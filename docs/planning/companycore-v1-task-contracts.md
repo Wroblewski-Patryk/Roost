@@ -766,8 +766,8 @@ P0
 - ID: CCV1-012
 - Title: Registration, login, and workspace bootstrap
 - Task Type: feature
-- Current Stage: planning
-- Status: READY
+- Current Stage: verification
+- Status: DONE
 - Owner: Backend Builder
 - Depends on: CCV1-011, CCV1-003
 - Priority: P0
@@ -796,15 +796,34 @@ business routes can resolve `userId` and `workspaceId`.
 - `docs/security/security-baseline.md`
 
 ### Acceptance Criteria
-- [ ] `POST /auth/register` or approved equivalent creates owner user and
+- [x] `POST /auth/register` or approved equivalent creates owner user and
   workspace atomically.
-- [ ] Duplicate email/owner registration is handled safely.
-- [ ] `POST /auth/login` or approved equivalent authenticates the owner.
-- [ ] Passwords or login secrets are hashed; plaintext credentials are never
+- [x] Duplicate email/owner registration is handled safely.
+- [x] `POST /auth/login` or approved equivalent authenticates the owner.
+- [x] Passwords or login secrets are hashed; plaintext credentials are never
   stored.
-- [ ] Protected routes can resolve `workspaceId`.
-- [ ] `GET /health` remains public.
-- [ ] `npm run build` passes.
+- [x] Protected routes can resolve `workspaceId`.
+- [x] `GET /health` remains public.
+- [x] `npm run build` passes.
+
+### Result Report
+- Task summary: Added owner registration/login, signed bearer auth tokens,
+  password hashing, workspace and owner membership models, workspace-aware API
+  key context, and local seed bootstrap for an owner workspace.
+- Files changed: `prisma/schema.prisma`,
+  `prisma/migrations/202605022_workspace_auth/migration.sql`,
+  `prisma/seed.ts`, `.env.example`, `src/app.ts`, `src/config/env.ts`,
+  `src/auth/api-key.middleware.ts`, `src/auth/password.ts`,
+  `src/auth/token.ts`, `src/modules/auth/auth.routes.ts`,
+  `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`,
+  `docs/planning/mvp-next-commits.md`, and this task contract.
+- How tested: Ran `npx prisma generate`, `npm run build`,
+  `npx prisma validate` with a local `DATABASE_URL`, and `git diff --check`.
+- What is incomplete: Workspace scoping is available in auth context, but
+  existing business routes still need filtering/persistence by workspace in
+  later scoped tasks.
+- Next steps: Start CCV1-013 workspace-scoped integration settings and secret
+  storage.
 
 ### Priority
 P0

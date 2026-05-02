@@ -36,9 +36,9 @@ Last updated: 2026-05-02
 - Observability: minimal system events table.
 - MCP / external tools: ClickUp API is called by a native CompanyCore
   integration adapter; n8n may call API endpoints for optional orchestration.
-- Auth / ownership: planned v1 workspace owner model with user registration,
-  login, workspace-scoped API access, and workspace-scoped integration
-  settings.
+- Auth / ownership: v1 workspace owner model with user registration, login,
+  automatic workspace bootstrap, bearer auth context, workspace-scoped API key
+  context, and planned workspace-scoped integration settings.
 
 ## Validation Commands
 - Lint: Not configured.
@@ -54,9 +54,10 @@ Last updated: 2026-05-02
 - Primary deploy path: Docker Compose.
 - Coolify app/service layout: one backend service plus one Postgres service.
 - Dockerfiles / compose paths: `Dockerfile`, `docker-compose.yml`.
-- Required secrets: `DATABASE_URL`, `SEED_API_KEY`, app auth secrets, optional
-  `PORT`; ClickUp tokens must be stored as workspace integration settings, not
-  hardcoded process globals.
+- Required secrets: `DATABASE_URL`, `SEED_API_KEY`, `AUTH_TOKEN_SECRET`,
+  optional `PORT`; local seed may use `SEED_OWNER_EMAIL`,
+  `SEED_OWNER_PASSWORD`, and `SEED_WORKSPACE_NAME`; ClickUp tokens must be
+  stored as workspace integration settings, not hardcoded process globals.
 - Public URLs / ports: backend on `3000`; deployed domains to document and
   verify are `companycore.luckysparrow.ch` and
   `api.companycore.luckysparrow.ch`.
@@ -66,8 +67,8 @@ Last updated: 2026-05-02
   Postgres volume.
 
 ## Current Focus
-- Main active objective: implement owner registration, login, and workspace
-  bootstrap.
+- Main active objective: implement workspace-scoped integration settings and
+  secret storage.
 - Top blockers: native ClickUp integration contract needs design before
   implementation; API namespace and API key hardening implementation details
   remain open; deployed databases initialized with `db push` may need migration
@@ -78,12 +79,15 @@ Last updated: 2026-05-02
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-012 registration, login, and workspace bootstrap.
+- Current iteration: CCV1-013 workspace-scoped integration settings and secret
+  storage.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-015 workspace guardrail test matrix.
-- Last completed task: documented route-level workspace guardrail test cases
-  for auth, cross-workspace access, service API keys, secrets, and sync.
-- Next required mode: ARCHITECT for CCV1-003 if following iteration rotation.
+- Last completed iteration: CCV1-012 registration, login, and workspace
+  bootstrap.
+- Last completed task: implemented owner registration/login, signed bearer
+  tokens, password hashing, workspace/membership schema, workspace-aware API key
+  context, and local owner workspace seed bootstrap.
+- Next required mode: BUILDER for CCV1-013.
 
 ## Recent Progress
 - 2026-05-02: Created Company Core backend foundation, Prisma schema, Docker
@@ -118,6 +122,10 @@ Last updated: 2026-05-02
 - 2026-05-02: Completed CCV1-003 by adding the v1 foundation Prisma migration,
   switching Docker startup to `prisma migrate deploy`, and documenting rollback
   expectations.
+- 2026-05-02: Completed CCV1-012 by adding owner registration/login,
+  automatic workspace creation, bearer token auth, password hashing,
+  workspace-aware API key context, workspace/auth migration, and local seed
+  bootstrap.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

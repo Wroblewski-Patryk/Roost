@@ -32,7 +32,7 @@ CRM UI during this plan.
 
 ## Phase 1: Foundation
 
-- [ ] CCV1-001 Canonical architecture and deployment docs alignment
+- [x] CCV1-001 Canonical architecture and deployment docs alignment
   - Why now: Code and short-form docs are ahead of canonical
     `docs/architecture/*` and `docs/operations/*` files.
   - Depends on: Existing audit findings.
@@ -78,7 +78,7 @@ CRM UI during this plan.
 
 ## Phase 4: Auth Runtime
 
-- [ ] CCV1-012 Registration, login, and workspace bootstrap
+- [x] CCV1-012 Registration, login, and workspace bootstrap
   - Why now: Owner user and workspace creation are the root of secure
     CompanyCore usage and must exist before workspace-owned integration
     settings are accepted.

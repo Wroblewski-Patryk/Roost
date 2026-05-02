@@ -21,13 +21,6 @@
   - Scope: Implement ClickUp as the first native CompanyCore integration
     adapter after CCV1-001 and DEC-005 are resolved.
 
-- CCV1-012 Registration, login, and workspace bootstrap
-  - Stage: planning
-  - Owner: Backend Builder
-  - Priority: P0
-  - Scope: Implement owner registration/login and automatic workspace creation
-    after the architecture contract is approved.
-
 - CCV1-013 Workspace-scoped integration settings and secret storage
   - Stage: planning
   - Owner: Backend Builder
@@ -96,3 +89,4 @@
 - CCV1-014 API contract and error response standard.
 - CCV1-015 Workspace guardrail test matrix.
 - CCV1-003 Prisma migration baseline and deployment entrypoint.
+- CCV1-012 Registration, login, and workspace bootstrap.

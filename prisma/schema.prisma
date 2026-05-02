@@ -28,6 +28,50 @@ enum AgentStatus {
   retired
 }
 
+enum WorkspaceRole {
+  owner
+}
+
+model User {
+  id           String                @id @default(uuid()) @db.Uuid
+  email        String                @unique
+  name         String?
+  passwordHash String                @map("password_hash")
+  ownedWorkspaces Workspace[]        @relation("WorkspaceOwner")
+  memberships  WorkspaceMembership[]
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Workspace {
+  id          String                @id @default(uuid()) @db.Uuid
+  name        String
+  ownerUserId String                @map("owner_user_id") @db.Uuid
+  owner       User                  @relation("WorkspaceOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
+  memberships WorkspaceMembership[]
+  apiKeys     ApiKey[]
+  createdAt   DateTime             @default(now()) @map("created_at")
+  updatedAt   DateTime             @updatedAt @map("updated_at")
+
+  @@map("workspaces")
+}
+
+model WorkspaceMembership {
+  id          String        @id @default(uuid()) @db.Uuid
+  workspaceId String        @map("workspace_id") @db.Uuid
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  userId      String        @map("user_id") @db.Uuid
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        WorkspaceRole @default(owner)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, userId])
+  @@map("workspace_memberships")
+}
+
 model Project {
   id          String     @id @default(uuid()) @db.Uuid
   name        String
@@ -268,6 +312,8 @@ model Event {
 
 model ApiKey {
   id        String    @id @default(uuid()) @db.Uuid
+  workspaceId String?   @map("workspace_id") @db.Uuid
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   name      String
   key       String    @unique
   active    Boolean   @default(true)

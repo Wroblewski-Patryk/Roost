@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import { requireApiKey } from "./auth/api-key.middleware";
 import { errorHandler } from "./middleware/error-handler";
+import { authRouter } from "./modules/auth/auth.routes";
 import { clientsRouter } from "./modules/clients/clients.routes";
 import { dealsRouter } from "./modules/deals/deals.routes";
 import { eventsRouter } from "./modules/events/events.routes";
@@ -19,6 +20,7 @@ export function createApp() {
   app.use(express.json({ limit: "1mb" }));
 
   app.use("/health", healthRouter);
+  app.use("/auth", authRouter);
 
   app.use(requireApiKey);
   app.use("/projects", projectsRouter);

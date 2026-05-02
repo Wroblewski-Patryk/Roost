@@ -5,11 +5,10 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
-- [ ] CCV1-012 Registration, login, and workspace bootstrap
+- [ ] CCV1-013 Workspace-scoped integration settings and secret storage
 
 ## NEXT
 
-- [ ] CCV1-013 Workspace-scoped integration settings and secret storage
 - [ ] CCV1-010 Native ClickUp integration contract and first adapter slice
 - [ ] CCV1-004 Complete required v1 event emission
 - [ ] CCV1-005 Deployment domain documentation and smoke checklist
