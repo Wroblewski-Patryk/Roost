@@ -17,14 +17,6 @@
   - Scope: replace manual `teamId/listIds` fields with a guided
     token-check, Workspace select, and grouped List checklist.
 
-- CCV1-028 Jarvis application-side CompanyCore Data Source deployment
-  - Stage: release
-  - Owner: Backend Builder
-  - Priority: P1
-  - Scope: deploy the prepared Jarvis CompanyCore connector and chat context
-    injector that read `COMPANYCORE_BASE_URL` and `COMPANYCORE_API_KEY`, then
-    verify production chat answers from CompanyCore records.
-
 ## Blocked
 
 - CCV1-020 GitHub webhook auto-deploy completion
@@ -42,9 +34,9 @@
   - Stage: planning
   - Owner: Backend Builder
   - Priority: P1
-  - Scope: choose and implement either scheduled native pull sync, ClickUp
-    webhook ingestion with signature validation, or external orchestration once
-    the first production ClickUp pull is verified.
+  - Scope: choose either scheduled native pull sync, ClickUp webhook ingestion
+    with `X-Signature` verification and webhook state storage, or external
+    orchestration once the first production ClickUp pull is verified.
 
 ## Done
 
@@ -89,3 +81,4 @@
 - CCV1-029 ClickUp production bootstrap slot.
 - CCV1-030 Minimal owner ClickUp web console.
 - CCV1-031P ClickUp owner console deployment plan.
+- CCV1-028 Jarvis application-side CompanyCore Data Source deployment.

@@ -245,6 +245,15 @@ Last updated: 2026-05-02
   lists, tasks, clients, deals, interactions, notes, decisions, agents, and
   events into the Jarvis knowledge pipeline, and was locally validated with
   targeted connector/context tests.
+- 2026-05-03: Completed CCV1-028 by deploying the Jarvis CompanyCore connector
+  and chat context injector to production `jarvis.luckysparrow.ch`.
+  `GET /v1/connectors/companycore` returned `connected=true`, manual sync
+  indexed 38 CompanyCore chunks, and a production chat smoke answered from the
+  seeded CompanyCore Paperclip project, including the decision, two tasks, and
+  `Jarvis production chat adapter` agent.
+- 2026-05-03: Added `docs/operations/jarvis-companycore-update-runbook.md`
+  with the repeatable OpenJarvis update, deploy, connector smoke, and chat
+  smoke procedure for the CompanyCore Data Source integration.
 - 2026-05-03: Completed CCV1-029 by adding an operator-only ClickUp production
   bootstrap script and deployment doc. Operators can provide temporary
   `CLICKUP_API_TOKEN`, `CLICKUP_TEAM_ID`, and `CLICKUP_LIST_IDS` values to save
@@ -257,6 +266,10 @@ Last updated: 2026-05-02
   can access multiple Workspaces available to the user, so v1 owner setup must
   discover `GET /api/v2/team`, let the owner select the ClickUp Workspace, then
   discover Spaces/Folders/Lists before saving selected `listIds`.
+- 2026-05-03: Audited the ClickUp owner-console plan against additional
+  official ClickUp docs. Added required handling for token rate limits, stored
+  token rediscovery, explicit pagination validation, and future webhook
+  signature/idempotency requirements.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

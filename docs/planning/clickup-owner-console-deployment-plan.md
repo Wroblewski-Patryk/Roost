@@ -29,6 +29,14 @@ Official ClickUp documentation confirms the missing selection layer:
 - `GET /api/v2/team/{team_Id}/task` can filter by `list_ids[]`, includes
   pagination from page `0`, and supports `include_closed`, `subtasks`, and
   `include_markdown_description`.
+- ClickUp applies rate limits per token. Free Forever, Unlimited, and Business
+  plans allow 100 requests per minute per token; Business Plus allows 1,000;
+  Enterprise allows 10,000. `HTTP 429` responses include rate-limit headers.
+- ClickUp webhooks are tied to the user auth token that created them. Incoming
+  webhook events include an `X-Signature` HMAC SHA-256 signature generated from
+  the webhook secret returned when the webhook is created.
+- `POST /api/v2/team/{team_id}/webhook` creates webhooks for a Workspace and
+  can target one hierarchy location such as Space, Folder, List, or task.
 
 Sources:
 
@@ -39,6 +47,25 @@ Sources:
 - `https://developer.clickup.com/reference/getlists`
 - `https://developer.clickup.com/reference/getfolderlesslists`
 - `https://developer.clickup.com/reference/getfilteredteamtasks`
+- `https://developer.clickup.com/docs/rate-limits`
+- `https://developer.clickup.com/docs/webhooks`
+- `https://developer.clickup.com/docs/webhooksignature`
+- `https://developer.clickup.com/reference/createwebhook`
+
+## Coverage Audit Against ClickUp Docs
+
+| Area | Covered | Plan Action |
+| --- | --- | --- |
+| Personal token ownership | Yes | v1 uses owner-provided personal token stored as workspace integration secret. |
+| OAuth Workspace authorization | Deferred | Keep as v2 decision if non-owner/external users need self-service authorization. |
+| Workspace selection | Yes | Add discovery from `GET /api/v2/team` before settings save. |
+| Space/Folder/List discovery | Yes | Add discovery tree using Space, Folder, folder List, and folderless List endpoints. |
+| Task pull sync | Mostly | Keep filtered Workspace task endpoint and add explicit pagination validation. |
+| Rate limits | Newly planned | Map `429` to safe `integration_rate_limited` or `integration_unavailable`, surface retry guidance, and avoid unbounded discovery fan-out. |
+| Webhooks | Deferred with detail | Do not implement in v1 owner setup; define v1.1/v2 requirements for signed webhook ingestion. |
+| Secret handling | Yes | Discovery token is not stored; save route encrypts token; responses never return token. |
+| Existing saved token rediscovery | Newly planned | Owner can refresh Workspace/List discovery using the stored encrypted token without re-entering it. |
+| Production smoke | Yes | Add guided UI smoke plus Jarvis readback after sync. |
 
 ## Required v1 UX
 
@@ -57,6 +84,8 @@ The first production-ready owner console must not require manual ID lookup.
 - Backend calls ClickUp using the submitted token without storing it yet.
 - UI shows available ClickUp Workspaces.
 - If the token fails, show a local recovery message and do not save anything.
+- If ClickUp returns `429`, show a rate-limit message with retry guidance and
+  do not retry in a tight loop.
 
 ### Workspace Selection State
 
@@ -102,6 +131,9 @@ The first production-ready owner console must not require manual ID lookup.
 - Token field placeholder says that leaving it blank keeps the saved token.
 - Owner can update selected Lists without re-entering the token.
 - Owner can replace the token by entering a new one and saving.
+- Owner can click `Refresh ClickUp structure` to rediscover Workspaces, Spaces,
+  Folders, and Lists using the stored encrypted token. The token remains
+  server-side and is not returned to the browser.
 
 ## Backend Implementation Plan
 
@@ -109,7 +141,7 @@ The first production-ready owner console must not require manual ID lookup.
 
 Add provider client methods:
 
-- `getAuthorizedWorkspaces(token)`
+- `getAuthorizedWorkspaces()`
 - `getSpaces(teamId)`
 - `getFolders(spaceId)`
 - `getFolderLists(folderId)`
@@ -118,6 +150,18 @@ Add provider client methods:
 
 Provider responses must be normalized into safe internal shapes before reaching
 routes.
+
+Provider client requirements:
+
+- Accept token in the constructor so it can use either a submitted discovery
+  token or the stored workspace token.
+- Use ClickUp's `Authorization` header exactly as required by the ClickUp API.
+- Map `401`/`403` provider responses to a safe invalid-token or unavailable
+  response.
+- Map `429` to a safe rate-limit response and preserve retry metadata only in
+  safe logs/events.
+- Never include raw provider response bodies in client-facing errors.
+- Avoid unbounded discovery calls by paging deliberately and limiting fan-out.
 
 ### 2. Add Discovery Route
 
@@ -132,7 +176,8 @@ Payload:
 ```json
 {
   "token": "clickup-personal-token",
-  "teamId": "optional-clickup-workspace-id"
+  "teamId": "optional-clickup-workspace-id",
+  "useStoredToken": false
 }
 ```
 
@@ -141,9 +186,15 @@ Behavior:
 - If `teamId` is omitted, return available Workspaces only.
 - If `teamId` is provided, return the selected Workspace's Spaces, Folders, and
   Lists.
+- If `useStoredToken` is true, load the encrypted workspace ClickUp token and
+  use it for rediscovery. This is allowed only after settings already exist.
+- If both `token` and `useStoredToken` are provided, the submitted token wins
+  for validation/discovery and is still not stored until the save route.
 - Do not store the submitted token.
 - Do not return raw provider errors.
 - Do not log token or raw ClickUp response bodies.
+- Return a safe `integration_rate_limited` or `integration_unavailable` error
+  if ClickUp rejects discovery.
 
 Safe response shape:
 
@@ -200,6 +251,12 @@ keeping the current idempotent upsert rule:
 (workspace_id, source = clickup, external_id)
 ```
 
+The current code already pages with a `maxPages` guard. CCV1-031 must verify
+this behavior against the ClickUp docs, make the guard explicit in docs/tests,
+and confirm the sync result reports the full fetched count within the approved
+page limit. If production needs more than the configured max page count, create
+a follow-up instead of silently truncating.
+
 ### 5. Future Continuous Updates
 
 Do not implement continuous updates in this same task. After first production
@@ -211,6 +268,17 @@ pull succeeds, choose one follow-up:
 
 Recommended v1.1 default: scheduled pull sync first, webhook later when event
 volume and required freshness justify it.
+
+Webhook follow-up requirements if chosen later:
+
+- Create webhooks with `POST /api/v2/team/{team_id}/webhook`.
+- Store webhook IDs and webhook secrets as workspace-owned integration state.
+- Verify incoming `X-Signature` HMAC SHA-256 before trusting payloads.
+- Use `webhook_id:history_item_id` as the event idempotency key when present.
+- Do not rely on ClickUp source IP allowlisting because ClickUp does not expose
+  dedicated webhook IPs.
+- Treat user-token ownership as operational risk: if the ClickUp user is
+  disabled or loses hierarchy access, webhook delivery can stop.
 
 ## Frontend Implementation Plan
 
@@ -228,6 +296,7 @@ Expected states:
 
 - loading token validation
 - invalid token
+- rate limited by ClickUp
 - no Workspaces available
 - selected Workspace loading
 - no Lists available
@@ -286,14 +355,26 @@ Accessibility expectations:
 
 ## Task Split
 
+Execute these tasks strictly one by one. Do not deploy the owner console before
+the backend discovery API is implemented and verified, because the intended v1
+flow must not require manual ClickUp ID lookup.
+
 ### CCV1-031 ClickUp Discovery Backend
+
+Order: 1.
 
 - Add client methods for Workspaces, Spaces, Folders, Lists.
 - Add `POST /v1/integration-settings/clickup/discover`.
-- Add tests for invalid token safe failure and valid mocked discovery shapes.
-- Add pagination to task sync.
+- Support both submitted token discovery and stored-token rediscovery.
+- Add safe provider error mapping for invalid token, provider unavailable, and
+  rate-limited responses.
+- Add tests for invalid token safe failure, rate-limit handling, stored-token
+  rediscovery, and valid mocked discovery shapes.
+- Verify and document task pagination behavior.
 
 ### CCV1-032 Guided Owner Console
+
+Order: 2.
 
 - Replace manual `teamId/listIds` entry with discovery-driven selection.
 - Keep advanced/manual fields hidden or removed from the primary flow.
@@ -302,11 +383,40 @@ Accessibility expectations:
 
 ### CCV1-033 Production Deploy And Smoke
 
+Order: 3.
+
 - Deploy backend + owner console.
 - Run production owner setup.
 - Run native sync.
 - Verify Jarvis/Paperclip/Aviary can read CompanyCore data with their service
   API keys after their app-side connectors are active.
+
+### CCV1-034 Continuous ClickUp Update Decision
+
+Order: 4.
+
+- Decide scheduled pull sync vs ClickUp webhook ingestion.
+- If scheduler is selected, define interval, max pages, failure events, and
+  Coolify execution path.
+- If webhook is selected, define endpoint, signature verification, webhook
+  state storage, idempotency, retry behavior, and rollback.
+
+## Execution Queue
+
+| Order | Task | Stage | Exit Criteria |
+| --- | --- | --- | --- |
+| 1 | CCV1-031 ClickUp Discovery Backend | implementation | Backend can validate/discover ClickUp Workspaces and Lists through safe CompanyCore API routes, with tests for invalid token, rate limit, stored-token rediscovery, and pagination. |
+| 2 | CCV1-032 Guided Owner Console | implementation | Owner can log in, check token, choose Workspace and Lists, save settings, refresh saved structure, and sync from the UI across desktop/tablet/mobile. |
+| 3 | CCV1-033 Production Deploy And Smoke | release | Production owner setup succeeds, ClickUp tasks sync into CompanyCore, and Jarvis/Paperclip/Aviary service API readback is verified. |
+| 4 | CCV1-034 Continuous ClickUp Update Decision | planning | A single approved update strategy exists: scheduled pull, signed webhook ingestion, or external orchestration, with rollback and risk notes. |
+
+Recommended execution discipline:
+
+- Complete and verify one task before starting the next.
+- Keep each task as a small commit.
+- Do not mark CCV1-033 done until production smoke includes real ClickUp data.
+- Do not begin CCV1-034 implementation until the first production pull has
+  evidence.
 
 ## Open Decisions
 

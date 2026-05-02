@@ -65,15 +65,20 @@ Plan the production-ready guided ClickUp setup flow before implementation.
 - Source review: official ClickUp docs for personal tokens, authorized
   Workspaces, Spaces, Folders, folder Lists, folderless Lists, and filtered
   Workspace tasks.
+- Follow-up source review: official ClickUp docs for rate limits, webhooks,
+  webhook signatures, and webhook creation.
 - Local checks: documentation-only planning update.
 
 ### Result Report
 - Task summary: Published the guided ClickUp owner-console deployment plan and
-  queued backend discovery, frontend guide flow, and production smoke tasks.
+  queued backend discovery, frontend guide flow, production smoke, and
+  continuous-update decision tasks.
 - Files changed: `docs/planning/clickup-owner-console-deployment-plan.md`,
   `.codex/context/TASK_BOARD.md`, `.codex/context/PROJECT_STATE.md`,
   `docs/planning/mvp-next-commits.md`, and this task contract.
-- How tested: reviewed official docs and checked queue consistency.
+- How tested: reviewed official docs, added coverage audit rows for rate
+  limits, stored-token rediscovery, pagination, and webhook signature
+  requirements, then checked queue consistency.
 - What is incomplete: implementation remains in CCV1-031, CCV1-032, and
   CCV1-033.
 - Next steps: implement ClickUp discovery backend.
