@@ -66,12 +66,9 @@ Last updated: 2026-05-02
   Postgres volume.
 
 ## Current Focus
-- Main active objective: align canonical architecture and operations docs with
-  the revised CompanyCore v1 architecture, including workspace ownership,
-  authenticated access, and native ClickUp integration as the first integration
-  adapter pattern.
-- Top blockers: canonical architecture/operations docs still contain template
-  placeholders; workspace/auth schema needs design before integration secrets
+- Main active objective: define the workspace ownership and auth architecture
+  contract for CompanyCore v1.
+- Top blockers: workspace/auth schema needs design before integration secrets
   can be implemented correctly; native ClickUp integration contract needs
   design before implementation; production migration policy is undecided; API
   namespace and API key hardening depth require decisions before some
@@ -83,12 +80,13 @@ Last updated: 2026-05-02
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-001 canonical architecture and deployment docs
-  alignment.
+- Current iteration: CCV1-011 workspace ownership and auth architecture
+  contract.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-002 planning queue and task contracts.
-- Last completed task: convert audit findings into executable planning files,
-  task board entries, task contracts, and open decisions.
+- Last completed iteration: CCV1-001 canonical architecture and deployment docs
+  alignment.
+- Last completed task: aligned canonical architecture, tech stack, architecture
+  source-of-truth, and Coolify deployment contract docs with CompanyCore v1.
 - Next required mode: ARCHITECT for CCV1-003 if following iteration rotation.
 
 ## Recent Progress
@@ -110,6 +108,9 @@ Last updated: 2026-05-02
 - 2026-05-02: Added regression-prevention plan covering API contracts,
   workspace guardrail tests, migration/bootstrap safety, integration adapter
   contracts, and observability minimums.
+- 2026-05-02: Completed CCV1-001 by replacing canonical architecture and
+  Coolify deployment placeholders with CompanyCore-specific architecture and
+  operations truth.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

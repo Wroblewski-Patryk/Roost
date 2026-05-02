@@ -2,13 +2,6 @@
 
 ## Ready
 
-- CCV1-001 Canonical architecture and deployment docs alignment
-  - Stage: planning
-  - Owner: Product Docs
-  - Priority: P0
-  - Scope: Align `docs/architecture/*` and `docs/operations/*` with actual v1
-    backend architecture.
-
 - CCV1-003 Prisma migration baseline and deployment entrypoint
   - Stage: planning
   - Owner: DB/Migrations
@@ -126,3 +119,4 @@
 - Validate build and Docker smoke flow.
 - Audit current repository architecture against CompanyCore v1 expectations.
 - CCV1-002 Real planning queue and task contracts.
+- CCV1-001 Canonical architecture and deployment docs alignment.

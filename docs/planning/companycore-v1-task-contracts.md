@@ -31,8 +31,8 @@ Every runtime task must preserve these rules:
 - ID: CCV1-001
 - Title: Canonical architecture and deployment docs alignment
 - Task Type: research
-- Current Stage: planning
-- Status: READY
+- Current Stage: verification
+- Status: DONE
 - Owner: Product Docs
 - Depends on: Audit findings from 2026-05-02
 - Priority: P0
@@ -61,25 +61,35 @@ CompanyCore v1 backend-only architecture.
    secrets.
 
 ### Acceptance Criteria
-- [ ] Canonical architecture docs no longer describe placeholder systems.
-- [ ] Docs clearly state that CompanyCore v1 has no GUI.
-- [ ] Docs clearly state the
+- [x] Canonical architecture docs no longer describe placeholder systems.
+- [x] Docs clearly state that CompanyCore v1 has no GUI.
+- [x] Docs clearly state the
   `ClickUp API -> CompanyCore adapter -> DB -> event` flow.
-- [ ] Deployment contract lists backend, Postgres, volume, health check, and
+- [x] Deployment contract lists backend, Postgres, volume, health check, and
   required secrets.
 
 ### Definition of Done
-- [ ] Docs are updated in English.
-- [ ] No runtime code changes are included.
-- [ ] Planning and project state remain synchronized.
-- [ ] `DEFINITION_OF_DONE.md` is checked before status changes to `DONE`.
+- [x] Docs are updated in English.
+- [x] No runtime code changes are included.
+- [x] Planning and project state remain synchronized.
+- [x] `DEFINITION_OF_DONE.md` was checked before status changed to `DONE`.
 
 ### Result Report
-- Task summary:
-- Files changed:
-- How tested:
-- What is incomplete:
-- Next steps:
+- Task summary: Replaced canonical architecture and deployment placeholders
+  with CompanyCore-specific backend-only architecture, workspace ownership,
+  native ClickUp adapter direction, tech stack, and Coolify deployment contract.
+- Files changed: `docs/architecture/system-architecture.md`,
+  `docs/architecture/tech-stack.md`,
+  `docs/architecture/architecture-source-of-truth.md`,
+  `docs/operations/coolify-vps-deployment-contract.md`,
+  `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`,
+  `docs/planning/mvp-next-commits.md`, and this task contract.
+- How tested: Searched canonical docs for old template placeholder language,
+  reviewed docs for the required architecture statements, and ran
+  `git diff --check`.
+- What is incomplete: Runtime implementation is unchanged; CCV1-011 must still
+  finalize detailed workspace/auth schema and auth-context contract.
+- Next steps: Start CCV1-011.
 
 ## CCV1-002 Real Planning Queue And Task Contracts
 

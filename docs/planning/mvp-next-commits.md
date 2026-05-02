@@ -5,7 +5,6 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
-- [ ] CCV1-001 Canonical architecture and deployment docs alignment
 - [ ] CCV1-011 Workspace ownership and auth architecture contract
 
 ## NEXT

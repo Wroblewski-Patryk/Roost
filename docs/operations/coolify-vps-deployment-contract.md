@@ -1,48 +1,119 @@
 # Coolify VPS Deployment Contract
 
-This template assumes VPS hosting with Coolify as the default deployment path.
-If the project uses another target, keep the same contract and document the
-difference explicitly.
+CompanyCore v1 deploys as a backend-only Docker Compose application on a
+Coolify-compatible VPS. The deployment must preserve PostgreSQL data and expose
+only the backend API publicly.
 
 ## Deployment Target
 
-- VPS provider:
-- Coolify project or environment:
+- VPS provider: LuckySparrow-managed VPS.
+- Platform: Coolify.
 - Public domains:
-- Private services:
+  - `companycore.luckysparrow.ch`
+  - `api.companycore.luckysparrow.ch`
+- Public service: `backend` on container port `3000`.
+- Private services: `postgres`.
 
 ## Runtime Inventory
 
 - Main app services:
-- Worker or cron services:
-- Databases:
-- Cache or queue:
+  - `backend`: Node.js/Express API.
+  - `postgres`: PostgreSQL database.
+- Worker or cron services: none in v1.
+- Databases: PostgreSQL 16.
+- Cache or queue: none in v1.
 - Persistent volumes:
+  - `companycore_postgres` mounted at `/var/lib/postgresql/data`.
 
 ## Required Artifacts
 
-- Dockerfile paths:
-- Compose or service-definition paths:
-- Env example files:
-- Health or readiness endpoints:
+- Dockerfile path: `Dockerfile`.
+- Local Compose path: `docker-compose.yml`.
+- Coolify Compose path: `docker-compose.coolify.yml`.
+- Env example file: `.env.example`.
+- Health/readiness endpoint: `GET /health`.
 - Migration entrypoint:
+  - Current foundation uses `prisma db push` in the runtime command.
+  - CCV1-003 must replace production reliance on `db push` with controlled
+    Prisma migrations.
 
 ## Env And Secrets Contract
 
-- Which env files exist:
-- Which values must come from Coolify secrets:
-- Which values are safe to keep in examples:
-- Who owns secret rotation:
+Current foundation secrets:
+
+- `DATABASE_URL`
+- `SERVICE_PASSWORD_POSTGRES`
+- `SERVICE_PASSWORD_API_KEY` or `SEED_API_KEY`
+- optional `PORT`
+
+Planned v1 secrets:
+
+- app auth/session/JWT secret selected during CCV1-012
+- integration secret encryption key selected during CCV1-013
+- workspace-scoped service API keys for Paperclip, Jarvis, n8n, and other
+  agents
+
+ClickUp configuration:
+
+- ClickUp tokens, list IDs, team IDs, and sync configuration should be stored
+  as workspace-owned integration settings.
+- Only app-level encryption or runtime secrets belong in Coolify env.
+- ClickUp tokens must not be hardcoded, logged, or returned in API responses.
 
 ## Release Requirements
 
-- Required checks before deploy:
-- Required smoke checks after deploy:
-- Rollback trigger:
-- Rollback method:
+Required checks before deploy:
+
+- `npm run build`
+- migration review for schema changes
+- relevant endpoint/integration tests once CCV1-006 is implemented
+- `git diff --check` before commit/release handoff
+
+Required smoke checks after deploy:
+
+- `GET https://api.companycore.luckysparrow.ch/health`
+- owner registration/login or approved first-owner bootstrap
+- protected workspace-scoped project/task call
+- denied unauthenticated or cross-workspace request
+- workspace ClickUp settings response with secrets redacted
+- native ClickUp sync
+- event readback showing expected sync event
+
+Rollback trigger:
+
+- failed health check
+- failed owner/auth bootstrap
+- failed migration that risks data ownership
+- failed protected API path
+- failed ClickUp sync that corrupts or duplicates data
+
+Rollback method:
+
+- redeploy previous image/commit
+- preserve the PostgreSQL volume
+- restore database from backup if migration or data corruption occurred
+- record the incident and add a regression check before retrying
 
 ## Data Safety
 
-- Backup strategy:
-- Restore verification expectation:
-- Risky migration policy:
+- Backup strategy: take Postgres volume/database backups before risky
+  production migrations.
+- Restore verification expectation: periodically verify backup restore path
+  before relying on production data.
+- Risky migration policy: any migration that changes ownership, auth, API key,
+  integration settings, or external ID uniqueness must include rollback or
+  recovery notes.
+
+## Observability And Logs
+
+Minimum v1 logs/signals:
+
+- backend startup and migration failures
+- auth failures without logging credentials
+- workspace scoping failures without leaking record details
+- integration settings changes without logging secret values
+- ClickUp sync start, success, failure, and item counts
+- event creation failures
+
+Provider tokens, API keys, passwords, and raw secret material must never be
+logged.

@@ -63,9 +63,31 @@ At minimum, keep these files aligned:
 
 - `docs/architecture/system-architecture.md`
 - `docs/architecture/tech-stack.md`
+- `docs/ARCHITECTURE.md`
+- `docs/DATABASE.md`
+- `docs/API.md`
+- `docs/INTEGRATIONS.md`
+- `docs/planning/auth-workspace-integration-plan.md`
+- `docs/planning/regression-prevention-plan.md`
 
 Projects may add more architecture docs or ADRs, but these baseline files
 should always stay current.
+
+## CompanyCore v1 Approved Direction
+
+The approved v1 direction is:
+
+- backend-only product foundation, no GUI
+- PostgreSQL is the source of truth
+- API is the only supported access layer
+- owner registration creates a workspace
+- business data, service API keys, integration settings, and integration sync
+  state are workspace-scoped
+- ClickUp is the first native integration adapter
+- n8n remains optional orchestration, not the required primary ClickUp path
+- schema changes should move from `prisma db push` to controlled migrations
+- tests and smoke checks must prove workspace scoping and integration sync
+  behavior before v1 is considered stable
 
 ## Implementation Contract
 
