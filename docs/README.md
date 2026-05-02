@@ -14,8 +14,9 @@ Company Core v1 provides:
 - Express API protected by `X-API-Key`.
 - Minimal flows for projects, goals, targets, tasks, clients, deals, notes, and
   events.
-- ClickUp sync endpoint designed for n8n payloads.
+- Native ClickUp integration planned as the first backend integration adapter,
+  with the existing ClickUp sync endpoint kept for compatible external payloads.
 - Docker Compose runtime for local and Coolify-style deployment.
 
-It deliberately does not provide a GUI, direct ClickUp API integration,
+It deliberately does not provide a GUI, Google Drive sync, Obsidian sync,
 advanced auth, analytics, background workers, or full business automation.

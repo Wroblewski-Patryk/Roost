@@ -1,85 +1,104 @@
-﻿# Testing Strategy
+# Testing Strategy
 
-Document the real testing approach for the repository here.
+CompanyCore v1 testing must protect the foundation: workspace ownership, auth,
+database migrations, integration sync, and events. Passing a happy-path request
+is not enough.
 
-## Purpose
+## Required Commands
 
-This file should explain how the project is validated beyond "tests passed".
+- Typecheck/build: `npm run build`
+- Test command: not configured yet; CCV1-006 must add and document it.
+- Docker smoke: `docker compose up -d --build`
 
-Capture:
+Keep this file aligned with `.codex/context/PROJECT_STATE.md`.
 
-- critical risk areas
-- automated test layers
-- manual verification expectations
-- stack-specific quality gates
-- any scenario or behavior validation required for high-risk subsystems
+## Critical Areas
 
-## Recommended Sections
+- owner registration and login
+- workspace scoping for all business data
+- workspace-scoped service API keys
+- integration settings and secret redaction
+- ClickUp discovery/sync idempotency
+- event emission for state changes
+- migrations and production bootstrap
+- safe error responses
 
-### Critical Areas
+## Workspace Guardrail Matrix
 
-- auth and permissions
-- money or billing logic
-- data ownership and migrations
-- external integrations
-- deployment-sensitive runtime paths
+Every protected workspace-scoped route should include tests for:
 
-### Tooling
+- unauthenticated request is denied
+- authenticated same-workspace request is allowed
+- cross-workspace read is denied
+- cross-workspace write is denied
+- missing or insufficient service API key scope is denied when scopes exist
+- responses do not reveal whether another workspace's record exists
+- writes persist the expected `workspace_id`
 
-- unit or integration test runner
-- API contract test tools
-- UI test tools
-- lint and typecheck commands
-- build verification commands
+## API Error Contract Tests
 
-### Manual Verification Standard
+Endpoint tests should assert stable error codes rather than raw messages.
 
-- define when frontend changes need manual UI verification
-- define when backend changes need manual API verification
-- require delivery summaries to mention automated and manual checks actually
-  run
-- require delivery summaries to include exact command lines used for automated
-  checks and a short pass/fail outcome per command
+Required minimum codes:
 
-### Behavior Or Scenario Validation
+- `validation_error`
+- `unauthorized`
+- `forbidden`
+- `not_found`
+- `workspace_required`
+- `integration_not_configured`
+- `integration_unavailable`
+- `sync_failed`
 
-Use this section if the project has subsystems where passing isolated tests is
-not enough.
+Raw backend, Prisma, provider, or validation internals should not be returned
+directly to API clients.
 
-Examples:
+## Integration Tests
 
-- agentic runtime behavior
-- multi-step workflows across time
-- worker orchestration
-- backtest versus live parity
-- graceful failure, degraded mode, or fail-closed behavior
+Native integration tests should cover:
 
-### Required Checks By Change Type
+- provider client success path
+- provider unavailable/failure path
+- mapper handles missing optional provider fields
+- sync is idempotent by `(workspace_id, source, external_id)`
+- sync emits the expected event
+- provider secrets are not logged or returned
+- one workspace cannot sync or read another workspace's integration settings
 
-- runtime changes
-- API contract changes
-- database or migration changes
-- UI or route changes
-- deployment or infrastructure changes
+Use mocked provider responses for repeatable automated tests, plus manual smoke
+against real ClickUp credentials before production verification.
 
-### Evidence Standard
+## Migration Tests
 
-- For each completed task, include:
-  - exact automated validation commands run
-  - manual verification actions run
-  - pass/fail result for each item
-  - links or references to key artifacts (logs, screenshots, reports) when
-    applicable
+Schema-changing tasks should verify:
 
-## Rule
+- migration applies to an empty database
+- migration applies to an existing local foundation database
+- generated Prisma client builds
+- affected runtime paths still work after restart
+- rollback or recovery note is recorded
 
-Keep this file aligned with the real commands recorded in
-`.codex/context/PROJECT_STATE.md`.
+## Manual Verification Standard
+
+Delivery summaries must include:
+
+- exact automated commands run and pass/fail result
+- manual API checks run and pass/fail result
+- whether denied paths were checked
+- whether secrets were redacted
+- residual risks
 
 ## AI And Integration Validation
 
-AI features require repeatable multi-turn validation using `AI_TESTING_PROTOCOL.md`. Required coverage includes memory consistency, multi-step context stability, adversarial contradiction handling, role break and prompt injection resistance, memory corruption resistance, edge cases, data leakage, and unauthorized access attempts.
+AI-facing features require repeatable validation using `AI_TESTING_PROTOCOL.md`.
+Required coverage includes memory consistency, multi-step context stability,
+adversarial contradiction handling, role break and prompt injection resistance,
+memory corruption resistance, edge cases, data leakage, and unauthorized access
+attempts.
 
-Runtime features require integration validation using `INTEGRATION_CHECKLIST.md`. A feature is not complete until real UI/client paths, API contracts, database schema or migrations, validation, loading states, error states, refresh or restart behavior, and regression risk are verified.
+Runtime features require integration validation using
+`INTEGRATION_CHECKLIST.md`. A feature is not complete until real API contracts,
+database schema or migrations, validation, error states, restart behavior, and
+regression risk are verified.
 
-Completion evidence must satisfy `DEFINITION_OF_DONE.md` and include exact commands, manual checks, scenario results, and residual risks.
+Completion evidence must satisfy `DEFINITION_OF_DONE.md`.

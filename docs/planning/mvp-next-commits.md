@@ -1,23 +1,40 @@
 # MVP Next Commits
 
-Keep this file short and execution-focused.
+Keep this file short and execution-focused. The active queue must stay
+synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
-- [ ] PRJ-001 Example first tiny task
-- [ ] PRJ-002 Example second tiny task
+- [ ] CCV1-001 Canonical architecture and deployment docs alignment
+- [ ] CCV1-011 Workspace ownership and auth architecture contract
 
 ## NEXT
 
-- [ ] PRJ-003 Example follow-up task
+- [ ] CCV1-014 API contract and error response standard
+- [ ] CCV1-015 Workspace guardrail test matrix
+- [ ] CCV1-012 Registration, login, and workspace bootstrap
+- [ ] CCV1-013 Workspace-scoped integration settings and secret storage
+- [ ] CCV1-010 Native ClickUp integration contract and first adapter slice
+- [ ] CCV1-003 Prisma migration baseline and deployment entrypoint
+- [ ] CCV1-004 Complete required v1 event emission
+- [ ] CCV1-005 Deployment domain documentation and smoke checklist
 
-## PIPELINE (Optional)
+## PIPELINE
 
-- [ ] PRJ-004 Example queued task for later continuation
+- [ ] CCV1-006 Endpoint test foundation
+- [ ] CCV1-007 API key hardening plan and implementation
+- [ ] CCV1-008 Missing module route decision and minimal route slice
+- [ ] CCV1-009 Production deployment verification
+- [ ] CCV1-016 Migration safety and seed/bootstrap policy
+- [ ] CCV1-017 Integration adapter contract and observability minimum
 
-## GROUP QUEUE (Optional)
+## GROUP QUEUE
 
-- [ ] PRJ-A (commits 01-03): example grouped execution batch
+- [ ] CCV1-A (docs and planning): CCV1-001, CCV1-002, CCV1-005
+- [ ] CCV1-B (workspace and auth): CCV1-011, CCV1-012, CCV1-013, CCV1-007
+- [ ] CCV1-C (regression prevention): CCV1-014, CCV1-015, CCV1-016, CCV1-017
+- [ ] CCV1-D (runtime foundation): CCV1-003, CCV1-004, CCV1-006, CCV1-010
+- [ ] CCV1-E (completion): CCV1-008, CCV1-009
 
 ## Refill Rules
 
@@ -33,4 +50,4 @@ Keep this file short and execution-focused.
 - Before reporting that no work is queued, verify both:
   - active canonical queue sections
   - background or historical unchecked checklists outside the canonical queue,
-    clearly labeled as non-active if found
+    clearly labeled as non-active if found.

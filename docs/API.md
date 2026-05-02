@@ -12,6 +12,25 @@ Base URL in local Docker:
 http://localhost:3000
 ```
 
+## Auth And Workspace
+
+v1 must add owner registration/login before workspace-owned settings are
+production-ready. Registration should create an owner user and workspace in one
+transaction. Protected business and integration routes should resolve an active
+`workspaceId` from either a user auth context or a workspace-scoped service API
+key.
+
+Planned minimum:
+
+```http
+POST /auth/register
+POST /auth/login
+GET /me
+```
+
+Integration settings such as ClickUp credentials must belong to the active
+workspace and must not be returned in API responses.
+
 ## Health
 
 ```http
@@ -79,7 +98,7 @@ POST /tasks/sync/clickup
 }
 ```
 
-ClickUp sync payload from n8n:
+ClickUp sync payload for external/manual orchestration:
 
 ```json
 {
@@ -92,6 +111,12 @@ ClickUp sync payload from n8n:
   }
 }
 ```
+
+The primary v1 ClickUp path should be the native CompanyCore ClickUp adapter.
+`POST /tasks/sync/clickup` remains as a compatible ingestion endpoint for
+tests, manual repair, or optional orchestration. Native sync should use the
+active workspace's ClickUp settings and upsert by `(workspace_id, source,
+external_id)`.
 
 ## Clients
 

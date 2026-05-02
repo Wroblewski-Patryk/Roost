@@ -51,6 +51,48 @@ Every meaningful runtime path should provide:
 - operator-readable error messages
 - smoke command or manual verification path
 
+## CompanyCore v1 Minimum
+
+Before v1 is considered stable, observability must cover:
+
+- owner registration/login success and failure without logging credentials
+- workspace-scoped API key authentication success/failure without logging raw
+  keys
+- workspace scoping failures without leaking target record details
+- integration settings changes without logging secret values
+- ClickUp sync start, success, failure, and item counts
+- event creation failures
+- database migration/startup failures
+
+## Critical Journeys
+
+- Public health check responds.
+- Owner can register/login and receive workspace context.
+- Protected route can create and read workspace-scoped task data.
+- Cross-workspace access is denied.
+- Workspace owner can configure ClickUp settings without secret leakage.
+- Native ClickUp sync creates or updates tasks and emits events.
+
+## Suggested SLIs
+
+- API availability for protected core routes.
+- Auth success/error rate.
+- ClickUp sync success rate.
+- ClickUp sync freshness for configured workspaces.
+- Event creation success rate for meaningful state changes.
+
+## Smoke Signals
+
+Production smoke should verify:
+
+- `GET /health`
+- owner registration/login or approved first-owner bootstrap
+- protected workspace-scoped project/task call
+- denied cross-workspace or unauthorized call
+- ClickUp integration settings read/write with redacted response
+- native ClickUp sync
+- `GET /events` includes the expected sync event
+
 ## Incident Learning
 
 After a production incident, failed deploy, or serious smoke failure:

@@ -13,11 +13,33 @@ database client. External tools should not write directly to the database.
 Express exposes a small HTTP API. Paperclip, Jarvis, n8n, and future GUI
 clients must use this API rather than bypassing it.
 
+## Ownership Boundary
+
+CompanyCore v1 must create a workspace ownership boundary before production
+integrations are considered complete. Registration creates an owner user and a
+workspace atomically. Business records, service API keys, integration settings,
+integration sync state, and agent access should resolve to a workspace before
+writes are accepted.
+
+This is not full enterprise multi-tenancy in v1. Invitations, billing,
+advanced RBAC, and organization administration are out of scope. The goal is a
+secure owner workspace that can later grow without rewriting the data model.
+
 ## Integration Layer
 
-n8n is the integration orchestrator. In v1, ClickUp data reaches Company Core
-through `POST /tasks/sync/clickup`. Company Core does not call the ClickUp API
-directly.
+CompanyCore supports first-class backend integration adapters when an external
+system should be part of the core operational memory. ClickUp is the first v1
+native adapter and should establish the pattern for future integrations:
+provider-specific client code stays in `src/integrations/<provider>/`, data is
+normalized into internal models, writes go through CompanyCore persistence, and
+events are emitted for automation and auditability.
+
+Integration credentials and settings belong to a workspace. ClickUp tokens,
+team/list configuration, sync cursors, and future provider settings must not be
+global process state.
+
+n8n remains optional orchestration for workflows that are better outside the
+backend. It is not the required primary path for ClickUp in v1.
 
 ## Consumers
 
