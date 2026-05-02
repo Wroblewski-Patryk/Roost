@@ -173,6 +173,67 @@ Use this file to record the minimum checks after each deploy.
   - Full protected CRUD smoke still needs a real production workspace service
     API key. Use `npm run adapter:smoke` once that key exists.
 
+## Protected Adapter Smoke Evidence
+
+- Timestamp: 2026-05-03
+- Environment: production API, workspace `LuckySparrow`
+  (`00000000-0000-4000-8000-000000000100`)
+- Credential path:
+  - SSH access to the VPS was verified through `plink`.
+  - A fresh hash-only service API key named
+    `Paperclip/Jarvis production adapter` was created in the production
+    database through the running backend container.
+  - The raw key was used for smoke only and was not printed in docs.
+  - Key prefix: `cc_v1_LxSo`
+  - API key id: `d64ab750-b6e7-4806-96b3-8e64eadeb37d`
+- Command run:
+  - `npm run adapter:smoke` with
+    `COMPANYCORE_BASE_URL=https://api.companycore.luckysparrow.ch`
+- Result:
+  - `/v1/connection` succeeded.
+  - Created agent `7e651b64-5bc1-4013-8f4e-fa68ece8da29`.
+  - Created task list `db2b6b31-bcda-44f0-8ee1-651785c2f7df`.
+  - Created task `19b3f439-eb18-477b-821c-d0fb59162a0b`.
+  - Created interaction `d1a38820-8961-44a3-81bb-f384b90f3144`.
+  - Created agent log `5d9d5f26-4aae-4dbe-b2d2-02e8fa50722b`.
+  - `/v1/events` contained the expected adapter event types.
+- Residual risks:
+  - The service key value is not recoverable from CompanyCore because raw keys
+    are shown only once by design. To wire Paperclip/Jarvis directly, create a
+    dedicated key per adapter through `/v1/api-keys` or create/store a fresh
+    key directly in each adapter's secret environment.
+
+## Paperclip And Jarvis Environment Wiring Evidence
+
+- Timestamp: 2026-05-03
+- Environment: production VPS Docker Compose apps
+- Target containers:
+  - `paperclip-prod-paperclip-1`
+  - `openjarvis-prod-jarvis-1`
+- Credential path:
+  - Created separate hash-only service API keys in CompanyCore for:
+    - `Paperclip production adapter`
+    - `Jarvis production adapter`
+  - Stored raw keys only in the target app `.env` files on the VPS.
+  - Recreated both application containers with Docker Compose so new env values
+    are visible at runtime.
+- CompanyCore env visible in containers:
+  - Paperclip:
+    - `COMPANYCORE_BASE_URL=https://api.companycore.luckysparrow.ch`
+    - `COMPANYCORE_ADAPTER_SOURCE=paperclip`
+    - `COMPANYCORE_API_KEY` prefix `cc_v1_qUZK`
+  - Jarvis:
+    - `COMPANYCORE_BASE_URL=https://api.companycore.luckysparrow.ch`
+    - `COMPANYCORE_ADAPTER_SOURCE=jarvis`
+    - `COMPANYCORE_API_KEY` prefix `cc_v1_GaF4`
+- Protected smoke:
+  - Paperclip key passed `npm run adapter:smoke`.
+  - Jarvis key passed `npm run adapter:smoke`.
+- Residual risks:
+  - Paperclip and Jarvis application code still needs to read these env vars
+    and call CompanyCore through its adapter layer. Infrastructure wiring is
+    complete.
+
 ## Local Docker Reproduction Evidence
 
 - Timestamp: 2026-05-02

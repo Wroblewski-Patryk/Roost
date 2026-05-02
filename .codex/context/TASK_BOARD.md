@@ -4,14 +4,6 @@
 
 ## Blocked
 
-- CCV1-009P Protected production smoke
-  - Stage: verification
-  - Owner: Ops/Release
-  - Priority: P1
-  - Blocked by: production owner/API key plus ClickUp settings unavailable for
-    protected project/task, integration settings, native sync, and event
-    readback smoke.
-
 - CCV1-020 GitHub webhook auto-deploy completion
   - Stage: release
   - Owner: Ops/Release
@@ -63,3 +55,5 @@ No backlog v1 tasks.
 - CCV1-024 Workspace-scoped interactions API.
 - CCV1-025 Task list and pipeline stage API.
 - CCV1-026 Adapter smoke script.
+- CCV1-009P Protected production smoke for adapter CRUD.
+- CCV1-027 Paperclip and Jarvis production env wiring.

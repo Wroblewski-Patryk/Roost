@@ -5,11 +5,13 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
-- [ ] CCV1-009P Protected production smoke
+- [x] CCV1-009P Protected production smoke for adapter CRUD
+- [x] CCV1-027 Paperclip and Jarvis production env wiring
 
 ## NEXT
 
-No queued v1 implementation tasks after protected production smoke.
+- [ ] Implement Paperclip/Jarvis application-side adapter code that reads
+      `COMPANYCORE_BASE_URL` and `COMPANYCORE_API_KEY`.
 
 ## PIPELINE
 

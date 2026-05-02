@@ -214,6 +214,21 @@ Last updated: 2026-05-02
 - 2026-05-03: Completed CCV1-026 by adding an adapter smoke script that checks
   `/v1/connection`, creates an agent, task list, task, interaction, and agent
   log, then verifies expected events without printing the service API key.
+- 2026-05-03: Completed protected production adapter smoke through VPS/Coolify
+  access. A fresh hash-only service key for `Paperclip/Jarvis production
+  adapter` was created in production DB for workspace `LuckySparrow`; key
+  prefix `cc_v1_LxSo`, key id `d64ab750-b6e7-4806-96b3-8e64eadeb37d`.
+  `npm run adapter:smoke` succeeded against
+  `https://api.companycore.luckysparrow.ch`, creating agent, task list, task,
+  interaction, agent log, and expected events. The raw key was not recorded in
+  docs because raw service keys are one-time secret material.
+- 2026-05-03: Wired CompanyCore environment variables into production
+  Paperclip and Jarvis containers on the VPS. Paperclip has
+  `COMPANYCORE_BASE_URL`, `COMPANYCORE_ADAPTER_SOURCE=paperclip`, and a
+  dedicated service key with prefix `cc_v1_qUZK`. Jarvis has
+  `COMPANYCORE_BASE_URL`, `COMPANYCORE_ADAPTER_SOURCE=jarvis`, and a dedicated
+  service key with prefix `cc_v1_GaF4`. Both containers were recreated and both
+  dedicated keys passed `npm run adapter:smoke`.
 
 ## Working Agreements
 - Keep task board and project state synchronized.
