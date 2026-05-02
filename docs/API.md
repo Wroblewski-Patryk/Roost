@@ -295,16 +295,23 @@ Safe response:
         "ownerHeader": "Authorization: Bearer <token>"
       },
       "routes": {
-        "tasks": [
-          {
-            "method": "POST",
-            "path": "/v1/tasks",
-            "capability": "tasks:write"
-          }
-        ],
-        "events": [
-          {
-            "method": "GET",
+    "tasks": [
+      {
+        "method": "POST",
+        "path": "/v1/tasks",
+        "capability": "tasks:write"
+      }
+    ],
+    "agents": [
+      {
+        "method": "POST",
+        "path": "/v1/agents",
+        "capability": "agents:write"
+      }
+    ],
+    "events": [
+      {
+        "method": "GET",
             "path": "/v1/events",
             "capability": "events:read"
           }
@@ -506,6 +513,27 @@ POST /decisions
 }
 ```
 
+## Agents
+
+```http
+GET /v1/agents
+POST /v1/agents
+GET /agents
+POST /agents
+```
+
+```json
+{
+  "name": "Jarvis",
+  "role": "operations_agent",
+  "status": "active",
+  "source": "jarvis"
+}
+```
+
+Agents are workspace-scoped. Use the returned `id` as `agentId` when writing
+agent logs.
+
 ## Agent Logs
 
 ```http
@@ -544,6 +572,7 @@ Generated v1 events:
 - `deal_created`
 - `note_created`
 - `decision_created`
+- `agent_created`
 - `sync_started`
 - `sync_succeeded`
 - `sync_failed`

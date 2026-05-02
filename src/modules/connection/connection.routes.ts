@@ -21,6 +21,8 @@ const capabilities = [
   "notes:write",
   "decisions:read",
   "decisions:write",
+  "agents:read",
+  "agents:write",
   "agent-logs:read",
   "agent-logs:write",
   "events:read",
@@ -70,6 +72,10 @@ const adapterManifest = {
     decisions: [
       { method: "GET", path: "/v1/decisions", capability: "decisions:read" },
       { method: "POST", path: "/v1/decisions", capability: "decisions:write" }
+    ],
+    agents: [
+      { method: "GET", path: "/v1/agents", capability: "agents:read" },
+      { method: "POST", path: "/v1/agents", capability: "agents:write" }
     ],
     agentLogs: [
       { method: "GET", path: "/v1/agent-logs", capability: "agent-logs:read" },

@@ -164,6 +164,7 @@ test("CompanyCore v1 protected API flow", async () => {
         auth: { serviceHeader: string };
         routes: {
           tasks: Array<{ method: string; path: string; capability: string }>;
+          agents: Array<{ method: string; path: string; capability: string }>;
           agentLogs: Array<{ method: string; path: string; capability: string }>;
           integrationSettings: Array<{ method: string; path: string; capability: string }>;
         };
@@ -190,6 +191,11 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(connectionBody.data.adapterManifest.routes.agentLogs.some((route) => (
     route.method === "POST"
     && route.path === "/v1/agent-logs"
+  )));
+  assert.ok(connectionBody.data.adapterManifest.routes.agents.some((route) => (
+    route.method === "POST"
+    && route.path === "/v1/agents"
+    && route.capability === "agents:write"
   )));
   assert.equal(connectionBody.data.adapterManifest.routes.integrationSettings[0].path, "/v1/integration-settings/clickup");
   assert.ok(connectionBody.data.adapterManifest.writeRules.includes("Do not send workspaceId in write payloads."));
@@ -310,10 +316,23 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(decision.status, 201);
 
+  const agent = await request("/v1/agents", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({
+      name: "Jarvis",
+      role: "operations_agent",
+      source: "jarvis"
+    })
+  });
+  assert.equal(agent.status, 201);
+  const agentId = (agent.body as { data: { id: string } }).data.id;
+
   const agentLog = await request("/v1/agent-logs", {
     method: "POST",
     headers: authA,
     body: JSON.stringify({
+      agentId,
       level: "info",
       message: "Jarvis inspected CompanyCore memory",
       metadata: { source: "test" }
@@ -321,11 +340,24 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(agentLog.status, 201);
 
+  const foreignAgentLog = await request("/v1/agent-logs", {
+    method: "POST",
+    headers: authB,
+    body: JSON.stringify({
+      agentId,
+      message: "Should not attach to another workspace"
+    })
+  });
+  assert.equal(foreignAgentLog.status, 404);
+
   const decisionsB = await request("/v1/decisions", { headers: authB });
+  const agentsB = await request("/v1/agents", { headers: authB });
   const agentLogsB = await request("/v1/agent-logs", { headers: authB });
   assert.equal(decisionsB.status, 200);
+  assert.equal(agentsB.status, 200);
   assert.equal(agentLogsB.status, 200);
   assert.equal((decisionsB.body as { data: unknown[] }).data.length, 0);
+  assert.equal((agentsB.body as { data: unknown[] }).data.length, 0);
   assert.equal((agentLogsB.body as { data: unknown[] }).data.length, 0);
 
   const settings = await request("/integration-settings/clickup", {
@@ -380,6 +412,7 @@ test("CompanyCore v1 protected API flow", async () => {
   const eventTypes = (events.body as { data: Array<{ type: string }> }).data.map((event) => event.type);
   assert.ok(eventTypes.includes("task_created"));
   assert.ok(eventTypes.includes("decision_created"));
+  assert.ok(eventTypes.includes("agent_created"));
   assert.ok(eventTypes.includes("task_synced_from_clickup"));
   assert.ok(eventTypes.includes("sync_succeeded"));
 });

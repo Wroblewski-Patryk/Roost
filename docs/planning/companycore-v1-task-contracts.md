@@ -25,6 +25,167 @@ Every runtime task must preserve these rules:
 - API errors use stable, safe response codes
 - tests include allowed and denied paths
 
+## CCV1-023 Workspace-Scoped Agents API
+
+### Header
+- ID: CCV1-023
+- Title: Workspace-scoped agents API
+- Task Type: feature
+- Current Stage: verification
+- Status: DONE
+- Owner: Backend Builder
+- Depends on: CCV1-019, CCV1-022
+- Priority: P0
+- Iteration: v1-023
+- Operation Mode: BUILDER
+
+### Process Self-Audit
+- [x] All seven autonomous loop steps are represented.
+- [x] Exactly one priority task was selected.
+- [x] Operation mode matches the current queue.
+- [x] The task aligns with repository source-of-truth documents.
+
+### Context
+CompanyCore already stored agents and agent logs, but only logs had runtime
+routes. Paperclip/Jarvis-style clients need a durable agent identity before
+writing operational logs.
+
+### Goal
+Add minimal workspace-scoped `GET /v1/agents` and `POST /v1/agents` routes,
+emit an `agent_created` event, and expose the capability in the adapter
+manifest.
+
+### Scope
+- `src/app.ts`
+- `src/modules/agents/agents.routes.ts`
+- `src/modules/agents/README.md`
+- `src/modules/connection/connection.routes.ts`
+- `src/tests/api.test.ts`
+- `docs/API.md`
+- `docs/INTEGRATIONS.md`
+- `docs/integrations/adapter-onboarding.md`
+- `.codex/context/PROJECT_STATE.md`
+- `.codex/context/TASK_BOARD.md`
+- this task contract
+
+### Implementation Plan
+1. Reuse the existing `Agent` model and workspace auth context.
+2. Add list and create routes only; defer update/delete until a real adapter
+   lifecycle need exists.
+3. Emit `agent_created` through the existing event service.
+4. Extend tests for same-workspace creation, cross-workspace isolation, and
+   log attachment denial.
+5. Update adapter docs and connection manifest.
+
+### Autonomous Loop Evidence
+
+#### 1. Analyze Current State
+- Issues: logs could reference agents, but adapters could not create/list agent
+  identities through the API.
+- Gaps: missing runtime route for an existing source-of-truth model.
+- Inconsistencies: agent table was documented as future-only while adapters now
+  need it.
+- Architecture constraints: API-only access, workspace scoping, no GUI.
+
+#### 2. Select One Priority Task
+- Selected task: CCV1-023 workspace-scoped agents API.
+- Priority rationale: unlocks durable Paperclip/Jarvis identity and log
+  attribution.
+- Why other candidates were deferred: production protected smoke still needs
+  real credentials; update/delete lifecycle can wait.
+
+#### 3. Plan Implementation
+- Files or surfaces to modify: agents route, app mount, connection manifest,
+  tests, docs, context.
+- Logic: derive `workspaceId` from auth, persist agent, emit event.
+- Edge cases: foreign `agentId` in logs must remain denied.
+
+#### 4. Execute Implementation
+- Implementation notes: added `GET/POST /agents` root aliases and `/v1/agents`
+  through the existing protected route mounting.
+
+#### 5. Verify and Test
+- Validation performed: `npm test` against disposable PostgreSQL.
+- Result: pending when first recorded; final result is in Validation Evidence.
+
+#### 6. Self-Review
+- Simpler option considered: keep agent identity only in log metadata.
+- Technical debt introduced: no.
+- Scalability assessment: route uses existing model and workspace guardrails;
+  future lifecycle endpoints can extend this module.
+- Refinements made: kept scope to list/create instead of adding premature
+  update/delete.
+
+#### 7. Update Documentation and Knowledge
+- Docs updated: API, integrations, adapter onboarding, module README, task
+  contract, project state, task board.
+- Context updated: yes.
+- Learning journal updated: not applicable.
+
+### Acceptance Criteria
+- [x] `GET /v1/agents` lists only active workspace agents.
+- [x] `POST /v1/agents` creates an agent in the active workspace.
+- [x] Agent creation emits `agent_created`.
+- [x] Agent logs can attach to same-workspace agents and reject foreign agents.
+- [x] Adapter manifest includes agents routes and capabilities.
+- [x] Docs explain agent identity usage for adapters.
+
+### Definition of Done
+- [x] Code builds without errors.
+- [x] Feature works through the real API surface.
+- [x] No mock, placeholder, fake, or temporary data/path remains.
+- [x] No existing functionality is broken.
+- [x] Changes are documented in the relevant source of truth.
+- [x] `DEFINITION_OF_DONE.md` was checked before status changed to `DONE`.
+
+### Validation Evidence
+- Tests: `npm test` with `DATABASE_URL` pointed at disposable PostgreSQL.
+- Manual checks: endpoint behavior covered by integration test.
+- High-risk checks: no schema or secret changes.
+
+### Integration Evidence
+- `INTEGRATION_CHECKLIST.md` reviewed: yes.
+- Real API/service path used: yes.
+- Endpoint and client contract match: yes.
+- DB schema and migrations verified: not applicable; existing model reused.
+- Error state verified: foreign `agentId` in log creation returns `404`.
+- Regression check performed: existing protected API flow test.
+
+### Security / Privacy Evidence
+- `docs/security/secure-development-lifecycle.md` reviewed: yes.
+- Data classification: workspace business metadata and operational memory.
+- Trust boundaries: protected API and workspace auth context.
+- Permission or ownership checks: list/create derive `workspaceId`; log
+  attachment verifies same-workspace agent.
+- Secret handling: no secrets returned or stored by this route.
+- Fail-closed behavior: protected route auth and foreign relation denial.
+
+### Deployment / Ops Evidence
+- Deploy impact: low.
+- Env or secret changes: none.
+- Health-check impact: none.
+- Smoke steps updated: adapter onboarding docs updated.
+- Rollback note: redeploy previous commit if adapter route causes regression.
+- `DEPLOYMENT_GATE.md` reviewed: yes.
+
+### Result Report
+- Task summary: Added minimal workspace-scoped agents API and adapter manifest
+  coverage.
+- Files changed: `src/app.ts`, `src/modules/agents/agents.routes.ts`,
+  `src/modules/agents/README.md`,
+  `src/modules/connection/connection.routes.ts`, `src/tests/api.test.ts`,
+  `docs/API.md`, `docs/INTEGRATIONS.md`,
+  `docs/integrations/adapter-onboarding.md`,
+  `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`, and this
+  task contract.
+- How tested: `npm test` against disposable PostgreSQL.
+- What is incomplete: no update/delete agent lifecycle routes in this slice.
+- Next steps: issue production API keys for Paperclip/Jarvis and run protected
+  production smoke.
+
+### Priority
+P0
+
 ## CCV1-022 Adapter Manifest For Service Clients
 
 ### Header

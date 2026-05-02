@@ -64,6 +64,13 @@ Expected success shape:
             "capability": "tasks:write"
           }
         ],
+        "agents": [
+          {
+            "method": "POST",
+            "path": "/v1/agents",
+            "capability": "agents:write"
+          }
+        ],
         "agentLogs": [
           {
             "method": "POST",
@@ -101,6 +108,7 @@ tokens.
    - `POST /v1/tasks`
    - `POST /v1/notes`
    - `POST /v1/decisions`
+   - `POST /v1/agents`
    - `POST /v1/agent-logs`
 6. Read event history through `GET /v1/events`.
 
@@ -121,6 +129,20 @@ Content-Type: application/json
   "description": "Created by Paperclip adapter",
   "status": "todo",
   "source": "paperclip"
+}
+```
+
+Register an adapter/agent identity:
+
+```http
+POST /v1/agents
+X-API-Key: <workspace-service-key>
+Content-Type: application/json
+
+{
+  "name": "Jarvis",
+  "role": "operations_agent",
+  "source": "jarvis"
 }
 ```
 

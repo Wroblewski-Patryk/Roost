@@ -79,12 +79,12 @@ Last updated: 2026-05-02
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-022 adapter manifest for service clients.
+- Current iteration: CCV1-023 workspace-scoped agents API.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-022 adapter manifest for service clients.
-- Last completed task: expanded `/v1/connection` with a safe
-  machine-readable adapter manifest for Paperclip, Jarvis, Jarvan, Aviary,
-  n8n, and similar clients.
+- Last completed iteration: CCV1-023 workspace-scoped agents API.
+- Last completed task: added `GET /v1/agents` and `POST /v1/agents` so
+  Paperclip, Jarvis, Jarvan, Aviary, n8n, and similar clients can register a
+  durable workspace-scoped agent identity and attach logs to it.
 - Next required mode: BUILDER for adapter production smoke once credentials are
   available.
 
@@ -194,6 +194,9 @@ Last updated: 2026-05-02
 - 2026-05-02: Completed CCV1-022 by expanding the connection handshake with a
   safe adapter manifest that lists canonical v1 routes, methods, capabilities,
   auth headers, and write rules for service clients.
+- 2026-05-02: Completed CCV1-023 by adding workspace-scoped agents API routes,
+  `agent_created` event emission, manifest capabilities for agents, and tests
+  for same-workspace creation plus cross-workspace log denial.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

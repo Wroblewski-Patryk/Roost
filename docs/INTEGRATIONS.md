@@ -15,6 +15,10 @@ This validates the workspace API key, returns safe capability metadata, exposes
 the machine-readable `adapterManifest.routes` map for canonical v1 paths, and
 shows whether ClickUp is configured without exposing secret material.
 
+Adapters that need a durable identity should create or reuse a workspace-scoped
+agent record through `POST /v1/agents`, then attach `agentId` to
+`POST /v1/agent-logs`.
+
 ## ClickUp To Company Core
 
 v1 primary integration path:
