@@ -50,25 +50,40 @@ async function main() {
     }
   });
 
-  await prisma.apiKey.upsert({
-    where: { keyHash: hashApiKey(key) },
-    update: {
-      active: true,
-      workspaceId: workspace.id,
-      keyHash: hashApiKey(key),
-      keyPrefix: apiKeyPrefix(key),
-      scopes: []
-    },
-    create: {
-      name: "Local development key",
-      key,
-      keyHash: hashApiKey(key),
-      keyPrefix: apiKeyPrefix(key),
-      scopes: [],
-      workspaceId: workspace.id,
-      active: true
+  const keyHash = hashApiKey(key);
+  const existingApiKey = await prisma.apiKey.findFirst({
+    where: {
+      OR: [
+        { keyHash },
+        { key }
+      ]
     }
   });
+
+  if (existingApiKey) {
+    await prisma.apiKey.update({
+      where: { id: existingApiKey.id },
+      data: {
+        active: true,
+        workspaceId: workspace.id,
+        keyHash,
+        keyPrefix: apiKeyPrefix(key),
+        scopes: []
+      }
+    });
+  } else {
+    await prisma.apiKey.create({
+      data: {
+        name: "Local development key",
+        key,
+        keyHash,
+        keyPrefix: apiKeyPrefix(key),
+        scopes: [],
+        workspaceId: workspace.id,
+        active: true
+      }
+    });
+  }
 
   const stages = ["Lead", "Qualified", "Proposal", "Won"];
   for (const [position, name] of stages.entries()) {

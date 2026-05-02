@@ -68,6 +68,10 @@ access.
 - How tested: Ran `npm test` against disposable PostgreSQL at `localhost:55432`;
   the command applied all 7 migrations from scratch and passed endpoint tests.
 - What is incomplete: A richer UI for key rotation remains out of v1 scope.
+- Follow-up fix: After first production redeploy returned `503`, updated
+  `prisma/seed.ts` to find an existing legacy plaintext seed API key before
+  creating a hash-backed row, preventing duplicate key conflicts during
+  transition deploys.
 - Next steps: Push and let auto-deploy run, then rerun CCV1-009 production
   smoke.
 

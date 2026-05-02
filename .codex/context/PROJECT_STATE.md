@@ -159,6 +159,9 @@ Last updated: 2026-05-02
 - 2026-05-02: Completed CCV1-018 by adding owner-only adapter API key
   management so Jarvan, Aviary, and similar agents can receive workspace
   service credentials without GUI work or direct database access.
+- 2026-05-02: Added production seed transition fix so existing legacy plaintext
+  `SEED_API_KEY` rows are updated with `key_hash` instead of creating a
+  duplicate unique key during redeploy.
 
 ## Working Agreements
 - Keep task board and project state synchronized.
