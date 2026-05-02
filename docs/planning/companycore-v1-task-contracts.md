@@ -236,11 +236,24 @@ existing event service.
 - `docs/NEXT_STEPS.md`
 
 ### Acceptance Criteria
-- [ ] `POST /clients` emits `client_created`.
-- [ ] `POST /deals` emits `deal_created`.
-- [ ] `POST /notes` emits `note_created`.
-- [ ] Event payloads include useful entity identifiers.
-- [ ] `npm run build` passes.
+- [x] `POST /clients` emits `client_created`.
+- [x] `POST /deals` emits `deal_created`.
+- [x] `POST /notes` emits `note_created`.
+- [x] Event payloads include useful entity identifiers.
+- [x] `npm run build` passes.
+
+### Result Report
+- Task summary: Added required event writes for client, deal, and note creation
+  using the existing event service.
+- Files changed: `src/modules/clients/clients.routes.ts`,
+  `src/modules/deals/deals.routes.ts`, `src/modules/notes/notes.routes.ts`,
+  `docs/API.md`, `.codex/context/PROJECT_STATE.md`,
+  `.codex/context/TASK_BOARD.md`, `docs/planning/mvp-execution-plan.md`,
+  `docs/planning/mvp-next-commits.md`, and this task contract.
+- How tested: Ran `npm run build` and `git diff --check`.
+- What is incomplete: Automated endpoint assertions remain in CCV1-006.
+- Next steps: Start CCV1-005 deployment domain documentation and smoke
+  checklist.
 
 ### Priority
 P0

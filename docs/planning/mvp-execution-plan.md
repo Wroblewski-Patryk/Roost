@@ -116,7 +116,7 @@ CRM UI during this plan.
     standard errors for auth, workspace, validation, and integrations.
   - Deployment impact: Low.
 
-- [ ] CCV1-004 Complete required v1 event emission
+- [x] CCV1-004 Complete required v1 event emission
   - Why now: Required events for `client_created`, `deal_created`, and
     `note_created` are missing.
   - Depends on: Existing event service and current route modules.

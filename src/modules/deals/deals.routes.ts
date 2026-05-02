@@ -3,6 +3,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
+import { createEvent } from "../events/event.service";
 
 const createDealSchema = z.object({
   clientId: z.string().uuid().optional(),
@@ -25,5 +26,16 @@ dealsRouter.get("/", asyncHandler(async (_req, res) => {
 dealsRouter.post("/", asyncHandler(async (req, res) => {
   const input = createDealSchema.parse(req.body);
   const deal = await prisma.deal.create({ data: input });
+  await createEvent({
+    type: "deal_created",
+    source: deal.source,
+    payload: {
+      dealId: deal.id,
+      clientId: deal.clientId,
+      title: deal.title,
+      value: deal.value,
+      currency: deal.currency
+    }
+  });
   res.status(201).json({ data: deal });
 }));

@@ -5,19 +5,18 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
-- [ ] CCV1-004 Complete required v1 event emission
+- [ ] CCV1-005 Deployment domain documentation and smoke checklist
 
 ## NEXT
 
-- [ ] CCV1-005 Deployment domain documentation and smoke checklist
 - [ ] CCV1-007 API key hardening plan and implementation
+- [ ] CCV1-016 Migration safety and seed/bootstrap policy
 
 ## PIPELINE
 
 - [ ] CCV1-006 Endpoint test foundation
 - [ ] CCV1-008 Missing module route decision and minimal route slice
 - [ ] CCV1-009 Production deployment verification
-- [ ] CCV1-016 Migration safety and seed/bootstrap policy
 
 ## GROUP QUEUE
 

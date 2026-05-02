@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
+import { createEvent } from "../events/event.service";
 
 const createClientSchema = z.object({
   name: z.string().min(1),
@@ -23,5 +24,14 @@ clientsRouter.get("/", asyncHandler(async (_req, res) => {
 clientsRouter.post("/", asyncHandler(async (req, res) => {
   const input = createClientSchema.parse(req.body);
   const client = await prisma.client.create({ data: input });
+  await createEvent({
+    type: "client_created",
+    source: client.source,
+    payload: {
+      clientId: client.id,
+      name: client.name,
+      companyName: client.companyName
+    }
+  });
   res.status(201).json({ data: client });
 }));

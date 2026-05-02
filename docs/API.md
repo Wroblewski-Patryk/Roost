@@ -370,3 +370,9 @@ Generated v1 events:
 - `task_synced_from_clickup`
 - `goal_created`
 - `target_created`
+- `client_created`
+- `deal_created`
+- `note_created`
+- `sync_started`
+- `sync_succeeded`
+- `sync_failed`
