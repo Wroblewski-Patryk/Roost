@@ -44,12 +44,12 @@ Current foundation secrets:
 - `DATABASE_URL`
 - `SERVICE_PASSWORD_POSTGRES`
 - `SERVICE_PASSWORD_API_KEY` or `SEED_API_KEY`
+- `AUTH_TOKEN_SECRET`
+- `INTEGRATION_SECRET_KEY`
 - optional `PORT`
 
-Planned v1 secrets:
+v1 service credentials:
 
-- app auth/session/JWT secret selected during CCV1-012
-- integration secret encryption key selected during CCV1-013
 - workspace-scoped service API keys for Paperclip, Jarvis, n8n, and other
   agents
 

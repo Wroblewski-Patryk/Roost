@@ -37,10 +37,17 @@ For local development without Docker, provide a reachable PostgreSQL
 Use Docker Compose deployment with the repository root as the compose context
 and `docker-compose.coolify.yml` as the compose file.
 
+Public domains:
+
+- Project domain: `https://companycore.luckysparrow.ch`
+- API domain: `https://api.companycore.luckysparrow.ch`
+
 Required environment values:
 
 - `SERVICE_PASSWORD_POSTGRES`
 - `SERVICE_PASSWORD_API_KEY`
+- `AUTH_TOKEN_SECRET`
+- `INTEGRATION_SECRET_KEY`
 
 Map domains to the `backend` service on container port `3000`.
 
@@ -52,6 +59,18 @@ production once data matters.
 ## Smoke Check
 
 ```bash
-curl http://localhost:3000/health
-curl -H "X-API-Key: dev-companycore-key" http://localhost:3000/projects
+curl https://api.companycore.luckysparrow.ch/health
+curl -H "X-API-Key: <workspace-api-key>" https://api.companycore.luckysparrow.ch/projects
+curl -H "Authorization: Bearer <owner-token>" https://api.companycore.luckysparrow.ch/integration-settings/clickup
+curl -X POST -H "Authorization: Bearer <owner-token>" https://api.companycore.luckysparrow.ch/tasks/sync/clickup/native
+curl -H "Authorization: Bearer <owner-token>" https://api.companycore.luckysparrow.ch/events
 ```
+
+Expected smoke evidence:
+
+- `/health` returns healthy status.
+- Protected API rejects missing auth and accepts owner token or workspace API
+  key.
+- ClickUp settings response redacts token material.
+- Native ClickUp sync creates or updates tasks without duplicating records.
+- `GET /events` shows `task_synced_from_clickup` and sync status events.

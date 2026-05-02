@@ -156,7 +156,7 @@ CRM UI during this plan.
 
 ## Phase 8: Docs
 
-- [ ] CCV1-005 Deployment domain documentation and smoke checklist
+- [x] CCV1-005 Deployment domain documentation and smoke checklist
   - Why now: `companycore.luckysparrow.ch` and
     `api.companycore.luckysparrow.ch` are not recorded in docs or state.
   - Depends on: CCV1-001.

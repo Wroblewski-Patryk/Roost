@@ -2,12 +2,6 @@
 
 ## Ready
 
-- CCV1-005 Deployment domain documentation and smoke checklist
-  - Stage: planning
-  - Owner: Ops/Release
-  - Priority: P0
-  - Scope: Record production domains and smoke path.
-
 - CCV1-016 Migration safety and seed/bootstrap policy
   - Stage: planning
   - Owner: DB/Migrations
@@ -67,3 +61,4 @@
 - CCV1-017 Integration adapter contract and observability minimum.
 - CCV1-010 Native ClickUp integration contract and first adapter slice.
 - CCV1-004 Complete required v1 event emission.
+- CCV1-005 Deployment domain documentation and smoke checklist.

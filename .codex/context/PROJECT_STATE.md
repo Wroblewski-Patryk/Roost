@@ -67,7 +67,7 @@ Last updated: 2026-05-02
   Postgres volume.
 
 ## Current Focus
-- Main active objective: document deployment domains and production smoke path.
+- Main active objective: document migration safety and seed/bootstrap policy.
 - Top blockers: API namespace and API key hardening implementation details
   remain open; deployed databases initialized with `db push` may need migration
   reconciliation before production rollout.
@@ -77,13 +77,14 @@ Last updated: 2026-05-02
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-005 deployment domain documentation and smoke
+- Current iteration: CCV1-016 migration safety and seed/bootstrap policy.
+- Current operation mode: BUILDER
+- Last completed iteration: CCV1-005 deployment domain documentation and smoke
   checklist.
-- Current operation mode: TESTER
-- Last completed iteration: CCV1-004 complete required v1 event emission.
-- Last completed task: added `client_created`, `deal_created`, and
-  `note_created` event emission for create routes.
-- Next required mode: TESTER for CCV1-005.
+- Last completed task: recorded production domains, deployment smoke checks,
+  required Coolify secrets, ClickUp sync smoke evidence, and Postgres volume
+  rollback expectations.
+- Next required mode: BUILDER for CCV1-016.
 
 ## Recent Progress
 - 2026-05-02: Created Company Core backend foundation, Prisma schema, Docker
@@ -133,6 +134,9 @@ Last updated: 2026-05-02
   `(workspace_id, source, external_id)` upsert, and safe sync events.
 - 2026-05-02: Completed CCV1-004 by adding missing `client_created`,
   `deal_created`, and `note_created` events to create routes.
+- 2026-05-02: Completed CCV1-005 by recording production domains, smoke
+  checks, required deployment secrets, and rollback notes for preserving the
+  PostgreSQL volume.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

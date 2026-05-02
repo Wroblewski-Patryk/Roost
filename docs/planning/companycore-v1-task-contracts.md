@@ -264,8 +264,8 @@ P0
 - ID: CCV1-005
 - Title: Deployment domain documentation and smoke checklist
 - Task Type: release
-- Current Stage: planning
-- Status: READY
+- Current Stage: verification
+- Status: DONE
 - Owner: Ops/Release
 - Depends on: CCV1-001
 - Priority: P0
@@ -283,11 +283,26 @@ CompanyCore v1.
 - `docs/operations/coolify-vps-deployment-contract.md`
 
 ### Acceptance Criteria
-- [ ] `companycore.luckysparrow.ch` is recorded as the project domain.
-- [ ] `api.companycore.luckysparrow.ch` is recorded as the API domain.
-- [ ] Smoke checks cover public health, protected API, ClickUp sync payload,
+- [x] `companycore.luckysparrow.ch` is recorded as the project domain.
+- [x] `api.companycore.luckysparrow.ch` is recorded as the API domain.
+- [x] Smoke checks cover public health, protected API, ClickUp sync payload,
   and event readback.
-- [ ] Rollback notes reference preserving the Postgres volume.
+- [x] Rollback notes reference preserving the Postgres volume.
+
+### Result Report
+- Task summary: Recorded production domains, required Coolify secrets, public
+  smoke checks, ClickUp sync smoke evidence, and rollback/volume preservation
+  expectations.
+- Files changed: `docs/DEPLOYMENT.md`,
+  `docs/operations/post-deploy-smoke.md`,
+  `docs/operations/coolify-vps-deployment-contract.md`,
+  `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`,
+  `docs/planning/mvp-execution-plan.md`, `docs/planning/mvp-next-commits.md`,
+  and this task contract.
+- How tested: Reviewed docs against CCV1-005 acceptance criteria and ran
+  `git diff --check`.
+- What is incomplete: Actual production smoke execution remains in CCV1-009.
+- Next steps: Start CCV1-016 migration safety and seed/bootstrap policy.
 
 ### Priority
 P0
