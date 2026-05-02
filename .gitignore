@@ -1,0 +1,25 @@
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local temp output
+tmp/
+temp/
+output/
+
+# Logs
+*.log
+
+# Optional local env files for template development
+.env
+.env.local
+.env.*.local
+
+# Node / build output
+node_modules/
+dist/
+
+# Prisma local database variants
+*.db
+*.db-journal

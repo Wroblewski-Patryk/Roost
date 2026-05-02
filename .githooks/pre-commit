@@ -1,0 +1,62 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ "${SKIP_LOCAL_GATES:-0}" = "1" ]; then
+  echo "[pre-commit] SKIP_LOCAL_GATES=1 -> skipping local quality gates"
+  exit 0
+fi
+
+run_if_exists() {
+  cmd="$1"
+  if command -v "$cmd" >/dev/null 2>&1; then
+    return 0
+  fi
+  return 1
+}
+
+echo "[pre-commit] running local quality gates"
+
+# JavaScript/TypeScript repositories
+if [ -f "pnpm-workspace.yaml" ] || [ -f "pnpm-lock.yaml" ]; then
+  if run_if_exists pnpm; then
+    pnpm -r --if-present run lint
+    pnpm -r --if-present run typecheck
+    pnpm -r --if-present run test -- --run
+  fi
+elif [ -f "package.json" ]; then
+  if run_if_exists npm; then
+    npm run lint --if-present
+    npm run typecheck --if-present
+    npm test --if-present
+  fi
+fi
+
+# PHP repositories
+if [ -f "composer.json" ]; then
+  if run_if_exists composer; then
+    if grep -q '"analyse"' composer.json; then
+      composer analyse
+    fi
+    if grep -q '"test"' composer.json; then
+      composer test
+    elif [ -x "vendor/bin/phpunit" ]; then
+      vendor/bin/phpunit
+    fi
+  fi
+fi
+
+# Python repositories
+if [ -f "pyproject.toml" ] || [ -f "requirements.txt" ]; then
+  if run_if_exists pytest; then
+    pytest -q
+  fi
+fi
+
+# Go repositories
+if [ -f "go.mod" ]; then
+  if run_if_exists go; then
+    go test ./...
+  fi
+fi
+
+echo "[pre-commit] quality gates passed"

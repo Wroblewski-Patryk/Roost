@@ -1,0 +1,279 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TaskStatus {
+  todo
+  in_progress
+  blocked
+  done
+  archived
+}
+
+enum DealStatus {
+  open
+  won
+  lost
+  archived
+}
+
+enum AgentStatus {
+  active
+  paused
+  retired
+}
+
+model Project {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  status      String     @default("active")
+  externalId  String?    @map("external_id")
+  source      String?    @default("companycore")
+  goals       Goal[]
+  taskLists   TaskList[]
+  tasks       Task[]
+  notes       Note[]
+  decisions   Decision[]
+  events      Event[]
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  @@map("projects")
+}
+
+model Goal {
+  id          String    @id @default(uuid()) @db.Uuid
+  projectId   String?   @map("project_id") @db.Uuid
+  project     Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title       String
+  description String?
+  status      String    @default("active")
+  externalId  String?   @map("external_id")
+  source      String?   @default("companycore")
+  targets     Target[]
+  tasks       Task[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("goals")
+}
+
+model Target {
+  id           String    @id @default(uuid()) @db.Uuid
+  goalId       String?   @map("goal_id") @db.Uuid
+  goal         Goal?     @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  title        String
+  description  String?
+  metric       String?
+  targetValue  Float?    @map("target_value")
+  currentValue Float?    @default(0) @map("current_value")
+  dueDate      DateTime? @map("due_date")
+  status       String    @default("active")
+  externalId   String?   @map("external_id")
+  source       String?   @default("companycore")
+  tasks        Task[]
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@map("targets")
+}
+
+model TaskList {
+  id          String    @id @default(uuid()) @db.Uuid
+  projectId   String?   @map("project_id") @db.Uuid
+  project     Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  name        String
+  description String?
+  externalId  String?   @map("external_id")
+  source      String?   @default("companycore")
+  tasks       Task[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@map("task_lists")
+}
+
+model Task {
+  id          String     @id @default(uuid()) @db.Uuid
+  projectId   String?    @map("project_id") @db.Uuid
+  project     Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  goalId      String?    @map("goal_id") @db.Uuid
+  goal        Goal?      @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  targetId    String?    @map("target_id") @db.Uuid
+  target      Target?    @relation(fields: [targetId], references: [id], onDelete: SetNull)
+  taskListId  String?    @map("task_list_id") @db.Uuid
+  taskList    TaskList?  @relation(fields: [taskListId], references: [id], onDelete: SetNull)
+  title       String
+  description String?
+  status      TaskStatus @default(todo)
+  priority    String?
+  dueDate     DateTime?  @map("due_date")
+  externalId  String?    @map("external_id")
+  source      String?    @default("companycore")
+  notes       Note[]
+  events      Event[]
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  @@unique([source, externalId])
+  @@map("tasks")
+}
+
+model Client {
+  id           String        @id @default(uuid()) @db.Uuid
+  name         String
+  companyName  String?       @map("company_name")
+  email        String?
+  phone        String?
+  status       String        @default("active")
+  externalId   String?       @map("external_id")
+  source       String?       @default("companycore")
+  deals        Deal[]
+  interactions Interaction[]
+  notes        Note[]
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  @@map("clients")
+}
+
+model PipelineStage {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String
+  position   Int      @default(0)
+  externalId String?  @map("external_id")
+  source     String?  @default("companycore")
+  deals      Deal[]
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("pipeline_stages")
+}
+
+model Deal {
+  id              String         @id @default(uuid()) @db.Uuid
+  clientId        String?        @map("client_id") @db.Uuid
+  client          Client?        @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  pipelineStageId String?        @map("pipeline_stage_id") @db.Uuid
+  pipelineStage   PipelineStage? @relation(fields: [pipelineStageId], references: [id], onDelete: SetNull)
+  title           String
+  value           Decimal?       @db.Decimal(12, 2)
+  currency        String?        @default("PLN")
+  status          DealStatus     @default(open)
+  externalId      String?        @map("external_id")
+  source          String?        @default("companycore")
+  notes           Note[]
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  @@map("deals")
+}
+
+model Interaction {
+  id         String   @id @default(uuid()) @db.Uuid
+  clientId   String?  @map("client_id") @db.Uuid
+  client     Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  type       String
+  summary    String?
+  occurredAt DateTime @default(now()) @map("occurred_at")
+  externalId String?  @map("external_id")
+  source     String?  @default("companycore")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("interactions")
+}
+
+model Note {
+  id        String   @id @default(uuid()) @db.Uuid
+  content   String
+  projectId String?  @map("project_id") @db.Uuid
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  taskId    String?  @map("task_id") @db.Uuid
+  task      Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  clientId  String?  @map("client_id") @db.Uuid
+  client    Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  dealId    String?  @map("deal_id") @db.Uuid
+  deal      Deal?    @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  externalId String? @map("external_id")
+  source    String?  @default("companycore")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("notes")
+}
+
+model Decision {
+  id         String   @id @default(uuid()) @db.Uuid
+  projectId  String?  @map("project_id") @db.Uuid
+  project    Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title      String
+  rationale  String?
+  outcome    String?
+  externalId String?  @map("external_id")
+  source     String?  @default("companycore")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("decisions")
+}
+
+model Agent {
+  id          String      @id @default(uuid()) @db.Uuid
+  name        String
+  role        String?
+  status      AgentStatus @default(active)
+  externalId  String?     @map("external_id")
+  source      String?     @default("companycore")
+  logs        AgentLog[]
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  @@map("agents")
+}
+
+model AgentLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  agentId   String?  @map("agent_id") @db.Uuid
+  agent     Agent?   @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  level     String   @default("info")
+  message   String
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("agent_logs")
+}
+
+model Event {
+  id        String   @id @default(uuid()) @db.Uuid
+  type      String
+  payload   Json?
+  source    String?  @default("companycore")
+  projectId String?  @map("project_id") @db.Uuid
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  taskId    String?  @map("task_id") @db.Uuid
+  task      Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("events")
+}
+
+model ApiKey {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String
+  key       String    @unique
+  active    Boolean   @default(true)
+  lastUsedAt DateTime? @map("last_used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("api_keys")
+}

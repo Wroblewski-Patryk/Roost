@@ -1,0 +1,487 @@
+# AGENTS.md - Unified Project Conductor Standard
+
+## Purpose
+
+This repository follows a multi-agent workflow so multiple chats can run in
+parallel without losing source-of-truth quality, deployment discipline, or
+documentation parity.
+
+## Canonical Files
+
+### Core Context
+
+- `.codex/context/PROJECT_STATE.md`
+- `.codex/context/TASK_BOARD.md`
+- `.codex/context/LEARNING_JOURNAL.md`
+- `DEFINITION_OF_DONE.md`
+- `INTEGRATION_CHECKLIST.md`
+- `NO_TEMPORARY_SOLUTIONS.md`
+- `DEPLOYMENT_GATE.md`
+- `AI_TESTING_PROTOCOL.md`
+- `.agents/workflows/general.md`
+- `.agents/workflows/documentation-governance.md`
+- `.agents/workflows/subagent-orchestration.md`
+- `.agents/workflows/user-collaboration.md`
+- `.agents/workflows/world-class-delivery.md`
+- `docs/governance/autonomous-engineering-loop.md`
+
+### Planning
+
+- `docs/planning/mvp-execution-plan.md`
+- `docs/planning/mvp-next-commits.md`
+- `docs/planning/open-decisions.md`
+
+### Governance
+
+- `docs/governance/working-agreements.md`
+- `docs/governance/language-policy.md`
+- `docs/governance/repository-structure-policy.md`
+- `docs/governance/subagent-delegation-policy.md`
+- `docs/governance/code-quality-guardrails.md` (optional)
+- `docs/governance/template-usage.md`
+- `docs/governance/agent-setup-blueprint.md` (optional)
+- `docs/governance/world-class-product-engineering-standard.md`
+- `docs/governance/autonomous-engineering-loop.md`
+- `docs/governance/function-coverage-ledger-standard.md`
+- `docs/governance/function-coverage-ledger-template.csv`
+
+### Operations
+
+- `docs/operations/coolify-vps-deployment-contract.md`
+- `docs/operations/post-deploy-smoke.md`
+- `docs/operations/rollback-and-recovery.md`
+- `docs/operations/service-reliability-and-observability.md`
+
+### Engineering
+
+- `docs/engineering/local-development.md`
+- `docs/engineering/testing.md`
+- `docs/security/secure-development-lifecycle.md`
+
+### Templates and Review
+
+- `.codex/templates/task-template.md`
+- `.codex/templates/project-state-template.md`
+- `.codex/templates/deployment-agent-checklist-template.md`
+- `.github/pull_request_template.md`
+
+### Architecture and UX Truth
+
+- `docs/architecture/README.md`
+- `docs/architecture/system-architecture.md`
+- `docs/architecture/tech-stack.md`
+- `docs/architecture/architecture-source-of-truth.md`
+- `docs/ux/design-system-contract.md`
+- `docs/ux/experience-quality-bar.md`
+- `docs/ux/design-memory.md`
+- `docs/ux/visual-direction-brief.md`
+- `docs/ux/ui-scorecard.md`
+- `docs/ux/pattern-gallery.md`
+- `docs/ux/screen-quality-checklist.md`
+- `docs/ux/anti-patterns.md`
+- `docs/ux/brand-personality-tokens.md`
+- `docs/ux/canonical-visual-implementation-workflow.md`
+- `docs/ux/background-and-decorative-asset-strategy.md`
+- `docs/ux/evidence-driven-ux-review.md`
+
+## Core Rules (All Agents)
+
+### 1. Architecture Is Source Of Truth
+
+- `docs/architecture/` is the single architecture authority.
+- Implementation must match approved architecture.
+- If something does not fit architecture, stop implementation and report the
+  mismatch first.
+- Do not silently rewrite architecture during delivery.
+
+### 2. Critical Prohibitions
+
+- Do not create new systems without explicit approval.
+- Do not introduce workarounds or temporary bypasses.
+- Do not duplicate logic that already exists in approved paths.
+- Do not ignore existing mechanisms that already solve the need.
+- Always reuse existing systems first.
+
+### 3. Decision Mode For Architecture Gaps
+
+When a blocker or mismatch appears, do not ship a fast workaround. Instead:
+
+1. describe the problem clearly
+2. propose 2 to 3 valid implementation options
+3. wait for explicit user decision before continuing
+
+### 4. Task Contract Is Mandatory
+
+Every task must be written using `.codex/templates/task-template.md` and must
+include:
+
+- `Goal`
+- `Scope` with exact files, modules, APIs, schemas, or docs
+- `Implementation Plan`
+- `Acceptance Criteria`
+- `Definition of Done`
+- `Result Report`
+
+The task contract must be testable. A task without scope, acceptance criteria,
+Definition of Done, and result report is not eligible for `DONE`.
+
+### 5. Scope Discipline
+
+- Stay inside the approved task.
+- Do not extend scope unless explicitly requested.
+- Do not change architecture during implementation unless explicitly approved.
+
+### 6. Mandatory Review And Refactor Pass
+
+After each implementation, verify:
+
+- architecture alignment
+- existing system reuse
+- no workaround added
+- no logic duplication introduced
+
+If any check fails, fix before closing the task.
+
+Always run a brief cleanup pass when needed:
+
+- remove workaround remnants
+- unify duplicated or divergent code paths
+- simplify where complexity was added by implementation pressure
+
+### 7. Working Cycle
+
+Follow `docs/governance/autonomous-engineering-loop.md` for every autonomous
+iteration:
+
+1. analyze current state
+2. select exactly one priority task
+3. plan implementation
+4. execute implementation
+5. verify and test
+6. self-review
+7. update documentation and knowledge
+
+Before starting an iteration, perform the process self-audit from that document.
+Do not continue until all seven steps, one-task scope, and the correct operation
+mode are represented in the task contract.
+
+Operation mode rotates by iteration number:
+
+- `BUILDER`: default mode
+- `ARCHITECT`: every third iteration, unless the iteration is also a tester
+  iteration
+- `TESTER`: every fifth iteration
+
+### 8. Stage-Based Delivery Workflow
+
+Every task must declare its current delivery stage and the output expected from
+that stage.
+
+Supported stages:
+- `intake`
+- `analysis`
+- `planning`
+- `implementation`
+- `verification`
+- `release`
+- `post-release`
+
+Stage contract:
+- `intake`: clarify request, scope, constraints, and unknowns
+- `analysis`: inspect the current state and identify the implementation surface
+- `planning`: define ordered execution steps, validation, and rollout shape
+- `implementation`: make the approved scoped change only
+- `verification`: prove the result against acceptance criteria
+- `release`: prepare merge, deploy, handoff, and rollback notes
+- `post-release`: define monitoring, success signals, and follow-up actions
+
+Rules:
+- Do not skip stages implicitly.
+- Do not implement during `analysis` or `planning` unless explicitly requested.
+- Do not declare a task complete without `verification` evidence.
+- If missing information materially affects quality or risk, stop at the current
+  stage and surface the gap.
+- Prefer the smallest safe assumption set and state assumptions explicitly.
+
+### 9. Execution Posture
+
+- Better to stop and ask than ship a wrong solution.
+- Agents execute within architecture constraints and do not self-appoint as
+  architecture owners.
+- Project state, task board, planning docs, and governance docs are source of
+  truth unless the repository defines additional canonical files.
+- Do not leave resolved architecture decisions only in planning docs or
+  closure notes.
+- When the repository uses `docs/modules/`, keep them implementation-facing and
+  linked back to architecture instead of redefining runtime truth.
+- When a project has an established visual system, reuse existing shared
+  patterns before creating new component variants or page-local styles.
+- When a project has no strong visual direction yet, establish one early and
+  keep it consistent across surfaces.
+- When a canonical screenshot, mockup, or approved screen image exists, treat
+  it as a specification instead of loose inspiration.
+- For screenshot-driven UX/UI work, close one surface at a time and require an
+  explicit `95%` parity judgment before moving to dependent surfaces.
+- When user notes modify a canonical visual, treat the visual plus those notes
+  as the active merged spec.
+- If user notes conflict with each other or with an approved interpretation,
+  stop and ask for a decision before implementing.
+- Do not silently lower visual fidelity by replacing needed image assets,
+  illustrations, or textured backgrounds with generic gradients.
+- Treat mobile, tablet, and desktop as distinct experience surfaces with
+  different density, navigation, and input expectations.
+- All repository artifacts must be written in English.
+- AI communication with end users should follow the user's language.
+- Never reference sibling repositories or `!template` paths from project docs.
+- Keep root minimal. Project documentation belongs in `docs/`.
+- Every meaningful change updates at least one relevant source-of-truth file:
+  - `.codex/context/TASK_BOARD.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/LEARNING_JOURNAL.md` when a recurring pitfall is confirmed
+  - `docs/planning/*`
+  - project docs or ADRs when behavior, scope, or architecture changed
+- Keep commits tiny, single-purpose, and reversible.
+- Before creating a commit, run local quality gates proactively:
+  - lint
+  - typecheck
+  - tests
+  - stack-specific high-risk checks
+- Do not create a commit when required quality gates fail, unless the user
+  explicitly approves a temporary exception.
+- Run relevant validation for changed scope, or explain why it could not run.
+- Do not mark a task done without acceptance-criteria evidence.
+- Do not mark a task done without validating `DEFINITION_OF_DONE.md`.
+- Do not accept integrated runtime work without validating
+  `INTEGRATION_CHECKLIST.md`.
+- Do not ship placeholders, mock-only behavior, fake data, "for now" fixes, or
+  temporary bypasses. Follow `NO_TEMPORARY_SOLUTIONS.md`.
+- Deliver features as vertical slices across UI, logic, API, DB, validation,
+  error handling, and tests.
+- For AI-assisted, auth-sensitive, or money-impacting flows, include adversarial
+  and fail-closed validation before completion.
+- AI systems must be tested against prompt injection, data leakage, and
+  unauthorized access before deployment.
+- AI features must pass multi-step scenarios from `AI_TESTING_PROTOCOL.md`
+  before completion.
+- When a recurring environment or tooling pitfall is discovered, record it in
+  `.codex/context/LEARNING_JOURNAL.md` in the same task.
+- Before saying "nothing is planned" or "no tasks are queued", run a planning
+  source-of-truth cross-check:
+  - Tier 1: active canonical planning files
+  - Tier 2: background or historical unchecked checklists, clearly labeled as
+    non-active if they are not part of the canonical queue
+- When active work is unclear in a medium or large project, use the function
+  coverage ledger model in
+  `docs/governance/function-coverage-ledger-standard.md` to turn module
+  confidence gaps into explicit planning rows before inventing new features.
+- Treat the function coverage ledger as an index of product confidence, not a
+  replacement for tests, architecture docs, or the task board.
+- If a project has an active coverage ledger, derive follow-up tasks in this
+  order:
+  - `V1_BLOCKER` or equivalent release blockers
+  - `REQUIRES_IMPLEMENTATION_REVIEW`
+  - `IMPLEMENTED_NEEDS_EVIDENCE` for `P0`
+  - `IMPLEMENTED_NOT_VERIFIED` for `P0/P1`
+  - `P1/P2` scope decisions or deferrals
+- Do not convert every `PARTIAL` or evidence-missing ledger row into feature
+  work. Plan verification first, then create a narrow fix only when proof or
+  code inspection finds a real defect.
+- Follow the default delivery loop:
+  - analyze current state
+  - select one priority task
+  - plan implementation
+  - execute implementation
+  - verify and test
+  - self-review
+  - update documentation and knowledge
+  - repeat
+- Follow `.agents/workflows/user-collaboration.md` when a task involves
+  ambiguous intent, user-authored visual notes, blocker decisions, or a handoff
+  between planning and execution.
+- Follow `.agents/workflows/world-class-delivery.md` for substantial product,
+  runtime, release, UX, security, or AI work.
+- For substantial changes, define why the work matters, the smallest safe
+  slice, the success signal, the main failure mode, and the rollback or recovery
+  path.
+- For deployable services or important journeys, use
+  `docs/operations/service-reliability-and-observability.md` to define SLIs,
+  SLOs, health checks, alert routes, and error-budget posture when appropriate.
+- For auth, AI, money, secrets, permissions, integrations, or user-data work,
+  use `docs/security/secure-development-lifecycle.md`.
+- After launch or deploy, capture what was learned from smoke checks, incidents,
+  metrics, or user feedback before declaring the loop complete.
+
+## Agent Catalog
+
+- Planner: `.agents/prompts/planner.md` or `.claude/agents/planner.agent.md`
+- Product Docs: `.agents/prompts/product-docs.md` or
+  `.claude/agents/product-docs.agent.md`
+- Backend Builder: `.agents/prompts/backend-builder.md` or
+  `.claude/agents/backend-builder.agent.md`
+- Frontend Builder: `.agents/prompts/frontend-builder.md` or
+  `.claude/agents/frontend-builder.agent.md`
+- QA/Test: `.agents/prompts/qa-test.md` or
+  `.claude/agents/qa-test.agent.md`
+- Security: `.agents/prompts/security-auditor.md` or
+  `.claude/agents/security-auditor.agent.md`
+- DB/Migrations: `.agents/prompts/db-migrations.md` or
+  `.claude/agents/db-migrations.agent.md`
+- Ops/Release: `.agents/prompts/ops-release.md` or
+  `.claude/agents/ops-release.agent.md`
+- Code Review: `.agents/prompts/code-reviewer.md`
+- Codex Documentation Agent: `.codex/agents/documentation-agent.md`
+- Codex Planning Agent: `.codex/agents/planning-agent.md`
+- Codex Execution Agent: `.codex/agents/execution-agent.md`
+- Codex Review Agent: `.codex/agents/review-agent.md`
+- Codex AI Red Team Agent: `.codex/agents/ai-red-team-agent.md`
+
+## Trigger Intent
+
+If the user sends a short execution nudge (`rob`, `dzialaj`, `start`, `go`,
+`next`, `lecimy`):
+1. Read `docs/planning/mvp-next-commits.md` and `.codex/context/TASK_BOARD.md`.
+2. Take the first `NOW` item that maps to a `READY` or `IN_PROGRESS` task.
+3. If planning docs and board drift, sync them before implementation.
+4. Implement exactly one tiny task.
+5. Run relevant checks.
+6. Update task, project state, and planning files.
+7. Return summary with files changed, tests run, deployment impact, and next
+   tiny task.
+
+If a new execution wave or detailed implementation plan is published:
+1. activate the first executable tasks in canonical queue files in the same
+   turn
+2. update `NOW` and `NEXT`
+3. if useful for larger waves, also update `PIPELINE` and `GROUP QUEUE`
+4. do not leave a new plan without an actionable canonical queue
+
+## Workflow Contract
+
+1. Product and architecture truth live in `docs/`.
+2. Planning work translates truth into executable tasks and a small `NOW`
+   queue.
+3. Builder agents implement one scoped task at a time.
+4. QA, Security, and Review agents validate before completion.
+5. After validation, check for cleaner architecture or smaller follow-up tasks.
+6. Refresh priorities and repeat with the next smallest valuable task.
+
+All tasks must also respect the stage-based delivery workflow above:
+- declare `Task Type`
+- declare `Current Stage`
+- declare `Deliverable For This Stage`
+- keep output aligned to the active stage only
+
+Documentation-governance rule:
+- Use `.agents/workflows/documentation-governance.md` to decide whether new
+  truth belongs in architecture, modules, planning, operations, or UX docs.
+- Use `docs/governance/function-coverage-ledger-standard.md` when a release,
+  handoff, incident, or stalled queue needs a module-by-module confidence map.
+  Store active release ledgers under `docs/operations/` and derive executable
+  tasks into `docs/planning/` plus `.codex/context/TASK_BOARD.md`.
+
+## Subagent Contract (Codex)
+
+- Delegate only independent or clearly bounded subtasks.
+- Keep critical-path blocking work local.
+- Assign explicit ownership for delegated write scope.
+- Avoid overlapping file ownership between parallel workers.
+- Require delegated output to report:
+  - objective completed
+  - files changed
+  - validations run
+  - residual risks
+  - next suggested step
+- Integrate and verify delegated output before closing tasks.
+- Follow `.agents/workflows/subagent-orchestration.md`.
+
+## UX/UI Contract
+
+For UX/UI tasks, always include:
+- design source reference (Figma link/node or approved snapshot)
+- existing design-system pattern reused, or clear justification for a new
+  shared pattern
+- expected states (`loading`, `empty`, `error`, `success`)
+- responsive checks (`desktop`, `tablet`, `mobile`)
+- accessibility checks
+- parity evidence in task or review notes
+- evidence that the screen answers the key user questions quickly: what matters
+  now, what is blocked, and what the next action is
+
+Design-source policy:
+- Primary source: Figma MCP for implementation context.
+- Secondary source: Stitch MCP for ideation or draft exploration only.
+- Stitch-only output cannot be the sole source of truth for final
+  implementation unless the repository explicitly documents an approved
+  exception workflow.
+- For pixel-close implementation from screenshots, approved mockups, or
+  canonical images, use `docs/ux/canonical-visual-implementation-workflow.md`
+  and record the active spec, the mismatch list, and the parity judgment.
+- Work through shared shell and layout dependencies before polishing route
+  modules that depend on them.
+- Capture a fresh screenshot after each meaningful surface slice and compare it
+  to the active spec before opening a new visual lane.
+- Use `docs/ux/evidence-driven-ux-review.md` for full-route clickthroughs,
+  broad UX audits, or UI work that needs to turn screenshots into actionable
+  implementation slices.
+- Do not expose raw backend, provider, or validation errors directly to end
+  users when a user-language recovery message and action can be provided.
+- Keep feedback local to the action whenever possible: loading, error, and
+  success states should appear where the user acted.
+- If the repository has project UX docs, follow them. Otherwise record the
+  design source directly in task notes or PR notes.
+- If the repository has a documented design-system contract, agents must reuse
+  existing shared patterns before introducing new visual variants.
+- Record approved reusable UI patterns and verified UX learnings in
+  `docs/ux/design-memory.md` when they should influence future work.
+- Use the UX starter docs to keep direction explicit:
+  - `docs/ux/visual-direction-brief.md` for product visual thesis
+  - `docs/ux/ui-scorecard.md` for review quality scoring
+  - `docs/ux/pattern-gallery.md` for screen-level reuse
+  - `docs/ux/screen-quality-checklist.md` before calling a flow polished
+  - `docs/ux/anti-patterns.md` to avoid recurring mistakes
+  - `docs/ux/brand-personality-tokens.md` for consistent experience character
+  - `docs/ux/canonical-visual-implementation-workflow.md` for pixel-close
+    delivery from approved visuals
+  - `docs/ux/background-and-decorative-asset-strategy.md` for image-rich
+    decorative fidelity
+
+## Deployment Contract
+
+This template assumes VPS hosting with Coolify as the default deployment path.
+
+Every deployable project should define:
+- hosting target and topology in `.codex/context/PROJECT_STATE.md`
+- deployment contract in `docs/operations/coolify-vps-deployment-contract.md`
+- post-deploy smoke in `docs/operations/post-deploy-smoke.md`
+- rollback procedure in `docs/operations/rollback-and-recovery.md`
+- reliability and observability expectations in
+  `docs/operations/service-reliability-and-observability.md`
+- real env examples for every runtime surface
+- health endpoints or equivalent readiness checks
+
+If the project does not use Coolify, keep the same contract but document the
+alternative deploy surface explicitly.
+
+## Optional Deep-Dive Docs
+
+When a repository grows beyond a small single-surface app, add:
+- `docs/modules/README.md`
+- `docs/modules/system-modules.md`
+- `docs/modules/module-deep-dive-template.md`
+- `docs/modules/module-doc-status-index.md`
+
+These files help agents keep code ownership, routes, and test surfaces mapped
+without overloading architecture docs.
+
+## Template Usage Mode
+
+This repository bootstrap is maintained in manual mode:
+- start from this repository bootstrap package
+- rename the project folder
+- open it in Codex
+- finalize project details through conversation and targeted file updates
+
+## Pre-Commit Quality Gate
+
+Use the validation commands recorded in `.codex/context/PROJECT_STATE.md` as the
+required pre-commit contract.
