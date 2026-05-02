@@ -66,25 +66,23 @@ Last updated: 2026-05-02
   Postgres volume.
 
 ## Current Focus
-- Main active objective: define the API contract and error response standard
-  before expanding auth, workspace, and integration routes.
+- Main active objective: define the workspace guardrail test matrix before
+  implementing workspace-scoped runtime routes.
 - Top blockers: native ClickUp integration contract needs design before
   implementation; production migration policy is undecided; API namespace and
-  API key hardening implementation details remain open; API/error contracts and
-  workspace guardrail tests need definition before route surface expands.
+  API key hardening implementation details remain open; workspace guardrail
+  tests need definition before route surface expands.
 - Success criteria for this phase: canonical docs, workspace/auth model,
   task board, planning queue, deployment domains, migration strategy, event
   coverage, API/error contracts, regression guardrails, tests, observability,
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-014 API contract and error response standard.
-- Current operation mode: ARCHITECT
-- Last completed iteration: CCV1-011 workspace ownership and auth architecture
-  contract.
-- Last completed task: finalized v1 owner/workspace/auth architecture decisions
-  and documented workspace-scoped business data, API keys, and integration
-  settings.
+- Current iteration: CCV1-015 workspace guardrail test matrix.
+- Current operation mode: TESTER
+- Last completed iteration: CCV1-014 API contract and error response standard.
+- Last completed task: documented stable success/error envelopes, safe error
+  codes, and API error redaction rules.
 - Next required mode: ARCHITECT for CCV1-003 if following iteration rotation.
 
 ## Recent Progress
@@ -112,6 +110,8 @@ Last updated: 2026-05-02
 - 2026-05-02: Completed CCV1-011 by documenting owner email/password auth,
   workspace creation at registration, owner-only membership for v1, and
   workspace-scoped service API keys.
+- 2026-05-02: Completed CCV1-014 by documenting stable API response envelopes,
+  error response shape, standard error codes, and safe error redaction rules.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

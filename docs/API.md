@@ -12,6 +12,72 @@ Base URL in local Docker:
 http://localhost:3000
 ```
 
+## Response Contract
+
+CompanyCore v1 should use stable response envelopes so Paperclip, Jarvis,
+future GUI clients, and tests can rely on predictable shapes.
+
+Successful single-resource responses:
+
+```json
+{
+  "data": {
+    "id": "uuid"
+  }
+}
+```
+
+Successful list responses:
+
+```json
+{
+  "data": []
+}
+```
+
+Future pagination may add `meta`, but existing clients should not require it
+until the endpoint documents pagination explicitly.
+
+Error responses:
+
+```json
+{
+  "error": {
+    "code": "validation_error",
+    "message": "Request validation failed.",
+    "details": {}
+  }
+}
+```
+
+Rules:
+
+- `error.code` is stable and testable.
+- `error.message` is safe for API clients and operators.
+- `error.details` is optional and must not include secrets.
+- Raw Prisma, provider, stack trace, token, password, API key, or validation
+  internals must not be returned directly.
+- Protected endpoints should not reveal whether another workspace's record
+  exists.
+
+## Standard Error Codes
+
+| HTTP | Code | Use |
+| --- | --- | --- |
+| 400 | `validation_error` | Request body, params, or query failed validation. |
+| 401 | `unauthorized` | No valid user auth or service API key was provided. |
+| 403 | `forbidden` | Authenticated caller cannot perform the action. |
+| 404 | `not_found` | Record is missing or not visible to the active workspace. |
+| 409 | `conflict` | Unique constraint or state conflict. |
+| 422 | `workspace_required` | Request cannot resolve an active workspace. |
+| 422 | `integration_not_configured` | Workspace lacks required provider settings. |
+| 502 | `integration_unavailable` | External provider is unavailable or returned an unsafe response. |
+| 500 | `sync_failed` | Sync failed after request validation and provider call handling. |
+| 500 | `internal_server_error` | Unexpected server error with no safe specific code. |
+
+Implementation should map framework/provider/database errors into this contract
+instead of exposing raw errors.
+
 ## Auth And Workspace
 
 v1 must add owner registration/login before workspace-owned settings are

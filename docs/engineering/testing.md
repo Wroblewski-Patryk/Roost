@@ -45,13 +45,23 @@ Required minimum codes:
 - `unauthorized`
 - `forbidden`
 - `not_found`
+- `conflict`
 - `workspace_required`
 - `integration_not_configured`
 - `integration_unavailable`
 - `sync_failed`
+- `internal_server_error`
 
 Raw backend, Prisma, provider, or validation internals should not be returned
 directly to API clients.
+
+Every error-contract test should verify:
+
+- HTTP status code
+- `error.code`
+- safe `error.message`
+- absence of secret values
+- absence of raw provider, Prisma, stack trace, or password/API key material
 
 ## Integration Tests
 

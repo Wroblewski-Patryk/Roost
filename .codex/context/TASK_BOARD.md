@@ -42,13 +42,6 @@
   - Scope: Store ClickUp and future integration settings under workspace
     ownership with protected secret handling.
 
-- CCV1-014 API contract and error response standard
-  - Stage: planning
-  - Owner: Backend Builder
-  - Priority: P0
-  - Scope: Define stable success/error response contracts before route surface
-    expands.
-
 - CCV1-015 Workspace guardrail test matrix
   - Stage: planning
   - Owner: QA/Test
@@ -114,3 +107,4 @@
 - CCV1-002 Real planning queue and task contracts.
 - CCV1-001 Canonical architecture and deployment docs alignment.
 - CCV1-011 Workspace ownership and auth architecture contract.
+- CCV1-014 API contract and error response standard.

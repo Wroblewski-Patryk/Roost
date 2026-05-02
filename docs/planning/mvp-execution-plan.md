@@ -108,7 +108,7 @@ CRM UI during this plan.
 
 ## Phase 6: Core API And Events
 
-- [ ] CCV1-014 API contract and error response standard
+- [x] CCV1-014 API contract and error response standard
   - Why now: Paperclip, Jarvis, and future GUI clients need stable contracts and
     safe error codes before routes expand.
   - Depends on: CCV1-001, CCV1-011.

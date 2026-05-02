@@ -5,11 +5,10 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
-- [ ] CCV1-014 API contract and error response standard
+- [ ] CCV1-015 Workspace guardrail test matrix
 
 ## NEXT
 
-- [ ] CCV1-015 Workspace guardrail test matrix
 - [ ] CCV1-012 Registration, login, and workspace bootstrap
 - [ ] CCV1-013 Workspace-scoped integration settings and secret storage
 - [ ] CCV1-010 Native ClickUp integration contract and first adapter slice

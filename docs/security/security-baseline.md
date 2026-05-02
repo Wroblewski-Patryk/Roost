@@ -24,6 +24,17 @@
 - Integration secrets must not be logged or returned in API responses.
 - Raw provider/backend errors must not be exposed directly to API clients.
 
+## API Error Safety
+
+API errors must use the standard error envelope from `docs/API.md`.
+
+- Return stable `error.code` values.
+- Keep messages operator-readable but non-secret.
+- Do not expose Prisma errors, provider payloads, stack traces, passwords, API
+  keys, session tokens, or integration tokens.
+- For records outside the active workspace, prefer `not_found` or `forbidden`
+  without confirming the record exists.
+
 ## Elevated Risk Areas
 
 - AI-assisted flows

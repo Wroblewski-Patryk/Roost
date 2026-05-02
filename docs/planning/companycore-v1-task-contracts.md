@@ -498,8 +498,8 @@ P0
 - ID: CCV1-014
 - Title: API contract and error response standard
 - Task Type: research
-- Current Stage: planning
-- Status: READY
+- Current Stage: verification
+- Status: DONE
 - Owner: Backend Builder
 - Depends on: CCV1-001, CCV1-011
 - Priority: P0
@@ -523,13 +523,26 @@ failures, and integration failures.
 - `src/middleware/error-handler.ts` during implementation
 
 ### Acceptance Criteria
-- [ ] API docs define standard success envelope or document existing envelope.
-- [ ] API docs define standard error body.
-- [ ] Error codes include validation, unauthorized, forbidden, not found,
+- [x] API docs define standard success envelope or document existing envelope.
+- [x] API docs define standard error body.
+- [x] Error codes include validation, unauthorized, forbidden, not found,
   workspace required, integration not configured, integration unavailable, and
   sync failed.
-- [ ] Docs state that raw provider/backend errors are not returned directly.
-- [ ] Future endpoint tests can assert error codes consistently.
+- [x] Docs state that raw provider/backend errors are not returned directly.
+- [x] Future endpoint tests can assert error codes consistently.
+
+### Result Report
+- Task summary: Defined CompanyCore's response envelope, error envelope,
+  standard error codes, redaction rules, and test expectations for safe errors.
+- Files changed: `docs/API.md`, `docs/engineering/testing.md`,
+  `docs/security/security-baseline.md`, `.codex/context/PROJECT_STATE.md`,
+  `.codex/context/TASK_BOARD.md`, `docs/planning/mvp-next-commits.md`, and
+  this task contract.
+- How tested: Reviewed API docs for CCV1-014 acceptance criteria and ran
+  `git diff --check`.
+- What is incomplete: Runtime `error-handler` still needs implementation in a
+  later coding task.
+- Next steps: Start CCV1-015 workspace guardrail test matrix.
 
 ### Priority
 P0
