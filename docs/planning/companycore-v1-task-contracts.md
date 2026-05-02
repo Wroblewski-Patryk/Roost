@@ -25,6 +25,160 @@ Every runtime task must preserve these rules:
 - API errors use stable, safe response codes
 - tests include allowed and denied paths
 
+## CCV1-026 Adapter Smoke Script
+
+### Header
+- ID: CCV1-026
+- Title: Adapter smoke script
+- Task Type: feature
+- Current Stage: verification
+- Status: DONE
+- Owner: QA/Test
+- Depends on: CCV1-025
+- Priority: P0
+- Iteration: v1-026
+- Operation Mode: BUILDER
+
+### Process Self-Audit
+- [x] All seven autonomous loop steps are represented.
+- [x] Exactly one priority task was selected.
+- [x] Operation mode matches the current queue.
+- [x] The task aligns with repository source-of-truth documents.
+
+### Context
+Paperclip/Jarvis integration readiness needs a repeatable operator check that
+uses the same public API surface the adapters will use. Production protected
+smoke is still blocked until a real service API key exists.
+
+### Goal
+Add a local smoke script that validates the full adapter onboarding flow using
+`COMPANYCORE_BASE_URL` and `COMPANYCORE_API_KEY`.
+
+### Scope
+- `package.json`
+- `scripts/adapter-smoke.mjs`
+- `docs/integrations/adapter-onboarding.md`
+- `docs/operations/post-deploy-smoke.md`
+- `.codex/context/PROJECT_STATE.md`
+- `.codex/context/TASK_BOARD.md`
+- this task contract
+
+### Implementation Plan
+1. Add a dependency-free Node smoke script using global `fetch`.
+2. Call `/v1/connection` and assert required capabilities.
+3. Create one agent, task list, task, interaction, and agent log.
+4. Read events and verify expected event types.
+5. Document env vars and the command for operators.
+
+### Autonomous Loop Evidence
+
+#### 1. Analyze Current State
+- Issues: protected production smoke could not be completed without a service
+  key.
+- Gaps: no one-command adapter readiness check existed.
+- Inconsistencies: docs described the flow but did not provide an executable
+  verification tool.
+- Architecture constraints: use public API only; do not connect to DB.
+
+#### 2. Select One Priority Task
+- Selected task: CCV1-026 adapter smoke script.
+- Priority rationale: lets the owner verify Paperclip/Jarvis readiness as soon
+  as a service key exists.
+- Why other candidates were deferred: production key creation still needs owner
+  credentials.
+
+#### 3. Plan Implementation
+- Files or surfaces to modify: package script, smoke script, adapter docs,
+  deployment smoke evidence, context.
+- Logic: fail closed on missing env, non-2xx responses, missing capabilities,
+  or missing events.
+- Edge cases: never print API key; support current string or envelope error
+  shape.
+
+#### 4. Execute Implementation
+- Implementation notes: added `npm run adapter:smoke` with no new dependency.
+
+#### 5. Verify and Test
+- Validation performed: `npm run build`, `npm test`, and missing-env smoke
+  invocation.
+- Result: pending when first recorded; final result is in Validation Evidence.
+
+#### 6. Self-Review
+- Simpler option considered: docs-only curl checklist.
+- Technical debt introduced: no.
+- Scalability assessment: script exercises the same contract future adapters
+  use and can grow as adapter capabilities grow.
+- Refinements made: script redacts by omission and does not print secret env.
+
+#### 7. Update Documentation and Knowledge
+- Docs updated: adapter onboarding, post-deploy smoke, task contract, project
+  state, task board.
+- Context updated: yes.
+- Learning journal updated: not applicable.
+
+### Acceptance Criteria
+- [x] `npm run adapter:smoke` exists.
+- [x] Script fails closed when base URL or API key is missing.
+- [x] Script calls `/v1/connection` before writing records.
+- [x] Script writes through API only and verifies events.
+- [x] Script does not print the API key.
+- [x] Docs explain how to run the script for Paperclip/Jarvis.
+
+### Definition of Done
+- [x] Code builds without errors.
+- [x] Feature works through the real API surface when credentials are provided.
+- [x] No mock, placeholder, fake, or temporary path remains.
+- [x] No existing functionality is broken.
+- [x] Changes are documented in the relevant source of truth.
+- [x] `DEFINITION_OF_DONE.md` was checked before status changed to `DONE`.
+
+### Validation Evidence
+- Tests: `npm test` with `DATABASE_URL` pointed at disposable PostgreSQL.
+- Manual checks: `npm run adapter:smoke` without env returns a clear missing
+  env failure and does not print secrets.
+- High-risk checks: no schema or secret changes.
+
+### Integration Evidence
+- `INTEGRATION_CHECKLIST.md` reviewed: yes.
+- Real API/service path used: yes; script uses only HTTP API.
+- Endpoint and client contract match: yes.
+- DB schema and migrations verified: not applicable.
+- Error state verified: missing env fails closed.
+- Regression check performed: existing protected API flow test.
+
+### Security / Privacy Evidence
+- `docs/security/secure-development-lifecycle.md` reviewed: yes.
+- Data classification: workspace adapter smoke records.
+- Trust boundaries: service API key boundary and public API boundary.
+- Permission or ownership checks: relies on workspace-scoped service API key.
+- Secret handling: API key is read from env and not printed.
+- Fail-closed behavior: missing env, missing capabilities, failed writes, or
+  missing events exit non-zero.
+
+### Deployment / Ops Evidence
+- Deploy impact: none for runtime; operator script only.
+- Env or secret changes: none.
+- Health-check impact: none.
+- Smoke steps updated: yes.
+- Rollback note: remove script or redeploy previous commit if needed.
+- `DEPLOYMENT_GATE.md` reviewed: yes.
+
+### Result Report
+- Task summary: Added a service-adapter smoke script for Paperclip/Jarvis
+  readiness verification.
+- Files changed: `package.json`, `scripts/adapter-smoke.mjs`,
+  `docs/integrations/adapter-onboarding.md`,
+  `docs/operations/post-deploy-smoke.md`,
+  `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`, and this
+  task contract.
+- How tested: `npm test` and missing-env smoke invocation.
+- What is incomplete: protected production smoke still needs a real production
+  service API key.
+- Next steps: create a production key and run `npm run adapter:smoke`.
+
+### Priority
+P0
+
 ## CCV1-025 Task List And Pipeline Stage API
 
 ### Header

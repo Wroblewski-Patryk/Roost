@@ -118,6 +118,31 @@ Expected success shape:
 The response never includes raw API keys, owner passwords, or integration
 tokens.
 
+## Smoke Script
+
+After an owner creates a workspace service API key, run the adapter smoke script
+before wiring Paperclip or Jarvis:
+
+```powershell
+$env:COMPANYCORE_BASE_URL="https://api.companycore.luckysparrow.ch"
+$env:COMPANYCORE_API_KEY="cc_v1_..."
+$env:COMPANYCORE_ADAPTER_NAME="Jarvis"
+$env:COMPANYCORE_ADAPTER_SOURCE="jarvis"
+npm run adapter:smoke
+```
+
+The script performs the same first flow an adapter should use:
+
+- `GET /v1/connection`
+- `POST /v1/agents`
+- `POST /v1/task-lists`
+- `POST /v1/tasks`
+- `POST /v1/interactions`
+- `POST /v1/agent-logs`
+- `GET /v1/events`
+
+It prints created record IDs but never prints the API key.
+
 ## Minimal Adapter Flow
 
 1. Call `GET /v1/connection`.

@@ -13,6 +13,7 @@
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",
     "seed": "tsx prisma/seed.ts",
+    "adapter:smoke": "node scripts/adapter-smoke.mjs",
     "test": "npm run build && npm run prisma:migrate:deploy && node --test \"dist/tests/**/*.test.js\"",
     "validate": "npm run build"
   },

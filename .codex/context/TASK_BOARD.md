@@ -62,3 +62,4 @@ No backlog v1 tasks.
 - CCV1-023 Workspace-scoped agents API.
 - CCV1-024 Workspace-scoped interactions API.
 - CCV1-025 Task list and pipeline stage API.
+- CCV1-026 Adapter smoke script.

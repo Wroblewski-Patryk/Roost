@@ -79,12 +79,12 @@ Last updated: 2026-05-02
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-025 task list and pipeline stage API.
+- Current iteration: CCV1-026 adapter smoke script.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-025 task list and pipeline stage API.
-- Last completed task: added list/create/update routes for task lists and CRM
-  pipeline stages so Paperclip/Jarvis-style clients can organize task and deal
-  records without direct database access.
+- Last completed iteration: CCV1-026 adapter smoke script.
+- Last completed task: added `npm run adapter:smoke` so a production workspace
+  service key can verify the full Paperclip/Jarvis onboarding path before the
+  adapters are wired.
 - Next required mode: BUILDER for adapter production smoke once credentials are
   available.
 
@@ -211,6 +211,9 @@ Last updated: 2026-05-02
   pipeline stage API routes, create/update events, adapter manifest
   capabilities, and tests for same-workspace creation/update plus
   cross-workspace relation isolation.
+- 2026-05-03: Completed CCV1-026 by adding an adapter smoke script that checks
+  `/v1/connection`, creates an agent, task list, task, interaction, and agent
+  log, then verifies expected events without printing the service API key.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

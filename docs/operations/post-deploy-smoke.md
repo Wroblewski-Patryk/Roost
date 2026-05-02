@@ -153,6 +153,26 @@ Use this file to record the minimum checks after each deploy.
   - Full protected agent creation and connection manifest smoke still needs a
     real production workspace service API key.
 
+## Adapter CRUD Deployment Evidence
+
+- Timestamp: 2026-05-03
+- Environment: Coolify production, Root Team, `companycore (localhost)`
+- Deployment:
+  - Manual redeploy imported commit `decd899`.
+  - Deployment was in progress at `2026-05-02 22:18:26 UTC` and public smoke
+    passed after the rollout window.
+- Public checks:
+  - `GET https://api.companycore.luckysparrow.ch/v1/health` returned `200`.
+  - `GET https://api.companycore.luckysparrow.ch/v1/task-lists` without auth
+    returned `401`, which is the expected protected-route negative path.
+  - `GET https://api.companycore.luckysparrow.ch/v1/pipeline-stages` without
+    auth returned `401`, which is the expected protected-route negative path.
+  - `GET https://api.companycore.luckysparrow.ch/v1/interactions` without auth
+    returned `401`, which is the expected protected-route negative path.
+- Residual risks:
+  - Full protected CRUD smoke still needs a real production workspace service
+    API key. Use `npm run adapter:smoke` once that key exists.
+
 ## Local Docker Reproduction Evidence
 
 - Timestamp: 2026-05-02
