@@ -4,15 +4,16 @@
 
 ## Blocked
 
-No blocked v1 tasks.
+- CCV1-009 Production deployment verification
+  - Stage: verification
+  - Owner: Ops/Release
+  - Priority: P1
+  - Blocked by: latest commits not deployed to production and production
+    owner/API key plus ClickUp settings unavailable for protected smoke.
 
 ## Backlog
 
-- CCV1-009 Production deployment verification
-  - Stage: planning
-  - Owner: Ops/Release
-  - Priority: P1
-  - Depends on: CCV1-003, CCV1-004, CCV1-005, CCV1-006
+No backlog v1 tasks.
 
 ## Done
 

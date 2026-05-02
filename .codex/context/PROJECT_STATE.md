@@ -69,8 +69,9 @@ Last updated: 2026-05-02
 
 ## Current Focus
 - Main active objective: verify production deployment.
-- Top blockers: deployed databases initialized with `db push` may need
-  migration reconciliation before production rollout.
+- Top blockers: latest commits are not yet verified as deployed to production;
+  `/v1/health` returns `401 Unauthorized` on production; production owner/API
+  key and ClickUp settings are needed for protected smoke.
 - Success criteria for this phase: canonical docs, workspace/auth model,
   task board, planning queue, deployment domains, migration strategy, event
   coverage, API/error contracts, regression guardrails, tests, observability,
@@ -83,7 +84,8 @@ Last updated: 2026-05-02
   route slice.
 - Last completed task: resolved `/v1/*` namespace without `/api`, preserved
   root aliases, and added workspace-scoped `decisions` and `agent-logs` routes.
-- Next required mode: ARCHITECT for CCV1-009.
+- Next required mode: ARCHITECT for CCV1-009 after deploy/credential blockers
+  are cleared.
 
 ## Recent Progress
 - 2026-05-02: Created Company Core backend foundation, Prisma schema, Docker
@@ -149,6 +151,11 @@ Last updated: 2026-05-02
 - 2026-05-02: Completed CCV1-008 by resolving DEC-001 and DEC-003, adding
   `/v1/*` route aliases without `/api`, preserving root compatibility aliases,
   and implementing workspace-scoped decisions and agent-log endpoints.
+- 2026-05-02: Started CCV1-009 production verification. Public
+  `GET https://api.companycore.luckysparrow.ch/health` returned healthy status,
+  but `GET /v1/health` returned `401 Unauthorized`, so production is not yet
+  verified against the current v1 route build. Protected smoke remains blocked
+  pending deployment and production credentials.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

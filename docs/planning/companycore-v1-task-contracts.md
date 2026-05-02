@@ -488,8 +488,8 @@ P1
 - ID: CCV1-009
 - Title: Production deployment verification
 - Task Type: release
-- Current Stage: planning
-- Status: BACKLOG
+- Current Stage: verification
+- Status: BLOCKED
 - Owner: Ops/Release
 - Depends on: CCV1-003, CCV1-004, CCV1-005, CCV1-006
 - Priority: P1
@@ -507,7 +507,7 @@ flow.
 - `docs/NEXT_STEPS.md`
 
 ### Acceptance Criteria
-- [ ] `https://api.companycore.luckysparrow.ch/health` returns healthy status.
+- [x] `https://api.companycore.luckysparrow.ch/health` returns healthy status.
 - [ ] Owner registration/login works or a first-owner bootstrap path is
   documented and verified.
 - [ ] Protected API calls work with the configured workspace-scoped production
@@ -516,6 +516,26 @@ flow.
   settings.
 - [ ] `GET /events` shows `task_synced_from_clickup`.
 - [ ] Smoke evidence and residual risks are recorded.
+
+### Result Report
+- Task summary: Started production verification and confirmed the public API
+  health endpoint works. Verification is blocked because production is not yet
+  serving the current v1 route build and production credentials were not
+  available for protected smoke checks.
+- Files changed: `docs/operations/post-deploy-smoke.md`,
+  `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`, and this
+  task contract.
+- How tested: Ran public HTTP checks against
+  `https://api.companycore.luckysparrow.ch/health`,
+  `https://api.companycore.luckysparrow.ch/v1/health`,
+  `https://api.companycore.luckysparrow.ch/v1/projects`,
+  `https://api.companycore.luckysparrow.ch/projects`, and
+  `https://companycore.luckysparrow.ch`.
+- What is incomplete: owner/auth protected smoke, workspace API key smoke,
+  ClickUp settings read/write, native ClickUp sync, and event readback require
+  deploying the latest commits and providing production credentials.
+- Next steps: Deploy current branch, then rerun CCV1-009 with owner token or
+  workspace API key and configured ClickUp settings.
 
 ### Priority
 P1
