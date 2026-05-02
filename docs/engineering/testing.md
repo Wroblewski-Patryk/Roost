@@ -38,6 +38,7 @@ applied.
 - owner registration and login
 - workspace scoping for all business data
 - workspace-scoped service API keys
+- owner-managed adapter API key creation and redaction
 - integration settings and secret redaction
 - ClickUp discovery/sync idempotency
 - event emission for state changes

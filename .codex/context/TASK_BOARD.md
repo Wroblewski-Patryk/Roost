@@ -44,3 +44,4 @@ No backlog v1 tasks.
 - CCV1-007 API key hardening plan and implementation.
 - CCV1-006 Endpoint test foundation.
 - CCV1-008 Missing module route decision and minimal route slice.
+- CCV1-018 Owner-managed adapter API keys.

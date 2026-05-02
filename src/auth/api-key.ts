@@ -1,5 +1,9 @@
-import { createHmac } from "crypto";
+import { createHmac, randomBytes } from "crypto";
 import { env } from "../config/env";
+
+export function generateApiKey() {
+  return `cc_v1_${randomBytes(24).toString("base64url")}`;
+}
 
 export function hashApiKey(apiKey: string) {
   return createHmac("sha256", env.apiKeyHashSecret).update(apiKey).digest("hex");

@@ -151,6 +151,10 @@ new seed/bootstrap paths populate `key_hash` and `key_prefix`. Middleware checks
 Production should rotate service keys and remove plaintext dependence in a
 future cleanup migration.
 
+Owner-created API keys leave the legacy `key` column null and store only
+`key_hash`, `key_prefix`, metadata, scopes, and active state. The raw key is
+shown once by the API and cannot be recovered from the database.
+
 ## Integration Settings
 
 `integration_settings` stores workspace-owned integration configuration:

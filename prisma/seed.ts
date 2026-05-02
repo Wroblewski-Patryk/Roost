@@ -51,7 +51,7 @@ async function main() {
   });
 
   await prisma.apiKey.upsert({
-    where: { key },
+    where: { keyHash: hashApiKey(key) },
     update: {
       active: true,
       workspaceId: workspace.id,

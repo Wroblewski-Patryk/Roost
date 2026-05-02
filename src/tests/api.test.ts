@@ -2,7 +2,6 @@ import { strict as assert } from "assert";
 import type { AddressInfo } from "net";
 import test, { after, before } from "node:test";
 import { createApp } from "../app";
-import { apiKeyPrefix, hashApiKey } from "../auth/api-key";
 import { prisma } from "../db/prisma";
 
 const realFetch = globalThis.fetch.bind(globalThis);
@@ -105,17 +104,29 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(login.status, 200);
 
-  const serviceKey = "cc_test_service_key";
-  await prisma.apiKey.create({
-    data: {
-      workspaceId: ownerA.workspace.id,
-      name: "Test service key",
-      key: serviceKey,
-      keyHash: hashApiKey(serviceKey),
-      keyPrefix: apiKeyPrefix(serviceKey),
-      scopes: []
-    }
+  const createdKey = await request("/v1/api-keys", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({
+      name: "Jarvan adapter",
+      scopes: ["adapter:jarvan"]
+    })
   });
+  assert.equal(createdKey.status, 201);
+  const createdKeyBody = createdKey.body as {
+    data: { id: string; key: string; keyPrefix: string };
+  };
+  assert.ok(createdKeyBody.data.key.startsWith("cc_v1_"));
+  assert.ok(createdKeyBody.data.keyPrefix);
+
+  const serviceKey = createdKeyBody.data.key;
+
+  const listedKeys = await request("/v1/api-keys", { headers: authA });
+  assert.equal(listedKeys.status, 200);
+  const listedKey = (listedKeys.body as { data: Array<{ id: string; key?: string; keyPrefix: string }> }).data[0];
+  assert.equal(listedKey.id, createdKeyBody.data.id);
+  assert.equal(listedKey.key, undefined);
+  assert.equal(listedKey.keyPrefix, createdKeyBody.data.keyPrefix);
 
   const invalidKey = await request("/projects", {
     headers: { "X-API-Key": "wrong-key" }
@@ -131,6 +142,15 @@ test("CompanyCore v1 protected API flow", async () => {
     })
   });
   assert.equal(serviceProject.status, 201);
+
+  const serviceCannotCreateKeys = await request("/v1/api-keys", {
+    method: "POST",
+    headers: { "X-API-Key": serviceKey },
+    body: JSON.stringify({
+      name: "Nested adapter key"
+    })
+  });
+  assert.equal(serviceCannotCreateKeys.status, 403);
 
   const task = await request("/tasks", {
     method: "POST",

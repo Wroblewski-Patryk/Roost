@@ -96,6 +96,15 @@ CRM UI during this plan.
     insufficient-scope paths are tested and fail closed.
   - Deployment impact: Medium. Requires key rotation or compatible migration.
 
+- [x] CCV1-018 Owner-managed adapter API keys
+  - Why now: Jarvan, Aviary, and similar adapters need workspace service keys
+    without GUI work, seed reruns, or direct database access.
+  - Depends on: CCV1-007, CCV1-006.
+  - Validation: Owner creates a redacted hash-stored key, service key cannot
+    mint more keys, and the generated key works with `X-API-Key`.
+  - Deployment impact: Medium. Adds a migration that makes legacy plaintext key
+    storage nullable for new hash-only keys.
+
 ## Phase 5: Workspace-Scoped Settings
 
 - [x] CCV1-013 Workspace-scoped integration settings and secret storage

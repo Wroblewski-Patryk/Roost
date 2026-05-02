@@ -161,6 +161,43 @@ n8n, and other agents. In v1 it must become workspace-scoped:
 - Future scopes may restrict service clients to narrower permissions.
 - Raw keys are only shown once if an API key creation endpoint is added.
 
+Owner-managed adapter keys:
+
+```http
+GET /v1/api-keys
+POST /v1/api-keys
+PATCH /v1/api-keys/:id
+GET /api-keys
+POST /api-keys
+PATCH /api-keys/:id
+```
+
+`POST /v1/api-keys` is owner-only and returns the raw API key exactly once:
+
+```json
+{
+  "name": "Jarvan adapter",
+  "scopes": ["adapter:jarvan"]
+}
+```
+
+Safe response:
+
+```json
+{
+  "data": {
+    "id": "uuid",
+    "name": "Jarvan adapter",
+    "keyPrefix": "cc_v1_abcd",
+    "key": "cc_v1_generated-secret-shown-once",
+    "active": true
+  }
+}
+```
+
+List and update responses never include `key`. `PATCH /v1/api-keys/:id`
+currently supports `{ "active": false }` or `{ "active": true }`.
+
 ## Integration Settings
 
 Workspace-owned integration settings are configured through protected routes.

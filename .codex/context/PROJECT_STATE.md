@@ -156,6 +156,9 @@ Last updated: 2026-05-02
   but `GET /v1/health` returned `401 Unauthorized`, so production is not yet
   verified against the current v1 route build. Protected smoke remains blocked
   pending deployment and production credentials.
+- 2026-05-02: Completed CCV1-018 by adding owner-only adapter API key
+  management so Jarvan, Aviary, and similar agents can receive workspace
+  service credentials without GUI work or direct database access.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

@@ -54,6 +54,10 @@ the old key. Raw key material must only be shown at creation/bootstrap time and
 must not be logged. `key_prefix` can identify keys operationally without
 revealing the secret.
 
+Owner API key management endpoints are owner-only. Workspace service API keys
+must not be allowed to create additional keys. This prevents a leaked adapter
+key from minting persistent replacement credentials.
+
 ## Elevated Risk Areas
 
 - AI-assisted flows

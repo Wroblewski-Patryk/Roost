@@ -25,6 +25,55 @@ Every runtime task must preserve these rules:
 - API errors use stable, safe response codes
 - tests include allowed and denied paths
 
+## CCV1-018 Owner-Managed Adapter API Keys
+
+### Header
+- ID: CCV1-018
+- Title: Owner-managed adapter API keys
+- Task Type: feature
+- Current Stage: verification
+- Status: DONE
+- Owner: Security
+- Depends on: CCV1-007, CCV1-006
+- Priority: P0
+- Iteration: v1-018
+- Operation Mode: BUILDER
+
+### Description
+Add a safe owner-controlled API key management path so adapters such as Jarvan
+and Aviary can be connected without GUI work, seed reruns, or direct database
+access.
+
+### Acceptance Criteria
+- [x] Owner can create a workspace service API key through `/v1/api-keys`.
+- [x] New API keys are stored hashed and not stored as plaintext in the legacy
+  `key` column.
+- [x] Raw key is returned only once on creation.
+- [x] List/update responses redact raw key material.
+- [x] Service API keys cannot create more API keys.
+- [x] Created key works with `X-API-Key`.
+- [x] `npm test` passes.
+
+### Result Report
+- Task summary: Added owner-only service API key management for adapter
+  onboarding, including generated `cc_v1_*` keys, hash-only storage for new
+  keys, redacted list/update responses, activation toggling, and test coverage.
+- Files changed: `prisma/schema.prisma`,
+  `prisma/migrations/202605027_api_key_management/migration.sql`,
+  `prisma/seed.ts`, `src/auth/api-key.ts`, `src/app.ts`,
+  `src/modules/api-keys/api-keys.routes.ts`, `src/tests/api.test.ts`,
+  `docs/API.md`, `docs/DATABASE.md`, `docs/security/security-baseline.md`,
+  `docs/engineering/testing.md`, `.codex/context/PROJECT_STATE.md`,
+  `.codex/context/TASK_BOARD.md`, and this task contract.
+- How tested: Ran `npm test` against disposable PostgreSQL at `localhost:55432`;
+  the command applied all 7 migrations from scratch and passed endpoint tests.
+- What is incomplete: A richer UI for key rotation remains out of v1 scope.
+- Next steps: Push and let auto-deploy run, then rerun CCV1-009 production
+  smoke.
+
+### Priority
+P0
+
 ## CCV1-001 Canonical Architecture And Deployment Docs Alignment
 
 ### Header

@@ -325,7 +325,7 @@ model ApiKey {
   workspaceId String?   @map("workspace_id") @db.Uuid
   workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   name      String
-  key       String    @unique
+  key       String?   @unique
   keyHash   String?   @unique @map("key_hash")
   keyPrefix String?   @map("key_prefix")
   scopes    Json      @default("[]")
