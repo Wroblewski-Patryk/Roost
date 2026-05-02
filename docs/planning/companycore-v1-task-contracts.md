@@ -25,6 +25,168 @@ Every runtime task must preserve these rules:
 - API errors use stable, safe response codes
 - tests include allowed and denied paths
 
+## CCV1-024 Workspace-Scoped Interactions API
+
+### Header
+- ID: CCV1-024
+- Title: Workspace-scoped interactions API
+- Task Type: feature
+- Current Stage: verification
+- Status: DONE
+- Owner: Backend Builder
+- Depends on: CCV1-019, CCV1-023
+- Priority: P0
+- Iteration: v1-024
+- Operation Mode: BUILDER
+
+### Process Self-Audit
+- [x] All seven autonomous loop steps are represented.
+- [x] Exactly one priority task was selected.
+- [x] Operation mode matches the current queue.
+- [x] The task aligns with repository source-of-truth documents.
+
+### Context
+CompanyCore stores CRM interactions in the database, but Paperclip/Jarvis-style
+clients did not yet have an API surface for writing lead/customer timeline
+activity.
+
+### Goal
+Add minimal workspace-scoped `GET /v1/interactions` and
+`POST /v1/interactions` routes, emit `interaction_created`, and expose the
+route in the adapter manifest.
+
+### Scope
+- `src/app.ts`
+- `src/modules/interactions/interactions.routes.ts`
+- `src/modules/connection/connection.routes.ts`
+- `src/tests/api.test.ts`
+- `docs/API.md`
+- `docs/INTEGRATIONS.md`
+- `docs/integrations/adapter-onboarding.md`
+- `.codex/context/PROJECT_STATE.md`
+- `.codex/context/TASK_BOARD.md`
+- this task contract
+
+### Implementation Plan
+1. Reuse the existing `Interaction` model and workspace auth context.
+2. Add list and create routes only; defer update/delete until a real adapter
+   lifecycle need exists.
+3. Validate optional `clientId` against the active workspace.
+4. Emit `interaction_created` through the existing event service.
+5. Extend tests for same-workspace creation, cross-workspace relation denial,
+   and manifest coverage.
+
+### Autonomous Loop Evidence
+
+#### 1. Analyze Current State
+- Issues: interactions existed in DB but had no runtime API.
+- Gaps: Paperclip lead/customer timeline activity would otherwise be forced
+  into notes or logs.
+- Inconsistencies: `interactions` was part of the source-of-truth model but not
+  an implemented route module.
+- Architecture constraints: API-only access, workspace scoping, no GUI.
+
+#### 2. Select One Priority Task
+- Selected task: CCV1-024 workspace-scoped interactions API.
+- Priority rationale: closes a direct Paperclip/Jarvis CRM write path.
+- Why other candidates were deferred: pipeline stages and task lists are useful
+  but less urgent for adapter onboarding than CRM timeline writes.
+
+#### 3. Plan Implementation
+- Files or surfaces to modify: interactions route, app mount, connection
+  manifest, tests, docs, context.
+- Logic: derive `workspaceId` from auth, validate `clientId`, persist
+  interaction, emit event.
+- Edge cases: foreign `clientId` must return `not_found`.
+
+#### 4. Execute Implementation
+- Implementation notes: added `GET/POST /interactions` root aliases and
+  `/v1/interactions` through the existing protected route mounting.
+
+#### 5. Verify and Test
+- Validation performed: `npm test` against disposable PostgreSQL.
+- Result: pending when first recorded; final result is in Validation Evidence.
+
+#### 6. Self-Review
+- Simpler option considered: store CRM timeline in notes.
+- Technical debt introduced: no.
+- Scalability assessment: route uses the existing model and workspace
+  guardrails; future lifecycle endpoints can extend the module.
+- Refinements made: kept scope to list/create instead of adding premature
+  update/delete.
+
+#### 7. Update Documentation and Knowledge
+- Docs updated: API, integrations, adapter onboarding, task contract, project
+  state, task board.
+- Context updated: yes.
+- Learning journal updated: not applicable.
+
+### Acceptance Criteria
+- [x] `GET /v1/interactions` lists only active workspace interactions.
+- [x] `POST /v1/interactions` creates an interaction in the active workspace.
+- [x] Optional `clientId` is accepted only for active workspace clients.
+- [x] Interaction creation emits `interaction_created`.
+- [x] Adapter manifest includes interactions routes and capabilities.
+- [x] Docs explain interaction usage for adapters.
+
+### Definition of Done
+- [x] Code builds without errors.
+- [x] Feature works through the real API surface.
+- [x] No mock, placeholder, fake, or temporary data/path remains.
+- [x] No existing functionality is broken.
+- [x] Changes are documented in the relevant source of truth.
+- [x] `DEFINITION_OF_DONE.md` was checked before status changed to `DONE`.
+
+### Validation Evidence
+- Tests: `npm test` with `DATABASE_URL` pointed at disposable PostgreSQL.
+- Manual checks: endpoint behavior covered by integration test.
+- High-risk checks: no schema or secret changes.
+
+### Integration Evidence
+- `INTEGRATION_CHECKLIST.md` reviewed: yes.
+- Real API/service path used: yes.
+- Endpoint and client contract match: yes.
+- DB schema and migrations verified: not applicable; existing model reused.
+- Error state verified: foreign `clientId` in interaction creation returns
+  `404`.
+- Regression check performed: existing protected API flow test.
+
+### Security / Privacy Evidence
+- `docs/security/secure-development-lifecycle.md` reviewed: yes.
+- Data classification: workspace CRM activity.
+- Trust boundaries: protected API and workspace auth context.
+- Permission or ownership checks: list/create derive `workspaceId`; optional
+  `clientId` is workspace-validated.
+- Secret handling: no secrets returned or stored by this route.
+- Fail-closed behavior: protected route auth and foreign relation denial.
+
+### Deployment / Ops Evidence
+- Deploy impact: low.
+- Env or secret changes: none.
+- Health-check impact: none.
+- Smoke steps updated: adapter onboarding docs updated.
+- Rollback note: redeploy previous commit if adapter route causes regression.
+- `DEPLOYMENT_GATE.md` reviewed: yes.
+
+### Result Report
+- Task summary: Added minimal workspace-scoped interactions API and adapter
+  manifest coverage.
+- Files changed: `src/app.ts`,
+  `src/modules/interactions/interactions.routes.ts`,
+  `src/modules/connection/connection.routes.ts`, `src/tests/api.test.ts`,
+  `docs/API.md`, `docs/INTEGRATIONS.md`,
+  `docs/integrations/adapter-onboarding.md`,
+  `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`, and this
+  task contract.
+- How tested: `npm test` against disposable PostgreSQL.
+- What is incomplete: no update/delete interaction lifecycle routes in this
+  slice.
+- Next steps: add remaining adapter-facing setup routes or run protected
+  production smoke once a production service key exists.
+
+### Priority
+P0
+
 ## CCV1-023 Workspace-Scoped Agents API
 
 ### Header

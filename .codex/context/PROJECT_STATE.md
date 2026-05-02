@@ -79,12 +79,12 @@ Last updated: 2026-05-02
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-023 workspace-scoped agents API.
+- Current iteration: CCV1-024 workspace-scoped interactions API.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-023 workspace-scoped agents API.
-- Last completed task: added `GET /v1/agents` and `POST /v1/agents` so
-  Paperclip, Jarvis, Jarvan, Aviary, n8n, and similar clients can register a
-  durable workspace-scoped agent identity and attach logs to it.
+- Last completed iteration: CCV1-024 workspace-scoped interactions API.
+- Last completed task: added `GET /v1/interactions` and
+  `POST /v1/interactions` so Paperclip/Jarvis-style clients can write
+  workspace-scoped CRM timeline records and attach them to clients safely.
 - Next required mode: BUILDER for adapter production smoke once credentials are
   available.
 
@@ -203,6 +203,10 @@ Last updated: 2026-05-02
   CompanyCore deployment detail page and finished successfully. Public
   `/v1/health` returned `200`; unauthenticated `/v1/agents` and
   `/v1/connection` returned `401` as expected.
+- 2026-05-03: Completed CCV1-024 by adding workspace-scoped interactions API
+  routes, `interaction_created` event emission, adapter manifest capabilities
+  for interactions, and tests for same-workspace creation plus cross-workspace
+  client relation denial.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

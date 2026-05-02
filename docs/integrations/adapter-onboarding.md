@@ -71,6 +71,13 @@ Expected success shape:
             "capability": "agents:write"
           }
         ],
+        "interactions": [
+          {
+            "method": "POST",
+            "path": "/v1/interactions",
+            "capability": "interactions:write"
+          }
+        ],
         "agentLogs": [
           {
             "method": "POST",
@@ -108,6 +115,7 @@ tokens.
    - `POST /v1/tasks`
    - `POST /v1/notes`
    - `POST /v1/decisions`
+   - `POST /v1/interactions`
    - `POST /v1/agents`
    - `POST /v1/agent-logs`
 6. Read event history through `GET /v1/events`.
@@ -143,6 +151,21 @@ Content-Type: application/json
   "name": "Jarvis",
   "role": "operations_agent",
   "source": "jarvis"
+}
+```
+
+Record a CRM interaction:
+
+```http
+POST /v1/interactions
+X-API-Key: <workspace-service-key>
+Content-Type: application/json
+
+{
+  "clientId": "uuid",
+  "type": "email",
+  "summary": "Paperclip captured a reply from the lead",
+  "source": "paperclip"
 }
 ```
 

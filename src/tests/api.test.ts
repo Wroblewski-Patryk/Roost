@@ -166,6 +166,7 @@ test("CompanyCore v1 protected API flow", async () => {
           tasks: Array<{ method: string; path: string; capability: string }>;
           agents: Array<{ method: string; path: string; capability: string }>;
           agentLogs: Array<{ method: string; path: string; capability: string }>;
+          interactions: Array<{ method: string; path: string; capability: string }>;
           integrationSettings: Array<{ method: string; path: string; capability: string }>;
         };
         writeRules: string[];
@@ -196,6 +197,11 @@ test("CompanyCore v1 protected API flow", async () => {
     route.method === "POST"
     && route.path === "/v1/agents"
     && route.capability === "agents:write"
+  )));
+  assert.ok(connectionBody.data.adapterManifest.routes.interactions.some((route) => (
+    route.method === "POST"
+    && route.path === "/v1/interactions"
+    && route.capability === "interactions:write"
   )));
   assert.equal(connectionBody.data.adapterManifest.routes.integrationSettings[0].path, "/v1/integration-settings/clickup");
   assert.ok(connectionBody.data.adapterManifest.writeRules.includes("Do not send workspaceId in write payloads."));
@@ -274,6 +280,29 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(deal.status, 201);
 
+  const interaction = await request("/v1/interactions", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({
+      clientId,
+      type: "email",
+      summary: "Paperclip captured a reply from the lead",
+      source: "paperclip"
+    })
+  });
+  assert.equal(interaction.status, 201);
+
+  const foreignInteraction = await request("/v1/interactions", {
+    method: "POST",
+    headers: authB,
+    body: JSON.stringify({
+      clientId,
+      type: "email",
+      summary: "Should not attach to another workspace"
+    })
+  });
+  assert.equal(foreignInteraction.status, 404);
+
   const note = await request("/v1/notes", {
     method: "POST",
     headers: authA,
@@ -297,12 +326,15 @@ test("CompanyCore v1 protected API flow", async () => {
 
   const clientsB = await request("/v1/clients", { headers: authB });
   const dealsB = await request("/v1/deals", { headers: authB });
+  const interactionsB = await request("/v1/interactions", { headers: authB });
   const notesB = await request("/v1/notes", { headers: authB });
   assert.equal(clientsB.status, 200);
   assert.equal(dealsB.status, 200);
+  assert.equal(interactionsB.status, 200);
   assert.equal(notesB.status, 200);
   assert.equal((clientsB.body as { data: unknown[] }).data.length, 0);
   assert.equal((dealsB.body as { data: unknown[] }).data.length, 0);
+  assert.equal((interactionsB.body as { data: unknown[] }).data.length, 0);
   assert.equal((notesB.body as { data: unknown[] }).data.length, 0);
 
   const decision = await request("/v1/decisions", {
@@ -411,6 +443,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal((eventsB.body as { data: unknown[] }).data.length, 0);
   const eventTypes = (events.body as { data: Array<{ type: string }> }).data.map((event) => event.type);
   assert.ok(eventTypes.includes("task_created"));
+  assert.ok(eventTypes.includes("interaction_created"));
   assert.ok(eventTypes.includes("decision_created"));
   assert.ok(eventTypes.includes("agent_created"));
   assert.ok(eventTypes.includes("task_synced_from_clickup"));

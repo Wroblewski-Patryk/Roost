@@ -18,6 +18,7 @@ import { projectsRouter } from "./modules/projects/projects.routes";
 import { targetsRouter } from "./modules/targets/targets.routes";
 import { tasksRouter } from "./modules/tasks/tasks.routes";
 import { healthRouter } from "./health/health.routes";
+import { interactionsRouter } from "./modules/interactions/interactions.routes";
 
 function mountProtectedRoutes(router: Router) {
   router.use("/projects", projectsRouter);
@@ -27,6 +28,7 @@ function mountProtectedRoutes(router: Router) {
   router.use("/tasks", tasksRouter);
   router.use("/clients", clientsRouter);
   router.use("/deals", dealsRouter);
+  router.use("/interactions", interactionsRouter);
   router.use("/notes", notesRouter);
   router.use("/decisions", decisionsRouter);
   router.use("/agents", agentsRouter);

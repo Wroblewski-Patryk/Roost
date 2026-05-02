@@ -17,6 +17,8 @@ const capabilities = [
   "clients:write",
   "deals:read",
   "deals:write",
+  "interactions:read",
+  "interactions:write",
   "notes:read",
   "notes:write",
   "decisions:read",
@@ -64,6 +66,10 @@ const adapterManifest = {
     deals: [
       { method: "GET", path: "/v1/deals", capability: "deals:read" },
       { method: "POST", path: "/v1/deals", capability: "deals:write" }
+    ],
+    interactions: [
+      { method: "GET", path: "/v1/interactions", capability: "interactions:read" },
+      { method: "POST", path: "/v1/interactions", capability: "interactions:write" }
     ],
     notes: [
       { method: "GET", path: "/v1/notes", capability: "notes:read" },

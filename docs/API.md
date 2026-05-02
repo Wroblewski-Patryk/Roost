@@ -309,6 +309,13 @@ Safe response:
         "capability": "agents:write"
       }
     ],
+    "interactions": [
+      {
+        "method": "POST",
+        "path": "/v1/interactions",
+        "capability": "interactions:write"
+      }
+    ],
     "events": [
       {
         "method": "GET",
@@ -479,6 +486,28 @@ POST /deals
 }
 ```
 
+## Interactions
+
+```http
+GET /v1/interactions
+POST /v1/interactions
+GET /interactions
+POST /interactions
+```
+
+```json
+{
+  "clientId": "uuid",
+  "type": "email",
+  "summary": "Paperclip captured a reply from the lead",
+  "occurredAt": "2026-05-03T10:00:00.000Z",
+  "source": "paperclip"
+}
+```
+
+Interactions are workspace-scoped CRM timeline records. If `clientId` is
+provided, it must belong to the active workspace.
+
 ## Notes
 
 ```http
@@ -570,6 +599,7 @@ Generated v1 events:
 - `target_created`
 - `client_created`
 - `deal_created`
+- `interaction_created`
 - `note_created`
 - `decision_created`
 - `agent_created`

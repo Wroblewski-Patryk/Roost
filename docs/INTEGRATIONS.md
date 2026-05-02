@@ -19,6 +19,10 @@ Adapters that need a durable identity should create or reuse a workspace-scoped
 agent record through `POST /v1/agents`, then attach `agentId` to
 `POST /v1/agent-logs`.
 
+CRM-style adapters such as Paperclip should write lead/customer timeline
+activity through `POST /v1/interactions` instead of hiding it in notes or
+agent logs.
+
 ## ClickUp To Company Core
 
 v1 primary integration path:

@@ -60,3 +60,4 @@ No backlog v1 tasks.
 - CCV1-021 Adapter connection handshake for Paperclip and Jarvis.
 - CCV1-022 Adapter manifest for service clients.
 - CCV1-023 Workspace-scoped agents API.
+- CCV1-024 Workspace-scoped interactions API.
