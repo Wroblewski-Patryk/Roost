@@ -305,3 +305,25 @@ Use this file to record the minimum checks after each deploy.
   - `GET https://api.companycore.luckysparrow.ch/app.js` returned `401`, so
     API domain is no longer the public asset surface.
   - `GET https://api.companycore.luckysparrow.ch/health` returned `200`.
+
+## Owner Console View Split Deployment Evidence
+
+- Timestamp: 2026-05-03
+- Environment: Coolify production, Root Team, `companycore`
+- Deployment:
+  - Manual redeploy `dtsz5sbd091zpz7h5ax8czze`.
+  - Coolify imported commit `e056ee0a6c90556d6e709153a6d99174437e38f1`.
+- Public web checks:
+  - `GET https://companycore.luckysparrow.ch/` returned `200`.
+  - `GET https://companycore.luckysparrow.ch/auth/login` returned `200`.
+  - `GET https://companycore.luckysparrow.ch/auth/register` returned `200`.
+  - `GET https://companycore.luckysparrow.ch/dashboard` returned `200`.
+  - `GET https://companycore.luckysparrow.ch/settings` returned `200`.
+  - `GET https://companycore.luckysparrow.ch/settings/api` returned `200`.
+  - `GET https://companycore.luckysparrow.ch/app.js` returned the view router
+    with `/dashboard`, `/settings`, `/settings/api`, and `/auth/register`.
+- API checks:
+  - `GET https://api.companycore.luckysparrow.ch/` still returned API metadata.
+  - `GET https://api.companycore.luckysparrow.ch/app.js` still returned `401`.
+  - `POST https://api.companycore.luckysparrow.ch/auth/login` with the
+    production owner account returned `200` for workspace `LuckySparrow`.
