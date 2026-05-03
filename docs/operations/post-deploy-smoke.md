@@ -642,3 +642,35 @@ Use this file to record the minimum checks after each deploy.
 - Residual risks:
   - Google Drive itself is ready for credential entry, but no Drive files are
     expected until OAuth/configuration is completed and an import is run.
+
+## Web Console Operating Map Production Smoke
+
+- Timestamp: 2026-05-03
+- Environment: production VPS Docker backend
+- Commit: `6b4d57a6e98159e64d9f065427e7201238b47ab5`
+- Image:
+  `rnqqkhl3o3dut4qv56mlxly2_backend:6b4d57a6e98159e64d9f065427e7201238b47ab5`
+- Running container:
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-6b4d57a`
+- Data safety:
+  - Production Postgres container
+    `postgres-rnqqkhl3o3dut4qv56mlxly2-171327317813` remained running and
+    healthy.
+  - `prisma migrate deploy` reported 13 migrations and no pending migrations.
+  - Seed completed successfully.
+- Public smoke:
+  - `GET https://api.companycore.luckysparrow.ch/health` returned `200` with
+    build commit `6b4d57a6e98159e64d9f065427e7201238b47ab5`.
+  - `GET https://api.companycore.luckysparrow.ch/v1/health` returned `200`
+    with the same build commit.
+  - `GET https://companycore.luckysparrow.ch/` returned `200`.
+  - `GET https://companycore.luckysparrow.ch/settings/drive` returned `200`
+    and served the owner web console shell.
+- Protected smoke:
+  - Existing workspace service API key `GET /v1/connection` returned workspace
+    `LuckySparrow`, 12 operating areas, and 47 capabilities.
+  - Existing workspace service API key `GET /v1/google-drive/files` returned
+    0 files, which is expected before Google Drive OAuth/configuration.
+- Residual risks:
+  - Full browser owner workflow on production still depends on owner login and
+    entering real Google Drive OAuth credentials.

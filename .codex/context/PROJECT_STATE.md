@@ -654,6 +654,15 @@ Last updated: 2026-05-03
   folder import, changes reconciliation, file refresh, and imported-file
   review. Desktop and mobile Playwright smoke screenshots passed; `node --check
   public/app.js`, `git diff --check`, `npm run build`, and `npm test` passed.
+- 2026-05-03: Deployed V2WEB-001 to production with manual VPS backend
+  rollover. The running backend container is
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-6b4d57a`, image
+  `rnqqkhl3o3dut4qv56mlxly2_backend:6b4d57a6e98159e64d9f065427e7201238b47ab5`.
+  Public `/health`, `/v1/health`, web root, and `/settings/drive` returned
+  `200`; protected smoke via the Jarvis/Paperclip workspace service key
+  returned workspace `LuckySparrow`, 12 operating areas, 47 capabilities,
+  Google Drive unconfigured, and 0 imported Drive files. Postgres remained
+  healthy and no migrations were pending.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

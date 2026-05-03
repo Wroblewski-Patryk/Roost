@@ -54,3 +54,10 @@
   - Verified desktop and mobile browser rendering with Playwright screenshots.
   - `node --check public/app.js`, `git diff --check`, `npm run build`, and
     `npm test` passed.
+  - Deployed to production as backend image
+    `rnqqkhl3o3dut4qv56mlxly2_backend:6b4d57a6e98159e64d9f065427e7201238b47ab5`.
+  - Production public smoke passed for `/health`, `/v1/health`, web root, and
+    `/settings/drive`.
+  - Production protected smoke returned workspace `LuckySparrow`, 12 operating
+    areas, 47 capabilities, Google Drive unconfigured, and 0 imported Drive
+    files.
