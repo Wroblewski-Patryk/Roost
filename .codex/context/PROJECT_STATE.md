@@ -86,8 +86,8 @@ Last updated: 2026-05-03
   Postgres volume.
 
 ## Current Focus
-- Main active objective: run the v1 closure audit now that ClickUp, Jarvis, and
-  Paperclip production bridges are connected.
+- Main active objective: v1 runtime release candidate is live; harden the
+  authenticated Jarvis smoke and managed Paperclip adapter source path.
 - Top blockers: GitHub repository webhook setup needs an authenticated GitHub
   session or token with webhook administration permissions.
 - Success criteria for this phase: canonical docs, workspace/auth model,
@@ -96,14 +96,14 @@ Last updated: 2026-05-03
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-047 Paperclip Application-Side CompanyCore Adapter.
-- Current operation mode: BUILDER
-- Last completed iteration: CCV1-047 Paperclip Application-Side CompanyCore Adapter.
-- Last completed task: deployed Paperclip application-side CompanyCore event
-  consumption so Paperclip reads pending CompanyCore agent events, creates
-  idempotent Paperclip issues, and acks the events back through CompanyCore.
-- Next required mode: TESTER for v1 closure audit because the next slice is
-  release-readiness verification.
+- Current iteration: CCV1-048 V1 Closure Audit.
+- Current operation mode: TESTER
+- Last completed iteration: CCV1-048 V1 Closure Audit.
+- Last completed task: verified the v1 production release candidate across
+  CompanyCore health, service-key connection, ClickUp maintenance/scheduler,
+  Paperclip health/event consumption, and documented residual risks.
+- Next required mode: BUILDER for authenticated Jarvis connector smoke and
+  managed Paperclip adapter source path.
 
 ## Recent Progress
 - 2026-05-02: Created Company Core backend foundation, Prisma schema, Docker
@@ -511,6 +511,16 @@ Last updated: 2026-05-03
   `received=1`, `created=1`, and `acked=1`, Paperclip created issue `LUC-37`
   for CompanyCore event `78569a4e-756a-4950-8aba-10f3736ba50e`, and CompanyCore
   returned 0 pending Paperclip events afterward.
+- 2026-05-03: Completed CCV1-048 v1 closure audit and published
+  `docs/operations/v1-release-readiness.md`. Production smoke confirmed
+  CompanyCore `/health` and `/v1/health` returned `200`, service-key
+  `/v1/connection` returned workspace `LuckySparrow` with ClickUp configured,
+  ClickUp maintenance `inspect_only` saw 21 webhooks, 219 ClickUp tasks, and 0
+  failed inbox rows, Paperclip `/api/health` returned `200`, Paperclip had one
+  `companycore_agent_event` issue, and CompanyCore had 0 pending Paperclip
+  events. Jarvis public connector smoke requires user Authorization, so the
+  next hardening task is an authenticated Jarvis smoke rather than a
+  CompanyCore runtime blocker.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

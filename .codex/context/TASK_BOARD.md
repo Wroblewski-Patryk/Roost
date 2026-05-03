@@ -2,13 +2,13 @@
 
 ## Ready
 
-- V1 closure audit
+- Authenticated Jarvis connector smoke and managed Paperclip adapter source path
   - Stage: planning
-  - Owner: Backend Builder
+  - Owner: QA/Test + Ops/Release
   - Priority: P0
-  - Scope: verify owner console, ClickUp live sync and scheduler, Jarvis and
-    Paperclip adapters, production smoke, documentation parity, and remaining
-    blockers before declaring v1 complete.
+  - Scope: run a user-authenticated Jarvis connector smoke and move the
+    Paperclip CompanyCore adapter patch into a managed source/deploy path before
+    the next Paperclip upgrade.
 
 ## Blocked
 
@@ -101,3 +101,4 @@ Paperclip application-side adapter work tracked in
 - CCV1-045 ClickUp Maintenance Freshness Run.
 - CCV1-046 ClickUp Maintenance Scheduler.
 - CCV1-047 Paperclip Application-Side CompanyCore Adapter.
+- CCV1-048 V1 Closure Audit.

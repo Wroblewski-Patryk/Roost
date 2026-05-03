@@ -41,11 +41,12 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] CCV1-045 ClickUp Maintenance Freshness Run
 - [x] CCV1-046 ClickUp Maintenance Scheduler
 - [x] CCV1-047 Paperclip Application-Side CompanyCore Adapter
+- [x] CCV1-048 V1 Closure Audit
 
 ## NEXT
 
-- [ ] V1 closure audit: verify owner console, ClickUp sync, Jarvis/Paperclip
-      adapters, deployment smoke, and remaining P0 blockers.
+- [ ] Authenticated Jarvis connector smoke and managed Paperclip adapter source
+      path.
 
 ## PIPELINE
 
@@ -74,6 +75,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 23. CCV1-045 ClickUp Maintenance Freshness Run
 - [x] 24. CCV1-046 ClickUp Maintenance Scheduler
 - [x] 25. CCV1-047 Paperclip Application-Side CompanyCore Adapter
+- [x] 26. CCV1-048 V1 Closure Audit
 
 
 ## GROUP QUEUE

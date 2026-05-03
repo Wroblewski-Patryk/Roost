@@ -4,6 +4,72 @@ These task contracts turn the v1 audit into executable work. Each task must be
 completed as its own small iteration and must update `.codex/context/TASK_BOARD.md`,
 `.codex/context/PROJECT_STATE.md`, and relevant docs when status changes.
 
+## CCV1-048 V1 Closure Audit
+
+### Header
+- ID: CCV1-048
+- Title: V1 closure audit
+- Task Type: release
+- Current Stage: verification
+- Status: DONE
+- Owner: QA/Test + Ops/Release
+- Depends on: CCV1-047
+- Priority: P0
+- Iteration: v1-048
+- Operation Mode: TESTER
+
+### Goal
+Verify whether the approved CompanyCore v1 runtime slice is release-ready in
+production.
+
+### Scope
+- CompanyCore public and v1 health.
+- CompanyCore service-key connection.
+- ClickUp maintenance and scheduler evidence.
+- Paperclip health, CompanyCore event consumption, and event ack.
+- Jarvis CompanyCore service-key evidence.
+- `DEFINITION_OF_DONE.md`, `INTEGRATION_CHECKLIST.md`, and
+  `DEPLOYMENT_GATE.md` review.
+- Release readiness documentation.
+
+### Implementation Plan
+- Run production smoke checks for CompanyCore, ClickUp maintenance, Paperclip,
+  and available Jarvis integration evidence.
+- Validate the Definition of Done, integration checklist, and deployment gate
+  against collected evidence.
+- Record release verdict, residual risks, rollback, and next hardening tasks.
+- Sync planning and context docs.
+
+### Acceptance Criteria
+- [x] CompanyCore public and protected smoke checks pass.
+- [x] ClickUp maintenance reports healthy registrations, synced task visibility,
+  and zero failed inbox rows.
+- [x] Paperclip adapter created an issue from a CompanyCore agent event and
+  acknowledged it.
+- [x] Residual risks are separated from runtime v1 blockers.
+- [x] Release readiness doc records evidence and next work.
+
+### Definition of Done
+- [x] Production smoke evidence recorded.
+- [x] Definition of Done reviewed.
+- [x] Integration checklist reviewed.
+- [x] Deployment gate reviewed.
+- [x] Task board, next-commits queue, project state, and task contract updated.
+
+### Result Report
+- Task summary: Verified CompanyCore v1 as a production release candidate for
+  the approved runtime slice.
+- Files changed: `docs/operations/v1-release-readiness.md`,
+  `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`,
+  `docs/planning/mvp-next-commits.md`, and this task contract.
+- How tested: Production smoke for CompanyCore health, service-key connection,
+  ClickUp maintenance inspect, scheduler log, Paperclip health, Paperclip
+  issue origin rows, and CompanyCore pending Paperclip events.
+- What is incomplete: Authenticated Jarvis public connector smoke and managed
+  Paperclip adapter source/deploy path remain as hardening follow-up tasks.
+- Next steps: Run authenticated Jarvis connector smoke and make the Paperclip
+  adapter patch durable in the managed Paperclip deployment source.
+
 ## CCV1-047 Paperclip Application-Side CompanyCore Adapter
 
 ### Header
