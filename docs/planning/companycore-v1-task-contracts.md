@@ -446,6 +446,75 @@ small executable implementation slices.
 ### Priority
 P0
 
+## CCV1-037 ClickUp List Selection UX Fix
+
+### Header
+- ID: CCV1-037
+- Title: ClickUp list selection UX fix
+- Task Type: bugfix
+- Current Stage: verification
+- Status: DONE
+- Owner: Frontend Builder
+- Depends on: CCV1-032, CCV1-035
+- Priority: P0
+- Iteration: v1-037
+- Operation Mode: BUILDER
+
+### Description
+Real owner testing confirmed ClickUp Workspace discovery works, but the owner
+did not see an obvious List selection path after choosing the Workspace.
+
+### Goal
+Make the ClickUp List loading and multiselect flow explicit enough for first
+production import: load Lists on demand, show clear no-list feedback, and allow
+selecting or clearing all loaded Lists.
+
+### Scope
+- `public/index.html`
+- `public/app.js`
+- `public/styles.css`
+- `.codex/context/PROJECT_STATE.md`
+- `.codex/context/TASK_BOARD.md`
+- `docs/planning/mvp-next-commits.md`
+- this task contract
+
+### Implementation Plan
+1. Add an explicit `Load Lists` action next to the ClickUp Workspace selector.
+2. Reuse the existing discovery endpoint and selected Workspace state.
+3. Add `Select all` and `Clear all` controls for loaded Lists.
+4. Improve List summary messaging for loaded, selected, and no-list states.
+5. Validate the static frontend through TypeScript build and diff checks.
+
+### Acceptance Criteria
+- [x] Owner can manually load Lists after selecting a ClickUp Workspace.
+- [x] Owner can select all loaded Lists.
+- [x] Owner can clear all selected Lists.
+- [x] Empty ClickUp structure produces an actionable no-list message.
+- [x] Existing save/sync enablement still requires at least one selected List.
+- [x] `npm run build` passes.
+
+### Definition of Done
+- [x] Change stays inside the owner console selection flow.
+- [x] Existing ClickUp discovery and sync APIs are reused.
+- [x] No temporary fallback or fake provider data is added.
+- [x] Canonical planning and project state are updated.
+
+### Result Report
+- Task summary: Added explicit List loading and bulk selection controls to the
+  ClickUp owner console, plus clearer feedback when a selected Workspace returns
+  no Lists for the token.
+- Files changed: `public/index.html`, `public/app.js`, `public/styles.css`,
+  `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`,
+  `docs/planning/mvp-next-commits.md`, and this task contract.
+- How tested: Ran `npm run build` and `git diff --check`.
+- What is incomplete: A real ClickUp token/List selection smoke remains with
+  the owner in the browser.
+- Next steps: Deploy this UI fix, refresh the owner console, load Lists, select
+  desired Lists, and run `inspect_only` before the first import.
+
+### Priority
+P0
+
 ## CCV1-034B ClickUp Structure Persistence
 
 ### Header

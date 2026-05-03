@@ -349,6 +349,11 @@ Last updated: 2026-05-03
   `docs/planning/clickup-webhook-trigger-plan.md` and queued CCV1-036A through
   CCV1-036F to implement webhook schema/security, registration, receiver,
   task processing, agent event bridge, and production smoke.
+- 2026-05-03: Improved the owner ClickUp List selection flow after real token
+  testing reached Workspace discovery but did not make List selection obvious.
+  The settings console now has an explicit `Load Lists` action, clearer no-list
+  messaging, and `Select all` / `Clear all` controls for multiselect List
+  setup before the first import.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

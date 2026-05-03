@@ -33,6 +33,9 @@ const checkTokenButton = document.querySelector("#checkTokenButton");
 const refreshButton = document.querySelector("#refreshButton");
 const saveButton = document.querySelector("#saveButton");
 const syncButton = document.querySelector("#syncButton");
+const loadListsButton = document.querySelector("#loadListsButton");
+const selectAllListsButton = document.querySelector("#selectAllListsButton");
+const clearListsButton = document.querySelector("#clearListsButton");
 const workspaceSelect = document.querySelector("#workspaceSelect");
 const connectionStatus = document.querySelector("#connectionStatus");
 const workspaceLabel = document.querySelector("#workspaceLabel");
@@ -43,6 +46,7 @@ const clickupStatusHint = document.querySelector("#clickupStatusHint");
 const capabilitySummary = document.querySelector("#capabilitySummary");
 const capabilityList = document.querySelector("#capabilityList");
 const listTree = document.querySelector("#listTree");
+const listToolbar = document.querySelector("#listToolbar");
 const listSummary = document.querySelector("#listSummary");
 const resultPanel = document.querySelector("#resultPanel");
 const resultMessage = document.querySelector("#resultMessage");
@@ -139,7 +143,11 @@ function setClickUpEnabled(isEnabled) {
     control.disabled = !isEnabled;
   });
   workspaceSelect.disabled = !isEnabled || state.clickup.workspaces.length === 0;
+  loadListsButton.disabled = !isEnabled || !workspaceSelect.value;
   refreshButton.disabled = !isEnabled || !state.clickup.configured;
+  const loadedListCount = allLists().length;
+  selectAllListsButton.disabled = !isEnabled || loadedListCount === 0;
+  clearListsButton.disabled = !isEnabled || state.clickup.selectedListIds.size === 0;
   const canSave = isEnabled && state.clickup.selectedListIds.size > 0 && Boolean(workspaceSelect.value);
   saveButton.disabled = !canSave;
   syncButton.disabled = !canSave;
@@ -366,6 +374,8 @@ function allLists() {
 function renderTree() {
   listTree.innerHTML = "";
   const spaces = state.clickup.spaces;
+  const loadedLists = allLists();
+  listToolbar.hidden = loadedLists.length === 0;
 
   if (spaces.length === 0) {
     listSummary.textContent = state.clickup.configured
@@ -373,6 +383,10 @@ function renderTree() {
       : "Choose a ClickUp Workspace to load Lists.";
     setClickUpEnabled(isSignedIn());
     return;
+  }
+
+  if (loadedLists.length === 0) {
+    listSummary.textContent = "This ClickUp Workspace loaded, but no Lists were returned for the token. Check whether the selected Workspace has Spaces/Lists available to this user.";
   }
 
   for (const space of spaces) {
@@ -392,7 +406,9 @@ function renderTree() {
     listTree.append(section);
   }
 
-  updateListSummary();
+  if (loadedLists.length > 0) {
+    updateListSummary();
+  }
   setClickUpEnabled(isSignedIn());
 }
 
@@ -433,9 +449,40 @@ function appendListGroup(parent, title, lists) {
 
 function updateListSummary() {
   const count = state.clickup.selectedListIds.size;
+  const loadedCount = allLists().length;
+  listToolbar.hidden = loadedCount === 0;
+
+  if (loadedCount === 0) {
+    listSummary.textContent = "No ClickUp Lists loaded yet.";
+    return;
+  }
+
   listSummary.textContent = count === 0
-    ? "Select at least one List to sync."
-    : `${count} List${count === 1 ? "" : "s"} selected for sync.`;
+    ? `${loadedCount} List${loadedCount === 1 ? "" : "s"} loaded. Select at least one List to sync.`
+    : `${count} of ${loadedCount} List${loadedCount === 1 ? "" : "s"} selected for sync.`;
+}
+
+function selectAllLoadedLists() {
+  for (const list of allLists()) {
+    state.clickup.selectedListIds.add(list.id);
+  }
+  renderTree();
+}
+
+function clearSelectedLists() {
+  state.clickup.selectedListIds.clear();
+  renderTree();
+}
+
+async function loadSelectedWorkspaceLists() {
+  if (!workspaceSelect.value) {
+    throw new Error("Choose a ClickUp Workspace first.");
+  }
+
+  await discoverClickUp({
+    includeStructure: true,
+    useStoredToken: !fields.token.value.trim()
+  });
 }
 
 function selectedConfig() {
@@ -566,6 +613,29 @@ checkTokenButton.addEventListener("click", async () => {
   }
 });
 
+loadListsButton.addEventListener("click", async () => {
+  setBusy(true);
+  try {
+    await loadSelectedWorkspaceLists();
+    const count = allLists().length;
+    showResult(count > 0
+      ? `Workspace loaded. ${count} ClickUp List${count === 1 ? "" : "s"} available.`
+      : "Workspace loaded, but ClickUp returned no Lists for this token.", count > 0 ? "success" : "error");
+  } catch (error) {
+    showResult(friendlyError(error), "error");
+  } finally {
+    setBusy(false);
+  }
+});
+
+selectAllListsButton.addEventListener("click", () => {
+  selectAllLoadedLists();
+});
+
+clearListsButton.addEventListener("click", () => {
+  clearSelectedLists();
+});
+
 refreshButton.addEventListener("click", async () => {
   setBusy(true);
   try {
@@ -587,11 +657,11 @@ workspaceSelect.addEventListener("change", async () => {
 
   setBusy(true);
   try {
-    await discoverClickUp({
-      includeStructure: true,
-      useStoredToken: !fields.token.value.trim()
-    });
-    showResult("Workspace loaded. Select the Lists to sync.");
+    await loadSelectedWorkspaceLists();
+    const count = allLists().length;
+    showResult(count > 0
+      ? `Workspace loaded. ${count} ClickUp List${count === 1 ? "" : "s"} available.`
+      : "Workspace loaded, but ClickUp returned no Lists for this token.", count > 0 ? "success" : "error");
   } catch (error) {
     showResult(friendlyError(error), "error");
   } finally {

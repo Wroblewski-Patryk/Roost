@@ -24,6 +24,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] CCV1-034E Automation Scope Registry
 - [x] CCV1-035 ClickUp First-Run Import Policy And Launch Audit
 - [x] CCV1-036 ClickUp Webhook Trigger Architecture Plan
+- [x] CCV1-037 ClickUp List Selection UX Fix
 
 ## NEXT
 

@@ -175,12 +175,19 @@
                 <option value="">Check token first</option>
               </select>
             </label>
+            <div class="actions">
+              <button type="button" class="secondary" id="loadListsButton">Load Lists</button>
+            </div>
           </div>
 
           <div class="step">
             <div class="section-title compact-title">
               <h3>Lists to sync</h3>
               <p id="listSummary">Choose a ClickUp Workspace to load Lists.</p>
+            </div>
+            <div class="list-toolbar" id="listToolbar" hidden>
+              <button type="button" class="secondary" id="selectAllListsButton">Select all</button>
+              <button type="button" class="secondary" id="clearListsButton">Clear all</button>
             </div>
             <div class="tree" id="listTree" aria-live="polite"></div>
           </div>

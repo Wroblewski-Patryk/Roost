@@ -413,6 +413,19 @@ a[aria-disabled="true"] {
   background: #fbfcfe;
 }
 
+.list-toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: -2px 0 12px;
+}
+
+.list-toolbar button {
+  min-height: 38px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
 .tree:empty::before {
   color: var(--muted);
   content: "No Lists loaded yet.";
