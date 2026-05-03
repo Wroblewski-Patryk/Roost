@@ -96,15 +96,15 @@ Last updated: 2026-05-03
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-036B-G ClickUp live sync and write-back.
+- Current iteration: CCV1-036F Production webhook smoke.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-036B-G ClickUp live sync and write-back.
-- Last completed task: implemented ClickUp webhook reconcile, signed webhook
-  ingestion, idempotent provider inbox writes, task event processing, agent
-  event outbox APIs, and CompanyCore-to-ClickUp task write-back for
-  ClickUp-sourced tasks.
-- Next required mode: TESTER/OPS for CCV1-036F production webhook smoke unless
-  priority changes.
+- Last completed iteration: CCV1-036F Production webhook smoke.
+- Last completed task: verified the production ClickUp roundtrip by changing a
+  real ClickUp-sourced task through CompanyCore, observing ClickUp's natural
+  signed `taskUpdated` webhooks return to CompanyCore, processing both inbox
+  rows, and restoring the original task title.
+- Next required mode: BUILDER for Paperclip application-side CompanyCore
+  adapter unless priority changes.
 
 ## Recent Progress
 - 2026-05-02: Created Company Core backend foundation, Prisma schema, Docker
@@ -407,6 +407,11 @@ Last updated: 2026-05-03
   processed the provider inbox row, and exposed a pending
   `task_status_updated_from_clickup` agent event readable by Jarvis's
   CompanyCore API key.
+- 2026-05-03: Completed the natural production ClickUp roundtrip smoke for
+  CCV1-036F. A real ClickUp-sourced task (`86c5fqumu`) was patched through
+  CompanyCore, which wrote the change back to ClickUp; ClickUp then delivered
+  two natural signed `taskUpdated` webhooks back to CompanyCore, both verified
+  and processed. The task title was restored to its original value.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

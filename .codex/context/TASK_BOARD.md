@@ -2,12 +2,13 @@
 
 ## Ready
 
-- CCV1-036F Production Webhook Smoke
+- Implement Paperclip application-side adapter code
   - Stage: planning
-  - Owner: Ops/Release
+  - Owner: Backend Builder
   - Priority: P0
-  - Scope: deploy webhook runtime, reconcile selected List webhooks, change a
-    real ClickUp task status, and verify CompanyCore plus agent-event readback.
+  - Scope: update Paperclip so it reads `COMPANYCORE_BASE_URL` and
+    `COMPANYCORE_API_KEY`, consumes CompanyCore agent events, and writes
+    relevant records back through CompanyCore instead of direct provider paths.
 
 ## Blocked
 
@@ -92,3 +93,4 @@ Paperclip application-side adapter work tracked in
 - CCV1-036D Task Event Processor.
 - CCV1-036E Agent Event Bridge.
 - CCV1-036G CompanyCore to ClickUp write-back.
+- CCV1-036F Production Webhook Smoke.

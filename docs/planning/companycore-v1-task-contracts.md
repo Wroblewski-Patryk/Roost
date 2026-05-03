@@ -134,6 +134,62 @@ and guarded write-back.
   smoke are intentionally left for CCV1-036F after deploy.
 - Next steps: deploy and run CCV1-036F production webhook smoke.
 
+## CCV1-036F Production Webhook Smoke
+
+### Header
+- ID: CCV1-036F
+- Title: Production webhook smoke
+- Task Type: release verification
+- Current Stage: verification
+- Status: DONE
+- Owner: Ops/Release
+- Depends on: CCV1-036B-G
+- Priority: P0
+- Iteration: v1-036F
+- Operation Mode: TESTER
+
+### Goal
+Prove the deployed production bridge works in both directions with real ClickUp
+data and no lasting task pollution.
+
+### Scope
+- Production CompanyCore deployment
+- ClickUp webhook registrations
+- Provider inbox and agent outbox readback
+- `docs/operations/post-deploy-smoke.md`
+- planning/context docs
+
+### Acceptance Criteria
+- [x] Production deploy runs the webhook schema and runtime.
+- [x] Selected ClickUp List webhooks are registered.
+- [x] Unsigned webhook requests fail closed.
+- [x] A signed webhook updates/reads through the deployed receiver.
+- [x] A real CompanyCore task update writes to ClickUp.
+- [x] ClickUp sends natural signed webhook events back to CompanyCore.
+- [x] Provider inbox rows are processed and signature-verified.
+- [x] The touched task is restored to its original title.
+
+### Validation Evidence
+- Deploy: Coolify manual deploy `e12x9rc7i8071qfnrzh6u1hh`.
+- Runtime image:
+  `rnqqkhl3o3dut4qv56mlxly2_backend:75df028f9dc3cab59f026fd7d2c5fef430e6d5ea`.
+- Public health: `GET https://api.companycore.luckysparrow.ch/health`
+  returned `200`.
+- Webhooks: `21` active ClickUp List webhooks registered.
+- Signed smoke: `POST /v1/webhooks/clickup` returned `202 accepted`.
+- Natural roundtrip: changing ClickUp task `86c5fqumu` through CompanyCore
+  produced `2` natural ClickUp `taskUpdated` inbox rows, both
+  `processingStatus = processed` and `signatureVerified = true`.
+
+### Result Report
+- Task summary: Completed the production webhook and write-back smoke.
+- Files changed: operations smoke evidence, project state, task board, and
+  next-commits queue.
+- How tested: deployed runtime checks plus real ClickUp roundtrip smoke.
+- What is incomplete: Paperclip still needs application-side consumption of
+  CompanyCore agent events.
+- Next steps: implement Paperclip application-side CompanyCore adapter.
+
 ## CCV1-034B2 ClickUp Views And Custom Fields Persistence
 
 ### Header

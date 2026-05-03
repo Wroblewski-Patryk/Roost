@@ -34,10 +34,10 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] CCV1-036D Task Event Processor
 - [x] CCV1-036E Agent Event Bridge
 - [x] CCV1-036G CompanyCore To ClickUp Write-Back
+- [x] CCV1-036F Production Webhook Smoke
 
 ## NEXT
 
-- [ ] CCV1-036F Production Webhook Smoke
 - [ ] Implement Paperclip application-side adapter code that reads
       `COMPANYCORE_BASE_URL` and `COMPANYCORE_API_KEY`.
 
@@ -61,7 +61,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 16. CCV1-036D Task Event Processor
 - [x] 17. CCV1-036E Agent Event Bridge
 - [x] 18. CCV1-036G CompanyCore To ClickUp Write-Back
-- [ ] 19. CCV1-036F Production Webhook Smoke
+- [x] 19. CCV1-036F Production Webhook Smoke
 
 
 ## GROUP QUEUE

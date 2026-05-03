@@ -406,3 +406,27 @@ Use this file to record the minimum checks after each deploy.
     ClickUp full-task fetch, task upsert path, and agent outbox. The first
     naturally provider-initiated ClickUp webhook should still be observed after
     the owner next changes a real task in ClickUp.
+
+### Natural ClickUp Webhook Roundtrip Evidence
+
+- Timestamp: 2026-05-03
+- Method:
+  - Selected real ClickUp task `86c5fqumu`
+    (`Stworzyć repozytorium na githubie`) from the mapped
+    `11. Innovations - Featherly` list.
+  - Called CompanyCore `PATCH /v1/tasks/:id` to temporarily append a smoke
+    marker to the title.
+  - CompanyCore write-back updated the ClickUp task through ClickUp's API.
+  - Waited for ClickUp to POST its natural webhook back to CompanyCore.
+  - Called CompanyCore `PATCH /v1/tasks/:id` again to restore the original
+    title.
+- Result:
+  - Final CompanyCore title is back to `Stworzyć repozytorium na githubie`.
+  - Provider inbox received `2` natural ClickUp `taskUpdated` events for the
+    task.
+  - Both inbox rows have `processingStatus = processed` and
+    `signatureVerified = true`.
+- Conclusion:
+  - The production bridge is confirmed in both directions:
+    CompanyCore -> ClickUp write-back and ClickUp -> CompanyCore webhook
+    ingestion.
