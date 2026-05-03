@@ -96,13 +96,13 @@ Last updated: 2026-05-03
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-036F Production webhook smoke.
+- Current iteration: CCV1-041 Template Agent Governance Sync.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-036F Production webhook smoke.
-- Last completed task: verified the production ClickUp roundtrip by changing a
-  real ClickUp-sourced task through CompanyCore, observing ClickUp's natural
-  signed `taskUpdated` webhooks return to CompanyCore, processing both inbox
-  rows, and restoring the original task title.
+- Last completed iteration: CCV1-041 Template Agent Governance Sync.
+- Last completed task: compared `companycore` with `!template`, confirmed the
+  autonomous engineering loop and agent role updates were already present, then
+  synced the remaining source-of-truth references for docs index, canonical
+  workflow context, and working agreements.
 - Next required mode: BUILDER for Paperclip application-side CompanyCore
   adapter unless priority changes.
 
@@ -412,6 +412,11 @@ Last updated: 2026-05-03
   CompanyCore, which wrote the change back to ClickUp; ClickUp then delivered
   two natural signed `taskUpdated` webhooks back to CompanyCore, both verified
   and processed. The task title was restored to its original value.
+- 2026-05-03: Completed CCV1-041 by comparing CompanyCore against `!template`.
+  The autonomous engineering loop document and agent role updates were already
+  present. Synced the remaining missing governance references into
+  `.codex/context/PROJECT_STATE.md`, added a full CompanyCore docs index to
+  `docs/README.md`, and recorded the task in `.codex/context/TASK_BOARD.md`.
 
 ## Working Agreements
 - Keep task board and project state synchronized.
@@ -420,6 +425,11 @@ Last updated: 2026-05-03
 - Validate touched areas before marking done.
 - Keep repository artifacts in English.
 - Communicate with users in their language.
+- Delegate with explicit ownership and avoid overlapping subagent write scope.
+- Use the default loop:
+  `analyze -> select one task -> plan -> implement -> verify -> self-review -> sync knowledge`.
+- Use `docs/governance/autonomous-engineering-loop.md` for process self-audit,
+  one-task priority selection, seven-step evidence, and mode rotation.
 - Treat deployment docs and smoke checks as part of done-state for runtime
   changes.
 
@@ -428,6 +438,10 @@ Last updated: 2026-05-03
 - `.codex/context/TASK_BOARD.md`
 - `.codex/context/LEARNING_JOURNAL.md`
 - `.agents/workflows/general.md`
+- `.agents/workflows/documentation-governance.md`
+- `.agents/workflows/subagent-orchestration.md`
+- `.agents/workflows/user-collaboration.md`
+- `.agents/workflows/world-class-delivery.md`
 
 ## Canonical Docs
 - `docs/README.md`
@@ -437,6 +451,27 @@ Last updated: 2026-05-03
 - `docs/INTEGRATIONS.md`
 - `docs/DEPLOYMENT.md`
 - `docs/NEXT_STEPS.md`
+- `docs/architecture/README.md`
+- `docs/architecture/system-architecture.md`
+- `docs/architecture/tech-stack.md`
+- `docs/architecture/architecture-source-of-truth.md`
+- `docs/engineering/local-development.md`
+- `docs/engineering/testing.md`
+- `docs/governance/working-agreements.md`
+- `docs/governance/world-class-product-engineering-standard.md`
+- `docs/governance/autonomous-engineering-loop.md`
+- `docs/governance/function-coverage-ledger-standard.md`
+- `docs/governance/function-coverage-ledger-template.csv`
+- `docs/operations/coolify-vps-deployment-contract.md`
+- `docs/operations/post-deploy-smoke.md`
+- `docs/operations/rollback-and-recovery.md`
+- `docs/operations/service-reliability-and-observability.md`
+- `docs/security/secure-development-lifecycle.md`
+- `docs/security/security-baseline.md`
+- `docs/ux/design-system-contract.md`
+- `docs/ux/visual-direction-brief.md`
+- `docs/ux/design-memory.md`
+- `docs/ux/evidence-driven-ux-review.md`
 
 ## Active v1 Plan
 - `docs/planning/mvp-next-commits.md`
