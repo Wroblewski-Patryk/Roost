@@ -99,14 +99,13 @@ Last updated: 2026-05-03
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-054 Final V1 Runtime Rollover Smoke.
+- Current iteration: CCV1-055 Full V1 Live System Smoke.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-054 Final V1 Runtime Rollover Smoke.
-- Last completed task: manually rolled production CompanyCore from the final
-  v1 runtime commit `9116026` into backend image
-  `rnqqkhl3o3dut4qv56mlxly2_backend:9116026`, preserved the production
-  Postgres container/volume, and reran public, protected, and ClickUp
-  maintenance smoke checks.
+- Last completed iteration: CCV1-055 Full V1 Live System Smoke.
+- Last completed task: reran a full live-system smoke after the final runtime
+  rollover, covering CompanyCore, ClickUp maintenance, Jarvis CompanyCore
+  connector/sync/index status, Paperclip health, and the Paperclip agent-event
+  queue.
 - Next required mode: BUILDER when a new approved v2 or handoff task is moved
   into the active queue.
 
@@ -580,6 +579,14 @@ Last updated: 2026-05-03
   while keeping Postgres healthy. Public `/health`, `/v1/health`, web root,
   API metadata, protected `/v1/connection`, and ClickUp maintenance
   `inspect_only` smoke all passed.
+- 2026-05-03: Completed CCV1-055 by rerunning full live-system smoke after the
+  final runtime rollover. CompanyCore public health, v1 health, web root, API
+  metadata, protected connection, and ClickUp maintenance stayed green.
+  Paperclip `/api/health` returned `200`, Jarvis `/health` returned `200`,
+  Jarvis's authenticated CompanyCore connector returned `connected=true`,
+  `auth_type=bridge`, and `chunks=259`, a CompanyCore connector sync could be
+  started, and CompanyCore had 0 pending Paperclip agent events. Added a
+  learning-journal guardrail for remote smoke scripts that touch secrets.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

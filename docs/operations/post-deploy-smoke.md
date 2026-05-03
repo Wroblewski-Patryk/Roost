@@ -548,3 +548,33 @@ Use this file to record the minimum checks after each deploy.
   - Jarvis service-key `GET /v1/connection` returned `200`.
   - ClickUp maintenance with `importMode=inspect_only` returned 219 items,
     0 created, 0 updated, 0 deleted, 219 skipped, and 0 failed retries.
+
+## Full V1 Live System Smoke
+
+- Timestamp: 2026-05-03
+- Environment: production CompanyCore, OpenJarvis, Paperclip, and ClickUp
+- CompanyCore:
+  - `GET https://api.companycore.luckysparrow.ch/health` returned `200`.
+  - `GET https://api.companycore.luckysparrow.ch/v1/health` returned `200`.
+  - `GET https://companycore.luckysparrow.ch/` returned `200`.
+  - `GET https://api.companycore.luckysparrow.ch/` returned `200`.
+  - Protected `GET /v1/connection` returned `200`.
+- ClickUp:
+  - Maintenance `importMode=inspect_only` returned 219 items, 0 created,
+    0 updated, 0 deleted, 219 skipped, and 0 failed retries.
+- Jarvis:
+  - `GET https://jarvis.luckysparrow.ch/health` returned `200`.
+  - Authenticated `GET /v1/connectors/companycore` returned `200`.
+  - The CompanyCore connector reported `connected=true` and
+    `auth_type=bridge`.
+  - Authenticated `POST /v1/connectors/companycore/sync` returned `200` with
+    `status=started`.
+  - Authenticated connector list reported CompanyCore with 259 chunks.
+- Paperclip:
+  - `GET https://paperclip.luckysparrow.ch/api/health` returned `200`.
+  - CompanyCore `GET /v1/agent-events?targetAgent=paperclip` returned `200`
+    with 0 total and 0 pending Paperclip events.
+- Guardrail captured:
+  - `.codex/context/LEARNING_JOURNAL.md` now records that remote smoke scripts
+    touching secrets must avoid PowerShell here-string piping into bash and use
+    ASCII temporary scripts or proven single remote commands instead.

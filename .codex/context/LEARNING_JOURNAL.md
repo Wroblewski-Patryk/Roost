@@ -109,3 +109,25 @@ fixes for this repository.
 - Evidence: Official ClickUp docs reviewed during CCV1-034 for API v2/v3
   terminology, Tasks, Custom Fields, Views, Rate Limits, and Webhook
   signature behavior.
+
+### 2026-05-03 - Do not pipe PowerShell here-strings with secrets into remote bash
+- Context: Production smoke commands sometimes need to read service secrets
+  inside the VPS container and call protected endpoints without printing secret
+  values.
+- Symptom: A PowerShell here-string piped into `ssh ... bash -s` can arrive
+  with a leading BOM, causing remote bash to treat the first assignment or
+  command as invalid.
+- Root cause: Windows text encoding can prepend a BOM to piped script content,
+  and the failing shell error may echo the malformed first command.
+- Guardrail: For remote scripts that touch secrets, write a temporary ASCII
+  script file, copy it to the VPS, execute it, and delete it, or use a proven
+  single remote command with carefully tested quoting.
+- Preferred pattern: `Set-Content -Encoding ascii` for temporary remote smoke
+  scripts, no `set -x`, no secret echoing, and cleanup both local and remote
+  script files.
+- Avoid: Piping PowerShell here-strings directly into remote bash when the
+  script reads API keys, tokens, or passwords.
+- Evidence: During CCV1-055 smoke, a piped here-string produced remote
+  `command not found` output from a BOM-prefixed line; rerunning via an ASCII
+  temporary script executed correctly and returned Jarvis CompanyCore connector
+  status without exposing secret values.

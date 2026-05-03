@@ -4,6 +4,82 @@ These task contracts turn the v1 audit into executable work. Each task must be
 completed as its own small iteration and must update `.codex/context/TASK_BOARD.md`,
 `.codex/context/PROJECT_STATE.md`, and relevant docs when status changes.
 
+## CCV1-055 Full V1 Live System Smoke
+
+### Header
+- ID: CCV1-055
+- Title: Full v1 live system smoke
+- Task Type: post-release verification
+- Current Stage: post-release
+- Status: DONE
+- Owner: QA/Test + Ops/Release
+- Depends on: CCV1-054
+- Priority: P1
+- Iteration: v1-055
+- Operation Mode: BUILDER
+
+### Goal
+Verify the complete live CompanyCore v1 ecosystem after the final runtime
+rollover.
+
+### Scope
+- CompanyCore public, protected, and ClickUp maintenance smoke.
+- Jarvis health, authenticated CompanyCore connector, sync trigger, and
+  connector index evidence.
+- Paperclip health and CompanyCore agent-event queue.
+- Learning journal entry for the remote secret-safe smoke-script guardrail.
+- Canonical release docs and planning/context files.
+
+### Implementation Plan
+- Run public health checks for CompanyCore, Jarvis, and Paperclip.
+- Run protected CompanyCore connection and ClickUp maintenance checks through
+  service credentials stored on the VPS without printing raw secrets.
+- Run authenticated Jarvis CompanyCore connector and sync checks through the
+  Jarvis production API key stored in the container.
+- Confirm Jarvis connector index reports CompanyCore chunks.
+- Confirm CompanyCore has no pending Paperclip agent events.
+- Record smoke evidence and the remote scripting guardrail.
+
+### Acceptance Criteria
+- [x] CompanyCore `/health`, `/v1/health`, web root, and API metadata return
+  `200`.
+- [x] Protected CompanyCore `/v1/connection` returns `200`.
+- [x] ClickUp maintenance `inspect_only` returns 219 items, 0 created,
+  0 updated, and 219 skipped.
+- [x] Paperclip `/api/health` returns `200`.
+- [x] Jarvis `/health` returns `200`.
+- [x] Jarvis authenticated CompanyCore connector returns `connected=true` and
+  `auth_type=bridge`.
+- [x] Jarvis connector list reports CompanyCore with 259 chunks.
+- [x] CompanyCore has 0 pending Paperclip agent events.
+- [x] Learning journal captures the remote smoke-script guardrail.
+
+### Definition of Done
+- [x] Production smoke evidence recorded.
+- [x] `git diff --check` passes.
+- [x] `npm run build` passes.
+- [x] `npm test` passes against local PostgreSQL.
+- [x] Task board, project state, planning queue, task contract, release
+  readiness, post-deploy smoke docs, and learning journal are updated.
+
+### Result Report
+- Task summary: Revalidated the complete live CompanyCore v1 ecosystem after
+  final runtime rollover and recorded a remote scripting guardrail.
+- Files changed: `.codex/context/PROJECT_STATE.md`,
+  `.codex/context/TASK_BOARD.md`, `.codex/context/LEARNING_JOURNAL.md`,
+  `docs/planning/mvp-next-commits.md`,
+  `docs/planning/companycore-v1-task-contracts.md`,
+  `docs/operations/v1-release-readiness.md`, and
+  `docs/operations/post-deploy-smoke.md`.
+- How tested: Production public and protected smoke checks; authenticated
+  Jarvis connector and sync checks; Paperclip health; CompanyCore Paperclip
+  agent-event queue check; `git diff --check`; `npm run build`; `npm test`.
+- What is incomplete: GitHub-to-Coolify auto-deploy webhook administration and
+  upstream OpenJarvis/Paperclip source merge execution remain optional
+  non-runtime handoff tasks.
+- Next steps: Choose v2 product scope or explicitly approve external source
+  merge/release automation work.
+
 ## CCV1-054 Final V1 Runtime Rollover Smoke
 
 ### Header
