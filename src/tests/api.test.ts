@@ -3,6 +3,7 @@ import type { AddressInfo } from "net";
 import test, { after, before } from "node:test";
 import { createApp } from "../app";
 import { prisma } from "../db/prisma";
+import { signClickUpWebhookBody, verifyClickUpWebhookSignature } from "../integrations/clickup/webhook-signature";
 
 const realFetch = globalThis.fetch.bind(globalThis);
 let baseUrl = "";
@@ -10,6 +11,9 @@ let server: ReturnType<ReturnType<typeof createApp>["listen"]>;
 
 async function resetDatabase() {
   await prisma.event.deleteMany();
+  await prisma.providerEventInbox.deleteMany();
+  await prisma.agentEventOutbox.deleteMany();
+  await prisma.externalWebhookRegistration.deleteMany();
   await prisma.automationDefinition.deleteMany();
   await prisma.knowledgeRoot.deleteMany();
   await prisma.storageLocation.deleteMany();
@@ -97,6 +101,38 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(health.status, 200);
   const v1Health = await request("/v1/health");
   assert.equal(v1Health.status, 200);
+
+  const webhookBody = JSON.stringify({
+    webhook_id: "clickup-webhook-1",
+    event: "taskStatusUpdated",
+    task_id: "clickup-task-1"
+  });
+  const webhookSignature = signClickUpWebhookBody("official-clickup-style-secret", webhookBody);
+  assert.equal(verifyClickUpWebhookSignature({
+    secret: "official-clickup-style-secret",
+    rawBody: webhookBody,
+    signature: webhookSignature
+  }), true);
+  assert.equal(verifyClickUpWebhookSignature({
+    secret: "official-clickup-style-secret",
+    rawBody: webhookBody,
+    signature: "bad-signature"
+  }), false);
+
+  const missingWebhookSignature = await request("/v1/webhooks/clickup", {
+    method: "POST",
+    body: webhookBody
+  });
+  assert.equal(missingWebhookSignature.status, 401);
+  assert.equal((missingWebhookSignature.body as { error: string }).error, "missing_signature");
+
+  const webhookFoundation = await request("/v1/webhooks/clickup", {
+    method: "POST",
+    headers: { "X-Signature": webhookSignature },
+    body: webhookBody
+  });
+  assert.equal(webhookFoundation.status, 501);
+  assert.equal((webhookFoundation.body as { error: string }).error, "webhook_receiver_not_enabled");
 
   const missingAuth = await request("/projects");
   assert.equal(missingAuth.status, 401);

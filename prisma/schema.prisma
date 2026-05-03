@@ -46,37 +46,40 @@ model User {
 }
 
 model Workspace {
-  id                        String                     @id @default(uuid()) @db.Uuid
-  name                      String
-  ownerUserId               String                     @map("owner_user_id") @db.Uuid
-  owner                     User                       @relation("WorkspaceOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
-  memberships               WorkspaceMembership[]
-  apiKeys                   ApiKey[]
-  integrationSettings       IntegrationSetting[]
-  projects                  Project[]
-  goals                     Goal[]
-  targets                   Target[]
-  taskLists                 TaskList[]
-  tasks                     Task[]
-  clients                   Client[]
-  pipelineStages            PipelineStage[]
-  deals                     Deal[]
-  interactions              Interaction[]
-  notes                     Note[]
-  decisions                 Decision[]
-  agents                    Agent[]
-  agentLogs                 AgentLog[]
-  events                    Event[]
-  operatingAreas            OperatingArea[]
-  operatingFolders          OperatingFolder[]
-  operatingTables           OperatingTable[]
-  externalContainerMappings ExternalContainerMapping[]
-  externalFieldMappings     ExternalFieldMapping[]
-  storageLocations          StorageLocation[]
-  knowledgeRoots            KnowledgeRoot[]
-  automationDefinitions     AutomationDefinition[]
-  createdAt                 DateTime                   @default(now()) @map("created_at")
-  updatedAt                 DateTime                   @updatedAt @map("updated_at")
+  id                           String                        @id @default(uuid()) @db.Uuid
+  name                         String
+  ownerUserId                  String                        @map("owner_user_id") @db.Uuid
+  owner                        User                          @relation("WorkspaceOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
+  memberships                  WorkspaceMembership[]
+  apiKeys                      ApiKey[]
+  integrationSettings          IntegrationSetting[]
+  projects                     Project[]
+  goals                        Goal[]
+  targets                      Target[]
+  taskLists                    TaskList[]
+  tasks                        Task[]
+  clients                      Client[]
+  pipelineStages               PipelineStage[]
+  deals                        Deal[]
+  interactions                 Interaction[]
+  notes                        Note[]
+  decisions                    Decision[]
+  agents                       Agent[]
+  agentLogs                    AgentLog[]
+  events                       Event[]
+  operatingAreas               OperatingArea[]
+  operatingFolders             OperatingFolder[]
+  operatingTables              OperatingTable[]
+  externalContainerMappings    ExternalContainerMapping[]
+  externalFieldMappings        ExternalFieldMapping[]
+  storageLocations             StorageLocation[]
+  knowledgeRoots               KnowledgeRoot[]
+  automationDefinitions        AutomationDefinition[]
+  externalWebhookRegistrations ExternalWebhookRegistration[]
+  providerEventInbox           ProviderEventInbox[]
+  agentEventOutbox             AgentEventOutbox[]
+  createdAt                    DateTime                      @default(now()) @map("created_at")
+  updatedAt                    DateTime                      @updatedAt @map("updated_at")
 
   @@map("workspaces")
 }
@@ -264,6 +267,76 @@ model AutomationDefinition {
 
   @@index([workspaceId, provider])
   @@map("automation_definitions")
+}
+
+model ExternalWebhookRegistration {
+  id               String               @id @default(uuid()) @db.Uuid
+  workspaceId      String               @map("workspace_id") @db.Uuid
+  workspace        Workspace            @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  provider         String
+  externalId       String               @map("external_id")
+  scopeType        String               @map("scope_type")
+  scopeExternalId  String?              @map("scope_external_id")
+  endpointUrl      String               @map("endpoint_url")
+  secretCiphertext String               @map("secret_ciphertext")
+  events           Json                 @default("[]")
+  status           String               @default("active")
+  lastHealthAt     DateTime?            @map("last_health_at")
+  lastErrorCode    String?              @map("last_error_code")
+  providerEvents   ProviderEventInbox[]
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, provider, externalId])
+  @@index([workspaceId, provider, status])
+  @@map("external_webhook_registrations")
+}
+
+model ProviderEventInbox {
+  id                    String                       @id @default(uuid()) @db.Uuid
+  workspaceId           String                       @map("workspace_id") @db.Uuid
+  workspace             Workspace                    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  provider              String
+  webhookRegistrationId String?                      @map("webhook_registration_id") @db.Uuid
+  webhookRegistration   ExternalWebhookRegistration? @relation(fields: [webhookRegistrationId], references: [id], onDelete: SetNull)
+  externalWebhookId     String                       @map("external_webhook_id")
+  eventName             String                       @map("event_name")
+  externalTaskId        String?                      @map("external_task_id")
+  idempotencyKey        String                       @map("idempotency_key")
+  payloadHash           String                       @map("payload_hash")
+  payload               Json
+  signatureVerified     Boolean                      @default(false) @map("signature_verified")
+  processingStatus      String                       @default("pending") @map("processing_status")
+  retryCount            Int                          @default(0) @map("retry_count")
+  receivedAt            DateTime                     @default(now()) @map("received_at")
+  processedAt           DateTime?                    @map("processed_at")
+  createdAt             DateTime                     @default(now()) @map("created_at")
+  updatedAt             DateTime                     @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, provider, idempotencyKey])
+  @@index([workspaceId, provider, processingStatus])
+  @@index([externalWebhookId])
+  @@map("provider_event_inbox")
+}
+
+model AgentEventOutbox {
+  id             String    @id @default(uuid()) @db.Uuid
+  workspaceId    String    @map("workspace_id") @db.Uuid
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  eventId        String?   @map("event_id") @db.Uuid
+  eventType      String    @map("event_type")
+  targetAgent    String?   @map("target_agent")
+  scope          Json      @default("{}")
+  payload        Json
+  deliveryStatus String    @default("pending") @map("delivery_status")
+  availableAt    DateTime  @default(now()) @map("available_at")
+  deliveredAt    DateTime? @map("delivered_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@index([workspaceId, deliveryStatus, availableAt])
+  @@index([workspaceId, eventType])
+  @@map("agent_event_outbox")
 }
 
 model WorkspaceMembership {

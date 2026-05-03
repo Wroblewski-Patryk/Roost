@@ -21,6 +21,7 @@ import { projectsRouter } from "./modules/projects/projects.routes";
 import { targetsRouter } from "./modules/targets/targets.routes";
 import { taskListsRouter } from "./modules/task-lists/task-lists.routes";
 import { tasksRouter } from "./modules/tasks/tasks.routes";
+import { clickUpWebhooksRouter } from "./modules/webhooks/clickup-webhooks.routes";
 import { healthRouter } from "./health/health.routes";
 import { interactionsRouter } from "./modules/interactions/interactions.routes";
 
@@ -64,6 +65,7 @@ export function createApp() {
   const staticFiles = express.static(publicRoot);
 
   app.use(cors());
+  app.use("/v1/webhooks/clickup", express.raw({ type: "application/json", limit: "1mb" }), clickUpWebhooksRouter);
   app.use(express.json({ limit: "1mb" }));
   app.get("/", (req, res, next) => {
     if (!isApiHost(req.headers.host)) {

@@ -189,6 +189,9 @@ All business tables include `workspace_id` for v1 workspace isolation:
 - `storage_locations`
 - `knowledge_roots`
 - `automation_definitions`
+- `external_webhook_registrations`
+- `provider_event_inbox`
+- `agent_event_outbox`
 - `api_keys`
 - `integration_settings`
 
@@ -301,3 +304,22 @@ Native ClickUp sync writes `tasks.workspace_id` from auth context and uses the
 
 `events` are workspace-scoped so agent and operator event readback cannot leak
 activity across workspaces.
+
+## Provider Webhook And Agent Event Tables
+
+Continuous provider sync uses durable, workspace-scoped tables before any
+business processing:
+
+- `external_webhook_registrations`
+  - provider webhook identity, scope, endpoint URL, subscribed events, status,
+    health metadata, and encrypted webhook secret
+- `provider_event_inbox`
+  - verified provider deliveries, idempotency key, payload hash, safe payload,
+    processing state, retry count, and timestamps
+- `agent_event_outbox`
+  - provider-neutral follow-up events for Paperclip, Jarvis, Aviary, and future
+    consumers
+
+ClickUp webhook secrets are secret material and must be encrypted like provider
+tokens. Incoming webhook payloads must be signature-verified against the raw
+request body before any durable business update is processed.

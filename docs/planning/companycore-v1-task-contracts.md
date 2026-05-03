@@ -4,6 +4,70 @@ These task contracts turn the v1 audit into executable work. Each task must be
 completed as its own small iteration and must update `.codex/context/TASK_BOARD.md`,
 `.codex/context/PROJECT_STATE.md`, and relevant docs when status changes.
 
+## CCV1-036A Webhook Schema And Security Foundation
+
+### Header
+- ID: CCV1-036A
+- Title: Webhook schema and security foundation
+- Task Type: feature
+- Current Stage: verification
+- Status: DONE
+- Owner: DB/Migrations + Backend Builder
+- Depends on: CCV1-036
+- Priority: P0
+- Iteration: v1-036A
+- Operation Mode: BUILDER
+
+### Goal
+Create the durable and fail-closed foundation for ClickUp live sync before
+registering real provider webhooks.
+
+### Scope
+- `prisma/schema.prisma`
+- `prisma/migrations/202605032_clickup_webhook_foundation/migration.sql`
+- `src/app.ts`
+- `src/integrations/clickup/webhook-signature.ts`
+- `src/modules/webhooks/clickup-webhooks.routes.ts`
+- `src/tests/api.test.ts`
+- planning/context docs
+
+### Implementation Plan
+- Add webhook registration, provider event inbox, and agent event outbox tables.
+- Mount a ClickUp webhook route before JSON parsing so raw request bodies are
+  available for signature verification.
+- Add HMAC SHA-256 signing/verification helpers matching official ClickUp
+  webhook signature behavior.
+- Prove the route fails closed until the full receiver is enabled.
+
+### Acceptance Criteria
+- [x] Schema has workspace-scoped webhook registration, inbox, and outbox
+  tables.
+- [x] ClickUp webhook route receives raw JSON bodies outside protected API key
+  middleware.
+- [x] Missing signatures fail closed.
+- [x] HMAC SHA-256 helper verifies valid signatures and rejects invalid ones.
+- [x] Full event processing remains disabled until CCV1-036B/C provide stored
+  webhook secrets and inbox writes.
+
+### Definition of Done
+- [x] Official ClickUp webhook docs reviewed for user-token ownership, raw-body
+  HMAC signature verification, event payloads, and idempotency.
+- [x] Fresh migration path validated.
+- [x] Regression tests pass.
+- [x] Task board, next-commits queue, project state, and task contract updated.
+
+### Result Report
+- Task summary: Added the database and route/security foundation for ClickUp
+  live sync.
+- Files changed: Prisma schema and migration, app route mount, HMAC helper,
+  webhook route, API test, and planning/context docs.
+- How tested: `npm run build`; `npm test` with `DATABASE_URL` pointing at
+  disposable PostgreSQL on `localhost:55432`.
+- What is incomplete: webhook registration, stored-secret lookup, durable inbox
+  writes, task event processing, and agent outbox APIs remain queued as
+  CCV1-036B through CCV1-036F.
+- Next steps: implement CCV1-036B ClickUp Webhook Registration.
+
 ## CCV1-034B2 ClickUp Views And Custom Fields Persistence
 
 ### Header

@@ -850,6 +850,20 @@ POST /agent-logs
 }
 ```
 
+## Provider Webhooks
+
+```http
+POST /v1/webhooks/clickup
+```
+
+This route is public at the transport layer because ClickUp calls it directly.
+It is mounted before JSON parsing so CompanyCore can verify the exact raw body
+against ClickUp's `X-Signature` HMAC SHA-256 header. In CCV1-036A the endpoint
+is a fail-closed foundation only: requests without `X-Signature` return
+`missing_signature`, malformed payloads return `invalid_webhook_payload`, and
+validly shaped requests return `webhook_receiver_not_enabled` until webhook
+registration, stored secrets, and inbox processing are implemented.
+
 ## Events
 
 ```http

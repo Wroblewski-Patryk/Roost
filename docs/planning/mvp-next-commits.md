@@ -28,10 +28,10 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] CCV1-038 Dashboard Task Table
 - [x] CCV1-039 ClickUp Config-Only Save Fix
 - [x] CCV1-040 ClickUp Save-And-Sync Activation Fix
+- [x] CCV1-036A Webhook Schema And Security Foundation
 
 ## NEXT
 
-- [ ] CCV1-036A Webhook Schema And Security Foundation
 - [ ] CCV1-036B ClickUp Webhook Registration
 - [ ] CCV1-036C ClickUp Webhook Receiver And Inbox
 - [ ] CCV1-036D Task Event Processor
@@ -54,7 +54,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 10. CCV1-034E Automation Scope Registry
 - [x] 11. CCV1-035 ClickUp First-Run Import Policy And Launch Audit
 - [x] 12. CCV1-036 ClickUp Webhook Trigger Architecture Plan
-- [ ] 13. CCV1-036A Webhook Schema And Security Foundation
+- [x] 13. CCV1-036A Webhook Schema And Security Foundation
 - [ ] 14. CCV1-036B ClickUp Webhook Registration
 - [ ] 15. CCV1-036C ClickUp Webhook Receiver And Inbox
 - [ ] 16. CCV1-036D Task Event Processor

@@ -2,14 +2,6 @@
 
 ## Ready
 
-- CCV1-036A Webhook Schema And Security Foundation
-  - Stage: planning
-  - Owner: DB/Migrations + Backend Builder
-  - Priority: P0
-  - Scope: add webhook registration, provider inbox, agent outbox schema,
-    raw-body ClickUp webhook route foundation, and HMAC SHA-256 signature
-    verification tests.
-
 - CCV1-036B ClickUp Webhook Registration
   - Stage: planning
   - Owner: Backend Builder
@@ -122,3 +114,4 @@ Paperclip application-side adapter work tracked in
 - CCV1-038 Dashboard task table.
 - CCV1-039 ClickUp config-only save fix.
 - CCV1-040 ClickUp save-and-sync activation fix.
+- CCV1-036A Webhook Schema And Security Foundation.

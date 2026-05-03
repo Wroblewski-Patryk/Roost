@@ -152,11 +152,11 @@ not receive ClickUp webhook secrets or raw provider tokens.
 
 ## Delivery Tasks
 
-### CCV1-036A Webhook Schema And Security Foundation
+### CCV1-036A Webhook Schema And Security Foundation - DONE
 
-- Add webhook registration, provider inbox, and agent outbox tables.
-- Add raw body middleware support for ClickUp webhook route.
-- Add HMAC SHA-256 verification helper and tests using official ClickUp
+- [x] Add webhook registration, provider inbox, and agent outbox tables.
+- [x] Add raw body middleware support for ClickUp webhook route.
+- [x] Add HMAC SHA-256 verification helper and tests using official ClickUp
   signature behavior.
 
 ### CCV1-036B ClickUp Webhook Registration

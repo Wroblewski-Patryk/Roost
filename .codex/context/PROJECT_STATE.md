@@ -96,15 +96,15 @@ Last updated: 2026-05-03
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-035 ClickUp first-run import policy and launch audit.
+- Current iteration: CCV1-036A Webhook schema and security foundation.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-035 ClickUp first-run import policy and
-  launch audit.
-- Last completed task: added explicit ClickUp import modes for merge,
-  skip-existing, replace-selected-lists, and inspect-only; wired the modes
-  through owner console, API, production bootstrap, docs, and regression tests.
-- Next required mode: BUILDER for continuous ClickUp update strategy unless
-  priority changes.
+- Last completed iteration: CCV1-036A Webhook schema and security foundation.
+- Last completed task: added workspace-scoped webhook registration, provider
+  event inbox, and agent event outbox schema; mounted a raw-body ClickUp
+  webhook foundation route; added HMAC SHA-256 signature helpers and
+  regression coverage.
+- Next required mode: BUILDER for CCV1-036B ClickUp webhook registration
+  unless priority changes.
 
 ## Recent Progress
 - 2026-05-02: Created Company Core backend foundation, Prisma schema, Docker
@@ -376,6 +376,20 @@ Last updated: 2026-05-03
   `integration_not_configured`. Updated the owner console so `Save and sync`
   forces the ClickUp setting active before syncing and the Active checkbox
   refreshes button state immediately.
+- 2026-05-03: Audited the first real ClickUp import through CompanyCore/Jarvis.
+  Production CompanyCore contains 224 tasks total, 219 from ClickUp, all
+  ClickUp tasks have `externalId` and a mapped task list, 55 ClickUp tasks have
+  descriptions, 55 have priorities, and 0 currently have due dates. Missing
+  descriptions/priorities appear to be provider data absence rather than import
+  loss because the mapper uses `markdown_description`, `description`, then
+  `text_content` from ClickUp.
+- 2026-05-03: Completed CCV1-036A by adding webhook registration,
+  provider-event inbox, and agent-event outbox tables, a raw-body
+  `/v1/webhooks/clickup` route mounted before JSON parsing, and ClickUp HMAC
+  SHA-256 signature helpers. Official ClickUp docs were checked again for
+  webhook ownership, raw-body signatures, idempotency, task events, and
+  task update API shape. `npm test` passed against a disposable PostgreSQL
+  database on `localhost:55432`.
 
 ## Working Agreements
 - Keep task board and project state synchronized.
