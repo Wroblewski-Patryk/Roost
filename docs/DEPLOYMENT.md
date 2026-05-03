@@ -8,7 +8,7 @@ docker compose up -d --build
 
 Services:
 
-- `backend`: Node/Express API on port `3000`
+- `backend`: Node/Express API and minimal owner console on port `3000`
 - `postgres`: PostgreSQL available inside the Compose network
 
 The backend startup command runs:
@@ -60,6 +60,8 @@ Required environment values:
 - `INTEGRATION_SECRET_KEY`
 
 Map domains to the `backend` service on container port `3000`.
+The backend serves the minimal owner console from `/` and API routes from
+`/v1/*` plus existing compatibility aliases.
 
 Keep Postgres storage persistent through Coolify volume configuration.
 
@@ -81,6 +83,7 @@ Migration release checklist:
 
 ```bash
 curl https://api.companycore.luckysparrow.ch/health
+curl https://api.companycore.luckysparrow.ch/
 curl -H "X-API-Key: <workspace-api-key>" https://api.companycore.luckysparrow.ch/projects
 curl -H "Authorization: Bearer <owner-token>" https://api.companycore.luckysparrow.ch/integration-settings/clickup
 curl -X POST -H "Authorization: Bearer <owner-token>" https://api.companycore.luckysparrow.ch/tasks/sync/clickup/native
@@ -90,8 +93,11 @@ curl -H "Authorization: Bearer <owner-token>" https://api.companycore.luckysparr
 Expected smoke evidence:
 
 - `/health` returns healthy status.
+- `/` returns the owner console assets.
 - Protected API rejects missing auth and accepts owner token or workspace API
   key.
+- Owner console can log in, check a ClickUp token, select a ClickUp Workspace,
+  select Lists, save settings, and trigger sync.
 - ClickUp settings response redacts token material.
 - Native ClickUp sync creates or updates tasks without duplicating records.
 - `GET /events` shows `task_synced_from_clickup` and sync status events.

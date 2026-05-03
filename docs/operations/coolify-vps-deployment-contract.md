@@ -12,12 +12,13 @@ only the backend API publicly.
   - `companycore.luckysparrow.ch`
   - `api.companycore.luckysparrow.ch`
 - Public service: `backend` on container port `3000`.
+- Public web surface: minimal owner console served by `backend` at `/`.
 - Private services: `postgres`.
 
 ## Runtime Inventory
 
 - Main app services:
-  - `backend`: Node.js/Express API.
+  - `backend`: Node.js/Express API plus minimal static owner console.
   - `postgres`: PostgreSQL database.
 - Worker or cron services: none in v1.
 - Databases: PostgreSQL 16.
@@ -32,6 +33,7 @@ only the backend API publicly.
 - Coolify Compose path: `docker-compose.coolify.yml`.
 - Env example file: `.env.example`.
 - Health/readiness endpoint: `GET /health`.
+- Owner console: `GET /`.
 - Migration entrypoint:
   - Runtime startup runs `npm run prisma:migrate:deploy`.
   - Local development may use `npm run prisma:migrate:dev`.
@@ -63,6 +65,11 @@ ClickUp configuration:
   as workspace-owned integration settings.
 - Only app-level encryption or runtime secrets belong in Coolify env.
 - ClickUp tokens must not be hardcoded, logged, or returned in API responses.
+- For production bootstrap, use `npm run clickup:bootstrap` with temporary
+  operator env values documented in
+  `docs/operations/clickup-production-bootstrap.md`. Do not add
+  `CLICKUP_API_TOKEN` as a permanent backend runtime env unless a scheduled
+  sync worker is explicitly approved.
 
 ## Release Requirements
 
@@ -83,6 +90,7 @@ Required smoke checks after deploy:
 - protected workspace-scoped project/task call
 - denied unauthenticated or cross-workspace request
 - workspace ClickUp settings response with secrets redacted
+- owner console guided ClickUp discovery and settings save
 - native ClickUp sync
 - event readback showing expected sync event
 

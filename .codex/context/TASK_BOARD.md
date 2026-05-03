@@ -2,20 +2,13 @@
 
 ## Ready
 
-- CCV1-031 ClickUp Discovery Backend
-  - Stage: planning
-  - Owner: Backend Builder
+- CCV1-033 Production deploy and smoke for guided ClickUp owner console
+  - Stage: release
+  - Owner: Ops/Release
   - Priority: P0
-  - Scope: add token validation/discovery for ClickUp Workspaces, Spaces,
-    Folders, and Lists, plus task pagination, so the owner console can select
-    the ClickUp Workspace instead of requiring manual IDs.
-
-- CCV1-032 Guided Owner Console
-  - Stage: planning
-  - Owner: Frontend Builder
-  - Priority: P0
-  - Scope: replace manual `teamId/listIds` fields with a guided
-    token-check, Workspace select, and grouped List checklist.
+  - Scope: deploy the guided owner console and ClickUp discovery backend, then
+    verify owner login, token check, ClickUp Workspace/List selection, settings
+    save, native sync, and agent API readback in production.
 
 ## Blocked
 
@@ -82,3 +75,5 @@
 - CCV1-030 Minimal owner ClickUp web console.
 - CCV1-031P ClickUp owner console deployment plan.
 - CCV1-028 Jarvis application-side CompanyCore Data Source deployment.
+- CCV1-031 ClickUp Discovery Backend.
+- CCV1-032 Guided Owner Console.

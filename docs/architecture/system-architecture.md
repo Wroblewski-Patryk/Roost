@@ -1,15 +1,16 @@
 # System Architecture
 
-CompanyCore is the backend-only operational core for LuckySparrow. It stores
-company projects, goals, targets, tasks, CRM context, decisions, notes, AI agent
+CompanyCore is the operational core for LuckySparrow. It stores company
+projects, goals, targets, tasks, CRM context, decisions, notes, AI agent
 metadata, agent logs, integration state, and system events. PostgreSQL is the
-source of truth, and the HTTP API is the only supported access layer.
+source of truth, and the HTTP API is the supported integration access layer.
 
 ## Main Runtime Surfaces
 
 - API or backend: Node.js 22, Express, TypeScript, Prisma.
-- Web: none in v1.
-- Mobile: none in v1.
+- Web: minimal owner-only static console in v1 for ClickUp integration setup.
+  A broader company operations dashboard is v2 scope.
+- Mobile: none in v1; v2 mobile should follow the web product experience.
 - Jobs or workers: none in the current runtime; native integration sync may be
   exposed through authenticated API commands first.
 - External services: PostgreSQL, ClickUp API, optional n8n orchestration, future
@@ -20,7 +21,8 @@ source of truth, and the HTTP API is the only supported access layer.
 - PostgreSQL owns canonical company state.
 - Prisma owns the database schema and generated database client.
 - External tools must not write directly to PostgreSQL.
-- Paperclip, Jarvis, n8n, future GUI, and other agents must use the API.
+- Paperclip, Jarvis, n8n, future dashboard clients, and other agents must use
+  the API.
 - Significant state changes should emit events.
 - Schema changes must use migrations before production data becomes valuable.
 
@@ -59,6 +61,8 @@ advanced RBAC, organization administration, and a full CRM UI are out of scope.
 - `src/modules/*`: domain route modules and business behavior.
 - `src/integrations/<provider>/`: provider-specific API clients, mappers, sync
   services, and safe error mapping.
+- `public/`: minimal static owner console served by the backend for setup
+  workflows only.
 
 Route modules should not call external provider APIs directly. They should call
 integration services that read workspace-owned settings and normalize provider

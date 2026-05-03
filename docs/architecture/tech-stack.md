@@ -6,8 +6,9 @@ replace these choices without an explicit architecture decision.
 ## Runtime Stack
 
 - Backend: Node.js 22, Express 4, TypeScript.
-- Frontend: none in v1.
-- Mobile: none in v1.
+- Frontend: minimal static HTML/CSS/JavaScript owner console in v1, served by
+  the backend for integration setup only.
+- Mobile: none in v1; v2 mobile should follow the web product experience.
 - Database: PostgreSQL 16 with Prisma.
 - Cache or queue: none in v1.
 - Jobs or workers: none in current runtime; first sync flows should be exposed
@@ -38,7 +39,8 @@ should be selected during the relevant scoped task, then recorded here.
 - Lint: not configured yet.
 - Unit/integration tests: not configured yet; CCV1-006 must add and document
   the test command.
-- Browser automation: not applicable in v1 because there is no GUI.
+- Browser automation: applicable for v1 owner-console smoke when UI changes
+  are made.
 
 ## Deployment Tooling
 
@@ -74,7 +76,7 @@ Planned v1 additions:
 
 ## Non-Goals For v1
 
-- GUI.
+- Full company operations dashboard.
 - Mobile app.
 - Billing.
 - Invitations.

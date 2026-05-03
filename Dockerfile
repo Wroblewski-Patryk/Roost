@@ -21,6 +21,7 @@ RUN apk add --no-cache openssl
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
+COPY public ./public
 COPY package*.json ./
 EXPOSE 3000
 CMD ["sh", "-c", "npm run prisma:migrate:deploy && npm run seed && node dist/server.js"]

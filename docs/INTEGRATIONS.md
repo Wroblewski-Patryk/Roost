@@ -64,6 +64,26 @@ The endpoint performs pull-only task sync from configured ClickUp lists. It uses
 ClickUp's `GET /api/v2/team/{team_Id}/task` endpoint with `list_ids[]` filters,
 `include_closed=true`, `subtasks=true`, and
 `include_markdown_description=true`. v1 does not write changes back to ClickUp.
+Production operators can configure the workspace token and trigger the first
+pull through `npm run clickup:bootstrap`; see
+`docs/operations/clickup-production-bootstrap.md`.
+
+The owner web console discovers available ClickUp Workspaces and Lists before
+settings are saved:
+
+```http
+POST /v1/integration-settings/clickup/discover
+```
+
+Discovery calls ClickUp's authorized Workspaces, Spaces, Folders, folder Lists,
+and folderless Lists endpoints. A submitted discovery token is never stored;
+the save route remains the only path that encrypts token material. Existing
+connections can rediscover structure with the stored encrypted token without
+returning the token to the browser.
+
+Setting a ClickUp token does not automatically start continuous listening.
+Continuous updates require an approved scheduled sync, webhook receiver, or
+external orchestration task.
 
 ## Adapter Contract
 

@@ -1,5 +1,6 @@
 import cors from "cors";
 import express, { Router } from "express";
+import path from "path";
 import { requireApiKey } from "./auth/api-key.middleware";
 import { errorHandler } from "./middleware/error-handler";
 import { agentLogsRouter } from "./modules/agent-logs/agent-logs.routes";
@@ -47,6 +48,7 @@ export function createApp() {
 
   app.use(cors());
   app.use(express.json({ limit: "1mb" }));
+  app.use(express.static(path.join(process.cwd(), "public")));
 
   app.use("/health", healthRouter);
   app.use("/v1/health", healthRouter);

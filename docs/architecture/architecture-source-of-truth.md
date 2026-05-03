@@ -77,9 +77,11 @@ should always stay current.
 
 The approved v1 direction is:
 
-- backend-only product foundation, no GUI
+- API-first product foundation with a minimal owner-only web console for v1
+  ClickUp setup
 - PostgreSQL is the source of truth
-- API is the only supported access layer
+- API is the supported access layer for agents, automations, future dashboards,
+  and future mobile clients
 - owner registration creates a workspace
 - business data, service API keys, integration settings, and integration sync
   state are workspace-scoped
@@ -88,6 +90,8 @@ The approved v1 direction is:
 - schema changes should move from `prisma db push` to controlled migrations
 - tests and smoke checks must prove workspace scoping and integration sync
   behavior before v1 is considered stable
+- full company dashboard and mobile app are v2 scope; mobile should follow the
+  web product experience
 
 ## Implementation Contract
 

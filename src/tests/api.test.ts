@@ -479,6 +479,143 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal((settings.body as { data: { secretConfigured: boolean; token?: string } }).data.secretConfigured, true);
   assert.equal((settings.body as { data: { token?: string } }).data.token, undefined);
 
+  const originalFetchBeforeDiscovery = globalThis.fetch;
+  globalThis.fetch = (async () => new Response(JSON.stringify({ err: "Unauthorized" }), { status: 401 })) as typeof fetch;
+
+  try {
+    const invalidDiscovery = await request("/v1/integration-settings/clickup/discover", {
+      method: "POST",
+      headers: authA,
+      body: JSON.stringify({
+        token: "invalid-clickup-token"
+      })
+    });
+    assert.equal(invalidDiscovery.status, 401);
+    assert.equal((invalidDiscovery.body as { error: string }).error, "integration_invalid_token");
+  } finally {
+    globalThis.fetch = originalFetchBeforeDiscovery;
+  }
+
+  globalThis.fetch = (async () => new Response(JSON.stringify({ err: "Rate limited" }), { status: 429 })) as typeof fetch;
+
+  try {
+    const rateLimitedDiscovery = await request("/v1/integration-settings/clickup/discover", {
+      method: "POST",
+      headers: authA,
+      body: JSON.stringify({
+        token: "rate-limited-clickup-token"
+      })
+    });
+    assert.equal(rateLimitedDiscovery.status, 429);
+    assert.equal((rateLimitedDiscovery.body as { error: string }).error, "integration_rate_limited");
+  } finally {
+    globalThis.fetch = originalFetchBeforeDiscovery;
+  }
+
+  const mockClickUpDiscoveryFetch = async (input: string | URL | Request) => {
+    const url = new URL(String(input));
+    const path = url.pathname;
+
+    if (path === "/api/v2/team") {
+      return new Response(JSON.stringify({
+        teams: [
+          { id: "team-1", name: "LuckySparrow" },
+          { id: "team-2", name: "Archive" }
+        ]
+      }), { status: 200 });
+    }
+
+    if (path === "/api/v2/team/team-1/space") {
+      return new Response(JSON.stringify({
+        spaces: [
+          { id: "space-1", name: "Operations" }
+        ]
+      }), { status: 200 });
+    }
+
+    if (path === "/api/v2/space/space-1/list") {
+      return new Response(JSON.stringify({
+        lists: [
+          { id: "list-folderless", name: "Inbox" }
+        ]
+      }), { status: 200 });
+    }
+
+    if (path === "/api/v2/space/space-1/folder") {
+      return new Response(JSON.stringify({
+        folders: [
+          { id: "folder-1", name: "Company" }
+        ]
+      }), { status: 200 });
+    }
+
+    if (path === "/api/v2/folder/folder-1/list") {
+      return new Response(JSON.stringify({
+        lists: [
+          { id: "list-1", name: "Jarvis" }
+        ]
+      }), { status: 200 });
+    }
+
+    return new Response(JSON.stringify({ err: "Not found" }), { status: 404 });
+  };
+
+  globalThis.fetch = mockClickUpDiscoveryFetch as typeof fetch;
+
+  try {
+    const discovery = await request("/v1/integration-settings/clickup/discover", {
+      method: "POST",
+      headers: authA,
+      body: JSON.stringify({
+        token: "clickup-token",
+        teamId: "team-1"
+      })
+    });
+    assert.equal(discovery.status, 200);
+    const discoveryBody = discovery.body as {
+      data: {
+        workspaces: Array<{ id: string; name: string }>;
+        selectedWorkspace: { id: string; name: string } | null;
+        spaces: Array<{
+          id: string;
+          name: string;
+          lists: Array<{ id: string; name: string }>;
+          folders: Array<{
+            id: string;
+            name: string;
+            lists: Array<{ id: string; name: string }>;
+          }>;
+        }>;
+      };
+    };
+    assert.equal(discoveryBody.data.workspaces.length, 2);
+    assert.equal(discoveryBody.data.selectedWorkspace?.id, "team-1");
+    assert.equal(discoveryBody.data.spaces[0].lists[0].id, "list-folderless");
+    assert.equal(discoveryBody.data.spaces[0].folders[0].lists[0].id, "list-1");
+
+    const storedDiscovery = await request("/v1/integration-settings/clickup/discover", {
+      method: "POST",
+      headers: authA,
+      body: JSON.stringify({
+        useStoredToken: true,
+        teamId: "team-1"
+      })
+    });
+    assert.equal(storedDiscovery.status, 200);
+    assert.equal((storedDiscovery.body as typeof discoveryBody).data.spaces[0].folders[0].lists[0].name, "Jarvis");
+  } finally {
+    globalThis.fetch = originalFetchBeforeDiscovery;
+  }
+
+  const serviceCannotDiscoverClickUp = await request("/v1/integration-settings/clickup/discover", {
+    method: "POST",
+    headers: { "X-API-Key": serviceKey },
+    body: JSON.stringify({
+      useStoredToken: true
+    })
+  });
+  assert.equal(serviceCannotDiscoverClickUp.status, 403);
+
   const originalFetch = globalThis.fetch;
   globalThis.fetch = (async () => new Response(JSON.stringify({
     tasks: [

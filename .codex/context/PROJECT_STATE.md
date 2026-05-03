@@ -270,6 +270,11 @@ Last updated: 2026-05-02
   official ClickUp docs. Added required handling for token rate limits, stored
   token rediscovery, explicit pagination validation, and future webhook
   signature/idempotency requirements.
+- 2026-05-03: Completed CCV1-031 and CCV1-032 locally by adding owner-only
+  ClickUp discovery through CompanyCore, safe invalid-token and rate-limit
+  error mapping, stored-token rediscovery, manifest capabilities, guided web
+  console Workspace/List selection, and tests covering discovery, rate limits,
+  stored-token rediscovery, protected route denial, and native sync.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

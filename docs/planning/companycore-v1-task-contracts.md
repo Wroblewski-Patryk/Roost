@@ -4,6 +4,125 @@ These task contracts turn the v1 audit into executable work. Each task must be
 completed as its own small iteration and must update `.codex/context/TASK_BOARD.md`,
 `.codex/context/PROJECT_STATE.md`, and relevant docs when status changes.
 
+## CCV1-032 Guided Owner Console
+
+### Header
+- ID: CCV1-032
+- Title: Guided owner console
+- Task Type: feature
+- Current Stage: verification
+- Status: DONE
+- Owner: Frontend Builder
+- Depends on: CCV1-031
+- Priority: P0
+- Iteration: v1-032
+- Operation Mode: BUILDER
+
+### Goal
+Replace manual ClickUp ID entry with a guided owner flow that checks a token,
+selects a ClickUp Workspace, lists available Lists, saves settings, and starts
+sync.
+
+### Scope
+- `public/index.html`
+- `public/app.js`
+- `public/styles.css`
+- `src/app.ts`
+- `Dockerfile`
+- API, integrations, deployment, task board, project state, and planning docs
+
+### Acceptance Criteria
+- [x] Owner can log in from `/`.
+- [x] Owner can check a ClickUp token without storing it.
+- [x] Owner can select a ClickUp Workspace returned by discovery.
+- [x] Owner can select one or more ClickUp Lists from grouped Spaces/Folders.
+- [x] Owner can save settings and keep the stored token server-side.
+- [x] Owner can refresh ClickUp structure using the stored token.
+- [x] Owner can trigger native sync from the UI.
+- [x] Desktop/mobile responsive layout avoids horizontal overflow.
+
+### Validation Evidence
+- Tests: `npm run build`.
+- Manual checks: local backend static smoke returned `200` for `/`, `/app.js`,
+  and `/styles.css`.
+- Browser visual check: not available in this session because the browser
+  plugin was not exposed by tool discovery.
+
+### Result Report
+- Task summary: Replaced the manual ClickUp settings form with a guided owner
+  setup surface.
+- Files changed: `public/index.html`, `public/app.js`, `public/styles.css`,
+  `src/app.ts`, `Dockerfile`, docs, task board, project state, and planning
+  queue.
+- How tested: build, API tests, and local static smoke.
+- What is incomplete: production deploy and real ClickUp token smoke are in
+  CCV1-033.
+- Next steps: deploy and run production owner setup.
+
+### Priority
+P0
+
+## CCV1-031 ClickUp Discovery Backend
+
+### Header
+- ID: CCV1-031
+- Title: ClickUp discovery backend
+- Task Type: feature
+- Current Stage: verification
+- Status: DONE
+- Owner: Backend Builder
+- Depends on: CCV1-031P
+- Priority: P0
+- Iteration: v1-031
+- Operation Mode: BUILDER
+
+### Goal
+Add safe ClickUp discovery so the owner console can choose Workspaces and Lists
+without manual ID lookup.
+
+### Scope
+- `src/integrations/clickup/clickup.client.ts`
+- `src/integrations/errors.ts`
+- `src/modules/integration-settings/integration-settings.routes.ts`
+- `src/modules/connection/connection.routes.ts`
+- `src/tests/api.test.ts`
+- API/integration docs and canonical planning/context files
+
+### Acceptance Criteria
+- [x] CompanyCore can discover ClickUp Workspaces from a submitted token.
+- [x] CompanyCore can discover Spaces, Folders, folderless Lists, and folder
+  Lists for a selected ClickUp Workspace.
+- [x] Discovery does not store submitted token material.
+- [x] Existing saved ClickUp token can be used for rediscovery.
+- [x] API-key service clients cannot call owner-only discovery.
+- [x] Invalid token and rate-limit provider responses are mapped safely.
+- [x] Native task pagination behavior remains guarded and tested through the
+  existing pull path.
+
+### Validation Evidence
+- Tests: `npm test` with `DATABASE_URL` pointed at isolated
+  `companycore-test-postgres` on host port `55432`.
+- Result: all migrations applied and `CompanyCore v1 protected API flow`
+  passed.
+- High-risk checks: no schema migration required.
+
+### Result Report
+- Task summary: Added owner-only ClickUp discovery, safe provider error mapping,
+  stored-token rediscovery, and route/capability coverage.
+- Files changed: `src/integrations/clickup/clickup.client.ts`,
+  `src/integrations/errors.ts`,
+  `src/modules/integration-settings/integration-settings.routes.ts`,
+  `src/modules/connection/connection.routes.ts`, `src/tests/api.test.ts`,
+  docs, task board, project state, and planning queue.
+- How tested: `npm run build`, `npm test` against isolated PostgreSQL, and
+  local static smoke for the owner console.
+- What is incomplete: production deploy and real ClickUp token smoke are in
+  CCV1-033.
+- Next steps: deploy and smoke the guided owner setup in production.
+
+### Priority
+P0
+
 ## CCV1-031P ClickUp Owner Console Deployment Plan
 
 ### Header

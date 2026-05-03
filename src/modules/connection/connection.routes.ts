@@ -32,7 +32,9 @@ const capabilities = [
   "agent-logs:read",
   "agent-logs:write",
   "events:read",
-  "integration-settings:clickup:read"
+  "integration-settings:clickup:read",
+  "integration-settings:clickup:write",
+  "integration-settings:clickup:discover"
 ] as const;
 
 const adapterManifest = {
@@ -105,7 +107,9 @@ const adapterManifest = {
       { method: "GET", path: "/v1/events", capability: "events:read" }
     ],
     integrationSettings: [
-      { method: "GET", path: "/v1/integration-settings/clickup", capability: "integration-settings:clickup:read" }
+      { method: "GET", path: "/v1/integration-settings/clickup", capability: "integration-settings:clickup:read" },
+      { method: "PUT", path: "/v1/integration-settings/clickup", capability: "integration-settings:clickup:write" },
+      { method: "POST", path: "/v1/integration-settings/clickup/discover", capability: "integration-settings:clickup:discover" }
     ]
   },
   writeRules: [

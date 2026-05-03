@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CompanyCore Integrations</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="panel intro">
+        <div>
+          <p class="label">CompanyCore owner console</p>
+          <h1>ClickUp connection</h1>
+          <p class="lede">
+            Connect your ClickUp account once, choose the Workspace and Lists to
+            sync, then let Jarvis, Paperclip, and Aviary read the clean
+            CompanyCore API.
+          </p>
+        </div>
+        <div class="status-card" id="connectionStatus">
+          <span class="dot muted"></span>
+          <span>Not connected</span>
+        </div>
+      </section>
+
+      <section class="grid">
+        <form class="panel form" id="loginForm">
+          <div class="section-title">
+            <h2>Owner login</h2>
+            <p>Use the CompanyCore owner account.</p>
+          </div>
+          <label>
+            Email
+            <input id="email" name="email" type="email" autocomplete="email" required>
+          </label>
+          <label>
+            Password
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+          </label>
+          <button type="submit">Sign in</button>
+        </form>
+
+        <section class="panel form" id="clickupPanel" aria-disabled="true">
+          <div class="section-title row-title">
+            <div>
+              <h2>ClickUp setup</h2>
+              <p id="workspaceLabel">Sign in to load workspace settings.</p>
+            </div>
+            <label class="switch">
+              <input id="active" name="active" type="checkbox" checked>
+              <span>Active</span>
+            </label>
+          </div>
+
+          <div class="step">
+            <label>
+              API token
+              <input id="token" name="token" type="password" autocomplete="off" placeholder="Paste token, or leave blank to use saved token">
+            </label>
+            <div class="actions">
+              <button type="button" class="secondary" id="checkTokenButton">Check token</button>
+              <button type="button" class="secondary" id="refreshButton">Refresh saved structure</button>
+            </div>
+          </div>
+
+          <div class="step">
+            <label>
+              ClickUp Workspace
+              <select id="workspaceSelect" disabled>
+                <option value="">Check token first</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="step">
+            <div class="section-title compact-title">
+              <h3>Lists to sync</h3>
+              <p id="listSummary">Choose a ClickUp Workspace to load Lists.</p>
+            </div>
+            <div class="tree" id="listTree" aria-live="polite"></div>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="secondary" id="saveButton">Save connection</button>
+            <button type="button" id="syncButton">Save and sync</button>
+          </div>
+        </section>
+      </section>
+
+      <section class="panel result" id="resultPanel" hidden>
+        <div class="section-title">
+          <h2>Latest result</h2>
+          <p id="resultMessage"></p>
+        </div>
+        <dl class="metrics" id="metrics"></dl>
+      </section>
+    </main>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

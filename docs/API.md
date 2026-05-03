@@ -17,6 +17,11 @@ Base URL in local Docker:
 http://localhost:3000
 ```
 
+The minimal owner console is served from `/`. It is intentionally limited to
+owner login, ClickUp settings, and native ClickUp sync in v1. Agents,
+automations, future dashboards, and future mobile clients should still use the
+HTTP API.
+
 v1 routes are available under `/v1/*` without an `/api` prefix because the API
 uses a dedicated API domain in production. Root-level routes remain as v1
 compatibility aliases.
@@ -105,6 +110,8 @@ Implemented v1 workspace-scoped record surfaces:
 | 422 | `workspace_required` | Request cannot resolve an active workspace. |
 | 422 | `integration_not_configured` | Workspace lacks required provider settings. |
 | 400 | `integration_secret_required` | New provider setting was created without required token material. |
+| 401 | `integration_invalid_token` | External provider rejected submitted or stored token material. |
+| 429 | `integration_rate_limited` | External provider rate limit was reached. |
 | 502 | `integration_unavailable` | External provider is unavailable or returned an unsafe response. |
 | 500 | `sync_failed` | Sync failed after request validation and provider call handling. |
 | 500 | `internal_server_error` | Unexpected server error with no safe specific code. |
@@ -216,6 +223,7 @@ not send `workspaceId`.
 ```http
 GET /integration-settings/clickup
 PUT /integration-settings/clickup
+POST /v1/integration-settings/clickup/discover
 ```
 
 ClickUp configuration payload:
@@ -254,6 +262,67 @@ Safe responses include only metadata and non-secret config:
 `token` is encrypted before storage and is never returned. Updating config
 without a `token` preserves the existing encrypted secret. Creating a new
 setting requires a token.
+
+The owner console uses discovery before saving settings so humans do not need
+to manually look up ClickUp IDs. Discovery is owner-auth only and never stores
+the submitted token:
+
+```json
+{
+  "token": "clickup-api-token",
+  "teamId": "optional-clickup-workspace-id",
+  "useStoredToken": false
+}
+```
+
+If `teamId` is omitted, discovery returns ClickUp Workspaces available to the
+token. If `teamId` is provided, discovery also returns Spaces, Folders,
+folderless Lists, and folder Lists for that ClickUp Workspace. If
+`useStoredToken` is true, CompanyCore uses the encrypted workspace ClickUp
+token and still does not return it to the browser.
+
+Safe discovery response:
+
+```json
+{
+  "data": {
+    "workspaces": [
+      {
+        "id": "clickup-workspace-id",
+        "name": "LuckySparrow"
+      }
+    ],
+    "selectedWorkspace": {
+      "id": "clickup-workspace-id",
+      "name": "LuckySparrow"
+    },
+    "spaces": [
+      {
+        "id": "space-id",
+        "name": "Operations",
+        "lists": [
+          {
+            "id": "folderless-list-id",
+            "name": "Inbox"
+          }
+        ],
+        "folders": [
+          {
+            "id": "folder-id",
+            "name": "Company",
+            "lists": [
+              {
+                "id": "list-id",
+                "name": "Jarvis"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
 
 ## Health
 
