@@ -460,6 +460,15 @@ Last updated: 2026-05-03
   creates a failed inbox row, lists it, retries it, verifies the ClickUp task is
   recovered, and confirms `lastErrorCode` is cleared. `npm test` passed against
   disposable PostgreSQL on `localhost:55432`.
+- 2026-05-03: Deployed CCV1-044 to production by manually rolling over the
+  backend container because Coolify's deployment queue was full with unrelated
+  services. The deployed image is
+  `rnqqkhl3o3dut4qv56mlxly2_backend:90c209e2a8398b7b9117ec51f72d85e97e0e80cb`.
+  Startup applied migration `202605034_clickup_event_retry_observability`,
+  public `/health` and `/v1/health` returned `200`, and Jarvis's CompanyCore
+  API key verified `/v1/connection`,
+  `/v1/integration-settings/clickup/events`, and
+  `/v1/integration-settings/clickup/events?status=failed` with safe metadata.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

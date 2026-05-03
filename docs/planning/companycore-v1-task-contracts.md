@@ -660,10 +660,10 @@ events visible, safely retryable, and idempotent.
 - How tested: Ran `npm test` with `DATABASE_URL` pointed at disposable
   PostgreSQL on `localhost:55432`; migration deploy applied
   `202605034_clickup_event_retry_observability` and the API flow passed.
-- What is incomplete: Production deploy and smoke are still required for this
-  runtime change.
-- Next steps: Deploy to Coolify and smoke health plus protected inbox event
-  metadata.
+- What is incomplete: No known incomplete item in the CompanyCore-side ClickUp
+  provider event retry and health slice.
+- Next steps: Continue the Paperclip application-side adapter so it consumes
+  CompanyCore agent events and writes through CompanyCore.
 
 ### Priority
 P0
