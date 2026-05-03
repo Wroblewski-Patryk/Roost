@@ -2,7 +2,7 @@
 
 ## Ready
 
-No active P0/P1 runtime task is ready after CCV1-059.
+No active P0/P1 runtime task is ready after CCV1-060.
 
 ## Blocked
 
@@ -126,3 +126,4 @@ auto-deploy webhook administration task.
 - CCV1-057 Paperclip Source Handoff Validation.
 - CCV1-058 OpenJarvis Source Handoff Validation.
 - CCV1-059 GitHub Auto-Deploy Capability Audit.
+- CCV1-060 V1 Operator Handoff.

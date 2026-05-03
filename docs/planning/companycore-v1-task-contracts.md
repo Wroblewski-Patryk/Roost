@@ -4,6 +4,73 @@ These task contracts turn the v1 audit into executable work. Each task must be
 completed as its own small iteration and must update `.codex/context/TASK_BOARD.md`,
 `.codex/context/PROJECT_STATE.md`, and relevant docs when status changes.
 
+## CCV1-060 V1 Operator Handoff
+
+### Header
+- ID: CCV1-060
+- Title: V1 operator handoff
+- Task Type: release handoff
+- Current Stage: post-release
+- Status: DONE
+- Owner: Ops/Release + Product Docs
+- Depends on: CCV1-059
+- Priority: P2
+- Iteration: v1-060
+- Operation Mode: BUILDER
+
+### Goal
+Create a concise operator-facing acceptance handoff for the completed
+CompanyCore v1 runtime.
+
+### Scope
+- Production endpoints.
+- Accepted v1 runtime scope.
+- Current runtime image/container.
+- Latest smoke and data state.
+- Rollback pointer.
+- Residual non-runtime blockers.
+- Next product decision options.
+- Canonical docs index and planning/context files.
+
+### Implementation Plan
+- Consolidate evidence from release readiness, post-deploy smoke, rollback,
+  and source handoff docs.
+- Add a single operator handoff doc under `docs/operations/`.
+- Link the handoff doc from the docs index and canonical project state.
+- Mark the task complete in planning and task board.
+- Run standard docs/build/test gates.
+
+### Acceptance Criteria
+- [x] Handoff states v1 accepted runtime scope.
+- [x] Handoff lists production endpoints and current runtime image/container.
+- [x] Handoff lists latest smoke summary and clean data state.
+- [x] Handoff lists rollback pointer and operator checks.
+- [x] Handoff distinguishes residual non-runtime blockers from v1 runtime
+  readiness.
+- [x] Docs index and canonical queue are synchronized.
+
+### Definition of Done
+- [x] `git diff --check` passes.
+- [x] `npm run build` passes.
+- [x] `npm test` passes against local PostgreSQL.
+- [x] CompanyCore public health smoke passes.
+- [x] Task board, project state, planning queue, task contract, docs index, and
+  operator handoff are updated.
+
+### Result Report
+- Task summary: Added the final v1 operator handoff document so the accepted
+  runtime can be operated without reconstructing evidence from the task log.
+- Files changed: `docs/operations/v1-operator-handoff.md`, `docs/README.md`,
+  `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`,
+  `docs/planning/mvp-next-commits.md`, and this task contract.
+- How tested: `git diff --check`; `npm run build`; `npm test`; CompanyCore
+  public health smoke.
+- What is incomplete: No v1 runtime work remains. Non-runtime items remain
+  blocked or optional: GitHub-to-Coolify auto-deploy tooling and upstream
+  source merge routes for OpenJarvis/Paperclip.
+- Next steps: Choose the first v2 scope or provide the credentials/tooling for
+  one of the non-runtime handoff blockers.
+
 ## CCV1-059 GitHub Auto-Deploy Capability Audit
 
 ### Header

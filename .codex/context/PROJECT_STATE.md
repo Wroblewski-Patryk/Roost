@@ -99,16 +99,13 @@ Last updated: 2026-05-03
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-059 GitHub Auto-Deploy Capability Audit.
+- Current iteration: CCV1-060 V1 Operator Handoff.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-059 GitHub Auto-Deploy Capability Audit.
-- Last completed task: audited the remaining GitHub-to-Coolify auto-deploy
-  blocker. The GitHub app can see `Wroblewski-Patryk/companycore` with admin
-  permissions, but the available connector tools do not expose repository
-  webhook administration. The local `gh` CLI is not installed. Coolify
-  containers are healthy and manual runtime rollover remains the approved
-  release path until webhook-management tooling or a Coolify deploy token is
-  available.
+- Last completed iteration: CCV1-060 V1 Operator Handoff.
+- Last completed task: added a concise v1 operator handoff that consolidates
+  accepted runtime scope, production endpoints, current runtime image,
+  smoke/data evidence, rollback pointer, residual non-runtime blockers, and
+  next decision choices.
 - Next required mode: BUILDER when a new approved v2 or handoff task is moved
   into the active queue.
 
@@ -621,6 +618,11 @@ Last updated: 2026-05-03
   Coolify DB/Redis/realtime/proxy, CompanyCore backend, and CompanyCore
   Postgres containers are healthy. Auto-deploy remains a P2 tooling/permission
   blocker, not a v1 runtime blocker.
+- 2026-05-03: Completed CCV1-060 by adding
+  `docs/operations/v1-operator-handoff.md`, a single operator-facing v1
+  acceptance handoff with production endpoints, accepted runtime scope, current
+  backend image/container, latest smoke summary, clean data state, rollback
+  pointer, residual non-runtime blockers, and next product decision options.
 
 ## Working Agreements
 - Keep task board and project state synchronized.
@@ -671,6 +673,7 @@ Last updated: 2026-05-03
 - `docs/operations/rollback-and-recovery.md`
 - `docs/operations/service-reliability-and-observability.md`
 - `docs/operations/paperclip-companycore-adapter-runbook.md`
+- `docs/operations/v1-operator-handoff.md`
 - `docs/operations/v1-source-handoff-package.md`
 - `docs/operations/v1-release-readiness.md`
 - `docs/security/secure-development-lifecycle.md`
