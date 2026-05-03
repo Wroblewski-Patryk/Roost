@@ -2,9 +2,13 @@
 
 ## Ready
 
-- No active ready task. Refill from `docs/planning/mvp-next-commits.md` after
-  the first real ClickUp token run confirms whether CCV1-034 should be
-  scheduled pull sync or webhook ingestion.
+- CCV1-034A Operating Model Registry Schema
+  - Stage: planning
+  - Owner: DB/Migrations
+  - Priority: P0
+  - Scope: add the workspace -> operating area -> folder -> table registry
+    plan and then implement the approved Prisma migration/backfill in the next
+    code iteration.
 
 ## Blocked
 
@@ -26,6 +30,31 @@
   - Scope: choose either scheduled native pull sync, ClickUp webhook ingestion
     with `X-Signature` verification and webhook state storage, or external
     orchestration once the first production ClickUp pull is verified.
+- CCV1-034B ClickUp Structure Persistence
+  - Stage: planning
+  - Owner: Backend Builder
+  - Priority: P0
+  - Scope: persist ClickUp Spaces, Folders, Lists, Views, and Custom Fields
+    into provider mapping tables and connect them to operating areas, folders,
+    and tables.
+- CCV1-034C Registry-Backed Table API Contract
+  - Stage: planning
+  - Owner: Backend Builder
+  - Priority: P1
+  - Scope: expose table API metadata from the operating registry while keeping
+    existing typed routes stable.
+- CCV1-034D Storage And Knowledge Roots
+  - Stage: planning
+  - Owner: Backend Builder
+  - Priority: P1
+  - Scope: add workspace/folder/table-scoped storage and knowledge root
+    metadata for local disk, Google Drive, and Obsidian-style Markdown roots.
+- CCV1-034E Automation Scope Registry
+  - Stage: planning
+  - Owner: Backend Builder
+  - Priority: P1
+  - Scope: register scheduled sync, webhook, and external-orchestrator
+    automations against workspace, area, folder, table, or provider scopes.
 
 ## Done
 
@@ -74,3 +103,4 @@
 - CCV1-031 ClickUp Discovery Backend.
 - CCV1-032 Guided Owner Console.
 - CCV1-033 Production deploy and smoke for guided ClickUp owner console.
+- CCV1-034 ClickUp-shaped operating model architecture and implementation plan.

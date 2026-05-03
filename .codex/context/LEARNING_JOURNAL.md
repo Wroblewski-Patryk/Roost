@@ -84,3 +84,28 @@ fixes for this repository.
   `202605021_v1_foundation`, redeploying commit `3f64a72` finished, logs showed
   `No pending migrations to apply`, seed success, and `/health` plus
   `/v1/health` returned `200`.
+
+### 2026-05-03 - Provider API mapping must start from official docs
+
+- Context: CompanyCore is using ClickUp as the first native integration and
+  future integrations will shape database tables, API routes, automations,
+  storage roots, and knowledge roots.
+- Symptom: A provider can look simple from UI naming, but API terminology and
+  write behavior differ; ClickUp API v2 uses `Team` for Workspace, Custom
+  Fields require separate endpoints for updates, Views have explicit parent
+  scopes, rate limits are per token, and webhook events require HMAC signature
+  verification.
+- Root cause: Provider UI concepts, public API terminology, and write/update
+  contracts can drift over time and cannot be safely inferred from memory.
+- Guardrail: Before implementing or changing provider API behavior, check the
+  current official provider documentation and record endpoint, hierarchy,
+  pagination, rate-limit, webhook, signature, field, and permission
+  assumptions in the task evidence.
+- Preferred pattern: Keep provider-specific terminology in integration
+  clients/mappers and map it into stable CompanyCore concepts through explicit
+  mapping tables.
+- Avoid: Hardcoding provider hierarchy or write behavior from memory, UI labels,
+  old examples, or a single successful smoke call.
+- Evidence: Official ClickUp docs reviewed during CCV1-034 for API v2/v3
+  terminology, Tasks, Custom Fields, Views, Rate Limits, and Webhook
+  signature behavior.

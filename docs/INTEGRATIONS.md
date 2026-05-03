@@ -41,6 +41,8 @@ boundaries.
 Company Core is responsible for:
 
 - calling the ClickUp API through a dedicated adapter
+- checking current official ClickUp documentation before adding or changing
+  API mapping behavior
 - reading ClickUp credentials/configuration from the active workspace's
   integration settings
 - mapping ClickUp tasks into CompanyCore task fields
@@ -84,6 +86,40 @@ returning the token to the browser.
 Setting a ClickUp token does not automatically start continuous listening.
 Continuous updates require an approved scheduled sync, webhook receiver, or
 external orchestration task.
+
+## ClickUp Structural Mapping
+
+The long-term ClickUp adapter should preserve ClickUp structure instead of only
+syncing flat tasks. The required structural mapping is:
+
+| ClickUp API concept | CompanyCore target concept |
+| --- | --- |
+| Team in API v2 / Workspace in current UI | `workspace` external mapping |
+| Space | `operating_area` external mapping |
+| Folder | `operating_folder` external mapping |
+| List | `operating_table` external mapping |
+| Task | first-party business record, usually `task`, with provider mapping |
+| Custom Field definition | `external_field_mapping` |
+| Custom Field value | typed field value or raw mapped provider value |
+| View | saved view metadata scoped to workspace, area, folder, or table |
+| Webhook | workspace/folder/table-scoped provider trigger |
+
+Official ClickUp docs that affected this contract:
+
+- API v2 uses `Team` where the current product says Workspace.
+- A Team/Workspace contains Spaces, Folders, Lists, and tasks.
+- Tasks include name, description or Markdown description, assignees, status,
+  priority, dates, tags, Custom Fields, estimates, points, parent/subtask, and
+  dependency metadata.
+- Updating task Custom Fields requires the Set Custom Field Value endpoint;
+  the normal Update Task endpoint does not update those values.
+- Views can be attached to the Workspace, Space, Folder, or List level.
+- Rate limits are per token and must be handled as provider backpressure.
+- ClickUp webhooks use an `X-Signature` HMAC signature that must be verified
+  before processing webhook events.
+
+Future write-back, webhook ingestion, and broad sync must include explicit
+tests for these mapping rules before release.
 
 ## Adapter Contract
 

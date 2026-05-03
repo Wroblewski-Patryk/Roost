@@ -86,6 +86,13 @@ The approved v1 direction is:
 - business data, service API keys, integration settings, and integration sync
   state are workspace-scoped
 - ClickUp is the first native integration adapter
+- CompanyCore should evolve toward a ClickUp-shaped operating model:
+  `Workspace -> Operating Area -> Operating Folder -> Operating Table ->
+  Record`, mapped to ClickUp `Team/Workspace -> Space -> Folder -> List ->
+  Task`
+- first-party business tables should be assigned to one of 12 approved
+  operating areas, while users, memberships, API keys, integration settings,
+  provider mappings, and platform metadata remain system tables
 - n8n remains optional orchestration, not the required primary ClickUp path
 - schema changes should move from `prisma db push` to controlled migrations
 - tests and smoke checks must prove workspace scoping and integration sync

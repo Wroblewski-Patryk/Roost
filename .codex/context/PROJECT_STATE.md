@@ -91,7 +91,6 @@ Last updated: 2026-05-02
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-026 adapter smoke script.
 - Current iteration: CCV1-034 ClickUp-shaped operating model architecture.
 - Current operation mode: BUILDER
 - Last completed iteration: CCV1-034 ClickUp-shaped operating model architecture.

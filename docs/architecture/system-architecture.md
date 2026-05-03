@@ -51,6 +51,70 @@ advanced RBAC, organization administration, and a full CRM UI are out of scope.
 - Platform state: events, users, workspaces, workspace-scoped API keys,
   integration settings.
 
+## ClickUp-Shaped Operating Model
+
+CompanyCore should evolve toward a ClickUp-compatible operating model without
+becoming a ClickUp clone. The canonical internal hierarchy is:
+
+```text
+Workspace -> Operating Area -> Operating Folder -> Operating Table -> Record
+```
+
+This maps to ClickUp API v2 terminology as:
+
+```text
+ClickUp Team/Workspace -> Space -> Folder -> List -> Task
+```
+
+ClickUp API v2 still calls the top-level workspace a `Team`; CompanyCore docs
+and UI should use `Workspace` and treat ClickUp `team_id` as an external
+workspace identifier. Provider-specific naming must stay in integration
+mappers, not leak into core domain names.
+
+Every business table should belong to exactly one of 12 operating areas. Each
+area can own several operating folders and several operating tables. System
+tables such as users, memberships, API keys, integration settings, provider
+mappings, audit/events, and schema metadata remain platform-owned and are not
+counted as business-area tables.
+
+The approved 12 operating areas are:
+
+1. Strategy and governance
+2. Projects and delivery
+3. Tasks and workflow
+4. Sales and CRM
+5. Marketing and growth
+6. Finance and billing
+7. People and roles
+8. Operations and administration
+9. Knowledge and decisions
+10. Assets and storage
+11. Automations and integrations
+12. AI agents and observability
+
+For each workspace, the operating model should make the following resources
+addressable through one consistent scope:
+
+- tables and records
+- API resources for those tables
+- automations that read or write those tables
+- storage locations, including local disk, object storage, Google Drive, or
+  other providers
+- knowledge roots, including Obsidian Markdown branches or Google Drive Docs
+- external provider mappings, starting with ClickUp Space, Folder, List, View,
+  Custom Field, and Task identifiers
+
+The registry layer should be explicit instead of inferred from table names. A
+future schema slice should add records such as `operating_areas`,
+`operating_folders`, `operating_tables`, `external_container_mappings`,
+`external_field_mappings`, `storage_locations`, `knowledge_roots`, and
+`automation_definitions` before broad two-way provider sync is attempted.
+
+Existing v1 domain tables are valid as a foundation, but they are not yet a
+complete ClickUp 1:1 structural mirror. The current gap is intentional planning
+work, not a reason to overload `projects` or `task_lists` with unrelated
+metadata.
+
 ## Module Boundaries
 
 - `src/auth/`: authentication and service API key middleware.
@@ -82,11 +146,20 @@ The ClickUp adapter should establish the pattern for future integrations:
 
 - provider client
 - provider mapper
+- provider documentation review before mapping or API implementation
 - workspace settings reader
 - sync service
 - safe provider error mapper
 - idempotent persistence using `(workspace_id, source, external_id)`
 - event emission and observable sync results
+
+Provider adapters must be designed from current vendor documentation and
+record the relevant endpoint, hierarchy, pagination, rate-limit, webhook,
+signature, field, and permission assumptions in the task evidence. For ClickUp,
+mapping must preserve the `Team/Workspace -> Space -> Folder -> List -> Task`
+hierarchy, Custom Field metadata and values, View parent scope, per-token rate
+limits, and webhook HMAC signature requirements before enabling write-back or
+continuous sync.
 
 n8n remains optional orchestration for workflows better kept outside the
 backend. It is not the required primary ClickUp path in v1.

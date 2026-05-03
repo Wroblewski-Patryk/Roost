@@ -38,3 +38,12 @@ No active decisions.
 - 2026-05-02: DEC-003 resolved. v1 adds minimal API routes only for
   `decisions` and `agent-logs`; task lists, pipeline stages, interactions, and
   agents remain deferred until workflows require them.
+- 2026-05-03: CompanyCore should evolve toward a ClickUp-shaped operating
+  model with the canonical hierarchy `Workspace -> Operating Area -> Operating
+  Folder -> Operating Table -> Record`, mapped to ClickUp
+  `Team/Workspace -> Space -> Folder -> List -> Task`. Business tables belong
+  to one of 12 approved operating areas; system tables remain platform-owned.
+- 2026-05-03: Provider API work must check current official provider
+  documentation before implementation or mapping changes. For ClickUp, task
+  evidence must cover hierarchy terminology, Custom Fields, Views, rate limits,
+  pagination, webhook signatures, and permissions when relevant.

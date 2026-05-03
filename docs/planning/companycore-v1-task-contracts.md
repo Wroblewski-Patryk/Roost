@@ -4,6 +4,157 @@ These task contracts turn the v1 audit into executable work. Each task must be
 completed as its own small iteration and must update `.codex/context/TASK_BOARD.md`,
 `.codex/context/PROJECT_STATE.md`, and relevant docs when status changes.
 
+## CCV1-034 ClickUp-Shaped Operating Model Architecture
+
+### Header
+- ID: CCV1-034
+- Title: ClickUp-shaped operating model architecture
+- Task Type: research
+- Current Stage: verification
+- Status: DONE
+- Owner: Product Docs
+- Depends on: CCV1-031, CCV1-032, CCV1-033
+- Priority: P0
+- Iteration: v1-034
+- Operation Mode: BUILDER
+
+### Process Self-Audit
+- [x] All seven autonomous loop steps are represented.
+- [x] No loop step is skipped.
+- [x] Exactly one priority task is selected.
+- [x] Operation mode matches iteration 34.
+- [x] The task aligns with repository source-of-truth documents.
+
+### Context
+The owner wants CompanyCore tables, APIs, automations, storage, and knowledge
+roots to map 1:1 with ClickUp workspace/folder structure where useful, then
+expand with strong ideas from other systems. The current schema is
+workspace-scoped but does not yet persist a full ClickUp-equivalent hierarchy.
+
+### Goal
+Document the target operating model, audit the current database/code fit, and
+queue the smallest safe implementation sequence before runtime schema changes.
+
+### Scope
+- `docs/architecture/system-architecture.md`
+- `docs/DATABASE.md`
+- `docs/INTEGRATIONS.md`
+- `docs/planning/clickup-shaped-operating-model-plan.md`
+- `.codex/context/PROJECT_STATE.md`
+- `.codex/context/TASK_BOARD.md`
+- `docs/planning/mvp-next-commits.md`
+- `.codex/context/LEARNING_JOURNAL.md`
+- this task contract
+
+### Implementation Plan
+1. Check official ClickUp docs for hierarchy, tasks, Custom Fields, Views,
+   rate limits, and webhook signatures.
+2. Compare the current Prisma schema and integration docs to the desired
+   workspace/folder/table mapping.
+3. Document the target 12-area operating model and system-table boundary.
+4. Plan migration/API/storage/automation follow-up tasks without changing
+   runtime behavior.
+5. Update project state, board, learning journal, and validation evidence.
+
+### Autonomous Loop Evidence
+
+#### 1. Analyze Current State
+- Issues: current v1 tables have workspace ownership, but there is no explicit
+  `Operating Area -> Operating Folder -> Operating Table` registry.
+- Gaps: ClickUp Spaces, Folders, Views, Custom Fields, storage roots,
+  knowledge roots, and automation scopes are not persisted as first-class
+  records.
+- Inconsistencies: `task_lists` approximates ClickUp Lists but is not a
+  general table registry.
+- Architecture constraints: PostgreSQL remains source of truth and all
+  clients must use the API.
+
+#### 2. Select One Priority Task
+- Selected task: CCV1-034 ClickUp-shaped operating model architecture.
+- Priority rationale: schema/code implementation needs an approved source of
+  truth before adding new tables or sync behavior.
+- Why other candidates were deferred: continuous ClickUp sync should wait
+  until the structural registry decision is captured.
+
+#### 3. Plan Implementation
+- Files or surfaces to modify: architecture, database, integration, planning,
+  task board, project state, and learning journal docs only.
+- Logic: record the hierarchy and follow-up task sequence.
+- Edge cases: keep system tables outside the 12 business areas; avoid
+  pretending current code already mirrors ClickUp 1:1.
+
+#### 4. Execute Implementation
+- Implementation notes: added the operating model architecture, database target
+  registry, ClickUp structural mapping, and implementation plan.
+
+#### 5. Verify and Test
+- Validation performed: official ClickUp documentation review, schema/code
+  inspection, `git diff --check`.
+- Result: documentation-only validation passed.
+
+#### 6. Self-Review
+- Simpler option considered: adding fields directly to `task_lists`.
+- Technical debt introduced: no.
+- Scalability assessment: registry approach supports ClickUp now and future
+  systems later without overloading domain tables.
+- Refinements made: separated system tables from the 12 business areas.
+
+#### 7. Update Documentation and Knowledge
+- Docs updated: architecture, database, integrations, planning, board, project
+  state, learning journal.
+- Context updated: yes.
+- Learning journal updated: yes.
+
+### Acceptance Criteria
+- [x] Architecture defines the ClickUp-shaped hierarchy and 12 business areas.
+- [x] Database docs identify current schema gaps and target registry tables.
+- [x] Integration docs capture ClickUp hierarchy and provider-doc guardrails.
+- [x] Planning docs queue implementation tasks for schema, mapping, API,
+  storage/knowledge, and automations.
+- [x] The current code is assessed without introducing runtime changes.
+
+### Definition of Done
+- [x] Changes are documented in the relevant source of truth.
+- [x] Behavior is reproducible from the evidence recorded below.
+- [x] No mock, placeholder, fake, or temporary path is introduced.
+- [x] `DEFINITION_OF_DONE.md` was checked before status changed to `DONE`.
+
+### Validation Evidence
+- Tests: `git diff --check`.
+- Manual checks: reviewed `prisma/schema.prisma`, `docs/DATABASE.md`,
+  `docs/INTEGRATIONS.md`, and official ClickUp docs.
+- High-risk checks: no runtime or migration changes were made.
+
+### Integration Evidence
+- `INTEGRATION_CHECKLIST.md` reviewed: yes.
+- Real API/service path used: not applicable.
+- Endpoint and client contract match: not applicable.
+- DB schema and migrations verified: docs-only audit; runtime schema unchanged.
+- Regression check performed: documentation diff validation.
+
+### Architecture Evidence
+- Architecture source reviewed: `docs/architecture/system-architecture.md`.
+- Fits approved architecture: yes.
+- Mismatch discovered: yes; current code lacks the full operating registry.
+- Decision required from user: no; user requested documenting the direction and
+  planning implementation.
+- Follow-up architecture doc updates: added target model and provider-doc
+  guardrail.
+
+### Result Report
+- Task summary: Documented CompanyCore's ClickUp-shaped operating model and
+  planned the registry implementation sequence.
+- Files changed: architecture, database, integrations, operating-model plan,
+  project state, task board, next commits, learning journal, and this contract.
+- How tested: official ClickUp documentation review, local schema/code audit,
+  and `git diff --check`.
+- What is incomplete: runtime registry tables and APIs are queued as
+  CCV1-034A through CCV1-034E.
+- Next steps: implement CCV1-034A Operating Model Registry Schema.
+
+### Priority
+P0
+
 ## CCV1-033 Production Deploy And Smoke For Guided ClickUp Owner Console
 
 ### Header

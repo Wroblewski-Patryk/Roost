@@ -14,11 +14,18 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] CCV1-031 ClickUp Discovery Backend
 - [x] CCV1-032 Guided Owner Console
 - [x] CCV1-033 Production deploy and smoke for guided ClickUp owner console
+- [x] CCV1-034 ClickUp-shaped operating model architecture and implementation
+      plan
 
 ## NEXT
 
-- [ ] CCV1-034 Decide scheduled ClickUp sync versus webhook ingestion after the
-      first production pull succeeds, including rate-limit and signature
+- [ ] CCV1-034A Operating Model Registry Schema.
+- [ ] CCV1-034B ClickUp Structure Persistence.
+- [ ] CCV1-034C Registry-Backed Table API Contract.
+- [ ] CCV1-034D Storage And Knowledge Roots.
+- [ ] CCV1-034E Automation Scope Registry.
+- [ ] Decide scheduled ClickUp sync versus webhook ingestion after the first
+      production pull succeeds, including rate-limit and signature
       requirements.
 - [ ] Implement Paperclip application-side adapter code that reads
       `COMPANYCORE_BASE_URL` and `COMPANYCORE_API_KEY`.
@@ -28,7 +35,13 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 1. CCV1-031 ClickUp Discovery Backend
 - [x] 2. CCV1-032 Guided Owner Console
 - [x] 3. CCV1-033 Production deploy and smoke for guided ClickUp owner console
-- [ ] 4. CCV1-034 Continuous ClickUp update strategy decision
+- [x] 4. CCV1-034 ClickUp-shaped operating model architecture
+- [ ] 5. CCV1-034A Operating Model Registry Schema
+- [ ] 6. CCV1-034B ClickUp Structure Persistence
+- [ ] 7. CCV1-034C Registry-Backed Table API Contract
+- [ ] 8. CCV1-034D Storage And Knowledge Roots
+- [ ] 9. CCV1-034E Automation Scope Registry
+- [ ] 10. Continuous ClickUp update strategy decision
 
 
 ## GROUP QUEUE

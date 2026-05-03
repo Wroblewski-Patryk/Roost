@@ -27,6 +27,89 @@ integration fields such as `external_id` and `source` where relevant.
 - `integration_settings`: workspace-scoped provider configuration and protected
   secret material, starting with ClickUp.
 
+## Target Operating Registry
+
+The current schema is workspace-scoped and usable for v1, but it does not yet
+fully mirror ClickUp's structural hierarchy. The next database architecture
+slice should add a registry that keeps business areas, folders, tables, API
+surfaces, storage, knowledge roots, automations, and provider mappings aligned.
+
+Target hierarchy:
+
+```text
+workspaces
+  -> operating_areas
+  -> operating_folders
+  -> operating_tables
+  -> business records
+```
+
+ClickUp mapping:
+
+```text
+workspaces.id
+  -> ClickUp team_id / Workspace
+operating_areas.external mapping
+  -> ClickUp Space
+operating_folders.external mapping
+  -> ClickUp Folder
+operating_tables.external mapping
+  -> ClickUp List
+business record external mapping
+  -> ClickUp Task or provider-specific entity
+```
+
+The approved business areas are fixed catalog values owned by CompanyCore:
+
+| Area | Example current/future tables |
+| --- | --- |
+| Strategy and governance | `goals`, `targets`, future governance policies |
+| Projects and delivery | `projects`, future milestones/releases |
+| Tasks and workflow | `task_lists`, `tasks`, future statuses/checklists |
+| Sales and CRM | `clients`, `deals`, `pipeline_stages`, `interactions` |
+| Marketing and growth | future campaigns, experiments, channels |
+| Finance and billing | future invoices, expenses, subscriptions |
+| People and roles | future teammates, responsibilities, role maps |
+| Operations and administration | future vendors, assets, procedures |
+| Knowledge and decisions | `notes`, `decisions`, future docs index |
+| Assets and storage | future file/storage objects and media references |
+| Automations and integrations | `integration_settings`, future automations |
+| AI agents and observability | `agents`, `agent_logs`, `events` |
+
+System tables remain outside the 12 business areas:
+
+- `users`
+- `workspaces`
+- `workspace_memberships`
+- `api_keys`
+- provider mapping tables
+- migration, audit, schema, and platform metadata tables
+
+Planned registry tables:
+
+- `operating_areas`: one row per approved area per workspace, with a stable
+  area key.
+- `operating_folders`: workspace and area-owned grouping layer equivalent to a
+  ClickUp Folder.
+- `operating_tables`: registry rows for each business table or custom table,
+  with `workspace_id`, optional `operating_area_id`,
+  optional `operating_folder_id`, stable `api_slug`, storage and knowledge
+  references, and sync policy.
+- `external_container_mappings`: provider IDs for ClickUp Workspaces, Spaces,
+  Folders, Lists, Views, and equivalent future systems.
+- `external_field_mappings`: provider field definitions and links to
+  CompanyCore fields, including ClickUp Custom Field metadata.
+- `storage_locations`: local disk, object storage, Google Drive folder, or
+  other provider roots for a workspace/folder/table.
+- `knowledge_roots`: Obsidian Markdown branch, Google Drive Docs root, or
+  other durable knowledge base root for a workspace/folder/table.
+- `automation_definitions`: workspace/folder/table-scoped automations and
+  provider triggers.
+
+Runtime routes should eventually resolve table API behavior through
+`operating_tables.api_slug` or an equivalent registry lookup, while preserving
+explicit typed routes for the stable first-party domain tables.
+
 ## Migration Policy
 
 Production schema changes must be represented by Prisma migrations committed
