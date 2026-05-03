@@ -655,18 +655,10 @@ workspaceSelect.addEventListener("change", async () => {
     return;
   }
 
-  setBusy(true);
-  try {
-    await loadSelectedWorkspaceLists();
-    const count = allLists().length;
-    showResult(count > 0
-      ? `Workspace loaded. ${count} ClickUp List${count === 1 ? "" : "s"} available.`
-      : "Workspace loaded, but ClickUp returned no Lists for this token.", count > 0 ? "success" : "error");
-  } catch (error) {
-    showResult(friendlyError(error), "error");
-  } finally {
-    setBusy(false);
-  }
+  state.clickup.spaces = [];
+  state.clickup.selectedListIds = new Set();
+  renderTree();
+  showResult("Workspace selected. Click Load Lists to fetch ClickUp Lists.");
 });
 
 saveButton.addEventListener("click", async () => {

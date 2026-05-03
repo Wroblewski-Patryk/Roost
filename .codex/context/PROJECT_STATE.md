@@ -354,6 +354,12 @@ Last updated: 2026-05-03
   The settings console now has an explicit `Load Lists` action, clearer no-list
   messaging, and `Select all` / `Clear all` controls for multiselect List
   setup before the first import.
+- 2026-05-03: Fixed the production ClickUp List load failure found during real
+  owner testing. ClickUp returned a non-array `required_views` value from a
+  Views endpoint, which caused discovery persistence to throw
+  `internal_server_error` before Lists rendered. The ClickUp client now treats
+  non-array `views`/`required_views` values as empty arrays, and Workspace
+  selection no longer auto-loads Lists before the owner clicks `Load Lists`.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

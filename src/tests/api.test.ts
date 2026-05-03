@@ -684,7 +684,7 @@ test("CompanyCore v1 protected API flow", async () => {
         views: [
           { id: "view-workspace", name: "Everything", type: "list", parent: { id: "team-1", type: 7 } }
         ],
-        required_views: []
+        required_views: {}
       }), { status: 200 });
     }
 
@@ -709,7 +709,7 @@ test("CompanyCore v1 protected API flow", async () => {
     }
 
     if (path === "/api/v2/list/list-folderless/view") {
-      return new Response(JSON.stringify({ views: [], required_views: [] }), { status: 200 });
+      return new Response(JSON.stringify({ views: [], required_views: null }), { status: 200 });
     }
 
     if (path === "/api/v2/list/list-1/field") {
@@ -732,7 +732,7 @@ test("CompanyCore v1 protected API flow", async () => {
         views: [
           { id: "view-list-1", name: "Jarvis Board", type: "board", parent: { id: "list-1", type: 6 } }
         ],
-        required_views: []
+        required_views: false
       }), { status: 200 });
     }
 

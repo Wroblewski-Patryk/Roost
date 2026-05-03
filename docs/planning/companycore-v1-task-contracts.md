@@ -502,11 +502,16 @@ selecting or clearing all loaded Lists.
 ### Result Report
 - Task summary: Added explicit List loading and bulk selection controls to the
   ClickUp owner console, plus clearer feedback when a selected Workspace returns
-  no Lists for the token.
+  no Lists for the token. After production testing exposed
+  `internal_server_error`, also fixed ClickUp View parsing so non-array
+  `required_views` provider responses no longer block List discovery, and made
+  Workspace selection wait for an explicit `Load Lists` click.
 - Files changed: `public/index.html`, `public/app.js`, `public/styles.css`,
+  `src/integrations/clickup/clickup.client.ts`, `src/tests/api.test.ts`,
   `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`,
   `docs/planning/mvp-next-commits.md`, and this task contract.
-- How tested: Ran `npm run build` and `git diff --check`.
+- How tested: Ran `npm run build`, `git diff --check`, and `npm test` against
+  disposable PostgreSQL on `localhost:55432`.
 - What is incomplete: A real ClickUp token/List selection smoke remains with
   the owner in the browser.
 - Next steps: Deploy this UI fix, refresh the owner console, load Lists, select

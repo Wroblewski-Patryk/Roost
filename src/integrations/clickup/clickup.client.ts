@@ -278,8 +278,15 @@ export class ClickUpClient {
       }));
   }
 
+  private arrayOrEmpty<T>(value: T[] | unknown): T[] {
+    return Array.isArray(value) ? value : [];
+  }
+
   private safeViews(payload: ClickUpViewsResponse) {
-    return [...(payload.views ?? []), ...(payload.required_views ?? [])]
+    return [
+      ...this.arrayOrEmpty<NonNullable<ClickUpViewsResponse["views"]>[number]>(payload.views),
+      ...this.arrayOrEmpty<NonNullable<ClickUpViewsResponse["required_views"]>[number]>(payload.required_views)
+    ]
       .filter((view): view is ClickUpViewSummary => Boolean(view.id && view.name))
       .map((view) => ({
         id: String(view.id),
