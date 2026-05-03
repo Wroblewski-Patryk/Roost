@@ -1,4 +1,4 @@
-const privateRoutes = new Set(["/dashboard", "/areas", "/tasks-adapter", "/pipeline", "/settings", "/settings/integrations", "/settings/drive", "/settings/api"]);
+const privateRoutes = new Set(["/dashboard", "/areas", "/tasks-adapter", "/pipeline", "/settings", "/settings/account", "/settings/integrations", "/settings/drive", "/settings/api"]);
 const publicRoutes = new Set(["/", "/auth/login", "/auth/register"]);
 
 const state = {
@@ -109,6 +109,12 @@ const modulePipelineMeta = document.querySelector("#modulePipelineMeta");
 const moduleDriveMeta = document.querySelector("#moduleDriveMeta");
 const moduleClickUpMeta = document.querySelector("#moduleClickUpMeta");
 const moduleIntegrationsMeta = document.querySelector("#moduleIntegrationsMeta");
+const accountSummary = document.querySelector("#accountSummary");
+const accountOwnerName = document.querySelector("#accountOwnerName");
+const accountOwnerEmail = document.querySelector("#accountOwnerEmail");
+const accountWorkspaceName = document.querySelector("#accountWorkspaceName");
+const accountWorkspaceId = document.querySelector("#accountWorkspaceId");
+const accountReadiness = document.querySelector("#accountReadiness");
 const pipelineSummary = document.querySelector("#pipelineSummary");
 const pipelineStats = document.querySelector("#pipelineStats");
 const pipelineStagesList = document.querySelector("#pipelineStagesList");
@@ -160,6 +166,7 @@ const routeLabels = {
   "/areas": "Operating areas",
   "/tasks-adapter": "Tasks & adapters",
   "/pipeline": "Pipeline",
+  "/settings/account": "Account",
   "/settings/integrations": "Integrations",
   "/settings": "ClickUp adapter",
   "/settings/drive": "Google Drive",
@@ -648,6 +655,49 @@ function nextActionCopy(items, signals) {
   return "Open the integration map or operating areas to keep relationships clean as new data arrives.";
 }
 
+function renderAccountSettings() {
+  const connected = isSignedIn() && state.workspace;
+  const ownerName = state.user?.name || state.user?.email || "Owner";
+  const ownerEmail = state.user?.email || "No email loaded.";
+  const workspaceName = state.workspace?.name || "-";
+  const workspaceId = state.workspace?.id ? `Workspace ID: ${state.workspace.id}` : "No workspace loaded.";
+
+  accountSummary.textContent = connected
+    ? `${workspaceName} account context is loaded for this owner session.`
+    : "Sign in to load account context.";
+  accountOwnerName.textContent = connected ? ownerName : "-";
+  accountOwnerEmail.textContent = connected ? ownerEmail : "No owner loaded.";
+  accountWorkspaceName.textContent = connected ? workspaceName : "-";
+  accountWorkspaceId.textContent = workspaceId;
+
+  accountReadiness.innerHTML = "";
+  const readiness = [
+    ["Owner session", connected ? "Connected" : "Not connected", "/dashboard"],
+    ["ClickUp", state.clickup.configured ? state.clickup.active ? "Active" : "Saved, inactive" : "Not connected", "/settings"],
+    ["Google Drive", state.googleDrive.configured ? state.googleDrive.active ? "Active" : "Saved, inactive" : "Not connected", "/settings/drive"],
+    ["API capabilities", `${state.capabilities.length} route${state.capabilities.length === 1 ? "" : "s"}`, "/settings/api"],
+    ["Operating areas", `${state.operatingModel.areas.length} area${state.operatingModel.areas.length === 1 ? "" : "s"}`, "/areas"],
+    ["Integrations", "Implemented taxonomy", "/settings/integrations"]
+  ];
+
+  for (const [label, status, href] of readiness) {
+    const link = document.createElement("a");
+    link.className = "account-readiness-item";
+    link.href = href;
+    link.dataset.link = "";
+    const strong = document.createElement("strong");
+    strong.textContent = label;
+    const span = document.createElement("span");
+    span.textContent = status;
+    link.append(strong, span);
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      navigate(href);
+    });
+    accountReadiness.append(link);
+  }
+}
+
 function renderPipeline() {
   pipelineStats.innerHTML = "";
   const clients = recordsForSlug("clients");
@@ -911,6 +961,7 @@ function renderDataCounters() {
     dataCounters.append(card);
   }
   renderDashboardCommandCenter();
+  renderAccountSettings();
 }
 
 function renderOperatingMap() {
@@ -1337,6 +1388,7 @@ function renderConnectionState() {
 
 function setConnected(connection) {
   state.workspace = connection.data.workspace;
+  state.user = connection.data.user || state.user;
   state.capabilities = connection.data.capabilities || [];
   state.clickup.configured = connection.data.integrations.clickup.configured;
   state.clickup.active = Boolean(connection.data.integrations.clickup.active);

@@ -63,6 +63,7 @@ const webAppRoutes = [
   "/tasks-adapter",
   "/pipeline",
   "/settings",
+  "/settings/account",
   "/settings/integrations",
   "/settings/drive",
   "/settings/api"

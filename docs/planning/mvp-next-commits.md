@@ -5,6 +5,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
+- [x] V2WEB-009 Account Settings View
 - [x] V2WEB-008 Dashboard Command Center
 - [x] V2WEB-007 Dedicated Pipeline View
 - [x] V2WEB-006 Settings Integration Taxonomy View
@@ -73,9 +74,9 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NEXT
 
-- [ ] Continue v2 web console polish after command-center dashboard: account
-      settings and deeper module editing surfaces should become route-level
-      slices only when their data path is already implemented.
+- [ ] Continue v2 web console polish after account settings: deeper module
+      editing surfaces should become route-level slices only when their data
+      path is already implemented.
 - [x] Source handoff package: document the OpenJarvis
       `5a426370` connector hygiene commit and the Paperclip `4cfa476f`
       adapter commit for managed upstream handoff.
@@ -98,6 +99,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 53. V2WEB-006 Settings Integration Taxonomy View
 - [x] 54. V2WEB-007 Dedicated Pipeline View
 - [x] 55. V2WEB-008 Dashboard Command Center
+- [x] 56. V2WEB-009 Account Settings View
 - [x] 48. V2WEB-001 Operating Map And Google Drive Console
 - [x] 39. V2GD-001 Google Drive Architecture And Queue
 - [x] 40. V2GD-002 Google Drive Persistence Foundation

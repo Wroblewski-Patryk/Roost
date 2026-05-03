@@ -3,7 +3,7 @@
 ## Ready
 
 No active P0/P1 Google Drive or web console implementation task remains ready
-after V2WEB-008.
+after V2WEB-009.
 
 ## Blocked
 
@@ -140,3 +140,4 @@ after V2WEB-008.
 - V2WEB-006 Settings Integration Taxonomy View.
 - V2WEB-007 Dedicated Pipeline View.
 - V2WEB-008 Dashboard Command Center.
+- V2WEB-009 Account Settings View.

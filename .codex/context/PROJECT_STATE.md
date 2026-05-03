@@ -112,11 +112,11 @@ Last updated: 2026-05-03
   pattern.
 
 ## Autonomous Iteration State
-- Current iteration: V2WEB-008 Dashboard Command Center.
+- Current iteration: V2WEB-009 Account Settings View.
 - Current operation mode: BUILDER
-- Last completed iteration: V2WEB-007 Dedicated Pipeline View.
-- Last completed task: added dashboard command-center signals, live module
-  metadata, and recommended next action copy from implemented frontend data.
+- Last completed iteration: V2WEB-008 Dashboard Command Center.
+- Last completed task: added `/settings/account` for owner/workspace context
+  and settings readiness links from implemented connection data.
 - Next required mode: BUILDER for the next v2 web console iteration unless an
   architecture decision blocks the queue first.
 
@@ -705,6 +705,11 @@ Last updated: 2026-05-03
   live module metadata for operating areas, tasks, pipeline, Drive, ClickUp,
   and integration taxonomy, plus a recommended next action. Signals are derived
   from existing frontend state only and link to implemented routes.
+- 2026-05-04: Completed V2WEB-009 by adding `/settings/account` for owner and
+  workspace context. The view shows account/workspace cards and readiness links
+  for session, ClickUp, Drive, API capabilities, operating areas, and
+  integrations. Direct route refresh now preserves owner user data from
+  `/v1/connection`.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

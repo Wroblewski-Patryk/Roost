@@ -32,6 +32,7 @@
           <a href="/areas" data-link data-nav="/areas">Operating areas</a>
           <a href="/tasks-adapter" data-link data-nav="/tasks-adapter">Tasks & adapters</a>
           <a href="/pipeline" data-link data-nav="/pipeline">Pipeline</a>
+          <a href="/settings/account" data-link data-nav="/settings/account">Account</a>
           <a href="/settings/integrations" data-link data-nav="/settings/integrations">Integrations</a>
           <a href="/settings" data-link data-nav="/settings">ClickUp adapter</a>
           <a href="/settings/drive" data-link data-nav="/settings/drive">Google Drive</a>
@@ -51,6 +52,7 @@
             <h1 id="routeTitle">Dashboard</h1>
           </div>
           <div class="topbar-actions">
+            <a class="button-link secondary compact" href="/settings/account" data-link>Account</a>
             <a class="button-link secondary compact" href="/settings/api" data-link>API</a>
             <button type="button" class="link-button compact" id="logoutButton">Sign out</button>
           </div>
@@ -220,6 +222,7 @@
             <a class="button-link" href="/tasks-adapter" data-link>Open tasks</a>
             <a class="button-link" href="/pipeline" data-link>Open pipeline</a>
             <a class="button-link" href="/settings/integrations" data-link>Open integrations</a>
+            <a class="button-link secondary" href="/settings/account" data-link>Account</a>
             <a class="button-link" href="/settings" data-link>Open settings</a>
             <a class="button-link secondary" href="/settings/drive" data-link>Connect Drive</a>
             <a class="button-link secondary" href="/settings/api" data-link>View API</a>
@@ -452,6 +455,41 @@
             <button type="button" class="secondary" id="saveButton">Save connection</button>
             <button type="button" id="syncButton">Save and sync</button>
           </div>
+        </section>
+      </section>
+
+      <section class="view" data-view="/settings/account">
+        <div class="page-title">
+          <div>
+            <p class="label">Settings</p>
+            <h1>Account</h1>
+            <p id="accountSummary">Sign in to load account context.</p>
+          </div>
+          <div class="status-card">
+            <span class="dot ok"></span>
+            <span>Owner session</span>
+          </div>
+        </div>
+
+        <section class="settings-grid">
+          <article class="panel account-card">
+            <span class="summary-kicker">Owner</span>
+            <strong id="accountOwnerName">-</strong>
+            <p id="accountOwnerEmail">No owner loaded.</p>
+          </article>
+          <article class="panel account-card">
+            <span class="summary-kicker">Workspace</span>
+            <strong id="accountWorkspaceName">-</strong>
+            <p id="accountWorkspaceId">No workspace loaded.</p>
+          </article>
+        </section>
+
+        <section class="panel account-readiness">
+          <div class="section-title">
+            <h2>Workspace readiness</h2>
+            <p>Account-level view of the implemented console surfaces.</p>
+          </div>
+          <div class="account-readiness-grid" id="accountReadiness"></div>
         </section>
       </section>
 

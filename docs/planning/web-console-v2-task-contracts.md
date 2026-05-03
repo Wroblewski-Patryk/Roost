@@ -1,5 +1,52 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-009 Account Settings View
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: dedicated `/settings/account` owner-console view
+  for signed-in user and workspace context.
+- Goal: Complete the first Settings information architecture with account,
+  integrations, ClickUp, Drive, and API surfaces backed by implemented data.
+- Scope:
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `src/app.ts`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Add `/settings/account` to authenticated frontend and Express web routes.
+  - Add signed-in navigation and settings links to account settings.
+  - Render user, workspace, session, and integration readiness using existing
+    connection state only.
+  - Validate syntax, build, tests, local route rendering, and production smoke.
+- Acceptance Criteria:
+  - Signed-in navigation includes `Account`.
+  - `/settings/account` renders owner and workspace context after sign-in.
+  - Account settings link to implemented integration and API settings routes.
+  - Existing settings routes still render.
+- Definition of Done:
+  - `node --check public/app.js`, `git diff --check`, `npm run build`, and
+    `npm test` pass.
+  - Browser smoke verifies `/settings/account`, account cards, and settings
+    links on desktop.
+  - Project state, task board, and next-commits docs are updated.
+- Result Report:
+  - Added `/settings/account` to the authenticated frontend route list, signed
+    in navigation, topbar actions, dashboard actions, and Express web app route
+    allowlist.
+  - Rendered owner name/email, workspace name/id, session readiness, and links
+    to implemented settings surfaces using existing connection state.
+  - Updated connection hydration so the owner user returned by `/v1/connection`
+    is available after direct route refresh.
+  - `node --check public/app.js`, `git diff --check`, `npm run build`, and
+    `npm test` passed.
+  - Playwright smoke verified `/settings/account`, owner/workspace cards,
+    readiness links, and active navigation on desktop.
+
 ## V2WEB-008 Dashboard Command Center
 
 - Task Type: design/frontend
