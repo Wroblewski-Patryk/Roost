@@ -805,6 +805,26 @@
           </div>
           <div class="capability-list" id="capabilityList"></div>
         </section>
+
+        <section class="panel api-panel">
+          <div class="section-title">
+            <h2>Route workbench</h2>
+            <p id="apiRouteSummary">Sign in to load the adapter route manifest.</p>
+          </div>
+          <section class="api-filter-bar" aria-label="API route filters">
+            <label>
+              Search routes
+              <input id="apiSearch" type="search" autocomplete="off" placeholder="Route, group, capability..." />
+            </label>
+            <label>
+              Method
+              <select id="apiMethodFilter">
+                <option value="">All methods</option>
+              </select>
+            </label>
+          </section>
+          <div class="compact-list api-route-list" id="apiRouteList"></div>
+        </section>
       </section>
 
       <section class="panel result" id="resultPanel" hidden>

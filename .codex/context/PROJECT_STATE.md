@@ -112,12 +112,11 @@ Last updated: 2026-05-04
   pattern.
 
 ## Autonomous Iteration State
-- Current iteration: V2WEB-015 Google Drive Files Workbench Filters.
+- Current iteration: V2WEB-016 API Workbench Filters.
 - Current operation mode: BUILDER
-- Last completed iteration: V2WEB-015 Google Drive Files Workbench Filters.
-- Last completed task: added search, kind, operating-area, and scan-status
-  filtering to `/settings/drive` imported Drive files while preserving folder
-  assignment selectors.
+- Last completed iteration: V2WEB-016 API Workbench Filters.
+- Last completed task: added a searchable `/settings/api` route workbench
+  using the existing adapter manifest from `/v1/connection`.
 - Next required mode: BUILDER for the next v2 web console iteration unless an
   architecture decision blocks the queue first.
 
@@ -739,6 +738,11 @@ Last updated: 2026-05-04
   operating-area, and scan-status filters, filtered counts, and a
   filter-specific empty state. The Google Drive panel now updates
   `aria-disabled` with its enabled state so signed-in controls are accessible.
+- 2026-05-04: Completed V2WEB-016 by turning `/settings/api` into a searchable
+  route workbench backed by the existing adapter manifest from
+  `/v1/connection`. API route rows now show method, path, group, and
+  capability context with search, method filtering, filtered counts, and a
+  filter-specific empty state while preserving capability badges.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

@@ -5,6 +5,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
+- [x] V2WEB-016 API Workbench Filters
 - [x] V2WEB-015 Google Drive Files Workbench Filters
 - [x] V2WEB-014 Integration Matrix Filters
 - [x] V2WEB-013 Operating Area Workbench Filters
@@ -80,7 +81,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NEXT
 
-- [ ] Continue v2 web console polish after Google Drive file filters:
+- [ ] Continue v2 web console polish after API workbench filters:
       deeper
       module editing surfaces should become route-level slices only when their
       data path is already implemented.
@@ -113,6 +114,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 60. V2WEB-013 Operating Area Workbench Filters
 - [x] 61. V2WEB-014 Integration Matrix Filters
 - [x] 62. V2WEB-015 Google Drive Files Workbench Filters
+- [x] 63. V2WEB-016 API Workbench Filters
 - [x] 48. V2WEB-001 Operating Map And Google Drive Console
 - [x] 39. V2GD-001 Google Drive Architecture And Queue
 - [x] 40. V2GD-002 Google Drive Persistence Foundation

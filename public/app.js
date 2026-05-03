@@ -6,6 +6,7 @@ const state = {
   workspace: null,
   user: null,
   capabilities: [],
+  adapterManifest: null,
   mobileMenuOpen: false,
   clickup: {
     configured: false,
@@ -57,6 +58,10 @@ const state = {
     kind: "",
     area: "",
     scan: ""
+  },
+  apiFilters: {
+    search: "",
+    method: ""
   }
 };
 
@@ -120,6 +125,10 @@ const googleDriveStatusLabel = document.querySelector("#googleDriveStatusLabel")
 const googleDriveStatusHint = document.querySelector("#googleDriveStatusHint");
 const capabilitySummary = document.querySelector("#capabilitySummary");
 const capabilityList = document.querySelector("#capabilityList");
+const apiSearch = document.querySelector("#apiSearch");
+const apiMethodFilter = document.querySelector("#apiMethodFilter");
+const apiRouteSummary = document.querySelector("#apiRouteSummary");
+const apiRouteList = document.querySelector("#apiRouteList");
 const operatingAreasNav = document.querySelector("#operatingAreasNav");
 const areaTitle = document.querySelector("#areaTitle");
 const areaDescription = document.querySelector("#areaDescription");
@@ -1963,12 +1972,104 @@ function renderConnectionState() {
       : "Sign in to load available API capabilities.";
     capabilityList.innerHTML = "";
   }
+
+  renderApiWorkbench();
+}
+
+function renderApiWorkbench() {
+  apiRouteList.innerHTML = "";
+  const routes = apiRouteRows();
+  syncApiFilters(routes);
+  const filteredRoutes = filteredApiRouteRows(routes);
+
+  if (!isSignedIn()) {
+    apiRouteSummary.textContent = "Sign in to load the adapter route manifest.";
+    renderApiRouteEmpty("Sign in to review implemented API routes.");
+    return;
+  }
+
+  if (routes.length === 0) {
+    apiRouteSummary.textContent = "No adapter route manifest is available for this workspace yet.";
+    renderApiRouteEmpty("The connection endpoint did not return adapter routes.");
+    return;
+  }
+
+  apiRouteSummary.textContent = `${filteredRoutes.length} of ${routes.length} implemented API route${routes.length === 1 ? "" : "s"} match the current view.`;
+
+  if (filteredRoutes.length === 0) {
+    renderApiRouteEmpty("No API routes match the current filters.");
+    return;
+  }
+
+  for (const route of filteredRoutes) {
+    const row = document.createElement("div");
+    row.className = "compact-row api-route-row";
+    const method = document.createElement("span");
+    method.className = "record-type";
+    method.textContent = route.method;
+    const title = document.createElement("strong");
+    title.textContent = route.path;
+    const meta = document.createElement("span");
+    meta.textContent = `${route.group} - ${route.capability || "capability not specified"}`;
+    row.append(method, title, meta);
+    apiRouteList.append(row);
+  }
+}
+
+function renderApiRouteEmpty(message) {
+  const empty = document.createElement("p");
+  empty.className = "empty-note";
+  empty.textContent = message;
+  apiRouteList.append(empty);
+}
+
+function apiRouteRows() {
+  const routes = state.adapterManifest?.routes || {};
+  return Object.entries(routes).flatMap(([group, items]) => (items || []).map((route) => {
+    const method = route.method || "GET";
+    const path = route.path || "-";
+    const capability = route.capability || "";
+    return {
+      group,
+      method,
+      path,
+      capability,
+      searchable: [group, method, path, capability].filter(Boolean).join(" ").toLowerCase()
+    };
+  }));
+}
+
+function syncApiFilters(routes) {
+  apiSearch.value = state.apiFilters.search;
+  const methods = [...new Set(routes.map((route) => route.method).filter(Boolean))]
+    .sort((left, right) => left.localeCompare(right));
+  const nextMethod = methods.includes(state.apiFilters.method) ? state.apiFilters.method : "";
+  apiMethodFilter.innerHTML = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "All methods";
+  apiMethodFilter.append(placeholder);
+  for (const method of methods) {
+    const option = document.createElement("option");
+    option.value = method;
+    option.textContent = method;
+    apiMethodFilter.append(option);
+  }
+  apiMethodFilter.value = nextMethod;
+  state.apiFilters.method = nextMethod;
+}
+
+function filteredApiRouteRows(routes) {
+  const search = state.apiFilters.search.trim().toLowerCase();
+  return routes.filter((route) => (!search || route.searchable.includes(search))
+    && (!state.apiFilters.method || route.method === state.apiFilters.method));
 }
 
 function setConnected(connection) {
   state.workspace = connection.data.workspace;
   state.user = connection.data.user || state.user;
   state.capabilities = connection.data.capabilities || [];
+  state.adapterManifest = connection.data.adapterManifest || null;
   state.clickup.configured = connection.data.integrations.clickup.configured;
   state.clickup.active = Boolean(connection.data.integrations.clickup.active);
   state.clickup.config = connection.data.integrations.clickup.config || {};
@@ -2262,6 +2363,7 @@ logoutButton.addEventListener("click", () => {
   state.workspace = null;
   state.user = null;
   state.capabilities = [];
+  state.adapterManifest = null;
   state.clickup.configured = false;
   state.clickup.active = false;
   state.clickup.config = {};
@@ -2294,6 +2396,8 @@ logoutButton.addEventListener("click", () => {
   state.driveFilters.kind = "";
   state.driveFilters.area = "";
   state.driveFilters.scan = "";
+  state.apiFilters.search = "";
+  state.apiFilters.method = "";
   renderTasks();
   renderGoogleDriveFiles();
   renderOperatingMap();
@@ -2389,6 +2493,16 @@ driveAreaFilter.addEventListener("change", () => {
 driveScanFilter.addEventListener("change", () => {
   state.driveFilters.scan = driveScanFilter.value;
   renderGoogleDriveFiles();
+});
+
+apiSearch.addEventListener("input", () => {
+  state.apiFilters.search = apiSearch.value;
+  renderApiWorkbench();
+});
+
+apiMethodFilter.addEventListener("change", () => {
+  state.apiFilters.method = apiMethodFilter.value;
+  renderApiWorkbench();
 });
 
 loginForm.addEventListener("submit", async (event) => {

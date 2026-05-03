@@ -444,7 +444,8 @@ h4 {
 .pipeline-filter-bar,
 .area-filter-bar,
 .integration-filter-bar,
-.drive-filter-bar {
+.drive-filter-bar,
+.api-filter-bar {
   display: grid;
   grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(150px, 0.75fr));
   gap: 12px;
@@ -461,7 +462,8 @@ h4 {
 }
 
 .area-filter-bar,
-.integration-filter-bar {
+.integration-filter-bar,
+.api-filter-bar {
   grid-template-columns: minmax(220px, 1.5fr) minmax(160px, 0.8fr);
   margin-top: 16px;
 }
@@ -470,7 +472,8 @@ h4 {
 .pipeline-filter-bar label,
 .area-filter-bar label,
 .integration-filter-bar label,
-.drive-filter-bar label {
+.drive-filter-bar label,
+.api-filter-bar label {
   margin: 0;
   color: var(--muted);
   font-size: 12px;
@@ -486,7 +489,9 @@ h4 {
 .integration-filter-bar input,
 .integration-filter-bar select,
 .drive-filter-bar input,
-.drive-filter-bar select {
+.drive-filter-bar select,
+.api-filter-bar input,
+.api-filter-bar select {
   margin-top: 6px;
 }
 
@@ -575,6 +580,10 @@ h4 {
 }
 
 .drive-filter-bar {
+  margin: 0 0 16px;
+}
+
+.api-filter-bar {
   margin: 0 0 16px;
 }
 
@@ -1148,6 +1157,15 @@ button.compact,
   font-weight: 800;
 }
 
+.api-route-list {
+  margin-top: 4px;
+}
+
+.api-route-row strong {
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+}
+
 .table-wrap {
   overflow-x: auto;
 }
@@ -1282,6 +1300,7 @@ button.compact,
   .area-filter-bar,
   .integration-filter-bar,
   .drive-filter-bar,
+  .api-filter-bar,
   .module-launch-grid {
     grid-template-columns: 1fr;
   }

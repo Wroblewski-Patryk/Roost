@@ -1,5 +1,55 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-016 API Workbench Filters
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: searchable API route workbench backed by the
+  implemented adapter manifest returned by `/v1/connection`.
+- Goal: Make `/settings/api` useful for agents, adapters, and internal tools by
+  showing implemented API routes as searchable workbench rows instead of only
+  static capability badges.
+- Scope:
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Store the existing `adapterManifest` from `/v1/connection` in frontend
+    state.
+  - Add search and method filters to `/settings/api`.
+  - Flatten implemented adapter manifest route groups into one route workbench.
+  - Preserve the existing capability badge list.
+  - Validate syntax, build, tests, local route rendering, and production smoke.
+- Acceptance Criteria:
+  - `/settings/api` supports search across route group, method, path, and
+    capability.
+  - Method filtering updates route rows without reloading.
+  - Summary reflects filtered count versus total implemented API routes.
+  - Empty state explains when filters hide all API routes.
+  - Existing capability badges still render.
+- Definition of Done:
+  - `node --check public/app.js`, `git diff --check`, `npm run build`, and
+    `npm test` pass.
+  - Browser smoke verifies API search, method filtering, filtered empty state,
+    and capability badges on desktop.
+  - Project state, task board, and next-commits docs are updated.
+- Result Report:
+  - Stored the existing `adapterManifest` from `/v1/connection` in frontend
+    state.
+  - Added a searchable route workbench to `/settings/api`.
+  - Added method filtering for implemented API manifest routes.
+  - Flattened adapter manifest route groups into readable route rows with
+    method, path, group, and capability context.
+  - Preserved the existing capability badge list.
+  - `node --check public/app.js`, `git diff --check`, `npm run build`, and
+    `npm test` passed.
+  - Playwright smoke verified API route search, method filtering, filtered
+    empty state, and capability badges on desktop.
+
 ## V2WEB-015 Google Drive Files Workbench Filters
 
 - Task Type: design/frontend
