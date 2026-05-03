@@ -659,6 +659,10 @@ test("CompanyCore v1 protected API flow", async () => {
   const originalFetchBeforeWebhooks = globalThis.fetch;
   globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
     const url = new URL(String(input));
+    if (url.pathname === "/api/v2/team/team-1/webhook" && !init?.method) {
+      return new Response(JSON.stringify({ webhooks: [] }), { status: 200 });
+    }
+
     if (url.pathname === "/api/v2/team/team-1/webhook" && init?.method === "POST") {
       const body = JSON.parse(String(init.body ?? "{}")) as { list_id?: string };
       const listId = body.list_id ?? "workspace";
@@ -672,6 +676,10 @@ test("CompanyCore v1 protected API flow", async () => {
           health: { status: "active" }
         }
       }), { status: 200 });
+    }
+
+    if (url.pathname === "/api/v2/webhook/webhook-list-folderless" && init?.method === "DELETE") {
+      return new Response("", { status: 200 });
     }
 
     return new Response(JSON.stringify({ err: "Not found" }), { status: 404 });
@@ -689,13 +697,28 @@ test("CompanyCore v1 protected API flow", async () => {
     assert.equal(reconciledBody.data.createdCount, 2);
     assert.equal(reconciledBody.data.existingCount, 0);
     assert.ok(reconciledBody.data.registrations.some((registration) => registration.externalId === "webhook-list-1"));
+
+    const listedWebhooks = await request("/v1/integration-settings/clickup/webhooks", { headers: authA });
+    assert.equal(listedWebhooks.status, 200);
+    const listedWebhookRows = (listedWebhooks.body as {
+      data: Array<{ id: string; externalId: string; scopeExternalId: string }>;
+    }).data;
+    assert.equal(listedWebhookRows.length, 2);
+    const folderlessWebhook = listedWebhookRows.find((registration) => registration.scopeExternalId === "list-folderless");
+    assert.ok(folderlessWebhook);
+
+    const deletedWebhook = await request(`/v1/integration-settings/clickup/webhooks/${folderlessWebhook.id}`, {
+      method: "DELETE",
+      headers: authA
+    });
+    assert.equal(deletedWebhook.status, 200);
+
+    const listedWebhooksAfterDelete = await request("/v1/integration-settings/clickup/webhooks", { headers: authA });
+    assert.equal(listedWebhooksAfterDelete.status, 200);
+    assert.equal((listedWebhooksAfterDelete.body as { data: unknown[] }).data.length, 1);
   } finally {
     globalThis.fetch = originalFetchBeforeWebhooks;
   }
-
-  const listedWebhooks = await request("/v1/integration-settings/clickup/webhooks", { headers: authA });
-  assert.equal(listedWebhooks.status, 200);
-  assert.equal((listedWebhooks.body as { data: unknown[] }).data.length, 2);
 
   const originalFetchBeforeDiscovery = globalThis.fetch;
   globalThis.fetch = (async () => new Response(JSON.stringify({ err: "Unauthorized" }), { status: 401 })) as typeof fetch;
@@ -1308,6 +1331,81 @@ test("CompanyCore v1 protected API flow", async () => {
     where: { id: taskId }
   });
   assert.equal(manualTaskAfterReplace?.title, "Workspace A task");
+
+  let createdInClickUpPayload: unknown = null;
+  let customFieldPayload: unknown = null;
+  let archivePayload: unknown = null;
+  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+    const url = new URL(String(input));
+    if (url.pathname === "/api/v2/list/list-1/task" && init?.method === "POST") {
+      createdInClickUpPayload = JSON.parse(String(init.body ?? "{}"));
+      return new Response(JSON.stringify({
+        id: "clickup-task-created-from-companycore",
+        name: "Created from CompanyCore"
+      }), { status: 200 });
+    }
+
+    if (url.pathname === "/api/v2/task/clickup-task-created-from-companycore/field/field-priority" && init?.method === "POST") {
+      customFieldPayload = JSON.parse(String(init.body ?? "{}"));
+      return new Response(JSON.stringify({ value: "urgent" }), { status: 200 });
+    }
+
+    if (url.pathname === "/api/v2/task/clickup-task-created-from-companycore" && init?.method === "PUT") {
+      archivePayload = JSON.parse(String(init.body ?? "{}"));
+      return new Response(JSON.stringify({
+        id: "clickup-task-created-from-companycore",
+        name: "Created from CompanyCore"
+      }), { status: 200 });
+    }
+
+    return new Response(JSON.stringify({ err: "Not found" }), { status: 404 });
+  }) as typeof fetch;
+
+  let createdClickUpBackedTaskId = "";
+  try {
+    const clickUpBackedTask = await request("/v1/tasks", {
+      method: "POST",
+      headers: authA,
+      body: JSON.stringify({
+        taskListId: replacedTask?.taskListId,
+        title: "Created from CompanyCore",
+        description: "This should be created in ClickUp first",
+        priority: "urgent",
+        status: "todo"
+      })
+    });
+    assert.equal(clickUpBackedTask.status, 201);
+    const clickUpBackedTaskBody = clickUpBackedTask.body as { data: { id: string; externalId: string; source: string } };
+    createdClickUpBackedTaskId = clickUpBackedTaskBody.data.id;
+    assert.equal(clickUpBackedTaskBody.data.externalId, "clickup-task-created-from-companycore");
+    assert.equal(clickUpBackedTaskBody.data.source, "clickup");
+
+    const customFieldUpdate = await request(`/v1/tasks/${createdClickUpBackedTaskId}/clickup/custom-fields/field-priority`, {
+      method: "POST",
+      headers: authA,
+      body: JSON.stringify({
+        value: "urgent"
+      })
+    });
+    assert.equal(customFieldUpdate.status, 200);
+
+    const archivedClickUpBackedTask = await request(`/v1/tasks/${createdClickUpBackedTaskId}`, {
+      method: "DELETE",
+      headers: authA
+    });
+    assert.equal(archivedClickUpBackedTask.status, 200);
+    assert.equal((archivedClickUpBackedTask.body as { data: { status: string } }).data.status, "archived");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+  assert.deepEqual(createdInClickUpPayload, {
+    name: "Created from CompanyCore",
+    description: "This should be created in ClickUp first",
+    status: "to do",
+    priority: 1
+  });
+  assert.deepEqual(customFieldPayload, { value: "urgent" });
+  assert.deepEqual(archivePayload, { archived: true });
 
   const eventsB = await request("/events", { headers: authB });
   assert.equal(events.status, 200);

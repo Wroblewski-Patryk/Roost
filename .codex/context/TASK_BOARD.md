@@ -95,3 +95,4 @@ Paperclip application-side adapter work tracked in
 - CCV1-036G CompanyCore to ClickUp write-back.
 - CCV1-036F Production Webhook Smoke.
 - CCV1-041 Template Agent Governance Sync.
+- CCV1-042 ClickUp Full API Bridge Completion.

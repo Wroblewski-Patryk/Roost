@@ -85,8 +85,9 @@ Last updated: 2026-05-03
   Postgres volume.
 
 ## Current Focus
-- Main active objective: complete the first real ClickUp owner import in
-  production, then decide continuous sync strategy.
+- Main active objective: complete the first real ClickUp owner import and
+  bidirectional ClickUp task bridge in production, then wire Paperclip's
+  application-side adapter to CompanyCore agent events.
 - Top blockers: a real ClickUp token/list selection is needed for first
   production import; GitHub repository webhook setup needs an authenticated
   GitHub session or token with webhook administration permissions.
@@ -96,13 +97,13 @@ Last updated: 2026-05-03
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-041 Template Agent Governance Sync.
+- Current iteration: CCV1-042 ClickUp Full API Bridge Completion.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-041 Template Agent Governance Sync.
-- Last completed task: compared `companycore` with `!template`, confirmed the
-  autonomous engineering loop and agent role updates were already present, then
-  synced the remaining source-of-truth references for docs index, canonical
-  workflow context, and working agreements.
+- Last completed iteration: CCV1-042 ClickUp Full API Bridge Completion.
+- Last completed task: extended the ClickUp bridge so CompanyCore can create
+  ClickUp tasks from ClickUp-sourced lists, archive ClickUp-sourced tasks,
+  write mapped ClickUp Custom Field values, delete webhook registrations, and
+  reconcile webhook health against ClickUp's remote webhook list.
 - Next required mode: BUILDER for Paperclip application-side CompanyCore
   adapter unless priority changes.
 
@@ -417,6 +418,14 @@ Last updated: 2026-05-03
   present. Synced the remaining missing governance references into
   `.codex/context/PROJECT_STATE.md`, added a full CompanyCore docs index to
   `docs/README.md`, and recorded the task in `.codex/context/TASK_BOARD.md`.
+- 2026-05-03: Completed CCV1-042 locally by extending the ClickUp API bridge
+  beyond pull/import and PATCH write-back. CompanyCore now creates ClickUp
+  tasks before local persistence when a task targets a ClickUp-sourced list,
+  archives ClickUp-sourced tasks in ClickUp before local archival, writes
+  mapped ClickUp Custom Field values, deletes individual ClickUp webhook
+  registrations, and reconciles webhook health by comparing local
+  registrations with ClickUp's remote webhook list. `npm test` passed against
+  disposable PostgreSQL on `localhost:55432`.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

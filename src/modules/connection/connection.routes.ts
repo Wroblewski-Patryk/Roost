@@ -17,6 +17,7 @@ const capabilities = [
   "tasks:read",
   "tasks:write",
   "tasks:sync:clickup",
+  "tasks:clickup:custom-fields:write",
   "clients:read",
   "clients:write",
   "pipeline-stages:read",
@@ -36,7 +37,8 @@ const capabilities = [
   "events:read",
   "integration-settings:clickup:read",
   "integration-settings:clickup:write",
-  "integration-settings:clickup:discover"
+  "integration-settings:clickup:discover",
+  "integration-settings:clickup:webhooks:write"
 ] as const;
 
 const adapterManifest = {
@@ -83,6 +85,8 @@ const adapterManifest = {
       { method: "GET", path: "/v1/tasks", capability: "tasks:read" },
       { method: "POST", path: "/v1/tasks", capability: "tasks:write" },
       { method: "PATCH", path: "/v1/tasks/:id", capability: "tasks:write" },
+      { method: "DELETE", path: "/v1/tasks/:id", capability: "tasks:write" },
+      { method: "POST", path: "/v1/tasks/:id/clickup/custom-fields/:fieldId", capability: "tasks:clickup:custom-fields:write" },
       { method: "POST", path: "/v1/tasks/sync/clickup/native", capability: "tasks:sync:clickup" }
     ],
     clients: [
@@ -124,7 +128,10 @@ const adapterManifest = {
     integrationSettings: [
       { method: "GET", path: "/v1/integration-settings/clickup", capability: "integration-settings:clickup:read" },
       { method: "PUT", path: "/v1/integration-settings/clickup", capability: "integration-settings:clickup:write" },
-      { method: "POST", path: "/v1/integration-settings/clickup/discover", capability: "integration-settings:clickup:discover" }
+      { method: "POST", path: "/v1/integration-settings/clickup/discover", capability: "integration-settings:clickup:discover" },
+      { method: "GET", path: "/v1/integration-settings/clickup/webhooks", capability: "integration-settings:clickup:read" },
+      { method: "POST", path: "/v1/integration-settings/clickup/webhooks/reconcile", capability: "integration-settings:clickup:webhooks:write" },
+      { method: "DELETE", path: "/v1/integration-settings/clickup/webhooks/:id", capability: "integration-settings:clickup:webhooks:write" }
     ]
   },
   writeRules: [

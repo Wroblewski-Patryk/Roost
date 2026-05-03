@@ -156,6 +156,8 @@ The ClickUp adapter should establish the pattern for future integrations:
 - idempotent persistence using `(workspace_id, source, external_id)`
 - explicit import policy for existing records before writes run
 - event emission, outbound agent signals, and observable sync/webhook results
+- bidirectional task operations through CompanyCore API routes: create,
+  update, archive, and mapped Custom Field value writes
 
 Provider adapters must be designed from current vendor documentation and
 record the relevant endpoint, hierarchy, pagination, rate-limit, webhook,
@@ -189,6 +191,13 @@ when the ClickUp user loses access or the webhook becomes inactive. Webhook
 secrets returned by ClickUp must be encrypted as workspace integration secret
 material. Incoming webhook requests must be rejected before parsing business
 logic when the `X-Signature` HMAC SHA-256 check fails.
+
+Webhook operations should be managed as durable provider resources, not as
+fire-and-forget setup calls. Reconciliation must compare local registrations
+with ClickUp's remote webhook list, refresh health, reactivate inactive
+webhooks when possible, replace missing remote registrations, and keep stale
+local registrations from no-longer-selected Lists inactive until an owner
+deletes them.
 
 Webhook processing should be event-first and bridge-friendly. Status changes,
 for example `taskStatusUpdated`, must update the CompanyCore task state and

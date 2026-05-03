@@ -226,6 +226,7 @@ PUT /integration-settings/clickup
 POST /v1/integration-settings/clickup/discover
 GET /v1/integration-settings/clickup/webhooks
 POST /v1/integration-settings/clickup/webhooks/reconcile
+DELETE /v1/integration-settings/clickup/webhooks/:id
 ```
 
 ClickUp configuration payload:
@@ -295,6 +296,14 @@ ClickUp structural metadata into the operating model registry:
 
 This persistence is idempotent and stores provider IDs/names only, not token
 material.
+
+Webhook reconciliation compares CompanyCore registrations with ClickUp's remote
+webhook list, creates missing selected List webhooks, refreshes health metadata,
+reactivates inactive remote webhooks when possible, replaces registrations that
+no longer exist in ClickUp, and marks registrations for no-longer-selected
+Lists inactive. Owner users can delete a single registration through
+`DELETE /v1/integration-settings/clickup/webhooks/:id`, which first deletes the
+remote ClickUp webhook and then removes the local encrypted registration.
 
 Safe discovery response:
 
@@ -606,11 +615,15 @@ delete task lists yet.
 GET /v1/tasks
 POST /v1/tasks
 PATCH /v1/tasks/:id
+DELETE /v1/tasks/:id
+POST /v1/tasks/:id/clickup/custom-fields/:fieldId
 POST /v1/tasks/sync/clickup
 POST /v1/tasks/sync/clickup/native
 GET /tasks
 POST /tasks
 PATCH /tasks/:id
+DELETE /tasks/:id
+POST /tasks/:id/clickup/custom-fields/:fieldId
 POST /tasks/sync/clickup
 POST /tasks/sync/clickup/native
 ```
@@ -688,6 +701,19 @@ For ClickUp-sourced tasks, `PATCH /v1/tasks/:id` writes supported CompanyCore
 edits back to ClickUp before saving the local update. Supported write-back
 fields are title, description, status, priority, and due date. Provider
 failures return the mapped integration error and emit `clickup_writeback_failed`.
+
+When `POST /v1/tasks` targets a ClickUp-sourced task list, CompanyCore creates
+the task in ClickUp first, then stores the returned ClickUp task ID as
+`externalId` with `source = clickup`. This keeps CompanyCore as the API source
+of truth while preserving ClickUp as the mapped external workspace/list surface.
+
+`DELETE /v1/tasks/:id` archives ClickUp-sourced tasks in ClickUp before marking
+the local task `archived`. Native/manual CompanyCore tasks are archived locally.
+
+`POST /v1/tasks/:id/clickup/custom-fields/:fieldId` sets a mapped ClickUp Custom
+Field value for a ClickUp-sourced task. The field must exist in
+`external_field_mappings` for the workspace, and provider failures emit
+`clickup_custom_field_update_failed`.
 
 Safe native sync response:
 
@@ -906,6 +932,11 @@ Generated v1 events:
 - `clickup_taskUpdated`
 - `clickup_taskStatusUpdated`
 - `clickup_writeback_failed`
+- `clickup_create_failed`
+- `clickup_archive_failed`
+- `clickup_custom_field_updated`
+- `clickup_custom_field_update_failed`
+- `clickup_webhook_deleted`
 - `goal_created`
 - `target_created`
 - `client_created`

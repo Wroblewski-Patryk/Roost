@@ -2,7 +2,11 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
 import { ClickUpClient } from "../../integrations/clickup/clickup.client";
-import { listClickUpWebhookRegistrations, reconcileClickUpWebhooksForWorkspace } from "../../integrations/clickup/clickup.webhooks";
+import {
+  deleteClickUpWebhookRegistration,
+  listClickUpWebhookRegistrations,
+  reconcileClickUpWebhooksForWorkspace
+} from "../../integrations/clickup/clickup.webhooks";
 import { IntegrationError } from "../../integrations/errors";
 import { getClickUpSettingsForWorkspace, toJsonInput } from "../../integrations/integration-settings.service";
 import { encryptSecret } from "../../integrations/secrets";
@@ -121,6 +125,25 @@ integrationSettingsRouter.post("/clickup/webhooks/reconcile", asyncHandler(async
 
   try {
     const result = await reconcileClickUpWebhooksForWorkspace(req.auth!.workspaceId, req);
+    return res.json({ data: result });
+  } catch (error) {
+    if (error instanceof IntegrationError) {
+      return res.status(error.status).json({ error: error.code });
+    }
+    throw error;
+  }
+}));
+
+integrationSettingsRouter.delete("/clickup/webhooks/:id", asyncHandler(async (req, res) => {
+  if (req.auth!.authType !== "user") {
+    return res.status(403).json({ error: "forbidden" });
+  }
+
+  try {
+    const result = await deleteClickUpWebhookRegistration({
+      workspaceId: req.auth!.workspaceId,
+      registrationId: String(req.params.id)
+    });
     return res.json({ data: result });
   } catch (error) {
     if (error instanceof IntegrationError) {

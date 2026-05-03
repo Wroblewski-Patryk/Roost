@@ -287,10 +287,32 @@ export class ClickUpClient {
     status?: string;
     priority?: number | null;
     due_date?: number | null;
+    archived?: boolean;
   }) {
     return this.request<ClickUpTask>(`/task/${encodeURIComponent(taskId)}`, {
       method: "PUT",
       body: JSON.stringify(input)
+    });
+  }
+
+  async createTask(listId: string, input: {
+    name: string;
+    description?: string;
+    markdown_content?: string;
+    status?: string;
+    priority?: number | null;
+    due_date?: number | null;
+  }) {
+    return this.request<ClickUpTask>(`/list/${encodeURIComponent(listId)}/task`, {
+      method: "POST",
+      body: JSON.stringify(input)
+    });
+  }
+
+  async setCustomFieldValue(taskId: string, fieldId: string, value: unknown) {
+    return this.request<Record<string, unknown>>(`/task/${encodeURIComponent(taskId)}/field/${encodeURIComponent(fieldId)}`, {
+      method: "POST",
+      body: JSON.stringify({ value })
     });
   }
 
@@ -335,6 +357,12 @@ export class ClickUpClient {
       body: JSON.stringify(input)
     });
     return payload.webhook ?? null;
+  }
+
+  async deleteWebhook(webhookId: string) {
+    await this.request<Record<string, unknown>>(`/webhook/${encodeURIComponent(webhookId)}`, {
+      method: "DELETE"
+    });
   }
 
   private safeSummary(input: { id?: string | number | null; name?: string | null }) {
@@ -420,6 +448,7 @@ export class ClickUpClient {
       );
     }
 
-    return response.json() as Promise<T>;
+    const text = await response.text();
+    return (text ? JSON.parse(text) : {}) as T;
   }
 }

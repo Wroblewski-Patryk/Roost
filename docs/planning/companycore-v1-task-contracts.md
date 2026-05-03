@@ -430,6 +430,94 @@ provider mappings, storage roots, knowledge roots, and automation scopes.
 ### Priority
 P0
 
+## CCV1-042 ClickUp Full API Bridge Completion
+
+### Header
+- ID: CCV1-042
+- Title: ClickUp full API bridge completion
+- Task Type: feature
+- Current Stage: verification
+- Status: DONE
+- Owner: Backend Builder
+- Depends on: CCV1-036A, CCV1-036B, CCV1-036C, CCV1-036D, CCV1-036E, CCV1-036G
+- Priority: P0
+- Iteration: v1-042
+- Operation Mode: BUILDER
+
+### Description
+Close the remaining ClickUp bidirectional API gaps so CompanyCore can act as
+the source-of-truth API while preserving 1:1 mapping to selected ClickUp Lists,
+Tasks, Custom Fields, and webhook registrations.
+
+### Goal
+Support full v1 task bridge operations through CompanyCore: create ClickUp
+tasks from mapped lists, write task updates, archive tasks, write mapped Custom
+Fields, and manage ClickUp webhook registrations with health reconciliation.
+
+### Scope
+- `src/integrations/clickup/clickup.client.ts`
+- `src/integrations/clickup/clickup.webhooks.ts`
+- `src/modules/tasks/tasks.routes.ts`
+- `src/modules/integration-settings/integration-settings.routes.ts`
+- `src/modules/connection/connection.routes.ts`
+- `src/tests/api.test.ts`
+- `docs/API.md`
+- `docs/architecture/system-architecture.md`
+- `.codex/context/PROJECT_STATE.md`
+- `.codex/context/TASK_BOARD.md`
+- `docs/planning/mvp-next-commits.md`
+
+### Implementation Plan
+- Extend the ClickUp client with Create Task, Set Custom Field Value, Delete
+  Webhook, archived task update support, and empty-body response handling.
+- Route CompanyCore task creation through ClickUp first when the target task
+  list is ClickUp-sourced.
+- Add task archival and mapped Custom Field write endpoints.
+- Improve webhook reconciliation to compare local records with ClickUp remote
+  webhooks, refresh health, reactivate inactive hooks, replace missing remote
+  registrations, and allow owner deletion.
+- Update adapter manifest, API docs, architecture truth, planning, and tests.
+
+### Acceptance Criteria
+- [x] Creating a task under a ClickUp-sourced list calls ClickUp Create Task
+  before local persistence and stores the returned external ID.
+- [x] Updating a ClickUp-sourced task still writes supported fields back to
+  ClickUp before local update.
+- [x] Deleting a ClickUp-sourced task archives it in ClickUp before local
+  archival.
+- [x] Mapped ClickUp Custom Field values can be written through a protected
+  CompanyCore route.
+- [x] Webhook reconciliation refreshes health against ClickUp remote state and
+  owner users can delete registrations.
+- [x] Adapter manifest and API docs expose the new capabilities safely.
+- [x] Local integration tests pass.
+
+### Definition of Done
+- [x] Implementation uses existing workspace-scoped settings and encrypted
+  provider secrets.
+- [x] No raw ClickUp tokens or webhook secrets are returned to clients.
+- [x] Provider errors map to safe API error codes.
+- [x] Runtime routes emit events for success and provider failure paths.
+- [x] `npm test` passes against disposable PostgreSQL.
+
+### Result Report
+- Task summary: Added ClickUp task creation, archival, Custom Field write, and
+  webhook delete/health reconciliation capabilities to the existing native
+  ClickUp bridge.
+- Files changed: ClickUp client/service files, task and integration routes,
+  connection manifest, API/architecture/planning/context docs, and regression
+  tests.
+- How tested: Ran `npm test` with `DATABASE_URL` pointed at disposable
+  PostgreSQL on `localhost:55432`; the test suite performed build, migrate
+  deploy, and API flow checks.
+- What is incomplete: Production deploy and smoke are still required for the
+  runtime change.
+- Next steps: Deploy the runtime change to Coolify, smoke health and protected
+  CompanyCore/ClickUp bridge status, then continue the Paperclip adapter.
+
+### Priority
+P0
+
 ## CCV1-035 ClickUp First-Run Import Policy And Launch Audit
 
 ### Header

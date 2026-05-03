@@ -8,7 +8,8 @@ export class IntegrationError extends Error {
       | "sync_failed"
       | "invalid_webhook_payload"
       | "webhook_not_registered"
-      | "invalid_webhook_signature",
+      | "invalid_webhook_signature"
+      | "not_found",
     public readonly status: number,
     message: string
   ) {

@@ -35,6 +35,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] CCV1-036E Agent Event Bridge
 - [x] CCV1-036G CompanyCore To ClickUp Write-Back
 - [x] CCV1-036F Production Webhook Smoke
+- [x] CCV1-042 ClickUp Full API Bridge Completion
 
 ## NEXT
 
@@ -62,6 +63,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 17. CCV1-036E Agent Event Bridge
 - [x] 18. CCV1-036G CompanyCore To ClickUp Write-Back
 - [x] 19. CCV1-036F Production Webhook Smoke
+- [x] 20. CCV1-042 ClickUp Full API Bridge Completion
 
 
 ## GROUP QUEUE

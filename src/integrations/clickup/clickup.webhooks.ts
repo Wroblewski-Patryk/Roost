@@ -109,9 +109,40 @@ export async function reconcileClickUpWebhooksForWorkspace(
 
   const endpointUrl = webhookEndpointUrl(req);
   const client = new ClickUpClient(settings.token);
+  const remoteWebhooks = await client.getWebhooks(teamId);
+  const remoteById = new Map(remoteWebhooks.map((webhook) => [webhook.id, webhook]));
   const reconciled = [];
   let createdCount = 0;
   let existingCount = 0;
+  let refreshedCount = 0;
+  let reactivatedCount = 0;
+  let replacedCount = 0;
+  let staleCount = 0;
+
+  await prisma.externalWebhookRegistration.updateMany({
+    where: {
+      workspaceId,
+      provider: "clickup",
+      scopeType: "list",
+      scopeExternalId: { notIn: listIds },
+      status: { not: "inactive" }
+    },
+    data: {
+      status: "inactive",
+      lastHealthAt: new Date(),
+      lastErrorCode: "scope_removed"
+    }
+  });
+
+  staleCount = await prisma.externalWebhookRegistration.count({
+    where: {
+      workspaceId,
+      provider: "clickup",
+      scopeType: "list",
+      scopeExternalId: { notIn: listIds },
+      status: "inactive"
+    }
+  });
 
   for (const listId of listIds) {
     const existing = await prisma.externalWebhookRegistration.findFirst({
@@ -125,7 +156,54 @@ export async function reconcileClickUpWebhooksForWorkspace(
 
     if (existing) {
       existingCount += 1;
-      reconciled.push(safeRegistration(existing));
+      const remoteWebhook = remoteById.get(existing.externalId);
+      if (!remoteWebhook) {
+        const webhook = await client.createWebhook({
+          teamId,
+          endpoint: endpointUrl,
+          events: [...clickUpWebhookEvents],
+          listId
+        });
+        const registration = await prisma.externalWebhookRegistration.update({
+          where: { id: existing.id },
+          data: {
+            externalId: webhook.id,
+            endpointUrl,
+            secretCiphertext: encryptSecret(webhook.secret!),
+            events: toJson(webhook.events ?? [...clickUpWebhookEvents]),
+            status: webhook.health?.status ?? "active",
+            lastHealthAt: new Date(),
+            lastErrorCode: null
+          }
+        });
+        replacedCount += 1;
+        reconciled.push(safeRegistration(registration));
+        continue;
+      }
+
+      let nextStatus = remoteWebhook.health?.status ?? existing.status;
+      if (nextStatus !== "active") {
+        const updated = await client.updateWebhook(existing.externalId, {
+          endpoint: endpointUrl,
+          events: [...clickUpWebhookEvents],
+          status: "active"
+        });
+        nextStatus = updated?.health?.status ?? "active";
+        reactivatedCount += 1;
+      }
+
+      const registration = await prisma.externalWebhookRegistration.update({
+        where: { id: existing.id },
+        data: {
+          endpointUrl,
+          events: toJson(remoteWebhook.events ?? [...clickUpWebhookEvents]),
+          status: nextStatus,
+          lastHealthAt: new Date(),
+          lastErrorCode: remoteWebhook.health?.fail_count ? `fail_count:${remoteWebhook.health.fail_count}` : null
+        }
+      });
+      refreshedCount += 1;
+      reconciled.push(safeRegistration(registration));
       continue;
     }
 
@@ -161,7 +239,11 @@ export async function reconcileClickUpWebhooksForWorkspace(
       provider: "clickup",
       listCount: listIds.length,
       createdCount,
-      existingCount
+      existingCount,
+      refreshedCount,
+      reactivatedCount,
+      replacedCount,
+      staleCount
     }
   });
 
@@ -171,8 +253,51 @@ export async function reconcileClickUpWebhooksForWorkspace(
     endpointUrl,
     createdCount,
     existingCount,
+    refreshedCount,
+    reactivatedCount,
+    replacedCount,
+    staleCount,
     registrations: reconciled
   };
+}
+
+export async function deleteClickUpWebhookRegistration(input: {
+  workspaceId: string;
+  registrationId: string;
+}) {
+  const registration = await prisma.externalWebhookRegistration.findFirst({
+    where: {
+      id: input.registrationId,
+      workspaceId: input.workspaceId,
+      provider: "clickup"
+    }
+  });
+  if (!registration) {
+    throw new IntegrationError("not_found", 404, "ClickUp webhook registration was not found.");
+  }
+
+  const settings = await getClickUpSettingsForWorkspace(input.workspaceId);
+  if (!settings) {
+    throw new IntegrationError("integration_not_configured", 422, "ClickUp integration is not configured for this workspace.");
+  }
+
+  const client = new ClickUpClient(settings.token);
+  await client.deleteWebhook(registration.externalId);
+  await prisma.externalWebhookRegistration.delete({ where: { id: registration.id } });
+
+  await createEvent({
+    type: "clickup_webhook_deleted",
+    workspaceId: input.workspaceId,
+    source: "clickup",
+    payload: {
+      provider: "clickup",
+      externalId: registration.externalId,
+      scopeType: registration.scopeType,
+      scopeExternalId: registration.scopeExternalId
+    }
+  });
+
+  return safeRegistration(registration);
 }
 
 function idempotencyKey(payload: ClickUpWebhookPayload, payloadHash: string) {
@@ -383,6 +508,59 @@ function clickUpPriority(priority?: string | null) {
   return undefined;
 }
 
+function clickUpTaskPayload(input: {
+  title?: string;
+  description?: string | null;
+  status?: TaskStatus;
+  priority?: string | null;
+  dueDate?: Date | null;
+}) {
+  const payload: {
+    name?: string;
+    description?: string;
+    status?: string;
+    priority?: number | null;
+    due_date?: number | null;
+  } = {};
+  if (input.title !== undefined) payload.name = input.title;
+  if (input.description !== undefined) payload.description = input.description || " ";
+  if (input.status !== undefined) payload.status = clickUpStatus(input.status);
+  if (input.priority !== undefined) payload.priority = clickUpPriority(input.priority) ?? null;
+  if (input.dueDate !== undefined) payload.due_date = input.dueDate ? input.dueDate.getTime() : null;
+  return payload;
+}
+
+export async function createCompanyCoreTaskInClickUp(input: {
+  workspaceId: string;
+  listExternalId: string;
+  task: {
+    title: string;
+    description?: string | null;
+    status?: TaskStatus;
+    priority?: string | null;
+    dueDate?: Date | null;
+  };
+}) {
+  const settings = await getClickUpSettingsForWorkspace(input.workspaceId);
+  if (!settings) {
+    throw new IntegrationError("integration_not_configured", 422, "ClickUp integration is not configured for this workspace.");
+  }
+
+  const payload = clickUpTaskPayload(input.task);
+  if (!payload.name) {
+    payload.name = input.task.title;
+  }
+
+  const client = new ClickUpClient(settings.token);
+  return client.createTask(input.listExternalId, payload as {
+    name: string;
+    description?: string;
+    status?: string;
+    priority?: number | null;
+    due_date?: number | null;
+  });
+}
+
 export async function writeBackCompanyCoreTaskToClickUp(input: {
   workspaceId: string;
   externalId: string;
@@ -399,18 +577,7 @@ export async function writeBackCompanyCoreTaskToClickUp(input: {
     throw new IntegrationError("integration_not_configured", 422, "ClickUp integration is not configured for this workspace.");
   }
 
-  const payload: {
-    name?: string;
-    description?: string;
-    status?: string;
-    priority?: number | null;
-    due_date?: number | null;
-  } = {};
-  if (input.changes.title !== undefined) payload.name = input.changes.title;
-  if (input.changes.description !== undefined) payload.description = input.changes.description || " ";
-  if (input.changes.status !== undefined) payload.status = clickUpStatus(input.changes.status);
-  if (input.changes.priority !== undefined) payload.priority = clickUpPriority(input.changes.priority) ?? null;
-  if (input.changes.dueDate !== undefined) payload.due_date = input.changes.dueDate ? input.changes.dueDate.getTime() : null;
+  const payload = clickUpTaskPayload(input.changes);
 
   if (Object.keys(payload).length === 0) {
     return null;
@@ -418,4 +585,43 @@ export async function writeBackCompanyCoreTaskToClickUp(input: {
 
   const client = new ClickUpClient(settings.token);
   return client.updateTask(input.externalId, payload);
+}
+
+export async function archiveCompanyCoreTaskInClickUp(input: {
+  workspaceId: string;
+  externalId: string;
+}) {
+  const settings = await getClickUpSettingsForWorkspace(input.workspaceId);
+  if (!settings) {
+    throw new IntegrationError("integration_not_configured", 422, "ClickUp integration is not configured for this workspace.");
+  }
+
+  const client = new ClickUpClient(settings.token);
+  return client.updateTask(input.externalId, { archived: true });
+}
+
+export async function setCompanyCoreTaskClickUpCustomField(input: {
+  workspaceId: string;
+  externalTaskId: string;
+  externalFieldId: string;
+  value: unknown;
+}) {
+  const settings = await getClickUpSettingsForWorkspace(input.workspaceId);
+  if (!settings) {
+    throw new IntegrationError("integration_not_configured", 422, "ClickUp integration is not configured for this workspace.");
+  }
+
+  const field = await prisma.externalFieldMapping.findFirst({
+    where: {
+      workspaceId: input.workspaceId,
+      provider: "clickup",
+      externalId: input.externalFieldId
+    }
+  });
+  if (!field) {
+    throw new IntegrationError("not_found", 404, "ClickUp custom field is not mapped for this workspace.");
+  }
+
+  const client = new ClickUpClient(settings.token);
+  return client.setCustomFieldValue(input.externalTaskId, input.externalFieldId, input.value);
 }
