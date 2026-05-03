@@ -49,6 +49,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] CCV1-053 V1 Source Handoff Package
 - [x] CCV1-054 Final V1 Runtime Rollover Smoke
 - [x] CCV1-055 Full V1 Live System Smoke
+- [x] CCV1-056 V1 Post-Release Artifact Cleanup
 
 ## NEXT
 
@@ -98,6 +99,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 31. CCV1-053 V1 Source Handoff Package
 - [x] 32. CCV1-054 Final V1 Runtime Rollover Smoke
 - [x] 33. CCV1-055 Full V1 Live System Smoke
+- [x] 34. CCV1-056 V1 Post-Release Artifact Cleanup
 
 
 ## GROUP QUEUE

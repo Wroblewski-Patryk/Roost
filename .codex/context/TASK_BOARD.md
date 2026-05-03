@@ -2,7 +2,7 @@
 
 ## Ready
 
-No active P0/P1 runtime task is ready after CCV1-055.
+No active P0/P1 runtime task is ready after CCV1-056.
 
 ## Blocked
 
@@ -103,3 +103,4 @@ auto-deploy webhook administration task.
 - CCV1-053 V1 Source Handoff Package.
 - CCV1-054 Final V1 Runtime Rollover Smoke.
 - CCV1-055 Full V1 Live System Smoke.
+- CCV1-056 V1 Post-Release Artifact Cleanup.

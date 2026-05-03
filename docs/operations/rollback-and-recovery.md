@@ -2,6 +2,16 @@
 
 Document the first safe rollback path before the first production deploy.
 
+## Current V1 Rollback Pointer
+
+- Current production backend container:
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-9116026`.
+- Current production backend image:
+  `rnqqkhl3o3dut4qv56mlxly2_backend:9116026`.
+- Previous verified rollback image retained on the VPS:
+  `rnqqkhl3o3dut4qv56mlxly2_backend:ae2c3bf`.
+- Production Postgres container/volume must be preserved during rollback.
+
 ## Rollback Triggers
 
 - Failed `GET /health` after deploy.

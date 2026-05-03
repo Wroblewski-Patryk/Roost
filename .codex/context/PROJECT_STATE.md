@@ -99,13 +99,13 @@ Last updated: 2026-05-03
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-055 Full V1 Live System Smoke.
+- Current iteration: CCV1-056 V1 Post-Release Artifact Cleanup.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-055 Full V1 Live System Smoke.
-- Last completed task: reran a full live-system smoke after the final runtime
-  rollover, covering CompanyCore, ClickUp maintenance, Jarvis CompanyCore
-  connector/sync/index status, Paperclip health, and the Paperclip agent-event
-  queue.
+- Last completed iteration: CCV1-056 V1 Post-Release Artifact Cleanup.
+- Last completed task: cleaned temporary CompanyCore build and smoke artifacts
+  from the VPS after the final runtime rollover while preserving the running
+  `9116026` backend image/container, healthy Postgres container, and rollback
+  image `ae2c3bf`.
 - Next required mode: BUILDER when a new approved v2 or handoff task is moved
   into the active queue.
 
@@ -587,6 +587,12 @@ Last updated: 2026-05-03
   `auth_type=bridge`, and `chunks=259`, a CompanyCore connector sync could be
   started, and CompanyCore had 0 pending Paperclip agent events. Added a
   learning-journal guardrail for remote smoke scripts that touch secrets.
+- 2026-05-03: Completed CCV1-056 by cleaning temporary VPS artifacts created
+  during the final CompanyCore runtime rollover. Removed
+  `/tmp/companycore-9116026`, `/tmp/companycore-9116026.tar`, and any temporary
+  Jarvis smoke files. Verified the running backend still uses
+  `rnqqkhl3o3dut4qv56mlxly2_backend:9116026`, Postgres remains healthy, and
+  rollback image `rnqqkhl3o3dut4qv56mlxly2_backend:ae2c3bf` is still present.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

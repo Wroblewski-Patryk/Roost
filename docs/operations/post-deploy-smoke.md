@@ -578,3 +578,21 @@ Use this file to record the minimum checks after each deploy.
   - `.codex/context/LEARNING_JOURNAL.md` now records that remote smoke scripts
     touching secrets must avoid PowerShell here-string piping into bash and use
     ASCII temporary scripts or proven single remote commands instead.
+
+## V1 Post-Release Artifact Cleanup
+
+- Timestamp: 2026-05-03
+- Environment: production VPS
+- Cleanup:
+  - Removed `/tmp/companycore-9116026`.
+  - Removed `/tmp/companycore-9116026.tar`.
+  - Confirmed temporary Jarvis smoke files are absent from `/tmp`.
+- Runtime preserved:
+  - Running backend remains
+    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-9116026`.
+  - Running backend image remains
+    `rnqqkhl3o3dut4qv56mlxly2_backend:9116026`.
+  - Production Postgres remains running and healthy.
+- Rollback preserved:
+  - Previous runtime image
+    `rnqqkhl3o3dut4qv56mlxly2_backend:ae2c3bf` remains available for rollback.

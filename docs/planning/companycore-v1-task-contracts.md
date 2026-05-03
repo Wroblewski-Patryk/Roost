@@ -4,6 +4,76 @@ These task contracts turn the v1 audit into executable work. Each task must be
 completed as its own small iteration and must update `.codex/context/TASK_BOARD.md`,
 `.codex/context/PROJECT_STATE.md`, and relevant docs when status changes.
 
+## CCV1-056 V1 Post-Release Artifact Cleanup
+
+### Header
+- ID: CCV1-056
+- Title: V1 post-release artifact cleanup
+- Task Type: post-release cleanup
+- Current Stage: post-release
+- Status: DONE
+- Owner: Ops/Release
+- Depends on: CCV1-055
+- Priority: P2
+- Iteration: v1-056
+- Operation Mode: BUILDER
+
+### Goal
+Leave the production VPS clean after the final v1 runtime rollover while
+preserving rollback capability.
+
+### Scope
+- Temporary CompanyCore build and smoke files in `/tmp` on the VPS.
+- Running CompanyCore backend and Postgres containers.
+- Rollback image presence.
+- Canonical release docs and planning/context files.
+
+### Implementation Plan
+- Inspect CompanyCore backend/Postgres containers and backend images on the
+  VPS.
+- Remove temporary `/tmp` build archives/directories and temporary Jarvis smoke
+  files created during release verification.
+- Verify the running backend still uses the `9116026` image and Postgres is
+  healthy.
+- Verify rollback image `ae2c3bf` remains present.
+- Record cleanup evidence and rollback pointer.
+
+### Acceptance Criteria
+- [x] Temporary CompanyCore rollover artifacts are removed from `/tmp`.
+- [x] Temporary Jarvis smoke artifacts are absent from `/tmp`.
+- [x] Running backend remains
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-9116026`.
+- [x] Production Postgres remains running and healthy.
+- [x] Rollback image `rnqqkhl3o3dut4qv56mlxly2_backend:ae2c3bf` remains
+  present.
+
+### Definition of Done
+- [x] VPS cleanup verified.
+- [x] Rollback image verified.
+- [x] `git diff --check` passes.
+- [x] `npm run build` passes.
+- [x] `npm test` passes against local PostgreSQL.
+- [x] Task board, project state, planning queue, task contract, rollback docs,
+  and post-deploy smoke docs are updated.
+
+### Result Report
+- Task summary: Removed temporary VPS release artifacts while preserving the
+  running final v1 backend and rollback image.
+- Files changed: `.codex/context/PROJECT_STATE.md`,
+  `.codex/context/TASK_BOARD.md`, `docs/planning/mvp-next-commits.md`,
+  `docs/planning/companycore-v1-task-contracts.md`,
+  `docs/operations/post-deploy-smoke.md`, and
+  `docs/operations/rollback-and-recovery.md`.
+- How tested: VPS inspection confirmed `/tmp/companycore-9116026`,
+  `/tmp/companycore-9116026.tar`, and temporary Jarvis smoke files are absent;
+  backend `9116026` is running; Postgres is healthy; rollback image `ae2c3bf`
+  exists; `git diff --check`; `npm run build`; `npm test`.
+- What is incomplete: GitHub-to-Coolify auto-deploy webhook administration and
+  upstream OpenJarvis/Paperclip source merge execution remain optional
+  non-runtime handoff tasks.
+- Next steps: Choose v2 product scope or explicitly approve external source
+  merge/release automation work.
+
 ## CCV1-055 Full V1 Live System Smoke
 
 ### Header
