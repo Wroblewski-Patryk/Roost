@@ -5,6 +5,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
+- [x] V2WEB-014 Integration Matrix Filters
 - [x] V2WEB-013 Operating Area Workbench Filters
 - [x] V2WEB-012 Pipeline Workbench Filters
 - [x] V2WEB-011 Task Workbench Filters
@@ -78,7 +79,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NEXT
 
-- [ ] Continue v2 web console polish after operating-area workbench filters:
+- [ ] Continue v2 web console polish after integration matrix filters:
       deeper
       module editing surfaces should become route-level slices only when their
       data path is already implemented.
@@ -109,6 +110,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 58. V2WEB-011 Task Workbench Filters
 - [x] 59. V2WEB-012 Pipeline Workbench Filters
 - [x] 60. V2WEB-013 Operating Area Workbench Filters
+- [x] 61. V2WEB-014 Integration Matrix Filters
 - [x] 48. V2WEB-001 Operating Map And Google Drive Console
 - [x] 39. V2GD-001 Google Drive Architecture And Queue
 - [x] 40. V2GD-002 Google Drive Persistence Foundation

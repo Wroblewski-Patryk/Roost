@@ -112,12 +112,12 @@ Last updated: 2026-05-04
   pattern.
 
 ## Autonomous Iteration State
-- Current iteration: V2WEB-013 Operating Area Workbench Filters.
+- Current iteration: V2WEB-014 Integration Matrix Filters.
 - Current operation mode: BUILDER
-- Last completed iteration: V2WEB-013 Operating Area Workbench Filters.
-- Last completed task: added selected-area search and content-type filtering
-  with a unified `/areas` workbench over existing tables, Drive items,
-  provider mappings, and record previews.
+- Last completed iteration: V2WEB-014 Integration Matrix Filters.
+- Last completed task: added search and data-type filtering to the
+  `/settings/integrations` operating-area matrix and corrected mapping counts
+  to honor the established `areaId` relation.
 - Next required mode: BUILDER for the next v2 web console iteration unless an
   architecture decision blocks the queue first.
 
@@ -729,6 +729,11 @@ Last updated: 2026-05-04
   `/areas` into a searchable workbench. The view now combines mapped tables,
   Drive items, provider mappings, and table record previews into one filtered
   feed while preserving assignment selectors for relationship correction.
+- 2026-05-04: Completed V2WEB-014 by turning the `/settings/integrations`
+  operating-area matrix into a searchable control map with data-type filters,
+  filtered counts, and a filter-specific empty state. The matrix now counts
+  provider mappings using the established `areaId` relation while preserving
+  compatibility with older operating-area and table-level links.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

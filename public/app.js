@@ -47,6 +47,10 @@ const state = {
     search: "",
     type: "",
     status: ""
+  },
+  integrationFilters: {
+    search: "",
+    type: ""
   }
 };
 
@@ -165,6 +169,9 @@ const tasksSummary = document.querySelector("#tasksSummary");
 const tasksTableBody = document.querySelector("#tasksTableBody");
 const integrationSummary = document.querySelector("#integrationSummary");
 const integrationGroups = document.querySelector("#integrationGroups");
+const integrationMatrixSummary = document.querySelector("#integrationMatrixSummary");
+const integrationSearch = document.querySelector("#integrationSearch");
+const integrationTypeFilter = document.querySelector("#integrationTypeFilter");
 const integrationAreaMatrix = document.querySelector("#integrationAreaMatrix");
 const googleDrivePanel = document.querySelector("#googleDrivePanel");
 const googleDriveWorkspaceLabel = document.querySelector("#googleDriveWorkspaceLabel");
@@ -1164,6 +1171,8 @@ function renderIntegrationTaxonomy() {
     integrationGroups.append(integrationGroupCard(group));
   }
 
+  integrationSearch.value = state.integrationFilters.search;
+  integrationTypeFilter.value = state.integrationFilters.type;
   renderIntegrationAreaMatrix();
 }
 
@@ -1221,6 +1230,9 @@ function renderIntegrationAreaMatrix() {
   const areas = sortedOperatingAreas();
 
   if (areas.length === 0) {
+    integrationMatrixSummary.textContent = isSignedIn()
+      ? "Refresh the workspace connection to load the operating-area matrix."
+      : "Sign in to load the operating-area matrix.";
     const empty = document.createElement("p");
     empty.className = "empty-note";
     empty.textContent = isSignedIn()
@@ -1230,21 +1242,82 @@ function renderIntegrationAreaMatrix() {
     return;
   }
 
-  for (const area of areas) {
-    const providerMappings = state.operatingModel.externalMappings.filter((mapping) => mapping.operatingAreaId === area.id);
-    const driveFiles = state.googleDrive.files.filter((file) => file.operatingAreaId === area.id);
-    const tableRecords = (area.tables || []).reduce((sum, table) => sum + countForTable(table), 0);
+  const rows = areas.map(integrationAreaRowData);
+  const filteredRows = filteredIntegrationAreaRows(rows);
+  integrationMatrixSummary.textContent = `${filteredRows.length} of ${rows.length} operating area${rows.length === 1 ? "" : "s"} match the current integration map.`;
+
+  if (filteredRows.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty-note";
+    empty.textContent = "No operating-area rows match the current integration filters.";
+    integrationAreaMatrix.append(empty);
+    return;
+  }
+
+  for (const item of filteredRows) {
     const row = document.createElement("article");
     row.className = "integration-area-row";
     row.append(
-      integrationAreaLabel(area),
-      integrationAreaMetric("Tables", area.tables?.length || 0),
-      integrationAreaMetric("Records", tableRecords),
-      integrationAreaMetric("Mappings", providerMappings.length),
-      integrationAreaMetric("Drive", driveFiles.length)
+      integrationAreaLabel(item.area),
+      integrationAreaMetric("Tables", item.tables),
+      integrationAreaMetric("Records", item.records),
+      integrationAreaMetric("Mappings", item.mappings),
+      integrationAreaMetric("Drive", item.drive)
     );
     integrationAreaMatrix.append(row);
   }
+}
+
+function integrationAreaRowData(area) {
+  const tables = area.tables || [];
+  const tableIds = new Set(tables.map((table) => table.id));
+  const providerMappings = state.operatingModel.externalMappings.filter((mapping) => (
+    mapping.areaId === area.id
+    || mapping.operatingAreaId === area.id
+    || mapping.tableId && tableIds.has(mapping.tableId)
+  ));
+  const driveFiles = state.googleDrive.files.filter((file) => (
+    file.operatingAreaId === area.id
+    || file.operatingTableId && tableIds.has(file.operatingTableId)
+  ));
+  const tableRecords = tables.reduce((sum, table) => sum + countForTable(table), 0);
+  const definition = areaDefinitionFor(area);
+  const searchable = [
+    areaLabel(area),
+    definition.description,
+    area.description,
+    ...tables.flatMap((table) => [table.name, table.tableName, table.apiSlug]),
+    ...providerMappings.flatMap((mapping) => [mapping.name, mapping.externalId, mapping.provider, mapping.entityType]),
+    ...driveFiles.flatMap((file) => [file.name, file.mimeType, file.scanStatus])
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  return {
+    area,
+    tables: tables.length,
+    records: tableRecords,
+    mappings: providerMappings.length,
+    drive: driveFiles.length,
+    searchable
+  };
+}
+
+function filteredIntegrationAreaRows(rows) {
+  const search = state.integrationFilters.search.trim().toLowerCase();
+  return rows.filter((row) => (!search || row.searchable.includes(search))
+    && (!state.integrationFilters.type || row[integrationTypeMetricKey(state.integrationFilters.type)] > 0));
+}
+
+function integrationTypeMetricKey(type) {
+  if (type === "tables") {
+    return "tables";
+  }
+  if (type === "records") {
+    return "records";
+  }
+  if (type === "mappings") {
+    return "mappings";
+  }
+  return "drive";
 }
 
 function integrationAreaLabel(area) {
@@ -2130,6 +2203,8 @@ logoutButton.addEventListener("click", () => {
   state.pipelineFilters.search = "";
   state.pipelineFilters.type = "";
   state.pipelineFilters.status = "";
+  state.integrationFilters.search = "";
+  state.integrationFilters.type = "";
   renderTasks();
   renderGoogleDriveFiles();
   renderOperatingMap();
@@ -2195,6 +2270,16 @@ areaSearch.addEventListener("input", () => {
 areaTypeFilter.addEventListener("change", () => {
   state.areaFilters.type = areaTypeFilter.value;
   renderOperatingMap();
+});
+
+integrationSearch.addEventListener("input", () => {
+  state.integrationFilters.search = integrationSearch.value;
+  renderIntegrationTaxonomy();
+});
+
+integrationTypeFilter.addEventListener("change", () => {
+  state.integrationFilters.type = integrationTypeFilter.value;
+  renderIntegrationTaxonomy();
 });
 
 loginForm.addEventListener("submit", async (event) => {

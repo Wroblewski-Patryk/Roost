@@ -638,10 +638,26 @@
           <div class="section-title row-title">
             <div>
               <h2>Operating-area data map</h2>
-              <p>Implemented tables, provider mappings, and Drive records grouped by company area.</p>
+              <p id="integrationMatrixSummary">Implemented tables, provider mappings, and Drive records grouped by company area.</p>
             </div>
             <a class="button-link secondary compact" href="/areas" data-link>Correct mapping</a>
           </div>
+          <section class="integration-filter-bar" aria-label="Integration matrix filters">
+            <label>
+              Search matrix
+              <input id="integrationSearch" type="search" autocomplete="off" placeholder="Area, table, mapping, Drive item..." />
+            </label>
+            <label>
+              Data type
+              <select id="integrationTypeFilter">
+                <option value="">All data</option>
+                <option value="tables">Tables</option>
+                <option value="records">Records</option>
+                <option value="mappings">Provider mappings</option>
+                <option value="drive">Google Drive</option>
+              </select>
+            </label>
+          </section>
           <div class="integration-area-list" id="integrationAreaMatrix"></div>
         </section>
       </section>

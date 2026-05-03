@@ -1,5 +1,59 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-014 Integration Matrix Filters
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: searchable integration operating-area matrix
+  backed by implemented workspace data.
+- Goal: Make `/settings/integrations` usable as a control-map view when the
+  company has many areas, mappings, Drive folders, and records.
+- Scope:
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Add search and data-type controls to the operating-area data map.
+  - Filter existing area rows client-side by area label, table names, provider
+    mappings, Drive files, and record counts.
+  - Keep implemented integration/data group cards visible.
+  - Use the established `areaId` mapping relation when counting provider
+    mappings.
+  - Validate syntax, build, tests, local route rendering, and production smoke.
+- Acceptance Criteria:
+  - `/settings/integrations` supports search across operating-area matrix rows.
+  - Data-type filtering shows only rows with tables, records, mappings, or
+    Drive items as selected.
+  - Matrix summary reflects filtered count versus total operating areas.
+  - Empty state explains when filters hide all matrix rows.
+  - Existing integration group cards and "Correct mapping" link still render.
+- Definition of Done:
+  - `node --check public/app.js`, `git diff --check`, `npm run build`, and
+    `npm test` pass.
+  - Browser smoke verifies matrix search, data-type filtering, filtered empty
+    state, and the provider mapping count on desktop.
+  - Project state, task board, and next-commits docs are updated.
+- Result Report:
+  - Added integration matrix search and data-type filters to
+    `/settings/integrations`.
+  - Filtered existing operating-area rows client-side by area labels, table
+    names, provider mappings, Drive files, and selected metric type.
+  - Updated the matrix summary to show filtered count versus total operating
+    areas.
+  - Added a filter-specific empty state when no operating-area row matches the
+    current controls.
+  - Corrected provider mapping counts in the matrix by honoring the established
+    `areaId` relation, with compatibility for older `operatingAreaId` and
+    table-level mappings.
+  - `node --check public/app.js`, `git diff --check`, `npm run build`, and
+    `npm test` passed.
+  - Playwright smoke verified matrix search, provider-mapping type filtering,
+    filtered empty state, and mapping count on desktop.
+
 ## V2WEB-013 Operating Area Workbench Filters
 
 - Task Type: design/frontend
