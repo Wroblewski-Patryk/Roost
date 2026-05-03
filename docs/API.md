@@ -825,6 +825,11 @@ POST /notes
 }
 ```
 
+When a note is created against a ClickUp-sourced task, CompanyCore creates a
+ClickUp task comment first and then stores the returned comment ID as the
+note's `externalId` with `source = clickup`. If ClickUp rejects the comment,
+the local note is not created and the API returns a safe integration error.
+
 ## Decisions
 
 ```http
@@ -901,6 +906,11 @@ processed into CompanyCore task records, and status changes create
 provider-neutral agent events for Paperclip, Jarvis, Aviary, and future
 consumers.
 
+ClickUp task comment events are mapped to CompanyCore notes attached to the
+same task. The note uses `source = clickup` and the ClickUp comment ID as
+`externalId`, so repeated webhook deliveries update the same note instead of
+duplicating context.
+
 ## Agent Events
 
 ```http
@@ -937,6 +947,7 @@ Generated v1 events:
 - `clickup_custom_field_updated`
 - `clickup_custom_field_update_failed`
 - `clickup_webhook_deleted`
+- `clickup_comment_create_failed`
 - `goal_created`
 - `target_created`
 - `client_created`

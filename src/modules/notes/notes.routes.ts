@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
+import { createCompanyCoreNoteInClickUp } from "../../integrations/clickup/clickup.webhooks";
+import { IntegrationError } from "../../integrations/errors";
 import { asyncHandler } from "../../middleware/async-handler";
 import { createEvent } from "../events/event.service";
 
@@ -40,9 +42,49 @@ notesRouter.post("/", asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "not_found" });
   }
 
+  let providerFields = {
+    externalId: input.externalId,
+    source: input.source
+  };
+
+  const task = input.taskId
+    ? await prisma.task.findFirst({ where: { id: input.taskId, workspaceId } })
+    : null;
+  if (!input.externalId && task?.source === "clickup" && task.externalId) {
+    try {
+      const clickUpComment = await createCompanyCoreNoteInClickUp({
+        workspaceId,
+        externalTaskId: task.externalId,
+        content: input.content
+      });
+      providerFields = {
+        externalId: clickUpComment?.id,
+        source: "clickup"
+      };
+    } catch (error) {
+      if (error instanceof IntegrationError) {
+        await createEvent({
+          type: "clickup_comment_create_failed",
+          workspaceId,
+          taskId: task.id,
+          source: "clickup",
+          payload: {
+            provider: "clickup",
+            taskId: task.id,
+            externalId: task.externalId,
+            errorCode: error.code
+          }
+        });
+        return res.status(error.status).json({ error: error.code });
+      }
+      throw error;
+    }
+  }
+
   const note = await prisma.note.create({
     data: {
       ...input,
+      ...providerFields,
       workspaceId
     }
   });

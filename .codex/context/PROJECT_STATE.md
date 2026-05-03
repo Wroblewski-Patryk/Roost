@@ -97,13 +97,12 @@ Last updated: 2026-05-03
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-042 ClickUp Full API Bridge Completion.
+- Current iteration: CCV1-043 ClickUp Task Comment Bridge.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-042 ClickUp Full API Bridge Completion.
-- Last completed task: extended the ClickUp bridge so CompanyCore can create
-  ClickUp tasks from ClickUp-sourced lists, archive ClickUp-sourced tasks,
-  write mapped ClickUp Custom Field values, delete webhook registrations, and
-  reconcile webhook health against ClickUp's remote webhook list.
+- Last completed iteration: CCV1-043 ClickUp Task Comment Bridge.
+- Last completed task: extended the ClickUp bridge so task comments flow into
+  CompanyCore notes from ClickUp webhooks and CompanyCore notes on
+  ClickUp-sourced tasks create ClickUp task comments before local persistence.
 - Next required mode: BUILDER for Paperclip application-side CompanyCore
   adapter unless priority changes.
 
@@ -436,6 +435,14 @@ Last updated: 2026-05-03
   `/v1/integration-settings/clickup/webhooks` with 21 registrations, and
   `/v1/agent-events`; the adapter manifest exposes the new Custom Field and
   webhook-delete capabilities.
+- 2026-05-03: Completed CCV1-043 locally by adding ClickUp task comment
+  bridging. ClickUp `taskCommentPosted` and comment-field webhook payloads now
+  create or update CompanyCore notes attached to the mapped task and emit a
+  provider-neutral agent event. CompanyCore `POST /v1/notes` against a
+  ClickUp-sourced task now creates a ClickUp task comment first and stores the
+  returned ClickUp comment ID. Added a unique note external identity migration
+  for `(workspace_id, source, external_id)`. `npm test` passed against
+  disposable PostgreSQL on `localhost:55432`.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

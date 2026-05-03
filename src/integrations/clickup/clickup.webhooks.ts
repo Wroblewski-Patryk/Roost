@@ -18,7 +18,9 @@ export const clickUpWebhookEvents = [
   "taskPriorityUpdated",
   "taskStatusUpdated",
   "taskDueDateUpdated",
-  "taskMoved"
+  "taskMoved",
+  "taskCommentPosted",
+  "taskCommentUpdated"
 ] as const;
 
 type ClickUpWebhookPayload = {
@@ -33,6 +35,13 @@ type ClickUpWebhookPayload = {
     before?: unknown;
     after?: unknown;
     user?: unknown;
+    comment?: {
+      id?: string | number | null;
+      date?: string | number | null;
+      parent?: string | null;
+      comment?: Array<{ text?: string | null }> | string | null;
+      user?: unknown;
+    } | null;
   }>;
 };
 
@@ -319,6 +328,69 @@ function statusChange(payload: ClickUpWebhookPayload) {
   };
 }
 
+function commentTextFromSegments(value: unknown) {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+  if (!Array.isArray(value)) {
+    return "";
+  }
+  return value
+    .map((segment) => {
+      if (segment && typeof segment === "object" && "text" in segment) {
+        const text = (segment as { text?: unknown }).text;
+        return typeof text === "string" ? text : "";
+      }
+      return "";
+    })
+    .join("")
+    .trim();
+}
+
+function clickUpCommentFromWebhook(payload: ClickUpWebhookPayload) {
+  const item = payload.history_items?.find((historyItem) => (
+    historyItem.field === "comment" && historyItem.comment?.id
+  ));
+  if (!item?.comment?.id) {
+    return null;
+  }
+
+  return {
+    id: String(item.comment.id),
+    content: commentTextFromSegments(item.comment.comment) || "ClickUp comment",
+    occurredAt: item.comment.date ? new Date(Number(item.comment.date)) : null,
+    actor: item.comment.user ?? item.user ?? null
+  };
+}
+
+async function upsertClickUpCommentNote(input: {
+  workspaceId: string;
+  taskId: string;
+  externalCommentId: string;
+  content: string;
+}) {
+  return prisma.note.upsert({
+    where: {
+      workspaceId_source_externalId: {
+        workspaceId: input.workspaceId,
+        source: "clickup",
+        externalId: input.externalCommentId
+      }
+    },
+    update: {
+      taskId: input.taskId,
+      content: input.content
+    },
+    create: {
+      workspaceId: input.workspaceId,
+      taskId: input.taskId,
+      content: input.content,
+      externalId: input.externalCommentId,
+      source: "clickup"
+    }
+  });
+}
+
 export async function ingestClickUpWebhook(input: {
   rawBody: Buffer;
   signature?: string;
@@ -393,6 +465,8 @@ export async function processClickUpProviderEvent(inboxId: string) {
     let taskId: string | null = null;
     let externalId = payload.task_id ?? null;
 
+    const webhookComment = clickUpCommentFromWebhook(payload);
+
     if (payload.event === "taskDeleted" && externalId) {
       const archivedTask = await prisma.task.update({
         where: {
@@ -429,6 +503,39 @@ export async function processClickUpProviderEvent(inboxId: string) {
         create: data
       });
       taskId = task.id;
+
+      if (webhookComment) {
+        const note = await upsertClickUpCommentNote({
+          workspaceId: inbox.workspaceId,
+          taskId: task.id,
+          externalCommentId: webhookComment.id,
+          content: webhookComment.content
+        });
+
+        await prisma.agentEventOutbox.create({
+          data: {
+            workspaceId: inbox.workspaceId,
+            eventType: "task_comment_posted_from_clickup",
+            targetAgent: null,
+            scope: toJson({
+              taskId: task.id,
+              externalId,
+              noteId: note.id,
+              externalCommentId: webhookComment.id,
+              webhookRegistrationId: inbox.webhookRegistrationId
+            }),
+            payload: toJson({
+              provider: "clickup",
+              taskId: task.id,
+              externalId,
+              noteId: note.id,
+              externalCommentId: webhookComment.id,
+              content: webhookComment.content,
+              actor: webhookComment.actor
+            })
+          }
+        });
+      }
     }
 
     const event = await createEvent({
@@ -488,6 +595,27 @@ export async function processClickUpProviderEvent(inboxId: string) {
     });
     throw error;
   }
+}
+
+export async function createCompanyCoreNoteInClickUp(input: {
+  workspaceId: string;
+  externalTaskId: string;
+  content: string;
+}) {
+  const settings = await getClickUpSettingsForWorkspace(input.workspaceId);
+  if (!settings) {
+    throw new IntegrationError("integration_not_configured", 422, "ClickUp integration is not configured for this workspace.");
+  }
+
+  const client = new ClickUpClient(settings.token);
+  const comment = await client.createTaskComment(input.externalTaskId, {
+    commentText: input.content,
+    notifyAll: false
+  });
+  if (!comment?.id) {
+    throw new IntegrationError("integration_unavailable", 502, "ClickUp did not return the created comment identifier.");
+  }
+  return comment;
 }
 
 function clickUpStatus(status: TaskStatus) {

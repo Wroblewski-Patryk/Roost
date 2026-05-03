@@ -518,6 +518,83 @@ Fields, and manage ClickUp webhook registrations with health reconciliation.
 ### Priority
 P0
 
+## CCV1-043 ClickUp Task Comment Bridge
+
+### Header
+- ID: CCV1-043
+- Title: ClickUp task comment bridge
+- Task Type: feature
+- Current Stage: verification
+- Status: DONE
+- Owner: Backend Builder
+- Depends on: CCV1-036C, CCV1-036D, CCV1-036E, CCV1-042
+- Priority: P0
+- Iteration: v1-043
+- Operation Mode: BUILDER
+
+### Description
+Preserve operational discussion context by mapping ClickUp task comments to
+CompanyCore task notes and allowing CompanyCore notes on ClickUp-sourced tasks
+to create ClickUp comments.
+
+### Goal
+Make Jarvis, Paperclip, Aviary, and future agents see task comment context in
+the CompanyCore source of truth while keeping ClickUp and CompanyCore aligned.
+
+### Scope
+- `prisma/schema.prisma`
+- `prisma/migrations/202605033_clickup_note_external_identity/migration.sql`
+- `src/integrations/clickup/clickup.client.ts`
+- `src/integrations/clickup/clickup.webhooks.ts`
+- `src/modules/notes/notes.routes.ts`
+- `src/tests/api.test.ts`
+- `docs/API.md`
+- `docs/architecture/system-architecture.md`
+- `.codex/context/PROJECT_STATE.md`
+- `.codex/context/TASK_BOARD.md`
+- `docs/planning/mvp-next-commits.md`
+
+### Implementation Plan
+- Check current official ClickUp comment and webhook documentation.
+- Add ClickUp client methods for task comment read/write.
+- Store external note identity with a workspace/provider/comment unique key.
+- Map ClickUp comment webhooks into task-attached CompanyCore notes.
+- Create ClickUp comments before saving CompanyCore notes against
+  ClickUp-sourced tasks.
+- Add regression coverage and update source-of-truth docs.
+
+### Acceptance Criteria
+- [x] ClickUp comment webhook payloads create or update one CompanyCore note by
+  ClickUp comment ID.
+- [x] Comment-created events are exposed through the agent outbox.
+- [x] `POST /v1/notes` against a ClickUp-sourced task creates the ClickUp
+  comment first and stores the returned external ID.
+- [x] Provider failures fail closed and do not create local-only ghost comments.
+- [x] Local integration tests pass with the new migration.
+
+### Definition of Done
+- [x] Secrets are read only through workspace integration settings.
+- [x] No raw provider errors or secrets are exposed.
+- [x] Repeated webhook deliveries are idempotent for comment notes.
+- [x] Architecture and API docs describe the comment bridge.
+- [x] `npm test` passes against disposable PostgreSQL.
+
+### Result Report
+- Task summary: Added ClickUp task comment inbound/outbound bridging through
+  CompanyCore notes.
+- Files changed: Prisma schema/migration, ClickUp client/service, notes route,
+  regression tests, architecture/API/planning/context docs.
+- How tested: Ran `npm test` with `DATABASE_URL` pointed at disposable
+  PostgreSQL on `localhost:55432`; migration deploy applied
+  `202605033_clickup_note_external_identity` and the API flow passed.
+- What is incomplete: Production deploy and smoke are still required for this
+  runtime change.
+- Next steps: Deploy the runtime change to Coolify, smoke health, and verify
+  protected note/comment capability indirectly through the CompanyCore API.
+
+### Priority
+P0
+
 ## CCV1-035 ClickUp First-Run Import Policy And Launch Audit
 
 ### Header

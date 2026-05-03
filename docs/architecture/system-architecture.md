@@ -157,7 +157,8 @@ The ClickUp adapter should establish the pattern for future integrations:
 - explicit import policy for existing records before writes run
 - event emission, outbound agent signals, and observable sync/webhook results
 - bidirectional task operations through CompanyCore API routes: create,
-  update, archive, and mapped Custom Field value writes
+  update, archive, mapped Custom Field value writes, and task comments mapped
+  to CompanyCore notes
 
 Provider adapters must be designed from current vendor documentation and
 record the relevant endpoint, hierarchy, pagination, rate-limit, webhook,
@@ -205,6 +206,12 @@ also emit a durable internal event that downstream agents can consume. Paperclip
 can use status changes as work triggers, while Jarvis and Aviary can consume the
 same event stream for context refreshes, decisions, notifications, or future
 automation modules.
+
+Task comments are operational context and should not be lost in a task-only
+sync. ClickUp `taskCommentPosted` and comment-field update payloads should map
+to CompanyCore notes attached to the corresponding task, keyed by the ClickUp
+comment ID. CompanyCore notes created against ClickUp-sourced tasks should
+create a ClickUp task comment first and then store the returned comment ID.
 
 n8n remains optional orchestration for workflows better kept outside the
 backend. It is not the required primary ClickUp path in v1.

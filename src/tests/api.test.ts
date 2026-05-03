@@ -1015,12 +1015,77 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(liveTask?.priority, "urgent");
   assert.equal(liveTask?.taskList?.externalId, "list-1");
 
+  const commentWebhookBody = JSON.stringify({
+    webhook_id: "webhook-list-1",
+    event: "taskCommentPosted",
+    task_id: "clickup-task-live",
+    history_items: [
+      {
+        id: "history-comment-1",
+        field: "comment",
+        date: "1777777778000",
+        parent_id: "list-1",
+        user: { id: 123, username: "ClickUp User" },
+        comment: {
+          id: "clickup-comment-1",
+          date: "1777777778000",
+          parent: "clickup-task-live",
+          comment: [
+            { text: "Comment from ClickUp for Jarvis context" }
+          ],
+          user: { id: 123, username: "ClickUp User" }
+        }
+      }
+    ]
+  });
+  const commentWebhookSignature = signClickUpWebhookBody("secret-list-1", commentWebhookBody);
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    const url = new URL(String(input));
+    if (url.pathname === "/api/v2/task/clickup-task-live") {
+      return new Response(JSON.stringify({
+        id: "clickup-task-live",
+        name: "Live webhook task",
+        markdown_description: "Updated from ClickUp webhook",
+        status: { status: "in progress", type: "custom" },
+        priority: { priority: "urgent" },
+        due_date: "1893456000000",
+        list: { id: "list-1" }
+      }), { status: 200 });
+    }
+    return new Response(JSON.stringify({ err: "Not found" }), { status: 404 });
+  }) as typeof fetch;
+
+  try {
+    const commentWebhook = await request("/v1/webhooks/clickup", {
+      method: "POST",
+      headers: { "X-Signature": commentWebhookSignature },
+      body: commentWebhookBody
+    });
+    assert.equal(commentWebhook.status, 202);
+  } finally {
+    globalThis.fetch = originalFetchBeforeDiscovery;
+  }
+
+  const clickUpCommentNote = await prisma.note.findUnique({
+    where: {
+      workspaceId_source_externalId: {
+        workspaceId: ownerA.workspace.id,
+        source: "clickup",
+        externalId: "clickup-comment-1"
+      }
+    }
+  });
+  assert.equal(clickUpCommentNote?.taskId, liveTask?.id);
+  assert.equal(clickUpCommentNote?.content, "Comment from ClickUp for Jarvis context");
+
   const agentEvents = await request("/v1/agent-events", { headers: authA });
   assert.equal(agentEvents.status, 200);
-  const statusEvent = (agentEvents.body as { data: Array<{ id: string; eventType: string }> }).data.find((event) => (
+  const listedAgentEvents = (agentEvents.body as { data: Array<{ id: string; eventType: string }> }).data;
+  const statusEvent = listedAgentEvents.find((event) => (
     event.eventType === "task_status_updated_from_clickup"
   ));
   assert.ok(statusEvent);
+  assert.ok(listedAgentEvents.some((event) => event.eventType === "task_comment_posted_from_clickup"));
 
   const ackedAgentEvent = await request(`/v1/agent-events/${statusEvent.id}/ack`, {
     method: "POST",
@@ -1060,6 +1125,39 @@ test("CompanyCore v1 protected API flow", async () => {
     name: "CompanyCore owned title",
     status: "in progress",
     priority: 2
+  });
+
+  let createCommentPayload: unknown = null;
+  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+    const url = new URL(String(input));
+    if (url.pathname === "/api/v2/task/clickup-task-live/comment" && init?.method === "POST") {
+      createCommentPayload = JSON.parse(String(init.body ?? "{}"));
+      return new Response(JSON.stringify({
+        id: "clickup-comment-created-from-companycore"
+      }), { status: 200 });
+    }
+    return new Response(JSON.stringify({ err: "Not found" }), { status: 404 });
+  }) as typeof fetch;
+
+  try {
+    const outboundNote = await request("/v1/notes", {
+      method: "POST",
+      headers: authA,
+      body: JSON.stringify({
+        taskId: liveTask!.id,
+        content: "CompanyCore comment for ClickUp"
+      })
+    });
+    assert.equal(outboundNote.status, 201);
+    const outboundNoteBody = outboundNote.body as { data: { externalId: string; source: string } };
+    assert.equal(outboundNoteBody.data.externalId, "clickup-comment-created-from-companycore");
+    assert.equal(outboundNoteBody.data.source, "clickup");
+  } finally {
+    globalThis.fetch = originalFetchBeforeDiscovery;
+  }
+  assert.deepEqual(createCommentPayload, {
+    comment_text: "CompanyCore comment for ClickUp",
+    notify_all: false
   });
 
   const serviceCannotDiscoverClickUp = await request("/v1/integration-settings/clickup/discover", {

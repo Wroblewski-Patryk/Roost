@@ -21,6 +21,21 @@ export type ClickUpTask = {
   } | null;
 };
 
+export type ClickUpComment = {
+  id: string;
+  date?: string | null;
+  parent?: string | null;
+  comment?: Array<{
+    text?: string | null;
+  }> | string | null;
+  comment_text?: string | null;
+  user?: {
+    id?: string | number | null;
+    username?: string | null;
+    email?: string | null;
+  } | null;
+};
+
 export type ClickUpWebhook = {
   id: string;
   endpoint?: string | null;
@@ -87,6 +102,15 @@ type ClickUpWebhookResponse = {
 
 type ClickUpWebhooksResponse = {
   webhooks?: ClickUpWebhook[];
+};
+
+type ClickUpCommentsResponse = {
+  comments?: ClickUpComment[];
+};
+
+type ClickUpCommentResponse = {
+  id?: string;
+  comment?: ClickUpComment;
 };
 
 type ClickUpTeamResponse = {
@@ -314,6 +338,26 @@ export class ClickUpClient {
       method: "POST",
       body: JSON.stringify({ value })
     });
+  }
+
+  async getTaskComments(taskId: string) {
+    const payload = await this.request<ClickUpCommentsResponse>(`/task/${encodeURIComponent(taskId)}/comment`);
+    return (payload.comments ?? []).filter((comment): comment is ClickUpComment => Boolean(comment.id));
+  }
+
+  async createTaskComment(taskId: string, input: {
+    commentText: string;
+    notifyAll?: boolean;
+  }) {
+    const payload = await this.request<ClickUpCommentResponse>(`/task/${encodeURIComponent(taskId)}/comment`, {
+      method: "POST",
+      body: JSON.stringify({
+        comment_text: input.commentText,
+        notify_all: input.notifyAll ?? false
+      })
+    });
+
+    return payload.comment ?? (payload.id ? { id: payload.id, comment_text: input.commentText } : null);
   }
 
   async getWebhooks(teamId: string) {
