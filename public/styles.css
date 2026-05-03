@@ -252,7 +252,8 @@ h4 {
 
 .summary-card,
 .next-panel,
-.api-panel {
+.api-panel,
+.table-panel {
   padding: 24px;
 }
 
@@ -483,6 +484,36 @@ a[aria-disabled="true"] {
   color: #344054;
   font-size: 13px;
   font-weight: 800;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 760px;
+  font-size: 14px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.data-table th {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.data-table td {
+  overflow-wrap: anywhere;
 }
 
 .result {

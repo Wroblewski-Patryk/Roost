@@ -14,7 +14,8 @@ const state = {
     selectedWorkspace: null,
     spaces: [],
     selectedListIds: new Set()
-  }
+  },
+  tasks: []
 };
 
 const API_ORIGIN = window.location.hostname === "companycore.luckysparrow.ch"
@@ -33,6 +34,7 @@ const checkTokenButton = document.querySelector("#checkTokenButton");
 const refreshButton = document.querySelector("#refreshButton");
 const saveButton = document.querySelector("#saveButton");
 const syncButton = document.querySelector("#syncButton");
+const refreshTasksButton = document.querySelector("#refreshTasksButton");
 const loadListsButton = document.querySelector("#loadListsButton");
 const selectAllListsButton = document.querySelector("#selectAllListsButton");
 const clearListsButton = document.querySelector("#clearListsButton");
@@ -51,6 +53,8 @@ const listSummary = document.querySelector("#listSummary");
 const resultPanel = document.querySelector("#resultPanel");
 const resultMessage = document.querySelector("#resultMessage");
 const metrics = document.querySelector("#metrics");
+const tasksSummary = document.querySelector("#tasksSummary");
+const tasksTableBody = document.querySelector("#tasksTableBody");
 
 const fields = {
   email: document.querySelector("#email"),
@@ -136,6 +140,7 @@ function setBusy(isBusy) {
     link.setAttribute("aria-disabled", String(isBusy));
   });
   setClickUpEnabled(isSignedIn() && !isBusy);
+  refreshTasksButton.disabled = !isSignedIn() || isBusy;
 }
 
 function setClickUpEnabled(isEnabled) {
@@ -178,6 +183,59 @@ function showResult(message, tone = "success", sync = null) {
     item.innerHTML = `<dt>${label}</dt><dd>${value ?? 0}</dd>`;
     metrics.append(item);
   }
+}
+
+function formatDate(value) {
+  if (!value) {
+    return "-";
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  }).format(new Date(value));
+}
+
+function renderTasks() {
+  tasksTableBody.innerHTML = "";
+  const tasks = state.tasks;
+
+  if (tasks.length === 0) {
+    tasksSummary.textContent = "No tasks found in this workspace yet.";
+    const row = document.createElement("tr");
+    row.innerHTML = '<td colspan="6">No tasks found yet.</td>';
+    tasksTableBody.append(row);
+    return;
+  }
+
+  const clickUpCount = tasks.filter((task) => task.source === "clickup").length;
+  tasksSummary.textContent = `${tasks.length} task${tasks.length === 1 ? "" : "s"} loaded, including ${clickUpCount} from ClickUp.`;
+
+  for (const task of tasks.slice(0, 50)) {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${task.title}</td>
+      <td>${task.status}</td>
+      <td>${task.priority || "-"}</td>
+      <td>${task.taskList?.name || "-"}</td>
+      <td>${task.source || "companycore"}</td>
+      <td>${formatDate(task.dueDate)}</td>
+    `;
+    tasksTableBody.append(row);
+  }
+}
+
+async function loadTasks() {
+  if (!isSignedIn()) {
+    state.tasks = [];
+    renderTasks();
+    return;
+  }
+
+  const response = await api("/v1/tasks");
+  state.tasks = response.data || [];
+  renderTasks();
 }
 
 function friendlyError(error) {
@@ -300,6 +358,7 @@ function setConnected(connection) {
 async function loadConnection() {
   const connection = await api("/v1/connection");
   setConnected(connection);
+  await loadTasks();
 }
 
 function renderWorkspaces(workspaces, selectedId = "") {
@@ -553,8 +612,22 @@ logoutButton.addEventListener("click", () => {
   state.clickup.workspaces = [];
   state.clickup.spaces = [];
   state.clickup.selectedListIds = new Set();
+  state.tasks = [];
+  renderTasks();
   resultPanel.hidden = true;
   navigate("/auth/login", { replace: true });
+});
+
+refreshTasksButton.addEventListener("click", async () => {
+  setBusy(true);
+  try {
+    await loadTasks();
+    showResult("Tasks refreshed.");
+  } catch (error) {
+    showResult(friendlyError(error), "error");
+  } finally {
+    setBusy(false);
+  }
 });
 
 loginForm.addEventListener("submit", async (event) => {
@@ -686,6 +759,7 @@ syncButton.addEventListener("click", async () => {
       })
     });
     await loadConnection();
+    await loadTasks();
     showResult("ClickUp connection saved and sync completed.", "success", sync.data);
   } catch (error) {
     showResult(friendlyError(error), "error");

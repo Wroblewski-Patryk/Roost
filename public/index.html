@@ -134,6 +134,35 @@
             <a class="button-link secondary" href="/settings/api" data-link>View API</a>
           </div>
         </section>
+
+        <section class="panel table-panel">
+          <div class="section-title row-title">
+            <div>
+              <h2>Tasks</h2>
+              <p id="tasksSummary">Sign in to load tasks.</p>
+            </div>
+            <button type="button" class="secondary" id="refreshTasksButton">Refresh</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Status</th>
+                  <th>Priority</th>
+                  <th>List</th>
+                  <th>Source</th>
+                  <th>Due</th>
+                </tr>
+              </thead>
+              <tbody id="tasksTableBody">
+                <tr>
+                  <td colspan="6">No tasks loaded yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </section>
 
       <section class="view" data-view="/settings">

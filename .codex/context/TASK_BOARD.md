@@ -119,3 +119,4 @@ Paperclip application-side adapter work tracked in
 - CCV1-035 ClickUp first-run import policy and launch audit.
 - CCV1-036 ClickUp webhook trigger architecture plan.
 - CCV1-037 ClickUp list selection UX fix.
+- CCV1-038 Dashboard task table.

@@ -65,6 +65,16 @@ async function visibleTaskRelations(workspaceId: string, input: {
 tasksRouter.get("/", asyncHandler(async (req, res) => {
   const tasks = await prisma.task.findMany({
     where: { workspaceId: req.auth!.workspaceId },
+    include: {
+      taskList: {
+        select: {
+          id: true,
+          name: true,
+          externalId: true,
+          source: true
+        }
+      }
+    },
     orderBy: { createdAt: "desc" }
   });
   res.json({ data: tasks });

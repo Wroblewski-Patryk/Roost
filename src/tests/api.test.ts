@@ -881,6 +881,13 @@ test("CompanyCore v1 protected API flow", async () => {
   }
 
   const events = await request("/events", { headers: authA });
+  const listedTasksAfterImport = await request("/v1/tasks", { headers: authA });
+  assert.equal(listedTasksAfterImport.status, 200);
+  const listedImportedTask = (listedTasksAfterImport.body as {
+    data: Array<{ externalId: string | null; taskList?: { name: string; externalId: string | null } | null }>;
+  }).data.find((listedTask) => listedTask.externalId === "clickup-task-1");
+  assert.equal(listedImportedTask?.taskList?.externalId, "list-1");
+  assert.equal(listedImportedTask?.taskList?.name, "Jarvis");
   const importedTask = await prisma.task.findUnique({
     where: {
       workspaceId_source_externalId: {

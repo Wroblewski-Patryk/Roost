@@ -360,6 +360,10 @@ Last updated: 2026-05-03
   `internal_server_error` before Lists rendered. The ClickUp client now treats
   non-array `views`/`required_views` values as empty arrays, and Workspace
   selection no longer auto-loads Lists before the owner clicks `Load Lists`.
+- 2026-05-03: Added the first Dashboard data table for tasks so the owner can
+  immediately verify whether ClickUp import created records. `/v1/tasks` now
+  includes safe task list metadata, and the Dashboard renders title, status,
+  priority, list, source, and due date with a manual refresh action.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

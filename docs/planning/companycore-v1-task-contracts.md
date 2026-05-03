@@ -520,6 +520,80 @@ selecting or clearing all loaded Lists.
 ### Priority
 P0
 
+## CCV1-038 Dashboard Task Table
+
+### Header
+- ID: CCV1-038
+- Title: Dashboard task table
+- Task Type: feature
+- Current Stage: verification
+- Status: DONE
+- Owner: Frontend Builder
+- Depends on: CCV1-035
+- Priority: P0
+- Iteration: v1-038
+- Operation Mode: BUILDER
+
+### Description
+After the first ClickUp import attempt, the owner needs a visible table in the
+CompanyCore dashboard to confirm whether tasks were imported.
+
+### Goal
+Add the first dashboard data table for tasks, including ClickUp-visible fields
+that prove import mapping worked: title, status, priority, list, source, and
+due date.
+
+### Scope
+- `src/modules/tasks/tasks.routes.ts`
+- `public/index.html`
+- `public/app.js`
+- `public/styles.css`
+- `src/tests/api.test.ts`
+- `.codex/context/PROJECT_STATE.md`
+- `.codex/context/TASK_BOARD.md`
+- `docs/planning/mvp-next-commits.md`
+- this task contract
+
+### Implementation Plan
+1. Extend task list API responses with safe task list metadata.
+2. Add a dashboard task table with a manual refresh action.
+3. Load tasks after owner connection and after ClickUp sync.
+4. Render empty state and ClickUp count summary.
+5. Add regression assertion that `/v1/tasks` includes imported task list
+   metadata.
+6. Run build, diff check, and integration tests.
+
+### Acceptance Criteria
+- [x] Dashboard shows a tasks table for the active workspace.
+- [x] Imported ClickUp tasks show source, priority, status, and task list.
+- [x] Empty state is clear when there are no tasks.
+- [x] Refresh button reloads tasks without rerunning ClickUp sync.
+- [x] `/v1/tasks` remains workspace-scoped.
+- [x] `npm test` passes.
+
+### Definition of Done
+- [x] Existing task API and dashboard shell were reused.
+- [x] No fake data or placeholder-only behavior was added.
+- [x] Task list relation data is safe and workspace-scoped.
+- [x] Documentation and planning state are updated.
+
+### Result Report
+- Task summary: Added the first dashboard data table for workspace tasks and
+  included safe task list metadata in task list API responses so owners can
+  verify ClickUp import results immediately.
+- Files changed: `src/modules/tasks/tasks.routes.ts`, `public/index.html`,
+  `public/app.js`, `public/styles.css`, `src/tests/api.test.ts`,
+  `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`,
+  `docs/planning/mvp-next-commits.md`, and this task contract.
+- How tested: Ran `npm test` against disposable PostgreSQL, `npm run build`,
+  and `git diff --check`.
+- What is incomplete: This is the first table only; broader dashboard
+  filtering/search/pagination remains future UX work.
+- Next steps: Deploy, refresh Dashboard, and inspect imported ClickUp tasks.
+
+### Priority
+P0
+
 ## CCV1-034B ClickUp Structure Persistence
 
 ### Header
