@@ -4,14 +4,17 @@ Last updated: 2026-05-03
 
 ## Verdict
 
-CompanyCore v1 is a production release candidate for the approved operating
-slice: owner setup, workspace-scoped API, ClickUp import/live sync/write-back,
-Jarvis read integration, and Paperclip event consumption are deployed and smoke
-tested.
+CompanyCore v1 is achieved for the approved operating slice: owner setup,
+workspace-scoped API, ClickUp import/live sync/write-back, Jarvis read
+integration, Paperclip event consumption, and clean sync data hygiene are
+deployed and smoke tested.
 
 The only tracked residual blocker is not a runtime v1 feature blocker:
 GitHub-to-Coolify auto-deploy webhook administration remains blocked by missing
-GitHub repository settings access. Manual deploy and rollback paths are proven.
+callable webhook-management tooling in this session. Repository visibility
+shows admin permission, but the available GitHub connector surface does not
+expose webhook create/list/update actions and the local `gh` CLI is
+unavailable. Manual deploy and rollback paths are proven.
 
 ## Smoke Evidence
 
@@ -28,6 +31,7 @@ GitHub repository settings access. Manual deploy and rollback paths are proven.
 | Jarvis env bridge | Production container env | `COMPANYCORE_BASE_URL` and service key configured |
 | Jarvis authenticated connector | Bearer-authenticated production connector smoke | `200`, `connected=true`, `auth_type=bridge` |
 | Jarvis CompanyCore sync | Bearer-authenticated production sync trigger | `200`, `status=started`, CompanyCore chunks indexed |
+| Clean sync hygiene | Production maintenance after cleanup | `219` unchanged tasks skipped, `0` duplicate ClickUp tasks, no new duplicate sync events |
 
 Jarvis's public connector endpoint returned `401` without an Authorization
 header. This is expected for a protected user-facing endpoint. A follow-up
@@ -78,14 +82,20 @@ test records.
 
 ## Residual Risks
 
-- GitHub auto-deploy webhook remains blocked by repository settings access.
-  Manual deploy is the approved fallback until credentials are available.
+- GitHub auto-deploy webhook remains blocked by missing callable webhook
+  administration tooling. Manual deploy is the approved fallback until tooling
+  or credentials are available.
+- OpenJarvis connector hygiene is deployed in production and committed locally
+  as `5a426370`, but that commit has not been pushed to the upstream
+  OpenJarvis repository because the checkout contains unrelated local changes
+  and upstream ownership needs a deliberate handoff.
 - Paperclip adapter is deployed as a production image patch from the current
   production source to avoid upgrading unrelated upstream Paperclip changes.
   The patch is now carried in `integrations/paperclip/companycore-adapter.patch`
   and documented in `docs/operations/paperclip-companycore-adapter-runbook.md`;
-  it should still be merged into the managed Paperclip application repository
-  before the next Paperclip upgrade.
+  the local Paperclip source commit is `4cfa476f` and should still be merged
+  into the managed Paperclip application repository before the next Paperclip
+  upgrade.
 
 ## Rollback
 
@@ -98,5 +108,6 @@ test records.
 
 ## Next Work
 
-No active P0/P1 v1 runtime hardening task remains ready. The next known
-non-runtime blocker is GitHub-to-Coolify auto-deploy webhook administration.
+No active P0/P1 v1 runtime hardening task remains ready. The next choices are
+v2 scope selection, OpenJarvis/Paperclip source handoff, or GitHub-to-Coolify
+auto-deploy administration when the required tooling is available.

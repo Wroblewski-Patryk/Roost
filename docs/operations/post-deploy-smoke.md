@@ -500,3 +500,24 @@ Use this file to record the minimum checks after each deploy.
     events.
   - Jarvis rebuilt the CompanyCore connector index to 259 chunks with event
     indexing disabled by default.
+
+## V1 Launch Boundary
+
+- Timestamp: 2026-05-03
+- Environment: production CompanyCore, OpenJarvis, and Paperclip
+- Verdict:
+  - The approved CompanyCore v1 runtime slice is achieved.
+  - CompanyCore is the workspace-scoped source of truth for the imported
+    ClickUp task set.
+  - ClickUp updates are handled by signed webhooks plus non-destructive
+    scheduled maintenance.
+  - CompanyCore writes supported task and note changes back to ClickUp.
+  - Jarvis reads CompanyCore through the authenticated CompanyCore connector
+    with smoke/test records excluded from normal business prompts.
+  - Paperclip consumes CompanyCore agent events and acknowledges processed
+    events.
+- Boundary:
+  - GitHub-to-Coolify auto-deploy is a release automation follow-up, not a v1
+    runtime blocker.
+  - OpenJarvis and Paperclip source handoff is tracked separately from
+    CompanyCore runtime readiness.

@@ -7,7 +7,7 @@ Last updated: 2026-05-03
 - Goal: Central backend for company projects, goals, tasks, CRM, notes,
   decisions, agents, and system events.
 - Commercial model: Internal operational infrastructure.
-- Current phase: v1 foundation.
+- Current phase: v1 runtime achieved; v2 scope selection next.
 
 ## Product Decisions (Confirmed)
 - 2026-05-03: v1 includes a minimal owner-only web console for production
@@ -86,26 +86,27 @@ Last updated: 2026-05-03
   Postgres volume.
 
 ## Current Focus
-- Main active objective: v1 runtime release candidate is live with clean sync
-  data hygiene; no active P0/P1 runtime hardening task remains ready.
-- Top blockers: GitHub repository webhook setup needs an authenticated GitHub
-  session or token with webhook administration permissions.
+- Main active objective: v1 runtime is achieved for the approved operating
+  slice; no active P0/P1 runtime hardening task remains ready.
+- Top blockers: GitHub-to-Coolify auto-deploy webhook administration remains
+  blocked by missing callable webhook-management tooling in the current
+  session. GitHub repository visibility shows admin permission, but the
+  available GitHub connector surface does not expose webhook create/list/update
+  actions and the local `gh` CLI is unavailable.
 - Success criteria for this phase: canonical docs, workspace/auth model,
   task board, planning queue, deployment domains, migration strategy, event
   coverage, API/error contracts, regression guardrails, tests, observability,
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-051 Clean Sync Data Hygiene.
-- Current operation mode: BUILDER
-- Last completed iteration: CCV1-051 Clean Sync Data Hygiene.
-- Last completed task: verified ClickUp task records are not duplicated,
-  changed ClickUp sync to skip unchanged task pulls without emitting duplicate
-  `task_synced_from_clickup` events, changed Jarvis CompanyCore connector
-  event indexing to opt-in, backed up production stores, and cleaned production
-  smoke/sync noise while preserving real ClickUp tasks.
-- Next required mode: ARCHITECT for the next planned v1/v2 scope decision
-  unless priority changes.
+- Current iteration: CCV1-052 V1 Launch Boundary And Source Handoff.
+- Current operation mode: ARCHITECT
+- Last completed iteration: CCV1-052 V1 Launch Boundary And Source Handoff.
+- Last completed task: recorded the v1 launch boundary, separated runtime
+  readiness from external auto-deploy administration, and documented the
+  OpenJarvis/Paperclip source handoff status.
+- Next required mode: BUILDER when a new approved v2 or handoff task is moved
+  into the active queue.
 
 ## Recent Progress
 - 2026-05-02: Created Company Core backend foundation, Prisma schema, Docker
@@ -556,6 +557,13 @@ Last updated: 2026-05-03
   events. A production maintenance run skipped all 219 unchanged tasks and did
   not create new task sync events. Jarvis rebuilt the CompanyCore connector
   index to 259 chunks.
+- 2026-05-03: Completed CCV1-052 by promoting the approved CompanyCore runtime
+  slice from release candidate to v1 achieved. The final boundary records that
+  CompanyCore, ClickUp, Jarvis, and Paperclip are live and smoked end to end;
+  GitHub-to-Coolify auto-deploy is an external release automation blocker, not
+  a v1 runtime blocker; OpenJarvis has a local unpushed connector hygiene
+  commit and Paperclip has a local unpushed adapter commit plus a managed
+  CompanyCore patch/runbook for durable handoff.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

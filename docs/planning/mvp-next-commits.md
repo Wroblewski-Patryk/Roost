@@ -45,10 +45,17 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] CCV1-049 Authenticated Jarvis Smoke And Managed Paperclip Source Path
 - [x] CCV1-050 Jarvis CompanyCore Answer Precision Hardening
 - [x] CCV1-051 Clean Sync Data Hygiene
+- [x] CCV1-052 V1 Launch Boundary And Source Handoff
 
 ## NEXT
 
 - [ ] No active P0/P1 v1 runtime task is ready.
+- [ ] Optional source handoff: push or upstream the OpenJarvis
+      `5a426370` connector hygiene commit and the Paperclip `4cfa476f`
+      adapter commit when those repositories are ready for managed changes.
+- [ ] Optional release automation: complete GitHub-to-Coolify auto-deploy
+      webhook administration when webhook-management tooling or credentials are
+      available.
 
 ## PIPELINE
 
@@ -81,6 +88,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 27. CCV1-049 Authenticated Jarvis Smoke And Managed Paperclip Source Path
 - [x] 28. CCV1-050 Jarvis CompanyCore Answer Precision Hardening
 - [x] 29. CCV1-051 Clean Sync Data Hygiene
+- [x] 30. CCV1-052 V1 Launch Boundary And Source Handoff
 
 
 ## GROUP QUEUE

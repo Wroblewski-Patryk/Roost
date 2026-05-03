@@ -4,6 +4,79 @@ These task contracts turn the v1 audit into executable work. Each task must be
 completed as its own small iteration and must update `.codex/context/TASK_BOARD.md`,
 `.codex/context/PROJECT_STATE.md`, and relevant docs when status changes.
 
+## CCV1-052 V1 Launch Boundary And Source Handoff
+
+### Header
+- ID: CCV1-052
+- Title: V1 launch boundary and source handoff
+- Task Type: release architecture
+- Current Stage: release
+- Status: DONE
+- Owner: Ops/Release + Product Docs
+- Depends on: CCV1-051
+- Priority: P1
+- Iteration: v1-052
+- Operation Mode: ARCHITECT
+
+### Goal
+Close the approved CompanyCore v1 runtime slice without hiding the remaining
+external handoff and release automation work.
+
+### Scope
+- Release readiness verdict.
+- Canonical task board and next-commits queue.
+- Project state.
+- Post-deploy smoke record.
+- OpenJarvis and Paperclip source handoff notes.
+- GitHub-to-Coolify auto-deploy blocker classification.
+
+### Implementation Plan
+- Review the current canonical queue and release readiness evidence after
+  CCV1-051.
+- Promote the runtime verdict from release candidate to v1 achieved for the
+  approved scope.
+- Record that GitHub auto-deploy remains blocked by missing callable webhook
+  administration tooling in this session, despite repository admin visibility.
+- Record OpenJarvis and Paperclip source handoff status without pushing
+  unrelated upstream changes.
+- Keep future v2/product expansion separate from v1 runtime completion.
+- Run docs validation and a production public health smoke.
+
+### Acceptance Criteria
+- [x] v1 achieved scope is explicit and limited to the approved runtime slice.
+- [x] Runtime readiness is separated from external auto-deploy administration.
+- [x] OpenJarvis and Paperclip handoff status is documented.
+- [x] No new runtime code is changed.
+- [x] Canonical board, project state, planning queue, release readiness, and
+  smoke docs are synchronized.
+
+### Definition of Done
+- [x] `git diff --check` passes.
+- [x] `npm run build` passes.
+- [x] `npm test` passes against local PostgreSQL.
+- [x] Production public CompanyCore health smoke passes.
+- [x] Task board, project state, planning queue, and task contract are updated.
+
+### Result Report
+- Task summary: Marked the approved CompanyCore v1 runtime slice as achieved
+  and documented the remaining non-runtime release automation and external
+  source handoff boundaries.
+- Files changed: `.codex/context/PROJECT_STATE.md`,
+  `.codex/context/TASK_BOARD.md`, `docs/planning/mvp-next-commits.md`,
+  `docs/planning/companycore-v1-task-contracts.md`,
+  `docs/operations/v1-release-readiness.md`, and
+  `docs/operations/post-deploy-smoke.md`.
+- How tested: `git diff --check`; `npm run build`; `npm test` with
+  `DATABASE_URL` pointing at local PostgreSQL on `localhost:55432`; production
+  public health smoke for `https://api.companycore.luckysparrow.ch/health` and
+  `https://api.companycore.luckysparrow.ch/v1/health`.
+- What is incomplete: GitHub-to-Coolify auto-deploy webhook administration
+  remains blocked until webhook-management tooling or credentials are
+  available. OpenJarvis and Paperclip source commits remain local/unpushed
+  handoff items.
+- Next steps: Choose the first v2 product scope or perform external source
+  handoff when those repositories are ready.
+
 ## CCV1-051 Clean Sync Data Hygiene
 
 ### Header
