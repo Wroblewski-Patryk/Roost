@@ -162,7 +162,8 @@ Safe auth responses may include user and workspace identifiers, but must not
 include password hashes, raw API keys, integration tokens, or secret material.
 
 Integration settings such as ClickUp credentials must belong to the active
-workspace and must not be returned in API responses.
+workspace and must not be returned in API responses. The same rule applies to
+Google Drive OAuth bearer tokens and channel verification tokens.
 
 ## Service API Keys
 
@@ -223,10 +224,19 @@ not send `workspaceId`.
 ```http
 GET /integration-settings/clickup
 PUT /integration-settings/clickup
+GET /integration-settings/google-drive
+PUT /integration-settings/google-drive
+GET /integration-settings/google_drive
+PUT /integration-settings/google_drive
 POST /v1/integration-settings/clickup/discover
 GET /v1/integration-settings/clickup/webhooks
 POST /v1/integration-settings/clickup/webhooks/reconcile
 DELETE /v1/integration-settings/clickup/webhooks/:id
+GET /v1/integration-settings/clickup/events
+POST /v1/integration-settings/clickup/events/retry-failed
+POST /v1/integration-settings/google-drive/sync/notes
+GET /v1/integration-settings/google-drive/webhooks
+POST /v1/integration-settings/google-drive/webhooks/reconcile
 ```
 
 ClickUp configuration payload:
@@ -304,6 +314,83 @@ no longer exist in ClickUp, and marks registrations for no-longer-selected
 Lists inactive. Owner users can delete a single registration through
 `DELETE /v1/integration-settings/clickup/webhooks/:id`, which first deletes the
 remote ClickUp webhook and then removes the local encrypted registration.
+
+Provider event inbox health is exposed without returning raw webhook payloads:
+
+```http
+GET /v1/integration-settings/clickup/events?status=failed
+POST /v1/integration-settings/clickup/events/retry-failed
+```
+
+`GET /clickup/events` returns safe metadata such as event name, external task
+ID, processing status, retry count, last error code, and timestamps. Owner users
+can replay failed events with:
+
+```json
+{
+  "eventIds": ["provider-event-uuid"],
+  "limit": 25
+}
+```
+
+Replay reprocesses failed inbox rows through the same ClickUp task/comment
+mapper, clears `lastErrorCode` on success, and leaves still-failing rows in
+`failed` state with an incremented retry count.
+
+Google Drive configuration payload:
+
+```json
+{
+  "token": "google-drive-oauth-access-token",
+  "config": {
+    "rootFolderId": "google-drive-folder-id",
+    "syncMode": "two_way",
+    "includeGoogleDocs": true,
+    "pushNotesToDrive": false,
+    "webhookToken": "optional-channel-verification-token"
+  },
+  "active": true
+}
+```
+
+`GET/PUT /integration-settings/google-drive` use the generic workspace-owned
+integration settings route. The underscore alias
+`/integration-settings/google_drive` remains accepted for compatibility. The
+token is encrypted and never returned. The first native Google Drive slice maps
+text files and Google Docs in the selected Drive folder to CompanyCore notes
+using `(workspace_id, source = google_drive, external_id = file id)`.
+
+`POST /v1/integration-settings/google-drive/sync/notes` pulls supported Drive
+files into notes and can also export local CompanyCore notes when `push` is
+true or the saved config has `pushNotesToDrive = true`:
+
+```json
+{
+  "push": true
+}
+```
+
+Safe sync response:
+
+```json
+{
+  "data": {
+    "provider": "google_drive",
+    "importedCount": 1,
+    "exportedCount": 1,
+    "updatedCount": 0,
+    "skippedCount": 0
+  }
+}
+```
+
+`POST /v1/integration-settings/google-drive/webhooks/reconcile` registers a
+Google Drive Changes notification channel for the workspace. Google Drive
+notifications are public transport callbacks, so CompanyCore verifies the
+`X-Goog-Channel-Token` against encrypted channel secret material before writing
+a provider inbox row. Verified `change` notifications trigger the same Google
+Drive notes sync service and mark the inbox row `processed` or `failed` with a
+safe `lastErrorCode`.
 
 Safe discovery response:
 
@@ -467,6 +554,14 @@ Safe response:
           "listIds": ["clickup-list-id"],
           "syncMode": "pull"
         }
+      },
+      "google_drive": {
+        "configured": true,
+        "active": true,
+        "config": {
+          "rootFolderId": "google-drive-folder-id",
+          "syncMode": "two_way"
+        }
       }
     }
   }
@@ -486,6 +581,7 @@ knowledge, and automation metadata through protected routes.
 GET /v1/operating-model
 GET /v1/operating-model/tables
 GET /v1/operating-model/external-mappings
+PATCH /v1/operating-model/external-mappings/:id/scope
 GET /v1/operating-model/external-fields
 GET /v1/operating-model/storage-locations
 POST /v1/operating-model/storage-locations
@@ -498,6 +594,19 @@ POST /v1/operating-model/automation-definitions
 Write payloads derive `workspaceId` from auth. Optional `areaId`, `folderId`,
 and `tableId` must belong to the active workspace and to each other; otherwise
 the API returns `not_found`.
+
+External mapping scope payload:
+
+```json
+{
+  "areaId": "uuid-or-null",
+  "folderId": "uuid-or-null",
+  "tableId": "uuid-or-null"
+}
+```
+
+Mapping reassignment is one record at a time and emits
+`external_mapping_scope_updated` when the scope changes.
 
 Storage location payload:
 
@@ -814,8 +923,10 @@ provided, it must belong to the active workspace.
 ```http
 GET /v1/notes
 POST /v1/notes
+PATCH /v1/notes/:id
 GET /notes
 POST /notes
+PATCH /notes/:id
 ```
 
 ```json
@@ -829,6 +940,11 @@ When a note is created against a ClickUp-sourced task, CompanyCore creates a
 ClickUp task comment first and then stores the returned comment ID as the
 note's `externalId` with `source = clickup`. If ClickUp rejects the comment,
 the local note is not created and the API returns a safe integration error.
+
+When a note has `source = google_drive` and a Drive file ID in `externalId`,
+`PATCH /v1/notes/:id` writes the updated note content back to Google Drive
+before saving the local update. If Google Drive rejects the update, the local
+note is not changed and CompanyCore emits `google_drive_note_writeback_failed`.
 
 ## Decisions
 
@@ -892,6 +1008,7 @@ POST /agent-logs
 
 ```http
 POST /v1/webhooks/clickup
+POST /v1/webhooks/google-drive
 ```
 
 This route is public at the transport layer because ClickUp calls it directly.
@@ -910,6 +1027,14 @@ ClickUp task comment events are mapped to CompanyCore notes attached to the
 same task. The note uses `source = clickup` and the ClickUp comment ID as
 `externalId`, so repeated webhook deliveries update the same note instead of
 duplicating context.
+
+Google Drive change notifications are accepted through
+`POST /v1/webhooks/google-drive`. The route validates Google Drive notification
+headers, verifies the channel token, writes idempotent provider inbox rows by
+channel/message number, and returns `202 accepted`. Because Google Drive
+notifications signal that a change happened without carrying full file content,
+CompanyCore queries Drive through the notes sync service after verified
+`change` notifications.
 
 ## Agent Events
 
@@ -948,6 +1073,11 @@ Generated v1 events:
 - `clickup_custom_field_update_failed`
 - `clickup_webhook_deleted`
 - `clickup_comment_create_failed`
+- `google_drive_sync_started`
+- `google_drive_sync_succeeded`
+- `note_synced_from_google_drive`
+- `note_exported_to_google_drive`
+- `google_drive_note_writeback_failed`
 - `goal_created`
 - `target_created`
 - `client_created`

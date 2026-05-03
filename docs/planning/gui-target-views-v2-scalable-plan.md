@@ -447,12 +447,12 @@ before GUI implementation:
 After the read-first Operating Areas Explorer lands, schedule a narrow
 backend+GUI slice:
 
-- add `PATCH /v1/operating-model/external-mappings/:id/scope`
-- validate `areaId`, `folderId`, and `tableId` with the existing fail-closed
+- added `PATCH /v1/operating-model/external-mappings/:id/scope`
+- validates `areaId`, `folderId`, and `tableId` with the existing fail-closed
   `assertScope` rules
-- emit a safe system event when a mapping changes
-- add GUI controls to reassign one provider container at a time
-- test cross-workspace denial and invalid area/folder/table combinations
+- emits a safe system event when a mapping changes
+- adds GUI controls to reassign one provider container at a time
+- tests cross-workspace denial and invalid area/table combinations
 
 This is the slice that makes corrections such as moving `03.Sprzedaż` into the
 proper Sales/CRM area safe and auditable.

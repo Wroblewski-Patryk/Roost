@@ -105,16 +105,14 @@ Last updated: 2026-05-03
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-046 GUI App Shell And Navigation.
+- Current iteration: CCV1-052 Relationship Mapping Reassignment API And UI.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-046 GUI App Shell And Navigation.
-- Last completed task: replaced the minimal owner-console frame with a
-  scalable authenticated app shell and route structure for Dashboard,
-  Operating Areas, Tasks And Adapters, Pipeline, Settings, and API while
-  preserving existing ClickUp setup and API capability flows.
+- Last completed iteration: CCV1-052 Relationship Mapping Reassignment API And UI.
+- Last completed task: completed the first GUI rollout wave from scalable app
+  shell through dashboard, operating areas, settings taxonomy, task adapter
+  operations, pipeline summary, and safe provider mapping reassignment.
 - Next required mode: BUILDER for Paperclip application-side CompanyCore
-  adapter unless priority changes; next GUI slice is CCV1-047 Dashboard Command
-  Center.
+  adapter unless priority changes.
 
 ## Recent Progress
 - 2026-05-02: Created Company Core backend foundation, Prisma schema, Docker
@@ -498,6 +496,16 @@ Last updated: 2026-05-03
   route serving were preserved. Validation passed with `node --check
   public/app.js`, `npm run build`, `git diff --check`, and local HTTP route
   checks on port `3107`.
+- 2026-05-03: Completed CCV1-047 through CCV1-052 as the first scalable GUI
+  rollout wave. Dashboard now summarizes provider health, operating model,
+  tasks, events, agent outbox, and webhook coverage. Operating Areas now has a
+  read-first area explorer with detail groups. Settings groups integrations by
+  data type/provider/scope. Tasks And Adapters exposes task lists, ClickUp
+  events, webhooks, and Custom Fields. Pipeline summarizes deals, open value,
+  clients, and interactions. External provider mappings can now be reassigned
+  one at a time through `PATCH /v1/operating-model/external-mappings/:id/scope`
+  with fail-closed workspace and scope validation plus event emission. `npm
+  test` passed against disposable PostgreSQL on `localhost:55432`.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

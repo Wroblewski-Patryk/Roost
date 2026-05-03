@@ -226,7 +226,10 @@ test("CompanyCore v1 protected API flow", async () => {
         };
         writeRules: string[];
       };
-      integrations: { clickup: { configured: boolean; active: boolean; config: unknown } };
+      integrations: {
+        clickup: { configured: boolean; active: boolean; config: unknown };
+        google_drive: { configured: boolean; active: boolean; config: unknown };
+      };
     };
   };
   assert.equal(connectionBody.data.service, "companycore");
@@ -287,6 +290,8 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(connectionBody.data.adapterManifest.routes.integrationSettings[0].path, "/v1/integration-settings/clickup");
   assert.ok(connectionBody.data.adapterManifest.writeRules.includes("Do not send workspaceId in write payloads."));
   assert.equal(connectionBody.data.integrations.clickup.configured, false);
+  assert.equal(connectionBody.data.integrations.google_drive.configured, false);
+  assert.ok(connectionBody.data.capabilities.includes("integration-settings:google-drive:notes:sync"));
 
   const projectListB = await request("/v1/projects", { headers: authB });
   assert.equal(projectListB.status, 200);
@@ -369,6 +374,54 @@ test("CompanyCore v1 protected API flow", async () => {
       }
     }
   });
+  const taskListsTable = await prisma.operatingTable.findUniqueOrThrow({
+    where: {
+      workspaceId_apiSlug: {
+        workspaceId: ownerA.workspace.id,
+        apiSlug: "task-lists"
+      }
+    }
+  });
+  const clickUpMapping = await prisma.externalContainerMapping.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      provider: "clickup",
+      entityType: "list",
+      externalId: "clickup-list-sales",
+      name: "03.Sprzedaz"
+    }
+  });
+
+  const reassignedMapping = await request(`/v1/operating-model/external-mappings/${clickUpMapping.id}/scope`, {
+    method: "PATCH",
+    headers: authA,
+    body: JSON.stringify({
+      areaId: taskListsTable.areaId,
+      tableId: taskListsTable.id
+    })
+  });
+  assert.equal(reassignedMapping.status, 200);
+  assert.equal((reassignedMapping.body as { data: { areaId: string; tableId: string } }).data.areaId, taskListsTable.areaId);
+  assert.equal((reassignedMapping.body as { data: { areaId: string; tableId: string } }).data.tableId, taskListsTable.id);
+
+  const foreignMappingReassignment = await request(`/v1/operating-model/external-mappings/${clickUpMapping.id}/scope`, {
+    method: "PATCH",
+    headers: authB,
+    body: JSON.stringify({
+      areaId: taskListsTable.areaId
+    })
+  });
+  assert.equal(foreignMappingReassignment.status, 404);
+
+  const mismatchedMappingScope = await request(`/v1/operating-model/external-mappings/${clickUpMapping.id}/scope`, {
+    method: "PATCH",
+    headers: authA,
+    body: JSON.stringify({
+      areaId: goalsTable.areaId,
+      tableId: taskListsTable.id
+    })
+  });
+  assert.equal(mismatchedMappingScope.status, 404);
 
   const knowledgeRoot = await request("/v1/operating-model/knowledge-roots", {
     method: "POST",
@@ -530,6 +583,159 @@ test("CompanyCore v1 protected API flow", async () => {
     })
   });
   assert.equal(note.status, 201);
+  const noteId = (note.body as { data: { id: string } }).data.id;
+
+  const googleDriveSettings = await request("/v1/integration-settings/google-drive", {
+    method: "PUT",
+    headers: authA,
+    body: JSON.stringify({
+      token: "google-drive-token",
+      config: {
+        rootFolderId: "drive-root-folder",
+        syncMode: "two_way",
+        includeGoogleDocs: true,
+        webhookToken: "drive-channel-token-123"
+      },
+      active: true
+    })
+  });
+  assert.equal(googleDriveSettings.status, 200);
+  assert.equal((googleDriveSettings.body as { data: { secretConfigured: boolean; config: { rootFolderId: string } } }).data.secretConfigured, true);
+  assert.equal((googleDriveSettings.body as { data: { token?: string } }).data.token, undefined);
+  const googleDriveSettingsCompat = await request("/v1/integration-settings/google_drive", { headers: authA });
+  assert.equal(googleDriveSettingsCompat.status, 200);
+  assert.equal((googleDriveSettingsCompat.body as { data: { provider: string } }).data.provider, "google_drive");
+
+  const originalFetchBeforeDrive = globalThis.fetch;
+  let exportedDrivePayload = "";
+  let updatedDrivePayload = "";
+  globalThis.fetch = (async (input: string | URL, init?: RequestInit) => {
+    const url = new URL(String(input));
+    if (url.hostname === "www.googleapis.com" && url.pathname === "/drive/v3/files" && !init?.method) {
+      assert.equal(url.searchParams.get("supportsAllDrives"), "true");
+      return new Response(JSON.stringify({
+        files: [{
+          id: "drive-file-imported",
+          name: "Imported CompanyCore note.txt",
+          mimeType: "text/plain",
+          modifiedTime: "2026-05-03T12:00:00.000Z",
+          webViewLink: "https://drive.google.com/file/d/drive-file-imported"
+        }]
+      }), { status: 200 });
+    }
+    if (url.hostname === "www.googleapis.com" && url.pathname === "/drive/v3/files/drive-file-imported" && url.searchParams.get("alt") === "media") {
+      return new Response("Imported from Google Drive", { status: 200 });
+    }
+    if (url.hostname === "www.googleapis.com" && url.pathname === "/upload/drive/v3/files" && init?.method === "POST") {
+      exportedDrivePayload = String(init.body ?? "");
+      return new Response(JSON.stringify({
+        id: "drive-file-exported",
+        name: `companycore-note-${noteId}.txt`,
+        mimeType: "text/plain",
+        modifiedTime: "2026-05-03T12:05:00.000Z"
+      }), { status: 200 });
+    }
+    if (url.hostname === "www.googleapis.com" && url.pathname === "/upload/drive/v3/files/drive-file-exported" && init?.method === "PATCH") {
+      updatedDrivePayload = String(init.body ?? "");
+      return new Response(JSON.stringify({
+        id: "drive-file-exported",
+        name: `companycore-note-${noteId}.txt`,
+        mimeType: "text/plain"
+      }), { status: 200 });
+    }
+    if (url.hostname === "www.googleapis.com" && url.pathname === "/drive/v3/changes/startPageToken") {
+      return new Response(JSON.stringify({ startPageToken: "drive-start-token" }), { status: 200 });
+    }
+    if (url.hostname === "www.googleapis.com" && url.pathname === "/drive/v3/changes/watch" && init?.method === "POST") {
+      const watchPayload = JSON.parse(String(init.body ?? "{}")) as { id: string; address: string; token: string; type: string };
+      assert.equal(watchPayload.type, "web_hook");
+      assert.ok(watchPayload.address.endsWith("/v1/webhooks/google-drive"));
+      assert.equal(watchPayload.token, "drive-channel-token-123");
+      return new Response(JSON.stringify({
+        id: watchPayload.id,
+        resourceId: "drive-resource-1",
+        resourceUri: "https://www.googleapis.com/drive/v3/changes",
+        expiration: "1770000000000"
+      }), { status: 200 });
+    }
+    return originalFetchBeforeDrive(input, init);
+  }) as typeof fetch;
+
+  try {
+    const googleDriveSync = await request("/v1/integration-settings/google-drive/sync/notes", {
+      method: "POST",
+      headers: authA,
+      body: JSON.stringify({ push: true })
+    });
+    assert.equal(googleDriveSync.status, 200);
+    assert.deepEqual((googleDriveSync.body as { data: { importedCount: number; exportedCount: number; updatedCount: number } }).data, {
+      provider: "google_drive",
+      importedCount: 1,
+      exportedCount: 1,
+      updatedCount: 0,
+      skippedCount: 0
+    });
+    assert.ok(exportedDrivePayload.includes("Workspace A scoped note"));
+
+    const importedDriveNote = await prisma.note.findUnique({
+      where: {
+        workspaceId_source_externalId: {
+          workspaceId: ownerA.workspace.id,
+          source: "google_drive",
+          externalId: "drive-file-imported"
+        }
+      }
+    });
+    assert.equal(importedDriveNote?.content, "Imported from Google Drive");
+
+    const patchDriveNote = await request(`/v1/notes/${noteId}`, {
+      method: "PATCH",
+      headers: authA,
+      body: JSON.stringify({
+        content: "Updated locally and written back to Drive"
+      })
+    });
+    assert.equal(patchDriveNote.status, 200);
+    assert.equal(updatedDrivePayload, "Updated locally and written back to Drive");
+
+    const driveWatch = await request("/v1/integration-settings/google-drive/webhooks/reconcile", {
+      method: "POST",
+      headers: authA,
+      body: JSON.stringify({})
+    });
+    assert.equal(driveWatch.status, 200);
+    const driveWatchBody = driveWatch.body as { data: { externalId: string; status: string } };
+    assert.equal(driveWatchBody.data.status, "active");
+
+    const driveWebhook = await request("/v1/webhooks/google-drive", {
+      method: "POST",
+      headers: {
+        "X-Goog-Channel-ID": driveWatchBody.data.externalId,
+        "X-Goog-Channel-Token": "drive-channel-token-123",
+        "X-Goog-Message-Number": "1",
+        "X-Goog-Resource-State": "change",
+        "X-Goog-Resource-ID": "drive-resource-1"
+      },
+      body: ""
+    });
+    assert.equal(driveWebhook.status, 202);
+    assert.equal((driveWebhook.body as { data: { processingStatus: string } }).data.processingStatus, "processed");
+
+    const invalidDriveWebhook = await request("/v1/webhooks/google-drive", {
+      method: "POST",
+      headers: {
+        "X-Goog-Channel-ID": driveWatchBody.data.externalId,
+        "X-Goog-Channel-Token": "wrong-token",
+        "X-Goog-Message-Number": "2",
+        "X-Goog-Resource-State": "change"
+      },
+      body: ""
+    });
+    assert.equal(invalidDriveWebhook.status, 401);
+    assert.equal((invalidDriveWebhook.body as { error: string }).error, "invalid_webhook_signature");
+  } finally {
+    globalThis.fetch = originalFetchBeforeDrive;
+  }
 
   const foreignNote = await request("/v1/notes", {
     method: "POST",
@@ -1160,6 +1366,95 @@ test("CompanyCore v1 protected API flow", async () => {
     notify_all: false
   });
 
+  const webhookRegistration = await prisma.externalWebhookRegistration.findUniqueOrThrow({
+    where: {
+      workspaceId_provider_externalId: {
+        workspaceId: ownerA.workspace.id,
+        provider: "clickup",
+        externalId: "webhook-list-1"
+      }
+    }
+  });
+  const failedInbox = await prisma.providerEventInbox.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      provider: "clickup",
+      webhookRegistrationId: webhookRegistration.id,
+      externalWebhookId: "webhook-list-1",
+      eventName: "taskUpdated",
+      externalTaskId: "clickup-task-retry",
+      idempotencyKey: "webhook-list-1:history-retry-1",
+      payloadHash: "retry-hash",
+      payload: {
+        webhook_id: "webhook-list-1",
+        event: "taskUpdated",
+        task_id: "clickup-task-retry"
+      },
+      signatureVerified: true,
+      processingStatus: "failed",
+      retryCount: 1,
+      lastErrorCode: "integration_unavailable"
+    }
+  });
+
+  const failedProviderEvents = await request("/v1/integration-settings/clickup/events?status=failed", {
+    headers: authA
+  });
+  assert.equal(failedProviderEvents.status, 200);
+  assert.ok((failedProviderEvents.body as { data: Array<{ id: string; lastErrorCode: string }> }).data.some((event) => (
+    event.id === failedInbox.id && event.lastErrorCode === "integration_unavailable"
+  )));
+
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    const url = new URL(String(input));
+    if (url.pathname === "/api/v2/task/clickup-task-retry") {
+      return new Response(JSON.stringify({
+        id: "clickup-task-retry",
+        name: "Retried provider event task",
+        markdown_description: "Recovered from failed inbox replay",
+        status: { status: "to do", type: "open" },
+        priority: { priority: "normal" },
+        list: { id: "list-1" }
+      }), { status: 200 });
+    }
+    return new Response(JSON.stringify({ err: "Not found" }), { status: 404 });
+  }) as typeof fetch;
+
+  try {
+    const retriedProviderEvents = await request("/v1/integration-settings/clickup/events/retry-failed", {
+      method: "POST",
+      headers: authA,
+      body: JSON.stringify({
+        eventIds: [failedInbox.id]
+      })
+    });
+    assert.equal(retriedProviderEvents.status, 200);
+    const retryBody = retriedProviderEvents.body as {
+      data: { attemptedCount: number; processedCount: number; failedCount: number };
+    };
+    assert.equal(retryBody.data.attemptedCount, 1);
+    assert.equal(retryBody.data.processedCount, 1);
+    assert.equal(retryBody.data.failedCount, 0);
+  } finally {
+    globalThis.fetch = originalFetchBeforeDiscovery;
+  }
+
+  const retriedInbox = await prisma.providerEventInbox.findUniqueOrThrow({
+    where: { id: failedInbox.id }
+  });
+  assert.equal(retriedInbox.processingStatus, "processed");
+  assert.equal(retriedInbox.lastErrorCode, null);
+  const retriedTask = await prisma.task.findUnique({
+    where: {
+      workspaceId_source_externalId: {
+        workspaceId: ownerA.workspace.id,
+        source: "clickup",
+        externalId: "clickup-task-retry"
+      }
+    }
+  });
+  assert.equal(retriedTask?.title, "Retried provider event task");
+
   const serviceCannotDiscoverClickUp = await request("/v1/integration-settings/clickup/discover", {
     method: "POST",
     headers: { "X-API-Key": serviceKey },
@@ -1397,7 +1692,7 @@ test("CompanyCore v1 protected API flow", async () => {
     assert.equal(replaceBody.data.itemCount, 1);
     assert.equal(replaceBody.data.createdCount, 1);
     assert.equal(replaceBody.data.updatedCount, 0);
-    assert.equal(replaceBody.data.deletedCount, 3);
+    assert.equal(replaceBody.data.deletedCount, 4);
   } finally {
     globalThis.fetch = originalFetch;
   }

@@ -45,6 +45,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] CCV1-049 Settings Integration Taxonomy
 - [x] CCV1-050 Tasks And Adapter Operations View
 - [x] CCV1-051 Pipeline Module
+- [x] CCV1-052 Relationship Mapping Reassignment API And UI
 
 ## NEXT
 
@@ -82,7 +83,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 27. CCV1-049 Settings Integration Taxonomy
 - [x] 28. CCV1-050 Tasks And Adapter Operations View
 - [x] 29. CCV1-051 Pipeline Module
-- [ ] 30. CCV1-052 Relationship Mapping Reassignment API And UI
+- [x] 30. CCV1-052 Relationship Mapping Reassignment API And UI
 
 
 ## GROUP QUEUE

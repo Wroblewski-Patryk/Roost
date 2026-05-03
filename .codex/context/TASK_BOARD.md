@@ -23,13 +23,6 @@
 
 ## Backlog
 
-- CCV1-052 Relationship Mapping Reassignment API And UI
-  - Stage: planning
-  - Owner: Backend Builder + Frontend Builder
-  - Priority: P1
-  - Scope: after the read-first areas explorer, add a safe mapping reassignment
-    endpoint and one-at-a-time GUI correction flow for provider containers.
-
 ## Done
 
 - Initialize `companycore` from `!template`.
@@ -108,3 +101,4 @@
 - CCV1-049 Settings Integration Taxonomy.
 - CCV1-050 Tasks And Adapter Operations View.
 - CCV1-051 Pipeline Module.
+- CCV1-052 Relationship Mapping Reassignment API And UI.

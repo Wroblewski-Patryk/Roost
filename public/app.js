@@ -807,7 +807,7 @@ function renderAreas() {
     areaDetailGrid.innerHTML = "";
     const row = document.createElement("tr");
     const cell = document.createElement("td");
-    cell.colSpan = 5;
+    cell.colSpan = 6;
     cell.textContent = "No mappings loaded yet.";
     row.append(cell);
     mappingTableBody.append(row);
@@ -870,7 +870,7 @@ function renderAreas() {
     mappingHealthSummary.textContent = "No external provider mappings are stored yet.";
     const row = document.createElement("tr");
     const cell = document.createElement("td");
-    cell.colSpan = 5;
+    cell.colSpan = 6;
     cell.textContent = "No provider mappings found.";
     row.append(cell);
     mappingTableBody.append(row);
@@ -891,11 +891,81 @@ function renderAreas() {
       areaById.get(mapping.areaId)?.name || "Needs review",
       tableById.get(mapping.tableId)?.name || "-"
     ].forEach((value) => appendText(row, "td", value));
+    const actionCell = document.createElement("td");
+    actionCell.append(createMappingScopeEditor(mapping, areas, tables));
+    row.append(actionCell);
     if (!mapping.areaId && !mapping.tableId) {
       row.className = "needs-review";
     }
     mappingTableBody.append(row);
   }
+}
+
+function createMappingScopeEditor(mapping, areas, tables) {
+  const form = document.createElement("div");
+  form.className = "mapping-editor";
+  const areaSelect = document.createElement("select");
+  const tableSelect = document.createElement("select");
+  const save = document.createElement("button");
+  save.type = "button";
+  save.className = "secondary compact";
+  save.textContent = "Save";
+
+  const areaPlaceholder = document.createElement("option");
+  areaPlaceholder.value = "";
+  areaPlaceholder.textContent = "No area";
+  areaSelect.append(areaPlaceholder);
+  for (const area of areas) {
+    const option = document.createElement("option");
+    option.value = area.id;
+    option.textContent = area.name;
+    areaSelect.append(option);
+  }
+  areaSelect.value = mapping.areaId || "";
+
+  function renderTableOptions() {
+    tableSelect.innerHTML = "";
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "No table";
+    tableSelect.append(placeholder);
+    const visibleTables = tables.filter((table) => !areaSelect.value || table.areaId === areaSelect.value);
+    for (const table of visibleTables) {
+      const option = document.createElement("option");
+      option.value = table.id;
+      option.textContent = table.name;
+      tableSelect.append(option);
+    }
+    tableSelect.value = visibleTables.some((table) => table.id === mapping.tableId) ? mapping.tableId : "";
+  }
+
+  areaSelect.addEventListener("change", renderTableOptions);
+  renderTableOptions();
+
+  save.addEventListener("click", async () => {
+    setBusy(true);
+    try {
+      await api(`/v1/operating-model/external-mappings/${mapping.id}/scope`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          areaId: areaSelect.value || null,
+          folderId: null,
+          tableId: tableSelect.value || null
+        })
+      });
+      const response = await api("/v1/operating-model");
+      state.operatingModel = response.data;
+      renderAll();
+      showResult("Provider mapping scope updated.");
+    } catch (error) {
+      showResult(friendlyError(error), "error");
+    } finally {
+      setBusy(false);
+    }
+  });
+
+  form.append(areaSelect, tableSelect, save);
+  return form;
 }
 
 function renderAreaDetailGroup(title, items) {

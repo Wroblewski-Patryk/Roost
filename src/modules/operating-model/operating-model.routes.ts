@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
+import { createEvent } from "../events/event.service";
 
 const uuidSchema = z.string().uuid();
 
@@ -10,6 +11,12 @@ const scopedResourceSchema = z.object({
   areaId: uuidSchema.optional(),
   folderId: uuidSchema.optional(),
   tableId: uuidSchema.optional()
+}).strict();
+
+const reassignmentSchema = z.object({
+  areaId: uuidSchema.nullable().optional(),
+  folderId: uuidSchema.nullable().optional(),
+  tableId: uuidSchema.nullable().optional()
 }).strict();
 
 const storageLocationSchema = scopedResourceSchema.extend({
@@ -134,6 +141,64 @@ operatingModelRouter.get("/external-mappings", asyncHandler(async (req, res) => 
   });
 
   res.json({ data: mappings });
+}));
+
+operatingModelRouter.patch("/external-mappings/:id/scope", asyncHandler(async (req, res) => {
+  const input = reassignmentSchema.parse(req.body);
+  const workspaceId = req.auth!.workspaceId;
+  const existing = await prisma.externalContainerMapping.findFirst({
+    where: {
+      id: String(req.params.id),
+      workspaceId
+    }
+  });
+
+  if (!existing) {
+    return res.status(404).json({ error: "not_found" });
+  }
+
+  const nextScope = {
+    areaId: input.areaId === undefined ? existing.areaId ?? undefined : input.areaId ?? undefined,
+    folderId: input.folderId === undefined ? existing.folderId ?? undefined : input.folderId ?? undefined,
+    tableId: input.tableId === undefined ? existing.tableId ?? undefined : input.tableId ?? undefined
+  };
+
+  if (!(await assertScope(workspaceId, nextScope))) {
+    return res.status(404).json({ error: "not_found" });
+  }
+
+  const mapping = await prisma.externalContainerMapping.update({
+    where: { id: existing.id },
+    data: {
+      areaId: input.areaId === undefined ? existing.areaId : input.areaId,
+      folderId: input.folderId === undefined ? existing.folderId : input.folderId,
+      tableId: input.tableId === undefined ? existing.tableId : input.tableId
+    }
+  });
+
+  await createEvent({
+    type: "external_mapping_scope_updated",
+    workspaceId,
+    source: "companycore",
+    payload: {
+      mappingId: mapping.id,
+      provider: mapping.provider,
+      entityType: mapping.entityType,
+      externalId: mapping.externalId,
+      previous: {
+        areaId: existing.areaId,
+        folderId: existing.folderId,
+        tableId: existing.tableId
+      },
+      next: {
+        areaId: mapping.areaId,
+        folderId: mapping.folderId,
+        tableId: mapping.tableId
+      }
+    }
+  });
+
+  res.json({ data: mapping });
 }));
 
 operatingModelRouter.get("/external-fields", asyncHandler(async (req, res) => {
