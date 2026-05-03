@@ -7,7 +7,7 @@ Last updated: 2026-05-03
 - Goal: Central backend for company projects, goals, tasks, CRM, notes,
   decisions, agents, and system events.
 - Commercial model: Internal operational infrastructure.
-- Current phase: v1 runtime achieved; v2 scope selection next.
+- Current phase: v2 Google Drive integration planning and implementation.
 
 ## Product Decisions (Confirmed)
 - 2026-05-03: v1 includes a minimal owner-only web console for production
@@ -23,6 +23,14 @@ Last updated: 2026-05-03
   documentation before mapping or implementation. For ClickUp this includes
   hierarchy terminology, Custom Fields, Views, rate limits, pagination,
   webhook signatures, and permissions.
+- 2026-05-03: Google Drive is approved as the next native v2 integration.
+  Drive folders/files must map into the same workspace operating model as
+  ClickUp so one company area can show ClickUp Lists, Drive folders/files,
+  storage locations, knowledge roots, automations, and CompanyCore tables
+  consistently. Google Drive uses OAuth-backed workspace integration settings,
+  encrypted refresh-token material, paginated Drive file discovery, Docs/Sheets
+  read/edit/create APIs, Drive Changes freshness, and CompanyCore API access
+  for Jarvis, Paperclip, Aviary, and future GUI clients.
 - 2026-05-03: ClickUp imports must expose an explicit existing-record policy
   before writing. Approved v1 modes are `merge`, `skip_existing`,
   `replace_selected_lists`, and `inspect_only`; destructive cleanup is limited
@@ -86,28 +94,28 @@ Last updated: 2026-05-03
   Postgres volume.
 
 ## Current Focus
-- Main active objective: v1 runtime is achieved for the approved operating
-  slice; no active P0/P1 runtime hardening task remains ready.
+- Main active objective: implement the approved Google Drive v2 integration as
+  a native CompanyCore adapter, starting with architecture alignment and then
+  Drive folder/file/content persistence.
 - Top blockers: GitHub-to-Coolify auto-deploy webhook administration remains
   blocked by missing callable webhook-management tooling in the current
   session. GitHub repository visibility shows admin permission, but the
   available GitHub connector surface does not expose webhook create/list/update
   actions and the local `gh` CLI is unavailable.
-- Success criteria for this phase: canonical docs, workspace/auth model,
-  task board, planning queue, deployment domains, migration strategy, event
-  coverage, API/error contracts, regression guardrails, tests, observability,
-  and deployment smoke evidence are aligned.
+- Success criteria for this phase: Google Drive folder/file metadata,
+  searchable content snapshots, Docs/Sheets create/read/edit flows, Drive
+  freshness, agent API access, and operating-area dashboard mapping are
+  implemented through the native integration pattern.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-060 V1 Operator Handoff.
+- Current iteration: V2GD-001 Google Drive Architecture And Queue.
 - Current operation mode: BUILDER
 - Last completed iteration: CCV1-060 V1 Operator Handoff.
 - Last completed task: added a concise v1 operator handoff that consolidates
   accepted runtime scope, production endpoints, current runtime image,
   smoke/data evidence, rollback pointer, residual non-runtime blockers, and
   next decision choices.
-- Next required mode: BUILDER when a new approved v2 or handoff task is moved
-  into the active queue.
+- Next required mode: BUILDER for V2GD-002 Google Drive Persistence Foundation.
 
 ## Recent Progress
 - 2026-05-02: Created Company Core backend foundation, Prisma schema, Docker

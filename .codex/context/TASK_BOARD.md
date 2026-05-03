@@ -2,7 +2,12 @@
 
 ## Ready
 
-No active P0/P1 runtime task is ready after CCV1-060.
+- V2GD-002 Google Drive Persistence Foundation
+  - Stage: planning
+  - Owner: DB/Migrations + Backend Builder
+  - Priority: P1
+  - Goal: add workspace-scoped Drive folder/file and content snapshot
+    persistence with idempotent import behavior.
 
 ## Blocked
 
@@ -36,9 +41,15 @@ No active P0/P1 runtime task is ready after CCV1-060.
 
 ## Backlog
 
-No active backlog item beyond future v2 product expansion, upstream
-OpenJarvis/Paperclip source merge execution, and the blocked GitHub
-auto-deploy webhook administration task.
+- V2GD-003 Google Drive Provider Client And OAuth Settings.
+- V2GD-004 Folder Discovery And File Import.
+- V2GD-005 Docs And Sheets Read/Create/Edit.
+- V2GD-006 Drive Changes Freshness.
+- Future v2 dashboard surfaces that show ClickUp Lists, Drive folders/files,
+  storage locations, knowledge roots, automations, and CompanyCore tables as
+  one company operating area.
+- Upstream OpenJarvis/Paperclip source merge execution and blocked GitHub
+  auto-deploy webhook administration task.
 
 ## Done
 
@@ -127,3 +138,4 @@ auto-deploy webhook administration task.
 - CCV1-058 OpenJarvis Source Handoff Validation.
 - CCV1-059 GitHub Auto-Deploy Capability Audit.
 - CCV1-060 V1 Operator Handoff.
+- V2GD-001 Google Drive Architecture And Queue.

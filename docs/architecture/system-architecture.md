@@ -15,8 +15,8 @@ source of truth, and the HTTP API is the supported integration access layer.
   maintenance scheduler. It reuses the authenticated maintenance service for
   active workspace settings so missed webhooks, failed inbox rows, and provider
   drift are repaired without introducing a separate worker tier in v1.
-- External services: PostgreSQL, ClickUp API, optional n8n orchestration, future
-  Paperclip/Jarvis/future GUI API clients.
+- External services: PostgreSQL, ClickUp API, Google Drive/Docs/Sheets APIs,
+  optional n8n orchestration, future Paperclip/Jarvis/future GUI API clients.
 
 ## Source Of Truth Rules
 
@@ -236,6 +236,79 @@ create a ClickUp task comment first and then store the returned comment ID.
 
 n8n remains optional orchestration for workflows better kept outside the
 backend. It is not the required primary ClickUp path in v1.
+
+## Google Drive Operating Model
+
+Google Drive is the next native integration after ClickUp. It must reuse the
+same adapter architecture instead of creating a parallel document subsystem.
+The approved v2 target flow is:
+
+```text
+Owner OAuth consent -> workspace Google Drive setting -> Drive API
+  -> CompanyCore Google Drive adapter -> PostgreSQL -> events/outbox
+```
+
+Google Drive hierarchy maps into the same CompanyCore operating model:
+
+```text
+Google account/shared drive -> Drive folder -> Drive file
+CompanyCore workspace -> Operating Area/Folder -> Storage/Knowledge file record
+```
+
+Drive folders can be attached to an operating area, operating folder, operating
+table, storage location, or knowledge root. This lets the dashboard show one
+company area that combines ClickUp Spaces/Folders/Lists, Drive folders/files,
+CompanyCore tables, automations, and knowledge roots without requiring agents
+to know provider-specific hierarchy rules.
+
+Google Drive records are workspace-scoped and must be idempotent by
+`(workspace_id, provider = google_drive, external_id)`. Folder/file metadata is
+stored separately from extracted content snapshots so repeated scans can update
+searchable descriptions without duplicating files. Provider-owned records must
+track parent folder IDs, MIME type, Drive web links, revision/version signals,
+trashed state, selected operating scope, and safe scan status.
+
+Docs and Sheets support must use current official Google Workspace
+documentation before implementation:
+
+- Drive `files.list` for paginated folder/file discovery, including `q`,
+  `spaces`, `supportsAllDrives`, `nextPageToken`, and `parents`.
+- Drive `files.create`, `files.update`, `files.export`, and download/export
+  flows for file creation and content access.
+- Drive `changes.getStartPageToken`, `changes.list`, and later
+  `changes.watch` for durable freshness.
+- Docs `documents.get` and `documents.batchUpdate` for document read/edit.
+- Sheets `spreadsheets.get`, `spreadsheets.values.get`,
+  `spreadsheets.values.batchGet`, `spreadsheets.values.update`,
+  `spreadsheets.values.batchUpdate`, and `spreadsheets.create` for sheet
+  read/edit/create.
+
+Google Drive authentication is OAuth-based, not an API-key flow. Refresh tokens
+and webhook/channel secrets are workspace-owned integration secret material and
+must be encrypted through the existing integration settings mechanism. The
+non-secret configuration should include selected root folder IDs, shared drive
+IDs when used, import/sync policy, current Drive changes page token, and
+operating scope mappings.
+
+The Google Drive adapter should deliver in vertical slices:
+
+1. Persist Drive folder/file metadata and extracted content snapshots.
+2. Add OAuth-backed provider client and owner connection routes.
+3. Import selected folders into storage locations and knowledge roots.
+4. Read Docs and Sheets into safe, searchable snapshots.
+5. Create and edit Docs/Sheets through CompanyCore APIs, then refresh local
+   metadata/content snapshots after successful provider writes.
+6. Reconcile external edits through Drive `changes.list`, then add
+   `changes.watch` channels for push-based freshness.
+7. Expose provider-neutral file/content APIs for Jarvis, Paperclip, Aviary, and
+   future GUI modules.
+
+CompanyCore remains the source of truth for operational interpretation. Google
+Drive remains the file/content source of truth. Jarvis or Paperclip may propose
+structured imports from Docs/Sheets into CompanyCore business tables only when a
+workspace-visible table mapping exists, the operation is auditable, and writes
+go through CompanyCore APIs. Agents must not use raw Google tokens or write
+directly to PostgreSQL.
 
 ## Security Boundaries
 

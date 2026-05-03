@@ -56,6 +56,77 @@ Company Core is responsible for:
 n8n may still be used for optional orchestration when a workflow is better kept
 outside the backend, but n8n is not the required primary ClickUp path in v1.
 
+## Google Drive To Company Core
+
+v2 primary integration path:
+
+```text
+Google Drive/Docs/Sheets APIs -> CompanyCore Google Drive adapter
+  -> CompanyCore DB -> event/outbox
+```
+
+Google Drive is the second native integration adapter. It must reuse the same
+workspace-owned settings, encrypted secret storage, safe provider client,
+mapper, sync service, provider event inbox, agent outbox, and safe error
+mapping pattern established for ClickUp.
+
+CompanyCore is responsible for:
+
+- checking current official Google Workspace documentation before adding or
+  changing Drive, Docs, or Sheets API behavior
+- storing Google OAuth refresh-token material as encrypted workspace
+  integration secret material
+- storing selected root folders, shared drives, sync policy, operating scope
+  mappings, and Drive changes page tokens as non-secret setting config
+- discovering Drive folders/files through paginated `files.list`
+- mapping Drive folders into operating areas/folders/tables, storage
+  locations, and knowledge roots
+- upserting Drive folders/files by `(workspace_id, provider = google_drive,
+  external_id)`
+- extracting searchable content snapshots from Google Docs and Sheets
+- creating and editing Google Docs/Sheets only through CompanyCore APIs
+- refreshing local metadata/content snapshots after successful provider writes
+- reconciling external edits through Drive `changes.list` first and
+  `changes.watch` channels after the polling path is proven
+- emitting provider-neutral file/content events for Jarvis, Paperclip, Aviary,
+  and future GUI modules
+
+Jarvis, Paperclip, Aviary, and future agents must read Google Drive metadata
+and content through CompanyCore APIs. They must not receive raw Google OAuth
+tokens or write directly to PostgreSQL. Structured extraction from Sheets or
+Docs into CompanyCore business tables is allowed only when an explicit table
+mapping exists and the write is auditable through CompanyCore events.
+
+Official Google docs that shape the v2 contract:
+
+- Drive `files.list` returns files with pagination through `nextPageToken` and
+  supports query filtering with `q`, `spaces`, and all-drive flags.
+- Drive `File` metadata includes `mimeType`, `parents`, `driveId`,
+  `webViewLink`, `headRevisionId`, timestamps, owners, and trashed state.
+- Drive folders/files have one direct parent in v3 metadata.
+- Drive `files.create` creates metadata-only or upload-backed files and uses
+  Google Workspace MIME types for Docs editors files.
+- Drive `changes.list` returns user/shared-drive changes with
+  `nextPageToken` and `newStartPageToken`; `changes.watch` subscribes to change
+  notifications for later push-based freshness.
+- Docs `documents.get` retrieves the latest document version; Docs
+  `documents.batchUpdate` applies atomic document updates and supports write
+  control.
+- Sheets values APIs read and write ranges through `get`, `batchGet`,
+  `update`, and `batchUpdate`; Sheets `spreadsheets.create` creates a new
+  spreadsheet.
+
+Initial import policy mirrors the ClickUp discipline:
+
+- `merge`: default; upsert provider-owned folder/file rows and refresh changed
+  snapshots.
+- `skip_existing`: add only new Drive rows and leave existing provider-owned
+  rows untouched.
+- `replace_selected_folders`: after a successful provider fetch, replace only
+  provider-owned Drive rows inside selected folders.
+- `inspect_only`: fetch and report would-create/would-update counts without
+  writing.
+
 Implemented first native slice:
 
 ```http

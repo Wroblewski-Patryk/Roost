@@ -5,6 +5,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
+- [x] V2GD-001 Google Drive Architecture And Queue
 - [x] CCV1-009P Protected production smoke for adapter CRUD
 - [x] CCV1-027 Paperclip and Jarvis production env wiring
 - [x] CCV1-029 ClickUp production bootstrap slot
@@ -57,7 +58,11 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NEXT
 
-- [ ] No active P0/P1 v1 runtime task is ready.
+- [ ] V2GD-002 Google Drive Persistence Foundation
+- [ ] V2GD-003 Google Drive Provider Client And OAuth Settings
+- [ ] V2GD-004 Folder Discovery And File Import
+- [ ] V2GD-005 Docs And Sheets Read/Create/Edit
+- [ ] V2GD-006 Drive Changes Freshness
 - [x] Source handoff package: document the OpenJarvis
       `5a426370` connector hygiene commit and the Paperclip `4cfa476f`
       adapter commit for managed upstream handoff.
@@ -73,6 +78,12 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## PIPELINE
 
+- [x] 39. V2GD-001 Google Drive Architecture And Queue
+- [ ] 40. V2GD-002 Google Drive Persistence Foundation
+- [ ] 41. V2GD-003 Google Drive Provider Client And OAuth Settings
+- [ ] 42. V2GD-004 Folder Discovery And File Import
+- [ ] 43. V2GD-005 Docs And Sheets Read/Create/Edit
+- [ ] 44. V2GD-006 Drive Changes Freshness
 - [x] 1. CCV1-031 ClickUp Discovery Backend
 - [x] 2. CCV1-032 Guided Owner Console
 - [x] 3. CCV1-033 Production deploy and smoke for guided ClickUp owner console

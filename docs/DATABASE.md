@@ -26,6 +26,10 @@ integration fields such as `external_id` and `source` where relevant.
 - `api_keys`: workspace-scoped service credentials for agents and automations.
 - `integration_settings`: workspace-scoped provider configuration and protected
   secret material, starting with ClickUp.
+- future `google_drive_files`: workspace-scoped Google Drive folder/file
+  metadata.
+- future `google_drive_content_snapshots`: extracted searchable text, summary,
+  preview, and scan state for Drive files.
 
 ## Operating Registry
 
@@ -330,3 +334,46 @@ The live-sync direction is:
   when needed -> task upsert -> internal event -> agent outbox.
 - CompanyCore -> ClickUp: updates to ClickUp-sourced tasks call ClickUp's task
   update API before the local task write is accepted.
+
+## Google Drive Persistence Direction
+
+Google Drive v2 adds file and content records without changing PostgreSQL as
+the CompanyCore source of truth for operational state.
+
+Planned tables:
+
+- `google_drive_files`
+  - `workspace_id`
+  - `provider`, fixed to `google_drive`
+  - `external_id`, the Drive file or folder ID
+  - `name`
+  - `mime_type`
+  - `drive_id`
+  - `parent_external_id`
+  - `is_folder`
+  - `trashed`
+  - `web_view_link`
+  - `head_revision_id`
+  - `modified_time`
+  - optional `operating_area_id`, `operating_folder_id`, `operating_table_id`,
+    `storage_location_id`, and `knowledge_root_id`
+  - `sync_status`, `last_synced_at`, `last_scanned_at`, and safe metadata
+- `google_drive_content_snapshots`
+  - `workspace_id`
+  - `google_drive_file_id`
+  - `source_revision_id`
+  - `content_kind`, for example `google_doc`, `google_sheet`, `pdf`, or
+    `binary_metadata_only`
+  - extracted text or structured preview
+  - summary/description for search and agent context
+  - scan status, error code, and timestamps
+
+Uniqueness must be enforced by `(workspace_id, provider, external_id)` for file
+metadata and by file/revision for content snapshots. The adapter may keep only
+the latest searchable snapshot in v2 unless a later audit feature explicitly
+requires historical content retention.
+
+Google Drive rows are provider-owned records. Repeated imports must update the
+same rows, not duplicate them. Destructive repair modes must be scoped to
+selected provider-owned folders/files only and must never delete native
+CompanyCore records.
