@@ -112,11 +112,11 @@ Last updated: 2026-05-03
   pattern.
 
 ## Autonomous Iteration State
-- Current iteration: V2WEB-007 Dedicated Pipeline View.
+- Current iteration: V2WEB-008 Dashboard Command Center.
 - Current operation mode: BUILDER
-- Last completed iteration: V2WEB-006 Settings Integration Taxonomy View.
-- Last completed task: added `/pipeline` as a read-only module surface for
-  implemented clients, pipeline stages, deals, and interactions snapshots.
+- Last completed iteration: V2WEB-007 Dedicated Pipeline View.
+- Last completed task: added dashboard command-center signals, live module
+  metadata, and recommended next action copy from implemented frontend data.
 - Next required mode: BUILDER for the next v2 web console iteration unless an
   architecture decision blocks the queue first.
 
@@ -700,6 +700,11 @@ Last updated: 2026-05-03
   record lists with empty states, and is linked from the sidebar, dashboard, and
   integration taxonomy. No new backend behavior or placeholder write flow was
   introduced.
+- 2026-05-04: Completed V2WEB-008 by turning the dashboard into a command
+  center. The signed-in landing screen now shows data-driven attention items,
+  live module metadata for operating areas, tasks, pipeline, Drive, ClickUp,
+  and integration taxonomy, plus a recommended next action. Signals are derived
+  from existing frontend state only and link to implemented routes.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

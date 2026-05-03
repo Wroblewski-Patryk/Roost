@@ -435,6 +435,42 @@ h4 {
   margin-bottom: 20px;
 }
 
+.command-panel {
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.attention-list {
+  display: grid;
+  gap: 10px;
+}
+
+.attention-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fbfcfe;
+}
+
+.attention-row div {
+  display: grid;
+  gap: 4px;
+}
+
+.attention-row strong {
+  line-height: 1.25;
+}
+
+.attention-row span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
 .mini-card {
   padding: 18px;
 }
@@ -1077,6 +1113,7 @@ button.compact,
   .operating-layout,
   .area-columns,
   .area-heading,
+  .attention-row,
   .pipeline-layout,
   .integration-area-row {
     grid-template-columns: 1fr;

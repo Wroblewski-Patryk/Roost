@@ -1,5 +1,57 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-008 Dashboard Command Center
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: dashboard command-center polish that surfaces
+  attention items, module counts, and the next recommended action from
+  implemented data.
+- Goal: Make the signed-in landing screen immediately usable as the company
+  control point instead of a static link hub.
+- Scope:
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Add a dashboard attention panel that uses existing task, Drive,
+    integration, and mapping state.
+  - Add live module metadata to dashboard module links.
+  - Add a recommended next action message based on implemented readiness gaps.
+  - Keep all actions linked to existing routes.
+  - Validate syntax, build, tests, local route rendering, and production smoke.
+- Acceptance Criteria:
+  - Dashboard explains what matters now after sign-in.
+  - Attention items are data-driven and have links to existing implemented
+    routes.
+  - Module links show useful counts rather than generic descriptions only.
+  - The next action updates when ClickUp, Drive, mapping, task, or pipeline data
+    is available.
+  - Existing module routes still render.
+- Definition of Done:
+  - `node --check public/app.js`, `git diff --check`, `npm run build`, and
+    `npm test` pass.
+  - Browser smoke verifies dashboard attention items, module metadata, and
+    route links on desktop.
+  - Project state, task board, and next-commits docs are updated.
+- Result Report:
+  - Added a dashboard command-center attention panel driven by existing
+    ClickUp, Drive, task, pipeline, and operating-model state.
+  - Added live module metadata to dashboard links for areas, tasks, pipeline,
+    Drive, ClickUp, and integration taxonomy.
+  - Added a recommended next action that prioritizes connection gaps, unmapped
+    provider mappings, unassigned Drive folders, due tasks, and empty pipeline
+    data.
+  - Kept every action linked to an existing implemented route.
+  - `node --check public/app.js`, `git diff --check`, `npm run build`, and
+    `npm test` passed.
+  - Playwright smoke verified dashboard attention items, module metadata,
+    next-action copy, active navigation, and route links on desktop.
+
 ## V2WEB-007 Dedicated Pipeline View
 
 - Task Type: design/frontend

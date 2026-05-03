@@ -172,29 +172,40 @@
           <div class="module-launch-grid">
             <a class="module-link" href="/areas" data-link>
               <strong>12 company areas</strong>
-              <span>Browse Strategy, Product, Sales, Operations, Relationships, and the rest of the operating model.</span>
+              <span id="moduleAreasMeta">Browse Strategy, Product, Sales, Operations, Relationships, and the rest of the operating model.</span>
             </a>
             <a class="module-link" href="/tasks-adapter" data-link>
               <strong>Tasks & adapters</strong>
-              <span>Review synced CompanyCore and ClickUp tasks with list ownership, status, priority, and due dates.</span>
+              <span id="moduleTasksMeta">Review synced CompanyCore and ClickUp tasks with list ownership, status, priority, and due dates.</span>
             </a>
             <a class="module-link" href="/pipeline" data-link>
               <strong>Pipeline</strong>
-              <span>Review clients, stages, deals, and sales interactions from implemented CompanyCore tables.</span>
+              <span id="modulePipelineMeta">Review clients, stages, deals, and sales interactions from implemented CompanyCore tables.</span>
             </a>
             <a class="module-link" href="/settings/drive" data-link>
               <strong>Drive folders</strong>
-              <span>Connect or refresh imported folders before assigning them to areas.</span>
+              <span id="moduleDriveMeta">Connect or refresh imported folders before assigning them to areas.</span>
             </a>
             <a class="module-link" href="/settings" data-link>
               <strong>ClickUp Lists</strong>
-              <span>Refresh provider structure and keep task lists aligned with the right department.</span>
+              <span id="moduleClickUpMeta">Refresh provider structure and keep task lists aligned with the right department.</span>
             </a>
             <a class="module-link" href="/settings/integrations" data-link>
               <strong>Integration map</strong>
-              <span>Review implemented data groups by source, module, and operating area.</span>
+              <span id="moduleIntegrationsMeta">Review implemented data groups by source, module, and operating area.</span>
             </a>
           </div>
+        </section>
+
+        <section class="panel command-panel">
+          <div class="section-title row-title">
+            <div>
+              <h2>What needs attention</h2>
+              <p id="attentionSummary">Sign in to load operational signals.</p>
+            </div>
+            <a class="button-link secondary compact" href="/settings/integrations" data-link>Integration map</a>
+          </div>
+          <div class="attention-list" id="attentionList"></div>
         </section>
 
         <section class="dashboard-grid dense-grid" id="dataCounters"></section>
@@ -202,7 +213,7 @@
         <section class="panel next-panel">
           <div class="section-title">
             <h2>Next action</h2>
-            <p>Connect or review ClickUp and Google Drive, then refresh the operating map.</p>
+            <p id="nextActionText">Connect or review ClickUp and Google Drive, then refresh the operating map.</p>
           </div>
           <div class="actions">
             <a class="button-link" href="/areas" data-link>Open areas</a>

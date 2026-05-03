@@ -100,6 +100,15 @@ const areaFiles = document.querySelector("#areaFiles");
 const areaMappings = document.querySelector("#areaMappings");
 const areaRecords = document.querySelector("#areaRecords");
 const dataCounters = document.querySelector("#dataCounters");
+const attentionSummary = document.querySelector("#attentionSummary");
+const attentionList = document.querySelector("#attentionList");
+const nextActionText = document.querySelector("#nextActionText");
+const moduleAreasMeta = document.querySelector("#moduleAreasMeta");
+const moduleTasksMeta = document.querySelector("#moduleTasksMeta");
+const modulePipelineMeta = document.querySelector("#modulePipelineMeta");
+const moduleDriveMeta = document.querySelector("#moduleDriveMeta");
+const moduleClickUpMeta = document.querySelector("#moduleClickUpMeta");
+const moduleIntegrationsMeta = document.querySelector("#moduleIntegrationsMeta");
 const pipelineSummary = document.querySelector("#pipelineSummary");
 const pipelineStats = document.querySelector("#pipelineStats");
 const pipelineStagesList = document.querySelector("#pipelineStagesList");
@@ -473,6 +482,172 @@ function appendTaskCell(row, value) {
   row.append(cell);
 }
 
+function dashboardSignals() {
+  const openTasks = state.tasks.filter((task) => !["closed", "complete", "completed", "done"].includes(String(task.status || "").toLowerCase()));
+  const nextWeek = new Date();
+  nextWeek.setDate(nextWeek.getDate() + 7);
+  const dueSoonTasks = openTasks.filter((task) => {
+    if (!task.dueDate) {
+      return false;
+    }
+    const dueDate = new Date(task.dueDate);
+    return !Number.isNaN(dueDate.getTime()) && dueDate <= nextWeek;
+  });
+  const unmappedProviderMappings = state.operatingModel.externalMappings.filter((mapping) => !mapping.areaId && !mapping.operatingAreaId);
+  const unassignedDriveFolders = state.googleDrive.files.filter((file) => file.isFolder && !file.operatingAreaId);
+  const pipelineRecords = recordCountForSlugs(["clients", "pipeline-stages", "deals", "interactions"]);
+
+  return {
+    openTasks,
+    dueSoonTasks,
+    unmappedProviderMappings,
+    unassignedDriveFolders,
+    pipelineRecords
+  };
+}
+
+function renderDashboardCommandCenter() {
+  const signals = dashboardSignals();
+  const areas = state.operatingModel.areas.length;
+  const tables = state.operatingModel.areas.flatMap((area) => area.tables || []).length;
+  const mappings = state.operatingModel.externalMappings.length;
+  const clickUpLists = (state.clickup.config.listIds || []).length;
+  const driveItems = state.googleDrive.files.length;
+  const implementedGroups = 4;
+
+  moduleAreasMeta.textContent = `${areas || 0} areas, ${tables || 0} tables, ${mappings || 0} provider mappings.`;
+  moduleTasksMeta.textContent = `${state.tasks.length} tasks, ${signals.openTasks.length} open, ${signals.dueSoonTasks.length} due soon.`;
+  modulePipelineMeta.textContent = `${signals.pipelineRecords} CRM/pipeline records across clients, stages, deals, and interactions.`;
+  moduleDriveMeta.textContent = state.googleDrive.configured
+    ? `${driveItems} Drive items imported, ${signals.unassignedDriveFolders.length} folders need area review.`
+    : "Google Drive is not connected yet.";
+  moduleClickUpMeta.textContent = state.clickup.configured
+    ? `${clickUpLists} selected ClickUp List${clickUpLists === 1 ? "" : "s"}, ${state.clickup.active ? "active" : "inactive"} connection.`
+    : "ClickUp is not connected yet.";
+  moduleIntegrationsMeta.textContent = `${implementedGroups} implemented groups: tasks, files, pipeline, API.`;
+
+  const items = dashboardAttentionItems(signals);
+  attentionList.innerHTML = "";
+  attentionSummary.textContent = isSignedIn()
+    ? items.length === 0
+      ? "Everything implemented in this console looks connected and mapped."
+      : `${items.length} operational signal${items.length === 1 ? "" : "s"} need a quick look.`
+    : "Sign in to load operational signals.";
+
+  if (items.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty-note";
+    empty.textContent = isSignedIn()
+      ? "No urgent dashboard items. Review modules or keep improving operating-area mappings."
+      : "Sign in to load dashboard attention items.";
+    attentionList.append(empty);
+  } else {
+    for (const item of items) {
+      attentionList.append(attentionItemElement(item));
+    }
+  }
+
+  nextActionText.textContent = nextActionCopy(items, signals);
+}
+
+function dashboardAttentionItems(signals) {
+  const items = [];
+
+  if (!state.clickup.configured) {
+    items.push({
+      title: "Connect ClickUp",
+      detail: "Task Lists and ClickUp-sourced tasks need a saved connection before the task module is useful.",
+      href: "/settings",
+      action: "Open ClickUp"
+    });
+  }
+
+  if (!state.googleDrive.configured) {
+    items.push({
+      title: "Connect Google Drive",
+      detail: "Drive folders and files can be mapped to company areas after OAuth and import.",
+      href: "/settings/drive",
+      action: "Open Drive"
+    });
+  }
+
+  if (signals.unmappedProviderMappings.length > 0) {
+    items.push({
+      title: "Review provider mappings",
+      detail: `${signals.unmappedProviderMappings.length} provider mapping${signals.unmappedProviderMappings.length === 1 ? "" : "s"} still need an operating area.`,
+      href: "/areas",
+      action: "Correct areas"
+    });
+  }
+
+  if (signals.unassignedDriveFolders.length > 0) {
+    items.push({
+      title: "Assign Drive folders",
+      detail: `${signals.unassignedDriveFolders.length} Drive folder${signals.unassignedDriveFolders.length === 1 ? "" : "s"} can be assigned to the right company area.`,
+      href: "/settings/drive",
+      action: "Review folders"
+    });
+  }
+
+  if (signals.dueSoonTasks.length > 0) {
+    items.push({
+      title: "Check due tasks",
+      detail: `${signals.dueSoonTasks.length} open task${signals.dueSoonTasks.length === 1 ? "" : "s"} are due within seven days.`,
+      href: "/tasks-adapter",
+      action: "Open tasks"
+    });
+  }
+
+  if (signals.pipelineRecords === 0) {
+    items.push({
+      title: "Review pipeline data",
+      detail: "Clients, stages, deals, and interactions are implemented, but no pipeline records are loaded yet.",
+      href: "/pipeline",
+      action: "Open pipeline"
+    });
+  }
+
+  return items.slice(0, 5);
+}
+
+function attentionItemElement(item) {
+  const row = document.createElement("article");
+  row.className = "attention-row";
+
+  const copy = document.createElement("div");
+  const title = document.createElement("strong");
+  title.textContent = item.title;
+  const detail = document.createElement("span");
+  detail.textContent = item.detail;
+  copy.append(title, detail);
+
+  const link = document.createElement("a");
+  link.className = "button-link secondary compact";
+  link.href = item.href;
+  link.dataset.link = "";
+  link.textContent = item.action;
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    navigate(item.href);
+  });
+
+  row.append(copy, link);
+  return row;
+}
+
+function nextActionCopy(items, signals) {
+  if (!isSignedIn()) {
+    return "Sign in to load workspace data and recommended actions.";
+  }
+  if (items.length > 0) {
+    return `${items[0].title}: ${items[0].detail}`;
+  }
+  if (signals.openTasks.length > 0) {
+    return `Review ${signals.openTasks.length} open task${signals.openTasks.length === 1 ? "" : "s"} or continue improving operating-area relationships.`;
+  }
+  return "Open the integration map or operating areas to keep relationships clean as new data arrives.";
+}
+
 function renderPipeline() {
   pipelineStats.innerHTML = "";
   const clients = recordsForSlug("clients");
@@ -735,6 +910,7 @@ function renderDataCounters() {
     `;
     dataCounters.append(card);
   }
+  renderDashboardCommandCenter();
 }
 
 function renderOperatingMap() {
