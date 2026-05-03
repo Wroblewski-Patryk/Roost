@@ -7,276 +7,467 @@
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
-    <header class="topbar">
+    <div class="public-topbar" data-public-shell>
       <a class="brand" href="/" data-link>
         <span class="brand-mark">CC</span>
         <span>CompanyCore</span>
       </a>
-      <nav class="nav">
-        <a href="/dashboard" data-link data-private>Dashboard</a>
-        <a href="/settings" data-link data-private>Settings</a>
-        <a href="/settings/api" data-link data-private>API</a>
+      <nav class="public-nav">
         <a href="/auth/login" data-link data-public>Sign in</a>
-        <button type="button" class="link-button" id="logoutButton" data-private>Sign out</button>
+        <a class="button-link compact" href="/auth/register" data-link data-public>Create account</a>
       </nav>
-    </header>
+    </div>
 
-    <main class="shell">
-      <section class="view hero" data-view="/">
-        <div>
-          <p class="label">CompanyCore v1</p>
-          <h1>Company operations bridge</h1>
-          <p class="lede">
-            Connect company tools once, keep operational data in CompanyCore,
-            and let Jarvis, Paperclip, and Aviary read one clean API.
-          </p>
-          <div class="actions">
-            <a class="button-link" href="/auth/login" data-link>Sign in</a>
-            <a class="button-link secondary" href="/auth/register" data-link>Create account</a>
-          </div>
+    <div class="app-shell">
+      <aside class="sidebar" data-private>
+        <a class="brand sidebar-brand" href="/dashboard" data-link>
+          <span class="brand-mark">CC</span>
+          <span>
+            CompanyCore
+            <small id="sidebarWorkspaceName">Workspace</small>
+          </span>
+        </a>
+        <nav class="side-nav" aria-label="Primary">
+          <a href="/dashboard" data-link data-nav="/dashboard">Dashboard</a>
+          <a href="/areas" data-link data-nav="/areas">Operating Areas</a>
+          <a href="/tasks" data-link data-nav="/tasks">Tasks &amp; Adapters</a>
+          <a href="/pipeline" data-link data-nav="/pipeline">Pipeline</a>
+          <a href="/settings" data-link data-nav="/settings">Settings</a>
+        </nav>
+        <div class="sidebar-status">
+          <span class="dot muted" id="sidebarStatusDot"></span>
+          <span id="sidebarStatusText">Not connected</span>
         </div>
-        <div class="status-card" id="publicStatus">
-          <span class="dot muted"></span>
-          <span>Web UI</span>
-        </div>
-      </section>
+      </aside>
 
-      <section class="view auth-grid" data-view="/auth/login">
-        <form class="panel form auth-card" id="loginForm">
-          <div class="section-title">
-            <p class="label">Owner access</p>
-            <h1>Sign in</h1>
-            <p>Use your CompanyCore owner account.</p>
-          </div>
-          <label>
-            Email
-            <input id="email" name="email" type="email" autocomplete="email" required>
-          </label>
-          <label>
-            Password
-            <input id="password" name="password" type="password" autocomplete="current-password" required>
-          </label>
-          <button type="submit">Sign in</button>
-          <p class="form-note">
-            No account yet? <a href="/auth/register" data-link>Create one</a>.
-          </p>
-        </form>
-      </section>
-
-      <section class="view auth-grid" data-view="/auth/register">
-        <form class="panel form auth-card" id="registerForm">
-          <div class="section-title">
-            <p class="label">New workspace</p>
-            <h1>Create account</h1>
-            <p>Create an owner account and a new CompanyCore workspace.</p>
-          </div>
-          <label>
-            Name
-            <input id="registerName" name="name" type="text" autocomplete="name">
-          </label>
-          <label>
-            Email
-            <input id="registerEmail" name="email" type="email" autocomplete="email" required>
-          </label>
-          <label>
-            Password
-            <input id="registerPassword" name="password" type="password" autocomplete="new-password" minlength="12" required>
-          </label>
-          <label>
-            Workspace name
-            <input id="workspaceName" name="workspaceName" type="text" required>
-          </label>
-          <button type="submit">Create workspace</button>
-          <p class="form-note">
-            Already have an account? <a href="/auth/login" data-link>Sign in</a>.
-          </p>
-        </form>
-      </section>
-
-      <section class="view" data-view="/dashboard">
-        <div class="page-title">
+      <div class="workspace-frame">
+        <header class="workspace-topbar" data-private>
+          <button type="button" class="ghost mobile-menu-button" id="mobileMenuButton" aria-expanded="false">Menu</button>
           <div>
-            <p class="label">Private workspace</p>
-            <h1>Dashboard</h1>
-            <p id="workspaceLabel">Sign in to load workspace status.</p>
+            <p class="eyebrow" id="workspaceEyebrow">Private workspace</p>
+            <h1 id="routeTitle">Dashboard</h1>
           </div>
-          <div class="status-card" id="connectionStatus">
-            <span class="dot muted"></span>
-            <span>Not connected</span>
+          <div class="topbar-actions">
+            <a class="button-link secondary compact" href="/settings/api" data-link>API</a>
+            <button type="button" class="ghost compact" id="logoutButton" data-private>Sign out</button>
           </div>
-        </div>
+        </header>
 
-        <section class="dashboard-grid">
-          <article class="panel summary-card">
-            <span class="summary-kicker">Workspace</span>
-            <strong id="workspaceNameLabel">-</strong>
-            <p>Active owner session and workspace context.</p>
-          </article>
-          <article class="panel summary-card">
-            <span class="summary-kicker">ClickUp</span>
-            <strong id="clickupStatusLabel">Not configured</strong>
-            <p id="clickupStatusHint">Connect ClickUp in settings.</p>
-          </article>
-          <article class="panel summary-card">
-            <span class="summary-kicker">API</span>
-            <strong>Ready</strong>
-            <p>Jarvis, Paperclip, and Aviary read CompanyCore through the API domain.</p>
-          </article>
-        </section>
-
-        <section class="panel next-panel">
-          <div class="section-title">
-            <h2>Next action</h2>
-            <p>Connect or review ClickUp settings, then run the first sync.</p>
-          </div>
-          <div class="actions">
-            <a class="button-link" href="/settings" data-link>Open settings</a>
-            <a class="button-link secondary" href="/settings/api" data-link>View API</a>
-          </div>
-        </section>
-
-        <section class="panel table-panel">
-          <div class="section-title row-title">
+        <main class="shell">
+          <section class="view hero" data-view="/">
             <div>
-              <h2>Tasks</h2>
-              <p id="tasksSummary">Sign in to load tasks.</p>
+              <p class="eyebrow">CompanyCore v1</p>
+              <h1>Company operations bridge</h1>
+              <p class="lede">
+                Connect company tools once, keep operational data in CompanyCore,
+                and let internal agents read one clean API.
+              </p>
+              <div class="actions">
+                <a class="button-link" href="/auth/login" data-link>Sign in</a>
+                <a class="button-link secondary" href="/auth/register" data-link>Create account</a>
+              </div>
             </div>
-            <button type="button" class="secondary" id="refreshTasksButton">Refresh</button>
-          </div>
-          <div class="table-wrap">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Status</th>
-                  <th>Priority</th>
-                  <th>List</th>
-                  <th>Source</th>
-                  <th>Due</th>
-                </tr>
-              </thead>
-              <tbody id="tasksTableBody">
-                <tr>
-                  <td colspan="6">No tasks loaded yet.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-      </section>
-
-      <section class="view" data-view="/settings">
-        <div class="page-title">
-          <div>
-            <p class="label">Private settings</p>
-            <h1>Settings</h1>
-            <p>Manage workspace integrations and the first ClickUp connection.</p>
-          </div>
-        </div>
-
-        <section class="panel form" id="clickupPanel" aria-disabled="true">
-          <div class="section-title row-title">
-            <div>
-              <h2>ClickUp setup</h2>
-              <p id="clickupWorkspaceLabel">Sign in to load workspace settings.</p>
+            <div class="status-card">
+              <span class="dot muted"></span>
+              <span>Owner console</span>
             </div>
-            <label class="switch">
-              <input id="active" name="active" type="checkbox" checked>
-              <span>Active</span>
-            </label>
-          </div>
+          </section>
 
-          <div class="step">
-            <label>
-              API token
-              <input id="token" name="token" type="password" autocomplete="off" placeholder="Paste token, or leave blank to use saved token">
-            </label>
-            <div class="actions">
-              <button type="button" class="secondary" id="checkTokenButton">Check token</button>
-              <button type="button" class="secondary" id="refreshButton">Refresh saved structure</button>
+          <section class="view auth-grid" data-view="/auth/login">
+            <form class="panel form auth-card" id="loginForm">
+              <div class="section-title">
+                <p class="eyebrow">Owner access</p>
+                <h2>Sign in</h2>
+                <p>Use your CompanyCore owner account.</p>
+              </div>
+              <label>
+                Email
+                <input id="email" name="email" type="email" autocomplete="email" required>
+              </label>
+              <label>
+                Password
+                <input id="password" name="password" type="password" autocomplete="current-password" required>
+              </label>
+              <button type="submit">Sign in</button>
+              <p class="form-note">
+                No account yet? <a href="/auth/register" data-link>Create one</a>.
+              </p>
+            </form>
+          </section>
+
+          <section class="view auth-grid" data-view="/auth/register">
+            <form class="panel form auth-card" id="registerForm">
+              <div class="section-title">
+                <p class="eyebrow">New workspace</p>
+                <h2>Create account</h2>
+                <p>Create an owner account and a new CompanyCore workspace.</p>
+              </div>
+              <label>
+                Name
+                <input id="registerName" name="name" type="text" autocomplete="name">
+              </label>
+              <label>
+                Email
+                <input id="registerEmail" name="email" type="email" autocomplete="email" required>
+              </label>
+              <label>
+                Password
+                <input id="registerPassword" name="password" type="password" autocomplete="new-password" minlength="12" required>
+              </label>
+              <label>
+                Workspace name
+                <input id="workspaceName" name="workspaceName" type="text" required>
+              </label>
+              <button type="submit">Create workspace</button>
+              <p class="form-note">
+                Already have an account? <a href="/auth/login" data-link>Sign in</a>.
+              </p>
+            </form>
+          </section>
+
+          <section class="view" data-view="/dashboard">
+            <div class="command-grid">
+              <article class="panel summary-card">
+                <span class="summary-kicker">Workspace</span>
+                <strong id="workspaceNameLabel">-</strong>
+                <p id="workspaceLabel">Sign in to load workspace status.</p>
+              </article>
+              <article class="panel summary-card">
+                <span class="summary-kicker">Integrations</span>
+                <strong id="integrationHealthLabel">Not configured</strong>
+                <p id="integrationHealthHint">Connect providers in settings.</p>
+              </article>
+              <article class="panel summary-card">
+                <span class="summary-kicker">Operating model</span>
+                <strong id="operatingModelLabel">-</strong>
+                <p id="operatingModelHint">Areas, tables, mappings, and roots.</p>
+              </article>
+              <article class="panel summary-card">
+                <span class="summary-kicker">Task flow</span>
+                <strong id="taskFlowLabel">-</strong>
+                <p id="taskFlowHint">Tasks across native and provider sources.</p>
+              </article>
             </div>
-          </div>
 
-          <div class="step">
-            <label>
-              ClickUp Workspace
-              <select id="workspaceSelect" disabled>
-                <option value="">Check token first</option>
-              </select>
-            </label>
-            <div class="actions">
-              <button type="button" class="secondary" id="loadListsButton">Load Lists</button>
+            <section class="split-layout">
+              <article class="panel">
+                <div class="section-title row-title">
+                  <div>
+                    <h2>Command links</h2>
+                    <p>Jump into the implemented operational surfaces.</p>
+                  </div>
+                </div>
+                <div class="link-grid">
+                  <a href="/areas" data-link>
+                    <strong>Operating Areas</strong>
+                    <span>Review the 12-area model and provider mappings.</span>
+                  </a>
+                  <a href="/tasks" data-link>
+                    <strong>Tasks &amp; Adapters</strong>
+                    <span>Inspect ClickUp-backed tasks, lists, and sync health.</span>
+                  </a>
+                  <a href="/pipeline" data-link>
+                    <strong>Pipeline</strong>
+                    <span>Browse stages and deals already stored in CompanyCore.</span>
+                  </a>
+                  <a href="/settings" data-link>
+                    <strong>Settings</strong>
+                    <span>Manage integrations, API access, and workspace setup.</span>
+                  </a>
+                </div>
+              </article>
+
+              <article class="panel">
+                <div class="section-title row-title">
+                  <div>
+                    <h2>Integration health</h2>
+                    <p id="providerHealthSummary">Sign in to load provider status.</p>
+                  </div>
+                </div>
+                <div class="health-list" id="providerHealthList"></div>
+              </article>
+            </section>
+
+            <section class="panel table-panel">
+              <div class="section-title row-title">
+                <div>
+                  <h2>Recent tasks</h2>
+                  <p id="tasksSummary">Sign in to load tasks.</p>
+                </div>
+                <button type="button" class="secondary compact" id="refreshTasksButton">Refresh</button>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Status</th>
+                      <th>Priority</th>
+                      <th>List</th>
+                      <th>Source</th>
+                      <th>Due</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tasksTableBody">
+                    <tr>
+                      <td colspan="6">No tasks loaded yet.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </section>
+
+          <section class="view" data-view="/areas">
+            <section class="panel">
+              <div class="section-title row-title">
+                <div>
+                  <h2>Operating Areas</h2>
+                  <p id="areasSummary">Load the workspace operating model to inspect assignments.</p>
+                </div>
+                <button type="button" class="secondary compact" id="refreshAreasButton">Refresh</button>
+              </div>
+              <div class="area-grid" id="areaGrid"></div>
+            </section>
+            <section class="panel table-panel">
+              <div class="section-title">
+                <h2>Mapping health</h2>
+                <p id="mappingHealthSummary">Provider mappings are shown read-only until the reassignment endpoint is implemented.</p>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Provider</th>
+                      <th>Type</th>
+                      <th>Name</th>
+                      <th>Area</th>
+                      <th>Table</th>
+                    </tr>
+                  </thead>
+                  <tbody id="mappingTableBody">
+                    <tr><td colspan="5">No mappings loaded yet.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </section>
+
+          <section class="view" data-view="/tasks">
+            <section class="panel table-panel">
+              <div class="section-title row-title">
+                <div>
+                  <h2>Tasks &amp; Adapters</h2>
+                  <p id="taskModuleSummary">Inspect task records and provider-owned lists.</p>
+                </div>
+                <button type="button" class="secondary compact" id="refreshTaskModuleButton">Refresh</button>
+              </div>
+              <div class="filter-row">
+                <label>
+                  Source
+                  <select id="taskSourceFilter">
+                    <option value="">All sources</option>
+                    <option value="clickup">ClickUp</option>
+                    <option value="companycore">CompanyCore</option>
+                  </select>
+                </label>
+                <label>
+                  Status
+                  <select id="taskStatusFilter">
+                    <option value="">All statuses</option>
+                    <option value="todo">Todo</option>
+                    <option value="in_progress">In progress</option>
+                    <option value="blocked">Blocked</option>
+                    <option value="done">Done</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </label>
+              </div>
+              <div class="table-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Status</th>
+                      <th>Priority</th>
+                      <th>List</th>
+                      <th>Source</th>
+                      <th>Updated</th>
+                    </tr>
+                  </thead>
+                  <tbody id="taskModuleTableBody">
+                    <tr><td colspan="6">No tasks loaded yet.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="split-layout">
+              <article class="panel">
+                <div class="section-title">
+                  <h2>Task lists</h2>
+                  <p id="taskListSummary">Task lists group imported and native work.</p>
+                </div>
+                <div class="stack-list" id="taskListPanel"></div>
+              </article>
+              <article class="panel">
+                <div class="section-title row-title">
+                  <div>
+                    <h2>ClickUp events</h2>
+                    <p id="clickupEventSummary">Failed event rows can be retried by the owner.</p>
+                  </div>
+                  <button type="button" class="secondary compact" id="retryClickUpEventsButton">Retry failed</button>
+                </div>
+                <div class="stack-list" id="clickupEventPanel"></div>
+              </article>
+            </section>
+          </section>
+
+          <section class="view" data-view="/pipeline">
+            <section class="panel">
+              <div class="section-title row-title">
+                <div>
+                  <h2>Pipeline</h2>
+                  <p id="pipelineSummary">Sales pipeline records stored in CompanyCore.</p>
+                </div>
+                <button type="button" class="secondary compact" id="refreshPipelineButton">Refresh</button>
+              </div>
+              <div class="pipeline-board" id="pipelineBoard"></div>
+            </section>
+          </section>
+
+          <section class="view" data-view="/settings">
+            <div class="tabs">
+              <a href="/settings" data-link data-nav="/settings">Integrations</a>
+              <a href="/settings/api" data-link data-nav="/settings/api">API</a>
             </div>
-          </div>
 
-          <div class="step">
-            <div class="section-title compact-title">
-              <h3>Lists to sync</h3>
-              <p id="listSummary">Choose a ClickUp Workspace to load Lists.</p>
+            <section class="settings-grid">
+              <article class="panel summary-card">
+                <span class="summary-kicker">Account</span>
+                <strong id="settingsWorkspaceName">-</strong>
+                <p id="settingsAccountHint">Owner workspace context.</p>
+              </article>
+              <article class="panel summary-card">
+                <span class="summary-kicker">Data taxonomy</span>
+                <strong>Tasks, knowledge, automation</strong>
+                <p>Integrations are grouped by data type and operating area.</p>
+              </article>
+            </section>
+
+            <section class="panel form" id="clickupPanel" aria-disabled="true">
+              <div class="section-title row-title">
+                <div>
+                  <h2>Tasks: ClickUp</h2>
+                  <p id="clickupWorkspaceLabel">Sign in to load workspace settings.</p>
+                </div>
+                <label class="switch">
+                  <input id="active" name="active" type="checkbox" checked>
+                  <span>Active</span>
+                </label>
+              </div>
+
+              <div class="step">
+                <label>
+                  API token
+                  <input id="token" name="token" type="password" autocomplete="off" placeholder="Paste token, or leave blank to use saved token">
+                </label>
+                <div class="actions">
+                  <button type="button" class="secondary" id="checkTokenButton">Check token</button>
+                  <button type="button" class="secondary" id="refreshButton">Refresh saved structure</button>
+                </div>
+              </div>
+
+              <div class="step">
+                <label>
+                  ClickUp Workspace
+                  <select id="workspaceSelect" disabled>
+                    <option value="">Check token first</option>
+                  </select>
+                </label>
+                <div class="actions">
+                  <button type="button" class="secondary" id="loadListsButton">Load Lists</button>
+                </div>
+              </div>
+
+              <div class="step">
+                <div class="section-title compact-title">
+                  <h3>Lists to sync</h3>
+                  <p id="listSummary">Choose a ClickUp Workspace to load Lists.</p>
+                </div>
+                <div class="list-toolbar" id="listToolbar" hidden>
+                  <button type="button" class="secondary" id="selectAllListsButton">Select all</button>
+                  <button type="button" class="secondary" id="clearListsButton">Clear all</button>
+                </div>
+                <div class="tree" id="listTree" aria-live="polite"></div>
+              </div>
+
+              <label>
+                Import mode
+                <select id="importMode">
+                  <option value="merge">Merge and update</option>
+                  <option value="skip_existing">Only add new</option>
+                  <option value="replace_selected_lists">Replace selected ClickUp Lists</option>
+                  <option value="inspect_only">Inspect only</option>
+                </select>
+              </label>
+
+              <div class="actions">
+                <button type="button" class="secondary" id="saveButton">Save connection</button>
+                <button type="button" id="syncButton">Save and sync</button>
+              </div>
+            </section>
+
+            <section class="panel form">
+              <div class="section-title">
+                <h2>Knowledge and storage: Google Drive</h2>
+                <p id="googleDriveSummary">Google Drive settings use the implemented provider API.</p>
+              </div>
+              <div class="actions">
+                <button type="button" class="secondary" id="refreshGoogleDriveButton">Check status</button>
+                <button type="button" id="syncGoogleDriveButton">Sync notes</button>
+              </div>
+            </section>
+          </section>
+
+          <section class="view" data-view="/settings/api">
+            <div class="tabs">
+              <a href="/settings" data-link data-nav="/settings">Integrations</a>
+              <a href="/settings/api" data-link data-nav="/settings/api">API</a>
             </div>
-            <div class="list-toolbar" id="listToolbar" hidden>
-              <button type="button" class="secondary" id="selectAllListsButton">Select all</button>
-              <button type="button" class="secondary" id="clearListsButton">Clear all</button>
+
+            <section class="settings-grid">
+              <article class="panel summary-card">
+                <span class="summary-kicker">Base URL</span>
+                <strong>https://api.companycore.luckysparrow.ch</strong>
+                <p>Authenticated JSON API for CompanyCore v1.</p>
+              </article>
+              <article class="panel summary-card">
+                <span class="summary-kicker">Auth</span>
+                <strong>Owner token or service API key</strong>
+                <p>Browser settings use owner login. Agents should use scoped service keys.</p>
+              </article>
+            </section>
+
+            <section class="panel api-panel">
+              <div class="section-title">
+                <h2>Capabilities</h2>
+                <p id="capabilitySummary">Sign in to load available API capabilities.</p>
+              </div>
+              <div class="capability-list" id="capabilityList"></div>
+            </section>
+          </section>
+
+          <section class="panel result" id="resultPanel" hidden>
+            <div class="section-title">
+              <h2>Latest result</h2>
+              <p id="resultMessage"></p>
             </div>
-            <div class="tree" id="listTree" aria-live="polite"></div>
-          </div>
-
-          <label>
-            Import mode
-            <select id="importMode">
-              <option value="merge">Merge and update</option>
-              <option value="skip_existing">Only add new</option>
-              <option value="replace_selected_lists">Replace selected ClickUp Lists</option>
-              <option value="inspect_only">Inspect only</option>
-            </select>
-          </label>
-
-          <div class="actions">
-            <button type="button" class="secondary" id="saveButton">Save connection</button>
-            <button type="button" id="syncButton">Save and sync</button>
-          </div>
-        </section>
-      </section>
-
-      <section class="view" data-view="/settings/api">
-        <div class="page-title">
-          <div>
-            <p class="label">Private settings</p>
-            <h1>API</h1>
-            <p>Use this API domain for agents, adapters, and internal tools.</p>
-          </div>
-        </div>
-
-        <section class="settings-grid">
-          <article class="panel summary-card">
-            <span class="summary-kicker">Base URL</span>
-            <strong>https://api.companycore.luckysparrow.ch</strong>
-            <p>Authenticated JSON API for CompanyCore v1.</p>
-          </article>
-          <article class="panel summary-card">
-            <span class="summary-kicker">Auth</span>
-            <strong>Owner token or service API key</strong>
-            <p>Browser settings use owner login. Agents should use scoped service keys.</p>
-          </article>
-        </section>
-
-        <section class="panel api-panel">
-          <div class="section-title">
-            <h2>Capabilities</h2>
-            <p id="capabilitySummary">Sign in to load available API capabilities.</p>
-          </div>
-          <div class="capability-list" id="capabilityList"></div>
-        </section>
-      </section>
-
-      <section class="panel result" id="resultPanel" hidden>
-        <div class="section-title">
-          <h2>Latest result</h2>
-          <p id="resultMessage"></p>
-        </div>
-        <dl class="metrics" id="metrics"></dl>
-      </section>
-    </main>
+            <dl class="metrics" id="metrics"></dl>
+          </section>
+        </main>
+      </div>
+    </div>
 
     <script src="/app.js" defer></script>
   </body>

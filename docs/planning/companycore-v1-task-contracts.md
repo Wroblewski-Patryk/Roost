@@ -4,6 +4,197 @@ These task contracts turn the v1 audit into executable work. Each task must be
 completed as its own small iteration and must update `.codex/context/TASK_BOARD.md`,
 `.codex/context/PROJECT_STATE.md`, and relevant docs when status changes.
 
+## CCV1-045 Google Drive Bidirectional Notes Bridge
+
+### Header
+- ID: CCV1-045
+- Title: Google Drive bidirectional notes bridge
+- Task Type: feature
+- Current Stage: verification
+- Status: DONE
+- Owner: Backend Builder + QA/Test
+- Depends on: CCV1-034D, CCV1-044
+- Priority: P1
+- Iteration: v1-045
+- Operation Mode: TESTER
+
+### Process Self-Audit
+- [x] All seven autonomous loop steps are planned.
+- [x] No loop step is being skipped.
+- [x] Exactly one priority task is selected.
+- [x] Operation mode matches the iteration number.
+- [x] The task is aligned with repository source-of-truth documents.
+
+### Context
+ClickUp is already bidirectional for tasks and comments. Google Drive existed
+only as a possible storage provider value in the operating registry, without a
+native adapter.
+
+### Goal
+Add the first production-shaped Google Drive native adapter slice without
+duplicating the existing integration settings, provider inbox, or notes APIs.
+
+### Scope
+- `src/integrations/integration-settings.service.ts`
+- `src/integrations/google-drive/*`
+- `src/modules/integration-settings/integration-settings.routes.ts`
+- `src/modules/notes/notes.routes.ts`
+- `src/modules/webhooks/google-drive-webhooks.routes.ts`
+- `src/modules/connection/connection.routes.ts`
+- `src/app.ts`
+- `src/tests/api.test.ts`
+- API, integration, architecture, planning, task board, and project-state docs
+
+### Implementation Plan
+1. Verify current ClickUp state and confirm the Google Drive gap.
+2. Reuse workspace-owned encrypted integration settings for `google_drive`.
+3. Add a Google Drive provider client, note sync service, write-back helper,
+   and notification channel receiver.
+4. Expose protected sync/watch routes and public verified webhook intake.
+5. Add regression coverage for secret redaction, import, export, write-back,
+   channel verification, and failure-close behavior.
+6. Update source-of-truth documentation and queue state.
+
+### Autonomous Loop Evidence
+
+#### 1. Analyze Current State
+- Issues: ClickUp is bidirectional; Google Drive had no supported provider in
+  runtime code.
+- Gaps: no Drive settings schema, provider client, note sync, write-back, or
+  webhook/channel intake.
+- Inconsistencies: docs mentioned Google Drive as a future storage provider but
+  no executable adapter existed.
+- Architecture constraints: PostgreSQL remains source of truth; provider
+  tokens must be workspace-owned and encrypted; provider errors must be safe.
+
+#### 2. Select One Priority Task
+- Selected task: CCV1-045 Google Drive Bidirectional Notes Bridge.
+- Priority rationale: user explicitly requested checking and completing
+  bidirectional ClickUp and Google Drive.
+- Why other candidates were deferred: Paperclip adapter remains queued, but it
+  does not close the Google Drive integration gap.
+
+#### 3. Plan Implementation
+- Files or surfaces to modify: integration services, notes route, webhooks
+  route, connection manifest, tests, and docs.
+- Logic: Drive files and Google Docs in the configured folder map to notes;
+  local notes can export to Drive; Drive-sourced note edits write back before
+  local persistence; Drive channel notifications write verified inbox rows and
+  run notes sync for verified `change` events.
+- Edge cases: missing settings, invalid provider token, missing root folder,
+  invalid channel token, duplicate notifications, and secret redaction.
+
+#### 4. Execute Implementation
+- Implementation notes: Added `google_drive` to supported providers, built the
+  provider client under `src/integrations/google-drive`, reused
+  `ExternalWebhookRegistration` and `ProviderEventInbox`, and avoided schema
+  changes because existing generic provider tables fit the slice.
+
+#### 5. Verify and Test
+- Validation performed: `npm run build`; `npm test` with
+  `DATABASE_URL=postgresql://companycore:companycore@localhost:55432/companycore_test?schema=public`.
+- Result: both passed.
+
+#### 6. Self-Review
+- Simpler option considered: storage-location-only registration. Rejected
+  because it would not be bidirectional runtime behavior.
+- Technical debt introduced: no for the implemented slice.
+- Scalability assessment: current design supports provider-specific expansion
+  without a new database table; OAuth refresh and owner consent UI remain a
+  future task.
+- Refinements made: Google Drive notifications are stored as verified signals
+  instead of pretending they contain full file state.
+
+#### 7. Update Documentation and Knowledge
+- Docs updated: `docs/API.md`, `docs/INTEGRATIONS.md`,
+  `docs/architecture/system-architecture.md`.
+- Context updated: `.codex/context/PROJECT_STATE.md`,
+  `.codex/context/TASK_BOARD.md`, `docs/planning/mvp-next-commits.md`.
+- Learning journal updated: not applicable.
+
+### Acceptance Criteria
+- [x] ClickUp bidirectional state is checked and remains intact.
+- [x] Google Drive can store encrypted workspace settings without exposing the
+  token.
+- [x] Google Drive text files and Google Docs can sync into notes.
+- [x] Local notes can be exported to Google Drive through the sync endpoint.
+- [x] Updates to Drive-sourced notes write back to Google Drive before local
+  persistence.
+- [x] Google Drive Changes notification channels can be registered, verified,
+  and processed through a public webhook route.
+- [x] Invalid Drive channel tokens fail closed.
+- [x] Connection manifest and API docs expose the new routes.
+
+### Definition of Done
+- [x] Code builds without errors.
+- [x] Feature works through protected API routes and public webhook route.
+- [x] No mock, placeholder, fake, or temporary delivered path remains.
+- [x] Full data flow works across API, integration logic, DB, validation, safe
+  errors, and tests.
+- [x] No existing functionality is broken.
+- [x] Changes are documented in source-of-truth docs.
+- [x] `DEFINITION_OF_DONE.md` was checked before status changed to `DONE`.
+
+### Validation Evidence
+- Tests: `npm run build`; `npm test` with disposable PostgreSQL on
+  `localhost:55432`.
+- Manual checks: repository state inspection confirmed ClickUp two-way bridge
+  routes, webhooks, write-back, comments, and retry health already existed.
+- High-risk checks: provider secret redaction and invalid Drive channel token
+  denial are covered in regression tests.
+
+### Integration Evidence
+- `INTEGRATION_CHECKLIST.md` reviewed: yes.
+- Real API/service path used: yes, through provider client methods and API
+  routes; external calls are mocked only inside tests.
+- Endpoint and client contract match: yes.
+- DB schema and migrations verified: yes; no new migration was required.
+- Error state verified: yes.
+- Refresh/restart behavior verified: persistence uses existing Postgres tables.
+- Regression check performed: yes.
+
+### Security / Privacy Evidence
+- `docs/security/secure-development-lifecycle.md` reviewed: yes.
+- Data classification: workspace business notes and provider tokens.
+- Trust boundaries: protected API, public Drive webhook, provider API,
+  workspace DB boundary.
+- Permission or ownership checks: integration settings and notes use auth
+  workspace context; webhook lookup uses registered channel ID and encrypted
+  token verification.
+- Secret handling: OAuth token and channel token are encrypted and not returned.
+- Fail-closed behavior: missing settings, invalid token, missing root folder,
+  unknown channel, and invalid channel token return safe errors.
+
+### Architecture Evidence
+- Architecture source reviewed: `docs/architecture/system-architecture.md`,
+  `docs/architecture/architecture-source-of-truth.md`.
+- Fits approved architecture: yes.
+- Mismatch discovered: no.
+- Decision required from user: no; the user requested implementation.
+
+### Deployment / Ops Evidence
+- Deploy impact: medium.
+- Env or secret changes: no new process env vars; workspace must configure a
+  Google Drive token through API.
+- Health-check impact: none.
+- Smoke steps updated: API docs include sync and webhook routes.
+- Rollback note: revert this single adapter slice; no schema migration to roll
+  back.
+- `DEPLOYMENT_GATE.md` reviewed: yes.
+
+### Result Report
+- Task summary: Added the first native Google Drive adapter with encrypted
+  settings, bidirectional note sync/write-back, verified channel notification
+  intake, manifest updates, docs, and regression coverage.
+- Files changed: Google Drive integration modules, integration settings route,
+  notes route, app route mount, connection manifest, API test, and source-of-
+  truth docs.
+- How tested: `npm run build`; `npm test` with disposable PostgreSQL.
+- What is incomplete: production Drive token setup, OAuth refresh/consent UI,
+  and production smoke are not completed in this local implementation slice.
+- Next steps: deploy and run a real Google Drive smoke with a workspace token,
+  then continue the Paperclip application-side CompanyCore adapter.
+
 ## CCV1-036A Webhook Schema And Security Foundation
 
 ### Header
@@ -430,6 +621,188 @@ provider mappings, storage roots, knowledge roots, and automation scopes.
 ### Priority
 P0
 
+## CCV1-046 GUI App Shell And Navigation
+
+### Header
+- ID: CCV1-046
+- Title: GUI App Shell And Navigation
+- Task Type: design
+- Current Stage: verification
+- Status: DONE
+- Owner: Frontend Builder
+- Depends on: CCV1-034A, CCV1-034C, CCV1-038, CCV1-045
+- Priority: P1
+- Iteration: v1-046
+- Operation Mode: BUILDER
+
+### Process Self-Audit
+- [x] All seven autonomous loop steps are represented.
+- [x] Exactly one priority task was selected.
+- [x] The task reused implemented APIs and the existing static owner console.
+- [x] No new backend system or unsupported provider workflow was introduced.
+
+### Context
+The backend already exposes the operating model registry, task data, ClickUp
+adapter health, Google Drive settings, pipeline records, and API capabilities.
+The web UI was still a minimal owner console with only Dashboard, Settings, and
+API pages.
+
+### Goal
+Replace the minimal owner-console frame with a scalable authenticated app shell
+that can host the target CompanyCore views while preserving existing v1 setup
+flows.
+
+### Scope
+- `public/index.html`
+- `public/app.js`
+- `public/styles.css`
+- `src/app.ts`
+- `.codex/context/TASK_BOARD.md`
+- `.codex/context/PROJECT_STATE.md`
+- `docs/planning/mvp-next-commits.md`
+- `docs/planning/gui-target-views-v2-scalable-plan.md`
+- `docs/planning/companycore-v1-task-contracts.md`
+
+### Implementation Plan
+1. Inspect the current static console, implemented route modules, operating
+   model APIs, UX guidance, and definition of done.
+2. Rebuild the static shell around authenticated navigation for Dashboard,
+   Operating Areas, Tasks And Adapters, Pipeline, Settings, and API.
+3. Keep every new surface backed by existing read APIs and preserve existing
+   ClickUp setup, sync, and API capability flows.
+4. Validate build, JavaScript syntax, static route serving, and documentation
+   synchronization.
+
+### Autonomous Loop Evidence
+
+#### 1. Analyze Current State
+- Issues: target backend structures existed, but the UI frame did not expose
+  them.
+- Gaps: relationship mapping can be read, but reassignment is not yet supported.
+- Architecture constraints: static owner console remains the v1 web surface;
+  API remains the only backend access layer.
+
+#### 2. Select One Priority Task
+- Selected task: CCV1-046 GUI App Shell And Navigation.
+- Priority rationale: a scalable shell is required before dashboard, areas,
+  tasks, settings taxonomy, and pipeline slices can be implemented cleanly.
+- Deferred: full dashboard polish, editable mappings, and deeper per-module UI.
+
+#### 3. Plan Implementation
+- Files or surfaces to modify: static web assets and web-app route whitelist.
+- Logic: route rendering, authenticated shell state, provider health summaries,
+  read-only operating model, task adapter, and pipeline panels.
+- Edge cases: signed-out redirects, unknown routes, empty data, missing
+  Google Drive setting, failed ClickUp provider events, and mobile navigation.
+
+#### 4. Execute Implementation
+- Implementation notes: added the authenticated left navigation shell, top
+  utility bar, new SPA routes, real data loading, local empty/error states, and
+  static route serving for `/areas`, `/tasks`, and `/pipeline`.
+
+#### 5. Verify and Test
+- Validation performed: `node --check public/app.js`, `npm run build`,
+  `git diff --check`, and local HTTP checks for `/`, `/dashboard`, `/areas`,
+  `/tasks`, `/pipeline`, and `/settings/api` on port `3107`.
+- Result: all listed checks passed.
+
+#### 6. Self-Review
+- Simpler option considered: keeping only the old topbar and adding links.
+- Technical debt introduced: no.
+- Scalability assessment: the shell now separates navigation, route rendering,
+  provider health, areas, tasks, pipeline, and settings rendering functions.
+- Refinements made: fixed active navigation behavior for `/settings/api`.
+
+#### 7. Update Documentation and Knowledge
+- Docs updated: task board, project state, MVP queue, GUI plan, and this task
+  contract.
+- Context updated: yes.
+- Learning journal updated: not applicable.
+
+### Acceptance Criteria
+- [x] Existing auth, ClickUp setup, dashboard task table, and API settings still
+  have corresponding UI flows.
+- [x] New navigation exposes implemented surfaces only.
+- [x] Unknown routes still redirect safely.
+- [x] Mobile, tablet, and desktop navigation have responsive layout rules.
+- [x] `npm run build` passes.
+
+### Success Signal
+- User or operator problem: the owner needs a central GUI frame for the growing
+  operating model instead of a narrow setup console.
+- Expected product outcome: future GUI modules can be added into one coherent
+  navigation and layout system.
+- How success will be observed: the owner can open the new routes and continue
+  using the existing ClickUp/API flows.
+- Post-launch learning needed: yes, after browser screenshot and real owner
+  data walkthrough.
+
+### Deliverable For This Stage
+Verified implementation of the first GUI shell slice.
+
+### Definition of Done
+- [x] Code builds without errors.
+- [x] Feature works manually through local HTTP route checks.
+- [x] No mock-only route or fake provider path was added.
+- [x] Existing API-backed flows are preserved.
+- [x] Loading, empty, and error states are represented in the static UI.
+- [x] Changes are documented in relevant source-of-truth files.
+- [x] `DEFINITION_OF_DONE.md` was checked before status changed to `DONE`.
+
+### Validation Evidence
+- Tests: `node --check public/app.js`; `npm run build`.
+- Manual checks: local HTTP route checks for `/`, `/dashboard`, `/areas`,
+  `/tasks`, `/pipeline`, and `/settings/api` returned `200`.
+- Screenshots/logs: in-app browser tooling was unavailable in this session, so
+  screenshot comparison remains a follow-up.
+- High-risk checks: `git diff --check` passed for changed runtime files.
+
+### Integration Evidence
+- `INTEGRATION_CHECKLIST.md` reviewed: yes.
+- Real API/service path used: yes.
+- Endpoint and client contract match: yes for existing GET/POST routes used.
+- Loading state verified: static state exists.
+- Error state verified: friendly error copy path preserved.
+- Refresh/restart behavior verified: static routes are served by Express.
+- Regression check performed: build and route checks.
+
+### UX/UI Evidence
+- Design source type: approved_snapshot.
+- Design source reference: generated internal shell concept for CompanyCore.
+- Fidelity target: structurally_faithful.
+- Experience-quality bar reviewed: yes.
+- Visual-direction brief reviewed: yes.
+- Existing shared pattern reused: existing buttons, forms, panels, tables, and
+  ClickUp tree controls were retained and extended.
+- New shared pattern introduced: app shell/sidebar, status pills, area cards,
+  pipeline columns, and stack rows.
+- Responsive checks: CSS rules for desktop, tablet, and mobile.
+- Accessibility checks: semantic nav, focus-visible styling, button states, and
+  table headings retained.
+- Remaining mismatches: no browser screenshot comparison was possible in this
+  session.
+
+### Deployment / Ops Evidence
+- Deploy impact: low.
+- Env or secret changes: none.
+- Health-check impact: none.
+- Smoke steps updated: local static route checks recorded.
+- Rollback note: revert `public/*` plus `src/app.ts` route whitelist if needed.
+
+### Result Report
+- Task summary: Added the first scalable authenticated CompanyCore app shell
+  with Dashboard, Operating Areas, Tasks And Adapters, Pipeline, Settings, and
+  API route structure using existing backend surfaces.
+- Files changed: `public/index.html`, `public/app.js`, `public/styles.css`,
+  `src/app.ts`, `.codex/context/TASK_BOARD.md`,
+  `.codex/context/PROJECT_STATE.md`, `docs/planning/mvp-next-commits.md`,
+  `docs/planning/gui-target-views-v2-scalable-plan.md`, and this contract.
+- How tested: `node --check public/app.js`, `npm run build`,
+  `git diff --check`, and local HTTP route checks on port `3107`.
+- What is incomplete: full screenshot/browser QA and the deeper CCV1-047
+  dashboard data polish remain next GUI work.
+- Next steps: Implement CCV1-047 Dashboard Command Center.
+
 ## CCV1-042 ClickUp Full API Bridge Completion
 
 ### Header
@@ -589,6 +962,79 @@ the CompanyCore source of truth while keeping ClickUp and CompanyCore aligned.
   `202605033_clickup_note_external_identity` and the API flow passed.
 - What is incomplete: No known incomplete item in the CompanyCore-side ClickUp
   task comment bridge slice.
+- Next steps: Continue the Paperclip application-side adapter so it consumes
+  CompanyCore agent events and writes through CompanyCore.
+
+### Priority
+P0
+
+## CCV1-044 ClickUp Provider Event Retry And Health
+
+### Header
+- ID: CCV1-044
+- Title: ClickUp provider event retry and health
+- Task Type: feature
+- Current Stage: verification
+- Status: DONE
+- Owner: Backend Builder
+- Depends on: CCV1-036C, CCV1-036D, CCV1-043
+- Priority: P0
+- Iteration: v1-044
+- Operation Mode: BUILDER
+
+### Description
+Harden ClickUp live sync so failed webhook processing can be inspected and
+replayed through the API instead of requiring direct database repair.
+
+### Goal
+Keep CompanyCore reliably up to date with ClickUp by making failed provider
+events visible, safely retryable, and idempotent.
+
+### Scope
+- `prisma/schema.prisma`
+- `prisma/migrations/202605034_clickup_event_retry_observability/migration.sql`
+- `src/integrations/clickup/clickup.webhooks.ts`
+- `src/modules/integration-settings/integration-settings.routes.ts`
+- `src/modules/connection/connection.routes.ts`
+- `src/tests/api.test.ts`
+- `docs/API.md`
+- `docs/architecture/system-architecture.md`
+- `.codex/context/PROJECT_STATE.md`
+- `.codex/context/TASK_BOARD.md`
+- `docs/planning/mvp-next-commits.md`
+
+### Implementation Plan
+- Check current official ClickUp webhook health/retry documentation.
+- Add provider event inbox `last_error_code` persistence.
+- Expose safe ClickUp inbox metadata through protected API.
+- Add owner-only failed-event replay using the same idempotent processor as
+  live webhook ingestion.
+- Add regression coverage for failed event listing and successful retry.
+- Update architecture, API, planning, and context docs.
+
+### Acceptance Criteria
+- [x] Failed ClickUp webhook processing records a stable last error code.
+- [x] Protected API can list safe ClickUp provider event metadata by status.
+- [x] Owner users can replay failed ClickUp provider events without raw DB
+  access.
+- [x] Successful replay updates CompanyCore data and clears `lastErrorCode`.
+- [x] Local integration tests pass with the new migration.
+
+### Definition of Done
+- [x] Raw webhook payloads are not returned by health/list endpoints.
+- [x] Retry uses the existing idempotent mapper and workspace scope.
+- [x] Service clients can read inbox health; retry remains owner-only.
+- [x] `npm test` passes against disposable PostgreSQL.
+
+### Result Report
+- Task summary: Added ClickUp provider event inbox health and retry/replay.
+- Files changed: Prisma schema/migration, ClickUp webhook service,
+  integration settings routes, connection manifest, regression tests, and docs.
+- How tested: Ran `npm test` with `DATABASE_URL` pointed at disposable
+  PostgreSQL on `localhost:55432`; migration deploy applied
+  `202605034_clickup_event_retry_observability` and the API flow passed.
+- What is incomplete: No known incomplete item in the CompanyCore-side ClickUp
+  provider event retry and health slice.
 - Next steps: Continue the Paperclip application-side adapter so it consumes
   CompanyCore agent events and writes through CompanyCore.
 

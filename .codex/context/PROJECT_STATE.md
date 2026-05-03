@@ -28,6 +28,12 @@ Last updated: 2026-05-03
   `replace_selected_lists`, and `inspect_only`; destructive cleanup is limited
   to `source = clickup` records in the selected ClickUp List scope and must not
   delete native/manual CompanyCore records.
+- 2026-05-03: Google Drive is approved as the second native provider adapter
+  for the knowledge/storage slice. v1 maps Drive text files and Google Docs in
+  a configured folder to CompanyCore notes, can export local notes to Drive,
+  writes updates for Drive-sourced notes back to Drive, and records verified
+  Drive Changes notifications as provider inbox signals that trigger notes
+  sync for verified change events.
 - 2026-05-02: PostgreSQL is the source of truth.
 - 2026-05-02: API is the only supported access layer.
 - 2026-05-02: CompanyCore owns the first native integration adapter:
@@ -52,8 +58,9 @@ Last updated: 2026-05-03
 - Health / readiness checks: `GET /health`.
 - Environment files: `.env.example`.
 - Observability: minimal system events table.
-- MCP / external tools: ClickUp API is called by a native CompanyCore
-  integration adapter; n8n may call API endpoints for optional orchestration.
+- MCP / external tools: ClickUp API and Google Drive API are called by native
+  CompanyCore integration adapters; n8n may call API endpoints for optional
+  orchestration.
 - Auth / ownership: v1 workspace owner model with user registration, login,
   automatic workspace bootstrap, bearer auth context, workspace-scoped API key
   context, and workspace-scoped integration settings.
@@ -75,8 +82,9 @@ Last updated: 2026-05-03
 - Dockerfiles / compose paths: `Dockerfile`, `docker-compose.yml`.
 - Required secrets: `DATABASE_URL`, `SEED_API_KEY`, `AUTH_TOKEN_SECRET`,
   `INTEGRATION_SECRET_KEY`, optional `PORT`; local seed may use `SEED_OWNER_EMAIL`,
-  `SEED_OWNER_PASSWORD`, and `SEED_WORKSPACE_NAME`; ClickUp tokens must be
-  stored as workspace integration settings, not hardcoded process globals.
+  `SEED_OWNER_PASSWORD`, and `SEED_WORKSPACE_NAME`; ClickUp and Google Drive
+  tokens must be stored as workspace integration settings, not hardcoded
+  process globals.
 - Public URLs / ports: backend on `3000`; `companycore.luckysparrow.ch` is the
   web UI domain and `api.companycore.luckysparrow.ch` is the API domain.
 - Backup / restore expectation: Postgres volume backups required before
@@ -97,14 +105,16 @@ Last updated: 2026-05-03
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-043 ClickUp Task Comment Bridge.
+- Current iteration: CCV1-046 GUI App Shell And Navigation.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-043 ClickUp Task Comment Bridge.
-- Last completed task: extended the ClickUp bridge so task comments flow into
-  CompanyCore notes from ClickUp webhooks and CompanyCore notes on
-  ClickUp-sourced tasks create ClickUp task comments before local persistence.
+- Last completed iteration: CCV1-046 GUI App Shell And Navigation.
+- Last completed task: replaced the minimal owner-console frame with a
+  scalable authenticated app shell and route structure for Dashboard,
+  Operating Areas, Tasks And Adapters, Pipeline, Settings, and API while
+  preserving existing ClickUp setup and API capability flows.
 - Next required mode: BUILDER for Paperclip application-side CompanyCore
-  adapter unless priority changes.
+  adapter unless priority changes; next GUI slice is CCV1-047 Dashboard Command
+  Center.
 
 ## Recent Progress
 - 2026-05-02: Created Company Core backend foundation, Prisma schema, Docker
@@ -451,6 +461,43 @@ Last updated: 2026-05-03
   public `/health` and `/v1/health` returned `200`, and Jarvis's CompanyCore
   API key verified protected reads for `/v1/connection`, `/v1/notes`, and
   `/v1/agent-events`.
+- 2026-05-03: Completed CCV1-044 locally by adding retry observability for the
+  ClickUp provider event inbox. Failed webhook processing rows now record
+  `last_error_code`, `GET /v1/integration-settings/clickup/events` returns safe
+  inbox metadata without raw provider payloads, and owner users can call
+  `POST /v1/integration-settings/clickup/events/retry-failed` to replay failed
+  rows through the same idempotent task/comment processor. Regression coverage
+  creates a failed inbox row, lists it, retries it, verifies the ClickUp task is
+  recovered, and confirms `lastErrorCode` is cleared. `npm test` passed against
+  disposable PostgreSQL on `localhost:55432`.
+- 2026-05-03: Deployed CCV1-044 to production by manually rolling over the
+  backend container because Coolify's deployment queue was full with unrelated
+  services. The deployed image is
+  `rnqqkhl3o3dut4qv56mlxly2_backend:90c209e2a8398b7b9117ec51f72d85e97e0e80cb`.
+  Startup applied migration `202605034_clickup_event_retry_observability`,
+  public `/health` and `/v1/health` returned `200`, and Jarvis's CompanyCore
+  API key verified `/v1/connection`,
+  `/v1/integration-settings/clickup/events`, and
+  `/v1/integration-settings/clickup/events?status=failed` with safe metadata.
+- 2026-05-03: Completed CCV1-045 locally by adding the native Google Drive
+  notes bridge. The adapter stores encrypted workspace `google_drive` settings,
+  imports Drive text files and Google Docs from a configured folder into
+  CompanyCore notes, optionally exports local notes to Drive text files, writes
+  updates for Drive-sourced notes back to Drive on `PATCH /v1/notes/:id`, and
+  registers/verifies Google Drive Changes notification channels through the
+  provider inbox. Verified Drive `change` notifications now run the same notes
+  sync service and mark inbox rows processed or failed with safe metadata.
+  Official Google Drive docs were checked for file create/list behavior and
+  push notification channel semantics. `npm test` passed against disposable
+  PostgreSQL on `localhost:55432`.
+- 2026-05-03: Completed CCV1-046 by replacing the minimal post-login console
+  with a scalable static web app shell. The GUI now has authenticated routes
+  for `/dashboard`, `/areas`, `/tasks`, `/pipeline`, `/settings`, and
+  `/settings/api`, backed only by existing APIs. Existing owner login,
+  registration, ClickUp setup, ClickUp sync, API capability display, and static
+  route serving were preserved. Validation passed with `node --check
+  public/app.js`, `npm run build`, `git diff --check`, and local HTTP route
+  checks on port `3107`.
 
 ## Working Agreements
 - Keep task board and project state synchronized.
@@ -511,6 +558,7 @@ Last updated: 2026-05-03
 - `docs/planning/mvp-next-commits.md`
 - `docs/planning/mvp-execution-plan.md`
 - `docs/planning/companycore-v1-task-contracts.md`
+- `docs/planning/gui-target-views-v2-scalable-plan.md`
 - `docs/planning/auth-workspace-integration-plan.md`
 - `docs/planning/regression-prevention-plan.md`
 - `docs/planning/open-decisions.md`

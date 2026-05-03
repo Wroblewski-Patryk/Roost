@@ -10,6 +10,20 @@
     `COMPANYCORE_API_KEY`, consumes CompanyCore agent events, and writes
     relevant records back through CompanyCore instead of direct provider paths.
 
+- CCV1-047 Dashboard Command Center
+  - Stage: planning
+  - Owner: Frontend Builder
+  - Priority: P1
+  - Scope: expand `/dashboard` into the post-login command center with
+    workspace, integration, task, operating model, and event health summaries.
+
+- CCV1-048 Operating Areas Explorer
+  - Stage: planning
+  - Owner: Frontend Builder
+  - Priority: P1
+  - Scope: add the 12-area operating model explorer and read-first mapping
+    health view backed by `/v1/operating-model*`.
+
 ## Blocked
 
 - CCV1-020 GitHub webhook auto-deploy completion
@@ -23,9 +37,33 @@
 
 ## Backlog
 
-No active backlog item beyond the continuous ClickUp update strategy and
-Paperclip application-side adapter work tracked in
-`docs/planning/mvp-next-commits.md`.
+- CCV1-049 Settings Integration Taxonomy
+  - Stage: planning
+  - Owner: Frontend Builder
+  - Priority: P1
+  - Scope: split settings into Account, API, and Integrations grouped by data
+    type, provider, and operating area.
+
+- CCV1-050 Tasks And Adapter Operations View
+  - Stage: planning
+  - Owner: Frontend Builder
+  - Priority: P1
+  - Scope: add `/tasks` for task/list inspection, ClickUp health, provider
+    events, Custom Fields, notes/comments, and retry visibility.
+
+- CCV1-051 Pipeline Module
+  - Stage: planning
+  - Owner: Frontend Builder
+  - Priority: P2
+  - Scope: add `/pipeline` using existing stages, deals, clients,
+    interactions, and notes.
+
+- CCV1-052 Relationship Mapping Reassignment API And UI
+  - Stage: planning
+  - Owner: Backend Builder + Frontend Builder
+  - Priority: P1
+  - Scope: after the read-first areas explorer, add a safe mapping reassignment
+    endpoint and one-at-a-time GUI correction flow for provider containers.
 
 ## Done
 
@@ -97,3 +135,6 @@ Paperclip application-side adapter work tracked in
 - CCV1-041 Template Agent Governance Sync.
 - CCV1-042 ClickUp Full API Bridge Completion.
 - CCV1-043 ClickUp Task Comment Bridge.
+- CCV1-044 ClickUp Provider Event Retry And Health.
+- CCV1-045 Google Drive Bidirectional Notes Bridge.
+- CCV1-046 GUI App Shell And Navigation.

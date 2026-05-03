@@ -1,4 +1,11 @@
-const privateRoutes = new Set(["/dashboard", "/settings", "/settings/api"]);
+const privateRoutes = new Set([
+  "/dashboard",
+  "/areas",
+  "/tasks",
+  "/pipeline",
+  "/settings",
+  "/settings/api"
+]);
 const publicRoutes = new Set(["/", "/auth/login", "/auth/register"]);
 
 const state = {
@@ -6,6 +13,7 @@ const state = {
   workspace: null,
   user: null,
   capabilities: [],
+  mobileMenuOpen: false,
   clickup: {
     configured: false,
     active: false,
@@ -15,7 +23,18 @@ const state = {
     spaces: [],
     selectedListIds: new Set()
   },
-  tasks: []
+  googleDrive: {
+    configured: false,
+    active: false,
+    config: {}
+  },
+  operatingModel: null,
+  tasks: [],
+  taskLists: [],
+  clickupEvents: [],
+  pipelineStages: [],
+  deals: [],
+  clients: []
 };
 
 const API_ORIGIN = window.location.hostname === "companycore.luckysparrow.ch"
@@ -25,26 +44,56 @@ const API_ORIGIN = window.location.hostname === "companycore.luckysparrow.ch"
 const views = [...document.querySelectorAll("[data-view]")];
 const privateControls = [...document.querySelectorAll("[data-private]")];
 const publicControls = [...document.querySelectorAll("[data-public]")];
+const publicShell = document.querySelector("[data-public-shell]");
 const links = [...document.querySelectorAll("[data-link]")];
+const navLinks = [...document.querySelectorAll("[data-nav]")];
+
 const loginForm = document.querySelector("#loginForm");
 const registerForm = document.querySelector("#registerForm");
 const logoutButton = document.querySelector("#logoutButton");
+const mobileMenuButton = document.querySelector("#mobileMenuButton");
+
 const clickupPanel = document.querySelector("#clickupPanel");
 const checkTokenButton = document.querySelector("#checkTokenButton");
 const refreshButton = document.querySelector("#refreshButton");
 const saveButton = document.querySelector("#saveButton");
 const syncButton = document.querySelector("#syncButton");
-const refreshTasksButton = document.querySelector("#refreshTasksButton");
 const loadListsButton = document.querySelector("#loadListsButton");
 const selectAllListsButton = document.querySelector("#selectAllListsButton");
 const clearListsButton = document.querySelector("#clearListsButton");
 const workspaceSelect = document.querySelector("#workspaceSelect");
-const connectionStatus = document.querySelector("#connectionStatus");
+
+const refreshTasksButton = document.querySelector("#refreshTasksButton");
+const refreshAreasButton = document.querySelector("#refreshAreasButton");
+const refreshTaskModuleButton = document.querySelector("#refreshTaskModuleButton");
+const refreshPipelineButton = document.querySelector("#refreshPipelineButton");
+const retryClickUpEventsButton = document.querySelector("#retryClickUpEventsButton");
+const refreshGoogleDriveButton = document.querySelector("#refreshGoogleDriveButton");
+const syncGoogleDriveButton = document.querySelector("#syncGoogleDriveButton");
+const taskSourceFilter = document.querySelector("#taskSourceFilter");
+const taskStatusFilter = document.querySelector("#taskStatusFilter");
+
+const routeTitle = document.querySelector("#routeTitle");
+const workspaceEyebrow = document.querySelector("#workspaceEyebrow");
+const sidebarWorkspaceName = document.querySelector("#sidebarWorkspaceName");
+const sidebarStatusDot = document.querySelector("#sidebarStatusDot");
+const sidebarStatusText = document.querySelector("#sidebarStatusText");
+
 const workspaceLabel = document.querySelector("#workspaceLabel");
 const clickupWorkspaceLabel = document.querySelector("#clickupWorkspaceLabel");
 const workspaceNameLabel = document.querySelector("#workspaceNameLabel");
-const clickupStatusLabel = document.querySelector("#clickupStatusLabel");
-const clickupStatusHint = document.querySelector("#clickupStatusHint");
+const integrationHealthLabel = document.querySelector("#integrationHealthLabel");
+const integrationHealthHint = document.querySelector("#integrationHealthHint");
+const operatingModelLabel = document.querySelector("#operatingModelLabel");
+const operatingModelHint = document.querySelector("#operatingModelHint");
+const taskFlowLabel = document.querySelector("#taskFlowLabel");
+const taskFlowHint = document.querySelector("#taskFlowHint");
+const settingsWorkspaceName = document.querySelector("#settingsWorkspaceName");
+const settingsAccountHint = document.querySelector("#settingsAccountHint");
+const providerHealthSummary = document.querySelector("#providerHealthSummary");
+const providerHealthList = document.querySelector("#providerHealthList");
+const googleDriveSummary = document.querySelector("#googleDriveSummary");
+
 const capabilitySummary = document.querySelector("#capabilitySummary");
 const capabilityList = document.querySelector("#capabilityList");
 const listTree = document.querySelector("#listTree");
@@ -53,8 +102,22 @@ const listSummary = document.querySelector("#listSummary");
 const resultPanel = document.querySelector("#resultPanel");
 const resultMessage = document.querySelector("#resultMessage");
 const metrics = document.querySelector("#metrics");
+
 const tasksSummary = document.querySelector("#tasksSummary");
 const tasksTableBody = document.querySelector("#tasksTableBody");
+const taskModuleSummary = document.querySelector("#taskModuleSummary");
+const taskModuleTableBody = document.querySelector("#taskModuleTableBody");
+const taskListSummary = document.querySelector("#taskListSummary");
+const taskListPanel = document.querySelector("#taskListPanel");
+const clickupEventSummary = document.querySelector("#clickupEventSummary");
+const clickupEventPanel = document.querySelector("#clickupEventPanel");
+
+const areasSummary = document.querySelector("#areasSummary");
+const areaGrid = document.querySelector("#areaGrid");
+const mappingHealthSummary = document.querySelector("#mappingHealthSummary");
+const mappingTableBody = document.querySelector("#mappingTableBody");
+const pipelineSummary = document.querySelector("#pipelineSummary");
+const pipelineBoard = document.querySelector("#pipelineBoard");
 
 const fields = {
   email: document.querySelector("#email"),
@@ -66,6 +129,15 @@ const fields = {
   active: document.querySelector("#active"),
   token: document.querySelector("#token"),
   importMode: document.querySelector("#importMode")
+};
+
+const routeLabels = {
+  "/dashboard": "Dashboard",
+  "/areas": "Operating Areas",
+  "/tasks": "Tasks & Adapters",
+  "/pipeline": "Pipeline",
+  "/settings": "Settings",
+  "/settings/api": "API"
 };
 
 function normalizedPath(pathname = window.location.pathname) {
@@ -84,13 +156,43 @@ function authHeaders() {
   };
 }
 
+function text(value, fallback = "-") {
+  if (value === null || value === undefined || value === "") {
+    return fallback;
+  }
+  return String(value);
+}
+
+function appendText(parent, tagName, value, className) {
+  const element = document.createElement(tagName);
+  element.textContent = value;
+  if (className) {
+    element.className = className;
+  }
+  parent.append(element);
+  return element;
+}
+
+function createStatusPill(label, tone = "neutral") {
+  const pill = document.createElement("span");
+  pill.className = `status-pill ${tone}`;
+  pill.textContent = label;
+  return pill;
+}
+
 function updateChrome() {
+  const signedIn = isSignedIn();
+  document.body.classList.toggle("is-signed-in", signedIn);
+  document.body.classList.toggle("mobile-nav-open", state.mobileMenuOpen && signedIn);
   privateControls.forEach((element) => {
-    element.hidden = !isSignedIn();
+    element.hidden = !signedIn;
   });
   publicControls.forEach((element) => {
-    element.hidden = isSignedIn();
+    element.hidden = signedIn;
   });
+  if (publicShell) {
+    publicShell.hidden = signedIn;
+  }
 }
 
 function navigate(path, { replace = false } = {}) {
@@ -100,6 +202,7 @@ function navigate(path, { replace = false } = {}) {
   } else {
     window.history.pushState({}, "", nextPath);
   }
+  state.mobileMenuOpen = false;
   renderRoute();
 }
 
@@ -127,9 +230,18 @@ function renderRoute() {
     view.hidden = view.dataset.view !== path;
   });
 
+  navLinks.forEach((link) => {
+    const target = link.dataset.nav;
+    link.classList.toggle("active", target === path || (path.startsWith("/settings") && target === "/settings"));
+  });
+
+  routeTitle.textContent = routeLabels[path] || "CompanyCore";
+  workspaceEyebrow.textContent = state.workspace
+    ? `${state.workspace.name} workspace`
+    : "Private workspace";
   document.body.dataset.route = path;
-  renderConnectionState();
   setClickUpEnabled(isSignedIn());
+  renderAll();
 }
 
 function setBusy(isBusy) {
@@ -140,10 +252,13 @@ function setBusy(isBusy) {
     link.setAttribute("aria-disabled", String(isBusy));
   });
   setClickUpEnabled(isSignedIn() && !isBusy);
-  refreshTasksButton.disabled = !isSignedIn() || isBusy;
 }
 
 function setClickUpEnabled(isEnabled) {
+  if (!clickupPanel) {
+    return;
+  }
+
   clickupPanel.querySelectorAll("input, button, select").forEach((control) => {
     control.disabled = !isEnabled;
   });
@@ -180,12 +295,13 @@ function showResult(message, tone = "success", sync = null) {
 
   for (const [label, value] of items) {
     const item = document.createElement("div");
-    item.innerHTML = `<dt>${label}</dt><dd>${value ?? 0}</dd>`;
+    appendText(item, "dt", label);
+    appendText(item, "dd", value ?? 0);
     metrics.append(item);
   }
 }
 
-function formatDate(value) {
+function formatDate(value, withTime = false) {
   if (!value) {
     return "-";
   }
@@ -193,49 +309,9 @@ function formatDate(value) {
   return new Intl.DateTimeFormat(undefined, {
     year: "numeric",
     month: "short",
-    day: "numeric"
+    day: "numeric",
+    ...(withTime ? { hour: "2-digit", minute: "2-digit" } : {})
   }).format(new Date(value));
-}
-
-function renderTasks() {
-  tasksTableBody.innerHTML = "";
-  const tasks = state.tasks;
-
-  if (tasks.length === 0) {
-    tasksSummary.textContent = "No tasks found in this workspace yet.";
-    const row = document.createElement("tr");
-    row.innerHTML = '<td colspan="6">No tasks found yet.</td>';
-    tasksTableBody.append(row);
-    return;
-  }
-
-  const clickUpCount = tasks.filter((task) => task.source === "clickup").length;
-  tasksSummary.textContent = `${tasks.length} task${tasks.length === 1 ? "" : "s"} loaded, including ${clickUpCount} from ClickUp.`;
-
-  for (const task of tasks.slice(0, 50)) {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${task.title}</td>
-      <td>${task.status}</td>
-      <td>${task.priority || "-"}</td>
-      <td>${task.taskList?.name || "-"}</td>
-      <td>${task.source || "companycore"}</td>
-      <td>${formatDate(task.dueDate)}</td>
-    `;
-    tasksTableBody.append(row);
-  }
-}
-
-async function loadTasks() {
-  if (!isSignedIn()) {
-    state.tasks = [];
-    renderTasks();
-    return;
-  }
-
-  const response = await api("/v1/tasks");
-  state.tasks = response.data || [];
-  renderTasks();
 }
 
 function friendlyError(error) {
@@ -245,11 +321,13 @@ function friendlyError(error) {
     invalid_credentials: "Email or password is incorrect.",
     integration_invalid_token: "ClickUp rejected this token. Check that it belongs to your ClickUp account and has access to the Workspace.",
     integration_rate_limited: "ClickUp rate limit was reached. Wait a minute, then try again.",
-    integration_secret_required: "Paste a ClickUp token first, or use a saved connection.",
-    integration_not_configured: "ClickUp is not configured for this workspace yet.",
-    integration_unavailable: "ClickUp did not respond successfully. Try again shortly.",
+    integration_secret_required: "Paste the provider token first, or use a saved connection.",
+    integration_not_configured: "This integration is not configured for this workspace yet.",
+    integration_unavailable: "The provider did not respond successfully. Try again shortly.",
     validation_error: "Some fields are missing or invalid.",
-    forbidden: "This action requires the owner login."
+    forbidden: "This action requires the owner login.",
+    missing_api_key: "Sign in to continue.",
+    not_found: "The requested workspace resource was not found."
   };
   return copy[message] || message;
 }
@@ -277,6 +355,17 @@ async function api(path, options = {}) {
   return body;
 }
 
+async function maybeApi(path, fallback = null) {
+  try {
+    return await api(path);
+  } catch (error) {
+    if (error.message === "integration_not_configured" || error.message === "not_found") {
+      return fallback;
+    }
+    throw error;
+  }
+}
+
 async function authRequest(path, payload) {
   const response = await fetch(`${API_ORIGIN}${path}`, {
     method: "POST",
@@ -298,44 +387,6 @@ function applyAuthPayload(payload) {
   sessionStorage.setItem("companycoreOwnerToken", state.ownerToken);
 }
 
-function renderConnectionState() {
-  const connected = isSignedIn() && state.workspace;
-  connectionStatus.innerHTML = connected
-    ? '<span class="dot ok"></span><span>Connected</span>'
-    : '<span class="dot muted"></span><span>Not connected</span>';
-
-  workspaceLabel.textContent = connected
-    ? `${state.workspace.name} workspace`
-    : "Sign in to load workspace status.";
-  clickupWorkspaceLabel.textContent = connected
-    ? `${state.workspace.name} workspace`
-    : "Sign in to load workspace settings.";
-  workspaceNameLabel.textContent = connected ? state.workspace.name : "-";
-
-  if (state.clickup.configured) {
-    clickupStatusLabel.textContent = state.clickup.active ? "Active" : "Saved, inactive";
-    clickupStatusHint.textContent = `${(state.clickup.config.listIds || []).length} ClickUp Lists selected.`;
-  } else {
-    clickupStatusLabel.textContent = "Not configured";
-    clickupStatusHint.textContent = "Connect ClickUp in settings.";
-  }
-
-  if (state.capabilities.length > 0) {
-    capabilitySummary.textContent = `${state.capabilities.length} capabilities available for this workspace.`;
-    capabilityList.innerHTML = "";
-    for (const capability of state.capabilities) {
-      const item = document.createElement("span");
-      item.textContent = capability;
-      capabilityList.append(item);
-    }
-  } else {
-    capabilitySummary.textContent = connected
-      ? "No capabilities returned by the connection endpoint."
-      : "Sign in to load available API capabilities.";
-    capabilityList.innerHTML = "";
-  }
-}
-
 function setConnected(connection) {
   state.workspace = connection.data.workspace;
   state.capabilities = connection.data.capabilities || [];
@@ -345,20 +396,383 @@ function setConnected(connection) {
   fields.active.checked = connection.data.integrations.clickup.active ?? !state.clickup.configured;
   fields.importMode.value = state.clickup.config.importMode || "merge";
   state.clickup.selectedListIds = new Set(state.clickup.config.listIds || []);
-
-  if (state.clickup.configured) {
-    showResult("ClickUp settings are saved. Open Settings to refresh the saved structure.");
-  }
-
-  renderConnectionState();
-  renderTree();
-  setClickUpEnabled(true);
 }
 
 async function loadConnection() {
   const connection = await api("/v1/connection");
   setConnected(connection);
-  await loadTasks();
+  await loadWorkspaceData();
+  renderAll();
+}
+
+async function loadWorkspaceData() {
+  if (!isSignedIn()) {
+    return;
+  }
+
+  const [
+    tasks,
+    taskLists,
+    operatingModel,
+    clickupEvents,
+    pipelineStages,
+    deals,
+    clients,
+    googleDrive
+  ] = await Promise.all([
+    maybeApi("/v1/tasks", { data: [] }),
+    maybeApi("/v1/task-lists", { data: [] }),
+    maybeApi("/v1/operating-model", { data: null }),
+    maybeApi("/v1/integration-settings/clickup/events", { data: [] }),
+    maybeApi("/v1/pipeline-stages", { data: [] }),
+    maybeApi("/v1/deals", { data: [] }),
+    maybeApi("/v1/clients", { data: [] }),
+    maybeApi("/v1/integration-settings/google_drive", null)
+  ]);
+
+  state.tasks = tasks?.data || [];
+  state.taskLists = taskLists?.data || [];
+  state.operatingModel = operatingModel?.data || null;
+  state.clickupEvents = clickupEvents?.data || [];
+  state.pipelineStages = pipelineStages?.data || [];
+  state.deals = deals?.data || [];
+  state.clients = clients?.data || [];
+
+  if (googleDrive?.data) {
+    state.googleDrive.configured = true;
+    state.googleDrive.active = Boolean(googleDrive.data.active);
+    state.googleDrive.config = googleDrive.data.config || {};
+  } else {
+    state.googleDrive.configured = false;
+    state.googleDrive.active = false;
+    state.googleDrive.config = {};
+  }
+}
+
+function renderAll() {
+  renderConnectionState();
+  renderProviderHealth();
+  renderTasks();
+  renderAreas();
+  renderTaskModule();
+  renderPipeline();
+  renderCapabilities();
+  renderTree();
+}
+
+function renderConnectionState() {
+  const connected = isSignedIn() && state.workspace;
+  sidebarStatusDot.className = connected ? "dot ok" : "dot muted";
+  sidebarStatusText.textContent = connected ? "Connected" : "Not connected";
+  sidebarWorkspaceName.textContent = connected ? state.workspace.name : "Workspace";
+
+  workspaceLabel.textContent = connected
+    ? "Active owner session and workspace context."
+    : "Sign in to load workspace status.";
+  clickupWorkspaceLabel.textContent = connected
+    ? `${state.workspace.name} workspace`
+    : "Sign in to load workspace settings.";
+  workspaceNameLabel.textContent = connected ? state.workspace.name : "-";
+  settingsWorkspaceName.textContent = connected ? state.workspace.name : "-";
+  settingsAccountHint.textContent = connected
+    ? "Owner account is using the protected browser session."
+    : "Sign in to manage settings.";
+
+  const activeProviders = [
+    state.clickup.active ? "ClickUp" : null,
+    state.googleDrive.active ? "Google Drive" : null
+  ].filter(Boolean);
+  const configuredProviders = [
+    state.clickup.configured ? "ClickUp" : null,
+    state.googleDrive.configured ? "Google Drive" : null
+  ].filter(Boolean);
+
+  integrationHealthLabel.textContent = activeProviders.length > 0
+    ? `${activeProviders.length} active`
+    : configuredProviders.length > 0
+      ? `${configuredProviders.length} configured`
+      : "Not configured";
+  integrationHealthHint.textContent = configuredProviders.length > 0
+    ? `${configuredProviders.join(", ")} connected to the workspace.`
+    : "Connect providers in Settings.";
+
+  const areas = state.operatingModel?.areas || [];
+  const mappings = state.operatingModel?.externalMappings || [];
+  operatingModelLabel.textContent = areas.length > 0 ? `${areas.length} areas` : "-";
+  operatingModelHint.textContent = areas.length > 0
+    ? `${mappings.length} provider mappings tracked.`
+    : "Operating model will load after sign-in.";
+
+  const clickUpCount = state.tasks.filter((task) => task.source === "clickup").length;
+  taskFlowLabel.textContent = state.tasks.length > 0 ? `${state.tasks.length} tasks` : "-";
+  taskFlowHint.textContent = state.tasks.length > 0
+    ? `${clickUpCount} imported from ClickUp.`
+    : "No task records loaded yet.";
+
+  googleDriveSummary.textContent = state.googleDrive.configured
+    ? `${state.googleDrive.active ? "Active" : "Saved, inactive"} Google Drive notes bridge.`
+    : "Google Drive is not configured for this workspace yet.";
+}
+
+function renderProviderHealth() {
+  providerHealthList.innerHTML = "";
+  const providers = [
+    {
+      name: "ClickUp",
+      dataType: "Tasks",
+      configured: state.clickup.configured,
+      active: state.clickup.active,
+      hint: state.clickup.configured
+        ? `${(state.clickup.config.listIds || []).length} Lists selected.`
+        : "Connect Lists in Settings."
+    },
+    {
+      name: "Google Drive",
+      dataType: "Knowledge and storage",
+      configured: state.googleDrive.configured,
+      active: state.googleDrive.active,
+      hint: state.googleDrive.configured
+        ? text(state.googleDrive.config.rootFolderId, "Folder configured")
+        : "Configure a Drive root folder through the integration API."
+    }
+  ];
+
+  providerHealthSummary.textContent = providers.some((provider) => provider.configured)
+    ? "Configured providers and their current workspace state."
+    : "No providers are configured yet.";
+
+  for (const provider of providers) {
+    const item = document.createElement("div");
+    item.className = "health-row";
+    const copy = document.createElement("div");
+    appendText(copy, "strong", provider.name);
+    appendText(copy, "span", `${provider.dataType} - ${provider.hint}`);
+    item.append(copy);
+    item.append(createStatusPill(provider.active ? "Active" : provider.configured ? "Saved" : "Not configured", provider.active ? "ok" : provider.configured ? "warn" : "neutral"));
+    providerHealthList.append(item);
+  }
+}
+
+function renderCapabilities() {
+  if (state.capabilities.length > 0) {
+    capabilitySummary.textContent = `${state.capabilities.length} capabilities available for this workspace.`;
+    capabilityList.innerHTML = "";
+    for (const capability of state.capabilities) {
+      appendText(capabilityList, "span", capability);
+    }
+  } else {
+    capabilitySummary.textContent = isSignedIn()
+      ? "No capabilities returned by the connection endpoint."
+      : "Sign in to load available API capabilities.";
+    capabilityList.innerHTML = "";
+  }
+}
+
+function renderTaskRows(target, tasks, emptyCopy, limit = 50, updatedColumn = false) {
+  target.innerHTML = "";
+
+  if (tasks.length === 0) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 6;
+    cell.textContent = emptyCopy;
+    row.append(cell);
+    target.append(row);
+    return;
+  }
+
+  for (const task of tasks.slice(0, limit)) {
+    const row = document.createElement("tr");
+    [
+      task.title,
+      task.status,
+      task.priority || "-",
+      task.taskList?.name || "-",
+      task.source || "companycore",
+      updatedColumn ? formatDate(task.updatedAt, true) : formatDate(task.dueDate)
+    ].forEach((value) => appendText(row, "td", value));
+    target.append(row);
+  }
+}
+
+function renderTasks() {
+  const tasks = state.tasks;
+
+  if (tasks.length === 0) {
+    tasksSummary.textContent = isSignedIn()
+      ? "No tasks found in this workspace yet."
+      : "Sign in to load tasks.";
+    renderTaskRows(tasksTableBody, [], "No tasks found yet.");
+    return;
+  }
+
+  const clickUpCount = tasks.filter((task) => task.source === "clickup").length;
+  tasksSummary.textContent = `${tasks.length} task${tasks.length === 1 ? "" : "s"} loaded, including ${clickUpCount} from ClickUp.`;
+  renderTaskRows(tasksTableBody, tasks, "No tasks found yet.", 12);
+}
+
+function renderAreas() {
+  areaGrid.innerHTML = "";
+  mappingTableBody.innerHTML = "";
+  const model = state.operatingModel;
+  const areas = model?.areas || [];
+  const mappings = model?.externalMappings || [];
+  const tables = areas.flatMap((area) => area.tables || []);
+  const areaById = new Map(areas.map((area) => [area.id, area]));
+  const tableById = new Map(tables.map((table) => [table.id, table]));
+
+  if (areas.length === 0) {
+    areasSummary.textContent = isSignedIn()
+      ? "No operating areas loaded yet."
+      : "Sign in to load the operating model.";
+    mappingHealthSummary.textContent = "No provider mappings loaded yet.";
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 5;
+    cell.textContent = "No mappings loaded yet.";
+    row.append(cell);
+    mappingTableBody.append(row);
+    return;
+  }
+
+  areasSummary.textContent = `${areas.length} operating areas, ${tables.length} operating tables, ${mappings.length} provider mappings.`;
+
+  for (const area of areas) {
+    const areaMappings = mappings.filter((mapping) => mapping.areaId === area.id);
+    const card = document.createElement("article");
+    card.className = "area-card";
+    appendText(card, "span", String(area.position).padStart(2, "0"), "area-index");
+    appendText(card, "strong", area.name);
+    appendText(card, "p", `${(area.tables || []).length} tables, ${(area.folders || []).length} folders, ${areaMappings.length} mappings`);
+    areaGrid.append(card);
+  }
+
+  if (mappings.length === 0) {
+    mappingHealthSummary.textContent = "No external provider mappings are stored yet.";
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 5;
+    cell.textContent = "No provider mappings found.";
+    row.append(cell);
+    mappingTableBody.append(row);
+    return;
+  }
+
+  const unmapped = mappings.filter((mapping) => !mapping.areaId && !mapping.tableId).length;
+  mappingHealthSummary.textContent = unmapped > 0
+    ? `${unmapped} mapping${unmapped === 1 ? "" : "s"} need area or table review.`
+    : "All loaded mappings have an area or table scope.";
+
+  for (const mapping of mappings.slice(0, 80)) {
+    const row = document.createElement("tr");
+    [
+      mapping.provider,
+      mapping.entityType,
+      mapping.name || mapping.externalId,
+      areaById.get(mapping.areaId)?.name || "Needs review",
+      tableById.get(mapping.tableId)?.name || "-"
+    ].forEach((value) => appendText(row, "td", value));
+    if (!mapping.areaId && !mapping.tableId) {
+      row.className = "needs-review";
+    }
+    mappingTableBody.append(row);
+  }
+}
+
+function filteredTasks() {
+  const source = taskSourceFilter.value;
+  const status = taskStatusFilter.value;
+  return state.tasks.filter((task) => {
+    if (source && (task.source || "companycore") !== source) {
+      return false;
+    }
+    if (status && task.status !== status) {
+      return false;
+    }
+    return true;
+  });
+}
+
+function renderTaskModule() {
+  const tasks = filteredTasks();
+  taskModuleSummary.textContent = state.tasks.length > 0
+    ? `${tasks.length} of ${state.tasks.length} tasks visible with current filters.`
+    : isSignedIn()
+      ? "No task records found yet."
+      : "Sign in to load task records.";
+  renderTaskRows(taskModuleTableBody, tasks, "No tasks match the current filters.", 100, true);
+
+  taskListPanel.innerHTML = "";
+  taskListSummary.textContent = state.taskLists.length > 0
+    ? `${state.taskLists.length} task lists loaded.`
+    : "No task lists found yet.";
+  for (const list of state.taskLists.slice(0, 12)) {
+    const count = state.tasks.filter((task) => task.taskListId === list.id).length;
+    const item = document.createElement("div");
+    item.className = "stack-item";
+    appendText(item, "strong", list.name);
+    appendText(item, "span", `${count} tasks - ${list.source || "companycore"}`);
+    taskListPanel.append(item);
+  }
+  if (state.taskLists.length === 0) {
+    appendText(taskListPanel, "p", "No task lists loaded.", "empty-copy");
+  }
+
+  clickupEventPanel.innerHTML = "";
+  const failed = state.clickupEvents.filter((event) => event.processingStatus === "failed").length;
+  clickupEventSummary.textContent = state.clickupEvents.length > 0
+    ? `${state.clickupEvents.length} provider events loaded, ${failed} failed.`
+    : "No ClickUp provider events loaded.";
+  retryClickUpEventsButton.disabled = !isSignedIn() || failed === 0;
+
+  for (const event of state.clickupEvents.slice(0, 8)) {
+    const item = document.createElement("div");
+    item.className = "stack-item";
+    appendText(item, "strong", event.eventName || "ClickUp event");
+    appendText(item, "span", `${event.processingStatus} - ${formatDate(event.receivedAt, true)}`);
+    item.append(createStatusPill(event.processingStatus, event.processingStatus === "processed" ? "ok" : event.processingStatus === "failed" ? "danger" : "warn"));
+    clickupEventPanel.append(item);
+  }
+  if (state.clickupEvents.length === 0) {
+    appendText(clickupEventPanel, "p", "No provider events loaded.", "empty-copy");
+  }
+}
+
+function renderPipeline() {
+  pipelineBoard.innerHTML = "";
+  const stages = state.pipelineStages.length > 0
+    ? state.pipelineStages
+    : [{ id: "unassigned", name: "Unassigned", position: 999 }];
+  const clientById = new Map(state.clients.map((client) => [client.id, client]));
+
+  pipelineSummary.textContent = `${state.deals.length} deal${state.deals.length === 1 ? "" : "s"} across ${state.pipelineStages.length} configured stage${state.pipelineStages.length === 1 ? "" : "s"}.`;
+
+  for (const stage of stages) {
+    const column = document.createElement("article");
+    column.className = "pipeline-column";
+    const stageDeals = state.deals.filter((deal) => {
+      if (stage.id === "unassigned") {
+        return !deal.pipelineStageId;
+      }
+      return deal.pipelineStageId === stage.id;
+    });
+    appendText(column, "h3", stage.name);
+    appendText(column, "p", `${stageDeals.length} deal${stageDeals.length === 1 ? "" : "s"}`);
+
+    for (const deal of stageDeals.slice(0, 8)) {
+      const card = document.createElement("div");
+      card.className = "deal-card";
+      appendText(card, "strong", deal.title);
+      appendText(card, "span", `${clientById.get(deal.clientId)?.name || "No client"} - ${deal.value || 0} ${deal.currency || "PLN"}`);
+      card.append(createStatusPill(deal.status || "open", deal.status === "won" ? "ok" : deal.status === "lost" ? "danger" : "neutral"));
+      column.append(card);
+    }
+
+    if (stageDeals.length === 0) {
+      appendText(column, "span", "No deals in this stage.", "empty-copy");
+    }
+    pipelineBoard.append(column);
+  }
 }
 
 function renderWorkspaces(workspaces, selectedId = "") {
@@ -445,23 +859,17 @@ function renderTree() {
   }
 
   if (loadedLists.length === 0) {
-    listSummary.textContent = "This ClickUp Workspace loaded, but no Lists were returned for the token. Check whether the selected Workspace has Spaces/Lists available to this user.";
+    listSummary.textContent = "This ClickUp Workspace loaded, but no Lists were returned for the token.";
   }
 
   for (const space of spaces) {
     const section = document.createElement("section");
     section.className = "tree-section";
-
-    const heading = document.createElement("h4");
-    heading.textContent = space.name;
-    section.append(heading);
-
+    appendText(section, "h4", space.name);
     appendListGroup(section, "Folderless Lists", space.lists || []);
-
     for (const folder of space.folders || []) {
       appendListGroup(section, folder.name, folder.lists || []);
     }
-
     listTree.append(section);
   }
 
@@ -478,18 +886,14 @@ function appendListGroup(parent, title, lists) {
 
   const group = document.createElement("div");
   group.className = "tree-group";
-  const heading = document.createElement("p");
-  heading.textContent = title;
-  group.append(heading);
+  appendText(group, "p", title);
 
   for (const list of lists) {
     const item = document.createElement("label");
     item.className = "check-row";
-    item.innerHTML = `
-      <input type="checkbox" value="${list.id}">
-      <span>${list.name}</span>
-    `;
-    const checkbox = item.querySelector("input");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = list.id;
     checkbox.checked = state.clickup.selectedListIds.has(list.id);
     checkbox.addEventListener("change", () => {
       if (checkbox.checked) {
@@ -500,6 +904,8 @@ function appendListGroup(parent, title, lists) {
       updateListSummary();
       setClickUpEnabled(isSignedIn());
     });
+    item.append(checkbox);
+    appendText(item, "span", list.name);
     group.append(item);
   }
 
@@ -587,6 +993,29 @@ async function saveSettings({ forceActive = false } = {}) {
   state.clickup.config = config;
 }
 
+function resetPrivateState() {
+  state.ownerToken = "";
+  state.workspace = null;
+  state.user = null;
+  state.capabilities = [];
+  state.clickup.configured = false;
+  state.clickup.active = false;
+  state.clickup.config = {};
+  state.clickup.workspaces = [];
+  state.clickup.spaces = [];
+  state.clickup.selectedListIds = new Set();
+  state.googleDrive.configured = false;
+  state.googleDrive.active = false;
+  state.googleDrive.config = {};
+  state.operatingModel = null;
+  state.tasks = [];
+  state.taskLists = [];
+  state.clickupEvents = [];
+  state.pipelineStages = [];
+  state.deals = [];
+  state.clients = [];
+}
+
 links.forEach((link) => {
   link.addEventListener("click", (event) => {
     if (link.getAttribute("aria-disabled") === "true") {
@@ -604,20 +1033,15 @@ links.forEach((link) => {
 
 window.addEventListener("popstate", renderRoute);
 
+mobileMenuButton.addEventListener("click", () => {
+  state.mobileMenuOpen = !state.mobileMenuOpen;
+  mobileMenuButton.setAttribute("aria-expanded", String(state.mobileMenuOpen));
+  updateChrome();
+});
+
 logoutButton.addEventListener("click", () => {
   sessionStorage.removeItem("companycoreOwnerToken");
-  state.ownerToken = "";
-  state.workspace = null;
-  state.user = null;
-  state.capabilities = [];
-  state.clickup.configured = false;
-  state.clickup.active = false;
-  state.clickup.config = {};
-  state.clickup.workspaces = [];
-  state.clickup.spaces = [];
-  state.clickup.selectedListIds = new Set();
-  state.tasks = [];
-  renderTasks();
+  resetPrivateState();
   resultPanel.hidden = true;
   navigate("/auth/login", { replace: true });
 });
@@ -625,7 +1049,9 @@ logoutButton.addEventListener("click", () => {
 refreshTasksButton.addEventListener("click", async () => {
   setBusy(true);
   try {
-    await loadTasks();
+    const response = await api("/v1/tasks");
+    state.tasks = response.data || [];
+    renderAll();
     showResult("Tasks refreshed.");
   } catch (error) {
     showResult(friendlyError(error), "error");
@@ -633,6 +1059,105 @@ refreshTasksButton.addEventListener("click", async () => {
     setBusy(false);
   }
 });
+
+refreshAreasButton.addEventListener("click", async () => {
+  setBusy(true);
+  try {
+    const response = await api("/v1/operating-model");
+    state.operatingModel = response.data;
+    renderAll();
+    showResult("Operating model refreshed.");
+  } catch (error) {
+    showResult(friendlyError(error), "error");
+  } finally {
+    setBusy(false);
+  }
+});
+
+refreshTaskModuleButton.addEventListener("click", async () => {
+  setBusy(true);
+  try {
+    await loadWorkspaceData();
+    renderAll();
+    showResult("Task module refreshed.");
+  } catch (error) {
+    showResult(friendlyError(error), "error");
+  } finally {
+    setBusy(false);
+  }
+});
+
+refreshPipelineButton.addEventListener("click", async () => {
+  setBusy(true);
+  try {
+    const [stages, deals, clients] = await Promise.all([
+      api("/v1/pipeline-stages"),
+      api("/v1/deals"),
+      api("/v1/clients")
+    ]);
+    state.pipelineStages = stages.data || [];
+    state.deals = deals.data || [];
+    state.clients = clients.data || [];
+    renderAll();
+    showResult("Pipeline refreshed.");
+  } catch (error) {
+    showResult(friendlyError(error), "error");
+  } finally {
+    setBusy(false);
+  }
+});
+
+retryClickUpEventsButton.addEventListener("click", async () => {
+  setBusy(true);
+  try {
+    const result = await api("/v1/integration-settings/clickup/events/retry-failed", {
+      method: "POST",
+      body: JSON.stringify({ limit: 25 })
+    });
+    const events = await api("/v1/integration-settings/clickup/events");
+    state.clickupEvents = events.data || [];
+    renderAll();
+    showResult("Failed ClickUp events retried.", "success", result.data);
+  } catch (error) {
+    showResult(friendlyError(error), "error");
+  } finally {
+    setBusy(false);
+  }
+});
+
+refreshGoogleDriveButton.addEventListener("click", async () => {
+  setBusy(true);
+  try {
+    const response = await maybeApi("/v1/integration-settings/google_drive", null);
+    state.googleDrive.configured = Boolean(response?.data);
+    state.googleDrive.active = Boolean(response?.data?.active);
+    state.googleDrive.config = response?.data?.config || {};
+    renderAll();
+    showResult(state.googleDrive.configured ? "Google Drive status loaded." : "Google Drive is not configured.", state.googleDrive.configured ? "success" : "error");
+  } catch (error) {
+    showResult(friendlyError(error), "error");
+  } finally {
+    setBusy(false);
+  }
+});
+
+syncGoogleDriveButton.addEventListener("click", async () => {
+  setBusy(true);
+  try {
+    const response = await api("/v1/integration-settings/google-drive/sync/notes", {
+      method: "POST",
+      body: JSON.stringify({})
+    });
+    showResult("Google Drive notes sync completed.", "success", response.data);
+  } catch (error) {
+    showResult(friendlyError(error), "error");
+  } finally {
+    setBusy(false);
+  }
+});
+
+taskSourceFilter.addEventListener("change", renderTaskModule);
+taskStatusFilter.addEventListener("change", renderTaskModule);
 
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -646,7 +1171,7 @@ loginForm.addEventListener("submit", async (event) => {
 
     applyAuthPayload(response);
     await loadConnection();
-    showResult("Signed in. Open Settings to connect ClickUp.");
+    showResult("Signed in. Dashboard loaded.");
     navigate("/dashboard", { replace: true });
   } catch (error) {
     showResult(friendlyError(error), "error");
@@ -669,7 +1194,7 @@ registerForm.addEventListener("submit", async (event) => {
 
     applyAuthPayload(response);
     await loadConnection();
-    showResult("Workspace created. Open Settings to connect ClickUp.");
+    showResult("Workspace created. Dashboard loaded.");
     navigate("/dashboard", { replace: true });
   } catch (error) {
     showResult(friendlyError(error), "error");
@@ -705,13 +1230,8 @@ loadListsButton.addEventListener("click", async () => {
   }
 });
 
-selectAllListsButton.addEventListener("click", () => {
-  selectAllLoadedLists();
-});
-
-clearListsButton.addEventListener("click", () => {
-  clearSelectedLists();
-});
+selectAllListsButton.addEventListener("click", selectAllLoadedLists);
+clearListsButton.addEventListener("click", clearSelectedLists);
 
 fields.active.addEventListener("change", () => {
   setClickUpEnabled(isSignedIn());
@@ -729,7 +1249,7 @@ refreshButton.addEventListener("click", async () => {
   }
 });
 
-workspaceSelect.addEventListener("change", async () => {
+workspaceSelect.addEventListener("change", () => {
   if (!workspaceSelect.value) {
     state.clickup.spaces = [];
     renderTree();
@@ -767,7 +1287,6 @@ syncButton.addEventListener("click", async () => {
       })
     });
     await loadConnection();
-    await loadTasks();
     showResult("ClickUp connection saved and sync completed.", "success", sync.data);
   } catch (error) {
     showResult(friendlyError(error), "error");
@@ -783,7 +1302,7 @@ if (state.ownerToken) {
     renderRoute();
   }).catch(() => {
     sessionStorage.removeItem("companycoreOwnerToken");
-    state.ownerToken = "";
+    resetPrivateState();
     setClickUpEnabled(false);
     renderRoute();
   });

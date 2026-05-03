@@ -23,6 +23,7 @@ import { targetsRouter } from "./modules/targets/targets.routes";
 import { taskListsRouter } from "./modules/task-lists/task-lists.routes";
 import { tasksRouter } from "./modules/tasks/tasks.routes";
 import { clickUpWebhooksRouter } from "./modules/webhooks/clickup-webhooks.routes";
+import { googleDriveWebhooksRouter } from "./modules/webhooks/google-drive-webhooks.routes";
 import { healthRouter } from "./health/health.routes";
 import { interactionsRouter } from "./modules/interactions/interactions.routes";
 
@@ -57,6 +58,9 @@ const webAppRoutes = [
   "/auth/login",
   "/auth/register",
   "/dashboard",
+  "/areas",
+  "/tasks",
+  "/pipeline",
   "/settings",
   "/settings/api"
 ];
@@ -68,6 +72,7 @@ export function createApp() {
 
   app.use(cors());
   app.use("/v1/webhooks/clickup", express.raw({ type: "application/json", limit: "1mb" }), clickUpWebhooksRouter);
+  app.use("/v1/webhooks/google-drive", googleDriveWebhooksRouter);
   app.use(express.json({ limit: "1mb" }));
   app.get("/", (req, res, next) => {
     if (!isApiHost(req.headers.host)) {
@@ -95,6 +100,10 @@ export function createApp() {
   });
   app.get(webAppRoutes, (req, res, next) => {
     if (isApiHost(req.headers.host)) {
+      next();
+      return;
+    }
+    if (req.headers.authorization || req.headers["x-api-key"]) {
       next();
       return;
     }

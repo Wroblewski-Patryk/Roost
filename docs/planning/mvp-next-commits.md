@@ -37,11 +37,16 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] CCV1-036F Production Webhook Smoke
 - [x] CCV1-042 ClickUp Full API Bridge Completion
 - [x] CCV1-043 ClickUp Task Comment Bridge
+- [x] CCV1-044 ClickUp Provider Event Retry And Health
+- [x] CCV1-045 Google Drive Bidirectional Notes Bridge
+- [x] CCV1-046 GUI App Shell And Navigation
 
 ## NEXT
 
 - [ ] Implement Paperclip application-side adapter code that reads
       `COMPANYCORE_BASE_URL` and `COMPANYCORE_API_KEY`.
+- [ ] CCV1-047 Dashboard Command Center
+- [ ] CCV1-048 Operating Areas Explorer
 
 ## PIPELINE
 
@@ -66,6 +71,15 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 19. CCV1-036F Production Webhook Smoke
 - [x] 20. CCV1-042 ClickUp Full API Bridge Completion
 - [x] 21. CCV1-043 ClickUp Task Comment Bridge
+- [x] 22. CCV1-044 ClickUp Provider Event Retry And Health
+- [x] 23. CCV1-045 Google Drive Bidirectional Notes Bridge
+- [x] 24. CCV1-046 GUI App Shell And Navigation
+- [ ] 25. CCV1-047 Dashboard Command Center
+- [ ] 26. CCV1-048 Operating Areas Explorer
+- [ ] 27. CCV1-049 Settings Integration Taxonomy
+- [ ] 28. CCV1-050 Tasks And Adapter Operations View
+- [ ] 29. CCV1-051 Pipeline Module
+- [ ] 30. CCV1-052 Relationship Mapping Reassignment API And UI
 
 
 ## GROUP QUEUE
