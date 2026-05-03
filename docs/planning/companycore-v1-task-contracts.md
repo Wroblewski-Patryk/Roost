@@ -4,6 +4,73 @@ These task contracts turn the v1 audit into executable work. Each task must be
 completed as its own small iteration and must update `.codex/context/TASK_BOARD.md`,
 `.codex/context/PROJECT_STATE.md`, and relevant docs when status changes.
 
+## CCV1-047 Paperclip Application-Side CompanyCore Adapter
+
+### Header
+- ID: CCV1-047
+- Title: Paperclip application-side CompanyCore adapter
+- Task Type: integration
+- Current Stage: verification
+- Status: DONE
+- Owner: Backend Builder
+- Depends on: CCV1-036E, CCV1-046
+- Priority: P0
+- Iteration: v1-047
+- Operation Mode: BUILDER
+
+### Goal
+Make Paperclip consume CompanyCore as the operational source of truth instead
+of relying on direct provider paths or manual checks.
+
+### Scope
+- Production Paperclip application runtime.
+- CompanyCore agent event API:
+  `GET /v1/agent-events?targetAgent=paperclip` and
+  `POST /v1/agent-events/:id/ack`.
+- CompanyCore planning and context docs.
+
+### Implementation Plan
+- Add a Paperclip-side adapter service that starts only when
+  `COMPANYCORE_BASE_URL` and `COMPANYCORE_API_KEY` are configured.
+- Poll CompanyCore pending agent events for `targetAgent=paperclip`.
+- Create idempotent Paperclip issues using `origin_kind =
+  companycore_agent_event` and the CompanyCore agent event ID as `origin_id`.
+- Ack CompanyCore events only after the local Paperclip issue is created or
+  found already present.
+- Deploy without upgrading unrelated Paperclip upstream code.
+
+### Acceptance Criteria
+- [x] Paperclip starts with CompanyCore adapter enabled in production.
+- [x] Adapter does not log API key material.
+- [x] Pending CompanyCore agent event creates a Paperclip issue.
+- [x] Repeated processing is idempotent by origin kind and origin ID.
+- [x] Processed event is acknowledged through CompanyCore.
+- [x] Paperclip health remains green after deployment.
+
+### Definition of Done
+- [x] Adapter mapping unit test passes in the Paperclip source checkout.
+- [x] Paperclip server typecheck passes in the Paperclip source checkout.
+- [x] Production Paperclip image builds from the current production source plus
+  the adapter patch.
+- [x] Production smoke proves issue creation and CompanyCore ack.
+- [x] Task board, next-commits queue, project state, and task contract updated.
+
+### Result Report
+- Task summary: Deployed Paperclip's CompanyCore adapter so Paperclip consumes
+  CompanyCore agent events and creates local idempotent work items.
+- Files changed outside CompanyCore: Paperclip runtime files
+  `server/src/services/companycore-adapter.ts` and `server/src/index.ts`.
+- Files changed in CompanyCore: `.codex/context/PROJECT_STATE.md`,
+  `.codex/context/TASK_BOARD.md`, `docs/planning/mvp-next-commits.md`, and this
+  task contract.
+- How tested: Paperclip adapter unit test passed, Paperclip server typecheck
+  passed, production image build passed, `/api/health` returned `200`, Paperclip
+  created issue `LUC-37`, and CompanyCore returned 0 pending Paperclip events
+  after ack.
+- What is incomplete: v1 closure audit remains to verify the full release
+  surface and any non-P0 residual gaps.
+- Next steps: Run the v1 closure audit and update release readiness docs.
+
 ## CCV1-046 ClickUp Maintenance Scheduler
 
 ### Header

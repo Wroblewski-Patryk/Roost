@@ -40,11 +40,12 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] CCV1-044 ClickUp Provider Event Retry And Health
 - [x] CCV1-045 ClickUp Maintenance Freshness Run
 - [x] CCV1-046 ClickUp Maintenance Scheduler
+- [x] CCV1-047 Paperclip Application-Side CompanyCore Adapter
 
 ## NEXT
 
-- [ ] Implement Paperclip application-side adapter code that reads
-      `COMPANYCORE_BASE_URL` and `COMPANYCORE_API_KEY`.
+- [ ] V1 closure audit: verify owner console, ClickUp sync, Jarvis/Paperclip
+      adapters, deployment smoke, and remaining P0 blockers.
 
 ## PIPELINE
 
@@ -72,6 +73,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 22. CCV1-044 ClickUp Provider Event Retry And Health
 - [x] 23. CCV1-045 ClickUp Maintenance Freshness Run
 - [x] 24. CCV1-046 ClickUp Maintenance Scheduler
+- [x] 25. CCV1-047 Paperclip Application-Side CompanyCore Adapter
 
 
 ## GROUP QUEUE

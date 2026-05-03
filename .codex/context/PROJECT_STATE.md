@@ -86,26 +86,24 @@ Last updated: 2026-05-03
   Postgres volume.
 
 ## Current Focus
-- Main active objective: complete the first real ClickUp owner import and
-  bidirectional ClickUp task bridge in production, then wire Paperclip's
-  application-side adapter to CompanyCore agent events.
-- Top blockers: a real ClickUp token/list selection is needed for first
-  production import; GitHub repository webhook setup needs an authenticated
-  GitHub session or token with webhook administration permissions.
+- Main active objective: run the v1 closure audit now that ClickUp, Jarvis, and
+  Paperclip production bridges are connected.
+- Top blockers: GitHub repository webhook setup needs an authenticated GitHub
+  session or token with webhook administration permissions.
 - Success criteria for this phase: canonical docs, workspace/auth model,
   task board, planning queue, deployment domains, migration strategy, event
   coverage, API/error contracts, regression guardrails, tests, observability,
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-046 ClickUp Maintenance Scheduler.
+- Current iteration: CCV1-047 Paperclip Application-Side CompanyCore Adapter.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-046 ClickUp Maintenance Scheduler.
-- Last completed task: added an in-process ClickUp maintenance scheduler that
-  runs the non-destructive maintenance flow for active workspace settings on a
-  configurable cadence.
-- Next required mode: BUILDER for Paperclip application-side CompanyCore
-  adapter unless priority changes.
+- Last completed iteration: CCV1-047 Paperclip Application-Side CompanyCore Adapter.
+- Last completed task: deployed Paperclip application-side CompanyCore event
+  consumption so Paperclip reads pending CompanyCore agent events, creates
+  idempotent Paperclip issues, and acks the events back through CompanyCore.
+- Next required mode: TESTER for v1 closure audit because the next slice is
+  release-readiness verification.
 
 ## Recent Progress
 - 2026-05-02: Created Company Core backend foundation, Prisma schema, Docker
@@ -503,6 +501,16 @@ Last updated: 2026-05-03
   maintenance `inspect_only` smoke passed; the smoke refreshed 21 webhook
   registrations, inspected 219 ClickUp tasks, and left 0 failed provider inbox
   rows.
+- 2026-05-03: Completed CCV1-047 by adding and deploying the Paperclip
+  application-side CompanyCore adapter on production Paperclip. The adapter
+  reads `COMPANYCORE_BASE_URL` and `COMPANYCORE_API_KEY`, polls
+  `/v1/agent-events?targetAgent=paperclip`, creates idempotent Paperclip issues
+  with `origin_kind = companycore_agent_event`, and acknowledges processed
+  events through `POST /v1/agent-events/:id/ack`. Production smoke confirmed
+  Paperclip `/api/health` returned `200`, the adapter log reported
+  `received=1`, `created=1`, and `acked=1`, Paperclip created issue `LUC-37`
+  for CompanyCore event `78569a4e-756a-4950-8aba-10f3736ba50e`, and CompanyCore
+  returned 0 pending Paperclip events afterward.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

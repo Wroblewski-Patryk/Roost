@@ -2,13 +2,13 @@
 
 ## Ready
 
-- Implement Paperclip application-side adapter code
+- V1 closure audit
   - Stage: planning
   - Owner: Backend Builder
   - Priority: P0
-  - Scope: update Paperclip so it reads `COMPANYCORE_BASE_URL` and
-    `COMPANYCORE_API_KEY`, consumes CompanyCore agent events, and writes
-    relevant records back through CompanyCore instead of direct provider paths.
+  - Scope: verify owner console, ClickUp live sync and scheduler, Jarvis and
+    Paperclip adapters, production smoke, documentation parity, and remaining
+    blockers before declaring v1 complete.
 
 ## Blocked
 
@@ -100,3 +100,4 @@ Paperclip application-side adapter work tracked in
 - CCV1-044 ClickUp Provider Event Retry And Health.
 - CCV1-045 ClickUp Maintenance Freshness Run.
 - CCV1-046 ClickUp Maintenance Scheduler.
+- CCV1-047 Paperclip Application-Side CompanyCore Adapter.
