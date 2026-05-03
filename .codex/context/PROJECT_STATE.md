@@ -332,6 +332,15 @@ Last updated: 2026-05-03
   tests prove priorities/list placement, skip-existing behavior, inspect-only
   no-write behavior, and replace-selected-list deletion limited to ClickUp-owned
   tasks.
+- 2026-05-03: Deployed the ClickUp first-run import policy to production.
+  Auto-deploy did not immediately update the running image after push, so a
+  temporary Coolify API token was used for manual deploy
+  `gpos2n2ll9x301v6h3qlit8x` and then deleted. The backend image ran commit
+  `0ed8c96896f7c2b754a24f35843a16e1737ba6e0`; logs showed no pending
+  migrations and server start; public `/health` and `/v1/health` returned
+  `200`; unauthenticated `/v1/connection` returned `401 missing_api_key`; and
+  the owner console served the new ClickUp `Import mode` selector with
+  `Inspect only`.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

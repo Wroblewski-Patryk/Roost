@@ -327,3 +327,36 @@ Use this file to record the minimum checks after each deploy.
   - `GET https://api.companycore.luckysparrow.ch/app.js` still returned `401`.
   - `POST https://api.companycore.luckysparrow.ch/auth/login` with the
     production owner account returned `200` for workspace `LuckySparrow`.
+
+## ClickUp First-Run Import Policy Deployment Evidence
+
+- Timestamp: 2026-05-03
+- Environment: Coolify production, Root Team, `companycore`
+- Deployment:
+  - Pushed `main` through commit `0ed8c96896f7c2b754a24f35843a16e1737ba6e0`.
+  - Auto-deploy did not immediately update the running image, so a temporary
+    Coolify API token was created, manual deploy `gpos2n2ll9x301v6h3qlit8x`
+    was queued, and the token was deleted after the deploy completed.
+  - Coolify deployment status finished successfully.
+  - Backend container image tag became
+    `rnqqkhl3o3dut4qv56mlxly2_backend:0ed8c96896f7c2b754a24f35843a16e1737ba6e0`.
+- Runtime logs:
+  - `prisma migrate deploy` found 9 migrations and no pending migrations.
+  - Seed completed and the backend logged `companycore listening on port 3000`.
+- Public checks:
+  - `GET https://api.companycore.luckysparrow.ch/health` returned `200`.
+  - `GET https://api.companycore.luckysparrow.ch/v1/health` returned `200`.
+  - `GET https://api.companycore.luckysparrow.ch/v1/connection` without auth
+    returned `401 missing_api_key`, which is the expected protected-route
+    negative path.
+  - `GET https://companycore.luckysparrow.ch/` returned the owner console with
+    the new ClickUp `Import mode` selector and `Inspect only` option.
+  - `GET https://companycore.luckysparrow.ch/app.js` returned the new sync
+    response display fields including `wouldCreateCount`.
+- Residual risks:
+  - A real ClickUp token was not entered in this session, so provider
+    discovery, selected List import, and Jarvis readback remain the next owner
+    action.
+  - Continuous ClickUp updates are still not enabled; the queued follow-up is
+    the scheduled pull versus webhook ingestion decision after the first real
+    production pull succeeds.
