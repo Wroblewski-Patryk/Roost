@@ -2,6 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
 import { ClickUpClient } from "../../integrations/clickup/clickup.client";
+import { listClickUpWebhookRegistrations, reconcileClickUpWebhooksForWorkspace } from "../../integrations/clickup/clickup.webhooks";
 import { IntegrationError } from "../../integrations/errors";
 import { getClickUpSettingsForWorkspace, toJsonInput } from "../../integrations/integration-settings.service";
 import { encryptSecret } from "../../integrations/secrets";
@@ -17,7 +18,7 @@ const clickUpConfigSchema = z.object({
   spaceIds: z.array(z.string().min(1)).optional(),
   folderIds: z.array(z.string().min(1)).optional(),
   listIds: z.array(z.string().min(1)).optional(),
-  syncMode: z.literal("pull").optional(),
+  syncMode: z.enum(["pull", "two_way"]).optional(),
   importMode: z.enum(["merge", "skip_existing", "replace_selected_lists", "inspect_only"]).optional()
 }).strict();
 
@@ -100,6 +101,27 @@ integrationSettingsRouter.post("/clickup/discover", asyncHandler(async (req, res
         spaces
       }
     });
+  } catch (error) {
+    if (error instanceof IntegrationError) {
+      return res.status(error.status).json({ error: error.code });
+    }
+    throw error;
+  }
+}));
+
+integrationSettingsRouter.get("/clickup/webhooks", asyncHandler(async (req, res) => {
+  const registrations = await listClickUpWebhookRegistrations(req.auth!.workspaceId);
+  res.json({ data: registrations });
+}));
+
+integrationSettingsRouter.post("/clickup/webhooks/reconcile", asyncHandler(async (req, res) => {
+  if (req.auth!.authType !== "user") {
+    return res.status(403).json({ error: "forbidden" });
+  }
+
+  try {
+    const result = await reconcileClickUpWebhooksForWorkspace(req.auth!.workspaceId, req);
+    return res.json({ data: result });
   } catch (error) {
     if (error instanceof IntegrationError) {
       return res.status(error.status).json({ error: error.code });

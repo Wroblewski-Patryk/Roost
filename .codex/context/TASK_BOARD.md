@@ -2,34 +2,6 @@
 
 ## Ready
 
-- CCV1-036B ClickUp Webhook Registration
-  - Stage: planning
-  - Owner: Backend Builder
-  - Priority: P0
-  - Scope: add ClickUp get/create/update/delete webhook client methods and an
-    owner reconcile API that stores returned webhook secrets encrypted.
-
-- CCV1-036C ClickUp Webhook Receiver And Inbox
-  - Stage: planning
-  - Owner: Backend Builder
-  - Priority: P0
-  - Scope: add `POST /v1/webhooks/clickup`, verify `X-Signature`, persist
-    idempotent inbox rows, and acknowledge valid events quickly.
-
-- CCV1-036D Task Event Processor
-  - Stage: planning
-  - Owner: Backend Builder
-  - Priority: P0
-  - Scope: process ClickUp task events, especially `taskStatusUpdated`, update
-    CompanyCore tasks, and emit internal events.
-
-- CCV1-036E Agent Event Bridge
-  - Stage: planning
-  - Owner: Backend Builder
-  - Priority: P0
-  - Scope: expose provider-neutral agent events so Paperclip, Jarvis, Aviary,
-    and future bridges can react without ClickUp-specific logic.
-
 - CCV1-036F Production Webhook Smoke
   - Stage: planning
   - Owner: Ops/Release
@@ -115,3 +87,8 @@ Paperclip application-side adapter work tracked in
 - CCV1-039 ClickUp config-only save fix.
 - CCV1-040 ClickUp save-and-sync activation fix.
 - CCV1-036A Webhook Schema And Security Foundation.
+- CCV1-036B ClickUp Webhook Registration.
+- CCV1-036C ClickUp Webhook Receiver And Inbox.
+- CCV1-036D Task Event Processor.
+- CCV1-036E Agent Event Bridge.
+- CCV1-036G CompanyCore to ClickUp write-back.

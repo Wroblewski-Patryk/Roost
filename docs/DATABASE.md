@@ -323,3 +323,10 @@ business processing:
 ClickUp webhook secrets are secret material and must be encrypted like provider
 tokens. Incoming webhook payloads must be signature-verified against the raw
 request body before any durable business update is processed.
+
+The live-sync direction is:
+
+- ClickUp -> CompanyCore: signed webhook -> provider inbox -> full task fetch
+  when needed -> task upsert -> internal event -> agent outbox.
+- CompanyCore -> ClickUp: updates to ClickUp-sourced tasks call ClickUp's task
+  update API before the local task write is accepted.

@@ -21,6 +21,21 @@ export type ClickUpTask = {
   } | null;
 };
 
+export type ClickUpWebhook = {
+  id: string;
+  endpoint?: string | null;
+  events?: string[] | null;
+  list_id?: string | number | null;
+  folder_id?: string | number | null;
+  space_id?: string | number | null;
+  task_id?: string | number | null;
+  secret?: string | null;
+  health?: {
+    status?: string | null;
+    fail_count?: number | null;
+  } | null;
+};
+
 export type ClickUpWorkspaceSummary = {
   id: string;
   name: string;
@@ -64,6 +79,14 @@ export type ClickUpViewSummary = {
 type ClickUpTasksResponse = {
   tasks?: ClickUpTask[];
   last_page?: boolean;
+};
+
+type ClickUpWebhookResponse = {
+  webhook?: ClickUpWebhook;
+};
+
+type ClickUpWebhooksResponse = {
+  webhooks?: ClickUpWebhook[];
 };
 
 type ClickUpTeamResponse = {
@@ -251,6 +274,69 @@ export class ClickUpClient {
     return tasks;
   }
 
+  async getTask(taskId: string) {
+    const url = new URL(`${clickUpBaseUrl}/task/${encodeURIComponent(taskId)}`);
+    url.searchParams.set("include_markdown_description", "true");
+    return this.request<ClickUpTask>(url);
+  }
+
+  async updateTask(taskId: string, input: {
+    name?: string;
+    description?: string;
+    markdown_content?: string;
+    status?: string;
+    priority?: number | null;
+    due_date?: number | null;
+  }) {
+    return this.request<ClickUpTask>(`/task/${encodeURIComponent(taskId)}`, {
+      method: "PUT",
+      body: JSON.stringify(input)
+    });
+  }
+
+  async getWebhooks(teamId: string) {
+    const payload = await this.request<ClickUpWebhooksResponse>(`/team/${encodeURIComponent(teamId)}/webhook`);
+    return (payload.webhooks ?? []).filter((webhook): webhook is ClickUpWebhook => Boolean(webhook.id));
+  }
+
+  async createWebhook(input: {
+    teamId: string;
+    endpoint: string;
+    events: string[];
+    listId?: string;
+  }) {
+    const payload = await this.request<ClickUpWebhookResponse>(`/team/${encodeURIComponent(input.teamId)}/webhook`, {
+      method: "POST",
+      body: JSON.stringify({
+        endpoint: input.endpoint,
+        events: input.events,
+        ...(input.listId ? { list_id: input.listId } : {})
+      })
+    });
+
+    if (!payload.webhook?.id || !payload.webhook.secret) {
+      throw new IntegrationError(
+        "integration_unavailable",
+        502,
+        "ClickUp did not return webhook secret material."
+      );
+    }
+
+    return payload.webhook;
+  }
+
+  async updateWebhook(webhookId: string, input: {
+    endpoint?: string;
+    events?: string[];
+    status?: "active" | "inactive";
+  }) {
+    const payload = await this.request<ClickUpWebhookResponse>(`/webhook/${encodeURIComponent(webhookId)}`, {
+      method: "PUT",
+      body: JSON.stringify(input)
+    });
+    return payload.webhook ?? null;
+  }
+
   private safeSummary(input: { id?: string | number | null; name?: string | null }) {
     if (input.id === undefined || input.id === null || !input.name) {
       return null;
@@ -296,15 +382,17 @@ export class ClickUpClient {
       }));
   }
 
-  private async request<T>(pathOrUrl: string | URL): Promise<T> {
+  private async request<T>(pathOrUrl: string | URL, init: RequestInit = {}): Promise<T> {
     const url = pathOrUrl instanceof URL
       ? pathOrUrl
       : new URL(`${clickUpBaseUrl}${pathOrUrl}`);
 
     const response = await fetch(url, {
+      ...init,
       headers: {
         Authorization: this.token,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        ...(init.headers ?? {})
       }
     });
 

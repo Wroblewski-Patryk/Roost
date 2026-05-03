@@ -4,6 +4,7 @@ import path from "path";
 import { requireApiKey } from "./auth/api-key.middleware";
 import { errorHandler } from "./middleware/error-handler";
 import { agentLogsRouter } from "./modules/agent-logs/agent-logs.routes";
+import { agentEventsRouter } from "./modules/agent-events/agent-events.routes";
 import { agentsRouter } from "./modules/agents/agents.routes";
 import { apiKeysRouter } from "./modules/api-keys/api-keys.routes";
 import { authRouter } from "./modules/auth/auth.routes";
@@ -41,6 +42,7 @@ function mountProtectedRoutes(router: Router) {
   router.use("/decisions", decisionsRouter);
   router.use("/agents", agentsRouter);
   router.use("/agent-logs", agentLogsRouter);
+  router.use("/agent-events", agentEventsRouter);
   router.use("/api-keys", apiKeysRouter);
   router.use("/integration-settings", integrationSettingsRouter);
   router.use("/events", eventsRouter);

@@ -126,13 +126,13 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(missingWebhookSignature.status, 401);
   assert.equal((missingWebhookSignature.body as { error: string }).error, "missing_signature");
 
-  const webhookFoundation = await request("/v1/webhooks/clickup", {
+  const unregisteredWebhook = await request("/v1/webhooks/clickup", {
     method: "POST",
     headers: { "X-Signature": webhookSignature },
     body: webhookBody
   });
-  assert.equal(webhookFoundation.status, 501);
-  assert.equal((webhookFoundation.body as { error: string }).error, "webhook_receiver_not_enabled");
+  assert.equal(unregisteredWebhook.status, 404);
+  assert.equal((unregisteredWebhook.body as { error: string }).error, "webhook_not_registered");
 
   const missingAuth = await request("/projects");
   assert.equal(missingAuth.status, 401);
@@ -656,6 +656,47 @@ test("CompanyCore v1 protected API flow", async () => {
     "inspect_only"
   );
 
+  const originalFetchBeforeWebhooks = globalThis.fetch;
+  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+    const url = new URL(String(input));
+    if (url.pathname === "/api/v2/team/team-1/webhook" && init?.method === "POST") {
+      const body = JSON.parse(String(init.body ?? "{}")) as { list_id?: string };
+      const listId = body.list_id ?? "workspace";
+      return new Response(JSON.stringify({
+        webhook: {
+          id: `webhook-${listId}`,
+          endpoint: body,
+          events: ["taskStatusUpdated", "taskUpdated"],
+          list_id: listId,
+          secret: `secret-${listId}`,
+          health: { status: "active" }
+        }
+      }), { status: 200 });
+    }
+
+    return new Response(JSON.stringify({ err: "Not found" }), { status: 404 });
+  }) as typeof fetch;
+
+  try {
+    const reconciledWebhooks = await request("/v1/integration-settings/clickup/webhooks/reconcile", {
+      method: "POST",
+      headers: authA
+    });
+    assert.equal(reconciledWebhooks.status, 200);
+    const reconciledBody = reconciledWebhooks.body as {
+      data: { createdCount: number; existingCount: number; registrations: Array<{ externalId: string; scopeExternalId: string }> };
+    };
+    assert.equal(reconciledBody.data.createdCount, 2);
+    assert.equal(reconciledBody.data.existingCount, 0);
+    assert.ok(reconciledBody.data.registrations.some((registration) => registration.externalId === "webhook-list-1"));
+  } finally {
+    globalThis.fetch = originalFetchBeforeWebhooks;
+  }
+
+  const listedWebhooks = await request("/v1/integration-settings/clickup/webhooks", { headers: authA });
+  assert.equal(listedWebhooks.status, 200);
+  assert.equal((listedWebhooks.body as { data: unknown[] }).data.length, 2);
+
   const originalFetchBeforeDiscovery = globalThis.fetch;
   globalThis.fetch = (async () => new Response(JSON.stringify({ err: "Unauthorized" }), { status: 401 })) as typeof fetch;
 
@@ -890,6 +931,113 @@ test("CompanyCore v1 protected API flow", async () => {
   } finally {
     globalThis.fetch = originalFetchBeforeDiscovery;
   }
+
+  const liveWebhookBody = JSON.stringify({
+    webhook_id: "webhook-list-1",
+    event: "taskStatusUpdated",
+    task_id: "clickup-task-live",
+    history_items: [
+      {
+        id: "history-status-1",
+        field: "status",
+        date: "1777777777000",
+        parent_id: "list-1",
+        before: { status: "to do" },
+        after: { status: "in progress" },
+        user: { id: 123, username: "ClickUp User" }
+      }
+    ]
+  });
+  const liveWebhookSignature = signClickUpWebhookBody("secret-list-1", liveWebhookBody);
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    const url = new URL(String(input));
+    if (url.pathname === "/api/v2/task/clickup-task-live") {
+      return new Response(JSON.stringify({
+        id: "clickup-task-live",
+        name: "Live webhook task",
+        markdown_description: "Updated from ClickUp webhook",
+        status: { status: "in progress", type: "custom" },
+        priority: { priority: "urgent" },
+        due_date: "1893456000000",
+        list: { id: "list-1" }
+      }), { status: 200 });
+    }
+    return new Response(JSON.stringify({ err: "Not found" }), { status: 404 });
+  }) as typeof fetch;
+
+  try {
+    const liveWebhook = await request("/v1/webhooks/clickup", {
+      method: "POST",
+      headers: { "X-Signature": liveWebhookSignature },
+      body: liveWebhookBody
+    });
+    assert.equal(liveWebhook.status, 202);
+    assert.equal((liveWebhook.body as { data: { status: string } }).data.status, "accepted");
+  } finally {
+    globalThis.fetch = originalFetchBeforeDiscovery;
+  }
+
+  const liveTask = await prisma.task.findUnique({
+    where: {
+      workspaceId_source_externalId: {
+        workspaceId: ownerA.workspace.id,
+        source: "clickup",
+        externalId: "clickup-task-live"
+      }
+    },
+    include: { taskList: true }
+  });
+  assert.equal(liveTask?.title, "Live webhook task");
+  assert.equal(liveTask?.status, "in_progress");
+  assert.equal(liveTask?.priority, "urgent");
+  assert.equal(liveTask?.taskList?.externalId, "list-1");
+
+  const agentEvents = await request("/v1/agent-events", { headers: authA });
+  assert.equal(agentEvents.status, 200);
+  const statusEvent = (agentEvents.body as { data: Array<{ id: string; eventType: string }> }).data.find((event) => (
+    event.eventType === "task_status_updated_from_clickup"
+  ));
+  assert.ok(statusEvent);
+
+  const ackedAgentEvent = await request(`/v1/agent-events/${statusEvent.id}/ack`, {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({})
+  });
+  assert.equal(ackedAgentEvent.status, 200);
+
+  let writeBackPayload: unknown = null;
+  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+    const url = new URL(String(input));
+    if (url.pathname === "/api/v2/task/clickup-task-live" && init?.method === "PUT") {
+      writeBackPayload = JSON.parse(String(init.body ?? "{}"));
+      return new Response(JSON.stringify({
+        id: "clickup-task-live",
+        name: "CompanyCore owned title"
+      }), { status: 200 });
+    }
+    return new Response(JSON.stringify({ err: "Not found" }), { status: 404 });
+  }) as typeof fetch;
+
+  try {
+    const writeBack = await request(`/v1/tasks/${liveTask!.id}`, {
+      method: "PATCH",
+      headers: authA,
+      body: JSON.stringify({
+        title: "CompanyCore owned title",
+        priority: "high",
+        status: "in_progress"
+      })
+    });
+    assert.equal(writeBack.status, 200);
+  } finally {
+    globalThis.fetch = originalFetchBeforeDiscovery;
+  }
+  assert.deepEqual(writeBackPayload, {
+    name: "CompanyCore owned title",
+    status: "in progress",
+    priority: 2
+  });
 
   const serviceCannotDiscoverClickUp = await request("/v1/integration-settings/clickup/discover", {
     method: "POST",
@@ -1128,7 +1276,7 @@ test("CompanyCore v1 protected API flow", async () => {
     assert.equal(replaceBody.data.itemCount, 1);
     assert.equal(replaceBody.data.createdCount, 1);
     assert.equal(replaceBody.data.updatedCount, 0);
-    assert.equal(replaceBody.data.deletedCount, 2);
+    assert.equal(replaceBody.data.deletedCount, 3);
   } finally {
     globalThis.fetch = originalFetch;
   }

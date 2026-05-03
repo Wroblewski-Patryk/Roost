@@ -3,6 +3,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
 import { IntegrationError } from "../../integrations/errors";
+import { writeBackCompanyCoreTaskToClickUp } from "../../integrations/clickup/clickup.webhooks";
 import { clickUpImportModes, syncClickUpTasksForWorkspaceWithOptions } from "../../integrations/clickup/clickup.sync";
 import { asyncHandler } from "../../middleware/async-handler";
 import { createEvent } from "../events/event.service";
@@ -107,6 +108,49 @@ tasksRouter.patch("/:id", asyncHandler(async (req, res) => {
   const input = updateTaskSchema.parse(req.body);
   if (!await visibleTaskRelations(req.auth!.workspaceId, input)) {
     return res.status(404).json({ error: "not_found" });
+  }
+
+  const existing = await prisma.task.findFirst({
+    where: {
+      id: String(req.params.id),
+      workspaceId: req.auth!.workspaceId
+    }
+  });
+  if (!existing) {
+    return res.status(404).json({ error: "not_found" });
+  }
+
+  if (existing.source === "clickup" && existing.externalId) {
+    try {
+      await writeBackCompanyCoreTaskToClickUp({
+        workspaceId: req.auth!.workspaceId,
+        externalId: existing.externalId,
+        changes: {
+          title: input.title,
+          description: input.description,
+          status: input.status,
+          priority: input.priority,
+          dueDate: input.dueDate
+        }
+      });
+    } catch (error) {
+      if (error instanceof IntegrationError) {
+        await createEvent({
+          type: "clickup_writeback_failed",
+          workspaceId: req.auth!.workspaceId,
+          taskId: existing.id,
+          source: "clickup",
+          payload: {
+            provider: "clickup",
+            taskId: existing.id,
+            externalId: existing.externalId,
+            errorCode: error.code
+          }
+        });
+        return res.status(error.status).json({ error: error.code });
+      }
+      throw error;
+    }
   }
 
   const task = await prisma.task.update({

@@ -29,13 +29,14 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] CCV1-039 ClickUp Config-Only Save Fix
 - [x] CCV1-040 ClickUp Save-And-Sync Activation Fix
 - [x] CCV1-036A Webhook Schema And Security Foundation
+- [x] CCV1-036B ClickUp Webhook Registration
+- [x] CCV1-036C ClickUp Webhook Receiver And Inbox
+- [x] CCV1-036D Task Event Processor
+- [x] CCV1-036E Agent Event Bridge
+- [x] CCV1-036G CompanyCore To ClickUp Write-Back
 
 ## NEXT
 
-- [ ] CCV1-036B ClickUp Webhook Registration
-- [ ] CCV1-036C ClickUp Webhook Receiver And Inbox
-- [ ] CCV1-036D Task Event Processor
-- [ ] CCV1-036E Agent Event Bridge
 - [ ] CCV1-036F Production Webhook Smoke
 - [ ] Implement Paperclip application-side adapter code that reads
       `COMPANYCORE_BASE_URL` and `COMPANYCORE_API_KEY`.
@@ -55,11 +56,12 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 11. CCV1-035 ClickUp First-Run Import Policy And Launch Audit
 - [x] 12. CCV1-036 ClickUp Webhook Trigger Architecture Plan
 - [x] 13. CCV1-036A Webhook Schema And Security Foundation
-- [ ] 14. CCV1-036B ClickUp Webhook Registration
-- [ ] 15. CCV1-036C ClickUp Webhook Receiver And Inbox
-- [ ] 16. CCV1-036D Task Event Processor
-- [ ] 17. CCV1-036E Agent Event Bridge
-- [ ] 18. CCV1-036F Production Webhook Smoke
+- [x] 14. CCV1-036B ClickUp Webhook Registration
+- [x] 15. CCV1-036C ClickUp Webhook Receiver And Inbox
+- [x] 16. CCV1-036D Task Event Processor
+- [x] 17. CCV1-036E Agent Event Bridge
+- [x] 18. CCV1-036G CompanyCore To ClickUp Write-Back
+- [ ] 19. CCV1-036F Production Webhook Smoke
 
 
 ## GROUP QUEUE

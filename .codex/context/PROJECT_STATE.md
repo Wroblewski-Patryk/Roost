@@ -96,15 +96,15 @@ Last updated: 2026-05-03
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-036A Webhook schema and security foundation.
+- Current iteration: CCV1-036B-G ClickUp live sync and write-back.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-036A Webhook schema and security foundation.
-- Last completed task: added workspace-scoped webhook registration, provider
-  event inbox, and agent event outbox schema; mounted a raw-body ClickUp
-  webhook foundation route; added HMAC SHA-256 signature helpers and
-  regression coverage.
-- Next required mode: BUILDER for CCV1-036B ClickUp webhook registration
-  unless priority changes.
+- Last completed iteration: CCV1-036B-G ClickUp live sync and write-back.
+- Last completed task: implemented ClickUp webhook reconcile, signed webhook
+  ingestion, idempotent provider inbox writes, task event processing, agent
+  event outbox APIs, and CompanyCore-to-ClickUp task write-back for
+  ClickUp-sourced tasks.
+- Next required mode: TESTER/OPS for CCV1-036F production webhook smoke unless
+  priority changes.
 
 ## Recent Progress
 - 2026-05-02: Created Company Core backend foundation, Prisma schema, Docker
@@ -390,6 +390,14 @@ Last updated: 2026-05-03
   webhook ownership, raw-body signatures, idempotency, task events, and
   task update API shape. `npm test` passed against a disposable PostgreSQL
   database on `localhost:55432`.
+- 2026-05-03: Completed CCV1-036B through CCV1-036E plus CCV1-036G. The
+  backend can reconcile ClickUp List webhooks from selected workspace settings,
+  store returned webhook secrets encrypted, verify incoming ClickUp signatures,
+  persist provider inbox rows idempotently, fetch full ClickUp task data for
+  task events, update CompanyCore task records, emit internal ClickUp events,
+  publish provider-neutral agent events for Paperclip/Jarvis/Aviary, and write
+  supported CompanyCore edits for ClickUp-sourced tasks back to ClickUp.
+  `npm test` passed against disposable PostgreSQL on `localhost:55432`.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

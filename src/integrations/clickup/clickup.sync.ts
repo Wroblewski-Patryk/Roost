@@ -33,7 +33,7 @@ export type ClickUpSyncOptions = {
   importMode?: ClickUpImportMode;
 };
 
-async function findOrCreateClickUpTaskList(workspaceId: string, listId?: string | null) {
+export async function findOrCreateClickUpTaskList(workspaceId: string, listId?: string | null) {
   if (!listId) {
     return null;
   }

@@ -159,32 +159,40 @@ not receive ClickUp webhook secrets or raw provider tokens.
 - [x] Add HMAC SHA-256 verification helper and tests using official ClickUp
   signature behavior.
 
-### CCV1-036B ClickUp Webhook Registration
+### CCV1-036B ClickUp Webhook Registration - DONE
 
-- Add ClickUp client methods for get/create/update/delete webhooks.
-- Add owner API to reconcile selected List webhooks.
-- Store returned webhook secrets encrypted.
-- Record webhook status and last reconciliation result.
+- [x] Add ClickUp client methods for get/create/update webhooks.
+- [x] Add owner API to reconcile selected List webhooks.
+- [x] Store returned webhook secrets encrypted.
+- [x] Record webhook status and last reconciliation result.
 
-### CCV1-036C ClickUp Webhook Receiver And Inbox
+### CCV1-036C ClickUp Webhook Receiver And Inbox - DONE
 
-- Add `POST /v1/webhooks/clickup`.
-- Verify signature before processing.
-- Store inbox rows idempotently.
-- Return quick `2xx` after durable inbox write for valid events.
+- [x] Add `POST /v1/webhooks/clickup`.
+- [x] Verify signature before processing.
+- [x] Store inbox rows idempotently.
+- [x] Return `202` after valid signed event ingestion.
 
-### CCV1-036D Task Event Processor
+### CCV1-036D Task Event Processor - DONE
 
-- Process task create/update/delete/status events.
-- Fetch full task details when needed.
-- Update CompanyCore tasks and emit internal events.
-- Add retry and failure states.
+- [x] Process task create/update/delete/status events.
+- [x] Fetch full task details when needed.
+- [x] Update CompanyCore tasks and emit internal events.
+- [x] Add retry and failure states.
 
-### CCV1-036E Agent Event Bridge
+### CCV1-036E Agent Event Bridge - DONE
 
-- Add agent event outbox APIs.
-- Emit provider-neutral events for Paperclip, Jarvis, and Aviary.
-- Document consumer behavior and ack semantics.
+- [x] Add agent event outbox APIs.
+- [x] Emit provider-neutral events for Paperclip, Jarvis, and Aviary.
+- [x] Document consumer behavior and ack semantics.
+
+### CCV1-036G CompanyCore To ClickUp Write-Back - DONE
+
+- [x] Add ClickUp task update client method.
+- [x] Push CompanyCore edits for ClickUp-sourced tasks back to ClickUp.
+- [x] Map title, description, status, priority, and due date to ClickUp update
+  fields.
+- [x] Emit safe failure events when provider write-back fails.
 
 ### CCV1-036F Production Webhook Smoke
 

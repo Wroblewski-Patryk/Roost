@@ -68,6 +68,72 @@ registering real provider webhooks.
   CCV1-036B through CCV1-036F.
 - Next steps: implement CCV1-036B ClickUp Webhook Registration.
 
+## CCV1-036B-G ClickUp Live Sync And Write-Back
+
+### Header
+- ID: CCV1-036B-G
+- Title: ClickUp live sync and CompanyCore write-back
+- Task Type: feature
+- Current Stage: verification
+- Status: DONE
+- Owner: Backend Builder
+- Depends on: CCV1-036A
+- Priority: P0
+- Iteration: v1-036B-G
+- Operation Mode: BUILDER
+
+### Goal
+Make CompanyCore the live operational source of truth while keeping ClickUp,
+Paperclip, Jarvis, and Aviary updated through provider webhooks, agent events,
+and guarded write-back.
+
+### Scope
+- `src/integrations/clickup/clickup.client.ts`
+- `src/integrations/clickup/clickup.webhooks.ts`
+- `src/modules/integration-settings/integration-settings.routes.ts`
+- `src/modules/webhooks/clickup-webhooks.routes.ts`
+- `src/modules/agent-events/agent-events.routes.ts`
+- `src/modules/tasks/tasks.routes.ts`
+- `src/app.ts`
+- `src/tests/api.test.ts`
+- API/database/planning/context docs
+
+### Implementation Plan
+- Add ClickUp webhook and task update client methods.
+- Add owner-only webhook reconcile API for selected ClickUp Lists.
+- Verify signed ClickUp deliveries, persist inbox rows idempotently, and
+  process task events into CompanyCore tasks.
+- Emit provider-neutral agent events for status changes.
+- Add agent event read/ack APIs.
+- Write supported CompanyCore edits for ClickUp-sourced tasks back to ClickUp.
+
+### Acceptance Criteria
+- [x] Webhooks can be reconciled from saved ClickUp settings.
+- [x] Returned ClickUp webhook secrets are encrypted and never returned.
+- [x] Signed task webhook events update CompanyCore task records.
+- [x] Duplicate webhook deliveries are idempotent.
+- [x] Status changes create agent-readable outbox events.
+- [x] Agents can list and ack pending events.
+- [x] CompanyCore task edits for ClickUp-sourced tasks call ClickUp update API.
+- [x] Provider write-back failures emit a safe failure event.
+
+### Definition of Done
+- [x] Official ClickUp webhook and task update docs reviewed.
+- [x] Build and integration tests pass.
+- [x] Source-of-truth docs and planning queue updated.
+- [x] Production smoke remains queued as the separate release task CCV1-036F.
+
+### Result Report
+- Task summary: Implemented the runtime bridge for ClickUp inbound live sync,
+  agent event fan-out, and CompanyCore-to-ClickUp write-back.
+- Files changed: ClickUp client/service, webhook route, integration settings
+  route, agent event route, task write-back path, app mount, tests, and docs.
+- How tested: `npm test` with `DATABASE_URL` pointed at disposable PostgreSQL
+  on `localhost:55432`.
+- What is incomplete: production webhook reconciliation and real ClickUp status
+  smoke are intentionally left for CCV1-036F after deploy.
+- Next steps: deploy and run CCV1-036F production webhook smoke.
+
 ## CCV1-034B2 ClickUp Views And Custom Fields Persistence
 
 ### Header

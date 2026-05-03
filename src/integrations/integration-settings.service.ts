@@ -10,7 +10,7 @@ export type ClickUpIntegrationConfig = {
   spaceIds?: string[];
   folderIds?: string[];
   listIds?: string[];
-  syncMode?: "pull";
+  syncMode?: "pull" | "two_way";
   importMode?: "merge" | "skip_existing" | "replace_selected_lists" | "inspect_only";
 };
 

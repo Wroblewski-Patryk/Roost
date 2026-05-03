@@ -224,6 +224,8 @@ not send `workspaceId`.
 GET /integration-settings/clickup
 PUT /integration-settings/clickup
 POST /v1/integration-settings/clickup/discover
+GET /v1/integration-settings/clickup/webhooks
+POST /v1/integration-settings/clickup/webhooks/reconcile
 ```
 
 ClickUp configuration payload:
@@ -236,7 +238,7 @@ ClickUp configuration payload:
     "spaceIds": ["clickup-space-id"],
     "folderIds": ["clickup-folder-id"],
     "listIds": ["clickup-list-id"],
-    "syncMode": "pull",
+    "syncMode": "two_way",
     "importMode": "merge"
   },
   "active": true
@@ -682,6 +684,11 @@ Imported ClickUp task fields currently mapped:
 This means task imports can preserve priority and land under the right
 CompanyCore task list once ClickUp discovery has persisted the List mapping.
 
+For ClickUp-sourced tasks, `PATCH /v1/tasks/:id` writes supported CompanyCore
+edits back to ClickUp before saving the local update. Supported write-back
+fields are title, description, status, priority, and due date. Provider
+failures return the mapped integration error and emit `clickup_writeback_failed`.
+
 Safe native sync response:
 
 ```json
@@ -858,11 +865,27 @@ POST /v1/webhooks/clickup
 
 This route is public at the transport layer because ClickUp calls it directly.
 It is mounted before JSON parsing so CompanyCore can verify the exact raw body
-against ClickUp's `X-Signature` HMAC SHA-256 header. In CCV1-036A the endpoint
-is a fail-closed foundation only: requests without `X-Signature` return
-`missing_signature`, malformed payloads return `invalid_webhook_payload`, and
-validly shaped requests return `webhook_receiver_not_enabled` until webhook
-registration, stored secrets, and inbox processing are implemented.
+against ClickUp's `X-Signature` HMAC SHA-256 header. Requests without
+`X-Signature` return `missing_signature`, malformed payloads return
+`invalid_webhook_payload`, unknown webhooks return `webhook_not_registered`,
+and invalid signatures return `invalid_webhook_signature`.
+
+Valid signed ClickUp events are stored idempotently in the provider inbox,
+processed into CompanyCore task records, and status changes create
+provider-neutral agent events for Paperclip, Jarvis, Aviary, and future
+consumers.
+
+## Agent Events
+
+```http
+GET /v1/agent-events
+POST /v1/agent-events/:id/ack
+```
+
+Agents use `GET /v1/agent-events` with their CompanyCore API key to read
+pending provider-neutral operational events. Optional query parameter
+`targetAgent` returns events targeted to that agent plus broadcast events.
+After handling an event, the agent calls `POST /v1/agent-events/:id/ack`.
 
 ## Events
 
@@ -879,6 +902,10 @@ Generated v1 events:
 - `task_list_created`
 - `task_list_updated`
 - `task_synced_from_clickup`
+- `clickup_taskCreated`
+- `clickup_taskUpdated`
+- `clickup_taskStatusUpdated`
+- `clickup_writeback_failed`
 - `goal_created`
 - `target_created`
 - `client_created`

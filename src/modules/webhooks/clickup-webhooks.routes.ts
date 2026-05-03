@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
+import { ingestClickUpWebhook } from "../../integrations/clickup/clickup.webhooks";
+import { IntegrationError } from "../../integrations/errors";
 import { asyncHandler } from "../../middleware/async-handler";
 
 const webhookFoundationSchema = z.object({
@@ -31,12 +33,16 @@ clickUpWebhooksRouter.post("/", asyncHandler(async (req, res) => {
     return res.status(400).json({ error: "invalid_webhook_payload" });
   }
 
-  return res.status(501).json({
-    error: "webhook_receiver_not_enabled",
-    data: {
-      provider: "clickup",
-      webhookId: parsed.data.webhook_id,
-      event: parsed.data.event
+  try {
+    const result = await ingestClickUpWebhook({
+      rawBody: req.body,
+      signature
+    });
+    return res.status(202).json({ data: result });
+  } catch (error) {
+    if (error instanceof IntegrationError) {
+      return res.status(error.status).json({ error: error.code });
     }
-  });
+    throw error;
+  }
 }));
