@@ -13,8 +13,8 @@ The only tracked residual blocker is not a runtime v1 feature blocker:
 GitHub-to-Coolify auto-deploy webhook administration remains blocked by missing
 callable webhook-management tooling in this session. Repository visibility
 shows admin permission, but the available GitHub connector surface does not
-expose webhook create/list/update actions and the local `gh` CLI is
-unavailable. Manual deploy and rollback paths are proven.
+expose webhook create/list/update actions and the local `gh` CLI is not
+installed. Manual deploy and rollback paths are proven.
 
 ## Smoke Evidence
 
@@ -87,8 +87,10 @@ test records.
 ## Residual Risks
 
 - GitHub auto-deploy webhook remains blocked by missing callable webhook
-  administration tooling. Manual deploy is the approved fallback until tooling
-  or credentials are available.
+  administration tooling. The GitHub app can see the CompanyCore repository
+  with admin permission, but available connector tools cannot administer
+  webhooks and local `gh` is unavailable. Manual deploy is the approved
+  fallback until tooling or credentials are available.
 - OpenJarvis connector hygiene is deployed in production and committed locally
   as `5a426370`, but that commit has not been pushed to the upstream
   OpenJarvis repository because the checkout contains unrelated local changes

@@ -99,14 +99,16 @@ Last updated: 2026-05-03
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-058 OpenJarvis Source Handoff Validation.
+- Current iteration: CCV1-059 GitHub Auto-Deploy Capability Audit.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-058 OpenJarvis Source Handoff Validation.
-- Last completed task: replayed the OpenJarvis CompanyCore connector change on
-  a clean worktree from current `origin/main`, validated targeted tests, and
-  attempted a safe branch push to `codex/companycore-connector-v1`. GitHub
-  rejected the branch push with `403`, so upstream source merge execution is
-  blocked by repository write permissions rather than code readiness.
+- Last completed iteration: CCV1-059 GitHub Auto-Deploy Capability Audit.
+- Last completed task: audited the remaining GitHub-to-Coolify auto-deploy
+  blocker. The GitHub app can see `Wroblewski-Patryk/companycore` with admin
+  permissions, but the available connector tools do not expose repository
+  webhook administration. The local `gh` CLI is not installed. Coolify
+  containers are healthy and manual runtime rollover remains the approved
+  release path until webhook-management tooling or a Coolify deploy token is
+  available.
 - Next required mode: BUILDER when a new approved v2 or handoff task is moved
   into the active queue.
 
@@ -610,6 +612,15 @@ Last updated: 2026-05-03
   `origin/codex/companycore-connector-v1` failed with GitHub `403`, so
   upstream OpenJarvis source merge is now a permissions blocker, not an
   implementation blocker. The temporary clean worktree was removed.
+- 2026-05-03: Completed CCV1-059 by auditing GitHub-to-Coolify auto-deploy
+  capability after v1 runtime closure. `gh auth status` could not run because
+  `gh` is not installed. The GitHub connector lists
+  `Wroblewski-Patryk/companycore` with `admin=true`, but the available GitHub
+  connector actions include repository contents, branches, refs, blobs, files,
+  repository listing, and PR metadata, not webhook administration. Coolify,
+  Coolify DB/Redis/realtime/proxy, CompanyCore backend, and CompanyCore
+  Postgres containers are healthy. Auto-deploy remains a P2 tooling/permission
+  blocker, not a v1 runtime blocker.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

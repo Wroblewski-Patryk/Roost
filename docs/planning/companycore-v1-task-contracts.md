@@ -4,6 +4,78 @@ These task contracts turn the v1 audit into executable work. Each task must be
 completed as its own small iteration and must update `.codex/context/TASK_BOARD.md`,
 `.codex/context/PROJECT_STATE.md`, and relevant docs when status changes.
 
+## CCV1-059 GitHub Auto-Deploy Capability Audit
+
+### Header
+- ID: CCV1-059
+- Title: GitHub auto-deploy capability audit
+- Task Type: release automation audit
+- Current Stage: release
+- Status: DONE
+- Owner: Ops/Release
+- Depends on: CCV1-058
+- Priority: P2
+- Iteration: v1-059
+- Operation Mode: BUILDER
+
+### Goal
+Determine whether the remaining GitHub-to-Coolify auto-deploy blocker can be
+resolved in the current tool/session context.
+
+### Scope
+- Local GitHub CLI availability.
+- Available GitHub connector tool surface.
+- GitHub repository visibility and permissions for `Wroblewski-Patryk/companycore`.
+- Coolify service health.
+- CompanyCore release docs and planning/context files.
+
+### Implementation Plan
+- Check local `gh` availability and auth state.
+- Inspect the GitHub connector tools exposed in-session for repository webhook
+  administration support.
+- Verify the GitHub connector can see the CompanyCore repository and permission
+  level.
+- Verify Coolify and CompanyCore runtime containers are healthy.
+- Record the blocker as tooling/permission bound when webhook administration is
+  unavailable.
+
+### Acceptance Criteria
+- [x] Local `gh` availability is checked.
+- [x] GitHub connector repository visibility for CompanyCore is checked.
+- [x] GitHub connector webhook-administration capability is checked.
+- [x] Coolify service health is checked.
+- [x] Auto-deploy blocker classification is updated.
+- [x] Manual deploy remains documented as the approved release path.
+
+### Definition of Done
+- [x] Capability evidence recorded.
+- [x] `git diff --check` passes.
+- [x] `npm run build` passes.
+- [x] `npm test` passes against local PostgreSQL.
+- [x] Task board, project state, planning queue, task contract, release
+  readiness, and deployment contract docs are updated.
+
+### Result Report
+- Task summary: Confirmed GitHub-to-Coolify auto-deploy cannot be completed in
+  this session because webhook administration is not exposed by the available
+  GitHub tools and the local GitHub CLI is unavailable.
+- Files changed: `.codex/context/PROJECT_STATE.md`,
+  `.codex/context/TASK_BOARD.md`, `docs/planning/mvp-next-commits.md`,
+  `docs/planning/companycore-v1-task-contracts.md`,
+  `docs/operations/coolify-vps-deployment-contract.md`, and
+  `docs/operations/v1-release-readiness.md`.
+- How tested: `gh auth status` failed because `gh` is not installed; GitHub
+  connector repository listing showed `Wroblewski-Patryk/companycore` with
+  `admin=true`; available GitHub connector tools do not include repository
+  webhook list/create/update/delete; VPS inspection confirmed Coolify and
+  CompanyCore containers are healthy; `git diff --check`; `npm run build`;
+  `npm test`.
+- What is incomplete: Completing auto-deploy requires one of: a GitHub tool
+  surface with repository webhook administration, an authenticated `gh` CLI or
+  token with webhook scope, or an approved Coolify deploy-token workflow.
+- Next steps: Provide webhook-management credentials/tooling or keep using the
+  proven manual rollover path for v1.
+
 ## CCV1-058 OpenJarvis Source Handoff Validation
 
 ### Header

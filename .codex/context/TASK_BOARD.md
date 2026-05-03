@@ -2,7 +2,7 @@
 
 ## Ready
 
-No active P0/P1 runtime task is ready after CCV1-058.
+No active P0/P1 runtime task is ready after CCV1-059.
 
 ## Blocked
 
@@ -10,10 +10,12 @@ No active P0/P1 runtime task is ready after CCV1-058.
   - Stage: release
   - Owner: Ops/Release
   - Priority: P2
-  - Blocked by: GitHub repository settings require an authenticated GitHub
-    session or token with webhook administration permissions. Coolify
-    `Auto Deploy` is enabled, but no deployment was created automatically after
-    push.
+  - Blocked by: GitHub webhook administration is not available through the
+    current tools. The GitHub app can see `Wroblewski-Patryk/companycore` with
+    admin permissions, but the exposed connector actions do not include
+    repository webhook list/create/update/delete. The local `gh` CLI is not
+    installed. Coolify services are healthy and manual rollover remains the
+    approved release path.
 - CCV1-057B Paperclip upstream branch push
   - Stage: release
   - Owner: Ops/Release
@@ -123,3 +125,4 @@ auto-deploy webhook administration task.
 - CCV1-056 V1 Post-Release Artifact Cleanup.
 - CCV1-057 Paperclip Source Handoff Validation.
 - CCV1-058 OpenJarvis Source Handoff Validation.
+- CCV1-059 GitHub Auto-Deploy Capability Audit.

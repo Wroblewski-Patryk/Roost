@@ -98,6 +98,26 @@ Required smoke checks after deploy:
 - native ClickUp sync
 - event readback showing expected sync event
 
+## Auto-Deploy Status
+
+GitHub-to-Coolify auto-deploy is not required for v1 runtime readiness.
+
+Current status as of 2026-05-03:
+
+- Coolify services are healthy on the VPS.
+- CompanyCore manual runtime rollover is proven and documented.
+- The GitHub app can see `Wroblewski-Patryk/companycore` with admin
+  permissions.
+- The available GitHub connector tool surface does not expose repository
+  webhook list/create/update/delete actions.
+- The local `gh` CLI is not installed in the Codex workspace.
+- Auto-deploy completion therefore requires webhook-management tooling,
+  an authenticated GitHub CLI/token with webhook scope, or an approved Coolify
+  deploy-token workflow.
+
+Until then, manual rollover is the approved release path and must preserve the
+PostgreSQL volume.
+
 Rollback trigger:
 
 - failed health check
