@@ -99,7 +99,9 @@ test records.
   and documented in `docs/operations/paperclip-companycore-adapter-runbook.md`;
   the local Paperclip source commit is `4cfa476f` and should still be merged
   into the managed Paperclip application repository before the next Paperclip
-  upgrade.
+  upgrade. The commit has passed Paperclip typecheck and adapter tests, but a
+  safe branch push to `paperclipai/paperclip` failed with GitHub `403`, so the
+  remaining blocker is upstream write access or an approved fork/PR route.
 
 ## Rollback
 

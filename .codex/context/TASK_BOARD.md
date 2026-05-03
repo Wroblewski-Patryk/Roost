@@ -2,7 +2,7 @@
 
 ## Ready
 
-No active P0/P1 runtime task is ready after CCV1-056.
+No active P0/P1 runtime task is ready after CCV1-057.
 
 ## Blocked
 
@@ -14,6 +14,14 @@ No active P0/P1 runtime task is ready after CCV1-056.
     session or token with webhook administration permissions. Coolify
     `Auto Deploy` is enabled, but no deployment was created automatically after
     push.
+- CCV1-057B Paperclip upstream branch push
+  - Stage: release
+  - Owner: Ops/Release
+  - Priority: P2
+  - Blocked by: GitHub returned `403` for pushing
+    `codex/companycore-adapter-v1` to `paperclipai/paperclip` as
+    `Wroblewski-Patryk`. The adapter commit is validated locally and remains
+    available as `4cfa476f` plus the managed CompanyCore patch.
 
 ## Backlog
 
@@ -104,3 +112,4 @@ auto-deploy webhook administration task.
 - CCV1-054 Final V1 Runtime Rollover Smoke.
 - CCV1-055 Full V1 Live System Smoke.
 - CCV1-056 V1 Post-Release Artifact Cleanup.
+- CCV1-057 Paperclip Source Handoff Validation.

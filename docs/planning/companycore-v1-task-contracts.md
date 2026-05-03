@@ -4,6 +4,78 @@ These task contracts turn the v1 audit into executable work. Each task must be
 completed as its own small iteration and must update `.codex/context/TASK_BOARD.md`,
 `.codex/context/PROJECT_STATE.md`, and relevant docs when status changes.
 
+## CCV1-057 Paperclip Source Handoff Validation
+
+### Header
+- ID: CCV1-057
+- Title: Paperclip source handoff validation
+- Task Type: release handoff
+- Current Stage: release
+- Status: DONE
+- Owner: Ops/Release
+- Depends on: CCV1-056
+- Priority: P2
+- Iteration: v1-057
+- Operation Mode: BUILDER
+
+### Goal
+Determine whether the validated Paperclip CompanyCore adapter commit can be
+handed off upstream safely.
+
+### Scope
+- Paperclip local worktree at
+  `C:\Personal\Projekty\Aplikacje\paperclip-companycore-worktree`.
+- Paperclip commit `4cfa476f feat: add companycore adapter poller`.
+- Paperclip typecheck and adapter test.
+- Safe branch push attempt to `codex/companycore-adapter-v1`.
+- CompanyCore handoff and planning docs.
+
+### Implementation Plan
+- Confirm Paperclip worktree contains exactly the adapter commit ahead of
+  `origin/master`.
+- Run Paperclip server typecheck.
+- Run the CompanyCore adapter unit test.
+- Push the validated commit to a dedicated handoff branch instead of upstream
+  `master`.
+- If push is rejected, record it as a permissions blocker with validation
+  evidence and keep the managed patch as the durable handoff artifact.
+
+### Acceptance Criteria
+- [x] Paperclip worktree is clean and ahead by one adapter commit.
+- [x] Paperclip server typecheck passes.
+- [x] Paperclip CompanyCore adapter test passes.
+- [x] No direct push to `master` is attempted.
+- [x] Branch push result is recorded.
+- [x] CompanyCore docs distinguish code readiness from upstream write-access
+  blocker.
+
+### Definition of Done
+- [x] Validation evidence recorded.
+- [x] Branch push failure recorded without exposing credentials.
+- [x] `git diff --check` passes.
+- [x] `npm run build` passes.
+- [x] `npm test` passes against local PostgreSQL.
+- [x] Task board, project state, planning queue, task contract, source handoff
+  package, and release readiness docs are updated.
+
+### Result Report
+- Task summary: Validated the Paperclip CompanyCore adapter source handoff and
+  proved upstream branch push is blocked by GitHub write permissions, not code
+  readiness.
+- Files changed: `.codex/context/PROJECT_STATE.md`,
+  `.codex/context/TASK_BOARD.md`, `docs/planning/mvp-next-commits.md`,
+  `docs/planning/companycore-v1-task-contracts.md`,
+  `docs/operations/v1-source-handoff-package.md`, and
+  `docs/operations/v1-release-readiness.md`.
+- How tested: `npx --yes pnpm@9.15.4 --filter @paperclipai/server typecheck`
+  passed; `npm exec --yes pnpm@9.15.4 -- vitest run server/src/__tests__/companycore-adapter.test.ts`
+  passed with 3 tests; `git push origin HEAD:refs/heads/codex/companycore-adapter-v1`
+  failed with GitHub `403`.
+- What is incomplete: Paperclip upstream merge execution requires write access
+  to `paperclipai/paperclip` or an approved fork/PR route.
+- Next steps: Obtain Paperclip repository write access, create an approved fork
+  PR route, or apply the managed patch in the upstream Paperclip release flow.
+
 ## CCV1-056 V1 Post-Release Artifact Cleanup
 
 ### Header

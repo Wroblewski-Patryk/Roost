@@ -78,6 +78,11 @@ then rerun targeted tests before opening a PR or pushing to the managed branch.
 - Current status: local `master` is ahead of `origin/master` by 1 commit.
 - Managed patch in CompanyCore:
   `integrations/paperclip/companycore-adapter.patch`
+- Handoff validation: Paperclip typecheck and adapter tests passed on
+  2026-05-03. A safe branch push to
+  `codex/companycore-adapter-v1` was attempted and rejected by GitHub with
+  `403`, so upstream merge execution requires write access or an approved
+  fork/PR route.
 
 ### Files
 
@@ -107,6 +112,14 @@ Expected result from the v1 deployment session:
 
 - Paperclip server typecheck passed.
 - CompanyCore adapter test passed.
+
+Latest handoff validation:
+
+- `npx --yes pnpm@9.15.4 --filter @paperclipai/server typecheck` passed.
+- `npm exec --yes pnpm@9.15.4 -- vitest run server/src/__tests__/companycore-adapter.test.ts`
+  passed with 3 tests.
+- `git push origin HEAD:refs/heads/codex/companycore-adapter-v1` failed with
+  GitHub `403` for `paperclipai/paperclip`.
 
 ### Handoff Rule
 
