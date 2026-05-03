@@ -103,6 +103,7 @@ Use `docs/` as the canonical home for CompanyCore documentation.
   - `operations/rollback-and-recovery.md`
   - `operations/service-reliability-and-observability.md`
   - `operations/clickup-production-bootstrap.md`
+  - `operations/google-drive-owner-setup.md`
   - `operations/v1-operator-handoff.md`
   - `operations/jarvis-companycore-update-runbook.md`
   - `operations/paperclip-companycore-adapter-runbook.md`
