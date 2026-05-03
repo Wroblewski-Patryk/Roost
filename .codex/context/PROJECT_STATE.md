@@ -480,6 +480,15 @@ Last updated: 2026-05-03
   recreates a missing selected-list webhook, syncs a fallback ClickUp task, and
   verifies no failed inbox rows remain. `npm test` passed against disposable
   PostgreSQL on `localhost:55432`.
+- 2026-05-03: Deployed CCV1-045 to production by manually rolling over the
+  backend container because Coolify's unrelated deployment queue remained full.
+  The deployed image is
+  `rnqqkhl3o3dut4qv56mlxly2_backend:ea1856dace47385ddb69645a697df5b5e3a71206`.
+  Startup reported no pending migrations, public `/health` and `/v1/health`
+  returned `200`, and Jarvis's CompanyCore API key verified
+  `/v1/integration-settings/clickup/maintenance/run` with `inspect_only`:
+  21 webhook registrations reconciled, 0 failed events retried, 219 ClickUp
+  tasks inspected, and 0 failed inbox rows remained.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

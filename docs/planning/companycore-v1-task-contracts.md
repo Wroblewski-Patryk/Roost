@@ -731,10 +731,11 @@ retries failed provider events, and performs a safe pull fallback from ClickUp.
   manifest, regression tests, architecture/API/planning/context docs.
 - How tested: Ran `npm test` with `DATABASE_URL` pointed at disposable
   PostgreSQL on `localhost:55432`.
-- What is incomplete: Production deploy and smoke are still required for this
-  runtime change.
-- Next steps: Deploy to production, smoke health, and verify the endpoint with
-  Jarvis's CompanyCore API key.
+- What is incomplete: No known incomplete item in the CompanyCore-side ClickUp
+  maintenance freshness run slice.
+- Next steps: Continue application-side Paperclip/Jarvis scheduling or adapter
+  consumption so maintenance can be invoked on a cadence by the surrounding
+  system.
 
 ### Priority
 P0
