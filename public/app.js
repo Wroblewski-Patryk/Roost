@@ -32,6 +32,10 @@ const state = {
   tasks: [],
   taskLists: [],
   clickupEvents: [],
+  events: [],
+  agentEvents: [],
+  clickupWebhooks: [],
+  googleDriveWebhooks: [],
   pipelineStages: [],
   deals: [],
   clients: []
@@ -92,6 +96,10 @@ const settingsWorkspaceName = document.querySelector("#settingsWorkspaceName");
 const settingsAccountHint = document.querySelector("#settingsAccountHint");
 const providerHealthSummary = document.querySelector("#providerHealthSummary");
 const providerHealthList = document.querySelector("#providerHealthList");
+const signalSummary = document.querySelector("#signalSummary");
+const signalPanel = document.querySelector("#signalPanel");
+const webhookSummary = document.querySelector("#webhookSummary");
+const webhookPanel = document.querySelector("#webhookPanel");
 const googleDriveSummary = document.querySelector("#googleDriveSummary");
 
 const capabilitySummary = document.querySelector("#capabilitySummary");
@@ -415,6 +423,10 @@ async function loadWorkspaceData() {
     taskLists,
     operatingModel,
     clickupEvents,
+    events,
+    agentEvents,
+    clickupWebhooks,
+    googleDriveWebhooks,
     pipelineStages,
     deals,
     clients,
@@ -424,6 +436,10 @@ async function loadWorkspaceData() {
     maybeApi("/v1/task-lists", { data: [] }),
     maybeApi("/v1/operating-model", { data: null }),
     maybeApi("/v1/integration-settings/clickup/events", { data: [] }),
+    maybeApi("/v1/events", { data: [] }),
+    maybeApi("/v1/agent-events", { data: [] }),
+    maybeApi("/v1/integration-settings/clickup/webhooks", { data: [] }),
+    maybeApi("/v1/integration-settings/google-drive/webhooks", { data: [] }),
     maybeApi("/v1/pipeline-stages", { data: [] }),
     maybeApi("/v1/deals", { data: [] }),
     maybeApi("/v1/clients", { data: [] }),
@@ -434,6 +450,10 @@ async function loadWorkspaceData() {
   state.taskLists = taskLists?.data || [];
   state.operatingModel = operatingModel?.data || null;
   state.clickupEvents = clickupEvents?.data || [];
+  state.events = events?.data || [];
+  state.agentEvents = agentEvents?.data || [];
+  state.clickupWebhooks = clickupWebhooks?.data || [];
+  state.googleDriveWebhooks = googleDriveWebhooks?.data || [];
   state.pipelineStages = pipelineStages?.data || [];
   state.deals = deals?.data || [];
   state.clients = clients?.data || [];
@@ -452,6 +472,8 @@ async function loadWorkspaceData() {
 function renderAll() {
   renderConnectionState();
   renderProviderHealth();
+  renderOperationalSignals();
+  renderWebhookCoverage();
   renderTasks();
   renderAreas();
   renderTaskModule();
@@ -496,6 +518,12 @@ function renderConnectionState() {
     ? `${configuredProviders.join(", ")} connected to the workspace.`
     : "Connect providers in Settings.";
 
+  const failedProviderEvents = state.clickupEvents.filter((event) => event.processingStatus === "failed").length;
+  if (failedProviderEvents > 0) {
+    integrationHealthLabel.textContent = `${failedProviderEvents} failed events`;
+    integrationHealthHint.textContent = "Open Tasks & Adapters to retry failed ClickUp events.";
+  }
+
   const areas = state.operatingModel?.areas || [];
   const mappings = state.operatingModel?.externalMappings || [];
   operatingModelLabel.textContent = areas.length > 0 ? `${areas.length} areas` : "-";
@@ -512,6 +540,66 @@ function renderConnectionState() {
   googleDriveSummary.textContent = state.googleDrive.configured
     ? `${state.googleDrive.active ? "Active" : "Saved, inactive"} Google Drive notes bridge.`
     : "Google Drive is not configured for this workspace yet.";
+}
+
+function renderOperationalSignals() {
+  signalPanel.innerHTML = "";
+  const signals = [
+    ...state.events.slice(0, 5).map((event) => ({
+      title: event.type || "System event",
+      detail: `${event.source || "companycore"} - ${formatDate(event.createdAt, true)}`,
+      status: "Event"
+    })),
+    ...state.agentEvents.slice(0, 5).map((event) => ({
+      title: event.eventType || "Agent event",
+      detail: `${event.deliveryStatus || "pending"} - ${formatDate(event.createdAt, true)}`,
+      status: event.deliveryStatus || "pending"
+    }))
+  ].sort((a, b) => String(b.detail).localeCompare(String(a.detail))).slice(0, 8);
+
+  signalSummary.textContent = signals.length > 0
+    ? `${state.events.length} system events and ${state.agentEvents.length} agent events loaded.`
+    : isSignedIn()
+      ? "No recent operational signals found."
+      : "Sign in to load operational signals.";
+
+  for (const signal of signals) {
+    const item = document.createElement("div");
+    item.className = "stack-item";
+    appendText(item, "strong", signal.title);
+    appendText(item, "span", signal.detail);
+    item.append(createStatusPill(signal.status, signal.status === "delivered" ? "ok" : signal.status === "failed" ? "danger" : "neutral"));
+    signalPanel.append(item);
+  }
+
+  if (signals.length === 0) {
+    appendText(signalPanel, "p", "No operational signals loaded.", "empty-copy");
+  }
+}
+
+function renderWebhookCoverage() {
+  webhookPanel.innerHTML = "";
+  const providers = [
+    { name: "ClickUp", registrations: state.clickupWebhooks },
+    { name: "Google Drive", registrations: state.googleDriveWebhooks }
+  ];
+  const total = providers.reduce((sum, provider) => sum + provider.registrations.length, 0);
+
+  webhookSummary.textContent = total > 0
+    ? `${total} provider webhook registrations tracked.`
+    : "No provider webhooks registered yet.";
+
+  for (const provider of providers) {
+    const active = provider.registrations.filter((registration) => registration.status === "active").length;
+    const item = document.createElement("div");
+    item.className = "health-row";
+    const copy = document.createElement("div");
+    appendText(copy, "strong", provider.name);
+    appendText(copy, "span", `${active} active of ${provider.registrations.length} registrations`);
+    item.append(copy);
+    item.append(createStatusPill(active > 0 ? "Listening" : "No listener", active > 0 ? "ok" : "neutral"));
+    webhookPanel.append(item);
+  }
 }
 
 function renderProviderHealth() {
@@ -1011,6 +1099,10 @@ function resetPrivateState() {
   state.tasks = [];
   state.taskLists = [];
   state.clickupEvents = [];
+  state.events = [];
+  state.agentEvents = [];
+  state.clickupWebhooks = [];
+  state.googleDriveWebhooks = [];
   state.pipelineStages = [];
   state.deals = [];
   state.clients = [];

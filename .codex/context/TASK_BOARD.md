@@ -10,13 +10,6 @@
     `COMPANYCORE_API_KEY`, consumes CompanyCore agent events, and writes
     relevant records back through CompanyCore instead of direct provider paths.
 
-- CCV1-047 Dashboard Command Center
-  - Stage: planning
-  - Owner: Frontend Builder
-  - Priority: P1
-  - Scope: expand `/dashboard` into the post-login command center with
-    workspace, integration, task, operating model, and event health summaries.
-
 - CCV1-048 Operating Areas Explorer
   - Stage: planning
   - Owner: Frontend Builder
@@ -138,3 +131,4 @@
 - CCV1-044 ClickUp Provider Event Retry And Health.
 - CCV1-045 Google Drive Bidirectional Notes Bridge.
 - CCV1-046 GUI App Shell And Navigation.
+- CCV1-047 Dashboard Command Center.

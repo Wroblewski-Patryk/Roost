@@ -40,12 +40,12 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] CCV1-044 ClickUp Provider Event Retry And Health
 - [x] CCV1-045 Google Drive Bidirectional Notes Bridge
 - [x] CCV1-046 GUI App Shell And Navigation
+- [x] CCV1-047 Dashboard Command Center
 
 ## NEXT
 
 - [ ] Implement Paperclip application-side adapter code that reads
       `COMPANYCORE_BASE_URL` and `COMPANYCORE_API_KEY`.
-- [ ] CCV1-047 Dashboard Command Center
 - [ ] CCV1-048 Operating Areas Explorer
 
 ## PIPELINE
@@ -74,7 +74,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 22. CCV1-044 ClickUp Provider Event Retry And Health
 - [x] 23. CCV1-045 Google Drive Bidirectional Notes Bridge
 - [x] 24. CCV1-046 GUI App Shell And Navigation
-- [ ] 25. CCV1-047 Dashboard Command Center
+- [x] 25. CCV1-047 Dashboard Command Center
 - [ ] 26. CCV1-048 Operating Areas Explorer
 - [ ] 27. CCV1-049 Settings Integration Taxonomy
 - [ ] 28. CCV1-050 Tasks And Adapter Operations View
