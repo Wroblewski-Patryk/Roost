@@ -4,6 +4,72 @@ These task contracts turn the v1 audit into executable work. Each task must be
 completed as its own small iteration and must update `.codex/context/TASK_BOARD.md`,
 `.codex/context/PROJECT_STATE.md`, and relevant docs when status changes.
 
+## CCV1-046 ClickUp Maintenance Scheduler
+
+### Header
+- ID: CCV1-046
+- Title: ClickUp maintenance scheduler
+- Task Type: feature
+- Current Stage: verification
+- Status: DONE
+- Owner: Backend Builder
+- Depends on: CCV1-045
+- Priority: P0
+- Iteration: v1-046
+- Operation Mode: BUILDER
+
+### Goal
+Keep ClickUp-backed workspaces fresh without requiring a human or external
+automation to call the maintenance endpoint.
+
+### Scope
+- `src/config/env.ts`
+- `src/server.ts`
+- `src/integrations/clickup/clickup.maintenance-scheduler.ts`
+- `.env.example`
+- architecture, API, planning, and context docs
+
+### Implementation Plan
+- Add scheduler configuration for the maintenance cadence and public API base
+  URL requirement.
+- Reuse the canonical ClickUp maintenance service for every active workspace
+  ClickUp setting.
+- Prevent overlapping sweeps and keep the scheduled import mode
+  non-destructive.
+- Start the scheduler only from the runtime server entrypoint so test app
+  construction does not spawn background intervals.
+
+### Acceptance Criteria
+- [x] Backend startup starts scheduled ClickUp maintenance when configured.
+- [x] Scheduler skips startup safely when public API URL is missing or cadence
+  is disabled.
+- [x] Scheduler reuses the CCV1-045 maintenance path instead of duplicating
+  webhook reconciliation, event replay, or sync logic.
+- [x] Scheduled maintenance always uses `merge`.
+- [x] Scheduler prevents overlapping sweeps.
+- [x] API and architecture docs describe the scheduled freshness behavior.
+
+### Definition of Done
+- [x] Existing maintenance endpoint tests still pass.
+- [x] `npm run build` passes.
+- [x] `npm test` passes against local PostgreSQL.
+- [x] Task board, next-commits queue, project state, and task contract updated.
+
+### Result Report
+- Task summary: Added an in-process ClickUp maintenance scheduler that runs the
+  non-destructive maintenance flow for active workspace ClickUp settings.
+- Files changed: `src/config/env.ts`, `src/server.ts`,
+  `src/integrations/clickup/clickup.maintenance-scheduler.ts`, `.env.example`,
+  `docs/API.md`, `docs/architecture/system-architecture.md`,
+  `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`,
+  `docs/planning/mvp-next-commits.md`, and this task contract.
+- How tested: Ran `npm run build` and `npm test` with `DATABASE_URL` pointing
+  at local PostgreSQL on `localhost:55432`.
+- What is incomplete: Production deploy and smoke evidence will be recorded in
+  a release doc update after deployment.
+- Next steps: commit, push, deploy, and verify scheduler startup in production
+  logs.
+
 ## CCV1-036A Webhook Schema And Security Foundation
 
 ### Header

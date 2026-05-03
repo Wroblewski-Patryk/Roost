@@ -350,6 +350,13 @@ Allowed maintenance modes are `merge`, `skip_existing`, and `inspect_only`.
 is a destructive first-run/import-repair policy, not an always-on freshness
 operation.
 
+The backend also runs this maintenance flow automatically for active ClickUp
+workspace settings when `COMPANYCORE_PUBLIC_API_BASE_URL` is configured. The
+default cadence is 15 minutes and can be changed with
+`CLICKUP_MAINTENANCE_INTERVAL_MINUTES`; values below 5 minutes are clamped to 5
+minutes. Scheduled maintenance always uses `merge` so it refreshes ClickUp-owned
+records without deleting native CompanyCore records.
+
 Safe discovery response:
 
 ```json

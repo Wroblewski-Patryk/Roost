@@ -99,3 +99,4 @@ Paperclip application-side adapter work tracked in
 - CCV1-043 ClickUp Task Comment Bridge.
 - CCV1-044 ClickUp Provider Event Retry And Health.
 - CCV1-045 ClickUp Maintenance Freshness Run.
+- CCV1-046 ClickUp Maintenance Scheduler.

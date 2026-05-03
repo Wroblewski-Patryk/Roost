@@ -11,8 +11,10 @@ source of truth, and the HTTP API is the supported integration access layer.
 - Web: minimal owner-only static console in v1 for ClickUp integration setup.
   A broader company operations dashboard is v2 scope.
 - Mobile: none in v1; v2 mobile should follow the web product experience.
-- Jobs or workers: none in the current runtime; native integration sync may be
-  exposed through authenticated API commands first.
+- Jobs or workers: the backend owns a lightweight in-process ClickUp
+  maintenance scheduler. It reuses the authenticated maintenance service for
+  active workspace settings so missed webhooks, failed inbox rows, and provider
+  drift are repaired without introducing a separate worker tier in v1.
 - External services: PostgreSQL, ClickUp API, optional n8n orchestration, future
   Paperclip/Jarvis/future GUI API clients.
 
@@ -214,6 +216,10 @@ retries failed provider events, and performs a `merge` pull fallback from
 ClickUp. Agents or operators can invoke this through the API to close gaps from
 missed webhook deliveries, temporary provider failures, or backend restarts
 while preserving CompanyCore's immediate write-back path for local changes.
+The backend also starts the same maintenance operation on a configurable
+interval for every active workspace ClickUp setting. This scheduler must remain
+non-destructive and use `merge` only; destructive import repair remains an
+explicit owner/operator action.
 
 Webhook processing should be event-first and bridge-friendly. Status changes,
 for example `taskStatusUpdated`, must update the CompanyCore task state and

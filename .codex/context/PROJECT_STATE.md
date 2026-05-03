@@ -47,7 +47,8 @@ Last updated: 2026-05-03
 - Hosting target: Coolify-compatible Docker Compose.
 - Deployment shape: backend + postgres.
 - Runtime services: `backend`, `postgres`.
-- Background jobs / workers: None in v1.
+- Background jobs / workers: lightweight in-process ClickUp maintenance
+  scheduler in the backend; no separate worker tier in v1.
 - Persistent storage: Docker volume `companycore_postgres`.
 - Health / readiness checks: `GET /health`.
 - Environment files: `.env.example`.
@@ -97,13 +98,12 @@ Last updated: 2026-05-03
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-045 ClickUp Maintenance Freshness Run.
+- Current iteration: CCV1-046 ClickUp Maintenance Scheduler.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-045 ClickUp Maintenance Freshness Run.
-- Last completed task: added the canonical ClickUp maintenance run that
-  reconciles webhook health, retries failed provider events, and performs a
-  non-destructive pull fallback to keep CompanyCore fresh even if webhooks are
-  delayed or missed.
+- Last completed iteration: CCV1-046 ClickUp Maintenance Scheduler.
+- Last completed task: added an in-process ClickUp maintenance scheduler that
+  runs the non-destructive maintenance flow for active workspace settings on a
+  configurable cadence.
 - Next required mode: BUILDER for Paperclip application-side CompanyCore
   adapter unless priority changes.
 
@@ -489,6 +489,11 @@ Last updated: 2026-05-03
   `/v1/integration-settings/clickup/maintenance/run` with `inspect_only`:
   21 webhook registrations reconciled, 0 failed events retried, 219 ClickUp
   tasks inspected, and 0 failed inbox rows remained.
+- 2026-05-03: Completed CCV1-046 locally by adding an in-process ClickUp
+  maintenance scheduler. It starts with the backend when
+  `COMPANYCORE_PUBLIC_API_BASE_URL` is configured, clamps cadence to at least 5
+  minutes, and always uses `merge` so scheduled freshness never performs a
+  destructive import repair.
 
 ## Working Agreements
 - Keep task board and project state synchronized.
