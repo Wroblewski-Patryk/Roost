@@ -632,6 +632,19 @@ Last updated: 2026-05-03
   acceptance handoff with production endpoints, accepted runtime scope, current
   backend image/container, latest smoke summary, clean data state, rollback
   pointer, residual non-runtime blockers, and next product decision options.
+- 2026-05-03: Deployed the Google Drive v2 runtime hardening commit
+  `a52afef4492445c87d1313324dcee8bbe82f3323` to production by manually
+  rolling over the CompanyCore backend on the VPS. Coolify redeployed only
+  `6731b82cd40866f3a06dc7b719cd7d13c269d5d5`, so production was missing
+  the Google Drive deploy-smoke and OAuth refresh hardening commits. The new
+  backend container is `backend-rnqqkhl3o3dut4qv56mlxly2-manual-a52afef`,
+  running image
+  `rnqqkhl3o3dut4qv56mlxly2_backend:a52afef4492445c87d1313324dcee8bbe82f3323`.
+  Postgres stayed healthy, `prisma migrate deploy` reported no pending
+  migrations, public `/health` and `/v1/health` returned the expected build
+  metadata, and the protected Google Drive smoke passed through the Jarvis
+  workspace service API key with Google Drive currently unconfigured and
+  `importedFileCount=0`.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

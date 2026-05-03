@@ -603,3 +603,42 @@ Use this file to record the minimum checks after each deploy.
 - Rollback preserved:
   - Previous runtime image
     `rnqqkhl3o3dut4qv56mlxly2_backend:ae2c3bf` remains available for rollback.
+
+## Google Drive V2 Production Rollover Smoke
+
+- Timestamp: 2026-05-03
+- Environment: production VPS Docker backend
+- Commit: `a52afef4492445c87d1313324dcee8bbe82f3323`
+- Image:
+  `rnqqkhl3o3dut4qv56mlxly2_backend:a52afef4492445c87d1313324dcee8bbe82f3323`
+- Running container:
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-a52afef`
+- Replaced container:
+  `backend-rnqqkhl3o3dut4qv56mlxly2-171327323464`, which was running
+  `6731b82cd40866f3a06dc7b719cd7d13c269d5d5`
+- Data safety:
+  - Production Postgres container
+    `postgres-rnqqkhl3o3dut4qv56mlxly2-171327317813` remained running and
+    healthy.
+  - `prisma migrate deploy` reported 13 migrations and no pending migrations.
+  - Seed completed successfully.
+- Public smoke:
+  - `GET https://api.companycore.luckysparrow.ch/health` returned `200` with
+    build commit `a52afef4492445c87d1313324dcee8bbe82f3323`.
+  - `GET https://api.companycore.luckysparrow.ch/v1/health` returned `200`
+    with the same build commit.
+  - `GET https://companycore.luckysparrow.ch/` returned `200` and served the
+    owner console.
+  - `GET https://api.companycore.luckysparrow.ch/` returned `200` with API
+    metadata.
+- Protected smoke:
+  - Jarvis workspace service API key `GET /v1/connection` returned workspace
+    `LuckySparrow`, `authType=api_key`, `googleDriveConfigured=false`,
+    `googleDriveActive=false`, and 47 capabilities.
+  - `npm run google-drive:smoke` logic passed from the production source
+    bundle with `googleDriveConfigured=false`, `googleDriveActive=false`, and
+    `importedFileCount=0`.
+  - Unauthenticated `GET /v1/google-drive/files` remains denied.
+- Residual risks:
+  - Google Drive itself is ready for credential entry, but no Drive files are
+    expected until OAuth/configuration is completed and an import is run.

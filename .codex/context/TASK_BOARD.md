@@ -139,3 +139,4 @@ No active P0/P1 Google Drive implementation task remains ready after V2GD-006.
 - V2GD-006 Drive Changes Freshness.
 - V2GD-007 Google Drive Deploy Smoke Hardening.
 - V2GD-008 Google Drive OAuth Runtime Hardening.
+- V2GD-009 Google Drive Production Rollover Smoke.

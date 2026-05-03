@@ -131,3 +131,26 @@ fixes for this repository.
   `command not found` output from a BOM-prefixed line; rerunning via an ASCII
   temporary script executed correctly and returned Jarvis CompanyCore connector
   status without exposing secret values.
+
+### 2026-05-03 - Verify deployed image, not only Coolify UI state
+
+- Context: CompanyCore production may be rolled forward either by Coolify
+  redeploy or by the approved manual VPS backend rollover path while
+  GitHub-to-Coolify auto-deploy remains blocked.
+- Symptom: A forced Coolify redeploy left production on commit `6731b82` even
+  though newer Google Drive commits were pushed to `main`; public health still
+  returned the old shape without build metadata.
+- Root cause: Coolify UI/project discovery did not make the target resource
+  obvious from the session, and the currently running Docker image was the
+  actual deployment truth.
+- Guardrail: For production release verification, always inspect the running
+  Docker image/container and compare it with `/health` build metadata before
+  declaring deploy success.
+- Preferred pattern: If Coolify deploy state and runtime image diverge, use the
+  documented manual rollover path, preserve Postgres, keep the prior image as
+  rollback, and then run public plus protected smoke.
+- Avoid: Treating a green public `/health` without build metadata as proof that
+  the latest commit is deployed.
+- Evidence: V2GD-009 rolled production from `6731b82` to
+  `a52afef4492445c87d1313324dcee8bbe82f3323`; `/health` then reported the
+  expected build commit and protected Google Drive smoke passed.

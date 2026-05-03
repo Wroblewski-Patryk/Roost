@@ -308,3 +308,53 @@ It follows the repository task contract and must stay synchronized with
   - Added refresh-token flow against Google's token endpoint.
   - Updated sync/content services to use fresh Google Drive clients.
   - Added regression tests for consent URL and token refresh.
+
+## V2GD-009 Google Drive Production Rollover Smoke
+
+- Task Type: ops/release
+- Current Stage: done
+- Deliverable For This Stage: production runtime rollover and public/protected
+  smoke evidence for the Google Drive v2 backend.
+- Goal: Ensure production runs the Google Drive deploy-smoke and OAuth runtime
+  hardening commits before operators enter Google Drive credentials.
+- Scope:
+  - Coolify/VPS backend runtime for `companycore`
+  - `docs/operations/post-deploy-smoke.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+- Implementation Plan:
+  - Verify the deployed backend image and public health response.
+  - Build the current commit as a new backend image with build metadata.
+  - Roll over only the backend container on the existing application network.
+  - Preserve the production Postgres container and rollback image.
+  - Run public health/web/API smoke and protected Google Drive smoke.
+  - Record release evidence without storing raw keys or provider tokens.
+- Acceptance Criteria:
+  - Production `/health` reports commit
+    `a52afef4492445c87d1313324dcee8bbe82f3323`.
+  - `prisma migrate deploy` reports no failed migration.
+  - Postgres remains healthy.
+  - Protected Google Drive smoke passes with an existing workspace service API
+    key.
+  - Raw API keys are not written to docs or chat.
+- Definition of Done:
+  - Public health, v1 health, web root, API metadata, protected connection,
+    and Google Drive smoke are verified.
+  - Deployment evidence is recorded in canonical docs.
+- Result Report:
+  - Diagnosed that the Coolify redeploy reached only
+    `6731b82cd40866f3a06dc7b719cd7d13c269d5d5`, leaving the production health
+    response without build metadata.
+  - Built and deployed image
+    `rnqqkhl3o3dut4qv56mlxly2_backend:a52afef4492445c87d1313324dcee8bbe82f3323`.
+  - Started backend container
+    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-a52afef`.
+  - Preserved `postgres-rnqqkhl3o3dut4qv56mlxly2-171327317813`, which remained
+    healthy.
+  - Verified `GET /health` and `GET /v1/health` return build commit
+    `a52afef4492445c87d1313324dcee8bbe82f3323`.
+  - Ran protected Google Drive smoke through the Jarvis workspace service API
+    key. The smoke passed with `googleDriveConfigured=false`,
+    `googleDriveActive=false`, and `importedFileCount=0`, which is expected
+    before Google Drive credentials are entered.
