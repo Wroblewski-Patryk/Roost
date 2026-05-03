@@ -2,7 +2,7 @@
 
 ## Ready
 
-No active P0/P1 runtime task is ready after CCV1-057.
+No active P0/P1 runtime task is ready after CCV1-058.
 
 ## Blocked
 
@@ -22,6 +22,15 @@ No active P0/P1 runtime task is ready after CCV1-057.
     `codex/companycore-adapter-v1` to `paperclipai/paperclip` as
     `Wroblewski-Patryk`. The adapter commit is validated locally and remains
     available as `4cfa476f` plus the managed CompanyCore patch.
+- CCV1-058B OpenJarvis upstream branch push
+  - Stage: release
+  - Owner: Ops/Release
+  - Priority: P2
+  - Blocked by: GitHub returned `403` for pushing
+    `codex/companycore-connector-v1` to `open-jarvis/OpenJarvis` as
+    `Wroblewski-Patryk`. The connector change was replayed on clean
+    `origin/main`, validated with 6 targeted tests, and remains available as
+    the documented OpenJarvis source handoff.
 
 ## Backlog
 
@@ -113,3 +122,4 @@ auto-deploy webhook administration task.
 - CCV1-055 Full V1 Live System Smoke.
 - CCV1-056 V1 Post-Release Artifact Cleanup.
 - CCV1-057 Paperclip Source Handoff Validation.
+- CCV1-058 OpenJarvis Source Handoff Validation.

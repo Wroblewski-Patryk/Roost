@@ -4,6 +4,81 @@ These task contracts turn the v1 audit into executable work. Each task must be
 completed as its own small iteration and must update `.codex/context/TASK_BOARD.md`,
 `.codex/context/PROJECT_STATE.md`, and relevant docs when status changes.
 
+## CCV1-058 OpenJarvis Source Handoff Validation
+
+### Header
+- ID: CCV1-058
+- Title: OpenJarvis source handoff validation
+- Task Type: release handoff
+- Current Stage: release
+- Status: DONE
+- Owner: Ops/Release
+- Depends on: CCV1-057
+- Priority: P2
+- Iteration: v1-058
+- Operation Mode: BUILDER
+
+### Goal
+Determine whether the validated OpenJarvis CompanyCore connector change can be
+handed off upstream safely from a clean upstream base.
+
+### Scope
+- Clean OpenJarvis worktree created from current `origin/main`.
+- OpenJarvis CompanyCore connector hygiene change.
+- Targeted OpenJarvis CompanyCore connector/context tests.
+- Safe branch push attempt to `codex/companycore-connector-v1`.
+- CompanyCore handoff and planning docs.
+
+### Implementation Plan
+- Create a clean OpenJarvis worktree from current upstream `origin/main`.
+- Cherry-pick only the CompanyCore connector hygiene change.
+- Run targeted connector/context tests from the clean worktree.
+- Push the validated change to a dedicated handoff branch instead of upstream
+  `main`.
+- If push is rejected, record it as a permissions blocker with validation
+  evidence.
+- Remove the temporary clean worktree after evidence is captured.
+
+### Acceptance Criteria
+- [x] OpenJarvis handoff change applies cleanly to current upstream
+  `origin/main`.
+- [x] Targeted OpenJarvis CompanyCore tests pass.
+- [x] No direct push to `main` is attempted.
+- [x] Branch push result is recorded.
+- [x] Temporary clean worktree is removed after validation.
+- [x] CompanyCore docs distinguish code readiness from upstream write-access
+  blocker.
+
+### Definition of Done
+- [x] Validation evidence recorded.
+- [x] Branch push failure recorded without exposing credentials.
+- [x] `git diff --check` passes.
+- [x] `npm run build` passes.
+- [x] `npm test` passes against local PostgreSQL.
+- [x] Task board, project state, planning queue, task contract, source handoff
+  package, and release readiness docs are updated.
+
+### Result Report
+- Task summary: Validated the OpenJarvis CompanyCore connector source handoff
+  on a clean current upstream base and proved upstream branch push is blocked
+  by GitHub write permissions, not code readiness.
+- Files changed: `.codex/context/PROJECT_STATE.md`,
+  `.codex/context/TASK_BOARD.md`, `docs/planning/mvp-next-commits.md`,
+  `docs/planning/companycore-v1-task-contracts.md`,
+  `docs/operations/v1-source-handoff-package.md`, and
+  `docs/operations/v1-release-readiness.md`.
+- How tested: Created a clean OpenJarvis worktree from current `origin/main`,
+  cherry-picked the CompanyCore connector hygiene change, ran
+  `..\OpenJarvis\.venv\Scripts\python -m pytest tests\connectors\test_companycore.py tests\server\test_companycore_context.py -q`
+  with 6 tests passing, then attempted
+  `git push origin codex/companycore-connector-v1:codex/companycore-connector-v1`,
+  which failed with GitHub `403`.
+- What is incomplete: OpenJarvis upstream merge execution requires write
+  access to `open-jarvis/OpenJarvis` or an approved fork/PR route.
+- Next steps: Obtain OpenJarvis repository write access, create an approved
+  fork PR route, or replay the validated four-file change in the upstream
+  OpenJarvis release flow.
+
 ## CCV1-057 Paperclip Source Handoff Validation
 
 ### Header

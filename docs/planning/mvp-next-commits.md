@@ -51,6 +51,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] CCV1-055 Full V1 Live System Smoke
 - [x] CCV1-056 V1 Post-Release Artifact Cleanup
 - [x] CCV1-057 Paperclip Source Handoff Validation
+- [x] CCV1-058 OpenJarvis Source Handoff Validation
 
 ## NEXT
 
@@ -58,9 +59,9 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] Source handoff package: document the OpenJarvis
       `5a426370` connector hygiene commit and the Paperclip `4cfa476f`
       adapter commit for managed upstream handoff.
-- [ ] Optional source merge execution: push or upstream the OpenJarvis
-      `5a426370` connector hygiene commit when that repository is ready for
-      managed changes.
+- [ ] Blocked source merge execution: push or upstream the OpenJarvis
+      CompanyCore connector hygiene change after write access or a fork/PR
+      route is available.
 - [ ] Blocked source merge execution: push or upstream the Paperclip
       `4cfa476f` adapter commit after write access or a fork/PR route is
       available.
@@ -105,6 +106,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 33. CCV1-055 Full V1 Live System Smoke
 - [x] 34. CCV1-056 V1 Post-Release Artifact Cleanup
 - [x] 35. CCV1-057 Paperclip Source Handoff Validation
+- [x] 36. CCV1-058 OpenJarvis Source Handoff Validation
 
 
 ## GROUP QUEUE

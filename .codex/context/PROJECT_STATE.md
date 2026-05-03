@@ -99,14 +99,14 @@ Last updated: 2026-05-03
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-057 Paperclip Source Handoff Validation.
+- Current iteration: CCV1-058 OpenJarvis Source Handoff Validation.
 - Current operation mode: BUILDER
-- Last completed iteration: CCV1-057 Paperclip Source Handoff Validation.
-- Last completed task: validated the Paperclip CompanyCore adapter source
-  commit with Paperclip typecheck and adapter tests, then attempted a safe
-  branch push to `codex/companycore-adapter-v1`. GitHub rejected the branch
-  push with `403`, so upstream source merge execution is blocked by repository
-  write permissions rather than code readiness.
+- Last completed iteration: CCV1-058 OpenJarvis Source Handoff Validation.
+- Last completed task: replayed the OpenJarvis CompanyCore connector change on
+  a clean worktree from current `origin/main`, validated targeted tests, and
+  attempted a safe branch push to `codex/companycore-connector-v1`. GitHub
+  rejected the branch push with `403`, so upstream source merge execution is
+  blocked by repository write permissions rather than code readiness.
 - Next required mode: BUILDER when a new approved v2 or handoff task is moved
   into the active queue.
 
@@ -602,6 +602,14 @@ Last updated: 2026-05-03
   `origin/codex/companycore-adapter-v1` failed with GitHub `403`, so upstream
   Paperclip source merge is now a permissions blocker, not an implementation
   blocker.
+- 2026-05-03: Completed CCV1-058 by validating the OpenJarvis source handoff.
+  Created a clean worktree from current `open-jarvis/OpenJarvis` `origin/main`,
+  cherry-picked only the CompanyCore connector hygiene change, and ran
+  `..\OpenJarvis\.venv\Scripts\python -m pytest tests\connectors\test_companycore.py tests\server\test_companycore_context.py -q`
+  with 6 tests passing. A safe branch push to
+  `origin/codex/companycore-connector-v1` failed with GitHub `403`, so
+  upstream OpenJarvis source merge is now a permissions blocker, not an
+  implementation blocker. The temporary clean worktree was removed.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

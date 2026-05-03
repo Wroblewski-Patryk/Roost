@@ -32,6 +32,12 @@ external applications that consume CompanyCore.
 - Repository checkout: `C:\Personal\Projekty\Aplikacje\OpenJarvis`
 - Current status: local branch is ahead of `origin/main` by 2 commits and has
   unrelated uncommitted local changes. Do not push blindly from this checkout.
+- Handoff validation: the CompanyCore connector hygiene change was
+  cherry-picked onto a clean worktree from current `origin/main` on
+  2026-05-03. Targeted tests passed. A safe branch push to
+  `codex/companycore-connector-v1` was attempted and rejected by GitHub with
+  `403`, so upstream merge execution requires write access or an approved
+  fork/PR route.
 
 ### Files
 
@@ -61,6 +67,15 @@ Run from the OpenJarvis checkout:
 Expected result from the v1 deployment session:
 
 - `6 passed`
+
+Latest handoff validation:
+
+- Clean worktree from current OpenJarvis `origin/main`.
+- CompanyCore connector hygiene change cherry-picked cleanly.
+- `..\OpenJarvis\.venv\Scripts\python -m pytest tests\connectors\test_companycore.py tests\server\test_companycore_context.py -q`
+  passed with 6 tests.
+- `git push origin codex/companycore-connector-v1:codex/companycore-connector-v1`
+  failed with GitHub `403` for `open-jarvis/OpenJarvis`.
 
 ### Handoff Rule
 

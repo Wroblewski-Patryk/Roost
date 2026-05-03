@@ -92,7 +92,11 @@ test records.
 - OpenJarvis connector hygiene is deployed in production and committed locally
   as `5a426370`, but that commit has not been pushed to the upstream
   OpenJarvis repository because the checkout contains unrelated local changes
-  and upstream ownership needs a deliberate handoff.
+  and upstream ownership needs a deliberate handoff. The connector change has
+  been replayed on a clean current upstream base and passed 6 targeted tests,
+  but a safe branch push to `open-jarvis/OpenJarvis` failed with GitHub `403`,
+  so the remaining blocker is upstream write access or an approved fork/PR
+  route.
 - Paperclip adapter is deployed as a production image patch from the current
   production source to avoid upgrading unrelated upstream Paperclip changes.
   The patch is now carried in `integrations/paperclip/companycore-adapter.patch`
