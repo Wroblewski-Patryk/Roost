@@ -1,5 +1,54 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-012 Pipeline Workbench Filters
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: searchable pipeline workbench feed backed by
+  implemented CRM tables.
+- Goal: Make `/pipeline` useful once CRM records grow by adding a unified feed,
+  search, and filters without adding backend contracts or placeholder data.
+- Scope:
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Add search, record-type, and status controls to `/pipeline`.
+  - Normalize existing `clients`, `pipeline-stages`, `deals`, and
+    `interactions` records into one local workbench feed.
+  - Keep the existing overview cards and type-specific lists visible.
+  - Update summary and empty states to distinguish no records from no filter
+    matches.
+  - Validate syntax, build, tests, local route rendering, and production smoke.
+- Acceptance Criteria:
+  - `/pipeline` supports search across visible CRM/pipeline fields.
+  - Record-type and status filters update the feed without reloading.
+  - Summary reflects filtered count versus total implemented records.
+  - Empty state explains when filters hide all pipeline records.
+  - Existing pipeline overview lists still render from implemented tables.
+- Definition of Done:
+  - `node --check public/app.js`, `git diff --check`, `npm run build`, and
+    `npm test` pass.
+  - Browser smoke verifies filters and filtered feed rows on desktop.
+  - Project state, task board, and next-commits docs are updated.
+- Result Report:
+  - Added pipeline search plus record-type and status filters to `/pipeline`.
+  - Added a unified workbench feed normalized from existing `clients`,
+    `pipeline-stages`, `deals`, and `interactions` records.
+  - Updated pipeline summary to show filtered count versus total implemented
+    records.
+  - Added a filter-specific empty state when no pipeline record matches the
+    current controls.
+  - Kept the existing overview cards and type-specific lists intact.
+  - `node --check public/app.js`, `git diff --check`, `npm run build`, and
+    `npm test` passed.
+  - Playwright smoke verified search, type filtering, status filtering,
+    filtered empty state, and matching filtered feed rows on desktop.
+
 ## V2WEB-011 Task Workbench Filters
 
 - Task Type: design/frontend

@@ -440,7 +440,8 @@ h4 {
   margin-bottom: 20px;
 }
 
-.task-filter-bar {
+.task-filter-bar,
+.pipeline-filter-bar {
   display: grid;
   grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(150px, 0.75fr));
   gap: 12px;
@@ -452,7 +453,12 @@ h4 {
   background: #fbfcfe;
 }
 
-.task-filter-bar label {
+.pipeline-filter-bar {
+  grid-template-columns: minmax(220px, 1.4fr) repeat(2, minmax(150px, 0.75fr));
+}
+
+.task-filter-bar label,
+.pipeline-filter-bar label {
   margin: 0;
   color: var(--muted);
   font-size: 12px;
@@ -460,7 +466,9 @@ h4 {
 }
 
 .task-filter-bar input,
-.task-filter-bar select {
+.task-filter-bar select,
+.pipeline-filter-bar input,
+.pipeline-filter-bar select {
   margin-top: 6px;
 }
 
@@ -590,6 +598,23 @@ h4 {
 
 .pipeline-panel {
   padding: 24px;
+}
+
+.pipeline-feed-panel {
+  margin-bottom: 20px;
+}
+
+.pipeline-record-row {
+  display: grid;
+  gap: 2px;
+}
+
+.pipeline-record-row .record-type {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
 }
 
 .relationship-panel {
@@ -1218,6 +1243,7 @@ button.compact,
   .account-readiness-grid,
   .integration-grid,
   .task-filter-bar,
+  .pipeline-filter-bar,
   .module-launch-grid {
     grid-template-columns: 1fr;
   }

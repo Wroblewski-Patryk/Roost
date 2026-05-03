@@ -5,6 +5,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
+- [x] V2WEB-012 Pipeline Workbench Filters
 - [x] V2WEB-011 Task Workbench Filters
 - [x] V2WEB-010 Relationship Review Center
 - [x] V2WEB-009 Account Settings View
@@ -76,7 +77,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NEXT
 
-- [ ] Continue v2 web console polish after task workbench filters: deeper
+- [ ] Continue v2 web console polish after pipeline workbench filters: deeper
       module editing surfaces should become route-level slices only when their
       data path is already implemented.
 - [x] Source handoff package: document the OpenJarvis
@@ -104,6 +105,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 56. V2WEB-009 Account Settings View
 - [x] 57. V2WEB-010 Relationship Review Center
 - [x] 58. V2WEB-011 Task Workbench Filters
+- [x] 59. V2WEB-012 Pipeline Workbench Filters
 - [x] 48. V2WEB-001 Operating Map And Google Drive Console
 - [x] 39. V2GD-001 Google Drive Architecture And Queue
 - [x] 40. V2GD-002 Google Drive Persistence Foundation

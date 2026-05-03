@@ -38,6 +38,11 @@ const state = {
     status: "",
     source: "",
     list: ""
+  },
+  pipelineFilters: {
+    search: "",
+    type: "",
+    status: ""
   }
 };
 
@@ -128,6 +133,11 @@ const accountWorkspaceId = document.querySelector("#accountWorkspaceId");
 const accountReadiness = document.querySelector("#accountReadiness");
 const pipelineSummary = document.querySelector("#pipelineSummary");
 const pipelineStats = document.querySelector("#pipelineStats");
+const pipelineSearch = document.querySelector("#pipelineSearch");
+const pipelineTypeFilter = document.querySelector("#pipelineTypeFilter");
+const pipelineStatusFilter = document.querySelector("#pipelineStatusFilter");
+const pipelineFeedSummary = document.querySelector("#pipelineFeedSummary");
+const pipelineRecordFeed = document.querySelector("#pipelineRecordFeed");
 const pipelineStagesList = document.querySelector("#pipelineStagesList");
 const pipelineDealsList = document.querySelector("#pipelineDealsList");
 const pipelineClientsList = document.querySelector("#pipelineClientsList");
@@ -891,15 +901,19 @@ function renderPipeline() {
   const deals = recordsForSlug("deals");
   const interactions = recordsForSlug("interactions");
   const total = clients.length + stages.length + deals.length + interactions.length;
+  const records = pipelineRecords({ clients, stages, deals, interactions });
+  syncPipelineFilters(records);
+  const filteredRecords = filteredPipelineRecords(records);
 
   pipelineSummary.textContent = isSignedIn()
-    ? `${total} CRM/pipeline record${total === 1 ? "" : "s"} loaded from implemented CompanyCore tables.`
+    ? `${filteredRecords.length} of ${total} CRM/pipeline record${total === 1 ? "" : "s"} shown from implemented CompanyCore tables.`
     : "Sign in to load pipeline data.";
 
   renderPipelineStat("Clients", clients.length);
   renderPipelineStat("Stages", stages.length);
   renderPipelineStat("Deals", deals.length);
   renderPipelineStat("Interactions", interactions.length);
+  renderPipelineFeed(records, filteredRecords);
 
   renderPipelineList(pipelineStagesList, stages, "No pipeline stages found yet.", (stage) => ({
     title: stage.name || stage.title || stage.id,
@@ -921,6 +935,127 @@ function renderPipeline() {
 
 function recordsForSlug(slug) {
   return state.databaseTables.get(slug)?.records || [];
+}
+
+function pipelineRecords(groups) {
+  return [
+    ...groups.clients.map((record) => pipelineRecord("clients", "Client", record, {
+      title: record.name || record.email || record.id,
+      meta: [record.email, record.status, record.source || "companycore"].filter(Boolean).join(" - "),
+      status: record.status
+    })),
+    ...groups.stages.map((record) => pipelineRecord("pipeline-stages", "Stage", record, {
+      title: record.name || record.title || record.id,
+      meta: [record.status, record.source || "companycore"].filter(Boolean).join(" - ") || "companycore",
+      status: record.status
+    })),
+    ...groups.deals.map((record) => pipelineRecord("deals", "Deal", record, {
+      title: record.title || record.name || record.summary || record.id,
+      meta: [record.status, record.source || "companycore", formatDate(record.updatedAt || record.createdAt)].filter(Boolean).join(" - "),
+      status: record.status
+    })),
+    ...groups.interactions.map((record) => pipelineRecord("interactions", "Interaction", record, {
+      title: record.summary || record.title || record.type || record.id,
+      meta: [record.channel || record.type, record.source || "companycore", formatDate(record.occurredAt || record.createdAt)].filter(Boolean).join(" - "),
+      status: record.status || record.type || record.channel
+    }))
+  ];
+}
+
+function pipelineRecord(type, label, record, content) {
+  const status = content.status ? String(content.status) : "";
+  const source = record.source || "companycore";
+  const updatedAt = formatDate(record.updatedAt || record.createdAt || record.occurredAt);
+  const searchable = [
+    label,
+    content.title,
+    content.meta,
+    status,
+    source,
+    updatedAt,
+    record.email,
+    record.name,
+    record.title,
+    record.summary,
+    record.channel,
+    record.type
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  return {
+    type,
+    label,
+    title: content.title || record.id || "-",
+    meta: content.meta || source,
+    status,
+    source,
+    updatedAt,
+    searchable
+  };
+}
+
+function syncPipelineFilters(records) {
+  pipelineSearch.value = state.pipelineFilters.search;
+  pipelineTypeFilter.value = state.pipelineFilters.type;
+  const statuses = [...new Set(records.map((record) => record.status).filter(Boolean).map(String))]
+    .sort((left, right) => left.localeCompare(right));
+  const nextStatus = statuses.includes(state.pipelineFilters.status) ? state.pipelineFilters.status : "";
+  pipelineStatusFilter.innerHTML = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "All statuses";
+  pipelineStatusFilter.append(placeholder);
+  for (const status of statuses) {
+    const option = document.createElement("option");
+    option.value = status;
+    option.textContent = status;
+    pipelineStatusFilter.append(option);
+  }
+  pipelineStatusFilter.value = nextStatus;
+  state.pipelineFilters.status = nextStatus;
+}
+
+function filteredPipelineRecords(records) {
+  const search = state.pipelineFilters.search.trim().toLowerCase();
+  return records.filter((record) => (!search || record.searchable.includes(search))
+    && (!state.pipelineFilters.type || record.type === state.pipelineFilters.type)
+    && (!state.pipelineFilters.status || record.status === state.pipelineFilters.status));
+}
+
+function renderPipelineFeed(records, filteredRecords) {
+  pipelineRecordFeed.innerHTML = "";
+
+  if (records.length === 0) {
+    pipelineFeedSummary.textContent = "No CRM records are loaded from the implemented pipeline tables yet.";
+    const empty = document.createElement("p");
+    empty.className = "empty-note";
+    empty.textContent = "Add or sync clients, stages, deals, or interactions to populate this feed.";
+    pipelineRecordFeed.append(empty);
+    return;
+  }
+
+  pipelineFeedSummary.textContent = `${filteredRecords.length} of ${records.length} pipeline record${records.length === 1 ? "" : "s"} match the current view.`;
+
+  if (filteredRecords.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "empty-note";
+    empty.textContent = "No pipeline records match the current filters.";
+    pipelineRecordFeed.append(empty);
+    return;
+  }
+
+  for (const item of filteredRecords.slice(0, 12)) {
+    const row = document.createElement("div");
+    row.className = "compact-row pipeline-record-row";
+    const eyebrow = document.createElement("span");
+    eyebrow.className = "record-type";
+    eyebrow.textContent = item.label;
+    const title = document.createElement("strong");
+    title.textContent = item.title;
+    const meta = document.createElement("span");
+    meta.textContent = item.meta || item.source;
+    row.append(eyebrow, title, meta);
+    pipelineRecordFeed.append(row);
+  }
 }
 
 function renderPipelineStat(label, value) {
@@ -1898,6 +2033,9 @@ logoutButton.addEventListener("click", () => {
   state.databaseTables = new Map();
   state.selectedAreaKey = "";
   state.tasks = [];
+  state.pipelineFilters.search = "";
+  state.pipelineFilters.type = "";
+  state.pipelineFilters.status = "";
   renderTasks();
   renderGoogleDriveFiles();
   renderOperatingMap();
@@ -1938,6 +2076,21 @@ taskSourceFilter.addEventListener("change", () => {
 taskListFilter.addEventListener("change", () => {
   state.taskFilters.list = taskListFilter.value;
   renderTasks();
+});
+
+pipelineSearch.addEventListener("input", () => {
+  state.pipelineFilters.search = pipelineSearch.value;
+  renderPipeline();
+});
+
+pipelineTypeFilter.addEventListener("change", () => {
+  state.pipelineFilters.type = pipelineTypeFilter.value;
+  renderPipeline();
+});
+
+pipelineStatusFilter.addEventListener("change", () => {
+  state.pipelineFilters.status = pipelineStatusFilter.value;
+  renderPipeline();
 });
 
 loginForm.addEventListener("submit", async (event) => {

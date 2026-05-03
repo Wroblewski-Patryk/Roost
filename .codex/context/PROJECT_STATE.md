@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Last updated: 2026-05-03
+Last updated: 2026-05-04
 
 ## Product Snapshot
 - Name: LuckySparrow Company Core
@@ -112,11 +112,12 @@ Last updated: 2026-05-03
   pattern.
 
 ## Autonomous Iteration State
-- Current iteration: V2WEB-011 Task Workbench Filters.
+- Current iteration: V2WEB-012 Pipeline Workbench Filters.
 - Current operation mode: BUILDER
-- Last completed iteration: V2WEB-010 Relationship Review Center.
-- Last completed task: added task search, status, source, and list filters to
-  `/tasks-adapter` using existing `/v1/tasks` data.
+- Last completed iteration: V2WEB-012 Pipeline Workbench Filters.
+- Last completed task: added pipeline search, record-type, and status filters
+  with a unified feed using existing `clients`, `pipeline-stages`, `deals`, and
+  `interactions` tables.
 - Next required mode: BUILDER for the next v2 web console iteration unless an
   architecture decision blocks the queue first.
 
@@ -720,6 +721,10 @@ Last updated: 2026-05-03
   workbench. The view now supports search plus status, source, and list
   filters over existing `/v1/tasks` data, distinguishes filtered-empty state
   from no-task state, and keeps refresh/settings actions in the same surface.
+- 2026-05-04: Completed V2WEB-012 by turning `/pipeline` into a searchable CRM
+  workbench. The view now has a unified record feed over implemented clients,
+  pipeline stages, deals, and interactions, with search, record-type filtering,
+  status filtering, filtered counts, and a filter-specific empty state.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

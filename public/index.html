@@ -422,6 +422,37 @@
 
         <section class="dashboard-grid dense-grid pipeline-stats" id="pipelineStats"></section>
 
+        <section class="pipeline-filter-bar" aria-label="Pipeline filters">
+          <label>
+            Search records
+            <input id="pipelineSearch" type="search" autocomplete="off" placeholder="Client, deal, status, source..." />
+          </label>
+          <label>
+            Record type
+            <select id="pipelineTypeFilter">
+              <option value="">All record types</option>
+              <option value="clients">Clients</option>
+              <option value="pipeline-stages">Stages</option>
+              <option value="deals">Deals</option>
+              <option value="interactions">Interactions</option>
+            </select>
+          </label>
+          <label>
+            Status
+            <select id="pipelineStatusFilter">
+              <option value="">All statuses</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="panel pipeline-panel pipeline-feed-panel">
+          <div class="section-title">
+            <h2>Record feed</h2>
+            <p id="pipelineFeedSummary">Sign in to review the unified CRM feed.</p>
+          </div>
+          <div class="compact-list" id="pipelineRecordFeed"></div>
+        </section>
+
         <section class="pipeline-layout">
           <article class="panel pipeline-panel">
             <div class="section-title">
