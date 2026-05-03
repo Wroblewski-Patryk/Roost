@@ -112,11 +112,11 @@ Last updated: 2026-05-03
   pattern.
 
 ## Autonomous Iteration State
-- Current iteration: V2WEB-010 Relationship Review Center.
+- Current iteration: V2WEB-011 Task Workbench Filters.
 - Current operation mode: BUILDER
-- Last completed iteration: V2WEB-009 Account Settings View.
-- Last completed task: added `/relationships` for provider and Drive area
-  assignment review using existing scope update endpoints.
+- Last completed iteration: V2WEB-010 Relationship Review Center.
+- Last completed task: added task search, status, source, and list filters to
+  `/tasks-adapter` using existing `/v1/tasks` data.
 - Next required mode: BUILDER for the next v2 web console iteration unless an
   architecture decision blocks the queue first.
 
@@ -716,6 +716,10 @@ Last updated: 2026-05-03
   provider and Drive folder assignments, and reuses the existing scope update
   endpoints/selectors so relationship correction is no longer buried inside a
   selected area detail.
+- 2026-05-04: Completed V2WEB-011 by turning `/tasks-adapter` into a basic task
+  workbench. The view now supports search plus status, source, and list
+  filters over existing `/v1/tasks` data, distinguishes filtered-empty state
+  from no-task state, and keeps refresh/settings actions in the same surface.
 
 ## Working Agreements
 - Keep task board and project state synchronized.

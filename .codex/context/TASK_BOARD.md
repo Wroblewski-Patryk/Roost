@@ -3,7 +3,7 @@
 ## Ready
 
 No active P0/P1 Google Drive or web console implementation task remains ready
-after V2WEB-010.
+after V2WEB-011.
 
 ## Blocked
 
@@ -142,3 +142,4 @@ after V2WEB-010.
 - V2WEB-008 Dashboard Command Center.
 - V2WEB-009 Account Settings View.
 - V2WEB-010 Relationship Review Center.
+- V2WEB-011 Task Workbench Filters.

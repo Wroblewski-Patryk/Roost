@@ -32,7 +32,13 @@ const state = {
   },
   databaseTables: new Map(),
   selectedAreaKey: "",
-  tasks: []
+  tasks: [],
+  taskFilters: {
+    search: "",
+    status: "",
+    source: "",
+    list: ""
+  }
 };
 
 const COMPANY_AREAS = [
@@ -72,6 +78,10 @@ const refreshButton = document.querySelector("#refreshButton");
 const saveButton = document.querySelector("#saveButton");
 const syncButton = document.querySelector("#syncButton");
 const refreshTasksButton = document.querySelector("#refreshTasksButton");
+const taskSearch = document.querySelector("#taskSearch");
+const taskStatusFilter = document.querySelector("#taskStatusFilter");
+const taskSourceFilter = document.querySelector("#taskSourceFilter");
+const taskListFilter = document.querySelector("#taskListFilter");
 const loadListsButton = document.querySelector("#loadListsButton");
 const selectAllListsButton = document.querySelector("#selectAllListsButton");
 const clearListsButton = document.querySelector("#clearListsButton");
@@ -433,6 +443,7 @@ function renderTasks() {
   tasksTableBody.innerHTML = "";
   taskStats.innerHTML = "";
   const tasks = state.tasks;
+  syncTaskFilters();
   const clickUpCount = tasks.filter((task) => task.source === "clickup").length;
   const openTasks = tasks.filter((task) => !["closed", "complete", "completed", "done"].includes(String(task.status || "").toLowerCase())).length;
   const nextWeek = new Date();
@@ -462,9 +473,21 @@ function renderTasks() {
     return;
   }
 
-  tasksSummary.textContent = `${tasks.length} task${tasks.length === 1 ? "" : "s"} loaded, including ${clickUpCount} from ClickUp.`;
+  const filteredTasks = filteredTaskRows();
+  tasksSummary.textContent = `${filteredTasks.length} of ${tasks.length} task${tasks.length === 1 ? "" : "s"} shown, including ${clickUpCount} from ClickUp.`;
 
-  for (const task of tasks.slice(0, 50)) {
+  if (filteredTasks.length === 0) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 6;
+    cell.textContent = "No tasks match the current filters.";
+    row.append(cell);
+    tasksTableBody.append(row);
+    renderIntegrationTaxonomy();
+    return;
+  }
+
+  for (const task of filteredTasks.slice(0, 80)) {
     const row = document.createElement("tr");
     appendTaskCell(row, task.title);
     appendTaskCell(row, task.status);
@@ -475,6 +498,61 @@ function renderTasks() {
     tasksTableBody.append(row);
   }
   renderIntegrationTaxonomy();
+}
+
+function syncTaskFilters() {
+  syncTaskFilterSelect(taskStatusFilter, uniqueTaskValues((task) => task.status), "All statuses", state.taskFilters.status);
+  syncTaskFilterSelect(taskSourceFilter, uniqueTaskValues((task) => task.source || "companycore"), "All sources", state.taskFilters.source);
+  syncTaskFilterSelect(taskListFilter, uniqueTaskValues((task) => task.taskList?.name || "-"), "All lists", state.taskFilters.list);
+  taskSearch.value = state.taskFilters.search;
+}
+
+function uniqueTaskValues(getValue) {
+  return [...new Set(state.tasks.map(getValue).filter(Boolean).map(String))].sort((left, right) => left.localeCompare(right));
+}
+
+function syncTaskFilterSelect(select, values, placeholder, selectedValue) {
+  const nextValue = values.includes(selectedValue) ? selectedValue : "";
+  select.innerHTML = "";
+  const option = document.createElement("option");
+  option.value = "";
+  option.textContent = placeholder;
+  select.append(option);
+  for (const value of values) {
+    const item = document.createElement("option");
+    item.value = value;
+    item.textContent = value;
+    select.append(item);
+  }
+  select.value = nextValue;
+  state.taskFilters[taskFilterKey(select)] = nextValue;
+}
+
+function taskFilterKey(select) {
+  if (select === taskStatusFilter) {
+    return "status";
+  }
+  if (select === taskSourceFilter) {
+    return "source";
+  }
+  return "list";
+}
+
+function filteredTaskRows() {
+  const search = state.taskFilters.search.trim().toLowerCase();
+  return state.tasks.filter((task) => {
+    const source = task.source || "companycore";
+    const list = task.taskList?.name || "-";
+    const haystack = [task.title, task.status, task.priority, list, source, formatDate(task.dueDate)]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return (!search || haystack.includes(search))
+      && (!state.taskFilters.status || task.status === state.taskFilters.status)
+      && (!state.taskFilters.source || source === state.taskFilters.source)
+      && (!state.taskFilters.list || list === state.taskFilters.list);
+  });
 }
 
 function renderTaskStat(label, value) {
@@ -1840,6 +1918,26 @@ refreshTasksButton.addEventListener("click", async () => {
   } finally {
     setBusy(false);
   }
+});
+
+taskSearch.addEventListener("input", () => {
+  state.taskFilters.search = taskSearch.value;
+  renderTasks();
+});
+
+taskStatusFilter.addEventListener("change", () => {
+  state.taskFilters.status = taskStatusFilter.value;
+  renderTasks();
+});
+
+taskSourceFilter.addEventListener("change", () => {
+  state.taskFilters.source = taskSourceFilter.value;
+  renderTasks();
+});
+
+taskListFilter.addEventListener("change", () => {
+  state.taskFilters.list = taskListFilter.value;
+  renderTasks();
 });
 
 loginForm.addEventListener("submit", async (event) => {

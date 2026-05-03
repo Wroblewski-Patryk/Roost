@@ -1,5 +1,51 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-011 Task Workbench Filters
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: task workbench controls for searching and
+  filtering implemented task records.
+- Goal: Make `/tasks-adapter` usable once ClickUp imports many tasks by adding
+  local search and filters without changing backend contracts.
+- Scope:
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Add search, status, source, and list filters to `/tasks-adapter`.
+  - Filter the existing `/v1/tasks` data client-side.
+  - Update summary and empty states to distinguish no tasks from no filter
+    matches.
+  - Keep refresh and ClickUp settings actions in the same workbench surface.
+  - Validate syntax, build, tests, local route rendering, and production smoke.
+- Acceptance Criteria:
+  - `/tasks-adapter` supports search by title/status/list/source.
+  - Status, source, and task-list filters update the table without reloading.
+  - Summary reflects filtered count versus total count.
+  - Empty state explains when filters hide all tasks.
+  - Existing task refresh still works.
+- Definition of Done:
+  - `node --check public/app.js`, `git diff --check`, `npm run build`, and
+    `npm test` pass.
+  - Browser smoke verifies filters and filtered table rows on desktop.
+  - Project state, task board, and next-commits docs are updated.
+- Result Report:
+  - Added task search plus status, source, and task-list filters to
+    `/tasks-adapter`.
+  - Implemented client-side filtering against existing `/v1/tasks` data only.
+  - Updated task summary to show filtered count versus total count.
+  - Added a filter-specific empty state when no task matches the current
+    controls.
+  - `node --check public/app.js`, `git diff --check`, `npm run build`, and
+    `npm test` passed.
+  - Playwright smoke verified search, source filtering, empty filtered state,
+    and matching filtered rows on desktop.
+
 ## V2WEB-010 Relationship Review Center
 
 - Task Type: design/frontend
