@@ -1,0 +1,362 @@
+From 4cfa476f8ad8c445fc10f6a15d6c9d7915137adf Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Patryk=20Wr=C3=B3blewski?= <wroblewskipatryk@gmail.com>
+Date: Sun, 3 May 2026 16:17:55 +0200
+Subject: [PATCH] feat: add companycore adapter poller
+
+---
+ .../src/__tests__/companycore-adapter.test.ts |  60 +++++
+ server/src/index.ts                           |   3 +
+ server/src/services/companycore-adapter.ts    | 253 ++++++++++++++++++
+ 3 files changed, 316 insertions(+)
+ create mode 100644 server/src/__tests__/companycore-adapter.test.ts
+ create mode 100644 server/src/services/companycore-adapter.ts
+
+diff --git a/server/src/__tests__/companycore-adapter.test.ts b/server/src/__tests__/companycore-adapter.test.ts
+new file mode 100644
+index 00000000..a8cfc148
+--- /dev/null
++++ b/server/src/__tests__/companycore-adapter.test.ts
+@@ -0,0 +1,60 @@
++import { describe, expect, it } from "vitest";
++import {
++  buildIssueFromCompanyCoreEvent,
++  loadCompanyCoreAdapterConfig,
++} from "../services/companycore-adapter.js";
++
++describe("CompanyCore adapter", () => {
++  it("stays disabled without the CompanyCore base URL and API key", () => {
++    expect(loadCompanyCoreAdapterConfig({})).toBeNull();
++    expect(loadCompanyCoreAdapterConfig({ COMPANYCORE_BASE_URL: "https://api.example.test" })).toBeNull();
++    expect(loadCompanyCoreAdapterConfig({ COMPANYCORE_API_KEY: "secret" })).toBeNull();
++  });
++
++  it("loads safe polling defaults from environment variables", () => {
++    const config = loadCompanyCoreAdapterConfig({
++      COMPANYCORE_BASE_URL: "https://api.example.test/",
++      COMPANYCORE_API_KEY: "secret",
++    });
++
++    expect(config).toMatchObject({
++      baseUrl: "https://api.example.test",
++      targetAgent: "paperclip",
++      source: "paperclip",
++      intervalMs: 30_000,
++      batchLimit: 25,
++    });
++  });
++
++  it("builds an idempotent Paperclip issue from a CompanyCore event", () => {
++    const issue = buildIssueFromCompanyCoreEvent(
++      {
++        id: "agent-event-1",
++        eventId: "event-1",
++        eventType: "task_status_updated_from_clickup",
++        scope: {
++          taskId: "task-1",
++          externalId: "clickup-1",
++        },
++        payload: {
++          before: { status: "todo" },
++          after: { status: "done" },
++          provider: "clickup",
++        },
++        createdAt: "2026-05-03T10:00:00.000Z",
++      },
++      "paperclip",
++    );
++
++    expect(issue).toMatchObject({
++      title: "CompanyCore task status updated from clickup (clickup-1)",
++      status: "todo",
++      priority: "medium",
++      originKind: "companycore_agent_event",
++      originId: "agent-event-1",
++      originFingerprint: "event-1",
++    });
++    expect(issue.description).toContain("Status: todo -> done");
++    expect(issue.description).toContain('"provider": "clickup"');
++  });
++});
+diff --git a/server/src/index.ts b/server/src/index.ts
+index bd7a9bc1..2c3aa408 100644
+--- a/server/src/index.ts
++++ b/server/src/index.ts
+@@ -37,6 +37,7 @@ import {
+ } from "./services/index.js";
+ import { createFeedbackTraceShareClientFromConfig } from "./services/feedback-share-client.js";
+ import { buildRuntimeApiCandidateUrls, choosePrimaryRuntimeApiUrl } from "./runtime-api.js";
++import { startCompanyCoreAdapterPoller } from "./services/companycore-adapter.js";
+ import { createPluginWorkerManager } from "./services/plugin-worker-manager.js";
+ import { createStorageServiceFromConfig } from "./storage/index.js";
+ import { printStartupBanner } from "./startup-banner.js";
+@@ -800,6 +801,8 @@ export async function startServer(): Promise<StartedServer> {
+       });
+     }, backupIntervalMs);
+   }
++
++  startCompanyCoreAdapterPoller(db as any);
+   
+   // Wait for external adapters to finish loading before accepting requests.
+   // Without this, adapter type validation (assertKnownAdapterType) would
+diff --git a/server/src/services/companycore-adapter.ts b/server/src/services/companycore-adapter.ts
+new file mode 100644
+index 00000000..e2e98b92
+--- /dev/null
++++ b/server/src/services/companycore-adapter.ts
+@@ -0,0 +1,253 @@
++import { asc, eq } from "drizzle-orm";
++import type { Db } from "@paperclipai/db";
++import { companies } from "@paperclipai/db";
++import { logger } from "../middleware/logger.js";
++import { issueService } from "./issues.js";
++
++type CompanyCoreEnvelope<T> = {
++  data: T;
++};
++
++type CompanyCoreAgentEvent = {
++  id: string;
++  eventId?: string | null;
++  eventType: string;
++  targetAgent?: string | null;
++  scope?: Record<string, unknown> | null;
++  payload?: Record<string, unknown> | null;
++  createdAt?: string | null;
++};
++
++type CompanyCoreAdapterConfig = {
++  baseUrl: string;
++  apiKey: string;
++  targetAgent: string;
++  source: string;
++  companyId?: string;
++  intervalMs: number;
++  batchLimit: number;
++};
++
++type CompanyCoreAdapterClient = {
++  listAgentEvents(): Promise<CompanyCoreAgentEvent[]>;
++  ackAgentEvent(eventId: string): Promise<void>;
++};
++
++let adapterStarted = false;
++let pollInFlight = false;
++
++function normalizeBaseUrl(value: string) {
++  return value.trim().replace(/\/+$/, "");
++}
++
++function readPositiveNumber(value: string | undefined, fallback: number, minimum: number) {
++  const parsed = Number(value);
++  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
++  return Math.max(minimum, Math.floor(parsed));
++}
++
++export function loadCompanyCoreAdapterConfig(env: NodeJS.ProcessEnv = process.env): CompanyCoreAdapterConfig | null {
++  const rawBaseUrl = env.COMPANYCORE_BASE_URL?.trim();
++  const apiKey = env.COMPANYCORE_API_KEY?.trim();
++  if (!rawBaseUrl || !apiKey) return null;
++
++  return {
++    baseUrl: normalizeBaseUrl(rawBaseUrl),
++    apiKey,
++    targetAgent: env.COMPANYCORE_AGENT_EVENT_TARGET?.trim() || "paperclip",
++    source: env.COMPANYCORE_ADAPTER_SOURCE?.trim() || "paperclip",
++    companyId: env.COMPANYCORE_PAPERCLIP_COMPANY_ID?.trim() || undefined,
++    intervalMs: readPositiveNumber(env.COMPANYCORE_EVENT_POLL_INTERVAL_MS, 30_000, 10_000),
++    batchLimit: readPositiveNumber(env.COMPANYCORE_EVENT_BATCH_LIMIT, 25, 1),
++  };
++}
++
++function safeString(value: unknown): string | null {
++  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
++}
++
++function readStatus(payload: Record<string, unknown> | null | undefined, key: "before" | "after") {
++  const value = payload?.[key];
++  if (!value || typeof value !== "object") return null;
++  return safeString((value as Record<string, unknown>).status);
++}
++
++function formatJsonBlock(value: unknown, maxChars = 4_000) {
++  const formatted = JSON.stringify(value ?? {}, null, 2);
++  return formatted.length > maxChars ? `${formatted.slice(0, maxChars).trimEnd()}\n... [truncated]` : formatted;
++}
++
++export function buildIssueFromCompanyCoreEvent(event: CompanyCoreAgentEvent, source: string) {
++  const externalId = safeString(event.scope?.externalId) ?? safeString(event.payload?.externalId);
++  const taskId = safeString(event.scope?.taskId) ?? safeString(event.payload?.taskId);
++  const beforeStatus = readStatus(event.payload, "before");
++  const afterStatus = readStatus(event.payload, "after");
++  const titleParts = [
++    "CompanyCore",
++    event.eventType.replace(/_/g, " "),
++    externalId ? `(${externalId})` : taskId ? `(${taskId})` : null,
++  ].filter(Boolean);
++
++  const description = [
++    `Source: ${source}`,
++    `CompanyCore event: ${event.eventType}`,
++    event.createdAt ? `Created at: ${event.createdAt}` : null,
++    beforeStatus || afterStatus ? `Status: ${beforeStatus ?? "unknown"} -> ${afterStatus ?? "unknown"}` : null,
++    "",
++    "Scope:",
++    "```json",
++    formatJsonBlock(event.scope),
++    "```",
++    "",
++    "Payload:",
++    "```json",
++    formatJsonBlock(event.payload),
++    "```",
++  ].filter((line): line is string => line !== null).join("\n");
++
++  return {
++    title: titleParts.join(" "),
++    description,
++    status: "todo",
++    priority: "medium",
++    originKind: "companycore_agent_event",
++    originId: event.id,
++    originFingerprint: event.eventId ?? event.id,
++  };
++}
++
++export function createCompanyCoreAdapterClient(config: CompanyCoreAdapterConfig): CompanyCoreAdapterClient {
++  const headers = {
++    "X-API-Key": config.apiKey,
++  };
++
++  async function request<T>(path: string, init?: RequestInit): Promise<T> {
++    const response = await fetch(`${config.baseUrl}${path}`, {
++      ...init,
++      headers: {
++        ...headers,
++        ...(init?.headers ?? {}),
++      },
++    });
++    if (!response.ok) {
++      throw new Error(`CompanyCore request failed: ${response.status}`);
++    }
++    return response.json() as Promise<T>;
++  }
++
++  return {
++    async listAgentEvents() {
++      const query = new URLSearchParams({
++        targetAgent: config.targetAgent,
++        limit: String(config.batchLimit),
++      });
++      const response = await request<CompanyCoreEnvelope<CompanyCoreAgentEvent[]>>(`/v1/agent-events?${query.toString()}`);
++      return Array.isArray(response.data) ? response.data : [];
++    },
++    async ackAgentEvent(eventId: string) {
++      await request<CompanyCoreEnvelope<unknown>>(`/v1/agent-events/${encodeURIComponent(eventId)}/ack`, {
++        method: "POST",
++      });
++    },
++  };
++}
++
++async function resolveCompanyId(db: Db, configuredCompanyId?: string) {
++  if (configuredCompanyId) {
++    const row = await db
++      .select({ id: companies.id })
++      .from(companies)
++      .where(eq(companies.id, configuredCompanyId))
++      .then((rows) => rows[0] ?? null);
++    if (row) return row.id;
++    throw new Error("Configured CompanyCore Paperclip company was not found");
++  }
++
++  const row = await db
++    .select({ id: companies.id })
++    .from(companies)
++    .orderBy(asc(companies.createdAt), asc(companies.id))
++    .limit(1)
++    .then((rows) => rows[0] ?? null);
++  if (!row) throw new Error("Paperclip has no company to receive CompanyCore events");
++  return row.id;
++}
++
++export async function processCompanyCoreAgentEvents(input: {
++  db: Db;
++  client: CompanyCoreAdapterClient;
++  config: CompanyCoreAdapterConfig;
++}) {
++  const companyId = await resolveCompanyId(input.db, input.config.companyId);
++  const issues = issueService(input.db);
++  const events = await input.client.listAgentEvents();
++  let created = 0;
++  let acked = 0;
++  let skipped = 0;
++
++  for (const event of events) {
++    const existing = await issues.list(companyId, {
++      originKind: "companycore_agent_event",
++      originId: event.id,
++      limit: 1,
++    });
++
++    if (existing.length === 0) {
++      const issueInput = buildIssueFromCompanyCoreEvent(event, input.config.source);
++      await issues.create(companyId, issueInput);
++      created += 1;
++    } else {
++      skipped += 1;
++    }
++
++    await input.client.ackAgentEvent(event.id);
++    acked += 1;
++  }
++
++  return { received: events.length, created, skipped, acked };
++}
++
++export function startCompanyCoreAdapterPoller(db: Db) {
++  if (adapterStarted) return;
++  const config = loadCompanyCoreAdapterConfig();
++  if (!config) {
++    logger.info("CompanyCore adapter disabled; COMPANYCORE_BASE_URL and COMPANYCORE_API_KEY are required");
++    return;
++  }
++
++  adapterStarted = true;
++  const client = createCompanyCoreAdapterClient(config);
++  logger.info(
++    {
++      baseUrl: config.baseUrl,
++      targetAgent: config.targetAgent,
++      source: config.source,
++      intervalMs: config.intervalMs,
++      batchLimit: config.batchLimit,
++      companyIdConfigured: Boolean(config.companyId),
++    },
++    "CompanyCore adapter enabled",
++  );
++
++  const poll = async () => {
++    if (pollInFlight) return;
++    pollInFlight = true;
++    try {
++      const result = await processCompanyCoreAgentEvents({ db, client, config });
++      if (result.received > 0) {
++        logger.info(result, "CompanyCore adapter processed agent events");
++      }
++    } catch (err) {
++      logger.warn({ err }, "CompanyCore adapter poll failed");
++    } finally {
++      pollInFlight = false;
++    }
++  };
++
++  setTimeout(() => {
++    void poll();
++  }, 5_000).unref();
++  setInterval(() => {
++    void poll();
++  }, config.intervalMs).unref();
++}
+-- 
+2.49.0.windows.1
+

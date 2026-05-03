@@ -4,6 +4,80 @@ These task contracts turn the v1 audit into executable work. Each task must be
 completed as its own small iteration and must update `.codex/context/TASK_BOARD.md`,
 `.codex/context/PROJECT_STATE.md`, and relevant docs when status changes.
 
+## CCV1-049 Authenticated Jarvis Smoke And Managed Paperclip Source Path
+
+### Header
+- ID: CCV1-049
+- Title: Authenticated Jarvis smoke and managed Paperclip source path
+- Task Type: release hardening
+- Current Stage: verification
+- Status: DONE
+- Owner: QA/Test + Ops/Release
+- Depends on: CCV1-048
+- Priority: P0
+- Iteration: v1-049
+- Operation Mode: BUILDER
+
+### Goal
+Close the two v1 hardening gaps left by the release audit: prove the protected
+Jarvis CompanyCore connector path with real production auth and make the
+Paperclip adapter patch durable outside the one-off production image patch.
+
+### Scope
+- Production Jarvis connector and chat smoke.
+- OpenJarvis CompanyCore context relevance improvement.
+- Paperclip adapter patch generated from the local Paperclip source commit.
+- CompanyCore operations, planning, and context docs.
+
+### Implementation Plan
+- Run an authenticated production Jarvis connector smoke using protected
+  Jarvis API access without exposing secrets.
+- Trigger the CompanyCore connector sync and verify indexed chunks.
+- Run a CompanyCore chat smoke and improve context ordering when production
+  answers mix durable records with smoke records.
+- Generate and store the Paperclip adapter patch in CompanyCore.
+- Add a Paperclip adapter runbook with apply, validation, smoke, and rollback
+  steps.
+- Update release readiness, task board, project state, docs index, and queue.
+
+### Acceptance Criteria
+- [x] Protected Jarvis connector endpoint returns `200`.
+- [x] Jarvis reports `companycore.connected=true` and `auth_type=bridge`.
+- [x] Jarvis CompanyCore sync can be triggered in production.
+- [x] Jarvis chat answers from CompanyCore records after the context relevance
+  improvement.
+- [x] Paperclip adapter patch is stored in a managed CompanyCore path.
+- [x] Paperclip adapter runbook documents apply, validation, production smoke,
+  and rollback.
+
+### Definition of Done
+- [x] OpenJarvis targeted CompanyCore tests pass locally.
+- [x] Production Jarvis rebuild succeeds.
+- [x] Production Jarvis authenticated connector smoke passes.
+- [x] Production Jarvis chat smoke confirms CompanyCore-backed answers.
+- [x] Release readiness and canonical queue docs are updated.
+
+### Result Report
+- Task summary: Hardened the production Jarvis CompanyCore smoke and created a
+  durable managed patch/runbook path for the Paperclip CompanyCore adapter.
+- Files changed in CompanyCore: `integrations/paperclip/companycore-adapter.patch`,
+  `docs/operations/paperclip-companycore-adapter-runbook.md`,
+  `docs/operations/v1-release-readiness.md`, `docs/README.md`,
+  `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`,
+  `docs/planning/mvp-next-commits.md`, and this task contract.
+- Files changed outside CompanyCore: OpenJarvis
+  `src/openjarvis/server/companycore_context.py` and
+  `tests/server/test_companycore_context.py`.
+- How tested: OpenJarvis targeted tests returned `5 passed`; production Jarvis
+  connector returned `200`, `connected=true`, `auth_type=bridge`; sync returned
+  `status=started`; chat answered from CompanyCore project, decision, and task
+  records.
+- What is incomplete: Jarvis answer precision remains a P1 follow-up because a
+  broad Paperclip prompt can still choose a smoke agent when multiple agent
+  records match.
+- Next steps: Harden Jarvis CompanyCore answer precision and merge the
+  Paperclip adapter patch into the managed Paperclip application repository.
+
 ## CCV1-048 V1 Closure Audit
 
 ### Header

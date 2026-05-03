@@ -430,3 +430,27 @@ Use this file to record the minimum checks after each deploy.
   - The production bridge is confirmed in both directions:
     CompanyCore -> ClickUp write-back and ClickUp -> CompanyCore webhook
     ingestion.
+
+## Jarvis Authenticated CompanyCore Smoke
+
+- Timestamp: 2026-05-03
+- Environment: production OpenJarvis at `https://jarvis.luckysparrow.ch`
+- Deployment:
+  - Rebuilt and restarted the `openjarvis-prod-jarvis-1` container after a
+    CompanyCore context relevance update.
+- Protected connector checks:
+  - Bearer-authenticated `GET /v1/connectors/companycore` returned `200`.
+  - Response reported `connected=true` and `auth_type=bridge`.
+  - Bearer-authenticated `POST /v1/connectors/companycore/sync` returned
+    `200` with `status=started`.
+  - `GET /v1/connectors` reported the CompanyCore connector with indexed
+    chunks.
+- Chat smoke:
+  - Bearer-authenticated `POST /v1/chat/completions` answered from CompanyCore
+    records for the Paperclip onboarding project.
+  - The answer included the CompanyCore project and the two durable project
+    tasks after the relevance update.
+- Residual precision note:
+  - A broad prompt can still pick an adapter smoke agent when multiple agent
+    records match Paperclip. This is tracked as a P1 Jarvis answer precision
+    hardening item, not a CompanyCore connectivity blocker.

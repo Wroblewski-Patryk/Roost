@@ -26,11 +26,17 @@ GitHub repository settings access. Manual deploy and rollback paths are proven.
 | Paperclip adapter | Production logs and DB | `received=1`, `created=1`, `acked=1`; issue `LUC-37` created |
 | Paperclip event ack | CompanyCore pending events for `targetAgent=paperclip` | `0` |
 | Jarvis env bridge | Production container env | `COMPANYCORE_BASE_URL` and service key configured |
+| Jarvis authenticated connector | Bearer-authenticated production connector smoke | `200`, `connected=true`, `auth_type=bridge` |
+| Jarvis CompanyCore sync | Bearer-authenticated production sync trigger | `200`, `status=started`, CompanyCore chunks indexed |
 
 Jarvis's public connector endpoint returned `401` without an Authorization
-header. This is expected for a protected user-facing endpoint and is not a
-CompanyCore service-key failure; the same Jarvis CompanyCore service key passed
-the CompanyCore `/v1/connection` smoke.
+header. This is expected for a protected user-facing endpoint. A follow-up
+authenticated smoke with Jarvis's production bearer auth returned `200`,
+reported `companycore.connected=true`, triggered a CompanyCore sync, and
+confirmed chat answers are using CompanyCore records. The remaining Jarvis
+follow-up is answer precision: when smoke records and durable business records
+both match a broad Paperclip prompt, Jarvis can choose a smoke agent as the
+example agent even though the CompanyCore connection and chat context are live.
 
 ## Definition Of Done Review
 
@@ -71,12 +77,14 @@ the CompanyCore `/v1/connection` smoke.
 
 - GitHub auto-deploy webhook remains blocked by repository settings access.
   Manual deploy is the approved fallback until credentials are available.
-- Jarvis public connector smoke requires a valid user Authorization header.
-  CompanyCore-side Jarvis service authentication is verified, but a future
-  closure pass should include an authenticated Jarvis UI/API smoke.
+- Jarvis answer precision should be hardened so broad CompanyCore prompts
+  prefer durable business records over adapter smoke records when both are
+  relevant.
 - Paperclip adapter is deployed as a production image patch from the current
   production source to avoid upgrading unrelated upstream Paperclip changes.
-  The patch should be upstreamed or carried in the managed deployment source
+  The patch is now carried in `integrations/paperclip/companycore-adapter.patch`
+  and documented in `docs/operations/paperclip-companycore-adapter-runbook.md`;
+  it should still be merged into the managed Paperclip application repository
   before the next Paperclip upgrade.
 
 ## Rollback
@@ -90,5 +98,6 @@ the CompanyCore `/v1/connection` smoke.
 
 ## Next Work
 
-The next valuable v1-hardening slice is an authenticated Jarvis connector smoke
-and a managed source path for the Paperclip CompanyCore adapter patch.
+The next valuable v1-hardening slice is Jarvis CompanyCore answer precision so
+chat responses consistently prefer durable business records over adapter smoke
+records.

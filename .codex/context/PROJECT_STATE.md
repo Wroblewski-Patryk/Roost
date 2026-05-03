@@ -86,8 +86,9 @@ Last updated: 2026-05-03
   Postgres volume.
 
 ## Current Focus
-- Main active objective: v1 runtime release candidate is live; harden the
-  authenticated Jarvis smoke and managed Paperclip adapter source path.
+- Main active objective: v1 runtime release candidate is live; continue
+  hardening Jarvis CompanyCore answer precision and managed downstream adapter
+  source paths.
 - Top blockers: GitHub repository webhook setup needs an authenticated GitHub
   session or token with webhook administration permissions.
 - Success criteria for this phase: canonical docs, workspace/auth model,
@@ -96,14 +97,17 @@ Last updated: 2026-05-03
   and deployment smoke evidence are aligned.
 
 ## Autonomous Iteration State
-- Current iteration: CCV1-048 V1 Closure Audit.
-- Current operation mode: TESTER
-- Last completed iteration: CCV1-048 V1 Closure Audit.
-- Last completed task: verified the v1 production release candidate across
-  CompanyCore health, service-key connection, ClickUp maintenance/scheduler,
-  Paperclip health/event consumption, and documented residual risks.
-- Next required mode: BUILDER for authenticated Jarvis connector smoke and
-  managed Paperclip adapter source path.
+- Current iteration: CCV1-049 Authenticated Jarvis Smoke And Managed Paperclip
+  Source Path.
+- Current operation mode: BUILDER
+- Last completed iteration: CCV1-049 Authenticated Jarvis Smoke And Managed
+  Paperclip Source Path.
+- Last completed task: verified Jarvis's protected production CompanyCore
+  connector path, deployed a relevance improvement for CompanyCore chat
+  context, and stored the Paperclip adapter patch/runbook in a managed
+  CompanyCore path.
+- Next required mode: BUILDER for Jarvis CompanyCore answer precision
+  hardening unless priority changes.
 
 ## Recent Progress
 - 2026-05-02: Created Company Core backend foundation, Prisma schema, Docker
@@ -521,6 +525,17 @@ Last updated: 2026-05-03
   events. Jarvis public connector smoke requires user Authorization, so the
   next hardening task is an authenticated Jarvis smoke rather than a
   CompanyCore runtime blocker.
+- 2026-05-03: Completed CCV1-049 by running authenticated production Jarvis
+  CompanyCore smoke with protected bearer access. `GET
+  /v1/connectors/companycore` returned `200`, `connected=true`, and
+  `auth_type=bridge`; `POST /v1/connectors/companycore/sync` returned
+  `status=started`; the CompanyCore connector had indexed chunks; and chat
+  answered from CompanyCore project, decision, and task records. Deployed an
+  OpenJarvis context relevance improvement so CompanyCore records are ranked
+  against the latest question and highlighted before full sections. Stored the
+  Paperclip adapter as `integrations/paperclip/companycore-adapter.patch` and
+  documented apply/validation/smoke/rollback in
+  `docs/operations/paperclip-companycore-adapter-runbook.md`.
 
 ## Working Agreements
 - Keep task board and project state synchronized.
@@ -570,6 +585,8 @@ Last updated: 2026-05-03
 - `docs/operations/post-deploy-smoke.md`
 - `docs/operations/rollback-and-recovery.md`
 - `docs/operations/service-reliability-and-observability.md`
+- `docs/operations/paperclip-companycore-adapter-runbook.md`
+- `docs/operations/v1-release-readiness.md`
 - `docs/security/secure-development-lifecycle.md`
 - `docs/security/security-baseline.md`
 - `docs/ux/design-system-contract.md`

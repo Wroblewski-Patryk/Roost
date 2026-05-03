@@ -2,13 +2,7 @@
 
 ## Ready
 
-- Authenticated Jarvis connector smoke and managed Paperclip adapter source path
-  - Stage: planning
-  - Owner: QA/Test + Ops/Release
-  - Priority: P0
-  - Scope: run a user-authenticated Jarvis connector smoke and move the
-    Paperclip CompanyCore adapter patch into a managed source/deploy path before
-    the next Paperclip upgrade.
+No active P0 runtime task is ready after CCV1-049.
 
 ## Blocked
 
@@ -23,9 +17,12 @@
 
 ## Backlog
 
-No active backlog item beyond the continuous ClickUp update strategy and
-Paperclip application-side adapter work tracked in
-`docs/planning/mvp-next-commits.md`.
+- Jarvis CompanyCore answer precision hardening
+  - Stage: analysis
+  - Owner: QA/Test + Backend Builder
+  - Priority: P1
+  - Scope: reduce ambiguity when Jarvis answers from CompanyCore records that
+    include both durable business records and adapter smoke records.
 
 ## Done
 
@@ -102,3 +99,4 @@ Paperclip application-side adapter work tracked in
 - CCV1-046 ClickUp Maintenance Scheduler.
 - CCV1-047 Paperclip Application-Side CompanyCore Adapter.
 - CCV1-048 V1 Closure Audit.
+- CCV1-049 Authenticated Jarvis Smoke And Managed Paperclip Source Path.

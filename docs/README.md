@@ -102,6 +102,8 @@ Use `docs/` as the canonical home for CompanyCore documentation.
   - `operations/service-reliability-and-observability.md`
   - `operations/clickup-production-bootstrap.md`
   - `operations/jarvis-companycore-update-runbook.md`
+  - `operations/paperclip-companycore-adapter-runbook.md`
+  - `operations/v1-release-readiness.md`
 - Security:
   - `security/security-baseline.md`
   - `security/secure-development-lifecycle.md`

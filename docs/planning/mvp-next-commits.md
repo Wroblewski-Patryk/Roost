@@ -42,11 +42,11 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] CCV1-046 ClickUp Maintenance Scheduler
 - [x] CCV1-047 Paperclip Application-Side CompanyCore Adapter
 - [x] CCV1-048 V1 Closure Audit
+- [x] CCV1-049 Authenticated Jarvis Smoke And Managed Paperclip Source Path
 
 ## NEXT
 
-- [ ] Authenticated Jarvis connector smoke and managed Paperclip adapter source
-      path.
+- [ ] Jarvis CompanyCore answer precision hardening.
 
 ## PIPELINE
 
@@ -76,6 +76,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] 24. CCV1-046 ClickUp Maintenance Scheduler
 - [x] 25. CCV1-047 Paperclip Application-Side CompanyCore Adapter
 - [x] 26. CCV1-048 V1 Closure Audit
+- [x] 27. CCV1-049 Authenticated Jarvis Smoke And Managed Paperclip Source Path
 
 
 ## GROUP QUEUE
