@@ -66,6 +66,10 @@ const state = {
   apiFilters: {
     search: "",
     method: ""
+  },
+  relationshipFilters: {
+    search: "",
+    source: ""
   }
 };
 
@@ -177,6 +181,8 @@ const pipelineDealsList = document.querySelector("#pipelineDealsList");
 const pipelineClientsList = document.querySelector("#pipelineClientsList");
 const pipelineInteractionsList = document.querySelector("#pipelineInteractionsList");
 const relationshipSummary = document.querySelector("#relationshipSummary");
+const relationshipSearch = document.querySelector("#relationshipSearch");
+const relationshipSourceFilter = document.querySelector("#relationshipSourceFilter");
 const relationshipQueue = document.querySelector("#relationshipQueue");
 const relationshipProviderList = document.querySelector("#relationshipProviderList");
 const relationshipDriveList = document.querySelector("#relationshipDriveList");
@@ -989,6 +995,58 @@ function areaNameById(areaId) {
   return area ? areaLabel(area) : "Unassigned";
 }
 
+function relationshipRows(mappings, driveFolders) {
+  return [
+    ...mappings.map((mapping) => ({
+      type: "mapping",
+      source: "provider",
+      sourceLabel: providerLabel(mapping.provider),
+      title: mapping.name || mapping.externalId || mapping.id,
+      provider: mapping.provider,
+      entityType: mapping.entityType,
+      areaId: mappingAreaId(mapping),
+      needsReview: !mappingAreaId(mapping),
+      item: mapping
+    })),
+    ...driveFolders.map((file) => ({
+      type: "drive",
+      source: "drive",
+      sourceLabel: "Google Drive",
+      title: file.name,
+      provider: "google_drive",
+      entityType: "folder",
+      areaId: file.operatingAreaId || "",
+      needsReview: !file.operatingAreaId,
+      item: file
+    }))
+  ];
+}
+
+function relationshipMatchesFilters(row) {
+  const search = state.relationshipFilters.search.trim().toLowerCase();
+  const source = state.relationshipFilters.source;
+
+  if (source === "review" && !row.needsReview) {
+    return false;
+  }
+  if (source === "provider" && row.source !== "provider") {
+    return false;
+  }
+  if (source === "drive" && row.source !== "drive") {
+    return false;
+  }
+
+  const searchable = [
+    row.title,
+    row.provider,
+    row.entityType,
+    row.sourceLabel,
+    areaNameById(row.areaId)
+  ].filter(Boolean).join(" ").toLowerCase();
+
+  return !search || searchable.includes(search);
+}
+
 function renderRelationshipCenter() {
   relationshipQueue.innerHTML = "";
   relationshipProviderList.innerHTML = "";
@@ -996,33 +1054,38 @@ function renderRelationshipCenter() {
 
   const mappings = state.operatingModel.externalMappings || [];
   const driveFolders = state.googleDrive.files.filter((file) => file.isFolder);
-  const unmappedMappings = mappings.filter((mapping) => !mappingAreaId(mapping));
-  const unassignedFolders = driveFolders.filter((file) => !file.operatingAreaId);
-  const queueCount = unmappedMappings.length + unassignedFolders.length;
+  const rows = relationshipRows(mappings, driveFolders);
+  const filteredRows = rows.filter(relationshipMatchesFilters);
+  const queueRows = filteredRows.filter((row) => row.needsReview);
+  const queueCount = rows.filter((row) => row.needsReview).length;
+  relationshipSearch.value = state.relationshipFilters.search;
+  relationshipSourceFilter.value = state.relationshipFilters.source;
 
   relationshipSummary.textContent = isSignedIn()
-    ? `${mappings.length} provider mapping${mappings.length === 1 ? "" : "s"} and ${driveFolders.length} Drive folder${driveFolders.length === 1 ? "" : "s"} loaded. ${queueCount} relationship${queueCount === 1 ? "" : "s"} need review.`
+    ? `${filteredRows.length} of ${rows.length} relationship${rows.length === 1 ? "" : "s"} shown. ${queueCount} need review.`
     : "Sign in to load relationship data.";
 
-  const queueItems = [
-    ...unmappedMappings.map((mapping) => ({ type: "mapping", item: mapping })),
-    ...unassignedFolders.map((file) => ({ type: "drive", item: file }))
-  ];
-
-  if (queueItems.length === 0) {
+  if (queueRows.length === 0) {
     const empty = document.createElement("p");
     empty.className = "empty-note";
-    empty.textContent = isSignedIn()
-      ? "No unmapped provider or Drive relationships need review."
-      : "Sign in to load relationship review items.";
+    if (!isSignedIn()) {
+      empty.textContent = "Sign in to load relationship review items.";
+    } else if (filteredRows.length === 0) {
+      empty.textContent = "No relationships match the current filters.";
+    } else {
+      empty.textContent = "No filtered relationships need review.";
+    }
     relationshipQueue.append(empty);
   } else {
-    for (const queueItem of queueItems.slice(0, 12)) {
-      relationshipQueue.append(relationshipQueueRow(queueItem));
+    for (const row of queueRows.slice(0, 12)) {
+      relationshipQueue.append(relationshipQueueRow({ type: row.type, item: row.item }));
     }
   }
 
-  renderCompactList(relationshipProviderList, mappings.slice(0, 80), (mapping) => `
+  const filteredMappings = filteredRows.filter((row) => row.type === "mapping").map((row) => row.item);
+  const filteredDriveFolders = filteredRows.filter((row) => row.type === "drive").map((row) => row.item);
+
+  renderCompactList(relationshipProviderList, filteredMappings.slice(0, 80), (mapping) => `
     <strong>${escapeHtml(mapping.name || mapping.externalId || mapping.id)}</strong>
     <span>${escapeHtml(providerLabel(mapping.provider))} · ${escapeHtml(mapping.entityType)} · ${escapeHtml(areaNameById(mappingAreaId(mapping)))}</span>
     ${mapping.provider === "clickup" && ["space", "folder", "list"].includes(mapping.entityType) ? scopeEditorHtml({
@@ -1031,9 +1094,9 @@ function renderRelationshipCenter() {
       type: "mapping",
       label: "Assign area"
     }) : ""}
-  `, "No provider mappings loaded yet.");
+  `, state.relationshipFilters.source === "drive" ? "Provider mappings are hidden by the current filter." : "No provider mappings match the current filters.");
 
-  renderCompactList(relationshipDriveList, driveFolders.slice(0, 80), (file) => `
+  renderCompactList(relationshipDriveList, filteredDriveFolders.slice(0, 80), (file) => `
     <strong>${escapeHtml(file.name)}</strong>
     <span>Google Drive · Folder · ${escapeHtml(areaNameById(file.operatingAreaId))}</span>
     ${scopeEditorHtml({
@@ -1042,7 +1105,7 @@ function renderRelationshipCenter() {
       type: "drive",
       label: "Assign area"
     })}
-  `, state.googleDrive.configured ? "No imported Drive folders loaded yet." : "Google Drive is not connected yet.");
+  `, state.relationshipFilters.source === "provider" ? "Drive folders are hidden by the current filter." : state.googleDrive.configured ? "No Drive folders match the current filters." : "Google Drive is not connected yet.");
 }
 
 function relationshipQueueRow(queueItem) {
@@ -2576,6 +2639,16 @@ moduleSearch.addEventListener("input", () => {
   renderModuleSwitcher({ open: true });
 });
 
+relationshipSearch.addEventListener("input", () => {
+  state.relationshipFilters.search = relationshipSearch.value;
+  renderRelationshipCenter();
+});
+
+relationshipSourceFilter.addEventListener("change", () => {
+  state.relationshipFilters.source = relationshipSourceFilter.value;
+  renderRelationshipCenter();
+});
+
 moduleSearch.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     event.preventDefault();
@@ -2631,6 +2704,8 @@ logoutButton.addEventListener("click", () => {
   state.pipelineFilters.status = "";
   state.integrationFilters.search = "";
   state.integrationFilters.type = "";
+  state.relationshipFilters.search = "";
+  state.relationshipFilters.source = "";
   state.driveFilters.search = "";
   state.driveFilters.kind = "";
   state.driveFilters.area = "";

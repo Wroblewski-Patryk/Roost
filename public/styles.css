@@ -542,7 +542,8 @@ h4 {
 .integration-filter-bar,
 .drive-filter-bar,
 .api-filter-bar,
-.clickup-list-filter-bar {
+.clickup-list-filter-bar,
+.relationship-filter-bar {
   display: grid;
   grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(150px, 0.75fr));
   gap: 12px;
@@ -561,7 +562,8 @@ h4 {
 .area-filter-bar,
 .integration-filter-bar,
 .api-filter-bar,
-.clickup-list-filter-bar {
+.clickup-list-filter-bar,
+.relationship-filter-bar {
   grid-template-columns: minmax(220px, 1.5fr) minmax(160px, 0.8fr);
   margin-top: 16px;
 }
@@ -572,7 +574,8 @@ h4 {
 .integration-filter-bar label,
 .drive-filter-bar label,
 .api-filter-bar label,
-.clickup-list-filter-bar label {
+.clickup-list-filter-bar label,
+.relationship-filter-bar label {
   margin: 0;
   color: var(--muted);
   font-size: 12px;
@@ -592,7 +595,9 @@ h4 {
 .api-filter-bar input,
 .api-filter-bar select,
 .clickup-list-filter-bar input,
-.clickup-list-filter-bar select {
+.clickup-list-filter-bar select,
+.relationship-filter-bar input,
+.relationship-filter-bar select {
   margin-top: 6px;
 }
 
@@ -690,6 +695,10 @@ h4 {
 
 .clickup-list-filter-bar {
   margin: 0 0 12px;
+}
+
+.relationship-filter-bar {
+  margin: 0 0 14px;
 }
 
 .integration-area-list {
@@ -1423,6 +1432,7 @@ button.compact,
   .drive-filter-bar,
   .api-filter-bar,
   .clickup-list-filter-bar,
+  .relationship-filter-bar,
   .module-launch-grid {
     grid-template-columns: 1fr;
   }

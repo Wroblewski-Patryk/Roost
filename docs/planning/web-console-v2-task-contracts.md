@@ -1,5 +1,56 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-019 Relationship Review Filters
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: searchable relationship review filters backed by
+  existing provider mappings and imported Google Drive folders.
+- Goal: Make `/relationships` usable as the correction surface for misplaced
+  ClickUp/Drive elements by letting an operator quickly narrow the review queue
+  and supporting lists without changing backend contracts.
+- Scope:
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Add search and source/status controls to the Relationships view.
+  - Filter the review queue, provider mapping list, and Drive folder list from
+    already loaded frontend state.
+  - Keep existing assignment controls and update the relationship summary to
+    show filtered versus loaded relationships.
+  - Preserve empty states for signed-out, no data, and filtered no-match cases.
+  - Validate syntax, build, tests, local browser smoke, and production smoke.
+- Acceptance Criteria:
+  - `/relationships` supports search across provider mapping, Drive folder,
+    provider/source, entity type, and assigned area names.
+  - Source/status filter supports all, needs review, provider mappings, and
+    Drive folders.
+  - Review queue and supporting lists update without reloading and preserve
+    existing area assignment controls.
+  - Summary reflects filtered relationship count and unresolved review count.
+  - Responsive layout remains usable on desktop and mobile.
+- Definition of Done:
+  - `node --check public/app.js`, `git diff --check`, `npm run build`, and
+    `npm test` pass.
+  - Browser smoke verifies relationship search, source/status filtering,
+    filtered empty state, assignment control persistence, and mobile layout.
+  - Project state, task board, and next-commits docs are updated.
+- Result Report:
+  - Added search and source/status filters to `/relationships` for all,
+    needs-review, provider mapping, and Drive folder views.
+  - The review queue, provider mapping list, and Drive folder list now filter
+    from existing frontend state while preserving area assignment controls.
+  - Relationship summary now reports filtered count versus loaded count and
+    unresolved review count.
+  - Validation passed: `node --check public/app.js`, `git diff --check`,
+    `npm run build`, `npm test`, and local Playwright relationship-filter
+    smoke.
+
 ## V2WEB-018 Global Module Switcher
 
 - Task Type: design/frontend

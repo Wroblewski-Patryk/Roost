@@ -414,6 +414,21 @@
             </div>
             <a class="button-link secondary compact" href="/areas" data-link>Open area map</a>
           </div>
+          <section class="relationship-filter-bar" aria-label="Relationship filters">
+            <label>
+              Search relationships
+              <input id="relationshipSearch" type="search" autocomplete="off" placeholder="List, folder, provider, area..." />
+            </label>
+            <label>
+              View
+              <select id="relationshipSourceFilter">
+                <option value="">All relationships</option>
+                <option value="review">Needs review</option>
+                <option value="provider">Provider mappings</option>
+                <option value="drive">Drive folders</option>
+              </select>
+            </label>
+          </section>
           <div class="relationship-queue" id="relationshipQueue"></div>
         </section>
 

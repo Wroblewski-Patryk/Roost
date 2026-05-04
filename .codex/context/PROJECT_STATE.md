@@ -115,14 +115,17 @@ Last updated: 2026-05-04
 - Current iteration: select the next smallest v2 web console polish slice from
   implemented data surfaces.
 - Current operation mode: BUILDER
-- Last completed iteration: V2WEB-018 Global Module Switcher.
-- Last completed task: added a searchable private topbar module switcher for
-  implemented console routes with state-aware hints, keyboard navigation, and
-  mobile-safe layout.
+- Last completed iteration: V2WEB-019 Relationship Review Filters.
+- Last completed task: added relationship search and source/status filters for
+  provider mappings and Drive folders while preserving assignment controls.
 - Next required mode: BUILDER for the next v2 web console iteration unless an
   architecture decision blocks the queue first.
 
 ## Recent Progress
+- 2026-05-04: Completed V2WEB-019 by adding relationship review filters in
+  `/relationships` for all, needs-review, provider, and Drive views with
+  filtered summaries, empty states, preserved assignment controls, and mobile
+  smoke coverage.
 - 2026-05-04: Completed V2WEB-018 by adding a global module switcher in the
   private workspace topbar, backed by implemented routes and current frontend
   state, with click, Enter, Escape, empty-state, desktop, and mobile smoke

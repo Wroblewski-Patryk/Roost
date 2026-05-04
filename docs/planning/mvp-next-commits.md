@@ -5,6 +5,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
+- [x] V2WEB-019 Relationship Review Filters
 - [x] V2WEB-018 Global Module Switcher
 - [x] V2WEB-017 ClickUp List Tree Filters
 - [x] V2WEB-016 API Workbench Filters
@@ -83,7 +84,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NEXT
 
-- [ ] Continue v2 web console polish after global module switcher:
+- [ ] Continue v2 web console polish after relationship review filters:
       deeper
       module editing surfaces should become route-level slices only when their
       data path is already implemented.
@@ -102,6 +103,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## PIPELINE
 
+- [x] 66. V2WEB-019 Relationship Review Filters
 - [x] 65. V2WEB-018 Global Module Switcher
 - [x] 49. V2WEB-002 Manual Provider Scope Mapping
 - [x] 50. V2WEB-003 Main Branch Web Console Shell Reconciliation
