@@ -5,6 +5,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
+- [x] V2WEB-020 Main Operating Area Foundation
 - [x] V2WEB-019 Relationship Review Filters
 - [x] V2WEB-018 Global Module Switcher
 - [x] V2WEB-017 ClickUp List Tree Filters
@@ -84,7 +85,10 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NEXT
 
-- [ ] Continue v2 web console polish after relationship review filters:
+- [ ] V2WEB-021 User-Created Area Deletion Guardrails:
+      define system/user-created area metadata, protect `00. Glowny`, and only
+      then expose safe delete controls for user-created areas.
+- [ ] Continue v2 web console polish after main operating area foundation:
       deeper
       module editing surfaces should become route-level slices only when their
       data path is already implemented.
@@ -103,6 +107,8 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## PIPELINE
 
+- [x] 67. V2WEB-020 Main Operating Area Foundation
+- [ ] 68. V2WEB-021 User-Created Area Deletion Guardrails
 - [x] 66. V2WEB-019 Relationship Review Filters
 - [x] 65. V2WEB-018 Global Module Switcher
 - [x] 49. V2WEB-002 Manual Provider Scope Mapping

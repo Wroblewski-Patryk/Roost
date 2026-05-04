@@ -90,9 +90,11 @@ The approved v1 direction is:
   `Workspace -> Operating Area -> Operating Folder -> Operating Table ->
   Record`, mapped to ClickUp `Team/Workspace -> Space -> Folder -> List ->
   Task`
-- first-party business tables should be assigned to one of 12 approved
-  operating areas, while users, memberships, API keys, integration settings,
-  provider mappings, and platform metadata remain system tables
+- first-party business tables should be assigned to an approved operating area;
+  `00. Glowny` is the non-removable fallback area for unclassified imports,
+  followed by the 12 company departments, while users, memberships, API keys,
+  integration settings, provider mappings, and platform metadata remain system
+  tables
 - provider imports must expose an explicit existing-record policy before
   writing; ClickUp supports `merge`, `skip_existing`,
   `replace_selected_lists`, and `inspect_only`, with deletes limited to

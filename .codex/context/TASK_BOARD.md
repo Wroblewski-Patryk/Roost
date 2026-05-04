@@ -2,9 +2,12 @@
 
 ## Ready
 
-No additional ready P0/P1 web console implementation task is queued. Continue
-v2 web console polish by selecting the next smallest route-level slice that is
-already backed by implemented data.
+- V2WEB-021 User-Created Area Deletion Guardrails
+  - Stage: planning
+  - Owner: Backend/Frontend Builder
+  - Priority: P1
+  - Scope: define system/user-created area metadata, protect `00. Glowny`, and
+    expose deletion only for user-created areas after safe reassignment rules.
 
 ## In Progress
 
@@ -156,3 +159,4 @@ No active task.
 - V2WEB-017 ClickUp List Tree Filters.
 - V2WEB-018 Global Module Switcher.
 - V2WEB-019 Relationship Review Filters.
+- V2WEB-020 Main Operating Area Foundation.

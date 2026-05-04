@@ -1,5 +1,55 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-020 Main Operating Area Foundation
+
+- Task Type: backend/frontend
+- Current Stage: done
+- Deliverable For This Stage: workspace operating model includes immutable
+  `00. Glowny` fallback area for unclassified ClickUp/Drive/company elements.
+- Goal: Give ClickUp Lists and other imported records without a clear company
+  department a stable home instead of forcing them into an unrelated internal
+  department.
+- Scope:
+  - `src/operating-model/catalog.ts`
+  - `src/modules/connection/connection.routes.ts`
+  - `src/modules/operating-model/operating-model.routes.ts`
+  - `src/tests/api.test.ts`
+  - `public/app.js`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Add `main-general` as position `0` in the operating-area catalog.
+  - Make unclassified provider names fall back to `main-general`.
+  - Ensure existing workspaces receive the new area during connection and
+    operating-model reads.
+  - Update frontend area metadata/order so `00. Glowny` appears first.
+  - Update tests from 12 to 13 areas and verify unknown ClickUp lists map to
+    the new fallback area.
+- Acceptance Criteria:
+  - New and existing workspaces expose `main-general` / `00. Glowny` first.
+  - Unknown ClickUp List names classify to `main-general`.
+  - Existing business table mappings remain in their current operating areas.
+  - Connection and operating-model endpoints keep returning the full hierarchy.
+  - Delete-area UX is not shipped in this slice and remains planned separately.
+- Definition of Done:
+  - `node --check public/app.js`, `git diff --check`, `npm run build`, and
+    `npm test` pass.
+  - Production smoke confirms `/v1/connection`, `/v1/operating-model`, and the
+    frontend bundle include the main area behavior.
+- Result Report:
+  - Added `main-general` / `00. Główny` as position `0` in the operating-area
+    catalog.
+  - Unclassified provider names now fall back to `main-general`; explicit
+    operations and AI/Jarvis names still classify to their specific areas.
+  - Existing workspaces receive the new area during `/v1/connection` and
+    `/v1/operating-model` reads.
+  - Updated frontend area metadata and copy from a strict 12-area model to
+    `00` fallback plus 12 company departments.
+  - Validation passed: `node --check public/app.js`, `git diff --check`,
+    `npm run build`, and `npm test`.
+
 ## V2WEB-019 Relationship Review Filters
 
 - Task Type: design/frontend

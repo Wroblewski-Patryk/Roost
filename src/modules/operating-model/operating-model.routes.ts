@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
+import { ensureOperatingModelForWorkspace } from "../../operating-model/catalog";
 
 const uuidSchema = z.string().uuid();
 
@@ -77,6 +78,7 @@ async function assertScope(workspaceId: string, input: {
 
 operatingModelRouter.get("/", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
+  await ensureOperatingModelForWorkspace(prisma, workspaceId);
   const [
     areas,
     externalMappings,

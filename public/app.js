@@ -74,6 +74,7 @@ const state = {
 };
 
 const COMPANY_AREAS = [
+  { number: "00", label: "Główny", key: "main-general", description: "Default home for unclassified imported lists, folders, records, and shared company context." },
   { number: "01", label: "Strategia", key: "strategy-governance", description: "Goals, targets, decisions, and the strategic source of truth." },
   { number: "02", label: "Produkt", key: "projects-delivery", description: "Projects, delivery containers, product work, and shipped outcomes." },
   { number: "03", label: "Sprzedaż", key: "sales-crm", description: "Clients, pipeline stages, deals, and sales interactions." },

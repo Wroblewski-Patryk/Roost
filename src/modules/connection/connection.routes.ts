@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
+import { ensureOperatingModelForWorkspace } from "../../operating-model/catalog";
 
 const capabilities = [
   "connection:read",
@@ -189,6 +190,8 @@ connectionRouter.get("/", asyncHandler(async (req, res) => {
   if (!workspace) {
     return res.status(422).json({ error: "workspace_required" });
   }
+
+  await ensureOperatingModelForWorkspace(prisma, workspace.id);
 
   const clickUp = await prisma.integrationSetting.findUnique({
     where: {

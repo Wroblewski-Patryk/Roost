@@ -73,14 +73,16 @@ and UI should use `Workspace` and treat ClickUp `team_id` as an external
 workspace identifier. Provider-specific naming must stay in integration
 mappers, not leak into core domain names.
 
-Every business table should belong to exactly one of 12 operating areas. Each
-area can own several operating folders and several operating tables. System
-tables such as users, memberships, API keys, integration settings, provider
-mappings, audit/events, and schema metadata remain platform-owned and are not
-counted as business-area tables.
+Every business table should belong to exactly one operating area. The model has
+one non-removable fallback area, `00. Glowny`, followed by the 12 company
+departments. Each area can own several operating folders and several operating
+tables. System tables such as users, memberships, API keys, integration
+settings, provider mappings, audit/events, and schema metadata remain
+platform-owned and are not counted as business-area tables.
 
-The approved 12 operating areas are:
+The approved company operating areas are:
 
+0. Glowny
 1. Strategy and governance
 2. Projects and delivery
 3. Tasks and workflow

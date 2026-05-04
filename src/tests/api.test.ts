@@ -5,6 +5,7 @@ import { createApp } from "../app";
 import { prisma } from "../db/prisma";
 import { signClickUpWebhookBody, verifyClickUpWebhookSignature } from "../integrations/clickup/webhook-signature";
 import { getGoogleDriveSettingsForWorkspace } from "../integrations/integration-settings.service";
+import { classifyOperatingAreaKey } from "../operating-model/catalog";
 
 const realFetch = globalThis.fetch.bind(globalThis);
 let baseUrl = "";
@@ -246,7 +247,8 @@ test("CompanyCore v1 protected API flow", async () => {
     connectionBody.data.operatingModel.hierarchy,
     "workspace -> operating_area -> operating_folder -> operating_table -> record"
   );
-  assert.equal(connectionBody.data.operatingModel.areas.length, 12);
+  assert.equal(connectionBody.data.operatingModel.areas.length, 13);
+  assert.equal(connectionBody.data.operatingModel.areas[0]?.key, "main-general");
   const strategyArea = connectionBody.data.operatingModel.areas.find((area) => area.key === "strategy-governance");
   assert.ok(strategyArea);
   assert.ok(strategyArea.tables.some((table) => table.apiSlug === "goals" && table.tableName === "goals"));
@@ -567,6 +569,15 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(serviceCannotCreateKeys.status, 403);
 
+  await prisma.operatingArea.delete({
+    where: {
+      workspaceId_key: {
+        workspaceId: ownerA.workspace.id,
+        key: "main-general"
+      }
+    }
+  });
+
   const operatingModel = await request("/v1/operating-model", { headers: authA });
   assert.equal(operatingModel.status, 200);
   const operatingModelBody = operatingModel.body as {
@@ -574,7 +585,8 @@ test("CompanyCore v1 protected API flow", async () => {
       areas: Array<{ key: string; tables: Array<{ apiSlug: string }> }>;
     };
   };
-  assert.equal(operatingModelBody.data.areas.length, 12);
+  assert.equal(operatingModelBody.data.areas.length, 13);
+  assert.equal(operatingModelBody.data.areas[0]?.key, "main-general");
   assert.ok(operatingModelBody.data.areas.some((area) => (
     area.key === "strategy-governance"
     && area.tables.some((table) => table.apiSlug === "goals")
@@ -1668,6 +1680,8 @@ test("CompanyCore v1 protected API flow", async () => {
     assert.equal(mappedList?.name, "Jarvis");
     assert.equal(mappedList?.folder?.name, "Company");
     assert.equal(mappedList?.area.key, "ai-agents-observability");
+    assert.equal(classifyOperatingAreaKey("Unsorted Inbox"), "main-general");
+    assert.equal(classifyOperatingAreaKey("Operations"), "operations-administration");
 
     const mappedField = await prisma.externalFieldMapping.findUnique({
       where: {

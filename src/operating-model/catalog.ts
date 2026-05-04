@@ -3,6 +3,7 @@ import type { Prisma, PrismaClient } from "@prisma/client";
 type PrismaExecutor = PrismaClient | Prisma.TransactionClient;
 
 export const operatingAreas = [
+  { key: "main-general", name: "00. Główny", position: 0 },
   { key: "strategy-governance", name: "Strategy and governance", position: 1 },
   { key: "projects-delivery", name: "Projects and delivery", position: 2 },
   { key: "tasks-workflow", name: "Tasks and workflow", position: 3 },
@@ -154,8 +155,11 @@ export function classifyOperatingAreaKey(...names: Array<string | null | undefin
   if (/(ai|agent|jarvis|paperclip|log|event|observability)/.test(text)) {
     return "ai-agents-observability";
   }
+  if (/(operation|operations|administration|admin|office|backoffice)/.test(text)) {
+    return "operations-administration";
+  }
 
-  return "operations-administration";
+  return "main-general";
 }
 
 export async function ensureOperatingModelForWorkspace(

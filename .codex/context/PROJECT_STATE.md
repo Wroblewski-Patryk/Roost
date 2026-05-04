@@ -10,15 +10,21 @@ Last updated: 2026-05-04
 - Current phase: v2 Google Drive integration planning and implementation.
 
 ## Product Decisions (Confirmed)
+- 2026-05-04: The operating model includes a non-user fallback area
+  `00. Glowny` (`main-general`) that cannot be treated as a normal removable
+  company department. Imported ClickUp/Drive/company elements that cannot be
+  confidently classified should land there first so operators can move them
+  intentionally later.
 - 2026-05-03: v1 includes a minimal owner-only web console for production
   ClickUp connection setup. A broader company operations dashboard and mobile
   app are v2 scope; mobile should follow the web product shape.
 - 2026-05-03: CompanyCore should evolve toward a ClickUp-shaped operating
   model: `Workspace -> Operating Area -> Operating Folder -> Operating Table
   -> Record`, mapped to ClickUp `Team/Workspace -> Space -> Folder -> List ->
-  Task`. Business tables must be assigned to one of 12 approved operating
-  areas, while users, memberships, API keys, integration settings, provider
-  mappings, and platform metadata remain system tables.
+  Task`. Business tables must be assigned to an approved operating area:
+  `00. Glowny` for unclassified imports plus the 12 company departments, while
+  users, memberships, API keys, integration settings, provider mappings, and
+  platform metadata remain system tables.
 - 2026-05-03: Provider API work must check current official provider
   documentation before mapping or implementation. For ClickUp this includes
   hierarchy terminology, Custom Fields, Views, rate limits, pagination,
@@ -112,16 +118,20 @@ Last updated: 2026-05-04
   pattern.
 
 ## Autonomous Iteration State
-- Current iteration: select the next smallest v2 web console polish slice from
-  implemented data surfaces.
+- Current iteration: V2WEB-021 User-Created Area Deletion Guardrails planning.
 - Current operation mode: BUILDER
-- Last completed iteration: V2WEB-019 Relationship Review Filters.
-- Last completed task: added relationship search and source/status filters for
-  provider mappings and Drive folders while preserving assignment controls.
+- Last completed iteration: V2WEB-020 Main Operating Area Foundation.
+- Last completed task: added `00. Glowny` / `main-general` as the fallback
+  operating area for unclassified imports and ensured existing workspaces get
+  it on connection/operating-model reads.
 - Next required mode: BUILDER for the next v2 web console iteration unless an
   architecture decision blocks the queue first.
 
 ## Recent Progress
+- 2026-05-04: Completed V2WEB-020 by adding the `00. Glowny` fallback area to
+  the operating model catalog, making unclassified imports land in
+  `main-general`, auto-ensuring the area for existing workspaces, and updating
+  API/frontend tests and architecture docs.
 - 2026-05-04: Completed V2WEB-019 by adding relationship review filters in
   `/relationships` for all, needs-review, provider, and Drive views with
   filtered summaries, empty states, preserved assignment controls, and mobile
