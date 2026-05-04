@@ -52,6 +52,11 @@
             <p class="label" id="workspaceEyebrow">Private workspace</p>
             <h1 id="routeTitle">Dashboard</h1>
           </div>
+          <div class="module-switcher" id="moduleSwitcher">
+            <label for="moduleSearch">Open module</label>
+            <input id="moduleSearch" type="search" autocomplete="off" placeholder="Search modules..." aria-controls="moduleResults" aria-expanded="false">
+            <div class="module-results" id="moduleResults" role="listbox" hidden></div>
+          </div>
           <div class="topbar-actions">
             <a class="button-link secondary compact" href="/settings/account" data-link>Account</a>
             <a class="button-link secondary compact" href="/settings/api" data-link>API</a>

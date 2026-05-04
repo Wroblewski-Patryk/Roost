@@ -127,9 +127,9 @@ body {
   position: sticky;
   top: 0;
   z-index: 9;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(260px, 360px) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 18px;
   min-height: 84px;
   padding: 16px 28px;
@@ -145,6 +145,102 @@ body {
 
 .workspace-topbar .label {
   margin-bottom: 5px;
+}
+
+.module-switcher {
+  position: relative;
+  min-width: 0;
+}
+
+.module-switcher label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.module-switcher input {
+  width: 100%;
+  min-height: 42px;
+  margin: 0;
+  border-color: #c9d2e3;
+  background: #ffffff;
+}
+
+.module-results {
+  position: absolute;
+  z-index: 12;
+  top: calc(100% + 8px);
+  right: 0;
+  left: 0;
+  display: grid;
+  gap: 6px;
+  max-height: min(460px, calc(100vh - 128px));
+  padding: 8px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+}
+
+.module-result {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 58px;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+}
+
+.module-result:hover,
+.module-result:focus-visible {
+  border-color: #b9c8e2;
+  background: var(--soft);
+}
+
+.module-result span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.module-result strong {
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.module-result small {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.module-result kbd {
+  color: var(--muted);
+  font: 800 11px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.module-result-empty {
+  margin: 0;
+  padding: 12px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .topbar-actions {
@@ -1280,6 +1376,16 @@ button.compact,
     display: grid;
     grid-template-columns: auto 1fr;
     padding: 14px 16px;
+  }
+
+  .module-switcher {
+    grid-column: 1 / -1;
+  }
+
+  .module-results {
+    right: 0;
+    left: 0;
+    max-height: min(360px, calc(100vh - 180px));
   }
 
   .topbar-actions {

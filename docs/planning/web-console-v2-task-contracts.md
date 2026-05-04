@@ -1,5 +1,55 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-018 Global Module Switcher
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: searchable module switcher in the private
+  workspace topbar backed by implemented web console routes.
+- Goal: Make the growing v2 web console easier to use by letting an operator
+  quickly find and open existing modules, settings, and review surfaces without
+  memorizing sidebar structure.
+- Scope:
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Add a compact search input and result menu to the private workspace
+    topbar.
+  - Build result rows from existing implemented routes only.
+  - Include current state hints such as tasks, mappings, Drive files, selected
+    ClickUp Lists, and API routes where available.
+  - Support mouse selection, Enter-to-open, Escape-to-close, and filtered empty
+    state.
+  - Validate syntax, build, tests, desktop/mobile route rendering, and
+    production smoke.
+- Acceptance Criteria:
+  - Signed-in users can search and open Dashboard, Areas, Relationships,
+    Tasks, Pipeline, Account, Integrations, ClickUp, Drive, and API surfaces.
+  - Result descriptions reflect existing frontend state and do not invent data.
+  - Empty state appears when no module matches the query.
+  - Keyboard Enter opens the first filtered result and Escape closes the menu.
+  - Layout remains usable on desktop and mobile topbar widths.
+- Definition of Done:
+  - `node --check public/app.js`, `git diff --check`, `npm run build`, and
+    `npm test` pass.
+  - Browser smoke verifies search, click navigation, Enter navigation, Escape
+    close, empty state, and mobile layout.
+  - Project state, task board, and next-commits docs are updated.
+- Result Report:
+  - Added a private topbar module switcher that searches implemented console
+    routes and opens modules without a full page reload.
+  - Result rows include existing state hints for areas, relationships, tasks,
+    pipeline records, ClickUp Lists, Drive files, and API routes.
+  - Keyboard support covers Enter-to-open and Escape-to-close, with filtered
+    empty-state copy and mobile viewport containment.
+  - Validation passed: `node --check public/app.js`, `git diff --check`,
+    `npm run build`, `npm test`, and local Playwright module-switcher smoke.
+
 ## V2WEB-017 ClickUp List Tree Filters
 
 - Task Type: design/frontend

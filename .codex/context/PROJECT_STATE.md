@@ -115,14 +115,18 @@ Last updated: 2026-05-04
 - Current iteration: select the next smallest v2 web console polish slice from
   implemented data surfaces.
 - Current operation mode: BUILDER
-- Last completed iteration: V2WEB-017 ClickUp List Tree Filters.
-- Last completed task: added searchable and selected-state filters to the
-  ClickUp List tree in `/settings`, preserving selection/save behavior and
-  fixing the ClickUp panel `aria-disabled` enabled state.
+- Last completed iteration: V2WEB-018 Global Module Switcher.
+- Last completed task: added a searchable private topbar module switcher for
+  implemented console routes with state-aware hints, keyboard navigation, and
+  mobile-safe layout.
 - Next required mode: BUILDER for the next v2 web console iteration unless an
   architecture decision blocks the queue first.
 
 ## Recent Progress
+- 2026-05-04: Completed V2WEB-018 by adding a global module switcher in the
+  private workspace topbar, backed by implemented routes and current frontend
+  state, with click, Enter, Escape, empty-state, desktop, and mobile smoke
+  coverage.
 - 2026-05-04: Completed V2WEB-017 by adding ClickUp List tree search and
   all/selected/unselected filters in `/settings`, preserving saved List
   selections, adding filtered empty-state copy, and fixing the ClickUp panel

@@ -118,6 +118,9 @@ const connectionStatus = document.querySelector("#connectionStatus");
 const workspaceLabel = document.querySelector("#workspaceLabel");
 const routeTitle = document.querySelector("#routeTitle");
 const workspaceEyebrow = document.querySelector("#workspaceEyebrow");
+const moduleSwitcher = document.querySelector("#moduleSwitcher");
+const moduleSearch = document.querySelector("#moduleSearch");
+const moduleResults = document.querySelector("#moduleResults");
 const sidebarWorkspaceName = document.querySelector("#sidebarWorkspaceName");
 const sidebarStatusDot = document.querySelector("#sidebarStatusDot");
 const sidebarStatusText = document.querySelector("#sidebarStatusText");
@@ -240,6 +243,19 @@ const routeLabels = {
   "/settings/api": "API settings"
 };
 
+const moduleRoutes = [
+  { path: "/dashboard", label: "Dashboard", group: "Command center", keywords: "home overview summary next action attention" },
+  { path: "/areas", label: "Operating areas", group: "Operating model", keywords: "departments areas tables records mapping workspace" },
+  { path: "/relationships", label: "Relationships", group: "Operating model", keywords: "review queue provider drive unmapped correction relations" },
+  { path: "/tasks-adapter", label: "Tasks & adapters", group: "Adapters", keywords: "tasks clickup lists priority status due sync" },
+  { path: "/pipeline", label: "Pipeline", group: "CRM", keywords: "clients deals stages interactions sales crm" },
+  { path: "/settings/account", label: "Account", group: "Settings", keywords: "owner workspace readiness login account" },
+  { path: "/settings/integrations", label: "Integrations", group: "Settings", keywords: "data map modules sources tables drive clickup api" },
+  { path: "/settings", label: "ClickUp adapter", group: "Settings", keywords: "clickup token workspace lists sync import" },
+  { path: "/settings/drive", label: "Google Drive", group: "Settings", keywords: "drive folders files oauth import reconcile scan" },
+  { path: "/settings/api", label: "API settings", group: "Settings", keywords: "api routes manifest agents service keys capabilities" }
+];
+
 function normalizedPath(pathname = window.location.pathname) {
   const trimmed = pathname.replace(/\/+$/, "");
   return trimmed || "/";
@@ -249,11 +265,131 @@ function isSignedIn() {
   return Boolean(state.ownerToken);
 }
 
+function moduleMetric(path) {
+  const signals = isSignedIn() ? dashboardSignals() : null;
+  const areaCount = state.operatingModel.areas.length;
+  const tableCount = state.operatingModel.areas.flatMap((area) => area.tables || []).length;
+  const clickUpLists = (state.clickup.config.listIds || []).length;
+  const driveItems = state.googleDrive.files.length;
+  const apiRoutes = apiRouteRows().length;
+
+  switch (path) {
+    case "/dashboard":
+      return isSignedIn() ? "Live command center" : "Sign in required";
+    case "/areas":
+      return `${areaCount} areas, ${tableCount} tables`;
+    case "/relationships":
+      return `${(signals?.unmappedProviderMappings.length || 0) + (signals?.unassignedDriveFolders.length || 0)} items need review`;
+    case "/tasks-adapter":
+      return `${state.tasks.length} tasks, ${signals?.openTasks.length || 0} open`;
+    case "/pipeline":
+      return `${recordCountForSlugs(["clients", "pipeline-stages", "deals", "interactions"])} CRM records`;
+    case "/settings/account":
+      return state.user?.email || "Owner workspace settings";
+    case "/settings/integrations":
+      return `${areaCount} areas mapped across integrations`;
+    case "/settings":
+      return state.clickup.configured
+        ? `${clickUpLists} selected ClickUp Lists`
+        : "ClickUp not connected";
+    case "/settings/drive":
+      return state.googleDrive.configured
+        ? `${driveItems} Drive items imported`
+        : "Google Drive not connected";
+    case "/settings/api":
+      return `${apiRoutes} implemented API routes`;
+    default:
+      return "";
+  }
+}
+
+function moduleSearchRows() {
+  return moduleRoutes.map((route) => ({
+    ...route,
+    metric: moduleMetric(route.path),
+    searchable: [route.label, route.group, route.keywords, moduleMetric(route.path)]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+  }));
+}
+
 function authHeaders() {
   return {
     "Content-Type": "application/json",
     Authorization: `Bearer ${state.ownerToken}`
   };
+}
+
+function closeModuleSwitcher({ clear = false } = {}) {
+  moduleResults.hidden = true;
+  moduleSearch.setAttribute("aria-expanded", "false");
+  if (clear) {
+    moduleSearch.value = "";
+  }
+}
+
+function renderModuleSwitcher({ open = false } = {}) {
+  if (!isSignedIn()) {
+    closeModuleSwitcher({ clear: true });
+    return;
+  }
+
+  const query = moduleSearch.value.trim().toLowerCase();
+  const rows = moduleSearchRows().filter((row) => !query || row.searchable.includes(query));
+  moduleResults.innerHTML = "";
+
+  if (rows.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "module-result-empty";
+    empty.textContent = "No implemented module matches this search.";
+    moduleResults.append(empty);
+  } else {
+    for (const row of rows) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "module-result";
+      button.dataset.path = row.path;
+      button.setAttribute("role", "option");
+
+      const copy = document.createElement("span");
+      const title = document.createElement("strong");
+      title.textContent = row.label;
+      const meta = document.createElement("small");
+      meta.textContent = `${row.group} - ${row.metric}`;
+      copy.append(title, meta);
+
+      const route = document.createElement("kbd");
+      route.textContent = row.path;
+      button.append(copy, route);
+      button.addEventListener("click", () => {
+        moduleSearch.value = "";
+        closeModuleSwitcher();
+        navigate(row.path);
+      });
+      moduleResults.append(button);
+    }
+  }
+
+  moduleResults.hidden = !open;
+  moduleSearch.setAttribute("aria-expanded", String(open));
+}
+
+function openFirstModuleResult() {
+  const first = moduleSearchRows()
+    .filter((row) => {
+      const query = moduleSearch.value.trim().toLowerCase();
+      return !query || row.searchable.includes(query);
+    })
+    .at(0);
+
+  if (!first) {
+    return;
+  }
+
+  moduleSearch.value = "";
+  closeModuleSwitcher();
+  navigate(first.path);
 }
 
 function updateChrome() {
@@ -283,6 +419,7 @@ function navigate(path, { replace = false, hash = "" } = {}) {
     window.history.pushState({}, "", nextUrl);
   }
   state.mobileMenuOpen = false;
+  closeModuleSwitcher({ clear: true });
   renderRoute();
   if (hash) {
     window.requestAnimationFrame(() => {
@@ -329,6 +466,7 @@ function renderRoute() {
   }
   document.body.dataset.route = path;
   renderConnectionState();
+  renderModuleSwitcher();
   setClickUpEnabled(isSignedIn());
   setGoogleDriveEnabled(isSignedIn());
 }
@@ -2429,6 +2567,33 @@ if (mobileMenuButton) {
     updateChrome();
   });
 }
+
+moduleSearch.addEventListener("focus", () => {
+  renderModuleSwitcher({ open: true });
+});
+
+moduleSearch.addEventListener("input", () => {
+  renderModuleSwitcher({ open: true });
+});
+
+moduleSearch.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    openFirstModuleResult();
+  }
+
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeModuleSwitcher();
+    moduleSearch.blur();
+  }
+});
+
+document.addEventListener("click", (event) => {
+  if (!moduleSwitcher.contains(event.target)) {
+    closeModuleSwitcher();
+  }
+});
 
 logoutButton.addEventListener("click", () => {
   sessionStorage.removeItem("companycoreOwnerToken");
