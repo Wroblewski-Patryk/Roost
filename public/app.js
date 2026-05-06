@@ -122,6 +122,11 @@ const selectAllListsButton = document.querySelector("#selectAllListsButton");
 const clearListsButton = document.querySelector("#clearListsButton");
 const workspaceSelect = document.querySelector("#workspaceSelect");
 const connectionStatus = document.querySelector("#connectionStatus");
+const commandPriorityTitle = document.querySelector("#commandPriorityTitle");
+const commandPriorityDetail = document.querySelector("#commandPriorityDetail");
+const commandPrimaryAction = document.querySelector("#commandPrimaryAction");
+const commandSecondaryAction = document.querySelector("#commandSecondaryAction");
+const operationalSteps = document.querySelector("#operationalSteps");
 const workspaceLabel = document.querySelector("#workspaceLabel");
 const routeTitle = document.querySelector("#routeTitle");
 const workspaceEyebrow = document.querySelector("#workspaceEyebrow");
@@ -888,7 +893,142 @@ function renderDashboardCommandCenter() {
     }
   }
 
+  renderOperationalCockpit(signals, items, { areas, tables, mappings, pipelineRecords: signals.pipelineRecords });
   nextActionText.textContent = nextActionCopy(items, signals);
+}
+
+function renderOperationalCockpit(signals, items, counts) {
+  const priority = dashboardPriority(items, signals);
+  commandPriorityTitle.textContent = priority.title;
+  commandPriorityDetail.textContent = priority.detail;
+  commandPrimaryAction.href = priority.href;
+  commandPrimaryAction.textContent = priority.action;
+  commandSecondaryAction.href = priority.secondaryHref;
+  commandSecondaryAction.textContent = priority.secondaryAction;
+
+  operationalSteps.innerHTML = "";
+  const reviewCount = signals.unmappedProviderMappings.length + signals.unassignedDriveFolders.length;
+  const steps = [
+    {
+      label: "Integrations",
+      title: integrationReadinessTitle(),
+      detail: integrationReadinessDetail(),
+      href: "/settings/integrations",
+      status: state.clickup.configured && state.googleDrive.oauthTokenConfigured ? "good" : state.clickup.configured || state.googleDrive.oauthClientConfigured ? "warn" : "blocked"
+    },
+    {
+      label: "Relationships",
+      title: reviewCount === 0 ? "Mapped" : `${reviewCount} to review`,
+      detail: reviewCount === 0 ? "Provider and Drive relationships look assigned." : "Provider mappings or Drive folders still need an operating area.",
+      href: "/relationships",
+      status: reviewCount === 0 ? "good" : "warn"
+    },
+    {
+      label: "Execution",
+      title: `${signals.openTasks.length} open`,
+      detail: signals.dueSoonTasks.length > 0
+        ? `${signals.dueSoonTasks.length} due within seven days.`
+        : "No urgent due-date pressure detected.",
+      href: "/tasks-adapter",
+      status: signals.dueSoonTasks.length > 0 ? "warn" : "good"
+    },
+    {
+      label: "Data model",
+      title: `${counts.areas} areas`,
+      detail: `${counts.tables} tables, ${counts.mappings} provider mappings, ${counts.pipelineRecords} pipeline records.`,
+      href: "/areas",
+      status: counts.areas > 0 && counts.tables > 0 ? "good" : "warn"
+    }
+  ];
+
+  for (const step of steps) {
+    operationalSteps.append(operationalStepElement(step));
+  }
+}
+
+function dashboardPriority(items, signals) {
+  if (!isSignedIn()) {
+    return {
+      title: "Sign in to load the command center",
+      detail: "Owner login is required before CompanyCore can rank integrations, relationships, tasks, and data health.",
+      href: "/auth/login",
+      action: "Sign in",
+      secondaryHref: "/auth/register",
+      secondaryAction: "Create workspace"
+    };
+  }
+
+  if (items.length > 0) {
+    return {
+      title: items[0].title,
+      detail: items[0].detail,
+      href: items[0].href,
+      action: items[0].action,
+      secondaryHref: "/settings/integrations",
+      secondaryAction: "Integration setup"
+    };
+  }
+
+  if (signals.openTasks.length > 0) {
+    return {
+      title: "Review open execution",
+      detail: `${signals.openTasks.length} task${signals.openTasks.length === 1 ? "" : "s"} are open. Use the task workbench before deeper structural cleanup.`,
+      href: "/tasks-adapter",
+      action: "Open tasks",
+      secondaryHref: "/relationships",
+      secondaryAction: "Review mappings"
+    };
+  }
+
+  return {
+    title: "Workspace looks ready",
+    detail: "Core integrations and mappings look clean. Continue from operating areas or inspect the API routes agents can use.",
+    href: "/areas",
+    action: "Open areas",
+    secondaryHref: "/settings/api",
+    secondaryAction: "View API"
+  };
+}
+
+function integrationReadinessTitle() {
+  const connected = [
+    state.clickup.configured,
+    state.googleDrive.oauthTokenConfigured
+  ].filter(Boolean).length;
+  return `${connected}/2 connected`;
+}
+
+function integrationReadinessDetail() {
+  if (!state.clickup.configured && !state.googleDrive.oauthClientConfigured) {
+    return "ClickUp and Google Drive still need API setup.";
+  }
+  if (!state.googleDrive.oauthTokenConfigured && state.googleDrive.oauthClientConfigured) {
+    return "Drive OAuth client is saved; consent and import are next.";
+  }
+  if (!state.clickup.configured) {
+    return "Google Drive is ready; ClickUp still needs a token.";
+  }
+  if (!state.googleDrive.oauthTokenConfigured) {
+    return "ClickUp is ready; Google Drive still needs consent/import.";
+  }
+  return "ClickUp and Google Drive are ready for operating work.";
+}
+
+function operationalStepElement(step) {
+  const link = document.createElement("a");
+  link.className = `operational-step is-${step.status}`;
+  link.href = step.href;
+  link.dataset.link = "";
+  link.innerHTML = `
+    <span>${escapeHtml(step.label)}</span>
+    <strong>${escapeHtml(step.title)}</strong>
+    <small>${escapeHtml(step.detail)}</small>
+  `;
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    navigate(step.href);
+  });
+  return link;
 }
 
 function dashboardAttentionItems(signals) {

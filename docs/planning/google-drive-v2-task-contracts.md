@@ -4,6 +4,56 @@ This file is the execution queue for the approved Google Drive v2 integration.
 It follows the repository task contract and must stay synchronized with
 `.codex/context/TASK_BOARD.md` and `docs/planning/mvp-next-commits.md`.
 
+## V2WEB-023 Dashboard Operational Cockpit
+
+- Task Type: frontend/UX
+- Current Stage: done
+- Status: DONE
+- Owner: Frontend Builder
+- Priority: P1
+- Iteration: current autonomous web-console follow-up
+- Operation Mode: BUILDER
+- Deliverable For This Stage: dashboard cockpit that ranks the current
+  priority and shows operational readiness lanes.
+- Process Self-Audit:
+  - All seven autonomous loop steps are represented.
+  - Exactly one small UX slice is selected.
+  - The task reuses existing dashboard data and navigation routes.
+- Goal: Make the first dashboard screen work as an operational center by
+  showing the current priority, the next action, what is blocked, and the
+  status of the main operational lanes.
+- Scope:
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `docs/planning/google-drive-v2-task-contracts.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `.codex/context/PROJECT_STATE.md`
+- Implementation Plan:
+  1. Add a dashboard cockpit panel above the summary cards.
+  2. Rank the current priority from existing attention signals.
+  3. Render readiness lanes for integrations, relationships, execution, and
+     data model health.
+  4. Validate desktop and mobile rendered behavior.
+- Acceptance Criteria:
+  - Dashboard first viewport shows the top current priority and a primary next
+    action.
+  - Dashboard shows whether integration, relationship, execution, and data
+    model lanes are healthy, blocked, or need review.
+  - Cockpit links route to the existing module surfaces.
+  - Mobile layout remains readable without overlapping text or controls.
+- Definition of Done:
+  - `npm run build`, `node --check public/app.js`, `git diff --check`, and
+    authenticated rendered UI smoke pass or blockers are recorded.
+- Result Report:
+  - Added the dashboard Operational Cockpit panel with current priority,
+    primary and secondary actions, and four operational readiness lanes.
+  - Reused existing `dashboardSignals()` and module routes instead of adding a
+    new data source.
+  - Verified desktop and mobile dashboard render with authenticated local
+    Playwright smoke.
+
 ## V2WEB-022 Unified API Integration Setup
 
 - Task Type: frontend/backend/integration

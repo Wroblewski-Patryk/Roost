@@ -149,6 +149,28 @@
           </div>
         </div>
 
+        <section class="panel command-focus">
+          <div class="section-title row-title">
+            <div>
+              <h2>Operational cockpit</h2>
+              <p>Start here to see the current priority, what is blocked, and which operational lane needs the next click.</p>
+            </div>
+            <a class="button-link secondary compact" href="/settings/integrations" data-link>Integration setup</a>
+          </div>
+          <div class="command-focus-main">
+            <div>
+              <span class="summary-kicker">Current priority</span>
+              <h3 id="commandPriorityTitle">Sign in to load workspace signals</h3>
+              <p id="commandPriorityDetail">The cockpit will rank integration, relationship, task, and data-model work once the owner session is loaded.</p>
+            </div>
+            <div class="actions command-focus-actions">
+              <a class="button-link" id="commandPrimaryAction" href="/auth/login" data-link>Sign in</a>
+              <a class="button-link secondary" id="commandSecondaryAction" href="/settings/integrations" data-link>Review integrations</a>
+            </div>
+          </div>
+          <div class="operational-steps" id="operationalSteps" aria-label="Operational readiness"></div>
+        </section>
+
         <section class="dashboard-grid">
           <article class="panel summary-card">
             <span class="summary-kicker">Workspace</span>
