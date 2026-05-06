@@ -45,6 +45,12 @@ It follows the repository task contract and must stay synchronized with
   - Added a compact setup checklist to the existing Google Drive setup panel.
   - Added lightweight checklist styles that wrap long environment variable
     names safely.
+  - Verified `npm run build`, `git diff --check`, authenticated local
+    Playwright render smoke for `/settings/drive` at desktop and mobile widths,
+    and production HTML presence after deployment.
+  - Deployed runtime commit `17e0e10bd02ff97ef860815e0433931ff6b0d356` to
+    production with manual VPS backend rollover because the public health check
+    still reported the previous runtime after push.
 
 ## V2GD-010 Drive Hierarchy Preview And Descriptions
 
