@@ -672,6 +672,36 @@
 
         <section class="integration-grid" id="integrationGroups" aria-live="polite"></section>
 
+        <section class="panel integration-action-panel">
+          <div class="section-title row-title">
+            <div>
+              <h2>API integration setup</h2>
+              <p>Use this list to connect provider APIs, then open the dedicated workbench only when you need provider-specific import or review controls.</p>
+            </div>
+            <a class="button-link secondary compact" href="/settings/api" data-link>Agent API</a>
+          </div>
+          <div class="integration-action-list">
+            <a class="integration-action-row" href="/settings" data-link>
+              <span class="summary-kicker">Tasks</span>
+              <strong>ClickUp API</strong>
+              <p>Paste a ClickUp token, choose a Workspace, select Lists, and sync tasks into CompanyCore.</p>
+              <span>Configure ClickUp</span>
+            </a>
+            <a class="integration-action-row" href="/settings/drive" data-link>
+              <span class="summary-kicker">Files</span>
+              <strong>Google Drive API</strong>
+              <p>Paste OAuth client credentials, authorize Google consent, import folders, and keep file previews available to agents.</p>
+              <span>Configure Drive</span>
+            </a>
+            <a class="integration-action-row" href="/settings/api" data-link>
+              <span class="summary-kicker">Agents</span>
+              <strong>CompanyCore API</strong>
+              <p>Review route capabilities for Jarvis, Paperclip, Aviary, and other service clients.</p>
+              <span>Review API routes</span>
+            </a>
+          </div>
+        </section>
+
         <section class="panel integration-matrix-panel">
           <div class="section-title row-title">
             <div>
@@ -726,10 +756,25 @@
             <ol>
               <li>In Google Cloud, enable Google Drive API, Google Docs API, and Google Sheets API for the project.</li>
               <li>Create an OAuth Web application client and add the Redirect URI below exactly as an authorized redirect URI.</li>
-              <li>Set <code>GOOGLE_OAUTH_CLIENT_ID</code> and <code>GOOGLE_OAUTH_CLIENT_SECRET</code> in the backend environment, then redeploy if they changed.</li>
+              <li>Paste the OAuth client ID and client secret below, then save the OAuth client in this workspace.</li>
               <li>Paste the Drive folder IDs, create the OAuth URL, approve Google consent, paste the returned code, save the connection, then import folders.</li>
             </ol>
           </aside>
+
+          <div class="credential-grid">
+            <label>
+              Google OAuth client ID
+              <input id="googleDriveClientId" name="googleDriveClientId" type="text" autocomplete="off" placeholder="000000000000-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com">
+            </label>
+            <label>
+              Google OAuth client secret
+              <input id="googleDriveClientSecret" name="googleDriveClientSecret" type="password" autocomplete="off" placeholder="Leave blank to keep the saved secret">
+            </label>
+          </div>
+          <div class="actions setup-actions">
+            <button type="button" class="secondary" id="googleDriveSaveClientButton">Save OAuth client</button>
+            <span class="inline-status" id="googleDriveClientStatus">OAuth client not saved yet.</span>
+          </div>
 
           <div class="step">
             <label>

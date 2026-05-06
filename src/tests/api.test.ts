@@ -1407,6 +1407,10 @@ test("CompanyCore v1 protected API flow", async () => {
     method: "PUT",
     headers: authA,
     body: JSON.stringify({
+      oauthClient: {
+        clientId: "workspace-google-client-id",
+        clientSecret: "workspace-google-client-secret"
+      },
       oauth: {
         refreshToken: "google-refresh-token",
         accessToken: "google-access-token",
@@ -1429,12 +1433,16 @@ test("CompanyCore v1 protected API flow", async () => {
       provider: string;
       config: { rootFolderIds: string[]; syncMode: string; importMode: string };
       secretConfigured: boolean;
+      oauthClientConfigured: boolean;
+      oauthTokenConfigured: boolean;
       oauth?: unknown;
       token?: unknown;
     };
   };
   assert.equal(googleDriveSettingsBody.data.provider, "google_drive");
   assert.equal(googleDriveSettingsBody.data.secretConfigured, true);
+  assert.equal(googleDriveSettingsBody.data.oauthClientConfigured, true);
+  assert.equal(googleDriveSettingsBody.data.oauthTokenConfigured, true);
   assert.deepEqual(googleDriveSettingsBody.data.config.rootFolderIds, ["drive-folder-root"]);
   assert.equal(googleDriveSettingsBody.data.config.syncMode, "two_way");
   assert.equal(googleDriveSettingsBody.data.config.importMode, "merge");
@@ -1442,6 +1450,8 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(googleDriveSettingsBody.data.token, undefined);
 
   const loadedGoogleDriveSettings = await getGoogleDriveSettingsForWorkspace(ownerA.workspace.id);
+  assert.equal(loadedGoogleDriveSettings?.oauth.clientId, "workspace-google-client-id");
+  assert.equal(loadedGoogleDriveSettings?.oauth.clientSecret, "workspace-google-client-secret");
   assert.equal(loadedGoogleDriveSettings?.oauth.refreshToken, "google-refresh-token");
   assert.equal(loadedGoogleDriveSettings?.oauth.accessToken, "google-access-token");
   assert.equal(loadedGoogleDriveSettings?.config.rootFolderIds?.[0], "drive-folder-root");
@@ -1458,6 +1468,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(googleDriveAuthorizeUrl.status, 200);
   const authorizationUrl = new URL((googleDriveAuthorizeUrl.body as { data: { authorizationUrl: string } }).data.authorizationUrl);
   assert.equal(authorizationUrl.origin, "https://accounts.google.com");
+  assert.equal(authorizationUrl.searchParams.get("client_id"), "workspace-google-client-id");
   assert.equal(authorizationUrl.searchParams.get("access_type"), "offline");
   assert.equal(authorizationUrl.searchParams.get("include_granted_scopes"), "true");
   assert.ok(authorizationUrl.searchParams.get("scope")?.includes("https://www.googleapis.com/auth/drive.file"));
@@ -1970,6 +1981,8 @@ test("CompanyCore v1 protected API flow", async () => {
     if (url.origin === "https://oauth2.googleapis.com" && url.pathname === "/token") {
       oauthRefreshCalled = true;
       const body = new URLSearchParams(String(init?.body ?? ""));
+      assert.equal(body.get("client_id"), "workspace-google-client-id");
+      assert.equal(body.get("client_secret"), "workspace-google-client-secret");
       assert.equal(body.get("grant_type"), "refresh_token");
       assert.equal(body.get("refresh_token"), "google-refresh-token");
       return new Response(JSON.stringify({

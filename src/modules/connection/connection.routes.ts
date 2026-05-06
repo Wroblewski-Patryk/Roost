@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { adapterManifest, capabilities, effectiveCapabilities, scopesAreBroad } from "../../auth/capabilities";
 import { prisma } from "../../db/prisma";
+import { googleDriveSecretStatus } from "../../integrations/integration-settings.service";
 import { asyncHandler } from "../../middleware/async-handler";
 import { ensureOperatingModelForWorkspace } from "../../operating-model/catalog";
 
@@ -119,6 +120,7 @@ connectionRouter.get("/", asyncHandler(async (req, res) => {
           configured: Boolean(googleDrive?.secretCiphertext),
           active: Boolean(googleDrive?.active),
           config: googleDrive?.config ?? {},
+          ...googleDriveSecretStatus(googleDrive?.secretCiphertext),
           updatedAt: googleDrive?.updatedAt ?? null
         }
       }

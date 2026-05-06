@@ -55,6 +55,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] V2GD-009 Google Drive Production Rollover Smoke
 - [x] V2GD-010 Drive Hierarchy Preview And Descriptions
 - [x] V2GD-011 Drive Setup Operator Instructions
+- [x] V2WEB-022 Unified API Integration Setup
 - [x] CCV1-009P Protected production smoke for adapter CRUD
 - [x] CCV1-027 Paperclip and Jarvis production env wiring
 - [x] CCV1-029 ClickUp production bootstrap slot

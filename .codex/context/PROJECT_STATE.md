@@ -133,6 +133,18 @@ Last updated: 2026-05-07
 - Next required mode: TESTER for production smoke and release evidence.
 
 ## Recent Progress
+- 2026-05-07: Completed V2WEB-022 Unified API Integration Setup. The owner
+  console now has one clearer `/settings/integrations` API integration list for
+  ClickUp, Google Drive, and CompanyCore API routes. `/settings/drive` now has
+  concrete Google OAuth client ID and client secret inputs plus a save action,
+  instead of only telling operators to set environment variables. Google Drive
+  OAuth client credentials are stored as encrypted workspace integration secret
+  material, safe API responses expose only `oauthClientConfigured` and
+  `oauthTokenConfigured`, and Drive OAuth URL generation/token refresh uses the
+  workspace-stored client before falling back to process env. Validation
+  passed: `npm run build`, `git diff --check`, full `npm test` against
+  disposable Postgres on port `55454`, and authenticated local Playwright
+  desktop/mobile UI smoke.
 - 2026-05-07: Completed V2GD-010 Drive Hierarchy Preview And Descriptions.
   Google Drive imports now index selected root folders plus nested folders and
   files, preserving `parentExternalId` hierarchy for agents and the owner GUI.

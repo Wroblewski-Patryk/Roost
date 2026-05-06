@@ -15,7 +15,9 @@ export type ClickUpIntegrationConfig = {
 };
 
 export type GoogleDriveOAuthSecret = {
-  refreshToken: string;
+  clientId?: string;
+  clientSecret?: string;
+  refreshToken?: string;
   accessToken?: string;
   expiresAt?: string;
   tokenType?: string;
@@ -78,6 +80,32 @@ export async function getGoogleDriveSettingsForWorkspace(workspaceId: string) {
     oauth: JSON.parse(decryptSecret(setting.secretCiphertext)) as GoogleDriveOAuthSecret,
     config: setting.config as GoogleDriveIntegrationConfig,
     rawSetting: setting
+  };
+}
+
+export function parseGoogleDriveOAuthSecret(
+  secretCiphertext: string | null | undefined,
+  options: { failClosed?: boolean } = {}
+) {
+  if (!secretCiphertext) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(decryptSecret(secretCiphertext)) as GoogleDriveOAuthSecret;
+  } catch (error) {
+    if (options.failClosed === false) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+export function googleDriveSecretStatus(secretCiphertext: string | null | undefined) {
+  const secret = parseGoogleDriveOAuthSecret(secretCiphertext, { failClosed: false });
+  return {
+    oauthClientConfigured: Boolean(secret?.clientId),
+    oauthTokenConfigured: Boolean(secret?.refreshToken || secret?.accessToken)
   };
 }
 

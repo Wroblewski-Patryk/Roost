@@ -17,7 +17,13 @@ import {
   mergeGoogleDriveConfig
 } from "../../integrations/google-drive/google-drive.auth";
 import { importGoogleDriveFoldersForWorkspace, reconcileGoogleDriveChangesForWorkspace } from "../../integrations/google-drive/google-drive.sync";
-import { getClickUpSettingsForWorkspace, toJsonInput } from "../../integrations/integration-settings.service";
+import {
+  getClickUpSettingsForWorkspace,
+  googleDriveSecretStatus,
+  parseGoogleDriveOAuthSecret,
+  toJsonInput,
+  type GoogleDriveOAuthSecret
+} from "../../integrations/integration-settings.service";
 import { encryptSecret } from "../../integrations/secrets";
 import { asyncHandler } from "../../middleware/async-handler";
 import { persistClickUpStructure } from "../../operating-model/clickup-structure";
@@ -66,6 +72,11 @@ const googleDriveOAuthSchema = z.object({
   scope: z.string().min(1).optional()
 }).strict();
 
+const googleDriveOAuthClientSchema = z.object({
+  clientId: z.string().min(1),
+  clientSecret: z.string().min(1).optional()
+}).strict();
+
 const googleDriveAuthorizeUrlSchema = z.object({
   redirectUri: z.string().url(),
   state: z.string().min(1).optional(),
@@ -80,6 +91,7 @@ const googleDriveOAuthExchangeSchema = z.object({
 }).strict();
 
 const upsertGoogleDriveSettingSchema = z.object({
+  oauthClient: googleDriveOAuthClientSchema.optional(),
   oauth: googleDriveOAuthSchema.optional(),
   config: googleDriveConfigSchema.optional(),
   active: z.boolean().optional()
@@ -126,6 +138,9 @@ function safeIntegrationSetting(setting: {
   createdAt: Date;
   updatedAt: Date;
 }) {
+  const googleDriveStatus = setting.provider === "google_drive"
+    ? googleDriveSecretStatus(setting.secretCiphertext)
+    : {};
   return {
     id: setting.id,
     workspaceId: setting.workspaceId,
@@ -133,9 +148,28 @@ function safeIntegrationSetting(setting: {
     config: setting.config,
     active: setting.active,
     secretConfigured: Boolean(setting.secretCiphertext),
+    ...googleDriveStatus,
     lastValidatedAt: setting.lastValidatedAt,
     createdAt: setting.createdAt,
     updatedAt: setting.updatedAt
+  };
+}
+
+function mergeGoogleDriveSecret(
+  existingSecretCiphertext: string | null | undefined,
+  input: {
+    oauthClient?: z.infer<typeof googleDriveOAuthClientSchema>;
+    oauth?: GoogleDriveOAuthSecret;
+  }
+): GoogleDriveOAuthSecret {
+  const existingSecret = parseGoogleDriveOAuthSecret(existingSecretCiphertext, { failClosed: false }) ?? {};
+  return {
+    ...existingSecret,
+    ...(input.oauth ?? {}),
+    ...(input.oauthClient ? {
+      clientId: input.oauthClient.clientId,
+      clientSecret: input.oauthClient.clientSecret ?? existingSecret.clientSecret
+    } : {})
   };
 }
 
@@ -299,7 +333,10 @@ integrationSettingsRouter.post("/google_drive/oauth/authorize-url", asyncHandler
   try {
     return res.json({
       data: {
-        authorizationUrl: buildGoogleDriveAuthorizationUrl(input)
+        authorizationUrl: await buildGoogleDriveAuthorizationUrl({
+          ...input,
+          workspaceId: req.auth!.workspaceId
+        })
       }
     });
   } catch (error) {
@@ -319,7 +356,8 @@ integrationSettingsRouter.post("/google_drive/oauth/exchange", asyncHandler(asyn
   try {
     const oauth = await exchangeGoogleDriveAuthorizationCode({
       code: input.code,
-      redirectUri: input.redirectUri
+      redirectUri: input.redirectUri,
+      workspaceId: req.auth!.workspaceId
     });
     const existing = await prisma.integrationSetting.findUnique({
       where: {
@@ -339,12 +377,12 @@ integrationSettingsRouter.post("/google_drive/oauth/exchange", asyncHandler(asyn
       create: {
         workspaceId: req.auth!.workspaceId,
         provider: "google_drive",
-        secretCiphertext: encryptSecret(JSON.stringify(oauth)),
+        secretCiphertext: encryptSecret(JSON.stringify(mergeGoogleDriveSecret(existing?.secretCiphertext, { oauth }))),
         config: toJsonInput(input.config ?? {}),
         active: input.active ?? true
       },
       update: {
-        secretCiphertext: encryptSecret(JSON.stringify(oauth)),
+        secretCiphertext: encryptSecret(JSON.stringify(mergeGoogleDriveSecret(existing?.secretCiphertext, { oauth }))),
         config: mergeGoogleDriveConfig(existing?.config as never, input.config),
         active: input.active ?? existing?.active ?? true,
         lastValidatedAt: new Date()
@@ -442,7 +480,7 @@ integrationSettingsRouter.put("/:provider", asyncHandler(async (req, res) => {
 
   const input = upsertGoogleDriveSettingSchema.parse(req.body);
 
-  if (!existing && !input.oauth) {
+  if (!existing && !input.oauth && !input.oauthClient) {
     return res.status(400).json({ error: "integration_secret_required" });
   }
 
@@ -455,7 +493,9 @@ integrationSettingsRouter.put("/:provider", asyncHandler(async (req, res) => {
         }
       },
       data: {
-        secretCiphertext: input.oauth ? encryptSecret(JSON.stringify(input.oauth)) : existing.secretCiphertext,
+        secretCiphertext: input.oauth || input.oauthClient
+          ? encryptSecret(JSON.stringify(mergeGoogleDriveSecret(existing.secretCiphertext, input)))
+          : existing.secretCiphertext,
         config: input.config ? toJsonInput(input.config) : existing.config ?? {},
         active: input.active ?? existing.active
       }
@@ -464,7 +504,7 @@ integrationSettingsRouter.put("/:provider", asyncHandler(async (req, res) => {
       data: {
         workspaceId: req.auth!.workspaceId,
         provider,
-        secretCiphertext: encryptSecret(JSON.stringify(input.oauth!)),
+        secretCiphertext: encryptSecret(JSON.stringify(mergeGoogleDriveSecret(null, input))),
         config: toJsonInput(input.config ?? {}),
         active: input.active ?? true
       }

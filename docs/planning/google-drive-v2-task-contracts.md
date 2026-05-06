@@ -4,6 +4,69 @@ This file is the execution queue for the approved Google Drive v2 integration.
 It follows the repository task contract and must stay synchronized with
 `.codex/context/TASK_BOARD.md` and `docs/planning/mvp-next-commits.md`.
 
+## V2WEB-022 Unified API Integration Setup
+
+- Task Type: frontend/backend/integration
+- Current Stage: done
+- Status: DONE
+- Owner: Frontend Builder / Backend Builder
+- Priority: P1
+- Iteration: current autonomous Drive follow-up
+- Operation Mode: BUILDER
+- Deliverable For This Stage: one clearer integrations index plus concrete
+  Google Drive OAuth client input fields in the owner console.
+- Process Self-Audit:
+  - All seven autonomous loop steps are represented.
+  - Exactly one small product slice is selected.
+  - The task reuses `integration_settings` and does not create a parallel
+    provider configuration system.
+- Goal: Let owners see one list of API integrations and enter Google Drive
+  OAuth client credentials where the Drive integration is configured.
+- Scope:
+  - `src/integrations/integration-settings.service.ts`
+  - `src/integrations/google-drive/google-drive.auth.ts`
+  - `src/modules/connection/connection.routes.ts`
+  - `src/modules/integration-settings/integration-settings.routes.ts`
+  - `src/tests/api.test.ts`
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `docs/INTEGRATIONS.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+- Implementation Plan:
+  1. Store Google OAuth client credentials in encrypted workspace integration
+     settings and keep env vars as fallback.
+  2. Expose only safe Drive setup booleans to the connection/settings payloads.
+  3. Add visible OAuth client ID/secret inputs and a save action to
+     `/settings/drive`.
+  4. Improve `/settings/integrations` as a single API integration list that
+     routes owners to ClickUp, Drive, and CompanyCore API setup.
+  5. Validate backend behavior, rendered UI, and responsive layout.
+- Acceptance Criteria:
+  - Owners can save Google OAuth client ID/secret from the web console.
+  - Google Drive authorization URL and token refresh use workspace-stored
+    OAuth client credentials before falling back to env vars.
+  - Safe API responses expose `oauthClientConfigured` and
+    `oauthTokenConfigured` without exposing secrets.
+  - `/settings/integrations` presents one clear API integration list.
+  - `/settings/drive` disables token/import actions until the required earlier
+    Drive setup step exists.
+- Definition of Done:
+  - `npm run build`, `git diff --check`, `npm test`, and rendered UI smoke pass
+    or blockers are recorded.
+  - No raw OAuth client secret is returned to the browser after save.
+- Result Report:
+  - Added encrypted workspace storage for Google OAuth client credentials.
+  - Added safe Google Drive setup status booleans to settings and connection
+    responses.
+  - Added owner-facing OAuth client ID/secret inputs and a save action in
+    `/settings/drive`.
+  - Added a unified API integration setup list in `/settings/integrations`.
+  - Verified `npm run build`, `git diff --check`, full `npm test` against a
+    disposable Postgres database, and authenticated local Playwright desktop
+    and mobile UI smoke.
+
 ## V2GD-011 Drive Setup Operator Instructions
 
 - Task Type: frontend/documentation

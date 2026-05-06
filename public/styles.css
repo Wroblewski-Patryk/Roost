@@ -681,6 +681,52 @@ h4 {
   padding: 24px;
 }
 
+.integration-action-panel {
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.integration-action-list {
+  display: grid;
+  gap: 10px;
+}
+
+.integration-action-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.5fr) minmax(160px, 0.8fr) minmax(0, 1.7fr) auto;
+  align-items: center;
+  gap: 14px;
+  min-height: 76px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fbfcfe;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.integration-action-row:hover {
+  border-color: #b9c8e2;
+  background: var(--soft);
+}
+
+.integration-action-row strong {
+  font-size: 15px;
+}
+
+.integration-action-row p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.integration-action-row > span:last-child {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
 .integration-filter-bar {
   margin: 0 0 16px;
 }
@@ -1008,6 +1054,24 @@ button.compact,
   font-size: 13px;
   font-weight: 800;
   overflow-wrap: anywhere;
+}
+
+.credential-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.setup-actions {
+  margin: -2px 0 22px;
+}
+
+.inline-status {
+  align-self: center;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.4;
 }
 
 .switch {
@@ -1525,6 +1589,7 @@ button.danger:hover {
   .settings-grid,
   .account-readiness-grid,
   .integration-grid,
+  .credential-grid,
   .task-filter-bar,
   .pipeline-filter-bar,
   .area-filter-bar,
@@ -1548,6 +1613,7 @@ button.danger:hover {
   .pipeline-layout,
   .relationship-grid,
   .relationship-row,
+  .integration-action-row,
   .integration-area-row {
     grid-template-columns: 1fr;
     display: grid;

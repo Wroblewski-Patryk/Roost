@@ -3,6 +3,7 @@ import { env } from "../../config/env";
 import { IntegrationError } from "../errors";
 import {
   getGoogleDriveSettingsForWorkspace,
+  parseGoogleDriveOAuthSecret,
   toJsonInput,
   type GoogleDriveIntegrationConfig,
   type GoogleDriveOAuthSecret
@@ -60,12 +61,13 @@ export async function getFreshGoogleDriveOAuthForWorkspace(workspaceId: string) 
 export async function exchangeGoogleDriveAuthorizationCode(input: {
   code: string;
   redirectUri: string;
+  workspaceId?: string;
 }) {
   const response = await postGoogleOAuthToken({
     code: input.code,
     redirect_uri: input.redirectUri,
     grant_type: "authorization_code"
-  });
+  }, input.workspaceId);
 
   if (!response.refresh_token && !response.access_token) {
     throw new IntegrationError("integration_unavailable", 502, "Google OAuth did not return usable tokens.");
@@ -74,14 +76,15 @@ export async function exchangeGoogleDriveAuthorizationCode(input: {
   return normalizeTokenResponse(response, response.refresh_token);
 }
 
-export function buildGoogleDriveAuthorizationUrl(input: {
+export async function buildGoogleDriveAuthorizationUrl(input: {
   redirectUri: string;
   state?: string;
   loginHint?: string;
+  workspaceId?: string;
 }) {
-  requireGoogleOAuthClient();
+  const oauthClient = await getGoogleOAuthClient(input.workspaceId);
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
-  url.searchParams.set("client_id", env.googleOAuthClientId!);
+  url.searchParams.set("client_id", oauthClient.clientId);
   url.searchParams.set("redirect_uri", input.redirectUri);
   url.searchParams.set("response_type", "code");
   url.searchParams.set("scope", googleDriveOAuthScopes.join(" "));
@@ -125,16 +128,20 @@ async function refreshGoogleDriveOAuth(oauth: GoogleDriveOAuthSecret) {
   const response = await postGoogleOAuthToken({
     refresh_token: oauth.refreshToken,
     grant_type: "refresh_token"
-  });
+  }, undefined, oauth);
 
   return normalizeTokenResponse(response, oauth.refreshToken);
 }
 
-async function postGoogleOAuthToken(input: Record<string, string>) {
-  requireGoogleOAuthClient();
+async function postGoogleOAuthToken(
+  input: Record<string, string>,
+  workspaceId?: string,
+  oauthSecret?: GoogleDriveOAuthSecret
+) {
+  const oauthClient = await getGoogleOAuthClient(workspaceId, oauthSecret);
   const body = new URLSearchParams({
-    client_id: env.googleOAuthClientId!,
-    client_secret: env.googleOAuthClientSecret ?? "",
+    client_id: oauthClient.clientId,
+    client_secret: oauthClient.clientSecret ?? "",
     ...input
   });
 
@@ -187,8 +194,33 @@ function normalizeTokenResponse(
   };
 }
 
-function requireGoogleOAuthClient() {
-  if (!env.googleOAuthClientId) {
+async function getGoogleOAuthClient(workspaceId?: string, oauthSecret?: GoogleDriveOAuthSecret) {
+  const workspaceSecret = oauthSecret ?? await getStoredGoogleDriveSecret(workspaceId);
+  const clientId = workspaceSecret?.clientId ?? env.googleOAuthClientId;
+  const clientSecret = workspaceSecret?.clientSecret ?? env.googleOAuthClientSecret;
+
+  if (!clientId) {
     throw new IntegrationError("integration_not_configured", 404, "GOOGLE_OAUTH_CLIENT_ID is required.");
   }
+
+  return { clientId, clientSecret };
+}
+
+async function getStoredGoogleDriveSecret(workspaceId?: string) {
+  if (!workspaceId) {
+    return null;
+  }
+
+  const setting = await prisma.integrationSetting.findUnique({
+    where: {
+      workspaceId_provider: {
+        workspaceId,
+        provider: "google_drive"
+      }
+    },
+    select: {
+      secretCiphertext: true
+    }
+  });
+  return parseGoogleDriveOAuthSecret(setting?.secretCiphertext);
 }

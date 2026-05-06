@@ -59,6 +59,7 @@ No active task.
 
 ## Done
 
+- V2WEB-022 Unified API Integration Setup.
 - V2GD-011 Drive Setup Operator Instructions.
 - AGRUN-001 Agent Runtime Gap Plan.
 - AGRUN-006 Agent Event Ack Positive Smoke.

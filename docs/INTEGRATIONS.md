@@ -76,6 +76,10 @@ CompanyCore is responsible for:
   changing Drive, Docs, or Sheets API behavior
 - storing Google OAuth refresh-token material as encrypted workspace
   integration secret material
+- storing the Google OAuth web client ID and client secret as encrypted
+  workspace integration secret material when owners configure Drive from the
+  web console; process-level `GOOGLE_OAUTH_CLIENT_ID` and
+  `GOOGLE_OAUTH_CLIENT_SECRET` remain fallback/runtime bootstrap options
 - storing selected root folders, shared drives, sync policy, operating scope
   mappings, and Drive changes page tokens as non-secret setting config
 - discovering Drive folders/files through paginated `files.list`
@@ -129,10 +133,12 @@ Initial import policy mirrors the ClickUp discipline:
 
 Implemented foundation:
 
-- `PUT /v1/integration-settings/google_drive` stores encrypted OAuth material
-  and non-secret Drive configuration.
+- `PUT /v1/integration-settings/google_drive` stores encrypted OAuth client
+  credentials, encrypted OAuth token material, and non-secret Drive
+  configuration.
 - `GET /v1/integration-settings/google_drive` returns safe setting metadata
-  with `secretConfigured`, never OAuth tokens.
+  with `secretConfigured`, `oauthClientConfigured`, and
+  `oauthTokenConfigured`, never OAuth tokens or client secrets.
 - `GET /v1/connection` exposes safe Google Drive configuration state to
   Jarvis, Paperclip, Aviary, and future adapters.
 - `src/integrations/google-drive/google-drive.client.ts` contains the safe

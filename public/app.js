@@ -24,6 +24,8 @@ const state = {
   googleDrive: {
     configured: false,
     active: false,
+    oauthClientConfigured: false,
+    oauthTokenConfigured: false,
     config: {},
     files: []
   },
@@ -209,8 +211,10 @@ const integrationTypeFilter = document.querySelector("#integrationTypeFilter");
 const integrationAreaMatrix = document.querySelector("#integrationAreaMatrix");
 const googleDrivePanel = document.querySelector("#googleDrivePanel");
 const googleDriveWorkspaceLabel = document.querySelector("#googleDriveWorkspaceLabel");
+const googleDriveClientStatus = document.querySelector("#googleDriveClientStatus");
 const googleDriveAuthUrlButton = document.querySelector("#googleDriveAuthUrlButton");
 const googleDriveAuthLink = document.querySelector("#googleDriveAuthLink");
+const googleDriveSaveClientButton = document.querySelector("#googleDriveSaveClientButton");
 const googleDriveExchangeButton = document.querySelector("#googleDriveExchangeButton");
 const googleDriveImportButton = document.querySelector("#googleDriveImportButton");
 const googleDriveReconcileButton = document.querySelector("#googleDriveReconcileButton");
@@ -233,6 +237,8 @@ const fields = {
   token: document.querySelector("#token"),
   importMode: document.querySelector("#importMode"),
   googleDriveActive: document.querySelector("#googleDriveActive"),
+  googleDriveClientId: document.querySelector("#googleDriveClientId"),
+  googleDriveClientSecret: document.querySelector("#googleDriveClientSecret"),
   googleDriveRedirectUri: document.querySelector("#googleDriveRedirectUri"),
   googleDriveFolderIds: document.querySelector("#googleDriveFolderIds"),
   googleDriveCode: document.querySelector("#googleDriveCode"),
@@ -517,9 +523,12 @@ function setGoogleDriveEnabled(isEnabled) {
     control.disabled = !isEnabled;
   });
   fields.googleDriveRedirectUri.disabled = true;
+  googleDriveSaveClientButton.disabled = !isEnabled;
+  googleDriveAuthUrlButton.disabled = !isEnabled;
+  googleDriveExchangeButton.disabled = !isEnabled || !state.googleDrive.oauthClientConfigured;
   googleDriveAuthLink.hidden = !googleDriveAuthLink.href || googleDriveAuthLink.getAttribute("href") === "#";
-  googleDriveImportButton.disabled = !isEnabled || !state.googleDrive.configured;
-  googleDriveReconcileButton.disabled = !isEnabled || !state.googleDrive.configured;
+  googleDriveImportButton.disabled = !isEnabled || !state.googleDrive.oauthTokenConfigured;
+  googleDriveReconcileButton.disabled = !isEnabled || !state.googleDrive.oauthTokenConfigured;
   refreshDriveFilesButton.disabled = !isEnabled;
   driveSearch.disabled = !isEnabled;
   driveKindFilter.disabled = !isEnabled;
@@ -598,6 +607,15 @@ function parseIdList(value) {
     .split(/[,\n]/)
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function syncGoogleDriveCredentialPlaceholders() {
+  fields.googleDriveClientId.placeholder = state.googleDrive.oauthClientConfigured
+    ? "OAuth client ID saved; paste a new one to rotate"
+    : "000000000000-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com";
+  fields.googleDriveClientSecret.placeholder = state.googleDrive.oauthClientConfigured
+    ? "Leave blank to keep the saved secret"
+    : "Paste the OAuth client secret";
 }
 
 function areaDefinitionFor(area) {
@@ -1379,6 +1397,9 @@ function renderIntegrationTaxonomy() {
   const clickUpTasks = state.tasks.filter((task) => task.source === "clickup").length;
   const driveFolders = state.googleDrive.files.filter((file) => file.isFolder).length;
   const pipelineRecords = recordCountForSlugs(["clients", "pipeline-stages", "deals", "interactions"]);
+  const driveStatus = state.googleDrive.oauthTokenConfigured
+    ? state.googleDrive.active ? "Active" : "Saved, inactive"
+    : state.googleDrive.oauthClientConfigured ? "OAuth client saved" : "Not connected";
   const groups = [
     {
       type: "Tasks",
@@ -1394,9 +1415,11 @@ function renderIntegrationTaxonomy() {
     {
       type: "Files",
       name: "Google Drive",
-      status: state.googleDrive.configured ? state.googleDrive.active ? "Active" : "Saved, inactive" : "Not connected",
+      status: driveStatus,
       metric: `${state.googleDrive.files.length} Drive item${state.googleDrive.files.length === 1 ? "" : "s"}`,
-      detail: `${driveFolders} imported folder${driveFolders === 1 ? "" : "s"} available for area mapping.`,
+      detail: state.googleDrive.oauthTokenConfigured
+        ? `${driveFolders} imported folder${driveFolders === 1 ? "" : "s"} available for area mapping.`
+        : "Save OAuth client credentials, approve consent, then import selected folders.",
       primaryHref: "/settings/drive",
       primaryLabel: "Open Drive",
       secondaryHref: "/areas",
@@ -2260,6 +2283,46 @@ async function editGoogleDriveFileDescription(fileId) {
   }
 }
 
+async function saveGoogleDriveOAuthClient() {
+  const clientId = fields.googleDriveClientId.value.trim();
+  const clientSecret = fields.googleDriveClientSecret.value.trim();
+
+  if (!clientId) {
+    throw new Error(state.googleDrive.oauthClientConfigured
+      ? "Paste the OAuth client ID again when rotating Google credentials."
+      : "Paste the Google OAuth client ID first.");
+  }
+
+  const selectedFolderIds = parseIdList(fields.googleDriveFolderIds.value);
+  const response = await api("/v1/integration-settings/google_drive", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      oauthClient: {
+        clientId,
+        ...(clientSecret ? { clientSecret } : {})
+      },
+      active: fields.googleDriveActive.checked,
+      config: {
+        selectedFolderIds,
+        rootFolderIds: selectedFolderIds,
+        importMode: fields.googleDriveImportMode.value
+      }
+    })
+  });
+
+  state.googleDrive.configured = response.data.secretConfigured;
+  state.googleDrive.oauthClientConfigured = Boolean(response.data.oauthClientConfigured);
+  state.googleDrive.oauthTokenConfigured = Boolean(response.data.oauthTokenConfigured);
+  state.googleDrive.active = Boolean(response.data.active);
+  state.googleDrive.config = response.data.config || state.googleDrive.config;
+  fields.googleDriveClientId.value = "";
+  fields.googleDriveClientSecret.value = "";
+  syncGoogleDriveCredentialPlaceholders();
+  renderConnectionState();
+  setGoogleDriveEnabled(isSignedIn());
+}
+
 function friendlyError(error) {
   const message = error?.message || "Something went wrong.";
   const copy = {
@@ -2358,11 +2421,17 @@ function renderConnectionState() {
     clickupStatusHint.textContent = "Connect ClickUp in settings.";
   }
 
-  if (state.googleDrive.configured) {
+  if (state.googleDrive.oauthTokenConfigured) {
     googleDriveStatusLabel.textContent = state.googleDrive.active ? "Active" : "Saved, inactive";
     googleDriveStatusHint.textContent = `${state.googleDrive.files.length} Drive item${state.googleDrive.files.length === 1 ? "" : "s"} imported.`;
     googleDriveWorkspaceLabel.textContent = connected
       ? `${state.workspace.name} workspace · Google Drive ${state.googleDrive.active ? "active" : "inactive"}`
+      : "Sign in to load Google Drive settings.";
+  } else if (state.googleDrive.oauthClientConfigured) {
+    googleDriveStatusLabel.textContent = "OAuth client saved";
+    googleDriveStatusHint.textContent = "Create the OAuth URL, approve consent, then import folders.";
+    googleDriveWorkspaceLabel.textContent = connected
+      ? `${state.workspace.name} workspace - Google OAuth client saved`
       : "Sign in to load Google Drive settings.";
   } else {
     googleDriveStatusLabel.textContent = "Not configured";
@@ -2371,6 +2440,10 @@ function renderConnectionState() {
       ? `${state.workspace.name} workspace · Google Drive not configured`
       : "Sign in to load Google Drive settings.";
   }
+
+  googleDriveClientStatus.textContent = state.googleDrive.oauthClientConfigured
+    ? "OAuth client saved. Paste a new client ID and secret only when rotating credentials."
+    : "OAuth client not saved yet.";
 
   if (state.capabilities.length > 0) {
     capabilitySummary.textContent = `${state.capabilities.length} capabilities available for this workspace.`;
@@ -2540,6 +2613,8 @@ function setConnected(connection) {
   state.clickup.config = connection.data.integrations.clickup.config || {};
   state.googleDrive.configured = connection.data.integrations.googleDrive.configured;
   state.googleDrive.active = Boolean(connection.data.integrations.googleDrive.active);
+  state.googleDrive.oauthClientConfigured = Boolean(connection.data.integrations.googleDrive.oauthClientConfigured);
+  state.googleDrive.oauthTokenConfigured = Boolean(connection.data.integrations.googleDrive.oauthTokenConfigured);
   state.googleDrive.config = connection.data.integrations.googleDrive.config || {};
   fields.active.checked = connection.data.integrations.clickup.active ?? !state.clickup.configured;
   fields.importMode.value = state.clickup.config.importMode || "merge";
@@ -2547,6 +2622,9 @@ function setConnected(connection) {
   fields.googleDriveImportMode.value = state.googleDrive.config.importMode || "merge";
   fields.googleDriveFolderIds.value = (state.googleDrive.config.selectedFolderIds || state.googleDrive.config.rootFolderIds || []).join(", ");
   fields.googleDriveRedirectUri.value = `${window.location.origin}/settings/drive`;
+  fields.googleDriveClientId.value = "";
+  fields.googleDriveClientSecret.value = "";
+  syncGoogleDriveCredentialPlaceholders();
   state.clickup.selectedListIds = new Set(state.clickup.config.listIds || []);
   state.operatingModel.areas = connection.data.operatingModel.areas || [];
 
@@ -3256,6 +3334,18 @@ syncButton.addEventListener("click", async () => {
 
 fields.googleDriveActive.addEventListener("change", () => {
   setGoogleDriveEnabled(isSignedIn());
+});
+
+googleDriveSaveClientButton.addEventListener("click", async () => {
+  setBusy(true);
+  try {
+    await saveGoogleDriveOAuthClient();
+    showResult("Google Drive OAuth client saved. Create the OAuth URL next.");
+  } catch (error) {
+    showResult(friendlyError(error), "error");
+  } finally {
+    setBusy(false);
+  }
 });
 
 googleDriveAuthUrlButton.addEventListener("click", async () => {
