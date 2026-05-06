@@ -186,6 +186,61 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(invalidKey.status, 403);
   assert.equal((invalidKey.body as { error: string }).error, "invalid_api_key");
 
+  const createdScopedKey = await request("/v1/api-keys", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({
+      name: "Read-only notes agent",
+      scopes: ["connection:read", "notes:read", "agent-events:read"]
+    })
+  });
+  assert.equal(createdScopedKey.status, 201);
+  const scopedServiceKey = (createdScopedKey.body as {
+    data: { key: string };
+  }).data.key;
+  const scopedAuth = { "X-API-Key": scopedServiceKey };
+
+  const scopedConnection = await request("/v1/connection", {
+    headers: scopedAuth
+  });
+  assert.equal(scopedConnection.status, 200);
+  const scopedConnectionBody = scopedConnection.body as {
+    data: {
+      scopeMode: string;
+      capabilities: string[];
+    };
+  };
+  assert.equal(scopedConnectionBody.data.scopeMode, "scoped");
+  assert.ok(scopedConnectionBody.data.capabilities.includes("notes:read"));
+  assert.ok(!scopedConnectionBody.data.capabilities.includes("notes:write"));
+
+  const scopedReadNotes = await request("/v1/notes", {
+    headers: scopedAuth
+  });
+  assert.equal(scopedReadNotes.status, 200);
+
+  const deniedScopedNoteWrite = await request("/v1/notes", {
+    method: "POST",
+    headers: scopedAuth,
+    body: JSON.stringify({ content: "Scoped key should not write this." })
+  });
+  assert.equal(deniedScopedNoteWrite.status, 403);
+  assert.equal((deniedScopedNoteWrite.body as { error: string }).error, "forbidden");
+
+  const deniedScopedAgentEventAck = await request("/v1/agent-events/00000000-0000-4000-8000-000000000001/ack", {
+    method: "POST",
+    headers: scopedAuth
+  });
+  assert.equal(deniedScopedAgentEventAck.status, 403);
+  assert.equal((deniedScopedAgentEventAck.body as { error: string }).error, "forbidden");
+
+  const ownerBearerNoteWrite = await request("/v1/notes", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({ content: "Owner bearer writes are not API-key scoped." })
+  });
+  assert.equal(ownerBearerNoteWrite.status, 201);
+
   const serviceProject = await request("/projects", {
     method: "POST",
     headers: { "X-API-Key": serviceKey },
@@ -219,6 +274,7 @@ test("CompanyCore v1 protected API flow", async () => {
       capabilities: string[];
       adapterManifest: {
         basePath: string;
+        schemaVersion: string;
         auth: { serviceHeader: string };
         routes: {
           projects: Array<{ method: string; path: string; capability: string }>;
@@ -239,6 +295,11 @@ test("CompanyCore v1 protected API flow", async () => {
           integrationSettings: Array<{ method: string; path: string; capability: string }>;
           googleDrive: Array<{ method: string; path: string; capability: string }>;
         };
+        schemas: {
+          note: { create: { required: string[]; optional: string[] } };
+          agentLog: { create: { required: string[]; optional: string[] } };
+        };
+        errors: Record<string, string>;
         writeRules: string[];
       };
       integrations: {
@@ -271,7 +332,11 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(connectionBody.data.capabilities.includes("google-drive:files:scope:write"));
   assert.ok(connectionBody.data.capabilities.includes("tasks:write"));
   assert.equal(connectionBody.data.adapterManifest.basePath, "/v1");
+  assert.equal(connectionBody.data.adapterManifest.schemaVersion, "2026-05-06");
   assert.equal(connectionBody.data.adapterManifest.auth.serviceHeader, "X-API-Key");
+  assert.ok(connectionBody.data.adapterManifest.schemas.note.create.required.includes("content"));
+  assert.ok(connectionBody.data.adapterManifest.schemas.agentLog.create.required.includes("message"));
+  assert.ok(connectionBody.data.adapterManifest.errors["403"].includes("lacks permission"));
   assert.ok(connectionBody.data.adapterManifest.routes.operatingModel.some((route) => (
     route.method === "GET"
     && route.path === "/v1/operating-model"
@@ -1781,6 +1846,23 @@ test("CompanyCore v1 protected API flow", async () => {
     }
   });
   assert.equal(driveAgentEvents.length, 2);
+  const pendingAgentEvents = await request("/v1/agent-events?targetAgent=paperclip", {
+    headers: { "X-API-Key": serviceKey }
+  });
+  assert.equal(pendingAgentEvents.status, 200);
+  assert.ok((pendingAgentEvents.body as { data: Array<{ id: string }> }).data.length >= 2);
+  const acknowledgedAgentEvent = await request(`/v1/agent-events/${driveAgentEvents[0]!.id}/ack`, {
+    method: "POST",
+    headers: { "X-API-Key": serviceKey },
+    body: JSON.stringify({ targetAgent: "paperclip" })
+  });
+  assert.equal(acknowledgedAgentEvent.status, 200);
+  assert.equal((acknowledgedAgentEvent.body as { data: { deliveryStatus: string } }).data.deliveryStatus, "delivered");
+  const deliveredAgentEvent = await prisma.agentEventOutbox.findUniqueOrThrow({
+    where: { id: driveAgentEvents[0]!.id }
+  });
+  assert.equal(deliveredAgentEvent.deliveryStatus, "delivered");
+  assert.ok(deliveredAgentEvent.deliveredAt);
 
   const expiredGoogleDriveSettings = await request("/integration-settings/google_drive", {
     method: "PUT",

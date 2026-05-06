@@ -3,19 +3,19 @@
 ## Ready
 
 - AGRUN-002 Service Key Scope Enforcement
-  - Stage: planning
+  - Stage: release
   - Owner: Backend Builder
   - Priority: P0
   - Goal: enforce `api_keys.scopes` per route capability so service agents can
     be least-privilege instead of broad by default.
 - AGRUN-003 Machine-Readable Agent Contract
-  - Stage: planning
+  - Stage: release
   - Owner: Backend Builder
   - Priority: P1
   - Goal: extend the agent-facing contract beyond route names so agents can
     learn payloads, required capabilities, and safe errors from CompanyCore.
 - AGRUN-004 Reusable Agent Training Smoke
-  - Stage: planning
+  - Stage: release
   - Owner: QA/Test
   - Priority: P1
   - Goal: add a repeatable, secret-safe local and production smoke flow for
@@ -27,7 +27,7 @@
   - Goal: let owners create, rotate, and deactivate scoped agent service keys
     from the web console.
 - AGRUN-006 Agent Event Ack Positive Smoke
-  - Stage: planning
+  - Stage: release
   - Owner: QA/Test
   - Priority: P1
   - Goal: prove a real pending agent event can be read and acknowledged safely.

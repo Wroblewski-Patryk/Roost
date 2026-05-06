@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { prisma } from "../db/prisma";
 import { hashApiKey } from "./api-key";
+import { capabilityForRequest, hasCapability } from "./capabilities";
 import { verifyAuthToken } from "./token";
 
 export type AuthContext = {
@@ -8,6 +9,7 @@ export type AuthContext = {
   workspaceId: string;
   authType: "user" | "api_key";
   apiKeyId?: string;
+  scopes?: string[];
 };
 
 declare global {
@@ -83,6 +85,14 @@ export async function requireAuthContext(req: Request, res: Response, next: Next
     return res.status(422).json({ error: "workspace_required" });
   }
 
+  const scopes = Array.isArray(record.scopes)
+    ? record.scopes.filter((scope): scope is string => typeof scope === "string")
+    : [];
+  const requiredCapability = capabilityForRequest(req);
+  if (requiredCapability && !hasCapability(scopes, requiredCapability)) {
+    return res.status(403).json({ error: "forbidden" });
+  }
+
   await prisma.apiKey.update({
     where: { id: record.id },
     data: { lastUsedAt: new Date() }
@@ -91,7 +101,8 @@ export async function requireAuthContext(req: Request, res: Response, next: Next
   req.auth = {
     workspaceId: record.workspaceId,
     authType: "api_key",
-    apiKeyId: record.id
+    apiKeyId: record.id,
+    scopes
   };
 
   return next();

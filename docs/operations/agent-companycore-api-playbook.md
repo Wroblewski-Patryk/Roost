@@ -32,6 +32,8 @@ X-API-Key: <service-key>
 - `data.status` is `ok`
 - `data.auth.workspaceId` exists
 - `data.adapterManifest.basePath` is `/v1`
+- `data.adapterManifest.schemas` includes the payloads the agent intends to
+  write
 - required capabilities are present before the agent writes
 
 3. Treat these responses as fail-closed startup errors:
@@ -53,6 +55,7 @@ Write rules:
 - use CompanyCore IDs returned by the API when linking records
 - use provider lifecycle routes for provider/system tables
 - treat business `DELETE` routes as archive/deactivate lifecycle operations
+- treat `data.capabilities` as the effective permissions for the current key
 - never infer raw CRUD routes for users, workspaces, memberships, API keys,
   integration settings, provider inbox rows, webhook registrations, or event
   rows
@@ -219,15 +222,9 @@ material.
 With a disposable workspace/service key:
 
 ```powershell
-$base = "http://localhost:3000"
-$key = "<service-key>"
-$headers = @{ "X-API-Key" = $key; "Content-Type" = "application/json" }
-
-Invoke-RestMethod "$base/v1/connection" -Headers $headers
-$agent = Invoke-RestMethod "$base/v1/agents" -Method Post -Headers $headers -Body '{"name":"Training Agent","role":"memory_writer","source":"training"}'
-$note = Invoke-RestMethod "$base/v1/notes" -Method Post -Headers $headers -Body '{"content":"Training agent wrote durable memory."}'
-Invoke-RestMethod "$base/v1/agent-logs" -Method Post -Headers $headers -Body (@{ agentId = $agent.data.id; message = "Training smoke completed."; metadata = @{ source = "training" } } | ConvertTo-Json)
-Invoke-RestMethod "$base/v1/notes/$($note.data.id)" -Method Delete -Headers $headers
+$env:COMPANYCORE_BASE_URL = "http://localhost:3000"
+$env:COMPANYCORE_API_KEY = "<service-key>"
+npm run agent:training-smoke
 ```
 
 Expected result:
@@ -235,6 +232,7 @@ Expected result:
 - connection returns `status = ok`
 - agent creation returns `201`
 - note creation returns `201`
+- note read/update works through `GET /v1/notes/:id` and `PATCH /v1/notes/:id`
 - agent log creation returns `201`
 - note archive returns `status = archived`
 
@@ -248,4 +246,3 @@ Expected result:
 - Run `GET /v1/connection` at startup and after credential rotation.
 - Keep provider retries bounded and idempotent.
 - Do not treat archived records as deleted history.
-

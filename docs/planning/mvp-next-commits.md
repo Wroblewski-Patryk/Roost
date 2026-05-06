@@ -5,16 +5,16 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
-- [ ] AGRUN-002 Service Key Scope Enforcement:
+- [x] AGRUN-002 Service Key Scope Enforcement:
       enforce `api_keys.scopes` per route capability, keep owner bearer-token
       access intact, preserve existing production agent compatibility through
       an explicit broad-scope decision or migration, and test denied/allowed
       scoped-key behavior.
-- [ ] AGRUN-003 Machine-Readable Agent Contract:
+- [x] AGRUN-003 Machine-Readable Agent Contract:
       extend the `/v1/connection` agent contract with route payload/error
       metadata so agents can learn supported writes without guessing from prose
       docs.
-- [ ] AGRUN-004 Reusable Agent Training Smoke:
+- [x] AGRUN-004 Reusable Agent Training Smoke:
       add a secret-safe script and package command that proves connection,
       create/read/update/archive, agent-log write, and fail-closed behavior
       locally and in production.
@@ -108,7 +108,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [ ] AGRUN-005 Scoped Agent Key Owner UI:
       expose scoped agent key creation, copy-once raw key display, rotation or
       deactivation, and capability presets in `/settings/api`.
-- [ ] AGRUN-006 Agent Event Ack Positive Smoke:
+- [x] AGRUN-006 Agent Event Ack Positive Smoke:
       create a controlled pending agent event, read it through a target service
       key, acknowledge it, verify it no longer appears as pending, and record
       production smoke evidence.
@@ -152,11 +152,11 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## PIPELINE
 
-- [ ] 74. AGRUN-002 Service Key Scope Enforcement
-- [ ] 75. AGRUN-003 Machine-Readable Agent Contract
-- [ ] 76. AGRUN-004 Reusable Agent Training Smoke
+- [x] 74. AGRUN-002 Service Key Scope Enforcement
+- [x] 75. AGRUN-003 Machine-Readable Agent Contract
+- [x] 76. AGRUN-004 Reusable Agent Training Smoke
 - [ ] 77. AGRUN-005 Scoped Agent Key Owner UI
-- [ ] 78. AGRUN-006 Agent Event Ack Positive Smoke
+- [x] 78. AGRUN-006 Agent Event Ack Positive Smoke
 - [ ] 79. AGRUN-007 Google Drive Owner Consent And First Import
 - [ ] 80. AGRUN-008 Route-Level Business Editing Surfaces
 - [ ] 81. AGRUN-009 Deploy Automation Reliability

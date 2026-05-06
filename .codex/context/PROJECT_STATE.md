@@ -122,16 +122,28 @@ Last updated: 2026-05-06
   pending agent event can be acknowledged in local and production smoke.
 
 ## Autonomous Iteration State
-- Current iteration: AGRUN-002 Service Key Scope Enforcement is the next
-  executable task.
+- Current iteration: AGRUN-002 through AGRUN-004 and AGRUN-006 are implemented
+  locally and pending production release evidence.
 - Current operation mode: BUILDER
 - Last completed iteration: AGRUN-001 Agent Runtime Gap Plan.
-- Last completed task: added the agent runtime coverage ledger, planned the
-  post-CRUD execution wave, and activated AGRUN-002 through AGRUN-006 in the
-  canonical queue.
-- Next required mode: BUILDER for AGRUN-002.
+- Last completed task: enforced service-key scopes per route capability,
+  added machine-readable agent contract metadata, added the reusable
+  `agent:training-smoke` script, and added local positive agent-event ack
+  coverage.
+- Next required mode: TESTER for production smoke and release evidence.
 
 ## Recent Progress
+- 2026-05-06: Implemented AGRUN-002, AGRUN-003, AGRUN-004, and local
+  AGRUN-006 coverage. Service API keys now enforce route capabilities from a
+  shared adapter manifest, while empty scopes, `*`, `companycore:*`, and
+  legacy `adapter:*` scopes retain broad compatibility for deployed
+  Jarvis/Paperclip-style keys. `/v1/connection` now reports effective
+  capabilities, `scopeMode`, schema hints, and safe error behavior. Added
+  `npm run agent:training-smoke` for repeatable agent onboarding and extended
+  tests to cover scoped allow/deny behavior plus positive agent-event ack.
+  Validation passed: `npm run build`, `node --check
+  scripts/agent-training-smoke.mjs`, `git diff --check`, and `npm test`
+  against a disposable Postgres container on port `55448`.
 - 2026-05-06: Completed AGRUN-001 by adding
   `docs/operations/agent-runtime-coverage-ledger.csv` and
   `docs/planning/agent-runtime-gap-closure-plan.md`. The plan identifies the

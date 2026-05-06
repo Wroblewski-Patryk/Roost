@@ -174,7 +174,11 @@ n8n, and other agents. In v1 it must become workspace-scoped:
 - Existing plaintext-key rows are accepted only as a transition path when
   `key_hash` is not populated yet.
 - Inactive keys fail closed.
-- Future scopes may restrict service clients to narrower permissions.
+- Service-key scopes are enforced against route capabilities. A scoped key can
+  call only routes whose capability appears in its `scopes` array.
+- Empty scopes, `*`, `companycore:*`, and legacy `adapter:*` scopes currently
+  retain broad compatibility for already deployed Jarvis/Paperclip-style
+  agents. New keys should use explicit route capabilities.
 - Raw keys are only shown once if an API key creation endpoint is added.
 
 Owner-managed adapter keys:
@@ -457,8 +461,10 @@ Safe response:
       "systemTables": ["users", "workspaces", "api_keys"]
     },
     "capabilities": ["operating-model:read", "tasks:read", "tasks:write", "events:read"],
+    "scopeMode": "scoped",
     "adapterManifest": {
       "basePath": "/v1",
+      "schemaVersion": "2026-05-06",
       "auth": {
         "serviceHeader": "X-API-Key",
         "ownerHeader": "Authorization: Bearer <token>"
@@ -509,7 +515,25 @@ Safe response:
       },
       "writeRules": [
         "Do not send workspaceId in write payloads."
-      ]
+      ],
+      "schemas": {
+        "note": {
+          "create": {
+            "required": ["content"],
+            "optional": ["projectId", "taskId", "clientId", "dealId", "status", "externalId", "source"]
+          }
+        },
+        "agentLog": {
+          "create": {
+            "required": ["message"],
+            "optional": ["agentId", "level", "metadata"]
+          }
+        }
+      },
+      "errors": {
+        "401": "Stop write mode because credentials are missing or invalid.",
+        "403": "Stop the attempted action because the key lacks permission."
+      }
     },
     "integrations": {
       "clickup": {
@@ -527,7 +551,10 @@ Safe response:
 
 The `adapterManifest` is the machine-readable v1 onboarding surface for
 Paperclip, Jarvis, Jarvan, Aviary, n8n, and similar clients. It lists canonical
-paths, methods, expected capabilities, and write rules without exposing secrets.
+paths, methods, expected capabilities, payload field hints, safe error
+behavior, and write rules without exposing secrets. `data.capabilities` is
+filtered to the authenticated key's effective capabilities unless the key is in
+documented broad compatibility mode.
 
 ## Agent CRUD Rollout Policy
 

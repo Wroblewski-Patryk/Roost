@@ -14,6 +14,7 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "seed": "tsx prisma/seed.ts",
     "adapter:smoke": "node scripts/adapter-smoke.mjs",
+    "agent:training-smoke": "node scripts/agent-training-smoke.mjs",
     "google-drive:smoke": "node scripts/google-drive-production-smoke.mjs",
     "clickup:bootstrap": "node scripts/clickup-production-bootstrap.mjs",
     "test": "npm run build && npm run prisma:migrate:deploy && node --test \"dist/tests/**/*.test.js\"",

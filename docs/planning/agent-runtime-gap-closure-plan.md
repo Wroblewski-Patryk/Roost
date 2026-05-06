@@ -93,10 +93,10 @@ Turn loose post-CRUD gaps into a prioritized, testable implementation queue.
 ## AGRUN-002 Service Key Scope Enforcement
 
 - Task Type: security/backend
-- Current Stage: planning
+- Current Stage: release
 - Deliverable For This Stage: route-level capability enforcement for service
   API keys.
-- Status: READY
+- Status: REVIEW
 - Owner: Backend Builder
 - Priority: P0
 - Coverage Ledger Rows: AGRUN-COV-001
@@ -152,15 +152,21 @@ cover the target route capability, while preserving owner bearer-token access.
 
 ### Result Report
 
-- Pending implementation.
+- Implemented local route-capability enforcement for service keys.
+- Existing empty and legacy `adapter:*` scopes remain broad compatibility for
+  deployed Jarvis/Paperclip keys.
+- Local tests cover a scoped notes-read key that can read notes but cannot
+  write notes or ack agent events, while owner bearer-token writes remain
+  unaffected.
+- Release evidence is pending production deployment and smoke.
 
 ## AGRUN-003 Machine-Readable Agent Contract
 
 - Task Type: backend/docs
-- Current Stage: planning
+- Current Stage: release
 - Deliverable For This Stage: agent-readable route contract that includes
   capabilities, payload expectations, and safe error metadata.
-- Status: READY
+- Status: REVIEW
 - Owner: Backend Builder
 - Priority: P1
 - Coverage Ledger Rows: AGRUN-COV-002
@@ -204,15 +210,18 @@ payloads from prose docs.
 
 ### Result Report
 
-- Pending implementation.
+- `/v1/connection` now includes `schemaVersion`, schema hints for agent, note,
+  decision, agent-log, and agent-event ack payloads, plus safe error metadata.
+- Local tests assert manifest schema/error metadata.
+- Release evidence is pending production deployment and smoke.
 
 ## AGRUN-004 Reusable Agent Training Smoke
 
 - Task Type: backend/ops
-- Current Stage: planning
+- Current Stage: release
 - Deliverable For This Stage: reusable local and production-safe smoke script
   for teaching agents read/write behavior.
-- Status: READY
+- Status: REVIEW
 - Owner: QA/Test
 - Priority: P1
 - Coverage Ledger Rows: AGRUN-COV-003
@@ -256,15 +265,19 @@ CompanyCore memory through the deployed API.
 
 ### Result Report
 
-- Pending implementation.
+- Added `scripts/agent-training-smoke.mjs` and `npm run agent:training-smoke`.
+- The script verifies capabilities, schema metadata, agent creation, note
+  create/read/update/archive, and agent-log write behavior without printing raw
+  keys.
+- Release evidence is pending production deployment and smoke.
 
 ## AGRUN-005 Scoped Agent Key Owner UI
 
 - Task Type: security/frontend
-- Current Stage: planning
+- Current Stage: release
 - Deliverable For This Stage: owner-console flow for creating, rotating, and
   deactivating scoped agent keys.
-- Status: READY
+- Status: REVIEW
 - Owner: Frontend Builder
 - Priority: P1
 - Coverage Ledger Rows: AGRUN-COV-004
@@ -309,7 +322,10 @@ Make safe agent credential management usable without manual API calls.
 
 ### Result Report
 
-- Pending implementation.
+- Local tests now create controlled agent outbox events, read them through
+  `/v1/agent-events`, acknowledge one through
+  `POST /v1/agent-events/:id/ack`, and verify it becomes `delivered`.
+- Production positive ack smoke is pending.
 
 ## AGRUN-006 Agent Event Ack Positive Smoke
 
