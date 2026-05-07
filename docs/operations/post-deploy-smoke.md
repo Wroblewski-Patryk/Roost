@@ -43,6 +43,30 @@ Use this file to record the minimum checks after each deploy.
 - Timestamp: 2026-05-07
 - Environment: production public domains
 - Deployment:
+  - Manual VPS backend rollover for V2WEB-025.
+  - Previous runtime commit:
+    `d5505799718faa62653482e0474ee5ab6fe345d1`.
+  - New runtime commit:
+    `0007f2387ec6f162a651121f61b66a9388f03edb`.
+  - Running backend container:
+    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-0007f23`.
+  - Running backend image:
+    `rnqqkhl3o3dut4qv56mlxly2_backend:0007f2387ec6f162a651121f61b66a9388f03edb`.
+  - Production Postgres container remained healthy.
+- Public checks:
+  - `GET https://api.companycore.luckysparrow.ch/health` returned `200` with
+    build commit `0007f2387ec6f162a651121f61b66a9388f03edb`.
+  - `GET https://companycore.luckysparrow.ch/data/notes` returned `200` and
+    included the table workbench shell markers `tableWorkbenchTitle` and
+    `recordInspector`.
+- Residual risks:
+  - Full protected production record inspection was not run because it requires
+    an owner login session. Local authenticated Playwright smoke created a real
+    note through the API and inspected it in `/data/notes` before deploy.
+
+- Timestamp: 2026-05-07
+- Environment: production public domains
+- Deployment:
   - Manual VPS backend rollover for AGRUN-005.
   - Previous runtime commit:
     `1d9f5869bd0951693375a196a37689df64d33fcf`.

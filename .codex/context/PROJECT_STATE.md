@@ -142,6 +142,15 @@ Last updated: 2026-05-07
   `npm run build`, `git diff --check`, `npm test` against disposable Postgres
   on port `55458`, and authenticated local Playwright desktop/mobile
   `/data/notes` smoke using a real note created through the API.
+- 2026-05-07: Deployed V2WEB-025 to production with manual VPS backend
+  rollover after public health still reported `d550579` following the GitHub
+  push. The running backend container is
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-0007f23`, image
+  `rnqqkhl3o3dut4qv56mlxly2_backend:0007f2387ec6f162a651121f61b66a9388f03edb`.
+  Production Postgres remained healthy. Public `/health` reports commit
+  `0007f2387ec6f162a651121f61b66a9388f03edb`, and
+  `https://companycore.luckysparrow.ch/data/notes` returns the table workbench
+  shell markers `tableWorkbenchTitle` and `recordInspector`.
 - 2026-05-07: Completed AGRUN-005 Scoped Agent Key Owner UI. `/settings/api`
   now includes an Agent service keys panel with least-privilege presets for
   read-only agents, memory writers, event consumers, and operators. Owners can
