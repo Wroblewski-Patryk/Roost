@@ -887,28 +887,65 @@ h4 {
 
 .workbench-index-row {
   display: grid;
-  grid-template-columns: minmax(220px, 1.4fr) minmax(280px, 1fr) minmax(180px, 0.8fr) auto;
+  grid-template-columns: minmax(260px, 1fr) minmax(270px, 0.52fr);
   gap: 16px;
-  align-items: center;
+  align-items: stretch;
   min-height: 104px;
-  padding: 14px;
+  padding: 16px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: #fbfcfe;
   color: var(--text);
   text-decoration: none;
+  transition: border-color 140ms ease, background 140ms ease, box-shadow 140ms ease;
 }
 
 .workbench-index-row:hover {
   border-color: #b9c8e2;
   background: var(--soft);
+  box-shadow: 0 10px 24px rgba(35, 48, 73, 0.08);
+}
+
+.workbench-index-copy {
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.workbench-index-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
 }
 
 .workbench-index-row strong {
-  display: block;
-  margin-bottom: 5px;
+  display: inline;
+  margin: 0;
   font-size: 16px;
   line-height: 1.2;
+}
+
+.workbench-index-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 4px 8px;
+  border: 1px solid #cbd6e7;
+  border-radius: 999px;
+  background: #eef3fb;
+  color: #2f466b;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.workbench-index-row.is-editable .workbench-index-status {
+  border-color: #b9dfcd;
+  background: #eefaf4;
+  color: #17623d;
 }
 
 .workbench-index-row p {
@@ -916,6 +953,37 @@ h4 {
   color: var(--muted);
   font-size: 14px;
   line-height: 1.45;
+}
+
+.workbench-index-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.workbench-index-tags span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.workbench-index-side {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.7fr) minmax(130px, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid #e1e7f1;
+  border-radius: 8px;
+  background: #ffffff;
 }
 
 .workbench-index-metrics,
@@ -940,6 +1008,8 @@ h4 {
 }
 
 .workbench-index-action {
+  grid-column: 1 / -1;
+  justify-self: end;
   color: var(--accent);
   font-size: 13px;
   font-weight: 900;
@@ -2280,6 +2350,14 @@ button.danger:hover {
     .integration-area-row {
     grid-template-columns: 1fr;
     display: grid;
+  }
+
+  .workbench-index-side {
+    grid-template-columns: 1fr;
+  }
+
+  .workbench-index-action {
+    justify-self: start;
   }
 
   .area-stats {

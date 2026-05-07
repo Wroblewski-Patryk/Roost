@@ -34,6 +34,23 @@ of rediscovering them.
 
 ## Entries
 
+### 2026-05-07 - Workbench Capability Rows
+- Type: reusable_pattern
+- Context: Database and integration indexes need to answer "can I edit this",
+  "what API/source coverage exists", and "what should I open next" before the
+  operator drills into a table or provider screen.
+- Decision: Extend workbench index rows with a capability badge, compact
+  operation tags, and a right-side metrics/source panel. Editable business
+  modules get a positive typed-editor badge; unsupported modules stay visibly
+  read-only instead of implying unfinished write support.
+- Reuse when: A module index mixes editable and inspect-only resources, or when
+  agents/operators need route/source confidence before opening details.
+- Avoid when: Every row has the same capability state, or when dense
+  multi-column comparison is the primary job.
+- Evidence: V2WEB-035 `/data` polish adds typed-editor/read-only badges,
+  API/write/area tags, and responsive source metrics while preserving the
+  existing workbench route behavior.
+
 ### 2026-05-07 - Workbench Index Rows
 - Type: reusable_pattern
 - Context: Data-heavy owner-console pages need clear operational lists for

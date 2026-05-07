@@ -2004,28 +2004,47 @@ function filteredDataModuleRows(rows) {
 
 function dataModuleRowElement(row) {
   const link = document.createElement("a");
-  link.className = "workbench-index-row";
+  const typedEditorAvailable = hasTypedRecordEditor(row.slug);
+  const writableMethods = row.routes.filter((route) => ["POST", "PATCH", "DELETE"].includes(route.method));
+  const routeStatus = row.routes.length > 0
+    ? `${row.routes.length} API route${row.routes.length === 1 ? "" : "s"}`
+    : "No API route";
+  const writeStatus = writableMethods.length > 0
+    ? `${writableMethods.length} write action${writableMethods.length === 1 ? "" : "s"}`
+    : "Inspect only";
+  const editorStatus = typedEditorAvailable ? "Typed editor" : "Read-only";
+  link.className = `workbench-index-row ${typedEditorAvailable ? "is-editable" : "is-readonly"}`;
   link.href = row.href;
   link.dataset.link = "";
   const methods = row.routes.length > 0
     ? [...new Set(row.routes.map((route) => route.method))].join(", ")
     : "No route";
   link.innerHTML = `
-    <div>
+    <div class="workbench-index-copy">
       <span class="summary-kicker">${escapeHtml(row.group)}</span>
-      <strong>${escapeHtml(row.label)}</strong>
+      <div class="workbench-index-heading">
+        <strong>${escapeHtml(row.label)}</strong>
+        <span class="workbench-index-status">${escapeHtml(editorStatus)}</span>
+      </div>
       <p>${escapeHtml(row.description)}</p>
+      <div class="workbench-index-tags" aria-label="Module operation details">
+        <span>${escapeHtml(routeStatus)}</span>
+        <span>${escapeHtml(writeStatus)}</span>
+        <span>${escapeHtml(row.area ? areaLabel(row.area) : "Unmapped area")}</span>
+      </div>
     </div>
-    <div class="workbench-index-metrics">
-      <span><strong>${row.records.length}</strong> records</span>
-      <span><strong>${row.routes.length}</strong> routes</span>
-      <span><strong>${escapeHtml(row.area ? areaLabel(row.area) : "Unmapped")}</strong> area</span>
+    <div class="workbench-index-side">
+      <div class="workbench-index-metrics">
+        <span><strong>${row.records.length}</strong> records</span>
+        <span><strong>${row.routes.length}</strong> routes</span>
+        <span><strong>${row.sources.length}</strong> sources</span>
+      </div>
+      <div class="workbench-index-meta">
+        <span>${escapeHtml(methods)}</span>
+        <span>${escapeHtml(row.sources.length > 0 ? row.sources.join(", ") : "no source data")}</span>
+      </div>
+      <span class="workbench-index-action">Open table</span>
     </div>
-    <div class="workbench-index-meta">
-      <span>${escapeHtml(methods)}</span>
-      <span>${escapeHtml(row.sources.length > 0 ? row.sources.join(", ") : "no source data")}</span>
-    </div>
-    <span class="workbench-index-action">Open table</span>
   `;
   link.addEventListener("click", (event) => {
     event.preventDefault();

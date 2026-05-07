@@ -1,5 +1,59 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-035 Data Operations Index Polish
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: `/data` database module index communicates
+  editability, API coverage, record/source counts, and next action without
+  changing existing routes.
+- Goal: Make the database operations center easier to scan so the owner and
+  agents can quickly choose the right module, understand whether it is editable,
+  and open the existing table workbench.
+- Scope:
+  - `public/app.js`
+  - `public/styles.css`
+  - `docs/ux/design-memory.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Reuse the existing `workbench-index-row` pattern instead of adding a
+    page-local list component.
+  - Add row-level capability status for typed editors versus read-only modules.
+  - Add compact operational tags for API coverage, write actions, and mapped
+    area.
+  - Move metrics, provider/source metadata, and the open action into a
+    responsive side panel.
+  - Validate syntax, build, tests, and desktop/mobile `/data` rendering.
+- Acceptance Criteria:
+  - `/data` rows show whether a module has a typed editor or is read-only.
+  - Rows still navigate through the existing `data-link` SPA route behavior.
+  - API coverage, write action availability, mapped area, records, routes, and
+    sources are visible without opening a module.
+  - Desktop and mobile layouts render without horizontal overflow.
+- Definition of Done:
+  - `node --check public/app.js`, `npm run build`, `git diff --check`, and
+    `npm test` pass.
+  - Local browser smoke verifies `/data` row statuses, filtering/navigation, and
+    responsive layout with no console errors.
+- Result Report:
+  - Updated database module rows with capability badges, operational tags, a
+    compact metrics/source side panel, and preserved route navigation.
+  - Extended the reusable workbench index CSS pattern with editable/read-only
+    status styling and mobile-safe stacking.
+  - Validation passed: `node --check public/app.js`, `npm run build`,
+    `git diff --check`, and `npm test` against disposable Postgres database
+    `companycore_test` on port `55476`.
+  - Local Playwright `/data` smoke passed on desktop `1440x960` and mobile
+    `390x844`: 13 module rows rendered, 5 typed-editor rows were marked,
+    read-only badges rendered, operation tags rendered, the `tasks` filter
+    narrowed the list, `/data/tasks` navigation worked, there were no console
+    errors, and there was no horizontal overflow. Browser plugin validation was
+    attempted first but remained blocked because its Node REPL requires Node
+    `>=22.22.0` while this workstation exposes Node `22.13.0`.
+
 ## V2WEB-034 Command Bar Module Switcher Polish
 
 - Task Type: design/frontend

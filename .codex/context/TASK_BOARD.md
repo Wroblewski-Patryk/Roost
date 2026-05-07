@@ -54,6 +54,7 @@ No active task.
 
 ## Done
 
+- V2WEB-035 Data Operations Index Polish.
 - V2WEB-034 Command Bar Module Switcher Polish.
 - V2WEB-033 App Shell Navigation Polish.
 - V2WEB-032 Dashboard Command Layout Polish.
