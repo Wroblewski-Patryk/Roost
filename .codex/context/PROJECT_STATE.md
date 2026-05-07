@@ -137,6 +137,22 @@ Last updated: 2026-05-07
 
 ## Recent Progress
 
+- 2026-05-07: Completed V2WEB-042 Google Drive Import Context Polish.
+  `/settings/drive` now includes a compact Drive import context panel before
+  OAuth setup. The panel shows OAuth client state, consent state, selected
+  folder count, discovered folder count, imported item count, folder-review
+  count, and links to the setup panel plus `/relationships` through existing
+  navigation while preserving the OAuth form, setup guide, folder picker,
+  import mode, Drive file filters, preview actions, and description editing.
+  Validation passed: `node --check public/app.js`, `npm run build`,
+  `git diff --check`, `npm test` against disposable Postgres on port `55491`,
+  and local Playwright desktop/mobile `/settings/drive` smoke with no console
+  errors or horizontal overflow. Smoke verified context copy, OAuth/client
+  readiness pills, selected/discovered/imported folder counts, setup anchor
+  behavior, and SPA navigation to `/relationships`. Browser plugin fallback
+  note: in-app Browser could not initialize because node_repl resolved Node
+  `22.13.0` while the plugin requires `>=22.22.0`.
+
 - 2026-05-07: Completed V2WEB-041 Operating Area Context Polish.
   `/areas` now includes a compact operating model context panel before the
   company operating map. The panel shows area count, table count, record count,

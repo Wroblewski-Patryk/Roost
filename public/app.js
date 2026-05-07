@@ -356,6 +356,7 @@ const integrationMatrixSummary = document.querySelector("#integrationMatrixSumma
 const integrationSearch = document.querySelector("#integrationSearch");
 const integrationTypeFilter = document.querySelector("#integrationTypeFilter");
 const integrationAreaMatrix = document.querySelector("#integrationAreaMatrix");
+const driveContext = document.querySelector("#driveContext");
 const googleDrivePanel = document.querySelector("#googleDrivePanel");
 const googleDriveWorkspaceLabel = document.querySelector("#googleDriveWorkspaceLabel");
 const googleDriveClientStatus = document.querySelector("#googleDriveClientStatus");
@@ -835,6 +836,7 @@ function renderGoogleDriveFolderPicker() {
   const selectedIds = new Set(parseIdList(fields.googleDriveFolderIds.value));
   const folders = state.googleDrive.discoveredFolders || [];
   const selectedCount = folders.filter((folder) => selectedIds.has(folder.id)).length;
+  renderGoogleDriveContext();
 
   if (!state.googleDrive.oauthTokenConfigured) {
     googleDriveFolderPickerSummary.textContent = "Save the OAuth connection before CompanyCore can list Drive folders.";
@@ -871,6 +873,49 @@ function renderGoogleDriveFolderPicker() {
     row.querySelector("[data-drive-folder-select]").addEventListener("change", syncSelectedGoogleDriveFolderInput);
     googleDriveFolderPicker.append(row);
   }
+}
+
+function renderGoogleDriveContext() {
+  driveContext.innerHTML = "";
+  const selectedFolderIds = parseIdList(fields.googleDriveFolderIds.value || [
+    ...(state.googleDrive.config.selectedFolderIds || []),
+    ...(state.googleDrive.config.rootFolderIds || [])
+  ].join(", "));
+  const importedFolders = state.googleDrive.files.filter((file) => file.isFolder);
+  const unassignedFolders = importedFolders.filter((file) => !file.operatingAreaId);
+  const discoveredFolders = state.googleDrive.discoveredFolders || [];
+  const status = !isSignedIn()
+    ? "Sign in required"
+    : state.googleDrive.oauthTokenConfigured
+      ? state.googleDrive.active ? "Drive connected" : "Drive saved, inactive"
+      : state.googleDrive.oauthClientConfigured ? "Consent required" : "OAuth client required";
+
+  const panel = document.createElement("article");
+  panel.className = "drive-context-card";
+  panel.innerHTML = `
+    <div class="drive-context-copy">
+      <span class="summary-kicker">Drive import context</span>
+      <div class="drive-context-heading">
+        <strong>OAuth, folder selection, import, and area review</strong>
+        <span class="workbench-index-status">${escapeHtml(status)}</span>
+      </div>
+      <p>Use this setup surface to connect Google consent, choose folders from Drive, import readable files, and map folders into operating areas for agents.</p>
+      <div class="drive-context-pills" aria-label="Google Drive operation context">
+        <span>${state.googleDrive.oauthClientConfigured ? "OAuth client saved" : "OAuth client missing"}</span>
+        <span>${state.googleDrive.oauthTokenConfigured ? "Consent saved" : "Consent missing"}</span>
+        <span>${selectedFolderIds.length} selected folder${selectedFolderIds.length === 1 ? "" : "s"}</span>
+        <span>${discoveredFolders.length} discovered folder${discoveredFolders.length === 1 ? "" : "s"}</span>
+        <span>${state.googleDrive.files.length} imported item${state.googleDrive.files.length === 1 ? "" : "s"}</span>
+        <span>${unassignedFolders.length} folder${unassignedFolders.length === 1 ? "" : "s"} need review</span>
+      </div>
+    </div>
+    <div class="drive-context-actions">
+      <a class="button-link compact" href="#googleDrivePanel">Setup Drive</a>
+      <a class="button-link secondary compact" href="/relationships" data-link>Review folders</a>
+    </div>
+  `;
+  bindInlineNavigation(panel);
+  driveContext.append(panel);
 }
 
 function areaDefinitionFor(area) {
@@ -3818,6 +3863,7 @@ function renderGoogleDriveFiles() {
   googleDriveFilesBody.innerHTML = "";
   const files = state.googleDrive.files;
   const areasById = new Map(state.operatingModel.areas.map((area) => [area.id, area]));
+  renderGoogleDriveContext();
   syncDriveFilters(files, areasById);
 
   if (files.length === 0) {

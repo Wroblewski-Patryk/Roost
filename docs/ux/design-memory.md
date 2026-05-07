@@ -34,6 +34,22 @@ of rediscovering them.
 
 ## Entries
 
+### 2026-05-07 - Google Drive Import Context Panel
+- Type: reusable_pattern
+- Context: OAuth-backed import screens need to summarize credential readiness,
+  consent state, selected import scope, imported inventory, and review needs
+  before the operator follows detailed setup instructions.
+- Decision: Place a compact Drive import context panel before the OAuth setup
+  form. Show OAuth client state, consent state, selected folder count,
+  discovered folder count, imported item count, folder-review count, and
+  actions to setup plus relationship review.
+- Reuse when: A provider setup route has a multi-step auth/import flow and the
+  operator needs a quick readiness read before acting.
+- Avoid when: The provider route has no persisted credential state or no import
+  scope selection.
+- Evidence: V2WEB-042 adds `/settings/drive` context with OAuth/import state,
+  folder inventory, and navigation into setup plus relationship review.
+
 ### 2026-05-07 - Operating Area Context Panel
 - Type: reusable_pattern
 - Context: Operating-model screens need to show the full company map and the

@@ -54,6 +54,7 @@ No active task.
 
 ## Done
 
+- V2WEB-042 Google Drive Import Context Polish.
 - V2WEB-041 Operating Area Context Polish.
 - V2WEB-040 API Agent Access Context Polish.
 - V2WEB-039 Relationships Mapping Context Polish.

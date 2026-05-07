@@ -1,5 +1,57 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-042 Google Drive Import Context Polish
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: `/settings/drive` shows a compact Drive import
+  context panel before OAuth setup.
+- Goal: Make the Google Drive settings screen immediately explain OAuth client
+  readiness, consent state, selected/discovered folders, imported items, and
+  folder review needs before the owner follows the detailed setup guide.
+- Scope:
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `docs/ux/design-memory.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Add a Drive import context slot above the existing Drive setup panel.
+  - Render OAuth client state, consent state, selected folder count,
+    discovered folder count, imported item count, folder review count, and
+    Drive setup status from existing client state.
+  - Add local actions to Drive setup and relationship review through existing
+    page anchors and SPA navigation.
+  - Preserve existing OAuth form, setup guide, folder picker, import mode,
+    Drive file filters, preview actions, and description editing.
+  - Validate syntax, build, tests, and desktop/mobile `/settings/drive`
+    rendering.
+- Acceptance Criteria:
+  - `/settings/drive` explains Drive import readiness before OAuth setup.
+  - `Setup Drive` moves context to the existing Drive setup panel.
+  - `Review folders` navigates to `/relationships` through the SPA.
+  - Desktop and mobile layouts render without horizontal overflow.
+- Definition of Done:
+  - `node --check public/app.js`, `npm run build`, `git diff --check`, and
+    `npm test` pass.
+  - Local browser smoke verifies Drive context, both actions, responsive
+    layout, and no console errors.
+- Result Report:
+  - Added a dynamic Drive import context panel to `/settings/drive`.
+  - Added OAuth client, consent, selected folder, discovered folder, imported
+    item, and folder-review pills plus actions to setup and review folders.
+  - Passed `node --check public/app.js`, `npm run build`, `git diff --check`,
+    and `npm test` against disposable Postgres on port `55491`.
+  - Passed local Playwright desktop/mobile `/settings/drive` smoke with no
+    console errors or horizontal overflow; smoke verified context copy,
+    OAuth/client readiness pills, selected/discovered/imported folder counts,
+    setup anchor behavior, and SPA navigation to `/relationships`.
+  - Browser plugin fallback was required because node_repl resolved Node
+    `22.13.0` while the Browser plugin requires `>=22.22.0`.
+
 ## V2WEB-041 Operating Area Context Polish
 
 - Task Type: design/frontend
