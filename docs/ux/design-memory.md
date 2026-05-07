@@ -34,6 +34,22 @@ of rediscovering them.
 
 ## Entries
 
+### 2026-05-07 - Auth Onboarding Context Panels
+- Type: reusable_pattern
+- Context: Public owner-auth screens need enough product context to explain
+  why the owner is signing in or creating a workspace before they reach the
+  private operational console.
+- Decision: Place compact onboarding context panels beside login and
+  registration forms. Use the existing context-panel language, concise
+  operational copy, and pill signals for workspace owner, integrations,
+  operating areas, provider imports, and agent-safe API access.
+- Reuse when: A public or transitional route gates access to a private
+  operational surface and should explain what the user unlocks next.
+- Avoid when: The route is an in-app settings screen where live workspace
+  state should be shown instead of static onboarding context.
+- Evidence: V2WEB-046 adds `/auth/login` and `/auth/register` context panels
+  while preserving auth behavior.
+
 ### 2026-05-07 - ClickUp Adapter Command Panel
 - Type: reusable_pattern
 - Context: Provider setup screens with token validation, workspace selection,

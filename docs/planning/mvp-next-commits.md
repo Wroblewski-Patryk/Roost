@@ -80,6 +80,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] V2WEB-043 Integration Map Context Polish
 - [x] V2WEB-044 Account Context Polish
 - [x] V2WEB-045 ClickUp Setup Context Polish
+- [x] V2WEB-046 Auth Onboarding Context Polish
 - [x] AGRUN-005 Scoped Agent Key Owner UI
 - [x] CCV1-009P Protected production smoke for adapter CRUD
 - [x] CCV1-027 Paperclip and Jarvis production env wiring

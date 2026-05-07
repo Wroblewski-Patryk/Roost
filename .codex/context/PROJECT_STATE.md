@@ -137,6 +137,20 @@ Last updated: 2026-05-07
 
 ## Recent Progress
 
+- 2026-05-07: Completed V2WEB-046 Auth Onboarding Context Polish.
+  `/auth/login` now includes an owner onboarding context panel and
+  `/auth/register` now includes a workspace bootstrap context panel. The
+  panels explain workspace ownership, integration setup, operating areas,
+  provider imports, and agent-safe API access before the owner reaches the
+  private console while preserving existing auth forms and behavior.
+  Validation passed: `node --check public/app.js`, `npm run build`,
+  `git diff --check`, `npm test` against disposable Postgres on port `55499`,
+  and local Playwright desktop/mobile auth smoke with no console errors or
+  horizontal overflow. Smoke verified login/register context copy, navigation
+  between auth routes, and successful registration redirect to `/dashboard`.
+  Browser plugin fallback note: in-app Browser could not initialize because
+  node_repl resolved Node `22.13.0` while the plugin requires `>=22.22.0`.
+
 - 2026-05-07: Completed V2WEB-045 ClickUp Setup Context Polish.
   `/settings` now includes a compact ClickUp adapter command panel before the
   setup form. The panel shows ClickUp status, token readiness, workspace

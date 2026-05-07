@@ -1,5 +1,54 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-046 Auth Onboarding Context Polish
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: `/auth/login` and `/auth/register` show compact
+  onboarding context panels beside the owner forms.
+- Goal: Make the public entry screens explain the workspace, integration,
+  operating-area, and agent API context before an owner signs in or creates a
+  workspace.
+- Scope:
+  - `public/index.html`
+  - `public/styles.css`
+  - `docs/ux/design-memory.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Add a static owner onboarding context panel beside the login form.
+  - Add a static workspace bootstrap context panel beside the registration
+    form.
+  - Style both panels with the established compact context-panel visual
+    language and responsive single-column collapse.
+  - Preserve existing login, registration, form validation, and navigation
+    behavior.
+  - Validate syntax/build, tests, and desktop/mobile auth rendering.
+- Acceptance Criteria:
+  - `/auth/login` explains owner onboarding before sign-in.
+  - `/auth/register` explains workspace bootstrap before account creation.
+  - Existing auth form submissions and auth navigation continue to work.
+  - Desktop and mobile layouts render without horizontal overflow.
+- Definition of Done:
+  - `node --check public/app.js`, `npm run build`, `git diff --check`, and
+    `npm test` pass.
+  - Local browser smoke verifies login/register context, auth navigation,
+    successful registration, responsive layout, and no console errors.
+- Result Report:
+  - Added owner onboarding context to `/auth/login`.
+  - Added workspace bootstrap context to `/auth/register`.
+  - Reused the compact context-panel visual language with responsive
+    single-column collapse while preserving existing auth forms and behavior.
+  - Passed `node --check public/app.js`, `npm run build`, `git diff --check`,
+    and `npm test` against disposable Postgres on port `55499`.
+  - Passed local Playwright desktop/mobile auth smoke with no console errors or
+    horizontal overflow; smoke verified login/register context copy, navigation
+    between auth routes, and successful registration redirect to `/dashboard`.
+  - Browser plugin fallback was required because node_repl resolved Node
+    `22.13.0` while the plugin requires `>=22.22.0`.
+
 ## V2WEB-045 ClickUp Setup Context Polish
 
 - Task Type: design/frontend

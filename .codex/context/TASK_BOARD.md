@@ -54,6 +54,7 @@ No active task.
 
 ## Done
 
+- V2WEB-046 Auth Onboarding Context Polish.
 - V2WEB-045 ClickUp Setup Context Polish.
 - V2WEB-044 Account Context Polish.
 - V2WEB-043 Integration Map Context Polish.
