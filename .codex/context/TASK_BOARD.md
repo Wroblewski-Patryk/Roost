@@ -54,6 +54,7 @@ No active task.
 
 ## Done
 
+- V2WEB-049 Table Workbench Empty State Polish.
 - V2WEB-048 Global Feedback Panel Polish.
 - V2WEB-047 Public Entry Context Polish.
 - V2WEB-046 Auth Onboarding Context Polish.

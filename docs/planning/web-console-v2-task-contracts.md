@@ -1,5 +1,69 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-049 Table Workbench Empty State Polish
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: the table workbench shows actionable empty states
+  for unsupported tables, signed-out access, empty record lists, filtered-out
+  lists, and inspector selection.
+- Goal: Make route-level business editing surfaces feel intentional even when
+  no records are loaded yet, so operators know the next action without reading
+  raw table context.
+- Scope:
+  - `public/app.js`
+  - `public/styles.css`
+  - `docs/ux/design-memory.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Add a reusable table-workbench empty state helper with title, message, and
+    optional local action.
+  - Replace generic table record and inspector empty notes with actionable
+    states for unsupported, signed-out, no-records, filtered, and select-record
+    conditions.
+  - Add a clear-filters action and a new-draft action through existing table
+    workbench state.
+  - Style the empty state as a compact reusable panel that works inside lists
+    and inspector surfaces.
+  - Validate syntax/build, tests, and desktop/mobile table workbench rendering.
+- Acceptance Criteria:
+  - Empty record lists explain whether the table has no records or filters are
+    hiding matches.
+  - Typed editable tables offer `New draft` from the empty record-list state.
+  - Filtered-out lists offer `Clear filters` and update the table view.
+  - Inspector empty state explains selection or creation without raw backend
+    language.
+  - Desktop and mobile layouts render without horizontal overflow.
+- Definition of Done:
+  - `node --check public/app.js`, `npm run build`, `git diff --check`, and
+    `npm test` pass.
+  - Local browser smoke verifies table empty, filtered, and inspector states,
+    responsive layout, and no console errors.
+- Result Report:
+  - Added a reusable table-workbench empty state helper with title, message,
+    and optional local action.
+  - Replaced generic `/data-table` record-list and inspector notes with
+    actionable states for unsupported table routes, protected signed-out
+    routing, empty record lists, filtered-out lists, and selection/creation
+    context.
+  - Added local `New draft` and `Clear filters` actions through existing table
+    workbench state; no backend behavior, API routes, or CRUD semantics were
+    changed.
+  - Added compact empty-state styling that works inside record lists and
+    inspector panels on desktop and mobile.
+  - Passed `node --check public/app.js`, `npm run build`, `git diff --check`,
+    and `npm test` against disposable Postgres on port `55505`.
+  - Passed local Playwright smoke against disposable Postgres on port `55504`;
+    smoke verified protected `/data/notes` sign-in feedback, new-workspace
+    empty Notes state, `New draft`, note creation, filtered-out record-list and
+    inspector states, `Clear filters`, mobile layout, and no console/page
+    errors or horizontal overflow.
+  - Browser plugin fallback was required because the Browser tool was not
+    exposed in this session.
+
 ## V2WEB-048 Global Feedback Panel Polish
 
 - Task Type: design/frontend

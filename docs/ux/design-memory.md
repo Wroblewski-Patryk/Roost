@@ -34,6 +34,22 @@ of rediscovering them.
 
 ## Entries
 
+### 2026-05-07 - Table Workbench Empty State
+- Type: reusable_pattern
+- Context: Route-level table workbenches can be empty because records have not
+  been created, imports have not run, filters hide all matches, or the
+  inspector has no selected row.
+- Decision: Use compact `Workbench state` panels with a short title, recovery
+  message, and one local action when useful. Keep actions close to the list or
+  inspector state, such as `New draft` or `Clear filters`, instead of routing
+  users through a global notification.
+- Reuse when: A table, list, inspector, or workbench area is empty but the user
+  can either create, clear filters, select, or navigate to the right surface.
+- Avoid when: The screen has a real data-loading failure; use the action
+  feedback/error pattern and provider-safe recovery copy instead.
+- Evidence: V2WEB-049 upgrades `/data-table` record-list and inspector empty
+  states with actionable workbench panels.
+
 ### 2026-05-07 - Global Action Feedback Panel
 - Type: reusable_pattern
 - Context: Shared action feedback appears after auth, integration, CRUD, Drive,

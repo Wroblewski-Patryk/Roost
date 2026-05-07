@@ -137,6 +137,21 @@ Last updated: 2026-05-07
 
 ## Recent Progress
 
+- 2026-05-07: Completed V2WEB-049 Table Workbench Empty State Polish.
+  The `/data-table` workbench now uses actionable empty-state panels for
+  unsupported table routes, protected signed-out routing, empty record lists,
+  filtered-out lists, and inspector selection/creation context. The slice added
+  local `New draft` and `Clear filters` actions through existing table
+  workbench state without changing backend behavior, API routes, or CRUD
+  semantics.
+  Validation passed: `node --check public/app.js`, `npm run build`,
+  `git diff --check`, `npm test` against disposable Postgres on port `55505`,
+  and local Playwright smoke against disposable Postgres on port `55504`.
+  Smoke verified protected `/data/notes` sign-in feedback, empty Notes state,
+  note creation, filtered-out list and inspector states, `Clear filters`,
+  mobile layout, and no console/page errors or horizontal overflow. Browser
+  plugin fallback note: the Browser tool was not exposed in this session.
+
 - 2026-05-07: Completed V2WEB-048 Global Feedback Panel Polish.
   The shared `#resultPanel` now uses accessible live feedback, a tone label,
   and a bordered message box so success states read as `Success` and

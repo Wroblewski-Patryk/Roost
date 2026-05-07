@@ -2343,8 +2343,18 @@ function renderTableWorkbench() {
     tableRecordsSummary.textContent = "Open the data index to choose an implemented module.";
     tableWorkbenchStats.append(summaryStatCard("Records", 0), summaryStatCard("Routes", 0), summaryStatCard("Fields", 0), summaryStatCard("Sources", 0));
     tableWorkbenchBrief.append(tableWorkbenchBriefElement(null, [], [], []));
-    tableRecordList.append(emptyNote("No table module matches this route."));
-    recordInspector.append(emptyNote("Choose a supported data module from the Data index."));
+    tableRecordList.append(tableWorkbenchEmptyState({
+      title: "Unsupported table route",
+      message: "This route does not match an implemented CompanyCore data module.",
+      actionLabel: "Open data index",
+      href: "/data"
+    }));
+    recordInspector.append(tableWorkbenchEmptyState({
+      title: "Choose a supported module",
+      message: "Open the Data index to inspect implemented tables, API coverage, and available editors.",
+      actionLabel: "All data",
+      href: "/data"
+    }));
     return;
   }
 
@@ -2352,8 +2362,11 @@ function renderTableWorkbench() {
   const fields = tableFieldNames(records);
   const sources = tableSources(records);
   const filteredRecords = filteredTableRecords(module, records);
-  const selected = hasTypedRecordEditor(module.slug) && state.tableWorkbench.newDraft
+  const typedEditorAvailable = hasTypedRecordEditor(module.slug);
+  const selected = typedEditorAvailable && state.tableWorkbench.newDraft
     ? null
+    : filteredRecords.length === 0
+      ? null
     : selectedTableRecord(filteredRecords, records);
 
   tableWorkbenchLabel.textContent = module.group;
@@ -2374,22 +2387,93 @@ function renderTableWorkbench() {
   syncTableFilters(sources);
 
   if (!isSignedIn()) {
-    tableRecordList.append(emptyNote("Sign in to inspect table records."));
-    renderRecordInspector(null, module, fields);
+    tableRecordList.append(tableWorkbenchEmptyState({
+      title: "Sign in to inspect records",
+      message: "Owner access is required before CompanyCore can load workspace-scoped table records."
+    }));
+    renderRecordInspector(null, module, fields, { mode: "signed-out" });
     return;
   }
 
   if (filteredRecords.length === 0) {
-    tableRecordList.append(emptyNote(records.length === 0
-      ? "This table has no records yet."
-      : "No records match the current filters."));
+    if (records.length === 0) {
+      tableRecordList.append(tableWorkbenchEmptyState({
+        title: "No records yet",
+        message: typedEditorAvailable
+          ? `Create the first ${module.label.toLowerCase()} record here, then agents can read it through the API.`
+          : "This table has no imported or CompanyCore-owned records yet.",
+        actionLabel: typedEditorAvailable ? "New draft" : "Review API",
+        href: typedEditorAvailable ? "" : "/settings/api",
+        onAction: typedEditorAvailable ? () => {
+          state.tableWorkbench.newDraft = true;
+          renderTableWorkbench();
+        } : null
+      }));
+    } else {
+      tableRecordList.append(tableWorkbenchEmptyState({
+        title: "No records match",
+        message: "Search or source filters are hiding the currently loaded records.",
+        actionLabel: "Clear filters",
+        onAction: clearTableWorkbenchFilters
+      }));
+    }
   } else {
     for (const record of filteredRecords) {
       tableRecordList.append(tableRecordRowElement(record, module, selected?.id));
     }
   }
 
-  renderRecordInspector(selected, module, fields);
+  renderRecordInspector(selected, module, fields, {
+    mode: filteredRecords.length === 0
+      ? records.length === 0 ? "empty" : "filtered"
+      : "select"
+  });
+}
+
+function clearTableWorkbenchFilters() {
+  state.tableWorkbench.search = "";
+  state.tableWorkbench.source = "";
+  tableRecordSearch.value = "";
+  tableRecordSourceFilter.value = "";
+  renderTableWorkbench();
+}
+
+function tableWorkbenchEmptyState({ title, message, actionLabel = "", href = "", onAction = null }) {
+  const stateElement = document.createElement("article");
+  stateElement.className = "table-empty-state";
+
+  const copy = document.createElement("div");
+  copy.className = "table-empty-copy";
+
+  const kicker = document.createElement("span");
+  kicker.className = "summary-kicker";
+  kicker.textContent = "Workbench state";
+
+  const heading = document.createElement("strong");
+  heading.textContent = title;
+
+  const body = document.createElement("p");
+  body.textContent = message;
+
+  copy.append(kicker, heading, body);
+  stateElement.append(copy);
+
+  if (actionLabel && (href || onAction)) {
+    const action = href ? document.createElement("a") : document.createElement("button");
+    action.className = href ? "button-link secondary compact" : "compact";
+    action.textContent = actionLabel;
+    if (href) {
+      action.href = href;
+      action.dataset.link = "";
+    } else {
+      action.type = "button";
+      action.addEventListener("click", onAction);
+    }
+    stateElement.append(action);
+    bindInlineNavigation(stateElement);
+  }
+
+  return stateElement;
 }
 
 function tableWorkbenchBriefElement(module, records, fields, sources) {
@@ -2563,14 +2647,35 @@ function tableRecordRowElement(record, module, selectedId) {
   return button;
 }
 
-function renderRecordInspector(record, module, fields) {
+function renderRecordInspector(record, module, fields, options = {}) {
   recordInspector.innerHTML = "";
   if (!record) {
+    if (options.mode === "signed-out") {
+      recordInspector.append(tableWorkbenchEmptyState({
+        title: "Inspector locked",
+        message: "Sign in to inspect record fields and use table-specific editors."
+      }));
+      return;
+    }
+    if (options.mode === "filtered") {
+      recordInspector.append(tableWorkbenchEmptyState({
+        title: "Filters hide the inspector",
+        message: "Clear filters to select a loaded record, or adjust the search to narrow the visible list.",
+        actionLabel: "Clear filters",
+        onAction: clearTableWorkbenchFilters
+      }));
+      return;
+    }
     if (hasTypedRecordEditor(module?.slug) && isSignedIn()) {
       recordInspector.append(renderTypedRecordEditor(module.slug, null));
       return;
     }
-    recordInspector.append(emptyNote("Select a record to inspect its fields."));
+    recordInspector.append(tableWorkbenchEmptyState({
+      title: options.mode === "empty" ? "Ready for records" : "Select a record",
+      message: options.mode === "empty"
+        ? "Records created or imported for this table will appear in the list and open here for inspection."
+        : "Choose a row from the record list to inspect fields, metadata, and raw JSON."
+    }));
     return;
   }
 
