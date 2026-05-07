@@ -54,6 +54,7 @@ No active task.
 
 ## Done
 
+- V2WEB-026 Typed Notes Editor Workbench.
 - V2WEB-025 Generic Table Record Workbench.
 - AGRUN-005 Scoped Agent Key Owner UI.
 - V2WEB-024 Data Operations Index.

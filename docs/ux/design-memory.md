@@ -78,3 +78,20 @@ of rediscovering them.
   editing controls; use a table or typed form pattern instead.
 - Evidence: V2WEB-025 `/data/notes` browser smoke created a note through the
   API, filtered the table, and inspected the record on desktop/mobile.
+
+### 2026-05-07 - Typed Record Editor Panel
+- Type: reusable_pattern
+- Context: Data module workbenches need editing only when the payload and
+  lifecycle semantics are known for that specific route.
+- Decision: Add a `record-editor` panel inside the selected-record inspector
+  for typed modules. Keep create/save/archive actions local to the panel,
+  validate required fields before calling the API, refresh the table after each
+  mutation, and keep unrelated tables read-only until their typed editor is
+  implemented.
+- Reuse when: A CompanyCore business route has existing create/update/archive
+  APIs and a small payload that can be represented honestly in the UI.
+- Avoid when: The route has provider-side side effects, unresolved relationship
+  mapping, bulk editing, or ambiguous archive/delete semantics.
+- Evidence: V2WEB-026 `/data/notes` local Playwright smoke created, updated,
+  archived, and reloaded real Notes API records on desktop and mobile without
+  console errors.

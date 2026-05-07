@@ -78,7 +78,8 @@ const state = {
   tableWorkbench: {
     search: "",
     source: "",
-    selectedId: ""
+    selectedId: "",
+    newDraft: false
   },
   relationshipFilters: {
     search: "",
@@ -660,7 +661,7 @@ function renderRoute() {
 }
 
 function setBusy(isBusy) {
-  document.querySelectorAll("button, input, select").forEach((control) => {
+  document.querySelectorAll("button, input, select, textarea").forEach((control) => {
     control.disabled = isBusy;
   });
   links.forEach((link) => {
@@ -1981,7 +1982,9 @@ function renderTableWorkbench() {
   const fields = tableFieldNames(records);
   const sources = tableSources(records);
   const filteredRecords = filteredTableRecords(module, records);
-  const selected = selectedTableRecord(filteredRecords, records);
+  const selected = module.slug === "notes" && state.tableWorkbench.newDraft
+    ? null
+    : selectedTableRecord(filteredRecords, records);
 
   tableWorkbenchLabel.textContent = module.group;
   tableWorkbenchTitle.textContent = module.label;
@@ -2106,6 +2109,7 @@ function tableRecordRowElement(record, module, selectedId) {
   `;
   button.addEventListener("click", () => {
     state.tableWorkbench.selectedId = record.id;
+    state.tableWorkbench.newDraft = false;
     renderTableWorkbench();
   });
   return button;
@@ -2114,6 +2118,10 @@ function tableRecordRowElement(record, module, selectedId) {
 function renderRecordInspector(record, module, fields) {
   recordInspector.innerHTML = "";
   if (!record) {
+    if (module?.slug === "notes" && isSignedIn()) {
+      recordInspector.append(renderNoteEditor(null));
+      return;
+    }
     recordInspector.append(emptyNote("Select a record to inspect its fields."));
     return;
   }
@@ -2146,7 +2154,148 @@ function renderRecordInspector(record, module, fields) {
     <pre>${escapeHtml(JSON.stringify(record, null, 2))}</pre>
   `;
 
-  recordInspector.append(header, fieldList, raw);
+  const sections = [header];
+  if (module.slug === "notes") {
+    sections.push(renderNoteEditor(record));
+  }
+  sections.push(fieldList, raw);
+  recordInspector.append(...sections);
+}
+
+function renderNoteEditor(record) {
+  const panel = document.createElement("section");
+  panel.className = "record-editor";
+  panel.innerHTML = `
+    <div class="record-editor-heading">
+      <div>
+        <span class="summary-kicker">Typed editor</span>
+        <h3>${record ? "Edit selected note" : "Create note"}</h3>
+      </div>
+      ${record ? `<span class="status-pill">${escapeHtml(record.status || "active")}</span>` : ""}
+    </div>
+    <label>
+      Note content
+      <textarea id="noteEditorContent" rows="7" autocomplete="off" placeholder="Write operational context that agents and operators should remember.">${escapeHtml(record?.content || "")}</textarea>
+    </label>
+    <div class="record-editor-actions">
+      <button type="button" class="compact" data-note-action="create">Create note</button>
+      <button type="button" class="secondary compact" data-note-action="save" ${record ? "" : "disabled"}>Save selected</button>
+      <button type="button" class="secondary compact" data-note-action="new">New draft</button>
+      <button type="button" class="danger compact" data-note-action="archive" ${record && record.status !== "archived" ? "" : "disabled"}>Archive selected</button>
+    </div>
+    <p class="form-note" id="noteEditorStatus">${record ? "Changes are saved into the Notes API and visible in this database index." : "Create a local CompanyCore note. Relationship fields can still be managed through the API."}</p>
+  `;
+
+  panel.querySelector('[data-note-action="create"]').addEventListener("click", () => createNoteFromEditor(panel));
+  panel.querySelector('[data-note-action="save"]').addEventListener("click", () => saveSelectedNoteFromEditor(panel, record));
+  panel.querySelector('[data-note-action="new"]').addEventListener("click", () => {
+    state.tableWorkbench.selectedId = "";
+    state.tableWorkbench.newDraft = true;
+    renderTableWorkbench();
+  });
+  panel.querySelector('[data-note-action="archive"]').addEventListener("click", () => archiveSelectedNote(record));
+  return panel;
+}
+
+function noteEditorContent(panel) {
+  return panel.querySelector("#noteEditorContent")?.value.trim() || "";
+}
+
+function setNoteEditorStatus(panel, message, tone = "") {
+  const status = panel.querySelector("#noteEditorStatus");
+  if (!status) {
+    return;
+  }
+  status.textContent = message;
+  status.classList.toggle("is-error", tone === "error");
+  status.classList.toggle("is-success", tone === "success");
+}
+
+async function refreshTableRecords(slug) {
+  const response = await api(`/v1/${slug}`);
+  state.databaseTables.set(slug, { records: response.data || [] });
+}
+
+async function createNoteFromEditor(panel) {
+  const content = noteEditorContent(panel);
+  if (!content) {
+    setNoteEditorStatus(panel, "Write note content before creating it.", "error");
+    return;
+  }
+
+  setBusy(true);
+  try {
+    const response = await api("/v1/notes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content })
+    });
+    state.tableWorkbench.selectedId = response.data?.id || "";
+    state.tableWorkbench.newDraft = false;
+    await refreshTableRecords("notes");
+    renderTableWorkbench();
+    showResult("Note created in the database.", "success");
+  } catch (error) {
+    setNoteEditorStatus(panel, friendlyError(error), "error");
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function saveSelectedNoteFromEditor(panel, record) {
+  if (!record?.id) {
+    setNoteEditorStatus(panel, "Select a note before saving changes.", "error");
+    return;
+  }
+
+  const content = noteEditorContent(panel);
+  if (!content) {
+    setNoteEditorStatus(panel, "Note content cannot be empty.", "error");
+    return;
+  }
+
+  setBusy(true);
+  try {
+    await api(`/v1/notes/${record.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content })
+    });
+    state.tableWorkbench.selectedId = record.id;
+    state.tableWorkbench.newDraft = false;
+    await refreshTableRecords("notes");
+    renderTableWorkbench();
+    showResult("Note updated.", "success");
+  } catch (error) {
+    setNoteEditorStatus(panel, friendlyError(error), "error");
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function archiveSelectedNote(record) {
+  if (!record?.id) {
+    return;
+  }
+
+  const confirmed = window.confirm("Archive this note? It will stay in the database with archived status.");
+  if (!confirmed) {
+    return;
+  }
+
+  setBusy(true);
+  try {
+    await api(`/v1/notes/${record.id}`, { method: "DELETE" });
+    state.tableWorkbench.selectedId = record.id;
+    state.tableWorkbench.newDraft = false;
+    await refreshTableRecords("notes");
+    renderTableWorkbench();
+    showResult("Note archived.", "success");
+  } catch (error) {
+    showResult(friendlyError(error), "error");
+  } finally {
+    setBusy(false);
+  }
 }
 
 function formatRecordValue(value) {
@@ -3929,6 +4078,7 @@ logoutButton.addEventListener("click", () => {
   state.tableWorkbench.search = "";
   state.tableWorkbench.source = "";
   state.tableWorkbench.selectedId = "";
+  state.tableWorkbench.newDraft = false;
   renderAgentKeys();
   renderTasks();
   renderGoogleDriveFiles();

@@ -688,3 +688,49 @@ It follows the repository task contract and must stay synchronized with
   - Added backend SPA route support for `/data/:table`.
   - Validation passed against `/data/notes` with a real note record created
     through the API.
+
+## V2WEB-026 Typed Notes Editor Workbench
+
+- Task Type: frontend/ux
+- Current Stage: done
+- Deliverable For This Stage: first typed route-level business editor inside
+  the Data Operations workbench.
+- Goal: Let owners create, edit, and archive CompanyCore notes from
+  `/data/notes` without leaving the web console or guessing API payloads.
+- Scope:
+  - `public/app.js`
+  - `public/styles.css`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/operations/agent-runtime-coverage-ledger.csv`
+  - `docs/ux/design-memory.md`
+- Implementation Plan:
+  - Reuse the existing `/data/:table` split record workbench.
+  - Add a typed record editor panel only for the `notes` module.
+  - Wire create, update, and archive actions to the existing Notes API
+    (`POST /v1/notes`, `PATCH /v1/notes/:id`, `DELETE /v1/notes/:id`).
+  - Refresh table records after each mutation and keep selected/draft state
+    explicit.
+  - Validate desktop and mobile rendered behavior with an authenticated browser
+    smoke.
+- Acceptance Criteria:
+  - Signed-in owners can create a note from `/data/notes`.
+  - Selecting a note loads its content into an editable textarea.
+  - Saving updates the selected note and refreshes the record list/inspector.
+  - Archiving a selected note calls the Notes archive API and shows archived
+    status in the inspector.
+  - The editor is not shown as a generic placeholder on unrelated tables.
+- Definition of Done:
+  - `node --check public/app.js`, `npm run build`, `npm test`,
+    `git diff --check`, and authenticated Playwright desktop/mobile smoke pass.
+  - Canonical task, project-state, planning, coverage-ledger, and UX memory
+    docs are updated.
+- Result Report:
+  - Added a reusable `record-editor` presentation pattern.
+  - Added typed note content create/save/archive controls inside `/data/notes`.
+  - Added local editor status handling and validation for empty note content.
+  - Extended global busy handling to disable textareas during API mutations.
+  - Validation passed against a disposable Postgres database and local
+    Playwright desktop/mobile smokes that created, edited, and archived real
+    Notes API records.
