@@ -1,5 +1,60 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-043 Integration Map Context Polish
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: `/settings/integrations` shows a compact
+  integration command map before provider group cards.
+- Goal: Make the integration map immediately explain provider APIs, operating
+  areas, ClickUp tasks, Drive folders, pipeline records, and agent API routes
+  before the owner scans integration cards or setup rows.
+- Scope:
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `docs/ux/design-memory.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Add an integration command context slot above the existing integration
+    group grid.
+  - Render readiness, implemented group count, operating-area count, ClickUp
+    task count, Drive folder count, pipeline record count, API route count,
+    and Drive status from existing frontend state.
+  - Add local actions to ClickUp setup, Drive setup, and agent API settings
+    through existing SPA navigation.
+  - Preserve existing integration group cards, provider setup rows, integration
+    filters, and operating-area data matrix.
+  - Validate syntax, build, tests, and desktop/mobile
+    `/settings/integrations` rendering.
+- Acceptance Criteria:
+  - `/settings/integrations` explains the integration command map before the
+    provider group cards.
+  - `ClickUp setup`, `Drive setup`, and `Agent API` navigate through the SPA to
+    the existing dedicated setup surfaces.
+  - Desktop and mobile layouts render without horizontal overflow.
+- Definition of Done:
+  - `node --check public/app.js`, `npm run build`, `git diff --check`, and
+    `npm test` pass.
+  - Local browser smoke verifies integration context, all actions, responsive
+    layout, and no console errors.
+- Result Report:
+  - Added a dynamic integration command map to `/settings/integrations`.
+  - Added readiness, implemented group, operating-area, ClickUp task, Drive
+    folder, pipeline record, API route, and Drive status pills plus actions to
+    ClickUp setup, Drive setup, and agent API settings.
+  - Passed `node --check public/app.js`, `npm run build`, `git diff --check`,
+    and `npm test` against disposable Postgres on port `55493`.
+  - Passed local Playwright desktop/mobile `/settings/integrations` smoke with
+    no console errors or horizontal overflow; smoke verified context copy,
+    readiness/count pills, and SPA navigation to `/settings`,
+    `/settings/drive`, and `/settings/api`.
+  - Browser plugin fallback was required because node_repl resolved Node
+    `22.13.0` while the plugin requires `>=22.22.0`.
+
 ## V2WEB-042 Google Drive Import Context Polish
 
 - Task Type: design/frontend

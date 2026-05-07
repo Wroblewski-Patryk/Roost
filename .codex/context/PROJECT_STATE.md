@@ -137,6 +137,22 @@ Last updated: 2026-05-07
 
 ## Recent Progress
 
+- 2026-05-07: Completed V2WEB-043 Integration Map Context Polish.
+  `/settings/integrations` now includes a compact integration command map
+  before provider cards. The panel shows readiness, implemented group count,
+  operating-area count, ClickUp task count, Drive folder count, pipeline record
+  count, API route count, Drive status, and links to `/settings`,
+  `/settings/drive`, and `/settings/api` through existing navigation while
+  preserving existing setup rows, filters, and the operating-area data matrix.
+  Validation passed: `node --check public/app.js`, `npm run build`,
+  `git diff --check`, `npm test` against disposable Postgres on port `55493`,
+  and local Playwright desktop/mobile `/settings/integrations` smoke with no
+  console errors or horizontal overflow. Smoke verified context copy,
+  readiness/count pills, and SPA navigation to `/settings`, `/settings/drive`,
+  and `/settings/api`. Browser plugin fallback note: in-app Browser could not
+  initialize because node_repl resolved Node `22.13.0` while the plugin
+  requires `>=22.22.0`.
+
 - 2026-05-07: Completed V2WEB-042 Google Drive Import Context Polish.
   `/settings/drive` now includes a compact Drive import context panel before
   OAuth setup. The panel shows OAuth client state, consent state, selected

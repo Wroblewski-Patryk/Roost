@@ -34,6 +34,22 @@ of rediscovering them.
 
 ## Entries
 
+### 2026-05-07 - Integration Command Map Context Panel
+- Type: reusable_pattern
+- Context: Integration overview screens need to join provider readiness,
+  operating-area ownership, imported files, pipeline records, and agent API
+  routes before operators choose a provider-specific setup surface.
+- Decision: Place a compact integration command map before provider cards.
+  Show readiness, implemented group count, operating-area count, ClickUp task
+  count, Drive folder count, pipeline record count, API route count, Drive
+  status, and actions to ClickUp setup, Drive setup, and agent API settings.
+- Reuse when: A route summarizes multiple integrations or mixed provider/API
+  surfaces and the operator needs an operational inventory before drilling in.
+- Avoid when: The route owns only one provider setup flow; use the provider
+  context-panel pattern instead.
+- Evidence: V2WEB-043 adds `/settings/integrations` context with integration
+  readiness, provider/data counts, and direct setup/API actions.
+
 ### 2026-05-07 - Google Drive Import Context Panel
 - Type: reusable_pattern
 - Context: OAuth-backed import screens need to summarize credential readiness,

@@ -351,6 +351,7 @@ const tableRecordSourceFilter = document.querySelector("#tableRecordSourceFilter
 const tableRecordList = document.querySelector("#tableRecordList");
 const recordInspector = document.querySelector("#recordInspector");
 const integrationSummary = document.querySelector("#integrationSummary");
+const integrationContext = document.querySelector("#integrationContext");
 const integrationGroups = document.querySelector("#integrationGroups");
 const integrationMatrixSummary = document.querySelector("#integrationMatrixSummary");
 const integrationSearch = document.querySelector("#integrationSearch");
@@ -1953,6 +1954,7 @@ function renderPipelineList(container, items, emptyText, getContent) {
 }
 
 function renderIntegrationTaxonomy() {
+  integrationContext.innerHTML = "";
   integrationGroups.innerHTML = "";
   integrationAreaMatrix.innerHTML = "";
 
@@ -2015,6 +2017,15 @@ function renderIntegrationTaxonomy() {
     ? `${groups.length} implemented integration/data groups are available in this workspace.`
     : "Sign in to load integration data.";
 
+  integrationContext.append(integrationContextElement({
+    groupsCount: groups.length,
+    clickUpTasks,
+    driveFolders,
+    pipelineRecords,
+    driveStatus,
+    integrationStatus: integrationReadinessTitle()
+  }));
+
   for (const group of groups) {
     integrationGroups.append(integrationGroupCard(group));
   }
@@ -2022,6 +2033,39 @@ function renderIntegrationTaxonomy() {
   integrationSearch.value = state.integrationFilters.search;
   integrationTypeFilter.value = state.integrationFilters.type;
   renderIntegrationAreaMatrix();
+}
+
+function integrationContextElement({ groupsCount, clickUpTasks, driveFolders, pipelineRecords, driveStatus, integrationStatus }) {
+  const areas = sortedOperatingAreas();
+  const apiRoutes = apiRouteRows().length;
+  const panel = document.createElement("article");
+  panel.className = "integration-context-card";
+  panel.innerHTML = `
+    <div class="integration-context-copy">
+      <span class="summary-kicker">Integration command map</span>
+      <div class="integration-context-heading">
+        <strong>Provider APIs, operating areas, and agent routes</strong>
+        <span class="workbench-index-status">${escapeHtml(isSignedIn() ? integrationStatus : "Sign in required")}</span>
+      </div>
+      <p>Use this map to see which provider data sources, CompanyCore tables, and agent-facing API routes are connected to the operating model.</p>
+      <div class="integration-context-pills" aria-label="Integration operation context">
+        <span>${groupsCount} implemented group${groupsCount === 1 ? "" : "s"}</span>
+        <span>${areas.length} area${areas.length === 1 ? "" : "s"}</span>
+        <span>${clickUpTasks} ClickUp task${clickUpTasks === 1 ? "" : "s"}</span>
+        <span>${driveFolders} Drive folder${driveFolders === 1 ? "" : "s"}</span>
+        <span>${pipelineRecords} pipeline record${pipelineRecords === 1 ? "" : "s"}</span>
+        <span>${apiRoutes} API route${apiRoutes === 1 ? "" : "s"}</span>
+        <span>Drive: ${escapeHtml(driveStatus)}</span>
+      </div>
+    </div>
+    <div class="integration-context-actions">
+      <a class="button-link compact" href="/settings" data-link>ClickUp setup</a>
+      <a class="button-link secondary compact" href="/settings/drive" data-link>Drive setup</a>
+      <a class="button-link secondary compact" href="/settings/api" data-link>Agent API</a>
+    </div>
+  `;
+  bindInlineNavigation(panel);
+  return panel;
 }
 
 function integrationGroupCard(group) {

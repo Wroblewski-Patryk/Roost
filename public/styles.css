@@ -898,6 +898,73 @@ h4 {
   margin-bottom: 20px;
 }
 
+.integration-context-panel {
+  display: grid;
+  margin: 0 0 20px;
+}
+
+.integration-context-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(170px, auto);
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(35, 48, 73, 0.06);
+}
+
+.integration-context-copy {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.integration-context-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.integration-context-heading strong {
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.integration-context-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.integration-context-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.integration-context-pills span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fbfcfe;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.integration-context-actions {
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+}
+
 .integration-card {
   display: grid;
   align-content: start;
@@ -2822,6 +2889,7 @@ button.danger:hover {
     .area-context-card,
     .adapter-context-card,
     .drive-context-card,
+    .integration-context-card,
     .pipeline-context-card,
     .relationship-context-card,
     .table-context-card,
@@ -2867,6 +2935,10 @@ button.danger:hover {
   }
 
   .drive-context-actions {
+    justify-items: start;
+  }
+
+  .integration-context-actions {
     justify-items: start;
   }
 
