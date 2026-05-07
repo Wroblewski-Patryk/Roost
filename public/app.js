@@ -328,6 +328,7 @@ const metrics = document.querySelector("#metrics");
 const taskStats = document.querySelector("#taskStats");
 const tasksSummary = document.querySelector("#tasksSummary");
 const tasksTableBody = document.querySelector("#tasksTableBody");
+const taskAdapterBrief = document.querySelector("#taskAdapterBrief");
 const dataOperationsSummary = document.querySelector("#dataOperationsSummary");
 const dataOperationsStats = document.querySelector("#dataOperationsStats");
 const dataSearch = document.querySelector("#dataSearch");
@@ -934,9 +935,11 @@ function scopeEditorHtml({ id, selectedAreaId, type, label = "Area" }) {
 function renderTasks() {
   tasksTableBody.innerHTML = "";
   taskStats.innerHTML = "";
+  taskAdapterBrief.innerHTML = "";
   const tasks = state.tasks;
   syncTaskFilters();
   const clickUpCount = tasks.filter((task) => task.source === "clickup").length;
+  const companyCoreCount = tasks.filter((task) => (task.source || "companycore") !== "clickup").length;
   const openTasks = tasks.filter((task) => !["closed", "complete", "completed", "done"].includes(String(task.status || "").toLowerCase())).length;
   const nextWeek = new Date();
   nextWeek.setDate(nextWeek.getDate() + 7);
@@ -952,6 +955,13 @@ function renderTasks() {
   renderTaskStat("ClickUp", clickUpCount);
   renderTaskStat("Open", openTasks);
   renderTaskStat("Due soon", dueSoon);
+  taskAdapterBrief.append(taskAdapterBriefElement({
+    tasks,
+    clickUpCount,
+    companyCoreCount,
+    openTasks,
+    dueSoon
+  }));
 
   if (tasks.length === 0) {
     tasksSummary.textContent = "No tasks found in this workspace yet.";
@@ -990,6 +1000,44 @@ function renderTasks() {
     tasksTableBody.append(row);
   }
   renderIntegrationTaxonomy();
+}
+
+function taskAdapterBriefElement({ tasks, clickUpCount, companyCoreCount, openTasks, dueSoon }) {
+  const panel = document.createElement("article");
+  panel.className = "adapter-context-card";
+  const selectedLists = (state.clickup.config.listIds || []).length;
+  const clickupStatus = state.clickup.configured
+    ? state.clickup.active ? "ClickUp active" : "ClickUp saved, inactive"
+    : "ClickUp not connected";
+  const sourceLabel = clickUpCount > 0
+    ? `${clickUpCount} ClickUp / ${companyCoreCount} local`
+    : `${companyCoreCount} local records`;
+  const healthLabel = tasks.length === 0
+    ? "No task records loaded"
+    : dueSoon > 0 ? `${dueSoon} due soon` : `${openTasks} open`;
+
+  panel.innerHTML = `
+    <div class="adapter-context-copy">
+      <span class="summary-kicker">Adapter context</span>
+      <div class="adapter-context-heading">
+        <strong>Task intake and execution records</strong>
+        <span class="workbench-index-status">${escapeHtml(clickupStatus)}</span>
+      </div>
+      <p>Use this view to verify imported ClickUp tasks beside CompanyCore-owned task records. Edit local task records in the typed Data workbench.</p>
+      <div class="adapter-context-pills" aria-label="Task adapter operation context">
+        <span>${escapeHtml(sourceLabel)}</span>
+        <span>${selectedLists} selected ClickUp list${selectedLists === 1 ? "" : "s"}</span>
+        <span>${escapeHtml(healthLabel)}</span>
+        <span>${state.clickup.active ? "Sync enabled" : "Sync inactive"}</span>
+      </div>
+    </div>
+    <div class="adapter-context-actions">
+      <a class="button-link compact" href="/data/tasks" data-link>Open task editor</a>
+      <a class="button-link secondary compact" href="/settings" data-link>Configure ClickUp</a>
+    </div>
+  `;
+  bindInlineNavigation(panel);
+  return panel;
 }
 
 function defaultReassignArea(currentArea) {

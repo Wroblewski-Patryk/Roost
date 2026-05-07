@@ -34,6 +34,23 @@ of rediscovering them.
 
 ## Entries
 
+### 2026-05-07 - Adapter Context Panel
+- Type: reusable_pattern
+- Context: Integration adapter screens need to explain connection state,
+  selected provider scope, local/provider record split, and the best next
+  action before showing raw tables.
+- Decision: Place a compact adapter context panel before secondary stats and
+  tables. Use a capability/status badge, source/scope/health pills, and two
+  local actions: one for the operational editor, one for provider
+  configuration.
+- Reuse when: A screen is both an integration health surface and a record
+  review surface, such as task, file, calendar, or provider event adapters.
+- Avoid when: The route is purely a settings form or a typed business-record
+  editor with no provider-scope context.
+- Evidence: V2WEB-037 adds `/tasks-adapter` context with ClickUp/local task
+  split, selected List count, workload health, sync state, and links to the
+  task editor plus ClickUp settings.
+
 ### 2026-05-07 - Table Context Panel
 - Type: reusable_pattern
 - Context: Detail workbenches reached from a module index need to preserve the

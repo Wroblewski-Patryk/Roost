@@ -137,6 +137,20 @@ Last updated: 2026-05-07
 
 ## Recent Progress
 
+- 2026-05-07: Completed V2WEB-037 Tasks Adapter Context Polish.
+  `/tasks-adapter` now includes a compact adapter context panel before task
+  stats and the task table. The panel shows ClickUp connection state,
+  ClickUp/local task split, selected ClickUp List count, workload health, sync
+  state, and local actions to the typed task editor plus ClickUp settings while
+  preserving existing filters, stats, refresh, and table behavior.
+  Validation passed: `node --check public/app.js`, `npm run build`,
+  `git diff --check`, `npm test` against disposable Postgres on port `55481`,
+  and local Playwright desktop/mobile `/tasks-adapter` smoke with no console
+  errors or horizontal overflow. The Playwright smoke verified adapter context
+  copy, ClickUp disconnected state, source/scope/workload/sync pills, SPA
+  navigation to `/data/tasks`, SPA navigation to `/settings`, and first-viewport
+  mobile placement.
+
 - 2026-05-07: Completed V2WEB-036 Table Workbench Context Polish.
   `/data/:table` routes now include a compact table context panel that shows
   typed-editor versus read-only capability, API methods, write-action

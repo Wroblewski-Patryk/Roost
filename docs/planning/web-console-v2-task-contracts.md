@@ -1,5 +1,60 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-037 Tasks Adapter Context Polish
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: `/tasks-adapter` shows a compact adapter context
+  panel before task counts and the task table.
+- Goal: Make the ClickUp/CompanyCore task adapter screen communicate source
+  status, selected ClickUp scope, current workload health, and the right next
+  action before the owner scans the task table.
+- Scope:
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `docs/ux/design-memory.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Add a reusable adapter-context slot above the task stats strip.
+  - Render ClickUp connection status, ClickUp/local record split, selected List
+    count, open/due workload signal, and sync state.
+  - Add local actions to open the typed task editor and ClickUp configuration
+    through existing SPA navigation.
+  - Preserve existing task stats, filters, table rendering, and refresh
+    behavior.
+  - Validate syntax, build, tests, and desktop/mobile `/tasks-adapter`
+    rendering.
+- Acceptance Criteria:
+  - `/tasks-adapter` shows adapter status and source/scope context before task
+    stats.
+  - `Open task editor` navigates to `/data/tasks` through the SPA.
+  - `Configure ClickUp` navigates to `/settings` through the SPA.
+  - Desktop and mobile layouts render without horizontal overflow.
+- Definition of Done:
+  - `node --check public/app.js`, `npm run build`, `git diff --check`, and
+    `npm test` pass.
+  - Local browser smoke verifies adapter context, both actions, responsive
+    layout, and no console errors.
+- Result Report:
+  - Added a dynamic adapter context panel to `/tasks-adapter`.
+  - Added source split, selected ClickUp List count, workload health, sync
+    state, and actions to `/data/tasks` and `/settings`.
+  - Validation passed: `node --check public/app.js`, `npm run build`,
+    `git diff --check`, and `npm test` against disposable Postgres database
+    `companycore_test` on port `55481`.
+  - Local Playwright `/tasks-adapter` smoke passed on desktop `1440x960` and
+    mobile `390x844`: adapter context rendered, ClickUp disconnected state was
+    visible, source/scope/workload/sync pills rendered, `Open task editor`
+    navigated through the SPA to `/data/tasks`, `Configure ClickUp` navigated
+    through the SPA to `/settings`, there were no console errors, and there was
+    no horizontal overflow. Browser plugin validation was attempted first but
+    remained blocked because its Node REPL requires Node `>=22.22.0` while this
+    workstation exposes Node `22.13.0`.
+
 ## V2WEB-036 Table Workbench Context Polish
 
 - Task Type: design/frontend

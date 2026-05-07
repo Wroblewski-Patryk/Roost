@@ -54,6 +54,7 @@ No active task.
 
 ## Done
 
+- V2WEB-037 Tasks Adapter Context Polish.
 - V2WEB-036 Table Workbench Context Polish.
 - V2WEB-035 Data Operations Index Polish.
 - V2WEB-034 Command Bar Module Switcher Polish.
