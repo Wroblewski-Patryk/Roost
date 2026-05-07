@@ -137,3 +137,18 @@ of rediscovering them.
 - Evidence: V2WEB-031 moved pipeline copy and navigation grouping from
   CRM-owned language to shared workflow language while keeping CRM usage
   records visible.
+
+### 2026-05-07 - Command Center Pairing
+- Type: reusable_pattern
+- Context: Operational dashboards need to answer priority, blockers, and next
+  action before the operator scrolls.
+- Decision: Pair the current-priority cockpit with the attention queue in one
+  responsive command layout. Put readiness lanes inside the cockpit and keep
+  secondary health cards below as a compact strip.
+- Reuse when: A dashboard is the owner's starting point and has both ranked
+  action items and readiness/status lanes.
+- Avoid when: The screen is a single-purpose editor, table workbench, or setup
+  flow where a split command center would distract from the main form.
+- Evidence: V2WEB-032 moved dashboard attention items beside the operational
+  cockpit on desktop, stacked them cleanly on mobile, and preserved existing
+  dynamic state wiring.

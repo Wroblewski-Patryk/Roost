@@ -1,5 +1,61 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-032 Dashboard Command Layout Polish
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: dashboard first viewport behaves more like an
+  operational command center by pairing priority, readiness lanes, and the
+  attention queue in one scan path.
+- Goal: Make the owner console dashboard answer "what matters now, what is
+  blocked, and where do I click next" faster without adding new backend
+  behavior.
+- Scope:
+  - `public/index.html`
+  - `public/styles.css`
+  - `docs/ux/design-memory.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Place the operational cockpit and attention queue in a shared responsive
+    dashboard command layout.
+  - Keep readiness lanes inside the cockpit and move workspace/provider status
+    cards into a tighter health strip.
+  - Preserve existing IDs and JavaScript data wiring so dashboard behavior,
+    links, and attention ranking remain unchanged.
+  - Validate syntax, build, tests, and desktop/mobile dashboard render.
+- Acceptance Criteria:
+  - Desktop dashboard first viewport shows current priority, readiness lanes,
+    and attention items side by side without layout overflow.
+  - Mobile stacks the same cockpit, attention queue, and health strip in a
+    readable order without horizontal scrolling.
+  - Existing dashboard links and dynamic text still render from current state.
+  - No new backend endpoints, tables, or placeholder-only data are introduced.
+- Definition of Done:
+  - `node --check public/app.js`, `npm run build`, `git diff --check`, and
+    `npm test` pass.
+  - Local Playwright smoke verifies `/dashboard` on desktop and mobile with no
+    console errors or horizontal overflow.
+- Result Report:
+  - Added a reusable `dashboard-command-layout` that pairs the cockpit and
+    attention queue on desktop and stacks cleanly on mobile.
+  - Reused existing `command-focus`, `command-panel`, `operational-step`,
+    `summary-card`, and `button-link` patterns instead of introducing a new UI
+    system.
+  - Tightened the dashboard health cards through a `health-grid` variant while
+    preserving existing workspace, ClickUp, API, and Drive state wiring.
+  - Validation passed: `node --check public/app.js`, `npm run build`,
+    `git diff --check`, and `npm test` against disposable Postgres database
+    `companycore_test` on port `55469`.
+  - Local `/dashboard` Playwright smoke passed on desktop `1440x960` and mobile
+    `390x844`: the command layout rendered once, attention queue stayed in the
+    cockpit scan path, there were no console errors, and no horizontal
+    overflow. Browser plugin validation was attempted first but remained
+    blocked because its Node REPL requires Node `>=22.22.0` while this
+    workstation exposes Node `22.13.0`.
+
 ## V2WEB-031 Cross-Department Pipeline Semantics
 
 - Task Type: product/frontend/docs

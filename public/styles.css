@@ -474,6 +474,14 @@ h4 {
   padding: 24px;
 }
 
+.dashboard-command-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.75fr);
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+
 .summary-kicker {
   display: block;
   margin-bottom: 12px;
@@ -493,7 +501,7 @@ h4 {
 
 .command-focus {
   padding: 24px;
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 .command-focus-main {
@@ -505,7 +513,9 @@ h4 {
   padding: 18px;
   border: 1px solid #c9d7ee;
   border-radius: 8px;
-  background: #f8fbff;
+  background:
+    linear-gradient(135deg, rgba(35, 100, 210, 0.08), rgba(22, 132, 91, 0.04)),
+    #f8fbff;
 }
 
 .command-focus-main h3 {
@@ -535,7 +545,7 @@ h4 {
   display: grid;
   gap: 5px;
   min-height: 116px;
-  padding: 13px;
+  padding: 14px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: #fbfcfe;
@@ -629,7 +639,26 @@ h4 {
 
 .command-panel {
   padding: 24px;
-  margin-bottom: 20px;
+  margin-bottom: 0;
+}
+
+.dashboard-command-layout .command-panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  align-content: start;
+}
+
+.health-grid {
+  gap: 14px;
+}
+
+.health-grid .summary-card {
+  min-height: 154px;
+  padding: 20px;
+}
+
+.health-grid .summary-card strong {
+  font-size: 20px;
 }
 
 .task-filter-bar,
@@ -700,17 +729,21 @@ h4 {
 .attention-list {
   display: grid;
   gap: 10px;
+  align-content: start;
 }
 
 .attention-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 14px;
-  align-items: center;
+  gap: 12px;
+  align-items: start;
   padding: 14px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: #fbfcfe;
+}
+
+.attention-row .button-link {
+  justify-self: start;
 }
 
 .attention-row div {
@@ -2153,6 +2186,7 @@ button.danger:hover {
 
   .dashboard-grid,
   .settings-grid,
+  .dashboard-command-layout,
   .account-readiness-grid,
   .integration-grid,
   .command-focus-main,

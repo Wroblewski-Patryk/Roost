@@ -136,6 +136,17 @@ Last updated: 2026-05-07
 - Next required mode: TESTER for production smoke and release evidence.
 
 ## Recent Progress
+- 2026-05-07: Completed V2WEB-032 Dashboard Command Layout Polish.
+  The dashboard first viewport now pairs the operational cockpit with the
+  attention queue in a shared responsive command layout, keeps readiness lanes
+  inside the cockpit, and uses a tighter health-card strip for workspace,
+  ClickUp, API, and Drive status. Existing dashboard IDs and JavaScript state
+  wiring were preserved. Validation passed: `node --check public/app.js`,
+  `npm run build`, `git diff --check`, `npm test` against disposable Postgres
+  on port `55469`, and local Playwright desktop/mobile `/dashboard` smoke with
+  no console errors or horizontal overflow. Browser plugin validation was
+  attempted first but remained blocked by the local Node REPL runtime
+  requirement of Node `>=22.22.0`.
 - 2026-05-07: Completed V2WEB-031 Cross-Department Pipeline Semantics.
   `/pipeline`, dashboard module metadata, module search grouping, integration
   taxonomy, and data module copy now describe pipelines as shared workflow

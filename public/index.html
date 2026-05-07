@@ -150,29 +150,42 @@
           </div>
         </div>
 
-        <section class="panel command-focus">
-          <div class="section-title row-title">
-            <div>
-              <h2>Operational cockpit</h2>
-              <p>Start here to see the current priority, what is blocked, and which operational lane needs the next click.</p>
+        <section class="dashboard-command-layout">
+          <section class="panel command-focus">
+            <div class="section-title row-title">
+              <div>
+                <h2>Operational cockpit</h2>
+                <p>Start here to see the current priority, what is blocked, and which operational lane needs the next click.</p>
+              </div>
+              <a class="button-link secondary compact" href="/settings/integrations" data-link>Integration setup</a>
             </div>
-            <a class="button-link secondary compact" href="/settings/integrations" data-link>Integration setup</a>
-          </div>
-          <div class="command-focus-main">
-            <div>
-              <span class="summary-kicker">Current priority</span>
-              <h3 id="commandPriorityTitle">Sign in to load workspace signals</h3>
-              <p id="commandPriorityDetail">The cockpit will rank integration, relationship, task, and data-model work once the owner session is loaded.</p>
+            <div class="command-focus-main">
+              <div>
+                <span class="summary-kicker">Current priority</span>
+                <h3 id="commandPriorityTitle">Sign in to load workspace signals</h3>
+                <p id="commandPriorityDetail">The cockpit will rank integration, relationship, task, and data-model work once the owner session is loaded.</p>
+              </div>
+              <div class="actions command-focus-actions">
+                <a class="button-link" id="commandPrimaryAction" href="/auth/login" data-link>Sign in</a>
+                <a class="button-link secondary" id="commandSecondaryAction" href="/settings/integrations" data-link>Review integrations</a>
+              </div>
             </div>
-            <div class="actions command-focus-actions">
-              <a class="button-link" id="commandPrimaryAction" href="/auth/login" data-link>Sign in</a>
-              <a class="button-link secondary" id="commandSecondaryAction" href="/settings/integrations" data-link>Review integrations</a>
+            <div class="operational-steps" id="operationalSteps" aria-label="Operational readiness"></div>
+          </section>
+
+          <section class="panel command-panel">
+            <div class="section-title row-title">
+              <div>
+                <h2>What needs attention</h2>
+                <p id="attentionSummary">Sign in to load operational signals.</p>
+              </div>
+              <a class="button-link secondary compact" href="/settings/integrations" data-link>Integration map</a>
             </div>
-          </div>
-          <div class="operational-steps" id="operationalSteps" aria-label="Operational readiness"></div>
+            <div class="attention-list" id="attentionList"></div>
+          </section>
         </section>
 
-        <section class="dashboard-grid">
+        <section class="dashboard-grid health-grid" aria-label="Workspace readiness summary">
           <article class="panel summary-card">
             <span class="summary-kicker">Workspace</span>
             <strong id="workspaceNameLabel">-</strong>
@@ -234,17 +247,6 @@
               <span id="moduleIntegrationsMeta">Review implemented data groups by source, module, and operating area.</span>
             </a>
           </div>
-        </section>
-
-        <section class="panel command-panel">
-          <div class="section-title row-title">
-            <div>
-              <h2>What needs attention</h2>
-              <p id="attentionSummary">Sign in to load operational signals.</p>
-            </div>
-            <a class="button-link secondary compact" href="/settings/integrations" data-link>Integration map</a>
-          </div>
-          <div class="attention-list" id="attentionList"></div>
         </section>
 
         <section class="dashboard-grid dense-grid" id="dataCounters"></section>

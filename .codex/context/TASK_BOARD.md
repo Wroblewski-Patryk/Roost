@@ -54,6 +54,7 @@ No active task.
 
 ## Done
 
+- V2WEB-032 Dashboard Command Layout Polish.
 - V2WEB-031 Cross-Department Pipeline Semantics.
 - V2GD-012 Drive Consent Guidance And Folder Picker.
 - V2WEB-030 Typed Tasks Editor Workbench.
