@@ -34,6 +34,22 @@ of rediscovering them.
 
 ## Entries
 
+### 2026-05-07 - Table Context Panel
+- Type: reusable_pattern
+- Context: Detail workbenches reached from a module index need to preserve the
+  operator's orientation: what table is open, whether it is editable, which API
+  methods exist, what sources are loaded, and what the next local action is.
+- Decision: Place a compact context panel before the stats strip and record
+  workbench. Pair capability badges with API/source/field pills and keep the
+  primary table-level action local to the panel.
+- Reuse when: A workbench route is one level deeper than an index and combines
+  records, filters, inspectors, and optional typed editors.
+- Avoid when: The route is a single-purpose form where the page title already
+  answers the context and next action.
+- Evidence: V2WEB-036 adds `/data/:table` context panels with typed-editor
+  `New draft` and read-only `Review API` actions while preserving existing
+  table filters and inspectors.
+
 ### 2026-05-07 - Workbench Capability Rows
 - Type: reusable_pattern
 - Context: Database and integration indexes need to answer "can I edit this",

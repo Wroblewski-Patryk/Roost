@@ -337,6 +337,7 @@ const tableWorkbenchLabel = document.querySelector("#tableWorkbenchLabel");
 const tableWorkbenchTitle = document.querySelector("#tableWorkbenchTitle");
 const tableWorkbenchSummary = document.querySelector("#tableWorkbenchSummary");
 const tableWorkbenchStats = document.querySelector("#tableWorkbenchStats");
+const tableWorkbenchBrief = document.querySelector("#tableWorkbenchBrief");
 const tableWorkbenchApiLink = document.querySelector("#tableWorkbenchApiLink");
 const tableRecordsTitle = document.querySelector("#tableRecordsTitle");
 const tableRecordsSummary = document.querySelector("#tableRecordsSummary");
@@ -2061,6 +2062,7 @@ function currentTableModule() {
 function renderTableWorkbench() {
   const module = currentTableModule();
   tableWorkbenchStats.innerHTML = "";
+  tableWorkbenchBrief.innerHTML = "";
   tableRecordList.innerHTML = "";
   recordInspector.innerHTML = "";
 
@@ -2071,6 +2073,7 @@ function renderTableWorkbench() {
     tableRecordsTitle.textContent = "Records";
     tableRecordsSummary.textContent = "Open the data index to choose an implemented module.";
     tableWorkbenchStats.append(summaryStatCard("Records", 0), summaryStatCard("Routes", 0), summaryStatCard("Fields", 0), summaryStatCard("Sources", 0));
+    tableWorkbenchBrief.append(tableWorkbenchBriefElement(null, [], [], []));
     tableRecordList.append(emptyNote("No table module matches this route."));
     recordInspector.append(emptyNote("Choose a supported data module from the Data index."));
     return;
@@ -2097,6 +2100,7 @@ function renderTableWorkbench() {
     ["Routes", module.routes.length],
     ["Sources", sources.length || 1]
   ].forEach(([label, value]) => tableWorkbenchStats.append(summaryStatCard(label, value)));
+  tableWorkbenchBrief.append(tableWorkbenchBriefElement(module, records, fields, sources));
 
   syncTableFilters(sources);
 
@@ -2117,6 +2121,83 @@ function renderTableWorkbench() {
   }
 
   renderRecordInspector(selected, module, fields);
+}
+
+function tableWorkbenchBriefElement(module, records, fields, sources) {
+  const panel = document.createElement("article");
+  panel.className = "table-context-card";
+
+  if (!module) {
+    panel.innerHTML = `
+      <div class="table-context-copy">
+        <span class="summary-kicker">Table context</span>
+        <strong>Choose a supported data module</strong>
+        <p>Open the Data index to inspect implemented CompanyCore tables and their API coverage.</p>
+      </div>
+      <div class="table-context-actions">
+        <a class="button-link secondary compact" href="/data" data-link>All data</a>
+      </div>
+    `;
+    bindInlineNavigation(panel);
+    return panel;
+  }
+
+  const typedEditorAvailable = hasTypedRecordEditor(module.slug);
+  const methods = module.routes.length > 0
+    ? [...new Set(module.routes.map((route) => route.method))].join(", ")
+    : "No API route";
+  const writeMethods = [...new Set(module.routes
+    .filter((route) => ["POST", "PATCH", "DELETE"].includes(route.method))
+    .map((route) => route.method))];
+  const writeLabel = writeMethods.length > 0
+    ? `${writeMethods.length} write method${writeMethods.length === 1 ? "" : "s"}`
+    : "Inspect only";
+  const sourceLabel = sources.length > 0 ? sources.join(", ") : "companycore";
+  const area = module.area ? areaLabel(module.area) : "Unmapped area";
+  panel.classList.toggle("is-editable", typedEditorAvailable);
+  panel.innerHTML = `
+    <div class="table-context-copy">
+      <span class="summary-kicker">Table context</span>
+      <div class="table-context-heading">
+        <strong>${escapeHtml(module.label)}</strong>
+        <span class="workbench-index-status">${escapeHtml(typedEditorAvailable ? "Typed editor" : "Read-only")}</span>
+      </div>
+      <p>${escapeHtml(module.description)} ${escapeHtml(module.area ? `Mapped to ${area}.` : "Not mapped to an operating area yet.")}</p>
+      <div class="table-context-pills" aria-label="Table operation context">
+        <span>${escapeHtml(methods)}</span>
+        <span>${escapeHtml(writeLabel)}</span>
+        <span>${escapeHtml(sourceLabel)}</span>
+        <span>${fields.length} visible fields</span>
+      </div>
+    </div>
+    <div class="table-context-actions">
+      <span><strong>${records.length}</strong> records loaded</span>
+      <span><strong>${module.routes.length}</strong> API routes</span>
+      ${typedEditorAvailable ? '<button type="button" class="compact" data-table-action="new-draft">New draft</button>' : '<a class="button-link secondary compact" href="/settings/api" data-link>Review API</a>'}
+    </div>
+  `;
+
+  panel.querySelector('[data-table-action="new-draft"]')?.addEventListener("click", () => {
+    state.tableWorkbench.selectedId = "";
+    state.tableWorkbench.newDraft = true;
+    renderTableWorkbench();
+  });
+  bindInlineNavigation(panel);
+
+  return panel;
+}
+
+function bindInlineNavigation(root) {
+  root.querySelectorAll("[data-link]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const url = new URL(link.href);
+      if (url.origin !== window.location.origin) {
+        return;
+      }
+      event.preventDefault();
+      navigate(url.pathname, { hash: url.hash });
+    });
+  });
 }
 
 function tableFieldNames(records) {

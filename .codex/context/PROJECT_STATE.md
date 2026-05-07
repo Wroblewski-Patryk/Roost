@@ -137,6 +137,19 @@ Last updated: 2026-05-07
 
 ## Recent Progress
 
+- 2026-05-07: Completed V2WEB-036 Table Workbench Context Polish.
+  `/data/:table` routes now include a compact table context panel that shows
+  typed-editor versus read-only capability, API methods, write-action
+  availability, loaded sources, visible field count, record/API counts, and a
+  local next action. Typed modules expose `New draft`; read-only modules expose
+  `Review API` through existing SPA navigation.
+  Validation passed: `node --check public/app.js`, `npm run build`,
+  `git diff --check`, `npm test` against disposable Postgres on port `55479`,
+  and local Playwright desktop/mobile `/data/:table` smoke with no console
+  errors or horizontal overflow. The Playwright smoke verified `/data/tasks`
+  typed context, `New draft` create-form entry, `/data/goals` read-only
+  context, `Review API` SPA navigation, and first-viewport mobile placement.
+
 - 2026-05-07: Completed V2WEB-035 Data Operations Index Polish. The `/data`
   module index now shows typed-editor versus read-only capability badges,
   compact API/write/area tags, and a responsive metrics/source side panel for

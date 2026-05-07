@@ -70,6 +70,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] V2WEB-033 App Shell Navigation Polish
 - [x] V2WEB-034 Command Bar Module Switcher Polish
 - [x] V2WEB-035 Data Operations Index Polish
+- [x] V2WEB-036 Table Workbench Context Polish
 - [x] AGRUN-005 Scoped Agent Key Owner UI
 - [x] CCV1-009P Protected production smoke for adapter CRUD
 - [x] CCV1-027 Paperclip and Jarvis production env wiring

@@ -1,5 +1,65 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-036 Table Workbench Context Polish
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: `/data/:table` workbench shows a compact table
+  context panel with capability, API, source, field, and primary action
+  information.
+- Goal: Make the table-detail workbench feel like a continuation of the Data
+  operations center, so owners can understand editability, source coverage, and
+  next action before scanning records or opening the inspector.
+- Scope:
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `docs/ux/design-memory.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Add a reusable table-context slot above the table workbench panel.
+  - Render typed-editor versus read-only capability, API methods, write action
+    availability, sources, visible field count, and loaded record count.
+  - Provide a local `New draft` action for typed modules and an API review link
+    for read-only modules.
+  - Preserve existing table filters, record selection, typed editors, and route
+    paths.
+  - Validate syntax, build, tests, and desktop/mobile `/data/:table` rendering.
+- Acceptance Criteria:
+  - `/data/tasks` shows a typed-editor context panel and a `New draft` action
+    that opens the create form without leaving the route.
+  - A read-only module shows read-only/API review context instead of implying
+    an editor exists.
+  - Dynamic links in the new panel use existing SPA navigation behavior.
+  - Desktop and mobile layouts render without horizontal overflow.
+- Definition of Done:
+  - `node --check public/app.js`, `npm run build`, `git diff --check`, and
+    `npm test` pass.
+  - Local browser smoke verifies typed and read-only table context states,
+    `New draft`, API-review navigation, and responsive layout with no console
+    errors.
+- Result Report:
+  - Added a dynamic table context panel above `/data/:table` workbenches.
+  - Added typed/read-only capability status, API/write/source/field pills,
+    loaded-record/API route counts, `New draft` for typed modules, and `Review
+    API` for read-only modules.
+  - Moved the context panel above the stats strip so mobile users see table
+    meaning and primary action before secondary counts.
+  - Validation passed: `node --check public/app.js`, `npm run build`,
+    `git diff --check`, and `npm test` against disposable Postgres database
+    `companycore_test` on port `55479`.
+  - Local Playwright `/data/:table` smoke passed on desktop `1440x960` and
+    mobile `390x844`: `/data/tasks` rendered typed context with `New draft`,
+    the new-draft action opened the create-task editor, `/data/goals` rendered
+    read-only context with `Review API`, the review link navigated through the
+    SPA to `/settings/api`, there were no console errors, and there was no
+    horizontal overflow. Browser plugin validation was attempted first but
+    remained blocked because its Node REPL requires Node `>=22.22.0` while this
+    workstation exposes Node `22.13.0`.
+
 ## V2WEB-035 Data Operations Index Polish
 
 - Task Type: design/frontend
