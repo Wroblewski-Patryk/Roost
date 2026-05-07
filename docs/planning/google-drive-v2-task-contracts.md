@@ -788,3 +788,6 @@ It follows the repository task contract and must stay synchronized with
   - Validation passed against a disposable Postgres database and local
     Playwright desktop/mobile smokes that created, edited, archived, and
     reloaded real Projects API records.
+  - Deployed to production at commit
+    `9d50920361aaeeaa494c795e01973d319dd859d9`; production health and
+    static asset markers confirmed the typed Projects editor code is live.

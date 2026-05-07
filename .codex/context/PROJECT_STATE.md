@@ -143,6 +143,14 @@ Last updated: 2026-05-07
   `npm test` against disposable Postgres on port `55460`, and local
   authenticated Playwright desktop/mobile `/data/projects` smoke that created,
   updated, archived, and reloaded real Projects records.
+- 2026-05-07: Deployed V2WEB-027 to production with manual VPS backend
+  rollover after public health still reported `cf1dcf8` following the GitHub
+  push. The running backend container is
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-9d50920`, image
+  `rnqqkhl3o3dut4qv56mlxly2_backend:9d50920361aaeeaa494c795e01973d319dd859d9`.
+  Public `/health` reports commit
+  `9d50920361aaeeaa494c795e01973d319dd859d9`; production `app.js` includes
+  `renderProjectEditor`, `projectEditorName`, and `Create project`.
 - 2026-05-07: Completed V2WEB-026 Typed Notes Editor Workbench. `/data/notes`
   now has a typed note editor inside the reusable split record workbench:
   owners can create local notes, select a note to edit its content, save
