@@ -1,5 +1,60 @@
 # Web Console V2 Task Contracts
 
+## V2WEB-044 Account Context Polish
+
+- Task Type: design/frontend
+- Current Stage: done
+- Deliverable For This Stage: `/settings/account` shows a compact workspace
+  command profile before account cards.
+- Goal: Make the account screen immediately explain owner session readiness,
+  workspace identity, integration readiness, API route exposure, service key
+  state, and operating-area coverage before the owner scans readiness links.
+- Scope:
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `docs/ux/design-memory.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+- Implementation Plan:
+  - Add an account context slot above the existing owner/workspace cards.
+  - Render owner session state, workspace name, ClickUp state, Drive state,
+    API route count, active key count, scoped key count, and operating-area
+    count from existing frontend state.
+  - Add local actions to the integration map, agent API settings, and
+    operating areas through existing SPA navigation.
+  - Preserve existing owner/workspace cards and readiness grid.
+  - Validate syntax, build, tests, and desktop/mobile `/settings/account`
+    rendering.
+- Acceptance Criteria:
+  - `/settings/account` explains workspace command profile before account
+    cards.
+  - `Integration map`, `Agent API`, and `Operating areas` navigate through the
+    SPA to existing dedicated surfaces.
+  - Desktop and mobile layouts render without horizontal overflow.
+- Definition of Done:
+  - `node --check public/app.js`, `npm run build`, `git diff --check`, and
+    `npm test` pass.
+  - Local browser smoke verifies account context, all actions, responsive
+    layout, and no console errors.
+- Result Report:
+  - Added a dynamic workspace command profile to `/settings/account`.
+  - Added owner session, ClickUp state, Drive state, API route, active key,
+    scoped key, and operating-area pills plus actions to the integration map,
+    agent API settings, and operating areas.
+  - Kept the context panel from exposing the raw missing-email fallback when
+    owner details are not returned by the current connection payload.
+  - Passed `node --check public/app.js`, `npm run build`, `git diff --check`,
+    and `npm test` against disposable Postgres on port `55495`.
+  - Passed local Playwright desktop/mobile `/settings/account` smoke with no
+    console errors or horizontal overflow; smoke verified context copy,
+    readiness/count pills, and SPA navigation to `/settings/integrations`,
+    `/settings/api`, and `/areas`.
+  - Browser plugin fallback was required because node_repl resolved Node
+    `22.13.0` while the plugin requires `>=22.22.0`.
+
 ## V2WEB-043 Integration Map Context Polish
 
 - Task Type: design/frontend

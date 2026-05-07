@@ -137,6 +137,24 @@ Last updated: 2026-05-07
 
 ## Recent Progress
 
+- 2026-05-07: Completed V2WEB-044 Account Context Polish.
+  `/settings/account` now includes a compact workspace command profile before
+  account cards. The panel shows owner session state, workspace identity,
+  ClickUp state, Drive state, API route count, active key count, scoped key
+  count, operating-area count, and links to `/settings/integrations`,
+  `/settings/api`, and `/areas` through existing navigation while preserving
+  the account cards and readiness grid. The panel avoids exposing the raw
+  missing-email fallback when the current connection payload does not include
+  owner details.
+  Validation passed: `node --check public/app.js`, `npm run build`,
+  `git diff --check`, `npm test` against disposable Postgres on port `55495`,
+  and local Playwright desktop/mobile `/settings/account` smoke with no console
+  errors or horizontal overflow. Smoke verified context copy,
+  readiness/count pills, and SPA navigation to `/settings/integrations`,
+  `/settings/api`, and `/areas`. Browser plugin fallback note: in-app Browser
+  could not initialize because node_repl resolved Node `22.13.0` while the
+  plugin requires `>=22.22.0`.
+
 - 2026-05-07: Completed V2WEB-043 Integration Map Context Polish.
   `/settings/integrations` now includes a compact integration command map
   before provider cards. The panel shows readiness, implemented group count,

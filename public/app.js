@@ -296,6 +296,7 @@ const moduleDriveMeta = document.querySelector("#moduleDriveMeta");
 const moduleClickUpMeta = document.querySelector("#moduleClickUpMeta");
 const moduleIntegrationsMeta = document.querySelector("#moduleIntegrationsMeta");
 const accountSummary = document.querySelector("#accountSummary");
+const accountContext = document.querySelector("#accountContext");
 const accountOwnerName = document.querySelector("#accountOwnerName");
 const accountOwnerEmail = document.querySelector("#accountOwnerEmail");
 const accountWorkspaceName = document.querySelector("#accountWorkspaceName");
@@ -1492,6 +1493,14 @@ function renderAccountSettings() {
   accountWorkspaceName.textContent = connected ? workspaceName : "-";
   accountWorkspaceId.textContent = workspaceId;
 
+  accountContext.innerHTML = "";
+  accountContext.append(accountContextElement({
+    connected,
+    ownerName,
+    ownerEmail,
+    workspaceName
+  }));
+
   accountReadiness.innerHTML = "";
   const readiness = [
     ["Owner session", connected ? "Connected" : "Not connected", "/dashboard"],
@@ -1518,6 +1527,45 @@ function renderAccountSettings() {
     });
     accountReadiness.append(link);
   }
+}
+
+function accountContextElement({ connected, ownerName, ownerEmail, workspaceName }) {
+  const activeKeys = state.apiKeys.filter((key) => key.active).length;
+  const scopedKeys = state.apiKeys.filter((key) => key.active && Array.isArray(key.scopes) && key.scopes.length > 0).length;
+  const ownerLabel = ownerEmail === "No email loaded." ? ownerName : `${ownerName} (${ownerEmail})`;
+  const driveStatus = state.googleDrive.oauthTokenConfigured
+    ? state.googleDrive.active ? "Drive active" : "Drive saved"
+    : state.googleDrive.oauthClientConfigured ? "Consent needed" : "Drive not connected";
+  const clickUpStatus = state.clickup.configured
+    ? state.clickup.active ? "ClickUp active" : "ClickUp saved"
+    : "ClickUp not connected";
+  const panel = document.createElement("article");
+  panel.className = "account-context-card";
+  panel.innerHTML = `
+    <div class="account-context-copy">
+      <span class="summary-kicker">Workspace command profile</span>
+      <div class="account-context-heading">
+        <strong>${escapeHtml(connected ? workspaceName : "Owner workspace")}</strong>
+        <span class="workbench-index-status">${escapeHtml(connected ? "Owner session active" : "Sign in required")}</span>
+      </div>
+      <p>${escapeHtml(connected ? `${ownerLabel} can review workspace readiness, integrations, and agent access from this account surface.` : "Sign in to load owner, workspace, integration, and agent access context.")}</p>
+      <div class="account-context-pills" aria-label="Workspace account context">
+        <span>${escapeHtml(clickUpStatus)}</span>
+        <span>${escapeHtml(driveStatus)}</span>
+        <span>${state.capabilities.length} API route${state.capabilities.length === 1 ? "" : "s"}</span>
+        <span>${activeKeys} active key${activeKeys === 1 ? "" : "s"}</span>
+        <span>${scopedKeys} scoped key${scopedKeys === 1 ? "" : "s"}</span>
+        <span>${state.operatingModel.areas.length} area${state.operatingModel.areas.length === 1 ? "" : "s"}</span>
+      </div>
+    </div>
+    <div class="account-context-actions">
+      <a class="button-link compact" href="/settings/integrations" data-link>Integration map</a>
+      <a class="button-link secondary compact" href="/settings/api" data-link>Agent API</a>
+      <a class="button-link secondary compact" href="/areas" data-link>Operating areas</a>
+    </div>
+  `;
+  bindInlineNavigation(panel);
+  return panel;
 }
 
 function mappingAreaId(mapping) {

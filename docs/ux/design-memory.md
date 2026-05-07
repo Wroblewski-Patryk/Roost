@@ -34,6 +34,22 @@ of rediscovering them.
 
 ## Entries
 
+### 2026-05-07 - Account Workspace Command Profile
+- Type: reusable_pattern
+- Context: Account/workspace settings screens need to confirm owner session,
+  workspace identity, integration readiness, API exposure, service-key state,
+  and operating-area coverage before the operator scans account cards.
+- Decision: Place a compact workspace command profile before account cards.
+  Show owner session state, workspace name, ClickUp state, Drive state, API
+  route count, active key count, scoped key count, operating-area count, and
+  actions to integration map, agent API settings, and operating areas.
+- Reuse when: A settings route represents workspace-level access, ownership,
+  readiness, or handoff context across several operational modules.
+- Avoid when: The route is a provider-specific setup flow or a single-record
+  editor where a narrower context panel is more useful.
+- Evidence: V2WEB-044 adds `/settings/account` context with owner/workspace,
+  integration, key, API, and operating-area signals.
+
 ### 2026-05-07 - Integration Command Map Context Panel
 - Type: reusable_pattern
 - Context: Integration overview screens need to join provider readiness,
