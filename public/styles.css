@@ -782,6 +782,83 @@ h4 {
   margin-bottom: 20px;
 }
 
+.workbench-panel {
+  padding: 24px;
+}
+
+.workbench-filter-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 260px);
+  gap: 14px;
+  margin: 0 0 16px;
+}
+
+.workbench-index-list {
+  display: grid;
+  gap: 10px;
+}
+
+.workbench-index-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) minmax(280px, 1fr) minmax(180px, 0.8fr) auto;
+  gap: 16px;
+  align-items: center;
+  min-height: 104px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fbfcfe;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.workbench-index-row:hover {
+  border-color: #b9c8e2;
+  background: var(--soft);
+}
+
+.workbench-index-row strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.workbench-index-row p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.workbench-index-metrics,
+.workbench-index-meta {
+  display: grid;
+  gap: 6px;
+}
+
+.workbench-index-metrics span,
+.workbench-index-meta span {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.workbench-index-metrics strong {
+  display: inline;
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.workbench-index-action {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
 .integration-action-list {
   display: grid;
   gap: 10px;
@@ -1688,6 +1765,7 @@ button.danger:hover {
   .command-focus-main,
   .operational-steps,
   .credential-grid,
+  .workbench-filter-bar,
   .task-filter-bar,
   .pipeline-filter-bar,
   .area-filter-bar,
@@ -1712,6 +1790,7 @@ button.danger:hover {
   .relationship-grid,
   .relationship-row,
   .integration-action-row,
+  .workbench-index-row,
   .integration-area-row {
     grid-template-columns: 1fr;
     display: grid;

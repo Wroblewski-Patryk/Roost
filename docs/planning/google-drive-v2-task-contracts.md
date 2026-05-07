@@ -590,3 +590,54 @@ It follows the repository task contract and must stay synchronized with
     key. The smoke passed with `googleDriveConfigured=false`,
     `googleDriveActive=false`, and `importedFileCount=0`, which is expected
     before Google Drive credentials are entered.
+
+## V2WEB-024 Data Operations Index
+
+- Task Type: frontend/ux
+- Current Stage: done
+- Deliverable For This Stage: reusable data operations index in the owner web
+  console.
+- Goal: Give operators one clear database-module entry point that explains the
+  available CompanyCore tables, record counts, API coverage, source data, and
+  the current workbench route for each module.
+- Scope:
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `src/app.ts`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/ux/design-memory.md`
+- Implementation Plan:
+  - Reuse the existing static owner-console stack instead of adding Tailwind or
+    DaisyUI without an approved frontend architecture change.
+  - Add a `/data` route to the authenticated shell and backend SPA route list.
+  - Build a database-module catalog from existing module routes, API route
+    metadata, operating-model tables, loaded records, and Drive file counts.
+  - Add shared workbench panel, filter bar, index row, metric, metadata, and
+    empty-state classes that can be reused by future table workbenches.
+  - Validate desktop and mobile rendered behavior with an authenticated browser
+    smoke.
+- Acceptance Criteria:
+  - Signed-in owners can open `/data` directly from the sidebar, dashboard, and
+    module switcher.
+  - The page lists database modules with module group, description, record
+    count, route count, API methods, area mapping, and source data.
+  - Search and group filters work without reloading the page.
+  - `/data` is served as an SPA route by the backend, not treated as a protected
+    API path.
+  - Desktop and mobile layouts do not overlap key controls or text.
+- Definition of Done:
+  - `npm run build`, `node --check public/app.js`, `git diff --check`, and
+    authenticated Playwright smoke pass.
+  - Canonical task, project-state, planning, and UX memory docs are updated.
+- Result Report:
+  - Added the authenticated `/data` Data Operations view.
+  - Added 13 database module rows covering strategy, execution, CRM, knowledge,
+    and AI operations tables.
+  - Added reusable `workbench-*` CSS component classes for data-heavy index
+    screens.
+  - Added dashboard and module-switcher entry points for Data Operations.
+  - Confirmed the frontend baseline remains static CSS; Tailwind and DaisyUI
+    were not added because the project has no Tailwind build pipeline.

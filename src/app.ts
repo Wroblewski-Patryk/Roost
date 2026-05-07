@@ -59,6 +59,7 @@ const webAppRoutes = [
   "/auth/login",
   "/auth/register",
   "/dashboard",
+  "/data",
   "/areas",
   "/relationships",
   "/tasks-adapter",

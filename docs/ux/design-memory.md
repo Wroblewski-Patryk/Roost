@@ -34,10 +34,17 @@ of rediscovering them.
 
 ## Entries
 
-### YYYY-MM-DD - Add first approved design memory
-- Type:
-- Context:
-- Decision:
-- Reuse when:
-- Avoid when:
-- Evidence:
+### 2026-05-07 - Workbench Index Rows
+- Type: reusable_pattern
+- Context: Data-heavy owner-console pages need clear operational lists for
+  modules, API-backed records, provider sources, and future table workbenches.
+- Decision: Reuse `workbench-panel`, `workbench-filter-bar`,
+  `workbench-index-list`, `workbench-index-row`, `workbench-index-metrics`,
+  `workbench-index-meta`, and `workbench-index-action` for dense index screens.
+- Reuse when: A page needs searchable/filterable rows that combine a primary
+  entity description, operational metrics, source/status metadata, and one
+  route action.
+- Avoid when: The user is editing one record in detail or comparing tabular
+  cells where a real table is more scannable.
+- Evidence: V2WEB-024 `/data` desktop and mobile Playwright smoke passed with
+  13 module rows, filter interaction, and no browser console errors.

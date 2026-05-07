@@ -29,6 +29,7 @@
         </a>
         <nav class="side-nav" aria-label="Workspace navigation">
           <a href="/dashboard" data-link data-nav="/dashboard">Dashboard</a>
+          <a href="/data" data-link data-nav="/data">Data</a>
           <a href="/areas" data-link data-nav="/areas">Operating areas</a>
           <a href="/relationships" data-link data-nav="/relationships">Relationships</a>
           <a href="/tasks-adapter" data-link data-nav="/tasks-adapter">Tasks & adapters</a>
@@ -204,6 +205,10 @@
               <strong>00 main + 12 departments</strong>
               <span id="moduleAreasMeta">Browse Main, Strategy, Product, Sales, Operations, Relationships, and the rest of the operating model.</span>
             </a>
+            <a class="module-link" href="/data" data-link>
+              <strong>Data operations</strong>
+              <span id="moduleDataMeta">Review database modules, record counts, API coverage, and the right workbench for each table.</span>
+            </a>
             <a class="module-link" href="/relationships" data-link>
               <strong>Relationships</strong>
               <span id="moduleRelationshipsMeta">Review unmapped provider and Drive relationships in one queue.</span>
@@ -251,6 +256,7 @@
           </div>
           <div class="actions">
             <a class="button-link" href="/areas" data-link>Open areas</a>
+            <a class="button-link" href="/data" data-link>Open data</a>
             <a class="button-link" href="/relationships" data-link>Review relationships</a>
             <a class="button-link" href="/tasks-adapter" data-link>Open tasks</a>
             <a class="button-link" href="/pipeline" data-link>Open pipeline</a>
@@ -260,6 +266,45 @@
             <a class="button-link secondary" href="/settings/drive" data-link>Connect Drive</a>
             <a class="button-link secondary" href="/settings/api" data-link>View API</a>
           </div>
+        </section>
+      </section>
+
+      <section class="view" data-view="/data">
+        <div class="page-title">
+          <div>
+            <p class="label">Database operations</p>
+            <h1>Data</h1>
+            <p id="dataOperationsSummary">Sign in to load database modules.</p>
+          </div>
+          <div class="status-card">
+            <span class="dot ok"></span>
+            <span>Workspace data</span>
+          </div>
+        </div>
+
+        <section class="dashboard-grid dense-grid" id="dataOperationsStats"></section>
+
+        <section class="panel workbench-panel">
+          <div class="section-title row-title">
+            <div>
+              <h2>Database modules</h2>
+              <p>Use this index to choose the right CompanyCore table, understand its API coverage, and open the workbench that already handles it.</p>
+            </div>
+            <a class="button-link secondary compact" href="/settings/api" data-link>API routes</a>
+          </div>
+          <section class="workbench-filter-bar" aria-label="Data module filters">
+            <label>
+              Search modules
+              <input id="dataSearch" type="search" autocomplete="off" placeholder="Tasks, clients, notes, agents, source..." />
+            </label>
+            <label>
+              Module group
+              <select id="dataGroupFilter">
+                <option value="">All groups</option>
+              </select>
+            </label>
+          </section>
+          <div class="workbench-index-list" id="dataModuleList"></div>
         </section>
       </section>
 

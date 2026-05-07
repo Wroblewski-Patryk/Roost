@@ -59,6 +59,7 @@ No active task.
 
 ## Done
 
+- V2WEB-024 Data Operations Index.
 - V2WEB-023 Dashboard Operational Cockpit.
 - V2WEB-022 Unified API Integration Setup.
 - V2GD-011 Drive Setup Operator Instructions.

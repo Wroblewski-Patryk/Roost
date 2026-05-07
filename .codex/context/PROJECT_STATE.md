@@ -133,6 +133,15 @@ Last updated: 2026-05-07
 - Next required mode: TESTER for production smoke and release evidence.
 
 ## Recent Progress
+- 2026-05-07: Completed V2WEB-024 Data Operations Index. The owner console now
+  exposes `/data` as a reusable database operations entry point with 13
+  CompanyCore module rows, record counts, API route coverage, area mappings,
+  source labels, search, and group filtering. The slice reused the existing
+  static CSS frontend baseline and added shared `workbench-*` component classes
+  instead of introducing Tailwind or DaisyUI without an approved frontend build
+  architecture change. Validation passed: `npm run build`,
+  `node --check public/app.js`, `git diff --check`, and authenticated local
+  Playwright desktop/mobile data-view smoke.
 - 2026-05-07: Completed V2WEB-023 Dashboard Operational Cockpit. The dashboard
   now starts with an Operational Cockpit panel that ranks the current priority,
   exposes primary and secondary next actions, and shows four operational

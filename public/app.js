@@ -1,4 +1,4 @@
-const privateRoutes = new Set(["/dashboard", "/areas", "/relationships", "/tasks-adapter", "/pipeline", "/settings", "/settings/account", "/settings/integrations", "/settings/drive", "/settings/api"]);
+const privateRoutes = new Set(["/dashboard", "/data", "/areas", "/relationships", "/tasks-adapter", "/pipeline", "/settings", "/settings/account", "/settings/integrations", "/settings/drive", "/settings/api"]);
 const publicRoutes = new Set(["/", "/auth/login", "/auth/register"]);
 
 const state = {
@@ -68,6 +68,10 @@ const state = {
   apiFilters: {
     search: "",
     method: ""
+  },
+  dataFilters: {
+    search: "",
+    group: ""
   },
   relationshipFilters: {
     search: "",
@@ -167,6 +171,7 @@ const attentionSummary = document.querySelector("#attentionSummary");
 const attentionList = document.querySelector("#attentionList");
 const nextActionText = document.querySelector("#nextActionText");
 const moduleAreasMeta = document.querySelector("#moduleAreasMeta");
+const moduleDataMeta = document.querySelector("#moduleDataMeta");
 const moduleRelationshipsMeta = document.querySelector("#moduleRelationshipsMeta");
 const moduleTasksMeta = document.querySelector("#moduleTasksMeta");
 const modulePipelineMeta = document.querySelector("#modulePipelineMeta");
@@ -208,6 +213,11 @@ const metrics = document.querySelector("#metrics");
 const taskStats = document.querySelector("#taskStats");
 const tasksSummary = document.querySelector("#tasksSummary");
 const tasksTableBody = document.querySelector("#tasksTableBody");
+const dataOperationsSummary = document.querySelector("#dataOperationsSummary");
+const dataOperationsStats = document.querySelector("#dataOperationsStats");
+const dataSearch = document.querySelector("#dataSearch");
+const dataGroupFilter = document.querySelector("#dataGroupFilter");
+const dataModuleList = document.querySelector("#dataModuleList");
 const integrationSummary = document.querySelector("#integrationSummary");
 const integrationGroups = document.querySelector("#integrationGroups");
 const integrationMatrixSummary = document.querySelector("#integrationMatrixSummary");
@@ -252,6 +262,7 @@ const fields = {
 
 const routeLabels = {
   "/dashboard": "Dashboard",
+  "/data": "Data",
   "/areas": "Operating areas",
   "/relationships": "Relationships",
   "/tasks-adapter": "Tasks & adapters",
@@ -265,6 +276,7 @@ const routeLabels = {
 
 const moduleRoutes = [
   { path: "/dashboard", label: "Dashboard", group: "Command center", keywords: "home overview summary next action attention" },
+  { path: "/data", label: "Data", group: "Database operations", keywords: "database records tables crud modules workbench" },
   { path: "/areas", label: "Operating areas", group: "Operating model", keywords: "departments areas tables records mapping workspace" },
   { path: "/relationships", label: "Relationships", group: "Operating model", keywords: "review queue provider drive unmapped correction relations" },
   { path: "/tasks-adapter", label: "Tasks & adapters", group: "Adapters", keywords: "tasks clickup lists priority status due sync" },
@@ -274,6 +286,22 @@ const moduleRoutes = [
   { path: "/settings", label: "ClickUp adapter", group: "Settings", keywords: "clickup token workspace lists sync import" },
   { path: "/settings/drive", label: "Google Drive", group: "Settings", keywords: "drive folders files oauth import reconcile scan" },
   { path: "/settings/api", label: "API settings", group: "Settings", keywords: "api routes manifest agents service keys capabilities" }
+];
+
+const dataModuleCatalog = [
+  { slug: "projects", label: "Projects", group: "Strategy and delivery", href: "/data", description: "Project containers for delivery work and roadmap context." },
+  { slug: "goals", label: "Goals", group: "Strategy and delivery", href: "/data", description: "Goal records connected to strategy, projects, and targets." },
+  { slug: "targets", label: "Targets", group: "Strategy and delivery", href: "/data", description: "Measurable target records for strategic follow-through." },
+  { slug: "task-lists", label: "Task Lists", group: "Execution", href: "/tasks-adapter", description: "Execution containers, including ClickUp-sourced Lists." },
+  { slug: "tasks", label: "Tasks", group: "Execution", href: "/tasks-adapter", description: "CompanyCore and ClickUp task records with status and priority." },
+  { slug: "clients", label: "Clients", group: "CRM", href: "/pipeline", description: "Client records for sales, delivery, and relationship context." },
+  { slug: "pipeline-stages", label: "Pipeline Stages", group: "CRM", href: "/pipeline", description: "Pipeline stage records used to organize sales flow." },
+  { slug: "deals", label: "Deals", group: "CRM", href: "/pipeline", description: "Deal records with status, value, source, and client context." },
+  { slug: "interactions", label: "Interactions", group: "CRM", href: "/pipeline", description: "Sales or client timeline interactions." },
+  { slug: "notes", label: "Notes", group: "Knowledge", href: "/data", description: "Operational notes linked to projects, tasks, clients, or deals." },
+  { slug: "decisions", label: "Decisions", group: "Knowledge", href: "/data", description: "Durable decision records with rationale and outcome." },
+  { slug: "agents", label: "Agents", group: "AI operations", href: "/settings/api", description: "Agent identities for Jarvis, Paperclip, Aviary, and future clients." },
+  { slug: "agent-logs", label: "Agent Logs", group: "AI operations", href: "/settings/api", description: "Agent log records for observability and training smoke." }
 ];
 
 function normalizedPath(pathname = window.location.pathname) {
@@ -289,6 +317,7 @@ function moduleMetric(path) {
   const signals = isSignedIn() ? dashboardSignals() : null;
   const areaCount = state.operatingModel.areas.length;
   const tableCount = state.operatingModel.areas.flatMap((area) => area.tables || []).length;
+  const recordCount = totalDatabaseRecords();
   const clickUpLists = (state.clickup.config.listIds || []).length;
   const driveItems = state.googleDrive.files.length;
   const apiRoutes = apiRouteRows().length;
@@ -296,6 +325,8 @@ function moduleMetric(path) {
   switch (path) {
     case "/dashboard":
       return isSignedIn() ? "Live command center" : "Sign in required";
+    case "/data":
+      return `${tableCount} tables, ${recordCount} records`;
     case "/areas":
       return `${areaCount} areas, ${tableCount} tables`;
     case "/relationships":
@@ -861,6 +892,7 @@ function renderDashboardCommandCenter() {
   const implementedGroups = 4;
 
   moduleAreasMeta.textContent = `${areas || 0} areas, ${tables || 0} tables, ${mappings || 0} provider mappings.`;
+  moduleDataMeta.textContent = `${tables || 0} tables, ${totalDatabaseRecords()} records loaded, ${apiRouteRows().length} API routes available.`;
   moduleRelationshipsMeta.textContent = `${signals.unmappedProviderMappings.length + signals.unassignedDriveFolders.length} relationship${signals.unmappedProviderMappings.length + signals.unassignedDriveFolders.length === 1 ? "" : "s"} need review.`;
   moduleTasksMeta.textContent = `${state.tasks.length} tasks, ${signals.openTasks.length} open, ${signals.dueSoonTasks.length} due soon.`;
   modulePipelineMeta.textContent = `${signals.pipelineRecords} CRM/pipeline records across clients, stages, deals, and interactions.`;
@@ -1652,6 +1684,156 @@ function recordCountForSlugs(slugs) {
   return slugs.reduce((sum, slug) => sum + (state.databaseTables.get(slug)?.records.length || 0), 0);
 }
 
+function totalDatabaseRecords() {
+  return [...state.databaseTables.values()].reduce((sum, item) => sum + item.records.length, 0);
+}
+
+function dataModuleRows() {
+  const operatingTables = state.operatingModel.areas.flatMap((area) => (area.tables || []).map((table) => ({
+    area,
+    table
+  })));
+  const tableBySlug = new Map(operatingTables.map((item) => [item.table.apiSlug, item]));
+  const apiRoutes = apiRouteRows();
+
+  return dataModuleCatalog.map((module) => {
+    const tableContext = tableBySlug.get(module.slug);
+    const records = state.databaseTables.get(module.slug)?.records || [];
+    const routes = apiRoutes.filter((route) => route.path === `/v1/${module.slug}` || route.path.startsWith(`/v1/${module.slug}/`));
+    const sources = [...new Set(records.map((record) => record?.source || "companycore").filter(Boolean).map(String))];
+    return {
+      ...module,
+      records,
+      routes,
+      sources,
+      area: tableContext?.area || null,
+      table: tableContext?.table || null,
+      searchable: [
+        module.label,
+        module.group,
+        module.description,
+        tableContext?.area?.name,
+        tableContext?.table?.tableName,
+        ...sources,
+        ...routes.map((route) => route.method)
+      ].filter(Boolean).join(" ").toLowerCase()
+    };
+  });
+}
+
+function renderDataOperations() {
+  dataOperationsStats.innerHTML = "";
+  dataModuleList.innerHTML = "";
+  const rows = dataModuleRows();
+  syncDataFilters(rows);
+  const filteredRows = filteredDataModuleRows(rows);
+  const writableRows = rows.filter((row) => row.routes.some((route) => ["POST", "PATCH", "DELETE"].includes(route.method))).length;
+  const routedRows = rows.filter((row) => row.routes.length > 0).length;
+
+  dataOperationsSummary.textContent = isSignedIn()
+    ? `${filteredRows.length} of ${rows.length} database module${rows.length === 1 ? "" : "s"} shown, ${totalDatabaseRecords()} total records loaded.`
+    : "Sign in to load database modules.";
+
+  [
+    ["Modules", rows.length],
+    ["Records", totalDatabaseRecords()],
+    ["API-backed", routedRows],
+    ["Writable", writableRows],
+    ["Groups", new Set(rows.map((row) => row.group)).size],
+    ["Drive files", state.googleDrive.files.length]
+  ].forEach(([label, value]) => {
+    dataOperationsStats.append(summaryStatCard(label, value));
+  });
+
+  if (!isSignedIn()) {
+    dataModuleList.append(emptyNote("Sign in to review database modules."));
+    return;
+  }
+
+  if (filteredRows.length === 0) {
+    dataModuleList.append(emptyNote("No database modules match the current filters."));
+    return;
+  }
+
+  for (const row of filteredRows) {
+    dataModuleList.append(dataModuleRowElement(row));
+  }
+}
+
+function syncDataFilters(rows) {
+  dataSearch.value = state.dataFilters.search;
+  const groups = [...new Set(rows.map((row) => row.group))].sort((left, right) => left.localeCompare(right));
+  const nextGroup = groups.includes(state.dataFilters.group) ? state.dataFilters.group : "";
+  dataGroupFilter.innerHTML = "";
+  const option = document.createElement("option");
+  option.value = "";
+  option.textContent = "All groups";
+  dataGroupFilter.append(option);
+  for (const group of groups) {
+    const item = document.createElement("option");
+    item.value = group;
+    item.textContent = group;
+    dataGroupFilter.append(item);
+  }
+  dataGroupFilter.value = nextGroup;
+  state.dataFilters.group = nextGroup;
+}
+
+function filteredDataModuleRows(rows) {
+  const search = state.dataFilters.search.trim().toLowerCase();
+  return rows.filter((row) => (!search || row.searchable.includes(search))
+    && (!state.dataFilters.group || row.group === state.dataFilters.group));
+}
+
+function dataModuleRowElement(row) {
+  const link = document.createElement("a");
+  link.className = "workbench-index-row";
+  link.href = row.href;
+  link.dataset.link = "";
+  const methods = row.routes.length > 0
+    ? [...new Set(row.routes.map((route) => route.method))].join(", ")
+    : "No route";
+  link.innerHTML = `
+    <div>
+      <span class="summary-kicker">${escapeHtml(row.group)}</span>
+      <strong>${escapeHtml(row.label)}</strong>
+      <p>${escapeHtml(row.description)}</p>
+    </div>
+    <div class="workbench-index-metrics">
+      <span><strong>${row.records.length}</strong> records</span>
+      <span><strong>${row.routes.length}</strong> routes</span>
+      <span><strong>${escapeHtml(row.area ? areaLabel(row.area) : "Unmapped")}</strong> area</span>
+    </div>
+    <div class="workbench-index-meta">
+      <span>${escapeHtml(methods)}</span>
+      <span>${escapeHtml(row.sources.length > 0 ? row.sources.join(", ") : "no source data")}</span>
+    </div>
+    <span class="workbench-index-action">${row.href === "/data" ? "Plan workbench" : "Open workbench"}</span>
+  `;
+  link.addEventListener("click", (event) => {
+    event.preventDefault();
+    navigate(row.href);
+  });
+  return link;
+}
+
+function summaryStatCard(label, value) {
+  const card = document.createElement("article");
+  card.className = "panel summary-card mini-card";
+  card.innerHTML = `
+    <span class="summary-kicker">${escapeHtml(label)}</span>
+    <strong>${escapeHtml(value)}</strong>
+  `;
+  return card;
+}
+
+function emptyNote(message) {
+  const empty = document.createElement("p");
+  empty.className = "empty-note";
+  empty.textContent = message;
+  return empty;
+}
+
 function renderIntegrationAreaMatrix() {
   const areas = sortedOperatingAreas();
 
@@ -1790,6 +1972,7 @@ function renderDataCounters() {
   }
   renderDashboardCommandCenter();
   renderAccountSettings();
+  renderDataOperations();
 }
 
 function renderOperatingMap() {
@@ -2775,6 +2958,7 @@ function setConnected(connection) {
   renderConnectionState();
   renderGoogleDriveFiles();
   renderOperatingMap();
+  renderDataOperations();
   renderTree();
   setClickUpEnabled(true);
   setGoogleDriveEnabled(true);
@@ -3315,6 +3499,16 @@ apiSearch.addEventListener("input", () => {
 apiMethodFilter.addEventListener("change", () => {
   state.apiFilters.method = apiMethodFilter.value;
   renderApiWorkbench();
+});
+
+dataSearch.addEventListener("input", () => {
+  state.dataFilters.search = dataSearch.value;
+  renderDataOperations();
+});
+
+dataGroupFilter.addEventListener("change", () => {
+  state.dataFilters.group = dataGroupFilter.value;
+  renderDataOperations();
 });
 
 loginForm.addEventListener("submit", async (event) => {
