@@ -145,6 +145,15 @@ Last updated: 2026-05-07
   disposable Postgres database `companycore_test` on port `55463`, and local
   authenticated Playwright desktop/mobile `/data/tasks` smokes that created,
   updated, archived, and reloaded real Tasks records.
+- 2026-05-07: Deployed V2WEB-030 to production with manual VPS backend
+  rollover after public health still reported `27479c5` following the GitHub
+  push. The running backend container is
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-5a1904c`, image
+  `rnqqkhl3o3dut4qv56mlxly2_backend:5a1904c336e9fd97e2f4a6842a886253eda56cf5`.
+  Public `/health` reports commit
+  `5a1904c336e9fd97e2f4a6842a886253eda56cf5`; production `app.js` includes
+  `renderTaskEditor`, `taskEditorTitle`, `Create task`, and
+  `taskEditorDueDate`.
 - 2026-05-07: Completed V2WEB-029 Typed Task Lists Editor Workbench.
   `/data/task-lists` now has a typed task-list editor inside the reusable
   split record workbench: owners can create task lists, edit name, status,

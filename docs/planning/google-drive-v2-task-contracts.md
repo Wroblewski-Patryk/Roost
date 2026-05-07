@@ -910,7 +910,7 @@ It follows the repository task contract and must stay synchronized with
 ## V2WEB-030 Typed Tasks Editor Workbench
 
 - Task Type: frontend/ux
-- Current Stage: verification
+- Current Stage: done
 - Deliverable For This Stage: typed task create/edit/archive editor inside the
   Data Operations workbench.
 - Goal: Let owners manage concrete CompanyCore tasks from `/data/tasks`
@@ -963,3 +963,6 @@ It follows the repository task contract and must stay synchronized with
     `git diff --check`, `npm test` against disposable Postgres on port
     `55463`, and authenticated Playwright desktop/mobile smokes that created,
     edited, archived, and reloaded real Tasks API records.
+  - Deployed to production at commit
+    `5a1904c336e9fd97e2f4a6842a886253eda56cf5`; production health and static
+    asset markers confirmed the typed Tasks editor code is live.
