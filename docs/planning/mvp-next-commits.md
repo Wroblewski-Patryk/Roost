@@ -5,6 +5,14 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
+- [ ] UXA-002 Authenticated Private Route UX Evidence Harness:
+      create or document an approved local authenticated screenshot path for
+      the private owner-console routes, then capture desktop/tablet/mobile
+      evidence without writing test data to production.
+- [x] UXA-001 CompanyCore V1 UX/UI Audit:
+      audited the public/auth owner entry, local seeded runtime state, private
+      route implementation patterns, and UX source-of-truth docs; published
+      `docs/ux/companycore-v1-ux-ui-audit.md` and queued `UXA-002..UXA-006`.
 - [x] CCV1-067 Tech Stack Runtime Status Refresh:
       update `docs/architecture/tech-stack.md` so it reflects implemented auth,
       tests, migrations, owner console, ClickUp scheduler, and Google Drive v2
@@ -172,6 +180,19 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NEXT
 
+- [ ] UXA-003 Dashboard First-Viewport Command Polish:
+      tighten `/dashboard` so the first viewport has one dominant next action,
+      visible blocker state, and quieter secondary module exploration.
+- [ ] UXA-004 Mobile Auth Action-First Layout:
+      reorder mobile `/auth/login` and `/auth/register` so the form comes
+      before onboarding context while desktop keeps the two-column layout.
+- [ ] UXA-005 Workbench Visual Role Cleanup:
+      reduce equal-weight panel fatigue across dense workbenches by clarifying
+      command, filter, list, selected-detail, and feedback roles.
+- [ ] UXA-006 Local Action Feedback Placement:
+      add local success/error/status placement for auth, provider setup, Drive
+      import, typed editors, and API key lifecycle while preserving the global
+      result panel for cross-route outcomes.
 - [x] AGRUN-005 Scoped Agent Key Owner UI:
       expose scoped agent key creation, copy-once raw key display, rotation or
       deactivation, and capability presets in `/settings/api`.

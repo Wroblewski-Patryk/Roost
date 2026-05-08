@@ -4,13 +4,21 @@ Last updated: 2026-05-08
 
 ## NOW
 
-1. No ready v1 runtime or agent-runtime task remains after CCV1-061,
-   AGRUN-009, and AGRUN-008 were reconciled.
+1. UXA-002 Authenticated Private Route UX Evidence Harness: create or document
+   an approved local authenticated screenshot path for the private owner-console
+   routes, then capture desktop/tablet/mobile evidence without production
+   writes.
 
 ## NEXT
 
-1. Product decision required: choose the next v2 product slice, an upstream
-   source handoff route, or a release automation tooling investment.
+1. UXA-003 Dashboard First-Viewport Command Polish: make `/dashboard` answer
+   current priority, blocker state, and next action within the first viewport.
+2. UXA-004 Mobile Auth Action-First Layout: reorder mobile auth so returning
+   owners reach the form before onboarding context.
+3. UXA-005 Workbench Visual Role Cleanup: reduce equal-weight panel fatigue
+   across dense workbench routes.
+4. UXA-006 Local Action Feedback Placement: keep success/error feedback near
+   the action that caused it.
 
 ## LATER
 

@@ -35,6 +35,7 @@ Canonical queue sources should still remain:
 | `docs/planning/agent-runtime-gap-closure-plan.md` | external-blocked | `AGRUN-002..AGRUN-010` | Agent runtime hardening is complete except externally blocked Google Drive owner consent/import and upstream agent source merge execution. |
 | `docs/planning/agent-crud-api-rollout-plan.md` | implemented | `AGCRUD-001..AGCRUD-006` | Completed and deployed agent CRUD rollout. |
 | `docs/planning/web-console-v2-task-contracts.md` | implemented | `V2WEB-001..V2WEB-049` | Historical completed web-console slices, including typed business editors and route/context polish. |
+| `docs/ux/companycore-v1-ux-ui-audit.md` | queued | `UXA-001..UXA-006` | Active UX/UI audit and implementation queue for owner-console polish after v1 runtime acceptance. |
 | `docs/planning/google-drive-v2-task-contracts.md` | external-blocked | `V2GD-001..V2GD-012` | Server-side Google Drive v2 and consent guidance delivered; real owner consent/import proof is re-queued through AGRUN-007. |
 | `docs/NEXT_STEPS.md` | implemented | v1 handoff | Human-readable next-step summary only; canonical execution remains in task board, agent state, and next commits. |
 

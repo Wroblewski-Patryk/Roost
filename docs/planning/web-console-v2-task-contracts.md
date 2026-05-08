@@ -1,5 +1,52 @@
 # Web Console V2 Task Contracts
 
+## UXA-001 CompanyCore V1 UX/UI Audit
+
+- Task Type: design/research
+- Current Stage: verification
+- Deliverable For This Stage: evidence-driven UX/UI audit and implementation
+  plan for owner-console polish.
+- Goal: Evaluate CompanyCore v1 from the owner's point of view and translate
+  the findings into a small implementation queue.
+- Scope:
+  - `docs/ux/companycore-v1-ux-ui-audit.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.agents/state/current-focus.md`
+  - `.agents/state/next-steps.md`
+- Implementation Plan:
+  - Review project UX contracts, design memory, scorecard, screen checklist,
+    and anti-patterns.
+  - Inspect public/auth routes in the Browser plugin on production.
+  - Start a local Docker runtime on a non-production port and inspect seeded
+    authenticated API state.
+  - Audit private screens from source, local API state, and existing UX
+    patterns when authenticated Browser entry is blocked.
+  - Publish a prioritized UX implementation queue.
+- Acceptance Criteria:
+  - Audit identifies current strengths, user-facing problems, severity, and
+    implementation slices.
+  - Audit includes production/browser evidence and local runtime evidence.
+  - Authenticated screenshot limitation is recorded honestly instead of hidden.
+  - Canonical queue files point at the first executable UX slice.
+- Definition of Done:
+  - `git diff --check` passes.
+  - Browser evidence covers public entry, login, register, and mobile auth.
+  - Local runtime health and seeded authenticated API state are recorded.
+  - Project state, task board, next-commits, and agent state are updated.
+- Result Report:
+  - Added `docs/ux/companycore-v1-ux-ui-audit.md`.
+  - Scored the current owner console average at `3.42/5`.
+  - Identified P0 issues in dashboard command focus and mobile auth action
+    order.
+  - Queued the next implementation wave as `UXA-002..UXA-006`.
+  - Browser could not complete authenticated private-route clickthrough because
+    this Browser runtime failed typing into `input[type=email]` and blocked
+    `javascript:` session injection; the next task explicitly creates an
+    approved authenticated evidence path.
+
 ## V2WEB-049 Table Workbench Empty State Polish
 
 - Task Type: design/frontend

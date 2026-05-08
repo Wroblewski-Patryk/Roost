@@ -7,7 +7,8 @@ Last updated: 2026-05-08
 - Goal: Central backend for company projects, goals, tasks, CRM, notes,
   decisions, agents, and system events.
 - Commercial model: Internal operational infrastructure.
-- Current phase: v2 agent runtime hardening and onboarding.
+- Current phase: v1 owner-console UX/UI polish planning after runtime
+  acceptance.
 
 ## Product Decisions (Confirmed)
 - 2026-05-07: CRM and pipelines are separate domain concepts. Pipelines are a
@@ -134,6 +135,16 @@ Last updated: 2026-05-08
 
 ## Recent Progress
 
+- 2026-05-08: Completed UXA-001 CompanyCore V1 UX/UI Audit. Added
+  `docs/ux/companycore-v1-ux-ui-audit.md`, reviewed project UX contracts,
+  production public/auth routes, mobile auth screenshots, local Docker runtime
+  health on `http://localhost:3001`, and seeded authenticated API state
+  (`52` capabilities, `13` areas, `14` tables, no ClickUp/Drive/tasks in local
+  seed). The audit scored the current owner console at `3.42/5` and queued
+  `UXA-002..UXA-006`, starting with an authenticated private-route evidence
+  harness before dashboard and mobile-auth polish. Browser could not complete
+  authenticated private clickthrough because this Browser runtime failed typing
+  into `input[type=email]` and blocked `javascript:` session injection.
 - 2026-05-08: Completed CCV1-061 Agent State Source-Of-Truth Sync. Replaced
   placeholder `.agents/state/*` continuation files with the current v1
   post-release focus, known blockers, health evidence, regression monitoring,

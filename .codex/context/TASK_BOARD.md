@@ -2,7 +2,25 @@
 
 ## Ready
 
-No ready task.
+- UXA-002 Authenticated Private Route UX Evidence Harness
+  - Stage: planning
+  - Owner: QA/Test
+  - Priority: P0
+  - Scope: create or document an approved local authenticated screenshot path
+    for `/dashboard`, `/data`, `/data/tasks`, `/areas`, `/relationships`,
+    `/settings/drive`, and `/settings/api` without production writes.
+- UXA-003 Dashboard First-Viewport Command Polish
+  - Stage: planning
+  - Owner: Frontend Builder
+  - Priority: P0
+  - Scope: tighten `/dashboard` so the first viewport has one dominant next
+    action, blocker visibility, and a quieter module exploration surface.
+- UXA-004 Mobile Auth Action-First Layout
+  - Stage: planning
+  - Owner: Frontend Builder
+  - Priority: P0
+  - Scope: reorder mobile `/auth/login` and `/auth/register` so forms appear
+    before onboarding context while preserving desktop two-column auth.
 
 ## In Progress
 
@@ -52,6 +70,7 @@ No active task.
 
 ## Done
 
+- UXA-001 CompanyCore V1 UX/UI Audit.
 - CCV1-067 Tech Stack Runtime Status Refresh.
 - CCV1-066 Historical Guardrail Plan Classification.
 - CCV1-065 Front-Door Docs Scope Refresh.
