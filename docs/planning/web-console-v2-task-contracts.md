@@ -1,5 +1,95 @@
 # Web Console V2 Task Contracts
 
+## UXA-012 React Workbench Route Migration
+
+- Task Type: frontend
+- Current Stage: done
+- Operation Mode: BUILDER
+- Deliverable For This Stage: a parallel React task workbench route that uses
+  the approved React shell, DaisyUI theme, local notification, metric, filter,
+  and table primitives with live `/v1/tasks` data while preserving the current
+  vanilla `/tasks-adapter` and `/data/tasks` routes.
+- Process Self-Audit:
+  - Analyze current state: UXA-011 delivered reusable React/DaisyUI table and
+    local-notification primitives on `/react-dashboard`; the canonical task
+    workbench still lives in the vanilla owner console.
+  - Select exactly one priority task: UXA-012 only.
+  - Plan implementation: add one parallel React workbench route and reuse the
+    existing task API instead of changing backend contracts.
+  - Execute implementation: added `/react-tasks`, live task loading, filters,
+    metrics, table rendering, and links to the existing canonical editors.
+  - Verify and test: build/validate, Browser signed-out check, targeted
+    signed-in desktop/mobile rendered checks, owner-console smoke, and
+    container-scoped integration test passed.
+  - Self-review: confirmed backend contracts and vanilla task routes remain
+    unchanged.
+  - Update documentation and knowledge: task board, project state, next steps,
+    system health, design memory, and this contract updated.
+- Goal: Move the React migration from dashboard proof-of-value into a real
+  workbench surface that helps an owner inspect company tasks quickly.
+- Scope:
+  - `src/app.ts`
+  - `web/src/main.tsx`
+  - `web/src/styles.css`
+  - `docs/ux/design-memory.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.agents/state/current-focus.md`
+  - `.agents/state/next-steps.md`
+  - `.agents/state/system-health.md`
+- Implementation Plan:
+  - Serve the React SPA for `/react-tasks` without changing existing vanilla
+    routes.
+  - Route the React entry by `window.location.pathname` so `/react-dashboard`
+    stays intact and `/react-tasks` renders a workbench.
+  - Load `/v1/connection` and `/v1/tasks` in parallel from the owner session.
+  - Reuse the shared shell, local notice, metric-card, and table primitives.
+  - Add task-specific search, status, source, and list filters.
+  - Keep editing actions linked to the existing typed task editor at
+    `/data/tasks` and adapter fallback at `/tasks-adapter`.
+- Acceptance Criteria:
+  - `/react-tasks` renders from the React build and uses the `companycore`
+    DaisyUI theme.
+  - Signed-in users see live task rows from `/v1/tasks`.
+  - Signed-out, loading, empty, error, and success states are explicit and
+    local to the workbench surface.
+  - Search and select filters update visible rows without a page reload.
+  - Desktop and mobile layouts have no document-level horizontal overflow.
+  - Existing `/dashboard`, `/react-dashboard`, `/tasks-adapter`, and
+    `/data/tasks` behavior remains available.
+- Definition of Done:
+  - `npm run build` and `npm run validate` pass.
+  - Targeted desktop/mobile rendered checks verify `/react-tasks`.
+  - `npm run owner-console:ux-smoke` passes against an isolated local compose
+    project.
+  - Container-scoped Prisma migration and Node integration test pass.
+  - `git diff --check` passes.
+- Result Report:
+  - Added `/react-tasks` as a parallel React workbench route served by the
+    existing React build without changing `/tasks-adapter` or `/data/tasks`.
+  - Routed the React entry by `window.location.pathname` so `/react-dashboard`
+    remains the dashboard and `/react-tasks` renders the task workbench.
+  - Loaded `/v1/connection` and `/v1/tasks` in parallel from the owner session.
+  - Reused shared `Shell`, `LocalNotice`, `MetricCard`, and `DataTable`
+    primitives for the task route.
+  - Added task search plus status, source, and list filters.
+  - Added task metrics for total, open, ClickUp, due-soon, and list groups.
+  - Kept create/edit actions linked to `/data/tasks` and adapter fallback
+    linked to `/tasks-adapter`.
+  - Validation passed: `npm run build`, `npm run validate`, `git diff --check`,
+    Browser signed-out route check with no console errors, targeted
+    desktop/mobile signed-in rendered checks, `npm run owner-console:ux-smoke`
+    against isolated `http://localhost:3007`, and container-scoped Prisma
+    migration plus Node integration test.
+  - Rendered evidence: `/react-tasks` title is `CompanyCore React Tasks`,
+    `data-theme="companycore"` is applied, signed-in desktop/mobile checks
+    showed 1 live task row after creating an isolated test record through
+    `/v1/tasks`, search empty state appeared for a non-matching query, search
+    recovered the row for `verification`, and no document-level horizontal
+    overflow or targeted console issues were detected.
+
 ## UXA-011 React Table And Notification Primitive Migration
 
 - Task Type: architecture/frontend

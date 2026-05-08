@@ -69,7 +69,8 @@ Last updated: 2026-05-08
 - Frontend: backend-served owner console. The current production surface is
   still the static HTML/CSS/JavaScript console with local Phosphor icon assets,
   and UXA-009 adds a React + Vite + Tailwind CSS + DaisyUI foundation under
-  `web/` with generated `public/react/` output and `/react-dashboard`.
+  `web/` with generated `public/react/` output, `/react-dashboard`, and the
+  parallel `/react-tasks` workbench from UXA-012.
 - Mobile: None in v1; planned from v2 based on the web product experience.
 - Database: PostgreSQL with Prisma.
 - Infra: Docker Compose.
@@ -127,18 +128,31 @@ Last updated: 2026-05-08
   and the next executable task is selected from the canonical queue.
 
 ## Autonomous Iteration State
-- Current iteration: UXA-011 React Table And Notification Primitive Migration
+- Current iteration: UXA-012 React Workbench Route Migration
   completed.
 - Current operation mode: BUILDER
-- Last completed iteration: UXA-011 React Table And Notification Primitive
-  Migration.
-- Last completed task: added reusable React/DaisyUI `LocalNotice` and
-  `DataTable` primitives, live operating-model preview rows, table overflow
-  containment, and a repeatable React build-output cleanup step.
-- Next required mode: BUILDER; UXA-012 React Workbench Route Migration is
-  ready.
+- Last completed iteration: UXA-012 React Workbench Route Migration.
+- Last completed task: added `/react-tasks` as a parallel React task workbench
+  with live `/v1/tasks` data, task metrics, search/status/source/list filters,
+  local states, reusable table rendering, and preserved vanilla task routes.
+- Next required mode: BUILDER; UXA-013 React Workbench Canonical Route
+  Decision is ready.
 
 ## Recent Progress
+
+- 2026-05-08: Completed UXA-012 React Workbench Route Migration. Added
+  `/react-tasks` as the first real React workbench route, served by the
+  existing React build while preserving `/tasks-adapter` and `/data/tasks`.
+  The route loads `/v1/connection` and `/v1/tasks` from the owner session,
+  shows signed-out/loading/empty/error/success states, task metrics, search,
+  status/source/list filters, and a reusable task table. Validation passed:
+  `npm run build`, `npm run validate`, Browser signed-out route check,
+  targeted signed-in desktop/mobile rendered checks, `git diff --check`,
+  `npm run owner-console:ux-smoke` against isolated `http://localhost:3007`,
+  and container-scoped Prisma migration plus Node integration test. The first
+  owner-console smoke was invalid because it ran in parallel with the
+  integration test mutating the same isolated database; rerun after reseed
+  passed cleanly.
 
 - 2026-05-08: Completed UXA-011 React Table And Notification Primitive
   Migration. Added reusable `LocalNotice` and generic `DataTable` primitives,

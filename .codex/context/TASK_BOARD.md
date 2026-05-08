@@ -2,13 +2,13 @@
 
 ## Ready
 
-- UXA-012 React Workbench Route Migration
+- UXA-013 React Workbench Canonical Route Decision
   - Stage: planning
   - Owner: Frontend Builder
   - Priority: P1
-  - Scope: migrate one high-value workbench route into React using the
-    approved dashboard, table, and local-notification primitives while
-    preserving vanilla fallback routes.
+  - Scope: decide whether the task workbench can replace the canonical
+    `/tasks-adapter` route now or should remain a parallel React preview until
+    one more workbench proves parity.
 
 ## In Progress
 
@@ -58,6 +58,7 @@ No active task.
 
 ## Done
 
+- UXA-012 React Workbench Route Migration.
 - UXA-011 React Table And Notification Primitive Migration.
 - UXA-010 React Dashboard Component Migration.
 - UXA-009 React Tailwind DaisyUI Migration Foundation.

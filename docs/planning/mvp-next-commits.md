@@ -5,10 +5,19 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
-- [ ] UXA-012 React Workbench Route Migration:
+- [ ] UXA-013 React Workbench Canonical Route Decision:
+      decide whether the task workbench can replace the canonical
+      `/tasks-adapter` route now or should remain a parallel React preview
+      until one more workbench proves parity.
+- [x] UXA-012 React Workbench Route Migration:
       migrate one high-value workbench route into React using the approved
       dashboard, table, and local-notification primitives while preserving
-      vanilla fallback routes.
+      vanilla fallback routes. Added `/react-tasks`, live `/v1/tasks`
+      loading, task metrics, search/status/source/list filters, reusable table
+      rendering, signed-out/loading/empty/error/success states, and links back
+      to `/data/tasks` plus `/tasks-adapter`. Passed build, validate, Browser
+      signed-out check, targeted signed-in desktop/mobile rendered checks,
+      owner-console smoke, and container integration tests.
 - [x] UXA-011 React Table And Notification Primitive Migration:
       create reusable React/DaisyUI table and local notification primitives for
       the next workbench migration while preserving existing vanilla routes.
@@ -249,6 +258,9 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NEXT
 
+- [ ] UXA-014 React Workbench Second Route Candidate:
+      migrate one additional workbench route only after UXA-013 decides the
+      canonical route strategy.
 - [x] AGRUN-005 Scoped Agent Key Owner UI:
       expose scoped agent key creation, copy-once raw key display, rotation or
       deactivation, and capability presets in `/settings/api`.

@@ -94,6 +94,39 @@ type OperatingPreviewRow = {
   };
 };
 
+type TaskRecord = {
+  id: string;
+  title: string;
+  status?: string | null;
+  priority?: string | null;
+  dueDate?: string | null;
+  source?: string | null;
+  externalId?: string | null;
+  taskList?: {
+    id: string;
+    name: string;
+    externalId?: string | null;
+    source?: string | null;
+  } | null;
+};
+
+type TasksResponse = {
+  data: TaskRecord[];
+};
+
+type TasksWorkbenchState =
+  | { status: "signed-out" }
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "ready"; connection: ConnectionData; tasks: TaskRecord[] };
+
+type TaskFilterState = {
+  search: string;
+  status: string;
+  source: string;
+  list: string;
+};
+
 const modules: ModuleLink[] = [
   {
     title: "Operating areas",
@@ -110,7 +143,7 @@ const modules: ModuleLink[] = [
   {
     title: "Tasks & adapters",
     detail: "Inspect execution records, ClickUp sync state, and task ownership.",
-    href: "/tasks-adapter",
+    href: "/react-tasks",
     icon: "ph-list-checks"
   },
   {
@@ -135,6 +168,22 @@ async function loadConnection(token: string): Promise<ConnectionData> {
 
   if (!response.ok || !("data" in body)) {
     const message = "error" in body && body.error ? body.error : "connection_failed";
+    throw new Error(message);
+  }
+
+  return body.data;
+}
+
+async function loadTasks(token: string): Promise<TaskRecord[]> {
+  const response = await fetch("/v1/tasks", {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  const body = await response.json() as TasksResponse | { error?: string };
+
+  if (!response.ok || !("data" in body)) {
+    const message = "error" in body && body.error ? body.error : "tasks_failed";
     throw new Error(message);
   }
 
@@ -179,6 +228,49 @@ function useDashboardState(): [DashboardState, () => void] {
   }, [reloadKey]);
 
   return [dashboardState, () => setReloadKey((value) => value + 1)];
+}
+
+function useTasksWorkbenchState(): [TasksWorkbenchState, () => void] {
+  const [reloadKey, setReloadKey] = useState(0);
+  const [tasksState, setTasksState] = useState<TasksWorkbenchState>(() => (
+    ownerToken() ? { status: "loading" } : { status: "signed-out" }
+  ));
+
+  useEffect(() => {
+    const token = ownerToken();
+    if (!token) {
+      setTasksState({ status: "signed-out" });
+      return;
+    }
+
+    let cancelled = false;
+    setTasksState({ status: "loading" });
+    Promise.all([
+      loadConnection(token),
+      loadTasks(token)
+    ])
+      .then(([connection, tasks]) => {
+        if (!cancelled) {
+          setTasksState({ status: "ready", connection, tasks });
+        }
+      })
+      .catch((error: Error) => {
+        if (!cancelled) {
+          setTasksState({
+            status: "error",
+            message: error.message === "invalid_token"
+              ? "Your session expired. Sign in again to load the task workbench."
+              : "CompanyCore could not load task records. Try again or use the current task adapter."
+          });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
+
+  return [tasksState, () => setReloadKey((value) => value + 1)];
 }
 
 function integrationStatus(integration: IntegrationState, label: string) {
@@ -272,7 +364,101 @@ function operatingPreviewRows(connection: ConnectionData): OperatingPreviewRow[]
     });
 }
 
-function Shell({ children, connection }: { children: React.ReactNode; connection?: ConnectionData }) {
+function normalizedTaskSource(task: TaskRecord) {
+  return task.source || "companycore";
+}
+
+function normalizedTaskList(task: TaskRecord) {
+  return task.taskList?.name || "No list";
+}
+
+function isOpenTask(task: TaskRecord) {
+  const status = String(task.status || "todo").toLowerCase();
+  return !["archived", "closed", "complete", "completed", "done"].includes(status);
+}
+
+function isDueSoon(task: TaskRecord) {
+  if (!task.dueDate || !isOpenTask(task)) {
+    return false;
+  }
+
+  const dueDate = new Date(task.dueDate);
+  if (Number.isNaN(dueDate.getTime())) {
+    return false;
+  }
+
+  const now = new Date();
+  const sevenDays = 1000 * 60 * 60 * 24 * 7;
+  return dueDate.getTime() <= now.getTime() + sevenDays;
+}
+
+function formatTaskDate(value?: string | null) {
+  if (!value) {
+    return "-";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "2-digit"
+  }).format(date);
+}
+
+function uniqueTaskOptions(tasks: TaskRecord[], getValue: (task: TaskRecord) => string) {
+  return [...new Set(tasks.map(getValue).filter(Boolean))].sort((left, right) => left.localeCompare(right));
+}
+
+function taskMetrics(tasks: TaskRecord[]) {
+  const openTasks = tasks.filter(isOpenTask);
+  const clickUpTasks = tasks.filter((task) => normalizedTaskSource(task) === "clickup");
+  const dueSoonTasks = tasks.filter(isDueSoon);
+  const listCount = uniqueTaskOptions(tasks, normalizedTaskList).filter((list) => list !== "No list").length;
+
+  return {
+    total: tasks.length,
+    open: openTasks.length,
+    clickUp: clickUpTasks.length,
+    dueSoon: dueSoonTasks.length,
+    lists: listCount
+  };
+}
+
+function filteredTasks(tasks: TaskRecord[], filters: TaskFilterState) {
+  const query = filters.search.trim().toLowerCase();
+  return tasks.filter((task) => {
+    const source = normalizedTaskSource(task);
+    const list = normalizedTaskList(task);
+    const status = task.status || "todo";
+    const haystack = [
+      task.title,
+      status,
+      task.priority || "",
+      source,
+      list,
+      formatTaskDate(task.dueDate)
+    ].join(" ").toLowerCase();
+
+    return (!query || haystack.includes(query))
+      && (!filters.status || status === filters.status)
+      && (!filters.source || source === filters.source)
+      && (!filters.list || list === filters.list);
+  });
+}
+
+function Shell({
+  children,
+  connection,
+  appLabel = "React dashboard"
+}: {
+  children: React.ReactNode;
+  connection?: ConnectionData;
+  appLabel?: string;
+}) {
   return (
     <main className="min-h-screen bg-base-200 text-base-content" data-theme="companycore">
       <header className="border-b border-base-300 bg-base-100">
@@ -282,12 +468,14 @@ function Shell({ children, connection }: { children: React.ReactNode; connection
             <span>
               CompanyCore
               <small className="block text-xs font-black text-company-muted">
-                {connection?.workspace.name || "React dashboard"}
+                {connection?.workspace.name || appLabel}
               </small>
             </span>
           </a>
           <nav className="flex flex-wrap gap-2" aria-label="React dashboard navigation">
             <a className="btn btn-ghost btn-sm" href="/dashboard">Current dashboard</a>
+            <a className="btn btn-ghost btn-sm" href="/react-dashboard">React dashboard</a>
+            <a className="btn btn-ghost btn-sm" href="/react-tasks">React tasks</a>
             <a className="btn btn-ghost btn-sm" href="/settings/integrations">Integrations</a>
             <a className="btn btn-primary btn-sm" href="/areas">Operating areas</a>
           </nav>
@@ -678,6 +866,254 @@ function MigrationTable() {
   );
 }
 
+function TasksStatePanel({ state, onRetry }: { state: TasksWorkbenchState; onRetry: () => void }) {
+  if (state.status === "ready") {
+    return null;
+  }
+
+  const content = {
+    "signed-out": {
+      tone: "warning" as NoticeTone,
+      title: "Owner session required",
+      detail: "Sign in through the current console to load the React task workbench with live workspace data.",
+      action: { label: "Sign in", href: "/auth/login" }
+    },
+    loading: {
+      tone: "info" as NoticeTone,
+      title: "Loading tasks",
+      detail: "CompanyCore is reading the owner session, workspace context, and task records.",
+      action: undefined
+    },
+    error: {
+      tone: "error" as NoticeTone,
+      title: "Task workbench could not load",
+      detail: state.status === "error" ? state.message : "",
+      action: undefined
+    }
+  }[state.status];
+
+  return (
+    <Shell appLabel="React tasks">
+      <section className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-8">
+        <LocalNotice
+          tone={content.tone}
+          title={content.title}
+          detail={content.detail}
+          action={content.action}
+        />
+        {state.status === "error" ? (
+          <button className="btn btn-primary w-fit" type="button" onClick={onRetry}>Retry</button>
+        ) : null}
+      </section>
+    </Shell>
+  );
+}
+
+function TaskFilters({
+  filters,
+  onChange,
+  tasks
+}: {
+  filters: TaskFilterState;
+  onChange: (nextFilters: TaskFilterState) => void;
+  tasks: TaskRecord[];
+}) {
+  const statusOptions = uniqueTaskOptions(tasks, (task) => task.status || "todo");
+  const sourceOptions = uniqueTaskOptions(tasks, normalizedTaskSource);
+  const listOptions = uniqueTaskOptions(tasks, normalizedTaskList);
+
+  return (
+    <section className="card border border-base-300 bg-base-100 shadow-sm">
+      <div className="card-body gap-4">
+        <div className="grid gap-3 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr]">
+          <label className="form-control">
+            <span className="label">
+              <span className="label-text font-bold">Search tasks</span>
+            </span>
+            <input
+              className="input input-bordered"
+              type="search"
+              value={filters.search}
+              onChange={(event) => onChange({ ...filters, search: event.target.value })}
+              placeholder="Title, status, priority, list..."
+            />
+          </label>
+          <label className="form-control">
+            <span className="label">
+              <span className="label-text font-bold">Status</span>
+            </span>
+            <select
+              className="select select-bordered"
+              value={filters.status}
+              onChange={(event) => onChange({ ...filters, status: event.target.value })}
+            >
+              <option value="">All statuses</option>
+              {statusOptions.map((status) => (
+                <option value={status} key={status}>{status}</option>
+              ))}
+            </select>
+          </label>
+          <label className="form-control">
+            <span className="label">
+              <span className="label-text font-bold">Source</span>
+            </span>
+            <select
+              className="select select-bordered"
+              value={filters.source}
+              onChange={(event) => onChange({ ...filters, source: event.target.value })}
+            >
+              <option value="">All sources</option>
+              {sourceOptions.map((source) => (
+                <option value={source} key={source}>{source}</option>
+              ))}
+            </select>
+          </label>
+          <label className="form-control">
+            <span className="label">
+              <span className="label-text font-bold">Task list</span>
+            </span>
+            <select
+              className="select select-bordered"
+              value={filters.list}
+              onChange={(event) => onChange({ ...filters, list: event.target.value })}
+            >
+              <option value="">All lists</option>
+              {listOptions.map((list) => (
+                <option value={list} key={list}>{list}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TasksTable({ tasks }: { tasks: TaskRecord[] }) {
+  const columns: Array<TableColumn<TaskRecord>> = [
+    {
+      key: "title",
+      header: "Task",
+      cell: (task) => (
+        <div className="max-w-[22rem]">
+          <strong className="block break-words">{task.title}</strong>
+          <span className="text-xs text-company-muted">{task.externalId ? `External ${task.externalId}` : "CompanyCore record"}</span>
+        </div>
+      )
+    },
+    {
+      key: "status",
+      header: "Status",
+      cell: (task) => <span className="badge badge-outline">{task.status || "todo"}</span>
+    },
+    {
+      key: "priority",
+      header: "Priority",
+      cell: (task) => task.priority ? <span className="font-black">{task.priority}</span> : "-"
+    },
+    {
+      key: "list",
+      header: "List",
+      cell: (task) => normalizedTaskList(task)
+    },
+    {
+      key: "source",
+      header: "Source",
+      cell: (task) => (
+        <span className={normalizedTaskSource(task) === "clickup" ? "badge badge-primary" : "badge badge-neutral"}>
+          {normalizedTaskSource(task)}
+        </span>
+      )
+    },
+    {
+      key: "due",
+      header: "Due",
+      cell: (task) => formatTaskDate(task.dueDate)
+    }
+  ];
+
+  return (
+    <DataTable
+      columns={columns}
+      rows={tasks}
+      emptyTitle="No tasks match these filters"
+      emptyDetail="Adjust the search or filters, or open the typed task editor to create a CompanyCore task."
+    />
+  );
+}
+
+function TasksWorkbench({ connection, tasks }: { connection: ConnectionData; tasks: TaskRecord[] }) {
+  const [filters, setFilters] = useState<TaskFilterState>({
+    search: "",
+    status: "",
+    source: "",
+    list: ""
+  });
+  const metrics = useMemo(() => taskMetrics(tasks), [tasks]);
+  const visibleTasks = useMemo(() => filteredTasks(tasks, filters), [tasks, filters]);
+
+  return (
+    <Shell connection={connection}>
+      <section className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-8">
+        <section className="card border border-base-300 bg-base-100 shadow-sm">
+          <div className="card-body gap-5">
+            <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-start">
+              <div className="flex items-start gap-3">
+                <span className="dashboard-icon text-primary">
+                  <i className="ph-bold ph-list-checks" aria-hidden="true"></i>
+                </span>
+                <div>
+                  <p className="eyebrow">React workbench</p>
+                  <h1 className="text-3xl font-black leading-tight">Tasks</h1>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-company-muted">
+                    Inspect execution records, ClickUp ownership, open workload, and due-soon risk before editing the canonical task data.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <a className="btn btn-primary" href="/data/tasks">Open task editor</a>
+                <a className="btn btn-ghost" href="/tasks-adapter">Current adapter</a>
+              </div>
+            </div>
+
+            <LocalNotice
+              tone={metrics.total === 0 ? "warning" : "success"}
+              title={metrics.total === 0 ? "No task records loaded" : "Live task workbench"}
+              detail={metrics.total === 0
+                ? "This workspace has no task records yet. Create a task in the typed editor or connect ClickUp before reviewing workload."
+                : `${visibleTasks.length} of ${metrics.total} tasks are visible after filters. ${metrics.open} are open and ${metrics.dueSoon} are due soon.`}
+              action={metrics.total === 0 ? { label: "Create task", href: "/data/tasks" } : undefined}
+            />
+
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+              <MetricCard icon="ph-stack" label="Total" value={`${metrics.total}`} detail="Task records" />
+              <MetricCard icon="ph-circle-notch" label="Open" value={`${metrics.open}`} detail="Not complete or archived" />
+              <MetricCard icon="ph-plugs-connected" label="ClickUp" value={`${metrics.clickUp}`} detail="Provider-owned tasks" />
+              <MetricCard icon="ph-calendar-check" label="Due soon" value={`${metrics.dueSoon}`} detail="Open within 7 days" />
+              <MetricCard icon="ph-list-bullets" label="Lists" value={`${metrics.lists}`} detail="Task list groups" />
+            </div>
+          </div>
+        </section>
+
+        <TaskFilters filters={filters} onChange={setFilters} tasks={tasks} />
+
+        <section className="card border border-base-300 bg-base-100 shadow-sm">
+          <div className="card-body gap-4">
+            <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
+              <div>
+                <p className="eyebrow">Execution table</p>
+                <h2 className="text-xl font-black">Current task records</h2>
+              </div>
+              <span className="badge badge-outline">{visibleTasks.length} visible</span>
+            </div>
+            <TasksTable tasks={visibleTasks.slice(0, 80)} />
+          </div>
+        </section>
+      </section>
+    </Shell>
+  );
+}
+
 function ReadyDashboard({ connection }: { connection: ConnectionData }) {
   const items = useMemo(() => attentionItems(connection), [connection]);
 
@@ -710,12 +1146,32 @@ function ReactDashboardApp() {
   );
 }
 
+function ReactTasksApp() {
+  const [tasksState, reload] = useTasksWorkbenchState();
+
+  if (tasksState.status === "ready") {
+    return <TasksWorkbench connection={tasksState.connection} tasks={tasksState.tasks} />;
+  }
+
+  return <TasksStatePanel state={tasksState} onRetry={reload} />;
+}
+
+function ReactApp() {
+  if (window.location.pathname === "/react-tasks") {
+    document.title = "CompanyCore React Tasks";
+    return <ReactTasksApp />;
+  }
+
+  document.title = "CompanyCore React Dashboard";
+  return <ReactDashboardApp />;
+}
+
 const root = document.getElementById("root");
 
 if (root) {
   createRoot(root).render(
     <React.StrictMode>
-      <ReactDashboardApp />
+      <ReactApp />
     </React.StrictMode>
   );
 }

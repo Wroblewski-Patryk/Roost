@@ -21,6 +21,7 @@ Last updated: 2026-05-08
 | ux/react foundation smoke | Browser route load plus targeted Playwright and `npm run owner-console:ux-smoke` against isolated `http://localhost:3000` | PASS | `.tmp/companycore-uxa009-react-foundation`; `.tmp/companycore-uxa009-owner-console-final` | UXA-009 verified `/react-dashboard`, DaisyUI primary button and success alert, 3 table rows, owner-session detection on desktop/mobile, no horizontal overflow, and zero targeted console issues. |
 | ux/react dashboard smoke | Targeted Playwright plus `npm run owner-console:ux-smoke` against isolated `http://localhost:3000` | PASS | `.tmp/companycore-uxa010-react-dashboard-final`; `.tmp/companycore-uxa010-owner-console-final` | UXA-010 verified `/react-dashboard` title, `companycore` DaisyUI theme, live `LuckySparrow` workspace data, 4 module links, 4 migration table rows, 13 Phosphor icons, desktop/mobile no horizontal overflow, and zero targeted console issues. |
 | ux/react primitives smoke | Targeted Playwright plus `npm run owner-console:ux-smoke` against isolated `http://localhost:3000` | PASS | `.tmp/companycore-uxa011-react-primitives-final`; `.tmp/companycore-uxa011-owner-console-final` | UXA-011 verified `/react-dashboard` with 2 local notices, 1 reusable table primitive, 6 live table rows, internal table scroller, `companycore` theme, desktop/mobile no horizontal overflow, and zero targeted console issues. |
+| ux/react task workbench smoke | Browser signed-out check plus targeted Playwright and `npm run owner-console:ux-smoke` against isolated `http://localhost:3007` | PASS | `C:\Users\wrobl\AppData\Local\Temp\companycore-uxa012-react-tasks-data`; `C:\Users\wrobl\AppData\Local\Temp\companycore-ux-smoke\2026-05-08T21-59-46-321Z` | UXA-012 verified `/react-tasks`, `companycore` theme, live `/v1/tasks` row after isolated API creation, search empty/recovery states, desktop/mobile no document-level overflow, and zero targeted console issues. Browser form fill hit the known virtual-clipboard limitation, so signed-in checks used Playwright fallback. |
 | ux/browser | Production public/auth Browser audit | PARTIAL PASS | 2026-05-08 UXA-001 | Public entry, login, register, and mobile auth rendered with no relevant console warnings/errors; authenticated Browser entry was blocked by an automation issue on `input[type=email]`. |
 | local runtime | Docker local runtime for UX audit | PASS | 2026-05-08 UXA-001 | Local backend ran on `http://localhost:3001`; `/health` returned `ok`; migrations and seed completed. |
 | web editor markers | Production `app.js` marker check | PASS | 2026-05-08 AGRUN-008 public `app.js` check | Typed editor markers for Notes, Projects, Clients, Task Lists, and Tasks are present. |
@@ -54,6 +55,11 @@ Last updated: 2026-05-08
   boundary and `/v1/connection` without changing the vanilla dashboard route.
 - UXA-011 confirmed generated React output should be cleaned before Vite builds
   and that table overflow must stay inside `.react-table-shell` on mobile.
+- UXA-012 confirmed the React migration can host a real task workbench in
+  parallel with vanilla routes, using existing `/v1/tasks` and `/v1/connection`
+  contracts without backend changes. Browser still cannot reliably fill login
+  forms in this environment, so authenticated rendered checks should continue
+  to use the approved Playwright fallback when Browser form input fails.
 
 ## Quality Gate Notes
 

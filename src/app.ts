@@ -72,6 +72,11 @@ const webAppRoutes = [
   "/settings/api"
 ];
 
+const reactAppRoutes = [
+  "/react-dashboard",
+  "/react-tasks"
+];
+
 export function createApp() {
   const app = express();
   const publicRoot = path.join(process.cwd(), "public");
@@ -104,7 +109,7 @@ export function createApp() {
 
     staticFiles(req, res, next);
   });
-  app.get("/react-dashboard", (req, res, next) => {
+  app.get(reactAppRoutes, (req, res, next) => {
     if (isApiHost(req.headers.host)) {
       next();
       return;

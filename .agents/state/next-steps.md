@@ -4,14 +4,14 @@ Last updated: 2026-05-08
 
 ## NOW
 
-UXA-012 React Workbench Route Migration is ready. Migrate one high-value
-workbench route into React using the approved dashboard, table, and
-local-notification primitives while preserving vanilla fallback routes.
+UXA-013 React Workbench Canonical Route Decision is ready. Decide whether the
+task workbench can replace the canonical `/tasks-adapter` route now or should
+remain a parallel React preview until one more workbench proves parity.
 
 ## NEXT
 
-After UXA-012, decide whether to point the canonical route at the React
-workbench or keep it as a parallel preview until one more route proves parity.
+UXA-014 React Workbench Second Route Candidate. Migrate one additional
+workbench route only after UXA-013 decides the canonical route strategy.
 
 ## LATER
 

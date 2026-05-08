@@ -34,6 +34,24 @@ of rediscovering them.
 
 ## Entries
 
+### 2026-05-08 - React Task Workbench Route
+- Type: reusable_pattern
+- Context: React migration needs to prove a real owner workbench with live
+  business records before replacing canonical vanilla routes.
+- Decision: Use a parallel React route first. Load the owner session,
+  `/v1/connection`, and the target business API directly; pair a command
+  header with local notice, metric cards, filters, and the reusable
+  `DataTable`. Keep create/edit actions linked to the existing canonical
+  editor until route replacement is explicitly approved.
+- Reuse when: Migrating another dense workbench from vanilla to React while the
+  current vanilla route remains the safest canonical path.
+- Avoid when: The route replacement decision has already been made and the
+  task is to move the canonical route itself.
+- Evidence: UXA-012 adds `/react-tasks` with live `/v1/tasks` data, search,
+  status/source/list filters, signed-out/loading/empty/error/success states,
+  desktop/mobile rendered checks, and preserved `/tasks-adapter` plus
+  `/data/tasks` fallbacks.
+
 ### 2026-05-08 - React Table And Local Notice Primitives
 - Type: reusable_pattern
 - Context: Dense workbench migration needs reusable table and action-feedback
