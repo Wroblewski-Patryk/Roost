@@ -1,5 +1,144 @@
 # Web Console V2 Task Contracts
 
+## UXA-014 React Integration Map Workbench Route
+
+- Task Type: frontend
+- Current Stage: done
+- Operation Mode: BUILDER
+- Deliverable For This Stage: a parallel React integration map workbench route
+  that uses live `/v1/connection` data, the `companycore` DaisyUI theme,
+  Phosphor icons, local states, metrics, filters, and reusable table/list
+  primitives while preserving `/settings/integrations`.
+- Process Self-Audit:
+  - Analyze current state: `/react-dashboard` and `/react-tasks` are live
+    parallel React routes; `/settings/integrations` remains the canonical
+    vanilla integration map.
+  - Select exactly one priority task: UXA-014 only.
+  - Plan implementation: add one parallel route, reuse `/v1/connection`, and
+    avoid replacing canonical routes in this slice.
+  - Execute implementation: added `/react-integrations`, provider/data-path
+    cards, readiness notice, metrics, filters, and operating-area coverage
+    table.
+  - Verify and test: build/validate, Browser route check, signed-in rendered
+    desktop/mobile checks, owner-console smoke, and container integration test
+    passed.
+  - Self-review: confirmed existing `/settings/integrations` and backend API
+    contracts remain unchanged.
+  - Update documentation and knowledge: task board, project state, next steps,
+    system health, design memory, and this contract updated.
+- Goal: Give owners a clearer React-based integration map that explains
+  provider readiness, implemented data paths, and operating-area coverage.
+- Scope:
+  - `src/app.ts`
+  - `web/src/main.tsx`
+  - `docs/ux/design-memory.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `docs/planning/web-console-v2-task-contracts.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.agents/state/current-focus.md`
+  - `.agents/state/next-steps.md`
+  - `.agents/state/system-health.md`
+- Implementation Plan:
+  - Serve the React SPA for `/react-integrations`.
+  - Route React by pathname so existing React dashboard/tasks stay intact.
+  - Load live `/v1/connection` data from the owner session.
+  - Render provider readiness, implemented data groups, and operating-area
+    coverage using shared DaisyUI primitives.
+  - Add search and type filters for operating-area integration coverage rows.
+  - Keep canonical setup actions linked to `/settings/integrations`,
+    `/settings`, `/settings/drive`, `/settings/api`, and `/areas`.
+- Acceptance Criteria:
+  - `/react-integrations` renders from the React build and uses
+    `data-theme="companycore"`.
+  - Signed-in users see live workspace, integration, capability, and operating
+    model signals from `/v1/connection`.
+  - Signed-out, loading, empty, error, and success/readiness states are local
+    and explicit.
+  - Search and type filters update operating-area rows without a page reload.
+  - Desktop and mobile layouts have no document-level horizontal overflow.
+  - Existing `/settings/integrations` behavior remains available.
+- Definition of Done:
+  - `npm run build` and `npm run validate` pass.
+  - Targeted desktop/mobile rendered checks verify `/react-integrations`.
+  - `npm run owner-console:ux-smoke` passes against an isolated local compose
+    project.
+  - Container-scoped Prisma migration and Node integration test pass.
+  - `git diff --check` passes.
+- Result Report:
+  - Added `/react-integrations` as a parallel React route served by the
+    existing React build.
+  - Loaded live `/v1/connection` data from the owner session.
+  - Added integration readiness guidance with local action placement.
+  - Added provider/data-path cards for ClickUp tasks, Google Drive files,
+    agent-safe API, and the operating model.
+  - Added operating-area coverage filters and a reusable `DataTable` view for
+    12 company areas, excluding only the `main-general` fallback from the
+    company-area table.
+  - Preserved `/settings/integrations` as the canonical vanilla integration
+    map.
+  - Validation passed: `npm run build`, `npm run validate`, `git diff --check`,
+    Browser signed-out route check, targeted signed-in desktop/mobile rendered
+    checks, `npm run owner-console:ux-smoke` against isolated
+    `http://localhost:3008`, and container-scoped Prisma migration plus Node
+    integration test.
+  - Rendered evidence: `/react-integrations` title is `CompanyCore React
+    Integrations`, `data-theme="companycore"` is applied, signed-in
+    desktop/mobile checks showed 4 integration/data groups, 1 table, 12
+    operating-area rows, search empty/recovery behavior, no document-level
+    horizontal overflow, and zero targeted console issues.
+
+## UXA-013 React Workbench Canonical Route Decision
+
+- Task Type: planning/frontend
+- Current Stage: done
+- Operation Mode: BUILDER
+- Deliverable For This Stage: canonical route decision for the React task
+  workbench migration after UXA-012.
+- Process Self-Audit:
+  - Analyze current state: `/react-tasks` is live and validated as a parallel
+    React read/filter workbench; `/tasks-adapter` remains the canonical vanilla
+    task adapter route.
+  - Select exactly one priority task: UXA-013 only.
+  - Plan implementation: compare route parity and choose whether to switch the
+    canonical route or keep a parallel route.
+  - Execute implementation: recorded the route strategy decision and activated
+    the next migration slice.
+  - Verify and test: documentation consistency and source-of-truth queue
+    alignment are the validation surface for this decision task.
+  - Self-review: confirmed that switching `/tasks-adapter` now would remove
+    canonical adapter affordances before a second React workbench proves the
+    migration pattern.
+  - Update documentation and knowledge: task board, next commits, next steps,
+    project state, and this contract updated.
+- Goal: Avoid a premature canonical route switch while keeping React migration
+  moving through evidence-backed workbench slices.
+- Scope:
+  - `docs/planning/web-console-v2-task-contracts.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.agents/state/current-focus.md`
+  - `.agents/state/next-steps.md`
+- Implementation Plan:
+  - Review UXA-012 evidence and the current `/tasks-adapter` role.
+  - Decide whether `/react-tasks` should replace `/tasks-adapter` now.
+  - Record the decision and activate the next route migration.
+- Acceptance Criteria:
+  - Route decision is explicit.
+  - Decision explains why the canonical route is or is not switched now.
+  - Next executable React workbench migration is activated.
+- Definition of Done:
+  - Planning/state files agree on the decision and next task.
+  - `git diff --check` passes.
+- Result Report:
+  - Decision: keep `/react-tasks` as a parallel React workbench for now.
+  - Rationale: UXA-012 proved the React table/filter pattern with live
+    `/v1/tasks` data, but `/tasks-adapter` still carries the canonical adapter
+    context and should not be replaced until another React workbench proves
+    route-level parity and the route-switch pattern is less risky.
+  - Next task: UXA-014 React Integration Map Workbench Route.
+
 ## UXA-012 React Workbench Route Migration
 
 - Task Type: frontend

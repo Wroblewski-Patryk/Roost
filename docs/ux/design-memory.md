@@ -34,6 +34,24 @@ of rediscovering them.
 
 ## Entries
 
+### 2026-05-09 - React Integration Map Workbench
+- Type: reusable_pattern
+- Context: React migration needs a second real workbench that helps owners
+  understand provider readiness, API exposure, and company-area coverage before
+  any canonical route switch.
+- Decision: Use a parallel React route with a readiness notice, provider/data
+  cards, metric strip, filters, and a coverage table. Treat `main-general` as
+  the only non-company fallback row to exclude from company-area coverage; keep
+  the 12 canonical company areas visible even when they are system-owned.
+- Reuse when: Migrating integration, relationship, operating-area, or API
+  overview screens that need to answer readiness, ownership, and next action.
+- Avoid when: A route needs full provider setup/edit behavior in the same
+  slice; link back to the canonical setup route until parity is explicit.
+- Evidence: UXA-014 adds `/react-integrations` with live `/v1/connection`
+  data, provider/data-path cards, search and coverage filters, 12 operating
+  area rows, desktop/mobile rendered checks, and preserved
+  `/settings/integrations`.
+
 ### 2026-05-08 - React Task Workbench Route
 - Type: reusable_pattern
 - Context: React migration needs to prove a real owner workbench with live

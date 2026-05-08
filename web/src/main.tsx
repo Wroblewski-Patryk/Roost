@@ -127,6 +127,49 @@ type TaskFilterState = {
   list: string;
 };
 
+type IntegrationWorkbenchState =
+  | { status: "signed-out" }
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "ready"; connection: ConnectionData };
+
+type IntegrationGroup = {
+  id: string;
+  title: string;
+  detail: string;
+  status: string;
+  metric: string;
+  icon: string;
+  tone: "success" | "warning" | "info";
+  primary: {
+    label: string;
+    href: string;
+  };
+  secondary: {
+    label: string;
+    href: string;
+  };
+};
+
+type IntegrationAreaRow = {
+  id: string;
+  area: string;
+  ownership: string;
+  tables: number;
+  sources: string;
+  companycoreTables: number;
+  clickupTables: number;
+  action: {
+    label: string;
+    href: string;
+  };
+};
+
+type IntegrationFilterState = {
+  search: string;
+  type: string;
+};
+
 const modules: ModuleLink[] = [
   {
     title: "Operating areas",
@@ -149,7 +192,7 @@ const modules: ModuleLink[] = [
   {
     title: "Integration map",
     detail: "Review provider readiness and implemented data groups.",
-    href: "/settings/integrations",
+    href: "/react-integrations",
     icon: "ph-map-trifold"
   }
 ];
@@ -273,6 +316,46 @@ function useTasksWorkbenchState(): [TasksWorkbenchState, () => void] {
   return [tasksState, () => setReloadKey((value) => value + 1)];
 }
 
+function useIntegrationWorkbenchState(): [IntegrationWorkbenchState, () => void] {
+  const [reloadKey, setReloadKey] = useState(0);
+  const [integrationState, setIntegrationState] = useState<IntegrationWorkbenchState>(() => (
+    ownerToken() ? { status: "loading" } : { status: "signed-out" }
+  ));
+
+  useEffect(() => {
+    const token = ownerToken();
+    if (!token) {
+      setIntegrationState({ status: "signed-out" });
+      return;
+    }
+
+    let cancelled = false;
+    setIntegrationState({ status: "loading" });
+    loadConnection(token)
+      .then((connection) => {
+        if (!cancelled) {
+          setIntegrationState({ status: "ready", connection });
+        }
+      })
+      .catch((error: Error) => {
+        if (!cancelled) {
+          setIntegrationState({
+            status: "error",
+            message: error.message === "invalid_token"
+              ? "Your session expired. Sign in again to load the integration map."
+              : "CompanyCore could not load the integration map. Try again or use the current integration map."
+          });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey]);
+
+  return [integrationState, () => setReloadKey((value) => value + 1)];
+}
+
 function integrationStatus(integration: IntegrationState, label: string) {
   if (integration.active) {
     return `${label} active`;
@@ -293,6 +376,10 @@ function connectionMetrics(connection: ConnectionData) {
   ].length;
 
   return { areas, tables, selectedLists, selectedDriveFolders };
+}
+
+function companyAreas(connection: ConnectionData) {
+  return connection.operatingModel.areas.filter((area) => area.key !== "main-general");
 }
 
 function attentionItems(connection: ConnectionData): AttentionItem[] {
@@ -344,8 +431,7 @@ function attentionItems(connection: ConnectionData): AttentionItem[] {
 }
 
 function operatingPreviewRows(connection: ConnectionData): OperatingPreviewRow[] {
-  return connection.operatingModel.areas
-    .filter((area) => !area.isSystem)
+  return companyAreas(connection)
     .slice(0, 6)
     .map((area) => {
       const tables = area.tables || [];
@@ -450,6 +536,144 @@ function filteredTasks(tasks: TaskRecord[], filters: TaskFilterState) {
   });
 }
 
+function providerReadiness(connection: ConnectionData) {
+  const clickupReady = connection.integrations.clickup.configured && connection.integrations.clickup.active;
+  const driveReady = connection.integrations.googleDrive.oauthClientConfigured && connection.integrations.googleDrive.oauthTokenConfigured;
+
+  if (clickupReady && driveReady) {
+    return {
+      title: "Core integrations ready",
+      detail: "ClickUp and Google Drive are configured enough for operating-area review and agent-safe API inspection.",
+      tone: "success" as NoticeTone,
+      action: { label: "Open areas", href: "/areas" }
+    };
+  }
+
+  if (!connection.integrations.clickup.configured) {
+    return {
+      title: "Connect ClickUp next",
+      detail: "Task and workflow visibility needs a saved ClickUp connection before the integration map is complete.",
+      tone: "warning" as NoticeTone,
+      action: { label: "Open ClickUp setup", href: "/settings" }
+    };
+  }
+
+  if (!driveReady) {
+    return {
+      title: "Complete Google Drive next",
+      detail: "Drive folders need OAuth client and token readiness before imported files can be mapped to company areas.",
+      tone: "warning" as NoticeTone,
+      action: { label: "Open Drive setup", href: "/settings/drive" }
+    };
+  }
+
+  return {
+    title: "Review integration ownership",
+    detail: "Provider setup exists. Continue by checking area coverage, API capability exposure, and relationship cleanup.",
+    tone: "info" as NoticeTone,
+    action: { label: "Open current map", href: "/settings/integrations" }
+  };
+}
+
+function integrationGroups(connection: ConnectionData): IntegrationGroup[] {
+  const metrics = connectionMetrics(connection);
+  const clickup = connection.integrations.clickup;
+  const drive = connection.integrations.googleDrive;
+  const apiRoutes = connection.capabilities.length;
+  const areas = companyAreas(connection).length;
+
+  return [
+    {
+      id: "clickup",
+      title: "ClickUp tasks",
+      detail: "Task Lists, execution records, and provider task ownership.",
+      status: integrationStatus(clickup, "ClickUp"),
+      metric: `${metrics.selectedLists} selected list${metrics.selectedLists === 1 ? "" : "s"}`,
+      icon: "ph-plugs-connected",
+      tone: clickup.configured ? "success" : "warning",
+      primary: { label: "Setup ClickUp", href: "/settings" },
+      secondary: { label: "Review tasks", href: "/react-tasks" }
+    },
+    {
+      id: "drive",
+      title: "Google Drive files",
+      detail: "OAuth-backed folders and files mapped into company ownership.",
+      status: drive.oauthTokenConfigured ? "Drive consent ready" : drive.oauthClientConfigured ? "Drive client saved" : "Drive not connected",
+      metric: `${metrics.selectedDriveFolders} selected folder${metrics.selectedDriveFolders === 1 ? "" : "s"}`,
+      icon: "ph-cloud",
+      tone: drive.oauthTokenConfigured ? "success" : "warning",
+      primary: { label: "Setup Drive", href: "/settings/drive" },
+      secondary: { label: "Review areas", href: "/areas" }
+    },
+    {
+      id: "api",
+      title: "Agent-safe API",
+      detail: "Discoverable capabilities for service clients and AI-assisted workflows.",
+      status: `${apiRoutes} capabilities`,
+      metric: "Bearer and service-key access",
+      icon: "ph-key",
+      tone: "info",
+      primary: { label: "API settings", href: "/settings/api" },
+      secondary: { label: "Current map", href: "/settings/integrations" }
+    },
+    {
+      id: "model",
+      title: "Operating model",
+      detail: "Company areas and tables that explain where records belong.",
+      status: `${areas} operating areas`,
+      metric: `${metrics.tables} mapped table${metrics.tables === 1 ? "" : "s"}`,
+      icon: "ph-tree-structure",
+      tone: "success",
+      primary: { label: "Open areas", href: "/areas" },
+      secondary: { label: "Relationships", href: "/relationships" }
+    }
+  ];
+}
+
+function integrationAreaRows(connection: ConnectionData): IntegrationAreaRow[] {
+  return companyAreas(connection)
+    .map((area) => {
+      const tables = area.tables || [];
+      const sources = [...new Set(tables.map((table) => table.source || "companycore"))];
+      return {
+        id: area.id,
+        area: area.name,
+        ownership: area.key,
+        tables: tables.length,
+        sources: sources.join(", ") || "companycore",
+        companycoreTables: tables.filter((table) => (table.source || "companycore") === "companycore").length,
+        clickupTables: tables.filter((table) => table.source === "clickup").length,
+        action: {
+          label: "Open area",
+          href: "/areas"
+        }
+      };
+    });
+}
+
+function filteredIntegrationAreaRows(rows: IntegrationAreaRow[], filters: IntegrationFilterState) {
+  const query = filters.search.trim().toLowerCase();
+  return rows.filter((row) => {
+    const haystack = [
+      row.area,
+      row.ownership,
+      row.sources,
+      `${row.tables}`,
+      `${row.companycoreTables}`,
+      `${row.clickupTables}`
+    ].join(" ").toLowerCase();
+    const typeMatch = filters.type === "tables"
+      ? row.tables > 0
+      : filters.type === "clickup"
+        ? row.clickupTables > 0
+        : filters.type === "companycore"
+          ? row.companycoreTables > 0
+          : true;
+
+    return (!query || haystack.includes(query)) && typeMatch;
+  });
+}
+
 function Shell({
   children,
   connection,
@@ -476,7 +700,7 @@ function Shell({
             <a className="btn btn-ghost btn-sm" href="/dashboard">Current dashboard</a>
             <a className="btn btn-ghost btn-sm" href="/react-dashboard">React dashboard</a>
             <a className="btn btn-ghost btn-sm" href="/react-tasks">React tasks</a>
-            <a className="btn btn-ghost btn-sm" href="/settings/integrations">Integrations</a>
+            <a className="btn btn-ghost btn-sm" href="/react-integrations">React integrations</a>
             <a className="btn btn-primary btn-sm" href="/areas">Operating areas</a>
           </nav>
         </div>
@@ -1114,6 +1338,255 @@ function TasksWorkbench({ connection, tasks }: { connection: ConnectionData; tas
   );
 }
 
+function IntegrationStatePanel({ state, onRetry }: { state: IntegrationWorkbenchState; onRetry: () => void }) {
+  if (state.status === "ready") {
+    return null;
+  }
+
+  const content = {
+    "signed-out": {
+      tone: "warning" as NoticeTone,
+      title: "Owner session required",
+      detail: "Sign in through the current console to load the React integration map with live workspace data.",
+      action: { label: "Sign in", href: "/auth/login" }
+    },
+    loading: {
+      tone: "info" as NoticeTone,
+      title: "Loading integration map",
+      detail: "CompanyCore is reading provider readiness, capability exposure, and operating-area ownership.",
+      action: undefined
+    },
+    error: {
+      tone: "error" as NoticeTone,
+      title: "Integration map could not load",
+      detail: state.status === "error" ? state.message : "",
+      action: undefined
+    }
+  }[state.status];
+
+  return (
+    <Shell appLabel="React integrations">
+      <section className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-8">
+        <LocalNotice
+          tone={content.tone}
+          title={content.title}
+          detail={content.detail}
+          action={content.action}
+        />
+        {state.status === "error" ? (
+          <button className="btn btn-primary w-fit" type="button" onClick={onRetry}>Retry</button>
+        ) : null}
+      </section>
+    </Shell>
+  );
+}
+
+function IntegrationGroupCard({ group }: { group: IntegrationGroup }) {
+  const toneClass = group.tone === "success"
+    ? "text-success"
+    : group.tone === "warning"
+      ? "text-warning"
+      : "text-info";
+
+  return (
+    <article className="rounded-company border border-base-300 bg-base-200/45 p-4">
+      <div className="flex items-start gap-3">
+        <span className={`dashboard-icon dashboard-icon-sm ${toneClass}`}>
+          <i className={`ph-bold ${group.icon}`} aria-hidden="true"></i>
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <strong className="leading-tight">{group.title}</strong>
+            <span className={group.tone === "success" ? "badge badge-success" : group.tone === "warning" ? "badge badge-warning" : "badge badge-info"}>
+              {group.status}
+            </span>
+          </div>
+          <p className="mt-2 text-sm leading-6 text-company-muted">{group.detail}</p>
+          <p className="mt-2 text-xs font-bold uppercase text-company-muted">{group.metric}</p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <a className="btn btn-primary btn-sm" href={group.primary.href}>{group.primary.label}</a>
+            <a className="btn btn-ghost btn-sm" href={group.secondary.href}>{group.secondary.label}</a>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function IntegrationFilters({
+  filters,
+  onChange
+}: {
+  filters: IntegrationFilterState;
+  onChange: (nextFilters: IntegrationFilterState) => void;
+}) {
+  return (
+    <section className="card border border-base-300 bg-base-100 shadow-sm">
+      <div className="card-body gap-4">
+        <div className="grid gap-3 md:grid-cols-[1fr_16rem]">
+          <label className="form-control">
+            <span className="label">
+              <span className="label-text font-bold">Search operating areas</span>
+            </span>
+            <input
+              className="input input-bordered"
+              type="search"
+              value={filters.search}
+              onChange={(event) => onChange({ ...filters, search: event.target.value })}
+              placeholder="Area, ownership key, source..."
+            />
+          </label>
+          <label className="form-control">
+            <span className="label">
+              <span className="label-text font-bold">Coverage</span>
+            </span>
+            <select
+              className="select select-bordered"
+              value={filters.type}
+              onChange={(event) => onChange({ ...filters, type: event.target.value })}
+            >
+              <option value="">All coverage</option>
+              <option value="tables">Has tables</option>
+              <option value="companycore">CompanyCore tables</option>
+              <option value="clickup">ClickUp tables</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function IntegrationAreaTable({ rows }: { rows: IntegrationAreaRow[] }) {
+  const columns: Array<TableColumn<IntegrationAreaRow>> = [
+    {
+      key: "area",
+      header: "Operating area",
+      cell: (row) => (
+        <div>
+          <strong className="block">{row.area}</strong>
+          <span className="text-xs text-company-muted">{row.ownership}</span>
+        </div>
+      )
+    },
+    {
+      key: "tables",
+      header: "Tables",
+      className: "text-right",
+      cell: (row) => <span className="font-black">{row.tables}</span>
+    },
+    {
+      key: "companycore",
+      header: "CompanyCore",
+      className: "text-right",
+      cell: (row) => row.companycoreTables
+    },
+    {
+      key: "clickup",
+      header: "ClickUp",
+      className: "text-right",
+      cell: (row) => row.clickupTables
+    },
+    {
+      key: "sources",
+      header: "Sources",
+      cell: (row) => <span className="badge badge-outline">{row.sources}</span>
+    },
+    {
+      key: "action",
+      header: "Next action",
+      cell: (row) => <a className="btn btn-ghost btn-xs" href={row.action.href}>{row.action.label}</a>
+    }
+  ];
+
+  return (
+    <DataTable
+      columns={columns}
+      rows={rows}
+      emptyTitle="No operating-area coverage matches"
+      emptyDetail="Adjust the search or coverage filter to inspect the current integration map."
+    />
+  );
+}
+
+function IntegrationWorkbench({ connection }: { connection: ConnectionData }) {
+  const [filters, setFilters] = useState<IntegrationFilterState>({
+    search: "",
+    type: ""
+  });
+  const readiness = useMemo(() => providerReadiness(connection), [connection]);
+  const groups = useMemo(() => integrationGroups(connection), [connection]);
+  const rows = useMemo(() => integrationAreaRows(connection), [connection]);
+  const visibleRows = useMemo(() => filteredIntegrationAreaRows(rows, filters), [rows, filters]);
+  const metrics = connectionMetrics(connection);
+  const connectedGroups = groups.filter((group) => group.tone === "success").length;
+
+  return (
+    <Shell connection={connection}>
+      <section className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-8">
+        <section className="card border border-base-300 bg-base-100 shadow-sm">
+          <div className="card-body gap-5">
+            <div className="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-start">
+              <div className="flex items-start gap-3">
+                <span className="dashboard-icon text-primary">
+                  <i className="ph-bold ph-map-trifold" aria-hidden="true"></i>
+                </span>
+                <div>
+                  <p className="eyebrow">React workbench</p>
+                  <h1 className="text-3xl font-black leading-tight">Integration map</h1>
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-company-muted">
+                    See provider readiness, agent-safe API exposure, and which company areas have integration-owned data paths.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <a className="btn btn-primary" href="/settings/integrations">Current integration map</a>
+                <a className="btn btn-ghost" href="/settings/api">API settings</a>
+              </div>
+            </div>
+
+            <LocalNotice
+              tone={readiness.tone}
+              title={readiness.title}
+              detail={readiness.detail}
+              action={readiness.action}
+            />
+
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+              <MetricCard icon="ph-squares-four" label="Groups" value={`${groups.length}`} detail={`${connectedGroups} ready signals`} />
+              <MetricCard icon="ph-tree-structure" label="Areas" value={`${metrics.areas}`} detail="Including system fallback" />
+              <MetricCard icon="ph-database" label="Tables" value={`${metrics.tables}`} detail="Mapped table paths" />
+              <MetricCard icon="ph-key" label="Capabilities" value={`${connection.capabilities.length}`} detail="Agent-discoverable API" />
+              <MetricCard icon="ph-cloud-arrow-up" label="Drive folders" value={`${metrics.selectedDriveFolders}`} detail="Selected import scope" />
+            </div>
+          </div>
+        </section>
+
+        <section className="grid gap-3 lg:grid-cols-2">
+          {groups.map((group) => (
+            <IntegrationGroupCard group={group} key={group.id} />
+          ))}
+        </section>
+
+        <IntegrationFilters filters={filters} onChange={setFilters} />
+
+        <section className="card border border-base-300 bg-base-100 shadow-sm">
+          <div className="card-body gap-4">
+            <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
+              <div>
+                <p className="eyebrow">Coverage table</p>
+                <h2 className="text-xl font-black">Operating-area integration coverage</h2>
+              </div>
+              <span className="badge badge-outline">{visibleRows.length} visible</span>
+            </div>
+            <IntegrationAreaTable rows={visibleRows} />
+          </div>
+        </section>
+      </section>
+    </Shell>
+  );
+}
+
 function ReadyDashboard({ connection }: { connection: ConnectionData }) {
   const items = useMemo(() => attentionItems(connection), [connection]);
 
@@ -1156,10 +1629,25 @@ function ReactTasksApp() {
   return <TasksStatePanel state={tasksState} onRetry={reload} />;
 }
 
+function ReactIntegrationsApp() {
+  const [integrationState, reload] = useIntegrationWorkbenchState();
+
+  if (integrationState.status === "ready") {
+    return <IntegrationWorkbench connection={integrationState.connection} />;
+  }
+
+  return <IntegrationStatePanel state={integrationState} onRetry={reload} />;
+}
+
 function ReactApp() {
   if (window.location.pathname === "/react-tasks") {
     document.title = "CompanyCore React Tasks";
     return <ReactTasksApp />;
+  }
+
+  if (window.location.pathname === "/react-integrations") {
+    document.title = "CompanyCore React Integrations";
+    return <ReactIntegrationsApp />;
   }
 
   document.title = "CompanyCore React Dashboard";

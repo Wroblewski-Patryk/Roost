@@ -74,6 +74,7 @@ const webAppRoutes = [
 
 const reactAppRoutes = [
   "/react-dashboard",
+  "/react-integrations",
   "/react-tasks"
 ];
 

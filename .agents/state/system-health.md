@@ -22,6 +22,7 @@ Last updated: 2026-05-08
 | ux/react dashboard smoke | Targeted Playwright plus `npm run owner-console:ux-smoke` against isolated `http://localhost:3000` | PASS | `.tmp/companycore-uxa010-react-dashboard-final`; `.tmp/companycore-uxa010-owner-console-final` | UXA-010 verified `/react-dashboard` title, `companycore` DaisyUI theme, live `LuckySparrow` workspace data, 4 module links, 4 migration table rows, 13 Phosphor icons, desktop/mobile no horizontal overflow, and zero targeted console issues. |
 | ux/react primitives smoke | Targeted Playwright plus `npm run owner-console:ux-smoke` against isolated `http://localhost:3000` | PASS | `.tmp/companycore-uxa011-react-primitives-final`; `.tmp/companycore-uxa011-owner-console-final` | UXA-011 verified `/react-dashboard` with 2 local notices, 1 reusable table primitive, 6 live table rows, internal table scroller, `companycore` theme, desktop/mobile no horizontal overflow, and zero targeted console issues. |
 | ux/react task workbench smoke | Browser signed-out check plus targeted Playwright and `npm run owner-console:ux-smoke` against isolated `http://localhost:3007` | PASS | `C:\Users\wrobl\AppData\Local\Temp\companycore-uxa012-react-tasks-data`; `C:\Users\wrobl\AppData\Local\Temp\companycore-ux-smoke\2026-05-08T21-59-46-321Z` | UXA-012 verified `/react-tasks`, `companycore` theme, live `/v1/tasks` row after isolated API creation, search empty/recovery states, desktop/mobile no document-level overflow, and zero targeted console issues. Browser form fill hit the known virtual-clipboard limitation, so signed-in checks used Playwright fallback. |
+| ux/react integration workbench smoke | Browser signed-out check plus targeted Playwright and `npm run owner-console:ux-smoke` against isolated `http://localhost:3008` | PASS | `C:\Users\wrobl\AppData\Local\Temp\companycore-uxa014-react-integrations-rerun`; `C:\Users\wrobl\AppData\Local\Temp\companycore-ux-smoke\2026-05-08T22-16-46-903Z` | UXA-014 verified `/react-integrations`, `companycore` theme, 4 integration/data groups, 1 table, 12 company operating-area rows, search empty/recovery states, desktop/mobile no document-level overflow, and zero targeted console issues. |
 | ux/browser | Production public/auth Browser audit | PARTIAL PASS | 2026-05-08 UXA-001 | Public entry, login, register, and mobile auth rendered with no relevant console warnings/errors; authenticated Browser entry was blocked by an automation issue on `input[type=email]`. |
 | local runtime | Docker local runtime for UX audit | PASS | 2026-05-08 UXA-001 | Local backend ran on `http://localhost:3001`; `/health` returned `ok`; migrations and seed completed. |
 | web editor markers | Production `app.js` marker check | PASS | 2026-05-08 AGRUN-008 public `app.js` check | Typed editor markers for Notes, Projects, Clients, Task Lists, and Tasks are present. |
@@ -60,6 +61,11 @@ Last updated: 2026-05-08
   contracts without backend changes. Browser still cannot reliably fill login
   forms in this environment, so authenticated rendered checks should continue
   to use the approved Playwright fallback when Browser form input fails.
+- UXA-014 confirmed a second parallel React workbench can reuse
+  `/v1/connection` for provider readiness and operating-area coverage without
+  changing backend contracts. Company operating areas should exclude only
+  `main-general` in React map rows; the 12 canonical company areas may still be
+  system-owned and must remain visible to operators.
 
 ## Quality Gate Notes
 

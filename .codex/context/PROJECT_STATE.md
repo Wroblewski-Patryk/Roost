@@ -69,8 +69,8 @@ Last updated: 2026-05-08
 - Frontend: backend-served owner console. The current production surface is
   still the static HTML/CSS/JavaScript console with local Phosphor icon assets,
   and UXA-009 adds a React + Vite + Tailwind CSS + DaisyUI foundation under
-  `web/` with generated `public/react/` output, `/react-dashboard`, and the
-  parallel `/react-tasks` workbench from UXA-012.
+  `web/` with generated `public/react/` output, `/react-dashboard`,
+  `/react-tasks`, and `/react-integrations` parallel workbench routes.
 - Mobile: None in v1; planned from v2 based on the web product experience.
 - Database: PostgreSQL with Prisma.
 - Infra: Docker Compose.
@@ -128,17 +128,37 @@ Last updated: 2026-05-08
   and the next executable task is selected from the canonical queue.
 
 ## Autonomous Iteration State
-- Current iteration: UXA-012 React Workbench Route Migration
+- Current iteration: UXA-014 React Integration Map Workbench Route
   completed.
 - Current operation mode: BUILDER
-- Last completed iteration: UXA-012 React Workbench Route Migration.
-- Last completed task: added `/react-tasks` as a parallel React task workbench
-  with live `/v1/tasks` data, task metrics, search/status/source/list filters,
-  local states, reusable table rendering, and preserved vanilla task routes.
-- Next required mode: BUILDER; UXA-013 React Workbench Canonical Route
-  Decision is ready.
+- Last completed iteration: UXA-014 React Integration Map Workbench Route.
+- Last completed task: added `/react-integrations` as a parallel React route
+  with live `/v1/connection` data, provider/data-path cards, readiness
+  guidance, metrics, filters, and a 12-area operating-coverage table while
+  preserving `/settings/integrations`.
+- Next required mode: BUILDER; UXA-015 React Canonical Route Switch Readiness
+  is ready.
 
 ## Recent Progress
+
+- 2026-05-09: Completed UXA-014 React Integration Map Workbench Route. Added
+  `/react-integrations` as a parallel React route served by the existing React
+  build. The route reads live `/v1/connection` data, shows integration
+  readiness guidance, provider/data-path cards for ClickUp, Drive, API, and
+  the operating model, metrics, search/coverage filters, and a 12-area
+  operating coverage table that excludes only the `main-general` fallback from
+  the company-area rows. Validation passed: `npm run build`,
+  `npm run validate`, `git diff --check`, Browser signed-out route check,
+  signed-in desktop/mobile rendered checks, `npm run owner-console:ux-smoke`
+  against isolated `http://localhost:3008`, and container-scoped Prisma
+  migration plus Node integration test.
+
+- 2026-05-09: Completed UXA-013 React Workbench Canonical Route Decision.
+  `/react-tasks` remains a parallel React workbench for now. The canonical
+  `/tasks-adapter` route is preserved until another React workbench proves the
+  route migration pattern and the next switch decision can consider parity
+  with less risk. UXA-014 is activated as the next route migration slice:
+  React Integration Map Workbench Route.
 
 - 2026-05-08: Completed UXA-012 React Workbench Route Migration. Added
   `/react-tasks` as the first real React workbench route, served by the

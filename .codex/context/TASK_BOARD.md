@@ -2,13 +2,13 @@
 
 ## Ready
 
-- UXA-013 React Workbench Canonical Route Decision
+- UXA-015 React Canonical Route Switch Readiness
   - Stage: planning
   - Owner: Frontend Builder
   - Priority: P1
-  - Scope: decide whether the task workbench can replace the canonical
-    `/tasks-adapter` route now or should remain a parallel React preview until
-    one more workbench proves parity.
+  - Scope: decide whether the React task or integration workbench can safely
+    become the first canonical route, or whether remaining adapter/editor
+    parity needs another migration slice.
 
 ## In Progress
 
@@ -58,6 +58,8 @@ No active task.
 
 ## Done
 
+- UXA-014 React Integration Map Workbench Route.
+- UXA-013 React Workbench Canonical Route Decision.
 - UXA-012 React Workbench Route Migration.
 - UXA-011 React Table And Notification Primitive Migration.
 - UXA-010 React Dashboard Component Migration.

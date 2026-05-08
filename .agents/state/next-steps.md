@@ -4,14 +4,15 @@ Last updated: 2026-05-08
 
 ## NOW
 
-UXA-013 React Workbench Canonical Route Decision is ready. Decide whether the
-task workbench can replace the canonical `/tasks-adapter` route now or should
-remain a parallel React preview until one more workbench proves parity.
+UXA-015 React Canonical Route Switch Readiness is ready. After UXA-014, decide
+whether a React route can safely become canonical or whether remaining
+adapter/editor affordances need another slice.
 
 ## NEXT
 
-UXA-014 React Workbench Second Route Candidate. Migrate one additional
-workbench route only after UXA-013 decides the canonical route strategy.
+UXA-016 React Route Shell Extraction. If UXA-015 keeps migration parallel,
+extract shared React route helpers before adding a third workbench so
+`web/src/main.tsx` does not keep growing as a monolith.
 
 ## LATER
 

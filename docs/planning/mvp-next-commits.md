@@ -5,10 +5,23 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
-- [ ] UXA-013 React Workbench Canonical Route Decision:
+- [ ] UXA-015 React Canonical Route Switch Readiness:
+      after UXA-014, decide whether a React route can safely become canonical
+      or whether remaining adapter/editor affordances need another slice.
+- [x] UXA-014 React Integration Map Workbench Route:
+      migrate the integration map overview into a parallel React workbench
+      route using live `/v1/connection` data, DaisyUI primitives, and clear
+      provider/data-path states while preserving `/settings/integrations`.
+      Added `/react-integrations`, provider/data-path cards, readiness
+      guidance, metrics, filters, and a 12-area coverage table. Passed build,
+      validate, Browser signed-out check, targeted signed-in desktop/mobile
+      rendered checks, owner-console smoke, and container integration tests.
+- [x] UXA-013 React Workbench Canonical Route Decision:
       decide whether the task workbench can replace the canonical
       `/tasks-adapter` route now or should remain a parallel React preview
-      until one more workbench proves parity.
+      until one more workbench proves parity. Decision: keep `/react-tasks`
+      parallel for now and migrate one more React workbench before considering
+      a canonical route switch.
 - [x] UXA-012 React Workbench Route Migration:
       migrate one high-value workbench route into React using the approved
       dashboard, table, and local-notification primitives while preserving
@@ -258,9 +271,10 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NEXT
 
-- [ ] UXA-014 React Workbench Second Route Candidate:
-      migrate one additional workbench route only after UXA-013 decides the
-      canonical route strategy.
+- [ ] UXA-016 React Route Shell Extraction:
+      if UXA-015 keeps migration parallel, extract shared React route helpers
+      before adding a third workbench so `web/src/main.tsx` does not keep
+      growing as a monolith.
 - [x] AGRUN-005 Scoped Agent Key Owner UI:
       expose scoped agent key creation, copy-once raw key display, rotation or
       deactivation, and capability presets in `/settings/api`.

@@ -44,8 +44,13 @@ live operating-model preview rows, and a repeatable React build cleanup step.
 UXA-012 added `/react-tasks` as the first real React workbench route with live
 `/v1/tasks` data, task metrics, filters, local states, and reusable table
 rendering while preserving vanilla task routes.
-The next ready slice is UXA-013: decide the canonical route strategy for React
-workbench migration.
+UXA-013 decided to keep `/react-tasks` as a parallel route until one more React
+workbench proves migration parity.
+UXA-014 added `/react-integrations` as a parallel React integration map with
+provider/data-path cards, readiness guidance, filters, and a 12-area coverage
+table while preserving `/settings/integrations`.
+The next ready slice is UXA-015: decide whether a React route can safely become
+canonical or whether remaining parity needs another migration/refactor slice.
 
 ## Current Priority Order
 
