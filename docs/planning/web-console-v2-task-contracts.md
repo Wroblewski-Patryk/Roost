@@ -1,5 +1,73 @@
 # Web Console V2 Task Contracts
 
+## UXA-007 Mobile Private Header Compression
+
+- Task Type: design/frontend
+- Current Stage: done
+- Operation Mode: BUILDER
+- Deliverable For This Stage: private mobile routes start with a compact
+  command header that preserves drawer navigation, current-route identity, and
+  sign-out access while giving the first viewport back to route content.
+- Process Self-Audit:
+  - Analyze current state: reviewed mobile owner-console screenshots from
+    UXA-006 and existing topbar/sidebar implementation.
+  - Select exactly one priority task: UXA-007 only.
+  - Plan implementation: reuse the existing drawer and topbar; make mobile CSS
+    reduce topbar density instead of adding a new navigation system.
+  - Execute implementation: scoped to shared private-shell CSS plus queue/state
+    docs.
+  - Verify and test: syntax/build, desktop preservation, mobile screenshot
+    smoke, private-route smoke, and no horizontal overflow.
+  - Self-review: confirm no auth, API, route, data, or architecture behavior
+    changed.
+  - Update documentation and knowledge: task board, project state, next steps,
+    system health, and design memory if the pattern should be reused.
+- Goal: Make mobile private routes feel more action-first by reducing repeated
+  header controls that push page content down.
+- Scope:
+  - `public/styles.css`
+  - `docs/ux/design-memory.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.agents/state/current-focus.md`
+  - `.agents/state/next-steps.md`
+  - `.agents/state/system-health.md`
+- Implementation Plan:
+  - On mobile private routes, keep the topbar to Menu, route identity, and
+    Sign out.
+  - Hide the module search and Account/API quick links on mobile because the
+    drawer already carries route navigation.
+  - Preserve desktop/tablet topbar behavior.
+  - Validate mobile dashboard/settings first viewport and the owner-console UX
+    smoke.
+- Acceptance Criteria:
+  - Mobile private topbar is one compact row.
+  - Mobile users can still open the drawer and sign out.
+  - Desktop/tablet topbar behavior is unchanged.
+  - Mobile route content starts materially earlier, with no horizontal
+    overflow or text overlap.
+- Definition of Done:
+  - `npm run build` and `npm run validate` pass.
+  - `npm run owner-console:ux-smoke` passes against an isolated local compose
+    project.
+  - Targeted Playwright screenshots prove mobile dashboard/settings header
+    compression and desktop dashboard preservation.
+  - `git diff --check` passes.
+- Result Report:
+  - Compressed the authenticated mobile topbar to Menu, route identity, and
+    Sign out.
+  - Hid mobile module search and Account/API quick links because the drawer
+    already provides route navigation.
+  - Preserved desktop/tablet module search and Account/API actions.
+  - Verified mobile topbar height at `70px`, no mobile horizontal overflow,
+    drawer transform at `matrix(1, 0, 0, 1, 0, 0)` after opening, and desktop
+    module switcher display as `block`.
+  - Validation passed: `npm run build`, `npm run validate`, targeted
+    Playwright screenshots, `npm run owner-console:ux-smoke` against isolated
+    `http://localhost:3006`, and container-scoped Prisma migration plus Node
+    integration test.
+
 ## UXA-001 CompanyCore V1 UX/UI Audit
 
 - Task Type: design/research

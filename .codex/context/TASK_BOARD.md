@@ -52,6 +52,7 @@ No active task.
 
 ## Done
 
+- UXA-007 Mobile Private Header Compression.
 - UXA-006 Local Action Feedback Placement.
 - UXA-005 Workbench Visual Role Cleanup.
 - UXA-004 Mobile Auth Action-First Layout.

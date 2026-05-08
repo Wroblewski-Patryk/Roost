@@ -4,14 +4,14 @@ Last updated: 2026-05-08
 
 ## NOW
 
-No active ready task after completing UXA-006. Canonical cross-check performed
+No active ready task after completing UXA-007. Canonical cross-check performed
 against `.codex/context/TASK_BOARD.md` and `docs/planning/mvp-next-commits.md`;
 remaining unchecked items are blocked or future/backlog work, not active NOW
 tasks.
 
 ## NEXT
 
-No active UX polish task remains in the current queue.
+No additional active UX polish task is selected.
 
 ## LATER
 

@@ -250,6 +250,13 @@ Recommended fix:
 - Check `/dashboard`, `/data`, `/data/tasks`, `/areas`, `/relationships`,
   `/settings/drive`, and `/settings/api` at desktop, tablet, and mobile.
 
+Status: Partially completed by UXA-002 and UXA-007. UXA-002 established the
+authenticated desktop/tablet/mobile screenshot path for the priority private
+routes. UXA-007 compressed the authenticated mobile topbar so route content
+starts earlier while drawer navigation and sign-out remain available. Future
+mobile work, if needed, should be queued from fresh screenshot evidence rather
+than reopening this audit wave.
+
 ### P2: Visual Direction Is Consistent But Conservative
 
 Problem: The console is intentionally restrained, but it risks feeling generic:
@@ -405,6 +412,7 @@ outcomes and sync/import metric payloads. Evidence:
 3. `UXA-004 Mobile Auth Action-First Layout`
 4. `UXA-005 Workbench Visual Role Cleanup`
 5. `UXA-006 Local Action Feedback Placement`
+6. `UXA-007 Mobile Private Header Compression`
 
 ## Constraints
 

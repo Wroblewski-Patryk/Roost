@@ -125,17 +125,25 @@ Last updated: 2026-05-08
   and the next executable task is selected from the canonical queue.
 
 ## Autonomous Iteration State
-- Current iteration: UXA-006 Local Action Feedback Placement completed.
-- Current operation mode: TESTER
-- Last completed iteration: UXA-006 Local Action Feedback Placement.
-- Last completed task: placed local pending/success/error feedback next to auth,
-  ClickUp setup, and Google Drive setup/import actions while preserving existing
-  typed editor/API key local status and the global result panel.
+- Current iteration: UXA-007 Mobile Private Header Compression completed.
+- Current operation mode: BUILDER
+- Last completed iteration: UXA-007 Mobile Private Header Compression.
+- Last completed task: compressed the authenticated mobile topbar to Menu,
+  route identity, and Sign out while preserving desktop/tablet module search
+  and quick links.
 - Next required mode: BUILDER; no active ready UX polish task remains in the
-  canonical queue after UXA-006.
+  canonical queue after UXA-007.
 
 ## Recent Progress
 
+- 2026-05-08: Completed UXA-007 Mobile Private Header Compression. Updated
+  mobile private-shell CSS so authenticated phone routes show one compact
+  topbar row with Menu, current route, and Sign out, while desktop/tablet keep
+  module search and Account/API shortcuts. Validation passed: `npm run build`,
+  `npm run validate`, targeted Playwright screenshots for mobile and desktop,
+  `npm run owner-console:ux-smoke` against isolated `http://localhost:3006`,
+  and container-scoped Prisma migration plus Node integration test in isolated
+  `companycore_uxa007`.
 - 2026-05-08: Completed UXA-006 Local Action Feedback Placement. Added local
   `aria-live` status slots for login, registration, ClickUp setup, and Google
   Drive setup/import; wired auth, ClickUp, and Drive handlers to local pending,

@@ -3233,12 +3233,23 @@ button.danger:hover {
   .workspace-topbar {
     position: static;
     display: grid;
-    grid-template-columns: auto 1fr;
-    padding: 14px 16px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 10px;
+    min-height: 70px;
+    padding: 12px 16px;
+  }
+
+  .workspace-topbar h1 {
+    font-size: 21px;
+  }
+
+  .workspace-topbar .label {
+    margin-bottom: 2px;
+    font-size: 10px;
   }
 
   .module-switcher {
-    grid-column: 1 / -1;
+    display: none;
   }
 
   .module-results {
@@ -3248,12 +3259,23 @@ button.danger:hover {
   }
 
   .topbar-actions {
-    grid-column: 1 / -1;
-    justify-content: flex-start;
+    grid-column: auto;
+    justify-content: flex-end;
+  }
+
+  .topbar-actions .button-link {
+    display: none;
+  }
+
+  .topbar-actions .link-button {
+    min-height: 38px;
+    padding: 8px 0;
+    white-space: nowrap;
   }
 
   .mobile-menu-button {
     display: inline-flex;
+    min-height: 38px;
   }
 
   .nav {

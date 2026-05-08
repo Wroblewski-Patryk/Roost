@@ -5,6 +5,12 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
+- [x] UXA-007 Mobile Private Header Compression:
+      reduce authenticated mobile topbar height by keeping Menu, current route,
+      and Sign out visible while moving module jumping to the existing drawer
+      and preserving desktop/tablet topbar behavior. Mobile topbar now renders
+      as one compact row, desktop module search remains visible, and isolated
+      owner-console smoke passed at `http://localhost:3006`.
 - [x] UXA-006 Local Action Feedback Placement:
       add local success/error/status placement for auth, provider setup, Drive
       import, typed editors, and API key lifecycle while preserving the global

@@ -85,6 +85,23 @@ of rediscovering them.
   key local feedback, and verified the pattern with Playwright and
   `owner-console:ux-smoke`.
 
+### 2026-05-08 - Compact Private Mobile Topbar
+- Type: responsive_rule
+- Context: The authenticated mobile shell can push route content too far down
+  when Menu, route title, module search, account/API shortcuts, and sign-out
+  all appear in the first viewport.
+- Decision: On phone-sized private routes, keep the topbar to one compact row:
+  drawer Menu, current route identity, and Sign out. Use the existing drawer as
+  the route-jump surface, and preserve the richer module search plus quick
+  links on desktop/tablet.
+- Reuse when: A private mobile route needs to expose the current module and
+  account safety without delaying the page's primary content.
+- Avoid when: The route has no drawer/navigation fallback or when module search
+  is the only path to key destinations.
+- Evidence: UXA-007 compressed the mobile private topbar to `70px`, kept drawer
+  and sign-out access, preserved desktop module search, and passed targeted
+  Playwright plus `owner-console:ux-smoke` validation.
+
 ### 2026-05-07 - Public Entry Operational Context
 - Type: reusable_pattern
 - Context: The public `/` route should set up the product's operational
