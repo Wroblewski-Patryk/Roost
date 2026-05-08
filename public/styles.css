@@ -1631,6 +1631,19 @@ h4 {
   color: #166534;
 }
 
+.local-status {
+  margin: 2px 0 0;
+  font-weight: 800;
+}
+
+.local-status:empty {
+  display: none;
+}
+
+.form-note.is-pending {
+  color: var(--ink);
+}
+
 .integration-action-list {
   display: grid;
   gap: 10px;

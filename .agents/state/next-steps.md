@@ -4,12 +4,14 @@ Last updated: 2026-05-08
 
 ## NOW
 
-1. UXA-006 Local Action Feedback Placement: keep success/error feedback near
-   the action that caused it.
+No active ready task after completing UXA-006. Canonical cross-check performed
+against `.codex/context/TASK_BOARD.md` and `docs/planning/mvp-next-commits.md`;
+remaining unchecked items are blocked or future/backlog work, not active NOW
+tasks.
 
 ## NEXT
 
-No active UX polish task remains after UXA-006 in the current queue.
+No active UX polish task remains in the current queue.
 
 ## LATER
 

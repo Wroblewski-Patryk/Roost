@@ -135,6 +135,7 @@
             <input id="password" name="password" type="password" autocomplete="current-password" required>
           </label>
           <button type="submit">Sign in</button>
+          <p class="form-note local-status" id="loginStatus" aria-live="polite"></p>
           <p class="form-note">
             No account yet? <a href="/auth/register" data-link>Create one</a>.
           </p>
@@ -176,6 +177,7 @@
             <input id="workspaceName" name="workspaceName" type="text" required>
           </label>
           <button type="submit">Create workspace</button>
+          <p class="form-note local-status" id="registerStatus" aria-live="polite"></p>
           <p class="form-note">
             Already have an account? <a href="/auth/login" data-link>Sign in</a>.
           </p>
@@ -774,6 +776,7 @@
             <button type="button" class="secondary" id="saveButton">Save connection</button>
             <button type="button" id="syncButton">Save and sync</button>
           </div>
+          <p class="form-note local-status" id="clickupActionStatus" aria-live="polite"></p>
         </section>
       </section>
 
@@ -990,6 +993,7 @@
               <option value="inspect_only">Inspect only</option>
             </select>
           </label>
+          <p class="form-note local-status" id="googleDriveActionStatus" aria-live="polite"></p>
 
           <section class="table-panel nested-flat">
             <div class="section-title row-title">

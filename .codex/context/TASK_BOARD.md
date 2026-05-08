@@ -2,12 +2,7 @@
 
 ## Ready
 
-- UXA-006 Local Action Feedback Placement
-  - Stage: planning
-  - Owner: Frontend Builder
-  - Priority: P1
-  - Scope: keep success, error, and status feedback near auth, provider setup,
-    Drive import, typed editor, and API key lifecycle actions.
+No active ready task.
 
 ## In Progress
 
@@ -57,6 +52,7 @@ No active task.
 
 ## Done
 
+- UXA-006 Local Action Feedback Placement.
 - UXA-005 Workbench Visual Role Cleanup.
 - UXA-004 Mobile Auth Action-First Layout.
 - UXA-003 Dashboard First-Viewport Command Polish.

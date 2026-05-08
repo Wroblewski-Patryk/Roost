@@ -65,6 +65,26 @@ of rediscovering them.
 - Evidence: V2WEB-048 upgrades `#resultPanel` with tone-aware success/error
   styling and accessible live feedback.
 
+### 2026-05-08 - Local Action Feedback
+- Type: reusable_pattern
+- Context: Auth, provider setup, Drive import, typed editor, and API key
+  lifecycle actions can leave users uncertain when outcomes appear only in a
+  shared panel away from the triggering control.
+- Decision: Place immediate pending, success, and error feedback in a local
+  `aria-live` `form-note local-status` slot near the action. Keep empty local
+  slots hidden, reuse existing success/error tone classes, translate backend
+  and provider failures through user-language recovery copy, and keep the
+  global result panel for cross-route outcomes or metric payloads.
+- Reuse when: A form, setup control, import/sync action, editor, or key
+  lifecycle action needs direct acknowledgement at the action site.
+- Avoid when: The result is truly route-level, contains multi-metric sync
+  evidence, or needs to remain visible after navigation; use the global result
+  panel in those cases and optionally mirror a concise local status.
+- Evidence: UXA-006 added local live-status slots for login, registration,
+  ClickUp setup, and Google Drive setup/import, preserved typed editor and API
+  key local feedback, and verified the pattern with Playwright and
+  `owner-console:ux-smoke`.
+
 ### 2026-05-07 - Public Entry Operational Context
 - Type: reusable_pattern
 - Context: The public `/` route should set up the product's operational

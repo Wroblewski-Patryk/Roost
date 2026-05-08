@@ -125,16 +125,27 @@ Last updated: 2026-05-08
   and the next executable task is selected from the canonical queue.
 
 ## Autonomous Iteration State
-- Current iteration: UXA-006 Local Action Feedback Placement.
-- Current operation mode: BUILDER
-- Last completed iteration: UXA-005 Workbench Visual Role Cleanup.
-- Last completed task: clarified dense workbench visual roles for filters,
-  list rows, selected details, relationship rows, and compact rows.
-- Next required mode: BUILDER; implement local action feedback placement from
-  the UX audit.
+- Current iteration: UXA-006 Local Action Feedback Placement completed.
+- Current operation mode: TESTER
+- Last completed iteration: UXA-006 Local Action Feedback Placement.
+- Last completed task: placed local pending/success/error feedback next to auth,
+  ClickUp setup, and Google Drive setup/import actions while preserving existing
+  typed editor/API key local status and the global result panel.
+- Next required mode: BUILDER; no active ready UX polish task remains in the
+  canonical queue after UXA-006.
 
 ## Recent Progress
 
+- 2026-05-08: Completed UXA-006 Local Action Feedback Placement. Added local
+  `aria-live` status slots for login, registration, ClickUp setup, and Google
+  Drive setup/import; wired auth, ClickUp, and Drive handlers to local pending,
+  success, and error feedback; preserved typed editor/API key local status and
+  global result-panel metrics. Validation passed: `node --check public/app.js`,
+  `npm run build`, `npm run validate`, Playwright local feedback checks,
+  `npm run owner-console:ux-smoke` against isolated `http://localhost:3005`,
+  and container-scoped Prisma migration plus Node integration test in isolated
+  `companycore_uxa006`. Browser opened the route but interaction fallback was
+  required because Browser failed on `locator.fill`.
 - 2026-05-08: Completed UXA-005 Workbench Visual Role Cleanup. Updated shared
   CSS so dense workbench filters are quieter, repeated rows are lighter,
   selected rows use stronger non-color-only inset markers, record inspectors

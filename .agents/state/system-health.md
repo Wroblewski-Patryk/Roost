@@ -15,6 +15,7 @@ Last updated: 2026-05-08
 | ux/dashboard smoke | `npm run owner-console:ux-smoke` against isolated `http://localhost:3002` | PASS | `C:\Users\wrobl\AppData\Local\Temp\companycore-ux-smoke\2026-05-08T20-00-12-315Z` | UXA-003 dashboard screenshots show a dominant current-priority action, compact readiness evidence, top attention items, and secondary module exploration across desktop/tablet/mobile. |
 | ux/auth smoke | Browser DOM check plus local Playwright viewport screenshots against `http://localhost:3003` | PASS | `C:\Users\wrobl\AppData\Local\Temp\companycore-auth-ux-smoke\2026-05-08T20-08-09-640Z` | UXA-004 verified mobile login/register form-first order, submit buttons inside the first viewport, preserved desktop two-column auth, and zero console issues. Browser screenshot capture timed out, so viewport screenshots used local Playwright fallback. |
 | ux/workbench smoke | `npm run owner-console:ux-smoke` against isolated `http://localhost:3004` | PASS | `C:\Users\wrobl\AppData\Local\Temp\companycore-ux-smoke\2026-05-08T20-13-50-112Z` | UXA-005 verified private workbench routes after shared visual-role cleanup across desktop/tablet/mobile with zero console issues. |
+| ux/local feedback smoke | Playwright fallback plus `npm run owner-console:ux-smoke` against isolated `http://localhost:3005` | PASS | `.tmp/uxa006-owner-console-rerun`; `.tmp/companycore-uxa006-login-local-status-rerun.png` | UXA-006 verified invalid login renders local error status, ClickUp/Drive empty status slots stay hidden, and private routes pass desktop/tablet/mobile smoke. Browser opened the route but interaction fallback was required because Browser failed on `locator.fill`. |
 | ux/browser | Production public/auth Browser audit | PARTIAL PASS | 2026-05-08 UXA-001 | Public entry, login, register, and mobile auth rendered with no relevant console warnings/errors; authenticated Browser entry was blocked by an automation issue on `input[type=email]`. |
 | local runtime | Docker local runtime for UX audit | PASS | 2026-05-08 UXA-001 | Local backend ran on `http://localhost:3001`; `/health` returned `ok`; migrations and seed completed. |
 | web editor markers | Production `app.js` marker check | PASS | 2026-05-08 AGRUN-008 public `app.js` check | Typed editor markers for Notes, Projects, Clients, Task Lists, and Tasks are present. |
@@ -34,6 +35,9 @@ Last updated: 2026-05-08
   dashboard polish across desktop, tablet, and mobile.
 - UX smoke that depends on seeded owner state should use an isolated compose
   project when the default local volume has been touched by integration tests.
+- UXA-006 confirmed integration tests and UX smoke must run sequentially when
+  sharing one isolated compose database, because the integration test suite
+  mutates seeded owner data.
 
 ## Quality Gate Notes
 

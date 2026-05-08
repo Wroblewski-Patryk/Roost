@@ -385,6 +385,19 @@ Acceptance:
 - global panel no longer carries every local form outcome
 - technical/provider errors remain translated through `friendlyError`
 
+Status: Completed by UXA-006. Login, registration, ClickUp setup, and Google
+Drive setup/import now have local `aria-live` status slots wired to
+pending/success/error feedback with existing `form-note` tone classes. Typed
+editors and API key lifecycle already had local status handling and remain
+preserved. The global result panel remains available for broader cross-route
+outcomes and sync/import metric payloads. Evidence:
+- Playwright fallback confirmed invalid login shows
+  `Email or password is incorrect.` in `#loginStatus` with error tone.
+- Playwright fallback confirmed ClickUp and Drive empty local status slots are
+  hidden until used.
+- `npm run owner-console:ux-smoke` passed against isolated
+  `http://localhost:3005`; artifacts: `.tmp/uxa006-owner-console-rerun`.
+
 ## Recommended Queue
 
 1. `UXA-002 Authenticated Private Route UX Evidence Harness`

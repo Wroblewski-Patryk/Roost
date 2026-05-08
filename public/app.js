@@ -210,6 +210,8 @@ const links = [...document.querySelectorAll("[data-link]")];
 const navLinks = [...document.querySelectorAll("[data-nav]")];
 const loginForm = document.querySelector("#loginForm");
 const registerForm = document.querySelector("#registerForm");
+const loginStatus = document.querySelector("#loginStatus");
+const registerStatus = document.querySelector("#registerStatus");
 const logoutButton = document.querySelector("#logoutButton");
 const mobileMenuButton = document.querySelector("#mobileMenuButton");
 const clickupPanel = document.querySelector("#clickupPanel");
@@ -243,6 +245,7 @@ const sidebarWorkspaceName = document.querySelector("#sidebarWorkspaceName");
 const sidebarStatusDot = document.querySelector("#sidebarStatusDot");
 const sidebarStatusText = document.querySelector("#sidebarStatusText");
 const clickupWorkspaceLabel = document.querySelector("#clickupWorkspaceLabel");
+const clickupActionStatus = document.querySelector("#clickupActionStatus");
 const workspaceNameLabel = document.querySelector("#workspaceNameLabel");
 const clickupStatusLabel = document.querySelector("#clickupStatusLabel");
 const clickupStatusHint = document.querySelector("#clickupStatusHint");
@@ -365,6 +368,7 @@ const integrationAreaMatrix = document.querySelector("#integrationAreaMatrix");
 const driveContext = document.querySelector("#driveContext");
 const googleDrivePanel = document.querySelector("#googleDrivePanel");
 const googleDriveWorkspaceLabel = document.querySelector("#googleDriveWorkspaceLabel");
+const googleDriveActionStatus = document.querySelector("#googleDriveActionStatus");
 const googleDriveClientStatus = document.querySelector("#googleDriveClientStatus");
 const googleDriveAuthUrlButton = document.querySelector("#googleDriveAuthUrlButton");
 const googleDriveAuthLink = document.querySelector("#googleDriveAuthLink");
@@ -787,6 +791,21 @@ function showResult(message, tone = "success", sync = null) {
     item.append(term, detail);
     metrics.append(item);
   }
+}
+
+function setLocalStatus(target, message = "", tone = "") {
+  if (!target) {
+    return;
+  }
+  target.textContent = message;
+  target.classList.toggle("is-error", tone === "error");
+  target.classList.toggle("is-success", tone === "success");
+  target.classList.toggle("is-pending", tone === "pending");
+}
+
+function reportAction(target, message, tone = "success", sync = null) {
+  setLocalStatus(target, message, tone);
+  showResult(message, tone === "error" ? "error" : "success", sync);
 }
 
 function formatDate(value) {
@@ -5793,6 +5812,7 @@ tableRecordSourceFilter.addEventListener("change", () => {
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   setBusy(true);
+  setLocalStatus(loginStatus, "Checking owner access...", "pending");
 
   try {
     const response = await authRequest("/auth/login", {
@@ -5802,10 +5822,10 @@ loginForm.addEventListener("submit", async (event) => {
 
     applyAuthPayload(response);
     await loadConnection();
-    showResult("Signed in. Open Settings to connect ClickUp.");
+    reportAction(loginStatus, "Signed in. Opening dashboard.", "success");
     navigate("/dashboard", { replace: true });
   } catch (error) {
-    showResult(friendlyError(error), "error");
+    reportAction(loginStatus, friendlyError(error), "error");
   } finally {
     setBusy(false);
   }
@@ -5814,6 +5834,7 @@ loginForm.addEventListener("submit", async (event) => {
 registerForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   setBusy(true);
+  setLocalStatus(registerStatus, "Creating owner workspace...", "pending");
 
   try {
     const response = await authRequest("/auth/register", {
@@ -5825,10 +5846,10 @@ registerForm.addEventListener("submit", async (event) => {
 
     applyAuthPayload(response);
     await loadConnection();
-    showResult("Workspace created. Open Settings to connect ClickUp.");
+    reportAction(registerStatus, "Workspace created. Opening dashboard.", "success");
     navigate("/dashboard", { replace: true });
   } catch (error) {
-    showResult(friendlyError(error), "error");
+    reportAction(registerStatus, friendlyError(error), "error");
   } finally {
     setBusy(false);
   }
@@ -5836,11 +5857,12 @@ registerForm.addEventListener("submit", async (event) => {
 
 checkTokenButton.addEventListener("click", async () => {
   setBusy(true);
+  setLocalStatus(clickupActionStatus, "Checking ClickUp token...", "pending");
   try {
     await discoverClickUp();
-    showResult("Token checked. Choose the ClickUp Workspace to connect.");
+    reportAction(clickupActionStatus, "Token checked. Choose the ClickUp Workspace to connect.");
   } catch (error) {
-    showResult(friendlyError(error), "error");
+    reportAction(clickupActionStatus, friendlyError(error), "error");
   } finally {
     setBusy(false);
   }
@@ -5848,14 +5870,15 @@ checkTokenButton.addEventListener("click", async () => {
 
 loadListsButton.addEventListener("click", async () => {
   setBusy(true);
+  setLocalStatus(clickupActionStatus, "Loading ClickUp Lists for the selected Workspace...", "pending");
   try {
     await loadSelectedWorkspaceLists();
     const count = allLists().length;
-    showResult(count > 0
+    reportAction(clickupActionStatus, count > 0
       ? `Workspace loaded. ${count} ClickUp List${count === 1 ? "" : "s"} available.`
       : "Workspace loaded, but ClickUp returned no Lists for this token.", count > 0 ? "success" : "error");
   } catch (error) {
-    showResult(friendlyError(error), "error");
+    reportAction(clickupActionStatus, friendlyError(error), "error");
   } finally {
     setBusy(false);
   }
@@ -5885,11 +5908,12 @@ fields.active.addEventListener("change", () => {
 
 refreshButton.addEventListener("click", async () => {
   setBusy(true);
+  setLocalStatus(clickupActionStatus, "Checking saved ClickUp token...", "pending");
   try {
     await discoverClickUp({ useStoredToken: true });
-    showResult("Saved ClickUp token checked. Choose a Workspace to refresh Lists.");
+    reportAction(clickupActionStatus, "Saved ClickUp token checked. Choose a Workspace to refresh Lists.");
   } catch (error) {
-    showResult(friendlyError(error), "error");
+    reportAction(clickupActionStatus, friendlyError(error), "error");
   } finally {
     setBusy(false);
   }
@@ -5908,17 +5932,18 @@ workspaceSelect.addEventListener("change", async () => {
   state.clickup.selectedListIds = new Set();
   resetListFilters();
   renderTree();
-  showResult("Workspace selected. Click Load Lists to fetch ClickUp Lists.");
+  reportAction(clickupActionStatus, "Workspace selected. Click Load Lists to fetch ClickUp Lists.");
 });
 
 saveButton.addEventListener("click", async () => {
   setBusy(true);
+  setLocalStatus(clickupActionStatus, "Saving ClickUp connection...", "pending");
   try {
     await saveSettings();
     await loadConnection();
-    showResult("ClickUp connection saved.");
+    reportAction(clickupActionStatus, "ClickUp connection saved.");
   } catch (error) {
-    showResult(friendlyError(error), "error");
+    reportAction(clickupActionStatus, friendlyError(error), "error");
   } finally {
     setBusy(false);
   }
@@ -5926,6 +5951,7 @@ saveButton.addEventListener("click", async () => {
 
 syncButton.addEventListener("click", async () => {
   setBusy(true);
+  setLocalStatus(clickupActionStatus, "Saving ClickUp connection and starting sync...", "pending");
 
   try {
     await saveSettings({ forceActive: true });
@@ -5937,9 +5963,9 @@ syncButton.addEventListener("click", async () => {
     });
     await loadConnection();
     await loadTasks();
-    showResult("ClickUp connection saved and sync completed.", "success", sync.data);
+    reportAction(clickupActionStatus, "ClickUp connection saved and sync completed.", "success", sync.data);
   } catch (error) {
-    showResult(friendlyError(error), "error");
+    reportAction(clickupActionStatus, friendlyError(error), "error");
   } finally {
     setBusy(false);
   }
@@ -5951,11 +5977,12 @@ fields.googleDriveActive.addEventListener("change", () => {
 
 googleDriveSaveClientButton.addEventListener("click", async () => {
   setBusy(true);
+  setLocalStatus(googleDriveActionStatus, "Saving Google Drive OAuth client...", "pending");
   try {
     await saveGoogleDriveOAuthClient();
-    showResult("Google Drive OAuth client saved. Create the OAuth URL next.");
+    reportAction(googleDriveActionStatus, "Google Drive OAuth client saved. Create the OAuth URL next.");
   } catch (error) {
-    showResult(friendlyError(error), "error");
+    reportAction(googleDriveActionStatus, friendlyError(error), "error");
   } finally {
     setBusy(false);
   }
@@ -5963,6 +5990,7 @@ googleDriveSaveClientButton.addEventListener("click", async () => {
 
 googleDriveAuthUrlButton.addEventListener("click", async () => {
   setBusy(true);
+  setLocalStatus(googleDriveActionStatus, "Creating Google consent URL...", "pending");
   try {
     const response = await api("/v1/integration-settings/google_drive/oauth/authorize-url", {
       method: "POST",
@@ -5973,9 +6001,9 @@ googleDriveAuthUrlButton.addEventListener("click", async () => {
     });
     googleDriveAuthLink.href = response.data.authorizationUrl;
     googleDriveAuthLink.hidden = false;
-    showResult("Google Drive OAuth URL created. Open Google consent, then paste the authorization code here.");
+    reportAction(googleDriveActionStatus, "Google Drive OAuth URL created. Open Google consent, then paste the authorization code here.");
   } catch (error) {
-    showResult(friendlyError(error), "error");
+    reportAction(googleDriveActionStatus, friendlyError(error), "error");
   } finally {
     setBusy(false);
   }
@@ -5983,6 +6011,7 @@ googleDriveAuthUrlButton.addEventListener("click", async () => {
 
 googleDriveExchangeButton.addEventListener("click", async () => {
   setBusy(true);
+  setLocalStatus(googleDriveActionStatus, "Saving Google Drive OAuth connection...", "pending");
   try {
     const code = fields.googleDriveCode.value.trim();
     if (!code) {
@@ -6006,9 +6035,9 @@ googleDriveExchangeButton.addEventListener("click", async () => {
     fields.googleDriveCode.value = "";
     await loadConnection();
     await discoverGoogleDriveFolders();
-    showResult("Google Drive OAuth connection saved. Select folders, save selection, then import.");
+    reportAction(googleDriveActionStatus, "Google Drive OAuth connection saved. Select folders, save selection, then import.");
   } catch (error) {
-    showResult(friendlyError(error), "error");
+    reportAction(googleDriveActionStatus, friendlyError(error), "error");
   } finally {
     setBusy(false);
   }
@@ -6016,11 +6045,12 @@ googleDriveExchangeButton.addEventListener("click", async () => {
 
 googleDriveDiscoverFoldersButton.addEventListener("click", async () => {
   setBusy(true);
+  setLocalStatus(googleDriveActionStatus, "Loading Google Drive folders...", "pending");
   try {
     const folders = await discoverGoogleDriveFolders();
-    showResult(`${folders.length} Google Drive folder${folders.length === 1 ? "" : "s"} loaded. Select folders to import.`);
+    reportAction(googleDriveActionStatus, `${folders.length} Google Drive folder${folders.length === 1 ? "" : "s"} loaded. Select folders to import.`);
   } catch (error) {
-    showResult(friendlyError(error), "error");
+    reportAction(googleDriveActionStatus, friendlyError(error), "error");
   } finally {
     setBusy(false);
   }
@@ -6028,11 +6058,12 @@ googleDriveDiscoverFoldersButton.addEventListener("click", async () => {
 
 googleDriveSaveFoldersButton.addEventListener("click", async () => {
   setBusy(true);
+  setLocalStatus(googleDriveActionStatus, "Saving selected Google Drive folders...", "pending");
   try {
     const folderIds = await saveGoogleDriveFolderSelection();
-    showResult(`${folderIds.length} Drive folder${folderIds.length === 1 ? "" : "s"} saved for import.`);
+    reportAction(googleDriveActionStatus, `${folderIds.length} Drive folder${folderIds.length === 1 ? "" : "s"} saved for import.`);
   } catch (error) {
-    showResult(friendlyError(error), "error");
+    reportAction(googleDriveActionStatus, friendlyError(error), "error");
   } finally {
     setBusy(false);
   }
@@ -6040,6 +6071,7 @@ googleDriveSaveFoldersButton.addEventListener("click", async () => {
 
 googleDriveImportButton.addEventListener("click", async () => {
   setBusy(true);
+  setLocalStatus(googleDriveActionStatus, "Importing selected Google Drive folders...", "pending");
   try {
     const selectedFolderIds = selectedGoogleDriveFolderIds();
     const folderIds = selectedFolderIds.length > 0 ? selectedFolderIds : parseIdList(fields.googleDriveFolderIds.value);
@@ -6051,9 +6083,9 @@ googleDriveImportButton.addEventListener("click", async () => {
       })
     });
     await loadConnection();
-    showResult("Google Drive import finished.", "success", result.data);
+    reportAction(googleDriveActionStatus, "Google Drive import finished.", "success", result.data);
   } catch (error) {
-    showResult(friendlyError(error), "error");
+    reportAction(googleDriveActionStatus, friendlyError(error), "error");
   } finally {
     setBusy(false);
   }
@@ -6061,15 +6093,16 @@ googleDriveImportButton.addEventListener("click", async () => {
 
 googleDriveReconcileButton.addEventListener("click", async () => {
   setBusy(true);
+  setLocalStatus(googleDriveActionStatus, "Reconciling Google Drive changes...", "pending");
   try {
     const result = await api("/v1/integration-settings/google_drive/changes/reconcile", {
       method: "POST",
       body: JSON.stringify({})
     });
     await loadConnection();
-    showResult("Google Drive changes reconciled.", "success", result.data);
+    reportAction(googleDriveActionStatus, "Google Drive changes reconciled.", "success", result.data);
   } catch (error) {
-    showResult(friendlyError(error), "error");
+    reportAction(googleDriveActionStatus, friendlyError(error), "error");
   } finally {
     setBusy(false);
   }
@@ -6077,11 +6110,12 @@ googleDriveReconcileButton.addEventListener("click", async () => {
 
 refreshDriveFilesButton.addEventListener("click", async () => {
   setBusy(true);
+  setLocalStatus(googleDriveActionStatus, "Refreshing imported Google Drive files...", "pending");
   try {
     await loadGoogleDriveFiles();
-    showResult("Google Drive files refreshed.");
+    reportAction(googleDriveActionStatus, "Google Drive files refreshed.");
   } catch (error) {
-    showResult(friendlyError(error), "error");
+    reportAction(googleDriveActionStatus, friendlyError(error), "error");
   } finally {
     setBusy(false);
   }

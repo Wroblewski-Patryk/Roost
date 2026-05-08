@@ -5,10 +5,13 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
-- [ ] UXA-006 Local Action Feedback Placement:
+- [x] UXA-006 Local Action Feedback Placement:
       add local success/error/status placement for auth, provider setup, Drive
       import, typed editors, and API key lifecycle while preserving the global
-      result panel for cross-route outcomes.
+      result panel for cross-route outcomes. Added local `aria-live` status
+      slots for auth, ClickUp, and Google Drive actions, preserved typed editor
+      and API key local feedback, and verified local feedback plus private-route
+      smoke against isolated `http://localhost:3005`.
 - [x] UXA-005 Workbench Visual Role Cleanup:
       reduce equal-weight panel fatigue across dense workbenches by clarifying
       command, filter, list, selected-detail, and feedback roles. Made filter

@@ -351,6 +351,98 @@
   - Updated design memory with reusable visual-role guidance for dense
     workbenches.
 
+## UXA-006 Local Action Feedback Placement
+
+- Task Type: design/frontend
+- Current Stage: done
+- Operation Mode: TESTER
+- Deliverable For This Stage: auth, provider setup, Drive import, typed editor,
+  and API-key lifecycle actions keep status/error/success feedback close to the
+  action while the global result panel remains available for cross-route
+  outcomes and result metrics.
+- Process Self-Audit:
+  - Analyze current state: reviewed existing `showResult`, auth forms,
+    ClickUp setup, Google Drive setup/import, typed editor status helpers, and
+    API key lifecycle status.
+  - Select exactly one priority task: UXA-006 only.
+  - Plan implementation: add local status slots where feedback was still only
+    global, and reuse existing `form-note` tone classes instead of creating a
+    new notification system.
+  - Execute implementation: scoped to public HTML, frontend JS, shared CSS, and
+    source-of-truth docs.
+  - Verify and test: syntax/build, rendered Playwright feedback checks,
+    authenticated owner-console smoke, and container integration tests.
+  - Self-review: confirm auth, provider, Drive, API key, and typed editor
+    feedback still uses approved existing mechanisms with no raw backend
+    errors exposed.
+  - Update documentation and knowledge: task board, project state, next steps,
+    system health, UX audit, and design memory.
+- Goal: Reduce user uncertainty after form and setup actions by placing
+  immediate feedback next to the action that caused it.
+- Scope:
+  - `public/index.html`
+  - `public/app.js`
+  - `public/styles.css`
+  - `docs/ux/design-memory.md`
+  - `docs/ux/companycore-v1-ux-ui-audit.md`
+  - `docs/planning/mvp-next-commits.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.agents/state/current-focus.md`
+  - `.agents/state/next-steps.md`
+  - `.agents/state/system-health.md`
+- Implementation Plan:
+  - Add local `aria-live` status slots for login, registration, ClickUp setup,
+    and Google Drive setup/import.
+  - Add a shared `setLocalStatus` helper and use it before, after, and on error
+    for auth, ClickUp, and Drive actions.
+  - Keep `showResult` for broad cross-route outcomes and sync/import metrics.
+  - Preserve existing local feedback for typed editors and API key lifecycle
+    actions.
+  - Validate desktop/mobile rendered behavior plus private-route smoke.
+- Acceptance Criteria:
+  - Auth errors appear next to the auth form as well as in global feedback.
+  - ClickUp setup and Drive setup/import actions have local status feedback.
+  - Empty local status slots are hidden and do not add layout noise.
+  - Typed editor and API key local status behavior is preserved.
+  - Global result panel still handles cross-route outcomes and metric payloads.
+- Definition of Done:
+  - `node --check public/app.js` passes.
+  - `npm run build` and `npm run validate` pass.
+  - Rendered Playwright checks prove local auth feedback and hidden empty
+    ClickUp/Drive status slots.
+  - `npm run owner-console:ux-smoke` passes against an isolated local compose
+    project.
+  - Container-scoped Prisma migration plus Node integration test passes.
+  - `git diff --check` passes.
+- Validation Evidence:
+  - `node --check public/app.js` passed.
+  - `npm run build` passed.
+  - `npm run validate` passed.
+  - Browser path opened `http://localhost:3005/auth/login`, but interaction
+    fallback was required because Browser failed on `locator.fill` with a
+    virtual clipboard/runtime error.
+  - Playwright fallback confirmed invalid login renders
+    `Email or password is incorrect.` in `#loginStatus` with
+    `form-note local-status is-error`; the only console event was the expected
+    `401` from the intentional failed login.
+  - Playwright fallback confirmed `#clickupActionStatus` and
+    `#googleDriveActionStatus` exist and stay hidden while empty.
+  - `npm run owner-console:ux-smoke` passed against isolated local compose
+    project `companycore_uxa006` at `http://localhost:3005`; artifacts:
+    `.tmp/uxa006-owner-console-rerun`.
+  - Container-scoped Prisma migration plus Node integration test passed inside
+    isolated compose project `companycore_uxa006`.
+- Result Report:
+  - Added local live-status slots for login, registration, ClickUp setup, and
+    Google Drive setup/import surfaces.
+  - Added shared local status helpers and wired auth, ClickUp, and Drive action
+    handlers to pending/success/error feedback.
+  - Preserved the global result panel for broader outcomes and sync/import
+    metric details.
+  - Preserved existing typed editor and API-key lifecycle local feedback.
+  - Recorded the reusable local action feedback rule in design memory.
+
 ## V2WEB-049 Table Workbench Empty State Polish
 
 - Task Type: design/frontend

@@ -27,11 +27,12 @@ fixes for this repository.
 ## Entries
 
 ### 2026-05-08 - Isolate UI smoke from integration-test database state
-- Context: UXA-003 ran authenticated owner-console screenshot smoke while the
-  compose-backed integration test was also mutating local workspace/auth data.
+- Context: UXA-003 and UXA-006 ran authenticated owner-console screenshot smoke
+  while compose-backed integration tests were also mutating local
+  workspace/auth data.
 - Symptom: The UX smoke failed with noisy 403/404 console entries or an
-  unexpected Drive-control assertion even though the dashboard layout change
-  built successfully.
+  unexpected Drive-control assertion even though the frontend change built
+  successfully.
 - Root cause: The smoke and integration test shared the same compose database
   state, while the seed script intentionally does not reset an existing owner's
   password or integration settings.
@@ -39,13 +40,16 @@ fixes for this repository.
   project when screenshot evidence depends on seeded owner state. Do not run
   integration tests and UI smoke in parallel against the same local database.
 - Preferred pattern: Use a separate `COMPOSE_PROJECT_NAME` and port for
-  screenshot evidence, then stop that project after validation.
+  screenshot evidence, run API integration tests and UI smoke sequentially, and
+  reseed before repeating UI smoke if tests touched the database.
 - Avoid: Treating a dirty local compose volume as a stable UX fixture or
   debugging UI regressions from smoke output created during concurrent API
   tests.
 - Evidence: `owner-console:ux-smoke` failed on the default compose project
   after tests, then passed on isolated `companycore_uxa003` at
-  `http://localhost:3002`.
+  `http://localhost:3002`; UXA-006 reproduced the same parallel-run failure on
+  `companycore_uxa006`, then passed after reseeding and rerunning the smoke
+  sequentially at `http://localhost:3005`.
 
 ### 2026-04-30 - Canonical visuals require surface-by-surface closure
 
