@@ -6,10 +6,14 @@ replace these choices without an explicit architecture decision.
 ## Runtime Stack
 
 - Backend: Node.js 22, Express 4, TypeScript.
-- Frontend: static HTML/CSS/JavaScript owner console served by the backend.
+- Frontend: backend-served owner console. The current production surface is
+  still the static HTML/CSS/JavaScript console, and UXA-009 adds an explicit
+  React + Vite + Tailwind CSS + DaisyUI build foundation under
+  `web/` -> `public/react/` for incremental component migration.
   The accepted web surface now includes auth, settings, API-key management,
   ClickUp setup, Google Drive setup, operating areas, relationships, data
-  operations, and typed business editors.
+  operations, typed business editors, and a framework-backed
+  `/react-dashboard` foundation route.
 - Mobile: none in v1; v2 mobile should follow the web product experience.
 - Database: PostgreSQL 16 with Prisma.
 - Cache or queue: none in v1.
@@ -36,6 +40,8 @@ changes here only when a scoped task changes the stack.
 
 - Package manager: npm with `package-lock.json`.
 - Typecheck/build: `npm run build`.
+- Frontend build: `npm run build:web` produces the React foundation assets
+  under ignored generated output `public/react/`.
 - Development server: `npm run dev`.
 - Prisma generate: `npm run prisma:generate`.
 - Prisma schema push: available for local experimentation only; production uses

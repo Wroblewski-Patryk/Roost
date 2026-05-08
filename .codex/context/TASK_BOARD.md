@@ -2,12 +2,13 @@
 
 ## Ready
 
-- UXA-009 React Tailwind DaisyUI Migration Foundation
+- UXA-010 React Dashboard Component Migration
   - Stage: planning
   - Owner: Frontend Builder
   - Priority: P1
-  - Scope: introduce an explicit React + Vite + Tailwind + DaisyUI frontend
-    foundation while preserving backend APIs, auth, and owner-console flows.
+  - Scope: migrate the highest-value dashboard command surface into reusable
+    React components while preserving the existing owner-console route and
+    smoke coverage.
 
 ## In Progress
 
@@ -57,6 +58,7 @@ No active task.
 
 ## Done
 
+- UXA-009 React Tailwind DaisyUI Migration Foundation.
 - UXA-008 Dashboard Iconography And UX Governance.
 - UXA-007 Mobile Private Header Compression.
 - UXA-006 Local Action Feedback Placement.

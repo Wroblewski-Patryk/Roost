@@ -11,6 +11,9 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY package*.json tsconfig.json ./
 COPY prisma ./prisma
 COPY src ./src
+COPY public ./public
+COPY web ./web
+COPY vite.config.mjs tailwind.config.mjs ./
 RUN npx prisma generate
 RUN npm run build
 
@@ -25,7 +28,7 @@ RUN apk add --no-cache openssl
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
-COPY public ./public
+COPY --from=build /app/public ./public
 COPY scripts ./scripts
 COPY package*.json ./
 EXPOSE 3000

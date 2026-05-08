@@ -20,6 +20,7 @@ output/
 # Node / build output
 node_modules/
 dist/
+public/react/
 
 # Prisma local database variants
 *.db

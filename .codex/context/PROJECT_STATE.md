@@ -66,10 +66,10 @@ Last updated: 2026-05-08
 
 ## Technical Baseline
 - Backend: Node.js 22, Express, TypeScript.
-- Frontend: static owner console served by the backend, with local Phosphor
-  icon assets for dashboard and operational UI polish. React + Vite + Tailwind
-  + DaisyUI migration foundation is the next approved frontend architecture
-  slice, not yet implemented.
+- Frontend: backend-served owner console. The current production surface is
+  still the static HTML/CSS/JavaScript console with local Phosphor icon assets,
+  and UXA-009 adds a React + Vite + Tailwind CSS + DaisyUI foundation under
+  `web/` with generated `public/react/` output and `/react-dashboard`.
 - Mobile: None in v1; planned from v2 based on the web product experience.
 - Database: PostgreSQL with Prisma.
 - Infra: Docker Compose.
@@ -127,16 +127,27 @@ Last updated: 2026-05-08
   and the next executable task is selected from the canonical queue.
 
 ## Autonomous Iteration State
-- Current iteration: UXA-008 Dashboard Iconography And UX Governance
+- Current iteration: UXA-009 React Tailwind DaisyUI Migration Foundation
   completed.
 - Current operation mode: BUILDER
-- Last completed iteration: UXA-008 Dashboard Iconography And UX Governance.
-- Last completed task: added local Phosphor icon assets, applied dashboard
-  operational iconography, and documented management-first UX/UI rules.
-- Next required mode: BUILDER; UXA-009 React Tailwind DaisyUI Migration
-  Foundation is ready.
+- Last completed iteration: UXA-009 React Tailwind DaisyUI Migration
+  Foundation.
+- Last completed task: added the explicit React + Vite + Tailwind CSS +
+  DaisyUI frontend foundation, Docker build integration, and
+  `/react-dashboard` proof route.
+- Next required mode: ARCHITECT for the third iteration in this wave unless
+  the next selected task is classified as tester-only; UXA-010 React Dashboard
+  Component Migration is ready.
 
 ## Recent Progress
+
+- 2026-05-08: Completed UXA-009 React Tailwind DaisyUI Migration Foundation.
+  Added React/Vite/Tailwind/DaisyUI dependencies and config, `web/` source,
+  `/react-dashboard`, Docker build integration, and ignored generated
+  `public/react/` assets. Validation passed: `npm run build`,
+  `npm run validate`, Browser route load, targeted rendered desktop/mobile
+  React checks, `npm run owner-console:ux-smoke`, container migration and
+  integration test, and `git diff --check`.
 
 - 2026-05-08: Completed UXA-008 Dashboard Iconography And UX Governance. Added
   `@phosphor-icons/web`, vendored the Phosphor bold webfont/CSS under

@@ -4,16 +4,15 @@ Last updated: 2026-05-08
 
 ## NOW
 
-UXA-009 React Tailwind DaisyUI Migration Foundation is ready. Introduce an
-explicit React + Vite + Tailwind + DaisyUI frontend foundation as a reversible
-architecture slice while preserving backend APIs, auth, deployment shape, and
-owner-console flows.
+UXA-010 React Dashboard Component Migration is ready. Migrate the dashboard
+command surface into reusable React components, starting with app-shell-safe
+primitives for command panel, attention rows, module launcher, notifications,
+and table foundation.
 
 ## NEXT
 
-After UXA-009, migrate the highest-value dashboard surface into reusable
-components: app shell, command panel, attention rows, module launcher,
-notifications, and table foundation.
+After UXA-010, migrate the highest-value table/workbench primitive into React
+with DaisyUI table foundations and existing local-feedback behavior.
 
 ## LATER
 

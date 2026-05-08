@@ -5,10 +5,18 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## NOW
 
-- [ ] UXA-009 React Tailwind DaisyUI Migration Foundation:
+- [ ] UXA-010 React Dashboard Component Migration:
+      migrate the dashboard command surface into reusable React components,
+      starting with app-shell-safe primitives for command panel, attention rows,
+      module launcher, notifications, and table foundation.
+- [x] UXA-009 React Tailwind DaisyUI Migration Foundation:
       introduce an explicit React + Vite + Tailwind + DaisyUI frontend
       foundation as a reversible architecture slice while preserving backend
-      APIs, auth, deployment shape, and owner-console flows.
+      APIs, auth, deployment shape, and owner-console flows. Added `web/`,
+      Vite/Tailwind/DaisyUI config, `/react-dashboard`, Docker build
+      integration, ignored generated `public/react/`, and passed build,
+      validate, rendered React checks, owner-console smoke, and container
+      integration tests.
 - [x] UXA-008 Dashboard Iconography And UX Governance:
       add local Phosphor icon assets, apply consistent dashboard operational
       iconography, and document canonical CompanyCore management-UI rules.

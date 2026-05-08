@@ -49,7 +49,10 @@ fixes for this repository.
   after tests, then passed on isolated `companycore_uxa003` at
   `http://localhost:3002`; UXA-006 reproduced the same parallel-run failure on
   `companycore_uxa006`, then passed after reseeding and rerunning the smoke
-  sequentially at `http://localhost:3005`.
+  sequentially at `http://localhost:3005`. UXA-009 reproduced the same
+  failure mode when UI smoke and the container integration test ran in
+  parallel against `companycore_uxa009`; rerunning `npm run seed` and the smoke
+  sequentially produced passing evidence.
 
 ### 2026-04-30 - Canonical visuals require surface-by-surface closure
 

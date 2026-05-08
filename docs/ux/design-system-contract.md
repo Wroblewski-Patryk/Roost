@@ -78,17 +78,18 @@ feel calm and operational, not promotional.
 
 ## Component Strategy
 
-- The current web console is a static vanilla frontend served from `public/`.
-  Tailwind CSS and DaisyUI are not installed in the project baseline.
-- Do not silently introduce Tailwind, DaisyUI, or a new build pipeline inside a
-  local UI-polish task. That change requires an explicit architecture decision
-  because it changes the frontend implementation model.
-- Until such a decision is approved, improve reusable vanilla patterns:
-  buttons, local feedback, empty states, context panels, data rows, tables,
-  module links, icon containers, and responsive shells.
-- If DaisyUI is approved later, migrate by replacing repeated vanilla patterns
-  with shared component primitives first; do not mix page-local DaisyUI classes
-  into isolated screens without a component inventory.
+- The accepted UXA-009 migration foundation is React + Vite + Tailwind CSS +
+  DaisyUI, built from `web/` into generated `public/react/` assets.
+- The current production owner console remains vanilla until each route is
+  migrated intentionally. Do not rewrite multiple routes in one task unless a
+  migration plan explicitly scopes that wave.
+- Wrap DaisyUI usage in project-specific React primitives where a pattern will
+  repeat: app shell, buttons, alerts/toasts, tables, filters, module links,
+  command panels, empty states, and form fields.
+- Use DaisyUI component classes for known primitives, then tune with
+  CompanyCore tokens instead of creating unrelated page-local class recipes.
+- Preserve the existing vanilla patterns until their React replacement has
+  parity evidence and route-level smoke coverage.
 
 ## Forbidden Behaviors
 

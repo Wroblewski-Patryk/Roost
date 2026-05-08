@@ -1,0 +1,19 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default;
+}
+
+@theme {
+  --color-company-ink: #071225;
+  --color-company-muted: #51627f;
+  --color-company-blue: #2364d2;
+  --color-company-green: #16845b;
+  --color-company-amber: #b87700;
+  --color-company-border: #d8e1ee;
+  --radius-company: 8px;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}

@@ -34,6 +34,22 @@ of rediscovering them.
 
 ## Entries
 
+### 2026-05-08 - React DaisyUI Migration Foundation
+- Type: reusable_pattern
+- Context: CompanyCore needs reusable dashboard, notification, table, and
+  workbench primitives without rewriting the entire vanilla owner console in
+  one risky step.
+- Decision: Introduce React + Vite + Tailwind CSS + DaisyUI as a generated
+  `web/` -> `public/react/` build path and prove it on a separate
+  `/react-dashboard` route before migrating existing routes.
+- Reuse when: A route or component family is ready to migrate from vanilla
+  markup into reusable React primitives with DaisyUI-backed controls.
+- Avoid when: A task only needs a small CSS/markup polish on an existing
+  vanilla route and does not justify touching the framework boundary.
+- Evidence: UXA-009 added the framework build path, Docker integration, and a
+  rendered React route with DaisyUI alert, stats, steps, badges, and table
+  primitives.
+
 ### 2026-05-08 - Phosphor Operational Iconography
 - Type: reusable_pattern
 - Context: Dashboard modules, readiness signals, attention rows, and

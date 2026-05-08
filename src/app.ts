@@ -104,6 +104,14 @@ export function createApp() {
 
     staticFiles(req, res, next);
   });
+  app.get("/react-dashboard", (req, res, next) => {
+    if (isApiHost(req.headers.host)) {
+      next();
+      return;
+    }
+
+    res.sendFile(path.join(publicRoot, "react", "index.html"));
+  });
   app.get(webAppRoutes, (req, res, next) => {
     if (isApiHost(req.headers.host)) {
       next();
