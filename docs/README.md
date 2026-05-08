@@ -56,6 +56,21 @@ Use `docs/` as the canonical home for CompanyCore documentation.
 - Prefer repository-relative links.
 - Keep project docs in English.
 
+## Agent Operating Docs
+
+These files live outside `docs/` because they are execution state, not product
+or architecture truth:
+
+- `.agents/core/operating-system.md`
+- `.agents/core/execution-loop.md`
+- `.agents/core/anti-regression.md`
+- `.agents/core/quality-gates.md`
+- `.agents/state/current-focus.md`
+- `.agents/state/known-issues.md`
+- `.agents/state/regression-log.md`
+- `.agents/state/system-health.md`
+- `.agents/state/next-steps.md`
+
 ## Canonical Docs
 
 - Product:

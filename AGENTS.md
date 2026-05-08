@@ -18,6 +18,15 @@ documentation parity.
 - `NO_TEMPORARY_SOLUTIONS.md`
 - `DEPLOYMENT_GATE.md`
 - `AI_TESTING_PROTOCOL.md`
+- `.agents/core/operating-system.md`
+- `.agents/core/execution-loop.md`
+- `.agents/core/anti-regression.md`
+- `.agents/core/quality-gates.md`
+- `.agents/state/current-focus.md`
+- `.agents/state/known-issues.md`
+- `.agents/state/regression-log.md`
+- `.agents/state/system-health.md`
+- `.agents/state/next-steps.md`
 - `.agents/workflows/general.md`
 - `.agents/workflows/documentation-governance.md`
 - `.agents/workflows/subagent-orchestration.md`
@@ -171,6 +180,13 @@ Operation mode rotates by iteration number:
 - `ARCHITECT`: every third iteration, unless the iteration is also a tester
   iteration
 - `TESTER`: every fifth iteration
+
+Use `.agents/core/operating-system.md` as the startup and continuation path for
+non-trivial work. Use `.agents/core/execution-loop.md`,
+`.agents/core/anti-regression.md`, and `.agents/core/quality-gates.md` for the
+iteration checklist, regression hunt, and validation contract. Keep
+`.agents/state/*` current enough that a future session can continue from repo
+state without hidden chat memory.
 
 ### 8. Stage-Based Delivery Workflow
 
@@ -339,13 +355,15 @@ Rules:
 
 If the user sends a short execution nudge (`rob`, `dzialaj`, `start`, `go`,
 `next`, `lecimy`):
-1. Read `docs/planning/mvp-next-commits.md` and `.codex/context/TASK_BOARD.md`.
-2. Take the first `NOW` item that maps to a `READY` or `IN_PROGRESS` task.
-3. If planning docs and board drift, sync them before implementation.
-4. Implement exactly one tiny task.
-5. Run relevant checks.
-6. Update task, project state, and planning files.
-7. Return summary with files changed, tests run, deployment impact, and next
+1. Read `.agents/core/operating-system.md` and refresh `.agents/state/*`.
+2. Read `docs/planning/mvp-next-commits.md` and `.codex/context/TASK_BOARD.md`.
+3. Take the first `NOW` item that maps to a `READY` or `IN_PROGRESS` task.
+4. If planning docs, board, and `.agents/state/next-steps.md` drift, sync them
+   before implementation.
+5. Implement exactly one tiny task.
+6. Run relevant checks.
+7. Update task, project state, planning files, and `.agents/state/*`.
+8. Return summary with files changed, tests run, deployment impact, and next
    tiny task.
 
 If a new execution wave or detailed implementation plan is published:

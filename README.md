@@ -39,3 +39,10 @@ curl http://localhost:3000/health
 
 See `docs/` for architecture, database, API, integrations, deployment, and
 next-step handoff notes.
+
+## Agent Operating System
+
+Agent continuation state lives in `.agents/core/` and `.agents/state/`. These
+files define the startup order, execution loop, anti-regression checks, quality
+gates, current focus, known issues, regression log, system health, and next
+steps for future Codex sessions.

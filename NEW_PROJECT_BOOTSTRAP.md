@@ -35,6 +35,11 @@ Use this checklist when initializing a new repository from this template.
 - Fill:
   - `docs/architecture/system-architecture.md`
   - `docs/architecture/tech-stack.md`
+- Tailor `.agents/core/operating-system.md` with project-specific startup
+  sources, continuation semantics, and reporting expectations.
+- Tailor `.agents/core/execution-loop.md`, `.agents/core/anti-regression.md`,
+  and `.agents/core/quality-gates.md` with stack-specific analysis and
+  validation rules.
 - Tailor `.agents/workflows/general.md` with:
   - actual stack
   - architecture rules
@@ -66,6 +71,12 @@ Use this checklist when initializing a new repository from this template.
 ## 5) Planning Initialization
 
 - Create first real tasks in `.codex/context/TASK_BOARD.md`.
+- Fill `.agents/state/current-focus.md`, `.agents/state/system-health.md`, and
+  `.agents/state/next-steps.md` so future continuation prompts have durable
+  context.
+- Initialize `.agents/state/known-issues.md` and
+  `.agents/state/regression-log.md` with real issues or empty project-specific
+  placeholders.
 - Fill:
   - `docs/planning/mvp-execution-plan.md`
   - `docs/planning/mvp-next-commits.md`
@@ -122,6 +133,8 @@ Use this checklist when initializing a new repository from this template.
 - Review whether architecture, docs parity, deployment docs, or task breakdown
   should improve.
 - Update task, state, and planning files in the same cycle.
+- Keep `.agents/state/*`, `.codex/context/*`, and planning docs synchronized
+  before ending the cycle.
 
 ## Definition of Ready
 
@@ -132,6 +145,7 @@ Project is ready when:
 - first executable tasks exist in both planning docs and task board
 - canonical queue is actionable, not only documented
 - workflow and delegation rules are explicit
+- `.agents/core/*` and `.agents/state/*` are tailored to the app
 - deployment contract and smoke checklist exist
 - Definition of Done, integration checklist, AI testing protocol, no-temporary
   solutions rule, and deployment gate are active

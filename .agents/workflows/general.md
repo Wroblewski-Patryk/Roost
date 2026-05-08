@@ -39,6 +39,10 @@ description: Workspace rules for this project
 - Use `docs/governance/autonomous-engineering-loop.md` for autonomous
   iteration structure, process self-audit, one-task selection, and
   `BUILDER` / `ARCHITECT` / `TESTER` mode rotation.
+- Use `.agents/core/operating-system.md` for startup, continuation semantics,
+  and state updates.
+- Use `.agents/core/execution-loop.md`, `.agents/core/anti-regression.md`, and
+  `.agents/core/quality-gates.md` before calling substantial work complete.
 
 ## UI/UX Rules
 - Define approved component style and motion approach.
@@ -107,6 +111,9 @@ description: Workspace rules for this project
   explicitly requested.
 - Follow the default loop:
   `analyze -> select one task -> plan -> implement -> verify -> self-review -> sync knowledge -> repeat`.
+- Keep `.agents/state/current-focus.md`, `.agents/state/known-issues.md`,
+  `.agents/state/regression-log.md`, `.agents/state/system-health.md`, and
+  `.agents/state/next-steps.md` synchronized when the project state changes.
 - Report changed files, validations actually run, remaining risks, and the next
   tiny task after implementation.
 - Apply the validation commands from `.codex/context/PROJECT_STATE.md` before
