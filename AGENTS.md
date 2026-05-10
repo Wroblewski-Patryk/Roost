@@ -21,12 +21,14 @@ documentation parity.
 - `.agents/core/operating-system.md`
 - `.agents/core/project-memory-index.md`
 - `.agents/core/mission-control.md`
+- `.agents/core/product-delivery-system.md`
 - `.agents/core/execution-loop.md`
 - `.agents/core/anti-regression.md`
 - `.agents/core/quality-gates.md`
 - `.agents/state/current-focus.md`
 - `.agents/state/known-issues.md`
 - `.agents/state/module-confidence-ledger.md`
+- `.agents/state/delivery-map.md`
 - `.agents/state/regression-log.md`
 - `.agents/state/system-health.md`
 - `.agents/state/next-steps.md`
@@ -141,6 +143,19 @@ documentation parity.
   confidence at checkpoints, not only at the end.
 - Keep the mission bounded. Do not merge unrelated objectives just because the
   agent has available time.
+
+### 1C. Product Delivery Map
+
+- Use `.agents/core/product-delivery-system.md` and
+  `.agents/state/delivery-map.md` before broad app, module, screen, workflow,
+  or release work.
+- Decompose user intent, architecture, references, screenshots, and notes into
+  product journeys, screens, states, frontend, backend/API, data, integrations,
+  security, operations, and tests before implementation.
+- For PNG, screenshot, Figma, or reference-driven UI work, slice the view into
+  layout zones, components, states, and reusable patterns before coding.
+- Every substantial mission should connect:
+  `source idea/reference -> delivery map row -> mission -> code -> evidence -> module confidence row`.
 
 ### 2. Critical Prohibitions
 

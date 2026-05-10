@@ -18,21 +18,23 @@ For non-trivial work, read this order:
 2. `.agents/core/operating-system.md`
 3. `.agents/core/project-memory-index.md`
 4. `.agents/core/mission-control.md`
-5. `.agents/core/execution-loop.md`
-6. `.agents/core/anti-regression.md`
-7. `.agents/core/quality-gates.md`
-8. `.agents/state/current-focus.md`
-9. `.agents/state/known-issues.md`
-10. `.agents/state/module-confidence-ledger.md`
-11. `.agents/state/regression-log.md`
-12. `.agents/state/system-health.md`
-13. `.agents/state/next-steps.md`
-14. `.codex/context/PROJECT_STATE.md`
-15. `.codex/context/TASK_BOARD.md`
-16. `.codex/context/LEARNING_JOURNAL.md`
-17. `docs/planning/mvp-next-commits.md`
-18. `docs/planning/mvp-execution-plan.md`
-19. `docs/planning/open-decisions.md`
+5. `.agents/core/product-delivery-system.md`
+6. `.agents/core/execution-loop.md`
+7. `.agents/core/anti-regression.md`
+8. `.agents/core/quality-gates.md`
+9. `.agents/state/current-focus.md`
+10. `.agents/state/known-issues.md`
+11. `.agents/state/module-confidence-ledger.md`
+12. `.agents/state/delivery-map.md`
+13. `.agents/state/regression-log.md`
+14. `.agents/state/system-health.md`
+15. `.agents/state/next-steps.md`
+16. `.codex/context/PROJECT_STATE.md`
+17. `.codex/context/TASK_BOARD.md`
+18. `.codex/context/LEARNING_JOURNAL.md`
+19. `docs/planning/mvp-next-commits.md`
+20. `docs/planning/mvp-execution-plan.md`
+21. `docs/planning/open-decisions.md`
 
 If these sources drift, canonical priority is:
 
@@ -56,6 +58,10 @@ If these sources drift, canonical priority is:
   `.agents/core/project-memory-index.md`, `.agents/core/mission-control.md`,
   and `.agents/state/module-confidence-ledger.md` to identify the highest-value
   confidence gap.
+- Use `.agents/core/product-delivery-system.md` and
+  `.agents/state/delivery-map.md` to translate ideas, architecture,
+  references, screenshots, and notes into cross-layer build slices before
+  implementation.
 - Never introduce temporary bypasses, fake data, mock-only product behavior, or
   hidden fallback paths.
 - For auth-sensitive, AI, secrets, payments, permissions, integrations,
