@@ -31,6 +31,7 @@ Every change must consider:
 - UI validation when UI changed
 - architecture validation
 - regression validation
+- local resource cleanup after browser-driven validation
 
 ## Scope-Based Minimums
 

@@ -157,7 +157,23 @@ Always run a brief cleanup pass when needed:
 - unify duplicated or divergent code paths
 - simplify where complexity was added by implementation pressure
 
-### 7. Working Cycle
+### 7. Local Resource Hygiene
+
+- Browser-driven validation must clean up after itself. Close Playwright,
+  browser MCP, Chromium, Chrome, or headless browser contexts/pages before
+  ending the task.
+- Do not leave orphaned `chrome-headless-shell`, `chromium`, Playwright,
+  dev-server, Docker, or database processes running unless the user explicitly
+  asked to keep them alive.
+- After UI/browser testing, check for leftover headless browser processes and
+  terminate only the validation processes you started. On Windows, use a narrow
+  check such as `Get-Process chrome-headless-shell -ErrorAction SilentlyContinue`
+  and clean those up when they belong to the completed validation run.
+- Treat leaked local processes as a P1 environment regression: record the
+  pitfall in `.codex/context/LEARNING_JOURNAL.md` and include cleanup evidence
+  in the task result report.
+
+### 8. Working Cycle
 
 Follow `docs/governance/autonomous-engineering-loop.md` for every autonomous
 iteration:
@@ -188,7 +204,7 @@ iteration checklist, regression hunt, and validation contract. Keep
 `.agents/state/*` current enough that a future session can continue from repo
 state without hidden chat memory.
 
-### 8. Stage-Based Delivery Workflow
+### 9. Stage-Based Delivery Workflow
 
 Every task must declare its current delivery stage and the output expected from
 that stage.
@@ -219,7 +235,7 @@ Rules:
   stage and surface the gap.
 - Prefer the smallest safe assumption set and state assumptions explicitly.
 
-### 9. Execution Posture
+### 10. Execution Posture
 
 - Better to stop and ask than ship a wrong solution.
 - Agents execute within architecture constraints and do not self-appoint as

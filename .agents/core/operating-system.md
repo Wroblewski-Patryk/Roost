@@ -53,6 +53,11 @@ If these sources drift, canonical priority is:
 - For auth-sensitive, AI, secrets, payments, permissions, integrations,
   production, or user-data surfaces, default to fail-closed behavior and
   stronger validation.
+- Clean up local validation resources before ending a task. Browser-driven
+  checks must close Playwright/browser MCP pages, contexts, browsers, and local
+  preview servers. Do not leave validation-owned `chrome-headless-shell`,
+  `chromium`, Playwright, dev-server, Docker, or database processes running
+  unless the user explicitly asked to keep them alive.
 - Keep repository artifacts in English and user-facing conversation in the
   user's language.
 
