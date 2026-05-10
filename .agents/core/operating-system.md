@@ -16,20 +16,23 @@ For non-trivial work, read this order:
 
 1. `AGENTS.md`
 2. `.agents/core/operating-system.md`
-3. `.agents/core/execution-loop.md`
-4. `.agents/core/anti-regression.md`
-5. `.agents/core/quality-gates.md`
-6. `.agents/state/current-focus.md`
-7. `.agents/state/known-issues.md`
-8. `.agents/state/regression-log.md`
-9. `.agents/state/system-health.md`
-10. `.agents/state/next-steps.md`
-11. `.codex/context/PROJECT_STATE.md`
-12. `.codex/context/TASK_BOARD.md`
-13. `.codex/context/LEARNING_JOURNAL.md`
-14. `docs/planning/mvp-next-commits.md`
-15. `docs/planning/mvp-execution-plan.md`
-16. `docs/planning/open-decisions.md`
+3. `.agents/core/project-memory-index.md`
+4. `.agents/core/mission-control.md`
+5. `.agents/core/execution-loop.md`
+6. `.agents/core/anti-regression.md`
+7. `.agents/core/quality-gates.md`
+8. `.agents/state/current-focus.md`
+9. `.agents/state/known-issues.md`
+10. `.agents/state/module-confidence-ledger.md`
+11. `.agents/state/regression-log.md`
+12. `.agents/state/system-health.md`
+13. `.agents/state/next-steps.md`
+14. `.codex/context/PROJECT_STATE.md`
+15. `.codex/context/TASK_BOARD.md`
+16. `.codex/context/LEARNING_JOURNAL.md`
+17. `docs/planning/mvp-next-commits.md`
+18. `docs/planning/mvp-execution-plan.md`
+19. `docs/planning/open-decisions.md`
 
 If these sources drift, canonical priority is:
 
@@ -42,12 +45,17 @@ If these sources drift, canonical priority is:
 
 ## Operating Principles
 
-- Work in small, reversible, evidence-backed iterations.
-- Choose exactly one priority task per autonomous iteration.
+- Work in bounded, reversible, evidence-backed missions with checkpointed
+  slices.
+- Choose exactly one mission objective per autonomous run.
 - Prefer stability, architecture alignment, no regressions, correct flows, UX,
   aesthetics, and only then new features.
 - Reuse approved systems before creating or changing patterns.
 - Treat architecture mismatches as decision points, not implementation puzzles.
+- Select mission checkpoints from the full project picture. Use
+  `.agents/core/project-memory-index.md`, `.agents/core/mission-control.md`,
+  and `.agents/state/module-confidence-ledger.md` to identify the highest-value
+  confidence gap.
 - Never introduce temporary bypasses, fake data, mock-only product behavior, or
   hidden fallback paths.
 - For auth-sensitive, AI, secrets, payments, permissions, integrations,
@@ -100,9 +108,11 @@ Every autonomous iteration should classify the project through these lenses:
 Every completion report must include:
 
 - selected task and operation mode
+- mission status and checkpoint
 - files changed
 - validation actually run
 - validation not run and why
+- module confidence rows changed
 - deployment impact
 - residual risk
 - next tiny task
@@ -117,6 +127,8 @@ After each iteration, update these files when applicable:
 
 - `.agents/state/current-focus.md`: what the system is currently optimizing
 - `.agents/state/known-issues.md`: unresolved problems and risk classification
+- `.agents/state/module-confidence-ledger.md`: module and journey confidence,
+  evidence, broken flows, and next proof or fix
 - `.agents/state/regression-log.md`: regressions found, fixed, or monitored
 - `.agents/state/system-health.md`: latest validation and runtime health signal
 - `.agents/state/next-steps.md`: next executable tiny tasks in priority order
