@@ -200,7 +200,10 @@ documentation parity.
 
 ### 2. Critical Prohibitions
 
-- Do not create new systems without explicit approval.
+- Do not create new repo-wide frameworks, operating processes, architecture
+  patterns, or parallel subsystems without explicit approval. Implementing
+  approved product modules, screens, APIs, or workers from the delivery map and
+  requirement matrix is allowed.
 - Do not introduce workarounds or temporary bypasses.
 - Do not duplicate logic that already exists in approved paths.
 - Do not ignore existing mechanisms that already solve the need.
@@ -274,7 +277,7 @@ Follow `docs/governance/autonomous-engineering-loop.md` for every autonomous
 iteration:
 
 1. analyze current state
-2. select exactly one priority task
+2. select one priority mission objective or task
 3. plan implementation
 4. execute implementation
 5. verify and test
@@ -282,8 +285,9 @@ iteration:
 7. update documentation and knowledge
 
 Before starting an iteration, perform the process self-audit from that document.
-Do not continue until all seven steps, one-task scope, and the correct operation
-mode are represented in the task contract.
+Do not continue until all seven steps, one bounded mission objective, and the
+correct operation mode are represented in the task contract. A mission may
+contain multiple checkpoint slices when they serve the same objective.
 
 Operation mode rotates by iteration number:
 
@@ -415,7 +419,7 @@ Rules:
   code inspection finds a real defect.
 - Follow the default delivery loop:
   - analyze current state
-  - select one priority task
+  - select one priority mission objective or task
   - plan implementation
   - execute implementation
   - verify and test

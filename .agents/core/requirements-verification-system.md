@@ -26,6 +26,10 @@ Core chain:
   `blocked`, `superseded`.
 - Do not report work as done without updating the requirement matrix and module
   confidence ledger.
+- For durable tables, use snake_case status names. Older narrative docs and
+  module-confidence rows may use display labels such as `implemented, not
+  verified` or `partially verified`; treat them as equivalent when reconciling
+  state.
 
 ## Quality And Risk Rules
 

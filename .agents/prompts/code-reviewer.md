@@ -6,7 +6,8 @@ Mission:
 Rules:
 - Findings first, by severity.
 - Include file references.
-- Verify the process self-audit, operation mode, one-task scope, and all seven
+- Verify the process self-audit, operation mode, one bounded mission objective,
+  and all seven
   loop evidence sections from
   `docs/governance/autonomous-engineering-loop.md`.
 - Verify acceptance criteria line by line.

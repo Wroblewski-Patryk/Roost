@@ -11,6 +11,9 @@
 - Priority: P0 | P1 | P2
 - Coverage Ledger Rows:
 - Module Confidence Rows:
+- Requirement Rows:
+- Quality Scenario Rows:
+- Risk Rows:
 - Iteration:
 - Operation Mode: BUILDER | ARCHITECT | TESTER
 - Mission ID:
@@ -25,6 +28,8 @@
 - [ ] `.agents/core/project-memory-index.md` was reviewed.
 - [ ] `.agents/core/mission-control.md` was reviewed for long-running work.
 - [ ] Affected module confidence rows were identified.
+- [ ] Affected requirement, quality scenario, and risk rows were identified or
+      marked not applicable.
 - [ ] The task or mission improves release confidence, not only local code appearance.
 
 ## Mission Block
@@ -62,7 +67,7 @@ for this task.
 - Inconsistencies:
 - Architecture constraints:
 
-### 2. Select One Priority Task
+### 2. Select One Priority Mission Objective
 - Selected task:
 - Priority rationale:
 - Why other candidates were deferred:
@@ -151,6 +156,12 @@ Describe exactly what should be produced in the current stage only.
 - Coverage rows closed or changed:
 - Module confidence ledger updated: yes | no | not applicable
 - Module confidence rows closed or changed:
+- Requirements matrix updated: yes | no | not applicable
+- Requirement rows closed or changed:
+- Quality scenarios updated: yes | no | not applicable
+- Quality scenario rows closed or changed:
+- Risk register updated: yes | no | not applicable
+- Risk rows closed or changed:
 - Reality status: verified | implemented, not verified | partially verified | blocked | failed
 
 ## Integration Evidence

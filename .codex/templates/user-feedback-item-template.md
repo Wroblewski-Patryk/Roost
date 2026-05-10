@@ -56,4 +56,4 @@
 - Result:
 - Evidence:
 - Remaining mismatch:
-- Next tiny task:
+- Next mission checkpoint or tiny task:

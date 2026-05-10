@@ -10,22 +10,22 @@ Workflow:
 2. Read `docs/planning/mvp-next-commits.md`,
    `docs/planning/mvp-execution-plan.md`, and
    `.codex/context/TASK_BOARD.md`.
-3. Pick exactly one priority task from `NOW` that maps to `READY` or
+3. Pick one priority mission objective or task from `NOW` that maps to `READY` or
    `IN_PROGRESS`.
 4. If no task is executable, refine the smallest viable task first. For a
    medium/large project, release-readiness pass, handoff, incident review, or
    stale queue, use `docs/governance/function-coverage-ledger-standard.md` and
    any active `docs/operations/*function-coverage*` artifacts to derive the
    next evidence, blocker, implementation-review, or scope-decision task.
-5. Implement exactly one tiny task.
+5. Implement one mission checkpoint or tiny task tied to the selected objective.
 6. Run relevant checks.
 7. Review whether a better architectural follow-up, deployment note, or task
    split should be captured.
 8. Update planning docs, project state, and task board files.
-9. Return summary plus next tiny task.
+9. Return summary plus next mission checkpoint or tiny task.
 
 Hard rules:
-- Tiny commits only.
+- Small, reversible commits only.
 - Record iteration number, operation mode, and seven-step loop evidence in the
   task contract.
 - Fix, cleanup, or update before new features.

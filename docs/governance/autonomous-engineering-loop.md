@@ -8,7 +8,7 @@ delivery standards without replacing them.
 
 Agents must continuously move the project toward production-ready,
 premium-quality software. The goal is measurable project improvement through
-small, verified, documented iterations.
+bounded, verified, documented missions with small checkpoint slices.
 
 ## Process Self-Audit
 
@@ -17,7 +17,7 @@ Before every iteration, the active agent must verify:
 - Am I executing all seven loop steps?
 - Am I skipping any step?
 - Is my process aligned with this repository's source-of-truth documents?
-- Is exactly one priority task selected for this iteration?
+- Is exactly one priority mission objective selected for this iteration?
 - Is the current operation mode correct for this iteration number?
 
 If any answer fails, the agent must fix the process before continuing. Process
@@ -29,7 +29,7 @@ or documentation target before making implementation changes.
 Every iteration must complete all seven steps:
 
 1. Analyze Current State
-2. Select One Priority Task
+2. Select One Priority Mission Objective
 3. Plan Implementation
 4. Execute Implementation
 5. Verify and Test
@@ -53,9 +53,10 @@ Required output:
 - inconsistencies found
 - current architecture constraints
 
-### 2. Select One Priority Task
+### 2. Select One Priority Mission Objective
 
-Choose exactly one task for the iteration.
+Choose exactly one mission objective for the iteration. The objective may
+contain multiple small checkpoint tasks when they all serve the same outcome.
 
 Priority order:
 
@@ -65,8 +66,8 @@ Priority order:
 4. improvements or refactors
 5. UI polish or low-priority work
 
-If multiple tasks qualify, choose the highest-impact task that can be completed
-as a small, reversible slice.
+If multiple candidates qualify, choose the highest-impact objective that can be
+advanced through small, reversible checkpoint slices with clear evidence.
 
 ### 3. Plan Implementation
 
