@@ -22,6 +22,7 @@ documentation parity.
 - `.agents/core/project-memory-index.md`
 - `.agents/core/mission-control.md`
 - `.agents/core/product-delivery-system.md`
+- `.agents/core/product-intake-and-decision-handshake.md`
 - `.agents/core/execution-loop.md`
 - `.agents/core/anti-regression.md`
 - `.agents/core/quality-gates.md`
@@ -29,6 +30,7 @@ documentation parity.
 - `.agents/state/known-issues.md`
 - `.agents/state/module-confidence-ledger.md`
 - `.agents/state/delivery-map.md`
+- `.agents/state/decision-register.md`
 - `.agents/state/regression-log.md`
 - `.agents/state/system-health.md`
 - `.agents/state/next-steps.md`
@@ -156,6 +158,22 @@ documentation parity.
   layout zones, components, states, and reusable patterns before coding.
 - Every substantial mission should connect:
   `source idea/reference -> delivery map row -> mission -> code -> evidence -> module confidence row`.
+
+### 1D. Product Intake And Decision Handshake
+
+- Use `.agents/core/product-intake-and-decision-handshake.md` before coding
+  vague app ideas, broad features, major architecture changes, UX redesigns,
+  integrations, AI behavior, mobile behavior, or ambiguous fixes.
+- If a request can describe multiple products or workflows, ask the smallest
+  useful set of clarification questions before implementation.
+- When progress can safely continue, state assumptions explicitly and classify
+  them as `safe`, `risky`, or `blocking`.
+- Continue only on safe assumptions. Stop for user confirmation on blocking
+  assumptions that affect product behavior, data, architecture, UX, security,
+  costs, or validation.
+- Record accepted product and architecture decisions in
+  `.agents/state/decision-register.md`. Decisions left only in chat are not
+  durable project memory.
 
 ### 2. Critical Prohibitions
 

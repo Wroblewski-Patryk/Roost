@@ -19,22 +19,24 @@ For non-trivial work, read this order:
 3. `.agents/core/project-memory-index.md`
 4. `.agents/core/mission-control.md`
 5. `.agents/core/product-delivery-system.md`
-6. `.agents/core/execution-loop.md`
-7. `.agents/core/anti-regression.md`
-8. `.agents/core/quality-gates.md`
-9. `.agents/state/current-focus.md`
-10. `.agents/state/known-issues.md`
-11. `.agents/state/module-confidence-ledger.md`
-12. `.agents/state/delivery-map.md`
-13. `.agents/state/regression-log.md`
-14. `.agents/state/system-health.md`
-15. `.agents/state/next-steps.md`
-16. `.codex/context/PROJECT_STATE.md`
-17. `.codex/context/TASK_BOARD.md`
-18. `.codex/context/LEARNING_JOURNAL.md`
-19. `docs/planning/mvp-next-commits.md`
-20. `docs/planning/mvp-execution-plan.md`
-21. `docs/planning/open-decisions.md`
+6. `.agents/core/product-intake-and-decision-handshake.md`
+7. `.agents/core/execution-loop.md`
+8. `.agents/core/anti-regression.md`
+9. `.agents/core/quality-gates.md`
+10. `.agents/state/current-focus.md`
+11. `.agents/state/known-issues.md`
+12. `.agents/state/module-confidence-ledger.md`
+13. `.agents/state/delivery-map.md`
+14. `.agents/state/decision-register.md`
+15. `.agents/state/regression-log.md`
+16. `.agents/state/system-health.md`
+17. `.agents/state/next-steps.md`
+18. `.codex/context/PROJECT_STATE.md`
+19. `.codex/context/TASK_BOARD.md`
+20. `.codex/context/LEARNING_JOURNAL.md`
+21. `docs/planning/mvp-next-commits.md`
+22. `docs/planning/mvp-execution-plan.md`
+23. `docs/planning/open-decisions.md`
 
 If these sources drift, canonical priority is:
 
@@ -62,6 +64,9 @@ If these sources drift, canonical priority is:
   `.agents/state/delivery-map.md` to translate ideas, architecture,
   references, screenshots, and notes into cross-layer build slices before
   implementation.
+- Use `.agents/core/product-intake-and-decision-handshake.md` and
+  `.agents/state/decision-register.md` when intent, assumptions, product
+  rules, UX direction, data, integrations, or validation are unclear.
 - Never introduce temporary bypasses, fake data, mock-only product behavior, or
   hidden fallback paths.
 - For auth-sensitive, AI, secrets, payments, permissions, integrations,
