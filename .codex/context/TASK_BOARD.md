@@ -2,13 +2,13 @@
 
 ## Ready
 
-- ACF-MAINT-001 Large File Modularization
+- V2VIS-001 Shared CompanyShell And Dashboard Frame
   - Stage: planning
-  - Owner: Backend Builder + Frontend Builder
+  - Owner: Frontend Builder + UX + QA/Test
   - Priority: P1
-  - Source: `docs/operations/application-completion-audit-2026-05-14.md`
-  - Goal: split hotspots only after product/data decisions are no longer
-    blocking owner-grade usefulness.
+  - Source: `docs/ux/v2-visual-implementation-plan-2026-05-14.md`
+  - Goal: start the first bounded V2 implementation slice for the shared
+    shell and dashboard frame without broad workbench rewrites or gamification.
 
 ## In Progress
 
@@ -164,6 +164,17 @@ No active local implementation task is currently in progress.
     route migration order, validation plan, and first future code candidate
     `V2VIS-001 Shared CompanyShell And Dashboard Frame`.
   - Task contract: `docs/planning/webfound-014-task-contract.md`.
+
+- ACF-MAINT-001 Large File Modularization.
+  - Evidence: extracted the vanilla relationship workbench from `public/app.js`
+    into `public/relationship-workbench.js`; `public/app.js` dropped from
+    6527 to 6224 lines. `node --check public/app.js`, `node --check
+    public/relationship-workbench.js`, `npm run build`, and `npm test` passed
+    against disposable PostgreSQL on `localhost:55464`; Playwright fallback
+    verified `/relationships` on `http://127.0.0.1:3113` with the extracted
+    module loaded, graph markers rendered, no overflow, no console issues, and
+    no failed requests.
+  - Task contract: `docs/planning/acf-maint-001-task-contract.md`.
 
 - ACF-DOC-001 Coverage Ledger Reconciliation.
   - Evidence: stale Google Drive first-import blocker language was reconciled

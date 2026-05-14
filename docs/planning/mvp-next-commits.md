@@ -7,15 +7,16 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] ACF-MAINT-001 Large File Modularization:
-      split hotspots only after product/data decisions are no longer blocking
-      owner-grade usefulness.
+- [ ] V2VIS-001 Shared CompanyShell And Dashboard Frame:
+      start the first bounded V2 implementation slice from the approved visual
+      plan: shared shell and dashboard frame only, no broad workbench rewrites
+      or gamification.
 
 ### NEXT
 
-- [ ] V2VIS-001 Shared CompanyShell And Dashboard Frame:
-      start only when the user explicitly chooses to move from planning into
-      V2 visual implementation.
+- [ ] ACF-MAINT-002 Additional Hotspot Modularization:
+      continue splitting remaining hotspots only after the first V2 shell
+      slice has a stable implementation path.
 
 ### DEFERRED TO V2
 
@@ -115,6 +116,12 @@ and `docs/operations/v1-function-coverage-ledger.csv`.
       brief, status strip, responsive behavior, state model, route migration,
       visual asset strategy, validation plan, and first future code candidate
       `V2VIS-001 Shared CompanyShell And Dashboard Frame`.
+- [x] ACF-MAINT-001 Large File Modularization:
+      extracted the vanilla relationship workbench from `public/app.js` into
+      `public/relationship-workbench.js`; `public/app.js` dropped from 6527 to
+      6224 lines. `node --check`, `npm run build`, `npm test` on disposable
+      PostgreSQL `localhost:55464`, and Playwright `/relationships` proof on
+      `http://127.0.0.1:3113` passed.
 - [x] ACF-SEC-001 Production Secret And CORS Hardening:
       production now fails closed when required secret env vars are absent or
       still use committed development placeholder values; production CORS is

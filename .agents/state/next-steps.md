@@ -4,15 +4,16 @@ Last updated: 2026-05-14
 
 ## NOW
 
-1. ACF-MAINT-001 Large File Modularization.
-   - Split hotspots only after product/data decisions are no longer blocking
-     owner-grade usefulness.
+1. V2VIS-001 Shared CompanyShell And Dashboard Frame.
+   - Start the first bounded V2 implementation slice from the approved visual
+     plan: shared shell and dashboard frame only, no broad workbench rewrites
+     or gamification.
 
 ## NEXT
 
-1. V2VIS-001 Shared CompanyShell And Dashboard Frame.
-   - Start only when the user explicitly chooses to move from planning into V2
-     visual implementation.
+1. ACF-MAINT-002 Additional Hotspot Modularization.
+   - Continue splitting remaining hotspots only after the first V2 shell slice
+     has a stable implementation path.
 
 ## LATER
 
