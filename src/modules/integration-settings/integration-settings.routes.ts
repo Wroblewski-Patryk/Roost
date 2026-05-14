@@ -360,7 +360,7 @@ integrationSettingsRouter.get("/google_drive/folders/discover", asyncHandler(asy
         query: "mimeType = 'application/vnd.google-apps.folder' and trashed = false",
         pageToken,
         pageSize: 100,
-        fields: "nextPageToken,files(id,name,driveId,parents,webViewLink,modifiedTime)"
+        fields: "nextPageToken,files(id,name,mimeType,driveId,parents,webViewLink,modifiedTime)"
       });
       folders.push(...(response.files ?? []).filter((folder) => (
         folder.id

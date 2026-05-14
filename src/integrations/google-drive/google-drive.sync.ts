@@ -18,6 +18,8 @@ export type GoogleDriveImportResult = {
   deletedCount: number;
   wouldCreateCount: number;
   wouldUpdateCount: number;
+  contentRefreshedCount: number;
+  contentSkippedCount: number;
 };
 
 export type GoogleDriveChangesResult = {
@@ -81,6 +83,8 @@ export async function importGoogleDriveFoldersForWorkspace(input: {
   let deletedCount = 0;
   let wouldCreateCount = 0;
   let wouldUpdateCount = 0;
+  let contentRefreshedCount = 0;
+  let contentSkippedCount = 0;
 
   for (const file of files) {
     if (existingByExternalId.has(file.id)) {
@@ -102,7 +106,9 @@ export async function importGoogleDriveFoldersForWorkspace(input: {
       skippedCount,
       deletedCount,
       wouldCreateCount,
-      wouldUpdateCount
+      wouldUpdateCount,
+      contentRefreshedCount,
+      contentSkippedCount: files.length
     });
     return {
       provider: "google_drive",
@@ -114,7 +120,9 @@ export async function importGoogleDriveFoldersForWorkspace(input: {
       skippedCount,
       deletedCount,
       wouldCreateCount,
-      wouldUpdateCount
+      wouldUpdateCount,
+      contentRefreshedCount,
+      contentSkippedCount: files.length
     };
   }
 
@@ -137,7 +145,7 @@ export async function importGoogleDriveFoldersForWorkspace(input: {
       continue;
     }
 
-    await prisma.googleDriveFile.upsert({
+    const upsertedFile = await prisma.googleDriveFile.upsert({
       where: {
         workspaceId_provider_externalId: {
           workspaceId: input.workspaceId,
@@ -154,6 +162,17 @@ export async function importGoogleDriveFoldersForWorkspace(input: {
     } else {
       createdCount += 1;
     }
+
+    if (isContentRefreshSupported(file)) {
+      await refreshGoogleDriveFileContent({
+        workspaceId: input.workspaceId,
+        file: upsertedFile,
+        client
+      });
+      contentRefreshedCount += 1;
+    } else {
+      contentSkippedCount += 1;
+    }
   }
 
   const result = {
@@ -166,7 +185,9 @@ export async function importGoogleDriveFoldersForWorkspace(input: {
     skippedCount,
     deletedCount,
     wouldCreateCount,
-    wouldUpdateCount
+    wouldUpdateCount,
+    contentRefreshedCount,
+    contentSkippedCount
   };
   await emitGoogleDriveImportEvent(input.workspaceId, result);
   return result;
@@ -243,6 +264,11 @@ function toGoogleDriveFileCreate(
     externalId: file.id,
     description: file.description
   };
+}
+
+function isContentRefreshSupported(file: GoogleDriveFileMetadata) {
+  return file.mimeType === "application/vnd.google-apps.document"
+    || file.mimeType === "application/vnd.google-apps.spreadsheet";
 }
 
 function toGoogleDriveFileUpdate(file: GoogleDriveFileMetadata, config: GoogleDriveIntegrationConfig) {

@@ -1,5 +1,7 @@
 const privateRoutes = new Set(["/dashboard", "/data", "/areas", "/relationships", "/tasks-adapter", "/pipeline", "/settings", "/settings/account", "/settings/integrations", "/settings/drive", "/settings/api"]);
 const publicRoutes = new Set(["/", "/auth/login", "/auth/register"]);
+const pendingPrivatePathKey = "companycorePendingPrivatePath";
+const apiRequestTimeoutMs = 20_000;
 
 const state = {
   ownerToken: sessionStorage.getItem("companycoreOwnerToken") || "",
@@ -457,6 +459,10 @@ function normalizedPath(pathname = window.location.pathname) {
   return trimmed || "/";
 }
 
+function currentRouteTarget() {
+  return `${window.location.pathname}${window.location.search}${window.location.hash}`;
+}
+
 function dataTableSlugFromPath(pathname = window.location.pathname) {
   const match = normalizedPath(pathname).match(/^\/data\/([^/]+)$/);
   return match ? decodeURIComponent(match[1]) : "";
@@ -631,7 +637,9 @@ function updateChrome() {
 
 function navigate(path, { replace = false, hash = "" } = {}) {
   const nextPath = normalizedPath(path);
-  const nextUrl = `${nextPath}${hash}`;
+  const nextUrl = path.includes("?") || path.includes("#")
+    ? path
+    : `${nextPath}${hash}`;
   if (replace) {
     window.history.replaceState({}, "", nextUrl);
   } else {
@@ -658,6 +666,10 @@ function renderRoute() {
   }
 
   if ((privateRoutes.has(path) || dataWorkbench) && !isSignedIn()) {
+    const target = currentRouteTarget();
+    if (target !== "/auth/login" && target !== "/auth/register") {
+      sessionStorage.setItem(pendingPrivatePathKey, target);
+    }
     window.history.replaceState({}, "", "/auth/login");
     path = "/auth/login";
     showResult("Sign in to continue.", "error");
@@ -4593,6 +4605,9 @@ async function saveGoogleDriveFolderSelection() {
 
 function friendlyError(error) {
   const message = error?.message || "Something went wrong.";
+  if (error?.name === "AbortError") {
+    return "The request timed out. Refresh and try again.";
+  }
   const copy = {
     email_already_registered: "This email already has a CompanyCore account.",
     invalid_credentials: "Email or password is incorrect.",
@@ -4627,13 +4642,16 @@ function isAuthSessionError(error) {
 }
 
 async function api(path, options = {}) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), options.timeoutMs ?? apiRequestTimeoutMs);
   const response = await fetch(`${API_ORIGIN}${path}`, {
     ...options,
+    signal: controller.signal,
     headers: {
       ...authHeaders(),
       ...(options.headers || {})
     }
-  });
+  }).finally(() => window.clearTimeout(timeout));
 
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -4643,11 +4661,14 @@ async function api(path, options = {}) {
 }
 
 async function authRequest(path, payload) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), apiRequestTimeoutMs);
   const response = await fetch(`${API_ORIGIN}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+    body: JSON.stringify(payload),
+    signal: controller.signal
+  }).finally(() => window.clearTimeout(timeout));
   const body = await response.json().catch(() => ({}));
 
   if (!response.ok) {
@@ -5199,12 +5220,74 @@ function setConnected(connection) {
 async function loadConnection() {
   const connection = await api("/v1/connection");
   setConnected(connection);
-  await Promise.all([
+  const results = await Promise.allSettled([
     loadOperatingModel(),
     loadGoogleDriveFiles(),
     loadTasks(),
     loadApiKeys()
   ]);
+  const failed = results.filter((result) => result.status === "rejected");
+  if (failed.length > 0) {
+    showResult(`${failed.length} startup read${failed.length === 1 ? "" : "s"} could not load. Core owner session is active.`, "error");
+  }
+}
+
+async function completeGoogleDriveOAuthFromCurrentUrl() {
+  if (normalizedPath() !== "/settings/drive") {
+    return false;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const error = params.get("error");
+  if (error) {
+    reportAction(googleDriveActionStatus, `Google consent failed: ${error}`, "error");
+    window.history.replaceState({}, "", "/settings/drive");
+    return true;
+  }
+
+  const code = params.get("code");
+  if (!code) {
+    return false;
+  }
+
+  setBusy(true);
+  setLocalStatus(googleDriveActionStatus, "Saving Google Drive OAuth callback...", "pending");
+  try {
+    const folderIds = parseIdList(fields.googleDriveFolderIds.value);
+    await api("/v1/integration-settings/google_drive/oauth/exchange", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        code,
+        redirectUri: `${window.location.origin}/settings/drive`,
+        active: fields.googleDriveActive.checked,
+        config: {
+          selectedFolderIds: folderIds,
+          rootFolderIds: folderIds,
+          importMode: fields.googleDriveImportMode.value || "merge",
+          syncMode: "two_way"
+        }
+      })
+    });
+    window.history.replaceState({}, "", "/settings/drive");
+    await loadConnection();
+    await discoverGoogleDriveFolders();
+    reportAction(googleDriveActionStatus, "Google Drive OAuth connection saved. Select folders, save selection, then import.", "success");
+    return true;
+  } catch (callbackError) {
+    reportAction(googleDriveActionStatus, friendlyError(callbackError), "error");
+    return false;
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function openPostAuthTarget(defaultPath = "/dashboard") {
+  const pendingPath = sessionStorage.getItem(pendingPrivatePathKey);
+  sessionStorage.removeItem(pendingPrivatePathKey);
+  const target = pendingPath && pendingPath.startsWith("/") ? pendingPath : defaultPath;
+  navigate(target, { replace: true });
+  await completeGoogleDriveOAuthFromCurrentUrl();
 }
 
 function renderWorkspaces(workspaces, selectedId = "") {
@@ -5841,7 +5924,7 @@ loginForm.addEventListener("submit", async (event) => {
     applyAuthPayload(response);
     await loadConnection();
     reportAction(loginStatus, "Signed in. Opening dashboard.", "success");
-    navigate("/dashboard", { replace: true });
+    await openPostAuthTarget("/dashboard");
   } catch (error) {
     reportAction(loginStatus, friendlyError(error), "error");
   } finally {
@@ -5865,7 +5948,7 @@ registerForm.addEventListener("submit", async (event) => {
     applyAuthPayload(response);
     await loadConnection();
     reportAction(registerStatus, "Workspace created. Opening dashboard.", "success");
-    navigate("/dashboard", { replace: true });
+    await openPostAuthTarget("/dashboard");
   } catch (error) {
     reportAction(registerStatus, friendlyError(error), "error");
   } finally {
@@ -6145,6 +6228,7 @@ renderRoute();
 if (state.ownerToken) {
   loadConnection().then(() => {
     renderRoute();
+    return completeGoogleDriveOAuthFromCurrentUrl();
   }).catch((error) => {
     if (isAuthSessionError(error)) {
       sessionStorage.removeItem("companycoreOwnerToken");

@@ -12,16 +12,22 @@
 
 ## In Progress
 
-No active task.
+- AGRUN-007 Google Drive Owner Consent And First Import
+  - Stage: verification
+  - Status: IMPLEMENTED_NOT_DEPLOYED
+  - Owner: Ops/Release
+  - Priority: P1
+  - Goal: make Google Drive owner OAuth callback, folder discovery, selected
+    folder import, and Docs/Sheets content indexing available to CompanyCore
+    and MCP-facing agents.
+  - Evidence: local `npm run build`, Docker compiled API test, and
+    `git diff --check` passed on the scoped fix branch.
+  - Remaining gate: deploy the patched backend/web bundle, then rerun
+    production `/settings/drive` folder discovery and first selected-folder
+    import smoke.
 
 ## Blocked
 
-- AGRUN-007 Google Drive Owner Consent And First Import
-  - Stage: planning
-  - Owner: Ops/Release
-  - Priority: P1
-  - Blocked by: real Google OAuth credentials and owner consent/import action
-    are required before target-environment evidence can be produced.
 - AGRUN-010 Upstream Agent Source Merge Execution
   - Stage: planning
   - Owner: Ops/Release

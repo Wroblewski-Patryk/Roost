@@ -1,6 +1,6 @@
 # Module Confidence Ledger
 
-Last updated: 2026-05-11
+Last updated: 2026-05-14
 
 ## Purpose
 
@@ -33,6 +33,7 @@ it honest. Do not turn uncertainty into optimism.
 | ID | Module | Journey / function | Priority | Status | Confidence | Evidence | Missing proof or defect | Next smallest action | Owner | Last verified |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | CCORE-REL-001 | Release confidence | Release-critical CRM/company module inventory and proof map | P0 | IMPLEMENTED_NOT_VERIFIED | Low | Existing module READMEs and governance docs need current journey-level truth. | No current module-by-module proof ledger. | Inventory companies, contacts, interactions, task lists, pipeline stages, decisions, agents, integrations, and deployment journeys; replace this row with real rows. | Planning | 2026-05-11 |
+| GD-OAUTH-001 | Google Drive | Owner OAuth callback, folder discovery, and content indexing | P1 | IMPLEMENTED_NOT_VERIFIED | Medium | 2026-05-14 scoped fix branch: `npm run build`, Docker compiled API test, and `git diff --check` passed. Test covers folder discovery requesting `mimeType`, import counts, and Docs/Sheets content snapshots. | Production code is not yet deployed, so the live `/settings/drive` folder picker can still show zero folders until rollout; production post-deploy import smoke is missing. | Deploy patched backend/web bundle, then run owner `/settings/drive` folder discovery and first selected-folder import against the real Drive account. | Ops/Release + Backend | 2026-05-14 |
 
 ## Maintenance Rules
 
