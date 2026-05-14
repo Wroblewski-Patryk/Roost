@@ -140,7 +140,12 @@ Last updated: 2026-05-14
   production began requiring a separate `API_KEY_HASH_SECRET`. Runtime config
   now preserves the previous production-compatible fallback to the required
   non-placeholder `AUTH_TOKEN_SECRET`, keeping existing service API key hashes
-  valid while still supporting a separate hash secret when configured.
+  valid while still supporting a separate hash secret when configured. The
+  production incident was recovered after Coolify runtime inspection found
+  empty `AUTH_TOKEN_SECRET`, `API_KEY_HASH_SECRET`, and
+  `INTEGRATION_SECRET_KEY` values; all three were populated with
+  non-placeholder values, redeploy `l1i1ylihrss3d7xoxk4psu2n` finished, and
+  public web/API `/health` returned `200`.
 - 2026-05-14: `V2WEB-AGENT-002 Company OS Correlation Timeline` added a
   client-composed evidence chain to `/react-company-os` using existing recent
   event and audit log `correlationId` data from `/v1/company-os`.

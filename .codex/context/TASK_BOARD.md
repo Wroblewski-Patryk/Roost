@@ -67,6 +67,12 @@ No active local implementation task is currently in progress.
     separate hash secret is not configured. `git diff --check`,
     `npm run build`, and `npm test` passed against disposable PostgreSQL on
     `localhost:55466`, including a new production fallback regression test.
+    Coolify runtime inspection then found empty values for `AUTH_TOKEN_SECRET`,
+    `API_KEY_HASH_SECRET`, and `INTEGRATION_SECRET_KEY`; all three were
+    populated with non-placeholder production values. Redeploy
+    `l1i1ylihrss3d7xoxk4psu2n` finished, backend logs showed
+    `companycore listening on port 3000`, and public web/API `/health`
+    returned `200`.
   - Task contract: `docs/planning/prod-hotfix-001-task-contract.md`.
 
 - ACF-PROD-001 Operating Model Data Completion Decision.

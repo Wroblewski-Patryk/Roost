@@ -42,7 +42,7 @@
 - Handoff expectation: production-compatible config and recorded validation evidence.
 
 ## Context
-After the latest push, the production endpoint returned `503` and Coolify showed a restart loop. Local reproduction showed that production config fails when `API_KEY_HASH_SECRET` is absent even when `AUTH_TOKEN_SECRET` and `INTEGRATION_SECRET_KEY` are present.
+After the latest push, the production endpoint returned `503` and Coolify showed a restart loop. Local reproduction showed that production config fails when `API_KEY_HASH_SECRET` is absent even when `AUTH_TOKEN_SECRET` and `INTEGRATION_SECRET_KEY` are present. Post-deploy Coolify inspection found the runtime had empty values for `AUTH_TOKEN_SECRET`, `API_KEY_HASH_SECRET`, and `INTEGRATION_SECRET_KEY`; production secrets were populated in Coolify before the recovery redeploy.
 
 ## Goal
 Allow production to boot when `API_KEY_HASH_SECRET` is omitted by falling back to the already required non-placeholder `AUTH_TOKEN_SECRET`, matching previous hash behavior and preserving existing service keys.
@@ -60,13 +60,13 @@ Allow production to boot when `API_KEY_HASH_SECRET` is omitted by falling back t
 2. Change only `API_KEY_HASH_SECRET` fallback semantics to use `AUTH_TOKEN_SECRET` when omitted.
 3. Add a production config regression test for the compatibility fallback.
 4. Update deployment docs to mark a separate hash secret as recommended, not mandatory.
-5. Run build/test gates, commit, push, and verify public health after redeploy.
+5. Run build/test gates, commit, push, verify Coolify runtime secrets are populated, and verify public health after redeploy.
 
 ## Autonomous Loop Evidence
 
 ### 1. Analyze Current State
 - Issues: Public web and API return `503`; production restart loop reported in Coolify.
-- Gaps: Coolify may not have the newly required `API_KEY_HASH_SECRET` because older production used `AUTH_TOKEN_SECRET` as the hash fallback.
+- Gaps: Coolify may not have the newly required `API_KEY_HASH_SECRET` because older production used `AUTH_TOKEN_SECRET` as the hash fallback; post-deploy inspection also showed the auth and integration secrets existed as empty values.
 - Inconsistencies: Docs said the new secret was mandatory, but production runtime had existing service keys likely derived from the old fallback.
 - Architecture constraints: Do not rotate production secrets or invalidate existing agent keys during an emergency fix.
 
@@ -97,9 +97,12 @@ Allow production to boot when `API_KEY_HASH_SECRET` is omitted by falling back t
 ### 5. Verify and Test
 - Validation performed: production config import check without
   `API_KEY_HASH_SECRET`; `git diff --check`; `npm run build`; `npm test`
-  against disposable PostgreSQL on `localhost:55466`.
+  against disposable PostgreSQL on `localhost:55466`; Coolify env-name
+  inspection; Coolify redeploy of commit `ebadbf3`; public health checks.
 - Result: Passed. `npm test` now has 5 passing tests, including the new
-  production API key hash fallback regression.
+  production API key hash fallback regression. Coolify runtime secrets were
+  populated with non-placeholder values, the backend log reported
+  `companycore listening on port 3000`, and public `/health` returned `200`.
 
 ### 6. Self-Review
 - Simpler option considered: Set a new Coolify secret only.
@@ -118,13 +121,25 @@ Allow production to boot when `API_KEY_HASH_SECRET` is omitted by falling back t
 - [x] Missing or placeholder `AUTH_TOKEN_SECRET` still fails closed.
 - [x] `npm test` passes.
 - [x] Deployment docs describe the compatibility fallback.
-- [ ] Public health recovers after push/deploy or remaining blocker is recorded.
+- [x] Public health recovers after push/deploy or remaining blocker is recorded.
 
 ## Success Signal
 - User or operator problem: Coolify restart loop stops and public health returns a healthy response.
 - Expected product or reliability outcome: Existing service API keys keep working because the previous hash secret source is preserved.
 - How success will be observed: Public `/health` returns a successful response after redeploy.
 - Post-launch learning needed: yes
+
+## Production Recovery Evidence
+- Commit deployed through Coolify: `ebadbf34e2e4c3f4867dc31bc4faa8f1c7570aa7`.
+- Coolify runtime configuration finding: `AUTH_TOKEN_SECRET`,
+  `API_KEY_HASH_SECRET`, and `INTEGRATION_SECRET_KEY` existed but had empty
+  values; all three were populated with non-placeholder production values.
+- Deployment result: Coolify deployment `l1i1ylihrss3d7xoxk4psu2n` finished.
+- Runtime log evidence: migrations had no pending work, seed completed,
+  backend printed `companycore listening on port 3000`.
+- Public smoke: `https://companycore.luckysparrow.ch/health` returned `200`;
+  `https://api.companycore.luckysparrow.ch/health` returned `200`;
+  `https://companycore.luckysparrow.ch/` returned `200`.
 
 ## Deliverable For This Stage
 Emergency production-compatible config hotfix with test and docs.
