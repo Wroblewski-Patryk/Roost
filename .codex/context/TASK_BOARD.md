@@ -47,6 +47,14 @@ No active local implementation task is currently in progress.
 
 ## Done
 
+- PROD-HOTFIX-001 Owner Console Snapshot Routing.
+  - Evidence: production now runs commit
+    `a7557120b8ea4630a0b32097e66ba0d4bb012b1b`; public `/health` and
+    `/v1/health` report that commit; signed-in Playwright route checks for
+    `/dashboard`, `/data`, `/relationships`, `/settings/drive`,
+    `/settings/api`, and `/areas` reported no failed requests and no console
+    warnings or errors.
+
 - AGRUN-007 Google Drive Owner Consent And First Import.
   - Evidence: production runs commit
     `c5878d95a47f17745f65689c08e9e317a6465777`; OAuth is active; folder

@@ -80,6 +80,14 @@ Last updated: 2026-05-14
   and mapped to operating areas. `/v1/google-drive/files` readback returned
   748 imported items, 171 folders, `unassignedCount=0`, and descendant scope
   verification `mismatches=[]`.
+- 2026-05-14: Production now runs owner-console snapshot routing hotfix commit
+  `a7557120b8ea4630a0b32097e66ba0d4bb012b1b`. The vanilla web shell routes
+  implemented table snapshots to their correct API paths, sends Company OS
+  collections through `/v1/company-os/:collection`, and skips provider
+  pseudo-slugs that do not have direct collection endpoints. Signed-in
+  Playwright production checks for `/dashboard`, `/data`, `/relationships`,
+  `/settings/drive`, `/settings/api`, and `/areas` reported no failed requests
+  and no console warnings or errors.
 - 2026-05-14: `V2WEB-AGENT-002 Company OS Correlation Timeline` added a
   client-composed evidence chain to `/react-company-os` using existing recent
   event and audit log `correlationId` data from `/v1/company-os`.

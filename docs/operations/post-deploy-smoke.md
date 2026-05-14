@@ -954,3 +954,40 @@ Use this file to record the minimum checks after each deploy.
 - Residual risks:
   - Real Drive folders/files will appear only after owner OAuth consent and
     first import. That remains tracked as AGRUN-007.
+
+## Owner Console Snapshot Routing Hotfix Production Smoke
+
+- Timestamp: 2026-05-14
+- Environment: production VPS Docker backend
+- Commit: `a7557120b8ea4630a0b32097e66ba0d4bb012b1b`
+- Image:
+  `rnqqkhl3o3dut4qv56mlxly2_backend:a7557120b8ea4630a0b32097e66ba0d4bb012b1b`
+- Running container:
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-a755712`
+- Replaced container:
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-c5878d9`, retained stopped as
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-c5878d9-previous-a755712`.
+- Data safety:
+  - Production Postgres container
+    `postgres-rnqqkhl3o3dut4qv56mlxly2-025605098067` remained running and
+    healthy.
+  - Canary startup reported no pending migrations and seed completed.
+  - Final backend startup reported no pending migrations and seed completed.
+- Public smoke:
+  - `GET https://api.companycore.luckysparrow.ch/health` returned `200` with
+    build commit `a7557120b8ea4630a0b32097e66ba0d4bb012b1b`.
+  - `GET https://api.companycore.luckysparrow.ch/v1/health` returned `200`
+    with the same build commit.
+  - `GET https://companycore.luckysparrow.ch/settings/drive` returned `200`.
+- Owner UI proof:
+  - Playwright signed-in checks for `/dashboard`, `/data`, `/relationships`,
+    `/settings/drive`, `/settings/api`, and `/areas` reported no failed
+    requests and no console warnings or errors.
+  - `/settings/drive` rendered `13 selected folders`, `748 imported items`,
+    and `0 folders need review`.
+  - `/areas` rendered `DRIVE ITEMS`, `748/748 assigned`, and
+    `0 imported Drive items still need an operating area`.
+- Cleanup:
+  - Temporary VPS source archive, source directory, env file, and label file
+    were removed by the rollout script.
+  - Temporary local rollout archive and script were removed.

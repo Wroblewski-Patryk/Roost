@@ -102,7 +102,7 @@ Required smoke checks after deploy:
 
 GitHub-to-Coolify auto-deploy is not required for v1 runtime readiness.
 
-Current status as of 2026-05-08:
+Current status as of 2026-05-14:
 
 - Coolify services are healthy on the VPS.
 - CompanyCore manual runtime rollover is proven and documented.
@@ -115,8 +115,8 @@ Current status as of 2026-05-08:
   but no matching operations smoke record currently supersedes the repeated
   manual-rollover evidence.
 - Public health currently reports build commit
-  `c5878d95a47f17745f65689c08e9e317a6465777` and image
-  `rnqqkhl3o3dut4qv56mlxly2_backend:c5878d95a47f17745f65689c08e9e317a6465777`.
+  `a7557120b8ea4630a0b32097e66ba0d4bb012b1b` and image
+  `rnqqkhl3o3dut4qv56mlxly2_backend:a7557120b8ea4630a0b32097e66ba0d4bb012b1b`.
 - Auto-deploy should therefore be treated as unverified until a future task
   records a push-to-running-image smoke in `docs/operations/post-deploy-smoke.md`.
 

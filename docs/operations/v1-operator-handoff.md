@@ -44,17 +44,17 @@ achievement boundary and external blocker list.
 ## Current Runtime
 
 - CompanyCore public health currently reports backend image:
-  `rnqqkhl3o3dut4qv56mlxly2_backend:c5878d95a47f17745f65689c08e9e317a6465777`
+  `rnqqkhl3o3dut4qv56mlxly2_backend:a7557120b8ea4630a0b32097e66ba0d4bb012b1b`
 - CompanyCore source evidence:
   - Public `/health` reports build commit
-    `c5878d95a47f17745f65689c08e9e317a6465777`.
+    `a7557120b8ea4630a0b32097e66ba0d4bb012b1b`.
   - Documentation/source-of-truth `main` is at or after the accepted v1 runtime
     scope and includes later v2 web-console polish.
 - Container inventory:
   - Running backend:
-    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-c5878d9`.
+    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-a755712`.
   - Rollback container retained stopped:
-    `backend-rnqqkhl3o3dut4qv56mlxly2-025605103087-previous-c5878d9`.
+    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-c5878d9-previous-a755712`.
 - Database:
   - Production Postgres container remains running and healthy.
   - Production Postgres volume must be preserved on deploy and rollback.
@@ -65,6 +65,12 @@ achievement boundary and external blocker list.
 - CompanyCore v1 health returned `200`.
 - CompanyCore web root returned `200`.
 - CompanyCore API metadata returned `200`.
+- Owner console table snapshot routing hotfix is deployed. Signed-in
+  Playwright checks for `/dashboard`, `/data`, `/relationships`,
+  `/settings/drive`, `/settings/api`, and `/areas` reported no failed
+  requests and no console warnings or errors.
+- Google Drive owner UI shows 13 selected department roots, 748 imported
+  items, and no folders needing review; `/areas` shows `748/748 assigned`.
 - Protected CompanyCore `/v1/connection` returned `200`.
 - ClickUp maintenance `inspect_only` returned 219 items, 0 created, 0 updated,
   0 deleted, 219 skipped, and 0 failed retries.
