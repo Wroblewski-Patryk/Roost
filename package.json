@@ -25,8 +25,10 @@
     "ai-ready:smoke": "node scripts/companycore-ai-ready-smoke.mjs",
     "google-drive:smoke": "node scripts/google-drive-production-smoke.mjs",
     "clickup:bootstrap": "node scripts/clickup-production-bootstrap.mjs",
-    "test": "npm run build && npm run prisma:migrate:deploy && node --test \"dist/tests/**/*.test.js\"",
-    "validate": "npm run build"
+    "check:public-js": "node --check public/app.js && node --check public/relationship-workbench.js && node --check public/google-drive-workbench.js",
+    "test:api": "npm run build && npm run prisma:migrate:deploy && node --test \"dist/tests/api.test.js\"",
+    "test": "npm run test:api",
+    "validate": "npm run check:public-js && npm run build"
   },
   "dependencies": {
     "@phosphor-icons/web": "^2.1.2",

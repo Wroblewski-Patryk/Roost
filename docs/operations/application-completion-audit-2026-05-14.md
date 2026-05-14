@@ -174,3 +174,10 @@ still a known P2 gap. Rollback pointers are current after the hotfix deploy.
   cards, no overflow, no console issues, and no failed requests. Evidence is
   recorded in
   `docs/planning/acf-maint-002-google-drive-workbench-extraction-task-contract.md`.
+- 2026-05-15: ACF-QA-001 closed the command-entrypoint part of ACF-014 by
+  adding `npm run check:public-js`, `npm run test:api`, compatible `npm test`
+  delegation, and `npm run validate` with public JS syntax checks before
+  build. `npm run check:public-js`, `npm run validate`, `git diff --check`,
+  and `npm run test:api` passed against disposable PostgreSQL on
+  `localhost:55473`. Evidence is recorded in
+  `docs/planning/acf-qa-001-validation-gates-task-contract.md`.

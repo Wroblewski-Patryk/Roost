@@ -427,11 +427,12 @@ Last updated: 2026-05-15
   context, and workspace-scoped integration settings.
 
 ## Validation Commands
-- Lint: Not configured.
-- Typecheck: `npm run build`
+- Static public JS check: `npm run check:public-js`
+- Typecheck/build: `npm run build`
+- Combined local validation: `npm run validate`
 - Unit tests: Not configured in v1.
-- Integration tests: `npm test` with `DATABASE_URL` pointed at a disposable
-  PostgreSQL database.
+- Integration tests: `npm test` or `npm run test:api` with `DATABASE_URL`
+  pointed at a disposable PostgreSQL database.
 - E2E / smoke: `GET /health`, register owner/workspace, authenticate, create
   project, create task, configure workspace ClickUp settings, trigger native
   ClickUp sync, verify synced task and event.
@@ -2572,6 +2573,12 @@ Last updated: 2026-05-15
   `npm test` passed against disposable PostgreSQL on `localhost:55472`;
   Playwright verified desktop and mobile with the module loaded, four command
   cards, no overflow, no console issues, and no failed requests.
+- 2026-05-15: Completed ACF-QA-001 by adding explicit validation entrypoints:
+  `npm run check:public-js`, `npm run test:api`, compatible `npm test`
+  delegation, and `npm run validate` with the public JS static gate before
+  build. Testing docs and project validation commands now list the new gates.
+  `npm run check:public-js`, `npm run validate`, `git diff --check`, and
+  `npm run test:api` passed against disposable PostgreSQL on `localhost:55473`.
 - 2026-05-06: Deployed the Agent CRUD API rollout to production with manual
   VPS backend rollover. The running backend container is
   `backend-rnqqkhl3o3dut4qv56mlxly2-manual-bf59b2f`, image

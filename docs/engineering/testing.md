@@ -6,15 +6,18 @@ is not enough.
 
 ## Required Commands
 
+- Static public JS check: `npm run check:public-js`
 - Typecheck/build: `npm run build`
-- Integration tests: `npm test`
+- Combined local validation: `npm run validate`
+- Integration tests: `npm test` or `npm run test:api`
 - Docker smoke: `docker compose up -d --build`
 
 Keep this file aligned with `.codex/context/PROJECT_STATE.md`.
 
-`npm test` expects `DATABASE_URL` to point at a disposable PostgreSQL database.
-The script builds TypeScript, applies migrations with `prisma migrate deploy`,
-and runs Node's built-in test runner against compiled tests.
+`npm test` delegates to `npm run test:api` and expects `DATABASE_URL` to point
+at a disposable PostgreSQL database. The script builds TypeScript, applies
+migrations with `prisma migrate deploy`, and runs Node's built-in test runner
+against the compiled API integration tests.
 
 Example local disposable database:
 

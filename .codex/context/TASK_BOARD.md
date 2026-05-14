@@ -2,12 +2,13 @@
 
 ## Ready
 
-- ACF-QA-001 Lint And Split Test Gates
+- ACF-OPS-001 Auto-Deploy Proof Or Manual Path Acceptance
   - Stage: planning
-  - Owner: QA/Test + Backend Builder
+  - Owner: Ops/Release
   - Priority: P2
   - Source: `docs/operations/application-completion-audit-2026-05-14.md`
-  - Goal: improve validation ergonomics after the next maintainability slice.
+  - Goal: reconcile the remaining deployment automation evidence gap or keep
+    the manual Coolify rollover path explicitly accepted.
 
 ## In Progress
 
@@ -57,6 +58,16 @@ No active local implementation task is currently in progress.
   auto-deploy webhook administration task.
 
 ## Done
+
+- ACF-QA-001 Validation Gate Entrypoints.
+  - Evidence: added `npm run check:public-js`, `npm run test:api`, kept
+    `npm test` as a compatibility wrapper, and made `npm run validate` run the
+    public JS static check before build. Updated project-state validation
+    commands and testing docs. `npm run check:public-js`, `npm run validate`,
+    `git diff --check`, and `npm run test:api` passed against disposable
+    PostgreSQL on `localhost:55473`; validation container was removed.
+  - Task contract:
+    `docs/planning/acf-qa-001-validation-gates-task-contract.md`.
 
 - ACF-MAINT-002 Google Drive Workbench Context Extraction.
   - Evidence: added `public/google-drive-workbench.js` as the route-local

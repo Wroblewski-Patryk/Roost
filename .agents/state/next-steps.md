@@ -4,15 +4,15 @@ Last updated: 2026-05-15
 
 ## NOW
 
-1. ACF-QA-001 Lint And Split Test Gates.
-   - Improve validation ergonomics after the Drive workbench extraction closed
-     the active maintainability slice.
-
-## NEXT
-
 1. ACF-OPS-001 Auto-Deploy Proof Or Manual Path Acceptance.
    - Reconcile the remaining deployment automation evidence gap or keep the
      manual Coolify rollover path explicitly accepted.
+
+## NEXT
+
+1. AGRUN-010 Upstream Agent Source Merge Execution.
+   - Still blocked until upstream write access or an approved fork/PR route
+     exists.
 
 ## LATER
 

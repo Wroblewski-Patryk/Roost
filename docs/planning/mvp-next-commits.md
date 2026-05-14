@@ -7,15 +7,15 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] ACF-QA-001 Lint And Split Test Gates:
-      improve validation ergonomics after the Drive workbench extraction closed
-      the active maintainability slice.
-
-### NEXT
-
 - [ ] ACF-OPS-001 Auto-Deploy Proof Or Manual Path Acceptance:
       reconcile the remaining deployment automation evidence gap or keep the
       manual Coolify rollover path explicitly accepted.
+
+### NEXT
+
+- [ ] AGRUN-010 Upstream Agent Source Merge Execution:
+      still blocked until upstream write access or an approved fork/PR route
+      exists.
 
 ### DEFERRED TO V2
 
@@ -176,6 +176,13 @@ and `docs/operations/v1-function-coverage-ledger.csv`.
       Playwright verified desktop and mobile Drive route render with the
       module loaded, four command cards, no overflow, no failed requests, and
       no console issues.
+- [x] ACF-QA-001 Validation Gate Entrypoints:
+      added `npm run check:public-js`, `npm run test:api`, kept `npm test` as
+      the compatibility wrapper, and made `npm run validate` run the public JS
+      static gate before build. Updated testing docs and project validation
+      commands. `npm run check:public-js`, `npm run validate`, `git diff
+      --check`, and `npm run test:api` passed against disposable PostgreSQL on
+      `localhost:55473`.
 - [x] ACF-SEC-001 Production Secret And CORS Hardening:
       production now fails closed when required secret env vars are absent or
       still use committed development placeholder values; production CORS is
