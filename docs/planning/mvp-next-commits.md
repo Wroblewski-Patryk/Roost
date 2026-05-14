@@ -7,16 +7,16 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] V2VIS-002 Route Frame Convergence Audit:
-      use the repaired ACF-UX-003 shell pattern to decide the next route
-      convergence slice, especially React routes that still use a header-only
-      shell instead of the full company rail.
+- [ ] ACF-MAINT-002 Additional Hotspot Modularization:
+      continue reducing delivery risk in the remaining large web/API/test
+      hotspots after V2VIS-002 closed the first route-frame convergence slice.
 
 ### NEXT
 
-- [ ] ACF-MAINT-002 Additional Hotspot Modularization:
-      continue reducing delivery risk in the remaining large web/API/test
-      hotspots after the next shell convergence slice is selected.
+- [ ] V2VIS-003 Route Body UX Polish Candidate:
+      select one high-value route body from the V2VIS-002 audit, likely
+      `/areas` mobile density or `/settings/api` safety workflow, and polish
+      it with evidence-driven screenshots instead of broad route rewrites.
 
 ### DEFERRED TO V2
 
@@ -131,6 +131,15 @@ and `docs/operations/v1-function-coverage-ledger.csv`.
       `http://127.0.0.1:3000` passed at desktop `1366x900`, tablet
       `834x1112`, and mobile `390x844` with no overflow, no clipped cards,
       no console issues, and no failed requests.
+- [x] V2VIS-002 Route Frame Convergence And Usability Repair:
+      published a 100-item route-frame audit, added a reusable vanilla route
+      command strip, converted the shared React shell from header-only chrome
+      into a company command shell with desktop rail and mobile shortcut rail,
+      and verified representative vanilla/React routes at desktop, tablet,
+      and mobile with no overflow, no failed requests, no console issues, and
+      zero unnamed visible controls. `node --check public/app.js`,
+      `npm run build`, `git diff --check`, and `npm test` passed against
+      disposable PostgreSQL on `localhost:55468`.
 - [x] ACF-SEC-001 Production Secret And CORS Hardening:
       production now fails closed when required secret env vars are absent or
       still use committed development placeholder values; production CORS is

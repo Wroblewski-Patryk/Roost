@@ -3791,6 +3791,7 @@ function CompanyOsWorkflowDraftPanel({
               <span className="label-text">Workflow definition</span>
               <select
                 className="select select-bordered"
+                aria-label="Workflow definition"
                 disabled={!canWriteWorkflow || Boolean(pendingAction) || roots.length === 0}
                 onChange={(event) => {
                   setSelectedRootId(event.target.value);

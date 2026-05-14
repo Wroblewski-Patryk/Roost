@@ -289,6 +289,13 @@ const topbarHealthDot = document.querySelector("#topbarHealthDot");
 const topbarHealthText = document.querySelector("#topbarHealthText");
 const topbarWorkspaceText = document.querySelector("#topbarWorkspaceText");
 const topbarAgentText = document.querySelector("#topbarAgentText");
+const routeCommandStrip = document.querySelector("#routeCommandStrip");
+const routeCommandFamily = document.querySelector("#routeCommandFamily");
+const routeCommandTitle = document.querySelector("#routeCommandTitle");
+const routeCommandMatter = document.querySelector("#routeCommandMatter");
+const routeCommandBlocked = document.querySelector("#routeCommandBlocked");
+const routeCommandDot = document.querySelector("#routeCommandDot");
+const routeCommandActions = document.querySelector("#routeCommandActions");
 const clickupWorkspaceLabel = document.querySelector("#clickupWorkspaceLabel");
 const clickupActionStatus = document.querySelector("#clickupActionStatus");
 const workspaceNameLabel = document.querySelector("#workspaceNameLabel");
@@ -487,6 +494,142 @@ const moduleRoutes = [
   { path: "/react-agent-tools", label: "MCP tools", group: "Integrations & agents", keywords: "mcp tools manifest capabilities agent authority approval risk", external: true },
   { path: "/settings/account", label: "Account", group: "Workspace", keywords: "owner workspace readiness login account" }
 ];
+
+const routeCommandDefaults = {
+  family: "CompanyCore",
+  title: "Company command",
+  matter: "Review the current workspace signal before moving into detailed work.",
+  blocked: "No urgent blocker is selected for this route yet.",
+  tone: "ready",
+  actions: [
+    { label: "Company map", href: "/dashboard", secondary: false },
+    { label: "Integration health", href: "/settings/integrations", secondary: true }
+  ]
+};
+
+const routeCommandMeta = {
+  "/dashboard": {
+    family: "Command",
+    title: "Company map",
+    matter: "Start from the workspace map, command brief, and attention queue before opening detailed workbenches.",
+    blocked: "Review integrations, relationships, and data readiness when any signal is degraded.",
+    tone: "ready",
+    actions: [
+      { label: "Open areas", href: "/areas" },
+      { label: "Review relationships", href: "/relationships", secondary: true }
+    ]
+  },
+  "/data": {
+    family: "Workbench",
+    title: "Company data",
+    matter: "Choose the table that owns the company record you need to inspect, edit, or expose to agents.",
+    blocked: "Watch for modules without records, missing API coverage, or unclear ownership.",
+    tone: "review",
+    actions: [
+      { label: "Agent access", href: "/settings/api" },
+      { label: "Relationships", href: "/relationships", secondary: true }
+    ]
+  },
+  "/data-table": {
+    family: "Data table",
+    title: "Record workbench",
+    matter: "Inspect selected records, ownership, source, and API readiness before changing operational data.",
+    blocked: "If writes are missing or unsafe, keep the action inside existing typed workbenches.",
+    tone: "review",
+    actions: [
+      { label: "All data", href: "/data" },
+      { label: "API routes", href: "/settings/api", secondary: true }
+    ]
+  },
+  "/relationships": {
+    family: "Relationships",
+    title: "Relationship review",
+    matter: "Confirm direct, provider-derived, inferred, and needs-review links before people or agents rely on context.",
+    blocked: "Needs-review and unsupported links should be corrected or explicitly understood.",
+    tone: "attention",
+    actions: [
+      { label: "Correct mapping", href: "/areas" },
+      { label: "Integration health", href: "/settings/integrations", secondary: true }
+    ]
+  },
+  "/tasks-adapter": {
+    family: "Execution",
+    title: "Tasks & delivery",
+    matter: "Review synced tasks, list ownership, due work, and delivery status across CompanyCore and ClickUp.",
+    blocked: "If tasks are missing or stale, refresh ClickUp and check selected Lists.",
+    tone: "review",
+    actions: [
+      { label: "ClickUp bridge", href: "/settings" },
+      { label: "Company data", href: "/data/tasks", secondary: true }
+    ]
+  },
+  "/pipeline": {
+    family: "Workflow",
+    title: "Pipeline / CRM",
+    matter: "Review shared pipeline stages, CRM records, deals, and interactions as one cross-department flow.",
+    blocked: "If a stage or CRM record has no ownership, inspect the data workbench before relying on it.",
+    tone: "review",
+    actions: [
+      { label: "Pipeline data", href: "/data/pipeline-stages" },
+      { label: "Clients", href: "/data/clients", secondary: true }
+    ]
+  },
+  "/settings/integrations": {
+    family: "Integrations",
+    title: "Integration health",
+    matter: "Check provider readiness, relationship evidence, and MCP exposure before expanding automation or agent use.",
+    blocked: "Disconnected providers or missing relationship graph evidence should be resolved before agent delegation.",
+    tone: "attention",
+    actions: [
+      { label: "Agent access", href: "/settings/api" },
+      { label: "Relationships", href: "/relationships", secondary: true }
+    ]
+  },
+  "/settings": {
+    family: "ClickUp",
+    title: "ClickUp bridge",
+    matter: "Connect, select, refresh, and sync ClickUp Lists so delivery work lands in the right company area.",
+    blocked: "A missing token, workspace, or selected List blocks useful task synchronization.",
+    tone: "attention",
+    actions: [
+      { label: "Tasks", href: "/tasks-adapter" },
+      { label: "Integration health", href: "/settings/integrations", secondary: true }
+    ]
+  },
+  "/settings/drive": {
+    family: "Google Drive",
+    title: "Drive resources",
+    matter: "Connect Drive, import folders/files, and keep resources assigned to the right operating areas.",
+    blocked: "Unimported, stale, or unassigned Drive items reduce relationship and knowledge quality.",
+    tone: "review",
+    actions: [
+      { label: "Open areas", href: "/areas" },
+      { label: "Relationships", href: "/relationships", secondary: true }
+    ]
+  },
+  "/settings/api": {
+    family: "Agents",
+    title: "Agent access",
+    matter: "Create scoped service keys only after reviewing workspace, risk profile, MCP tools, and supervision needs.",
+    blocked: "Missing scopes, broad write access, or supervised tools require explicit owner review.",
+    tone: "attention",
+    actions: [
+      { label: "MCP tools", href: "/react-agent-tools", external: true },
+      { label: "Integration health", href: "/settings/integrations", secondary: true }
+    ]
+  },
+  "/settings/account": {
+    family: "Workspace",
+    title: "Account & readiness",
+    matter: "Review owner session, active workspace, and the readiness links that keep the console trustworthy.",
+    blocked: "If a readiness item is incomplete, open its setup surface before delegating work.",
+    tone: "ready",
+    actions: [
+      { label: "Integration health", href: "/settings/integrations" },
+      { label: "Agent access", href: "/settings/api", secondary: true }
+    ]
+  }
+};
 
 const dataModuleCatalog = [
   { slug: "projects", label: "Projects", group: "Strategy and delivery", href: "/data/projects", description: "Project containers for delivery work and roadmap context." },
@@ -762,6 +905,55 @@ function navigate(path, { replace = false, hash = "" } = {}) {
   }
 }
 
+function routeCommandKey(path) {
+  return isDataWorkbenchPath(path) ? "/data-table" : path;
+}
+
+function renderRouteCommandStrip(path) {
+  if (!routeCommandStrip) {
+    return;
+  }
+  const signedIn = isSignedIn();
+  routeCommandStrip.hidden = !signedIn;
+  if (!signedIn) {
+    return;
+  }
+
+  const meta = routeCommandMeta[routeCommandKey(path)] || routeCommandDefaults;
+  if (routeCommandFamily) {
+    routeCommandFamily.textContent = meta.family;
+  }
+  if (routeCommandTitle) {
+    routeCommandTitle.textContent = meta.title;
+  }
+  if (routeCommandMatter) {
+    routeCommandMatter.textContent = meta.matter;
+  }
+  if (routeCommandBlocked) {
+    routeCommandBlocked.textContent = meta.blocked;
+  }
+  if (routeCommandDot) {
+    routeCommandDot.className = `dot ${meta.tone === "attention" ? "warn" : meta.tone === "review" ? "ok" : "ok"}`;
+  }
+  if (routeCommandActions) {
+    routeCommandActions.replaceChildren();
+    for (const action of meta.actions || []) {
+      const link = document.createElement("a");
+      link.className = `button-link compact ${action.secondary ? "secondary" : ""}`.trim();
+      link.href = action.href;
+      link.textContent = action.label;
+      if (!action.external) {
+        link.dataset.link = "";
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          navigate(new URL(link.href).pathname);
+        });
+      }
+      routeCommandActions.append(link);
+    }
+  }
+}
+
 function renderRoute() {
   updateChrome();
 
@@ -803,6 +995,7 @@ function renderRoute() {
     workspaceEyebrow.textContent = isSignedIn() ? "Company command" : "Private workspace";
   }
   document.body.dataset.route = path;
+  renderRouteCommandStrip(path);
   renderConnectionState();
   renderModuleSwitcher();
   setClickUpEnabled(isSignedIn());
@@ -3258,7 +3451,7 @@ function renderTaskEditor(record) {
       </label>
       <label>
         Due date
-        <input id="taskEditorDueDate" type="date" value="${escapeHtml(dueDate)}" />
+        <input id="taskEditorDueDate" type="date" aria-label="Task due date" value="${escapeHtml(dueDate)}" />
       </label>
       <label>
         Project

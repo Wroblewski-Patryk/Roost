@@ -550,6 +550,89 @@ a {
   white-space: nowrap;
 }
 
+.route-command-strip {
+  position: sticky;
+  top: 72px;
+  z-index: 8;
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(210px, 0.68fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(248, 250, 252, 0.96);
+  box-shadow: 0 10px 28px rgba(20, 23, 31, 0.06);
+  backdrop-filter: blur(10px);
+}
+
+.route-command-main {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.route-family {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 7px 10px;
+  border: 1px solid #bed0eb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.route-command-main h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.15;
+}
+
+.route-command-main p,
+.route-command-signal {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.route-command-signal {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.route-command-signal span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.route-command-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  white-space: nowrap;
+}
+
 .compact {
   min-height: 38px;
   padding: 9px 12px;
@@ -857,6 +940,10 @@ h4 {
 
 .dot.ok {
   background: var(--success);
+}
+
+.dot.warn {
+  background: var(--warning);
 }
 
 .dot.muted {
@@ -4103,6 +4190,37 @@ button.danger:hover {
     white-space: nowrap;
   }
 
+  .route-command-strip {
+    position: static;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+
+  .route-command-main {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .route-family {
+    justify-self: start;
+  }
+
+  .route-command-main p,
+  .route-command-signal {
+    font-size: 12px;
+  }
+
+  .route-command-signal span:last-child {
+    white-space: normal;
+  }
+
+  .route-command-actions {
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
   .mobile-menu-button {
     display: inline-flex;
     min-height: 38px;
@@ -4320,6 +4438,16 @@ button.danger:hover {
 
   .workspace-topbar {
     grid-template-columns: minmax(150px, 220px) minmax(260px, 1fr) auto;
+  }
+
+  .route-command-strip {
+    top: 96px;
+    grid-template-columns: minmax(0, 1fr) minmax(180px, 0.72fr);
+  }
+
+  .route-command-actions {
+    grid-column: 1 / 3;
+    justify-content: flex-start;
   }
 
   .topbar-status {

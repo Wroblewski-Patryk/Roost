@@ -8,7 +8,14 @@
   - Priority: P1
   - Source: `docs/operations/application-completion-audit-2026-05-14.md`
   - Goal: continue reducing large-file delivery risk after the first dashboard
-    shell implementation path is verified.
+    and route-frame shell implementation paths are verified.
+- V2VIS-003 Route Body UX Polish Candidate
+  - Stage: planning
+  - Owner: Frontend Builder + QA/Test
+  - Priority: P1
+  - Source: `docs/ux/route-frame-usability-audit-2026-05-15.md`
+  - Goal: select one route body from the V2VIS-002 audit and polish it with
+    evidence-driven screenshots after the shared frame convergence is deployed.
 
 ## In Progress
 
@@ -58,6 +65,22 @@ No active local implementation task is currently in progress.
   auto-deploy webhook administration task.
 
 ## Done
+
+- V2VIS-002 Route Frame Convergence And Usability Repair.
+  - Evidence: published `docs/ux/route-frame-usability-audit-2026-05-15.md`
+    with 100 route-frame findings; added the vanilla route command strip;
+    converted the shared React shell from header-only navigation into a
+    company command shell with desktop command rail, grouped navigation,
+    workspace status, compact topbar, and mobile shortcut rail. `node --check
+    public/app.js`, `npm run build`, `git diff --check`, and `npm test`
+    passed against disposable PostgreSQL on `localhost:55468`. Playwright
+    fallback verified `/dashboard`, `/data/tasks`, `/settings/drive`,
+    `/settings/api`, `/areas`, `/react-agent-tools`, and `/react-company-os`
+    at desktop `1366x900`, tablet `834x1112`, and mobile `390x844` with no
+    horizontal overflow, no console issues, no failed requests, and zero
+    unnamed visible controls.
+  - Task contract:
+    `docs/planning/v2vis-002-route-frame-convergence-task-contract.md`.
 
 - ACF-UX-003 Authenticated Shell Usability Repair.
   - Evidence: sidebar IA now uses company-management lanes (`Command`,

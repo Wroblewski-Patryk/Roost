@@ -112,6 +112,27 @@ of rediscovering them.
   tablet `834x1112`, and mobile `390x844` with no horizontal overflow, no
   console issues, mobile drawer open, and mobile topbar height `65px`.
 
+### 2026-05-15 - Route Command Frame
+- Type: reusable_pattern
+- Context: V2VIS-002 responded to broad user feedback that the app still felt
+  weak and not useful enough across views after the first shell repair.
+- Decision: Private vanilla routes should expose a compact route command strip
+  below the topbar with the route family, what matters now, blocked/review
+  signal, and two quick actions. Shared React routes should use a CompanyCore
+  command shell with desktop left rail, grouped navigation, workspace status,
+  compact route topbar, and mobile shortcut rail instead of a header-only
+  horizontal navigation model.
+- Reuse when: Adding private routes, migrating React previews, reviewing
+  route body polish, or deciding where a route should surface next action and
+  blocked-state information.
+- Avoid when: Building public/auth routes, modal-only flows, or one-off
+  experiments that are not part of the authenticated management console.
+- Evidence: V2VIS-002 `node --check public/app.js`, `npm run build`,
+  `git diff --check`, `npm test`, and Playwright fallback proof on
+  `http://127.0.0.1:3115` passed at desktop `1366x900`, tablet `834x1112`,
+  and mobile `390x844` with no overflow, no console issues, no failed
+  requests, and zero unnamed visible controls.
+
 ### 2026-05-14 - Company City Strategic Map
 - Type: visual_direction
 - Context: The user approved the generated dashboard direction showing a

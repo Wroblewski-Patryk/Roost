@@ -147,6 +147,20 @@ Last updated: 2026-05-14
   `localhost:55467`; Playwright fallback verified desktop, tablet, and mobile
   with no overflow, no console issues, no failed requests, and mobile/tablet
   topbar height `65px`.
+- 2026-05-15: V2VIS-002 closed the first route-frame convergence repair after
+  the user asked for 100 UX/UI findings and implementation. The new audit
+  `docs/ux/route-frame-usability-audit-2026-05-15.md` records 100
+  route-frame findings across vanilla and React private routes. Vanilla
+  private routes now include a reusable route command strip with route family,
+  what matters now, blocked/review signal, and quick actions. The shared React
+  shell now uses a company command frame with desktop rail, grouped command /
+  workbench / integration / workspace navigation, workspace status, compact
+  topbar, and mobile shortcut rail. `node --check public/app.js`,
+  `npm run build`, `git diff --check`, and `npm test` passed against
+  disposable PostgreSQL on `localhost:55468`; Playwright fallback verified
+  representative vanilla and React routes at desktop `1366x900`, tablet
+  `834x1112`, and mobile `390x844` with no horizontal overflow, no console
+  issues, no failed requests, and zero unnamed visible controls.
 - 2026-05-14: PROD-HOTFIX-001 addressed the Coolify restart-loop risk after
   production began requiring a separate `API_KEY_HASH_SECRET`. Runtime config
   now preserves the previous production-compatible fallback to the required

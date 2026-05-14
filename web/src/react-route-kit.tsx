@@ -1694,6 +1694,40 @@ export function companyAreas(connection: ConnectionData) {
   return connection.operatingModel.areas.filter((area) => area.key !== "main-general");
 }
 
+const reactShellNav = [
+  {
+    label: "Command",
+    links: [
+      { href: "/dashboard", label: "Company map", icon: "ph-map-trifold" }
+    ]
+  },
+  {
+    label: "Workbenches",
+    links: [
+      { href: "/areas", label: "Areas & resources", icon: "ph-buildings" },
+      { href: "/relationships", label: "Relationship review", icon: "ph-graph" },
+      { href: "/data", label: "Company data", icon: "ph-database" },
+      { href: "/tasks-adapter", label: "Tasks & delivery", icon: "ph-list-checks" },
+      { href: "/pipeline", label: "Pipeline / CRM", icon: "ph-flow-arrow" }
+    ]
+  },
+  {
+    label: "Integrations & agents",
+    links: [
+      { href: "/settings/integrations", label: "Integration health", icon: "ph-plugs-connected" },
+      { href: "/settings/drive", label: "Google Drive", icon: "ph-cloud" },
+      { href: "/settings/api", label: "Agent access", icon: "ph-key" },
+      { href: "/react-agent-tools", label: "MCP tools", icon: "ph-robot" }
+    ]
+  },
+  {
+    label: "Workspace",
+    links: [
+      { href: "/settings/account", label: "Account & readiness", icon: "ph-user-circle" }
+    ]
+  }
+];
+
 export function Shell({
   children,
   connection,
@@ -1703,34 +1737,90 @@ export function Shell({
   connection?: ConnectionData;
   appLabel?: string;
 }) {
+  const metrics = connection ? connectionMetrics(connection) : null;
+  const currentPath = typeof window === "undefined" ? "" : window.location.pathname;
+  const activeLabel = reactShellNav
+    .flatMap((section) => section.links)
+    .find((link) => link.href === currentPath)?.label || appLabel.replace(/^React\s+/i, "");
+  const healthLabel = connection ? "Healthy workspace" : "Signed-out preview";
+  const workspaceLabel = connection?.workspace.name || "No active workspace";
+  const agentLabel = metrics ? `${metrics.areas} areas · ${metrics.tables} tables` : appLabel.replace(/^React\s+/i, "");
+
   return (
-    <main className="min-h-screen overflow-x-hidden bg-base-200 text-base-content" data-theme="companycore">
-      <header className="border-b border-base-300 bg-neutral text-neutral-content">
-        <div className="mx-auto grid w-full max-w-7xl gap-4 px-4 py-4 lg:grid-cols-[minmax(220px,0.7fr)_minmax(0,1fr)_auto] lg:items-center sm:px-5">
-          <a className="flex min-w-0 items-center gap-3 font-black no-underline" href="/dashboard">
-            <span className="grid h-9 w-9 place-items-center rounded-company bg-primary text-sm text-primary-content">CC</span>
-            <span className="min-w-0">
-              CompanyCore
-              <small className="block truncate text-xs font-black text-neutral-content/70">
-                {connection?.workspace.name || appLabel}
-              </small>
-            </span>
-          </a>
-          <nav className="flex min-w-0 flex-wrap gap-2" aria-label="CompanyCore command navigation">
-            <a className="btn btn-ghost btn-sm text-neutral-content hover:bg-white/10" href="/dashboard">Company map</a>
-            <a className="btn btn-ghost btn-sm text-neutral-content hover:bg-white/10" href="/areas">Areas</a>
-            <a className="btn btn-ghost btn-sm text-neutral-content hover:bg-white/10" href="/relationships">Relations</a>
-            <a className="btn btn-ghost btn-sm text-neutral-content hover:bg-white/10" href="/settings/integrations">Integrations</a>
-            <a className="btn btn-ghost btn-sm text-neutral-content hover:bg-white/10" href="/settings/api">Agent access</a>
-            <a className="btn btn-primary btn-sm" href="/react-agent-tools">MCP tools</a>
-          </nav>
-          <div className="flex flex-wrap gap-2 text-xs font-black text-neutral-content/75" aria-label="React shell status">
-            <span>{connection ? "Healthy" : "Signed out"}</span>
-            <span>{connection ? `${connectionMetrics(connection).areas} areas` : appLabel}</span>
+    <main className="min-h-screen overflow-x-hidden bg-base-200 text-base-content lg:grid lg:grid-cols-[304px_minmax(0,1fr)]" data-theme="companycore">
+      <aside className="hidden min-h-screen border-r border-white/10 bg-neutral px-4 py-5 text-neutral-content lg:grid lg:grid-rows-[auto_auto_minmax(0,1fr)_auto] lg:gap-4">
+        <a className="flex min-w-0 items-start gap-3 border-b border-white/10 pb-4 font-black no-underline text-neutral-content" href="/dashboard">
+          <span className="grid h-9 w-9 flex-none place-items-center rounded-company bg-primary text-sm text-primary-content">CC</span>
+          <span className="min-w-0">
+            CompanyCore
+            <small className="block truncate text-xs font-black text-neutral-content/65">{workspaceLabel}</small>
+          </span>
+        </a>
+        <section className="rounded-company border border-white/10 bg-white/[0.04] p-3" aria-label="Workspace status">
+          <p className="mb-2 text-[0.68rem] font-black uppercase text-neutral-content/60">Active workspace</p>
+          <strong className="block truncate text-sm">{workspaceLabel}</strong>
+          <div className="mt-3 grid gap-2 text-xs font-black text-neutral-content/70">
+            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5">{healthLabel}</span>
+            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5">{agentLabel}</span>
           </div>
+        </section>
+        <nav className="min-h-0 space-y-4 overflow-y-auto pr-1" aria-label="CompanyCore command navigation">
+          {reactShellNav.map((section) => (
+            <section className="grid gap-1.5" key={section.label} aria-label={section.label}>
+              <p className="px-3 text-[0.68rem] font-black uppercase text-neutral-content/55">{section.label}</p>
+              {section.links.map((link) => {
+                const isActive = link.href === currentPath || (link.href === "/data" && currentPath.startsWith("/data/"));
+                return (
+                  <a
+                    key={link.href}
+                    className={`flex min-h-10 items-center gap-3 rounded-company border px-3 py-2 text-sm font-black no-underline ${isActive ? "border-primary/60 bg-primary/15 text-neutral-content shadow-[inset_3px_0_0_#2364d2]" : "border-transparent text-neutral-content/82 hover:border-primary/40 hover:bg-primary/10 hover:text-neutral-content"}`}
+                    href={link.href}
+                  >
+                    <i className={`ph-bold ${link.icon} w-5 text-lg text-primary`} aria-hidden="true"></i>
+                    <span className="min-w-0 truncate">{link.label}</span>
+                  </a>
+                );
+              })}
+            </section>
+          ))}
+        </nav>
+        <div className="rounded-company border border-white/10 bg-white/[0.04] p-3 text-xs font-black text-neutral-content/70">
+          <span className="inline-flex items-center gap-2">
+            <span className={`h-2.5 w-2.5 rounded-full ${connection ? "bg-success" : "bg-neutral-content/45"}`} aria-hidden="true"></span>
+            {connection ? "Workspace online" : "Waiting for owner session"}
+          </span>
         </div>
-      </header>
-      {children}
+      </aside>
+      <section className="min-w-0">
+        <header className="sticky top-0 z-20 border-b border-base-300 bg-base-100/95 px-4 py-3 backdrop-blur sm:px-5 lg:min-h-[72px]">
+          <div className="mx-auto grid w-full max-w-7xl gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div className="flex min-w-0 items-center gap-3">
+              <a className="grid h-9 w-9 flex-none place-items-center rounded-company bg-neutral text-sm font-black text-neutral-content no-underline lg:hidden" href="/dashboard">CC</a>
+              <div className="min-w-0">
+                <p className="mb-1 text-[0.68rem] font-black uppercase text-company-muted">Company command</p>
+                <h1 className="truncate text-xl font-black leading-tight">{activeLabel}</h1>
+              </div>
+            </div>
+            <div className="hidden min-w-0 flex-wrap gap-2 text-xs font-black text-company-muted sm:flex" aria-label="React shell status">
+              <span className="rounded-full border border-base-300 bg-base-200 px-3 py-1.5">{healthLabel}</span>
+              <span className="max-w-[18rem] truncate rounded-full border border-base-300 bg-base-200 px-3 py-1.5">{workspaceLabel}</span>
+              <span className="rounded-full border border-base-300 bg-base-200 px-3 py-1.5">{agentLabel}</span>
+            </div>
+            <nav className="flex min-w-0 gap-2 overflow-x-auto pb-1 lg:hidden" aria-label="CompanyCore mobile command navigation">
+              {reactShellNav.flatMap((section) => section.links).slice(0, 7).map((link) => (
+                <a
+                  key={link.href}
+                  className={`btn btn-sm flex-none ${link.href === currentPath ? "btn-primary" : "btn-outline"}`}
+                  href={link.href}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+          </div>
+        </header>
+        {children}
+      </section>
     </main>
   );
 }
@@ -1747,10 +1837,10 @@ export function LocalNotice({
   action?: { label: string; href: string };
 }) {
   const toneClass = {
-    info: "alert-info",
-    success: "alert-success",
-    warning: "alert-warning",
-    error: "alert-error"
+    info: "border-info/30 bg-info/10",
+    success: "border-success/30 bg-success/10",
+    warning: "border-warning/40 bg-warning/20",
+    error: "border-error/35 bg-error/10"
   }[tone];
   const icon = {
     info: "ph-info",
@@ -1760,7 +1850,7 @@ export function LocalNotice({
   }[tone];
 
   return (
-    <div className={`alert ${toneClass} items-start`} role="status">
+    <div className={`grid grid-cols-1 items-start gap-3 rounded-company border p-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] ${toneClass}`} role="status">
       <i className={`ph-bold ${icon} mt-0.5 text-xl`} aria-hidden="true"></i>
       <div>
         <strong>{title}</strong>

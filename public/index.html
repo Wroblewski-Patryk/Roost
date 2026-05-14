@@ -109,6 +109,20 @@
             <button type="button" class="link-button compact" id="logoutButton">Sign out</button>
           </div>
         </header>
+        <section class="route-command-strip" id="routeCommandStrip" aria-label="Route command brief" data-private>
+          <div class="route-command-main">
+            <span class="route-family" id="routeCommandFamily">Workspace</span>
+            <div>
+              <h2 id="routeCommandTitle">Company command</h2>
+              <p id="routeCommandMatter">Load the workspace to review what matters now.</p>
+            </div>
+          </div>
+          <div class="route-command-signal" aria-label="Review signal">
+            <span class="dot muted" id="routeCommandDot"></span>
+            <span id="routeCommandBlocked">Waiting for owner session.</span>
+          </div>
+          <div class="route-command-actions" id="routeCommandActions"></div>
+        </section>
 
     <main class="shell">
       <section class="view hero" data-view="/">
@@ -1008,7 +1022,7 @@
               <p id="googleDriveWorkspaceLabel">Sign in to load Google Drive settings.</p>
             </div>
             <label class="switch">
-              <input id="googleDriveActive" name="googleDriveActive" type="checkbox" checked>
+              <input id="googleDriveActive" name="googleDriveActive" type="checkbox" aria-label="Enable Google Drive integration" checked>
               <span>Active</span>
             </label>
           </div>
@@ -1043,7 +1057,7 @@
           <div class="step">
             <label>
               Redirect URI
-              <input id="googleDriveRedirectUri" name="googleDriveRedirectUri" type="url" readonly>
+              <input id="googleDriveRedirectUri" name="googleDriveRedirectUri" type="url" aria-label="Google Drive redirect URI" readonly>
             </label>
             <label>
               Advanced fallback: Folder IDs to import

@@ -1,19 +1,19 @@
 # Next Steps
 
-Last updated: 2026-05-14
+Last updated: 2026-05-15
 
 ## NOW
 
-1. V2VIS-002 Route Frame Convergence Audit.
-   - Use the repaired ACF-UX-003 shell pattern to decide the next route
-     convergence slice, especially React routes that still use a header-only
-     shell instead of the full company rail.
+1. ACF-MAINT-002 Additional Hotspot Modularization.
+   - Continue reducing delivery risk in the remaining large web/API/test
+     hotspots after V2VIS-002 closed the first route-frame convergence slice.
 
 ## NEXT
 
-1. ACF-MAINT-002 Additional Hotspot Modularization.
-   - Continue reducing delivery risk in the remaining large web/API/test
-     hotspots after the next shell convergence slice is selected.
+1. V2VIS-003 Route Body UX Polish Candidate.
+   - Select one high-value route body from the V2VIS-002 audit, likely
+     `/areas` mobile density or `/settings/api` safety workflow, and polish it
+     with evidence-driven screenshots instead of broad route rewrites.
 
 ## LATER
 

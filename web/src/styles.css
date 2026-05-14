@@ -129,6 +129,14 @@ label {
     min-width: 0;
   }
 
+  .alert {
+    grid-template-columns: 1fr;
+  }
+
+  .alert .btn {
+    justify-self: start;
+  }
+
   .table {
     min-width: 34rem;
   }
