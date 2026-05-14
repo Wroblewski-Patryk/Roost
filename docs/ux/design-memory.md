@@ -940,3 +940,22 @@ of rediscovering them.
   `834x1112`, and mobile `390x844` with 13 area cards, 4 status pills, no
   overflow, no clipped cards, no console issues, no failed requests, map click
   to `/areas?area=main-general`, and `/relationships` regression proof.
+
+### 2026-05-15 - Provider Import Command Summary
+- Type: reusable_pattern
+- Context: Provider setup routes can become technical forms even when the user
+  really needs a staged operational decision: connect, scope, import, map,
+  review.
+- Decision: Put a route-local command summary above provider setup forms. The
+  summary should expose one current priority, four or fewer state-derived
+  command cards, and stable anchors to the real work sections. Readiness must
+  be staged rather than binary.
+- Reuse when: Google Drive, ClickUp, future storage, knowledge, webhook, or AI
+  provider routes need to show whether imported context is safe for owner and
+  agent use.
+- Avoid when: The screen is a narrow single-action form where the shared route
+  command strip already answers what matters now.
+- Evidence: V2VIS-005 added the Drive import command summary to
+  `/settings/drive`, verified desktop `1366x900`, tablet `834x1112`, and
+  mobile `390x844` with four command cards, stable anchors, no overflow, no
+  console issues, no failed requests, and zero unnamed visible controls.

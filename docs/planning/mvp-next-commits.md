@@ -7,15 +7,15 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] V2VIS-005 Next Route Body UX Polish Cycle:
-      repeat the 100-findings-plus-implementation UX cycle on the next dense
-      private route, likely `/settings/drive` import/scoping.
+- [ ] ACF-MAINT-002 Additional Hotspot Modularization:
+      continue reducing delivery risk in the remaining large web/API/test
+      hotspots after the V2VIS route-body polish queue closed with
+      `/settings/drive`.
 
 ### NEXT
 
-- [ ] ACF-MAINT-002 Additional Hotspot Modularization:
-      continue reducing delivery risk in the remaining large web/API/test
-      hotspots after V2VIS-002 closed the first route-frame convergence slice.
+- [ ] ACF-QA-001 Lint And Split Test Gates:
+      improve validation ergonomics after the next maintainability slice.
 
 ### DEFERRED TO V2
 
@@ -157,6 +157,15 @@ and `docs/operations/v1-function-coverage-ledger.csv`.
       tablet, and mobile with no overflow, no failed requests, no console
       issues, four command cards, and zero unnamed visible controls. Real
       create-key proof showed a visible raw `cc_v1_` key and one active key row.
+- [x] V2VIS-005 Settings Drive Route Body UX Polish:
+      published a 100-item `/settings/drive` route-body audit, added a Drive
+      import command summary, OAuth/selection/import/area-review command
+      cards, stable setup/folder/import anchors, and responsive command grid.
+      `node --check public/app.js`, `npm run build`, `git diff --check`, and
+      `npm test` passed against disposable PostgreSQL on `localhost:55471`;
+      Playwright verified `/settings/drive` on desktop, tablet, and mobile
+      with no overflow, no failed requests, no console issues, four command
+      cards, working folder-picker anchor, and zero unnamed visible controls.
 - [x] ACF-SEC-001 Production Secret And CORS Hardening:
       production now fails closed when required secret env vars are absent or
       still use committed development placeholder values; production CORS is

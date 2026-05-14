@@ -9,13 +9,6 @@
   - Source: `docs/operations/application-completion-audit-2026-05-14.md`
   - Goal: continue reducing large-file delivery risk after the first dashboard
     and route-frame shell implementation paths are verified.
-- V2VIS-005 Next Route Body UX Polish Cycle
-  - Stage: planning
-  - Owner: Frontend Builder + QA/Test
-  - Priority: P1
-  - Source: `docs/ux/settings-api-route-body-usability-audit-2026-05-15.md`
-  - Goal: repeat the 100-findings-plus-implementation UX cycle on the next
-    dense private route, likely `/settings/drive` import/scoping.
 
 ## In Progress
 
@@ -65,6 +58,22 @@ No active local implementation task is currently in progress.
   auto-deploy webhook administration task.
 
 ## Done
+
+- V2VIS-005 Settings Drive Route Body UX Polish.
+  - Evidence: published
+    `docs/ux/settings-drive-route-body-usability-audit-2026-05-15.md` with
+    100 route-body findings; added `/settings/drive` Drive import command
+    summary, OAuth/selection/import/area-review command cards, stable anchors
+    for setup, folder selection, and imported files, plus responsive command
+    grid CSS. `node --check public/app.js`, `npm run build`, `git diff
+    --check`, and `npm test` passed against disposable PostgreSQL on
+    `localhost:55471`. Playwright fallback verified `/settings/drive` on
+    `http://127.0.0.1:3118` at desktop `1366x900`, tablet `834x1112`, and
+    mobile `390x844` with no horizontal overflow, no console issues, no failed
+    requests, four command cards, working folder-picker anchor, and zero
+    unnamed visible controls.
+  - Task contract:
+    `docs/planning/v2vis-005-settings-drive-route-body-polish-task-contract.md`.
 
 - V2VIS-003 Areas Route Body UX Polish.
   - Evidence: published `docs/ux/areas-route-body-usability-audit-2026-05-15.md`

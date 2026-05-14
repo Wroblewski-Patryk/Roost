@@ -2554,6 +2554,15 @@ Last updated: 2026-05-15
   `/v1/connection`. API route rows now show method, path, group, and
   capability context with search, method filtering, filtered counts, and a
   filter-specific empty state while preserving capability badges.
+- 2026-05-15: Completed V2VIS-005 by turning `/settings/drive` from a
+  form-first provider setup route into a staged Drive import command surface.
+  The route now shows OAuth, folder selection, imported item, and area review
+  readiness from real Google Drive state, with stable anchors for setup,
+  folder picker, and imported-file review. `node --check public/app.js`,
+  `npm run build`, `git diff --check`, and `npm test` passed against
+  disposable PostgreSQL on `localhost:55471`; Playwright verified desktop,
+  tablet, and mobile with no overflow, console issues, failed requests, or
+  unnamed visible controls.
 - 2026-05-06: Deployed the Agent CRUD API rollout to production with manual
   VPS backend rollover. The running backend container is
   `backend-rnqqkhl3o3dut4qv56mlxly2-manual-bf59b2f`, image

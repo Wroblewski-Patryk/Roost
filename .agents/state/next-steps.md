@@ -4,15 +4,15 @@ Last updated: 2026-05-15
 
 ## NOW
 
-1. V2VIS-005 Next Route Body UX Polish Cycle.
-   - Repeat the 100-findings-plus-implementation UX cycle on the next dense
-     private route, likely `/settings/drive` import/scoping.
+1. ACF-MAINT-002 Additional Hotspot Modularization.
+   - Continue reducing delivery risk in the remaining large web/API/test
+     hotspots after the V2VIS route-body polish queue closed with
+     `/settings/drive`.
 
 ## NEXT
 
-1. ACF-MAINT-002 Additional Hotspot Modularization.
-   - Continue reducing delivery risk in the remaining large web/API/test
-     hotspots after V2VIS-002 closed the first route-frame convergence slice.
+1. ACF-QA-001 Lint And Split Test Gates.
+   - Improve validation ergonomics after the next maintainability slice.
 
 ## LATER
 
