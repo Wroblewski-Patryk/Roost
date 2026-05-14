@@ -1486,6 +1486,32 @@ test("CompanyCore v1 protected API flow", async () => {
   let googleDriveListCallCount = 0;
   globalThis.fetch = (async (input: string | URL | Request) => {
     const url = new URL(String(input));
+    if (url.origin === "https://docs.googleapis.com") {
+      assert.ok(url.pathname === "/v1/documents/drive-doc-1" || url.pathname === "/v1/documents/drive-nested-doc-1");
+      const documentId = url.pathname.split("/").at(-1);
+      return new Response(JSON.stringify({
+        body: {
+          content: [{
+            paragraph: {
+              elements: [{
+                textRun: {
+                  content: `${documentId} imported content for search.\n`
+                }
+              }]
+            }
+          }]
+        }
+      }), { status: 200 });
+    }
+
+    if (url.origin === "https://sheets.googleapis.com") {
+      assert.equal(url.pathname, "/v4/spreadsheets/drive-sheet-1/values/A1%3AZ100");
+      return new Response(JSON.stringify({
+        range: "A1:Z100",
+        values: [["Metric", "Value"], ["Imported sheet", "indexed"]]
+      }), { status: 200 });
+    }
+
     assert.equal(url.origin, "https://www.googleapis.com");
     assert.ok(url.pathname === "/drive/v3/files" || url.pathname === "/drive/v3/files/drive-folder-root");
     assert.equal(url.searchParams.get("supportsAllDrives"), "true");
@@ -1570,12 +1596,21 @@ test("CompanyCore v1 protected API flow", async () => {
     });
     assert.equal(inspectDriveImport.status, 200);
     const inspectDriveImportBody = inspectDriveImport.body as {
-      data: { itemCount: number; createdCount: number; skippedCount: number; wouldCreateCount: number };
+      data: {
+        itemCount: number;
+        createdCount: number;
+        skippedCount: number;
+        wouldCreateCount: number;
+        contentRefreshedCount: number;
+        contentSkippedCount: number;
+      };
     };
     assert.equal(inspectDriveImportBody.data.itemCount, 5);
     assert.equal(inspectDriveImportBody.data.createdCount, 0);
     assert.equal(inspectDriveImportBody.data.skippedCount, 5);
     assert.equal(inspectDriveImportBody.data.wouldCreateCount, 4);
+    assert.equal(inspectDriveImportBody.data.contentRefreshedCount, 0);
+    assert.equal(inspectDriveImportBody.data.contentSkippedCount, 5);
     assert.equal(await prisma.googleDriveFile.count({ where: { workspaceId: ownerA.workspace.id } }), 2);
 
     const mergeDriveImport = await request("/v1/integration-settings/google_drive/import", {
@@ -1587,12 +1622,21 @@ test("CompanyCore v1 protected API flow", async () => {
     });
     assert.equal(mergeDriveImport.status, 200);
     const mergeDriveImportBody = mergeDriveImport.body as {
-      data: { itemCount: number; createdCount: number; updatedCount: number; skippedCount: number };
+      data: {
+        itemCount: number;
+        createdCount: number;
+        updatedCount: number;
+        skippedCount: number;
+        contentRefreshedCount: number;
+        contentSkippedCount: number;
+      };
     };
     assert.equal(mergeDriveImportBody.data.itemCount, 5);
     assert.equal(mergeDriveImportBody.data.createdCount, 4);
     assert.equal(mergeDriveImportBody.data.updatedCount, 1);
     assert.equal(mergeDriveImportBody.data.skippedCount, 0);
+    assert.equal(mergeDriveImportBody.data.contentRefreshedCount, 3);
+    assert.equal(mergeDriveImportBody.data.contentSkippedCount, 2);
 
     const repeatDriveImport = await request("/v1/integration-settings/google_drive/import", {
       method: "POST",
@@ -1603,11 +1647,19 @@ test("CompanyCore v1 protected API flow", async () => {
     });
     assert.equal(repeatDriveImport.status, 200);
     const repeatDriveImportBody = repeatDriveImport.body as {
-      data: { createdCount: number; updatedCount: number; wouldUpdateCount: number };
+      data: {
+        createdCount: number;
+        updatedCount: number;
+        wouldUpdateCount: number;
+        contentRefreshedCount: number;
+        contentSkippedCount: number;
+      };
     };
     assert.equal(repeatDriveImportBody.data.createdCount, 0);
     assert.equal(repeatDriveImportBody.data.updatedCount, 5);
     assert.equal(repeatDriveImportBody.data.wouldUpdateCount, 5);
+    assert.equal(repeatDriveImportBody.data.contentRefreshedCount, 3);
+    assert.equal(repeatDriveImportBody.data.contentSkippedCount, 2);
   } finally {
     globalThis.fetch = originalFetchBeforeGoogleDriveImport;
   }
@@ -1634,6 +1686,29 @@ test("CompanyCore v1 protected API flow", async () => {
     }
   });
   assert.equal(importedNestedDriveDoc?.parentExternalId, "drive-nested-folder");
+  const importedDriveSheet = await prisma.googleDriveFile.findUnique({
+    where: {
+      workspaceId_provider_externalId: {
+        workspaceId: ownerA.workspace.id,
+        provider: "google_drive",
+        externalId: "drive-sheet-1"
+      }
+    }
+  });
+  assert.ok(importedDriveDoc?.id);
+  assert.ok(importedDriveSheet?.id);
+  assert.ok(importedNestedDriveDoc?.id);
+  const importedContentSnapshots = await prisma.googleDriveContentSnapshot.findMany({
+    where: {
+      workspaceId: ownerA.workspace.id,
+      googleDriveFileId: {
+        in: [importedDriveDoc.id, importedDriveSheet.id, importedNestedDriveDoc.id]
+      }
+    }
+  });
+  assert.equal(new Set(importedContentSnapshots.map((snapshot) => snapshot.googleDriveFileId)).size, 3);
+  assert.ok(importedContentSnapshots.some((snapshot) => snapshot.extractedText?.includes("drive-doc-1 imported content for search")));
+  assert.ok(importedContentSnapshots.some((snapshot) => snapshot.extractedText?.includes("Imported sheet | indexed")));
   const importedDriveRoot = await prisma.googleDriveFile.findUnique({
     where: {
       workspaceId_provider_externalId: {

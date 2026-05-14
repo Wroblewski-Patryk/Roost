@@ -46,6 +46,13 @@ Last updated: 2026-05-08
   encrypted refresh-token material, paginated Drive file discovery, Docs/Sheets
   read/edit/create APIs, Drive Changes freshness, and CompanyCore API access
   for Jarvis, Paperclip, Aviary, and future GUI clients.
+- 2026-05-14: Google Drive remains one workspace OAuth integration for Drive,
+  Docs, and Sheets rather than one configuration per Google service. The owner
+  callback route is `/settings/drive`; authenticated private-route handling
+  must preserve callback query parameters until token exchange completes.
+  Folder discovery must request `mimeType`, and imported Google Docs/Sheets
+  refresh searchable content snapshots for MCP-facing agents through the
+  CompanyCore HTTP boundary.
 - 2026-05-03: Provider-to-operating-area mappings must be operator-editable in
   the owner console. Automatic classification is only the first pass; manual
   ClickUp List/Folder/Space and Google Drive folder assignments are persisted
