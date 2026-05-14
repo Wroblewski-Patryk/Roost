@@ -211,6 +211,11 @@ Last updated: 2026-05-15
   what needs ownership review before scanning dense area tables and context
   panels. Evidence lives in
   `docs/ux/areas-route-body-usability-audit-2026-05-15.md`.
+- 2026-05-15: V2VIS-004 completed the second route-body UX polish cycle on
+  `/settings/api`. Agent access now starts with a safety command summary for
+  active, scoped, and broad keys, MCP tool exposure, supervised tools, and
+  least-privilege presets before service-key creation controls. Evidence lives
+  in `docs/ux/settings-api-route-body-usability-audit-2026-05-15.md`.
 - 2026-05-14: APP-AUDIT-001 completed a full application completion audit.
   `npm run build` passed, `npm test` passed against a disposable PostgreSQL
   database with all migrations applied, protected production API samples

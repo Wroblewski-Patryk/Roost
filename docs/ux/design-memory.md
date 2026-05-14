@@ -156,6 +156,29 @@ of rediscovering them.
   and mobile `390x844` with four command cards, no horizontal overflow, no
   console issues, no failed requests, and zero unnamed visible controls.
 
+### 2026-05-15 - Agent Access Safety Summary
+- Type: reusable_pattern
+- Context: V2VIS-004 polished `/settings/api`, a security-sensitive route
+  where owners create service keys for agents, adapters, MCP bridges, and
+  internal tools.
+- Decision: Agent-access routes should show a safety command summary before
+  key creation controls. The summary must distinguish active, scoped, and broad
+  keys; MCP read/write/destructive exposure; supervised tools; and available
+  least-privilege presets. Command actions should jump to create key, review
+  keys, preview supervision, and route exposure.
+- Reuse when: Building or polishing API key, MCP bridge, agent authority,
+  integration credential, approval, or supervised automation surfaces.
+- Avoid when: A route only displays read-only documentation and cannot create,
+  rotate, deactivate, or expose credentials or agent authority.
+- Evidence: V2VIS-004 `node --check public/app.js`, `npm run build`,
+  `git diff --check`, `npm test` against disposable PostgreSQL on
+  `localhost:55470`, Playwright `/settings/api` proof on
+  `http://127.0.0.1:3117` at desktop `1366x900`, tablet `834x1112`, and
+  mobile `390x844`, plus a real create-key browser proof. Checks reported no
+  horizontal overflow, no console issues, no failed requests, four command
+  cards, zero unnamed visible controls, visible raw `cc_v1_` copy-once key,
+  and one active service key row after creation.
+
 ### 2026-05-14 - Company City Strategic Map
 - Type: visual_direction
 - Context: The user approved the generated dashboard direction showing a

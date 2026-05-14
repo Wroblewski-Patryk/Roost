@@ -7,10 +7,9 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] V2VIS-004 Next Route Body UX Polish Cycle:
+- [ ] V2VIS-005 Next Route Body UX Polish Cycle:
       repeat the 100-findings-plus-implementation UX cycle on the next dense
-      private route, likely `/settings/api` safety workflow or `/settings/drive`
-      import/scoping.
+      private route, likely `/settings/drive` import/scoping.
 
 ### NEXT
 
@@ -148,6 +147,16 @@ and `docs/operations/v1-function-coverage-ledger.csv`.
       on `localhost:55469`; Playwright verified `/areas` on desktop, tablet,
       and mobile with no overflow, no failed requests, no console issues, four
       command cards, and zero unnamed visible controls.
+- [x] V2VIS-004 Settings API Route Body UX Polish:
+      published a 100-item `/settings/api` route-body audit, added
+      agent-access safety command summary, active/scoped/broad key signals,
+      MCP exposure and supervision command cards, route-body anchors, and
+      responsive command grid. `node --check public/app.js`, `npm run build`,
+      `git diff --check`, and `npm test` passed against disposable PostgreSQL
+      on `localhost:55470`; Playwright verified `/settings/api` on desktop,
+      tablet, and mobile with no overflow, no failed requests, no console
+      issues, four command cards, and zero unnamed visible controls. Real
+      create-key proof showed a visible raw `cc_v1_` key and one active key row.
 - [x] ACF-SEC-001 Production Secret And CORS Hardening:
       production now fails closed when required secret env vars are absent or
       still use committed development placeholder values; production CORS is

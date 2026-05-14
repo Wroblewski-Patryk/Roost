@@ -5467,9 +5467,63 @@ function renderApiSecurityContext() {
   const mcpTools = Array.isArray(state.mcpManifest?.tools) ? state.mcpManifest.tools : [];
   const supervisedTools = mcpTools.filter((tool) => tool.requiresApproval || tool.riskLevel === "destructive");
   const writeRoutes = routes.filter((route) => ["POST", "PATCH", "PUT", "DELETE"].includes(route.method)).length;
+  const broadKeys = activeKeys.filter((key) => !Array.isArray(key.scopes) || key.scopes.length === 0).length;
+  const readTools = mcpTools.filter((tool) => tool.riskLevel === "read").length;
+  const writeTools = mcpTools.filter((tool) => tool.riskLevel === "write").length;
+  const destructiveTools = mcpTools.filter((tool) => tool.riskLevel === "destructive").length;
+  const profileCount = Array.isArray(state.agentKeyProfiles) ? state.agentKeyProfiles.length : 0;
   const health = !signedIn
     ? "Sign in required"
-    : activeKeys.length > 0 ? "Agent access ready" : "No active keys";
+    : broadKeys > 0 ? "Broad key review"
+      : activeKeys.length > 0 ? "Agent access ready" : "No active keys";
+  const priorityTitle = !signedIn
+    ? "Sign in before creating agent access"
+    : broadKeys > 0
+      ? "Review broad service keys"
+      : activeKeys.length === 0
+        ? "Create the first scoped agent key"
+        : supervisedTools.length > 0
+          ? "Confirm supervised tool exposure"
+          : "Scoped agent access is ready";
+  const priorityDetail = !signedIn
+    ? "Owner authentication is required before CompanyCore can show workspace-scoped key, capability, and MCP tool impact."
+    : broadKeys > 0
+      ? "At least one active key has broad compatibility scope. Prefer a profile-backed scoped key before handing access to an agent."
+      : activeKeys.length === 0
+        ? "Use a backend-managed preset, inspect the MCP impact preview, then create and copy the key once."
+        : supervisedTools.length > 0
+          ? "Some visible MCP tools require approval or destructive/write supervision. Check the preview before rotating or adding keys."
+          : "Active keys are scoped. Keep reviewing route exposure when adding new agents, tools, or integrations.";
+  const commandCards = [
+    {
+      label: "Active keys",
+      value: `${activeKeys.length}`,
+      detail: `${scopedKeys.length} scoped, ${broadKeys} broad`,
+      href: "#agentKeyList",
+      tone: broadKeys > 0 ? "attention" : activeKeys.length > 0 ? "ready" : "blocked"
+    },
+    {
+      label: "MCP tools",
+      value: `${mcpTools.length}`,
+      detail: `${readTools} read, ${writeTools + destructiveTools} write/destructive`,
+      href: "#api-routes-panel",
+      tone: mcpTools.length > 0 ? "ready" : "blocked"
+    },
+    {
+      label: "Supervised",
+      value: `${supervisedTools.length}`,
+      detail: "approval or destructive risk",
+      href: "#agentKeyPreview",
+      tone: supervisedTools.length > 0 ? "attention" : "ready"
+    },
+    {
+      label: "Presets",
+      value: `${profileCount || fallbackAgentKeyPresets.length}`,
+      detail: "least-privilege templates",
+      href: "#agentKeyForm",
+      tone: profileCount > 0 ? "ready" : "attention"
+    }
+  ];
 
   const panel = document.createElement("article");
   panel.className = "api-context-card";
@@ -5481,6 +5535,22 @@ function renderApiSecurityContext() {
         <span class="workbench-index-status">${escapeHtml(health)}</span>
       </div>
       <p>Create scoped service keys, inspect route capabilities, and preview MCP tool exposure before handing a key to another app.</p>
+      <div class="api-command-summary">
+        <div>
+          <span class="summary-kicker">Agent access command</span>
+          <strong>${escapeHtml(priorityTitle)}</strong>
+          <p>${escapeHtml(priorityDetail)}</p>
+        </div>
+        <div class="api-command-grid" aria-label="Agent access safety summary">
+          ${commandCards.map((card) => `
+            <a class="api-command-card is-${card.tone}" href="${card.href}">
+              <small>${escapeHtml(card.label)}</small>
+              <strong>${escapeHtml(card.value)}</strong>
+              <span>${escapeHtml(card.detail)}</span>
+            </a>
+          `).join("")}
+        </div>
+      </div>
       <div class="api-context-pills" aria-label="API operation context">
         <span>${escapeHtml(signedIn && state.workspace ? state.workspace.name : "No workspace")}</span>
         <span>${activeKeys.length} active key${activeKeys.length === 1 ? "" : "s"}</span>
@@ -5495,6 +5565,8 @@ function renderApiSecurityContext() {
     </div>
     <div class="api-context-actions">
       <a class="button-link compact" href="#agentKeyForm">Create key</a>
+      <a class="button-link secondary compact" href="#agentKeyList">Review keys</a>
+      <a class="button-link secondary compact" href="#api-routes-panel">Route exposure</a>
       <a class="button-link secondary compact" href="/settings/integrations" data-link>Integration map</a>
     </div>
   `;

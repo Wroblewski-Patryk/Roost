@@ -9,14 +9,13 @@
   - Source: `docs/operations/application-completion-audit-2026-05-14.md`
   - Goal: continue reducing large-file delivery risk after the first dashboard
     and route-frame shell implementation paths are verified.
-- V2VIS-004 Next Route Body UX Polish Cycle
+- V2VIS-005 Next Route Body UX Polish Cycle
   - Stage: planning
   - Owner: Frontend Builder + QA/Test
   - Priority: P1
-  - Source: `docs/ux/areas-route-body-usability-audit-2026-05-15.md`
+  - Source: `docs/ux/settings-api-route-body-usability-audit-2026-05-15.md`
   - Goal: repeat the 100-findings-plus-implementation UX cycle on the next
-    dense private route, likely `/settings/api` safety workflow or
-    `/settings/drive` import/scoping.
+    dense private route, likely `/settings/drive` import/scoping.
 
 ## In Progress
 
@@ -80,6 +79,22 @@ No active local implementation task is currently in progress.
     visible controls.
   - Task contract:
     `docs/planning/v2vis-003-areas-route-body-polish-task-contract.md`.
+
+- V2VIS-004 Settings API Route Body UX Polish.
+  - Evidence: published
+    `docs/ux/settings-api-route-body-usability-audit-2026-05-15.md` with 100
+    route-body findings; added `/settings/api` agent-access safety command
+    summary, active/scoped/broad key signals, MCP exposure and supervision
+    command cards, route-body anchors, and responsive command grid. `node
+    --check public/app.js`, `npm run build`, `git diff --check`, and
+    `npm test` passed against disposable PostgreSQL on `localhost:55470`.
+    Playwright fallback verified `/settings/api` on
+    `http://127.0.0.1:3117` at desktop `1366x900`, tablet `834x1112`, and
+    mobile `390x844` with no horizontal overflow, no console issues, no failed
+    requests, four command cards, and zero unnamed visible controls. Real
+    create-key proof showed visible raw `cc_v1_` key and one active key row.
+  - Task contract:
+    `docs/planning/v2vis-004-settings-api-route-body-polish-task-contract.md`.
 
 - ORG-ARCH-001 Organizational Architecture Bridge Memory Update.
   - Evidence: added

@@ -4,10 +4,9 @@ Last updated: 2026-05-15
 
 ## NOW
 
-1. V2VIS-004 Next Route Body UX Polish Cycle.
+1. V2VIS-005 Next Route Body UX Polish Cycle.
    - Repeat the 100-findings-plus-implementation UX cycle on the next dense
-     private route, likely `/settings/api` safety workflow or `/settings/drive`
-     import/scoping.
+     private route, likely `/settings/drive` import/scoping.
 
 ## NEXT
 
