@@ -26,6 +26,22 @@ fixes for this repository.
 
 ## Entries
 
+### 2026-05-14 - Use Source Archive For Private GitHub VPS Deploys
+- Context: AGRUN-007 manual CompanyCore rollover to production.
+- Symptom: VPS `git clone` from the private CompanyCore repository failed
+  without non-interactive GitHub credentials.
+- Root cause: The production host can run Docker but should not be assumed to
+  have repository credentials for private source pulls.
+- Guardrail: Do not block a manual rollover on private GitHub clone access
+  when the exact commit is already available locally.
+- Preferred pattern: Build a local `git archive` for the exact commit, copy it
+  to `/tmp`, build the Docker image from that archive with explicit
+  `COMPANYCORE_BUILD_COMMIT` and `COMPANYCORE_BUILD_IMAGE`, then remove the
+  archive, source directory, env file, label file, and smoke scripts after
+  validation.
+- Evidence: Commit `c5878d95a47f17745f65689c08e9e317a6465777` deployed
+  successfully through the archive path; public health reports that commit.
+
 ### 2026-05-08 - Clean Vite generated output before React builds
 - Context: UXA-010 and UXA-011 rebuilt the React/Vite frontend into
   `public/react/` on Windows.

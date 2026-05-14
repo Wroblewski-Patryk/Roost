@@ -7,9 +7,9 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-No local Company OS workflow recovery task is currently ready. The next active
-work is external/target-environment validation listed under `BLOCKED`, unless
-a new product slice is selected.
+No local Company OS workflow recovery task is currently ready. Google Drive
+production deployment and discovery are verified; the remaining import gate is
+owner folder selection listed under `BLOCKED`.
 
 ### NEXT
 V2WEB-AGENT-024 is complete. Workflow recovery has backend lineage, web
@@ -19,7 +19,11 @@ External blockers stay listed below.
 ### BLOCKED
 
 - [ ] AGRUN-007 Google Drive Owner Consent And First Import:
-      blocked until real OAuth credentials and owner consent are available.
+      blocked until the owner selects the Google Drive folder roots that
+      CompanyCore is allowed to import. Production now runs
+      `c5878d95a47f17745f65689c08e9e317a6465777`, OAuth is active, protected
+      `google-drive:smoke` passes, and owner folder discovery returned 172
+      folders with `selectedFolderCount=0`.
 - [ ] AGRUN-010 Upstream Agent Source Merge Execution:
       blocked until upstream write access or an approved fork/PR route exists.
 - [ ] KI-002 GitHub-to-Coolify Auto-Deploy Proof:

@@ -115,8 +115,8 @@ Current status as of 2026-05-08:
   but no matching operations smoke record currently supersedes the repeated
   manual-rollover evidence.
 - Public health currently reports build commit
-  `71f3eb3b063ea68226a1736c727c52882b33f27a` and image
-  `rnqqkhl3o3dut4qv56mlxly2_backend:71f3eb3b063ea68226a1736c727c52882b33f27a`.
+  `c5878d95a47f17745f65689c08e9e317a6465777` and image
+  `rnqqkhl3o3dut4qv56mlxly2_backend:c5878d95a47f17745f65689c08e9e317a6465777`.
 - Auto-deploy should therefore be treated as unverified until a future task
   records a push-to-running-image smoke in `docs/operations/post-deploy-smoke.md`.
 

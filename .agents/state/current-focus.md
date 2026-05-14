@@ -19,7 +19,11 @@ V2AGENT-004 implemented the default bridge guard. V2AGENT-005 added the
 supervised-operator MCP smoke harness. No active local V1 evidence tasks
 remain. V1CLOSE-001 published
 `docs/operations/v1-achievement-and-blocker-handoff.md` so the V1 achievement
-boundary and external blockers are visible from repository state. V2AGENT-006
+boundary and external blockers are visible from repository state. AGRUN-007 is
+deployed and partially verified in production as of 2026-05-14: Google Drive
+OAuth is active, protected smoke passes, and owner folder discovery returns 172
+folders, but first import is blocked until the owner selects allowed folder
+roots. V2AGENT-006
 added an agent command queue to the Company OS cockpit from existing context
 data; V2AGENT-006R verified the rendered queue with a temporary mock `/v1`
 server and system Chrome dump-DOM proof. V2WEB-ARCH-001 then recorded

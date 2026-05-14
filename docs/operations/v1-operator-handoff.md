@@ -1,6 +1,6 @@
 # CompanyCore V1 Operator Handoff
 
-Last updated: 2026-05-11
+Last updated: 2026-05-14
 
 ## Verdict
 
@@ -44,17 +44,17 @@ achievement boundary and external blocker list.
 ## Current Runtime
 
 - CompanyCore public health currently reports backend image:
-  `rnqqkhl3o3dut4qv56mlxly2_backend:71f3eb3b063ea68226a1736c727c52882b33f27a`
+  `rnqqkhl3o3dut4qv56mlxly2_backend:c5878d95a47f17745f65689c08e9e317a6465777`
 - CompanyCore source evidence:
   - Public `/health` reports build commit
-    `71f3eb3b063ea68226a1736c727c52882b33f27a`.
+    `c5878d95a47f17745f65689c08e9e317a6465777`.
   - Documentation/source-of-truth `main` is at or after the accepted v1 runtime
     scope and includes later v2 web-console polish.
 - Container inventory:
-  - Not refreshed in the 2026-05-08 local session because the available SSH
-    key/password path was rejected.
-  - Treat public `/health` as the current exposed runtime signal until VPS
-    inventory can be refreshed from an approved operator shell.
+  - Running backend:
+    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-c5878d9`.
+  - Rollback container retained stopped:
+    `backend-rnqqkhl3o3dut4qv56mlxly2-025605103087-previous-c5878d9`.
 - Database:
   - Production Postgres container remains running and healthy.
   - Production Postgres volume must be preserved on deploy and rollback.
@@ -80,6 +80,11 @@ achievement boundary and external blocker list.
 - 2026-05-08 public smoke returned `200` for CompanyCore `/health`,
   `/v1/health`, and the web root; `/health` reported build/image
   `71f3eb3b063ea68226a1736c727c52882b33f27a`.
+- 2026-05-14 AGRUN-007 production smoke returned `200` for `/health`,
+  `/v1/health`, and `/settings/drive`; protected `google-drive:smoke` passed
+  with OAuth active; owner folder discovery returned 172 folders and
+  `selectedFolderCount=0`, leaving first import blocked on owner folder-root
+  selection.
 - 2026-05-08 public `app.js` marker check confirmed typed editor surfaces for
   Notes, Projects, Clients, Task Lists, and Tasks.
 - 2026-05-11 public no-secret smoke returned `200` for CompanyCore `/health`,

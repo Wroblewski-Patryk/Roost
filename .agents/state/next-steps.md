@@ -4,9 +4,9 @@ Last updated: 2026-05-14
 
 ## NOW
 
-No local Company OS workflow recovery task is currently ready. The next active
-work is external/target-environment validation listed under `LATER`, unless a
-new product slice is selected.
+No local Company OS workflow recovery task is currently ready. Google Drive
+production deployment and folder discovery are verified; the remaining import
+gate is owner folder selection listed under `LATER`.
 
 ## NEXT
 
@@ -16,10 +16,11 @@ against a disposable Docker Compose stack.
 
 ## LATER
 
-1. AGRUN-007 Google Drive Owner Consent And First Import, local patch verified;
-   deploy the patched backend/web bundle, then rerun production folder
-   discovery and first selected-folder import smoke with the connected owner
-   account.
+1. AGRUN-007 Google Drive Owner Consent And First Import, blocked until the
+   owner selects the Drive folder roots CompanyCore may import. Production now
+   runs commit `c5878d95a47f17745f65689c08e9e317a6465777`; OAuth is active,
+   protected Google Drive smoke passes, and owner folder discovery returned
+   172 folders with `selectedFolderCount=0`.
 2. AGRUN-010 Upstream Agent Source Merge Execution, blocked until upstream
    write access or an approved fork/PR route exists.
 

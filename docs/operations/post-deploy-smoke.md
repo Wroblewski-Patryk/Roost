@@ -5,7 +5,7 @@ Use this file to record the minimum checks after each deploy.
 ## Global Checks
 
 - [x] `https://api.companycore.luckysparrow.ch/health` returns success
-- [ ] `https://api.companycore.luckysparrow.ch/health` reports the expected
+- [x] `https://api.companycore.luckysparrow.ch/health` reports the expected
   deployed build commit when `COMPANYCORE_BUILD_COMMIT` or a supported Coolify
   commit env var is available
 - [ ] `https://companycore.luckysparrow.ch` reaches the configured project
@@ -24,8 +24,8 @@ Use this file to record the minimum checks after each deploy.
 - [ ] Native ClickUp sync creates or updates at least one task when credentials
   and list IDs are configured
 - [ ] `GET /events` includes `task_synced_from_clickup` and sync status events
-- [ ] `npm run google-drive:smoke` passes with a real workspace API key
-- [ ] Google Drive settings can be read without returning OAuth material
+- [x] `npm run google-drive:smoke` passes with a real workspace API key
+- [x] Google Drive settings can be read without returning OAuth material
 - [ ] Google Drive file list route returns imported files/snapshots for the
   workspace
 
@@ -39,6 +39,57 @@ Use this file to record the minimum checks after each deploy.
   deleting the Postgres volume
 
 ## Evidence
+
+- Timestamp: 2026-05-14
+- Environment: production VPS Docker backend
+- Purpose: AGRUN-007 Google Drive owner consent/import release gate.
+- Deployment:
+  - Manual VPS backend rollover to commit
+    `c5878d95a47f17745f65689c08e9e317a6465777`.
+  - Previous runtime image:
+    `rnqqkhl3o3dut4qv56mlxly2_backend:b7b39e50210d6a65371c737ae52fb5b8cf30e2c3`.
+  - New runtime image:
+    `rnqqkhl3o3dut4qv56mlxly2_backend:c5878d95a47f17745f65689c08e9e317a6465777`.
+  - Running backend container:
+    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-c5878d9`.
+  - Rollback container retained stopped:
+    `backend-rnqqkhl3o3dut4qv56mlxly2-025605103087-previous-c5878d9`.
+  - Production Postgres container
+    `postgres-rnqqkhl3o3dut4qv56mlxly2-025605098067` remained running and
+    healthy.
+- Data safety:
+  - Canary startup applied seven pending Company OS migrations:
+    `202605091_company_os_stage1_foundation`,
+    `202605092_company_os_stage2_runtime_evidence`,
+    `202605093_company_os_stage3_governance_intelligence`,
+    `202605141_company_os_standard_definition_status`,
+    `202605142_workflow_definition_drafts`,
+    `202605143_workflow_root_version_uniqueness`, and
+    `202605144_workflow_root_family_lineage`.
+  - Seed completed successfully.
+- Public smoke:
+  - `GET https://api.companycore.luckysparrow.ch/health` returned `200` with
+    build commit `c5878d95a47f17745f65689c08e9e317a6465777`.
+  - `GET https://api.companycore.luckysparrow.ch/v1/health` returned `200`
+    with the same build commit.
+  - `GET https://companycore.luckysparrow.ch/settings/drive` returned `200`
+    and served the Drive setup shell.
+- Protected Google Drive smoke:
+  - Existing Jarvis workspace service API key passed
+    `npm run google-drive:smoke` from the deployed backend container.
+  - Smoke returned `googleDriveConfigured=true`,
+    `googleDriveActive=true`, and `importedFileCount=0`.
+  - Owner-authenticated folder discovery returned 172 folders.
+  - First import was not run because production has `selectedFolderCount=0`.
+    Selecting an arbitrary Drive folder would change the data boundary without
+    owner approval.
+- Cleanup:
+  - Removed temporary VPS source archive, source directory, env file, label
+    file, health file, and rollout/smoke scripts under `/tmp`.
+- Residual risks:
+  - AGRUN-007 remains blocked only on owner folder-root selection. After the
+    owner selects the allowed folders in `/settings/drive`, run the first
+    selected-folder import smoke and Drive file readback.
 
 - Timestamp: 2026-05-08
 - Environment: production public domains

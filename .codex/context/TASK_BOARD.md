@@ -7,9 +7,13 @@ target-environment tasks remain below.
 
 ## In Progress
 
+No active local implementation task is currently in progress.
+
+## Blocked
+
 - AGRUN-007 Google Drive Owner Consent And First Import
   - Stage: verification
-  - Status: IMPLEMENTED_NOT_DEPLOYED
+  - Status: BLOCKED_OWNER_FOLDER_SELECTION
   - Owner: Ops/Release
   - Priority: P1
   - Source: live owner consent session plus Google Drive integration
@@ -18,14 +22,14 @@ target-environment tasks remain below.
     folder import, and Docs/Sheets content indexing available to CompanyCore
     and MCP-facing agents.
   - Evidence: Google Cloud OAuth consent, scopes, and test user were configured
-    for project `companycore-495601`; production workspace settings now report
+    for project `companycore-495601`; production workspace settings report
     Google Drive OAuth token configured. Local fix evidence: `npm run build`
-    passed; `docker compose exec -T backend sh -lc "npm run
-    prisma:migrate:deploy && node --test 'dist/tests/**/*.test.js'"` passed.
-  - Remaining gate: deploy the patched backend/web bundle to the production
-    CompanyCore service, then rerun production `/settings/drive` folder
-    discovery and first selected-folder import smoke.
-## Blocked
+    passed; Docker compiled API tests passed; production manual rollover to
+    commit `c5878d95a47f17745f65689c08e9e317a6465777` passed public health,
+    protected `google-drive:smoke`, and owner folder discovery with 172 folders.
+  - Blocked by: no Drive folders are selected in CompanyCore production
+    settings (`selectedFolderCount=0`), so first import is intentionally not
+    run until the owner selects the allowed folder roots.
 
 - AGRUN-010 Upstream Agent Source Merge Execution
   - Stage: planning

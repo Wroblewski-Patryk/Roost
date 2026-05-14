@@ -7,8 +7,9 @@ Last updated: 2026-05-14
 - Goal: Central backend for company projects, goals, tasks, CRM, notes,
   decisions, agents, and system events.
 - Commercial model: Internal operational infrastructure.
-- Current phase: v1 local evidence complete; Agent-First Company OS selected
-  as the next V2 lane; external blockers remain tracked separately.
+- Current phase: v1 local and production evidence complete for the approved
+  runtime plus Agent-First Company OS command surface; Google Drive first
+  import remains blocked only on owner folder-root selection.
 
 ## Product Decisions (Confirmed)
 - 2026-05-07: CRM and pipelines are separate domain concepts. Pipelines are a
@@ -71,6 +72,12 @@ Last updated: 2026-05-14
   `/react-agent-tools` as the first human-agent web bridge. The route reuses
   `/v1/connection` and `/v1/mcp/manifest` to show MCP tools by route family,
   capability, risk level, and approval requirement.
+- 2026-05-14: AGRUN-007 production rollover deployed commit
+  `c5878d95a47f17745f65689c08e9e317a6465777` to the CompanyCore backend.
+  Public health reports the commit/image, protected Google Drive smoke passes
+  with OAuth active, and owner folder discovery returns 172 folders. First
+  import is blocked because no Drive folder roots are selected in production
+  settings (`selectedFolderCount=0`).
 - 2026-05-14: `V2WEB-AGENT-002 Company OS Correlation Timeline` added a
   client-composed evidence chain to `/react-company-os` using existing recent
   event and audit log `correlationId` data from `/v1/company-os`.

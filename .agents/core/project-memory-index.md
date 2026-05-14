@@ -76,8 +76,10 @@ continue from repository files alone:
   `/settings/drive`; private-route login redirects must preserve callback query
   parameters until the backend token exchange completes. Folder discovery must
   request `mimeType`, and imports refresh searchable content snapshots for
-  Google Docs and Sheets. Local build and Docker API tests pass, but production
-  discovery/import proof is pending deploy.
+  Google Docs and Sheets. Production now runs commit
+  `c5878d95a47f17745f65689c08e9e317a6465777`; OAuth is active, protected smoke
+  passes, and owner discovery returns 172 folders. First import is blocked
+  until owner-selected folder roots exist in production settings.
 
 If one of these files is missing, empty, stale, or still template-like, rebuild
 the minimum useful version from architecture docs, context files, accepted
