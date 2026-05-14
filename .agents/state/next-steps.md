@@ -4,15 +4,15 @@ Last updated: 2026-05-15
 
 ## NOW
 
-1. ACF-MAINT-002 Additional Hotspot Modularization.
-   - Continue reducing delivery risk in the remaining large web/API/test
-     hotspots after the V2VIS route-body polish queue closed with
-     `/settings/drive`.
+1. ACF-QA-001 Lint And Split Test Gates.
+   - Improve validation ergonomics after the Drive workbench extraction closed
+     the active maintainability slice.
 
 ## NEXT
 
-1. ACF-QA-001 Lint And Split Test Gates.
-   - Improve validation ergonomics after the next maintainability slice.
+1. ACF-OPS-001 Auto-Deploy Proof Or Manual Path Acceptance.
+   - Reconcile the remaining deployment automation evidence gap or keep the
+     manual Coolify rollover path explicitly accepted.
 
 ## LATER
 

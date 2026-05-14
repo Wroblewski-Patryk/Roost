@@ -7,15 +7,15 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] ACF-MAINT-002 Additional Hotspot Modularization:
-      continue reducing delivery risk in the remaining large web/API/test
-      hotspots after the V2VIS route-body polish queue closed with
-      `/settings/drive`.
+- [ ] ACF-QA-001 Lint And Split Test Gates:
+      improve validation ergonomics after the Drive workbench extraction closed
+      the active maintainability slice.
 
 ### NEXT
 
-- [ ] ACF-QA-001 Lint And Split Test Gates:
-      improve validation ergonomics after the next maintainability slice.
+- [ ] ACF-OPS-001 Auto-Deploy Proof Or Manual Path Acceptance:
+      reconcile the remaining deployment automation evidence gap or keep the
+      manual Coolify rollover path explicitly accepted.
 
 ### DEFERRED TO V2
 
@@ -166,6 +166,16 @@ and `docs/operations/v1-function-coverage-ledger.csv`.
       Playwright verified `/settings/drive` on desktop, tablet, and mobile
       with no overflow, no failed requests, no console issues, four command
       cards, working folder-picker anchor, and zero unnamed visible controls.
+- [x] ACF-MAINT-002 Google Drive Workbench Context Extraction:
+      extracted the Drive command summary/context renderer from
+      `public/app.js` into `public/google-drive-workbench.js`, loaded it before
+      the main app script, and preserved the verified `/settings/drive`
+      behavior. `node --check public/app.js`, `node --check
+      public/google-drive-workbench.js`, `npm run build`, `git diff --check`,
+      and `npm test` passed against disposable PostgreSQL on `localhost:55472`;
+      Playwright verified desktop and mobile Drive route render with the
+      module loaded, four command cards, no overflow, no failed requests, and
+      no console issues.
 - [x] ACF-SEC-001 Production Secret And CORS Hardening:
       production now fails closed when required secret env vars are absent or
       still use committed development placeholder values; production CORS is

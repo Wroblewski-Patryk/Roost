@@ -165,3 +165,12 @@ still a known P2 gap. Rollback pointers are current after the hotfix deploy.
   Drive content body readback, Docs/Sheets write, and changes reconcile samples
   as target-safe proof tasks. Evidence is recorded in
   `docs/planning/acf-doc-001-task-contract.md`.
+- 2026-05-15: ACF-MAINT-002 continued ACF-007 by extracting the Google Drive
+  context command renderer into `public/google-drive-workbench.js`. `node
+  --check public/app.js`, `node --check public/google-drive-workbench.js`,
+  `npm run build`, `git diff --check`, and `npm test` passed against
+  disposable PostgreSQL on `localhost:55472`; Playwright verified
+  `/settings/drive` at desktop and mobile with the module loaded, four command
+  cards, no overflow, no console issues, and no failed requests. Evidence is
+  recorded in
+  `docs/planning/acf-maint-002-google-drive-workbench-extraction-task-contract.md`.

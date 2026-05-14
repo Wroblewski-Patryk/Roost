@@ -2,13 +2,12 @@
 
 ## Ready
 
-- ACF-MAINT-002 Additional Hotspot Modularization
+- ACF-QA-001 Lint And Split Test Gates
   - Stage: planning
-  - Owner: Frontend Builder + QA/Test
-  - Priority: P1
+  - Owner: QA/Test + Backend Builder
+  - Priority: P2
   - Source: `docs/operations/application-completion-audit-2026-05-14.md`
-  - Goal: continue reducing large-file delivery risk after the first dashboard
-    and route-frame shell implementation paths are verified.
+  - Goal: improve validation ergonomics after the next maintainability slice.
 
 ## In Progress
 
@@ -58,6 +57,20 @@ No active local implementation task is currently in progress.
   auto-deploy webhook administration task.
 
 ## Done
+
+- ACF-MAINT-002 Google Drive Workbench Context Extraction.
+  - Evidence: added `public/google-drive-workbench.js` as the route-local
+    module for Drive command summary/context rendering, loaded it before
+    `public/app.js`, and reduced `renderGoogleDriveContext()` to a module
+    delegation. `node --check public/app.js`, `node --check
+    public/google-drive-workbench.js`, `npm run build`, `git diff --check`,
+    and `npm test` passed against disposable PostgreSQL on `localhost:55472`.
+    Playwright fallback verified `/settings/drive` on
+    `http://127.0.0.1:3119` at desktop `1366x900` and mobile `390x844` with
+    the module loaded, four command cards, no horizontal overflow, no console
+    issues, and no failed requests.
+  - Task contract:
+    `docs/planning/acf-maint-002-google-drive-workbench-extraction-task-contract.md`.
 
 - V2VIS-005 Settings Drive Route Body UX Polish.
   - Evidence: published

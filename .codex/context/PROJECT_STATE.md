@@ -2563,6 +2563,15 @@ Last updated: 2026-05-15
   disposable PostgreSQL on `localhost:55471`; Playwright verified desktop,
   tablet, and mobile with no overflow, console issues, failed requests, or
   unnamed visible controls.
+- 2026-05-15: Completed ACF-MAINT-002 by extracting the Google Drive
+  context/command summary renderer into `public/google-drive-workbench.js`.
+  `public/app.js` now delegates Drive context rendering to the static module,
+  preserving the verified `/settings/drive` UI while reducing the main
+  hotspot. `node --check public/app.js`, `node --check
+  public/google-drive-workbench.js`, `npm run build`, `git diff --check`, and
+  `npm test` passed against disposable PostgreSQL on `localhost:55472`;
+  Playwright verified desktop and mobile with the module loaded, four command
+  cards, no overflow, no console issues, and no failed requests.
 - 2026-05-06: Deployed the Agent CRUD API rollout to production with manual
   VPS backend rollover. The running backend container is
   `backend-rnqqkhl3o3dut4qv56mlxly2-manual-bf59b2f`, image
