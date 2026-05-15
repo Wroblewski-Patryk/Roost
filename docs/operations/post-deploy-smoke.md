@@ -90,6 +90,13 @@ Use this file to record the minimum checks after each deploy.
     non-secret values are
     `COMPANYCORE_BASE_URL=https://api.companycore.luckysparrow.ch` and
     `COMPANYCORE_ADAPTER_SOURCE=jarvis`.
+  - Jarvis agent smoke used CompanyCore only and confirmed the target folder is
+    visible through CompanyCore:
+    `12. Zarzadzanie`, externalId
+    `1U1GMpy0erVETPDA9ciRb7l1gVbSJfaff`.
+  - The same Jarvis smoke attempted the required Google Doc and Google Sheet
+    creations and both returned `401 integration_invalid_token`; no files were
+    created, so readback could not run.
 - Residual risk:
   - Jarvis two-file smoke must not be treated as ready to pass until the
     Google Drive OAuth secret is repaired by restoring the matching

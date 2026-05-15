@@ -130,6 +130,10 @@ Jarvis and provide an evidence-backed deploy and smoke plan for the required
   - a Coolify recovery probe found only the current `INTEGRATION_SECRET_KEY`
     candidate, and it does not decrypt existing Google Drive or ClickUp
     integration secrets.
+  - Jarvis agent smoke used CompanyCore only, found folder
+    `12. Zarzadzanie` with externalId
+    `1U1GMpy0erVETPDA9ciRb7l1gVbSJfaff`, and received
+    `401 integration_invalid_token` for both required file creations.
 
 ### 6. Self-Review
 - Simpler option considered: keep Sheets `spreadsheets.create` and move the file
@@ -196,7 +200,9 @@ plus smoke plan.
 - Tests: `npm run build` passed; `npm run validate` passed; `git diff --check`
   passed; `npm run test:api` blocked by missing `DATABASE_URL`.
 - Manual checks: public production health returned `200`; production logs were
-  inspected without exposing secrets.
+  inspected without exposing secrets; Jarvis agent smoke confirmed folder
+  visibility through CompanyCore and write failure classification as
+  `401 integration_invalid_token`.
 - High-risk checks: secret material was not printed in logs or docs.
 - Module confidence ledger updated: pending after deploy/smoke.
 - Requirements matrix updated: pending after deploy/smoke.
