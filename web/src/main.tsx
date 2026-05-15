@@ -77,6 +77,7 @@ import type {
   TaskRecord,
   TasksWorkbenchState
 } from "./react-route-kit";
+import { canonicalPostAuthPath, routeMatches, type AppRouteMeta } from "./app-route-registry";
 import "./styles.css";
 
 type AttentionItem = {
@@ -203,6 +204,60 @@ type AreaAssignmentNotice = {
   tone: NoticeTone;
   title: string;
   detail: string;
+};
+
+type AreaDetailContext = {
+  tables: NonNullable<OperatingArea["tables"]>;
+  tableRecordsCount: number;
+  tableRecordRows: Array<{
+    apiSlug: string;
+    tableName: string;
+    href: string;
+    record: Record<string, unknown>;
+  }>;
+  recordPreviews: Array<{
+    tableName: string;
+    title: string;
+    detail: string;
+  }>;
+  driveItems: GoogleDriveFileRecord[];
+  providerMappings: ExternalContainerMapping[];
+  globalReviewDebt: number;
+};
+
+type AreaDetailLane = {
+  id: string;
+  label: string;
+  title: string;
+  detail: string;
+  metric: string;
+  icon: string;
+  href: string;
+  tone: "blue" | "green" | "amber" | "red";
+};
+
+type AreaCapabilityBoardItem = {
+  title: string;
+  detail: string;
+  meta?: string;
+  href?: string;
+};
+
+type AreaCapabilityBoardSection = {
+  title: string;
+  icon: string;
+  empty: string;
+  items: AreaCapabilityBoardItem[];
+};
+
+type AreaCapabilityBoardData = {
+  note: string;
+  sections: AreaCapabilityBoardSection[];
+  actions: Array<{
+    label: string;
+    href: string;
+    tone: "primary" | "secondary";
+  }>;
 };
 
 type CompanyOsDrilldown = {
@@ -1935,6 +1990,7 @@ function CapabilityTabs({
           type="button"
           key={capability.id}
           onClick={() => onSelectCapability(capability.id)}
+          aria-current={activeCapability === capability.id ? "page" : undefined}
         >
           <i className={`ph-bold ${capability.icon}`} aria-hidden="true"></i>
           {capability.label}
@@ -1944,10 +2000,251 @@ function CapabilityTabs({
   );
 }
 
-function capabilityContent(area: AreaViewState, capabilityId: string, connection: ConnectionData) {
+const areaCapabilityTableGroups: Record<string, string[]> = {
+  goals: ["goals", "targets", "metrics", "standards"],
+  workflows: [
+    "business-functions",
+    "processes",
+    "pipelines",
+    "pipeline-stages",
+    "procedures",
+    "procedure-steps",
+    "checklist-templates",
+    "checklist-items",
+    "dependencies",
+    "automation-rules",
+    "triggers"
+  ],
+  tasks: ["tasks", "projects", "pipeline-runs", "stage-runs", "acceptance-criteria"],
+  knowledge: ["knowledge-items", "notes", "artifacts"],
+  resources: ["resources", "tool-adapters", "integration-capabilities", "company-roles", "stakeholders", "clients"],
+  decisions: ["decision-logs", "approvals", "risks", "controls", "policies", "audit-logs"],
+  ai: ["tool-adapters", "integration-capabilities", "automation-rules", "audit-logs"]
+};
+
+function areaCapabilitySlugs(capabilityId: string) {
+  return areaCapabilityTableGroups[capabilityId] || [];
+}
+
+function tableBelongsToCapability(table: NonNullable<OperatingArea["tables"]>[number], capabilityId: string) {
+  const slugs = areaCapabilitySlugs(capabilityId);
+  return slugs.length === 0 || slugs.includes(table.apiSlug);
+}
+
+function areaCapabilityTables(context: AreaDetailContext, capabilityId: string) {
+  return context.tables.filter((table) => tableBelongsToCapability(table, capabilityId));
+}
+
+function areaCapabilityRecords(context: AreaDetailContext, capabilityId: string, limit = 6) {
+  const slugs = new Set(areaCapabilitySlugs(capabilityId));
+  return context.tableRecordRows
+    .filter((row) => slugs.size === 0 || slugs.has(row.apiSlug))
+    .slice(0, limit)
+    .map((row) => ({
+      title: compactRecordTitle(row.record),
+      detail: `${row.tableName} - ${compactRecordDetail(row.record)}`,
+      meta: row.apiSlug,
+      href: row.href
+    }));
+}
+
+function areaCapabilityTableItems(context: AreaDetailContext, capabilityId: string, limit = 6) {
+  return areaCapabilityTables(context, capabilityId).slice(0, limit).map((table) => ({
+    title: table.name,
+    detail: `${table.tableName || table.apiSlug} - ${sharedTableRecordApiPath(table.apiSlug)}`,
+    meta: `${context.tableRecordRows.filter((row) => row.apiSlug === table.apiSlug).length} records`,
+    href: `/data/${table.apiSlug}`
+  }));
+}
+
+function areaCapabilityProviderItems(context: AreaDetailContext, limit = 5) {
+  return context.providerMappings.slice(0, limit).map((mapping) => ({
+    title: mapping.name || mapping.externalId,
+    detail: `${mapping.provider} - ${mapping.entityType}`,
+    meta: mapping.tableId ? "table scope" : "area scope",
+    href: "/relationships"
+  }));
+}
+
+function areaCapabilityDriveItems(context: AreaDetailContext, limit = 5) {
+  return context.driveItems.slice(0, limit).map((file) => ({
+    title: file.name,
+    detail: file.isFolder ? "Google Drive folder" : file.mimeType,
+    meta: file.syncStatus || file.scanStatus || "scoped",
+    href: file.webViewLink || "/settings/drive"
+  }));
+}
+
+function areaCapabilityMcpItems(connection: ConnectionData, capabilityId: string, limit = 6) {
+  const tools = connection.mcpManifest?.tools || [];
+  const filtered = capabilityId === "ai"
+    ? tools
+    : tools.filter((tool) => tool.capability.includes(capabilityId) || tool.path.includes(capabilityId));
+  return filtered.slice(0, limit).map((tool) => ({
+    title: tool.title || tool.name,
+    detail: `${tool.method} ${tool.path}`,
+    meta: tool.requiresApproval ? "approval" : tool.riskLevel,
+    href: "/react-agent-tools"
+  }));
+}
+
+function areaCapabilityBoardData(
+  area: AreaViewState,
+  capabilityId: string,
+  context: AreaDetailContext,
+  connection: ConnectionData
+): AreaCapabilityBoardData {
+  const records = areaCapabilityRecords(context, capabilityId);
+  const tables = areaCapabilityTableItems(context, capabilityId);
+  const providers = areaCapabilityProviderItems(context);
+  const drive = areaCapabilityDriveItems(context);
+  const mcp = areaCapabilityMcpItems(connection, capabilityId);
+
+  if (capabilityId === "goals") {
+    return {
+      note: "Goals groups targets, success signals, and strategic records scoped to this department.",
+      sections: [
+        { title: "Goal records", icon: "ph-target", empty: "No goal or target records are scoped to this department yet.", items: records },
+        { title: "Goal tables", icon: "ph-database", empty: "No goals or targets table is linked to this department.", items: tables },
+        { title: "Proof", icon: "ph-books", empty: "No Drive proof is scoped to this department.", items: drive }
+      ],
+      actions: [
+        { label: "Open targets", href: "/data/targets", tone: "primary" },
+        { label: "Review evidence", href: "/relationships", tone: "secondary" }
+      ]
+    };
+  }
+
+  if (capabilityId === "workflows") {
+    return {
+      note: "Workflows shows the operating rhythm: processes, pipelines, procedures, runs, dependencies, and automation evidence.",
+      sections: [
+        { title: "Workflow records", icon: "ph-flow-arrow", empty: "No workflow records are scoped to this department yet.", items: records },
+        { title: "Workflow tables", icon: "ph-database", empty: "No workflow tables are linked to this department.", items: tables },
+        { title: "Providers", icon: "ph-plugs-connected", empty: "No provider containers are scoped to this department.", items: providers }
+      ],
+      actions: [
+        { label: "Open Company OS", href: "/react-company-os", tone: "primary" },
+        { label: "Open pipeline", href: "/pipeline", tone: "secondary" }
+      ]
+    };
+  }
+
+  if (capabilityId === "tasks") {
+    return {
+      note: "Tasks keeps execution pressure tied to area ownership and provider readiness.",
+      sections: [
+        { title: "Task records", icon: "ph-list-checks", empty: "No task or execution records are scoped to this department yet.", items: records },
+        { title: "Task sources", icon: "ph-plugs-connected", empty: "No task provider container is scoped to this department.", items: providers },
+        { title: "Execution tables", icon: "ph-database", empty: "No task-related tables are linked to this department.", items: tables }
+      ],
+      actions: [
+        { label: "Open tasks", href: "/tasks-adapter", tone: "primary" },
+        { label: "Open workbench", href: "/react-tasks", tone: "secondary" }
+      ]
+    };
+  }
+
+  if (capabilityId === "knowledge") {
+    return {
+      note: "Knowledge shows the trusted Drive and Company OS proof that can support human and AI decisions.",
+      sections: [
+        { title: "Drive knowledge", icon: "ph-cloud", empty: "No imported Drive items are scoped to this department.", items: drive },
+        { title: "Knowledge records", icon: "ph-books", empty: "No knowledge records are scoped to this department yet.", items: records },
+        { title: "Knowledge tables", icon: "ph-database", empty: "No knowledge tables are linked to this department.", items: tables }
+      ],
+      actions: [
+        { label: "Open Drive", href: "/settings/drive", tone: "primary" },
+        { label: "Review scope", href: "/relationships", tone: "secondary" }
+      ]
+    };
+  }
+
+  if (capabilityId === "resources") {
+    return {
+      note: "Resources collects the people, systems, tables, providers, and ownership hooks attached to this department.",
+      sections: [
+        { title: "Area tables", icon: "ph-database", empty: "No resource tables are linked to this department yet.", items: context.tables.slice(0, 6).map((table) => ({ title: table.name, detail: `${table.apiSlug} - ${sharedTableRecordApiPath(table.apiSlug)}`, meta: table.source || "workspace", href: `/data/${table.apiSlug}` })) },
+        { title: "Providers", icon: "ph-plugs-connected", empty: "No provider containers are scoped to this department.", items: providers },
+        { title: "Drive scope", icon: "ph-cloud", empty: "No Drive resources are scoped to this department.", items: drive }
+      ],
+      actions: [
+        { label: "Open resources", href: area.href, tone: "primary" },
+        { label: "Review relationships", href: "/relationships", tone: "secondary" }
+      ]
+    };
+  }
+
+  if (capabilityId === "decisions") {
+    return {
+      note: "Decisions combines logs, approvals, risks, controls, policies, and audit evidence before action.",
+      sections: [
+        { title: "Decision records", icon: "ph-seal-check", empty: "No decision or governance records are scoped to this department yet.", items: records },
+        { title: "Governance tables", icon: "ph-scales", empty: "No decision tables are linked to this department.", items: tables },
+        { title: "Proof", icon: "ph-books", empty: "No proof files are scoped to this department.", items: drive }
+      ],
+      actions: [
+        { label: "Open decisions", href: "/react-company-os", tone: "primary" },
+        { label: "Review risks", href: "/data/risks", tone: "secondary" }
+      ]
+    };
+  }
+
+  if (capabilityId === "ai") {
+    return {
+      note: "AI handoff stays useful only when tools, knowledge, ownership, and approval boundaries are visible together.",
+      sections: [
+        { title: "Agent tools", icon: "ph-robot", empty: "No MCP tools are visible for this session.", items: mcp },
+        { title: "Knowledge scope", icon: "ph-books", empty: "No Drive knowledge is scoped to this department.", items: drive },
+        { title: "Guardrails", icon: "ph-shield-check", empty: "No AI guardrails are visible from the MCP manifest.", items: (connection.mcpManifest?.guardrails || []).slice(0, 5).map((guardrail) => ({ title: guardrail, detail: "MCP manifest guardrail", meta: "policy", href: "/react-agent-tools" })) }
+      ],
+      actions: [
+        { label: "Open agent tools", href: "/react-agent-tools", tone: "primary" },
+        { label: "Open API access", href: "/settings/api", tone: "secondary" }
+      ]
+    };
+  }
+
+  if (capabilityId === "add-view") {
+    return {
+      note: "Custom area views should become real only after backend view configuration exists.",
+      sections: [
+        { title: "Reusable views", icon: "ph-squares-four", empty: "No custom views are stored yet.", items: areaCapabilities.map((capability) => ({ title: capability.label, detail: `Existing V1 tab for ${area.label}`, meta: capability.id, href: areaHref(area, capability.id) })) },
+        { title: "Required contract", icon: "ph-database", empty: "No view configuration storage exists yet.", items: [{ title: "View config", detail: "Needs backend persistence before creation is enabled.", meta: "planned", href: "/react-company-os" }] },
+        { title: "Proof", icon: "ph-books", empty: "No proof required for planned custom views.", items: [] }
+      ],
+      actions: [
+        { label: "Review plan", href: "/react-company-os", tone: "primary" },
+        { label: "Back to overview", href: areaHref(area, "overview"), tone: "secondary" }
+      ]
+    };
+  }
+
+  return {
+    note: "Overview connects the department health, records, providers, knowledge, and AI readiness in one scan.",
+    sections: [
+      { title: "Recent records", icon: "ph-stack", empty: "No records are loaded for this department yet.", items: areaCapabilityRecords(context, "overview") },
+      { title: "Linked evidence", icon: "ph-books", empty: "No evidence is scoped to this department yet.", items: [...drive, ...providers].slice(0, 6) },
+      { title: "Area tables", icon: "ph-database", empty: "No tables are linked to this department yet.", items: areaCapabilityTableItems(context, "overview") }
+    ],
+    actions: [
+      { label: "Open area", href: areaHref(area, "overview"), tone: "primary" },
+      { label: "Review relationships", href: "/relationships", tone: "secondary" }
+    ]
+  };
+}
+
+function capabilityContent(
+  area: AreaViewState,
+  capabilityId: string,
+  connection: ConnectionData,
+  context?: AreaDetailContext
+) {
   const clickUpReady = connection.integrations.clickup.configured;
   const driveReady = connection.integrations.googleDrive.configured;
   const tables = area.backendArea?.tables || [];
+  const relevantTables = context ? areaCapabilityTables(context, capabilityId) : tables;
+  const relevantRecords = context ? areaCapabilityRecords(context, capabilityId, 99).length : 0;
   const capability = areaCapabilities.find((item) => item.id === capabilityId);
 
   if (capabilityId === "ai") {
@@ -1960,7 +2257,7 @@ function capabilityContent(area: AreaViewState, capabilityId: string, connection
       metrics: [
         ["Capabilities", `${connection.capabilities.length}`],
         ["MCP", connection.mcpManifest ? "Visible" : "Review"],
-        ["Scope", connection.scopeMode || "owner"]
+        ["Tools", `${connection.mcpManifest?.tools.length || 0}`]
       ]
     };
   }
@@ -1974,8 +2271,8 @@ function capabilityContent(area: AreaViewState, capabilityId: string, connection
       primary: { label: "Open Drive", href: "/settings/drive" },
       metrics: [
         ["Drive", driveReady ? "Active" : "Review"],
-        ["Folders", `${connectionMetrics(connection).selectedDriveFolders}`],
-        ["Area tables", `${tables.length}`]
+        ["Files", `${context?.driveItems.length || 0}`],
+        ["Records", `${relevantRecords}`]
       ]
     };
   }
@@ -1990,7 +2287,7 @@ function capabilityContent(area: AreaViewState, capabilityId: string, connection
       metrics: [
         ["ClickUp", clickUpReady ? "Active" : "Review"],
         ["Lists", `${connectionMetrics(connection).selectedLists}`],
-        ["Area", area.statusLabel]
+        ["Records", `${relevantRecords}`]
       ]
     };
   }
@@ -2002,8 +2299,8 @@ function capabilityContent(area: AreaViewState, capabilityId: string, connection
       primary: { label: capabilityId === "goals" ? "Open targets" : "Open Company OS", href: capabilityId === "goals" ? "/data/targets" : "/react-company-os" },
       metrics: [
         ["Area", area.lens],
-        ["Tables", `${tables.length}`],
-        ["Status", area.statusLabel]
+        ["Tables", `${relevantTables.length}`],
+        ["Records", `${relevantRecords}`]
       ]
     };
   }
@@ -3274,6 +3571,563 @@ function AreaRelationshipQueues({
   );
 }
 
+function routeAreaQuery() {
+  if (typeof window === "undefined") {
+    return { area: "", view: "overview" };
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  return {
+    area: params.get("area") || "",
+    view: params.get("view") || "overview"
+  };
+}
+
+function resolveInitialAreaKey(areas: AreaViewState[]) {
+  const query = routeAreaQuery().area;
+  return areas.some((area) => area.key === query)
+    ? query
+    : areas.find((area) => area.key === "01-strategia")?.key || areas[0]?.key || "";
+}
+
+function resolveInitialCapability() {
+  const query = routeAreaQuery().view;
+  return areaCapabilities.some((capability) => capability.id === query) || query === "add-view"
+    ? query
+    : "overview";
+}
+
+function updateAreaRoute(areaKey: string, capabilityId: string) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.history.replaceState(null, "", `/areas?area=${areaKey}&view=${capabilityId}`);
+}
+
+function areaDetailContext(
+  area: AreaViewState,
+  externalMappings: ExternalContainerMapping[],
+  googleDriveFiles: GoogleDriveFileRecord[],
+  tableRecords: TableRecordSnapshot
+): AreaDetailContext {
+  const tables = area.backendArea?.tables || [];
+  const tableIds = new Set(tables.map((table) => table.id));
+  const tableRecordRows = tables.flatMap((table) => (tableRecords[table.apiSlug] || []).map((record) => ({
+    apiSlug: table.apiSlug,
+    tableName: table.name,
+    href: `/data/${table.apiSlug}`,
+    record
+  })));
+  const driveItems = googleDriveFiles
+    .filter((file) => !file.trashed && (
+      file.operatingAreaId === area.backendArea?.id
+      || Boolean(file.operatingTableId && tableIds.has(file.operatingTableId))
+    ))
+    .slice(0, 8);
+  const providerMappings = externalMappings
+    .filter((mapping) => (
+      mapping.areaId === area.backendArea?.id
+      || Boolean(mapping.tableId && tableIds.has(mapping.tableId))
+    ))
+    .slice(0, 8);
+  const recordPreviews = tables
+    .flatMap((table) => (tableRecords[table.apiSlug] || []).slice(0, 2).map((record) => ({
+      tableName: table.name,
+      title: compactRecordTitle(record),
+      detail: compactRecordDetail(record)
+    })))
+    .slice(0, 6);
+  const tableRecordsCount = tables.reduce((sum, table) => sum + (tableRecords[table.apiSlug]?.length || 0), 0);
+  const globalReviewDebt = externalMappings.filter((mapping) => !mapping.areaId).length
+    + googleDriveFiles.filter((file) => !file.trashed && !file.operatingAreaId).length;
+
+  return {
+    tables,
+    tableRecordsCount,
+    tableRecordRows,
+    recordPreviews,
+    driveItems,
+    providerMappings,
+    globalReviewDebt
+  };
+}
+
+function areaDetailLanes(
+  area: AreaViewState,
+  context: AreaDetailContext,
+  connection: ConnectionData
+): AreaDetailLane[] {
+  const clickUpReady = connection.integrations.clickup.configured;
+  const driveReady = connection.integrations.googleDrive.configured;
+
+  return [
+    {
+      id: "observe",
+      label: "Observe",
+      title: "Operating health",
+      detail: area.status === "ready"
+        ? "This department has mapped backend context and can be inspected by owner and AI workflows."
+        : "This department needs ownership or resource review before it becomes reliable operating context.",
+      metric: area.statusLabel,
+      icon: "ph-pulse",
+      href: area.href,
+      tone: area.status === "ready" ? "green" : "amber"
+    },
+    {
+      id: "decide",
+      label: "Decide",
+      title: "Owner decisions",
+      detail: context.globalReviewDebt > 0
+        ? "Unassigned provider or Drive resources still need a MECE owner before delegation."
+        : "No global ownership debt is visible from the loaded area context.",
+      metric: `${context.globalReviewDebt}`,
+      icon: "ph-seal-warning",
+      href: "#area-detail-decisions",
+      tone: context.globalReviewDebt > 0 ? "amber" : "green"
+    },
+    {
+      id: "execute",
+      label: "Execute",
+      title: "Tasks and workflows",
+      detail: clickUpReady
+        ? "Task and workflow pressure can be reviewed from the task workbench and Company OS cockpit."
+        : "Task pressure stays limited until ClickUp lists are connected to this workspace.",
+      metric: clickUpReady ? "Ready" : "Review",
+      icon: "ph-list-checks",
+      href: "/tasks-adapter",
+      tone: clickUpReady ? "blue" : "amber"
+    },
+    {
+      id: "delegate",
+      label: "Delegate",
+      title: "AI handoff",
+      detail: connection.mcpManifest && driveReady
+        ? "Jarvis and Paperclip can use read-safe context; risky commands still need owner approval."
+        : "AI handoff should stay read-only until MCP and knowledge scope are reviewed.",
+      metric: connection.mcpManifest ? "Guarded" : "Waiting",
+      icon: "ph-robot",
+      href: "/react-agent-tools",
+      tone: connection.mcpManifest ? "green" : "amber"
+    }
+  ];
+}
+
+function AreaDetailHero({
+  area,
+  context,
+  connection
+}: {
+  area: AreaViewState;
+  context: AreaDetailContext;
+  connection: ConnectionData;
+}) {
+  const metrics = [
+    { label: "Tables", value: `${context.tables.length}`, icon: "ph-database" },
+    { label: "Records", value: `${context.tableRecordsCount}`, icon: "ph-stack" },
+    { label: "Drive", value: `${context.driveItems.length}`, icon: "ph-cloud" },
+    { label: "Provider", value: `${context.providerMappings.length}`, icon: "ph-plugs-connected" }
+  ];
+
+  return (
+    <section className="area-detail-hero">
+      <div className="area-detail-hero-copy">
+        <p className="atlas-kicker">{connection.workspace.name} / {area.lens}</p>
+        <h1>{area.label}</h1>
+        <p>{area.backendArea?.description || area.detail}</p>
+        <div className="area-detail-actions">
+          <a className="atlas-primary-action" href="/react-company-os">
+            Review operating system
+            <i className="ph-bold ph-caret-right" aria-hidden="true"></i>
+          </a>
+          <a className="atlas-secondary-action" href="/dashboard">Back to atlas</a>
+        </div>
+      </div>
+      <div className="area-detail-sigil" aria-label={`${area.label} status`}>
+        <span className={`area-detail-sigil-ring ${areaStatusClass(area.status)}`} aria-hidden="true"></span>
+        <i className={`ph-bold ${area.icon}`} aria-hidden="true"></i>
+        <strong>{area.shortLabel}</strong>
+        <small>{area.statusLabel}</small>
+      </div>
+      <div className="area-detail-metrics" aria-label="Area metrics">
+        {metrics.map((metric) => (
+          <span key={metric.label}>
+            <i className={`ph-bold ${metric.icon}`} aria-hidden="true"></i>
+            <strong>{metric.value}</strong>
+            <small>{metric.label}</small>
+          </span>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function AreaOperatingBoard({ lanes }: { lanes: AreaDetailLane[] }) {
+  return (
+    <section className="area-operating-board" aria-label="Area operating board">
+      <div className="area-detail-section-heading">
+        <p className="atlas-kicker">Operating board</p>
+        <h2>Observe, decide, execute, delegate</h2>
+      </div>
+      <div className="area-operating-lanes">
+        {lanes.map((lane) => (
+          <a className={`area-operating-lane area-lane-${lane.tone}`} href={lane.href} key={lane.id}>
+            <span>
+              <i className={`ph-bold ${lane.icon}`} aria-hidden="true"></i>
+              <em>{lane.label}</em>
+            </span>
+            <strong>{lane.title}</strong>
+            <p>{lane.detail}</p>
+            <small>{lane.metric}</small>
+          </a>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function AreaCapabilityRail({
+  activeCapability,
+  onSelectCapability
+}: {
+  activeCapability: string;
+  onSelectCapability: (capability: string) => void;
+}) {
+  return (
+    <section className="area-detail-capability-rail" aria-label="Area capability views">
+      {areaCapabilities.map((capability) => (
+        <button
+          className={activeCapability === capability.id ? "is-active" : ""}
+          type="button"
+          key={capability.id}
+          onClick={() => onSelectCapability(capability.id)}
+        >
+          <i className={`ph-bold ${capability.icon}`} aria-hidden="true"></i>
+          <span>{capability.label}</span>
+        </button>
+      ))}
+      <button
+        className={activeCapability === "add-view" ? "is-active" : ""}
+        type="button"
+        onClick={() => onSelectCapability("add-view")}
+        aria-current={activeCapability === "add-view" ? "page" : undefined}
+      >
+        <i className="ph-bold ph-plus-circle" aria-hidden="true"></i>
+        <span>Add view</span>
+      </button>
+    </section>
+  );
+}
+
+function AreaCapabilityFocus({
+  area,
+  activeCapability,
+  context,
+  connection
+}: {
+  area: AreaViewState;
+  activeCapability: string;
+  context: AreaDetailContext;
+  connection: ConnectionData;
+}) {
+  const content = capabilityContent(area, activeCapability, connection, context);
+  const board = areaCapabilityBoardData(area, activeCapability, context, connection);
+
+  return (
+    <section className="area-capability-focus">
+      <div className="area-detail-section-heading">
+        <p className="atlas-kicker">Selected view</p>
+        <h2>{content.title}</h2>
+        <span>{activeCapability}</span>
+      </div>
+      <p>{content.detail}</p>
+      <div className="area-capability-focus-metrics">
+        {content.metrics.map(([label, value]) => (
+          <span key={label}>
+            <small>{label}</small>
+            <strong>{value}</strong>
+          </span>
+        ))}
+        <span>
+          <small>Records</small>
+          <strong>{context.tableRecordsCount}</strong>
+        </span>
+      </div>
+      <AreaCapabilityBoard board={board} />
+    </section>
+  );
+}
+
+function AreaCapabilityBoard({ board }: { board: AreaCapabilityBoardData }) {
+  return (
+    <div className="area-capability-board">
+      <p>{board.note}</p>
+      <div className="area-capability-board-grid">
+        {board.sections.map((section) => (
+          <article className="area-capability-board-section" key={section.title}>
+            <div className="area-capability-board-title">
+              <i className={`ph-bold ${section.icon}`} aria-hidden="true"></i>
+              <h3>{section.title}</h3>
+              <span>{section.items.length}</span>
+            </div>
+            {section.items.length === 0 ? (
+              <p className="area-capability-board-empty">{section.empty}</p>
+            ) : (
+              <div className="area-capability-board-list">
+                {section.items.map((item, index) => {
+                  const content = (
+                    <>
+                      <strong>{item.title}</strong>
+                      <small>{item.detail}</small>
+                      {item.meta ? <em>{item.meta}</em> : null}
+                    </>
+                  );
+                  return item.href ? (
+                    <a href={item.href} key={`${section.title}-${index}`}>
+                      {content}
+                    </a>
+                  ) : (
+                    <span key={`${section.title}-${index}`}>{content}</span>
+                  );
+                })}
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+      <div className="area-capability-board-actions">
+        {board.actions.map((action) => (
+          <a
+            className={action.tone === "primary" ? "atlas-primary-action" : "atlas-secondary-action"}
+            href={action.href}
+            key={action.label}
+          >
+            {action.label}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AreaEvidenceGrid({
+  context
+}: {
+  context: AreaDetailContext;
+}) {
+  const tableItems = context.tables.slice(0, 4);
+  const driveItems = context.driveItems.slice(0, 4);
+  const providerItems = context.providerMappings.slice(0, 4);
+  const previewItems = context.recordPreviews.slice(0, 4);
+
+  return (
+    <section className="area-evidence-grid" aria-label="Area evidence">
+      <AreaEvidencePanel
+        title="Tables"
+        icon="ph-database"
+        empty="No tables are linked to this department yet."
+        items={tableItems.map((table) => ({
+          title: table.name,
+          detail: `${table.tableName || table.apiSlug} - ${sharedTableRecordApiPath(table.apiSlug)}`
+        }))}
+      />
+      <AreaEvidencePanel
+        title="Records"
+        icon="ph-stack"
+        empty="No record previews are loaded for this department."
+        items={previewItems.map((item) => ({
+          title: item.title,
+          detail: `${item.tableName} - ${item.detail}`
+        }))}
+      />
+      <AreaEvidencePanel
+        title="Knowledge"
+        icon="ph-books"
+        empty="No imported Drive items are scoped to this department."
+        items={driveItems.map((file) => ({
+          title: file.name,
+          detail: file.isFolder ? "Google Drive folder" : file.mimeType
+        }))}
+      />
+      <AreaEvidencePanel
+        title="Providers"
+        icon="ph-plugs-connected"
+        empty="No provider containers are scoped to this department."
+        items={providerItems.map((mapping) => ({
+          title: mapping.name || mapping.externalId,
+          detail: `${mapping.provider} - ${mapping.entityType}`
+        }))}
+      />
+    </section>
+  );
+}
+
+function AreaEvidencePanel({
+  title,
+  icon,
+  empty,
+  items
+}: {
+  title: string;
+  icon: string;
+  empty: string;
+  items: Array<{ title: string; detail: string }>;
+}) {
+  return (
+    <article className="area-evidence-panel">
+      <div className="area-evidence-title">
+        <i className={`ph-bold ${icon}`} aria-hidden="true"></i>
+        <h3>{title}</h3>
+        <span>{items.length}</span>
+      </div>
+      {items.length === 0 ? (
+        <p className="area-evidence-empty">{empty}</p>
+      ) : (
+        <div className="area-evidence-list">
+          {items.map((item, index) => (
+            <span key={`${title}-${index}`}>
+              <strong>{item.title}</strong>
+              <small>{item.detail}</small>
+            </span>
+          ))}
+        </div>
+      )}
+    </article>
+  );
+}
+
+function AreaDecisionRail({
+  area,
+  context,
+  connection
+}: {
+  area: AreaViewState;
+  context: AreaDetailContext;
+  connection: ConnectionData;
+}) {
+  const items = [
+    {
+      title: "Ownership",
+      detail: context.globalReviewDebt > 0
+        ? `${context.globalReviewDebt} resources need a clear owner.`
+        : "No unassigned resource debt in loaded context.",
+      href: "#area-detail-decisions",
+      icon: "ph-shield-warning"
+    },
+    {
+      title: "Knowledge",
+      detail: connection.integrations.googleDrive.configured
+        ? `${context.driveItems.length} Drive items scoped here.`
+        : "Google Drive needs setup before knowledge is trusted.",
+      href: "/settings/drive",
+      icon: "ph-cloud"
+    },
+    {
+      title: "AI",
+      detail: connection.mcpManifest
+        ? "Read-safe context is visible to agents."
+        : "Review MCP manifest and agent access.",
+      href: "/react-agent-tools",
+      icon: "ph-robot"
+    }
+  ];
+
+  return (
+    <aside className="area-detail-rail" id="area-detail-decisions" aria-label="Area decisions">
+      <div>
+        <p className="atlas-kicker">Today in {area.shortLabel}</p>
+        <h2>Decision rail</h2>
+      </div>
+      <div className="area-detail-decision-list">
+        {items.map((item) => (
+          <a href={item.href} key={item.title}>
+            <i className={`ph-bold ${item.icon}`} aria-hidden="true"></i>
+            <span>
+              <strong>{item.title}</strong>
+              <small>{item.detail}</small>
+            </span>
+          </a>
+        ))}
+      </div>
+      <div className="area-detail-proof">
+        <span>Proof sources</span>
+        <strong>/v1/connection</strong>
+        <strong>Drive scope</strong>
+        <strong>Provider mappings</strong>
+      </div>
+    </aside>
+  );
+}
+
+function AreaDetailView({
+  connection,
+  externalMappings,
+  googleDriveFiles,
+  tableRecords
+}: {
+  connection: ConnectionData;
+  externalMappings: ExternalContainerMapping[];
+  googleDriveFiles: GoogleDriveFileRecord[];
+  tableRecords: TableRecordSnapshot;
+}) {
+  const areas = useMemo(() => buildAreaViewState(connection), [connection]);
+  const initialAreaKey = resolveInitialAreaKey(areas);
+  const [selectedAreaKey, setSelectedAreaKey] = useState(initialAreaKey);
+  const [activeCapability, setActiveCapability] = useState(resolveInitialCapability);
+  const selectedArea = areas.find((area) => area.key === selectedAreaKey) || areas[0];
+  const ownerLabel = connection.user?.name || connection.user?.email || "Owner";
+  const ownerDetail = connection.user?.email ? "Owner" : connection.workspace.name;
+  const context = useMemo(
+    () => areaDetailContext(selectedArea, externalMappings, googleDriveFiles, tableRecords),
+    [selectedArea, externalMappings, googleDriveFiles, tableRecords]
+  );
+  const lanes = useMemo(() => areaDetailLanes(selectedArea, context, connection), [selectedArea, context, connection]);
+
+  function selectArea(key: string) {
+    setSelectedAreaKey(key);
+    updateAreaRoute(key, activeCapability);
+  }
+
+  function selectCapability(capability: string) {
+    setActiveCapability(capability);
+    updateAreaRoute(selectedArea.key, capability);
+  }
+
+  return (
+    <main className="atlas-shell area-detail-shell" data-theme="companycore">
+      <AreaSidebar
+        areas={areas}
+        selectedArea={selectedArea}
+        activeCapability={activeCapability}
+        ownerLabel={ownerLabel}
+        ownerDetail={ownerDetail}
+        onSelectArea={selectArea}
+        onSelectCapability={selectCapability}
+      />
+      <section className="atlas-workspace area-detail-workspace">
+        <MobileAppBar workspaceName={connection.workspace.name} />
+        <DashboardHeader connection={connection} areas={areas} selectedArea={selectedArea} />
+        <MobileAreaSelector areas={areas} selectedArea={selectedArea} onSelectArea={selectArea} />
+        <section className="area-detail-layout">
+          <div className="area-detail-main">
+            <AreaDetailHero area={selectedArea} context={context} connection={connection} />
+            <AreaCapabilityRail activeCapability={activeCapability} onSelectCapability={selectCapability} />
+            <AreaOperatingBoard lanes={lanes} />
+            <AreaCapabilityFocus
+              area={selectedArea}
+              activeCapability={activeCapability}
+              context={context}
+              connection={connection}
+            />
+            <AreaEvidenceGrid context={context} />
+          </div>
+          <AreaDecisionRail area={selectedArea} context={context} connection={connection} />
+        </section>
+      </section>
+    </main>
+  );
+}
+
 function compactRecordTitle(record: Record<string, unknown>) {
   const value = record.name
     || record.title
@@ -3665,6 +4519,19 @@ function AreasWorkbench({
   const selectedContextAreaId = selectableAreas.some((area) => area.id === selectedAreaId)
     ? selectedAreaId
     : selectableAreas[0]?.id || "";
+  const requestedAreaKey = routeAreaQuery().area;
+  const hasAreaDetailRequest = canonicalAreas.some((area) => area.key === requestedAreaKey);
+
+  if (hasAreaDetailRequest) {
+    return (
+      <AreaDetailView
+        connection={connection}
+        externalMappings={externalMappings}
+        googleDriveFiles={googleDriveFiles}
+        tableRecords={tableRecords}
+      />
+    );
+  }
 
   async function handleScopeAssignment(item: AreaReviewItem, areaId: string) {
     if (!areaId) {
@@ -7550,23 +8417,89 @@ function PrivateStateGate<T>({
   );
 }
 
-function PublicAuthShell({ children }: { children: React.ReactNode }) {
+function PublicLayout({
+  children,
+  active = "home"
+}: {
+  children: React.ReactNode;
+  active?: "home" | "login" | "register";
+}) {
   return (
-    <main className="min-h-screen bg-base-200 text-base-content" data-theme="companycore">
-      <header className="border-b border-base-300 bg-base-100/95 px-5 py-4 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4">
-          <a className="flex items-center gap-3 font-black text-base-content no-underline" href="/">
-            <span className="grid h-9 w-9 place-items-center rounded-company bg-primary text-sm text-primary-content">CC</span>
-            <span>CompanyCore</span>
+    <main className="public-shell" data-theme="companycore">
+      <header className="public-header">
+        <div className="public-header-inner">
+          <a className="public-brand" href="/">
+            <span className="public-brand-mark">
+              <i className="ph-bold ph-cube" aria-hidden="true"></i>
+            </span>
+            <span>
+              <strong>CompanyCore</strong>
+              <small>LuckySparrow operating system</small>
+            </span>
           </a>
-          <nav className="flex gap-2">
-            <a className="btn btn-sm btn-ghost" href="/auth/login">Sign in</a>
-            <a className="btn btn-sm btn-primary" href="/auth/register">Create account</a>
+          <nav className="public-nav" aria-label="Public navigation">
+            <a className={active === "home" ? "is-active" : ""} href="/">Home</a>
+            <a className={active === "login" ? "is-active" : ""} href="/auth/login">Sign in</a>
+            <a className={active === "register" ? "is-active primary" : "primary"} href="/auth/register">Create account</a>
           </nav>
         </div>
       </header>
       {children}
     </main>
+  );
+}
+
+function PublicHomeRoute() {
+  return (
+    <PublicLayout active="home">
+      <section className="public-home">
+        <div className="public-home-copy">
+          <p className="public-kicker">CompanyCore V1</p>
+          <h1>One calm operating room for your company.</h1>
+          <p>
+            CompanyCore connects departments, work, knowledge, providers,
+            decisions, and AI handoff into a single owner-readable system.
+          </p>
+          <div className="public-home-actions">
+            <a className="atlas-primary-action" href="/auth/login">Open owner workspace</a>
+            <a className="atlas-secondary-action" href="/auth/register">Create workspace</a>
+          </div>
+        </div>
+
+        <div className="public-home-preview" aria-label="CompanyCore operating preview">
+          <div className="public-preview-topline">
+            <span>LuckySparrow</span>
+            <strong>Company Atlas</strong>
+            <em>Ready</em>
+          </div>
+          <div className="public-preview-map">
+            {canonicalAreas.slice(0, 13).map((area, index) => (
+              <span style={{ "--node-index": index } as React.CSSProperties} key={area.key}>
+                <i className={`ph-bold ${area.icon}`} aria-hidden="true"></i>
+                <strong>{area.shortLabel}</strong>
+              </span>
+            ))}
+            <div>
+              <i className="ph-bold ph-map-trifold" aria-hidden="true"></i>
+              <strong>Atlas</strong>
+              <small>12 areas + 00</small>
+            </div>
+          </div>
+          <div className="public-preview-rail">
+            {[
+              ["Strategy", "Goals, workflows, decisions"],
+              ["Knowledge", "Drive proof and records"],
+              ["AI handoff", "Guarded agent context"]
+            ].map(([title, detail]) => (
+              <span key={title}>
+                <strong>{title}</strong>
+                <small>{detail}</small>
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+    </PublicLayout>
   );
 }
 
@@ -7576,7 +8509,7 @@ function AuthRoute({ mode }: { mode: "login" | "register" }) {
 
   useEffect(() => {
     if (ownerToken()) {
-      window.location.replace("/");
+      window.location.replace(canonicalPostAuthPath());
     }
   }, []);
 
@@ -7608,9 +8541,9 @@ function AuthRoute({ mode }: { mode: "login" | "register" }) {
         throw new Error(body.error || "auth_failed");
       }
       window.sessionStorage.setItem("companycoreOwnerToken", body.data.token);
-      const pending = window.sessionStorage.getItem("companycorePendingPrivatePath") || "/";
+      const pending = canonicalPostAuthPath(window.sessionStorage.getItem("companycorePendingPrivatePath"));
       window.sessionStorage.removeItem("companycorePendingPrivatePath");
-      window.location.replace(pending.startsWith("/auth/") ? "/" : pending);
+      window.location.replace(pending);
     } catch (error) {
       setStatus({
         tone: "error",
@@ -7626,57 +8559,66 @@ function AuthRoute({ mode }: { mode: "login" | "register" }) {
   const isLogin = mode === "login";
 
   return (
-    <PublicAuthShell>
-      <section className="mx-auto grid min-h-[calc(100vh-4.5rem)] w-full max-w-6xl items-center gap-6 px-5 py-8 lg:grid-cols-[0.9fr_1fr]">
-        <aside className="grid gap-4 rounded-company border border-base-300 bg-base-100 p-6 shadow-sm">
-          <p className="eyebrow">Owner workspace</p>
-          <h1 className="text-3xl font-black leading-tight">{isLogin ? "Sign in to the company control plane" : "Create the company control plane"}</h1>
-          <p className="text-sm leading-6 text-company-muted">
-            CompanyCore keeps operating areas, provider data, workflow evidence, and agent access behind one owner session.
+    <PublicLayout active={isLogin ? "login" : "register"}>
+      <section className="public-auth">
+        <aside className="public-auth-context">
+          <p className="public-kicker">{isLogin ? "Owner access" : "Workspace bootstrap"}</p>
+          <h1>{isLogin ? "Return to your company operating room." : "Create the company control plane."}</h1>
+          <p>
+            Sign in to review departments, evidence, decisions, and guarded AI
+            handoff. Registration creates the first owner workspace.
           </p>
-          <div className="grid gap-2 text-sm font-black text-company-muted sm:grid-cols-2">
-            {["Company Atlas", "Google Drive", "MCP tools", "Agent keys"].map((item) => (
-              <span className="rounded-company border border-base-300 bg-base-200 px-3 py-2" key={item}>{item}</span>
+          <div className="public-auth-signals">
+            {[
+              ["Company Atlas", "All 00-12 areas"],
+              ["Area detail", "Goals, tasks, knowledge"],
+              ["AI guardrails", "MCP and owner approval"],
+              ["Evidence", "Tables, Drive, providers"]
+            ].map(([title, detail]) => (
+              <span key={title}>
+                <strong>{title}</strong>
+                <small>{detail}</small>
+              </span>
             ))}
           </div>
         </aside>
 
-        <form className="card border border-base-300 bg-base-100 shadow-sm" onSubmit={submit}>
-          <div className="card-body gap-4">
+        <form className="public-auth-card" onSubmit={submit}>
+          <div className="public-auth-card-inner">
             <div>
-              <p className="eyebrow">{isLogin ? "Owner access" : "Workspace bootstrap"}</p>
-              <h2 className="text-2xl font-black">{isLogin ? "Sign in" : "Create account"}</h2>
+              <p className="public-kicker">{isLogin ? "Private workspace" : "New workspace"}</p>
+              <h2>{isLogin ? "Sign in" : "Create account"}</h2>
             </div>
             {!isLogin ? (
-              <label className="form-control">
-                <span className="label-text font-bold">Name</span>
-                <input className="input input-bordered" name="name" type="text" autoComplete="name" />
+              <label className="public-field">
+                <span>Name</span>
+                <input name="name" type="text" autoComplete="name" />
               </label>
             ) : null}
-            <label className="form-control">
-              <span className="label-text font-bold">Email</span>
-              <input className="input input-bordered" name="email" type="email" autoComplete="email" required />
+            <label className="public-field">
+              <span>Email</span>
+              <input name="email" type="email" autoComplete="email" required />
             </label>
-            <label className="form-control">
-              <span className="label-text font-bold">Password</span>
-              <input className="input input-bordered" name="password" type="password" autoComplete={isLogin ? "current-password" : "new-password"} minLength={isLogin ? undefined : 12} required />
+            <label className="public-field">
+              <span>Password</span>
+              <input name="password" type="password" autoComplete={isLogin ? "current-password" : "new-password"} minLength={isLogin ? undefined : 12} required />
             </label>
             {!isLogin ? (
-              <label className="form-control">
-                <span className="label-text font-bold">Workspace name</span>
-                <input className="input input-bordered" name="workspaceName" type="text" required />
+              <label className="public-field">
+                <span>Workspace name</span>
+                <input name="workspaceName" type="text" required />
               </label>
             ) : null}
-            <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Working..." : isLogin ? "Sign in" : "Create workspace"}</button>
+            <button className="public-submit" type="submit" disabled={busy}>{busy ? "Working..." : isLogin ? "Sign in" : "Create workspace"}</button>
             {status ? <LocalNotice tone={status.tone} title="Authentication" detail={status.message} /> : null}
-            <p className="text-sm text-company-muted">
+            <p className="public-auth-switch">
               {isLogin ? "No account yet?" : "Already have an account?"}{" "}
-              <a className="font-black text-primary" href={isLogin ? "/auth/register" : "/auth/login"}>{isLogin ? "Create one" : "Sign in"}</a>
+              <a href={isLogin ? "/auth/register" : "/auth/login"}>{isLogin ? "Create one" : "Sign in"}</a>
             </p>
           </div>
         </form>
       </section>
-    </PublicAuthShell>
+    </PublicLayout>
   );
 }
 
@@ -7850,6 +8792,333 @@ function PipelineRoute() {
                 </div>
               </section>
               <GenericRecordTable records={feed} emptyTitle="No pipeline records" emptyDetail="No CRM or pipeline records are available yet." />
+            </section>
+          </Shell>
+        );
+      }}
+    </PrivateStateGate>
+  );
+}
+
+type SettingsTabId = "general" | "connections" | "agents" | "mcp";
+
+const settingsTabs: Array<{ id: SettingsTabId; label: string; detail: string; icon: string }> = [
+  { id: "general", label: "General", detail: "Workspace defaults", icon: "ph-sliders-horizontal" },
+  { id: "connections", label: "Connections", detail: "ClickUp and Drive", icon: "ph-plugs-connected" },
+  { id: "agents", label: "Agent access", detail: "Jarvis and Paperclip", icon: "ph-robot" },
+  { id: "mcp", label: "MCP", detail: "Visible tool surface", icon: "ph-terminal-window" }
+];
+
+function initialSettingsTab(): SettingsTabId {
+  const path = window.location.pathname;
+  if (path.includes("/settings/api")) {
+    return "agents";
+  }
+  if (path.includes("/react-agent-tools")) {
+    return "mcp";
+  }
+  if (path.includes("/settings/drive") || path.includes("/settings/integrations")) {
+    return "connections";
+  }
+  return "general";
+}
+
+function agentPresetName(name: string) {
+  const lowerName = name.toLowerCase();
+  if (lowerName.includes("paperclip")) {
+    return "Paperclip";
+  }
+  if (lowerName.includes("jarvis")) {
+    return "Jarvis";
+  }
+  return name;
+}
+
+function providerStatusLabel(active: boolean, configured: boolean) {
+  if (active) {
+    return "Connected";
+  }
+  if (configured) {
+    return "Configured";
+  }
+  return "Not connected";
+}
+
+function SimpleSettingCard({
+  icon,
+  title,
+  detail,
+  children,
+  status
+}: {
+  icon: string;
+  title: string;
+  detail: string;
+  children?: React.ReactNode;
+  status?: { label: string; tone: "success" | "warning" | "neutral" };
+}) {
+  const statusClass = status?.tone === "success" ? "badge-success" : status?.tone === "warning" ? "badge-warning" : "badge-outline";
+  return (
+    <article className="rounded-company border border-base-300 bg-base-100 p-4 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="dashboard-icon text-primary">
+            <i className={`ph-bold ${icon}`} aria-hidden="true"></i>
+          </span>
+          <div className="min-w-0">
+            <h3 className="text-lg font-black leading-tight">{title}</h3>
+            <p className="mt-1 text-sm leading-6 text-company-muted">{detail}</p>
+          </div>
+        </div>
+        {status ? <span className={`badge ${statusClass}`}>{status.label}</span> : null}
+      </div>
+      {children ? <div className="mt-4">{children}</div> : null}
+    </article>
+  );
+}
+
+function UnifiedSettingsRoute() {
+  const [activeTab, setActiveTab] = useState<SettingsTabId>(() => initialSettingsTab());
+  const [createdKey, setCreatedKey] = useState<string | null>(null);
+  const [settingsNotice, setSettingsNotice] = useState<{ tone: NoticeTone; title: string; detail: string } | null>(null);
+  const [state, reload] = usePrivateLoader(async () => {
+    const [connection, keys, profiles, manifest] = await Promise.all([
+      ownerApi<ConnectionData>("/v1/connection"),
+      ownerApi<ApiKeyRecord[]>("/v1/api-keys").catch(() => []),
+      ownerApi<AgentKeyProfile[]>("/v1/api-keys/profiles").catch(() => []),
+      ownerApi<McpManifest>("/v1/mcp/manifest").catch(() => ({ tools: [], guardrails: [] } as McpManifest))
+    ]);
+    return { connection, keys, profiles, manifest };
+  });
+
+  async function createAgentKey(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const profileId = String(form.get("profileId") || "");
+    const agentName = String(form.get("agentName") || "Agent");
+    const result = await ownerApi<ApiKeyRecord & { key?: string }>("/v1/api-keys", {
+      method: "POST",
+      body: JSON.stringify({ name: `${agentName} CompanyCore key`, profileId })
+    });
+    setCreatedKey(result.key || null);
+    setSettingsNotice({
+      tone: "success",
+      title: `${agentName} key created`,
+      detail: "Copy the key once, then store it in the agent runtime secret configuration."
+    });
+    reload();
+  }
+
+  return (
+    <PrivateStateGate state={state} title="Settings" detail="CompanyCore is loading simple workspace settings." onRetry={reload}>
+      {({ connection, keys, profiles, manifest }) => {
+        const clickup = connection.integrations.clickup;
+        const drive = connection.integrations.googleDrive;
+        const activeKeys = keys.filter((key) => key.active);
+        const jarvisKey = activeKeys.find((key) => key.name.toLowerCase().includes("jarvis"));
+        const paperclipKey = activeKeys.find((key) => key.name.toLowerCase().includes("paperclip"));
+        const readerProfile = profiles.find((profile) => profile.id.includes("reader")) || profiles[0];
+        const operatorProfile = profiles.find((profile) => profile.id.includes("operator")) || profiles[0];
+
+        return (
+          <Shell connection={connection} appLabel="Settings">
+            <section className="mx-auto grid w-full max-w-6xl gap-5 px-5 py-8">
+              <section className="rounded-company border border-base-300 bg-base-100 p-5 shadow-sm">
+                <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+                  <div>
+                    <p className="eyebrow">Workspace settings</p>
+                    <h1 className="text-3xl font-black leading-tight">Configure CompanyCore once, then let agents use it safely.</h1>
+                    <p className="mt-2 max-w-3xl text-sm leading-6 text-company-muted">
+                      Settings stay focused on connection and access. Imports, synchronization, mapping, and review queues belong in their own work views.
+                    </p>
+                  </div>
+                  <div className="rounded-company border border-base-300 bg-base-200/45 p-3 text-sm">
+                    <span className="block text-company-muted">Workspace</span>
+                    <strong>{connection.workspace.name}</strong>
+                  </div>
+                </div>
+              </section>
+
+              <nav className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4" aria-label="Settings sections">
+                {settingsTabs.map((tab) => (
+                  <button
+                    className={`rounded-company border p-4 text-left transition ${activeTab === tab.id ? "border-primary bg-primary/10 text-primary" : "border-base-300 bg-base-100 text-company-ink"}`}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id)}
+                    key={tab.id}
+                  >
+                    <span className="flex items-center gap-2 text-sm font-black">
+                      <i className={`ph-bold ${tab.icon}`} aria-hidden="true"></i>
+                      {tab.label}
+                    </span>
+                    <span className="mt-1 block text-xs text-company-muted">{tab.detail}</span>
+                  </button>
+                ))}
+              </nav>
+
+              {settingsNotice ? <LocalNotice tone={settingsNotice.tone} title={settingsNotice.title} detail={settingsNotice.detail} /> : null}
+
+              {activeTab === "general" ? (
+                <section className="grid gap-4 lg:grid-cols-2">
+                  <SimpleSettingCard
+                    icon="ph-buildings"
+                    title="Application defaults"
+                    detail="Keep the owner workspace simple: identity, language, and safe default behavior."
+                  >
+                    <div className="grid gap-3">
+                      <label className="form-control">
+                        <span className="label-text font-bold">Workspace name</span>
+                        <input className="input input-bordered" value={connection.workspace.name} readOnly />
+                      </label>
+                      <label className="form-control">
+                        <span className="label-text font-bold">Default area for unknown imports</span>
+                        <select className="select select-bordered" defaultValue="00-ogolny">
+                          <option value="00-ogolny">00 Ogolny</option>
+                          {companyAreas(connection).map((area) => (
+                            <option value={area.key} key={area.id}>{area.name}</option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                  </SimpleSettingCard>
+                  <SimpleSettingCard
+                    icon="ph-shield-check"
+                    title="Safe behavior"
+                    detail="Risky agent actions should stay approval-first until you deliberately change the access profile."
+                    status={{ label: "Recommended", tone: "success" }}
+                  >
+                    <label className="flex items-start gap-3 rounded-company border border-base-300 bg-base-200/45 p-3 text-sm">
+                      <input className="checkbox checkbox-sm mt-1" type="checkbox" defaultChecked />
+                      <span>
+                        <strong className="block">Require owner approval for write or destructive tools</strong>
+                        <span className="text-company-muted">Jarvis and Paperclip can read safely, but commands stay supervised by default.</span>
+                      </span>
+                    </label>
+                  </SimpleSettingCard>
+                </section>
+              ) : null}
+
+              {activeTab === "connections" ? (
+                <section className="grid gap-4 lg:grid-cols-2">
+                  <SimpleSettingCard
+                    icon="ph-cloud"
+                    title="Google Drive"
+                    detail="Connect Drive as a knowledge source. Import and folder review are handled outside settings."
+                    status={{
+                      label: providerStatusLabel(drive.active, drive.configured),
+                      tone: drive.active ? "success" : drive.configured ? "warning" : "neutral"
+                    }}
+                  >
+                    <div className="flex flex-wrap gap-2">
+                      <a className="btn btn-primary" href="/settings/drive">Configure connection</a>
+                      <a className="btn btn-ghost" href="/areas?area=12-zarzadzanie&view=knowledge">Review knowledge</a>
+                    </div>
+                  </SimpleSettingCard>
+                  <SimpleSettingCard
+                    icon="ph-kanban"
+                    title="ClickUp"
+                    detail="Connect ClickUp as the task provider for human and AI work handoff."
+                    status={{
+                      label: providerStatusLabel(clickup.active, clickup.configured),
+                      tone: clickup.active ? "success" : clickup.configured ? "warning" : "neutral"
+                    }}
+                  >
+                    <div className="flex flex-wrap gap-2">
+                      <a className="btn btn-primary" href="/settings/integrations">Configure connection</a>
+                      <a className="btn btn-ghost" href="/tasks-adapter">Open tasks</a>
+                    </div>
+                  </SimpleSettingCard>
+                  <LocalNotice
+                    tone="info"
+                    title="Synchronization is not a settings screen"
+                    detail="Settings only stores connection choices. Folder import, task sync, mapping, and verification should open in dedicated work views."
+                  />
+                </section>
+              ) : null}
+
+              {activeTab === "agents" ? (
+                <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+                  <form className="rounded-company border border-base-300 bg-base-100 p-4 shadow-sm" onSubmit={createAgentKey}>
+                    <div className="grid gap-4">
+                      <div>
+                        <p className="eyebrow">Agent connection</p>
+                        <h2 className="text-xl font-black">Connect Jarvis or Paperclip</h2>
+                        <p className="mt-1 text-sm leading-6 text-company-muted">Create one scoped key per agent. Start read-only, then upgrade deliberately.</p>
+                      </div>
+                      <label className="form-control">
+                        <span className="label-text font-bold">Agent</span>
+                        <select className="select select-bordered" name="agentName" defaultValue="Jarvis">
+                          <option value="Jarvis">Jarvis</option>
+                          <option value="Paperclip">Paperclip</option>
+                          <option value="External app">External app</option>
+                        </select>
+                      </label>
+                      <label className="form-control">
+                        <span className="label-text font-bold">Access profile</span>
+                        <select className="select select-bordered" name="profileId" defaultValue={readerProfile?.id || operatorProfile?.id || ""}>
+                          {profiles.map((profile) => (
+                            <option value={profile.id} key={profile.id}>{profile.label}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <button className="btn btn-primary" type="submit" disabled={profiles.length === 0}>Create agent key</button>
+                      {createdKey ? <LocalNotice tone="warning" title="Copy once" detail={createdKey} /> : null}
+                    </div>
+                  </form>
+                  <section className="grid gap-3">
+                    <SimpleSettingCard
+                      icon="ph-robot"
+                      title="Jarvis"
+                      detail="Use Jarvis for read-safe company context and supervised CompanyCore actions."
+                      status={{ label: jarvisKey ? "Key active" : "Needs key", tone: jarvisKey ? "success" : "warning" }}
+                    />
+                    <SimpleSettingCard
+                      icon="ph-paperclip"
+                      title="Paperclip"
+                      detail="Use Paperclip as the company management assistant once its scoped key is created."
+                      status={{ label: paperclipKey ? "Key active" : "Needs key", tone: paperclipKey ? "success" : "warning" }}
+                    />
+                    <SimpleSettingCard
+                      icon="ph-key"
+                      title="Existing keys"
+                      detail={activeKeys.length > 0 ? activeKeys.map((key) => agentPresetName(key.name)).join(", ") : "No active service keys yet."}
+                    />
+                  </section>
+                </section>
+              ) : null}
+
+              {activeTab === "mcp" ? (
+                <section className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+                  <SimpleSettingCard
+                    icon="ph-terminal-window"
+                    title="MCP endpoint"
+                    detail="Expose CompanyCore through the same guarded tool surface used by Jarvis and future applications."
+                    status={{ label: manifest.tools.length > 0 ? "Available" : "No tools", tone: manifest.tools.length > 0 ? "success" : "warning" }}
+                  >
+                    <div className="grid gap-3 text-sm">
+                      <div className="rounded-company border border-base-300 bg-base-200/45 p-3">
+                        <span className="block text-company-muted">HTTP API</span>
+                        <code>/v1/mcp/manifest</code>
+                      </div>
+                      <div className="rounded-company border border-base-300 bg-base-200/45 p-3">
+                        <span className="block text-company-muted">Local server command</span>
+                        <code>npm run mcp:server</code>
+                      </div>
+                    </div>
+                  </SimpleSettingCard>
+                  <SimpleSettingCard
+                    icon="ph-shield-warning"
+                    title="Tool safety"
+                    detail="Read tools can be exposed broadly; write and destructive tools should require an operator profile or owner approval."
+                  >
+                    <div className="grid gap-2 text-sm">
+                      <span className="badge badge-outline w-fit">{manifest.tools.length} visible tools</span>
+                      <span className="badge badge-warning w-fit">{manifest.tools.filter((tool) => tool.requiresApproval).length} approval-gated tools</span>
+                      <a className="btn btn-ghost w-fit" href="/react-agent-tools">Inspect full tool catalog</a>
+                    </div>
+                  </SimpleSettingCard>
+                </section>
+              ) : null}
             </section>
           </Shell>
         );
@@ -8301,79 +9570,85 @@ function ReactAgentToolsApp() {
   return <AgentToolSurfaceStatePanel state={surfaceState} onRetry={reload} />;
 }
 
+type AppRouteComponent = {
+  meta: Pick<AppRouteMeta, "id" | "href" | "title" | "aliases" | "match">;
+  component: React.ComponentType;
+};
+
+const appRouteComponents: AppRouteComponent[] = [
+  {
+    meta: { id: "home", href: "/", title: "CompanyCore" },
+    component: PublicHomeRoute
+  },
+  {
+    meta: { id: "login", href: "/auth/login", title: "Sign in" },
+    component: () => <AuthRoute mode="login" />
+  },
+  {
+    meta: { id: "register", href: "/auth/register", title: "Create account" },
+    component: () => <AuthRoute mode="register" />
+  },
+  {
+    meta: { id: "areas", href: "/areas", title: "Areas", aliases: ["/react-areas"] },
+    component: ReactAreasApp
+  },
+  {
+    meta: { id: "relationships", href: "/relationships", title: "Relationships" },
+    component: RelationshipsRoute
+  },
+  {
+    meta: { id: "data", href: "/data", title: "Data", match: "prefix" },
+    component: DataRoute
+  },
+  {
+    meta: { id: "tasks", href: "/tasks-adapter", title: "Tasks", aliases: ["/react-tasks"] },
+    component: ReactTasksApp
+  },
+  {
+    meta: { id: "pipeline", href: "/pipeline", title: "Pipeline" },
+    component: PipelineRoute
+  },
+  {
+    meta: { id: "account", href: "/settings/account", title: "Account" },
+    component: AccountSettingsRoute
+  },
+  {
+    meta: { id: "integration-health", href: "/settings/integrations", title: "Integrations", aliases: ["/react-integrations"] },
+    component: UnifiedSettingsRoute
+  },
+  {
+    meta: { id: "drive", href: "/settings/drive", title: "Google Drive" },
+    component: UnifiedSettingsRoute
+  },
+  {
+    meta: { id: "agent-access", href: "/settings/api", title: "Agent Access" },
+    component: UnifiedSettingsRoute
+  },
+  {
+    meta: { id: "settings", href: "/settings", title: "Settings" },
+    component: UnifiedSettingsRoute
+  },
+  {
+    meta: { id: "company-os", href: "/react-company-os", title: "Company OS" },
+    component: ReactCompanyOsApp
+  },
+  {
+    meta: { id: "agent-tools", href: "/react-agent-tools", title: "Agent Tools" },
+    component: UnifiedSettingsRoute
+  },
+  {
+    meta: { id: "dashboard", href: "/dashboard", title: "Company Atlas", aliases: ["/react-dashboard"] },
+    component: ReactDashboardApp
+  }
+];
+
 function ReactApp() {
-  if (window.location.pathname === "/auth/login") {
-    document.title = "CompanyCore Sign in";
-    return <AuthRoute mode="login" />;
-  }
+  const pathname = window.location.pathname;
+  const route = appRouteComponents.find((candidate) => routeMatches(candidate.meta, pathname)) || appRouteComponents[appRouteComponents.length - 1];
+  const RouteComponent = route.component;
 
-  if (window.location.pathname === "/auth/register") {
-    document.title = "CompanyCore Create account";
-    return <AuthRoute mode="register" />;
-  }
-
-  if (window.location.pathname === "/areas" || window.location.pathname === "/react-areas") {
-    document.title = "CompanyCore React Areas";
-    return <ReactAreasApp />;
-  }
-
-  if (window.location.pathname === "/relationships") {
-    document.title = "CompanyCore Relationships";
-    return <RelationshipsRoute />;
-  }
-
-  if (window.location.pathname === "/data" || window.location.pathname.startsWith("/data/")) {
-    document.title = "CompanyCore Data";
-    return <DataRoute />;
-  }
-
-  if (window.location.pathname === "/tasks-adapter" || window.location.pathname === "/react-tasks") {
-    document.title = "CompanyCore Tasks";
-    return <ReactTasksApp />;
-  }
-
-  if (window.location.pathname === "/pipeline") {
-    document.title = "CompanyCore Pipeline";
-    return <PipelineRoute />;
-  }
-
-  if (window.location.pathname === "/settings/account") {
-    document.title = "CompanyCore Account";
-    return <AccountSettingsRoute />;
-  }
-
-  if (window.location.pathname === "/settings/integrations" || window.location.pathname === "/react-integrations") {
-    document.title = "CompanyCore Integrations";
-    return <ReactIntegrationsApp />;
-  }
-
-  if (window.location.pathname === "/settings/drive") {
-    document.title = "CompanyCore Google Drive";
-    return <DriveSettingsRoute />;
-  }
-
-  if (window.location.pathname === "/settings/api") {
-    document.title = "CompanyCore Agent Access";
-    return <ApiSettingsRoute />;
-  }
-
-  if (window.location.pathname === "/settings") {
-    document.title = "CompanyCore ClickUp Bridge";
-    return <ClickUpSettingsRoute />;
-  }
-
-  if (window.location.pathname === "/react-company-os") {
-    document.title = "CompanyCore Company OS";
-    return <ReactCompanyOsApp />;
-  }
-
-  if (window.location.pathname === "/react-agent-tools") {
-    document.title = "CompanyCore Agent Tools";
-    return <ReactAgentToolsApp />;
-  }
-
-  document.title = "CompanyCore Company Atlas";
-  return <ReactDashboardApp />;
+  document.title = `CompanyCore ${route.meta.title}`;
+  return <RouteComponent />;
 }
 
 const root = document.getElementById("root");

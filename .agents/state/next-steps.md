@@ -4,35 +4,45 @@ Last updated: 2026-05-15
 
 ## NOW
 
-1. Restore Google Drive OAuth usability for Jarvis.
-   - Commit `fb6aca9` is deployed and lets `/settings/drive` repair OAuth even
-     when old Google Drive ciphertext cannot be decrypted.
-   - The current Jarvis container key is registered in CompanyCore and passes
-     protected Google Drive smoke.
-   - Complete owner Google Drive OAuth re-consent from `/settings/drive`, then
-     rerun Jarvis Docs/Sheets creation/readback smoke.
+1. V1PROD-002 Deploy V1 canonical web layer and rerun parity.
+   - Commit and deploy the current V1 canonical web layer.
+   - Confirm public web/API `/health` report the deployed commit.
+   - Recapture public home/login/register screenshots plus authenticated
+     dashboard and selected-area screenshots against
+     `docs/ux/v1-production-canonical-discrepancy-audit-2026-05-15.md`.
+2. REACT-WEB-002 ClickUp setup React workflow.
+   - Use the new `web/src/app-route-registry.ts` and shared React shell.
+   - Rebuild ClickUp token discovery, workspace/list selection, save, and
+     maintenance run controls inside the unified V1 settings module instead
+     of keeping `/settings` as a ClickUp-only route.
+3. REACT-WEB-003 Google Drive OAuth/folder-selection React workflow.
+   - Use the same route registry and shell foundation.
+   - Rebuild `/settings/drive` as a tab-aware unified settings entry for OAuth
+     client save, authorize URL, authorization-code exchange, folder
+     discovery, folder selection, import, mapping, and reconcile as React
+     components against the existing Google Drive integration routes.
+4. V1SETTINGS-002 Unified settings React implementation.
+   - Use `docs/ux/v1-settings-canonical-spec-2026-05-15.md` plus the desktop
+     and mobile canonical targets to converge General, Integrations,
+     Knowledge, Tools, API, MCP, and Access & audit into one `/settings`
+     module.
 
 ## NEXT
 
-1. REACT-WEB-002 ClickUp setup React workflow.
-   - Rebuild the former `/settings` ClickUp token discovery, workspace/list
-     selection, save, and maintenance run controls as React components against
-     the existing `/v1/integration-settings/clickup*` contracts.
-2. REACT-WEB-003 Google Drive OAuth/folder-selection React workflow.
-   - Rebuild OAuth client save, authorize URL, authorization-code exchange,
-     folder discovery, folder selection, import, and reconcile as React
-     components against the existing Google Drive integration routes.
-3. AGRUN-010 Upstream Agent Source Merge Execution.
+1. AGRUN-010 Upstream Agent Source Merge Execution.
    - Blocked until upstream write access or an approved fork/PR route exists.
-4. Production push-to-running-image smoke after the next deploy.
+2. Production push-to-running-image smoke after the next deploy.
    - Build metadata restoration is implemented locally; after deploy, compare
      public `/health` `build.commit` with the pushed commit before claiming
      auto-deploy proof.
-5. V1AREA follow-up verification and route convergence.
+3. V1AREA database-backed proof.
    - First unblock the host API gate by setting a valid local `DATABASE_URL`
-     and running `npm run test:api` for the new `/dashboard` routing.
-   - Then start V1AREA-002 as a narrow `/areas` route convergence or
-     capability-detail polish slice using the same area-first component model.
+   and running `npm run test:api`.
+   - Then repeat the selected-area route proof against database-backed owner
+   state.
+4. V1AREA capability actions.
+   - Add create/edit/filter actions only where an existing backend contract
+     already supports the selected capability safely.
 
 ## LATER
 

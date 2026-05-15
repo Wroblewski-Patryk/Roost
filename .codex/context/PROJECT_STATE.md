@@ -176,6 +176,72 @@ Last updated: 2026-05-15
   `docs/architecture/web-layer-react-ownership.md`. Follow-up remains for full
   React rebuilds of the legacy ClickUp setup form and full Google Drive
   OAuth/folder-selection workflow.
+- 2026-05-15: REACT-WEB-LAYOUT-001 made `/dashboard` the canonical
+  authenticated post-login route and added `web/src/app-route-registry.ts` as
+  the React route source of truth for route groups, canonical hrefs, aliases,
+  prefix matching, shell navigation, route titles, and safe post-auth redirect
+  normalization. The shared React shell now derives navigation from that
+  registry, and `ReactApp` uses a route component map instead of repeated
+  manual path branching. `npm run build:web`, `npm run validate`, and `git
+  diff --check` passed. Playwright fallback verified login -> `/dashboard`,
+  compatibility aliases `/` and `/react-dashboard`, route aliases `/areas` and
+  `/react-areas`, `/settings/api`, `/react-agent-tools`, and mobile
+  `/dashboard` at `390x844` with no horizontal overflow and no route-level
+  error panel.
+- 2026-05-15: V1AREA-002 added the canonical selected-department drill-down
+  opened from `/areas?area=:areaKey&view=:viewId`. `/areas` remains the
+  all-areas workbench, while `/areas?area=01-strategia` renders a department
+  operating view with the existing atlas shell, expanded selected area,
+  capability rail, observe/decide/execute/delegate board, selected capability
+  focus, evidence grid for tables/records/knowledge/providers, and decision
+  rail for ownership, knowledge, and AI handoff. `npm run build:web`, `npm run
+  validate`, and `git diff --check` passed. Playwright fallback verified
+  desktop `1366x900` and mobile `390x844` area detail routes with no
+  horizontal overflow, console errors, or page errors.
+- 2026-05-15: V1WEB-INDEX-001 added
+  `docs/ux/v1-web-view-index-2026-05-15.md` as the web UX maturity index.
+  It marks `/dashboard` and `/areas?area=:areaKey&view=:viewId` as
+  `V1 canonical`, AI/API/Company OS/auth surfaces as `V1 foundation`, and the
+  remaining module/workbench/admin views as `V0 rebuild` or compatibility
+  aliases. `web/src/app-route-registry.ts` now carries matching lightweight
+  `uxStage` markers and rebuild notes for implementation visibility.
+- 2026-05-15: V1AREA-002 canonical area-detail visual targets were refreshed
+  as separate desktop and mobile images:
+  `docs/ux/assets/companycore-v1-area-detail-desktop-canonical.png` and
+  `docs/ux/assets/companycore-v1-area-detail-mobile-canonical.png`. The V1 web
+  view index now links both targets directly in the canonical views table.
+- 2026-05-15: V1AREA-003 expanded the selected-department view into a complete
+  capability-tab overview. `overview`, `goals`, `workflows`, `tasks`,
+  `knowledge`, `resources`, `decisions`, `ai`, and `add-view` now render
+  distinct area-scoped boards from existing backend data: `/v1/connection`,
+  readable table snapshots, `/v1/operating-model/external-mappings`,
+  `/v1/google-drive/files`, and MCP manifest context. `npm run build:web`,
+  `npm run validate`, and `git diff --check` passed. Playwright fallback
+  verified all desktop tabs and mobile AI tab rendering at `390x844` with no
+  overflow or console/page errors.
+- 2026-05-15: V1AREA-004 polished the selected-department view without adding
+  backend scope. The operating board now reads as a connected workflow map on
+  desktop, capability boards are lighter and less nested, active tabs expose
+  `aria-current`, and mobile density was tightened for a faster CEO scan.
+  `npm run build:web`, `npm run validate`, and `git diff --check` passed.
+  Playwright fallback refreshed proof screenshots in `docs/ux/evidence/`.
+- 2026-05-15: V1WEB-002 organized the V1 web layer into five canonical
+  surfaces. `/` is now public home, `/auth/login` and `/auth/register` share
+  the public layout, `/dashboard` remains the authenticated Company Atlas, and
+  `/areas?area=:areaKey&view=:viewId` remains the private selected-department
+  operating room. Canonical desktop/mobile screenshots for all five surfaces
+  were refreshed under `docs/ux/assets/`; Playwright also captured tablet
+  dashboard proof at `834x1112`.
+- 2026-05-15: V1PROD-001 compared deployed production against the V1 canonical
+  web targets. Public web/API health reported `build.commit="b716f02"` while
+  the current canonical implementation is in the local `9b575e2` working tree,
+  so production is blocked by deploy drift. Production `/` still redirects to
+  `/auth/login`, and production login/register still show the older auth
+  layout. Signed-out private route redirects to `/auth/login` are healthy, but
+  authenticated dashboard and selected-area production parity remains
+  unverified until a valid owner session is used after the V1 deploy. Evidence:
+  `docs/ux/v1-production-canonical-discrepancy-audit-2026-05-15.md` and
+  `docs/ux/evidence/production-compare-2026-05-15/`.
 - 2026-05-14: Production now runs owner-console snapshot routing hotfix commit
   `a7557120b8ea4630a0b32097e66ba0d4bb012b1b`. The vanilla web shell routes
   implemented table snapshots to their correct API paths, sends Company OS

@@ -2,30 +2,37 @@
 
 ## Ready
 
-No ready implementation task is queued.
-
+- V1PROD-002 Deploy V1 canonical web layer and rerun parity.
+  - Stage: release
+  - Owner: Frontend Builder + Ops/Release
+  - Priority: P0
+  - Goal: commit, push, deploy, and smoke the V1 canonical web layer so
+    production matches `/`, `/auth/login`, `/auth/register`, `/dashboard`, and
+    `/areas?area=:areaKey&view=:viewId` canonical targets.
+- REACT-WEB-002 ClickUp setup React workflow.
+  - Stage: planning
+  - Owner: Frontend Builder + Backend Builder
+  - Priority: P1
+  - Goal: rebuild ClickUp setup inside the unified V1 settings module instead
+    of keeping `/settings` as a ClickUp-only route.
+- REACT-WEB-003 Google Drive OAuth/folder-selection React workflow.
+  - Stage: planning
+  - Owner: Frontend Builder + Backend Builder
+  - Priority: P1
+  - Goal: rebuild `/settings/drive` as a tab-aware entry into the unified V1
+    settings module, covering OAuth, folder discovery, selection, import,
+    mapping, and reconcile controls against existing backend contracts.
+- V1SETTINGS-002 Unified settings React implementation.
+  - Stage: planning
+  - Owner: Frontend Builder + Backend Builder
+  - Priority: P1
+  - Source: `docs/ux/v1-settings-canonical-spec-2026-05-15.md`
+  - Goal: implement the canonical `/settings` module with tabs for General,
+    Integrations, Knowledge, Tools, API, MCP, and Access & audit, then route
+    old settings entry points into the relevant tabs once verified.
 ## In Progress
 
-- GD-IMPORT-UX-001 Google Drive folder import organization.
-  - Stage: release
-  - Owner: Backend Builder + Frontend Builder + Ops/Release
-  - Priority: P0
-  - Goal: make `/settings/drive` show Drive folders as an organized import
-    scope instead of a flat list, then deploy and smoke the CompanyCore ->
-    Google Drive path.
-  - Evidence so far: production OAuth status now decrypts successfully and
-    reports both refresh and access tokens present; `npm run validate` passed.
-    `npm test` reached the build gate but stopped before API tests because the
-    local host has no `DATABASE_URL`.
-- JARVIS-GDRIVE-001 Jarvis CompanyCore Google Drive E2E.
-  - Stage: verification
-  - Owner: Backend Builder + Ops/Release + Jarvis agent
-  - Priority: P0
-  - Source:
-    `docs/planning/jarvis-companycore-google-drive-e2e-task-contract.md`
-  - Current state: owner OAuth re-consent is complete in production. Waiting
-    for this Drive import organization deploy and the Jarvis agent two-file
-    creation/readback smoke in folder `12. ZarzÄ…dzanie`.
+No task is actively in progress.
 
 ## Blocked
 
@@ -71,6 +78,128 @@ No ready implementation task is queued.
   auto-deploy webhook administration task.
 
 ## Done
+
+- V1PROD-001 Production Canonical Parity Audit.
+  - Evidence: production screenshots and route report were captured under
+    `docs/ux/evidence/production-compare-2026-05-15/`. Public web/API health
+    reported `build.commit="b716f02"` while the current V1 canonical web
+    implementation is in the local `9b575e2` working tree. Production `/`
+    redirects to `/auth/login`, login/register still use the old auth layout,
+    and private routes correctly redirect signed-out users to login.
+  - Discrepancy register:
+    `docs/ux/v1-production-canonical-discrepancy-audit-2026-05-15.md`.
+  - Result: production parity is blocked by deploy drift; the next task is
+    V1PROD-002 release and rerun of authenticated production screenshot
+    comparison.
+  - Task contract:
+    `docs/planning/v1-production-canonical-parity-audit-task-contract.md`.
+
+- V1WEB-INDEX-001 Web View UX Maturity Index.
+  - Evidence: `docs/ux/v1-web-view-index-2026-05-15.md` now classifies active
+    web routes as `V1 canonical`, `V1 foundation`, `V0 rebuild`,
+    `V0 compatibility`, or `V2 deferred`. It records canonical sources,
+    desktop/mobile target images, rebuild direction, owner journeys, and
+    recommended build order. The React route registry now carries matching
+    lightweight `uxStage`, canonical source, and rebuild-note metadata.
+  - Validation: `git diff --check` passed.
+  - Task contract:
+    `docs/planning/v1-web-view-index-task-contract.md`.
+
+- V1AREA-002 Area Detail Canonical View.
+  - Evidence: `/areas?area=:areaKey&view=:viewId` now opens a canonical
+    selected-department view from the Company Atlas model while `/areas`
+    remains the all-areas workbench. The view reuses the atlas shell and shows
+    department identity, capability navigation, observe/decide/execute/delegate
+    board, selected capability focus, tables/records/knowledge/provider
+    evidence, and ownership/AI decision rail. Current canonical targets are
+    `docs/ux/assets/companycore-v1-area-detail-desktop-canonical.png` and
+    `docs/ux/assets/companycore-v1-area-detail-mobile-canonical.png`.
+  - Validation: `npm run build:web`, `npm run validate`, and `git diff
+    --check` passed. Playwright fallback against `http://127.0.0.1:3138`
+    verified `/areas?area=01-strategia&view=overview` on desktop `1366x900`
+    and `/areas?area=01-strategia&view=ai` on mobile `390x844` with no
+    horizontal overflow, console errors, or page errors.
+  - Task contract:
+    `docs/planning/v1-area-detail-canonical-task-contract.md`.
+
+- V1AREA-003 Area Detail Capability Tabs.
+  - Evidence: `/areas?area=:areaKey&view=:viewId` now renders distinct
+    area-scoped capability boards for `overview`, `goals`, `workflows`,
+    `tasks`, `knowledge`, `resources`, `decisions`, `ai`, and `add-view`.
+    Each board is derived from existing connection data, readable area tables,
+    table record snapshots, Drive scope, provider mappings, and MCP manifest
+    context; no new backend route or fake data contract was introduced.
+  - Validation: `npm run build:web`, `npm run validate`, and `git diff
+    --check` passed. Playwright fallback against `http://127.0.0.1:3144`
+    clicked every desktop capability tab and verified mobile AI tab rendering
+    at `390x844` with no horizontal overflow, console errors, or page errors.
+    Screenshots:
+    `docs/ux/evidence/v1-area-detail-tabs-desktop.png` and
+    `docs/ux/evidence/v1-area-detail-tabs-mobile.png`.
+  - Task contract:
+    `docs/planning/v1-area-detail-capability-tabs-task-contract.md`.
+
+- V1AREA-004 Area Detail UX Polish.
+  - Evidence: the selected-department view now has a calmer connected
+    operating flow, lighter capability boards, improved mobile density, and
+    explicit active-tab accessibility state while keeping the same backend data
+    contracts.
+  - Validation: `npm run build:web`, `npm run validate`, and `git diff
+    --check` passed. Playwright fallback against `http://127.0.0.1:3146`
+    clicked every desktop capability tab and verified mobile AI tab rendering
+    at `390x844` with no horizontal overflow, console errors, or page errors.
+    Screenshots:
+    `docs/ux/evidence/v1-area-detail-polish-desktop.png` and
+    `docs/ux/evidence/v1-area-detail-polish-mobile.png`.
+  - Task contract:
+    `docs/planning/v1-area-detail-ux-polish-task-contract.md`.
+
+- V1WEB-002 Five Canonical Web Surfaces.
+  - Evidence: `/` is now the public CompanyCore home route, `/auth/login` and
+    `/auth/register` share the public layout, and `/dashboard` remains the
+    private post-login Company Atlas. The selected-area route remains private
+    on `/areas?area=:areaKey&view=:viewId`.
+  - Canonical images: refreshed desktop/mobile targets for public home, login,
+    registration, dashboard, and selected-area detail under `docs/ux/assets/`.
+  - Validation: `npm run build:web`, `npm run validate`, and `git diff
+    --check` passed. Playwright fallback against `http://127.0.0.1:3148`
+    rendered all five canonical views in desktop and mobile, plus dashboard
+    tablet proof at `834x1112`, with no horizontal overflow, blank page,
+    console errors, or page errors. Public home/login/register screenshots
+    were refreshed again after the mobile public-nav refinement.
+  - Task contract:
+    `docs/planning/v1-web-five-canonical-surfaces-task-contract.md`.
+
+- V1SETTINGS-001 Unified V1 Settings Canonical Design.
+  - Evidence: the settings IA now separates General, Integrations, Knowledge,
+    Tools, API, MCP, and Access & audit. Provider setup uses
+    `Connect -> Scope -> Import / Sync -> Map -> Verify`, and AI-facing
+    administration separates Knowledge from Tools with Access and Audit as
+    safety layers.
+  - Canonical images:
+    `docs/ux/assets/companycore-v1-settings-desktop-canonical.png` and
+    `docs/ux/assets/companycore-v1-settings-mobile-canonical.png`.
+  - Spec:
+    `docs/ux/v1-settings-canonical-spec-2026-05-15.md`.
+  - Task contract:
+    `docs/planning/v1-settings-canonical-design-task-contract.md`.
+
+- REACT-WEB-LAYOUT-001 Authenticated Layout Foundation.
+  - Evidence: `web/src/app-route-registry.ts` now owns React route groups,
+    canonical hrefs, aliases, prefix matching, shell navigation metadata, and
+    post-auth redirect normalization. Owner login/register default to
+    `/dashboard` while preserving safe pending private routes. Shared React
+    shell navigation is registry-derived, and `ReactApp` uses a component map
+    instead of repeated manual route branching.
+  - Validation: `npm run build:web`, `npm run validate`, and `git diff
+    --check` passed. Playwright fallback against local backend
+    `http://127.0.0.1:3137` verified login -> `/dashboard`; `/dashboard`,
+    `/`, `/react-dashboard`, `/areas`, `/react-areas`, `/settings/api`, and
+    `/react-agent-tools` rendered with no route-level error panel and no
+    horizontal overflow; mobile `/dashboard` at `390x844` had no horizontal
+    overflow. Validation server and headless browser processes were cleaned up.
+  - Task contract:
+    `docs/planning/react-web-layout-foundation-task-contract.md`.
 
 - JARVIS-GDRIVE-001 Jarvis CompanyCore Google Drive E2E.
   - Evidence: production commit `b716f02` is deployed and public health reports

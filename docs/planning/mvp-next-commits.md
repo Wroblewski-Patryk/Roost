@@ -7,10 +7,25 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-Restore Google Drive OAuth usability for Jarvis remains the active P0 blocker.
-The V1 area-first dashboard shell has been implemented, but its host API gate
-still needs a local `DATABASE_URL` before `npm run test:api` can complete.
-
+- [ ] V1PROD-002 Deploy V1 canonical web layer and rerun parity:
+      commit, push, deploy, confirm production health reports the deployed
+      commit, then recapture public and authenticated screenshots against
+      `docs/ux/v1-production-canonical-discrepancy-audit-2026-05-15.md`.
+- [ ] REACT-WEB-002 ClickUp setup React workflow:
+      rebuild ClickUp token discovery, workspace/list selection, save, and
+      maintenance run controls inside the unified V1 settings module instead
+      of keeping `/settings` as a ClickUp-only route.
+- [ ] REACT-WEB-003 Google Drive OAuth/folder-selection React workflow:
+      rebuild `/settings/drive` as a tab-aware unified settings entry for
+      OAuth client save, authorize URL,
+      authorization-code exchange, folder discovery, folder selection, import,
+      and reconcile controls as React components using existing backend
+      contracts.
+- [ ] V1SETTINGS-002 Unified settings React implementation:
+      implement the canonical `/settings` module from
+      `docs/ux/v1-settings-canonical-spec-2026-05-15.md`, then route old
+      settings entry points into General, Integrations, Knowledge, Tools, API,
+      MCP, or Access & audit once verified.
 ### NEXT
 
 - [ ] AGRUN-010 Upstream Agent Source Merge Execution:
@@ -20,11 +35,9 @@ still needs a local `DATABASE_URL` before `npm run test:api` can complete.
       build metadata restoration is implemented locally; compare public
       `/health` `build.commit` with the pushed commit before claiming
       auto-deploy proof.
-- [ ] V1AREA follow-up verification and route convergence:
-      run `npm run test:api` with a valid local `DATABASE_URL`, then scope
-      V1AREA-002 for `/areas` route convergence or a tighter desktop/mobile
-      pixel-parity pass.
-
+- [ ] V1AREA database-backed proof:
+      run `npm run test:api` with a valid local `DATABASE_URL`, then repeat a
+      selected-area route proof against database-backed owner state.
 ### DEFERRED TO V2
 
 - [ ] ACF-UX-002 Company City Dashboard / Gamified Strategic Map:
@@ -65,6 +78,45 @@ and `docs/operations/v1-function-coverage-ledger.csv`.
       and mobile `390x844` screenshots in `docs/ux/evidence/` with no
       overflow and no console/page errors. `npm run test:api` is still
       pending because host `DATABASE_URL` was unset.
+- [x] V1AREA-003 Area Detail Capability Tabs:
+      `/areas?area=:areaKey&view=:viewId` now gives every area capability tab a
+      distinct area-scoped board for records, tables, providers, Drive proof,
+      MCP tools, guardrails, and next safe actions, using existing backend data
+      already loaded by the selected-department route. `npm run build:web`,
+      `npm run validate`, `git diff --check`, and Playwright fallback tab
+      proof passed. Evidence screenshots:
+      `docs/ux/evidence/v1-area-detail-tabs-desktop.png` and
+      `docs/ux/evidence/v1-area-detail-tabs-mobile.png`.
+- [x] V1AREA-004 Area Detail UX Polish:
+      refined the selected-department view with a connected operating flow,
+      lighter capability board hierarchy, tighter mobile density, and
+      active-tab accessibility state. `npm run build:web`, `npm run validate`,
+      `git diff --check`, and Playwright fallback tab proof passed. Evidence:
+      `docs/ux/evidence/v1-area-detail-polish-desktop.png` and
+      `docs/ux/evidence/v1-area-detail-polish-mobile.png`.
+- [x] V1WEB-002 Five Canonical Web Surfaces:
+      `/` is now public home, `/auth/login` and `/auth/register` share the
+      public layout, and `/dashboard` plus selected-area detail remain private
+      atlas-layout surfaces. Desktop/mobile canonical images for all five
+      surfaces were refreshed in `docs/ux/assets/`; dashboard tablet proof was
+      captured in `docs/ux/evidence/companycore-v1-dashboard-tablet-proof.png`.
+- [x] V1PROD-001 Production Canonical Parity Audit:
+      captured production desktop/mobile public screenshots plus signed-out
+      private route screenshots under
+      `docs/ux/evidence/production-compare-2026-05-15/`. Production health
+      reports `b716f02`, so `/`, login, and registration do not yet match the
+      local V1 canonical targets because the current V1 web layer is not
+      deployed. Discrepancy register:
+      `docs/ux/v1-production-canonical-discrepancy-audit-2026-05-15.md`.
+- [x] V1SETTINGS-001 Unified V1 Settings Canonical Design:
+      published the unified settings IA and desktop/mobile canonical targets
+      for one settings module spanning General, Integrations, Knowledge, Tools,
+      API, MCP, and Access & audit. Provider setup uses
+      `Connect -> Scope -> Import / Sync -> Map -> Verify`, and AI-facing
+      administration separates Knowledge from Tools with Access and Audit as
+      safety layers. Targets:
+      `docs/ux/assets/companycore-v1-settings-desktop-canonical.png` and
+      `docs/ux/assets/companycore-v1-settings-mobile-canonical.png`.
 - [x] UX100-W03 Relationship/Data Provenance And AI Safety Labels:
       added existing-state-derived provenance and AI readiness labels to
       relationship graph rows, review rows, data modules, table context cards,

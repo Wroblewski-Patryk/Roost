@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { appRouteGroups, resolveRouteMeta, routeMatches } from "./app-route-registry";
 
 export type IntegrationState = {
   configured: boolean;
@@ -1720,39 +1721,10 @@ export function companyAreas(connection: ConnectionData) {
   return connection.operatingModel.areas.filter((area) => area.key !== "main-general");
 }
 
-const reactShellNav = [
-  {
-    label: "Command",
-    links: [
-      { href: "/dashboard", label: "Company map", icon: "ph-map-trifold" }
-    ]
-  },
-  {
-    label: "Workbenches",
-    links: [
-      { href: "/areas", label: "Areas & resources", icon: "ph-buildings" },
-      { href: "/relationships", label: "Relationship review", icon: "ph-graph" },
-      { href: "/data", label: "Company data", icon: "ph-database" },
-      { href: "/tasks-adapter", label: "Tasks & delivery", icon: "ph-list-checks" },
-      { href: "/pipeline", label: "Pipeline / CRM", icon: "ph-flow-arrow" }
-    ]
-  },
-  {
-    label: "Integrations & agents",
-    links: [
-      { href: "/settings/integrations", label: "Integration health", icon: "ph-plugs-connected" },
-      { href: "/settings/drive", label: "Google Drive", icon: "ph-cloud" },
-      { href: "/settings/api", label: "Agent access", icon: "ph-key" },
-      { href: "/react-agent-tools", label: "MCP tools", icon: "ph-robot" }
-    ]
-  },
-  {
-    label: "Workspace",
-    links: [
-      { href: "/settings/account", label: "Account & readiness", icon: "ph-user-circle" }
-    ]
-  }
-];
+const reactShellNav = appRouteGroups.map((group) => ({
+  label: group.label,
+  links: group.routes
+}));
 
 export function Shell({
   children,
@@ -1765,9 +1737,7 @@ export function Shell({
 }) {
   const metrics = connection ? connectionMetrics(connection) : null;
   const currentPath = typeof window === "undefined" ? "" : window.location.pathname;
-  const activeLabel = reactShellNav
-    .flatMap((section) => section.links)
-    .find((link) => link.href === currentPath)?.label || appLabel.replace(/^React\s+/i, "");
+  const activeLabel = resolveRouteMeta(currentPath)?.label || appLabel.replace(/^React\s+/i, "");
   const healthLabel = connection ? "Healthy workspace" : "Signed-out preview";
   const workspaceLabel = connection?.workspace.name || "No active workspace";
   const agentLabel = metrics ? `${metrics.areas} areas · ${metrics.tables} tables` : appLabel.replace(/^React\s+/i, "");
@@ -1795,7 +1765,7 @@ export function Shell({
             <section className="grid gap-1.5" key={section.label} aria-label={section.label}>
               <p className="px-3 text-[0.68rem] font-black uppercase text-neutral-content/55">{section.label}</p>
               {section.links.map((link) => {
-                const isActive = link.href === currentPath || (link.href === "/data" && currentPath.startsWith("/data/"));
+                const isActive = routeMatches(link, currentPath);
                 return (
                   <a
                     key={link.href}
@@ -1833,10 +1803,10 @@ export function Shell({
               <span className="rounded-full border border-base-300 bg-base-200 px-3 py-1.5">{agentLabel}</span>
             </div>
             <nav className="flex min-w-0 gap-2 overflow-x-auto pb-1 lg:hidden" aria-label="CompanyCore mobile command navigation">
-              {reactShellNav.flatMap((section) => section.links).slice(0, 7).map((link) => (
+              {reactShellNav.flatMap((section) => section.links).slice(0, 8).map((link) => (
                 <a
                   key={link.href}
-                  className={`btn btn-sm flex-none ${link.href === currentPath ? "btn-primary" : "btn-outline"}`}
+                  className={`btn btn-sm flex-none ${routeMatches(link, currentPath) ? "btn-primary" : "btn-outline"}`}
                   href={link.href}
                 >
                   {link.label}

@@ -83,8 +83,36 @@ continue from repository files alone:
   ownership contract. As of 2026-05-15, user-facing web routes are React-owned
   and served from the Vite bundle in `public/react/index.html`. The legacy
   vanilla owner console files under `public/` are removed from active runtime
-  ownership. Future web slices must extend `web/src/` instead of reintroducing
-  page-local vanilla scripts.
+  ownership. `/dashboard` is the canonical authenticated post-login route, and
+  `web/src/app-route-registry.ts` is the React route metadata source for
+  groups, aliases, shell navigation, and post-auth redirect normalization.
+  `/areas` remains the all-areas workbench, while
+  `/areas?area=:areaKey&view=:viewId` is the canonical selected-department
+  drill-down. As of V1AREA-003, selected-department capability tabs render
+  area-scoped boards for goals, workflows, tasks, knowledge, resources,
+  decisions, AI, and add-view planning from existing backend data. Future web
+  slices must extend `web/src/` and the route registry instead of
+  reintroducing page-local vanilla scripts or duplicated sidebar route maps.
+- `docs/ux/v1-web-view-index-2026-05-15.md`: current V1 web UX maturity
+  index. It marks `/dashboard` and `/areas?area=:areaKey&view=:viewId` as V1
+  canonical, foundation routes as usable but not canonical yet, and remaining
+  module/workbench/admin routes as V0 rebuild or compatibility surfaces.
+  V1PROD-001 adds production parity status: production health currently reports
+  `b716f02`, while the V1 canonical web layer exists in the local working tree,
+  so production parity is blocked by deploy drift. Future web UX tasks should
+  update this index when route maturity or production parity changes.
+- `docs/ux/v1-production-canonical-discrepancy-audit-2026-05-15.md`: current
+  production-to-canonical discrepancy register for the five V1 web surfaces.
+  It records the deployed screenshots, root/auth mismatches, signed-out private
+  redirect evidence, and the required V1PROD-002 release/rerun step.
+- `docs/ux/v1-settings-canonical-spec-2026-05-15.md`: current canonical
+  planning target for the unified V1 settings module. It defines `/settings`
+  as the future settings entry with tab-aware entries for integrations, Drive,
+  API, and MCP; provider setup uses `Connect -> Scope -> Import / Sync -> Map
+  -> Verify`; AI-facing administration separates Knowledge, Tools, Access, and
+  Audit. The desktop/mobile target images are
+  `docs/ux/assets/companycore-v1-settings-desktop-canonical.png` and
+  `docs/ux/assets/companycore-v1-settings-mobile-canonical.png`.
 - `docs/architecture/relationship-graph-audit-2026-05-14.md`: current
   relationship graph source audit for the pre-V2 web/backend/MCP foundation.
   Relationship APIs and UI must distinguish direct database edges,

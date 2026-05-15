@@ -1,0 +1,134 @@
+[
+  {
+    "name": "home",
+    "kind": "desktop",
+    "url": "https://companycore.luckysparrow.ch/",
+    "finalUrl": "https://companycore.luckysparrow.ch/auth/login",
+    "title": "CompanyCore Sign in",
+    "overflow": false,
+    "consoleErrors": [],
+    "failed": [
+      "GET https://companycore.luckysparrow.ch/vendor/phosphor/bold/Phosphor-Bold.woff2 net::ERR_ABORTED"
+    ],
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-compare-2026-05-15\\home-desktop.png",
+    "text": "CC\nCompanyCore\nSign in\nCreate account\n\nOWNER WORKSPACE\n\nSign in to the company control plane\n\nCompanyCore keeps operating areas, provider data, workflow evidence, and agent access behind one owner session.\n\nCompany Atlas\nGoogle Drive\nMCP tools\nAgent keys\n\nOWNER ACCESS\n\nSign in\nEmail\nPassword\nSign in\n\nNo account yet? Create one"
+  },
+  {
+    "name": "home",
+    "kind": "mobile",
+    "url": "https://companycore.luckysparrow.ch/",
+    "finalUrl": "https://companycore.luckysparrow.ch/auth/login",
+    "title": "CompanyCore Sign in",
+    "overflow": false,
+    "consoleErrors": [],
+    "failed": [
+      "GET https://companycore.luckysparrow.ch/vendor/phosphor/bold/Phosphor-Bold.woff2 net::ERR_ABORTED"
+    ],
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-compare-2026-05-15\\home-mobile.png",
+    "text": "CC\nCompanyCore\nSign in\nCreate account\n\nOWNER WORKSPACE\n\nSign in to the company control plane\n\nCompanyCore keeps operating areas, provider data, workflow evidence, and agent access behind one owner session.\n\nCompany Atlas\nGoogle Drive\nMCP tools\nAgent keys\n\nOWNER ACCESS\n\nSign in\nEmail\nPassword\nSign in\n\nNo account yet? Create one"
+  },
+  {
+    "name": "login",
+    "kind": "desktop",
+    "url": "https://companycore.luckysparrow.ch/auth/login",
+    "finalUrl": "https://companycore.luckysparrow.ch/auth/login",
+    "title": "CompanyCore Sign in",
+    "overflow": false,
+    "consoleErrors": [],
+    "failed": [],
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-compare-2026-05-15\\login-desktop.png",
+    "text": "CC\nCompanyCore\nSign in\nCreate account\n\nOWNER WORKSPACE\n\nSign in to the company control plane\n\nCompanyCore keeps operating areas, provider data, workflow evidence, and agent access behind one owner session.\n\nCompany Atlas\nGoogle Drive\nMCP tools\nAgent keys\n\nOWNER ACCESS\n\nSign in\nEmail\nPassword\nSign in\n\nNo account yet? Create one"
+  },
+  {
+    "name": "login",
+    "kind": "mobile",
+    "url": "https://companycore.luckysparrow.ch/auth/login",
+    "finalUrl": "https://companycore.luckysparrow.ch/auth/login",
+    "title": "CompanyCore Sign in",
+    "overflow": false,
+    "consoleErrors": [],
+    "failed": [],
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-compare-2026-05-15\\login-mobile.png",
+    "text": "CC\nCompanyCore\nSign in\nCreate account\n\nOWNER WORKSPACE\n\nSign in to the company control plane\n\nCompanyCore keeps operating areas, provider data, workflow evidence, and agent access behind one owner session.\n\nCompany Atlas\nGoogle Drive\nMCP tools\nAgent keys\n\nOWNER ACCESS\n\nSign in\nEmail\nPassword\nSign in\n\nNo account yet? Create one"
+  },
+  {
+    "name": "register",
+    "kind": "desktop",
+    "url": "https://companycore.luckysparrow.ch/auth/register",
+    "finalUrl": "https://companycore.luckysparrow.ch/auth/register",
+    "title": "CompanyCore Create account",
+    "overflow": false,
+    "consoleErrors": [],
+    "failed": [],
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-compare-2026-05-15\\register-desktop.png",
+    "text": "CC\nCompanyCore\nSign in\nCreate account\n\nOWNER WORKSPACE\n\nCreate the company control plane\n\nCompanyCore keeps operating areas, provider data, workflow evidence, and agent access behind one owner session.\n\nCompany Atlas\nGoogle Drive\nMCP tools\nAgent keys\n\nWORKSPACE BOOTSTRAP\n\nCreate account\nName\nEmail\nPassword\nWorkspace name\nCreate workspace\n\nAlready have an account? Sign in"
+  },
+  {
+    "name": "register",
+    "kind": "mobile",
+    "url": "https://companycore.luckysparrow.ch/auth/register",
+    "finalUrl": "https://companycore.luckysparrow.ch/auth/register",
+    "title": "CompanyCore Create account",
+    "overflow": false,
+    "consoleErrors": [],
+    "failed": [],
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-compare-2026-05-15\\register-mobile.png",
+    "text": "CC\nCompanyCore\nSign in\nCreate account\n\nOWNER WORKSPACE\n\nCreate the company control plane\n\nCompanyCore keeps operating areas, provider data, workflow evidence, and agent access behind one owner session.\n\nCompany Atlas\nGoogle Drive\nMCP tools\nAgent keys\n\nWORKSPACE BOOTSTRAP\n\nCreate account\nName\nEmail\nPassword\nWorkspace name\nCreate workspace\n\nAlready have an account? Sign in"
+  },
+  {
+    "name": "dashboard-signed-out",
+    "kind": "desktop",
+    "url": "https://companycore.luckysparrow.ch/dashboard",
+    "finalUrl": "https://companycore.luckysparrow.ch/auth/login",
+    "title": "CompanyCore Sign in",
+    "overflow": false,
+    "consoleErrors": [],
+    "failed": [
+      "GET https://companycore.luckysparrow.ch/vendor/phosphor/bold/Phosphor-Bold.woff2 net::ERR_ABORTED"
+    ],
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-compare-2026-05-15\\dashboard-signed-out-desktop.png",
+    "text": "CC\nCompanyCore\nSign in\nCreate account\n\nOWNER WORKSPACE\n\nSign in to the company control plane\n\nCompanyCore keeps operating areas, provider data, workflow evidence, and agent access behind one owner session.\n\nCompany Atlas\nGoogle Drive\nMCP tools\nAgent keys\n\nOWNER ACCESS\n\nSign in\nEmail\nPassword\nSign in\n\nNo account yet? Create one"
+  },
+  {
+    "name": "dashboard-signed-out",
+    "kind": "mobile",
+    "url": "https://companycore.luckysparrow.ch/dashboard",
+    "finalUrl": "https://companycore.luckysparrow.ch/auth/login",
+    "title": "CompanyCore Sign in",
+    "overflow": false,
+    "consoleErrors": [],
+    "failed": [
+      "GET https://companycore.luckysparrow.ch/vendor/phosphor/bold/Phosphor-Bold.woff2 net::ERR_ABORTED"
+    ],
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-compare-2026-05-15\\dashboard-signed-out-mobile.png",
+    "text": "CC\nCompanyCore\nSign in\nCreate account\n\nOWNER WORKSPACE\n\nSign in to the company control plane\n\nCompanyCore keeps operating areas, provider data, workflow evidence, and agent access behind one owner session.\n\nCompany Atlas\nGoogle Drive\nMCP tools\nAgent keys\n\nOWNER ACCESS\n\nSign in\nEmail\nPassword\nSign in\n\nNo account yet? Create one"
+  },
+  {
+    "name": "area-detail-signed-out",
+    "kind": "desktop",
+    "url": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=overview",
+    "finalUrl": "https://companycore.luckysparrow.ch/auth/login",
+    "title": "CompanyCore Sign in",
+    "overflow": false,
+    "consoleErrors": [],
+    "failed": [
+      "GET https://companycore.luckysparrow.ch/vendor/phosphor/bold/Phosphor-Bold.woff2 net::ERR_ABORTED"
+    ],
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-compare-2026-05-15\\area-detail-signed-out-desktop.png",
+    "text": "CC\nCompanyCore\nSign in\nCreate account\n\nOWNER WORKSPACE\n\nSign in to the company control plane\n\nCompanyCore keeps operating areas, provider data, workflow evidence, and agent access behind one owner session.\n\nCompany Atlas\nGoogle Drive\nMCP tools\nAgent keys\n\nOWNER ACCESS\n\nSign in\nEmail\nPassword\nSign in\n\nNo account yet? Create one"
+  },
+  {
+    "name": "area-detail-signed-out",
+    "kind": "mobile",
+    "url": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=overview",
+    "finalUrl": "https://companycore.luckysparrow.ch/auth/login",
+    "title": "CompanyCore Sign in",
+    "overflow": false,
+    "consoleErrors": [],
+    "failed": [
+      "GET https://companycore.luckysparrow.ch/vendor/phosphor/bold/Phosphor-Bold.woff2 net::ERR_ABORTED"
+    ],
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-compare-2026-05-15\\area-detail-signed-out-mobile.png",
+    "text": "CC\nCompanyCore\nSign in\nCreate account\n\nOWNER WORKSPACE\n\nSign in to the company control plane\n\nCompanyCore keeps operating areas, provider data, workflow evidence, and agent access behind one owner session.\n\nCompany Atlas\nGoogle Drive\nMCP tools\nAgent keys\n\nOWNER ACCESS\n\nSign in\nEmail\nPassword\nSign in\n\nNo account yet? Create one"
+  }
+]

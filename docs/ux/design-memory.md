@@ -34,6 +34,91 @@ of rediscovering them.
 
 ## Entries
 
+### 2026-05-15 - V1 Unified Settings Module
+- Type: reusable_pattern
+- Context: The user asked for a clean settings surface that can support
+  application settings, ClickUp, Google Drive, API keys, MCP, Jarvis,
+  Paperclip, and future AI/application access without scattering each tool
+  into a separate view or mixing OAuth, imports, mapping, and permissions into
+  one form.
+- Decision: Treat settings as one owner and AI administration center with
+  top-level tabs for General, Integrations, Knowledge, Tools, API, MCP, and
+  Access & audit. Provider setup should follow
+  `Connect -> Scope -> Import / Sync -> Map -> Verify`. AI-facing
+  administration must separate `Knowledge` from `Tools`, with `Access` and
+  `Audit` visible as supporting safety layers.
+- Reuse when: Rebuilding `/settings`, `/settings/integrations`,
+  `/settings/drive`, `/settings/api`, `/react-agent-tools`, ClickUp setup,
+  Drive setup, service-key workflows, or future Paperclip/Jarvis access
+  screens.
+- Avoid when: A route is a narrow record editor, table browser, or selected
+  area capability view where the settings tab model would hide the immediate
+  owner task.
+- Evidence:
+  `docs/ux/v1-settings-canonical-spec-2026-05-15.md`,
+  `docs/ux/assets/companycore-v1-settings-desktop-canonical.png`, and
+  `docs/ux/assets/companycore-v1-settings-mobile-canonical.png`.
+
+### 2026-05-15 - V1 Five Canonical Web Surfaces
+- Type: reusable_pattern
+- Context: V1WEB-002 separated public and private web layouts for the first
+  five surfaces that define the application entry path.
+- Decision: Treat `/`, `/auth/login`, and `/auth/register` as public-layout
+  surfaces. Treat `/dashboard` and `/areas?area=:areaKey&view=:viewId` as
+  private atlas-layout surfaces. Every change to these surfaces must refresh
+  the matching desktop and mobile canonical images in `docs/ux/assets/`.
+- Reuse when: Working on public onboarding, auth, Company Atlas, selected-area
+  detail, screenshot-driven parity, or future V1 view promotion.
+- Avoid when: Rebuilding non-canonical V0 workbenches before their user journey
+  is approved.
+- Evidence:
+  `docs/planning/v1-web-five-canonical-surfaces-task-contract.md` and
+  `docs/ux/v1-web-view-index-2026-05-15.md`.
+
+### 2026-05-15 - V1 Web View Maturity Index
+- Type: ux_learning
+- Context: The app has React coverage for many routes, but only some views
+  currently express the approved V1 area-first UX.
+- Decision: Treat `/dashboard` and `/areas?area=:areaKey&view=:viewId` as
+  `V1 canonical`. Treat useful but unfinished AI/API/Company OS surfaces as
+  `V1 foundation`. Treat the remaining module/workbench/admin-shaped surfaces
+  as `V0 rebuild` or `V0 compatibility` until they are rebuilt or removed.
+- Reuse when: Selecting the next web UX slice, reviewing route quality, adding
+  route registry entries, or deciding whether to polish, rebuild, or remove a
+  view.
+- Avoid when: Making runtime behavior decisions without checking architecture,
+  backend contracts, and current validation evidence.
+- Evidence:
+  `docs/ux/v1-web-view-index-2026-05-15.md` and
+  `docs/planning/v1-web-view-index-task-contract.md`.
+
+### 2026-05-15 - V1 Selected-Area Operating Room
+- Type: reusable_pattern
+- Context: V1AREA-002 added the canonical drill-down from Company Atlas into a
+  selected department through `/areas?area=:areaKey&view=:viewId`.
+- Decision: A department page should be an operating room, not a module page.
+  Use area identity, capability tabs, an `Observe / Decide / Execute /
+  Delegate` board, evidence panels, and an ownership/AI decision rail before
+  sending the owner into deeper workbenches. Each capability tab should include
+  an area-scoped board for pinned records, linked sources, and next safe
+  actions before linking away to deeper workbenches.
+- Reuse when: Building selected-area `goals`, `tasks`, `knowledge`,
+  `resources`, `decisions`, and `ai` depth views or future mobile area
+  screens.
+- Avoid when: The user needs the all-areas mapping, lifecycle, or reassignment
+  workbench; keep that on plain `/areas`.
+- Evidence:
+  `docs/ux/v1-area-detail-canonical-spec-2026-05-15.md` and
+  `docs/planning/v1-area-detail-canonical-task-contract.md`. Current
+  canonical desktop/mobile visual targets:
+  `docs/ux/assets/companycore-v1-area-detail-desktop-canonical.png` and
+  `docs/ux/assets/companycore-v1-area-detail-mobile-canonical.png`.
+  V1AREA-003 proof screenshots:
+  `docs/ux/evidence/v1-area-detail-tabs-desktop.png` and
+  `docs/ux/evidence/v1-area-detail-tabs-mobile.png`. V1AREA-004 polish proof:
+  `docs/ux/evidence/v1-area-detail-polish-desktop.png` and
+  `docs/ux/evidence/v1-area-detail-polish-mobile.png`.
+
 ### 2026-05-15 - V1 Area-First Company Atlas
 - Type: visual_direction
 - Context: V1UX-CANON-001 simplified the near-term owner panel before V2

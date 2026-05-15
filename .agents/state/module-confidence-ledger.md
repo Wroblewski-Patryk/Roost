@@ -8,6 +8,43 @@ mocked signed-in React route set with no legacy scripts, no old shell, no
 console errors, and no horizontal overflow. Full ClickUp setup and Google Drive
 OAuth/folder-selection controls remain dedicated React rebuild follow-ups.
 
+React layout foundation note: REACT-WEB-LAYOUT-001 is VERIFIED with high
+confidence for local scope. `/dashboard` is the canonical post-auth landing
+route, React shell navigation is generated from `web/src/app-route-registry.ts`,
+and Playwright fallback verified login -> `/dashboard`, dashboard aliases,
+selected feature aliases, desktop routes, and mobile dashboard overflow.
+
+Area detail note: V1AREA-002 is VERIFIED with high confidence for local scope.
+`/areas?area=01-strategia&view=overview` renders the canonical selected-area
+view with department hero, capability rail, operating board, evidence grid, and
+decision rail; `/areas` remains the all-areas workbench. Playwright fallback
+verified desktop and mobile area-detail routes with no overflow or console/page
+errors. Current desktop/mobile visual targets are
+`docs/ux/assets/companycore-v1-area-detail-desktop-canonical.png` and
+`docs/ux/assets/companycore-v1-area-detail-mobile-canonical.png`. V1AREA-003
+extended every selected-area capability tab with area-scoped boards derived
+from existing backend data and verified all desktop tabs plus mobile AI tab.
+V1AREA-004 then polished the same view with a connected operating flow, lighter
+capability board hierarchy, tighter mobile density, and refreshed proof
+screenshots.
+
+Web view index note: V1WEB-INDEX-001 is VERIFIED as documentation/process
+scope. `docs/ux/v1-web-view-index-2026-05-15.md` classifies current web routes
+by UX maturity and `web/src/app-route-registry.ts` carries matching lightweight
+`uxStage` markers. Runtime behavior is unchanged by the index.
+
+Five-surface web note: V1WEB-002 is VERIFIED with high confidence for local
+scope. `/`, `/auth/login`, `/auth/register`, `/dashboard`, and selected-area
+detail have canonical desktop/mobile images under `docs/ux/assets/`, with
+Playwright proof for desktop, mobile, and dashboard tablet.
+
+Production parity note: V1PROD-001 is BLOCKED with high confidence in the
+cause. Production health reports `b716f02`, while the canonical V1 web layer is
+local on `9b575e2` plus working tree changes. Production `/` still redirects
+to `/auth/login`, and login/register remain on the older auth layout. The next
+smallest action is to deploy the V1 canonical web layer and rerun authenticated
+production screenshot parity.
+
 ## Purpose
 
 This ledger is the quick reality map for companycore. It tracks whether each
@@ -38,6 +75,7 @@ it honest. Do not turn uncertainty into optimism.
 
 | ID | Module | Journey / function | Priority | Status | Confidence | Evidence | Missing proof or defect | Next smallest action | Owner | Last verified |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| WEB-V1-PROD-PARITY | React web | Production parity for public home, auth, dashboard, and selected-area canonical views | P0 | BLOCKED | High | `docs/ux/v1-production-canonical-discrepancy-audit-2026-05-15.md`; `docs/ux/evidence/production-compare-2026-05-15/` | Production runs `b716f02`, not the local V1 canonical web working tree; authenticated private screenshot parity was not possible without owner session. | Commit/deploy V1 canonical web layer, confirm `/health` commit, rerun public and authenticated screenshot comparison. | Frontend Builder + Ops/Release | 2026-05-15 |
 | JARVIS-GDRIVE-001 | Google Drive integration | Jarvis creates and reads Google Docs/Sheets through CompanyCore in folder `12. Zarządzanie` | P0 | VERIFIED | High | Production commit `b716f02` deployed by manual rollover; public health reports image `rnqqkhl3o3dut4qv56mlxly2_backend:b716f02`. Owner Google Drive OAuth decrypts successfully with refresh/access tokens present. Protected `google-drive:smoke` passed with `googleDriveActive=true` and 748 imported files. Owner folder discovery returned 174 folders, 13 selected roots, 173 included folders, and target folder `12. Zarządzanie` selected/imported. Jarvis-key CompanyCore-only smoke created Google Doc `Protokół Wielkiej Narady Spinaczy` and Google Sheet `Budżet Na Kawę I Inne Poważne Excely` in folder `12. Zarządzanie`, then read back both contents through CompanyCore. | Local host `npm test` cannot reach API tests until `DATABASE_URL` is provided; production smoke covers the release-critical journey. | Ask the Jarvis agent to repeat its own tool-layer smoke against the already-created/working CompanyCore path. | Ops/Release + Owner + Jarvis agent | 2026-05-15 |
 | CCOS-LIFE-001 | Company OS | Approval request and decision lifecycle | P0 | VERIFIED | High | V1EVID-001: `docker compose exec -T backend sh -lc "npm run prisma:migrate:deploy && npm run seed && npm run company-os:trace-smoke"` passed with trace `v1evid-1778458446081`; verified `approval_requested`, `approval_approved`, and `approval.requested` audit readback. | Target production Company OS command smoke is still pending after next deploy. | Run target command smoke after deployment or before unsupervised agent write rollout. | QA/Test | 2026-05-11 |
 | CCOS-LIFE-002 | Company OS | Stage start, validate, and complete lifecycle | P0 | VERIFIED | High | V1EVID-001 Docker trace smoke passed with stage run `ce70b2ee-faca-4406-8bc8-b137df1f1feb`; verified `stage_started`, `stage_validated`, `stage_completed`, and `stage_run.completed` audit readback. | Target production lifecycle command smoke is still pending after next deploy; block path remains covered by existing integration test evidence rather than this focused trace. | Include block plus fail-closed completion checks in the next target-safe lifecycle smoke. | QA/Test | 2026-05-11 |
