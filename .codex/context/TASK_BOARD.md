@@ -72,6 +72,36 @@ No ready implementation task is queued.
 
 ## Done
 
+- JARVIS-GDRIVE-001 Jarvis CompanyCore Google Drive E2E.
+  - Evidence: production commit `b716f02` is deployed and public health reports
+    image `rnqqkhl3o3dut4qv56mlxly2_backend:b716f02`. Owner Google Drive OAuth
+    decrypts successfully with refresh/access tokens present. Protected
+    `npm run google-drive:smoke` passed with `googleDriveActive=true` and 748
+    imported files. Owner folder discovery returned 174 folders, 13 selected
+    roots, 173 included folders, and target folder `12. Zarządzanie`
+    externalId `1U1GMpy0erVETPDA9ciRb7l1gVbSJfaff` selected/imported.
+  - Jarvis-key smoke: using Jarvis' CompanyCore key only, CompanyCore created
+    Google Doc `Protokół Wielkiej Narady Spinaczy` and Google Sheet
+    `Budżet Na Kawę I Inne Poważne Excely` in folder `12. Zarządzanie`.
+    CompanyCore returned file IDs/external IDs/links and read back both file
+    contents through `/v1/google-drive/files/:id/content`.
+  - Validation: `npm run validate` and `git diff --check` passed. Local
+    `npm test` reached the build gate but stopped before API tests because
+    this host has no `DATABASE_URL`.
+  - Task contract:
+    `docs/planning/jarvis-companycore-google-drive-e2e-task-contract.md`.
+
+- GD-IMPORT-UX-001 Google Drive folder import organization.
+  - Evidence: `/v1/integration-settings/google_drive/folders/discover` now
+    returns organized folder metadata including path, depth, parent,
+    selected/included/imported state, child/descendant counts, and direct
+    imported item counts. `/settings/drive` now shows searchable root-folder
+    selection, selected-scope filtering, imported/included badges, and scoped
+    save/import actions.
+  - Validation: production owner-token discovery smoke returned the target
+    `12. Zarządzanie` folder with `selected=true`, `imported=true`, and
+    `directImportedItemCount=3`.
+
 - REACT-WEB-001 React web layer consolidation.
   - Evidence: all user-facing web routes are now served through the React/Vite
     bundle instead of `public/index.html`. Removed active vanilla web files:

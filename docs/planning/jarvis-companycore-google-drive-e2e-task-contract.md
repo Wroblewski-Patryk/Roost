@@ -4,8 +4,8 @@
 - ID: JARVIS-GDRIVE-001
 - Title: Jarvis CompanyCore Google Drive Docs and Sheets write path
 - Task Type: fix | release
-- Current Stage: release
-- Status: PARTIAL
+- Current Stage: post-release
+- Status: DONE
 - Owner: Backend Builder + Ops/Release
 - Depends on: Drive import organization deploy and Jarvis agent smoke
 - Priority: P0
@@ -15,7 +15,7 @@
 - Iteration: 2026-05-15
 - Operation Mode: BUILDER
 - Mission ID: JARVIS-GDRIVE-001
-- Mission Status: PARTIAL
+- Mission Status: VERIFIED
 
 ## Process Self-Audit
 - [x] All seven autonomous loop steps are planned.
@@ -54,6 +54,11 @@
 - Next release gate: deploy the import organization patch, run protected Drive
   smoke, then hand the exact Docs/Sheets create/readback scenario to the Jarvis
   agent.
+- Result: production commit `b716f02` is deployed. Public health reports the
+  `b716f02` image, protected Google Drive smoke passes, owner folder discovery
+  proves `12. Zarządzanie` is selected/imported, and a Jarvis-key
+  CompanyCore-only smoke created and read back the required Doc and Sheet in
+  that folder.
 
 ## Context
 Jarvis already has CompanyCore tools. A previous production test showed

@@ -100,6 +100,15 @@ Last updated: 2026-05-15
   `/settings/drive` lets the owner save/import selected root folders from an
   organized tree instead of a flat list. `npm run validate` passed; host
   `npm test` remains blocked before API tests because `DATABASE_URL` is unset.
+- 2026-05-15: JARVIS-GDRIVE-001 passed in production after manual rollover to
+  commit `b716f02`. Public health reports
+  `rnqqkhl3o3dut4qv56mlxly2_backend:b716f02`; protected
+  `google-drive:smoke` reports `googleDriveActive=true` and 748 imported
+  files. Owner folder discovery returns the target folder `12. Zarządzanie`
+  (`1U1GMpy0erVETPDA9ciRb7l1gVbSJfaff`) as selected/imported. A Jarvis-key
+  CompanyCore-only smoke created Google Doc `Protokół Wielkiej Narady
+  Spinaczy` and Google Sheet `Budżet Na Kawę I Inne Poważne Excely` in that
+  folder, and read both contents back through CompanyCore.
 - 2026-05-15: V1AREA-001 implemented the V1 area-first Company Atlas on
   `/dashboard` through the React web layer. The route now uses the canonical
   00-12 LuckySparrow area model, expanded selected-area subviews, capability
