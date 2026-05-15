@@ -1491,35 +1491,89 @@ function scopeEditorHtml({ id, selectedAreaId, type, label = "Area" }) {
   `;
 }
 
+function taskIsOpen(task) {
+  return !["closed", "complete", "completed", "done"].includes(String(task.status || "").toLowerCase());
+}
+
+function taskDueState(task, now = new Date()) {
+  if (!task.dueDate) {
+    return "unscheduled";
+  }
+  const dueDate = new Date(task.dueDate);
+  if (Number.isNaN(dueDate.getTime())) {
+    return "unscheduled";
+  }
+  const nextWeek = new Date(now);
+  nextWeek.setDate(nextWeek.getDate() + 7);
+  if (dueDate < now && taskIsOpen(task)) {
+    return "overdue";
+  }
+  if (dueDate <= nextWeek && taskIsOpen(task)) {
+    return "due_soon";
+  }
+  return "scheduled";
+}
+
+function taskPressureSummary(tasks) {
+  const states = tasks.map((task) => taskDueState(task));
+  const openTasks = tasks.filter(taskIsOpen);
+  const overdue = states.filter((stateName) => stateName === "overdue").length;
+  const dueSoon = states.filter((stateName) => stateName === "due_soon").length;
+  const highPriority = openTasks.filter((task) => ["high", "urgent", "critical"].includes(String(task.priority || "").toLowerCase())).length;
+  const clickUpCount = tasks.filter((task) => task.source === "clickup").length;
+  const companyCoreCount = tasks.length - clickUpCount;
+  const tone = overdue > 0 ? "blocked" : dueSoon > 0 || highPriority > 0 ? "review" : openTasks.length > 0 ? "attention" : "safe";
+  const title = overdue > 0
+    ? "Overdue work needs owner action"
+    : dueSoon > 0 ? "This week has delivery pressure"
+      : openTasks.length > 0 ? "Open work is active"
+        : tasks.length > 0 ? "Task flow is calm"
+          : "Task flow is empty";
+  const nextAction = overdue > 0
+    ? "Resolve overdue tasks or move due dates before agents treat the queue as healthy."
+    : dueSoon > 0 ? "Plan the due-soon tasks and check ownership in the task editor."
+      : highPriority > 0 ? "Review high-priority tasks and confirm the next owner action."
+        : openTasks.length > 0 ? "Review open tasks by list or source."
+          : "Import or create tasks when real execution work is ready.";
+
+  return {
+    open: openTasks.length,
+    overdue,
+    dueSoon,
+    highPriority,
+    clickUpCount,
+    companyCoreCount,
+    tone,
+    title,
+    nextAction
+  };
+}
+
+function pressureCardHtml({ label, value, detail, tone = "neutral" }) {
+  return `
+    <span class="pressure-card pressure-${escapeHtml(tone)}">
+      <strong>${escapeHtml(String(value))}</strong>
+      <small>${escapeHtml(label)}</small>
+      <em>${escapeHtml(detail)}</em>
+    </span>
+  `;
+}
+
 function renderTasks() {
   tasksTableBody.innerHTML = "";
   taskStats.innerHTML = "";
   taskAdapterBrief.innerHTML = "";
   const tasks = state.tasks;
   syncTaskFilters();
-  const clickUpCount = tasks.filter((task) => task.source === "clickup").length;
-  const companyCoreCount = tasks.filter((task) => (task.source || "companycore") !== "clickup").length;
-  const openTasks = tasks.filter((task) => !["closed", "complete", "completed", "done"].includes(String(task.status || "").toLowerCase())).length;
-  const nextWeek = new Date();
-  nextWeek.setDate(nextWeek.getDate() + 7);
-  const dueSoon = tasks.filter((task) => {
-    if (!task.dueDate) {
-      return false;
-    }
-    const dueDate = new Date(task.dueDate);
-    return !Number.isNaN(dueDate.getTime()) && dueDate <= nextWeek;
-  }).length;
+  const pressure = taskPressureSummary(tasks);
 
   renderTaskStat("Total tasks", tasks.length);
-  renderTaskStat("ClickUp", clickUpCount);
-  renderTaskStat("Open", openTasks);
-  renderTaskStat("Due soon", dueSoon);
+  renderTaskStat("ClickUp", pressure.clickUpCount);
+  renderTaskStat("Open", pressure.open);
+  renderTaskStat("Due soon", pressure.dueSoon);
   taskAdapterBrief.append(taskAdapterBriefElement({
     tasks,
-    clickUpCount,
-    companyCoreCount,
-    openTasks,
-    dueSoon
+    pressure
   }));
 
   if (tasks.length === 0) {
@@ -1535,7 +1589,7 @@ function renderTasks() {
   }
 
   const filteredTasks = filteredTaskRows();
-  tasksSummary.textContent = `${filteredTasks.length} of ${tasks.length} task${tasks.length === 1 ? "" : "s"} shown, including ${clickUpCount} from ClickUp.`;
+  tasksSummary.textContent = `${filteredTasks.length} of ${tasks.length} task${tasks.length === 1 ? "" : "s"} shown, including ${pressure.clickUpCount} from ClickUp.`;
 
   if (filteredTasks.length === 0) {
     const row = document.createElement("tr");
@@ -1561,26 +1615,27 @@ function renderTasks() {
   renderIntegrationTaxonomy();
 }
 
-function taskAdapterBriefElement({ tasks, clickUpCount, companyCoreCount, openTasks, dueSoon }) {
+function taskAdapterBriefElement({ tasks, pressure }) {
   const panel = document.createElement("article");
   panel.className = "adapter-context-card";
   const selectedLists = (state.clickup.config.listIds || []).length;
   const clickupStatus = state.clickup.configured
     ? state.clickup.active ? "ClickUp active" : "ClickUp saved, inactive"
     : "ClickUp not connected";
-  const sourceLabel = clickUpCount > 0
-    ? `${clickUpCount} ClickUp / ${companyCoreCount} local`
-    : `${companyCoreCount} local records`;
+  const sourceLabel = pressure.clickUpCount > 0
+    ? `${pressure.clickUpCount} ClickUp / ${pressure.companyCoreCount} local`
+    : `${pressure.companyCoreCount} local records`;
   const healthLabel = tasks.length === 0
     ? "No task records loaded"
-    : dueSoon > 0 ? `${dueSoon} due soon` : `${openTasks} open`;
+    : pressure.overdue > 0 ? `${pressure.overdue} overdue`
+      : pressure.dueSoon > 0 ? `${pressure.dueSoon} due soon` : `${pressure.open} open`;
 
   panel.innerHTML = `
     <div class="adapter-context-copy">
       <span class="summary-kicker">Adapter context</span>
       <div class="adapter-context-heading">
         <strong>Task intake and execution records</strong>
-        <span class="workbench-index-status">${escapeHtml(clickupStatus)}</span>
+        <span class="workbench-index-status">${escapeHtml(pressure.title)}</span>
       </div>
       <p>Use this view to verify imported ClickUp tasks beside CompanyCore-owned task records. Edit local task records in the typed Data workbench.</p>
       <div class="adapter-context-pills" aria-label="Task adapter operation context">
@@ -1588,7 +1643,15 @@ function taskAdapterBriefElement({ tasks, clickUpCount, companyCoreCount, openTa
         <span>${selectedLists} selected ClickUp list${selectedLists === 1 ? "" : "s"}</span>
         <span>${escapeHtml(healthLabel)}</span>
         <span>${state.clickup.active ? "Sync enabled" : "Sync inactive"}</span>
+        <span>${escapeHtml(clickupStatus)}</span>
       </div>
+      <div class="operating-pressure-grid" aria-label="Task operating pressure">
+        ${pressureCardHtml({ label: "Overdue", value: pressure.overdue, detail: "Open tasks past due date", tone: pressure.overdue > 0 ? "blocked" : "safe" })}
+        ${pressureCardHtml({ label: "Due soon", value: pressure.dueSoon, detail: "Open tasks due within 7 days", tone: pressure.dueSoon > 0 ? "review" : "safe" })}
+        ${pressureCardHtml({ label: "Open", value: pressure.open, detail: "Tasks not marked done", tone: pressure.open > 0 ? "attention" : "safe" })}
+        ${pressureCardHtml({ label: "Priority", value: pressure.highPriority, detail: "High or urgent open tasks", tone: pressure.highPriority > 0 ? "review" : "safe" })}
+      </div>
+      <span class="operating-next-action operating-next-${escapeHtml(pressure.tone)}">${escapeHtml(pressure.nextAction)}</span>
     </div>
     <div class="adapter-context-actions">
       <a class="button-link compact" href="/data/tasks" data-link>Open task editor</a>
@@ -2438,6 +2501,9 @@ function renderPipeline() {
   pipelineContext.append(pipelineContextElement({
     stagesCount: stages.length,
     usageRecords,
+    clientsCount: clients.length,
+    dealsCount: deals.length,
+    interactionsCount: interactions.length,
     total,
     filteredCount: filteredRecords.length
   }));
@@ -2461,10 +2527,36 @@ function renderPipeline() {
   }));
 }
 
-function pipelineContextElement({ stagesCount, usageRecords, total, filteredCount }) {
+function pipelinePressureSummary({ stagesCount, usageRecords, clientsCount, dealsCount, interactionsCount }) {
+  const tone = stagesCount === 0 ? "blocked" : usageRecords === 0 || dealsCount > interactionsCount ? "review" : "safe";
+  const title = stagesCount === 0
+    ? "Pipeline stages need definition"
+    : usageRecords === 0 ? "Pipeline is ready but unused"
+      : dealsCount > interactionsCount ? "Deals need relationship follow-up"
+        : "Pipeline context is usable";
+  const nextAction = stagesCount === 0
+    ? "Create reusable stages before treating pipeline flow as operational."
+    : usageRecords === 0 ? "Add real clients, deals, or interactions to prove current CRM usage."
+      : dealsCount > interactionsCount ? "Add or review interactions so deal context is not detached from relationship history."
+        : "Review stage ownership and keep CRM records mapped as work moves.";
+  return {
+    tone,
+    title,
+    nextAction,
+    cards: [
+      { label: "Stages", value: stagesCount, detail: "Reusable workflow states", tone: stagesCount > 0 ? "safe" : "blocked" },
+      { label: "Usage", value: usageRecords, detail: "Clients, deals, interactions", tone: usageRecords > 0 ? "safe" : "review" },
+      { label: "Deals", value: dealsCount, detail: "Active CRM opportunities", tone: dealsCount > 0 ? "attention" : "neutral" },
+      { label: "Touchpoints", value: interactionsCount, detail: "Relationship interactions", tone: interactionsCount >= dealsCount && usageRecords > 0 ? "safe" : dealsCount > 0 ? "review" : "neutral" }
+    ]
+  };
+}
+
+function pipelineContextElement({ stagesCount, usageRecords, clientsCount, dealsCount, interactionsCount, total, filteredCount }) {
   const panel = document.createElement("article");
   panel.className = "pipeline-context-card";
-  const status = stagesCount > 0 ? "Workflow stages ready" : "Workflow API ready";
+  const pressure = pipelinePressureSummary({ stagesCount, usageRecords, clientsCount, dealsCount, interactionsCount });
+  const status = stagesCount > 0 ? pressure.title : "Workflow API ready";
   const usageLabel = usageRecords === 1 ? "CRM usage record" : "CRM usage records";
   panel.innerHTML = `
     <div class="pipeline-context-copy">
@@ -2480,6 +2572,10 @@ function pipelineContextElement({ stagesCount, usageRecords, total, filteredCoun
         <span>${filteredCount} of ${total} visible</span>
         <span>4 implemented tables</span>
       </div>
+      <div class="operating-pressure-grid" aria-label="Pipeline operating pressure">
+        ${pressure.cards.map(pressureCardHtml).join("")}
+      </div>
+      <span class="operating-next-action operating-next-${escapeHtml(pressure.tone)}">${escapeHtml(pressure.nextAction)}</span>
     </div>
     <div class="pipeline-context-actions">
       <a class="button-link compact" href="/data/pipeline-stages" data-link>Open stages</a>

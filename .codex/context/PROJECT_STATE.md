@@ -2624,6 +2624,17 @@ Last updated: 2026-05-15
   `/data/tasks`, and `/data/clients` at desktop, tablet, and mobile with
   provenance/AI labels present, no overflow, no console issues, no failed
   requests, and zero unnamed visible controls.
+- 2026-05-15: Completed UX100-W04 by adding existing-state-derived operating
+  pressure summaries to `/tasks-adapter` and `/pipeline`. The task workbench
+  now surfaces overdue, due-soon, open, high-priority, source, ClickUp list,
+  and next-action pressure before the table. The pipeline workbench now
+  surfaces reusable stages, CRM usage, deals, relationship touchpoints, and
+  next action before the record feed. `npm run check:public-js`, `npm run
+  validate`, `git diff --check`, and `npm run test:api` passed; the API gate
+  used portable PostgreSQL on `localhost:55475`. Playwright fallback verified
+  `/tasks-adapter` and `/pipeline` at desktop, tablet, and mobile with
+  pressure cards and next-action blocks present, no overflow, no console
+  issues, no failed requests, and zero unnamed visible controls.
 - 2026-05-06: Deployed the Agent CRUD API rollout to production with manual
   VPS backend rollover. The running backend container is
   `backend-rnqqkhl3o3dut4qv56mlxly2-manual-bf59b2f`, image

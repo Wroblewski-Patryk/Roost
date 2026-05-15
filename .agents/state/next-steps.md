@@ -4,9 +4,9 @@ Last updated: 2026-05-15
 
 ## NOW
 
-1. UX100-W04 Tasks/Pipeline Operating Pressure Summaries.
-   - Make delivery and pipeline pressure visible from real state after W03
-     provenance labels are verified.
+1. UX100-W05 Company OS And MCP Tools Alignment.
+   - Make agent supervision, Company OS command context, and MCP tools feel
+     coherent and safe after operating pressure is visible.
 
 ## NEXT
 

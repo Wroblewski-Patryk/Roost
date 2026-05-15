@@ -7,9 +7,9 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] UX100-W04 Tasks/Pipeline Operating Pressure Summaries:
-      make delivery and pipeline pressure visible from real state after W03
-      provenance labels are verified.
+- [ ] UX100-W05 Company OS And MCP Tools Alignment:
+      make agent supervision, Company OS command context, and MCP tools feel
+      coherent and safe after operating pressure is visible.
 
 ### NEXT
 
@@ -47,6 +47,13 @@ and `docs/operations/v1-function-coverage-ledger.csv`.
       validate`, `git diff --check`, `npm run test:api` on portable
       PostgreSQL `localhost:55475`, and Playwright fallback at desktop,
       tablet, and mobile all passed.
+- [x] UX100-W04 Tasks/Pipeline Operating Pressure Summaries:
+      added existing-state-derived operating pressure summaries to
+      `/tasks-adapter` and `/pipeline`, including overdue/due-soon/open/high
+      priority task pressure and stage/usage/deal/touchpoint pipeline pressure.
+      `npm run check:public-js`, `npm run validate`, `git diff --check`,
+      `npm run test:api` on portable PostgreSQL `localhost:55475`, and
+      Playwright fallback at desktop, tablet, and mobile all passed.
 - [x] ACF-DOC-001 Coverage Ledger Reconciliation:
       stale Drive first-import blocker language was reconciled across
       architecture, function-coverage audit, project-control, system-health,

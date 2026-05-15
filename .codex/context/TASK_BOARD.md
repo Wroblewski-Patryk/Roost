@@ -2,13 +2,13 @@
 
 ## Ready
 
-- UX100-W04 Tasks/Pipeline Operating Pressure Summaries
+- UX100-W05 Company OS And MCP Tools Alignment
   - Stage: planning
   - Owner: Frontend Builder + QA/Test
   - Priority: P1
   - Source: `docs/ux/web-app-ux100-audit-and-execution-plan-2026-05-15.md`
-  - Goal: make delivery and pipeline pressure visible from real state after
-    W03 provenance labels are verified.
+  - Goal: make agent supervision, Company OS command context, and MCP tools
+    feel coherent and safe after operating pressure is visible.
 
 ## In Progress
 
@@ -58,6 +58,23 @@ No active local implementation task is currently in progress.
   auto-deploy webhook administration task.
 
 ## Done
+
+- UX100-W04 Tasks/Pipeline Operating Pressure Summaries.
+  - Evidence: added task and pipeline operating-pressure summaries derived
+    from existing task status, due dates, priorities, sources, selected ClickUp
+    lists, pipeline stages, clients, deals, and interactions. `/tasks-adapter`
+    now shows overdue, due-soon, open, high-priority, source, and next-action
+    pressure. `/pipeline` now shows stage, usage, deal, touchpoint, and
+    relationship-follow-up pressure. `npm run check:public-js`, `npm run
+    validate`, `git diff --check`, and `npm run test:api` passed against
+    portable PostgreSQL on `localhost:55475`. Playwright fallback verified
+    `/tasks-adapter` and `/pipeline` on `http://127.0.0.1:3123` at desktop
+    `1366x900`, tablet `834x1112`, and mobile `390x844` with pressure cards
+    and next-action blocks present, no horizontal overflow, no console issues,
+    no failed requests, and zero unnamed visible controls. Portable database,
+    temporary QA script, and headless browser processes were cleaned up.
+  - Task contract:
+    `docs/planning/ux100-w04-tasks-pipeline-pressure-task-contract.md`.
 
 - UX100-W03 Relationship/Data Provenance And AI Safety Labels.
   - Evidence: added relationship and data provenance/readiness labels derived

@@ -179,6 +179,28 @@ of rediscovering them.
   provenance/AI labels present, no overflow, no console issues, no failed
   requests, and zero unnamed visible controls.
 
+### 2026-05-15 - Operating Pressure Cards
+- Type: reusable_pattern
+- Context: UX100-W04 made `/tasks-adapter` and `/pipeline` more useful for
+  day-to-day company management by turning existing operational records into a
+  compact pressure readout.
+- Decision: Workbench context panels that represent execution pressure should
+  include compact cards for the most important counts and one local next-action
+  block. Counts must be derived from existing state, such as task status,
+  due dates, priority, source, selected provider lists, pipeline stages, CRM
+  records, and relationship touchpoints.
+- Reuse when: Building task, pipeline, delivery, CRM, workflow, Company OS, or
+  future Company City surfaces where the owner needs to know what is urgent,
+  stale, blocked, thin, or ready before scanning a table.
+- Avoid when: The data is purely descriptive, not actionable, or the pressure
+  metric would require invented scoring not backed by existing state.
+- Evidence: UX100-W04 passed `npm run check:public-js`, `npm run validate`,
+  `git diff --check`, and `npm run test:api` against portable PostgreSQL on
+  `localhost:55475`. Playwright fallback verified `/tasks-adapter` and
+  `/pipeline` at desktop, tablet, and mobile with pressure cards and
+  next-action blocks present, no overflow, no console issues, no failed
+  requests, and zero unnamed visible controls.
+
 ### 2026-05-15 - Route Body Command Summary
 - Type: reusable_pattern
 - Context: V2VIS-003 polished `/areas` after route-frame convergence showed
