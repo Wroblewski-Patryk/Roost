@@ -214,6 +214,12 @@ Planning and implementation contract for a future coding task.
   so the fixed mobile nav no longer visually fights the map. Browser plugin
   navigation worked, but its screenshot/snapshot returned blank/black in this
   local session; Playwright fallback supplied the visual evidence.
+- 2026-05-15 executive panel pass: the selected-area panel now matches the
+  canonical CEO overview structure more closely: area title and subtitle,
+  underline capability tabs, health banner, four area signal tiles, Jarvis
+  read-only readiness, primary strategy-review CTA, open-area link, and MECE
+  accountability note. The right `Today` rail now uses canonical priority,
+  strategy decision, AI handoff, proof, and source-chip groups.
 - Coverage ledger updated: not applicable.
 - Module confidence ledger updated: yes, `V1AREA-001`.
 - Requirements matrix updated: yes, `REQ-V1AREA-001`.
@@ -311,4 +317,9 @@ Validation summary:
   `390x844`: no overflow, no console/page errors, canonical 71px desktop
   topbar, first content row starting at 87px, visible progressive path in the
   first desktop viewport, and five mobile nav items.
+- Passed: 2026-05-15 executive panel proof at desktop `1366x900`, tablet
+  `834x1112`, and mobile `390x844`: no overflow, no console/page errors,
+  health banner present, four area-signal tiles present, Jarvis readiness card
+  present, desktop/tablet capability tabs fit without horizontal overflow, and
+  mobile uses intentional horizontal tab overflow.
 - Not completed: `npm run test:api` because local `DATABASE_URL` is unset.

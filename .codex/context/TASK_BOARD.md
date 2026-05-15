@@ -97,6 +97,11 @@ No active implementation task is in progress.
     nav items. A follow-up fidelity pass flattened the desktop topbar to the
     canonical 71px bar, converted the atlas to circular icon nodes, moved the
     content row to the first viewport, and reduced the mobile orbit density.
+    A later executive-panel pass aligned the selected-area panel with the
+    canonical CEO overview: health banner, four area-signal tiles, Jarvis
+    read-only readiness, primary strategy-review CTA, open-area link, MECE
+    accountability note, and a `Today` rail with priority/decision/AI/proof
+    groups.
     Screenshots:
     `docs/ux/evidence/v1-area-dashboard-desktop-1366x900.png`,
     `docs/ux/evidence/v1-area-dashboard-tablet-834x1112.png`, and

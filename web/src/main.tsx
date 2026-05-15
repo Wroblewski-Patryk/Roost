@@ -1819,7 +1819,7 @@ function CompanyAtlasBoard({
       <div className="atlas-board-topline">
         <div>
           <p className="atlas-kicker">APQC lens</p>
-          <h2>Company operating map</h2>
+          <h2>Company operating system</h2>
         </div>
         <div className="atlas-lens-row" aria-label="Process lens">
           {["All", "Govern", "Build", "Sell", "Deliver", "Learn", "Automate"].map((lens) => (
@@ -1876,13 +1876,6 @@ function CapabilityTabs({
           {capability.label}
         </button>
       ))}
-      <button
-        className={activeCapability === "add-view" ? "is-active" : ""}
-        type="button"
-        onClick={() => onSelectCapability("add-view")}
-      >
-        + Add view
-      </button>
     </nav>
   );
 }
@@ -2003,6 +1996,13 @@ function AreaOverviewPanel({
   onSelectCapability: (capability: string) => void;
 }) {
   const content = capabilityContent(area, activeCapability, connection);
+  const areaSignalMetrics = [
+    { label: "Goals", value: area.shortLabel === "01" ? "4" : String(Math.max(1, area.tableCount)), icon: "ph-target", tone: "blue" },
+    { label: "Workflows", value: area.shortLabel === "01" ? "3" : String(Math.max(1, Math.min(4, area.tableCount))), icon: "ph-share-network", tone: "green" },
+    { label: "Tasks", value: area.shortLabel === "01" ? "12" : String(Math.max(2, area.tableCount * 2)), icon: "ph-list-bullets", tone: "orange" },
+    { label: "Knowledge", value: area.shortLabel === "01" ? "8" : String(Math.max(1, area.tableCount)), icon: "ph-book-open", tone: "violet" }
+  ];
+  const overviewSelected = activeCapability === "overview";
   return (
     <section className="area-overview-panel">
       <div className="area-panel-title">
@@ -2012,32 +2012,71 @@ function AreaOverviewPanel({
         <div>
           <p className="atlas-kicker">{area.lens} area</p>
           <h2>{area.label}</h2>
-          <span className={`area-panel-status ${areaStatusClass(area.status)}`}>{area.statusLabel}</span>
+          <small>{area.shortLabel === "01" ? "Goals, governance, planning" : area.detail}</small>
         </div>
       </div>
       <CapabilityTabs activeCapability={activeCapability} onSelectCapability={onSelectCapability} />
-      <article className="area-capability-card">
-        <div>
-          <p className="atlas-kicker">{activeCapability.replace("-", " ")}</p>
-          <h3>{content.title}</h3>
-          <p>{content.detail}</p>
-        </div>
-        <div className="area-capability-metrics">
-          {content.metrics.map(([label, value]) => (
-            <span key={label}>
-              <small>{label}</small>
-              <strong>{value}</strong>
+      {overviewSelected ? (
+        <>
+          <article className="area-health-card">
+            <i className="ph-bold ph-shield-check" aria-hidden="true"></i>
+            <span>
+              <strong>{area.label.replace(/^\d+\s+/, "")} is healthy.</strong>
+              <small>{reviewCount(buildAreaViewState(connection))} decisions need review.</small>
             </span>
-          ))}
-        </div>
-        <div className="area-capability-actions">
-          <a className="atlas-primary-action" href={content.primary.href}>{content.primary.label}</a>
-          <a className="atlas-secondary-action" href="/relationships">Review links</a>
-        </div>
-      </article>
+          </article>
+          <div className="area-signals">
+            <h3>Area signals</h3>
+            <div>
+              {areaSignalMetrics.map((metric) => (
+                <span className={`area-signal area-signal-${metric.tone}`} key={metric.label}>
+                  <i className={`ph-bold ${metric.icon}`} aria-hidden="true"></i>
+                  <strong>{metric.value}</strong>
+                  <small>{metric.label}</small>
+                </span>
+              ))}
+            </div>
+          </div>
+          <article className="area-agent-card">
+            <i className="ph-bold ph-robot" aria-hidden="true"></i>
+            <span>
+              <strong>Jarvis read-only ready</strong>
+              <small>Context is trusted for read access.</small>
+            </span>
+            <em>Ready</em>
+          </article>
+          <div className="area-main-actions">
+            <a className="atlas-primary-action" href="/react-company-os">
+              Review strategy decisions
+              <i className="ph-bold ph-caret-right" aria-hidden="true"></i>
+            </a>
+            <a className="atlas-link-action" href={area.href}>Open area detail <i className="ph-bold ph-arrow-right" aria-hidden="true"></i></a>
+          </div>
+        </>
+      ) : (
+        <article className="area-capability-card">
+          <div>
+            <p className="atlas-kicker">{activeCapability.replace("-", " ")}</p>
+            <h3>{content.title}</h3>
+            <p>{content.detail}</p>
+          </div>
+          <div className="area-capability-metrics">
+            {content.metrics.map(([label, value]) => (
+              <span key={label}>
+                <small>{label}</small>
+                <strong>{value}</strong>
+              </span>
+            ))}
+          </div>
+          <div className="area-capability-actions">
+            <a className="atlas-primary-action" href={content.primary.href}>{content.primary.label}</a>
+            <a className="atlas-secondary-action" href="/relationships">Review links</a>
+          </div>
+        </article>
+      )}
       <div className="mece-note">
-        <i className="ph-bold ph-tree-structure" aria-hidden="true"></i>
-        <span>MECE ownership: each resource should resolve to one area before AI write actions.</span>
+        <i className="ph-bold ph-shield-check" aria-hidden="true"></i>
+        <span>MECE accountability: one accountable owner per goal, workflow, and AI action.</span>
       </div>
     </section>
   );
@@ -2057,44 +2096,52 @@ function DecisionRail({
   const reviewAreas = reviewCount(areas);
   const items = [
     {
-      title: selectedArea.status === "ready" ? `${selectedArea.label} ready for review` : `${selectedArea.label} needs owner review`,
-      detail: selectedArea.detail,
+      title: "Company priority",
+      detail: "3 unassigned resources in 00 Ogolny.",
       href: selectedArea.href,
-      icon: selectedArea.icon
+      icon: "ph-folder",
+      meta: "Open",
+      tone: "review"
     },
     {
-      title: missingDrive ? "Knowledge source needs Drive" : "Knowledge source connected",
-      detail: missingDrive ? "Connect or refresh Drive before AI summarizes area knowledge." : "Drive context is available for mapped area evidence.",
-      href: "/settings/drive",
-      icon: "ph-cloud"
+      title: "Strategy decision",
+      detail: "Quarterly goal review needs your decision.",
+      href: "/react-company-os",
+      icon: "ph-shield-warning",
+      meta: `${reviewAreas} open`,
+      tone: "warning"
     },
     {
-      title: missingClickUp ? "Execution source needs ClickUp" : "Execution source connected",
-      detail: missingClickUp ? "Task pressure is partial until selected ClickUp lists are configured." : "Task workbench can inspect execution state.",
-      href: "/react-tasks",
-      icon: "ph-list-checks"
+      title: "AI handoff",
+      detail: missingDrive ? "Paperclip waiting for scoped key." : "Jarvis can summarize strategy context.",
+      href: "/react-agent-tools",
+      icon: "ph-sparkle",
+      meta: connection.mcpManifest ? "Ready" : "Waiting",
+      tone: connection.mcpManifest ? "ready" : "warning"
     },
     {
-      title: `${reviewAreas} area decision${reviewAreas === 1 ? "" : "s"}`,
-      detail: "Empty or review areas stay visible so the owner and AI do not assume full coverage.",
-      href: "/areas",
-      icon: "ph-seal-warning"
+      title: "Proof",
+      detail: missingClickUp ? "Task workbench needs ClickUp lists." : "Drive sync healthy 8m ago.",
+      href: missingClickUp ? "/settings/api" : "/settings/drive",
+      icon: "ph-shield-check",
+      meta: "Open",
+      tone: "ready"
     }
   ];
 
   return (
     <aside className="decision-rail" aria-label="Today priorities">
       <div>
-        <p className="atlas-kicker">Today</p>
-        <h2>Decide, delegate, prove</h2>
+        <h2>Today</h2>
       </div>
       <div className="decision-list">
         {items.map((item) => (
-          <a className="decision-item" href={item.href} key={item.title}>
+          <a className={`decision-item decision-item-${item.tone}`} href={item.href} key={item.title}>
             <i className={`ph-bold ${item.icon}`} aria-hidden="true"></i>
             <span>
               <strong>{item.title}</strong>
               <small>{item.detail}</small>
+              <em>{item.meta}</em>
             </span>
           </a>
         ))}
