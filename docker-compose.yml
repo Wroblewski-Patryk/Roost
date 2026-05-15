@@ -23,9 +23,9 @@ services:
       PORT: 3000
       DATABASE_URL: postgresql://companycore:${SERVICE_PASSWORD_POSTGRES:-companycore}@postgres:5432/companycore?schema=public
       SEED_API_KEY: ${SERVICE_PASSWORD_API_KEY:-dev-companycore-key}
-      SERVICE_URL_BACKEND_3000: ${SERVICE_URL_BACKEND_3000:-http://localhost:3000}
+      SERVICE_URL_BACKEND_3000: ${SERVICE_URL_BACKEND_3000:-http://localhost:3102}
     ports:
-      - "${BACKEND_PORT:-3000}:3000"
+      - "${BACKEND_PORT:-3102}:3000"
 
 volumes:
   companycore_postgres:

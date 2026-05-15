@@ -8,7 +8,7 @@ docker compose up -d --build
 
 Services:
 
-- `backend`: Node/Express API and owner console on port `3000`
+- `backend`: Node/Express API and owner console on local host port `3102` by default; the container still listens on port `3000`
 - `postgres`: PostgreSQL available inside the Compose network
 
 The backend startup command runs:

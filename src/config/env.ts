@@ -60,7 +60,7 @@ const nodeEnv = process.env.NODE_ENV ?? "development";
 
 export const env = {
   nodeEnv,
-  port: Number(process.env.PORT ?? 3000),
+  port: Number(process.env.PORT ?? 3102),
   databaseUrl: requireProductionValue("DATABASE_URL"),
   publicApiBaseUrl: process.env.COMPANYCORE_PUBLIC_API_BASE_URL,
   googleOAuthClientId: process.env.GOOGLE_OAUTH_CLIENT_ID ?? (process.env.NODE_ENV === "production" ? undefined : "dev-google-oauth-client-id"),

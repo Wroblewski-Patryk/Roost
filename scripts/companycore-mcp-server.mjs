@@ -2,7 +2,7 @@
 
 import readline from "node:readline";
 
-const baseUrl = (process.env.COMPANYCORE_BASE_URL ?? "http://localhost:3000").replace(/\/+$/, "");
+const baseUrl = (process.env.COMPANYCORE_BASE_URL ?? "http://localhost:3102").replace(/\/+$/, "");
 const apiKey = process.env.COMPANYCORE_API_KEY;
 const manifestPath = process.env.COMPANYCORE_MCP_MANIFEST_PATH ?? "/v1/mcp/manifest";
 const requestTimeoutMs = Number(process.env.COMPANYCORE_MCP_TIMEOUT_MS ?? 30000);

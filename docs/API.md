@@ -14,7 +14,7 @@ Authorization: Bearer <owner-auth-token>
 Base URL in local Docker:
 
 ```text
-http://localhost:3000
+http://localhost:3102
 ```
 
 The owner console is served from `/`. It includes owner login, API key

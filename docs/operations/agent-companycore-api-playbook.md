@@ -227,7 +227,7 @@ material.
 With a disposable workspace/service key:
 
 ```powershell
-$env:COMPANYCORE_BASE_URL = "http://localhost:3000"
+$env:COMPANYCORE_BASE_URL = "http://localhost:3102"
 $env:COMPANYCORE_API_KEY = "<service-key>"
 npm run agent:training-smoke
 ```

@@ -135,7 +135,7 @@ Example tool:
 Check server configuration without exposing the key:
 
 ```bash
-COMPANYCORE_BASE_URL=http://localhost:3000 \
+COMPANYCORE_BASE_URL=http://localhost:3102 \
 COMPANYCORE_API_KEY=cc_v1_example \
 node scripts/companycore-mcp-server.mjs --print-config
 ```
@@ -144,7 +144,7 @@ With a running CompanyCore API and a scoped key that includes `mcp:read`, test
 the full bridge path:
 
 ```bash
-COMPANYCORE_BASE_URL=http://localhost:3000 \
+COMPANYCORE_BASE_URL=http://localhost:3102 \
 COMPANYCORE_API_KEY=cc_v1_workspace_service_key \
 npm run mcp:smoke
 ```
@@ -164,7 +164,7 @@ For manual JSON-RPC inspection, test tool discovery directly:
 
 ```bash
 printf '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"smoke","version":"0.1.0"}}}\n{"jsonrpc":"2.0","id":2,"method":"tools/list"}\n' \
-  | COMPANYCORE_BASE_URL=http://localhost:3000 \
+  | COMPANYCORE_BASE_URL=http://localhost:3102 \
     COMPANYCORE_API_KEY=cc_v1_workspace_service_key \
     node scripts/companycore-mcp-server.mjs
 ```

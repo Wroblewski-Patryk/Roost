@@ -65,7 +65,7 @@ npm run mcp:server
 For local development, point the bridge at the local API:
 
 ```bash
-COMPANYCORE_BASE_URL=http://localhost:3000 \
+COMPANYCORE_BASE_URL=http://localhost:3102 \
 COMPANYCORE_API_KEY=cc_v1_workspace_service_key \
 npm run mcp:server
 ```
@@ -73,7 +73,7 @@ npm run mcp:server
 Before handing the key to an agent runtime, run:
 
 ```bash
-COMPANYCORE_BASE_URL=http://localhost:3000 \
+COMPANYCORE_BASE_URL=http://localhost:3102 \
 COMPANYCORE_API_KEY=cc_v1_workspace_service_key \
 npm run mcp:smoke
 ```

@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const bridgePath = resolve(scriptDir, "companycore-mcp-server.mjs");
-const baseUrl = (process.env.COMPANYCORE_BASE_URL ?? "http://localhost:3000").replace(/\/+$/, "");
+const baseUrl = (process.env.COMPANYCORE_BASE_URL ?? "http://localhost:3102").replace(/\/+$/, "");
 const apiKey = process.env.COMPANYCORE_API_KEY;
 const smokeToolName = process.env.COMPANYCORE_MCP_SMOKE_TOOL ?? "companycore_get_company_os";
 const smokeToolArguments = parseJsonEnv("COMPANYCORE_MCP_SMOKE_ARGUMENTS", {});
@@ -37,7 +37,7 @@ Required:
   COMPANYCORE_API_KEY              Workspace-scoped service key.
 
 Optional:
-  COMPANYCORE_BASE_URL             CompanyCore API base URL. Default: http://localhost:3000
+  COMPANYCORE_BASE_URL             CompanyCore API base URL. Default: http://localhost:3102
   COMPANYCORE_MCP_SMOKE_TOOL       Safe tool to call. Default: companycore_get_company_os
   COMPANYCORE_MCP_SMOKE_ARGUMENTS  JSON object passed to tools/call. Default: {}
   COMPANYCORE_MCP_SMOKE_EXPECT_ERROR
@@ -51,7 +51,7 @@ Optional:
   COMPANYCORE_MCP_SMOKE_TIMEOUT_MS Timeout in milliseconds. Default: 20000
 
 Example:
-  COMPANYCORE_BASE_URL=http://localhost:3000 \\
+  COMPANYCORE_BASE_URL=http://localhost:3102 \\
   COMPANYCORE_API_KEY=cc_v1_example \\
   npm run mcp:smoke
 `);

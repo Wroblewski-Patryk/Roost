@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
 const bridgeSmokePath = resolve(scriptDir, "companycore-mcp-smoke.mjs");
-const baseUrl = (process.env.COMPANYCORE_BASE_URL ?? "http://localhost:3000").replace(/\/+$/, "");
+const baseUrl = (process.env.COMPANYCORE_BASE_URL ?? "http://localhost:3102").replace(/\/+$/, "");
 const timeoutMs = Number(process.env.COMPANYCORE_AI_READY_SMOKE_TIMEOUT_MS ?? 30000);
 const runId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -29,11 +29,11 @@ Required:
   A running CompanyCore API server and migrated database.
 
 Optional:
-  COMPANYCORE_BASE_URL                       API base URL. Default: http://localhost:3000
+  COMPANYCORE_BASE_URL                       API base URL. Default: http://localhost:3102
   COMPANYCORE_AI_READY_SMOKE_TIMEOUT_MS      Per MCP bridge smoke timeout. Default: 30000
 
 Example:
-  COMPANYCORE_BASE_URL=http://127.0.0.1:3000 npm run ai-ready:smoke
+  COMPANYCORE_BASE_URL=http://127.0.0.1:3102 npm run ai-ready:smoke
 `);
 }
 
