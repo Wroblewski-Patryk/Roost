@@ -5,7 +5,7 @@
 - Title: Jarvis CompanyCore Google Drive Docs and Sheets write path
 - Task Type: fix | release
 - Current Stage: verification
-- Status: IN_PROGRESS
+- Status: BLOCKED
 - Owner: Backend Builder + Ops/Release
 - Depends on: valid production Google Drive OAuth secret or owner re-consent
 - Priority: P0
@@ -15,7 +15,7 @@
 - Iteration: 2026-05-15
 - Operation Mode: BUILDER
 - Mission ID: JARVIS-GDRIVE-001
-- Mission Status: PARTIALLY_VERIFIED
+- Mission Status: BLOCKED
 
 ## Process Self-Audit
 - [x] All seven autonomous loop steps are planned.
@@ -137,22 +137,26 @@ Jarvis and provide an evidence-backed deploy and smoke plan for the required
 
 ### 7. Update Documentation and Knowledge
 - Docs updated: this task contract and `docs/INTEGRATIONS.md`.
-- Context updated: pending after production deploy/smoke.
+- Context updated: `.codex/context/PROJECT_STATE.md`,
+  `.codex/context/TASK_BOARD.md`, `.agents/state/*`, and
+  `docs/operations/post-deploy-smoke.md`.
 - Learning journal updated: not applicable yet; no new recurring pitfall beyond
   existing deploy metadata and DB availability gaps.
 
 ## Acceptance Criteria
-- [ ] `POST /v1/google-drive/docs` accepts `parentId` and creates a Google Doc
+- [x] `POST /v1/google-drive/docs` accepts `parentId` and creates a Google Doc
   in folder `1U1GMpy0erVETPDA9ciRb7l1gVbSJfaff`.
-- [ ] `POST /v1/google-drive/sheets` accepts `parentId` and creates a Google
+- [x] `POST /v1/google-drive/sheets` accepts `parentId` and creates a Google
   Sheet through Drive `files.create` with spreadsheet MIME type.
-- [ ] Sheet values are written through Sheets API after creation.
+- [x] Sheet values are written through Sheets API after creation.
 - [ ] `GET /v1/google-drive/files/:id/content` reads both created files through
   CompanyCore content snapshots.
 - [ ] Jarvis creates `Protokół Wielkiej Narady Spinaczy` and
   `Budżet Na Kawę I Inne Poważne Excely` through CompanyCore.
 - [ ] Both files physically appear in Google Drive folder `12. Zarządzanie`.
-- [ ] Production smoke passes without printing raw secrets.
+- [x] Production smoke passes without printing raw secrets for health,
+  connection, and failure classification; real write/read remains blocked by
+  `integration_invalid_token`.
 
 ## Success Signal
 - User or operator problem: Jarvis can use CompanyCore as the company Google
@@ -191,7 +195,7 @@ plus smoke plan.
 - Module confidence ledger updated: pending after deploy/smoke.
 - Requirements matrix updated: pending after deploy/smoke.
 - Risk register updated: pending after deploy/smoke.
-- Reality status: partially verified.
+- Reality status: blocked.
 
 ## Integration Evidence
 - `INTEGRATION_CHECKLIST.md` reviewed: pending final close.
@@ -223,13 +227,13 @@ plus smoke plan.
 - `DEPLOYMENT_GATE.md` reviewed: pending final close.
 
 ## Result Report
-- Task summary: CompanyCore local Sheets creation contract was corrected for
-  Drive folder placement; OAuth decrypt failures are now controlled integration
-  errors.
+- Task summary: CompanyCore Sheets creation contract was corrected for Drive
+  folder placement; OAuth decrypt failures are now controlled integration
+  errors; commit `05e13e4` is deployed to production.
 - Files changed: listed in Scope.
 - How tested: build, validate, diff check; production health/log inspection.
-- What is incomplete: production deploy and real Jarvis-to-CompanyCore
-  Docs/Sheets smoke.
-- Next steps: deploy CompanyCore, restore or re-consent Google OAuth if needed,
-  then hand exact smoke to Jarvis agent.
+- What is incomplete: real Jarvis-to-CompanyCore Docs/Sheets smoke is blocked
+  by production `integration_invalid_token`.
+- Next steps: restore the matching production integration secret or complete
+  owner Google OAuth re-consent, then hand exact smoke to Jarvis agent.
 - Decisions made: Jarvis remains forbidden from direct Google API writes.

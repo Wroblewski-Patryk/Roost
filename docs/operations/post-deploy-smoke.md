@@ -41,6 +41,57 @@ Use this file to record the minimum checks after each deploy.
 ## Evidence
 
 - Timestamp: 2026-05-15
+- Environment: production VPS Docker backend
+- Purpose: JARVIS-GDRIVE-001 Jarvis CompanyCore Google Drive Docs/Sheets write
+  path.
+- Deployment:
+  - Manual VPS backend rollover to commit `05e13e4`.
+  - New runtime image: `rnqqkhl3o3dut4qv56mlxly2_backend:05e13e4`.
+  - Running backend container:
+    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-05e13e4`.
+  - Previous backend container was stopped after the new container reported
+    local health with build commit `05e13e4`.
+  - Production Postgres container remained running and healthy.
+- Local/source checks:
+  - `npm run build`: passed.
+  - `npm run validate`: passed.
+  - `git diff --check`: passed.
+  - `npm run test:api`: blocked before tests because this desktop session had
+    no `DATABASE_URL`; Docker validation attempt timed out before a disposable
+    database could be started.
+- Public smoke:
+  - `GET https://api.companycore.luckysparrow.ch/health` returned `200` with
+    build commit `05e13e4`.
+  - `GET https://api.companycore.luckysparrow.ch/v1/health` returned `200`
+    with build commit `05e13e4`.
+- Protected CompanyCore smoke:
+  - `npm run google-drive:smoke` from the deployed backend container passed
+    with `googleDriveConfigured=true`, `googleDriveActive=true`, and
+    `importedFileCount=748`.
+  - A protected content refresh against an existing imported Google Sheet
+    returned `401 integration_invalid_token`; this confirms the previous raw
+    Docs 500 is now fail-closed but the stored Google OAuth secret is not
+    usable with the current integration secret.
+- OpenJarvis checks:
+  - Local targeted OpenJarvis tests passed:
+    `tests/tools/test_companycore_tool.py::test_companycore_google_doc_create_uses_real_drive_route`,
+    `tests/tools/test_companycore_tool.py::test_companycore_google_sheet_create_can_target_drive_folder`,
+    `tests/connectors/test_companycore.py`, and
+    `tests/server/test_companycore_context.py`.
+  - Production Jarvis container image is
+    `ilkb..._jarvis:3d86f9d61c0fb10879f8dd3c99ae5a08b100405e`.
+  - Production Jarvis has `COMPANYCORE_BASE_URL`,
+    `COMPANYCORE_API_KEY`, and `COMPANYCORE_ADAPTER_SOURCE`; the visible
+    non-secret values are
+    `COMPANYCORE_BASE_URL=https://api.companycore.luckysparrow.ch` and
+    `COMPANYCORE_ADAPTER_SOURCE=jarvis`.
+- Residual risk:
+  - Jarvis two-file smoke must not be treated as ready to pass until the
+    Google Drive OAuth secret is repaired by restoring the matching
+    `INTEGRATION_SECRET_KEY` or completing owner OAuth re-consent from
+    `/settings/drive`.
+
+- Timestamp: 2026-05-15
 - Environment: production public domains
 - Purpose: ACF-OPS-001 auto-deploy proof or manual path acceptance refresh.
 - Current local source:

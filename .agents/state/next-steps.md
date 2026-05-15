@@ -4,9 +4,12 @@ Last updated: 2026-05-15
 
 ## NOW
 
-No active ready UX100 implementation wave remains after UX100-W05.
-V1UX-CANON-001 is complete as a planning artifact; runtime implementation of
-the area-first atlas should begin only as a separate scoped code task.
+1. Restore Google Drive OAuth usability for Jarvis.
+   - Restore the matching production `INTEGRATION_SECRET_KEY` for the existing
+     encrypted Google Drive OAuth material, or complete owner Google Drive
+     OAuth re-consent from `/settings/drive`.
+   - Rerun CompanyCore protected content refresh and Jarvis Docs/Sheets
+     creation/readback smoke before resuming unrelated work.
 
 ## NEXT
 
@@ -16,10 +19,17 @@ the area-first atlas should begin only as a separate scoped code task.
    - Build metadata restoration is implemented locally; after deploy, compare
      public `/health` `build.commit` with the pushed commit before claiming
      auto-deploy proof.
-3. V1UX-CANON-002 Area-first dashboard implementation task.
-   - Ready to scope after accepting
-     `docs/ux/assets/companycore-v1-area-first-atlas-canonical.png` as the V1
-     implementation target.
+3. V1AREA-001 Area-first dashboard implementation.
+   - Ready task contract:
+     `docs/planning/v1-area-first-pixel-perfect-task-contract.md`.
+   - Implementation plan:
+     `docs/planning/v1-area-first-pixel-perfect-implementation-plan.md`.
+   - Canonical desktop/mobile references:
+     `docs/ux/assets/companycore-v1-area-first-dashboard-desktop-canonical.png`
+     and
+     `docs/ux/assets/companycore-v1-area-first-dashboard-mobile-canonical.png`.
+   - Readiness review:
+     `docs/ux/v1-area-first-web-readiness-review-2026-05-15.md`.
 
 ## LATER
 

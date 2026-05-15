@@ -2,20 +2,51 @@
 
 ## Ready
 
-No active local implementation task is currently ready.
+- V1AREA-001 Area-First Dashboard Pixel-Perfect Implementation.
+  - Stage: planning -> implementation
+  - Owner: Frontend Builder + QA/Test
+  - Priority: P1
+  - Status: READY
+  - Source:
+    `docs/planning/v1-area-first-pixel-perfect-task-contract.md`
+  - Goal: implement the V1 area-first Company Atlas dashboard from the
+    canonical desktop and mobile references, starting with the shared
+    area-first shell, selected-area state, and responsive layout frame.
+  - Canonical images:
+    `docs/ux/assets/companycore-v1-area-first-dashboard-desktop-canonical.png`
+    and
+    `docs/ux/assets/companycore-v1-area-first-dashboard-mobile-canonical.png`.
+  - Implementation plan:
+    `docs/planning/v1-area-first-pixel-perfect-implementation-plan.md`.
+  - Readiness review:
+    `docs/ux/v1-area-first-web-readiness-review-2026-05-15.md`.
+  - First slice: `CompanyShell`, `AreaSidebar`, `MobileAppBar`,
+    `CommandSearch`, `StatusCluster`, `ProgressivePath`, display-name adapter
+    for 00-12 areas, and selected-area state. Do not implement every
+    capability tab in the first commit.
+  - Validation expectation: desktop `1366x900`, tablet `834x1112`, mobile
+    `390x844`, `npm run build`, `npm run validate`, and `npm run test:api`
+    when local PostgreSQL/Docker is available.
 
 ## In Progress
 
-- V2GD-010 Google Sheet Parent Folder Creation
-  - Stage: verification
-  - Owner: Backend Builder
-  - Priority: P0
-  - Scope: let `/v1/google-drive/sheets` accept optional `parentId` and create
-    the Sheet through the existing Drive file boundary when a parent folder is
-    supplied.
+No active implementation task is in progress.
 
 ## Blocked
 
+- JARVIS-GDRIVE-001 Jarvis CompanyCore Google Drive E2E.
+  - Stage: verification
+  - Owner: Backend Builder + Ops/Release
+  - Priority: P0
+  - Source:
+    `docs/planning/jarvis-companycore-google-drive-e2e-task-contract.md`
+  - Blocked by: production Google Drive OAuth ciphertext cannot be decrypted
+    with the current `INTEGRATION_SECRET_KEY`; protected content refresh now
+    returns controlled `401 integration_invalid_token`.
+  - Next action: restore the matching integration secret or complete owner
+    Google Drive OAuth re-consent from `/settings/drive`, then ask the Jarvis
+    agent to run the two-file creation/readback smoke in folder
+    `12. Zarządzanie`.
 - AGRUN-010 Upstream Agent Source Merge Execution
   - Stage: planning
   - Owner: Ops/Release
@@ -61,26 +92,31 @@ No active local implementation task is currently ready.
   - Source: `docs/planning/acf-ops-002-build-metadata-health-task-contract.md`
   - Goal: compare public `/health` `build.commit` with the pushed commit after
     deployment before claiming auto-deploy proof.
-- V1UX-CANON-002 Area-first dashboard implementation task.
-  - Stage: planning
-  - Owner: Frontend Builder + UX
-  - Priority: P1
-  - Source: `docs/ux/v1-simple-dashboard-canonical-spec-2026-05-15.md`
-  - Goal: scope a separate runtime implementation slice from
-    `docs/ux/assets/companycore-v1-area-first-atlas-canonical.png` after the
-    area-first V1 target is accepted.
 - Upstream OpenJarvis/Paperclip source merge execution and blocked GitHub
   auto-deploy webhook administration task.
 
 ## Done
 
+- V2GD-010 Google Sheet Parent Folder Creation.
+  - Evidence: deployed commit `05e13e4` to production through manual VPS
+    rollover. Public `/health` and `/v1/health` report `build.commit` as
+    `05e13e4`. CompanyCore protected Google Drive smoke passes for connection,
+    capabilities, active Drive config, and 748 imported files. The route now
+    accepts `parentId`; Sheets creation uses Drive `files.create` with MIME
+    type `application/vnd.google-apps.spreadsheet`, then writes values through
+    Sheets API.
+  - Remaining blocker: real Docs/Sheets content read/write is blocked by
+    invalid stored Google Drive OAuth secret, tracked as JARVIS-GDRIVE-001.
+
 - V1UX-CANON-001 Simple V1 Dashboard Canonical Design.
   - Evidence: published the V1 area-first Company Atlas direction, current UI
     audit, sitemap, component boundaries, Tailwind/DaisyUI style rules,
     pixel-perfect implementation plan, and generated canonical concept images.
-    The strongest V1 implementation target is
-    `docs/ux/assets/companycore-v1-area-first-atlas-canonical.png`. `git diff
-    --check` and manual image review passed.
+    The current V1 implementation targets are
+    `docs/ux/assets/companycore-v1-area-first-dashboard-desktop-canonical.png`
+    and
+    `docs/ux/assets/companycore-v1-area-first-dashboard-mobile-canonical.png`.
+    `git diff --check` and manual image review passed.
   - Task contract:
     `docs/planning/v1-simple-dashboard-canonical-design-task-contract.md`.
 

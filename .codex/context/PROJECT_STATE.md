@@ -82,6 +82,16 @@ Last updated: 2026-05-15
   and mapped to operating areas. `/v1/google-drive/files` readback returned
   748 imported items, 171 folders, `unassignedCount=0`, and descendant scope
   verification `mismatches=[]`.
+- 2026-05-15: Jarvis Google Drive CompanyCore patch deployed commit `05e13e4`
+  through manual VPS rollover. Public `/health` and `/v1/health` report
+  `build.commit="05e13e4"`. The CompanyCore route contract now accepts
+  `parentId` for Docs and Sheets; Sheets are created through Drive
+  `files.create` with MIME type `application/vnd.google-apps.spreadsheet`
+  before values are written through Sheets API. Protected Google Drive
+  connection smoke passes, but existing content refresh returns
+  `401 integration_invalid_token`, so owner OAuth re-consent or restoration of
+  the matching `INTEGRATION_SECRET_KEY` is required before Jarvis can complete
+  the two-file Docs/Sheets creation/readback scenario.
 - 2026-05-14: Production now runs owner-console snapshot routing hotfix commit
   `a7557120b8ea4630a0b32097e66ba0d4bb012b1b`. The vanilla web shell routes
   implemented table snapshots to their correct API paths, sends Company OS
