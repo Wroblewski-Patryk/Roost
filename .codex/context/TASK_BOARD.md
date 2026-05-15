@@ -98,9 +98,9 @@ No active implementation task is in progress.
 ## Done
 
 - V2GD-010 Google Sheet Parent Folder Creation.
-  - Evidence: deployed commit `05e13e4` to production through manual VPS
+  - Evidence: deployed commit `669c1c8` to production through manual VPS
     rollover. Public `/health` and `/v1/health` report `build.commit` as
-    `05e13e4`. CompanyCore protected Google Drive smoke passes for connection,
+    `669c1c8`. CompanyCore protected Google Drive smoke passes for connection,
     capabilities, active Drive config, and 748 imported files. The route now
     accepts `parentId`; Sheets creation uses Drive `files.create` with MIME
     type `application/vnd.google-apps.spreadsheet`, then writes values through

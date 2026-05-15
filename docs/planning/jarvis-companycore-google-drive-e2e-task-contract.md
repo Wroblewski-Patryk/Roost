@@ -229,7 +229,7 @@ plus smoke plan.
 ## Result Report
 - Task summary: CompanyCore Sheets creation contract was corrected for Drive
   folder placement; OAuth decrypt failures are now controlled integration
-  errors; commit `05e13e4` is deployed to production.
+  errors; commit `669c1c8` is deployed to production.
 - Files changed: listed in Scope.
 - How tested: build, validate, diff check; production health/log inspection.
 - What is incomplete: real Jarvis-to-CompanyCore Docs/Sheets smoke is blocked

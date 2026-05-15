@@ -45,12 +45,12 @@ Use this file to record the minimum checks after each deploy.
 - Purpose: JARVIS-GDRIVE-001 Jarvis CompanyCore Google Drive Docs/Sheets write
   path.
 - Deployment:
-  - Manual VPS backend rollover to commit `05e13e4`.
-  - New runtime image: `rnqqkhl3o3dut4qv56mlxly2_backend:05e13e4`.
+  - Manual VPS backend rollover to commit `669c1c8`.
+  - New runtime image: `rnqqkhl3o3dut4qv56mlxly2_backend:669c1c8`.
   - Running backend container:
-    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-05e13e4`.
+    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-669c1c8`.
   - Previous backend container was stopped after the new container reported
-    local health with build commit `05e13e4`.
+    local health with build commit `669c1c8`.
   - Production Postgres container remained running and healthy.
 - Local/source checks:
   - `npm run build`: passed.
@@ -61,9 +61,9 @@ Use this file to record the minimum checks after each deploy.
     database could be started.
 - Public smoke:
   - `GET https://api.companycore.luckysparrow.ch/health` returned `200` with
-    build commit `05e13e4`.
+    build commit `669c1c8`.
   - `GET https://api.companycore.luckysparrow.ch/v1/health` returned `200`
-    with build commit `05e13e4`.
+    with build commit `669c1c8`.
 - Protected CompanyCore smoke:
   - `npm run google-drive:smoke` from the deployed backend container passed
     with `googleDriveConfigured=true`, `googleDriveActive=true`, and

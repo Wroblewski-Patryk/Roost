@@ -82,9 +82,9 @@ Last updated: 2026-05-15
   and mapped to operating areas. `/v1/google-drive/files` readback returned
   748 imported items, 171 folders, `unassignedCount=0`, and descendant scope
   verification `mismatches=[]`.
-- 2026-05-15: Jarvis Google Drive CompanyCore patch deployed commit `05e13e4`
+- 2026-05-15: Jarvis Google Drive CompanyCore patch deployed commit `669c1c8`
   through manual VPS rollover. Public `/health` and `/v1/health` report
-  `build.commit="05e13e4"`. The CompanyCore route contract now accepts
+  `build.commit="669c1c8"`. The CompanyCore route contract now accepts
   `parentId` for Docs and Sheets; Sheets are created through Drive
   `files.create` with MIME type `application/vnd.google-apps.spreadsheet`
   before values are written through Sheets API. Protected Google Drive
