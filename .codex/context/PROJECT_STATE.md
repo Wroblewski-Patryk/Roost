@@ -92,6 +92,14 @@ Last updated: 2026-05-15
   `401 integration_invalid_token`, so owner OAuth re-consent or restoration of
   the matching `INTEGRATION_SECRET_KEY` is required before Jarvis can complete
   the two-file Docs/Sheets creation/readback scenario.
+- 2026-05-15: Owner Google Drive OAuth re-consent is complete in production:
+  the active Google Drive setting decrypts successfully and has both refresh
+  and access tokens present. The Drive import surface is being upgraded so
+  folder discovery returns hierarchy metadata (`path`, `depth`, parent,
+  child/descendant counts, selected/included/imported state) and
+  `/settings/drive` lets the owner save/import selected root folders from an
+  organized tree instead of a flat list. `npm run validate` passed; host
+  `npm test` remains blocked before API tests because `DATABASE_URL` is unset.
 - 2026-05-15: V1AREA-001 implemented the V1 area-first Company Atlas on
   `/dashboard` through the React web layer. The route now uses the canonical
   00-12 LuckySparrow area model, expanded selected-area subviews, capability
@@ -147,6 +155,18 @@ Last updated: 2026-05-15
   `index-DCaIUVzr.js` and `index-B1Wcb5DB.css`. Production Playwright smoke
   verified missing-session `/` and stale-token `/dashboard` both redirect to
   `/auth/login` with no dashboard error.
+- 2026-05-15: REACT-WEB-001 consolidated the active web UI runtime onto
+  React/Vite/Tailwind/DaisyUI. Express now serves `public/react/index.html`
+  for all user-facing web routes, including auth, data, relationships,
+  pipeline, settings, dashboard, areas, Company OS, and MCP tools. Active
+  legacy vanilla files under `public/` were removed, and `npm run validate`
+  now uses the React/Vite build as the web syntax gate. Playwright verified
+  signed-out redirects/auth pages and a signed-in mocked-backend route set with
+  no old vanilla scripts, no old public shell, no horizontal overflow, and no
+  console errors. Architecture ownership is recorded in
+  `docs/architecture/web-layer-react-ownership.md`. Follow-up remains for full
+  React rebuilds of the legacy ClickUp setup form and full Google Drive
+  OAuth/folder-selection workflow.
 - 2026-05-14: Production now runs owner-console snapshot routing hotfix commit
   `a7557120b8ea4630a0b32097e66ba0d4bb012b1b`. The vanilla web shell routes
   implemented table snapshots to their correct API paths, sends Company OS

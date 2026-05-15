@@ -63,8 +63,9 @@ function isApiHost(host = "") {
   return host.split(":")[0] === "api.companycore.luckysparrow.ch";
 }
 
-const webAppRoutes = [
-  "/",
+const reactAppRoutes = [
+  "/dashboard",
+  "/areas",
   "/auth/login",
   "/auth/register",
   "/data",
@@ -76,12 +77,7 @@ const webAppRoutes = [
   "/settings/account",
   "/settings/integrations",
   "/settings/drive",
-  "/settings/api"
-];
-
-const reactAppRoutes = [
-  "/dashboard",
-  "/areas",
+  "/settings/api",
   "/react-agent-tools",
   "/react-company-os",
   "/react-areas",
@@ -148,15 +144,6 @@ export function createApp() {
 
     res.sendFile(path.join(publicRoot, "react", "index.html"));
   });
-  app.get(webAppRoutes, (req, res, next) => {
-    if (isApiHost(req.headers.host)) {
-      next();
-      return;
-    }
-
-    res.sendFile(path.join(publicRoot, "index.html"));
-  });
-
   app.use("/health", healthRouter);
   app.use("/v1/health", healthRouter);
   app.use("/auth", authRouter);

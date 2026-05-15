@@ -4428,12 +4428,16 @@ test("CompanyCore v1 protected API flow", async () => {
     });
     assert.equal(discoveredDriveFolders.status, 200);
     const discoveredDriveFoldersBody = discoveredDriveFolders.body as {
-      data: Array<{ id: string; name: string; selected: boolean }>;
+      data: Array<{ id: string; name: string; parentId: string | null; path: string; depth: number; selected: boolean; childCount: number; descendantCount: number }>;
     };
-    assert.ok(discoveredDriveFoldersBody.data.some((folder) => (
-      folder.id === "drive-nested-folder"
-      && folder.name === "Nested Drive folder"
-    )));
+    const discoveredNestedFolder = discoveredDriveFoldersBody.data.find((folder) => folder.id === "drive-nested-folder");
+    assert.ok(discoveredNestedFolder);
+    assert.equal(discoveredNestedFolder.name, "Nested Drive folder");
+    assert.equal(discoveredNestedFolder.parentId, "drive-folder-root");
+    assert.equal(discoveredNestedFolder.path, "Nested Drive folder");
+    assert.equal(discoveredNestedFolder.depth, 0);
+    assert.equal(discoveredNestedFolder.childCount, 0);
+    assert.equal(discoveredNestedFolder.descendantCount, 0);
     assert.equal(discoveredDriveFoldersBody.data.some((folder) => folder.id === "drive-doc-1"), false);
 
     const inspectDriveImport = await request("/v1/integration-settings/google_drive/import", {

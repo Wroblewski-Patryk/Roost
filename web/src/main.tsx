@@ -7408,6 +7408,807 @@ function AgentToolSurfaceWorkbench({ connection, manifest }: { connection: Conne
   );
 }
 
+type ApiKeyRecord = {
+  id: string;
+  name: string;
+  keyPrefix?: string | null;
+  scopes?: unknown;
+  active: boolean;
+  createdAt?: string;
+  lastUsedAt?: string | null;
+};
+
+type AgentKeyProfile = {
+  id: string;
+  label: string;
+  description?: string;
+  riskLevel?: string;
+  scopes: string[];
+};
+
+type RelationshipGraph = {
+  nodes?: Array<Record<string, unknown>>;
+  edges?: Array<Record<string, unknown>>;
+  reviewItems?: Array<Record<string, unknown>>;
+  unsupportedFamilies?: Array<Record<string, unknown>>;
+};
+
+type PipelineBundle = {
+  clients: Array<Record<string, unknown>>;
+  stages: Array<Record<string, unknown>>;
+  deals: Array<Record<string, unknown>>;
+  interactions: Array<Record<string, unknown>>;
+};
+
+type PrivateLoadState<T> =
+  | { status: "signed-out" }
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "ready"; data: T };
+
+function apiErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "request_failed";
+}
+
+async function ownerApi<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = ownerToken();
+  if (!token) {
+    throw new Error("invalid_token");
+  }
+
+  const response = await fetch(path, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(options.headers || {})
+    }
+  });
+  const body = await response.json().catch(() => ({})) as { data?: T; error?: string };
+
+  if (!response.ok || !("data" in body)) {
+    throw new Error(body.error || "request_failed");
+  }
+
+  return body.data as T;
+}
+
+function usePrivateLoader<T>(loader: () => Promise<T>, deps: React.DependencyList = []): [PrivateLoadState<T>, () => void] {
+  const [reloadKey, setReloadKey] = useState(0);
+  const [state, setState] = useState<PrivateLoadState<T>>(() => (
+    ownerToken() ? { status: "loading" } : { status: "signed-out" }
+  ));
+
+  useEffect(() => {
+    if (!ownerToken()) {
+      setState({ status: "signed-out" });
+      return;
+    }
+
+    let cancelled = false;
+    setState({ status: "loading" });
+    loader()
+      .then((data) => {
+        if (!cancelled) {
+          setState({ status: "ready", data });
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          const message = apiErrorMessage(error);
+          if (["invalid_token", "invalid_auth_token", "missing_api_key", "invalid_api_key"].includes(message)) {
+            window.sessionStorage.removeItem("companycoreOwnerToken");
+            setState({ status: "signed-out" });
+            return;
+          }
+          setState({ status: "error", message });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadKey, ...deps]);
+
+  return [state, () => setReloadKey((value) => value + 1)];
+}
+
+function PrivateStateGate<T>({
+  state,
+  title,
+  detail,
+  onRetry,
+  children
+}: {
+  state: PrivateLoadState<T>;
+  title: string;
+  detail: string;
+  onRetry: () => void;
+  children: (data: T) => React.ReactNode;
+}) {
+  if (state.status === "ready") {
+    return <>{children(state.data)}</>;
+  }
+
+  if (state.status === "signed-out") {
+    return <OwnerLoginRedirect />;
+  }
+
+  return (
+    <Shell appLabel={title}>
+      <section className="mx-auto grid w-full max-w-7xl gap-4 px-5 py-8">
+        <LocalNotice
+          tone={state.status === "error" ? "error" : "info"}
+          title={state.status === "error" ? `${title} could not load` : title}
+          detail={state.status === "error" ? `${detail} (${state.message})` : detail}
+        />
+        {state.status === "error" ? (
+          <button className="btn btn-primary w-fit" type="button" onClick={onRetry}>Retry</button>
+        ) : null}
+      </section>
+    </Shell>
+  );
+}
+
+function PublicAuthShell({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="min-h-screen bg-base-200 text-base-content" data-theme="companycore">
+      <header className="border-b border-base-300 bg-base-100/95 px-5 py-4 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4">
+          <a className="flex items-center gap-3 font-black text-base-content no-underline" href="/">
+            <span className="grid h-9 w-9 place-items-center rounded-company bg-primary text-sm text-primary-content">CC</span>
+            <span>CompanyCore</span>
+          </a>
+          <nav className="flex gap-2">
+            <a className="btn btn-sm btn-ghost" href="/auth/login">Sign in</a>
+            <a className="btn btn-sm btn-primary" href="/auth/register">Create account</a>
+          </nav>
+        </div>
+      </header>
+      {children}
+    </main>
+  );
+}
+
+function AuthRoute({ mode }: { mode: "login" | "register" }) {
+  const [status, setStatus] = useState<{ tone: NoticeTone; message: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (ownerToken()) {
+      window.location.replace("/");
+    }
+  }, []);
+
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const payload = mode === "login"
+      ? {
+          email: String(form.get("email") || ""),
+          password: String(form.get("password") || "")
+        }
+      : {
+          name: String(form.get("name") || ""),
+          email: String(form.get("email") || ""),
+          password: String(form.get("password") || ""),
+          workspaceName: String(form.get("workspaceName") || "")
+        };
+
+    setBusy(true);
+    setStatus(null);
+    try {
+      const response = await fetch(`/auth/${mode}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const body = await response.json() as { data?: { token: string }; error?: string };
+      if (!response.ok || !body.data?.token) {
+        throw new Error(body.error || "auth_failed");
+      }
+      window.sessionStorage.setItem("companycoreOwnerToken", body.data.token);
+      const pending = window.sessionStorage.getItem("companycorePendingPrivatePath") || "/";
+      window.sessionStorage.removeItem("companycorePendingPrivatePath");
+      window.location.replace(pending.startsWith("/auth/") ? "/" : pending);
+    } catch (error) {
+      setStatus({
+        tone: "error",
+        message: apiErrorMessage(error) === "invalid_credentials"
+          ? "Email or password is incorrect."
+          : "CompanyCore could not complete authentication."
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const isLogin = mode === "login";
+
+  return (
+    <PublicAuthShell>
+      <section className="mx-auto grid min-h-[calc(100vh-4.5rem)] w-full max-w-6xl items-center gap-6 px-5 py-8 lg:grid-cols-[0.9fr_1fr]">
+        <aside className="grid gap-4 rounded-company border border-base-300 bg-base-100 p-6 shadow-sm">
+          <p className="eyebrow">Owner workspace</p>
+          <h1 className="text-3xl font-black leading-tight">{isLogin ? "Sign in to the company control plane" : "Create the company control plane"}</h1>
+          <p className="text-sm leading-6 text-company-muted">
+            CompanyCore keeps operating areas, provider data, workflow evidence, and agent access behind one owner session.
+          </p>
+          <div className="grid gap-2 text-sm font-black text-company-muted sm:grid-cols-2">
+            {["Company Atlas", "Google Drive", "MCP tools", "Agent keys"].map((item) => (
+              <span className="rounded-company border border-base-300 bg-base-200 px-3 py-2" key={item}>{item}</span>
+            ))}
+          </div>
+        </aside>
+
+        <form className="card border border-base-300 bg-base-100 shadow-sm" onSubmit={submit}>
+          <div className="card-body gap-4">
+            <div>
+              <p className="eyebrow">{isLogin ? "Owner access" : "Workspace bootstrap"}</p>
+              <h2 className="text-2xl font-black">{isLogin ? "Sign in" : "Create account"}</h2>
+            </div>
+            {!isLogin ? (
+              <label className="form-control">
+                <span className="label-text font-bold">Name</span>
+                <input className="input input-bordered" name="name" type="text" autoComplete="name" />
+              </label>
+            ) : null}
+            <label className="form-control">
+              <span className="label-text font-bold">Email</span>
+              <input className="input input-bordered" name="email" type="email" autoComplete="email" required />
+            </label>
+            <label className="form-control">
+              <span className="label-text font-bold">Password</span>
+              <input className="input input-bordered" name="password" type="password" autoComplete={isLogin ? "current-password" : "new-password"} minLength={isLogin ? undefined : 12} required />
+            </label>
+            {!isLogin ? (
+              <label className="form-control">
+                <span className="label-text font-bold">Workspace name</span>
+                <input className="input input-bordered" name="workspaceName" type="text" required />
+              </label>
+            ) : null}
+            <button className="btn btn-primary" type="submit" disabled={busy}>{busy ? "Working..." : isLogin ? "Sign in" : "Create workspace"}</button>
+            {status ? <LocalNotice tone={status.tone} title="Authentication" detail={status.message} /> : null}
+            <p className="text-sm text-company-muted">
+              {isLogin ? "No account yet?" : "Already have an account?"}{" "}
+              <a className="font-black text-primary" href={isLogin ? "/auth/register" : "/auth/login"}>{isLogin ? "Create one" : "Sign in"}</a>
+            </p>
+          </div>
+        </form>
+      </section>
+    </PublicAuthShell>
+  );
+}
+
+function AccountSettingsRoute() {
+  const [state, reload] = usePrivateLoader(async () => ownerApi<ConnectionData>("/v1/connection"));
+  return (
+    <PrivateStateGate state={state} title="Account" detail="CompanyCore is loading owner and workspace context." onRetry={reload}>
+      {(connection) => (
+        <Shell connection={connection} appLabel="Account">
+          <section className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-8">
+            <section className="card border border-base-300 bg-base-100 shadow-sm">
+              <div className="card-body gap-4">
+                <p className="eyebrow">Workspace owner</p>
+                <h1 className="text-3xl font-black">{connection.workspace.name}</h1>
+                <p className="text-sm leading-6 text-company-muted">{connection.user?.email || "Owner email unavailable"}</p>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <MetricCard icon="ph-buildings" label="Areas" value={`${companyAreas(connection).length}`} detail="LuckySparrow operating areas" />
+                  <MetricCard icon="ph-database" label="Tables" value={`${connectionMetrics(connection).tables}`} detail="Backend-backed data surfaces" />
+                  <MetricCard icon="ph-plugs-connected" label="ClickUp" value={connection.integrations.clickup.active ? "Active" : "Setup"} detail="Task provider bridge" />
+                  <MetricCard icon="ph-cloud" label="Drive" value={connection.integrations.googleDrive.active ? "Active" : "Setup"} detail="Knowledge and file bridge" />
+                </div>
+              </div>
+            </section>
+          </section>
+        </Shell>
+      )}
+    </PrivateStateGate>
+  );
+}
+
+function DataRoute() {
+  const pathParts = window.location.pathname.split("/").filter(Boolean);
+  const activeSlug = pathParts[1] || "";
+  const [state, reload] = usePrivateLoader(async () => {
+    const connection = await ownerApi<ConnectionData>("/v1/connection");
+    const tables = connection.operatingModel.areas.flatMap((area) => area.tables || []);
+    const selected = tables.find((table) => table.apiSlug === activeSlug) || tables[0];
+    const records = selected
+      ? await ownerApi<Array<Record<string, unknown>>>(sharedTableRecordApiPath(selected.apiSlug)).catch(() => [])
+      : [];
+    return { connection, tables, selected, records };
+  }, [activeSlug]);
+
+  return (
+    <PrivateStateGate state={state} title="Company data" detail="CompanyCore is loading database modules." onRetry={reload}>
+      {({ connection, tables, selected, records }) => (
+        <Shell connection={connection} appLabel="Company data">
+          <section className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-8">
+            <section className="card border border-base-300 bg-base-100 shadow-sm">
+              <div className="card-body gap-4">
+                <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
+                  <div>
+                    <p className="eyebrow">Data operations</p>
+                    <h1 className="text-3xl font-black">{selected?.name || "Company tables"}</h1>
+                    <p className="text-sm leading-6 text-company-muted">Browse backend-backed records by operating area without the legacy vanilla shell.</p>
+                  </div>
+                  <span className="badge badge-outline">{records.length} records</span>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {tables.map((table) => (
+                    <a className={`btn btn-sm flex-none ${table.apiSlug === selected?.apiSlug ? "btn-primary" : "btn-outline"}`} href={`/data/${table.apiSlug}`} key={table.id}>{table.name}</a>
+                  ))}
+                </div>
+              </div>
+            </section>
+            <GenericRecordTable records={records} emptyTitle="No records yet" emptyDetail="This table has no records available for the current workspace." />
+          </section>
+        </Shell>
+      )}
+    </PrivateStateGate>
+  );
+}
+
+function GenericRecordTable({ records, emptyTitle, emptyDetail }: { records: Array<Record<string, unknown>>; emptyTitle: string; emptyDetail: string }) {
+  const keys = useMemo(() => {
+    const preferred = ["id", "name", "title", "status", "source", "createdAt", "updatedAt"];
+    const discovered = [...new Set(records.flatMap((record) => Object.keys(record)))];
+    return [...preferred.filter((key) => discovered.includes(key)), ...discovered.filter((key) => !preferred.includes(key))].slice(0, 6);
+  }, [records]);
+  const rows = records.map((record, index) => ({ ...record, id: String(record.id || index) }));
+
+  return (
+    <DataTable
+      rows={rows}
+      emptyTitle={emptyTitle}
+      emptyDetail={emptyDetail}
+      columns={keys.map((key) => ({
+        key,
+        header: key,
+        cell: (row) => <span className="break-words text-sm">{formatUnknown(row[key])}</span>
+      }))}
+    />
+  );
+}
+
+function formatUnknown(value: unknown) {
+  if (value === null || value === undefined || value === "") {
+    return "-";
+  }
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
+function RelationshipsRoute() {
+  const [state, reload] = usePrivateLoader(async () => {
+    const [connection, graph] = await Promise.all([
+      ownerApi<ConnectionData>("/v1/connection"),
+      ownerApi<RelationshipGraph>("/v1/relationships/graph")
+    ]);
+    return { connection, graph };
+  });
+
+  return (
+    <PrivateStateGate state={state} title="Relationship review" detail="CompanyCore is loading the relationship graph." onRetry={reload}>
+      {({ connection, graph }) => (
+        <Shell connection={connection} appLabel="Relationship review">
+          <section className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-8">
+            <section className="card border border-base-300 bg-base-100 shadow-sm">
+              <div className="card-body gap-4">
+                <p className="eyebrow">Operating graph</p>
+                <h1 className="text-3xl font-black">Relationships that agents can trust</h1>
+                <p className="text-sm leading-6 text-company-muted">Direct, provider-derived, route-inferred, and review-needed links stay visible before AI relies on them.</p>
+                <div className="grid gap-3 sm:grid-cols-4">
+                  <MetricCard icon="ph-dots-three-circle" label="Nodes" value={`${graph.nodes?.length || 0}`} detail="Known graph entities" />
+                  <MetricCard icon="ph-git-branch" label="Edges" value={`${graph.edges?.length || 0}`} detail="Readable relationships" />
+                  <MetricCard icon="ph-warning-circle" label="Review" value={`${graph.reviewItems?.length || 0}`} detail="Needs owner context" />
+                  <MetricCard icon="ph-prohibit" label="Unsupported" value={`${graph.unsupportedFamilies?.length || 0}`} detail="Not inferred as facts" />
+                </div>
+              </div>
+            </section>
+            <GenericRecordTable records={graph.reviewItems || []} emptyTitle="No review items" emptyDetail="No relationship review items are currently reported." />
+            <GenericRecordTable records={graph.edges || []} emptyTitle="No graph edges" emptyDetail="No relationship edges are available yet." />
+          </section>
+        </Shell>
+      )}
+    </PrivateStateGate>
+  );
+}
+
+function PipelineRoute() {
+  const [state, reload] = usePrivateLoader(async () => {
+    const [connection, clients, stages, deals, interactions] = await Promise.all([
+      ownerApi<ConnectionData>("/v1/connection"),
+      ownerApi<Array<Record<string, unknown>>>("/v1/clients").catch(() => []),
+      ownerApi<Array<Record<string, unknown>>>("/v1/pipeline-stages").catch(() => []),
+      ownerApi<Array<Record<string, unknown>>>("/v1/deals").catch(() => []),
+      ownerApi<Array<Record<string, unknown>>>("/v1/interactions").catch(() => [])
+    ]);
+    return { connection, bundle: { clients, stages, deals, interactions } as PipelineBundle };
+  });
+
+  return (
+    <PrivateStateGate state={state} title="Pipeline / CRM" detail="CompanyCore is loading CRM and workflow records." onRetry={reload}>
+      {({ connection, bundle }) => {
+        const feed = [...bundle.deals, ...bundle.clients, ...bundle.interactions, ...bundle.stages];
+        return (
+          <Shell connection={connection} appLabel="Pipeline / CRM">
+            <section className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-8">
+              <section className="card border border-base-300 bg-base-100 shadow-sm">
+                <div className="card-body gap-4">
+                  <p className="eyebrow">Commercial operating lane</p>
+                  <h1 className="text-3xl font-black">Pipeline, clients, deals, and touchpoints</h1>
+                  <div className="grid gap-3 sm:grid-cols-4">
+                    <MetricCard icon="ph-users" label="Clients" value={`${bundle.clients.length}`} detail="Relationship accounts" />
+                    <MetricCard icon="ph-flow-arrow" label="Stages" value={`${bundle.stages.length}`} detail="Reusable pipeline stages" />
+                    <MetricCard icon="ph-handshake" label="Deals" value={`${bundle.deals.length}`} detail="Commercial opportunities" />
+                    <MetricCard icon="ph-chat-circle" label="Interactions" value={`${bundle.interactions.length}`} detail="Relationship touchpoints" />
+                  </div>
+                </div>
+              </section>
+              <GenericRecordTable records={feed} emptyTitle="No pipeline records" emptyDetail="No CRM or pipeline records are available yet." />
+            </section>
+          </Shell>
+        );
+      }}
+    </PrivateStateGate>
+  );
+}
+
+function ApiSettingsRoute() {
+  const [createdKey, setCreatedKey] = useState<string | null>(null);
+  const [state, reload] = usePrivateLoader(async () => {
+    const [connection, keys, profiles, manifest] = await Promise.all([
+      ownerApi<ConnectionData>("/v1/connection"),
+      ownerApi<ApiKeyRecord[]>("/v1/api-keys"),
+      ownerApi<AgentKeyProfile[]>("/v1/api-keys/profiles"),
+      ownerApi<McpManifest>("/v1/mcp/manifest")
+    ]);
+    return { connection, keys, profiles, manifest };
+  });
+
+  async function createKey(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const profileId = String(form.get("profileId") || "");
+    const name = String(form.get("name") || "Agent service key");
+    const result = await ownerApi<ApiKeyRecord & { key?: string }>("/v1/api-keys", {
+      method: "POST",
+      body: JSON.stringify({ name, profileId })
+    });
+    setCreatedKey(result.key || null);
+    reload();
+  }
+
+  return (
+    <PrivateStateGate state={state} title="Agent access" detail="CompanyCore is loading API keys and MCP capability context." onRetry={reload}>
+      {({ connection, keys, profiles, manifest }) => (
+        <Shell connection={connection} appLabel="Agent access">
+          <section className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-8">
+            <section className="card border border-base-300 bg-base-100 shadow-sm">
+              <div className="card-body gap-4">
+                <p className="eyebrow">Agent service keys</p>
+                <h1 className="text-3xl font-black">Least-privilege access for Jarvis and Paperclip</h1>
+                <div className="grid gap-3 sm:grid-cols-4">
+                  <MetricCard icon="ph-key" label="Keys" value={`${keys.length}`} detail="Workspace service keys" />
+                  <MetricCard icon="ph-check-circle" label="Active" value={`${keys.filter((key) => key.active).length}`} detail="Currently usable keys" />
+                  <MetricCard icon="ph-robot" label="MCP tools" value={`${manifest.tools.length}`} detail="Visible tool manifest" />
+                  <MetricCard icon="ph-shield-warning" label="Supervised" value={`${manifest.tools.filter((tool) => tool.requiresApproval).length}`} detail="Approval-aware tools" />
+                </div>
+              </div>
+            </section>
+            <section className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
+              <form className="card border border-base-300 bg-base-100 shadow-sm" onSubmit={createKey}>
+                <div className="card-body gap-4">
+                  <h2 className="text-xl font-black">Create scoped key</h2>
+                  <label className="form-control">
+                    <span className="label-text font-bold">Key name</span>
+                    <input className="input input-bordered" name="name" placeholder="Jarvis operator" required />
+                  </label>
+                  <label className="form-control">
+                    <span className="label-text font-bold">Profile</span>
+                    <select className="select select-bordered" name="profileId" defaultValue={profiles[0]?.id || ""}>
+                      {profiles.map((profile) => <option value={profile.id} key={profile.id}>{profile.label}</option>)}
+                    </select>
+                  </label>
+                  <button className="btn btn-primary" type="submit">Create key</button>
+                  {createdKey ? <LocalNotice tone="warning" title="Copy once" detail={createdKey} /> : null}
+                </div>
+              </form>
+              <GenericRecordTable records={keys as unknown as Array<Record<string, unknown>>} emptyTitle="No service keys" emptyDetail="Create a scoped key when an agent needs access." />
+            </section>
+          </section>
+        </Shell>
+      )}
+    </PrivateStateGate>
+  );
+}
+
+type GoogleDriveFolderOption = {
+  id: string;
+  name: string;
+  path: string;
+  parentId: string | null;
+  parents?: string[];
+  depth: number;
+  selected: boolean;
+  selectedAncestor: boolean;
+  selectedDescendantCount: number;
+  imported: boolean;
+  directImportedItemCount: number;
+  childCount: number;
+  descendantCount: number;
+  webViewLink?: string;
+  modifiedTime?: string;
+};
+
+function DriveSettingsRoute() {
+  const [state, reload] = usePrivateLoader(async () => {
+    const [connection, files, folders] = await Promise.all([
+      ownerApi<ConnectionData>("/v1/connection"),
+      ownerApi<GoogleDriveFileRecord[]>("/v1/google-drive/files").catch(() => []),
+      ownerApi<GoogleDriveFolderOption[]>("/v1/integration-settings/google_drive/folders/discover").catch(() => [])
+    ]);
+    return { connection, files, folders };
+  });
+  const [folderSearch, setFolderSearch] = useState("");
+  const [showSelectedOnly, setShowSelectedOnly] = useState(false);
+  const [selectedFolderIds, setSelectedFolderIds] = useState<Set<string>>(new Set());
+  const [driveNotice, setDriveNotice] = useState<{ tone: NoticeTone; title: string; detail: string } | null>(null);
+  const [driveAction, setDriveAction] = useState<"save" | "import" | "reconcile" | null>(null);
+
+  const folders = state.status === "ready" ? state.data.folders : [];
+  const files = state.status === "ready" ? state.data.files : [];
+  const folderById = useMemo(() => new Map(folders.map((folder) => [folder.id, folder])), [folders]);
+
+  useEffect(() => {
+    if (state.status === "ready") {
+      setSelectedFolderIds(new Set(state.data.folders.filter((folder) => folder.selected).map((folder) => folder.id)));
+    }
+  }, [state]);
+
+  function folderHasSelectedAncestor(folder: GoogleDriveFolderOption, selectedIds = selectedFolderIds) {
+    const visited = new Set<string>();
+    let parentId = folder.parentId;
+    while (parentId && !visited.has(parentId)) {
+      if (selectedIds.has(parentId)) {
+        return true;
+      }
+      visited.add(parentId);
+      parentId = folderById.get(parentId)?.parentId ?? null;
+    }
+    return false;
+  }
+
+  const visibleFolders = useMemo(() => {
+    const query = folderSearch.trim().toLowerCase();
+    return folders.filter((folder) => {
+      const selected = selectedFolderIds.has(folder.id);
+      const includedByAncestor = folderHasSelectedAncestor(folder);
+      const matchesQuery = !query || folder.path.toLowerCase().includes(query) || folder.name.toLowerCase().includes(query);
+      const matchesScope = !showSelectedOnly || selected || includedByAncestor;
+      return matchesQuery && matchesScope;
+    });
+  }, [folders, folderSearch, showSelectedOnly, selectedFolderIds, folderById]);
+
+  const includedFolderCount = useMemo(() => (
+    folders.filter((folder) => selectedFolderIds.has(folder.id) || folderHasSelectedAncestor(folder)).length
+  ), [folders, selectedFolderIds, folderById]);
+
+  const selectedFolders = useMemo(() => (
+    folders.filter((folder) => selectedFolderIds.has(folder.id))
+  ), [folders, selectedFolderIds]);
+
+  function toggleFolder(folderId: string) {
+    setSelectedFolderIds((current) => {
+      const next = new Set(current);
+      if (next.has(folderId)) {
+        next.delete(folderId);
+      } else {
+        next.add(folderId);
+      }
+      return next;
+    });
+  }
+
+  async function saveDriveFolders() {
+    const folderIds = Array.from(selectedFolderIds);
+    setDriveAction("save");
+    setDriveNotice(null);
+    try {
+      await ownerApi("/v1/integration-settings/google_drive", {
+        method: "PUT",
+        body: JSON.stringify({
+          active: true,
+          config: {
+            selectedFolderIds: folderIds,
+            rootFolderIds: folderIds,
+            importMode: "merge"
+          }
+        })
+      });
+      setDriveNotice({ tone: "success", title: "Drive scope saved", detail: `${folderIds.length} root folder${folderIds.length === 1 ? "" : "s"} selected for import.` });
+      reload();
+    } catch (error) {
+      setDriveNotice({ tone: "error", title: "Drive scope was not saved", detail: apiErrorMessage(error) });
+    } finally {
+      setDriveAction(null);
+    }
+  }
+
+  async function runDriveAction(action: "import" | "reconcile") {
+    const folderIds = Array.from(selectedFolderIds);
+    setDriveAction(action);
+    setDriveNotice(null);
+    try {
+      if (action === "import") {
+        await ownerApi("/v1/integration-settings/google_drive/import", {
+          method: "POST",
+          body: JSON.stringify({
+            importMode: "merge",
+            folderIds: folderIds.length > 0 ? folderIds : undefined
+          })
+        });
+      } else {
+        await ownerApi("/v1/integration-settings/google_drive/changes/reconcile", { method: "POST", body: JSON.stringify({}) });
+      }
+      setDriveNotice({
+        tone: "success",
+        title: action === "import" ? "Drive import finished" : "Drive reconcile finished",
+        detail: action === "import" ? `${folderIds.length} selected root folder${folderIds.length === 1 ? "" : "s"} processed.` : "CompanyCore checked Drive changes for the active token."
+      });
+      reload();
+    } catch (error) {
+      setDriveNotice({
+        tone: "error",
+        title: action === "import" ? "Drive import failed" : "Drive reconcile failed",
+        detail: apiErrorMessage(error)
+      });
+    } finally {
+      setDriveAction(null);
+    }
+  }
+
+  return (
+    <PrivateStateGate state={state} title="Google Drive" detail="CompanyCore is loading Drive integration status and imported files." onRetry={reload}>
+      {({ connection }) => (
+        <Shell connection={connection} appLabel="Google Drive">
+          <section className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-8">
+            <section className="card border border-base-300 bg-base-100 shadow-sm">
+              <div className="card-body gap-4">
+                <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
+                  <div>
+                    <p className="eyebrow">Knowledge bridge</p>
+                    <h1 className="text-3xl font-black">Google Drive files mapped to company areas</h1>
+                    <p className="text-sm leading-6 text-company-muted">OAuth setup remains backend-backed; this React surface shows readiness, imported files, and safe sync actions.</p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button className="btn btn-outline" type="button" onClick={() => void saveDriveFolders()} disabled={driveAction !== null}>
+                      {driveAction === "save" ? "Saving..." : "Save scope"}
+                    </button>
+                    <button className="btn btn-outline" type="button" onClick={() => void runDriveAction("import")} disabled={driveAction !== null || selectedFolderIds.size === 0}>
+                      {driveAction === "import" ? "Importing..." : "Import selected"}
+                    </button>
+                    <button className="btn btn-primary" type="button" onClick={() => void runDriveAction("reconcile")} disabled={driveAction !== null}>Reconcile</button>
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-4">
+                  <MetricCard icon="ph-cloud" label="Status" value={connection.integrations.googleDrive.active ? "Active" : "Setup"} detail="Google Drive connection" />
+                  <MetricCard icon="ph-tree-structure" label="Scope" value={`${selectedFolderIds.size}`} detail={`${includedFolderCount} folders included`} />
+                  <MetricCard icon="ph-folder" label="Folders" value={`${files.filter((file) => file.isFolder).length}`} detail="Imported folders" />
+                  <MetricCard icon="ph-file" label="Files" value={`${files.filter((file) => !file.isFolder).length}`} detail="Imported files" />
+                </div>
+                {driveNotice ? <LocalNotice tone={driveNotice.tone} title={driveNotice.title} detail={driveNotice.detail} /> : null}
+              </div>
+            </section>
+            <section className="card border border-base-300 bg-base-100 shadow-sm">
+              <div className="card-body gap-4">
+                <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-end">
+                  <label className="form-control">
+                    <span className="label-text font-bold">Folder search</span>
+                    <input
+                      className="input input-bordered"
+                      value={folderSearch}
+                      onChange={(event) => setFolderSearch(event.target.value)}
+                      placeholder="Search folder path"
+                    />
+                  </label>
+                  <label className="flex items-center gap-2 rounded border border-base-300 px-3 py-3 text-sm font-bold">
+                    <input
+                      className="checkbox checkbox-sm"
+                      type="checkbox"
+                      checked={showSelectedOnly}
+                      onChange={(event) => setShowSelectedOnly(event.target.checked)}
+                    />
+                    Selected scope
+                  </label>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <MetricCard icon="ph-check-square" label="Selected roots" value={`${selectedFolders.length}`} detail={selectedFolders.slice(0, 2).map((folder) => folder.name).join(", ") || "No root selected"} />
+                  <MetricCard icon="ph-folder-notch-open" label="Visible folders" value={`${visibleFolders.length}`} detail={`${folders.length} discovered from Drive`} />
+                  <MetricCard icon="ph-database" label="Imported items" value={`${files.length}`} detail={`${files.filter((file) => file.operatingAreaId).length} mapped to areas`} />
+                </div>
+                <div className="overflow-hidden rounded border border-base-300">
+                  {visibleFolders.length === 0 ? (
+                    <div className="p-4">
+                      <LocalNotice tone="warning" title="No folders matched" detail="Change the search or reload Drive after OAuth is connected." />
+                    </div>
+                  ) : (
+                    <div className="max-h-[34rem] overflow-auto divide-y divide-base-300">
+                      {visibleFolders.map((folder) => {
+                        const selected = selectedFolderIds.has(folder.id);
+                        const includedByAncestor = !selected && folderHasSelectedAncestor(folder);
+                        return (
+                          <div className="grid gap-3 p-3 lg:grid-cols-[1fr_auto] lg:items-center" key={folder.id}>
+                            <label className="flex min-w-0 items-start gap-3" style={{ paddingLeft: `${Math.min(folder.depth, 8) * 1.1}rem` }}>
+                              <input
+                                className="checkbox checkbox-sm mt-1 flex-none"
+                                type="checkbox"
+                                checked={selected}
+                                onChange={() => toggleFolder(folder.id)}
+                              />
+                              <span className="min-w-0">
+                                <span className="flex flex-wrap items-center gap-2">
+                                  <span className="font-black">{folder.name}</span>
+                                  {selected ? <span className="badge badge-primary">root</span> : null}
+                                  {includedByAncestor ? <span className="badge badge-ghost">included</span> : null}
+                                  {folder.imported ? <span className="badge badge-success">imported</span> : null}
+                                </span>
+                                <span className="block truncate text-xs text-company-muted">{folder.path}</span>
+                              </span>
+                            </label>
+                            <div className="flex flex-wrap justify-start gap-2 text-xs text-company-muted lg:justify-end">
+                              <span className="badge badge-outline">{folder.childCount} child</span>
+                              <span className="badge badge-outline">{folder.descendantCount} nested</span>
+                              <span className="badge badge-outline">{folder.directImportedItemCount} imported</span>
+                              {folder.webViewLink ? <a className="btn btn-ghost btn-xs" href={folder.webViewLink} target="_blank" rel="noreferrer">Open</a> : null}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
+            <GenericRecordTable records={files as unknown as Array<Record<string, unknown>>} emptyTitle="No Drive files" emptyDetail="Connect Google Drive and import folders to populate this workbench." />
+          </section>
+        </Shell>
+      )}
+    </PrivateStateGate>
+  );
+}
+
+function ClickUpSettingsRoute() {
+  const [state, reload] = usePrivateLoader(async () => ownerApi<ConnectionData>("/v1/connection"));
+  return (
+    <PrivateStateGate state={state} title="ClickUp bridge" detail="CompanyCore is loading ClickUp readiness." onRetry={reload}>
+      {(connection) => (
+        <Shell connection={connection} appLabel="ClickUp bridge">
+          <section className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-8">
+            <section className="card border border-base-300 bg-base-100 shadow-sm">
+              <div className="card-body gap-4">
+                <p className="eyebrow">Task provider</p>
+                <h1 className="text-3xl font-black">ClickUp bridge</h1>
+                <p className="text-sm leading-6 text-company-muted">The legacy token/list form has been retired from vanilla. This React surface keeps provider status visible while the next React slice adds the full guided connector form.</p>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <MetricCard icon="ph-plugs" label="Configured" value={connection.integrations.clickup.configured ? "Yes" : "No"} detail="Token saved in CompanyCore" />
+                  <MetricCard icon="ph-power" label="Active" value={connection.integrations.clickup.active ? "Yes" : "No"} detail="Sync enabled flag" />
+                  <MetricCard icon="ph-list-checks" label="Lists" value={`${connection.integrations.clickup.config?.listIds?.length || 0}`} detail="Selected ClickUp Lists" />
+                </div>
+                <LocalNotice tone="info" title="Next React slice" detail="ClickUp discovery and list selection will be rebuilt as React components against the existing /v1/integration-settings/clickup routes." />
+              </div>
+            </section>
+          </section>
+        </Shell>
+      )}
+    </PrivateStateGate>
+  );
+}
+
 function ReadyDashboard({ connection }: { connection: ConnectionData }) {
   return <AreaFirstDashboard connection={connection} />;
 }
@@ -7501,9 +8302,64 @@ function ReactAgentToolsApp() {
 }
 
 function ReactApp() {
+  if (window.location.pathname === "/auth/login") {
+    document.title = "CompanyCore Sign in";
+    return <AuthRoute mode="login" />;
+  }
+
+  if (window.location.pathname === "/auth/register") {
+    document.title = "CompanyCore Create account";
+    return <AuthRoute mode="register" />;
+  }
+
   if (window.location.pathname === "/areas" || window.location.pathname === "/react-areas") {
     document.title = "CompanyCore React Areas";
     return <ReactAreasApp />;
+  }
+
+  if (window.location.pathname === "/relationships") {
+    document.title = "CompanyCore Relationships";
+    return <RelationshipsRoute />;
+  }
+
+  if (window.location.pathname === "/data" || window.location.pathname.startsWith("/data/")) {
+    document.title = "CompanyCore Data";
+    return <DataRoute />;
+  }
+
+  if (window.location.pathname === "/tasks-adapter" || window.location.pathname === "/react-tasks") {
+    document.title = "CompanyCore Tasks";
+    return <ReactTasksApp />;
+  }
+
+  if (window.location.pathname === "/pipeline") {
+    document.title = "CompanyCore Pipeline";
+    return <PipelineRoute />;
+  }
+
+  if (window.location.pathname === "/settings/account") {
+    document.title = "CompanyCore Account";
+    return <AccountSettingsRoute />;
+  }
+
+  if (window.location.pathname === "/settings/integrations" || window.location.pathname === "/react-integrations") {
+    document.title = "CompanyCore Integrations";
+    return <ReactIntegrationsApp />;
+  }
+
+  if (window.location.pathname === "/settings/drive") {
+    document.title = "CompanyCore Google Drive";
+    return <DriveSettingsRoute />;
+  }
+
+  if (window.location.pathname === "/settings/api") {
+    document.title = "CompanyCore Agent Access";
+    return <ApiSettingsRoute />;
+  }
+
+  if (window.location.pathname === "/settings") {
+    document.title = "CompanyCore ClickUp Bridge";
+    return <ClickUpSettingsRoute />;
   }
 
   if (window.location.pathname === "/react-company-os") {
@@ -7514,16 +8370,6 @@ function ReactApp() {
   if (window.location.pathname === "/react-agent-tools") {
     document.title = "CompanyCore Agent Tools";
     return <ReactAgentToolsApp />;
-  }
-
-  if (window.location.pathname === "/react-tasks") {
-    document.title = "CompanyCore React Tasks";
-    return <ReactTasksApp />;
-  }
-
-  if (window.location.pathname === "/react-integrations") {
-    document.title = "CompanyCore React Integrations";
-    return <ReactIntegrationsApp />;
   }
 
   document.title = "CompanyCore Company Atlas";

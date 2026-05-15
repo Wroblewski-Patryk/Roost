@@ -344,7 +344,7 @@ integrationSettingsRouter.get("/google_drive/folders/discover", asyncHandler(asy
       : {};
     const selectedFolderIds = new Set(config.selectedFolderIds ?? config.rootFolderIds ?? []);
     const client = await getGoogleDriveClientForWorkspace(req.auth!.workspaceId);
-    const folders: Array<{
+    const discoveredFolders: Array<{
       id: string;
       name: string;
       parents?: string[];
@@ -354,15 +354,17 @@ integrationSettingsRouter.get("/google_drive/folders/discover", asyncHandler(asy
       selected: boolean;
     }> = [];
     let pageToken: string | undefined;
+    let pagesScanned = 0;
 
-    for (let page = 0; page < 5; page += 1) {
+    for (let page = 0; page < 20; page += 1) {
       const response = await client.listFiles({
         query: "mimeType = 'application/vnd.google-apps.folder' and trashed = false",
         pageToken,
         pageSize: 100,
         fields: "nextPageToken,files(id,name,mimeType,driveId,parents,webViewLink,modifiedTime)"
       });
-      folders.push(...(response.files ?? []).filter((folder) => (
+      pagesScanned += 1;
+      discoveredFolders.push(...(response.files ?? []).filter((folder) => (
         folder.id
         && folder.name
         && folder.mimeType === "application/vnd.google-apps.folder"
@@ -381,8 +383,154 @@ integrationSettingsRouter.get("/google_drive/folders/discover", asyncHandler(asy
       pageToken = response.nextPageToken;
     }
 
-    folders.sort((left, right) => left.name.localeCompare(right.name));
-    return res.json({ data: folders });
+    const foldersById = new Map(discoveredFolders.map((folder) => [folder.id, folder]));
+    const folderIds = Array.from(foldersById.keys());
+    const directImportedCounts = new Map<string, number>();
+    const importedFolderIds = new Set<string>();
+
+    if (folderIds.length > 0) {
+      const [childCounts, importedFolders] = await Promise.all([
+        prisma.googleDriveFile.groupBy({
+          by: ["parentExternalId"],
+          where: {
+            workspaceId: req.auth!.workspaceId,
+            trashed: false,
+            parentExternalId: { in: folderIds }
+          },
+          _count: { _all: true }
+        }),
+        prisma.googleDriveFile.findMany({
+          where: {
+            workspaceId: req.auth!.workspaceId,
+            provider: "google_drive",
+            isFolder: true,
+            externalId: { in: folderIds }
+          },
+          select: { externalId: true }
+        })
+      ]);
+
+      for (const count of childCounts) {
+        if (count.parentExternalId) {
+          directImportedCounts.set(count.parentExternalId, count._count._all);
+        }
+      }
+      for (const folder of importedFolders) {
+        importedFolderIds.add(folder.externalId);
+      }
+    }
+
+    const primaryParentById = new Map<string, string | null>();
+    const childrenByParent = new Map<string, typeof discoveredFolders>();
+    const compareFolders = (left: { name: string }, right: { name: string }) => (
+      left.name.localeCompare(right.name, undefined, { numeric: true, sensitivity: "base" })
+    );
+
+    for (const folder of discoveredFolders) {
+      const knownParent = folder.parents?.find((parentId) => foldersById.has(parentId));
+      const parentId = knownParent ?? folder.parents?.[0] ?? null;
+      primaryParentById.set(folder.id, parentId);
+
+      if (knownParent) {
+        const children = childrenByParent.get(knownParent) ?? [];
+        children.push(folder);
+        childrenByParent.set(knownParent, children);
+      }
+    }
+
+    for (const children of childrenByParent.values()) {
+      children.sort(compareFolders);
+    }
+
+    const roots = discoveredFolders
+      .filter((folder) => {
+        const parentId = primaryParentById.get(folder.id);
+        return !parentId || !foldersById.has(parentId);
+      })
+      .sort(compareFolders);
+
+    const descendantCount = (folderId: string, seen = new Set<string>()): number => {
+      if (seen.has(folderId)) {
+        return 0;
+      }
+      seen.add(folderId);
+      const children = childrenByParent.get(folderId) ?? [];
+      return children.reduce((count, child) => count + 1 + descendantCount(child.id, new Set(seen)), 0);
+    };
+
+    const selectedDescendantCount = (folderId: string, seen = new Set<string>()): number => {
+      if (seen.has(folderId)) {
+        return 0;
+      }
+      seen.add(folderId);
+      const children = childrenByParent.get(folderId) ?? [];
+      return children.reduce((count, child) => (
+        count
+        + (selectedFolderIds.has(child.id) ? 1 : 0)
+        + selectedDescendantCount(child.id, new Set(seen))
+      ), 0);
+    };
+
+    const organizedFolders: Array<{
+      id: string;
+      name: string;
+      parents?: string[];
+      parentId: string | null;
+      driveId?: string;
+      webViewLink?: string;
+      modifiedTime?: string;
+      selected: boolean;
+      selectedAncestor: boolean;
+      selectedDescendantCount: number;
+      imported: boolean;
+      directImportedItemCount: number;
+      childCount: number;
+      descendantCount: number;
+      depth: number;
+      path: string;
+    }> = [];
+
+    const walk = (folder: (typeof discoveredFolders)[number], ancestors: Array<{ id: string; name: string }>) => {
+      const children = childrenByParent.get(folder.id) ?? [];
+      const pathParts = [...ancestors.map((ancestor) => ancestor.name), folder.name];
+      organizedFolders.push({
+        id: folder.id,
+        name: folder.name,
+        parents: folder.parents,
+        parentId: primaryParentById.get(folder.id) ?? null,
+        driveId: folder.driveId,
+        webViewLink: folder.webViewLink,
+        modifiedTime: folder.modifiedTime,
+        selected: selectedFolderIds.has(folder.id),
+        selectedAncestor: ancestors.some((ancestor) => selectedFolderIds.has(ancestor.id)),
+        selectedDescendantCount: selectedDescendantCount(folder.id),
+        imported: importedFolderIds.has(folder.id),
+        directImportedItemCount: directImportedCounts.get(folder.id) ?? 0,
+        childCount: children.length,
+        descendantCount: descendantCount(folder.id),
+        depth: ancestors.length,
+        path: pathParts.join(" / ")
+      });
+      for (const child of children) {
+        walk(child, [...ancestors, { id: folder.id, name: folder.name }]);
+      }
+    };
+
+    for (const root of roots) {
+      walk(root, []);
+    }
+
+    return res.json({
+      data: organizedFolders,
+      meta: {
+        totalFolders: organizedFolders.length,
+        selectedFolderCount: selectedFolderIds.size,
+        importedFolderCount: importedFolderIds.size,
+        rootCount: roots.length,
+        pagesScanned,
+        truncated: Boolean(pageToken)
+      }
+    });
   } catch (error) {
     if (error instanceof IntegrationError) {
       return res.status(error.status).json({ error: error.code });

@@ -6,23 +6,29 @@ No ready implementation task is queued.
 
 ## In Progress
 
-No active implementation task is in progress.
-
-## Blocked
-
+- GD-IMPORT-UX-001 Google Drive folder import organization.
+  - Stage: release
+  - Owner: Backend Builder + Frontend Builder + Ops/Release
+  - Priority: P0
+  - Goal: make `/settings/drive` show Drive folders as an organized import
+    scope instead of a flat list, then deploy and smoke the CompanyCore ->
+    Google Drive path.
+  - Evidence so far: production OAuth status now decrypts successfully and
+    reports both refresh and access tokens present; `npm run validate` passed.
+    `npm test` reached the build gate but stopped before API tests because the
+    local host has no `DATABASE_URL`.
 - JARVIS-GDRIVE-001 Jarvis CompanyCore Google Drive E2E.
   - Stage: verification
-  - Owner: Backend Builder + Ops/Release
+  - Owner: Backend Builder + Ops/Release + Jarvis agent
   - Priority: P0
   - Source:
     `docs/planning/jarvis-companycore-google-drive-e2e-task-contract.md`
-  - Blocked by: production Google Drive OAuth ciphertext cannot be decrypted
-    with the current `INTEGRATION_SECRET_KEY`; protected content refresh now
-    returns controlled `401 integration_invalid_token`.
-  - Next action: restore the matching integration secret or complete owner
-    Google Drive OAuth re-consent from `/settings/drive`, then ask the Jarvis
-    agent to run the two-file creation/readback smoke in folder
-    `12. Zarządzanie`.
+  - Current state: owner OAuth re-consent is complete in production. Waiting
+    for this Drive import organization deploy and the Jarvis agent two-file
+    creation/readback smoke in folder `12. ZarzÄ…dzanie`.
+
+## Blocked
+
 - AGRUN-010 Upstream Agent Source Merge Execution
   - Stage: planning
   - Owner: Ops/Release
@@ -65,6 +71,26 @@ No active implementation task is in progress.
   auto-deploy webhook administration task.
 
 ## Done
+
+- REACT-WEB-001 React web layer consolidation.
+  - Evidence: all user-facing web routes are now served through the React/Vite
+    bundle instead of `public/index.html`. Removed active vanilla web files:
+    `public/app.js`, `public/styles.css`, `public/index.html`,
+    `public/relationship-workbench.js`, and
+    `public/google-drive-workbench.js`.
+  - Validation: `npm run validate` passed. Playwright signed-out proof covered
+    auth pages and private-route login redirects. Playwright signed-in
+    mocked-backend proof covered `/dashboard`, `/areas`, `/tasks-adapter`,
+    `/settings/integrations`, `/react-agent-tools`, `/relationships`, `/data`,
+    `/pipeline`, `/settings/api`, `/settings/drive`, `/settings/account`, and
+    `/settings` with no old vanilla scripts, no old public shell, no console
+    errors, no route error panels, and no horizontal overflow.
+  - Residual risk: full ClickUp setup and full Google Drive OAuth/folder
+    selection need dedicated React rebuild slices; current React routes expose
+    real backend status and safe actions without copying the legacy vanilla
+    forms.
+  - Task contract:
+    `docs/planning/react-web-consolidation-task-contract.md`.
 
 - V1AUTH-001 Owner auth redirect flow.
   - Evidence: private React routes with missing owner sessions now redirect to

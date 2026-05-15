@@ -4,10 +4,10 @@
 - ID: JARVIS-GDRIVE-001
 - Title: Jarvis CompanyCore Google Drive Docs and Sheets write path
 - Task Type: fix | release
-- Current Stage: verification
-- Status: BLOCKED
+- Current Stage: release
+- Status: PARTIAL
 - Owner: Backend Builder + Ops/Release
-- Depends on: valid production Google Drive OAuth secret or owner re-consent
+- Depends on: Drive import organization deploy and Jarvis agent smoke
 - Priority: P0
 - Module Confidence Rows: Google Drive integration; Ops / release
 - Requirement Rows: REQ-JARVIS-GDRIVE-001
@@ -15,7 +15,7 @@
 - Iteration: 2026-05-15
 - Operation Mode: BUILDER
 - Mission ID: JARVIS-GDRIVE-001
-- Mission Status: BLOCKED
+- Mission Status: PARTIAL
 
 ## Process Self-Audit
 - [x] All seven autonomous loop steps are planned.
@@ -42,6 +42,18 @@
   runtime lacks a valid CompanyCore API key; production write smoke fails.
 - Handoff expectation: Jarvis agent receives exact smoke scenario and must
   create/read the two required files through CompanyCore.
+
+## 2026-05-15 Continuation
+- Owner Google Drive OAuth re-consent is complete in production; the active
+  Google Drive setting decrypts successfully and has refresh/access tokens.
+- New release slice: organize Drive folder discovery and `/settings/drive`
+  import selection so owners can see selected root folders, included
+  descendants, imported folders, and direct imported item counts before import.
+- Validation: `npm run validate` passed. `npm test` reached the build gate but
+  stopped before API tests because this host has no `DATABASE_URL`.
+- Next release gate: deploy the import organization patch, run protected Drive
+  smoke, then hand the exact Docs/Sheets create/readback scenario to the Jarvis
+  agent.
 
 ## Context
 Jarvis already has CompanyCore tools. A previous production test showed

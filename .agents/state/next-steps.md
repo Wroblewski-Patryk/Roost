@@ -14,13 +14,21 @@ Last updated: 2026-05-15
 
 ## NEXT
 
-1. AGRUN-010 Upstream Agent Source Merge Execution.
+1. REACT-WEB-002 ClickUp setup React workflow.
+   - Rebuild the former `/settings` ClickUp token discovery, workspace/list
+     selection, save, and maintenance run controls as React components against
+     the existing `/v1/integration-settings/clickup*` contracts.
+2. REACT-WEB-003 Google Drive OAuth/folder-selection React workflow.
+   - Rebuild OAuth client save, authorize URL, authorization-code exchange,
+     folder discovery, folder selection, import, and reconcile as React
+     components against the existing Google Drive integration routes.
+3. AGRUN-010 Upstream Agent Source Merge Execution.
    - Blocked until upstream write access or an approved fork/PR route exists.
-2. Production push-to-running-image smoke after the next deploy.
+4. Production push-to-running-image smoke after the next deploy.
    - Build metadata restoration is implemented locally; after deploy, compare
      public `/health` `build.commit` with the pushed commit before claiming
      auto-deploy proof.
-3. V1AREA follow-up verification and route convergence.
+5. V1AREA follow-up verification and route convergence.
    - First unblock the host API gate by setting a valid local `DATABASE_URL`
      and running `npm run test:api` for the new `/dashboard` routing.
    - Then start V1AREA-002 as a narrow `/areas` route convergence or

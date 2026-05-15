@@ -79,6 +79,12 @@ continue from repository files alone:
   knowledge, resources, KPIs, audit, decisions, web/mobile clients, MCP, and
   Paperclip. Future work must reuse existing Company OS and operating-model
   tables before adding duplicate target-named tables.
+- `docs/architecture/web-layer-react-ownership.md`: current web route
+  ownership contract. As of 2026-05-15, user-facing web routes are React-owned
+  and served from the Vite bundle in `public/react/index.html`. The legacy
+  vanilla owner console files under `public/` are removed from active runtime
+  ownership. Future web slices must extend `web/src/` instead of reintroducing
+  page-local vanilla scripts.
 - `docs/architecture/relationship-graph-audit-2026-05-14.md`: current
   relationship graph source audit for the pre-V2 web/backend/MCP foundation.
   Relationship APIs and UI must distinguish direct database edges,
