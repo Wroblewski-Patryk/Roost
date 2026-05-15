@@ -61,17 +61,21 @@ No active implementation task is in progress.
 - Future v2 dashboard surfaces that show ClickUp Lists, Drive folders/files,
   storage locations, knowledge roots, automations, and CompanyCore tables as
   one company operating area.
-- Production push-to-running-image smoke after the next deploy.
-  - Stage: verification
-  - Owner: Ops/Release
-  - Priority: P2
-  - Source: `docs/planning/acf-ops-002-build-metadata-health-task-contract.md`
-  - Goal: compare public `/health` `build.commit` with the pushed commit after
-    deployment before claiming auto-deploy proof.
 - Upstream OpenJarvis/Paperclip source merge execution and blocked GitHub
   auto-deploy webhook administration task.
 
 ## Done
+
+- V1AREA-001 production manual rollover to `df99969`.
+  - Evidence: Coolify redeploy did not update the running image; public
+    `/health` still reported `fb6aca9`. The approved archive-based manual VPS
+    rollover built `rnqqkhl3o3dut4qv56mlxly2_backend:df99969`, started
+    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-df99969`, verified container
+    health, then stopped and retained the previous
+    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-fb6aca9-previous-df99969`
+    rollback container. Public web/API `/health` now report
+    `build.commit="df99969"`, and public `/dashboard` serves
+    `index-0as746Hb.js` plus `index-Dafh8u4t.css`.
 
 - V1AREA-001 Area-First Dashboard Pixel-Perfect Implementation.
   - Evidence: `/dashboard` now serves the React V1 area-first Company Atlas

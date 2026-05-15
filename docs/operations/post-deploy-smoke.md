@@ -40,6 +40,42 @@ Use this file to record the minimum checks after each deploy.
 
 ## Evidence
 
+- Timestamp: 2026-05-15 16:23 +02:00
+- Environment: production VPS Docker backend
+- Purpose: V1AREA-001 production update after Coolify redeploy left the public
+  runtime on the old image.
+- Deployment:
+  - Manual VPS backend rollover to commit `df99969`.
+  - Runtime image: `rnqqkhl3o3dut4qv56mlxly2_backend:df99969`.
+  - Running backend container:
+    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-df99969`.
+  - Previous backend container retained stopped as rollback:
+    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-fb6aca9-previous-df99969`.
+  - Production Postgres container
+    `postgres-rnqqkhl3o3dut4qv56mlxly2-140735959479` remained running and
+    healthy.
+- Local/source checks:
+  - `npm run validate`: passed before rollover.
+  - `git diff --check`: passed before rollover.
+  - Docker image build from local `git archive` for `df99969`: passed.
+- Public smoke:
+  - `GET https://companycore.luckysparrow.ch/health` returned `200` with
+    build commit `df99969`.
+  - `GET https://api.companycore.luckysparrow.ch/health` returned `200` with
+    build commit `df99969`.
+  - `GET https://companycore.luckysparrow.ch/dashboard` returned the React
+    dashboard HTML with current assets `index-0as746Hb.js` and
+    `index-Dafh8u4t.css`.
+- Deployment-path verdict:
+  - GitHub push reached `origin/main`, but Coolify redeploy did not update the
+    running image. Manual VPS rollover remains the accepted release path until
+    GitHub-to-Coolify auto-deploy is proven with matching public build
+    metadata.
+- Cleanup:
+  - Temporary VPS archive, source directory, env file, label file, container id
+    file, health file, and rollout/build scripts were removed from `/tmp`.
+  - Temporary local source archive and scripts were removed.
+
 - Timestamp: 2026-05-15
 - Environment: production VPS Docker backend
 - Purpose: JARVIS-GDRIVE-001 OAuth reconnect repair deploy.

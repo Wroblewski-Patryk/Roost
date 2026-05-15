@@ -103,6 +103,16 @@ Last updated: 2026-05-15
   `834x1112`, and mobile `390x844` with no overflow and no console/page
   errors; evidence screenshots are in `docs/ux/evidence/`. Host
   `npm run test:api` remains pending because local `DATABASE_URL` is unset.
+- 2026-05-15: V1AREA-001 production rollover updated CompanyCore from
+  `fb6aca9` to `df99969` through the approved manual VPS backend path after
+  Coolify redeploy left the public runtime on the old image. Public web and
+  API `/health` now report `build.commit="df99969"` and image
+  `rnqqkhl3o3dut4qv56mlxly2_backend:df99969`. Public `/dashboard` now serves
+  the current React bundle assets `index-0as746Hb.js` and
+  `index-Dafh8u4t.css`. Running backend:
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-df99969`; previous
+  `fb6aca9` backend retained stopped as rollback. Production Postgres remained
+  running and healthy.
 - 2026-05-14: Production now runs owner-console snapshot routing hotfix commit
   `a7557120b8ea4630a0b32097e66ba0d4bb012b1b`. The vanilla web shell routes
   implemented table snapshots to their correct API paths, sends Company OS
