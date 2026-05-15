@@ -155,6 +155,30 @@ of rediscovering them.
   console issues, no failed requests, route decision signals present, hidden
   desktop quick rail, and visible five-action mobile/tablet quick rail.
 
+### 2026-05-15 - Provenance And AI Readiness Badges
+- Type: reusable_pattern
+- Context: UX100-W03 made relationship and data trust visible before the V2
+  Company City and gamification direction expands the same information into a
+  richer operating map.
+- Decision: Rows and context panels that may become owner or AI/MCP context
+  should show three compact facts together: source/provenance, evidence basis,
+  and AI readiness. Use safe/review/blocked tones derived from existing state
+  such as relationship confidence, source, API route coverage, typed editor
+  availability, and operating-area mapping. Do not expose raw backend model
+  names as the main user-facing provenance label.
+- Reuse when: Rendering relationship graph rows, review queues, data modules,
+  table context panels, record lists, record inspectors, integration mapping
+  rows, MCP context previews, or future Company City map nodes.
+- Avoid when: The UI element is purely decorative, does not influence context
+  trust, or would duplicate a nearby provenance label without adding a new
+  decision signal.
+- Evidence: UX100-W03 passed `npm run check:public-js`, `npm run validate`,
+  `git diff --check`, and `npm run test:api` against portable PostgreSQL on
+  `localhost:55475`. Playwright fallback verified `/relationships`, `/data`,
+  `/data/tasks`, and `/data/clients` at desktop, tablet, and mobile with
+  provenance/AI labels present, no overflow, no console issues, no failed
+  requests, and zero unnamed visible controls.
+
 ### 2026-05-15 - Route Body Command Summary
 - Type: reusable_pattern
 - Context: V2VIS-003 polished `/areas` after route-frame convergence showed

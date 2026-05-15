@@ -4,18 +4,15 @@ Last updated: 2026-05-15
 
 ## NOW
 
-1. UX100-W03 Relationship/Data Provenance And AI Safety Labels.
-   - Improve trust by making source provenance and AI-safe context visible in
-     relationship and data surfaces.
-
-## NEXT
-
 1. UX100-W04 Tasks/Pipeline Operating Pressure Summaries.
    - Make delivery and pipeline pressure visible from real state after W03
      provenance labels are verified.
-2. AGRUN-010 Upstream Agent Source Merge Execution.
+
+## NEXT
+
+1. AGRUN-010 Upstream Agent Source Merge Execution.
    - Blocked until upstream write access or an approved fork/PR route exists.
-3. Restore build commit/image metadata in production health.
+2. Restore build commit/image metadata in production health.
    - Future deployability improvement so push-to-running-image proof can be
      captured without privileged Coolify inspection.
 

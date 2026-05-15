@@ -2,13 +2,13 @@
 
 ## Ready
 
-- UX100-W03 Relationship/Data Provenance And AI Safety Labels
+- UX100-W04 Tasks/Pipeline Operating Pressure Summaries
   - Stage: planning
   - Owner: Frontend Builder + QA/Test
   - Priority: P1
   - Source: `docs/ux/web-app-ux100-audit-and-execution-plan-2026-05-15.md`
-  - Goal: improve trust by making source provenance and AI-safe context visible
-    in relationship and data surfaces.
+  - Goal: make delivery and pipeline pressure visible from real state after
+    W03 provenance labels are verified.
 
 ## In Progress
 
@@ -58,6 +58,25 @@ No active local implementation task is currently in progress.
   auto-deploy webhook administration task.
 
 ## Done
+
+- UX100-W03 Relationship/Data Provenance And AI Safety Labels.
+  - Evidence: added relationship and data provenance/readiness labels derived
+    from existing confidence, source, API route, typed-editor, and operating
+    area state. `/relationships` now distinguishes CompanyCore graph,
+    provider hierarchy, route-inferred, owner-review, and unsupported families
+    with AI-safe/review/blocked labels. `/data` and `/data/:slug` now show
+    module, table, record-row, and inspector provenance plus AI readiness.
+    `npm run check:public-js`, `npm run validate`, `git diff --check`, and
+    `npm run test:api` passed against portable PostgreSQL on
+    `localhost:55475`. Playwright fallback verified `/relationships`,
+    `/data`, `/data/tasks`, and `/data/clients` on
+    `http://127.0.0.1:3122` at desktop `1366x900`, tablet `834x1112`, and
+    mobile `390x844` with provenance/AI labels present, no horizontal
+    overflow, no console issues, no failed requests, and zero unnamed visible
+    controls. Portable database and browser validation processes were cleaned
+    up.
+  - Task contract:
+    `docs/planning/ux100-w03-relationship-data-provenance-task-contract.md`.
 
 - UX100-W02 Shell Decision Brief And Mobile Quick Actions.
   - Evidence: extended the existing authenticated route command strip with

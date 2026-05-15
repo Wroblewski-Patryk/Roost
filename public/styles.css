@@ -2199,6 +2199,66 @@ h4 {
   line-height: 1;
 }
 
+.provenance-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.provenance-badge,
+.ai-safety-badge {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  min-height: 24px;
+  padding: 4px 8px;
+  border: 1px solid #d8e2f1;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.provenance-badge-source {
+  border-color: #c5d7f0;
+  background: #f6f9fe;
+  color: #2f466b;
+}
+
+.ai-safety-safe {
+  border-color: rgba(34, 197, 94, 0.32);
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.ai-safety-review {
+  border-color: rgba(217, 119, 6, 0.28);
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.ai-safety-blocked {
+  border-color: rgba(185, 28, 28, 0.22);
+  background: #fff5f5;
+  color: #b91c1c;
+}
+
+.provenance-detail {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
 .workbench-index-side {
   display: grid;
   grid-template-columns: minmax(110px, 0.7fr) minmax(130px, 1fr);
@@ -2406,6 +2466,14 @@ h4 {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.35;
+}
+
+.record-list-row .provenance-badges {
+  margin-top: 4px;
+}
+
+.record-list-row .provenance-detail {
+  font-size: 11px;
 }
 
 .record-inspector {
@@ -2984,6 +3052,28 @@ h4 {
   border-color: rgba(100, 116, 139, 0.24);
   background: #f8fafc;
   color: #475569;
+}
+
+.relationship-provenance {
+  display: grid;
+  gap: 2px;
+}
+
+.relationship-row .provenance-badges,
+.compact-row .provenance-badges {
+  margin-top: 6px;
+}
+
+.compact-row .provenance-badge,
+.compact-row .ai-safety-badge {
+  display: inline-flex;
+  font-size: 10px;
+}
+
+.compact-row .provenance-detail {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
 }
 
 .relationship-editor .scope-editor {
@@ -3800,6 +3890,22 @@ button.danger:hover {
   font-size: 13px;
   line-height: 1.4;
   overflow-wrap: anywhere;
+}
+
+.compact-row .provenance-badge-source {
+  color: #2f466b;
+}
+
+.compact-row .ai-safety-safe {
+  color: #15803d;
+}
+
+.compact-row .ai-safety-review {
+  color: #b45309;
+}
+
+.compact-row .ai-safety-blocked {
+  color: #b91c1c;
 }
 
 .scope-editor {

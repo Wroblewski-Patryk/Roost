@@ -7,15 +7,12 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] UX100-W03 Relationship/Data Provenance And AI Safety Labels:
-      improve trust by making source provenance and AI-safe context visible in
-      relationship and data surfaces.
-
-### NEXT
-
 - [ ] UX100-W04 Tasks/Pipeline Operating Pressure Summaries:
       make delivery and pipeline pressure visible from real state after W03
       provenance labels are verified.
+
+### NEXT
+
 - [ ] AGRUN-010 Upstream Agent Source Merge Execution:
       still blocked until upstream write access or an approved fork/PR route
       exists.
@@ -43,6 +40,13 @@ The section below is retained as execution evidence. It is not the active
 queue. Future work must start from `Active Queue`, `.codex/context/TASK_BOARD.md`,
 and `docs/operations/v1-function-coverage-ledger.csv`.
 
+- [x] UX100-W03 Relationship/Data Provenance And AI Safety Labels:
+      added existing-state-derived provenance and AI readiness labels to
+      relationship graph rows, review rows, data modules, table context cards,
+      record rows, and record inspectors. `npm run check:public-js`, `npm run
+      validate`, `git diff --check`, `npm run test:api` on portable
+      PostgreSQL `localhost:55475`, and Playwright fallback at desktop,
+      tablet, and mobile all passed.
 - [x] ACF-DOC-001 Coverage Ledger Reconciliation:
       stale Drive first-import blocker language was reconciled across
       architecture, function-coverage audit, project-control, system-health,

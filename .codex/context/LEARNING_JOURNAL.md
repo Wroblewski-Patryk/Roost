@@ -401,3 +401,23 @@ fixes for this repository.
   was reachable on `localhost:55475`. After freeing validation artifacts and
   starting portable PostgreSQL on the same port, `npm run test:api` passed and
   W02 was marked verified.
+
+### 2026-05-15 - Verify Playwright cleanup even when browser.close reports success
+- Context: UX100-W03 used a one-off Playwright fallback script for
+  desktop/tablet/mobile route proof after browser plugin access was not
+  available.
+- Symptom: The route proof completed with `badCount=0`, but a post-validation
+  process check still found four `chrome-headless-shell` processes from the
+  local Playwright run.
+- Root cause: The proof script called `browser.close()`, but Chromium child
+  processes remained alive after Node exited on Windows.
+- Guardrail: After Playwright validation, always run a narrow process check for
+  validation-owned `chrome-headless-shell` processes and terminate leftovers
+  before closing the task.
+- Preferred pattern: Keep screenshot/report artifacts, delete temporary QA
+  scripts, and run:
+  `Get-Process chrome-headless-shell -ErrorAction SilentlyContinue` followed
+  by `Stop-Process -Force` only for the validation run.
+- Evidence: UX100-W03 found four leftover `chrome-headless-shell` processes
+  after Playwright proof, stopped them, and a follow-up check returned no
+  remaining validation-owned browser processes.

@@ -47,6 +47,80 @@
       }[confidence] || "Relationship";
     }
 
+    function relationshipProvenance(row) {
+      const confidence = row.confidence || (row.needsReview ? "needs_review" : "provider_hierarchy");
+      const sourceLabel = relationshipSourceName(row.sourceLabel || row.provider || row.source || "Workspace");
+      const details = {
+        direct: {
+          source: "CompanyCore graph",
+          evidence: `Stored edge from ${sourceLabel}`,
+          aiLabel: "AI-safe",
+          aiDetail: "Can be used as workspace context.",
+          tone: "safe"
+        },
+        provider_hierarchy: {
+          source: row.source === "drive" ? "Google Drive" : "Provider hierarchy",
+          evidence: `Derived from ${sourceLabel}`,
+          aiLabel: "AI-safe with source",
+          aiDetail: "Use with provider provenance attached.",
+          tone: "safe"
+        },
+        route_inferred: {
+          source: "Route inference",
+          evidence: `Inferred from ${sourceLabel}`,
+          aiLabel: "Review context",
+          aiDetail: "Use only with confidence label visible.",
+          tone: "review"
+        },
+        needs_review: {
+          source: "Owner review",
+          evidence: "Missing or ambiguous operating-area scope",
+          aiLabel: "Not AI-safe yet",
+          aiDetail: "Assign or resolve before agents rely on it.",
+          tone: "blocked"
+        },
+        unsupported: {
+          source: "Unsupported family",
+          evidence: "Known relation type without approved workflow",
+          aiLabel: "Do not infer",
+          aiDetail: "Agents must not invent this relationship.",
+          tone: "blocked"
+        }
+      };
+      return details[confidence] || {
+        source: sourceLabel,
+        evidence: "Workspace relationship signal",
+        aiLabel: "Review context",
+        aiDetail: "Confirm provenance before agent use.",
+        tone: "review"
+      };
+    }
+
+    function relationshipSourceName(source) {
+      return {
+        ExternalContainerMapping: "Provider mapping",
+        ExternalFieldMapping: "Provider field mapping",
+        GoogleDriveFile: "Google Drive file",
+        OperatingModelTable: "CompanyCore table",
+        graph: "CompanyCore graph",
+        provider: "Provider mapping",
+        drive: "Google Drive",
+        google_drive: "Google Drive",
+        clickup: "ClickUp"
+      }[String(source || "")] || providerLabel(source) || String(source || "Workspace");
+    }
+
+    function provenanceBadgesHtml(provenance) {
+      return `
+        <div class="provenance-badges" aria-label="Source and AI safety">
+          <span class="provenance-badge provenance-badge-source">${escapeHtml(provenance.source)}</span>
+          <span class="provenance-badge">${escapeHtml(provenance.evidence)}</span>
+          <span class="ai-safety-badge ai-safety-${escapeHtml(provenance.tone)}">${escapeHtml(provenance.aiLabel)}</span>
+        </div>
+        <span class="provenance-detail">${escapeHtml(provenance.aiDetail)}</span>
+      `;
+    }
+
     function relationshipGraphRows() {
       const graph = state.relationshipGraph;
       const nodeMap = relationshipGraphNodeMap();
@@ -63,7 +137,7 @@
           source,
           sourceLabel: edge.sourceModel,
           title: `${fromLabel} -> ${toLabel}`,
-          detail: `${edge.label} / ${confidenceLabel(edge.confidence)} / ${edge.sourceModel}.${edge.sourceField}`,
+          detail: `${edge.label} / ${confidenceLabel(edge.confidence)} / ${relationshipSourceName(edge.sourceModel)} ${edge.sourceField}`,
           provider: edge.sourceModel,
           entityType: edge.sourceField,
           confidence: edge.confidence,
@@ -190,6 +264,7 @@
             <span>${summary?.confidence?.direct ?? 0} direct</span>
             <span>${summary?.confidence?.providerHierarchy ?? 0} provider hierarchy</span>
             <span>${summary?.confidence?.routeInferred ?? 0} route inferred</span>
+            <span>${(summary?.confidence?.direct ?? 0) + (summary?.confidence?.providerHierarchy ?? 0)} AI-safe links</span>
             <span>${summary?.unsupportedFamilies ?? 0} unsupported</span>
           `
         : `
@@ -221,10 +296,12 @@
 
     function relationshipGraphListItemHtml(row) {
       const badge = `<span class="relationship-confidence relationship-confidence-${escapeHtml(row.confidence)}">${escapeHtml(confidenceLabel(row.confidence))}</span>`;
+      const provenance = relationshipProvenance(row);
       return `
         <strong>${escapeHtml(row.title)}</strong>
         <span>${escapeHtml(row.detail)}</span>
         ${badge}
+        ${provenanceBadgesHtml(provenance)}
       `;
     }
 
@@ -284,6 +361,10 @@
       }
 
       copy.append(title, detail);
+      const provenance = document.createElement("div");
+      provenance.className = "relationship-provenance";
+      provenance.innerHTML = provenanceBadgesHtml(relationshipProvenance(queueItem));
+      copy.append(provenance);
       row.append(copy, editor);
       return row;
     }
@@ -352,6 +433,13 @@
       renderCompactList(relationshipProviderList, filteredMappings.slice(0, 80), (mapping) => `
         <strong>${escapeHtml(mapping.name || mapping.externalId || mapping.id)}</strong>
         <span>${escapeHtml(providerLabel(mapping.provider))} - ${escapeHtml(mapping.entityType)} - ${escapeHtml(areaNameById(mappingAreaId(mapping)))}</span>
+        ${provenanceBadgesHtml(relationshipProvenance({
+          source: "provider",
+          sourceLabel: providerLabel(mapping.provider),
+          provider: mapping.provider,
+          confidence: mappingAreaId(mapping) ? "provider_hierarchy" : "needs_review",
+          needsReview: !mappingAreaId(mapping)
+        }))}
         ${mapping.provider === "clickup" && ["space", "folder", "list"].includes(mapping.entityType) ? scopeEditorHtml({
           id: mapping.id,
           selectedAreaId: mappingAreaId(mapping) || state.operatingModel.areas[0]?.id,
@@ -363,6 +451,13 @@
       renderCompactList(relationshipDriveList, filteredDriveFolders.slice(0, 80), (file) => `
         <strong>${escapeHtml(file.name)}</strong>
         <span>Google Drive - Folder - ${escapeHtml(areaNameById(file.operatingAreaId))}</span>
+        ${provenanceBadgesHtml(relationshipProvenance({
+          source: "drive",
+          sourceLabel: "Google Drive",
+          provider: "google_drive",
+          confidence: file.operatingAreaId ? "provider_hierarchy" : "needs_review",
+          needsReview: !file.operatingAreaId
+        }))}
         ${scopeEditorHtml({
           id: file.id,
           selectedAreaId: file.operatingAreaId || state.operatingModel.areas[0]?.id,

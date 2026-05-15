@@ -2963,6 +2963,7 @@ function filteredDataModuleRows(rows) {
 function dataModuleRowElement(row) {
   const link = document.createElement("a");
   const typedEditorAvailable = hasTypedRecordEditor(row.slug);
+  const readiness = tableAiReadiness(row, row.records, row.sources);
   const writableMethods = row.routes.filter((route) => ["POST", "PATCH", "DELETE"].includes(route.method));
   const routeStatus = row.routes.length > 0
     ? `${row.routes.length} API route${row.routes.length === 1 ? "" : "s"}`
@@ -2990,6 +2991,12 @@ function dataModuleRowElement(row) {
         <span>${escapeHtml(writeStatus)}</span>
         <span>${escapeHtml(row.area ? areaLabel(row.area) : "Unmapped area")}</span>
       </div>
+      <div class="provenance-badges" aria-label="Module provenance and AI readiness">
+        <span class="provenance-badge provenance-badge-source">${escapeHtml(readiness.sourceLabel)}</span>
+        <span class="provenance-badge">${escapeHtml(readiness.evidence)}</span>
+        <span class="ai-safety-badge ai-safety-${escapeHtml(readiness.tone)}">${escapeHtml(readiness.label)}</span>
+      </div>
+      <span class="provenance-detail">${escapeHtml(readiness.detail)}</span>
     </div>
     <div class="workbench-index-side">
       <div class="workbench-index-metrics">
@@ -3194,6 +3201,7 @@ function tableWorkbenchBriefElement(module, records, fields, sources) {
     ? `${writeMethods.length} write method${writeMethods.length === 1 ? "" : "s"}`
     : "Inspect only";
   const sourceLabel = sources.length > 0 ? sources.join(", ") : "companycore";
+  const readiness = tableAiReadiness(module, records, sources);
   const area = module.area ? areaLabel(module.area) : "Unmapped area";
   panel.classList.toggle("is-editable", typedEditorAvailable);
   panel.innerHTML = `
@@ -3210,6 +3218,12 @@ function tableWorkbenchBriefElement(module, records, fields, sources) {
         <span>${escapeHtml(sourceLabel)}</span>
         <span>${fields.length} visible fields</span>
       </div>
+      <div class="provenance-badges" aria-label="Table provenance and AI readiness">
+        <span class="provenance-badge provenance-badge-source">${escapeHtml(readiness.sourceLabel)}</span>
+        <span class="provenance-badge">${escapeHtml(readiness.evidence)}</span>
+        <span class="ai-safety-badge ai-safety-${escapeHtml(readiness.tone)}">${escapeHtml(readiness.label)}</span>
+      </div>
+      <span class="provenance-detail">${escapeHtml(readiness.detail)}</span>
     </div>
     <div class="table-context-actions">
       <span><strong>${records.length}</strong> records loaded</span>
@@ -3255,6 +3269,118 @@ function tableSources(records) {
     .sort((left, right) => left.localeCompare(right));
 }
 
+function sourceDisplayName(source) {
+  return {
+    companycore: "CompanyCore",
+    clickup: "ClickUp",
+    google_drive: "Google Drive",
+    drive: "Google Drive",
+    api: "Owner API",
+    manual: "Owner entry"
+  }[String(source || "companycore")] || String(source || "companycore");
+}
+
+function recordProvenance(record, module = null) {
+  const source = String(record?.source || "companycore");
+  const sourceName = sourceDisplayName(source);
+  const hasArea = Boolean(module?.area);
+  const updated = formatDate(record?.updatedAt || record?.createdAt);
+  if (source === "companycore" || source === "manual" || source === "api") {
+    return {
+      sourceLabel: sourceName,
+      evidence: updated ? `Workspace-owned, updated ${updated}` : "Workspace-owned record",
+      label: hasArea ? "AI-safe" : "Needs area",
+      detail: hasArea
+        ? "Safe for agents when the workspace and table scope are included."
+        : "Connect this table to an operating area before agents treat it as complete context.",
+      tone: hasArea ? "safe" : "review"
+    };
+  }
+  if (source === "clickup") {
+    return {
+      sourceLabel: "ClickUp",
+      evidence: updated ? `Synced from provider, updated ${updated}` : "Synced from provider",
+      label: hasArea ? "AI-safe with source" : "Review area",
+      detail: hasArea
+        ? "Agents should keep the ClickUp source attached when using this record."
+        : "Provider data needs an operating-area assignment before agent use.",
+      tone: hasArea ? "safe" : "review"
+    };
+  }
+  if (source === "google_drive" || source === "drive") {
+    return {
+      sourceLabel: "Google Drive",
+      evidence: updated ? `Imported from Drive, updated ${updated}` : "Imported from Drive",
+      label: hasArea ? "AI-safe with source" : "Review area",
+      detail: hasArea
+        ? "Agents should cite Drive provenance when using this record."
+        : "Drive content needs operating-area confirmation before broad agent use.",
+      tone: hasArea ? "safe" : "review"
+    };
+  }
+  return {
+    sourceLabel: sourceName,
+    evidence: "External or imported record",
+    label: "Review context",
+    detail: "Confirm source and scope before agents use this record.",
+    tone: "review"
+  };
+}
+
+function tableAiReadiness(module, records, sources) {
+  if (!module) {
+    return {
+      sourceLabel: "Unsupported route",
+      evidence: "No table catalog match",
+      label: "Not AI-safe",
+      detail: "Choose a supported data module before agents use this context.",
+      tone: "blocked"
+    };
+  }
+  const hasRoutes = module.routes.length > 0;
+  const hasArea = Boolean(module.area);
+  const typedEditorAvailable = hasTypedRecordEditor(module.slug);
+  const sourceNames = sources.length > 0 ? sources.map(sourceDisplayName).join(", ") : "CompanyCore";
+  if (!hasRoutes) {
+    return {
+      sourceLabel: sourceNames,
+      evidence: "No API route coverage",
+      label: "Inspect only",
+      detail: "Visible to owners, but not ready as a first-class AI/API context surface.",
+      tone: "blocked"
+    };
+  }
+  if (!hasArea) {
+    return {
+      sourceLabel: sourceNames,
+      evidence: `${records.length} record${records.length === 1 ? "" : "s"}, area not mapped`,
+      label: "Review area",
+      detail: "Map this table to an operating area before broad AI use.",
+      tone: "review"
+    };
+  }
+  return {
+    sourceLabel: sourceNames,
+    evidence: `${records.length} record${records.length === 1 ? "" : "s"} / ${module.routes.length} route${module.routes.length === 1 ? "" : "s"}`,
+    label: typedEditorAvailable ? "AI-safe editable" : "AI-safe read",
+    detail: typedEditorAvailable
+      ? "Agents can read this scoped table; owners can correct records in the typed editor."
+      : "Agents can read this scoped table with source and API limits attached.",
+    tone: "safe"
+  };
+}
+
+function provenanceBadgesHtml(provenance) {
+  return `
+    <div class="provenance-badges" aria-label="Source and AI readiness">
+      <span class="provenance-badge provenance-badge-source">${escapeHtml(provenance.sourceLabel)}</span>
+      <span class="provenance-badge">${escapeHtml(provenance.evidence)}</span>
+      <span class="ai-safety-badge ai-safety-${escapeHtml(provenance.tone)}">${escapeHtml(provenance.label)}</span>
+    </div>
+    <span class="provenance-detail">${escapeHtml(provenance.detail)}</span>
+  `;
+}
+
 function recordTitle(record, module) {
   const contentPreview = record?.content || record?.body || record?.summary || record?.description;
   if (record?.title || record?.name || record?.subject || record?.key) {
@@ -3271,7 +3397,7 @@ function recordSubtitle(record) {
   const parts = [
     record?.status,
     record?.priority,
-    record?.source || "companycore",
+    sourceDisplayName(record?.source || "companycore"),
     formatDate(record?.updatedAt || record?.createdAt)
   ].filter(Boolean);
   return parts.join(" - ");
@@ -3320,12 +3446,14 @@ function syncTableFilters(sources) {
 
 function tableRecordRowElement(record, module, selectedId) {
   const button = document.createElement("button");
+  const provenance = recordProvenance(record, module);
   button.type = "button";
   button.className = `record-list-row ${record.id === selectedId ? "is-selected" : ""}`;
   button.innerHTML = `
-    <span class="summary-kicker">${escapeHtml(record?.source || "companycore")}</span>
+    <span class="summary-kicker">${escapeHtml(sourceDisplayName(record?.source || "companycore"))}</span>
     <strong>${escapeHtml(recordTitle(record, module))}</strong>
     <small>${escapeHtml(recordSubtitle(record) || record.id || "No metadata")}</small>
+    ${provenanceBadgesHtml(provenance)}
   `;
   button.addEventListener("click", () => {
     state.tableWorkbench.selectedId = record.id;
@@ -3368,11 +3496,13 @@ function renderRecordInspector(record, module, fields, options = {}) {
   }
 
   const header = document.createElement("div");
+  const provenance = recordProvenance(record, module);
   header.className = "record-inspector-header";
   header.innerHTML = `
     <span class="summary-kicker">${escapeHtml(module.label)}</span>
     <strong>${escapeHtml(recordTitle(record, module))}</strong>
     <p>${escapeHtml(recordSubtitle(record) || "No status metadata")}</p>
+    ${provenanceBadgesHtml(provenance)}
   `;
 
   const fieldList = document.createElement("dl");

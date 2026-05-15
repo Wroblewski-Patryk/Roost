@@ -2610,6 +2610,20 @@ Last updated: 2026-05-15
   desktop, tablet, and mobile with no overflow, no console issues, no failed
   requests, hidden desktop quick rail, visible tablet/mobile quick rail, route
   decision signals present, and zero unnamed visible controls.
+- 2026-05-15: Completed UX100-W03 by adding existing-state-derived provenance
+  and AI-readiness labels to relationship graph rows, relationship review
+  rows, data module rows, table context cards, record rows, and record
+  inspectors. `/relationships` now distinguishes CompanyCore graph,
+  provider-derived, route-inferred, owner-review, and unsupported relationship
+  families without exposing backend model names as the primary owner-facing
+  provenance. `/data` and `/data/:slug` now show whether context is AI-safe,
+  review-only, blocked, editable, provider-derived, or workspace-owned. `npm
+  run check:public-js`, `npm run validate`, `git diff --check`, and `npm run
+  test:api` passed; the API gate used portable PostgreSQL on
+  `localhost:55475`. Playwright fallback verified `/relationships`, `/data`,
+  `/data/tasks`, and `/data/clients` at desktop, tablet, and mobile with
+  provenance/AI labels present, no overflow, no console issues, no failed
+  requests, and zero unnamed visible controls.
 - 2026-05-06: Deployed the Agent CRUD API rollout to production with manual
   VPS backend rollover. The running backend container is
   `backend-rnqqkhl3o3dut4qv56mlxly2-manual-bf59b2f`, image
