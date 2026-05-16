@@ -7,6 +7,8 @@
   - Owner: Frontend Builder + QA/Test + Product Docs
   - Priority: P0
   - Source: `docs/planning/web-foundation-quality-audit-2026-05-16.md`
+  - Plan: `docs/planning/web-qa-001-implementation-plan.md`
+  - Task contract: `docs/planning/web-qa-001-task-contract.md`
   - Goal: implement the next web-foundation quality slice before adding more
     departments: default English UI with a persistent language selector and
     Polish dictionary path, shared user-facing API error mapping, shared form

@@ -13,7 +13,9 @@ synchronized with `.codex/context/TASK_BOARD.md`.
       API error mapping, form primitives, and centralized notice/action
       feedback must be shared now to avoid duplicated UX behavior. Default UI
       language remains English; Polish support should be added through a
-      dictionary/selector path, not page-local copy forks.
+      dictionary/selector path, not page-local copy forks. Implementation
+      plan: `docs/planning/web-qa-001-implementation-plan.md`. Task contract:
+      `docs/planning/web-qa-001-task-contract.md`.
 - [ ] Continue V1 department systems with `DMS-NEXT-004` Relationships
       Management read packet and board after `WEB-QA-001`, unless deployment
       smoke is selected first. The owner-approved `00 Main -> 04 Operations ->

@@ -148,6 +148,12 @@ continue from repository files alone:
   codes, native-only form validation, and decentralized feedback. Treat
   `WEB-QA-001` as the next web foundation implementation before new
   department screens.
+- `docs/planning/web-qa-001-implementation-plan.md` and
+  `docs/planning/web-qa-001-task-contract.md`: READY implementation handoff
+  for the next web foundation slice. It sequences i18n provider/dictionaries,
+  language selector, typed API client/errors, shared notices/live feedback,
+  shared auth form primitives, and minimal module split before `05
+  Relationships` or any other new department UI.
 - `docs/architecture/companycore-business-module-map.md`: accepted
   model-level module map for scaling CompanyCore as the bridge for operating
   the company. It classifies future work as native core, provider-backed,
