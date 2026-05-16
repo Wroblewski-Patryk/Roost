@@ -170,6 +170,19 @@ continue from repository files alone:
   `http://127.0.0.1:3192` passed. The next safe step is a command contract for
   classify/route proposals; do not add acknowledge, approval, invoice,
   discount, delete, or provider-write actions without that contract.
+- `docs/planning/dms-money-pricing-discount-source-inventory.md`: active
+  pricing and discount source handoff for Sales, Finance, Relationships,
+  Innovation, and Paperclip. As of 2026-05-16, Google Drive source review
+  found a strategic `499 CHF/month` Start model, a benchmarked hybrid
+  `1500 CHF setup + 150 CHF/month` model, pure subscription analysis, and
+  older Polish project pricing of `1700/2200 PLN`. These are not resolved into
+  one canonical price policy yet. The current-client `100%` discount must be
+  represented as a commercial exception with owner approval, not as missing
+  revenue. Direct ClickUp source review is blocked until a callable ClickUp
+  read/search tool or owner export is available. Future work should start with
+  DMS-07-001 Finance spec, DMS-07-002 price-list/hourly-value read model,
+  DMS-03-005 discount/commercial exception read model, and DMS-05-002 archived
+  client source audit.
 - `docs/architecture/web-layer-react-ownership.md`: current web route
   ownership contract. As of 2026-05-15, user-facing web routes are React-owned
   and served from the Vite bundle in `public/react/index.html`. The legacy

@@ -2,15 +2,6 @@
 
 ## Ready
 
-- DMS-MONEY-001 Pricing/hourly-value/discount source inventory.
-  - Stage: analysis
-  - Owner: Product Docs + Backend Builder
-  - Priority: P1
-  - Source:
-    `docs/planning/v1-department-systems-global-implementation-plan.md`
-  - Goal: inventory Drive/ClickUp pricing, service definitions, hourly-value
-    assumptions, discount cases, current client work, and old-client archive
-    evidence before pricing or invoice write contracts.
 - DMS-SHELL-001 Shared Department Management Shell.
   - Stage: planning
   - Owner: Frontend Builder + Product Docs
@@ -19,6 +10,33 @@
     `docs/planning/v1-department-systems-global-implementation-plan.md`
   - Goal: plan and extract the reusable selected-area department shell for all
     `00`-`12` management systems.
+- DMS-00-005 Global intake classify/route command contract.
+  - Stage: planning
+  - Owner: Product Docs + Backend Builder + Security
+  - Priority: P1
+  - Source:
+    `docs/planning/dms-00-global-intake-web-panel-task-contract.md`
+  - Goal: define the safe command-shaped classify/route proposal layer for
+    `00 Main` without acknowledging agent events, approving risky work,
+    invoicing, discounting, deleting, or mutating provider state.
+- DMS-07-001 Finance system spec.
+  - Stage: planning
+  - Owner: Product Docs + Backend Builder + Security
+  - Priority: P1
+  - Source:
+    `docs/planning/dms-money-pricing-discount-source-inventory.md`
+  - Goal: define the Finance management board, price-list/hourly-value read
+    model, owner decisions, and high-risk guardrails before invoice/payment or
+    autonomous pricing writes.
+- DMS-03-005 Discount/commercial exception read model.
+  - Stage: planning
+  - Owner: Product Docs + Backend Builder
+  - Priority: P1
+  - Source:
+    `docs/planning/dms-money-pricing-discount-source-inventory.md`
+  - Goal: represent discounts including 100 percent discounts as
+    owner-reviewed commercial exceptions connected to client, deal, work,
+    approval, and future invoice-readiness context.
 - DMS-NEXT-001 Department systems user review and implementation sequence.
   - Stage: planning
   - Owner: Product Docs + Frontend Builder + Backend Builder
@@ -37,14 +55,6 @@
   - Goal: make `00 Main` the review/router for unclassified owner, client,
     provider, and Paperclip-created items before broad background automation.
     Start with a read-only review queue and classification/routing model.
-- DMS-MIN-002 Pricing, discounts, current client, and archived-client context.
-  - Stage: planning
-  - Owner: Product Docs + Backend Builder
-  - Priority: P1
-  - Source: `docs/architecture/department-management-systems-v1-blueprint.md`
-  - Goal: inventory Drive/ClickUp pricing sources, hourly-value assumptions,
-    discount cases, current client work, and old-client archive evidence before
-    invoice/payment writes or autonomous pricing.
 - V1OPS-002 Production operations cockpit smoke.
   - Stage: planning
   - Owner: Frontend Builder + Ops/Release
@@ -144,6 +154,23 @@
   auto-deploy webhook administration task.
 
 ## Done
+
+- DMS-MONEY-001 Pricing/Hourly-Value/Discount Source Inventory.
+  - Evidence:
+    `docs/planning/dms-money-pricing-discount-source-inventory.md` inventories
+    Drive-backed pricing and client sources, separates conflicting commercial
+    models, records the 100 percent discount case as a required commercial
+    exception, maps current CompanyCore reuse, and lists backend gaps for
+    service offers, pricing models, labor rates, estimates, discount policies,
+    invoice drafts, and archived-client learning.
+  - Validation: Google Drive connector search/fetch reviewed `Business plan`,
+    the Swiss pricing benchmark, `2. Zalozenia`, and related offer/project
+    pointers. Repo source review covered Prisma clients/deals/interactions,
+    API docs, intake tests, and ClickUp/Drive adapter foundations. Direct
+    ClickUp source review is blocked because no callable ClickUp search/read
+    tool was exposed in this session. `git diff --check` passed.
+  - Task contract:
+    `docs/planning/dms-money-pricing-discount-source-inventory-task-contract.md`.
 
 - DMS-00-004 Global Intake Web Panel.
   - Evidence: `/areas?area=00-ogolny&view=overview` now renders a dedicated

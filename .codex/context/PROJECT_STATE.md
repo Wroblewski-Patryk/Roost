@@ -48,6 +48,17 @@ Last updated: 2026-05-16
   `/areas?area=00-ogolny&view=tasks`, and found no console errors, framework
   overlay, or horizontal overflow. The browser plugin path was attempted first
   but had no active Codex browser pane, so Playwright fallback was used.
+  As of 2026-05-16, DMS-MONEY-001 completed the pricing/hourly-value/discount
+  source inventory before Sales or Finance runtime work. Google Drive source
+  review found a strategic `499 CHF/month` Start subscription model, a Swiss
+  benchmark hybrid model of `1500 CHF setup + 150 CHF/month`, pure subscription
+  analysis, and older Polish project pricing of `1700/2200 PLN`. The inventory
+  records these as candidate/conflicting commercial models, defines the current
+  client `100%` discount case as a commercial exception requiring owner
+  approval, maps existing CompanyCore reuse, and lists backend gaps for pricing,
+  labor value, estimates, discounts, invoice readiness, and archived-client
+  learning. Direct ClickUp source review is blocked because no callable ClickUp
+  search/read tool was exposed in this session.
 
 ## Product Decisions (Confirmed)
 - 2026-05-07: CRM and pipelines are separate domain concepts. Pipelines are a

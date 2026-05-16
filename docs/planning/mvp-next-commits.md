@@ -7,10 +7,6 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] DMS-MONEY-001 Pricing/hourly-value/discount source inventory:
-      inventory Drive/ClickUp pricing, service definitions, hourly-value
-      assumptions, discount cases including 100 percent discount, current
-      client work, and old-client archive evidence.
 - [ ] DMS-SHELL-001 Shared Department Management Shell:
       plan and then extract the reusable selected-area department shell for
       identity, command brief, subsystem tabs, management board, evidence rail,
@@ -19,6 +15,12 @@ synchronized with `.codex/context/TASK_BOARD.md`.
       plan command-shaped classification and routing proposals for `00 Main`
       without adding acknowledge, approval, invoice, discount, delete, or
       provider-write behavior.
+- [ ] DMS-07-001 Finance system spec:
+      use the pricing and discount inventory to define the first Finance
+      management board, read model, owner decisions, and security guardrails.
+- [ ] DMS-03-005 Discount/commercial exception read model:
+      represent discounts including 100 percent discount as owner-reviewed
+      commercial exceptions before invoice or payment writes exist.
 ### NEXT
 
 - [ ] DMS-04-001 Operations real-data proof:
@@ -102,6 +104,16 @@ The section below is retained as execution evidence. It is not the active
 queue. Future work must start from `Active Queue`, `.codex/context/TASK_BOARD.md`,
 and `docs/operations/v1-function-coverage-ledger.csv`.
 
+- [x] DMS-MONEY-001 Pricing/Hourly-Value/Discount Source Inventory:
+      inventoried Drive-backed pricing and client sources, separated current
+      strategic `499 CHF/month`, benchmarked hybrid `1500 CHF setup + 150
+      CHF/month`, pure subscription, and older Polish project pricing evidence,
+      and mapped current CompanyCore reuse plus backend gaps before Sales or
+      Finance writes. Direct ClickUp source review remains blocked because no
+      callable ClickUp search/read tool was exposed in this session. `git diff
+      --check` passed.
+      Task contract:
+      `docs/planning/dms-money-pricing-discount-source-inventory-task-contract.md`.
 - [x] DMS-00-003 Global Intake Read API:
       protected `GET /v1/intake` aggregates existing agent events, provider
       inbox rows, unassigned Drive/provider resources, approvals, high risks,

@@ -4,19 +4,26 @@ Last updated: 2026-05-16
 
 ## NOW
 
-1. DMS-MONEY-001 Pricing/hourly-value/discount source inventory.
-   - Inventory Drive/ClickUp pricing, service definitions, hourly-value
-     assumptions, discounts including 100 percent discount, current client
-     work, and old-client archive evidence.
-2. DMS-SHELL-001 Shared Department Management Shell.
+1. DMS-SHELL-001 Shared Department Management Shell.
    - Plan and extract the reusable department shell used by `00`-`12`.
-3. DMS-00-005 Global intake classify/route command contract.
+2. DMS-00-005 Global intake classify/route command contract.
    - Source:
      `docs/planning/dms-00-global-intake-web-panel-task-contract.md`.
    - Plan the next safe command layer for `00 Main`: classify, route, request
      owner decision, and propose department ownership without acknowledging
      agent events, approving risky work, invoicing, discounting, deleting, or
      mutating provider state.
+3. DMS-07-001 Finance system spec.
+   - Source:
+     `docs/planning/dms-money-pricing-discount-source-inventory.md`.
+   - Define the Finance management board, price-list/hourly-value read model,
+     owner decisions, and guardrails before invoice/payment or autonomous
+     pricing writes.
+4. DMS-03-005 Discount/commercial exception read model.
+   - Source:
+     `docs/planning/dms-money-pricing-discount-source-inventory.md`.
+   - Represent discounts including 100 percent discount as owner-reviewed
+     commercial exceptions connected to client/deal/work context.
 
 ## NEXT
 
@@ -67,13 +74,13 @@ Last updated: 2026-05-16
      implementation is the verified `00 Main` read-only panel. Next
      implementation should design command-shaped classification and routing
      proposals before any write behavior.
-7. Inventory pricing, discounts, current client work, and archived clients.
+7. Implement pricing, discounts, current client work, and archived clients from
+   the completed inventory.
    - Source:
-     `docs/architecture/department-management-systems-v1-blueprint.md`.
-   - Pull together Drive/ClickUp price lists, service value, hourly work value,
-     discount rules, current client work, and old-client archive evidence.
-   - Keep agents in analysis/proposal mode until pricing, invoice, payment,
-     and discount write contracts are explicit.
+     `docs/planning/dms-money-pricing-discount-source-inventory.md`.
+   - Use `DMS-07-001`, `DMS-03-005`, `DMS-03-006`, and `DMS-05-002` as the
+     next scoped steps. Keep agents in analysis/proposal mode until pricing,
+     invoice, payment, and discount write contracts are explicit.
 8. Run database-backed or production smoke for the `04 Operacje` department
    system after deploy.
    - Route: `/areas?area=04-operacje&view=overview`.

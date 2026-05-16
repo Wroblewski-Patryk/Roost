@@ -263,9 +263,14 @@ The first tasks to activate from this plan are:
 
 1. `DMS-V1-000` - publish this global plan.
 2. `DMS-00-001` - design global intake and Paperclip output review contract.
-3. `DMS-MONEY-001` - inventory pricing/hourly-value/discount sources.
+3. `DMS-MONEY-001` - completed by
+   `docs/planning/dms-money-pricing-discount-source-inventory.md`.
 4. `DMS-SHELL-001` - extract shared Department Management Shell component.
-5. `DMS-04-001` - run real database-backed or production proof for the current
+5. `DMS-07-001` - define Finance system spec from the completed pricing and
+   discount inventory.
+6. `DMS-03-005` - design discount/commercial exception read model for the
+   current-client `100%` discount case.
+7. `DMS-04-001` - run real database-backed or production proof for the current
    `04 Operations` system.
 
 ## Dependency Summary
