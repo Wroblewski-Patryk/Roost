@@ -2,6 +2,49 @@
 
 Use this file to record the minimum checks after each deploy.
 
+## Production Web Shell And Operations Tasks Rollover
+
+- Timestamp: 2026-05-16
+- Environment: production VPS Docker backend
+- Commit: `02f86b613b5d69d282f554cf465e5688b251a5c0`
+- Image:
+  `rnqqkhl3o3dut4qv56mlxly2_backend:02f86b613b5d69d282f554cf465e5688b251a5c0`
+- Running container:
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-02f86b6`
+- Replaced container:
+  `backend-rnqqkhl3o3dut4qv56mlxly2-203839472398`, retained stopped as
+  `backend-rnqqkhl3o3dut4qv56mlxly2-203839472398-previous-02f86b6`.
+- Local/source checks:
+  - `npm run build:web`: passed.
+  - `npm run build:server`: passed.
+  - `npm run validate`: passed.
+  - Playwright fallback on temporary mocked API port `3139`: passed.
+  - `git diff --check`: passed with line-ending warnings only.
+- Rollover checks:
+  - Docker image build from the pushed commit archive for `02f86b6` passed.
+  - Canary container returned local `/health` with the expected commit before
+    traffic rollover.
+  - Final routed container returned local `/health` with the expected commit.
+  - Production Postgres container stayed running.
+- Public smoke:
+  - `GET https://api.companycore.luckysparrow.ch/health` returned `status=ok`
+    with the expected build commit and image.
+  - `GET https://companycore.luckysparrow.ch/health` returned `status=ok`
+    with the same build commit and image.
+  - `GET https://companycore.luckysparrow.ch/` served
+    `/react/assets/index-RfhYEq4o.js` and
+    `/react/assets/index-D362Tku6.css`.
+  - `GET /account/settings`, `GET /workspace/settings`, and
+    `GET /areas?area=04-operacje&view=tasks` returned the React shell HTML.
+- Cleanup:
+  - Temporary local archive and rollout script were removed.
+  - Temporary VPS archive, extracted source directory, and rollout script were
+    removed from `/tmp`.
+- Residual risks:
+  - No production smoke defect was found.
+  - Account/workspace settings are intentionally read-only in this slice;
+    settings write contracts and API key management remain future work.
+
 ## Production Strategy Context Rollover
 
 - Timestamp: 2026-05-16

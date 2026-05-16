@@ -26,7 +26,9 @@ Last updated: 2026-05-16
   to the workspace selector, account/workspace settings routes exist as simple
   private views, sidebar labels hide visible department numbers while
   preserving canonical ordering, and `04 Operations -> Tasks` renders real
-  `/v1/operations/work-items` records including ClickUp-sourced tasks.
+  `/v1/operations/work-items` records including ClickUp-sourced tasks. The
+  slice was manually rolled over to production at commit
+  `02f86b613b5d69d282f554cf465e5688b251a5c0`.
   As of 2026-05-16, the architectural direction is expanded in
   `docs/architecture/unified-organizational-operating-system.md`: CompanyCore
   is the unified organizational world state and operational source of truth,

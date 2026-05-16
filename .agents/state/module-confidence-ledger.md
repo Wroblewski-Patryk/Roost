@@ -22,7 +22,9 @@ WEB-SHELL-OPS-001 extends that verified base locally: `npm run validate`
 passed and Playwright fallback proved the user dropdown, workspace settings
 navigation, account/workspace settings routes, footer language selector,
 sidebar label cleanup, and Operations task table fed by the existing
-`/v1/operations/work-items` packet.
+`/v1/operations/work-items` packet. Production was manually rolled over to
+commit `02f86b613b5d69d282f554cf465e5688b251a5c0`; public health and React
+asset smoke passed.
 
 Area detail note: V1AREA-002 is VERIFIED with high confidence for local scope.
 `/areas?area=01-strategia&view=overview` renders the canonical selected-area

@@ -209,7 +209,10 @@
     `npm run validate`; Playwright fallback on temporary mocked API port
     `3139` verified the Operations task table, user dropdown, sidebar label
     cleanup, removed header department nav, footer attribution, and both
-    settings routes. No validation-owned browser or port processes remained.
+    settings routes. Production was manually rolled over to commit
+    `02f86b613b5d69d282f554cf465e5688b251a5c0`; public web/API health report
+    the expected commit and `/` serves `index-RfhYEq4o.js`. No
+    validation-owned browser or port processes remained.
 
 - UOS-000 Unified Organizational OS backend program queue alignment.
   - Evidence:

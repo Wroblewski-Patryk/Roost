@@ -191,7 +191,10 @@ continue from repository files alone:
   the workspace selector, `/account/settings` and `/workspace/settings` are
   private React routes, sidebar department labels hide visible numeric
   prefixes while preserving canonical order, and `04 Operations -> Tasks`
-  renders real work-item records from `/v1/operations/work-items`.
+  renders real work-item records from `/v1/operations/work-items`. Production
+  was manually rolled over to commit
+  `02f86b613b5d69d282f554cf465e5688b251a5c0` after GitHub-to-Coolify did not
+  update the running image automatically.
 - `docs/architecture/companycore-business-module-map.md`: accepted
   model-level module map for scaling CompanyCore as the bridge for operating
   the company. It classifies future work as native core, provider-backed,

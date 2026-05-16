@@ -75,6 +75,7 @@ packet.
   - `npm run build:server`
   - `npm run validate`
   - Playwright fallback smoke on temporary mocked API port `3139`
+  - Manual VPS rollover and public production smoke for commit `02f86b6`
 - What is incomplete: Workspace name editing, account profile editing, API key
   management, and integration settings remain future settings slices.
 - Next steps: Add audited settings write contracts and continue expanding
