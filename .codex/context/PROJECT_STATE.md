@@ -59,6 +59,14 @@ Last updated: 2026-05-16
   labor value, estimates, discounts, invoice readiness, and archived-client
   learning. Direct ClickUp source review is blocked because no callable ClickUp
   search/read tool was exposed in this session.
+  As of 2026-05-16, DMS-SHELL-001 extracted the selected-area route into a
+  shared `DepartmentManagementShell` and added `DepartmentImprovementLoop`.
+  `00 Main` global intake and `04 Operations` remain dedicated special panels
+  inside the shell, while normal departments such as `01 Strategy` retain the
+  operating board. `npm run build:web` and `git diff --check` passed.
+  Playwright static SPA proof verified desktop `00`, `01`, `04`, and mobile
+  `04` with required markers, no horizontal overflow, and no console/page
+  errors.
 
 ## Product Decisions (Confirmed)
 - 2026-05-07: CRM and pipelines are separate domain concepts. Pipelines are a

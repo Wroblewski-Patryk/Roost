@@ -834,6 +834,12 @@ label {
   min-width: 0;
 }
 
+.department-management-shell {
+  display: grid;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
 @media (min-width: 1180px) {
   .area-detail-layout {
     grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.28fr);
@@ -844,6 +850,7 @@ label {
 .area-detail-hero,
 .area-operating-board,
 .area-capability-focus,
+.department-improvement-loop,
 .area-detail-rail,
 .area-evidence-panel {
   min-width: 0;
@@ -1567,6 +1574,92 @@ label {
   background:
     radial-gradient(circle at 100% 0, rgb(35 100 210 / 0.06), transparent 18rem),
     rgb(255 255 255 / 0.94);
+}
+
+.department-improvement-loop {
+  display: grid;
+  gap: 0.82rem;
+  padding: 0.95rem;
+  background:
+    radial-gradient(circle at 0 0, rgb(22 132 91 / 0.08), transparent 16rem),
+    rgb(255 255 255 / 0.94);
+}
+
+.department-improvement-grid {
+  display: grid;
+  gap: 0.72rem;
+}
+
+@media (min-width: 900px) {
+  .department-improvement-grid {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: stretch;
+  }
+}
+
+.department-improvement-brief,
+.department-improvement-queue {
+  min-width: 0;
+  border: 1px solid rgb(216 225 238 / 0.82);
+  border-radius: 8px;
+  background: rgb(248 250 252 / 0.78);
+  padding: 0.82rem;
+}
+
+.department-improvement-brief {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.department-improvement-brief p {
+  margin: 0;
+  color: #51627f;
+  font-size: 0.88rem;
+  font-weight: 650;
+  line-height: 1.62;
+}
+
+.department-improvement-brief > div {
+  display: grid;
+  gap: 0.55rem;
+}
+
+@media (min-width: 640px) {
+  .department-improvement-brief > div {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.department-improvement-brief span {
+  display: grid;
+  gap: 0.18rem;
+  border: 1px solid rgb(216 225 238 / 0.82);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 0.62rem;
+}
+
+.department-improvement-brief i {
+  color: #16845b;
+  font-size: 1.1rem;
+}
+
+.department-improvement-brief strong {
+  color: #071225;
+  font-size: 1rem;
+  font-weight: 950;
+}
+
+.department-improvement-brief small {
+  color: #51627f;
+  font-size: 0.68rem;
+  font-weight: 850;
+  line-height: 1.35;
+}
+
+.department-improvement-queue {
+  display: grid;
+  gap: 0.68rem;
 }
 
 .area-capability-focus > p {

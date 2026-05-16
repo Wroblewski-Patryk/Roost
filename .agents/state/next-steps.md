@@ -4,15 +4,18 @@ Last updated: 2026-05-16
 
 ## NOW
 
-1. DMS-SHELL-001 Shared Department Management Shell.
-   - Plan and extract the reusable department shell used by `00`-`12`.
-2. DMS-00-005 Global intake classify/route command contract.
+1. DMS-00-005 Global intake classify/route command contract.
    - Source:
      `docs/planning/dms-00-global-intake-web-panel-task-contract.md`.
    - Plan the next safe command layer for `00 Main`: classify, route, request
      owner decision, and propose department ownership without acknowledging
      agent events, approving risky work, invoicing, discounting, deleting, or
      mutating provider state.
+2. DMS-SHELL-002 Department-specific subsystem registry.
+   - Source:
+     `docs/planning/dms-shell-001-shared-department-management-shell-task-contract.md`.
+   - Add static config for `00`-`12` department purposes, subsystem tabs,
+     blocked actions, and agent handoff copy on top of the shared shell.
 3. DMS-07-001 Finance system spec.
    - Source:
      `docs/planning/dms-money-pricing-discount-source-inventory.md`.

@@ -7,10 +7,6 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] DMS-SHELL-001 Shared Department Management Shell:
-      plan and then extract the reusable selected-area department shell for
-      identity, command brief, subsystem tabs, management board, evidence rail,
-      improvement loop, and Paperclip handoff.
 - [ ] DMS-00-005 Global intake classify/route command contract:
       plan command-shaped classification and routing proposals for `00 Main`
       without adding acknowledge, approval, invoice, discount, delete, or
@@ -23,6 +19,9 @@ synchronized with `.codex/context/TASK_BOARD.md`.
       commercial exceptions before invoice or payment writes exist.
 ### NEXT
 
+- [ ] DMS-SHELL-002 Department-specific subsystem registry:
+      add static config for `00`-`12` department purposes, subsystem tabs,
+      blocked actions, and agent handoff copy on top of the shared shell.
 - [ ] DMS-04-001 Operations real-data proof:
       run database-backed or production proof for the existing
       `/areas?area=04-operacje&view=overview` Operations Management System.
@@ -114,6 +113,15 @@ and `docs/operations/v1-function-coverage-ledger.csv`.
       --check` passed.
       Task contract:
       `docs/planning/dms-money-pricing-discount-source-inventory-task-contract.md`.
+- [x] DMS-SHELL-001 Shared Department Management Shell:
+      extracted `DepartmentManagementShell` and `DepartmentImprovementLoop`
+      for selected-area department routes while preserving `00 Main` intake
+      and `04 Operations` special panels. `npm run build:web` and `git diff
+      --check` passed. Playwright static SPA proof verified desktop `00`, `01`,
+      and `04` plus mobile `04`, with markers present, no horizontal overflow,
+      and no console/page errors.
+      Task contract:
+      `docs/planning/dms-shell-001-shared-department-management-shell-task-contract.md`.
 - [x] DMS-00-003 Global Intake Read API:
       protected `GET /v1/intake` aggregates existing agent events, provider
       inbox rows, unassigned Drive/provider resources, approvals, high risks,

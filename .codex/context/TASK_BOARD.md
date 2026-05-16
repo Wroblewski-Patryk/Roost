@@ -2,14 +2,6 @@
 
 ## Ready
 
-- DMS-SHELL-001 Shared Department Management Shell.
-  - Stage: planning
-  - Owner: Frontend Builder + Product Docs
-  - Priority: P1
-  - Source:
-    `docs/planning/v1-department-systems-global-implementation-plan.md`
-  - Goal: plan and extract the reusable selected-area department shell for all
-    `00`-`12` management systems.
 - DMS-00-005 Global intake classify/route command contract.
   - Stage: planning
   - Owner: Product Docs + Backend Builder + Security
@@ -19,6 +11,14 @@
   - Goal: define the safe command-shaped classify/route proposal layer for
     `00 Main` without acknowledging agent events, approving risky work,
     invoicing, discounting, deleting, or mutating provider state.
+- DMS-SHELL-002 Department-specific subsystem registry.
+  - Stage: planning
+  - Owner: Frontend Builder + Product Docs
+  - Priority: P1
+  - Source:
+    `docs/planning/dms-shell-001-shared-department-management-shell-task-contract.md`
+  - Goal: add static config for `00`-`12` department purposes, subsystem tabs,
+    blocked actions, and agent handoff copy on top of the shared shell.
 - DMS-07-001 Finance system spec.
   - Stage: planning
   - Owner: Product Docs + Backend Builder + Security
@@ -154,6 +154,25 @@
   auto-deploy webhook administration task.
 
 ## Done
+
+- DMS-SHELL-001 Shared Department Management Shell.
+  - Evidence: `web/src/main.tsx` now renders selected-area department views
+    through `DepartmentManagementShell`, with `DepartmentImprovementLoop` as a
+    shared zone for feedback, defects, standards, and next work. `00 Main` and
+    `04 Operations` keep their dedicated special panels inside the shared
+    shell. `web/src/react-route-kit.tsx` now uses unique shell navigation keys
+    for duplicate route hrefs across route groups.
+  - Validation: `npm run build:web` and `git diff --check` passed. Playwright
+    static SPA proof on `http://127.0.0.1:3206` verified desktop
+    `/areas?area=01-strategia&view=overview`,
+    `/areas?area=04-operacje&view=overview`,
+    `/areas?area=00-ogolny&view=overview`, and mobile
+    `/areas?area=04-operacje&view=overview`; required shell/intake/operations
+    markers were present, there was no horizontal overflow, and console/page
+    errors were empty. Temporary validation ports `3204`, `3205`, and `3206`
+    were stopped after proof.
+  - Task contract:
+    `docs/planning/dms-shell-001-shared-department-management-shell-task-contract.md`.
 
 - DMS-MONEY-001 Pricing/Hourly-Value/Discount Source Inventory.
   - Evidence:

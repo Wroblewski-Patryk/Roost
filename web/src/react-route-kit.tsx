@@ -1854,7 +1854,7 @@ export function Shell({
                 const isActive = routeMatches(link, currentPath);
                 return (
                   <a
-                    key={link.href}
+                    key={`${section.label}-${link.id}-${link.href}`}
                     className={`flex min-h-10 items-center gap-3 rounded-company border px-3 py-2 text-sm font-black no-underline ${isActive ? "border-primary/60 bg-primary/15 text-neutral-content shadow-[inset_3px_0_0_#2364d2]" : "border-transparent text-neutral-content/82 hover:border-primary/40 hover:bg-primary/10 hover:text-neutral-content"}`}
                     href={link.href}
                   >
@@ -1889,9 +1889,9 @@ export function Shell({
               <span className="rounded-full border border-base-300 bg-base-200 px-3 py-1.5">{agentLabel}</span>
             </div>
             <nav className="flex min-w-0 gap-2 overflow-x-auto pb-1 lg:hidden" aria-label="CompanyCore mobile command navigation">
-              {reactShellNav.flatMap((section) => section.links).slice(0, 8).map((link) => (
+              {reactShellNav.flatMap((section) => section.links.map((link) => ({ ...link, sectionLabel: section.label }))).slice(0, 8).map((link) => (
                 <a
-                  key={link.href}
+                  key={`${link.sectionLabel}-${link.id}-${link.href}`}
                   className={`btn btn-sm flex-none ${routeMatches(link, currentPath) ? "btn-primary" : "btn-outline"}`}
                   href={link.href}
                 >

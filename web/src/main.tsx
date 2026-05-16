@@ -5176,6 +5176,138 @@ function AreaDecisionRail({
   );
 }
 
+function DepartmentImprovementLoop({
+  area,
+  context,
+  connection,
+  activeCapability
+}: {
+  area: AreaViewState;
+  context: AreaDetailContext;
+  connection: ConnectionData;
+  activeCapability: string;
+}) {
+  const improvementItems = areaCapabilityRecords(context, "decisions", 4);
+  const taskItems = areaCapabilityRecords(context, "tasks", 4);
+  const knowledgeReady = context.driveItems.length > 0;
+  const agentReady = Boolean(connection.mcpManifest);
+  const signals = [
+    {
+      label: "Evidence",
+      value: `${context.tableRecordsCount}`,
+      detail: context.tableRecordsCount > 0 ? "records can feed review" : "no records loaded",
+      icon: "ph-stack"
+    },
+    {
+      label: "Knowledge",
+      value: `${context.driveItems.length}`,
+      detail: knowledgeReady ? "Drive evidence is scoped" : "Drive scope needs data",
+      icon: "ph-folder-open"
+    },
+    {
+      label: "AI",
+      value: agentReady ? "ready" : "review",
+      detail: agentReady ? "MCP context available" : "agent packet needs manifest",
+      icon: "ph-robot"
+    }
+  ];
+  const queue = [...improvementItems, ...taskItems].slice(0, 5);
+
+  return (
+    <section className="department-improvement-loop" aria-label={`${area.label} improvement loop`}>
+      <div className="area-detail-section-heading">
+        <p className="atlas-kicker">Improvement loop</p>
+        <h2>Feedback, defects, standards, next work</h2>
+        <span>{activeCapability}</span>
+      </div>
+      <div className="department-improvement-grid">
+        <article className="department-improvement-brief">
+          <p>
+            Every department system should turn delivery evidence into better
+            standards, safer agent packets, and the next focused task. This
+            shared loop keeps improvement visible even while department-specific
+            subsystems grow.
+          </p>
+          <div>
+            {signals.map((signal) => (
+              <span key={signal.label}>
+                <i className={`ph-bold ${signal.icon}`} aria-hidden="true"></i>
+                <strong>{signal.value}</strong>
+                <small>{signal.label} / {signal.detail}</small>
+              </span>
+            ))}
+          </div>
+        </article>
+        <article className="department-improvement-queue">
+          <div className="area-layer-panel-title">
+            <i className="ph-bold ph-arrows-clockwise" aria-hidden="true"></i>
+            <h3>Next learning queue</h3>
+            <span>{queue.length}</span>
+          </div>
+          {queue.length === 0 ? (
+            <p className="area-layer-empty">No task, decision, risk, or approval evidence is ready for improvement review yet.</p>
+          ) : (
+            <div className="area-data-layer-list">
+              {queue.map((item, index) => (
+                <a href={item.href || "/tasks-adapter"} key={`${item.title}-${index}`}>
+                  <span>
+                    <strong>{item.title}</strong>
+                    <small>{item.detail}</small>
+                  </span>
+                  <em>{item.meta || "review"}</em>
+                </a>
+              ))}
+            </div>
+          )}
+        </article>
+      </div>
+    </section>
+  );
+}
+
+function DepartmentManagementShell({
+  selectedArea,
+  activeCapability,
+  context,
+  connection,
+  lanes,
+  showOperatingBoard,
+  specialPanel,
+  onSelectCapability
+}: {
+  selectedArea: AreaViewState;
+  activeCapability: string;
+  context: AreaDetailContext;
+  connection: ConnectionData;
+  lanes: AreaDetailLane[];
+  showOperatingBoard: boolean;
+  specialPanel?: React.ReactNode;
+  onSelectCapability: (capability: string) => void;
+}) {
+  return (
+    <section className="department-management-shell" aria-label={`${selectedArea.label} department management shell`}>
+      <AreaDetailHero area={selectedArea} context={context} connection={connection} />
+      {specialPanel}
+      <AreaCapabilityRail activeCapability={activeCapability} onSelectCapability={onSelectCapability} />
+      {showOperatingBoard ? <AreaOperatingBoard lanes={lanes} /> : null}
+      <AreaCapabilityFocus
+        area={selectedArea}
+        activeCapability={activeCapability}
+        context={context}
+        connection={connection}
+        onSelectCapability={onSelectCapability}
+      />
+      <DepartmentImprovementLoop
+        area={selectedArea}
+        context={context}
+        connection={connection}
+        activeCapability={activeCapability}
+      />
+      <AreaEvidenceGrid context={context} />
+    </section>
+  );
+}
+
 function AreaDetailView({
   connection,
   externalMappings,
@@ -5262,6 +5394,21 @@ function AreaDetailView({
   const lanes = useMemo(() => areaDetailLanes(selectedArea, context, connection), [selectedArea, context, connection]);
   const isOperationsSystem = selectedArea.key === "04-operacje";
   const isMainSystem = selectedArea.key === "00-ogolny";
+  const departmentSpecialPanel = isMainSystem ? (
+    <MainIntakeSystemPanel
+      intake={intakeState.data}
+      status={intakeState.status}
+      connection={connection}
+      onSelectCapability={selectCapability}
+    />
+  ) : isOperationsSystem ? (
+    <OperationsManagementSystemPanel
+      area={selectedArea}
+      context={context}
+      connection={connection}
+      onSelectCapability={selectCapability}
+    />
+  ) : null;
 
   function selectArea(key: string) {
     setSelectedAreaKey(key);
@@ -5290,33 +5437,16 @@ function AreaDetailView({
         <MobileAreaSelector areas={areas} selectedArea={selectedArea} onSelectArea={selectArea} />
         <section className="area-detail-layout">
           <div className="area-detail-main">
-            <AreaDetailHero area={selectedArea} context={context} connection={connection} />
-            {isMainSystem ? (
-              <MainIntakeSystemPanel
-                intake={intakeState.data}
-                status={intakeState.status}
-                connection={connection}
-                onSelectCapability={selectCapability}
-              />
-            ) : null}
-            {isOperationsSystem ? (
-              <OperationsManagementSystemPanel
-                area={selectedArea}
-                context={context}
-                connection={connection}
-                onSelectCapability={selectCapability}
-              />
-            ) : null}
-            <AreaCapabilityRail activeCapability={activeCapability} onSelectCapability={selectCapability} />
-            {!isOperationsSystem && !isMainSystem ? <AreaOperatingBoard lanes={lanes} /> : null}
-            <AreaCapabilityFocus
-              area={selectedArea}
+            <DepartmentManagementShell
+              selectedArea={selectedArea}
               activeCapability={activeCapability}
               context={context}
               connection={connection}
+              lanes={lanes}
+              showOperatingBoard={!isOperationsSystem && !isMainSystem}
+              specialPanel={departmentSpecialPanel}
               onSelectCapability={selectCapability}
             />
-            <AreaEvidenceGrid context={context} />
           </div>
           <AreaDecisionRail area={selectedArea} context={context} connection={connection} />
         </section>

@@ -183,6 +183,15 @@ continue from repository files alone:
   DMS-07-001 Finance spec, DMS-07-002 price-list/hourly-value read model,
   DMS-03-005 discount/commercial exception read model, and DMS-05-002 archived
   client source audit.
+- `docs/planning/dms-shell-001-shared-department-management-shell-task-contract.md`:
+  active shared-shell handoff. As of 2026-05-16, selected-area department
+  routes render through `DepartmentManagementShell`, with
+  `DepartmentImprovementLoop` visible for feedback, defects, standards, and
+  next work. `00 Main` intake and `04 Operations` remain special panels inside
+  the shared shell. `npm run build:web`, `git diff --check`, and static SPA
+  Playwright proof for desktop `00`, `01`, `04` plus mobile `04` passed. The
+  next shell step is DMS-SHELL-002: department-specific subsystem registry and
+  copy for `00`-`12`.
 - `docs/architecture/web-layer-react-ownership.md`: current web route
   ownership contract. As of 2026-05-15, user-facing web routes are React-owned
   and served from the Vite bundle in `public/react/index.html`. The legacy
