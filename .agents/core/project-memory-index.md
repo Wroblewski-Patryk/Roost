@@ -349,6 +349,17 @@ continue from repository files alone:
   `/relationships?area=04-operacje` with no console/page errors or horizontal
   overflow. Future relationship fixes require explicit command contracts; do
   not add generic edge CRUD or fake links.
+- `docs/planning/v1-selected-area-knowledge-depth-task-contract.md`: current
+  task and evidence source for V1KNOW-001. As of 2026-05-16,
+  `/areas?area=:areaKey&view=knowledge` has a V1 knowledge-readiness layer
+  inside the selected-area shell. It shows Drive scope, agent packet
+  readiness, descriptions, freshness, agent-readable packet, and improvement
+  queue from existing Drive/knowledge/table context. `npm run build:web`
+  passed; Playwright proof on `http://127.0.0.1:3217` verified desktop/mobile
+  `/areas?area=04-operacje&view=knowledge` with seeded scoped Drive evidence,
+  no console/page errors, and no horizontal overflow. Future knowledge writes,
+  Drive edits, or autonomous source-trust decisions require explicit
+  contracts.
 - `docs/ux/v1-production-canonical-discrepancy-audit-2026-05-15.md`: current
   production-to-canonical discrepancy register for the five V1 web surfaces.
   It records the original deployed screenshots, root/auth mismatches,

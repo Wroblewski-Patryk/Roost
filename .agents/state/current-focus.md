@@ -9,11 +9,11 @@ route command, shared department shell, department subsystem registry, Finance
 system spec, commercial exception runtime API, Finance context runtime API,
 DMS-00-007 Paperclip background output review proof, DMS-SHELL-003 department
 data backbone, DMS-07-003 read-only Finance web board, DMS-04-001 Operations
-real-data proof, V1DATA-001 Data Evidence Browser, and V1REL-001 Area
-Relationship Provenance Review are verified locally. The next active slice is
-selected-area knowledge depth so department source coverage, Drive evidence,
-missing ownership, and agent-safe knowledge packets become as clear as table
-and relationship evidence.
+real-data proof, V1DATA-001 Data Evidence Browser, V1REL-001 Area
+Relationship Provenance Review, and V1KNOW-001 Selected Area Knowledge Depth
+are verified locally. The next active slice is selected-area tasks depth so
+department execution pressure, owner action, and AI handoff become as clear as
+table, relationship, and knowledge evidence.
 
 WEBFOUND-002/003/004, WEBFOUND-005, WEBFOUND-007, WEBFOUND-008A, WEBFOUND-008B, WEBFOUND-009, WEBFOUND-010, WEBFOUND-011, WEBFOUND-012, WEBFOUND-013, WEBFOUND-014, ACF-MAINT-001, V2VIS-001, and ACF-PROD-001 are now complete. The
 pre-V2 foundation has token-scoped multi-workspace owner switching, a workspace

@@ -62,6 +62,16 @@ Last updated: 2026-05-16
   overflow. Screenshots:
   `docs/ux/evidence/v1-relationship-provenance-desktop.png` and
   `docs/ux/evidence/v1-relationship-provenance-mobile.png`.
+  As of 2026-05-16, V1KNOW-001 deepened the selected-area `knowledge`
+  capability. `/areas?area=04-operacje&view=knowledge` now shows Drive scope,
+  agent packet readiness, description coverage, freshness/review signals, an
+  agent-readable packet list, and an improvement queue before the existing
+  knowledge tree. `npm run build:web` passed. Playwright real-backend proof on
+  `http://127.0.0.1:3217` registered a fresh owner, seeded scoped Google Drive
+  evidence for Operations, and verified desktop/mobile with no console/page
+  errors or horizontal overflow. Screenshots:
+  `docs/ux/evidence/v1-area-knowledge-depth-desktop.png` and
+  `docs/ux/evidence/v1-area-knowledge-depth-mobile.png`.
   As of 2026-05-16, DMS-00-003 implemented the first backend slice of
   `00 Main`: protected read-only `GET /v1/intake`. It aggregates existing
   agent events, provider inbox rows, unassigned Drive/provider resources,

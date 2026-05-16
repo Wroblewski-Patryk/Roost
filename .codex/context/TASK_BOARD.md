@@ -30,8 +30,8 @@
     creation, table/file coverage, and AI handoff readiness.
 ## In Progress
 
-- No active implementation task is currently in progress after the V1
-  relationship provenance proof.
+- No active implementation task is currently in progress after the V1 selected
+  area knowledge proof.
 
 ## Blocked
 
@@ -126,6 +126,20 @@
     overflow were observed. Validation backend and PostgreSQL were stopped.
   - Task contract:
     `docs/planning/v1-relationship-provenance-review-task-contract.md`.
+
+- V1KNOW-001 Selected-area knowledge depth.
+  - Evidence:
+    `/areas?area=04-operacje&view=knowledge` now renders a knowledge evidence
+    readiness panel inside the selected-area shell, including Drive scope,
+    agent packet readiness, description coverage, freshness/review signals,
+    an agent-readable packet list, and an improvement queue.
+  - Validation: `npm run build:web`, `git diff --check`, and Playwright
+    real-backend proof on `http://127.0.0.1:3217` for desktop/mobile
+    `/areas?area=04-operacje&view=knowledge`. No console/page errors or
+    horizontal overflow were observed. Validation backend and PostgreSQL were
+    stopped.
+  - Task contract:
+    `docs/planning/v1-selected-area-knowledge-depth-task-contract.md`.
 
 - DMS-07-003 Read-Only Finance Web Board.
   - Evidence:

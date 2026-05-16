@@ -407,6 +407,13 @@ type AreaKnowledgeTreeNode = {
   children: AreaKnowledgeTreeNode[];
 };
 
+type AreaKnowledgeSignal = {
+  label: string;
+  value: string;
+  detail: string;
+  tone: "ready" | "review" | "blocked";
+};
+
 type CompanyOsDrilldown = {
   id: CompanyOsCollectionName;
   label: string;
@@ -5519,10 +5526,119 @@ function AreaLayerWorkbench({
           <span><small>Drive</small><strong>{context.driveItems.length}</strong></span>
         </div>
       </div>
+      {activeCapability === "knowledge" ? <AreaKnowledgeDepthPanel context={context} /> : null}
       <div className="area-layer-grid">
         <AreaDataLayerPanel context={context} tables={tables} />
         <AreaKnowledgeTreePanel tree={knowledgeTree} driveItems={context.driveItems} />
       </div>
+    </section>
+  );
+}
+
+function AreaKnowledgeDepthPanel({ context }: { context: AreaDetailContext }) {
+  const driveItems = context.driveItems;
+  const knowledgeRecords = areaCapabilityRecords(context, "knowledge", 99);
+  const knowledgeTables = areaCapabilityTables(context, "knowledge");
+  const files = driveItems.filter((item) => !item.isFolder);
+  const folders = driveItems.filter((item) => item.isFolder);
+  const described = driveItems.filter((item) => Boolean(item.description?.trim()));
+  const missingDescriptions = driveItems.filter((item) => !item.description?.trim());
+  const staleOrReview = driveItems.filter((item) => {
+    const status = `${item.syncStatus || ""} ${item.scanStatus || ""}`.toLowerCase();
+    return item.trashed || status.includes("failed") || status.includes("error") || status.includes("pending");
+  });
+  const signals: AreaKnowledgeSignal[] = [
+    {
+      label: "Drive scope",
+      value: `${driveItems.length}`,
+      detail: driveItems.length > 0 ? "Scoped files and folders are ready for area context." : "No Drive evidence is scoped to this department.",
+      tone: driveItems.length > 0 ? "ready" : "blocked"
+    },
+    {
+      label: "Agent packet",
+      value: knowledgeRecords.length + driveItems.length > 0 ? "Readable" : "Empty",
+      detail: knowledgeRecords.length + driveItems.length > 0 ? "Paperclip can inspect existing knowledge context." : "Agents need scoped sources before using this department as knowledge context.",
+      tone: knowledgeRecords.length + driveItems.length > 0 ? "ready" : "blocked"
+    },
+    {
+      label: "Descriptions",
+      value: `${described.length}/${driveItems.length}`,
+      detail: missingDescriptions.length === 0 ? "Imported sources have owner-readable descriptions." : `${missingDescriptions.length} sources need descriptions or context notes.`,
+      tone: driveItems.length === 0 ? "blocked" : missingDescriptions.length === 0 ? "ready" : "review"
+    },
+    {
+      label: "Freshness",
+      value: `${staleOrReview.length}`,
+      detail: staleOrReview.length === 0 ? "No stale, failed, pending, or trashed source is visible." : "Review stale, pending, failed, or trashed imported sources.",
+      tone: staleOrReview.length === 0 ? "ready" : "review"
+    }
+  ];
+  const queue = [
+    driveItems.length === 0 ? "Import or scope Drive files for this department." : "",
+    knowledgeTables.length === 0 ? "Connect a knowledge table to this department." : "",
+    knowledgeRecords.length === 0 ? "Add or import knowledge records that summarize important source material." : "",
+    missingDescriptions.length > 0 ? "Add descriptions to imported files so agents understand why the source matters." : "",
+    staleOrReview.length > 0 ? "Review stale, pending, failed, or trashed Drive sources before using them as proof." : ""
+  ].filter(Boolean);
+
+  return (
+    <section className="area-knowledge-depth" aria-label="Knowledge evidence readiness">
+      <div className="area-knowledge-depth-header">
+        <div>
+          <p className="atlas-kicker">Knowledge evidence</p>
+          <h3>Source readiness for owner and AI work</h3>
+          <p>Drive, knowledge records, and table ownership are checked together before this department becomes trusted context.</p>
+        </div>
+        <a href="/settings/drive">Open Drive setup</a>
+      </div>
+      <div className="area-knowledge-signal-grid">
+        {signals.map((signal) => (
+          <article className={`area-knowledge-signal is-${signal.tone}`} key={signal.label}>
+            <span>{signal.label}</span>
+            <strong>{signal.value}</strong>
+            <p>{signal.detail}</p>
+          </article>
+        ))}
+      </div>
+      <div className="area-knowledge-depth-grid">
+        <article>
+          <div className="area-layer-panel-title">
+            <i className="ph-bold ph-file-magnifying-glass" aria-hidden="true"></i>
+            <h3>Agent-readable packet</h3>
+            <span>{files.length} files</span>
+          </div>
+          {driveItems.length === 0 ? (
+            <p className="area-layer-empty">No scoped Drive evidence is available for this department yet.</p>
+          ) : (
+            <div className="area-knowledge-packet-list">
+              {driveItems.slice(0, 8).map((item) => (
+                <a href={item.webViewLink || "/settings/drive"} target={item.webViewLink ? "_blank" : undefined} rel={item.webViewLink ? "noreferrer" : undefined} key={item.id}>
+                  <span>
+                    <strong>{item.name}</strong>
+                    <small>{item.description || (item.isFolder ? "Folder without description" : "File without description")}</small>
+                  </span>
+                  <em>{item.isFolder ? "folder" : fileIcon(item)}</em>
+                </a>
+              ))}
+            </div>
+          )}
+        </article>
+        <article>
+          <div className="area-layer-panel-title">
+            <i className="ph-bold ph-list-checks" aria-hidden="true"></i>
+            <h3>Improvement queue</h3>
+            <span>{queue.length}</span>
+          </div>
+          {queue.length === 0 ? (
+            <p className="area-layer-empty">Knowledge evidence has enough first-pass structure for supervised use.</p>
+          ) : (
+            <div className="area-knowledge-review-list">
+              {queue.map((item) => <span key={item}>{item}</span>)}
+            </div>
+          )}
+        </article>
+      </div>
+      <p className="area-knowledge-footnote">{folders.length} folders, {files.length} files, {knowledgeRecords.length} knowledge records, {knowledgeTables.length} knowledge tables.</p>
     </section>
   );
 }

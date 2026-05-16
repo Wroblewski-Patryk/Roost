@@ -4,11 +4,11 @@ Last updated: 2026-05-16
 
 ## NOW
 
-1. Deepen selected-area knowledge view.
+1. Deepen selected-area tasks view.
    - Source: `docs/ux/v1-web-view-index-2026-05-15.md`.
-   - Turn the selected department `knowledge` capability into a V1 evidence
-     view over Drive/source coverage, missing ownership, agent-safe knowledge
-     packets, and improvement candidates.
+   - Turn the selected department `tasks` capability into a V1 execution view
+     over task pressure, ownership gaps, agent handoff, and safe next actions
+     using existing task and Company OS contracts.
 
 ## NEXT
 
@@ -90,7 +90,7 @@ Last updated: 2026-05-16
      before raising production confidence.
 13. V1 operations route-depth slices.
    - Deepen one existing-contract workbench from the operations cockpit:
-     selected-area `knowledge`, then selected-area `tasks`.
+     selected-area `tasks`, then Company OS area-aware foundation polish.
 14. Production smoke for locally verified V1 command surfaces.
    - After the next deploy, compare public `/health` build metadata with the
      pushed commit.

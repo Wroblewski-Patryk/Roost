@@ -50,7 +50,7 @@ V0 means:
 | Owner Login | `/auth/login` | `V1 canonical` | `docs/ux/v1-web-view-index-2026-05-15.md` | `docs/ux/assets/companycore-v1-login-desktop-canonical.png` | `docs/ux/assets/companycore-v1-login-mobile-canonical.png` | How do I safely return to my private company operating room? | `docs/planning/v1-web-five-canonical-surfaces-task-contract.md` |
 | Owner Registration | `/auth/register` | `V1 canonical` | `docs/ux/v1-web-view-index-2026-05-15.md` | `docs/ux/assets/companycore-v1-register-desktop-canonical.png` | `docs/ux/assets/companycore-v1-register-mobile-canonical.png` | How do I create the first owner workspace? | `docs/planning/v1-web-five-canonical-surfaces-task-contract.md` |
 | Company Atlas | `/dashboard` | `V1 canonical` | `docs/ux/v1-simple-dashboard-canonical-spec-2026-05-15.md` | `docs/ux/assets/companycore-v1-dashboard-desktop-canonical.png` | `docs/ux/assets/companycore-v1-dashboard-mobile-canonical.png` | What matters across the company, which area owns it, and what should I open next? | `docs/planning/v1-area-first-pixel-perfect-task-contract.md` |
-| Selected Area Operating Room | `/areas?area=:areaKey&view=:viewId` | `V1 canonical` | `docs/ux/v1-area-detail-canonical-spec-2026-05-15.md` | `docs/ux/assets/companycore-v1-area-detail-desktop-canonical.png` | `docs/ux/assets/companycore-v1-area-detail-mobile-canonical.png` | What is happening inside this department, where is the proof, and what can I decide or delegate next? | `docs/planning/v1-area-detail-canonical-task-contract.md` |
+| Selected Area Operating Room | `/areas?area=:areaKey&view=:viewId` | `V1 canonical` | `docs/ux/v1-area-detail-canonical-spec-2026-05-15.md` | `docs/ux/assets/companycore-v1-area-detail-desktop-canonical.png` | `docs/ux/assets/companycore-v1-area-detail-mobile-canonical.png` | What is happening inside this department, where is the proof, and what can I decide or delegate next? | `docs/planning/v1-area-detail-canonical-task-contract.md`; `docs/planning/v1-selected-area-knowledge-depth-task-contract.md`; `docs/ux/evidence/v1-area-knowledge-depth-desktop.png`; `docs/ux/evidence/v1-area-knowledge-depth-mobile.png` |
 | Department Management Systems | `/areas?area=:areaKey&view=:viewId` for all 00-12 departments | `V1 target architecture` | `docs/ux/v1-department-management-systems-view-map.md` | to be generated per department | to be generated per department | How do I manage this department as a system with subsystems, evidence, actions, metrics, and AI handoff? | `docs/architecture/department-management-systems-architecture.md`; `docs/ux/v1-department-system-prompt-pack.md` |
 | Unified Settings | `/settings` plus `/settings/integrations`, `/settings/drive`, `/settings/api`, and `/react-agent-tools` section entries | `V1 canonical` | `docs/ux/v1-settings-canonical-spec-2026-05-15.md` | `docs/ux/assets/companycore-v1-settings-desktop-canonical.png` | `docs/ux/assets/companycore-v1-settings-mobile-canonical.png` | Where do I paste connector credentials, set active/sync policy, create Jarvis/Paperclip keys, and find MCP handoff fields without entering operational queues? | `docs/planning/v1-settings-react-implementation-task-contract.md`; `docs/ux/evidence/v1-settings-unified-proof-desktop.png`; `docs/ux/evidence/v1-settings-unified-proof-mobile.png`; `docs/ux/evidence/v1-settings-real-backend-desktop.png`; `docs/ux/evidence/v1-settings-drive-save-real-backend-desktop.png`; `docs/ux/evidence/v1-settings-real-backend-mobile.png` |
 | Operations Cockpit | `/operations` | `V1 canonical` | `docs/planning/v1-operations-cockpit-task-contract.md` | `docs/ux/evidence/v1-operations-cockpit-real-backend-desktop.png` | `docs/ux/evidence/v1-operations-cockpit-real-backend-mobile.png` | What do I need to supervise now across clients, tasks, department evidence, files, and AI-agent handoff? | `docs/planning/v1-operations-cockpit-task-contract.md`; `docs/ux/assets/companycore-v1-operations-cockpit-concept.png`; `docs/ux/evidence/v1-operations-cockpit-real-backend-desktop.png`; `docs/ux/evidence/v1-operations-cockpit-real-backend-mobile.png` |
@@ -183,11 +183,10 @@ V1 status:
 
 1. Deploy and run production smoke for `/operations`, AOG, and settings before raising production
    confidence.
-2. Deepen selected-area `knowledge` view.
-3. Deepen selected-area `tasks` view.
-4. Polish `/react-company-os` into
+2. Deepen selected-area `tasks` view.
+3. Polish `/react-company-os` into
    area-aware V1 foundations.
-5. Remove or hide compatibility aliases once no route references need them.
+4. Remove or hide compatibility aliases once no route references need them.
 
 ## Route Registry Rule
 
