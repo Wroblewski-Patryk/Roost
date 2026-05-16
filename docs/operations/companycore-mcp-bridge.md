@@ -89,6 +89,26 @@ messages. It supports:
 It writes only valid JSON-RPC messages to stdout. Operational logs go to
 stderr.
 
+## Tool Catalog Refresh
+
+The current bridge process caches `/v1/mcp/manifest` after the first manifest
+load and declares `tools.listChanged: false` during `initialize`. This is
+intentional until dynamic MCP tool-list notifications are implemented.
+
+Operational rule:
+
+- after adding, removing, renaming, or changing an MCP-visible CompanyCore
+  route, restart the bridge process before expecting `tools/list` to expose the
+  new catalog;
+- if the agent host caches MCP tools, reconnect the MCP server or start a new
+  agent session after the bridge restart;
+- verify the refreshed catalog with `npm run mcp:smoke` or a direct
+  `tools/list` inspection using the same service key profile.
+
+The architecture contract for discovery, refresh behavior, versioning, and
+future `notifications/tools/list_changed` support is recorded in
+`docs/architecture/mcp-tool-discovery-and-refresh-contract.md`.
+
 ## Tool Mapping
 
 Each CompanyCore MCP tool is generated from the API route manifest:
