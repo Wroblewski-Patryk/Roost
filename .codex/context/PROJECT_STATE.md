@@ -30,6 +30,16 @@ Last updated: 2026-05-16
   saved desktop/mobile screenshots with no horizontal overflow. Disposable
   Docker/Postgres proof timed out before port `55479` became available, so
   target/database smoke remains a deployment follow-up.
+  DMS-04-001 then completed the local database-backed proof on
+  `http://127.0.0.1:3214`: a fresh owner workspace was registered, real
+  Company OS records were seeded for business function, procedure, procedure
+  step, approval, and dependency, and desktop/mobile Playwright proof verified
+  the Operations board with those real records and no console/page errors or
+  horizontal overflow. The proof fixed a shared React loader regression where
+  Company OS table records were hidden because the frontend expected
+  per-collection `${apiSlug}:read` capabilities instead of the existing
+  `company-os:read` capability. `npm run build:web` passed after the fix.
+  Production smoke remains pending after deploy.
   As of 2026-05-16, DMS-00-003 implemented the first backend slice of
   `00 Main`: protected read-only `GET /v1/intake`. It aggregates existing
   agent events, provider inbox rows, unassigned Drive/provider resources,

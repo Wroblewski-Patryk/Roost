@@ -4,11 +4,11 @@ Last updated: 2026-05-16
 
 ## NOW
 
-1. DMS-04-001 Operations real-data proof.
-   - Source:
-     `docs/planning/operations-management-system-v1-task-contract.md`.
-   - Run database-backed or production proof for
-     `/areas?area=04-operacje&view=overview` after the latest shell changes.
+1. V1DATA-001 Evidence browser V1 workbench.
+   - Source: `docs/ux/v1-web-view-index-2026-05-15.md`.
+   - Convert `/data` and `/data/:table` from the older rebuild into a V1
+     evidence browser tied to departments, tables, Company OS records, and
+     agent-readable context.
 
 ## NEXT
 
@@ -66,12 +66,11 @@ Last updated: 2026-05-16
    - Use `DMS-07-001`, `DMS-03-005`, `DMS-03-006`, and `DMS-05-002` as the
      next scoped steps. Keep agents in analysis/proposal mode until pricing,
      invoice, payment, and discount write contracts are explicit.
-8. Run database-backed or production smoke for the `04 Operacje` department
-   system after deploy.
+8. Run production smoke for the `04 Operacje` department system after deploy.
    - Route: `/areas?area=04-operacje&view=overview`.
    - Source: `docs/planning/operations-management-system-v1-task-contract.md`.
-   - Frontend proof is complete with mocked owner data; target proof should
-     use a real owner session and deployed/current database data.
+   - Local database-backed proof is complete; target proof should compare the
+     deployed build metadata and use a real deployed owner session.
 9. AOG-BE-002 through AOG-BE-006 backend graph follow-ups.
    - After deployed AOG read proof is complete, plan and implement:
      `Target.metricId`,

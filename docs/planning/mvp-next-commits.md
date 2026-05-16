@@ -7,15 +7,12 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] DMS-04-001 Operations real-data proof:
-      run database-backed or production proof for the existing
-      `/areas?area=04-operacje&view=overview` Operations Management System.
-
-### NEXT
-
 - [ ] V1DATA-001 Evidence browser V1 workbench:
       convert `/data` and `/data/:table` from V0 rebuild into a V1 evidence
       browser tied to departments, tables, and agent-readable context.
+
+### NEXT
+
 - [ ] V1OPS-002 Production operations cockpit smoke:
       after the next deploy, compare public `/health` build metadata with the
       pushed commit and run authenticated `/operations`, `/tasks-adapter`, AOG,
@@ -140,6 +137,19 @@ and `docs/operations/v1-function-coverage-ledger.csv`.
       errors or horizontal overflow.
       Task contract:
       `docs/planning/dms-07-finance-web-board-task-contract.md`.
+- [x] DMS-04-001 Operations real-data proof:
+      fixed the shared React table-record loader so Company OS collections
+      covered by `company-os:read` load through `/v1/company-os/:collection`,
+      then proved `/areas?area=04-operacje&view=overview` against a real local
+      backend on `http://127.0.0.1:3214`. The proof registered an owner,
+      seeded a business function, procedure, procedure step, approval, and
+      dependency, and verified the Operations board on desktop/mobile with no
+      console/page errors or horizontal overflow.
+      Evidence:
+      `docs/ux/evidence/dms-ops-real-data-desktop.png` and
+      `docs/ux/evidence/dms-ops-real-data-mobile.png`.
+      Task contract:
+      `docs/planning/operations-management-system-v1-task-contract.md`.
 - [x] DMS-07-001 Finance system spec:
       defined the Finance Management System board, first safe web shape,
       protected read-only `GET /v1/finance/context` target, pricing model and

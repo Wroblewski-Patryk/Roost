@@ -37,8 +37,8 @@
     evidence browser tied to departments, tables, and agent-readable context.
 ## In Progress
 
-- No active implementation task is currently in progress after the local
-  04 Operations Management System implementation checkpoint.
+- No active implementation task is currently in progress after the
+  database-backed 04 Operations Management System proof.
 
 ## Blocked
 
@@ -376,14 +376,21 @@
     authenticated owners. The board derives planning, routines, controls,
     dependencies, approvals, business functions, and AI handoff signals from
     existing selected-area tables and links to existing Company OS, agent
-    tools, and API scope routes.
-  - Validation: `npm run build` and `git diff --check` passed. Playwright
-    authenticated mocked-owner proof verified desktop/mobile markers and no
-    horizontal overflow, with screenshots in
+    tools, and API scope routes. The shared table-record loader now treats
+    Company OS collections as readable when the owner has `company-os:read`,
+    so department tables backed by `/v1/company-os/:collection` load real
+    records instead of false zero-count states.
+  - Validation: `npm run build`, `npm run build:web`, and `git diff --check`
+    passed. Playwright authenticated mocked-owner proof verified
+    desktop/mobile markers and no horizontal overflow, with screenshots in
     `docs/ux/evidence/dms-ops-management-system-desktop.png` and
-    `docs/ux/evidence/dms-ops-management-system-mobile.png`.
-    Disposable Docker/Postgres proof timed out before port `55479` became
-    available.
+    `docs/ux/evidence/dms-ops-management-system-mobile.png`. Playwright
+    real-backend proof on `http://127.0.0.1:3214` registered an owner, seeded
+    real Company OS records for business function, procedure, procedure step,
+    approval, and dependency, and verified `/areas?area=04-operacje&view=overview`
+    on desktop/mobile with screenshots in
+    `docs/ux/evidence/dms-ops-real-data-desktop.png` and
+    `docs/ux/evidence/dms-ops-real-data-mobile.png`.
   - Task contract:
     `docs/planning/operations-management-system-v1-task-contract.md`.
 

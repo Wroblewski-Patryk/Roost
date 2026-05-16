@@ -817,7 +817,10 @@ export async function loadTableRecordSnapshot(
   const tables = connection.operatingModel.areas.flatMap((area) => area.tables || []);
   const readableCapabilities = new Set(connection.capabilities);
   const uniqueTables = [...new Map(tables
-    .filter((table) => readableCapabilities.has(`${table.apiSlug}:read`))
+    .filter((table) => (
+      readableCapabilities.has(`${table.apiSlug}:read`)
+      || (companyOsCollectionNames.has(table.apiSlug) && readableCapabilities.has("company-os:read"))
+    ))
     .map((table) => [table.apiSlug, table])).values()];
   const entries = await Promise.all(uniqueTables.map(async (table) => {
     try {

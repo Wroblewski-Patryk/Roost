@@ -5,7 +5,7 @@
 - Title: 04 Operations Management System V1 Read Model
 - Task Type: feature
 - Current Stage: verification
-- Status: VERIFIED_FRONTEND
+- Status: VERIFIED_REAL_DATA
 - Owner: Frontend Builder + Product Docs
 - Depends on: DMS-ARCH-001
 - Priority: P1
@@ -29,6 +29,7 @@
 - Included scope:
   - correct DMS documentation so `04` maps to Operacje in the current Company Atlas model;
   - add an operations-specific read-only management board in the selected-area React route;
+  - keep the shared React table-record loader aligned with Company OS read capabilities;
   - reuse existing tables and routes such as `procedures`, `procedure-steps`, `approvals`, `dependencies`, and `business-functions`;
   - update source-of-truth state files.
 - Explicit exclusions:
@@ -53,6 +54,7 @@ readiness, approvals, dependencies, and evidence.
 Allowed files:
 
 - `web/src/main.tsx`
+- `web/src/react-route-kit.tsx`
 - `web/src/styles.css`
 - `docs/architecture/department-management-systems-architecture.md`
 - `docs/ux/v1-department-management-systems-view-map.md`
@@ -84,9 +86,10 @@ Allowed files:
 - Validation evidence is captured in this task contract.
 
 ## Result Report
-- Status: PARTIALLY_VERIFIED
+- Status: VERIFIED
 - Files changed:
   - `web/src/main.tsx`
+  - `web/src/react-route-kit.tsx`
   - `web/src/styles.css`
   - `docs/architecture/department-management-systems-architecture.md`
   - `docs/ux/v1-department-management-systems-view-map.md`
@@ -103,7 +106,8 @@ Allowed files:
   - `.agents/state/module-confidence-ledger.md`
   - `docs/planning/mvp-next-commits.md`
 - Validation:
-  - `npm run build` passed.
+  - `npm run build` passed for the original UI implementation.
+  - `npm run build:web` passed after the real-data proof fix.
   - `git diff --check` passed.
   - Playwright authenticated mocked-owner proof for
     `http://127.0.0.1:3102/areas?area=04-operacje&view=overview` verified:
@@ -114,9 +118,20 @@ Allowed files:
   - Screenshots:
     `docs/ux/evidence/dms-ops-management-system-desktop.png` and
     `docs/ux/evidence/dms-ops-management-system-mobile.png`.
+  - Database-backed proof on `http://127.0.0.1:3214/areas?area=04-operacje&view=overview`
+    registered a fresh owner, seeded real Company OS records for a business
+    function, procedure, procedure step, approval, and dependency, and verified
+    the Operations board on desktop and mobile. The proof caught and fixed a
+    shared table-record loader gap: Company OS collections are readable through
+    `company-os:read`, not individual `${apiSlug}:read` capabilities.
+  - Real-data screenshots:
+    `docs/ux/evidence/dms-ops-real-data-desktop.png` and
+    `docs/ux/evidence/dms-ops-real-data-mobile.png`.
   - Temporary local server was stopped and port `3102` was no longer
     listening.
   - Headless browser processes from the validation run were cleaned up.
-- Residual risk: database-backed proof remains required after Docker or target
-  environment is available. A disposable Docker/Postgres attempt timed out
-  before port `55479` became available.
+  - The real-data validation backend on port `3214` and portable PostgreSQL on
+    port `55482` were stopped after the proof.
+- Residual risk: production smoke remains required after deploy. The panel is
+  still intentionally read-only; operations writes require explicit Company OS
+  command contracts and approval gates.

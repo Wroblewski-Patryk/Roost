@@ -6,11 +6,12 @@ Last updated: 2026-05-16
 
 Current DMS focus: the first `00 Main` intake API/web panel, proposal-only
 route command, shared department shell, department subsystem registry, Finance
-system spec, commercial exception runtime API, and Finance context runtime API
-are verified locally. DMS-00-007 also records the Paperclip background output
-review proof, and DMS-SHELL-003 is verified locally. The next active slice is
-DMS-04-001 Operations real-data proof. DMS-07-003 read-only Finance web board
-is also verified locally.
+system spec, commercial exception runtime API, Finance context runtime API,
+DMS-00-007 Paperclip background output review proof, DMS-SHELL-003 department
+data backbone, DMS-07-003 read-only Finance web board, and DMS-04-001
+Operations real-data proof are verified locally. The next active slice is
+V1DATA-001 Evidence browser V1 workbench so department table evidence becomes
+easier for the owner and Paperclip to inspect.
 
 WEBFOUND-002/003/004, WEBFOUND-005, WEBFOUND-007, WEBFOUND-008A, WEBFOUND-008B, WEBFOUND-009, WEBFOUND-010, WEBFOUND-011, WEBFOUND-012, WEBFOUND-013, WEBFOUND-014, ACF-MAINT-001, V2VIS-001, and ACF-PROD-001 are now complete. The
 pre-V2 foundation has token-scoped multi-workspace owner switching, a workspace

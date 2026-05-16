@@ -114,9 +114,12 @@ continue from repository files alone:
   `/areas?area=04-operacje&view=overview` adds a read-only Operations
   Management System board for planning, routines, controls, dependencies,
   approvals, and agent-safe handoff. It is build-verified and has
-  desktop/mobile authenticated mocked-owner proof under `docs/ux/evidence/`;
-  database-backed target smoke remains pending because disposable Docker
-  startup timed out in the local session.
+  desktop/mobile authenticated mocked-owner proof under `docs/ux/evidence/`.
+  As of DMS-04-001, local database-backed proof is also complete:
+  `/areas?area=04-operacje&view=overview` loaded real Company OS business
+  function, procedure, procedure-step, approval, and dependency records after
+  the shared React table-record loader was aligned with the existing
+  `company-os:read` capability. Production smoke remains pending after deploy.
 - `docs/architecture/department-management-systems-v1-blueprint.md`:
   detailed V1 blueprint for `00 Main` plus the 12 operating department
   management systems. As of 2026-05-16, future department work should use this
