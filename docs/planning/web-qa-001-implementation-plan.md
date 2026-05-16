@@ -2,8 +2,8 @@
 
 Date: 2026-05-16
 Task Type: frontend foundation implementation
-Current Stage: planning
-Status: READY
+Current Stage: verification
+Status: DONE
 Priority: P0
 
 ## Goal
@@ -284,3 +284,26 @@ This is a frontend-only foundation slice. If validation fails:
 - This plan is saved and linked from the active queue.
 - `WEB-QA-001` remains the next implementation task before new department UI.
 - No runtime implementation is performed in this planning stage.
+
+## Implementation Result
+
+Status: verified on 2026-05-16.
+
+Implemented:
+
+- i18n provider, dictionaries, language selector, locale persistence, and
+  `<html lang>` synchronization;
+- typed API client and user-facing error mapper;
+- shared `CcNotice`, `CcField`, and `CcTextInput`;
+- localized auth validation and friendly auth submit errors;
+- translated `CcDataTable` state labels;
+- layout/auth/public/department/API module split that keeps `main.tsx` focused
+  on provider and route composition.
+
+Validation:
+
+- `npm run build:web`
+- `npm run build:server`
+- Browser home smoke
+- Playwright fallback interaction proof on `http://127.0.0.1:3235`
+- cleanup proof for port `3235` and `chrome-headless-shell`

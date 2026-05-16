@@ -162,10 +162,16 @@ continue from repository files alone:
   department screens.
 - `docs/planning/web-qa-001-implementation-plan.md` and
   `docs/planning/web-qa-001-task-contract.md`: READY implementation handoff
-  for the next web foundation slice. It sequences i18n provider/dictionaries,
-  language selector, typed API client/errors, shared notices/live feedback,
-  shared auth form primitives, and minimal module split before `05
-  Relationships` or any other new department UI.
+  for the web foundation slice. As of 2026-05-16, WEB-QA-001 is implemented
+  and verified. Active React web has `web/src/i18n` English/Polish
+  dictionaries, selectable/persisted locale, `<html lang>` sync,
+  `web/src/api` typed errors, user-facing auth and packet error mapping,
+  `CcNotice`, `CcField`, `CcTextInput`, localized auth validation, translated
+  `CcDataTable` state labels, and a layout/auth/public/department/API module
+  split. `main.tsx` now owns provider wrapping and route selection only.
+  Browser home smoke passed; Browser form fill failed on email input, so
+  Playwright fallback completed the interaction proof. Future department UI
+  should reuse this foundation.
 - `docs/architecture/companycore-business-module-map.md`: accepted
   model-level module map for scaling CompanyCore as the bridge for operating
   the company. It classifies future work as native core, provider-backed,

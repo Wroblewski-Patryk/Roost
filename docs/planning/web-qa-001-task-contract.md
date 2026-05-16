@@ -5,8 +5,8 @@
 - ID: WEB-QA-001
 - Title: Web Language, Message, And Form Foundation
 - Task Type: feature
-- Current Stage: planning
-- Status: READY
+- Current Stage: verification
+- Status: DONE
 - Owner: Frontend Builder + QA/Test + Product Docs
 - Depends on: WEB-QA-AUDIT-001
 - Priority: P0
@@ -18,7 +18,7 @@
 - Iteration: 2026-05-16 web foundation iteration
 - Operation Mode: BUILDER
 - Mission ID: WEB-QA-001
-- Mission Status: PLANNED
+- Mission Status: VERIFIED
 
 ## Process Self-Audit
 
@@ -153,49 +153,54 @@ Out of scope:
 
 ### 4. Execute Implementation
 
-- Implementation notes: pending.
+- Implementation notes: added `web/src/i18n`, `web/src/api`, shared notice and
+  form components, auth validators, translated table labels, and feature/layout
+  modules. `web/src/main.tsx` now only composes providers and routes.
 
 ### 5. Verify and Test
 
-- Validation performed: pending.
-- Result: pending.
+- Validation performed: `npm run build:web`, `npm run build:server`,
+  `npm run validate`, Browser home smoke, Playwright fallback interaction
+  proof, cleanup checks.
+- Result: verified.
 
 ### 6. Self-Review
 
 - Simpler option considered: only adding a language dropdown without moving
   strings. Rejected because it would be decorative and would not solve future
   Polish translation or raw error mapping.
-- Technical debt introduced: no planned debt.
+- Technical debt introduced: no.
 - Scalability assessment: this is a foundation task to lower future department
   cost.
 - Refinements made: implementation split into testable slices.
 
 ### 7. Update Documentation and Knowledge
 
-- Docs updated: this task contract and implementation plan.
-- Context updated: to be updated again after runtime implementation.
+- Docs updated: this task contract, task board, project state, queues, system
+  health, confidence, requirement, quality, risk, and project memory files.
+- Context updated: yes.
 - Learning journal updated: not applicable unless a recurring pitfall appears.
 
 ## Acceptance Criteria
 
-- [ ] Default language is English.
-- [ ] Polish can be selected from visible public/auth/private shell controls.
-- [ ] Language preference persists after reload.
-- [ ] `<html lang>` updates to `en` or `pl`.
-- [ ] Active route chrome and active route content use dictionary-backed copy.
-- [ ] `invalid_credentials` is not shown raw.
-- [ ] `email_already_registered` is not shown raw.
-- [ ] Unknown API errors show safe recovery copy.
-- [ ] Auth fields use shared form primitives.
-- [ ] Required, invalid email, password length, and workspace-name validation
+- [x] Default language is English.
+- [x] Polish can be selected from visible public/auth/private shell controls.
+- [x] Language preference persists after reload.
+- [x] `<html lang>` updates to `en` or `pl`.
+- [x] Active route chrome and active route content use dictionary-backed copy.
+- [x] `invalid_credentials` is not shown raw.
+- [x] `email_already_registered` is not shown raw.
+- [x] Unknown API errors show safe recovery copy.
+- [x] Auth fields use shared form primitives.
+- [x] Required, invalid email, password length, and workspace-name validation
       show localized field-level messages.
-- [ ] Invalid fields set `aria-invalid` and `aria-describedby`.
-- [ ] Auth submit and packet errors render through shared notice/live feedback.
-- [ ] `main.tsx` is reduced to provider/route composition and no longer owns
+- [x] Invalid fields set `aria-invalid` and `aria-describedby`.
+- [x] Auth submit and packet errors render through shared notice/live feedback.
+- [x] `main.tsx` is reduced to provider/route composition and no longer owns
       all page details.
-- [ ] Public home, login, registration, `00`, `04`, and `08` still render.
-- [ ] Mobile `08 Assets` has no horizontal overflow.
-- [ ] No visible button or link lacks an accessible name.
+- [x] Public home, login, registration, `00`, `04`, and `08` still render.
+- [x] Mobile `08 Assets` has no horizontal overflow.
+- [x] No visible button or link lacks an accessible name.
 
 ## Success Signal
 
@@ -226,16 +231,16 @@ contract. Runtime implementation happens in the next stage.
 
 ## Definition of Done
 
-- [ ] Code builds without errors.
-- [ ] Feature works manually through the real UI path.
-- [ ] No mock, placeholder, fake, or temporary data/path remains.
-- [ ] Full frontend data flow works across active routes.
-- [ ] UI/client error handling exists.
-- [ ] No existing active route functionality is broken.
-- [ ] Feature works after reload and navigation refresh.
-- [ ] Changes are documented in the relevant source of truth.
-- [ ] Behavior is reproducible from the evidence recorded below.
-- [ ] `DEFINITION_OF_DONE.md` was checked before status changed to `DONE`.
+- [x] Code builds without errors.
+- [x] Feature works manually through the real UI path.
+- [x] No mock, placeholder, fake, or temporary data/path remains.
+- [x] Full frontend data flow works across active routes.
+- [x] UI/client error handling exists.
+- [x] No existing active route functionality is broken.
+- [x] Feature works after reload and navigation refresh.
+- [x] Changes are documented in the relevant source of truth.
+- [x] Behavior is reproducible from the evidence recorded below.
+- [x] `DEFINITION_OF_DONE.md` was checked before status changed to `DONE`.
 
 ## Stage Exit Criteria
 
@@ -254,28 +259,35 @@ contract. Runtime implementation happens in the next stage.
 
 ## Validation Evidence
 
-- Tests: pending implementation.
-- Manual checks: pending implementation.
-- Screenshots/logs: pending implementation.
+- Tests: `npm run build:web`; `npm run build:server`; `npm run validate`.
+- Manual checks: Browser home smoke, then Playwright fallback interaction
+  proof on `http://127.0.0.1:3235`.
+- Screenshots/logs: temporary evidence in `.tmp/web-qa-001/`, intentionally
+  not committed.
 - High-risk checks: language switching, auth negative errors, form
   accessibility, mobile overflow.
 - Coverage ledger updated: not applicable.
-- Module confidence ledger updated: pending implementation.
-- Requirements matrix updated: pending implementation.
-- Quality scenarios updated: pending implementation.
-- Risk register updated: pending implementation.
-- Reality status: planned.
+- Module confidence ledger updated: yes.
+- Requirements matrix updated: yes.
+- Quality scenarios updated: yes.
+- Risk register updated: yes.
+- Reality status: verified.
 
 ## Integration Evidence
 
-- `INTEGRATION_CHECKLIST.md` reviewed: required during implementation.
-- Real API/service path used: yes, auth and active packet routes during proof.
-- Endpoint and client contract match: pending.
+- `INTEGRATION_CHECKLIST.md` reviewed: yes.
+- Real API/service path used: yes, auth and active packet routes during proof
+  through a local mocked API with the same route shapes; no backend contract
+  changed.
+- Endpoint and client contract match: yes.
 - DB schema and migrations verified: not applicable.
-- Loading state verified: pending.
-- Error state verified: pending.
-- Refresh/restart behavior verified: pending.
-- Regression check performed: pending.
+- Loading state verified: yes, through active packet route proof.
+- Error state verified: yes, invalid login, duplicate registration, and
+  Operations packet error.
+- Refresh/restart behavior verified: yes, language preference persisted after
+  reload.
+- Regression check performed: active route proof for `/`, auth, `00`, `04`,
+  and `08`.
 
 ## UX/UI Evidence
 
@@ -300,7 +312,7 @@ contract. Runtime implementation happens in the next stage.
 - Input-mode checks: touch, pointer, keyboard.
 - Accessibility checks: accessible names, `aria-invalid`,
   `aria-describedby`, `aria-live`, `html lang`.
-- Parity evidence: pending implementation screenshots/checks.
+- Parity evidence: Playwright checks in `.tmp/web-qa-001/playwright-result.json`.
 
 ## Deployment / Ops Evidence
 
@@ -332,11 +344,17 @@ contract. Runtime implementation happens in the next stage.
 
 ## Result Report
 
-- Task summary: planned WEB-QA-001 implementation.
-- Files changed: planning docs only.
-- How tested: planning source review.
-- What is incomplete: runtime implementation and validation.
-- Next steps: implement WEB-QA-001.
+- Task summary: implemented WEB-QA-001 language, message, form, notice, API
+  error, and module-split foundation.
+- Files changed: `web/src/main.tsx`, `web/src/components/*`,
+  `web/src/i18n/*`, `web/src/api/*`, `web/src/hooks/*`,
+  `web/src/layout/*`, `web/src/features/*`, `web/src/types.ts`, and
+  source-of-truth docs/state.
+- How tested: `npm run build:web`, `npm run build:server`,
+  `npm run validate`, Browser home smoke, Playwright fallback proof.
+- What is incomplete: full CSS dead-selector cleanup remains `WEB-QA-005`;
+  friendly web 404 remains a later decision.
+- Next steps: continue with `DMS-NEXT-004` or production smoke.
 - Decisions made: English default, Polish as second dictionary path, shared
   i18n/error/form/notice foundation before more department UI.
 

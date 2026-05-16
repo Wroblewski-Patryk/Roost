@@ -1,5 +1,6 @@
 import React from "react";
 import { CcButton } from "./cc-button";
+import { CcNotice } from "./cc-notice";
 
 export type CcTableColumn<Row> = {
   key: string;
@@ -22,8 +23,18 @@ export type CcDataTableProps<Row extends { id: string }> = {
   rows: Row[];
   emptyTitle: string;
   emptyDetail: string;
+  labels?: {
+    loadingTitle: string;
+    loadingDetail: string;
+    errorTitle: string;
+    actions: string;
+    previous: string;
+    next: string;
+    pagination: (state: { start: number; end: number; total: number }) => string;
+  };
   loading?: boolean;
   error?: string | null;
+  errorAction?: React.ReactNode;
   density?: "compact" | "comfortable";
   mobileMode?: "scroll" | "cards";
   pagination?: CcTablePagination;
@@ -32,41 +43,20 @@ export type CcDataTableProps<Row extends { id: string }> = {
   tableMinWidthClassName?: string;
 };
 
-function CcTableState({
-  tone,
-  title,
-  detail
-}: {
-  tone: "info" | "error" | "loading";
-  title: string;
-  detail: string;
-}) {
-  const toneClass = {
-    info: "border-info/30 bg-info/10",
-    error: "border-error/35 bg-error/10",
-    loading: "border-base-300 bg-base-200/55"
-  }[tone];
-  const icon = {
-    info: "ph-info",
-    error: "ph-warning-diamond",
-    loading: "ph-circle-notch"
-  }[tone];
+const defaultLabels: NonNullable<CcDataTableProps<{ id: string }>["labels"]> = {
+  loadingTitle: "Loading records",
+  loadingDetail: "CompanyCore is preparing this table view.",
+  errorTitle: "Table could not load",
+  actions: "Actions",
+  previous: "Previous",
+  next: "Next",
+  pagination: ({ start, end, total }) => `${start}-${end} of ${total}`
+};
 
-  return (
-    <div className={`grid grid-cols-[auto_minmax(0,1fr)] gap-3 rounded-company border p-4 ${toneClass}`} role="status">
-      <i className={`ph-bold ${icon} mt-0.5 text-xl ${tone === "loading" ? "animate-spin" : ""}`} aria-hidden="true"></i>
-      <div>
-        <strong className="block">{title}</strong>
-        <p className="text-sm leading-6">{detail}</p>
-      </div>
-    </div>
-  );
-}
-
-function paginationLabel(pagination: CcTablePagination) {
+function paginationState(pagination: CcTablePagination) {
   const start = pagination.totalRows === 0 ? 0 : ((pagination.page - 1) * pagination.pageSize) + 1;
   const end = Math.min(pagination.page * pagination.pageSize, pagination.totalRows);
-  return `${start}-${end} of ${pagination.totalRows}`;
+  return { start, end, total: pagination.totalRows };
 }
 
 export function CcDataTable<Row extends { id: string }>({
@@ -74,8 +64,10 @@ export function CcDataTable<Row extends { id: string }>({
   rows,
   emptyTitle,
   emptyDetail,
+  labels,
   loading = false,
   error = null,
+  errorAction,
   density = "comfortable",
   mobileMode = "scroll",
   pagination,
@@ -84,11 +76,12 @@ export function CcDataTable<Row extends { id: string }>({
   tableMinWidthClassName = "min-w-[640px]"
 }: CcDataTableProps<Row>) {
   const tableDensityClass = density === "compact" ? "table-sm" : "";
+  const tableLabels = { ...defaultLabels, ...labels };
 
   if (loading) {
     return (
       <div className="rounded-company border border-base-300 bg-base-100 p-4">
-        <CcTableState tone="loading" title="Loading records" detail="CompanyCore is preparing this table view." />
+        <CcNotice tone="loading" title={tableLabels.loadingTitle} detail={tableLabels.loadingDetail} />
       </div>
     );
   }
@@ -96,7 +89,7 @@ export function CcDataTable<Row extends { id: string }>({
   if (error) {
     return (
       <div className="rounded-company border border-base-300 bg-base-100 p-4">
-        <CcTableState tone="error" title="Table could not load" detail={error} />
+        <CcNotice tone="error" title={tableLabels.errorTitle} detail={error} action={errorAction} live />
       </div>
     );
   }
@@ -104,7 +97,7 @@ export function CcDataTable<Row extends { id: string }>({
   if (rows.length === 0) {
     return (
       <div className="rounded-company border border-dashed border-base-300 bg-base-200/45 p-5">
-        <CcTableState tone="info" title={emptyTitle} detail={emptyDetail} />
+        <CcNotice tone="info" title={emptyTitle} detail={emptyDetail} />
       </div>
     );
   }
@@ -117,7 +110,7 @@ export function CcDataTable<Row extends { id: string }>({
             {columns.map((column) => (
               <th className={column.className} key={column.key}>{column.header}</th>
             ))}
-            {rowActions ? <th>Actions</th> : null}
+            {rowActions ? <th>{tableLabels.actions}</th> : null}
           </tr>
         </thead>
         <tbody>
@@ -163,7 +156,7 @@ export function CcDataTable<Row extends { id: string }>({
       ) : table}
       {pagination ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-company border border-base-300 bg-base-100 px-3 py-2 text-sm">
-          <span className="font-black text-company-muted">{paginationLabel(pagination)}</span>
+          <span className="font-black text-company-muted">{tableLabels.pagination(paginationState(pagination))}</span>
           <div className="flex gap-2">
             <CcButton
               disabled={!pagination.onPrevious || pagination.page <= 1}
@@ -171,7 +164,7 @@ export function CcDataTable<Row extends { id: string }>({
               size="sm"
               variant="ghost"
             >
-              Previous
+              {tableLabels.previous}
             </CcButton>
             <CcButton
               disabled={!pagination.onNext || pagination.page * pagination.pageSize >= pagination.totalRows}
@@ -179,7 +172,7 @@ export function CcDataTable<Row extends { id: string }>({
               size="sm"
               variant="ghost"
             >
-              Next
+              {tableLabels.next}
             </CcButton>
           </div>
         </div>

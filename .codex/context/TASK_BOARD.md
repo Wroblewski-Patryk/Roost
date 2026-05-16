@@ -2,17 +2,6 @@
 
 ## Ready
 
-- WEB-QA-001 Web language, message, and form foundation.
-  - Stage: planning
-  - Owner: Frontend Builder + QA/Test + Product Docs
-  - Priority: P0
-  - Source: `docs/planning/web-foundation-quality-audit-2026-05-16.md`
-  - Plan: `docs/planning/web-qa-001-implementation-plan.md`
-  - Task contract: `docs/planning/web-qa-001-task-contract.md`
-  - Goal: implement the next web-foundation quality slice before adding more
-    departments: default English UI with a persistent language selector and
-    Polish dictionary path, shared user-facing API error mapping, shared form
-    field/validation primitives, and centralized notices/action feedback.
 - DMS-NEXT-004 Relationships Management read packet and board.
   - Stage: planning
   - Owner: Product Docs + Backend Builder + Frontend Builder
@@ -135,6 +124,28 @@
   auto-deploy webhook administration task.
 
 ## Done
+
+- WEB-QA-001 Web language, message, and form foundation.
+  - Evidence: active React web now has default-English i18n with Polish
+    selectable and persisted, `<html lang>` synchronization, typed API client
+    errors, user-facing error mapping, shared `CcNotice`, shared `CcField` and
+    `CcTextInput`, auth validators, localized auth field and submit errors,
+    translated shared table state labels, and a module split for layout, auth,
+    public home, department views, API, hooks, and shared types. `main.tsx`
+    now owns provider wrapping and route selection only. Task contract:
+    `docs/planning/web-qa-001-task-contract.md`.
+  - Validation: `npm run build:web`; `npm run build:server`; Browser plugin
+    home smoke passed but Browser form fill failed on email input, so
+    Playwright fallback completed the interaction proof on a temporary mocked
+    API server at `http://127.0.0.1:3235`. Proof covered default English,
+    Polish switch, language persistence, `<html lang>` update, friendly
+    invalid-login and duplicate-registration messages without raw codes,
+    password validation with `aria-invalid` and `aria-describedby`, login
+    redirect to `00 General`, friendly Operations packet error, mobile `08
+    Assets` with no horizontal overflow, and zero unnamed visible controls.
+    Expected negative-test network statuses were `401`, `409`, and `500`;
+    no page errors occurred. Temporary server was stopped and no
+    `chrome-headless-shell` process remained.
 
 - ORG-ARCH-002 Unified organizational operating system architecture.
   - Evidence:

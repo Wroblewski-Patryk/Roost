@@ -80,7 +80,15 @@ Last updated: 2026-05-16
   should be `WEB-QA-001`: default-English i18n with a persistent selector and
   Polish dictionary path, user-facing API error mapping, shared form
   field/validation primitives, and centralized notices/action feedback before
-  more department screens are added.
+  more department screens are added. `WEB-QA-001` is now implemented and
+  verified: `web/src/i18n` provides English/Polish dictionaries and
+  `<html lang>` sync, `web/src/api` provides typed API errors, auth and packet
+  errors are user-facing, `CcNotice`, `CcField`, and `CcTextInput` provide
+  shared feedback/form behavior, `CcDataTable` accepts translated state
+  labels, and `main.tsx` has been reduced to route/provider composition over
+  layout/auth/department/API modules. `npm run build:web`,
+  `npm run build:server`, `npm run validate`, Browser home smoke, and
+  Playwright fallback interaction proof passed.
   `npm run build:web`, `npm run build:server`, Playwright route proof, and
   `git diff --check` passed. The next runtime slice should rebuild any new web
   surface only through a scoped department-system task contract, with `05

@@ -7,23 +7,15 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] Implement `WEB-QA-001` Web language, message, and form foundation before
-      adding more department screens. The cleaned active web base is
-      production-testable, but `WEB-QA-AUDIT-001` found that i18n, user-facing
-      API error mapping, form primitives, and centralized notice/action
-      feedback must be shared now to avoid duplicated UX behavior. Default UI
-      language remains English; Polish support should be added through a
-      dictionary/selector path, not page-local copy forks. Implementation
-      plan: `docs/planning/web-qa-001-implementation-plan.md`. Task contract:
-      `docs/planning/web-qa-001-task-contract.md`.
 - [ ] Continue V1 department systems with `DMS-NEXT-004` Relationships
-      Management read packet and board after `WEB-QA-001`, unless deployment
-      smoke is selected first. The owner-approved `00 Main -> 04 Operations ->
+      Management read packet and board, unless deployment smoke is selected
+      first. The owner-approved `00 Main -> 04 Operations ->
       08 Assets` checkpoint is complete through shared primitives, verified
       backend packets, selected-area UI adoption, CC-AUDIT-001 post-login
-      dashboard proof, and WEB-CORE-001 active web cleanup. CompanyCore remains
-      the operating system; AI agents remain external API/MCP clients. Do not
-      restore old private workbench screens without a scoped task contract.
+      dashboard proof, WEB-CORE-001 active web cleanup, and WEB-QA-001
+      language/error/form foundation. CompanyCore remains the operating
+      system; AI agents remain external API/MCP clients. Do not restore old
+      private workbench screens without a scoped task contract.
 
 ### NEXT
 
@@ -80,6 +72,16 @@ synchronized with `.codex/context/TASK_BOARD.md`.
       primitives, and centralized notices are implemented. Validation:
       source review, Playwright fallback proof on a temporary mocked API
       server, `npm run build:web`, and `npm run build:server`.
+- [x] Runtime checkpoint completed for `WEB-QA-001`: active React web now has
+      default-English i18n, selectable/persisted Polish, `<html lang>` sync,
+      typed API errors, friendly auth and packet error messages, shared notice
+      feedback, shared form fields, localized auth validation, translated table
+      states, and a layout/auth/department/API module split. Validation:
+      `npm run build:web`, `npm run build:server`, `npm run validate`,
+      Browser home smoke, and Playwright fallback proof for language switching,
+      reload persistence,
+      auth errors without raw codes, field `aria-invalid`/`aria-describedby`,
+      post-login `00 General`, Operations error, and mobile `08 Assets`.
 - [ ] Continue V1 department systems after the `00 -> 04 -> 08` loop has the
       next planning/runtime checkpoint. `03 Sales` read packet and board is
       complete locally; the broader sequence remains `05 Relationships`,
