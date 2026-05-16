@@ -1182,6 +1182,118 @@ label {
   text-transform: uppercase;
 }
 
+.finance-management-board {
+  display: grid;
+  gap: 0.95rem;
+  min-width: 0;
+  border: 1px solid #d8e1ee;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.94);
+  padding: 1rem;
+  box-shadow: 0 18px 54px rgb(7 18 37 / 0.07);
+}
+
+.finance-board-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.72rem;
+}
+
+.finance-board-panel {
+  display: grid;
+  align-content: start;
+  gap: 0.65rem;
+  min-width: 0;
+  border: 1px solid rgb(216 225 238 / 0.88);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 0.82rem;
+}
+
+.finance-board-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.finance-board-list span,
+.finance-board-list p {
+  display: grid;
+  gap: 0.18rem;
+  min-width: 0;
+  border-top: 1px solid rgb(216 225 238 / 0.72);
+  padding-top: 0.5rem;
+}
+
+.finance-board-list span:first-child,
+.finance-board-list p:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.finance-board-list strong {
+  color: #071225;
+  font-size: 0.78rem;
+  font-weight: 950;
+  overflow-wrap: anywhere;
+}
+
+.finance-board-list small,
+.finance-board-list em,
+.finance-board-list p {
+  color: #51627f;
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 730;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.finance-board-list em {
+  color: #2364d2;
+  font-weight: 900;
+}
+
+.finance-decision-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.finance-decision-strip article {
+  display: grid;
+  align-content: start;
+  gap: 0.42rem;
+  min-width: 0;
+  border: 1px solid rgb(216 225 238 / 0.86);
+  border-radius: 8px;
+  background: rgb(248 250 252 / 0.94);
+  padding: 0.72rem;
+}
+
+.finance-decision-strip strong {
+  color: #071225;
+  font-size: 0.72rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.finance-decision-strip span,
+.finance-decision-strip button {
+  justify-self: start;
+  border: 1px solid rgb(216 225 238 / 0.9);
+  border-radius: 999px;
+  background: #ffffff;
+  padding: 0.34rem 0.52rem;
+  color: #51627f;
+  font-size: 0.64rem;
+  font-weight: 850;
+  text-align: left;
+}
+
+.finance-decision-strip button {
+  cursor: pointer;
+}
+
 .area-detail-actions {
   display: flex;
   flex-wrap: wrap;
@@ -2722,7 +2834,9 @@ label {
 
   .department-system-brief,
   .department-subsystem-grid,
-  .department-backbone-grid {
+  .department-backbone-grid,
+  .finance-board-grid,
+  .finance-decision-strip {
     grid-template-columns: 1fr;
   }
 

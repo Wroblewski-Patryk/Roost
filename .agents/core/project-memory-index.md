@@ -233,6 +233,14 @@ continue from repository files alone:
   selected-area shell. `npm run build:web`, `git diff --check`, and
   Playwright proof on `http://127.0.0.1:3212` verified `01`, `07`, and `12`
   desktop/mobile with no console/page errors or horizontal overflow.
+- `docs/planning/dms-07-finance-web-board-task-contract.md`: Finance web
+  board handoff. As of 2026-05-16, `/areas?area=07-finanse&view=overview`
+  renders `FinanceManagementBoard` from `GET /v1/finance/context`, showing
+  pricing candidates, `150 CHF/hour`, commercial exceptions, invoice blockers,
+  source conflicts, and blocked finance actions. `npm run build:web`,
+  `git diff --check`, and Playwright proof on `http://127.0.0.1:3213`
+  verified desktop/mobile with no console/page errors or horizontal overflow.
+  Finance writes remain blocked.
 - `docs/planning/dms-03-commercial-exception-read-model-spec.md`: active
   Sales/Finance commercial exception handoff. As of 2026-05-16, DMS-03-005
   defines protected read-only `GET /v1/commercial-exceptions`, exception packet

@@ -265,6 +265,65 @@ type IntakeData = {
   items: IntakeItem[];
 };
 
+type FinanceContextData = {
+  summary: {
+    candidatePricingModels: number;
+    activePricingModels: number;
+    needsOwnerDecision: number;
+    openCommercialExceptions: number;
+    invoiceReadinessBlocked: number;
+    highRiskItems: number;
+  };
+  pricingModels: Array<{
+    id: string;
+    name: string;
+    market: string;
+    currency: string;
+    setupFee: number | null;
+    recurringFee: number | null;
+    hourlyValue: number | null;
+    status: string;
+    riskFlags: string[];
+    ownerDecisionNeeded: boolean;
+  }>;
+  hourlyValueAssumptions: Array<{
+    id: string;
+    roleOrUnit: string;
+    valuePerHour: number;
+    costPerHour: number | null;
+    currency: string;
+    status: string;
+    riskFlags: string[];
+  }>;
+  commercialExceptions: Array<{
+    id: string;
+    exceptionType: string;
+    status: string;
+    clientName: string | null;
+    grossValue: number | null;
+    discountPercent: number | null;
+    finalValue: number | null;
+    currency: string | null;
+    riskFlags: string[];
+  }>;
+  invoiceReadiness: Array<{
+    id: string;
+    readinessStatus: string;
+    missingEvidence: string[];
+    blockedActions: Array<{ action: string; reason: string }>;
+  }>;
+  sourceConflicts: Array<{
+    type: string;
+    status: string;
+    message: string;
+  }>;
+  agentPacket: {
+    mode: string;
+    requiredOwnerDecisions: string[];
+    blockedActions: Array<{ action: string; reason: string }>;
+  };
+};
+
 type IntakeRouteProposal = {
   proposal: {
     id: string;
@@ -584,6 +643,10 @@ async function loadAreaOperatingGraph(areaKey: string) {
 
 async function loadGlobalIntake(query = "limit=80") {
   return ownerApi<IntakeData>(`/v1/intake?${query}`);
+}
+
+async function loadFinanceContext(query = "limit=80") {
+  return ownerApi<FinanceContextData>(`/v1/finance/context?${query}`);
 }
 
 async function proposeIntakeRoute(item: IntakeItem, targetDepartmentKey: string) {
@@ -2689,6 +2752,177 @@ function MainIntakeSection({
         </div>
       )}
     </article>
+  );
+}
+
+function moneyValue(value: number | null, currency: string | null) {
+  if (value == null) {
+    return "Source needed";
+  }
+  return `${value.toLocaleString("en-US")} ${currency || ""}`.trim();
+}
+
+function FinanceManagementBoard({
+  finance,
+  status,
+  onSelectCapability
+}: {
+  finance: FinanceContextData | null;
+  status: "idle" | "loading" | "ready" | "error";
+  onSelectCapability: (capability: string) => void;
+}) {
+  const summary = finance?.summary;
+  const pricingModels = finance?.pricingModels ?? [];
+  const hourlyAssumptions = finance?.hourlyValueAssumptions ?? [];
+  const exceptions = finance?.commercialExceptions ?? [];
+  const invoiceBlockers = (finance?.invoiceReadiness ?? []).filter((item) => item.readinessStatus === "blocked").slice(0, 4);
+  const conflicts = finance?.sourceConflicts ?? [];
+  const blockedActions = finance?.agentPacket.blockedActions ?? [];
+  const metrics = [
+    { label: "Candidates", value: summary?.candidatePricingModels ?? 0, icon: "ph-tag" },
+    { label: "Owner decisions", value: summary?.needsOwnerDecision ?? 0, icon: "ph-seal-warning" },
+    { label: "Exceptions", value: summary?.openCommercialExceptions ?? 0, icon: "ph-percent" },
+    { label: "Invoice blockers", value: summary?.invoiceReadinessBlocked ?? 0, icon: "ph-file-lock" },
+    { label: "High risk", value: summary?.highRiskItems ?? 0, icon: "ph-shield-warning" }
+  ];
+
+  return (
+    <section className="finance-management-board" id="finance-management-board" aria-label="07 Finance management board">
+      <div className="operations-system-header">
+        <div>
+          <p className="atlas-kicker">07 Finance And Billing Management System</p>
+          <h2>Pricing, value, exceptions, invoice readiness</h2>
+          <p>
+            Read-only finance context for owner decisions and Paperclip analysis.
+            Active pricing, quotes, discounts, invoices, and payments stay blocked.
+          </p>
+        </div>
+        <a className="atlas-primary-action" href="/v1/finance/context">
+          <i className="ph-bold ph-database" aria-hidden="true"></i>
+          API packet
+        </a>
+      </div>
+
+      <div className="main-intake-status-row">
+        <span className={`main-intake-status is-${status}`}>
+          <i className="ph-bold ph-pulse" aria-hidden="true"></i>
+          {status === "loading" ? "Loading finance" : status === "error" ? "Finance unavailable" : "Read-only finance"}
+        </span>
+        <span className="main-intake-status is-ready">
+          <i className="ph-bold ph-lock-key" aria-hidden="true"></i>
+          No money writes
+        </span>
+      </div>
+
+      <div className="operations-system-metrics" aria-label="Finance metrics">
+        {metrics.map((metric) => (
+          <span key={metric.label}>
+            <i className={`ph-bold ${metric.icon}`} aria-hidden="true"></i>
+            <small>{metric.label}</small>
+            <strong>{metric.value}</strong>
+          </span>
+        ))}
+      </div>
+
+      <div className="finance-board-grid">
+        <article className="finance-board-panel">
+          <div className="area-layer-panel-title">
+            <i className="ph-bold ph-tag" aria-hidden="true"></i>
+            <h3>Price policy candidates</h3>
+            <span>{pricingModels.length}</span>
+          </div>
+          <div className="finance-board-list">
+            {pricingModels.length === 0 ? (
+              <p>No pricing model source is visible for the current filter.</p>
+            ) : pricingModels.slice(0, 4).map((model) => (
+              <span key={model.id}>
+                <strong>{model.name}</strong>
+                <small>{model.market} / {model.status.replace(/_/g, " ")}</small>
+                <em>
+                  {model.setupFee ? `${moneyValue(model.setupFee, model.currency)} setup + ` : ""}
+                  {model.recurringFee ? `${moneyValue(model.recurringFee, model.currency)}/mo` : "Archive/context"}
+                </em>
+              </span>
+            ))}
+          </div>
+        </article>
+
+        <article className="finance-board-panel">
+          <div className="area-layer-panel-title">
+            <i className="ph-bold ph-clock" aria-hidden="true"></i>
+            <h3>Hourly value</h3>
+            <span>{hourlyAssumptions.length}</span>
+          </div>
+          <div className="finance-board-list">
+            {hourlyAssumptions.map((assumption) => (
+              <span key={assumption.id}>
+                <strong>{moneyValue(assumption.valuePerHour, assumption.currency)} / hour</strong>
+                <small>{assumption.roleOrUnit}</small>
+                <em>{assumption.status.replace(/_/g, " ")}</em>
+              </span>
+            ))}
+          </div>
+        </article>
+
+        <article className="finance-board-panel">
+          <div className="area-layer-panel-title">
+            <i className="ph-bold ph-percent" aria-hidden="true"></i>
+            <h3>Commercial exceptions</h3>
+            <span>{exceptions.length}</span>
+          </div>
+          <div className="finance-board-list">
+            {exceptions.length === 0 ? (
+              <p>No discount or pro-bono exception is visible yet.</p>
+            ) : exceptions.slice(0, 4).map((exception) => (
+              <span key={exception.id}>
+                <strong>{exception.discountPercent ?? "?"}% {exception.exceptionType.replace(/_/g, " ")}</strong>
+                <small>{exception.clientName || "Client source needed"} / {exception.status.replace(/_/g, " ")}</small>
+                <em>{moneyValue(exception.finalValue, exception.currency)}</em>
+              </span>
+            ))}
+          </div>
+        </article>
+
+        <article className="finance-board-panel">
+          <div className="area-layer-panel-title">
+            <i className="ph-bold ph-file-lock" aria-hidden="true"></i>
+            <h3>Invoice blockers</h3>
+            <span>{invoiceBlockers.length}</span>
+          </div>
+          <div className="finance-board-list">
+            {invoiceBlockers.length === 0 ? (
+              <p>No invoice-ready work exists yet; provider commands remain blocked.</p>
+            ) : invoiceBlockers.map((blocker) => (
+              <span key={blocker.id}>
+                <strong>{blocker.readinessStatus.replace(/_/g, " ")}</strong>
+                <small>{blocker.missingEvidence.slice(0, 3).join(", ") || "owner review"}</small>
+                <em>blocked</em>
+              </span>
+            ))}
+          </div>
+        </article>
+      </div>
+
+      <div className="finance-decision-strip">
+        <article>
+          <strong>Source conflicts</strong>
+          {conflicts.length === 0 ? <span>No conflict visible.</span> : conflicts.slice(0, 3).map((conflict) => (
+            <span key={`${conflict.type}-${conflict.message}`}>{conflict.message}</span>
+          ))}
+        </article>
+        <article>
+          <strong>Blocked actions</strong>
+          {blockedActions.slice(0, 5).map((action) => (
+            <span key={action.action}>{action.action.replace(/_/g, " ")}</span>
+          ))}
+        </article>
+        <article>
+          <strong>Next owner views</strong>
+          <button type="button" onClick={() => onSelectCapability("decisions")}>Decisions</button>
+          <button type="button" onClick={() => onSelectCapability("tasks")}>Tasks</button>
+        </article>
+      </div>
+    </section>
   );
 }
 
@@ -5805,6 +6039,10 @@ function AreaDetailView({
     status: "idle" | "loading" | "ready" | "error";
     data: IntakeData | null;
   }>({ status: "idle", data: null });
+  const [financeState, setFinanceState] = useState<{
+    status: "idle" | "loading" | "ready" | "error";
+    data: FinanceContextData | null;
+  }>({ status: "idle", data: null });
   const selectedArea = areas.find((area) => area.key === selectedAreaKey) || areas[0];
   const ownerLabel = connection.user?.name || connection.user?.email || "Owner";
   const ownerDetail = connection.user?.email ? "Owner" : connection.workspace.name;
@@ -5854,6 +6092,31 @@ function AreaDetailView({
     };
   }, [selectedArea.key]);
 
+  useEffect(() => {
+    if (selectedArea.key !== "07-finanse") {
+      setFinanceState({ status: "idle", data: null });
+      return;
+    }
+
+    let cancelled = false;
+    setFinanceState({ status: "loading", data: null });
+    loadFinanceContext()
+      .then((data) => {
+        if (!cancelled) {
+          setFinanceState({ status: "ready", data });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setFinanceState({ status: "error", data: null });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedArea.key]);
+
   const context = useMemo(
     () => areaDetailContext(
       selectedArea,
@@ -5868,6 +6131,7 @@ function AreaDetailView({
   const lanes = useMemo(() => areaDetailLanes(selectedArea, context, connection), [selectedArea, context, connection]);
   const isOperationsSystem = selectedArea.key === "04-operacje";
   const isMainSystem = selectedArea.key === "00-ogolny";
+  const isFinanceSystem = selectedArea.key === "07-finanse";
   const departmentSpecialPanel = isMainSystem ? (
     <MainIntakeSystemPanel
       intake={intakeState.data}
@@ -5881,6 +6145,12 @@ function AreaDetailView({
       area={selectedArea}
       context={context}
       connection={connection}
+      onSelectCapability={selectCapability}
+    />
+  ) : isFinanceSystem ? (
+    <FinanceManagementBoard
+      finance={financeState.data}
+      status={financeState.status}
       onSelectCapability={selectCapability}
     />
   ) : null;
@@ -5928,7 +6198,7 @@ function AreaDetailView({
               context={context}
               connection={connection}
               lanes={lanes}
-              showOperatingBoard={!isOperationsSystem && !isMainSystem}
+              showOperatingBoard={!isOperationsSystem && !isMainSystem && !isFinanceSystem}
               specialPanel={departmentSpecialPanel}
               onSelectCapability={selectCapability}
             />

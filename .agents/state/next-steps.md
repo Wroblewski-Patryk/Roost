@@ -4,12 +4,11 @@ Last updated: 2026-05-16
 
 ## NOW
 
-1. DMS-07-003 Read-only Finance web board.
+1. DMS-04-001 Operations real-data proof.
    - Source:
-     `docs/planning/dms-07-finance-system-spec.md`.
-   - Render `/areas?area=07-finanse&view=overview` from
-     `GET /v1/finance/context`, showing pricing conflicts, hourly value,
-     commercial exceptions, invoice blockers, and blocked finance actions.
+     `docs/planning/operations-management-system-v1-task-contract.md`.
+   - Run database-backed or production proof for
+     `/areas?area=04-operacje&view=overview` after the latest shell changes.
 
 ## NEXT
 

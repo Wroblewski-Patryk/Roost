@@ -2,14 +2,6 @@
 
 ## Ready
 
-- DMS-07-003 Read-only Finance web board.
-  - Stage: planning
-  - Owner: Frontend Builder + Backend Builder + QA/Test
-  - Priority: P1
-  - Source: `docs/planning/dms-07-finance-system-spec.md`
-  - Goal: render `/areas?area=07-finanse&view=overview` as a read-only
-    Finance Management Board consuming `GET /v1/finance/context`, with no
-    quote, discount, invoice, payment, or active-pricing writes.
 - DMS-NEXT-001 Department systems user review and implementation sequence.
   - Stage: planning
   - Owner: Product Docs + Frontend Builder + Backend Builder
@@ -127,6 +119,19 @@
   auto-deploy webhook administration task.
 
 ## Done
+
+- DMS-07-003 Read-Only Finance Web Board.
+  - Evidence:
+    `/areas?area=07-finanse&view=overview` now renders
+    `FinanceManagementBoard` from `GET /v1/finance/context`, including pricing
+    candidates, hourly value, commercial exceptions, invoice blockers, source
+    conflicts, and blocked finance actions.
+  - Validation: `npm run build:web`, `git diff --check`, and Playwright proof
+    on `http://127.0.0.1:3213` for desktop/mobile Finance board. No
+    console/page errors or horizontal overflow were observed. Validation
+    backend and PostgreSQL were stopped.
+  - Task contract:
+    `docs/planning/dms-07-finance-web-board-task-contract.md`.
 
 - DMS-SHELL-003 Department Data Backbone.
   - Evidence:

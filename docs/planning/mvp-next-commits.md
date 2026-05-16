@@ -7,16 +7,12 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] DMS-07-003 Read-only Finance web board:
-      render `/areas?area=07-finanse&view=overview` from
-      `GET /v1/finance/context` with pricing conflicts, hourly value,
-      commercial exceptions, invoice blockers, and no finance writes.
-
-### NEXT
-
 - [ ] DMS-04-001 Operations real-data proof:
       run database-backed or production proof for the existing
       `/areas?area=04-operacje&view=overview` Operations Management System.
+
+### NEXT
+
 - [ ] V1DATA-001 Evidence browser V1 workbench:
       convert `/data` and `/data/:table` from V0 rebuild into a V1 evidence
       browser tied to departments, tables, and agent-readable context.
@@ -134,6 +130,16 @@ and `docs/operations/v1-function-coverage-ledger.csv`.
       horizontal overflow.
       Task contract:
       `docs/planning/dms-shell-003-department-data-backbone-task-contract.md`.
+- [x] DMS-07-003 Read-only Finance web board:
+      rendered `/areas?area=07-finanse&view=overview` from
+      `GET /v1/finance/context`, showing pricing candidates, `150 CHF/hour`,
+      commercial exceptions, invoice blockers, source conflicts, and blocked
+      finance actions without quote/discount/invoice/payment writes.
+      `npm run build:web`, `git diff --check`, and Playwright proof on
+      `http://127.0.0.1:3213` passed for desktop/mobile with no console/page
+      errors or horizontal overflow.
+      Task contract:
+      `docs/planning/dms-07-finance-web-board-task-contract.md`.
 - [x] DMS-07-001 Finance system spec:
       defined the Finance Management System board, first safe web shape,
       protected read-only `GET /v1/finance/context` target, pricing model and

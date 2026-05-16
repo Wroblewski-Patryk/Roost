@@ -149,6 +149,15 @@ Last updated: 2026-05-16
   `07-finanse`, and `12-zarzadzanie` on desktop/mobile with no console/page
   errors and no horizontal overflow. The validation backend and PostgreSQL
   processes were stopped after proof.
+  As of 2026-05-16, DMS-07-003 added the first read-only Finance web board.
+  `/areas?area=07-finanse&view=overview` now loads
+  `GET /v1/finance/context` and shows pricing candidates, `150 CHF/hour`,
+  commercial exceptions, invoice-readiness blockers, source conflicts, and
+  blocked finance actions without quote, discount, invoice, payment, or active
+  pricing controls. `npm run build:web`, `git diff --check`, and Playwright
+  proof on `http://127.0.0.1:3213` passed for desktop/mobile with no
+  console/page errors or horizontal overflow. The validation backend and
+  PostgreSQL processes were stopped after proof.
 
 ## Product Decisions (Confirmed)
 - 2026-05-07: CRM and pipelines are separate domain concepts. Pipelines are a
