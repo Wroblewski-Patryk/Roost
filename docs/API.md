@@ -1072,13 +1072,16 @@ Query parameters:
   `blocked`, `done`, or `archived`.
 - `priority`: optional task priority filter.
 - `source`: optional task source filter.
+- `taskListId`: optional list filter. Use `unassigned` only in the web layer;
+  API filtering accepts persisted list UUIDs.
 - `limit`: optional result limit, default `100`, maximum `200`.
 
-`GET /v1/operations/work-items` returns a read-only Operations work item packet
-over the existing task engine. It normalizes current `Task`, `Project`,
+`GET /v1/operations/work-items` returns an Operations work item packet over the
+existing task engine. It normalizes current `Task`, `Project`,
 `TaskList`, `Goal`, `Target`, `PipelineRun`, `StageRun`, `Procedure`,
 `Dependency`, `Note`, `Event`, `AgentLog`, `Resource`, and scoped Drive
-evidence without adding a second task manager or mutating records.
+evidence without adding a second task manager. Humans and MCP clients should
+treat these records as work items/tasks, not raw database rows.
 
 Safe response shape:
 
@@ -1104,6 +1107,25 @@ Safe response shape:
       "area": { "id": "uuid", "key": "operations-administration" },
       "driveFiles": []
     },
+    "taskLists": [
+      {
+        "id": "uuid",
+        "name": "Client onboarding",
+        "description": null,
+        "status": "active",
+        "source": "clickup",
+        "externalId": "clickup-list-id",
+        "project": null,
+        "taskCount": 4
+      }
+    ],
+    "statuses": [
+      { "key": "todo", "label": "To do" },
+      { "key": "in_progress", "label": "In progress" },
+      { "key": "blocked", "label": "Blocked" },
+      { "key": "done", "label": "Done" },
+      { "key": "archived", "label": "Archived" }
+    ],
     "workItems": [
       {
         "task": {
@@ -1160,6 +1182,34 @@ Safe response shape:
   }
 }
 ```
+
+```http
+PATCH /v1/operations/work-items/:id
+```
+
+Required capability:
+
+```text
+operations:write
+```
+
+This route updates a CompanyCore Operations work item through the task engine
+adapter. It is the preferred Operations/MCP route for task edits because it
+keeps the client mental model at "work item" level instead of exposing raw
+table updates. For ClickUp-sourced tasks, supported changes are written back
+through the existing ClickUp task adapter before CompanyCore state is updated.
+
+Allowed body fields:
+
+- `title`
+- `description`
+- `status`: `todo`, `in_progress`, `blocked`, `done`, or `archived`
+- `priority`
+- `dueDate`
+- `projectId`
+- `goalId`
+- `targetId`
+- `taskListId`
 
 ## Assets Context
 

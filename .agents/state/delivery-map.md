@@ -10,7 +10,8 @@ Last updated: 2026-05-16
   verified read-only context packet and selected-area board. The
   owner-approved `00 Main -> 04 Operations -> 08 Assets` company operating
   loop is now complete through architecture, API read packets, shared
-  primitives, and selected-area UI adoption.
+  primitives, selected-area UI adoption, and the first editable Operations
+  list board.
 - Primary user: owner/operator and policy-bound AI agents
 - Primary outcome: CompanyCore becomes a production-quality human and agent
   Company OS control plane where the owner can supervise clients, tasks,
@@ -18,9 +19,10 @@ Last updated: 2026-05-16
 - Top blockers: deeper per-department read models and safe command contracts
   remain incomplete; upstream Paperclip/OpenJarvis write access remains
   external.
-- Next mission: continue V1 department systems with `05 Relationships` unless
-  deployment smoke is selected first. `CC-UI-002`, `CC-UI-003`, `CC-00-002`,
-  `CC-04-002`, `CC-08-002`, and `CC-UI-004` are complete and verified.
+- Next mission: deploy/smoke the latest Operations board if needed, then
+  continue V1 department systems with `05 Relationships`. `CC-UI-002`,
+  `CC-UI-003`, `CC-00-002`, `CC-04-002`, `CC-08-002`, `CC-UI-004`, and
+  `OPS-BOARD-001` are complete and verified.
 - Closure handoff: `docs/operations/application-completion-audit-2026-05-14.md`.
 
 ## Source Inputs
@@ -68,6 +70,7 @@ Last updated: 2026-05-16
 | SRC-039 | backend/API/MCP | `docs/planning/cc-04-002-operations-work-item-read-model-task-contract.md`, `src/modules/operations/operations.routes.ts`, `src/auth/capabilities.ts`, `docs/API.md` | Verified read-only `04 Operations` work item packet over tasks, hierarchy, workflow evidence, dependencies, notes, events, agent logs, resources, and Drive context through `operations:read` and MCP read-risk exposure | active |
 | SRC-040 | backend/API/MCP | `docs/planning/cc-08-002-assets-context-read-api-task-contract.md`, `src/modules/assets/assets.routes.ts`, `src/auth/capabilities.ts`, `src/auth/agent-key-profiles.ts`, `src/mcp/manifest.ts`, `docs/API.md` | Verified read-only `08 Assets` context packet over Drive files/folders, content snapshots, Resource records, Knowledge Roots, Knowledge Items, taxonomy, AI-readiness labels, relations, cleanup summary, and blocked provider actions through `assets:read` and MCP read-risk exposure | active |
 | SRC-041 | frontend/UX | `docs/planning/cc-ui-004-00-04-08-read-packet-ui-adoption-task-contract.md`, `web/src/main.tsx`, `web/src/styles.css`, `docs/ux/evidence/cc-ui-004-*.png` | Verified selected-area UI adoption for the `00 Main`, `04 Operations`, and `08 Assets` read packets using shared `CcDataTable` and `CcButton` paths | active |
+| SRC-042 | backend/frontend/API/MCP/UX | `docs/planning/operations-management-board-implementation-task-contract.md`, `src/modules/operations/operations.routes.ts`, `web/src/features/departments/operations-route.tsx`, `docs/API.md` | Verified Operations list board with task-list grouping, canonical status columns, domain-level work-item editing, and MCP/API direction away from raw database table tools | active |
 
 ## Module / Journey Map
 
@@ -108,6 +111,7 @@ Last updated: 2026-05-16
 | CCORE-DM-022A | Paperclip Background Output Review Proof | Safe proof loop for Paperclip-like output through `00 Main` intake, route proposal, department review evidence, and unchanged source status | proof doc, existing API regression path, intake read, route proposal command, commercial exception and finance downstream context | verified locally | DMS-00-007; REQ-DMS-00-007; `docs/planning/dms-00-paperclip-background-output-review-proof.md`; `docs/planning/dms-00-paperclip-background-output-review-proof-task-contract.md`; latest `npm run test:api` against portable PostgreSQL on `127.0.0.1:55482` | Repeat desktop/mobile route proposal visual proof before final UI signoff; otherwise continue DMS-SHELL-003 or Finance web board. |
 | CCORE-DM-022B | 00 Main Route Proposal Lifecycle Readback | Read-only lifecycle inspection for route proposals after creation and idempotent replay | backend route, auth capability, MCP manifest, API docs, API regression tests | verified locally | CC-00-002; REQ-CC-00-002; `GET /v1/intake/route-proposals`; `intake:read`; `docs/planning/cc-00-002-route-proposal-lifecycle-readback-api-task-contract.md`; `npm run build:server`; `npm run test:api` against disposable PostgreSQL on `127.0.0.1:55498` | Consume this endpoint in a future 00 Main review board after the `00 -> 04 -> 08` read APIs are complete. |
 | CCORE-DM-022C | 04 Operations Work Item Readback | Read-only task-centered execution packet for Operations | backend route, auth capability, MCP manifest, API docs, API regression tests | verified locally | CC-04-002; REQ-CC-04-002; `GET /v1/operations/work-items`; `operations:read`; `docs/planning/cc-04-002-operations-work-item-read-model-task-contract.md`; `npm run build:server`; `npm run test:api` against disposable PostgreSQL on `127.0.0.1:55499` | Consume this endpoint in future Operations UI with shared primitives. |
+| CCORE-DM-022C2 | 04 Operations List Board | Editable task-list board for Operations work items | backend packet, write route, auth capability, MCP manifest, React selected-area board, API tests, responsive proof | verified locally | OPS-BOARD-001; REQ-OPS-BOARD-001; `GET /v1/operations/work-items` now returns `taskLists` and statuses; `PATCH /v1/operations/work-items/:id`; `operations:write`; `docs/planning/operations-management-board-implementation-task-contract.md`; `npm run validate`; `npm run test:api` against validation-owned PostgreSQL on `127.0.0.1:55511`; Playwright fallback on mocked API port `3244` proved list board, no `backlog`, modal save, no console warnings/errors, and no mobile overflow | Production smoke after deploy, then plan richer task lifecycle fields. |
 | CCORE-DM-022D | 08 Assets Context Readback | Read-only organizational memory packet for files, resources, and knowledge | backend route, auth capability, MCP manifest, profile scopes, API docs, API regression tests | verified locally | CC-08-002; REQ-CC-08-002; `GET /v1/assets/context`; `assets:read`; `docs/planning/cc-08-002-assets-context-read-api-task-contract.md`; `npm run build:server`; `npm run test:api` against disposable PostgreSQL on `127.0.0.1:55500` | Consume this endpoint in future Assets UI with shared primitives; keep provider writes blocked. |
 | CCORE-DM-023 | Department Subsystem Registry | Department-specific identity, subsystem, blocked action, and agent handoff copy for every selected-area shell | React selected-area route, static registry, shared subsystem component, responsive proof | verified locally | DMS-SHELL-002; REQ-DMS-SHELL-002; `departmentSystemRegistry`; `DepartmentSubsystemRegistry`; `npm run build:web`; `git diff --check`; Playwright proof on `http://127.0.0.1:3211` | Continue DMS-SHELL-003 operating graph fallback consistency or DMS-07-001 Finance spec. |
 | CCORE-DM-023A | Department Data Backbone | Shared graph/table/source/review-gap context inside every selected-area department shell | React selected-area route, existing operating graph context, local fallback context, responsive proof | verified locally | DMS-SHELL-003; REQ-DMS-SHELL-003; `DepartmentDataBackbone`; `npm run build:web`; `git diff --check`; Playwright proof on `http://127.0.0.1:3212` for desktop/mobile `01`, `07`, `12` | Implement DMS-07-003 read-only Finance web board or next department board through the shared shell. |

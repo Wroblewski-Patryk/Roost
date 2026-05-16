@@ -1684,8 +1684,10 @@ test("CompanyCore v1 protected API flow", async () => {
         area: { id: string; key: string } | null;
         driveFiles: Array<{ id: string; name: string; syncStatus: string; scanStatus: string }>;
       };
+      taskLists: Array<{ id: string; name: string; source: string | null; taskCount: number }>;
+      statuses: Array<{ key: string; label: string }>;
       workItems: Array<{
-        task: { id: string; normalizedStatus: string; completedAt: string | null; estimatedDurationMinutes: number | null };
+        task: { id: string; status: string; normalizedStatus: string; completedAt: string | null; estimatedDurationMinutes: number | null };
         responsibility: { status: string; evidence: Array<{ id: string; agentName: string | null }> };
         hierarchy: { project: { id: string; name: string } | null; taskList: { id: string; name: string } | null };
         operationalContext: { pipelineRuns: Array<{ id: string; currentStage: { procedure: { id: string } | null } | null; stageRuns: Array<{ id: string }> }> };
@@ -1714,8 +1716,20 @@ test("CompanyCore v1 protected API flow", async () => {
     && file.syncStatus === "synced"
     && file.scanStatus === "scanned"
   )));
+  assert.ok(operationsWorkItemsBody.data.taskLists.some((list) => (
+    list.id === operationsTaskList.id
+    && list.name === "Operations backlog"
+    && list.taskCount >= 1
+  )));
+  assert.ok(operationsWorkItemsBody.data.taskLists.some((list) => list.id === "unassigned"));
+  assert.deepEqual(
+    operationsWorkItemsBody.data.statuses.map((status) => status.key),
+    ["todo", "in_progress", "blocked", "done", "archived"]
+  );
+  assert.ok(!operationsWorkItemsBody.data.statuses.some((status) => status.key === "backlog"));
   const operationsWorkItem = operationsWorkItemsBody.data.workItems.find((item) => item.task.id === operationsTask.id);
   assert.ok(operationsWorkItem);
+  assert.equal(operationsWorkItem.task.status, "in_progress");
   assert.equal(operationsWorkItem.task.normalizedStatus, "in_progress");
   assert.equal(operationsWorkItem.task.estimatedDurationMinutes, null);
   assert.equal(operationsWorkItem.responsibility.status, "not_modeled");
@@ -1754,6 +1768,54 @@ test("CompanyCore v1 protected API flow", async () => {
     data: { workItems: Array<{ task: { id: string } }> };
   };
   assert.ok(!foreignOperationsWorkItemsBody.data.workItems.some((item) => item.task.id === operationsTask.id));
+
+  const filteredOperationsWorkItems = await request(`/v1/operations/work-items?taskListId=${operationsTaskList.id}`, { headers: authA });
+  assert.equal(filteredOperationsWorkItems.status, 200);
+  const filteredOperationsWorkItemsBody = filteredOperationsWorkItems.body as {
+    data: { workItems: Array<{ task: { id: string } }> };
+  };
+  assert.ok(filteredOperationsWorkItemsBody.data.workItems.some((item) => item.task.id === operationsTask.id));
+
+  const patchedOperationsWorkItem = await request(`/v1/operations/work-items/${operationsTask.id}`, {
+    method: "PATCH",
+    headers: authA,
+    body: JSON.stringify({
+      title: "Operations procedure review updated",
+      description: "Updated through the Operations work item adapter.",
+      status: "done",
+      priority: "critical",
+      dueDate: "2026-05-20T00:00:00.000Z",
+      taskListId: operationsTaskList.id
+    })
+  });
+  assert.equal(patchedOperationsWorkItem.status, 200);
+  const patchedOperationsWorkItemBody = patchedOperationsWorkItem.body as {
+    data: { id: string; title: string; status: string; priority: string | null; dueDate: string | null };
+  };
+  assert.equal(patchedOperationsWorkItemBody.data.id, operationsTask.id);
+  assert.equal(patchedOperationsWorkItemBody.data.title, "Operations procedure review updated");
+  assert.equal(patchedOperationsWorkItemBody.data.status, "done");
+  assert.equal(patchedOperationsWorkItemBody.data.priority, "critical");
+  assert.equal(patchedOperationsWorkItemBody.data.dueDate, "2026-05-20T00:00:00.000Z");
+  const updatedOperationsTask = await prisma.task.findUniqueOrThrow({ where: { id: operationsTask.id } });
+  assert.equal(updatedOperationsTask.title, "Operations procedure review updated");
+  assert.equal(updatedOperationsTask.status, "done");
+  const operationsWorkItemUpdatedEvent = await prisma.event.findFirst({
+    where: {
+      workspaceId: ownerA.workspace.id,
+      taskId: operationsTask.id,
+      type: "operations_work_item_updated"
+    }
+  });
+  assert.ok(operationsWorkItemUpdatedEvent);
+  await prisma.event.delete({ where: { id: operationsWorkItemUpdatedEvent.id } });
+
+  const foreignPatchOperationsWorkItem = await request(`/v1/operations/work-items/${operationsTask.id}`, {
+    method: "PATCH",
+    headers: authB,
+    body: JSON.stringify({ title: "Must not cross workspaces" })
+  });
+  assert.equal(foreignPatchOperationsWorkItem.status, 404);
 
   await prisma.googleDriveFile.delete({ where: { id: operationsDriveFile.id } });
   if (createdOperationsArea) {

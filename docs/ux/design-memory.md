@@ -34,6 +34,28 @@ of rediscovering them.
 
 ## Entries
 
+### 2026-05-16 - Department Work Board Pattern
+- Type: reusable_pattern
+- Context: OPS-BOARD-001 converted `04 Operations -> Tasks` from a flat table
+  into a task-list board over the existing Operations work-item packet.
+- Decision: For department execution views, prefer a two-level work board:
+  left-side list/source selection, then canonical status columns for the
+  selected list. Each task is a compact card/row that opens a modal form for
+  the domain object. The UI must use CompanyCore domain language such as work
+  item, resource, client, or relationship instead of exposing raw database
+  table rows. Avoid visible counters unless they directly support the current
+  decision.
+- Reuse when: Building future Operations list detail, Product delivery boards,
+  Relationship follow-up boards, Technology deployment boards, or any
+  department screen that groups provider-imported work by list/stage/status.
+- Avoid when: The user needs broad analytics, immutable evidence review, or a
+  narrow settings/configuration flow where columns would hide the primary
+  action.
+- Evidence:
+  `docs/planning/operations-management-board-implementation-task-contract.md`,
+  `web/src/features/departments/operations-route.tsx`, and API regression plus
+  Playwright proof recorded in `.agents/state/system-health.md`.
+
 ### 2026-05-15 - V1 Unified Settings Module
 - Type: reusable_pattern
 - Context: The user asked for a clean settings surface that can support

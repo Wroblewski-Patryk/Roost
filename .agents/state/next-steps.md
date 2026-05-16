@@ -43,6 +43,10 @@ Last updated: 2026-05-16
       shows logo/name, company/workspace selector, all `00`-`12` departments,
       disabled planned modules, active `00/04/08` dashboard links, and separate
       expand arrows for active module view lists.
+    - `OPS-BOARD-001` is complete and verified: `04 Operations -> Tasks` now
+      uses the Operations work-item packet as a list board with task-list
+      selection, canonical CompanyCore status columns, task cards, and a modal
+      edit form backed by `PATCH /v1/operations/work-items/:id`.
    - CompanyCore remains the company operating system; AI agents remain
      external API/MCP clients.
    - Keep writes behind explicit command contracts, audit/events, and API

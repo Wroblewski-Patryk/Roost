@@ -43,7 +43,7 @@
 ## In Progress
 
 - No active implementation task is currently in progress after the
-  WEB-CORE-001 web surface cleanup checkpoint.
+  OPS-BOARD-001 Operations board checkpoint.
 
 ## Blocked
 
@@ -192,6 +192,25 @@
   auto-deploy webhook administration task.
 
 ## Done
+
+- OPS-BOARD-001 Operations list board and work item editing.
+  - Evidence:
+    `docs/planning/operations-management-board-implementation-task-contract.md`
+    records the backend/frontend slice. `GET /v1/operations/work-items` now
+    returns task lists, canonical status columns, and `taskListId` filtering;
+    `PATCH /v1/operations/work-items/:id` updates CompanyCore work items
+    through the Operations adapter with ClickUp writeback reuse when relevant;
+    `operations:write` is available as a domain capability, not a raw table
+    editing concept. The `04 Operations -> Tasks` web view now renders a
+    ClickUp-like list selector, status columns, task cards, and a modal edit
+    form. `todo` is no longer normalized to `backlog`.
+  - Validation: `npm run validate`; `npm run test:api` against
+    validation-owned PostgreSQL on `127.0.0.1:55511`; Playwright fallback on
+    temporary mocked API port `3244` verified the list/status board, no
+    `backlog` label, modal edit/save interaction, desktop/mobile rendering, no
+    console warnings/errors, and no mobile horizontal overflow. Temporary
+    PostgreSQL and mock server processes were stopped and validation temp
+    directories were removed.
 
 - WEB-SHELL-OPS-001 Shell user menu, settings routes, and Operations tasks.
   - Evidence:

@@ -78,8 +78,26 @@ export type OperationsWorkItem = {
   };
 };
 
+export type OperationsTaskList = {
+  id: string;
+  name: string;
+  description?: string | null;
+  status?: string;
+  source?: string | null;
+  externalId?: string | null;
+  taskCount?: number;
+  project?: { id: string; name: string; status?: string } | null;
+};
+
+export type OperationsStatusColumn = {
+  key: "todo" | "in_progress" | "blocked" | "done" | "archived";
+  label: string;
+};
+
 export type OperationsPacket = {
   summary?: Record<string, unknown>;
+  taskLists?: OperationsTaskList[];
+  statuses?: OperationsStatusColumn[];
   workItems?: OperationsWorkItem[];
   blockedActions?: Array<string | { action?: string; reason?: string }>;
   agentPacket?: {

@@ -29,6 +29,17 @@ Last updated: 2026-05-16
   `/v1/operations/work-items` records including ClickUp-sourced tasks. The
   slice was manually rolled over to production at commit
   `02f86b613b5d69d282f554cf465e5688b251a5c0`.
+  OPS-BOARD-001 then deepened `04 Operations -> Tasks` from a flat task table
+  into the first usable Operations work-management board: the backend packet
+  now includes task lists, canonical status columns, and list filtering; the
+  web view renders list selection, status columns, task cards, and a modal edit
+  form; `PATCH /v1/operations/work-items/:id` updates the CompanyCore work item
+  through the Operations adapter and reuses ClickUp writeback for ClickUp
+  sourced tasks. The MCP/API direction is now explicit: agents should operate
+  domain objects such as work items, resources, and relationship graphs through
+  CompanyCore APIs, not raw database tables. `npm run validate`, `npm run
+  test:api` on validation-owned PostgreSQL `127.0.0.1:55511`, and Playwright
+  fallback desktop/mobile board proof passed.
   As of 2026-05-16, the architectural direction is expanded in
   `docs/architecture/unified-organizational-operating-system.md`: CompanyCore
   is the unified organizational world state and operational source of truth,

@@ -134,7 +134,11 @@ function routeDescription(route: ManifestRoute) {
   }
 
   if (route.capability === "operations:read") {
-    return "Read the 04 Operations management context for procedures, dependencies, approvals, business functions, operational tasks, and safe agent handoff.";
+    return "Read the 04 Operations management context for task lists, work items, procedures, dependencies, approvals, business functions, and safe agent handoff without exposing raw database table ownership as the agent mental model.";
+  }
+
+  if (route.capability === "operations:write") {
+    return "Update a CompanyCore Operations work item through the governed task element adapter instead of writing directly to the tasks table or provider database.";
   }
 
   if (route.capability === "assets:read") {

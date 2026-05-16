@@ -45,6 +45,14 @@ manage pipelines, and propose actions only through approved CompanyCore API/MCP
 boundaries. CompanyCore owns validation, permissions, approvals, events, audit,
 and source-of-truth state.
 
+MCP tools should expose domain objects and governed commands, not raw database
+table ownership. An agent should update an Operations work item, inspect an
+Assets resource, read a relationship graph, or request a workflow action. It
+should not be guided to think "edit row in `tasks`" or "mutate table X" unless
+the tool is an explicitly technical/admin diagnostic capability. Table names
+remain implementation details that are mapped into department systems, shared
+engines, graph packets, and command routes.
+
 ## Unified Workforce Boundary
 
 CompanyCore must treat humans and AI agents as organizational workforce
@@ -139,6 +147,12 @@ This enables:
 - consistent API/MCP contracts;
 - AI interoperability without embedding AI in the backend;
 - source-backed evidence instead of fake dashboard state.
+
+Every persistent backend table must have a clear owner in the product model:
+either the core system, one of the `00` plus `01`-`12` department management
+systems, or a shared engine used by several departments. Tables without a
+clear product owner, route, graph packet, MCP packet, or documented future
+adapter are architectural debt and should be mapped before more data is added.
 
 ## Operations System Target
 

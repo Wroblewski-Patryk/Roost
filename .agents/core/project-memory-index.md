@@ -195,6 +195,17 @@ continue from repository files alone:
   was manually rolled over to commit
   `02f86b613b5d69d282f554cf465e5688b251a5c0` after GitHub-to-Coolify did not
   update the running image automatically.
+- `docs/planning/operations-management-board-implementation-task-contract.md`:
+  verified the first Operations work-management board. `GET
+  /v1/operations/work-items` now returns task lists, canonical CompanyCore
+  status columns, and optional `taskListId` filtering. `PATCH
+  /v1/operations/work-items/:id` updates the CompanyCore Operations work item
+  through a domain adapter and reuses ClickUp writeback for ClickUp-sourced
+  tasks. The web route `/areas?area=04-operacje&view=tasks` renders a
+  ClickUp-like list selector, status columns, task cards, and modal edit form
+  without exposing raw database table editing as the user or MCP mental model.
+  `npm run validate`, API regression on PostgreSQL `127.0.0.1:55511`, and
+  desktop/mobile Playwright fallback proof passed.
 - `docs/architecture/companycore-business-module-map.md`: accepted
   model-level module map for scaling CompanyCore as the bridge for operating
   the company. It classifies future work as native core, provider-backed,

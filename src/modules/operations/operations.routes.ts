@@ -1,8 +1,12 @@
 import { Router } from "express";
+import { TaskStatus } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
+import { IntegrationError } from "../../integrations/errors";
+import { writeBackCompanyCoreTaskToClickUp } from "../../integrations/clickup/clickup.webhooks";
 import { asyncHandler } from "../../middleware/async-handler";
 import { resolveDepartmentEntry } from "../../operating-model/department-registry";
+import { createEvent } from "../events/event.service";
 
 const OPERATIONS_DEPARTMENT_KEY = "04-operacje";
 const OPERATIONS_LIMIT = 12;
@@ -12,7 +16,21 @@ const workItemsQuerySchema = z.object({
   status: z.enum(["todo", "in_progress", "blocked", "done", "archived"]).optional(),
   priority: z.string().min(1).optional(),
   source: z.string().min(1).optional(),
+  taskListId: z.string().uuid().optional(),
+  refresh: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(200).default(WORK_ITEM_LIMIT)
+}).strict();
+
+const updateWorkItemSchema = z.object({
+  title: z.string().min(1).optional(),
+  description: z.string().nullable().optional(),
+  status: z.nativeEnum(TaskStatus).optional(),
+  priority: z.string().nullable().optional(),
+  dueDate: z.coerce.date().nullable().optional(),
+  projectId: z.string().uuid().nullable().optional(),
+  goalId: z.string().uuid().nullable().optional(),
+  targetId: z.string().uuid().nullable().optional(),
+  taskListId: z.string().uuid().nullable().optional()
 }).strict();
 
 function asJsonArray(value: unknown) {
@@ -30,7 +48,7 @@ function taskLooksOperational(task: { title: string; description: string | null 
 
 function normalizedTaskStatus(status: string) {
   const statusMap: Record<string, string> = {
-    todo: "backlog",
+    todo: "todo",
     in_progress: "in_progress",
     blocked: "blocked",
     done: "completed",
@@ -38,6 +56,18 @@ function normalizedTaskStatus(status: string) {
   };
 
   return statusMap[status] ?? status;
+}
+
+async function visibleWorkItemRelations(workspaceId: string, input: z.infer<typeof updateWorkItemSchema>) {
+  const checks = [
+    input.projectId ? prisma.project.findFirst({ where: { id: input.projectId, workspaceId } }) : null,
+    input.goalId ? prisma.goal.findFirst({ where: { id: input.goalId, workspaceId } }) : null,
+    input.targetId ? prisma.target.findFirst({ where: { id: input.targetId, workspaceId } }) : null,
+    input.taskListId ? prisma.taskList.findFirst({ where: { id: input.taskListId, workspaceId } }) : null
+  ].filter(Boolean);
+
+  const relations = await Promise.all(checks);
+  return relations.every((relation) => Boolean(relation));
 }
 
 function taskRiskLevel(task: { status: string; dueDate: Date | null }, dependencyCount: number) {
@@ -120,7 +150,8 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
       workspaceId,
       ...(query.status ? { status: query.status } : {}),
       ...(query.priority ? { priority: query.priority } : {}),
-      ...(query.source ? { source: query.source } : {})
+      ...(query.source ? { source: query.source } : {}),
+      ...(query.taskListId ? { taskListId: query.taskListId } : {})
     },
     orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
     take: query.limit,
@@ -134,6 +165,20 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
     }
   });
 
+  const [taskLists, taskCountByList] = await Promise.all([
+    prisma.taskList.findMany({
+      where: { workspaceId, status: { not: "archived" } },
+      orderBy: [{ source: "asc" }, { name: "asc" }],
+      include: { project: true }
+    }),
+    prisma.task.groupBy({
+      by: ["taskListId"],
+      where: { workspaceId },
+      _count: { _all: true }
+    })
+  ]);
+
+  const taskCountByListId = new Map(taskCountByList.map((row) => [row.taskListId ?? "unassigned", row._count._all]));
   const taskIds = tasks.map((task) => task.id);
   const projectIds = Array.from(new Set(tasks.map((task) => task.projectId).filter((id): id is string => Boolean(id))));
 
@@ -316,6 +361,13 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
     counts[item.task.priority] = (counts[item.task.priority] ?? 0) + 1;
     return counts;
   }, {});
+  const statuses = [
+    { key: "todo", label: "To do" },
+    { key: "in_progress", label: "In progress" },
+    { key: "blocked", label: "Blocked" },
+    { key: "done", label: "Done" },
+    { key: "archived", label: "Archived" }
+  ];
 
   return res.json({
     data: {
@@ -352,6 +404,33 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
           modifiedTime: file.modifiedTime?.toISOString() ?? null
         }))
       },
+      taskLists: [
+        {
+          id: "unassigned",
+          name: "Unassigned",
+          description: "Tasks without a list assignment.",
+          status: "active",
+          source: "companycore",
+          externalId: null,
+          project: null,
+          taskCount: taskCountByListId.get("unassigned") ?? 0
+        },
+        ...taskLists.map((taskList) => ({
+          id: taskList.id,
+          name: taskList.name,
+          description: taskList.description,
+          status: taskList.status,
+          source: taskList.source,
+          externalId: taskList.externalId,
+          project: taskList.project ? {
+            id: taskList.project.id,
+            name: taskList.project.name,
+            status: taskList.project.status
+          } : null,
+          taskCount: taskCountByListId.get(taskList.id) ?? 0
+        }))
+      ],
+      statuses,
       workItems,
       agentPacket: {
         mode: "read_only",
@@ -364,6 +443,87 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
         ],
         blockedActions: mapBlockedOperationsActions()
       }
+    }
+  });
+}));
+
+operationsRouter.patch("/work-items/:id", asyncHandler(async (req, res) => {
+  const workspaceId = req.auth!.workspaceId;
+  const input = updateWorkItemSchema.parse(req.body);
+
+  if (!await visibleWorkItemRelations(workspaceId, input)) {
+    return res.status(404).json({ error: "not_found" });
+  }
+
+  const existing = await prisma.task.findFirst({
+    where: { id: String(req.params.id), workspaceId }
+  });
+
+  if (!existing) {
+    return res.status(404).json({ error: "not_found" });
+  }
+
+  if (existing.source === "clickup" && existing.externalId) {
+    try {
+      await writeBackCompanyCoreTaskToClickUp({
+        workspaceId,
+        externalId: existing.externalId,
+        changes: {
+          title: input.title,
+          description: input.description ?? undefined,
+          status: input.status,
+          priority: input.priority ?? undefined,
+          dueDate: input.dueDate ?? undefined
+        }
+      });
+    } catch (error) {
+      if (error instanceof IntegrationError) {
+        await createEvent({
+          type: "operations_work_item_writeback_failed",
+          workspaceId,
+          taskId: existing.id,
+          source: "clickup",
+          payload: {
+            provider: "clickup",
+            taskId: existing.id,
+            externalId: existing.externalId,
+            errorCode: error.code
+          }
+        });
+        return res.status(error.status).json({ error: error.code });
+      }
+      throw error;
+    }
+  }
+
+  const task = await prisma.task.update({
+    where: { id: existing.id },
+    data: input
+  });
+
+  await createEvent({
+    type: "operations_work_item_updated",
+    workspaceId,
+    projectId: task.projectId,
+    taskId: task.id,
+    source: task.source,
+    payload: {
+      taskId: task.id,
+      changed: Object.keys(input)
+    }
+  });
+
+  return res.json({
+    data: {
+      id: task.id,
+      title: task.title,
+      description: task.description,
+      status: task.status,
+      priority: task.priority,
+      dueDate: task.dueDate?.toISOString() ?? null,
+      source: task.source,
+      externalId: task.externalId,
+      updatedAt: task.updatedAt.toISOString()
     }
   });
 }));
