@@ -28,13 +28,14 @@
   - Goal: after the next deploy, compare public health build metadata with the
     pushed commit and run authenticated `/operations` smoke for client/task
     creation, table/file coverage, and AI handoff readiness.
-- V1DATA-001 Evidence browser V1 workbench.
+- V1REL-001 Area relationship provenance review.
   - Stage: planning
   - Owner: Frontend Builder + QA/Test
   - Priority: P1
   - Source: `docs/ux/v1-web-view-index-2026-05-15.md`
-  - Goal: convert `/data` and `/data/:table` from V0 rebuild into a V1
-    evidence browser tied to departments, tables, and agent-readable context.
+  - Goal: rebuild `/relationships` around selected-area provenance,
+    confidence labels, review gaps, unsupported families, and agent-safe
+    relationship context.
 ## In Progress
 
 - No active implementation task is currently in progress after the
@@ -393,6 +394,21 @@
     `docs/ux/evidence/dms-ops-real-data-mobile.png`.
   - Task contract:
     `docs/planning/operations-management-system-v1-task-contract.md`.
+
+- V1DATA-001 Evidence browser V1 workbench.
+  - Evidence: `/data` and `/data/:table` now render a V1 foundation evidence
+    browser with department record metrics, agent-readable table context,
+    empty-table and review-gap signals, selected-table owner/API/capability
+    context, department coverage links, and generic record inspection.
+    `/data` is marked `v1-foundation` in `web/src/app-route-registry.ts`.
+  - Validation: `npm run build:web` passed. Playwright real-backend proof on
+    `http://127.0.0.1:3215` registered an owner, seeded Company OS evidence
+    records, and verified desktop `/data` plus mobile `/data/procedures` with
+    no console/page errors or horizontal overflow. Screenshots:
+    `docs/ux/evidence/v1-data-evidence-browser-desktop.png` and
+    `docs/ux/evidence/v1-data-evidence-browser-mobile.png`.
+  - Task contract:
+    `docs/planning/v1-data-evidence-browser-task-contract.md`.
 
 - DMS-ARCH-001 Department Management Systems Architecture And V1 View Map.
   - Evidence: `docs/architecture/department-management-systems-architecture.md`

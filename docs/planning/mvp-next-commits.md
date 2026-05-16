@@ -7,20 +7,21 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] V1DATA-001 Evidence browser V1 workbench:
-      convert `/data` and `/data/:table` from V0 rebuild into a V1 evidence
-      browser tied to departments, tables, and agent-readable context.
+- [ ] V1REL-001 Area relationship provenance review:
+      rebuild `/relationships` around selected-area provenance, confidence
+      labels, review gaps, unsupported families, and agent-safe relationship
+      context.
 
 ### NEXT
 
 - [ ] V1OPS-002 Production operations cockpit smoke:
       after the next deploy, compare public `/health` build metadata with the
       pushed commit and run authenticated `/operations`, `/tasks-adapter`, AOG,
-      and settings smoke.
+      settings, `/data`, and `04 Operacje` smoke.
 - [ ] Deepen the next V1 capability from `/operations`:
       choose one route-level slice that already has backend contracts, with
-      preferred order `data` table evidence browser, then `relationships`
-      provenance review.
+      preferred order `relationships` provenance review, then selected-area
+      `knowledge` depth.
 - [ ] Use the CompanyCore business module map during upcoming product intake:
       `docs/architecture/companycore-business-module-map.md` now classifies
       future work as native core, provider-backed, future adapter, or derived
@@ -150,6 +151,19 @@ and `docs/operations/v1-function-coverage-ledger.csv`.
       `docs/ux/evidence/dms-ops-real-data-mobile.png`.
       Task contract:
       `docs/planning/operations-management-system-v1-task-contract.md`.
+- [x] V1DATA-001 Evidence browser V1 workbench:
+      rebuilt `/data` and `/data/:table` into a V1 foundation evidence browser
+      with department record metrics, agent-readable table context,
+      empty-table and review-gap signals, selected-table owner/API/capability
+      context, department coverage links, and generic record inspection.
+      `npm run build:web` passed. Playwright real-backend proof on
+      `http://127.0.0.1:3215` verified desktop `/data` and mobile
+      `/data/procedures` with no console/page errors or horizontal overflow.
+      Evidence:
+      `docs/ux/evidence/v1-data-evidence-browser-desktop.png` and
+      `docs/ux/evidence/v1-data-evidence-browser-mobile.png`.
+      Task contract:
+      `docs/planning/v1-data-evidence-browser-task-contract.md`.
 - [x] DMS-07-001 Finance system spec:
       defined the Finance Management System board, first safe web shape,
       protected read-only `GET /v1/finance/context` target, pricing model and

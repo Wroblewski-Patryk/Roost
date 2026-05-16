@@ -4,11 +4,11 @@ Last updated: 2026-05-16
 
 ## NOW
 
-1. V1DATA-001 Evidence browser V1 workbench.
+1. V1REL-001 Area relationship provenance review.
    - Source: `docs/ux/v1-web-view-index-2026-05-15.md`.
-   - Convert `/data` and `/data/:table` from the older rebuild into a V1
-     evidence browser tied to departments, tables, Company OS records, and
-     agent-readable context.
+   - Rebuild `/relationships` around selected-area provenance, confidence
+     labels, review gaps, unsupported families, and agent-safe relationship
+     context.
 
 ## NEXT
 
@@ -90,7 +90,7 @@ Last updated: 2026-05-16
      before raising production confidence.
 13. V1 operations route-depth slices.
    - Deepen one existing-contract workbench from the operations cockpit:
-     `data` or `relationships`.
+     `relationships`, then selected-area `knowledge`.
 14. Production smoke for locally verified V1 command surfaces.
    - After the next deploy, compare public `/health` build metadata with the
      pushed commit.

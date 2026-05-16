@@ -55,6 +55,7 @@ V0 means:
 | Unified Settings | `/settings` plus `/settings/integrations`, `/settings/drive`, `/settings/api`, and `/react-agent-tools` section entries | `V1 canonical` | `docs/ux/v1-settings-canonical-spec-2026-05-15.md` | `docs/ux/assets/companycore-v1-settings-desktop-canonical.png` | `docs/ux/assets/companycore-v1-settings-mobile-canonical.png` | Where do I paste connector credentials, set active/sync policy, create Jarvis/Paperclip keys, and find MCP handoff fields without entering operational queues? | `docs/planning/v1-settings-react-implementation-task-contract.md`; `docs/ux/evidence/v1-settings-unified-proof-desktop.png`; `docs/ux/evidence/v1-settings-unified-proof-mobile.png`; `docs/ux/evidence/v1-settings-real-backend-desktop.png`; `docs/ux/evidence/v1-settings-drive-save-real-backend-desktop.png`; `docs/ux/evidence/v1-settings-real-backend-mobile.png` |
 | Operations Cockpit | `/operations` | `V1 canonical` | `docs/planning/v1-operations-cockpit-task-contract.md` | `docs/ux/evidence/v1-operations-cockpit-real-backend-desktop.png` | `docs/ux/evidence/v1-operations-cockpit-real-backend-mobile.png` | What do I need to supervise now across clients, tasks, department evidence, files, and AI-agent handoff? | `docs/planning/v1-operations-cockpit-task-contract.md`; `docs/ux/assets/companycore-v1-operations-cockpit-concept.png`; `docs/ux/evidence/v1-operations-cockpit-real-backend-desktop.png`; `docs/ux/evidence/v1-operations-cockpit-real-backend-mobile.png` |
 | Tasks & Delivery | `/tasks-adapter` | `V1 canonical` | `docs/planning/v1-tasks-delivery-workbench-task-contract.md` | `docs/ux/evidence/v1-tasks-delivery-real-backend-desktop.png` | `docs/ux/evidence/v1-tasks-delivery-real-backend-mobile.png` | What execution pressure needs owner direction, and what task can I create or move now? | `docs/planning/v1-tasks-delivery-workbench-task-contract.md`; `docs/ux/assets/companycore-v1-tasks-delivery-concept.png`; `docs/ux/evidence/v1-tasks-delivery-real-backend-desktop.png`; `docs/ux/evidence/v1-tasks-delivery-real-backend-mobile.png` |
+| Data Evidence Browser | `/data` and `/data/:table` | `V1 foundation` | `docs/planning/v1-data-evidence-browser-task-contract.md` | `docs/ux/evidence/v1-data-evidence-browser-desktop.png` | `docs/ux/evidence/v1-data-evidence-browser-mobile.png` | Which department owns this evidence, can agents read it, what is empty, and where do I inspect records? | `docs/planning/v1-data-evidence-browser-task-contract.md`; `docs/ux/evidence/v1-data-evidence-browser-desktop.png`; `docs/ux/evidence/v1-data-evidence-browser-mobile.png` |
 
 ## Active Route Index
 
@@ -74,7 +75,7 @@ and Paperclip/AI packets: `docs/ux/v1-department-system-prompt-pack.md`.
 | `/areas` | `V0 rebuild` | All-areas mapping/lifecycle workbench; useful but not canonical owner flow. | Keep for admin/mapping, simplify later. |
 | `/react-areas` | `V0 compatibility` | Alias to `/areas`. | Remove after route references are cleaned. |
 | `/relationships` | `V0 rebuild` | Area-scoped relationship and provenance view. | Rebuild around selected area and confidence labels. |
-| `/data` and `/data/:table` | `V0 rebuild` | Evidence browser tied to areas, workflows, and owner questions. | Rebuild table browsing into V1 evidence views. |
+| `/data` and `/data/:table` | `V1 foundation` | Evidence browser tied to areas, workflows, source routes, and agent-readable context. | Keep and deepen with typed table actions only where existing backend contracts support them. |
 | `/tasks-adapter` | `V1 canonical` | Area-scoped execution pressure, priorities, task creation, status movement, and owner/AI task handoff. | Keep as the delivery workbench; add deeper area ownership only after a backend relation exists. |
 | `/react-tasks` | `V0 compatibility` | Alias to tasks workbench. | Remove after references are cleaned. |
 | `/pipeline` | `V0 rebuild` | Sales/operations workflow pressure tied to areas and decisions. | Rebuild as V1 workflow/pipeline capability. |
@@ -181,14 +182,12 @@ V1 status:
 
 1. Deploy and run production smoke for `/operations`, AOG, and settings before raising production
    confidence.
-2. Deepen `/data` as V1 evidence browser tied to departments, tables, and
-   agent-readable context.
-3. Rebuild `/relationships` as V1 area provenance and confidence review.
-4. Deepen selected-area `knowledge` view.
-5. Deepen selected-area `tasks` view.
-6. Polish `/react-company-os` into
+2. Rebuild `/relationships` as V1 area provenance and confidence review.
+3. Deepen selected-area `knowledge` view.
+4. Deepen selected-area `tasks` view.
+5. Polish `/react-company-os` into
    area-aware V1 foundations.
-7. Remove or hide compatibility aliases once no route references need them.
+6. Remove or hide compatibility aliases once no route references need them.
 
 ## Route Registry Rule
 

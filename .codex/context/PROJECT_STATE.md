@@ -40,6 +40,17 @@ Last updated: 2026-05-16
   per-collection `${apiSlug}:read` capabilities instead of the existing
   `company-os:read` capability. `npm run build:web` passed after the fix.
   Production smoke remains pending after deploy.
+  As of 2026-05-16, V1DATA-001 converted `/data` and `/data/:table` from a
+  generic table browser into a V1 foundation evidence browser. The route now
+  shows department record metrics, agent-readable table context, empty-table
+  and review-gap signals, selected-table owner/API/capability context,
+  department coverage links, and generic record inspection. `npm run build:web`
+  passed. Playwright real-backend proof on `http://127.0.0.1:3215` registered
+  a fresh owner, seeded Company OS evidence records, and verified desktop
+  `/data` plus mobile `/data/procedures` with no console/page errors or
+  horizontal overflow. Screenshots:
+  `docs/ux/evidence/v1-data-evidence-browser-desktop.png` and
+  `docs/ux/evidence/v1-data-evidence-browser-mobile.png`.
   As of 2026-05-16, DMS-00-003 implemented the first backend slice of
   `00 Main`: protected read-only `GET /v1/intake`. It aggregates existing
   agent events, provider inbox rows, unassigned Drive/provider resources,

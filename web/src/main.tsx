@@ -1959,6 +1959,16 @@ function findBackendArea(connection: ConnectionData, canonical: CanonicalArea) {
   return scoredAreas[0]?.area;
 }
 
+function canonicalAreaKeyFromBackend(area: OperatingArea) {
+  const candidates = areaKeyCandidates(area);
+  const matched = canonicalAreas.find((canonical) => {
+    const aliasCandidates = [canonical.key, canonical.label, ...(canonical.backendAliases || [])]
+      .map((alias) => normalizeAreaMatcherValue(alias));
+    return candidates.some((candidate) => aliasCandidates.some((alias) => candidate === alias || candidate.includes(alias)));
+  });
+  return matched?.key || "01-strategia";
+}
+
 function areaStatus(area?: OperatingArea): AreaStatus {
   if (!area) {
     return "empty";
@@ -11227,42 +11237,196 @@ function DataRoute() {
   const activeSlug = pathParts[1] || "";
   const [state, reload] = usePrivateLoader(async () => {
     const connection = await ownerApi<ConnectionData>("/v1/connection");
-    const tables = connection.operatingModel.areas.flatMap((area) => area.tables || []);
-    const selected = tables.find((table) => table.apiSlug === activeSlug) || tables[0];
-    const records = selected
-      ? await ownerApi<Array<Record<string, unknown>>>(sharedTableRecordApiPath(selected.apiSlug)).catch(() => [])
-      : [];
-    return { connection, tables, selected, records };
+    const tableRecords = await loadTableRecordSnapshot(connection).catch(() => ({}));
+    const [externalMappings, driveFiles] = await Promise.all([
+      ownerApi<ExternalContainerMapping[]>("/v1/operating-model/external-mappings").catch(() => []),
+      ownerApi<GoogleDriveFileRecord[]>("/v1/google-drive/files").catch(() => [])
+    ]);
+    const tables = [...new Map(connection.operatingModel.areas
+      .flatMap((area) => area.tables || [])
+      .map((table) => [table.apiSlug, table])).values()];
+    const selected = tables.find((table) => table.apiSlug === activeSlug)
+      || tables.find((table) => (tableRecords[table.apiSlug] || []).length > 0)
+      || tables[0];
+    const records = selected ? tableRecords[selected.apiSlug] || [] : [];
+    return { connection, tables, selected, records, tableRecords, externalMappings, driveFiles };
   }, [activeSlug]);
 
   return (
-    <PrivateStateGate state={state} title="Company data" detail="CompanyCore is loading database modules." onRetry={reload}>
-      {({ connection, tables, selected, records }) => (
-        <Shell connection={connection} appLabel="Company data">
-          <section className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-8">
-            <section className="card border border-base-300 bg-base-100 shadow-sm">
-              <div className="card-body gap-4">
-                <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
-                  <div>
-                    <p className="eyebrow">Data operations</p>
-                    <h1 className="text-3xl font-black">{selected?.name || "Company tables"}</h1>
-                    <p className="text-sm leading-6 text-company-muted">Browse backend-backed records by operating area without the legacy vanilla shell.</p>
-                  </div>
-                  <span className="badge badge-outline">{records.length} records</span>
-                </div>
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {tables.map((table) => (
-                    <a className={`btn btn-sm flex-none ${table.apiSlug === selected?.apiSlug ? "btn-primary" : "btn-outline"}`} href={`/data/${table.apiSlug}`} key={table.id}>{table.name}</a>
-                  ))}
-                </div>
-              </div>
-            </section>
-            <GenericRecordTable records={records} emptyTitle="No records yet" emptyDetail="This table has no records available for the current workspace." />
-          </section>
-        </Shell>
-      )}
+    <PrivateStateGate state={state} title="Company data" detail="CompanyCore is loading evidence, records, and department ownership." onRetry={reload}>
+      {(data) => <DataEvidenceBrowser {...data} />}
     </PrivateStateGate>
   );
+}
+
+function DataEvidenceBrowser({
+  connection,
+  tables,
+  selected,
+  records,
+  tableRecords,
+  externalMappings,
+  driveFiles
+}: {
+  connection: ConnectionData;
+  tables: NonNullable<OperatingArea["tables"]>;
+  selected?: NonNullable<OperatingArea["tables"]>[number];
+  records: Array<Record<string, unknown>>;
+  tableRecords: TableRecordSnapshot;
+  externalMappings: ExternalContainerMapping[];
+  driveFiles: GoogleDriveFileRecord[];
+}) {
+  const areas = connection.operatingModel.areas;
+  const selectedOwners = selected
+    ? areas.filter((area) => (area.tables || []).some((table) => table.apiSlug === selected.apiSlug))
+    : [];
+  const selectedOwner = selectedOwners[0];
+  const totalRecords = tables.reduce((sum, table) => sum + (tableRecords[table.apiSlug]?.length || 0), 0);
+  const emptyTables = tables.filter((table) => (tableRecords[table.apiSlug] || []).length === 0);
+  const companyOsTables = tables.filter((table) => sharedTableRecordApiPath(table.apiSlug).startsWith("/v1/company-os/"));
+  const readableTables = tables.filter((table) => {
+    const directCapability = connection.capabilities.includes(`${table.apiSlug}:read`);
+    const companyOsCapability = sharedTableRecordApiPath(table.apiSlug).startsWith("/v1/company-os/")
+      && connection.capabilities.includes("company-os:read");
+    return directCapability || companyOsCapability;
+  });
+  const unscopedDrive = driveFiles.filter((file) => !file.trashed && !file.operatingAreaId).length;
+  const unscopedMappings = externalMappings.filter((mapping) => !mapping.areaId).length;
+  const areaRows = areas.map((area) => {
+    const areaTables = area.tables || [];
+    const areaTableIds = new Set(areaTables.map((table) => table.id));
+    const areaRecords = areaTables.reduce((sum, table) => sum + (tableRecords[table.apiSlug]?.length || 0), 0);
+    const scopedDrive = driveFiles.filter((file) => !file.trashed && (
+      file.operatingAreaId === area.id
+      || Boolean(file.operatingTableId && areaTableIds.has(file.operatingTableId))
+    )).length;
+    const scopedProviders = externalMappings.filter((mapping) => (
+      mapping.areaId === area.id
+      || Boolean(mapping.tableId && areaTableIds.has(mapping.tableId))
+    )).length;
+    return { area, tables: areaTables.length, records: areaRecords, drive: scopedDrive, providers: scopedProviders };
+  });
+  const evidenceSignals = [
+    {
+      label: "Department records",
+      value: `${totalRecords}`,
+      detail: `${tables.length} tables across ${areas.length} departments`,
+      icon: "ph-database"
+    },
+    {
+      label: "Agent-readable",
+      value: `${readableTables.length}`,
+      detail: `${companyOsTables.length} Company OS collections use company-os:read`,
+      icon: "ph-robot"
+    },
+    {
+      label: "Empty tables",
+      value: `${emptyTables.length}`,
+      detail: "Need import, owner input, or a deliberate empty-state decision",
+      icon: "ph-warning-circle"
+    },
+    {
+      label: "Review gaps",
+      value: `${unscopedDrive + unscopedMappings}`,
+      detail: "Unscoped Drive files and provider mappings",
+      icon: "ph-map-pin-line"
+    }
+  ];
+
+  return (
+    <Shell connection={connection} appLabel="Company data">
+      <section className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-8">
+        <section className="card border border-base-300 bg-base-100 shadow-sm">
+          <div className="card-body gap-5">
+            <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+              <div>
+                <p className="eyebrow">V1 evidence browser</p>
+                <h1 className="text-3xl font-black">{selected?.name || "Company evidence"}</h1>
+                <p className="max-w-3xl text-sm leading-6 text-company-muted">
+                  Review company records by department ownership, source route, agent readability, and missing context before using the data in operations or Paperclip handoff.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 lg:justify-end">
+                <a className="btn btn-primary btn-sm" href={selectedOwner ? `/areas?area=${canonicalAreaKeyFromBackend(selectedOwner)}&view=overview` : "/areas"}>Open department</a>
+                <a className="btn btn-outline btn-sm" href="/react-agent-tools">Agent tools</a>
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {evidenceSignals.map((signal) => (
+                <MetricCard icon={signal.icon} label={signal.label} value={signal.value} detail={signal.detail} key={signal.label} />
+              ))}
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {tables.map((table) => (
+                <a className={`btn btn-sm flex-none ${table.apiSlug === selected?.apiSlug ? "btn-primary" : "btn-outline"}`} href={`/data/${table.apiSlug}`} key={table.id}>
+                  {table.name}
+                  <span className="badge badge-sm">{tableRecords[table.apiSlug]?.length || 0}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {selected ? (
+          <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+            <article className="card border border-base-300 bg-base-100 shadow-sm">
+              <div className="card-body gap-4">
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <MetricCard icon="ph-table" label="Table" value={selected.name} detail={selected.tableName} />
+                  <MetricCard icon="ph-link" label="API route" value={sharedTableRecordApiPath(selected.apiSlug)} detail={selected.source || "companycore"} />
+                  <MetricCard icon="ph-stack" label="Records" value={`${records.length}`} detail={selectedOwners.map((area) => area.name).join(", ") || "No area owner"} />
+                </div>
+                <GenericRecordTable records={records} emptyTitle="No evidence records yet" emptyDetail="This table is mapped to the company model, but the current workspace has no records here yet." />
+              </div>
+            </article>
+            <aside className="grid content-start gap-4">
+              <article className="card border border-base-300 bg-base-100 shadow-sm">
+                <div className="card-body gap-3">
+                  <p className="eyebrow">Owner context</p>
+                  <h2 className="text-xl font-black">{selectedOwner?.name || "Unowned table"}</h2>
+                  <p className="text-sm leading-6 text-company-muted">
+                    {selectedOwners.length > 0
+                      ? "This evidence is scoped to a department and can be opened from the atlas."
+                      : "This table has no department owner in the current operating model."}
+                  </p>
+                  <div className="grid gap-2 text-sm">
+                    <span className="rounded-company bg-base-200 p-3">Capability: {selectedReadableLabel(connection, selected.apiSlug)}</span>
+                    <span className="rounded-company bg-base-200 p-3">Agent packet: {records.length > 0 ? "ready for read-only context" : "needs evidence"}</span>
+                    <span className="rounded-company bg-base-200 p-3">Write mode: use existing typed editor or command contract only</span>
+                  </div>
+                </div>
+              </article>
+              <article className="card border border-base-300 bg-base-100 shadow-sm">
+                <div className="card-body gap-3">
+                  <p className="eyebrow">Department coverage</p>
+                  <div className="grid gap-2">
+                    {areaRows.filter((row) => row.tables > 0).slice(0, 8).map((row) => (
+                      <a className="flex items-center justify-between rounded-company bg-base-200 p-3 text-sm hover:bg-base-300" href={`/areas?area=${canonicalAreaKeyFromBackend(row.area)}&view=overview`} key={row.area.id}>
+                        <span>{row.area.name}</span>
+                        <strong>{row.records} records</strong>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </article>
+            </aside>
+          </section>
+        ) : (
+          <GenericRecordTable records={[]} emptyTitle="No tables available" emptyDetail="No operating-model tables are available for this workspace yet." />
+        )}
+      </section>
+    </Shell>
+  );
+}
+
+function selectedReadableLabel(connection: ConnectionData, apiSlug: string) {
+  if (connection.capabilities.includes(`${apiSlug}:read`)) {
+    return `${apiSlug}:read`;
+  }
+  if (sharedTableRecordApiPath(apiSlug).startsWith("/v1/company-os/") && connection.capabilities.includes("company-os:read")) {
+    return "company-os:read";
+  }
+  return "review required";
 }
 
 function GenericRecordTable({ records, emptyTitle, emptyDetail }: { records: Array<Record<string, unknown>>; emptyTitle: string; emptyDetail: string }) {

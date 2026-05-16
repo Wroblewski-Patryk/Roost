@@ -95,8 +95,9 @@ export const appRouteGroups: AppRouteGroup[] = [
         icon: "ph-database",
         match: "prefix",
         private: true,
-        uxStage: "v0-rebuild",
-        rebuildNote: "Rebuild table browsing around area-scoped evidence and useful owner tasks."
+        uxStage: "v1-foundation",
+        canonicalSource: "docs/planning/v1-data-evidence-browser-task-contract.md",
+        rebuildNote: "V1 evidence browser for department-owned tables, records, source routes, and agent-readable context."
       }
     ]
   },

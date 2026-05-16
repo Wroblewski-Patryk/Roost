@@ -329,6 +329,17 @@ continue from repository files alone:
   `in_progress`, and captured responsive screenshots. It intentionally does
   not invent a direct task-to-area relation; future area-task ownership must be
   designed as a separate backend-backed slice.
+- `docs/planning/v1-data-evidence-browser-task-contract.md`: current task and
+  evidence source for V1DATA-001. As of 2026-05-16, `/data` and
+  `/data/:table` are V1 foundation evidence-browser routes. They show
+  department record metrics, agent-readable table context, empty-table and
+  review-gap signals, selected-table owner/API/capability context, department
+  coverage links, and generic record inspection. `npm run build:web` and
+  Playwright real-backend proof on `http://127.0.0.1:3215` verified desktop
+  `/data` and mobile `/data/procedures` with seeded Company OS evidence, no
+  console/page errors, and no horizontal overflow. Future work should move to
+  `/relationships` provenance review or typed actions backed by existing
+  contracts.
 - `docs/ux/v1-production-canonical-discrepancy-audit-2026-05-15.md`: current
   production-to-canonical discrepancy register for the five V1 web surfaces.
   It records the original deployed screenshots, root/auth mismatches,
