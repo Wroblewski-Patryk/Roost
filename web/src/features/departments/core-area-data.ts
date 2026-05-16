@@ -15,9 +15,9 @@ export const coreAreas: CoreArea[] = [
     icon: "ph-map-trifold",
     enabled: true,
     views: [
-      { key: "overview", labelKey: "views.00.overview", href: canonicalGeneralDashboardPath, enabled: true },
-      { key: "routing", labelKey: "views.00.routing", enabled: false },
-      { key: "department-map", labelKey: "views.00.departmentMap", enabled: false }
+      { key: "overview", labelKey: "views.00.overview", href: canonicalGeneralDashboardPath, icon: "ph-gauge", enabled: true },
+      { key: "routing", labelKey: "views.00.routing", icon: "ph-git-branch", enabled: false },
+      { key: "department-map", labelKey: "views.00.departmentMap", icon: "ph-squares-four", enabled: false }
     ]
   },
   {
@@ -27,7 +27,7 @@ export const coreAreas: CoreArea[] = [
     descriptionKey: "departments.01.description",
     icon: "ph-target",
     enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", enabled: false }]
+    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
   },
   {
     key: "02-produkt",
@@ -36,7 +36,7 @@ export const coreAreas: CoreArea[] = [
     descriptionKey: "departments.02.description",
     icon: "ph-package",
     enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", enabled: false }]
+    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
   },
   {
     key: "03-sprzedaz",
@@ -45,7 +45,7 @@ export const coreAreas: CoreArea[] = [
     descriptionKey: "departments.03.description",
     icon: "ph-handshake",
     enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", enabled: false }]
+    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
   },
   {
     key: "04-operacje",
@@ -56,10 +56,10 @@ export const coreAreas: CoreArea[] = [
     icon: "ph-list-checks",
     enabled: true,
     views: [
-      { key: "tasks", labelKey: "views.04.tasks", href: canonicalOperationsPath, enabled: true },
-      { key: "calendar", labelKey: "views.04.calendar", href: "/areas?area=04-operacje&view=calendar", enabled: true },
-      { key: "pipelines", labelKey: "views.04.pipelines", enabled: false },
-      { key: "workload", labelKey: "views.04.workload", enabled: false }
+      { key: "tasks", labelKey: "views.04.tasks", href: canonicalOperationsPath, icon: "ph-list-checks", enabled: true },
+      { key: "calendar", labelKey: "views.04.calendar", href: "/areas?area=04-operacje&view=calendar", icon: "ph-calendar-blank", enabled: true },
+      { key: "pipelines", labelKey: "views.04.pipelines", icon: "ph-kanban", enabled: false },
+      { key: "workload", labelKey: "views.04.workload", icon: "ph-users-three", enabled: false }
     ]
   },
   {
@@ -69,7 +69,7 @@ export const coreAreas: CoreArea[] = [
     descriptionKey: "departments.05.description",
     icon: "ph-address-book",
     enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", enabled: false }]
+    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
   },
   {
     key: "06-kadry",
@@ -78,7 +78,7 @@ export const coreAreas: CoreArea[] = [
     descriptionKey: "departments.06.description",
     icon: "ph-users-three",
     enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", enabled: false }]
+    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
   },
   {
     key: "07-finanse",
@@ -87,7 +87,7 @@ export const coreAreas: CoreArea[] = [
     descriptionKey: "departments.07.description",
     icon: "ph-bank",
     enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", enabled: false }]
+    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
   },
   {
     key: "08-zasoby",
@@ -98,10 +98,10 @@ export const coreAreas: CoreArea[] = [
     icon: "ph-folder-open",
     enabled: true,
     views: [
-      { key: "overview", labelKey: "views.08.overview", href: canonicalAssetsPath, enabled: true },
-      { key: "files", labelKey: "views.08.files", enabled: false },
-      { key: "knowledge", labelKey: "views.08.knowledge", enabled: false },
-      { key: "graph", labelKey: "views.08.graph", enabled: false }
+      { key: "overview", labelKey: "views.08.overview", href: canonicalAssetsPath, icon: "ph-gauge", enabled: true },
+      { key: "files", labelKey: "views.08.files", icon: "ph-folders", enabled: false },
+      { key: "knowledge", labelKey: "views.08.knowledge", icon: "ph-book-open-text", enabled: false },
+      { key: "graph", labelKey: "views.08.graph", icon: "ph-graph", enabled: false }
     ]
   },
   {
@@ -111,7 +111,7 @@ export const coreAreas: CoreArea[] = [
     descriptionKey: "departments.09.description",
     icon: "ph-cpu",
     enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", enabled: false }]
+    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
   },
   {
     key: "10-prawo",
@@ -120,7 +120,7 @@ export const coreAreas: CoreArea[] = [
     descriptionKey: "departments.10.description",
     icon: "ph-scales",
     enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", enabled: false }]
+    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
   },
   {
     key: "11-innowacje",
@@ -129,7 +129,7 @@ export const coreAreas: CoreArea[] = [
     descriptionKey: "departments.11.description",
     icon: "ph-lightbulb",
     enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", enabled: false }]
+    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
   },
   {
     key: "12-zarzadzanie",
@@ -138,7 +138,7 @@ export const coreAreas: CoreArea[] = [
     descriptionKey: "departments.12.description",
     icon: "ph-chart-line-up",
     enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", enabled: false }]
+    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
   }
 ];
 

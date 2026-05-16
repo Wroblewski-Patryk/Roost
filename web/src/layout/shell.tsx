@@ -97,25 +97,27 @@ function DepartmentSidebar({
             </div>
 
             {hasExpandableViews && isOpen ? (
-              <div className="ml-8 grid gap-1 border-l border-neutral-content/10 pl-2">
+              <div className="ml-4 grid gap-1 border-l border-neutral-content/10 pl-2">
                 {area.views?.map((view) => {
                   const viewEnabled = view.enabled !== false && Boolean(view.href);
                   const viewActive = isActive && enabledViews.some((enabledView) => enabledView.key === view.key) && view.key === activeView;
                   return viewEnabled ? (
                     <a
-                      className={`rounded-company px-3 py-2 text-xs font-bold no-underline ${viewActive ? "bg-white/15 text-neutral-content" : "text-neutral-content/65 hover:bg-white/10 hover:text-neutral-content"}`}
+                      className={`grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-company px-3 py-2 text-xs font-bold no-underline ${viewActive ? "bg-white/15 text-neutral-content" : "text-neutral-content/65 hover:bg-white/10 hover:text-neutral-content"}`}
                       href={view.href}
                       key={view.key}
                     >
-                      {t(view.labelKey)}
+                      <i className={`ph-bold ${view.icon || "ph-circle"}`} aria-hidden="true"></i>
+                      <span className="truncate">{t(view.labelKey)}</span>
                     </a>
                   ) : (
                     <span
-                      className="rounded-company px-3 py-2 text-xs font-bold text-neutral-content/35"
+                      className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-company px-3 py-2 text-xs font-bold text-neutral-content/35"
                       key={view.key}
                       title={t("sidebar.viewDisabled")}
                     >
-                      {t(view.labelKey)}
+                      <i className={`ph-bold ${view.icon || "ph-circle"}`} aria-hidden="true"></i>
+                      <span className="truncate">{t(view.labelKey)}</span>
                     </span>
                   );
                 })}

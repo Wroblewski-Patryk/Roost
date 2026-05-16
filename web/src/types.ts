@@ -184,5 +184,6 @@ export type DepartmentView = {
   key: string;
   labelKey: string;
   href?: string;
+  icon?: string;
   enabled?: boolean;
 };
