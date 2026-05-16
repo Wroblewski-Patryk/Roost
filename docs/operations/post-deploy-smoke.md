@@ -2,6 +2,52 @@
 
 Use this file to record the minimum checks after each deploy.
 
+## Production Strategy Context Rollover
+
+- Timestamp: 2026-05-16
+- Environment: production VPS Docker backend
+- Commit: `5db4dd8b1fe9058d1fc78ebc957c0716ebd4822a`
+- Image:
+  `rnqqkhl3o3dut4qv56mlxly2_backend:5db4dd8b1fe9058d1fc78ebc957c0716ebd4822a`
+- Running container:
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-5db4dd8`
+- Replaced container:
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-9ff1882`, retained stopped as
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-9ff1882-previous-5db4dd8`.
+- Local/source checks:
+  - DMS-01-005A `npm run build:server`: passed.
+  - DMS-01-005A `npm run test:api`: passed against validation-owned
+    PostgreSQL on `127.0.0.1:55496`.
+  - DMS-01-005A `git diff --check`: passed.
+- Rollover checks:
+  - Docker image build from the pushed commit archive for `5db4dd8` passed.
+  - Canary container returned local `/health` with the expected commit before
+    traffic rollover.
+  - Final routed container returned local `/health` with the expected commit.
+  - Production Postgres container stayed running.
+- Public smoke:
+  - `GET https://api.companycore.luckysparrow.ch/health` returned `status=ok`
+    with the expected build commit and image.
+  - `GET https://companycore.luckysparrow.ch/health` returned `status=ok`
+    with the same build commit and image.
+- Protected smoke:
+  - Owner login succeeded without recording token material.
+  - `GET /v1/strategy/context` returned `200` with
+    `department.canonicalKey=01-strategia`,
+    `department.backendAreaKey=strategy-governance`,
+    `summary.activeMetrics=1`, `summary.activeRisks=1`,
+    `agentPacket.mode=read_only`, and `blockedActions=4`.
+- Cleanup:
+  - Temporary local archive was removed.
+  - Temporary VPS archive, source directory, env file, and labels were removed
+    from `/tmp`.
+- Residual risks:
+  - No production smoke defect was found.
+  - Production currently has no goals, targets, decision logs, or active
+    decisions in the Strategy packet; data import/curation remains a future
+    department content task.
+  - Future strategy writes remain gated by explicit command contracts.
+
 ## Production V1OPS Operations Context Rollover
 
 - Timestamp: 2026-05-16

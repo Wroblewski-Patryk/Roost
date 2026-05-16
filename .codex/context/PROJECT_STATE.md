@@ -146,8 +146,16 @@ Last updated: 2026-05-16
   manifest tooling, and read-oriented MCP key profiles. `npm run build:server`,
   `npm run test:api` against validation-owned PostgreSQL on
   `127.0.0.1:55496`, and `git diff --check` passed. The validation database
-  process and temporary files were removed after the run. Production smoke for
-  this new Strategy route is the next release checkpoint.
+  process and temporary files were removed after the run. DMS-01-005B then
+  deployed the commit to production through the accepted manual VPS rollover
+  path. Production now runs
+  `5db4dd8b1fe9058d1fc78ebc957c0716ebd4822a` in
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-5db4dd8`; previous backend
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-9ff1882` is retained stopped as
+  rollback. Public web/API health returned the expected commit, and protected
+  `/v1/strategy/context` returned `01-strategia`, `strategy-governance`,
+  `summary.activeMetrics=1`, `summary.activeRisks=1`,
+  `agentPacket.mode=read_only`, and `blockedActions=4`.
   As of 2026-05-16, DMS-00-003 implemented the first backend slice of
   `00 Main`: protected read-only `GET /v1/intake`. It aggregates existing
   agent events, provider inbox rows, unassigned Drive/provider resources,

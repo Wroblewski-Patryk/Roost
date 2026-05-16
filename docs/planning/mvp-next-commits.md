@@ -7,11 +7,11 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] Deploy and smoke the verified `01 Strategy` read packet:
-      `GET /v1/strategy/context` is locally verified with `strategy:read`,
-      MCP exposure, profile coverage, workspace isolation, no-mutation proof,
-      and scoped-key denial. Next release checkpoint is a production rollout
-      plus protected route smoke.
+- [ ] Continue V1 department systems with the next bounded slice:
+      preferred order is a read-only `03 Sales` department packet, then
+      `05 Relationships`, `02 Product And Delivery`, or a guarded
+      `04 Operations` planning/procedure command contract if operations writes
+      become more urgent.
 
 ### NEXT
 
@@ -146,6 +146,19 @@ and `docs/operations/v1-function-coverage-ledger.csv`.
       `git diff --check`. Validation PostgreSQL and temporary artifacts were
       cleaned up. Task contract:
       `docs/planning/v1-strategy-context-read-api-task-contract.md`.
+
+- [x] DMS-01-005B Production Strategy context smoke:
+      manual VPS rollover deployed commit
+      `5db4dd8b1fe9058d1fc78ebc957c0716ebd4822a`; production now runs
+      `backend-rnqqkhl3o3dut4qv56mlxly2-manual-5db4dd8`, with
+      `backend-rnqqkhl3o3dut4qv56mlxly2-manual-9ff1882` retained stopped as
+      rollback. Public web/API health returned the expected commit. Protected
+      `GET /v1/strategy/context` returned `01-strategia`,
+      `strategy-governance`, `summary.activeMetrics=1`,
+      `summary.activeRisks=1`, `agentPacket.mode=read_only`, and
+      `blockedActions=4`. Temporary local and VPS rollout artifacts were
+      removed. Task contract:
+      `docs/planning/v1-strategy-production-smoke-task-contract.md`.
 
 - [x] V1COS-001 Company OS area-aware foundation:
       `/react-company-os` now connects Company OS evidence and guarded

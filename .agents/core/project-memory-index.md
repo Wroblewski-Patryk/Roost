@@ -163,8 +163,14 @@ continue from repository files alone:
   summary counts, allowed read actions, and blocked strategy-write actions. It
   is exposed through `strategy:read` and MCP. `npm run build:server`,
   `npm run test:api` passed on validation-owned PostgreSQL
-  `127.0.0.1:55496`, and `git diff --check` passed. Production smoke remains
-  pending after deploy.
+  `127.0.0.1:55496`, and `git diff --check` passed. As of DMS-01-005B, that
+  strategy context is deployed and verified in production at commit
+  `5db4dd8b1fe9058d1fc78ebc957c0716ebd4822a`. Public web/API health reported
+  the expected commit and protected `/v1/strategy/context` returned
+  `01-strategia`, `strategy-governance`, `summary.activeMetrics=1`,
+  `summary.activeRisks=1`, `agentPacket.mode=read_only`, and
+  `blockedActions=4`. Previous backend `9ff1882` is retained stopped as
+  rollback.
 - `docs/architecture/department-management-systems-v1-blueprint.md`:
   detailed V1 blueprint for `00 Main` plus the 12 operating department
   management systems. As of 2026-05-16, future department work should use this
