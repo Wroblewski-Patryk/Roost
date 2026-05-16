@@ -31,6 +31,12 @@ and by AI agents through MCP. Paperclip, Jarvis, Codex, n8n, and future agents
 must operate through CompanyCore APIs or MCP tools rather than direct database
 or provider access.
 
+The model-level module map for turning this thesis into scalable product,
+API, MCP, provider, and UI surfaces lives in
+`docs/architecture/companycore-business-module-map.md`. Use that document to
+classify future work as native core, provider-backed, future adapter, or
+derived view before implementation.
+
 ## Foundational Principle
 
 Hierarchy is not process.

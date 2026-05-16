@@ -668,6 +668,210 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(relationshipGraphBody.data.summary.confidence.needsReview >= 2);
   assert.ok(relationshipGraphBody.data.summary.confidence.unsupported > 0);
 
+  const graphStrategyArea = await prisma.operatingArea.findFirstOrThrow({
+    where: { workspaceId: ownerA.workspace.id, key: "strategy-governance" },
+    include: { tables: true }
+  });
+  const graphGoal = await prisma.goal.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      title: "Operating graph revenue clarity",
+      description: "Prove that strategy goals connect into execution evidence."
+    }
+  });
+  const graphLonelyGoal = await prisma.goal.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      title: "Operating graph target gap"
+    }
+  });
+  const graphTarget = await prisma.target.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      goalId: graphGoal.id,
+      title: "Revenue signal has a measurable target",
+      metric: "Operating graph target metric",
+      targetValue: 100,
+      currentValue: 25
+    }
+  });
+  const graphTask = await prisma.task.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      goalId: graphGoal.id,
+      targetId: graphTarget.id,
+      title: "Connect target to execution task"
+    }
+  });
+  const graphProcess = await prisma.process.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      name: "Operating graph strategy process",
+      description: "Process used by area operating graph tests.",
+      department: "Strategy and governance",
+      category: "strategy",
+      status: "active"
+    }
+  });
+  const graphPipeline = await prisma.pipeline.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      processId: graphProcess.id,
+      name: "Operating graph strategy pipeline",
+      purpose: "Move a strategic target through execution evidence.",
+      status: "active"
+    }
+  });
+  const graphMetric = await prisma.metric.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      processId: graphProcess.id,
+      pipelineId: graphPipeline.id,
+      name: "Operating graph target metric",
+      category: "strategy",
+      measurementType: "number",
+      unit: "items",
+      targetValue: 100,
+      currentValue: 25,
+      status: "active"
+    }
+  });
+  const graphPipelineRun = await prisma.pipelineRun.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      pipelineId: graphPipeline.id,
+      initiatedByType: "user",
+      status: "running",
+      linkedTaskIds: [graphTask.id],
+      correlationId: "operating-graph-api-test"
+    }
+  });
+  const graphKnowledgeItem = await prisma.knowledgeItem.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      title: "Operating graph strategy note",
+      itemType: "note",
+      summary: "Knowledge linked to the strategy process and pipeline.",
+      processId: graphProcess.id,
+      pipelineId: graphPipeline.id,
+      status: "active"
+    }
+  });
+  const graphAreaDriveFile = await prisma.googleDriveFile.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      externalId: "operating-graph-strategy-doc",
+      name: "Operating Graph Strategy Doc",
+      mimeType: "application/vnd.google-apps.document",
+      operatingAreaId: graphStrategyArea.id,
+      webViewLink: "https://drive.example/operating-graph"
+    }
+  });
+  const graphAreaDriveSnapshot = await prisma.googleDriveContentSnapshot.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      googleDriveFileId: graphAreaDriveFile.id,
+      sourceRevisionId: "operating-graph-rev-1",
+      contentKind: "google_doc",
+      summary: "Strategy document summary for the area operating graph.",
+      extractedText: "Strategy document content."
+    }
+  });
+  const graphAreaMapping = await prisma.externalContainerMapping.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      provider: "clickup",
+      entityType: "list",
+      externalId: "operating-graph-strategy-list",
+      name: "Operating Graph Strategy List",
+      areaId: graphStrategyArea.id,
+      tableId: graphStrategyArea.tables.find((table) => table.apiSlug === "goals")?.id
+    }
+  });
+
+  const areaGraph = await request("/v1/operating-graph/areas/01-strategia?limit=100", { headers: authA });
+  assert.equal(areaGraph.status, 200);
+  const areaGraphBody = areaGraph.body as {
+    data: {
+      area: { id: string; key: string; canonicalKey: string; resolvedKey: string };
+      summary: { goals: number; targets: number; metrics: number; workflows: number; tasks: number; knowledge: number; sources: number; gaps: number };
+      nodes: Array<{ id: string; type: string; label: string; metadata?: Record<string, unknown> }>;
+      edges: Array<{ from: string; to: string; confidence: string; sourceModel: string; sourceField: string; evidence: unknown[] }>;
+      layers: { goals: string[]; workflows: string[]; tasks: string[]; knowledge: string[]; sources: string[] };
+      gaps: Array<{ id: string; layer: string; title: string; evidence: unknown[] }>;
+      reviewItems: Array<{ id: string }>;
+      unsupportedFamilies: Array<{ family: string }>;
+    };
+  };
+  assert.equal(areaGraphBody.data.area.id, graphStrategyArea.id);
+  assert.equal(areaGraphBody.data.area.key, "strategy-governance");
+  assert.equal(areaGraphBody.data.area.canonicalKey, "01-strategia");
+  assert.equal(areaGraphBody.data.area.resolvedKey, "strategy-governance");
+  assert.ok(areaGraphBody.data.summary.goals >= 2);
+  assert.ok(areaGraphBody.data.summary.targets >= 1);
+  assert.ok(areaGraphBody.data.summary.metrics >= 1);
+  assert.ok(areaGraphBody.data.summary.workflows >= 2);
+  assert.ok(areaGraphBody.data.summary.tasks >= 1);
+  assert.ok(areaGraphBody.data.summary.knowledge >= 2);
+  assert.ok(areaGraphBody.data.summary.sources >= 1);
+  assert.ok(areaGraphBody.data.summary.gaps >= 1);
+  assert.ok(areaGraphBody.data.nodes.some((node) => node.id === `goal:${graphGoal.id}`));
+  assert.ok(areaGraphBody.data.nodes.some((node) => node.id === `google_drive_file:${graphAreaDriveFile.id}` && node.metadata?.latestSnapshot));
+  assert.ok(areaGraphBody.data.edges.some((edge) => (
+    edge.from === `goal:${graphGoal.id}`
+    && edge.to === `target:${graphTarget.id}`
+    && edge.confidence === "direct"
+    && edge.sourceModel === "Target"
+    && edge.sourceField === "goalId"
+    && edge.evidence.length > 0
+  )));
+  assert.ok(areaGraphBody.data.edges.some((edge) => (
+    edge.from === `pipeline_run:${graphPipelineRun.id}`
+    && edge.to === `task:${graphTask.id}`
+    && edge.confidence === "route_inferred"
+    && edge.sourceField === "linkedTaskIds"
+  )));
+  assert.ok(areaGraphBody.data.edges.some((edge) => edge.confidence === "content_inferred"));
+  assert.ok(areaGraphBody.data.layers.goals.includes(`goal:${graphGoal.id}`));
+  assert.ok(areaGraphBody.data.layers.workflows.includes(`process:${graphProcess.id}`));
+  assert.ok(areaGraphBody.data.layers.tasks.includes(`task:${graphTask.id}`));
+  assert.ok(areaGraphBody.data.layers.knowledge.includes(`knowledge_item:${graphKnowledgeItem.id}`));
+  assert.ok(areaGraphBody.data.gaps.some((gap) => gap.id === `gap:goal:${graphLonelyGoal.id}:target`));
+  assert.ok(areaGraphBody.data.reviewItems.some((item) => item.id === `gap:goal:${graphLonelyGoal.id}:target`));
+  assert.ok(areaGraphBody.data.unsupportedFamilies.some((family) => family.family === "target_metric_fk"));
+
+  const foreignAreaGraph = await request("/v1/operating-graph/areas/01-strategia?limit=100", { headers: selectedWorkspaceAuth });
+  assert.equal(foreignAreaGraph.status, 200);
+  const foreignAreaGraphBody = foreignAreaGraph.body as { data: { nodes: Array<{ id: string }> } };
+  assert.ok(!foreignAreaGraphBody.data.nodes.some((node) => node.id === `goal:${graphGoal.id}`));
+
+  const missingAreaGraph = await request("/v1/operating-graph/areas/not-a-real-area", { headers: authA });
+  assert.equal(missingAreaGraph.status, 404);
+
+  const mcpManifestWithOperatingGraph = await request("/v1/mcp/manifest", { headers: authA });
+  assert.equal(mcpManifestWithOperatingGraph.status, 200);
+  const mcpManifestWithOperatingGraphBody = mcpManifestWithOperatingGraph.body as {
+    data: { tools: Array<{ path: string; capability: string; riskLevel: string; requiresApproval: boolean }> };
+  };
+  assert.ok(mcpManifestWithOperatingGraphBody.data.tools.some((tool) => (
+    tool.path === "/v1/operating-graph/areas/:areaKey"
+    && tool.capability === "operating-graph:read"
+    && tool.riskLevel === "read"
+    && tool.requiresApproval === false
+  )));
+
+  await prisma.googleDriveContentSnapshot.delete({ where: { id: graphAreaDriveSnapshot.id } });
+  await prisma.googleDriveFile.delete({ where: { id: graphAreaDriveFile.id } });
+  await prisma.externalContainerMapping.delete({ where: { id: graphAreaMapping.id } });
+  await prisma.knowledgeItem.delete({ where: { id: graphKnowledgeItem.id } });
+  await prisma.pipelineRun.delete({ where: { id: graphPipelineRun.id } });
+  await prisma.metric.delete({ where: { id: graphMetric.id } });
+  await prisma.pipeline.delete({ where: { id: graphPipeline.id } });
+  await prisma.process.delete({ where: { id: graphProcess.id } });
+  await prisma.task.delete({ where: { id: graphTask.id } });
+  await prisma.target.delete({ where: { id: graphTarget.id } });
+  await prisma.goal.deleteMany({ where: { id: { in: [graphGoal.id, graphLonelyGoal.id] } } });
+
   await prisma.googleDriveFile.deleteMany({
     where: { id: { in: [driveRoot.id, driveChild.id] } }
   });
@@ -4326,6 +4530,8 @@ test("CompanyCore v1 protected API flow", async () => {
     assert.equal(reconnectExchange.status, 200);
     assert.equal((reconnectExchange.body as { data: { oauthTokenConfigured: boolean } }).data.oauthTokenConfigured, true);
     const repairedGoogleDriveSettings = await getGoogleDriveSettingsForWorkspace(ownerA.workspace.id);
+    assert.equal(repairedGoogleDriveSettings?.oauth.clientId, "dev-google-oauth-client-id");
+    assert.equal(repairedGoogleDriveSettings?.oauth.clientSecret, "dev-google-oauth-client-secret");
     assert.equal(repairedGoogleDriveSettings?.oauth.refreshToken, "reconnected-google-refresh-token");
   } finally {
     globalThis.fetch = originalFetchBeforeGoogleDriveReconnect;
@@ -4934,8 +5140,8 @@ test("CompanyCore v1 protected API flow", async () => {
     if (url.origin === "https://oauth2.googleapis.com" && url.pathname === "/token") {
       oauthRefreshCalled = true;
       const body = new URLSearchParams(String(init?.body ?? ""));
-      assert.equal(body.get("client_id"), "workspace-google-client-id");
-      assert.equal(body.get("client_secret"), "workspace-google-client-secret");
+      assert.equal(body.get("client_id"), "dev-google-oauth-client-id");
+      assert.equal(body.get("client_secret"), "dev-google-oauth-client-secret");
       assert.equal(body.get("grant_type"), "refresh_token");
       assert.equal(body.get("refresh_token"), "google-refresh-token");
       return new Response(JSON.stringify({

@@ -41,11 +41,17 @@ of rediscovering them.
   Paperclip, and future AI/application access without scattering each tool
   into a separate view or mixing OAuth, imports, mapping, and permissions into
   one form.
-- Decision: Treat settings as a minimal credential surface, not an operations
-  dashboard. Use three simple sections: Integrations, Agent keys, and MCP.
-  Settings may save provider credentials and create scoped agent keys, but
-  import, sync, mapping, review queues, large MCP catalogs, badges, counters,
-  and operational metrics must live in dedicated work views.
+- Decision: Treat settings as a contextual connector configuration surface,
+  not an operations dashboard. Use three simple sections: Integrations, Agent
+  keys, and MCP. Integrations must show a provider list and then only the
+  backend-supported fields for the selected provider: credentials, active
+  state, provider scope IDs, `syncMode`, and `importMode`. The provider list
+  owns a direct active/disabled switch so an owner can pause a connector after
+  importing data without deleting the imported CompanyCore records. Advanced
+  provider work is grouped inside the selected provider as `Setup`, `Mapping`,
+  and `Sync`, backed by existing backend contracts. Review queues, large MCP
+  catalogs, badges, counters, and operational metrics must stay out of this
+  settings surface.
 - Reuse when: Rebuilding `/settings`, `/settings/integrations`,
   `/settings/drive`, `/settings/api`, `/react-agent-tools`, ClickUp
   connection setup, Drive connection setup, service-key workflows, or future

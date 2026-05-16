@@ -31,9 +31,12 @@ Those belong elsewhere:
 2. `system-architecture.md`
 3. `tech-stack.md`
 4. `organizational-architecture-bridge.md`
-5. `company-os-definition-editing-contract.md`
-6. `company-os-workflow-definition-command-contract.md`
-7. any project-specific architecture or ADR files added later
+5. `companycore-business-module-map.md`
+6. `companycore-global-business-flow.md`
+7. `department-management-systems-architecture.md`
+8. `company-os-definition-editing-contract.md`
+9. `company-os-workflow-definition-command-contract.md`
+10. any project-specific architecture or ADR files added later
 
 ## Architecture Rules
 

@@ -802,6 +802,100 @@ Confidence values:
 - `unsupported`: represented in `unsupportedFamilies` when the schema or read
   contract cannot support a useful relationship without inventing data.
 
+## Area Operating Graph
+
+```http
+GET /v1/operating-graph/areas/:areaKey
+GET /operating-graph/areas/:areaKey
+```
+
+Required capability:
+
+```text
+operating-graph:read
+```
+
+Returns a workspace-scoped read-only operating graph for one selected company
+department. The route accepts backend operating area keys such as
+`strategy-governance` and canonical V1 UX keys such as `01-strategia`.
+
+The endpoint derives graph nodes from existing records only. It does not create
+fake goals, mutate links, or expose a generic edge editor.
+
+Query:
+
+| Name | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `limit` | number | `100` | Optional per-family read cap from `1` to `500`. |
+| `include` | string | none | Reserved for future layer filtering; currently accepted for compatibility. |
+
+Response shape:
+
+```json
+{
+  "data": {
+    "area": {
+      "id": "area-id",
+      "key": "strategy-governance",
+      "canonicalKey": "01-strategia",
+      "resolvedKey": "strategy-governance",
+      "name": "Strategy and governance"
+    },
+    "summary": {
+      "goals": 2,
+      "targets": 1,
+      "metrics": 1,
+      "workflows": 2,
+      "tasks": 1,
+      "knowledge": 2,
+      "sources": 4,
+      "gaps": 1,
+      "nodes": 18,
+      "edges": 20
+    },
+    "nodes": [],
+    "edges": [
+      {
+        "id": "goal:goal-id->target:target-id",
+        "from": "goal:goal-id",
+        "to": "target:target-id",
+        "label": "measured by target",
+        "confidence": "direct",
+        "sourceModel": "Target",
+        "sourceField": "goalId",
+        "evidence": [
+          {
+            "model": "Target",
+            "id": "target-id",
+            "field": "goalId",
+            "value": "goal-id"
+          }
+        ]
+      }
+    ],
+    "layers": {
+      "goals": [],
+      "workflows": [],
+      "tasks": [],
+      "knowledge": [],
+      "sources": []
+    },
+    "gaps": [],
+    "reviewItems": [],
+    "unsupportedFamilies": []
+  }
+}
+```
+
+Edge confidence values:
+
+- `direct`: a durable database field connects the records.
+- `route_inferred`: an operating table or runtime field implies the relation.
+- `provider_hierarchy`: a provider hierarchy such as Google Drive parent/child.
+- `content_inferred`: content or metadata implies a relation.
+- `needs_review`: the owner should confirm or assign scope.
+- `unsupported`: the relation family is known but not modeled as a fact.
+
 ## Company OS
 
 Company OS records are exposed through a mostly read-oriented,

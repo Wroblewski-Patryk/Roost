@@ -442,3 +442,63 @@ fixes for this repository.
 - Evidence: ACF-OPS-002 restored `docs/operations/post-deploy-smoke.md` from
   Git, removed validation-owned temp artifacts, and increased free space from
   `0` bytes to over `500 MB`.
+
+### 2026-05-15 - Docker CLI can hang during disposable database startup
+- Context: AOG-BE-001 attempted to start a disposable PostgreSQL container for
+  `npm run test:api` after host validation failed because `DATABASE_URL` was
+  unset.
+- Symptom: `docker run` and subsequent narrow `docker ps` checks timed out
+  without returning container state.
+- Root cause: The local Docker backend was reachable enough to print a version
+  but did not respond to container lifecycle commands in time.
+- Guardrail: When Docker lifecycle commands time out during validation, stop
+  only the recent validation-owned `docker` CLI processes and record the API
+  gate as environment-blocked rather than leaving hanging shell processes.
+- Preferred pattern: Check recent `docker` processes with
+  `Get-Process docker -ErrorAction SilentlyContinue`, stop only those started
+  by the current validation window, then keep older Docker/Desktop processes
+  untouched.
+- Evidence: AOG-BE-001 stopped the recent validation-owned Docker CLI
+  processes after `docker run` and `docker ps` timed out; older Docker
+  processes were left untouched.
+
+### 2026-05-15 - Use valid UUID sentinels in Prisma filters
+- Context: AOG-BE-001 database-backed API validation exercised the new
+  operating graph aggregate against PostgreSQL.
+- Symptom: `npm run test:api` failed with Prisma `P2023` because the empty
+  anti-match branch used `id: "__none__"` in UUID columns.
+- Root cause: PostgreSQL UUID fields reject non-UUID sentinel strings even
+  when the filter is meant to match no rows.
+- Guardrail: For Prisma filters on UUID fields, use a valid impossible UUID
+  sentinel such as `00000000-0000-0000-0000-000000000000`, or restructure the
+  query to omit the branch.
+- Preferred pattern: Define one named constant close to the route/service and
+  reuse it for empty UUID filters.
+- Avoid: Magic strings such as `"__none__"` in UUID-backed Prisma `where`
+  clauses.
+- Evidence: AOG-BE-001 replaced the invalid sentinel in
+  `src/modules/operating-graph/operating-graph.routes.ts`; the follow-up
+  `npm run test:api` passed against workspace-local PostgreSQL on
+  `127.0.0.1:55476`.
+
+### 2026-05-15 - Preserve the OAuth client used during repair token exchange
+- Context: The V1 settings/AOG database gate replayed Google Drive OAuth repair
+  after an undecryptable stored Drive secret.
+- Symptom: Refresh assertions failed because reconnect used the environment
+  fallback OAuth client, but the saved token secret did not preserve that
+  client, making later refresh behavior ambiguous.
+- Root cause: `exchangeGoogleDriveAuthorizationCode` normalized tokens without
+  storing the resolved OAuth client used for the token exchange.
+- Guardrail: When OAuth repair falls back to an environment client because the
+  old encrypted secret cannot be read, persist the resolved client ID/secret in
+  the encrypted OAuth secret alongside the new token.
+- Preferred pattern: Resolve the OAuth client once, pass it into both the token
+  request and normalization, and keep client secrets inside encrypted provider
+  secret storage.
+- Avoid: Recomputing OAuth client selection separately during exchange and
+  refresh when repair flows can change the available source of truth.
+- Evidence: `src/integrations/google-drive/google-drive.auth.ts` now preserves
+  the resolved OAuth client during exchange/refresh, and
+  `src/tests/api.test.ts` asserts the repaired secret and refresh body. `npm
+  run test:api` passed against workspace-local PostgreSQL on
+  `127.0.0.1:55476`.

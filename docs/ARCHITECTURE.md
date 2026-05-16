@@ -3,6 +3,11 @@
 Company Core is built around one rule: the database is the source of truth, and
 the API is the only supported access layer.
 
+The long-term product shape is a company operating bridge, not only a backend
+integration dashboard. The model-level module map for scaling UI, API, MCP,
+provider, and agent work is
+`docs/architecture/companycore-business-module-map.md`.
+
 ## Source Of Truth
 
 PostgreSQL stores canonical company state. Prisma owns the schema and generated
@@ -45,10 +50,13 @@ backend. It is not the required primary path for ClickUp in v1.
 
 Paperclip and Jarvis consume Company Core as operational memory:
 
-- projects, goals, targets, and tasks for execution context
-- clients and deals for CRM context
-- notes and decisions for durable knowledge
-- events for auditability and automation triggers
+- goals, targets, tasks, processes, pipelines, and runtime evidence for
+  execution context
+- clients, deals, stakeholders, and relationships for CRM context
+- Drive/Docs/Sheets snapshots, notes, standards, and decisions for durable
+  knowledge
+- resources, tools, permissions, approvals, audit logs, and events for safe
+  agent action
 
 ## Current Runtime
 

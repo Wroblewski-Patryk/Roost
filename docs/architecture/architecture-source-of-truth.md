@@ -64,6 +64,9 @@ At minimum, keep these files aligned:
 - `docs/architecture/system-architecture.md`
 - `docs/architecture/tech-stack.md`
 - `docs/architecture/organizational-architecture-bridge.md`
+- `docs/architecture/companycore-business-module-map.md`
+- `docs/architecture/companycore-global-business-flow.md`
+- `docs/architecture/department-management-systems-architecture.md`
 - `docs/architecture/company-os-definition-editing-contract.md`
 - `docs/architecture/company-os-workflow-definition-command-contract.md`
 - `docs/architecture/web-and-mcp-foundation-before-v2.md`
@@ -122,6 +125,22 @@ The approved v1 direction is:
   future schema, MCP, web, mobile, Paperclip, governance, knowledge, KPI, and
   organizational graph work without bypassing scoped task contracts or existing
   Company OS boundaries.
+- CompanyCore should scale through model-level business modules recorded in
+  `docs/architecture/companycore-business-module-map.md`. Future views and
+  agent tools should derive from those modules and classify work as native
+  core, provider-backed, future adapter, or derived view before adding schema,
+  API, UI, or MCP surfaces.
+- CompanyCore's global business flow is recorded in
+  `docs/architecture/companycore-global-business-flow.md`. Future CRM,
+  marketing, product/service delivery, finance, support, feedback, and
+  improvement work should derive from the 13-stage value pipeline before
+  adding runtime surfaces.
+- CompanyCore V1 department views should become department management systems
+  as recorded in
+  `docs/architecture/department-management-systems-architecture.md`. Each of
+  the 13 areas is a scalable management system over shared tables, pipelines,
+  tasks, knowledge, resources, metrics, decisions, governance, and AI/MCP
+  tools, not a separate database or provider-led app.
 
 ## Implementation Contract
 

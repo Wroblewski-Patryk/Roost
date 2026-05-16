@@ -113,6 +113,10 @@ function routeDescription(route: ManifestRoute) {
     return "Read the workspace relationship graph with direct, inferred, provider-derived, review, and unsupported relationship context.";
   }
 
+  if (route.capability === "operating-graph:read") {
+    return "Read one selected department operating graph with goals, targets, metrics, workflows, tasks, knowledge, sources, evidence, and readiness gaps.";
+  }
+
   if (route.capability.startsWith("integration-settings:")) {
     return "Inspect or operate workspace integration settings through controlled lifecycle actions.";
   }

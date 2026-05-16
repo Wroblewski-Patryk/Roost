@@ -63,17 +63,18 @@ export async function exchangeGoogleDriveAuthorizationCode(input: {
   redirectUri: string;
   workspaceId?: string;
 }) {
+  const oauthClient = await getGoogleOAuthClient(input.workspaceId);
   const response = await postGoogleOAuthToken({
     code: input.code,
     redirect_uri: input.redirectUri,
     grant_type: "authorization_code"
-  }, input.workspaceId);
+  }, undefined, undefined, oauthClient);
 
   if (!response.refresh_token && !response.access_token) {
     throw new IntegrationError("integration_unavailable", 502, "Google OAuth did not return usable tokens.");
   }
 
-  return normalizeTokenResponse(response, response.refresh_token);
+  return normalizeTokenResponse(response, response.refresh_token, oauthClient);
 }
 
 export async function buildGoogleDriveAuthorizationUrl(input: {
@@ -125,20 +126,22 @@ async function refreshGoogleDriveOAuth(oauth: GoogleDriveOAuthSecret) {
     throw new IntegrationError("integration_invalid_token", 401, "Google Drive refresh token is missing.");
   }
 
+  const oauthClient = await getGoogleOAuthClient(undefined, oauth);
   const response = await postGoogleOAuthToken({
     refresh_token: oauth.refreshToken,
     grant_type: "refresh_token"
-  }, undefined, oauth);
+  }, undefined, oauth, oauthClient);
 
-  return normalizeTokenResponse(response, oauth.refreshToken);
+  return normalizeTokenResponse(response, oauth.refreshToken, oauthClient);
 }
 
 async function postGoogleOAuthToken(
   input: Record<string, string>,
   workspaceId?: string,
-  oauthSecret?: GoogleDriveOAuthSecret
+  oauthSecret?: GoogleDriveOAuthSecret,
+  resolvedOAuthClient?: { clientId: string; clientSecret?: string }
 ) {
-  const oauthClient = await getGoogleOAuthClient(workspaceId, oauthSecret);
+  const oauthClient = resolvedOAuthClient ?? await getGoogleOAuthClient(workspaceId, oauthSecret);
   const body = new URLSearchParams({
     client_id: oauthClient.clientId,
     client_secret: oauthClient.clientSecret ?? "",
@@ -177,13 +180,16 @@ function normalizeTokenResponse(
     scope?: string;
     token_type?: string;
   },
-  refreshToken?: string
+  refreshToken?: string,
+  oauthClient?: { clientId: string; clientSecret?: string }
 ): GoogleDriveOAuthSecret {
   if (!response.access_token) {
     throw new IntegrationError("integration_unavailable", 502, "Google OAuth did not return an access token.");
   }
 
   return {
+    clientId: oauthClient?.clientId,
+    clientSecret: oauthClient?.clientSecret,
     refreshToken: response.refresh_token ?? refreshToken ?? "",
     accessToken: response.access_token,
     expiresAt: response.expires_in

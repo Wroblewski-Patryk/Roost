@@ -351,4 +351,8 @@ Validation summary:
   owner row visible, desktop first viewport remains complete, and the mobile
   fixed nav is shorter while the full-page path remains readable from overview
   to area detail.
-- Not completed: `npm run test:api` because local `DATABASE_URL` is unset.
+- Follow-up completed on 2026-05-15: `npm run test:api` passed against
+  workspace-local PostgreSQL on `127.0.0.1:55476`, and real backend
+  Playwright proof verified selected-area routes with screenshots
+  `docs/ux/evidence/v1-area-real-backend-selected-area-desktop.png` and
+  `docs/ux/evidence/v1-area-real-backend-selected-area-mobile.png`.

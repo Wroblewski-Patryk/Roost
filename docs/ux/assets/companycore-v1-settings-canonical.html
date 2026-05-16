@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CompanyCore Minimal Settings Canonical</title>
+  <title>CompanyCore Contextual Integration Settings Canonical</title>
   <style>
     :root {
       --ink: #071225;
@@ -47,6 +47,17 @@
     .tab { border: 1px solid var(--line); border-radius: 7px; background: white; padding: 10px 14px; font-size: 13px; }
     .tab.active { border-color: var(--blue); background: var(--blue); color: white; }
     .panel { border: 1px solid var(--line); border-radius: 8px; background: white; padding: 18px; display: grid; gap: 16px; box-shadow: 0 16px 34px rgba(36,55,82,.07); }
+    .integration-layout { display: grid; grid-template-columns: 270px 1fr; gap: 14px; align-items: start; }
+    .integration-list { display: grid; gap: 8px; }
+    .integration-option { border: 1px solid var(--line); border-radius: 8px; background: white; padding: 14px; display: grid; gap: 6px; }
+    .integration-option.active { border-color: var(--blue); background: #f3f7ff; }
+    .integration-option strong { font-size: 14px; }
+    .integration-option span { color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .integration-switch { border-top: 1px solid var(--line); margin: 8px -14px -14px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
+    .toggle { width: 38px; height: 22px; border-radius: 999px; background: var(--blue); position: relative; }
+    .toggle::after { content: ""; position: absolute; top: 3px; right: 3px; width: 16px; height: 16px; border-radius: 999px; background: white; }
+    .switch-row { border: 1px solid var(--line); border-radius: 8px; background: #f5f9fd; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+    .policy-note { border-top: 1px solid var(--line); padding-top: 12px; }
     .form-grid { display: grid; gap: 14px; }
     .field { display: grid; gap: 6px; }
     label { font-size: 13px; font-weight: 900; }
@@ -66,6 +77,8 @@
       .mobile .tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
       .mobile .tab { white-space: nowrap; }
       .mobile .two { grid-template-columns: 1fr; }
+      .mobile .integration-layout { grid-template-columns: 1fr; }
+      .mobile .integration-list { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -95,33 +108,40 @@
       <div class="content">
         <section>
           <p class="eyebrow">Settings</p>
-          <h1>Credentials only.</h1>
-          <p>Enter the keys needed to connect providers and agents. Sync, import, mapping, and review happen elsewhere.</p>
+          <h1>Integration settings.</h1>
+          <p>Pick a connector and edit only the credentials and sync policy that backend supports for that connector.</p>
         </section>
         <nav class="tabs"><span class="tab active">Integrations</span><span class="tab">Agent keys</span><span class="tab">MCP</span></nav>
-        <section class="panel">
-          <h2>ClickUp</h2>
-          <div class="form-grid">
-            <div class="field"><label>API token</label><input type="password" placeholder="pk_..." /></div>
-            <button class="btn">Save ClickUp</button>
-          </div>
-        </section>
-        <section class="panel">
-          <h2>Google Drive</h2>
-          <div class="form-grid">
-            <div class="field"><label>Client ID</label><input placeholder="Google OAuth client ID" /></div>
-            <div class="field"><label>Client secret</label><input type="password" placeholder="Google OAuth client secret" /></div>
-            <button class="btn">Save Google Drive</button>
-          </div>
-        </section>
-        <section class="panel">
-          <h2>Jarvis / Paperclip</h2>
-          <div class="two">
-            <div class="field"><label>Agent</label><select><option>Jarvis</option><option>Paperclip</option></select></div>
-            <div class="field"><label>Access profile</label><select><option>MCP reader</option><option>MCP operator</option></select></div>
-          </div>
-          <button class="btn">Create API key</button>
-          <p class="quiet">The generated key is shown once.</p>
+        <section class="integration-layout">
+          <aside class="integration-list">
+            <div class="integration-option active"><strong>ClickUp</strong><span>Tasks, spaces, folders, lists, webhooks, and task sync.</span><small>Configured</small><div class="integration-switch"><b>Active</b><i class="toggle"></i></div></div>
+            <div class="integration-option"><strong>Google Drive</strong><span>Knowledge files, folder scope, OAuth, and Drive change sync.</span><small>Needs OAuth token</small><div class="integration-switch"><b>Disabled</b><i class="toggle" style="background:#9aacbf"></i></div></div>
+          </aside>
+          <section class="panel">
+            <div>
+              <h2>ClickUp</h2>
+              <p>Task sync configuration stored by `/v1/integration-settings/clickup`.</p>
+            </div>
+            <div class="switch-row"><strong>Integration active</strong><span>On</span></div>
+            <div class="form-grid">
+              <div class="field"><label>API token</label><input type="password" placeholder="Leave empty to keep saved token" /></div>
+              <div class="two">
+                <div class="field"><label>Workspace / team ID</label><input placeholder="ClickUp team ID" /></div>
+                <div class="field"><label>List IDs</label><input placeholder="Comma-separated list IDs" /></div>
+                <div class="field"><label>Space IDs</label><input placeholder="Optional, comma-separated" /></div>
+                <div class="field"><label>Folder IDs</label><input placeholder="Optional, comma-separated" /></div>
+              </div>
+              <div class="policy-note">
+                <h2>Sync policy</h2>
+                <div class="two">
+                  <div class="field"><label>Sync mode</label><select><option>Pull into CompanyCore</option><option>Two-way</option></select></div>
+                  <div class="field"><label>Import mode</label><select><option>Merge</option><option>Skip existing</option><option>Inspect only</option></select></div>
+                </div>
+                <p class="quiet">This saves settings only. Import, reconcile, mapping, and review stay in work views.</p>
+              </div>
+              <button class="btn">Save ClickUp</button>
+            </div>
+          </section>
         </section>
       </div>
     </main>
@@ -132,26 +152,25 @@
     <div class="mobile-content">
       <section>
         <p class="eyebrow">Settings</p>
-        <h1>Credentials only.</h1>
-        <p>Enter keys. Run sync and mapping elsewhere.</p>
+        <h1>Integration settings.</h1>
+        <p>Pick a connector, then edit its credentials and sync policy.</p>
       </section>
       <nav class="tabs"><span class="tab active">Integrations</span><span class="tab">Agent keys</span><span class="tab">MCP</span></nav>
-      <section class="panel">
-        <h2>ClickUp</h2>
-        <div class="field"><label>API token</label><input type="password" placeholder="pk_..." /></div>
-        <button class="btn">Save ClickUp</button>
-      </section>
-      <section class="panel">
-        <h2>Google Drive</h2>
-        <div class="field"><label>Client ID</label><input placeholder="Google OAuth client ID" /></div>
-        <div class="field"><label>Client secret</label><input type="password" placeholder="Google OAuth client secret" /></div>
-        <button class="btn">Save Google Drive</button>
-      </section>
-      <section class="panel">
-        <h2>Jarvis / Paperclip</h2>
-        <div class="field"><label>Agent</label><select><option>Jarvis</option><option>Paperclip</option></select></div>
-        <div class="field"><label>Access profile</label><select><option>MCP reader</option><option>MCP operator</option></select></div>
-        <button class="btn">Create API key</button>
+      <section class="integration-layout">
+        <aside class="integration-list">
+          <div class="integration-option active"><strong>ClickUp</strong><span>Tasks and sync</span><div class="integration-switch"><b>Active</b><i class="toggle"></i></div></div>
+          <div class="integration-option"><strong>Google Drive</strong><span>Knowledge and folders</span><div class="integration-switch"><b>Disabled</b><i class="toggle" style="background:#9aacbf"></i></div></div>
+        </aside>
+        <section class="panel">
+          <h2>ClickUp</h2>
+          <div class="switch-row"><strong>Integration active</strong><span>On</span></div>
+          <div class="field"><label>API token</label><input type="password" placeholder="pk_..." /></div>
+          <div class="field"><label>Workspace / team ID</label><input placeholder="ClickUp team ID" /></div>
+          <div class="field"><label>List IDs</label><input placeholder="Comma-separated list IDs" /></div>
+          <div class="field"><label>Sync mode</label><select><option>Pull into CompanyCore</option><option>Two-way</option></select></div>
+          <div class="field"><label>Import mode</label><select><option>Merge</option><option>Inspect only</option></select></div>
+          <button class="btn">Save ClickUp</button>
+        </section>
       </section>
     </div>
   </div>

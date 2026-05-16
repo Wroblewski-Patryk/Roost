@@ -20,6 +20,7 @@ import { googleDriveRouter } from "./modules/google-drive/google-drive.routes";
 import { integrationSettingsRouter } from "./modules/integration-settings/integration-settings.routes";
 import { mcpRouter } from "./modules/mcp/mcp.routes";
 import { notesRouter } from "./modules/notes/notes.routes";
+import { operatingGraphRouter } from "./modules/operating-graph/operating-graph.routes";
 import { operatingModelRouter } from "./modules/operating-model/operating-model.routes";
 import { pipelineStagesRouter } from "./modules/pipeline-stages/pipeline-stages.routes";
 import { projectsRouter } from "./modules/projects/projects.routes";
@@ -38,6 +39,7 @@ function mountProtectedRoutes(router: Router) {
   router.use("/connection", connectionRouter);
   router.use("/workspaces", workspacesRouter);
   router.use("/mcp", mcpRouter);
+  router.use("/operating-graph", operatingGraphRouter);
   router.use("/operating-model", operatingModelRouter);
   router.use("/relationships", relationshipsRouter);
   router.use("/goals", goalsRouter);
@@ -64,6 +66,7 @@ function isApiHost(host = "") {
 }
 
 const reactAppRoutes = [
+  "/operations",
   "/dashboard",
   "/areas",
   "/auth/login",

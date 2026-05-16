@@ -38,6 +38,17 @@ export const appRouteGroups: AppRouteGroup[] = [
     label: "Command",
     routes: [
       {
+        id: "operations",
+        href: "/operations",
+        label: "Operations cockpit",
+        title: "Operations Cockpit",
+        icon: "ph-house-line",
+        private: true,
+        uxStage: "v1-canonical",
+        canonicalSource: "docs/planning/v1-operations-cockpit-task-contract.md",
+        rebuildNote: "Derived V1 workbench for clients, tasks, files/tables, and AI handoff."
+      },
+      {
         id: "dashboard",
         href: canonicalDashboardPath,
         label: "Company map",
@@ -101,8 +112,9 @@ export const appRouteGroups: AppRouteGroup[] = [
         icon: "ph-list-checks",
         aliases: ["/react-tasks"],
         private: true,
-        uxStage: "v0-rebuild",
-        rebuildNote: "Rebuild as area-scoped execution pressure and task action views."
+        uxStage: "v1-canonical",
+        canonicalSource: "docs/planning/v1-tasks-delivery-workbench-task-contract.md",
+        rebuildNote: "V1 tasks and delivery workbench for execution pressure, task creation, status movement, and AI handoff."
       },
       {
         id: "pipeline",
@@ -131,25 +143,37 @@ export const appRouteGroups: AppRouteGroup[] = [
     label: "Integrations & agents",
     routes: [
       {
+        id: "settings",
+        href: "/settings",
+        label: "Workspace settings",
+        title: "Settings",
+        icon: "ph-sliders-horizontal",
+        private: true,
+        uxStage: "v1-canonical",
+        canonicalSource: "docs/ux/v1-settings-canonical-spec-2026-05-15.md"
+      },
+      {
         id: "integration-health",
         href: "/settings/integrations",
-        label: "Integration health",
+        label: "Integrations",
         title: "Integrations",
         icon: "ph-plugs-connected",
         aliases: ["/react-integrations"],
         private: true,
-        uxStage: "v0-rebuild",
-        rebuildNote: "Rebuild as integration readiness by area and workflow, not a provider directory."
+        uxStage: "v1-canonical",
+        canonicalSource: "docs/ux/v1-settings-canonical-spec-2026-05-15.md",
+        rebuildNote: "Section-aware entry into the unified V1 settings Integrations tab."
       },
       {
         id: "clickup",
-        href: "/settings",
+        href: "/settings/integrations",
         label: "ClickUp bridge",
         title: "ClickUp Bridge",
         icon: "ph-kanban",
         private: true,
-        uxStage: "v0-rebuild",
-        rebuildNote: "Rebuild setup/discovery/list-selection as a clean React workflow."
+        uxStage: "v1-canonical",
+        canonicalSource: "docs/ux/v1-settings-canonical-spec-2026-05-15.md",
+        rebuildNote: "ClickUp opens the unified V1 settings Integrations tab with ClickUp selected by default."
       },
       {
         id: "drive",
@@ -158,8 +182,9 @@ export const appRouteGroups: AppRouteGroup[] = [
         title: "Google Drive",
         icon: "ph-cloud",
         private: true,
-        uxStage: "v0-rebuild",
-        rebuildNote: "Rebuild OAuth, folder selection, imports, and area knowledge scope as React workflow."
+        uxStage: "v1-canonical",
+        canonicalSource: "docs/ux/v1-settings-canonical-spec-2026-05-15.md",
+        rebuildNote: "Section-aware entry into the unified V1 settings Integrations tab with Google Drive selected."
       },
       {
         id: "agent-access",
@@ -168,18 +193,20 @@ export const appRouteGroups: AppRouteGroup[] = [
         title: "Agent Access",
         icon: "ph-key",
         private: true,
-        uxStage: "v1-foundation",
-        rebuildNote: "Keep least-privilege safety model; polish into owner/AI access workflow."
+        uxStage: "v1-canonical",
+        canonicalSource: "docs/ux/v1-settings-canonical-spec-2026-05-15.md",
+        rebuildNote: "Section-aware entry into the unified V1 settings Agent keys tab."
       },
       {
         id: "agent-tools",
         href: "/react-agent-tools",
-        label: "MCP tools",
+        label: "MCP",
         title: "Agent Tools",
         icon: "ph-robot",
         private: true,
-        uxStage: "v1-foundation",
-        rebuildNote: "Keep MCP manifest foundation; polish as area-safe AI delegation surface."
+        uxStage: "v1-canonical",
+        canonicalSource: "docs/ux/v1-settings-canonical-spec-2026-05-15.md",
+        rebuildNote: "Section-aware entry into the unified V1 settings MCP tab."
       }
     ]
   },

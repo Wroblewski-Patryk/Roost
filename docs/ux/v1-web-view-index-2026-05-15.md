@@ -1,7 +1,8 @@
 # V1 Web View Index
 
 Date: 2026-05-15
-Stage: planning
+Last updated: 2026-05-16
+Stage: verified implementation index
 Owner: Frontend Builder + Product Docs
 
 ## Purpose
@@ -9,6 +10,12 @@ Owner: Frontend Builder + Product Docs
 This index marks the current CompanyCore web views by UX maturity so future
 work can move from the old route/module-shaped app into a useful V1 company
 management layer.
+
+As of 2026-05-16, the target V1 direction is department management systems:
+each of the 13 Company Atlas areas is a scalable department system composed
+from shared CompanyCore tables, pipelines, tasks, knowledge, resources,
+metrics, decisions, governance, and AI/MCP tools. The detailed system view map
+lives in `docs/ux/v1-department-management-systems-view-map.md`.
 
 V1 means:
 
@@ -44,34 +51,39 @@ V0 means:
 | Owner Registration | `/auth/register` | `V1 canonical` | `docs/ux/v1-web-view-index-2026-05-15.md` | `docs/ux/assets/companycore-v1-register-desktop-canonical.png` | `docs/ux/assets/companycore-v1-register-mobile-canonical.png` | How do I create the first owner workspace? | `docs/planning/v1-web-five-canonical-surfaces-task-contract.md` |
 | Company Atlas | `/dashboard` | `V1 canonical` | `docs/ux/v1-simple-dashboard-canonical-spec-2026-05-15.md` | `docs/ux/assets/companycore-v1-dashboard-desktop-canonical.png` | `docs/ux/assets/companycore-v1-dashboard-mobile-canonical.png` | What matters across the company, which area owns it, and what should I open next? | `docs/planning/v1-area-first-pixel-perfect-task-contract.md` |
 | Selected Area Operating Room | `/areas?area=:areaKey&view=:viewId` | `V1 canonical` | `docs/ux/v1-area-detail-canonical-spec-2026-05-15.md` | `docs/ux/assets/companycore-v1-area-detail-desktop-canonical.png` | `docs/ux/assets/companycore-v1-area-detail-mobile-canonical.png` | What is happening inside this department, where is the proof, and what can I decide or delegate next? | `docs/planning/v1-area-detail-canonical-task-contract.md` |
-
-## Canonical Planning Targets
-
-| View | Route Direction | Status | Canonical Source | Desktop Target | Mobile Target | User Question Answered | Evidence |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Unified Settings | `/settings` with sections for credentials, agent keys, and MCP | `V1 planned canonical` | `docs/ux/v1-settings-canonical-spec-2026-05-15.md` | `docs/ux/assets/companycore-v1-settings-desktop-canonical.png` | `docs/ux/assets/companycore-v1-settings-mobile-canonical.png` | Where do I paste the API key, API secret, OAuth client credentials, and Jarvis/Paperclip key settings without entering sync/import work? | `docs/planning/v1-settings-canonical-design-task-contract.md` |
+| Department Management Systems | `/areas?area=:areaKey&view=:viewId` for all 00-12 departments | `V1 target architecture` | `docs/ux/v1-department-management-systems-view-map.md` | to be generated per department | to be generated per department | How do I manage this department as a system with subsystems, evidence, actions, metrics, and AI handoff? | `docs/architecture/department-management-systems-architecture.md`; `docs/ux/v1-department-system-prompt-pack.md` |
+| Unified Settings | `/settings` plus `/settings/integrations`, `/settings/drive`, `/settings/api`, and `/react-agent-tools` section entries | `V1 canonical` | `docs/ux/v1-settings-canonical-spec-2026-05-15.md` | `docs/ux/assets/companycore-v1-settings-desktop-canonical.png` | `docs/ux/assets/companycore-v1-settings-mobile-canonical.png` | Where do I paste connector credentials, set active/sync policy, create Jarvis/Paperclip keys, and find MCP handoff fields without entering operational queues? | `docs/planning/v1-settings-react-implementation-task-contract.md`; `docs/ux/evidence/v1-settings-unified-proof-desktop.png`; `docs/ux/evidence/v1-settings-unified-proof-mobile.png`; `docs/ux/evidence/v1-settings-real-backend-desktop.png`; `docs/ux/evidence/v1-settings-drive-save-real-backend-desktop.png`; `docs/ux/evidence/v1-settings-real-backend-mobile.png` |
+| Operations Cockpit | `/operations` | `V1 canonical` | `docs/planning/v1-operations-cockpit-task-contract.md` | `docs/ux/evidence/v1-operations-cockpit-real-backend-desktop.png` | `docs/ux/evidence/v1-operations-cockpit-real-backend-mobile.png` | What do I need to supervise now across clients, tasks, department evidence, files, and AI-agent handoff? | `docs/planning/v1-operations-cockpit-task-contract.md`; `docs/ux/assets/companycore-v1-operations-cockpit-concept.png`; `docs/ux/evidence/v1-operations-cockpit-real-backend-desktop.png`; `docs/ux/evidence/v1-operations-cockpit-real-backend-mobile.png` |
+| Tasks & Delivery | `/tasks-adapter` | `V1 canonical` | `docs/planning/v1-tasks-delivery-workbench-task-contract.md` | `docs/ux/evidence/v1-tasks-delivery-real-backend-desktop.png` | `docs/ux/evidence/v1-tasks-delivery-real-backend-mobile.png` | What execution pressure needs owner direction, and what task can I create or move now? | `docs/planning/v1-tasks-delivery-workbench-task-contract.md`; `docs/ux/assets/companycore-v1-tasks-delivery-concept.png`; `docs/ux/evidence/v1-tasks-delivery-real-backend-desktop.png`; `docs/ux/evidence/v1-tasks-delivery-real-backend-mobile.png` |
 
 ## Active Route Index
+
+Department management system route inventory:
+`docs/ux/v1-department-management-systems-view-map.md`.
+
+Prompt pack for generating department specs, concepts, implementation plans,
+and Paperclip/AI packets: `docs/ux/v1-department-system-prompt-pack.md`.
 
 | Route | Current Status | V1 Direction | Keep / Rebuild / Remove |
 | --- | --- | --- | --- |
 | `/` | `V1 canonical` | Public CompanyCore home on the public layout. | Keep as public entry; do not require owner auth. |
 | `/react-dashboard` | `V0 compatibility` | Dashboard alias only. | Keep temporarily, remove once no references use it. |
 | `/dashboard` | `V1 canonical` | Whole-company Company Atlas. | Keep and extend carefully. |
+| `/operations` | `V1 canonical` | Owner supervision cockpit for clients, tasks, department files/tables, and AI-agent handoff. | Keep as the cross-perspective command surface; deepen downstream workbenches instead of turning it into raw admin CRUD. |
 | `/areas?area=:areaKey&view=:viewId` | `V1 canonical` | Department operating room with capability tabs. | Keep and deepen capability views. |
 | `/areas` | `V0 rebuild` | All-areas mapping/lifecycle workbench; useful but not canonical owner flow. | Keep for admin/mapping, simplify later. |
 | `/react-areas` | `V0 compatibility` | Alias to `/areas`. | Remove after route references are cleaned. |
 | `/relationships` | `V0 rebuild` | Area-scoped relationship and provenance view. | Rebuild around selected area and confidence labels. |
 | `/data` and `/data/:table` | `V0 rebuild` | Evidence browser tied to areas, workflows, and owner questions. | Rebuild table browsing into V1 evidence views. |
-| `/tasks-adapter` | `V0 rebuild` | Area-scoped execution pressure, priorities, and owner/AI task handoff. | Rebuild as V1 tasks capability. |
+| `/tasks-adapter` | `V1 canonical` | Area-scoped execution pressure, priorities, task creation, status movement, and owner/AI task handoff. | Keep as the delivery workbench; add deeper area ownership only after a backend relation exists. |
 | `/react-tasks` | `V0 compatibility` | Alias to tasks workbench. | Remove after references are cleaned. |
 | `/pipeline` | `V0 rebuild` | Sales/operations workflow pressure tied to areas and decisions. | Rebuild as V1 workflow/pipeline capability. |
-| `/settings/integrations` | `V0 rebuild` | Tab-aware entry into unified settings `Integrations`, showing provider readiness by area and workflow. | Rebuild, do not leave as provider directory. |
+| `/settings/integrations` | `V1 canonical` | Tab-aware entry into unified settings `Integrations`, with ClickUp selected by default. | Keep as section entry; move operational review queues to dedicated work views. |
 | `/react-integrations` | `V0 compatibility` | Alias to integration readiness. | Remove after references are cleaned. |
-| `/settings` | `V0 rebuild` | Canonical unified settings entry with sections for Integrations, Agent keys, and MCP. | Rebuild as one minimal credential module, not ClickUp-only setup and not a sync dashboard. |
-| `/settings/drive` | `V0 rebuild` | Section-aware entry into unified settings `Integrations`, focused on Drive Client ID and Client secret only. | Keep import, folder mapping, and sync in dedicated work views. |
-| `/settings/api` | `V1 foundation` | Section-aware entry into unified settings `Agent keys`, preserving owner/AI least-privilege safety. | Keep safety model, simplify into Jarvis/Paperclip key setup. |
-| `/react-agent-tools` | `V1 foundation` | Section-aware entry into unified settings `MCP`, preserving endpoint/command fields while linking to full catalog. | Keep large MCP catalog outside the first settings view. |
+| `/settings` | `V1 canonical` | Canonical unified settings entry with sections for Integrations, Agent keys, and MCP. | Keep as contextual connector settings, not a sync dashboard. |
+| `/settings/drive` | `V1 canonical` | Section-aware entry into unified settings `Integrations`, with Google Drive selected. | Keep settings fields here; move deep content-quality reviews to dedicated work views. |
+| `/settings/api` | `V1 canonical` | Section-aware entry into unified settings `Agent keys`, preserving owner/AI least-privilege safety. | Keep minimal Jarvis/Paperclip key setup. |
+| `/react-agent-tools` | `V1 canonical` | Section-aware entry into unified settings `MCP`, preserving manifest URL and local command fields. | Keep large MCP catalog outside the first settings view. |
 | `/react-company-os` | `V1 foundation` | Company OS command/evidence cockpit. | Keep, contextualize from selected areas. |
 | `/settings/account` | `V0 rebuild` | Quiet workspace/account/admin settings. | Rebuild after core owner journeys. |
 | `/auth/login` | `V1 canonical` | Owner entry into Company Atlas on the public layout. | Keep and extend only inside public auth shell. |
@@ -82,7 +94,7 @@ V0 means:
 ### Journey 1: Owner Opens Company
 
 ```text
-/auth/login -> /dashboard -> /areas?area=01-strategia&view=overview
+/auth/login -> /dashboard -> /operations -> /areas?area=01-strategia&view=overview
 ```
 
 Goal: understand company state, pick a department, and inspect what matters.
@@ -90,8 +102,24 @@ Goal: understand company state, pick a department, and inspect what matters.
 V1 status:
 
 - `/dashboard`: canonical.
+- `/operations`: canonical.
 - selected-area detail: canonical.
 - next gap: capability-specific depth for `knowledge`, `tasks`, and `ai`.
+
+### Journey 1A: Owner Runs The Company
+
+```text
+/operations -> create client or task -> /tasks-adapter or /data
+```
+
+Goal: create the next operational item and see where clients, tasks, tables,
+files, and AI handoff stand.
+
+V1 status:
+
+- `/operations`: canonical with local real-backend proof.
+- next gap: production smoke and deeper downstream task/data/relationship
+  workbench routes.
 
 ### Journey 2: Owner Reviews Department Work
 
@@ -104,7 +132,8 @@ Goal: start from department context, then inspect execution pressure.
 V1 status:
 
 - selected-area entry is canonical.
-- `/tasks-adapter` is V0 and must become a V1 area-scoped task capability.
+- `/tasks-adapter` is canonical for delivery pressure, task creation, status
+  movement, and AI handoff.
 
 ### Journey 3: Owner Validates Knowledge Scope
 
@@ -118,8 +147,8 @@ knowledge ownership.
 V1 status:
 
 - selected-area knowledge preview is canonical foundation.
-- `/settings/drive` is V0 and must become a V1 Drive setup/knowledge-scope
-  workflow.
+- `/settings/drive` is a V1 settings entry for Drive credentials and sync
+  policy; deeper Drive content review belongs in dedicated work views.
 
 ### Journey 4: Owner Delegates Safely To AI
 
@@ -150,19 +179,16 @@ V1 status:
 
 ## Build Order
 
-1. Deepen selected-area `knowledge` view.
-2. Deepen selected-area `tasks` view.
-3. Rebuild `/settings` as the unified V1 settings module, using the canonical
-   settings desktop/mobile targets and section-aware entries for Drive,
-   ClickUp, Jarvis/Paperclip API keys, and MCP.
-4. Rebuild `/tasks-adapter` as V1 execution-pressure capability.
-5. Rebuild `/relationships` as V1 area provenance and confidence review.
-6. Rebuild ClickUp setup inside unified settings rather than as the root
-   settings route.
-7. Rebuild `/settings/integrations` as a unified settings integrations tab.
-8. Polish `/settings/api`, `/react-agent-tools`, and `/react-company-os` into
+1. Deploy and run production smoke for `/operations`, AOG, and settings before raising production
+   confidence.
+2. Deepen `/data` as V1 evidence browser tied to departments, tables, and
+   agent-readable context.
+3. Rebuild `/relationships` as V1 area provenance and confidence review.
+4. Deepen selected-area `knowledge` view.
+5. Deepen selected-area `tasks` view.
+6. Polish `/react-company-os` into
    area-aware V1 foundations.
-9. Remove or hide compatibility aliases once no route references need them.
+7. Remove or hide compatibility aliases once no route references need them.
 
 ## Route Registry Rule
 

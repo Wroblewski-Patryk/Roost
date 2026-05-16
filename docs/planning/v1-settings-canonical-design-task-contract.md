@@ -62,9 +62,12 @@ out of scope for settings.
 
 ## Goal
 
-Define and implement a canonical settings direction that exposes only the
-credentials needed to connect tools: ClickUp API token, Google Drive OAuth
-client credentials, Jarvis/Paperclip API key creation, and MCP endpoint fields.
+Define and implement a canonical settings direction that exposes the
+backend-supported configuration for each selected connector: credentials,
+active state, provider scope IDs, `syncMode`, `importMode`, Jarvis/Paperclip
+API key creation, and MCP endpoint fields.
+Provider rows include active/disabled switches so imported data can remain
+usable after a connector is paused.
 
 ## Scope
 
@@ -120,15 +123,17 @@ Allowed files:
 ### 3. Plan Implementation
 - Files or surfaces to modify: UX spec, canonical assets, React settings route,
   planning and memory docs.
-- Logic: route settings entry points to one minimal credential surface with
-  Integrations, Agent keys, and MCP sections.
-- Edge cases: mobile no-overflow, readable settings sections, and no sync,
-  import, mapping, review queue, or large MCP catalog inside settings.
+- Logic: route settings entry points to one contextual configuration surface
+  with Integrations, Agent keys, and MCP sections. Provider list rows expose
+  active/disabled switches backed by `integration_settings.active`.
+- Edge cases: mobile no-overflow, readable provider-specific forms, saved sync
+  policy without running sync/import/mapping work, and no review queue or large
+  MCP catalog inside settings.
 
 ### 4. Execute Implementation
 - Implementation notes: replaced the overloaded canonical mockup with a
-  credentials-only target and routed the old settings entry points to a
-  unified React settings surface.
+  provider-list target and routed the old settings entry points to a unified
+  React settings surface.
 
 ### 5. Verify and Test
 - Validation performed: rendered both images, visually inspected them, and ran
@@ -153,8 +158,8 @@ Allowed files:
 ## Acceptance Criteria
 - [x] Desktop canonical image exists.
 - [x] Mobile canonical image exists.
-- [x] Spec explains sections, credential-only boundaries, AI access, MCP,
-      and states.
+- [x] Spec explains sections, contextual provider settings, backend-supported
+      sync policy boundaries, AI access, MCP, and states.
 - [x] Future implementation direction avoids ten disconnected settings views,
       one overloaded provider form, and settings-as-synchronization.
 

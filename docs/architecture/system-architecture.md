@@ -8,7 +8,17 @@ The long-term direction is an AI-first organizational operating system that
 connects humans, agents, processes, tasks, governance, memory, workflows,
 knowledge, KPIs, resources, and decisions into one organizational graph. The
 accepted bridge direction is documented in
-`docs/architecture/organizational-architecture-bridge.md`.
+`docs/architecture/organizational-architecture-bridge.md`. The model-level
+business modules that keep this direction scalable across UI, API, MCP,
+providers, and agents are documented in
+`docs/architecture/companycore-business-module-map.md`. The end-to-end
+business value flow that connects market presence, lead qualification,
+discovery, offer, product/service delivery, acceptance, payment, support,
+feedback, and operating-system improvement is documented in
+`docs/architecture/companycore-global-business-flow.md`. The V1 department
+management-system direction for turning each of the 13 operating areas into a
+coherent management surface is documented in
+`docs/architecture/department-management-systems-architecture.md`.
 
 ## Main Runtime Surfaces
 
@@ -94,6 +104,33 @@ replacing the existing Company OS model:
 - Paperclip as a supervised external company-building execution agent that
   uses CompanyCore knowledge, task context, and scoped tools through the same
   API/MCP boundaries rather than direct database or provider access
+
+The global company flow must be treated as a graph projection over these
+modules:
+
+```text
+strategic intent -> brand/market -> demand -> lead qualification
+  -> discovery -> offer/agreement -> delivery planning
+  -> product/service execution -> quality/acceptance -> payment
+  -> support -> feedback -> improvement -> next intent
+```
+
+This flow is the shared model for products, services, and hybrid delivery. It
+must not introduce a parallel CRM, delivery, billing, or survey subsystem
+without a scoped architecture decision and task contract.
+
+Each operating area should be exposed in V1 as a department management system:
+
+```text
+department -> subsystems -> shared CompanyCore modules
+  -> records / pipelines / tasks / knowledge / resources
+  -> metrics / decisions / risks / AI agent packet / evidence
+```
+
+Department systems are UX and graph projections over shared CompanyCore
+foundations. They must not duplicate tables, create provider-led departmental
+apps, or give agents a bypass around existing API, MCP, approval, event, and
+audit boundaries.
 
 ## ClickUp-Shaped Operating Model
 

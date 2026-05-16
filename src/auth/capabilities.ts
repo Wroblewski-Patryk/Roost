@@ -13,6 +13,7 @@ export const capabilities = [
   "company-os:automation:execute",
   "mcp:read",
   "relationships:read",
+  "operating-graph:read",
   "operating-model:read",
   "operating-model:write",
   "operating-model:mappings:write",
@@ -113,6 +114,9 @@ export const adapterManifest = {
     ],
     relationships: [
       { method: "GET", path: "/v1/relationships/graph", capability: "relationships:read" }
+    ],
+    operatingGraph: [
+      { method: "GET", path: "/v1/operating-graph/areas/:areaKey", capability: "operating-graph:read" }
     ],
     operatingModel: [
       { method: "GET", path: "/v1/connection", capability: "operating-model:read" },

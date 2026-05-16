@@ -7,15 +7,15 @@ Task: `V1SETTINGS-001`
 ## Purpose
 
 This spec defines the canonical V1 direction for the private settings module.
-Settings should become a simple configuration surface instead of a dense
+Settings should become a contextual configuration surface instead of a dense
 dashboard, synchronization workbench, or provider-operation center.
 
 The owner outcome is:
 
 ```text
-I can paste the credentials needed to connect ClickUp, Google Drive, Jarvis,
-Paperclip, and MCP without seeing import queues, sync tables, mapping debt, or
-operational dashboards.
+I can choose an integration and edit the exact credentials and sync policy
+fields that backend supports for that provider without seeing import queues,
+mapping debt, review tables, or operational dashboards.
 ```
 
 ## Canonical Images
@@ -47,16 +47,20 @@ Top-level settings sections:
 
 | Section | Purpose |
 | --- | --- |
-| Integrations | Minimal credential forms for ClickUp and Google Drive. |
+| Integrations | Integration list with one contextual configuration form per provider. |
 | Agent keys | Minimal API key creation for Jarvis, Paperclip, and future apps. |
 | MCP | Copy/read the MCP manifest URL and local server command. |
 
 ## Layer Model
 
-Settings should expose only the fields needed to connect:
+Settings should expose only the fields currently backed by integration
+contracts:
 
-- ClickUp: `API token`.
-- Google Drive: `Client ID` and `Client secret`.
+- ClickUp: integration-list `active` switch, `API token`, `teamId`, `spaceIds`, `folderIds`,
+  `listIds`, `syncMode`, and `importMode`.
+- Google Drive: integration-list `active` switch, `Client ID`, `Client secret`,
+  `rootFolderIds`, `sharedDriveIds`, `selectedFolderIds`, `syncMode`,
+  `importMode`, and optional `changesPageToken`.
 - Jarvis/Paperclip: `Agent`, `Access profile`, and generated API key.
 - MCP: `Manifest URL` and local server command.
 
@@ -85,7 +89,19 @@ Settings may link to those views after a connection is configured.
 - Use a compact top command bar with settings breadcrumb and search.
 - Show one short title and one sentence.
 - Use three simple tabs: Integrations, Agent keys, MCP.
-- Use one vertical form per tool.
+- In Integrations, show a provider list and one contextual workspace for the
+  selected provider.
+- Each provider workspace uses three tabs:
+  - `Setup`: credentials, active state, provider scope IDs, `syncMode`, and
+    `importMode`;
+  - `Mapping`: provider discovery plus mapping provider containers to
+    CompanyCore operating areas before sync;
+  - `Sync`: explicit provider actions such as ClickUp maintenance/task sync
+    and Google Drive import/reconcile.
+- Each configured provider row must expose a direct active/disabled switch.
+  Disabling an integration stops future provider sync/actions but must not
+  remove already imported CompanyCore data.
+- Use one vertical form per selected provider.
 - Prefer one primary action per form.
 - Use links to dedicated work views for imports, sync, mapping, task review,
   and MCP tool inspection.
@@ -116,8 +132,9 @@ Every implemented tab must define:
   an operations dashboard.
 - The first read must answer where to paste the API key, API secret, or client
   credentials.
-- Provider setup must stay simple: save credentials only. Deep
-  sync/import/mapping belongs elsewhere.
+- Provider setup must stay simple, while advanced provider work is grouped
+  into `Mapping` and `Sync` tabs for the selected integration. CompanyCore must
+  keep working from its own database when integrations are disabled.
 - Agent access must stay least-privilege and visibly guarded.
 - No fake readiness metrics, placeholder integrations, invented provider data,
   or decorative counters may be shown in implementation.
