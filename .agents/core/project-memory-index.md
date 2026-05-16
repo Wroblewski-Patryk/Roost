@@ -186,6 +186,15 @@ continue from repository files alone:
   relevant audit section; the recommended next slice is `03 Sales` read
   packet and board, with all quote, discount, invoice, ad, and autonomous
   outreach writes still blocked.
+  As of DMS-03-006, `03 Sales` has its first verified read-only management
+  slice. `GET /v1/sales/context` returns a Sales Management packet over
+  existing CRM, pipeline, interaction, notes, commercial exception, Finance
+  handoff, task, and Drive evidence with explicit blocked quote, discount,
+  invoice, ad, and autonomous outreach actions. The selected-area web route
+  `/areas?area=03-sprzedaz&view=overview` renders the dedicated Sales board
+  from that packet. Validation passed with server/web builds, API regression
+  on validation-owned PostgreSQL `127.0.0.1:55497`, and desktop/mobile
+  Playwright proof with screenshots in `docs/ux/evidence/dms-03-sales-board-*.png`.
 - `docs/architecture/department-management-systems-v1-blueprint.md`:
   detailed V1 blueprint for `00 Main` plus the 12 operating department
   management systems. As of 2026-05-16, future department work should use this

@@ -324,6 +324,107 @@ type FinanceContextData = {
   };
 };
 
+type SalesContextData = {
+  summary: {
+    clients: number;
+    activeClients: number;
+    openDeals: number;
+    wonDeals: number;
+    pipelineStages: number;
+    interactions: number;
+    followUpTasks: number;
+    commercialExceptions: number;
+    hundredPercentDiscounts: number;
+    currentClientWork: number;
+    sourceConflicts: number;
+    openTasks: number;
+    salesDriveFiles: number;
+  };
+  clients: Array<{
+    id: string;
+    name: string;
+    companyName: string | null;
+    email: string | null;
+    status: string;
+    deals: Array<{ id: string; title: string; value: number | null; currency: string | null; status: string; pipelineStageName: string | null }>;
+    lastInteraction: { id: string; type: string; summary: string | null; occurredAt: string } | null;
+  }>;
+  deals: Array<{
+    id: string;
+    title: string;
+    clientName: string | null;
+    pipelineStageName: string | null;
+    value: number | null;
+    currency: string | null;
+    status: string;
+    commercialExceptionCount: number;
+  }>;
+  pipelineStages: Array<{
+    id: string;
+    name: string;
+    position: number;
+    status: string;
+    dealCount: number;
+    deals: Array<{ id: string; title: string; value: number | null; currency: string | null; status: string }>;
+  }>;
+  interactions: Array<{
+    id: string;
+    clientName: string | null;
+    type: string;
+    summary: string | null;
+    status: string;
+    occurredAt: string;
+  }>;
+  followUpTasks: Array<{
+    id: string;
+    title: string;
+    status: string;
+    priority: string | null;
+    dueDate: string | null;
+  }>;
+  commercialExceptions: Array<{
+    id: string;
+    sourceId: string;
+    exceptionType: string;
+    status: string;
+    clientName: string | null;
+    discountPercent: number | null;
+    finalValue: number | null;
+    currency: string | null;
+    riskFlags: string[];
+  }>;
+  currentClientWork: Array<{
+    id: string;
+    clientName: string | null;
+    title: string;
+    status: string;
+    value: number | null;
+    currency: string | null;
+    pipelineStageName: string | null;
+    commercialExceptionCount: number;
+    hundredPercentDiscount: boolean;
+    invoiceReadiness: string;
+    riskFlags: string[];
+  }>;
+  salesDriveFiles: Array<{
+    id: string;
+    name: string;
+    webViewLink: string | null;
+    operatingAreaKey: string | null;
+  }>;
+  financeHandoff: {
+    sourceConflicts: Array<{ type: string; status: string; message: string }>;
+    invoiceReadinessBlocked: number;
+    requiredOwnerDecisions: string[];
+  };
+  agentPacket: {
+    mode: string;
+    safeActions: string[];
+    recommendedNextActions: string[];
+    blockedActions: Array<{ action: string; reason: string }>;
+  };
+};
+
 type IntakeRouteProposal = {
   proposal: {
     id: string;
@@ -661,6 +762,10 @@ async function loadGlobalIntake(query = "limit=80") {
 
 async function loadFinanceContext(query = "limit=80") {
   return ownerApi<FinanceContextData>(`/v1/finance/context?${query}`);
+}
+
+async function loadSalesContext(query = "limit=80") {
+  return ownerApi<SalesContextData>(`/v1/sales/context?${query}`);
 }
 
 async function proposeIntakeRoute(item: IntakeItem, targetDepartmentKey: string) {
@@ -2784,6 +2889,189 @@ function moneyValue(value: number | null, currency: string | null) {
     return "Source needed";
   }
   return `${value.toLocaleString("en-US")} ${currency || ""}`.trim();
+}
+
+function SalesManagementBoard({
+  sales,
+  status,
+  onSelectCapability
+}: {
+  sales: SalesContextData | null;
+  status: "idle" | "loading" | "ready" | "error";
+  onSelectCapability: (capability: string) => void;
+}) {
+  const summary = sales?.summary;
+  const pipelineStages = sales?.pipelineStages ?? [];
+  const deals = sales?.deals ?? [];
+  const followUps = sales?.followUpTasks ?? [];
+  const exceptions = sales?.commercialExceptions ?? [];
+  const currentClientWork = sales?.currentClientWork ?? [];
+  const interactions = sales?.interactions ?? [];
+  const financeConflicts = sales?.financeHandoff.sourceConflicts ?? [];
+  const blockedActions = sales?.agentPacket.blockedActions ?? [];
+  const metrics = [
+    { label: "Clients", value: summary?.clients ?? 0, icon: "ph-users-three" },
+    { label: "Open deals", value: summary?.openDeals ?? 0, icon: "ph-handshake" },
+    { label: "Follow-ups", value: summary?.followUpTasks ?? 0, icon: "ph-arrow-bend-up-right" },
+    { label: "Exceptions", value: summary?.commercialExceptions ?? 0, icon: "ph-percent" },
+    { label: "100% discounts", value: summary?.hundredPercentDiscounts ?? 0, icon: "ph-warning-circle" }
+  ];
+
+  return (
+    <section className="sales-management-board" id="sales-management-board" aria-label="03 Sales management board">
+      <div className="operations-system-header">
+        <div>
+          <p className="atlas-kicker">03 Sales Management System</p>
+          <h2>Pipeline, follow-ups, offers, commercial review</h2>
+          <p>
+            Read-only Sales context for client opportunities and Paperclip support.
+            Quotes, discounts, invoices, ads, and autonomous outreach stay blocked.
+          </p>
+        </div>
+        <a className="atlas-primary-action" href="/v1/sales/context">
+          <i className="ph-bold ph-database" aria-hidden="true"></i>
+          API packet
+        </a>
+      </div>
+
+      <div className="main-intake-status-row">
+        <span className={`main-intake-status is-${status}`}>
+          <i className="ph-bold ph-pulse" aria-hidden="true"></i>
+          {status === "loading" ? "Loading sales" : status === "error" ? "Sales unavailable" : "Read-only sales"}
+        </span>
+        <span className="main-intake-status is-ready">
+          <i className="ph-bold ph-lock-key" aria-hidden="true"></i>
+          No quote or outreach writes
+        </span>
+      </div>
+
+      <div className="operations-system-metrics" aria-label="Sales metrics">
+        {metrics.map((metric) => (
+          <span key={metric.label}>
+            <i className={`ph-bold ${metric.icon}`} aria-hidden="true"></i>
+            <small>{metric.label}</small>
+            <strong>{metric.value}</strong>
+          </span>
+        ))}
+      </div>
+
+      <div className="sales-board-grid">
+        <article className="sales-board-panel sales-pipeline-panel">
+          <div className="area-layer-panel-title">
+            <i className="ph-bold ph-funnel" aria-hidden="true"></i>
+            <h3>Pipeline stages</h3>
+            <span>{pipelineStages.length}</span>
+          </div>
+          <div className="sales-stage-lane">
+            {pipelineStages.length === 0 ? (
+              <p>No sales pipeline stages are configured yet.</p>
+            ) : pipelineStages.slice(0, 5).map((stage) => (
+              <span key={stage.id}>
+                <strong>{stage.name}</strong>
+                <small>{stage.dealCount} deal{stage.dealCount === 1 ? "" : "s"}</small>
+                <em>{stage.status}</em>
+              </span>
+            ))}
+          </div>
+        </article>
+
+        <article className="sales-board-panel">
+          <div className="area-layer-panel-title">
+            <i className="ph-bold ph-handshake" aria-hidden="true"></i>
+            <h3>Open opportunities</h3>
+            <span>{deals.length}</span>
+          </div>
+          <div className="finance-board-list">
+            {deals.length === 0 ? (
+              <p>No deal is visible in the Sales packet yet.</p>
+            ) : deals.slice(0, 5).map((deal) => (
+              <span key={deal.id}>
+                <strong>{deal.title}</strong>
+                <small>{deal.clientName || "Client source needed"} / {deal.status}</small>
+                <em>{moneyValue(deal.value, deal.currency)} {deal.pipelineStageName ? `- ${deal.pipelineStageName}` : ""}</em>
+              </span>
+            ))}
+          </div>
+        </article>
+
+        <article className="sales-board-panel">
+          <div className="area-layer-panel-title">
+            <i className="ph-bold ph-arrow-bend-up-right" aria-hidden="true"></i>
+            <h3>Follow-up queue</h3>
+            <span>{followUps.length}</span>
+          </div>
+          <div className="finance-board-list">
+            {followUps.length === 0 ? (
+              <p>No Sales follow-up task is visible yet.</p>
+            ) : followUps.slice(0, 5).map((task) => (
+              <span key={task.id}>
+                <strong>{task.title}</strong>
+                <small>{task.status}{task.priority ? ` / ${task.priority}` : ""}</small>
+                <em>{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "No due date"}</em>
+              </span>
+            ))}
+          </div>
+        </article>
+
+        <article className="sales-board-panel">
+          <div className="area-layer-panel-title">
+            <i className="ph-bold ph-percent" aria-hidden="true"></i>
+            <h3>Commercial review</h3>
+            <span>{exceptions.length}</span>
+          </div>
+          <div className="finance-board-list">
+            {exceptions.length === 0 ? (
+              <p>No discount or pro-bono review item is visible.</p>
+            ) : exceptions.slice(0, 5).map((exception) => (
+              <span key={exception.id}>
+                <strong>{exception.discountPercent ?? "?"}% {exception.exceptionType.replace(/_/g, " ")}</strong>
+                <small>{exception.clientName || "Client source needed"} / {exception.status.replace(/_/g, " ")}</small>
+                <em>{moneyValue(exception.finalValue, exception.currency)}</em>
+              </span>
+            ))}
+          </div>
+        </article>
+      </div>
+
+      <div className="sales-decision-strip">
+        <article>
+          <strong>Current client work</strong>
+          {currentClientWork.length === 0 ? <span>No active current-client work packet yet.</span> : currentClientWork.slice(0, 3).map((work) => (
+            <span key={work.id}>
+              {work.title} / {work.hundredPercentDiscount ? "100% discount review" : work.invoiceReadiness.replace(/_/g, " ")}
+            </span>
+          ))}
+        </article>
+        <article>
+          <strong>Recent interactions</strong>
+          {interactions.length === 0 ? <span>No interaction history yet.</span> : interactions.slice(0, 3).map((interaction) => (
+            <span key={interaction.id}>{interaction.clientName || "Client"} / {interaction.type}</span>
+          ))}
+        </article>
+        <article>
+          <strong>Blocked actions</strong>
+          {blockedActions.slice(0, 5).map((action) => (
+            <span key={action.action}>{action.action.replace(/_/g, " ")}</span>
+          ))}
+        </article>
+      </div>
+
+      <div className="finance-decision-strip sales-handoff-strip">
+        <article>
+          <strong>Finance handoff</strong>
+          {financeConflicts.length === 0 ? <span>No pricing conflict visible in Sales.</span> : financeConflicts.slice(0, 3).map((conflict) => (
+            <span key={`${conflict.type}-${conflict.message}`}>{conflict.message}</span>
+          ))}
+        </article>
+        <article>
+          <strong>Next owner views</strong>
+          <button type="button" onClick={() => onSelectCapability("tasks")}>Tasks</button>
+          <button type="button" onClick={() => onSelectCapability("knowledge")}>Sources</button>
+          <button type="button" onClick={() => onSelectCapability("decisions")}>Decisions</button>
+        </article>
+      </div>
+    </section>
+  );
 }
 
 function FinanceManagementBoard({
@@ -6289,6 +6577,10 @@ function AreaDetailView({
     status: "idle" | "loading" | "ready" | "error";
     data: FinanceContextData | null;
   }>({ status: "idle", data: null });
+  const [salesState, setSalesState] = useState<{
+    status: "idle" | "loading" | "ready" | "error";
+    data: SalesContextData | null;
+  }>({ status: "idle", data: null });
   const selectedArea = areas.find((area) => area.key === selectedAreaKey) || areas[0];
   const ownerLabel = connection.user?.name || connection.user?.email || "Owner";
   const ownerDetail = connection.user?.email ? "Owner" : connection.workspace.name;
@@ -6363,6 +6655,31 @@ function AreaDetailView({
     };
   }, [selectedArea.key]);
 
+  useEffect(() => {
+    if (selectedArea.key !== "03-sprzedaz") {
+      setSalesState({ status: "idle", data: null });
+      return;
+    }
+
+    let cancelled = false;
+    setSalesState({ status: "loading", data: null });
+    loadSalesContext()
+      .then((data) => {
+        if (!cancelled) {
+          setSalesState({ status: "ready", data });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSalesState({ status: "error", data: null });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedArea.key]);
+
   const context = useMemo(
     () => areaDetailContext(
       selectedArea,
@@ -6378,6 +6695,7 @@ function AreaDetailView({
   const isOperationsSystem = selectedArea.key === "04-operacje";
   const isMainSystem = selectedArea.key === "00-ogolny";
   const isFinanceSystem = selectedArea.key === "07-finanse";
+  const isSalesSystem = selectedArea.key === "03-sprzedaz";
   const departmentSpecialPanel = isMainSystem ? (
     <MainIntakeSystemPanel
       intake={intakeState.data}
@@ -6397,6 +6715,12 @@ function AreaDetailView({
     <FinanceManagementBoard
       finance={financeState.data}
       status={financeState.status}
+      onSelectCapability={selectCapability}
+    />
+  ) : isSalesSystem ? (
+    <SalesManagementBoard
+      sales={salesState.data}
+      status={salesState.status}
       onSelectCapability={selectCapability}
     />
   ) : null;
@@ -6444,7 +6768,7 @@ function AreaDetailView({
               context={context}
               connection={connection}
               lanes={lanes}
-              showOperatingBoard={!isOperationsSystem && !isMainSystem && !isFinanceSystem}
+              showOperatingBoard={!isOperationsSystem && !isMainSystem && !isFinanceSystem && !isSalesSystem}
               specialPanel={departmentSpecialPanel}
               onSelectCapability={selectCapability}
             />

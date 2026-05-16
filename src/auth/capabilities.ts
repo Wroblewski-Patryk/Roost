@@ -17,6 +17,7 @@ export const capabilities = [
   "commercial-exceptions:read",
   "finance:read",
   "relationships:read",
+  "sales:read",
   "operations:read",
   "strategy:read",
   "operating-graph:read",
@@ -130,6 +131,9 @@ export const adapterManifest = {
     ],
     relationships: [
       { method: "GET", path: "/v1/relationships/graph", capability: "relationships:read" }
+    ],
+    sales: [
+      { method: "GET", path: "/v1/sales/context", capability: "sales:read" }
     ],
     operations: [
       { method: "GET", path: "/v1/operations/context", capability: "operations:read" }

@@ -1091,6 +1091,184 @@ test("CompanyCore v1 protected API flow", async () => {
     && tool.requiresApproval === false
   )));
 
+  const salesStage = await prisma.pipelineStage.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      name: "Discovery",
+      position: 30,
+      source: "companycore_test"
+    }
+  });
+  await prisma.deal.update({
+    where: { id: commercialDeal.id },
+    data: { pipelineStageId: salesStage.id }
+  });
+  const salesInteraction = await prisma.interaction.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      clientId: commercialClient.id,
+      type: "sales_follow_up",
+      summary: "Follow up with current discount client about offer context.",
+      source: "companycore_test"
+    }
+  });
+  const salesTask = await prisma.task.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      title: "Sales follow-up for current client",
+      description: "Review offer, discount, pricing and next sales action.",
+      status: "todo",
+      priority: "high",
+      source: "companycore_test"
+    }
+  });
+  const salesArea = await prisma.operatingArea.findFirstOrThrow({
+    where: { workspaceId: ownerA.workspace.id, key: "sales-crm" }
+  });
+  const salesDriveFile = await prisma.googleDriveFile.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      externalId: "sales-drive-file",
+      name: "Sales offer source document",
+      description: "Offer, proposal, and client sales source.",
+      mimeType: "application/vnd.google-apps.document",
+      webViewLink: "https://drive.example/sales",
+      operatingAreaId: salesArea.id,
+      syncStatus: "synced",
+      scanStatus: "completed"
+    }
+  });
+  const foreignSalesClient = await prisma.client.create({
+    data: {
+      workspaceId: ownerB.workspace.id,
+      name: "Foreign sales client",
+      source: "companycore_test"
+    }
+  });
+
+  const unauthenticatedSalesContext = await request("/v1/sales/context");
+  assert.equal(unauthenticatedSalesContext.status, 401);
+  const salesCountsBefore = {
+    clients: await prisma.client.count({ where: { workspaceId: ownerA.workspace.id } }),
+    deals: await prisma.deal.count({ where: { workspaceId: ownerA.workspace.id } }),
+    interactions: await prisma.interaction.count({ where: { workspaceId: ownerA.workspace.id } }),
+    notes: await prisma.note.count({ where: { workspaceId: ownerA.workspace.id } }),
+    tasks: await prisma.task.count({ where: { workspaceId: ownerA.workspace.id } }),
+    approvals: await prisma.approval.count({ where: { workspaceId: ownerA.workspace.id } }),
+    driveFiles: await prisma.googleDriveFile.count({ where: { workspaceId: ownerA.workspace.id } }),
+    auditLogs: await prisma.auditLog.count({ where: { workspaceId: ownerA.workspace.id } }),
+    events: await prisma.event.count({ where: { workspaceId: ownerA.workspace.id } })
+  };
+  const salesContext = await request(`/v1/sales/context?clientId=${commercialClient.id}&limit=50`, { headers: authA });
+  assert.equal(salesContext.status, 200);
+  const salesContextBody = salesContext.body as {
+    data: {
+      department: { canonicalKey: string; backendAreaKey: string };
+      summary: {
+        clients: number;
+        openDeals: number;
+        followUpTasks: number;
+        commercialExceptions: number;
+        hundredPercentDiscounts: number;
+        currentClientWork: number;
+        salesDriveFiles: number;
+      };
+      clients: Array<{ id: string; deals: Array<{ id: string; pipelineStageName: string | null }>; lastInteraction: { id: string } | null }>;
+      deals: Array<{ id: string; commercialExceptionCount: number; pipelineStageName: string | null }>;
+      pipelineStages: Array<{ id: string; name: string; dealCount: number }>;
+      interactions: Array<{ id: string; clientName: string | null }>;
+      followUpTasks: Array<{ id: string; title: string }>;
+      commercialExceptions: Array<{ sourceId: string; discountPercent: number | null; finalValue: number | null }>;
+      currentClientWork: Array<{ dealId: string; hundredPercentDiscount: boolean; riskFlags: string[] }>;
+      salesDriveFiles: Array<{ id: string; operatingAreaKey: string | null }>;
+      financeHandoff: { sourceConflicts: Array<{ type: string }>; requiredOwnerDecisions: string[] };
+      agentPacket: { mode: string; safeActions: string[]; blockedActions: Array<{ action: string }> };
+    };
+  };
+  assert.equal(salesContextBody.data.department.canonicalKey, "03-sprzedaz");
+  assert.equal(salesContextBody.data.department.backendAreaKey, "sales-crm");
+  assert.ok(salesContextBody.data.summary.clients >= 1);
+  assert.ok(salesContextBody.data.summary.openDeals >= 1);
+  assert.ok(salesContextBody.data.summary.followUpTasks >= 1);
+  assert.ok(salesContextBody.data.summary.commercialExceptions >= 1);
+  assert.ok(salesContextBody.data.summary.hundredPercentDiscounts >= 1);
+  assert.ok(salesContextBody.data.summary.currentClientWork >= 1);
+  assert.ok(salesContextBody.data.summary.salesDriveFiles >= 1);
+  assert.ok(salesContextBody.data.clients.some((client) => (
+    client.id === commercialClient.id
+    && client.deals.some((deal) => deal.id === commercialDeal.id && deal.pipelineStageName === "Discovery")
+    && client.lastInteraction?.id === salesInteraction.id
+  )));
+  assert.ok(salesContextBody.data.deals.some((deal) => (
+    deal.id === commercialDeal.id
+    && deal.commercialExceptionCount >= 1
+    && deal.pipelineStageName === "Discovery"
+  )));
+  assert.ok(salesContextBody.data.pipelineStages.some((stage) => stage.id === salesStage.id && stage.dealCount >= 1));
+  assert.ok(salesContextBody.data.interactions.some((interaction) => interaction.id === salesInteraction.id));
+  assert.ok(salesContextBody.data.followUpTasks.some((task) => task.id === salesTask.id));
+  assert.ok(salesContextBody.data.commercialExceptions.some((item) => (
+    item.sourceId === commercialNote.id
+    && item.discountPercent === 100
+    && item.finalValue === 0
+  )));
+  assert.ok(salesContextBody.data.currentClientWork.some((work) => (
+    work.dealId === commercialDeal.id
+    && work.hundredPercentDiscount
+    && work.riskFlags.includes("hundred_percent_discount_requires_owner_review")
+  )));
+  assert.ok(salesContextBody.data.salesDriveFiles.some((file) => (
+    file.id === salesDriveFile.id
+    && file.operatingAreaKey === "sales-crm"
+  )));
+  assert.ok(salesContextBody.data.financeHandoff.requiredOwnerDecisions.some((decision) => decision.includes("pricing policy")));
+  assert.equal(salesContextBody.data.agentPacket.mode, "read_only");
+  assert.ok(salesContextBody.data.agentPacket.safeActions.includes("read_sales_context"));
+  assert.ok(salesContextBody.data.agentPacket.blockedActions.some((action) => action.action === "quote_final_terms"));
+  assert.ok(salesContextBody.data.agentPacket.blockedActions.some((action) => action.action === "send_outreach"));
+  const salesCountsAfter = {
+    clients: await prisma.client.count({ where: { workspaceId: ownerA.workspace.id } }),
+    deals: await prisma.deal.count({ where: { workspaceId: ownerA.workspace.id } }),
+    interactions: await prisma.interaction.count({ where: { workspaceId: ownerA.workspace.id } }),
+    notes: await prisma.note.count({ where: { workspaceId: ownerA.workspace.id } }),
+    tasks: await prisma.task.count({ where: { workspaceId: ownerA.workspace.id } }),
+    approvals: await prisma.approval.count({ where: { workspaceId: ownerA.workspace.id } }),
+    driveFiles: await prisma.googleDriveFile.count({ where: { workspaceId: ownerA.workspace.id } }),
+    auditLogs: await prisma.auditLog.count({ where: { workspaceId: ownerA.workspace.id } }),
+    events: await prisma.event.count({ where: { workspaceId: ownerA.workspace.id } })
+  };
+  assert.deepEqual(salesCountsAfter, salesCountsBefore);
+  const foreignSalesContext = await request("/v1/sales/context?limit=50", { headers: authB });
+  assert.equal(foreignSalesContext.status, 200);
+  const foreignSalesContextBody = foreignSalesContext.body as {
+    data: { clients: Array<{ id: string }>; deals: Array<{ id: string }> };
+  };
+  assert.ok(foreignSalesContextBody.data.clients.some((client) => client.id === foreignSalesClient.id));
+  assert.ok(!foreignSalesContextBody.data.clients.some((client) => client.id === commercialClient.id));
+  assert.ok(!foreignSalesContextBody.data.deals.some((deal) => deal.id === commercialDeal.id));
+  const salesMcpManifest = await request("/v1/mcp/manifest", { headers: authA });
+  assert.equal(salesMcpManifest.status, 200);
+  const salesMcpManifestBody = salesMcpManifest.body as {
+    data: { tools: Array<{ name: string; path: string; capability: string; riskLevel: string; requiresApproval: boolean }> };
+  };
+  assert.ok(salesMcpManifestBody.data.tools.some((tool) => (
+    tool.name === "companycore_get_sales_context"
+    && tool.path === "/v1/sales/context"
+    && tool.capability === "sales:read"
+    && tool.riskLevel === "read"
+    && tool.requiresApproval === false
+  )));
+
+  await prisma.googleDriveFile.delete({ where: { id: salesDriveFile.id } });
+  await prisma.interaction.delete({ where: { id: salesInteraction.id } });
+  await prisma.task.delete({ where: { id: salesTask.id } });
+  await prisma.deal.update({
+    where: { id: commercialDeal.id },
+    data: { pipelineStageId: null }
+  });
+  await prisma.pipelineStage.delete({ where: { id: salesStage.id } });
+  await prisma.client.delete({ where: { id: foreignSalesClient.id } });
+
   await prisma.agentEventOutbox.delete({ where: { id: commercialAgentEvent.id } });
   await prisma.task.delete({ where: { id: missingSourceTask.id } });
   await prisma.approval.delete({ where: { id: commercialApproval.id } });
@@ -3798,6 +3976,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(companyOsReaderProfile.scopes.includes("commercial-exceptions:read"));
   assert.ok(companyOsReaderProfile.scopes.includes("finance:read"));
   assert.ok(companyOsReaderProfile.scopes.includes("relationships:read"));
+  assert.ok(companyOsReaderProfile.scopes.includes("sales:read"));
   assert.ok(companyOsReaderProfile.scopes.includes("operations:read"));
   assert.ok(companyOsReaderProfile.scopes.includes("strategy:read"));
   assert.ok(!companyOsReaderProfile.scopes.includes("company-os:definition:write"));
@@ -3828,6 +4007,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(createdProfileKeyBody.data.scopes.includes("commercial-exceptions:read"));
   assert.ok(createdProfileKeyBody.data.scopes.includes("finance:read"));
   assert.ok(createdProfileKeyBody.data.scopes.includes("relationships:read"));
+  assert.ok(createdProfileKeyBody.data.scopes.includes("sales:read"));
   assert.ok(createdProfileKeyBody.data.scopes.includes("operations:read"));
   assert.ok(createdProfileKeyBody.data.scopes.includes("strategy:read"));
   assert.ok(!createdProfileKeyBody.data.scopes.includes("company-os:definition:write"));
@@ -3853,6 +4033,10 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(profileMcpManifestBody.data.tools.some((tool) => (
     tool.path === "/v1/finance/context"
     && tool.capability === "finance:read"
+  )));
+  assert.ok(profileMcpManifestBody.data.tools.some((tool) => (
+    tool.path === "/v1/sales/context"
+    && tool.capability === "sales:read"
   )));
   assert.ok(profileMcpManifestBody.data.tools.some((tool) => (
     tool.path === "/v1/operations/context"
@@ -4024,6 +4208,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(!scopedConnectionBody.data.capabilities.includes("company-os:workflow-definition:activate"));
   assert.ok(!scopedConnectionBody.data.capabilities.includes("commercial-exceptions:read"));
   assert.ok(!scopedConnectionBody.data.capabilities.includes("finance:read"));
+  assert.ok(!scopedConnectionBody.data.capabilities.includes("sales:read"));
   assert.ok(!scopedConnectionBody.data.capabilities.includes("operations:read"));
   assert.ok(!scopedConnectionBody.data.capabilities.includes("strategy:read"));
   assert.ok(!scopedConnectionBody.data.capabilities.includes("notes:write"));
@@ -4038,6 +4223,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(!scopedConnectionBody.data.mcpManifest.tools.some((tool) => tool.capability === "company-os:workflow-definition:activate"));
   assert.ok(!scopedConnectionBody.data.mcpManifest.tools.some((tool) => tool.capability === "commercial-exceptions:read"));
   assert.ok(!scopedConnectionBody.data.mcpManifest.tools.some((tool) => tool.capability === "finance:read"));
+  assert.ok(!scopedConnectionBody.data.mcpManifest.tools.some((tool) => tool.capability === "sales:read"));
   assert.ok(!scopedConnectionBody.data.mcpManifest.tools.some((tool) => tool.capability === "operations:read"));
   assert.ok(!scopedConnectionBody.data.mcpManifest.tools.some((tool) => tool.capability === "strategy:read"));
 
@@ -4061,6 +4247,7 @@ test("CompanyCore v1 protected API flow", async () => {
   )));
   assert.ok(!scopedMcpManifestBody.data.tools.some((tool) => tool.capability === "commercial-exceptions:read"));
   assert.ok(!scopedMcpManifestBody.data.tools.some((tool) => tool.capability === "finance:read"));
+  assert.ok(!scopedMcpManifestBody.data.tools.some((tool) => tool.capability === "sales:read"));
   assert.ok(!scopedMcpManifestBody.data.tools.some((tool) => tool.capability === "operations:read"));
   assert.ok(!scopedMcpManifestBody.data.tools.some((tool) => tool.capability === "strategy:read"));
 
@@ -4074,6 +4261,11 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(deniedScopedFinanceContext.status, 403);
   assert.equal((deniedScopedFinanceContext.body as { error: string }).error, "forbidden");
+  const deniedScopedSalesContext = await request("/v1/sales/context", {
+    headers: scopedAuth
+  });
+  assert.equal(deniedScopedSalesContext.status, 403);
+  assert.equal((deniedScopedSalesContext.body as { error: string }).error, "forbidden");
   const deniedScopedOperationsContext = await request("/v1/operations/context", {
     headers: scopedAuth
   });

@@ -178,6 +178,20 @@ Last updated: 2026-05-16
   slice is `03 Sales` context and board over existing CRM, commercial
   exception, and finance data before any quote, discount, invoice, ad, or
   outreach automation writes.
+  As of 2026-05-16, DMS-03-006 implemented that `03 Sales` runtime slice.
+  Protected read-only `GET /v1/sales/context` returns Sales Management
+  context over clients, deals, pipeline stages, interactions, follow-up work,
+  notes, commercial exceptions, current-client work, Drive evidence, and
+  Finance handoff context. It is exposed through `sales:read`, MCP manifest
+  tooling, and read-oriented MCP profiles. `/areas?area=03-sprzedaz&view=overview`
+  now renders a dedicated Sales Management board from that packet while quote,
+  discount, invoice, ad, and autonomous outreach writes remain blocked.
+  `npm run build:server`, `npm run build:web`, and `npm run test:api` passed
+  against validation-owned PostgreSQL on `127.0.0.1:55497`; Playwright proof
+  on `http://127.0.0.1:3220` verified desktop/mobile with no console/page
+  errors or horizontal overflow. Evidence:
+  `docs/ux/evidence/dms-03-sales-board-desktop.png` and
+  `docs/ux/evidence/dms-03-sales-board-mobile.png`.
   As of 2026-05-16, DMS-00-003 implemented the first backend slice of
   `00 Main`: protected read-only `GET /v1/intake`. It aggregates existing
   agent events, provider inbox rows, unassigned Drive/provider resources,

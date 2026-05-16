@@ -647,6 +647,40 @@ Read guarantees:
 - Finance and Paperclip get explicit blocked actions for active price policy,
   final quote, discount application, invoice sending, and payment status writes
 
+## Sales Context
+
+`GET /v1/sales/context` is the protected read-only Sales Management packet for
+clients, deals, pipeline stages, interactions, follow-up tasks, notes,
+commercial exceptions, current-client work, sales documents, and Finance
+handoff context.
+
+Supported query parameters:
+
+- `clientId`
+- `dealId`
+- `status`
+- `includeArchived`
+- `limit`
+
+Read guarantees:
+
+- no client, deal, interaction, note, task, approval, commercial exception,
+  finance, Drive, or agent-event source is mutated on read
+- `100%` discounts and pro-bono work are represented as commercial exceptions
+  and remain owner-reviewed
+- Sales and Paperclip get explicit blocked actions for final quotes, discount
+  application, invoice sending, autonomous outreach, and paid-ad launch
+- missing pricing, approval, source, or invoice evidence is surfaced as
+  handoff context instead of being hidden behind a fake sales-ready state
+
+Required capability:
+
+```text
+sales:read
+```
+
+## MCP Manifest Response
+
 Required capability:
 
 ```text

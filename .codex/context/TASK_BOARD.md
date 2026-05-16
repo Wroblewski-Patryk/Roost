@@ -2,16 +2,16 @@
 
 ## Ready
 
-- DMS-NEXT-003 Sales Management read packet and board.
+- DMS-NEXT-004 Relationships Management read packet and board.
   - Stage: planning
   - Owner: Product Docs + Backend Builder + Frontend Builder
   - Priority: P1
   - Source: `docs/planning/dms-13-systems-v1-implementation-audit.md`
-  - Goal: implement the first post-audit department slice for `03 Sales` by
-    creating a source-backed Sales context over clients, deals, stages,
-    interactions, tasks, notes, decisions, commercial exceptions, and finance
-    context before any quote, discount, invoice, ad, or outreach automation
-    writes.
+  - Goal: implement the next post-Sales department slice for `05 Relacje` by
+    creating a source-backed relationships/client-success context over
+    clients, interactions, archived clients, satisfaction/feedback signals,
+    relationship provenance, improvement opportunities, and blocked outreach
+    or promise-making actions.
 - DMS-NEXT-002 Differentiated department implementation slice.
   - Stage: planning
   - Owner: Product Docs + Frontend Builder + Backend Builder
@@ -124,6 +124,27 @@
   auto-deploy webhook administration task.
 
 ## Done
+
+- DMS-03-006 Sales Management context and board.
+  - Evidence:
+    Protected read-only `GET /v1/sales/context` now returns the `03-sprzedaz`
+    Sales Management packet over clients, deals, stages, interactions,
+    follow-up work, notes, commercial exceptions, current-client work, Drive
+    evidence, and Finance handoff context. The route is exposed through
+    `sales:read`, MCP manifest tooling, and read-oriented MCP key profiles.
+    `/areas?area=03-sprzedaz&view=overview` renders the dedicated Sales
+    Management board from that packet while quote, discount, invoice, ad, and
+    autonomous outreach writes remain blocked.
+  - Validation:
+    `npm run build:server`; `npm run build:web`; `npm run test:api` against
+    validation-owned PostgreSQL on `127.0.0.1:55497`; Playwright desktop and
+    mobile proof on `http://127.0.0.1:3220` with no console/page errors or
+    horizontal overflow.
+  - Evidence:
+    `docs/ux/evidence/dms-03-sales-board-desktop.png` and
+    `docs/ux/evidence/dms-03-sales-board-mobile.png`.
+  - Task contract:
+    `docs/planning/dms-03-sales-context-and-board-task-contract.md`.
 
 - DMS-V1-006 13 Department Systems V1 Implementation Audit.
   - Evidence:

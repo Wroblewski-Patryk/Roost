@@ -9,11 +9,12 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 - [ ] Continue V1 department systems with the next bounded slice:
       use `docs/planning/dms-13-systems-v1-implementation-audit.md` as the
-      selection handoff. Preferred order is a read-only `03 Sales` department
-      packet and board, then `05 Relationships`, `02 Product And Delivery`,
-      `08 Assets`, `09 Technology/AI`, and `10 Legal/Standards`; use a
-      guarded `04 Operations` planning/procedure command contract only if
-      operations writes become more urgent.
+      selection handoff. `03 Sales` read packet and board is now complete
+      locally; preferred next order is `05 Relationships`,
+      `02 Product And Delivery`, `08 Assets`, `09 Technology/AI`, and
+      `10 Legal/Standards`; use a guarded `04 Operations`
+      planning/procedure command contract only if operations writes become
+      more urgent.
       Each next slice must follow the DMS-V1-005 differentiated-system rule:
       shared CompanyCore shell, but a department-specific primary board,
       desktop layout, mobile attention queue, source records, state model, and
@@ -87,6 +88,24 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 The section below is retained as execution evidence. It is not the active
 queue. Future work must start from `Active Queue`, `.codex/context/TASK_BOARD.md`,
 and `docs/operations/v1-function-coverage-ledger.csv`.
+
+- [x] DMS-03-006 Sales Management context and board:
+      implemented protected read-only `GET /v1/sales/context`, exposed
+      `sales:read` through capabilities, MCP manifest, and read-oriented MCP
+      key profiles, and rendered `/areas?area=03-sprzedaz&view=overview` as a
+      dedicated Sales Management board over clients, deals, stages,
+      interactions, follow-up work, notes, commercial exceptions,
+      current-client work, Drive evidence, and Finance handoff context.
+      Quote, discount, invoice, ad, and autonomous outreach writes remain
+      blocked. Validation passed with `npm run build:server`,
+      `npm run build:web`, `npm run test:api` against validation-owned
+      PostgreSQL on `127.0.0.1:55497`, and Playwright desktop/mobile proof on
+      `http://127.0.0.1:3220` with no console/page errors or horizontal
+      overflow. Evidence:
+      `docs/ux/evidence/dms-03-sales-board-desktop.png` and
+      `docs/ux/evidence/dms-03-sales-board-mobile.png`.
+      Task contract:
+      `docs/planning/dms-03-sales-context-and-board-task-contract.md`.
 
 - [x] DMS-V1-006 13 department systems V1 implementation audit:
       `docs/planning/dms-13-systems-v1-implementation-audit.md` covers

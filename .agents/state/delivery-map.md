@@ -6,10 +6,9 @@ Last updated: 2026-05-16
 
 - Product: companycore
 - Current release or milestone: the V1OPS group and the first Strategy backend
-  packet are deployed and verified in production:
-  `/operations`, Company OS area foundation, canonical department key
-  compatibility, protected `04 Operations` context, and protected
-  `01 Strategy` context are all proven.
+  packet are deployed and verified in production. Locally, the next department
+  slice, `03 Sales`, now has a verified read-only context packet and selected
+  area board.
 - Primary user: owner/operator and policy-bound AI agents
 - Primary outcome: CompanyCore becomes a production-quality human and agent
   Company OS control plane where the owner can supervise clients, tasks,
@@ -17,8 +16,9 @@ Last updated: 2026-05-16
 - Top blockers: deeper per-department read models and safe command contracts
   remain incomplete; upstream Paperclip/OpenJarvis write access remains
   external.
-- Next mission: continue with the next department-specific read model or safe
-  command contract.
+- Next mission: continue with `05 Relationships` as the next
+  department-specific read model and board, or run production smoke for the
+  new Sales slice after deployment.
 - Closure handoff: `docs/operations/application-completion-audit-2026-05-14.md`.
 
 ## Source Inputs
@@ -59,6 +59,7 @@ Last updated: 2026-05-16
 | SRC-032 | release/evidence | `docs/planning/v1-strategy-production-smoke-task-contract.md`, `docs/operations/post-deploy-smoke.md` | Production rollout and protected smoke for Strategy context commit `5db4dd8b1fe9058d1fc78ebc957c0716ebd4822a` | active |
 | SRC-033 | product/UX architecture | `docs/planning/dms-differentiated-department-systems-analysis-task-contract.md`, `docs/architecture/department-management-systems-v1-blueprint.md`, `docs/ux/v1-department-management-systems-view-map.md` | Differentiated V1 model for 12 department management systems: shared shell and safety primitives, department-specific boards and mobile review modes | active |
 | SRC-034 | planning/backend/UX/AI | `docs/planning/dms-13-systems-v1-implementation-audit.md`, `docs/planning/dms-13-systems-v1-implementation-audit-task-contract.md` | Source-backed V1 implementation audit for `00 Main` plus all 12 department systems, including backend reuse, web readiness, backend gaps, Paperclip boundaries, blocked actions, and first implementation slices | active |
+| SRC-035 | backend/frontend/API/AI | `docs/planning/dms-03-sales-context-and-board-task-contract.md`, `src/modules/sales/sales.routes.ts`, `web/src/main.tsx`, `web/src/styles.css` | Verified read-only `03 Sales` Management context and selected-area board over CRM, pipeline, commercial exception, Finance handoff, and blocked sales actions | active |
 
 ## Module / Journey Map
 
@@ -105,7 +106,8 @@ Last updated: 2026-05-16
 | CCORE-DM-027 | Finance Context Read API | Runtime read model for pricing candidates, hourly value, work valuation, commercial exceptions, invoice readiness, payment source context, and Paperclip finance packet | backend route, auth capability, MCP manifest, agent key profiles, API docs, tests | verified locally | DMS-07-002; REQ-DMS-07-002; `GET /v1/finance/context`; `finance:read`; `docs/planning/dms-07-finance-context-read-api-task-contract.md`; `npm run build:server`; `git diff --check`; `npm run test:api` against portable PostgreSQL on `127.0.0.1:55482` | Run DMS-00-007 Paperclip background output review proof or implement the read-only Finance web board. |
 | CCORE-DM-028 | Finance Web Board | Read-only Finance department board over pricing candidates, hourly value, commercial exceptions, invoice blockers, and blocked finance actions | React selected-area route, Finance context API, responsive proof | verified locally | DMS-07-003; REQ-DMS-07-003; `FinanceManagementBoard`; `GET /v1/finance/context`; `npm run build:web`; `git diff --check`; Playwright proof on `http://127.0.0.1:3213` desktop/mobile | Keep finance writes blocked; run production visual proof after deploy. |
 | CCORE-DM-029 | Differentiated Department Systems | Product and UX model for 12 purpose-built department management systems inside one CompanyCore shell | architecture docs, UX view map, implementation plan, future web/backend task contracts | verified as planning scope | DMS-V1-005; REQ-DMS-DIFF-001; `docs/planning/dms-differentiated-department-systems-analysis-task-contract.md`; `docs/architecture/department-management-systems-v1-blueprint.md`; `docs/ux/v1-department-management-systems-view-map.md`; `git diff --check` | Future department tasks must define primary board, desktop layout, mobile attention queue, states, source records, Paperclip boundaries, and command/read-only posture. |
-| CCORE-DM-030 | 13 System V1 Implementation Audit | Per-system implementation handoff for `00 Main` plus `01`-`12`, including source reuse, backend gaps, web/mobile expectations, Paperclip boundaries, and first slices | planning docs, API docs, Prisma model review, DMS blueprint, task board/state ledgers | verified as planning scope | DMS-V1-006; REQ-DMS-AUDIT-001; `docs/planning/dms-13-systems-v1-implementation-audit.md`; `docs/planning/dms-13-systems-v1-implementation-audit-task-contract.md`; `git diff --check` | Implement `03 Sales` read packet and board first; keep quote, discount, invoice, ad, and autonomous outreach writes blocked. |
+| CCORE-DM-030 | 13 System V1 Implementation Audit | Per-system implementation handoff for `00 Main` plus `01`-`12`, including source reuse, backend gaps, web/mobile expectations, Paperclip boundaries, and first slices | planning docs, API docs, Prisma model review, DMS blueprint, task board/state ledgers | verified as planning scope | DMS-V1-006; REQ-DMS-AUDIT-001; `docs/planning/dms-13-systems-v1-implementation-audit.md`; `docs/planning/dms-13-systems-v1-implementation-audit-task-contract.md`; `git diff --check`; DMS-03-006 has since implemented the Sales packet and board locally. | Implement `05 Relationships` read packet and board next; keep outreach, promise-making, discount, invoice, and autonomous support writes blocked. |
+| CCORE-DM-031 | 03 Sales Management System | Sales context and board for clients, deals, pipeline stages, interactions, commercial exceptions, current-client work, Finance handoff, and blocked quote/discount/invoice/ad/outreach authority | backend route, auth capability, MCP manifest, agent key profiles, API tests, React selected-area board, responsive proof | verified locally | DMS-03-006; REQ-DMS-03-006; `GET /v1/sales/context`; `sales:read`; `docs/planning/dms-03-sales-context-and-board-task-contract.md`; `npm run build:server`; `npm run build:web`; `npm run test:api` against `127.0.0.1:55497`; Playwright proof on `http://127.0.0.1:3220`; screenshots `docs/ux/evidence/dms-03-sales-board-desktop.png`, `docs/ux/evidence/dms-03-sales-board-mobile.png` | Run production smoke after deploy; implement `05 Relationships` read packet and board next. |
 
 ## Visual Slice Map
 

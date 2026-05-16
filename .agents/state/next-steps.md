@@ -8,11 +8,11 @@ Last updated: 2026-05-16
    - Source: `docs/planning/mvp-next-commits.md`.
    - Implementation audit:
      `docs/planning/dms-13-systems-v1-implementation-audit.md`.
-   - Preferred order: read-only `03 Sales` department packet and board, then
-     `05 Relationships`, `02 Product And Delivery`, `08 Assets`,
-     `09 Technology/AI`, and `10 Legal/Standards`; use a guarded
-     `04 Operations` planning/procedure command contract only if operations
-     writes become more urgent.
+   - `03 Sales` department packet and board is now locally verified. Preferred
+     next order: `05 Relationships`, `02 Product And Delivery`, `08 Assets`,
+     `09 Technology/AI`, and `10 Legal/Standards`; use a guarded `04 Operations`
+     planning/procedure command contract only if operations writes become more
+     urgent.
    - Keep writes behind explicit command contracts and API tests.
    - Apply DMS-V1-005: shared CompanyCore shell, but department-specific
      primary board, desktop layout, mobile attention queue, source records,

@@ -129,6 +129,10 @@ function routeDescription(route: ManifestRoute) {
     return "Read the workspace relationship graph with direct, inferred, provider-derived, review, and unsupported relationship context.";
   }
 
+  if (route.capability === "sales:read") {
+    return "Read the 03 Sales management context for clients, deals, pipeline stages, interactions, follow-up tasks, commercial exceptions, current-client work, pricing handoff, and blocked sales actions without quoting final terms, applying discounts, sending invoices, launching ads, or sending outreach.";
+  }
+
   if (route.capability === "operations:read") {
     return "Read the 04 Operations management context for procedures, dependencies, approvals, business functions, operational tasks, and safe agent handoff.";
   }

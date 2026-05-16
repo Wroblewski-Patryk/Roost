@@ -29,6 +29,7 @@ import { operationsRouter } from "./modules/operations/operations.routes";
 import { pipelineStagesRouter } from "./modules/pipeline-stages/pipeline-stages.routes";
 import { projectsRouter } from "./modules/projects/projects.routes";
 import { relationshipsRouter } from "./modules/relationships/relationships.routes";
+import { salesRouter } from "./modules/sales/sales.routes";
 import { strategyRouter } from "./modules/strategy/strategy.routes";
 import { targetsRouter } from "./modules/targets/targets.routes";
 import { taskListsRouter } from "./modules/task-lists/task-lists.routes";
@@ -49,6 +50,7 @@ function mountProtectedRoutes(router: Router) {
   router.use("/operating-model", operatingModelRouter);
   router.use("/operations", operationsRouter);
   router.use("/relationships", relationshipsRouter);
+  router.use("/sales", salesRouter);
   router.use("/strategy", strategyRouter);
   router.use("/goals", goalsRouter);
   router.use("/google-drive", googleDriveRouter);
