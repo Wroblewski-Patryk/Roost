@@ -52,8 +52,12 @@ The best business systems share a few patterns:
 | Metrics tied to decisions | Metrics should trigger decisions, tasks, risks, controls, or improvements. |
 | Progressive depth | The owner should scan at executive level, then drill into records, workflow runs, tasks, and audit. |
 
-CompanyCore V1 should therefore build one shared department system pattern and
-then specialize each department with focused subsystems.
+CompanyCore V1 should therefore build one shared department system foundation
+and then specialize each department as its own management product. The
+foundation gives consistent navigation, auth, evidence, and agent safety. The
+department-specific layer gives each operating department the tools, board
+shape, workflow, and mobile behavior that match how that department actually
+creates value.
 
 ## Scope Model
 
@@ -104,6 +108,95 @@ Every department system must expose the same high-level contract:
 | Evidence rail | Tables, Drive files, task records, workflow runs, approvals, events, audit. |
 | Improvement loop | Feedback, defects, retros, standards updates, and new tasks. |
 
+## Differentiated Department Product Model
+
+The V1 assumption is no longer "all departments look the same." The correct
+model is:
+
+```text
+shared shell and safety model
+  -> department-specific management system
+  -> subsystem-specific board, workflow, records, actions, and agent packet
+```
+
+Every operating department still uses the shared CompanyCore shell, route
+model, auth, MCP, evidence rail, and command safety language. However, each
+department must have its own primary operating surface:
+
+| Shared across all departments | Different per department |
+| --- | --- |
+| route shell, auth, workspace scope, responsive frame | primary board layout and workflow |
+| identity bar, health, command brief, evidence rail | domain vocabulary and core objects |
+| common links to goals, tasks, records, knowledge, metrics, risks, decisions, AI | subsystem tabs and action panels |
+| read-first, command-shaped-write rule | default filters, tables, kanban/list/calendar/timeline shape |
+| agent packet contract and blocked actions | department-specific agent recommendations |
+| loading, empty, degraded, error, success states | mobile quick actions and decision prompts |
+
+The shared shell should make CompanyCore feel like one product. The
+department-specific board should make each department feel like the right tool
+for that job.
+
+### Department System Differentiation Matrix
+
+| Department | Primary operating surface | Main functional areas | Desktop UX requirement | Mobile UX requirement | First safe runtime direction |
+| --- | --- | --- | --- | --- | --- |
+| `01 Strategy` | Strategy command board | goals, targets, KPIs, roadmap, portfolio choices, assumptions, decisions, risks, positioning | show strategic north star, goal/target tree, decision/risk rail, roadmap timeline, and gaps in one scan-friendly board | owner can review top goals, blocked decisions, risky assumptions, and approve/request follow-up from a compact brief | read-only strategy context, then strategy web board and data curation |
+| `02 Product And Delivery` | Delivery promise and acceptance board | offer catalog, service/product packages, backlog, delivery plans, artifacts, releases, quality, acceptance | show promised value, active delivery streams, acceptance evidence, artifacts, blockers, and delivery readiness | show today's deliveries, blocked acceptance, required owner/client feedback, and next proof to capture | read-only delivery/acceptance packet before write actions |
+| `03 Sales` | Sales pipeline and offer workbench | leads, qualification, discovery, offers, pricing context, discounts, deal stages, follow-ups, source campaigns | show pipeline by stage, next follow-up, offer/pricing packet, discount exceptions, and lead quality signals | show urgent follow-ups, deal stage changes, current client work, quick contact context, and discount warning | read-only sales context over clients/deals/interactions/commercial exceptions |
+| `04 Operations` | Operating rhythm and control board | routines, SOPs, procedures, dependencies, approvals, controls, recurring admin, operational tasks | show procedure health, pending approvals, blocked dependencies, routines, and operational work queue | show what must be done today, approvals to review, blocked routines, and safe handoff to agents | deployed read-only operations context, then guarded command contract |
+| `05 Relationships` | Client success and relationship health board | active clients, archived clients, stakeholders, interactions, support, satisfaction, referrals, feedback | show client health, contact history, stakeholder map, follow-up queue, support issues, and archived-learning signals | show who needs contact now, last interaction, open support, feedback request, and relationship risk | read-only relationships context plus archived-client source audit |
+| `06 People/Agents And Roles` | Human/agent roster and authority board | people, AI agents, roles, responsibilities, capacity, permissions, escalation, hiring/agent creation, Paperclip roster sync | show roster, responsibilities, capacity load, authority boundaries, escalation map, service keys, and missing staffing | show who/which agent owns this, overload warnings, escalation route, and permission risk before action | read-only people/agents authority packet and Paperclip roster reconciliation design |
+| `07 Finance And Billing` | Money readiness and billing control board | pricing models, hourly value, work valuation, discounts, invoice readiness, payments, receivables, margin, finance risks | show pricing assumptions, commercial exceptions, invoice blockers, payment status, margin risk, and owner decisions | show invoice-ready work, payment blockers, discount approvals, and money-risk alerts | deployed finance context plus read-only board; writes require finance command contract |
+| `08 Assets And Resources` | Company asset and source control board | Drive folders/files, resources, prompts, repositories, tools, storage locations, knowledge roots, freshness | show source map, ownership, freshness, missing descriptions, unscoped files, and resource readiness by department | show recently changed/missing/untrusted sources, quick file inspection, and assignment needs | read-only asset/resource packet and freshness aggregate |
+| `09 Technology And AI Infrastructure` | Runtime, integration, and agent tool control board | integrations, API keys, MCP tools, agent runtime health, deployment health, observability, automation, incidents | show integration health, MCP exposure, agent authority, API/service key risk, deploy/runtime status, and automation health | show broken integrations, risky keys, failed agent/tool events, deploy status, and required owner action | read-only technology health aggregate before any automation writes |
+| `10 Legal, Standards, And Governance` | Rule, risk, and control board | standards, policies, controls, compliance, contracts, approvals, decision logs, legal risk | show applicable rules, standards, risks, controls, approvals, decision evidence, and workflow guardrails | show high-risk items, missing approval/standard, contract/legal decision, and blocked action reason | read-only legal/standards packet; writes only through approved standards/workflow commands |
+| `11 Innovation And Growth` | Experiment and improvement lab | experiments, growth ideas, marketing signals, feedback loops, retros, lessons, improvement tasks | show idea funnel, experiment status, learning evidence, feedback sources, growth signals, and improvement backlog | show experiments needing decision, latest learning, feedback trend, and next small test | read-only innovation/feedback packet after feedback sources are mapped |
+| `12 Executive Management` | Owner command and cross-department health board | portfolio, approvals, escalation, department health, risks, resources, agent autonomy, strategic reporting | show cross-department status, owner decision queue, approvals, escalations, KPI/risk summary, and portfolio tradeoffs | show top decisions, blocked departments, urgent approvals, and next executive action | department health aggregate and executive read-only board |
+
+### Desktop And Mobile UX Principles
+
+Desktop department systems should be built for command and comparison:
+
+- dense but readable information architecture;
+- two to three primary columns when useful: command board, operating records,
+  evidence/decision rail;
+- domain-specific board types such as pipeline, roster, timeline, health grid,
+  control checklist, or asset map;
+- visible filters for department-owned status, risk, owner, agent, source, and
+  freshness;
+- drill-down from board item to source record, workflow, task, decision, file,
+  audit, or approval;
+- no nested card-heavy marketing layout; this is operational software.
+
+Mobile department systems should be built for review and quick response:
+
+- one primary question at the top: what needs attention now?;
+- compact command brief with next action, blocker, and responsible human/agent;
+- short queues instead of wide tables;
+- tap targets for inspect, assign/propose, request approval, or open source;
+- no side-by-side comparison that requires horizontal scrolling;
+- defer deep editing to desktop unless a safe command is explicitly designed
+  for mobile.
+
+### Shared Components vs Department-Specific Components
+
+Reusable components should remain generic only when they preserve company
+meaning:
+
+| Component type | Shared component | Department-specific extension |
+| --- | --- | --- |
+| Command brief | `DepartmentCommandBrief` | department-specific priority and next-action wording |
+| Evidence rail | `DepartmentEvidenceRail` | domain-specific evidence groups and missing-proof warnings |
+| Work queue | `DepartmentWorkQueue` | sales follow-ups, finance blockers, operations routines, relationship care items |
+| Metrics | `DepartmentMetricStrip` | KPI, revenue, capacity, freshness, risk, or delivery metrics |
+| Agent packet | `DepartmentAgentPacketPanel` | allowed actions, blocked actions, recommended agent task by department |
+| Empty state | `DepartmentEmptyState` | source-specific next setup action |
+| Mobile summary | `DepartmentMobileCommandCard` | one department-specific owner decision and quick action |
+
+Do not force every department into the same cards if the work model is
+different. The system should reuse shell, safety, and evidence primitives while
+allowing specialized boards.
+
 ## Shared Web Layout
 
 All department routes should use the selected-area route:
@@ -112,18 +205,18 @@ All department routes should use the selected-area route:
 /areas?area=:areaKey&view=:viewId
 ```
 
-V1 component groups:
+V1 component groups form the shared shell, not the complete department UI:
 
 | Zone | Component group | Purpose |
 | --- | --- | --- |
 | Header | Department identity bar | Department name, value-flow role, health, owner focus. |
 | Top | Command brief | What matters now, blocker, next decision, agent suggestion. |
 | Navigation | Subsystem tabs | Overview plus specialized department subsystems. |
-| Main | Management board | The primary operating surface for the selected subsystem. |
+| Main | Department-specific management board | The primary operating surface for the selected subsystem. |
 | Right rail | Evidence and graph rail | Records, files, tasks, workflow runs, approvals, audit. |
 | Bottom | Improvement loop | Feedback, process updates, standards, next gaps. |
 
-Default common views:
+Default common views remain available as cross-cutting drill-downs:
 
 ```text
 overview
@@ -140,8 +233,9 @@ ai
 improvements
 ```
 
-Department-specific subsystem tabs can be added after the common views, but
-they must still map back to shared CompanyCore modules.
+Each department must define a smaller set of default visible tabs for its own
+workflow. Cross-cutting views can remain reachable, but the first screen should
+not expose every common tab if that makes the department feel generic.
 
 ## Shared Backend Reuse First
 

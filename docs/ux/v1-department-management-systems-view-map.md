@@ -86,6 +86,81 @@ improvements
 The current implementation already supports a subset of capability tabs. V1
 should expand toward the full set as existing backend contracts allow it.
 
+Important product rule:
+
+```text
+same route shell does not mean same department screen
+```
+
+Each department must keep shared CompanyCore navigation, safety, evidence, and
+agent handoff, but its first viewport and primary board must match the work of
+that department. A Sales system should behave like a pipeline and offer
+workbench. A Finance system should behave like money readiness control. A
+People/Agents system should behave like a roster, capacity, and authority map.
+
+## Differentiated Web Experience Contract
+
+### Shared Shell Requirements
+
+Every department route must provide:
+
+| Requirement | Desktop | Mobile |
+| --- | --- | --- |
+| Identity | department name, value role, health, selected subsystem | compact title, health, one-line role |
+| Command | current priority, blocker, next owner decision, agent suggestion | one primary action, one blocker, owner/agent responsible |
+| Navigation | subsystem tabs plus cross-cutting drill-down links | segmented control or compact tab list; no overflow |
+| Board | department-specific primary board | one-column review queue with top action |
+| Evidence | linked records, files, tasks, workflows, audit, approvals | source chips and "open evidence" affordance |
+| Safety | allowed actions and blocked actions | explicit disabled/blocked action reason |
+| Improvement | feedback, defects, standards/process updates | short improvement queue |
+
+### Department-Specific Board Requirements
+
+| Area | Primary desktop board | Mobile first screen | Key UI patterns | Required states |
+| --- | --- | --- | --- | --- |
+| `01-strategia` | strategic goals tree plus roadmap/decision/risk rail | top goals, blocked decisions, risky assumptions | goal tree, KPI strip, roadmap timeline, decision cards | no goals, stale decisions, missing metrics, blocked strategy write |
+| `02-produkt` | delivery promise board with backlog, artifacts, acceptance | today's delivery proof and acceptance blockers | kanban/list hybrid, artifact list, acceptance checklist | no catalog, blocked acceptance, missing artifacts, client feedback needed |
+| `03-sprzedaz` | deal pipeline with qualification, discovery, offer, pricing, follow-up | urgent leads/follow-ups and discount warnings | pipeline columns, lead cards, offer packet, pricing chips | no leads, stale follow-up, missing discovery, discount approval needed |
+| `04-operacje` | routines/procedures/dependencies/approvals control board | today's routines, approvals, blocked dependencies | SOP list, dependency board, approval queue, routine checklist | no routines, blocked dependency, pending approval, stale SOP |
+| `05-relacje` | client health and stakeholder care board | clients needing contact and open support | health cards, stakeholder map, interaction timeline, feedback queue | no clients, no recent contact, support blocked, feedback overdue |
+| `06-kadry` | people/agents roster with role, capacity, authority, escalation | owner/agent responsible, overload, escalation | roster table, capacity meters, authority badges, escalation map | no owner, over capacity, missing permission, escalation missing |
+| `07-finanse` | pricing, invoice readiness, discounts, payments, margin risk board | invoice-ready work, payment blockers, discount decisions | money readiness cards, exception table, invoice blocker list, risk strip | no price source, missing approval, payment blocked, invoice not ready |
+| `08-zasoby` | asset/source map for files, folders, resources, prompts, tools | changed/untrusted/missing sources | source tree, freshness badges, mapping table, resource cards | unscoped files, stale source, missing description, untrusted asset |
+| `09-technologia` | integration/MCP/runtime/agent health board | broken integration, risky key, failed tool event | health grid, MCP tool table, key risk cards, incident queue | integration down, risky key, failed event, deploy mismatch |
+| `10-prawo` | standards, policies, risks, controls, approvals board | high-risk item and missing approval/standard | rule cards, control matrix, approval queue, decision log | missing standard, control unverified, legal decision needed, action blocked |
+| `11-innowacje` | experiment and improvement lab | experiment needing decision and latest learning | idea funnel, experiment cards, feedback trend, learning log | no hypothesis, stale experiment, missing result, improvement not assigned |
+| `12-zarzadzanie` | executive command board across departments | top decisions, blocked departments, urgent approvals | department health grid, portfolio board, approval stack, escalation list | blocked department, approval overdue, KPI missing, autonomy risk |
+
+### Desktop Layout Guidance
+
+Use desktop width for comparison and control:
+
+- `01 Strategy`, `12 Executive`: three-column command, portfolio/roadmap, risk
+  and decision rail.
+- `03 Sales`, `02 Product And Delivery`: stage/pipeline boards with right-side
+  context and source evidence.
+- `04 Operations`, `10 Legal`: control boards with procedure/rule lists and
+  approval/risk rail.
+- `05 Relationships`, `06 People/Agents`: roster/relationship health grids
+  with timeline or escalation detail.
+- `07 Finance`: money readiness board with clear high-risk blocked states.
+- `08 Assets`, `09 Technology`: health/source maps with diagnostics and
+  freshness/status filters.
+- `11 Innovation`: experiment funnel with learning and feedback queue.
+
+### Mobile Layout Guidance
+
+Use mobile for supervision, not full administration:
+
+- top area: one department command card;
+- second area: three to five compact health metrics;
+- third area: short queue of items needing attention;
+- fourth area: evidence chips and one safe next action;
+- deep tables, large graph maps, and multi-column comparisons should collapse
+  into detail screens or source links;
+- high-risk actions should show a blocked state unless a mobile-safe command
+  contract exists.
+
 ## Department System Inventory
 
 | Area key | Label | System view name | Primary route | Core subsystems |

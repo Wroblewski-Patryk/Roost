@@ -171,6 +171,12 @@ continue from repository files alone:
   `summary.activeRisks=1`, `agentPacket.mode=read_only`, and
   `blockedActions=4`. Previous backend `9ff1882` is retained stopped as
   rollback.
+  As of DMS-V1-005, the V1 department assumption is differentiated systems,
+  not identical repeated screens. Future department work must keep the shared
+  CompanyCore shell, route model, auth, evidence, MCP, and safety primitives,
+  but each of the 12 operating departments must define its own primary board,
+  desktop layout, mobile attention queue, state model, source records, and
+  Paperclip boundaries before implementation.
 - `docs/architecture/department-management-systems-v1-blueprint.md`:
   detailed V1 blueprint for `00 Main` plus the 12 operating department
   management systems. As of 2026-05-16, future department work should use this

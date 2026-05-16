@@ -26,6 +26,9 @@ The goal is a coherent minimal V1 where:
 - pricing, discounts, current client work, archived clients, and feedback
   learning are visible before high-risk automation;
 - backend read models are stable before write actions expand.
+- the 12 operating departments share CompanyCore shell, evidence, and safety
+  primitives but each has a differentiated management board and mobile review
+  experience for its own work model.
 
 ## V1 Success Definition
 
@@ -73,6 +76,23 @@ repo state.
 | DMS-V1-002 | Normalize department naming and route metadata | UX/backend planning | Frontend + Product Docs | DMS-V1-000 | Route registry and docs agree on 00-12 labels, including 06 People/Agents | build/web route metadata review |
 | DMS-V1-003 | Define V1 department packet JSON contract | backend planning | Backend + AI Integration | DMS-V1-000 | Proposed shape for web and Paperclip packets | API design review |
 | DMS-V1-004 | Define V1 department health status vocabulary | product/backend planning | Product Docs + Backend | DMS-V1-000 | `ready`, `blocked`, `needs_data`, `needs_owner_decision`, `agent_ready`, `unsafe_for_automation` | source review |
+| DMS-V1-005 | Differentiate 12 department management systems | planning/product/UX | Product Docs | DMS-BLUEPRINT-001 | Shared shell plus department-specific board, desktop UX, mobile UX, and implementation assumptions for each operating department | source review + `git diff --check` |
+
+### Differentiated Department Implementation Rule
+
+After DMS-V1-005, each department implementation task must include:
+
+- the department's primary operating board type;
+- desktop first-viewport zones;
+- mobile first-screen command card and attention queue;
+- department-specific empty, degraded, blocked, and success states;
+- source records and backend read packet used by the board;
+- Paperclip allowed actions, proposed actions, and blocked actions;
+- the first safe command contract, or an explicit statement that the slice is
+  read-only.
+
+The shared Department Management Shell remains the frame. It must not flatten
+all departments into one generic area detail screen.
 
 ## Wave 1 - 00 Main Intake And Paperclip Review
 

@@ -12,6 +12,10 @@ synchronized with `.codex/context/TASK_BOARD.md`.
       `05 Relationships`, `02 Product And Delivery`, or a guarded
       `04 Operations` planning/procedure command contract if operations writes
       become more urgent.
+      Each next slice must follow the DMS-V1-005 differentiated-system rule:
+      shared CompanyCore shell, but a department-specific primary board,
+      desktop layout, mobile attention queue, source records, state model, and
+      Paperclip boundaries.
 
 ### NEXT
 
@@ -159,6 +163,15 @@ and `docs/operations/v1-function-coverage-ledger.csv`.
       `blockedActions=4`. Temporary local and VPS rollout artifacts were
       removed. Task contract:
       `docs/planning/v1-strategy-production-smoke-task-contract.md`.
+
+- [x] DMS-V1-005 Differentiated department management systems analysis:
+      updated the DMS architecture, UX view map, and global implementation
+      plan so the 12 operating departments are no longer planned as identical
+      screens. They now share shell/auth/evidence/MCP/safety primitives, but
+      each department requires a specific primary board, workflow vocabulary,
+      desktop UX, mobile review mode, state model, source records, and agent
+      boundaries. Task contract:
+      `docs/planning/dms-differentiated-department-systems-analysis-task-contract.md`.
 
 - [x] V1COS-001 Company OS area-aware foundation:
       `/react-company-os` now connects Company OS evidence and guarded

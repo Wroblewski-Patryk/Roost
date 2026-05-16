@@ -156,6 +156,17 @@ Last updated: 2026-05-16
   `/v1/strategy/context` returned `01-strategia`, `strategy-governance`,
   `summary.activeMetrics=1`, `summary.activeRisks=1`,
   `agentPacket.mode=read_only`, and `blockedActions=4`.
+  As of 2026-05-16, DMS-V1-005 updated the department-management-system
+  architecture assumption: the 12 operating departments should no longer be
+  treated as identical screens with different labels. CompanyCore keeps one
+  shared shell, route model, auth, evidence rail, MCP/agent safety language,
+  and source-of-truth reuse, but each department must become a differentiated
+  management system with its own primary board, workflow vocabulary,
+  desktop-first command layout, mobile review mode, state model, and blocked
+  action rules. The updated source of truth is in
+  `docs/architecture/department-management-systems-v1-blueprint.md`,
+  `docs/ux/v1-department-management-systems-view-map.md`, and
+  `docs/planning/v1-department-systems-global-implementation-plan.md`.
   As of 2026-05-16, DMS-00-003 implemented the first backend slice of
   `00 Main`: protected read-only `GET /v1/intake`. It aggregates existing
   agent events, provider inbox rows, unassigned Drive/provider resources,

@@ -11,6 +11,9 @@ Last updated: 2026-05-16
      `04 Operations` planning/procedure command contract if operations writes
      become more urgent.
    - Keep writes behind explicit command contracts and API tests.
+   - Apply DMS-V1-005: shared CompanyCore shell, but department-specific
+     primary board, desktop layout, mobile attention queue, source records,
+     state model, and Paperclip boundaries.
 
 ## NEXT
 

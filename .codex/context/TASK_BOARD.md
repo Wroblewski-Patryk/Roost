@@ -2,6 +2,16 @@
 
 ## Ready
 
+- DMS-NEXT-002 Differentiated department implementation slice.
+  - Stage: planning
+  - Owner: Product Docs + Frontend Builder + Backend Builder
+  - Priority: P1
+  - Source: `docs/architecture/department-management-systems-v1-blueprint.md`
+  - Goal: select the next department implementation task using the
+    differentiated-system contract. Recommended next runtime slice remains
+    `03 Sales` read packet or board, but it must define Sales-specific
+    pipeline/offer/follow-up/mobile states instead of copying a generic area
+    panel.
 - DMS-NEXT-001 Department systems user review and implementation sequence.
   - Stage: planning
   - Owner: Product Docs + Frontend Builder + Backend Builder
@@ -104,6 +114,21 @@
   auto-deploy webhook administration task.
 
 ## Done
+
+- DMS-V1-005 Differentiated Department Management Systems Analysis.
+  - Evidence:
+    The DMS architecture now states that the 12 operating departments share
+    CompanyCore shell, auth, evidence, MCP, and safety primitives, but each
+    department must have its own management board, workflow vocabulary,
+    desktop UX, mobile attention queue, state model, source records, and
+    Paperclip boundaries. The UX map defines department-specific board
+    requirements for Strategy, Product/Delivery, Sales, Operations,
+    Relationships, People/Agents, Finance, Assets, Technology/AI, Legal,
+    Innovation, and Executive.
+  - Validation:
+    source review and `git diff --check`.
+  - Task contract:
+    `docs/planning/dms-differentiated-department-systems-analysis-task-contract.md`.
 
 - DMS-01-005B Production Strategy Context Smoke.
   - Evidence:
