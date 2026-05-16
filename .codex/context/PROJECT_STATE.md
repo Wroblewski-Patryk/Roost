@@ -39,7 +39,8 @@ Last updated: 2026-05-16
   Company OS table records were hidden because the frontend expected
   per-collection `${apiSlug}:read` capabilities instead of the existing
   `company-os:read` capability. `npm run build:web` passed after the fix.
-  Production smoke remains pending after deploy.
+  Production route smoke for the deployed V1 bundle is now covered by
+  V1OPS-002.
   As of 2026-05-16, V1DATA-001 converted `/data` and `/data/:table` from a
   generic table browser into a V1 foundation evidence browser. The route now
   shows department record metrics, agent-readable table context, empty-table
@@ -94,6 +95,20 @@ Last updated: 2026-05-16
   or horizontal overflow. Screenshots:
   `docs/ux/evidence/v1-company-os-area-foundation-desktop.png` and
   `docs/ux/evidence/v1-company-os-area-foundation-mobile.png`.
+  V1OPS-002 then deployed that commit to production through the accepted
+  manual VPS rollover path. Production now runs
+  `5f1fc71e44d09cb1780d29b2579c85023205efb9` in container
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-5f1fc71`; the previous backend is
+  retained stopped as
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-d2c9b94-previous-5f1fc71`. Public
+  API/web health returned `200` with the expected commit and image.
+  Authenticated production smoke verified `/operations`, `/tasks-adapter`,
+  `/data`, `/areas?area=04-operacje&view=overview`, `/settings/drive`, and
+  `/react-company-os?area=04-operacje`; direct AOG smoke returned
+  `strategy-governance` with `27` nodes and `32` edges. Desktop/mobile route
+  proof found no console/page errors, failed non-font requests, or horizontal
+  overflow. Evidence:
+  `docs/ux/evidence/production-v1-5f1fc71-2026-05-16/`.
   As of 2026-05-16, DMS-00-003 implemented the first backend slice of
   `00 Main`: protected read-only `GET /v1/intake`. It aggregates existing
   agent events, provider inbox rows, unassigned Drive/provider resources,

@@ -2,6 +2,56 @@
 
 Use this file to record the minimum checks after each deploy.
 
+## Production V1 Company OS Area Foundation Rollover
+
+- Timestamp: 2026-05-16
+- Environment: production VPS Docker backend
+- Commit: `5f1fc71e44d09cb1780d29b2579c85023205efb9`
+- Image:
+  `rnqqkhl3o3dut4qv56mlxly2_backend:5f1fc71e44d09cb1780d29b2579c85023205efb9`
+- Running container:
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-5f1fc71`
+- Replaced container:
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-d2c9b94`, retained stopped as
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-d2c9b94-previous-5f1fc71`.
+- Local/source checks:
+  - `npm run build`: passed.
+  - `git diff --check`: passed before rollout.
+- Rollover checks:
+  - Docker image build from the local `git archive` for `5f1fc71` passed.
+  - Canary container returned local `/health` with the expected commit before
+    traffic rollover.
+  - Final routed container returned local and public `/health` with the
+    expected commit.
+  - Production Postgres container stayed running and healthy.
+- Public smoke:
+  - `GET https://api.companycore.luckysparrow.ch/health` returned `200` with
+    the expected build commit and image.
+  - `GET https://companycore.luckysparrow.ch/health` returned `200` with the
+    same build commit and image.
+- Protected smoke:
+  - Owner login succeeded without recording secrets.
+  - `GET /v1/operating-graph/areas/01-strategia` returned `200` with
+    `areaKey=strategy-governance`, `27` nodes, and `32` edges.
+  - Authenticated desktop and mobile proof covered `/operations`,
+    `/tasks-adapter`, `/data`, `/areas?area=04-operacje&view=overview`,
+    `/settings/drive`, and `/react-company-os?area=04-operacje`.
+  - `/react-company-os` switched to `06` and verified
+    `People/Agents And Role Management System`.
+  - Playwright reported no console/page errors, no failed non-font requests,
+    and no horizontal overflow.
+- Evidence:
+  - `docs/ux/evidence/production-v1-5f1fc71-2026-05-16/`
+  - `docs/ux/evidence/production-v1-5f1fc71-2026-05-16/production-v1-route-report.json`
+- Cleanup:
+  - Temporary VPS archive, source directory, env file, labels, and rollout
+    script were removed from `/tmp`.
+  - Temporary local archive and rollout script were removed.
+  - No `chrome-headless-shell` or `chromium` validation processes remained.
+- Residual risks:
+  - No production smoke defect was found. Future department writes remain gated
+    by explicit command contracts.
+
 ## Production Google Drive Changes Baseline Rollover
 
 - Timestamp: 2026-05-16

@@ -7,18 +7,13 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] V1OPS-002 Production operations cockpit smoke:
-      after the next deploy, compare public `/health` build metadata with the
-      pushed commit and run authenticated `/operations`, `/tasks-adapter`, AOG,
-      settings, `/data`, `04 Operacje`, and `/react-company-os` area-aware
-      foundation smoke.
-
-### NEXT
-
 - [ ] Deepen the next V1 capability from `/operations`:
       choose one route-level slice that already has backend contracts, with
       preferred order compatibility alias cleanup, then one department-specific
       read model or safe command contract.
+
+### NEXT
+
 - [ ] Use the CompanyCore business module map during upcoming product intake:
       `docs/architecture/companycore-business-module-map.md` now classifies
       future work as native core, provider-backed, future adapter, or derived
@@ -85,6 +80,20 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 The section below is retained as execution evidence. It is not the active
 queue. Future work must start from `Active Queue`, `.codex/context/TASK_BOARD.md`,
 and `docs/operations/v1-function-coverage-ledger.csv`.
+
+- [x] V1OPS-002 Production V1 smoke after Company OS area foundation:
+      production was manually rolled over to
+      `5f1fc71e44d09cb1780d29b2579c85023205efb9`; public web/API `/health`
+      returned `200` with expected commit and image; authenticated production
+      smoke covered `/operations`, `/tasks-adapter`, `/data`,
+      `/areas?area=04-operacje&view=overview`, `/settings/drive`, and
+      `/react-company-os?area=04-operacje`; direct AOG smoke returned
+      `strategy-governance` with `27` nodes and `32` edges. Desktop/mobile
+      proof reported no console/page errors, failed non-font requests, or
+      horizontal overflow. Evidence:
+      `docs/ux/evidence/production-v1-5f1fc71-2026-05-16/`.
+      Task contract:
+      `docs/planning/v1-production-smoke-rollout-task-contract.md`.
 
 - [x] V1COS-001 Company OS area-aware foundation:
       `/react-company-os` now connects Company OS evidence and guarded

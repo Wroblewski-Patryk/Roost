@@ -119,7 +119,8 @@ continue from repository files alone:
   `/areas?area=04-operacje&view=overview` loaded real Company OS business
   function, procedure, procedure-step, approval, and dependency records after
   the shared React table-record loader was aligned with the existing
-  `company-os:read` capability. Production smoke remains pending after deploy.
+  `company-os:read` capability. Production route smoke for the deployed V1
+  bundle is now covered by V1OPS-002.
   As of V1COS-001, `/react-company-os` also includes an area-aware department
   control map before the existing Company OS command/evidence panels. It lets
   the owner select any `00`-`12` management system and inspect subsystem
@@ -127,6 +128,16 @@ continue from repository files alone:
   blocked actions without adding new API or write authority. Local
   real-backend proof passed on `http://127.0.0.1:3219` with screenshots in
   `docs/ux/evidence/v1-company-os-area-foundation-*.png`.
+  As of V1OPS-002, that foundation is also verified in production. The manual
+  VPS rollover deployed commit `5f1fc71e44d09cb1780d29b2579c85023205efb9` to
+  `backend-rnqqkhl3o3dut4qv56mlxly2-manual-5f1fc71`; public web/API health
+  reported the expected commit and image. Authenticated production proof
+  covered `/operations`, `/tasks-adapter`, `/data`,
+  `/areas?area=04-operacje&view=overview`, `/settings/drive`, and
+  `/react-company-os?area=04-operacje`; the direct AOG read for
+  `01-strategia` returned `strategy-governance` with `27` nodes and `32`
+  edges. Evidence lives in
+  `docs/ux/evidence/production-v1-5f1fc71-2026-05-16/`.
 - `docs/architecture/department-management-systems-v1-blueprint.md`:
   detailed V1 blueprint for `00 Main` plus the 12 operating department
   management systems. As of 2026-05-16, future department work should use this

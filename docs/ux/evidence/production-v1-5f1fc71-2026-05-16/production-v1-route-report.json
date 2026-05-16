@@ -1,0 +1,107 @@
+{
+  "ok": true,
+  "generatedAt": "2026-05-16T05:21:22.301Z",
+  "commit": "5f1fc71e44d09cb1780d29b2579c85023205efb9",
+  "apiHealth": {
+    "commit": "5f1fc71e44d09cb1780d29b2579c85023205efb9",
+    "image": "rnqqkhl3o3dut4qv56mlxly2_backend:5f1fc71e44d09cb1780d29b2579c85023205efb9"
+  },
+  "webHealth": {
+    "commit": "5f1fc71e44d09cb1780d29b2579c85023205efb9",
+    "image": "rnqqkhl3o3dut4qv56mlxly2_backend:5f1fc71e44d09cb1780d29b2579c85023205efb9"
+  },
+  "aogSummary": {
+    "areaKey": "strategy-governance",
+    "nodeCount": 27,
+    "edgeCount": 32
+  },
+  "screenshots": [
+    {
+      "viewport": "desktop",
+      "route": "/operations",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-5f1fc71-2026-05-16\\desktop-operations.png",
+      "overflow": false,
+      "finalUrl": "https://companycore.luckysparrow.ch/operations"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/tasks-adapter",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-5f1fc71-2026-05-16\\desktop-tasks-adapter.png",
+      "overflow": false,
+      "finalUrl": "https://companycore.luckysparrow.ch/tasks-adapter"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/data",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-5f1fc71-2026-05-16\\desktop-data.png",
+      "overflow": false,
+      "finalUrl": "https://companycore.luckysparrow.ch/data"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/areas?area=04-operacje&view=overview",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-5f1fc71-2026-05-16\\desktop-areas-area-04-operacje-view-overview.png",
+      "overflow": false,
+      "finalUrl": "https://companycore.luckysparrow.ch/areas?area=04-operacje&view=overview"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/settings/drive",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-5f1fc71-2026-05-16\\desktop-settings-drive.png",
+      "overflow": false,
+      "finalUrl": "https://companycore.luckysparrow.ch/settings/drive"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/react-company-os?area=04-operacje",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-5f1fc71-2026-05-16\\desktop-react-company-os-area-04-operacje.png",
+      "overflow": false,
+      "finalUrl": "https://companycore.luckysparrow.ch/react-company-os?area=06-kadry"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/operations",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-5f1fc71-2026-05-16\\mobile-operations.png",
+      "overflow": false,
+      "finalUrl": "https://companycore.luckysparrow.ch/operations"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/tasks-adapter",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-5f1fc71-2026-05-16\\mobile-tasks-adapter.png",
+      "overflow": false,
+      "finalUrl": "https://companycore.luckysparrow.ch/tasks-adapter"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/data",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-5f1fc71-2026-05-16\\mobile-data.png",
+      "overflow": false,
+      "finalUrl": "https://companycore.luckysparrow.ch/data"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/areas?area=04-operacje&view=overview",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-5f1fc71-2026-05-16\\mobile-areas-area-04-operacje-view-overview.png",
+      "overflow": false,
+      "finalUrl": "https://companycore.luckysparrow.ch/areas?area=04-operacje&view=overview"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/settings/drive",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-5f1fc71-2026-05-16\\mobile-settings-drive.png",
+      "overflow": false,
+      "finalUrl": "https://companycore.luckysparrow.ch/settings/drive"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/react-company-os?area=04-operacje",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-5f1fc71-2026-05-16\\mobile-react-company-os-area-04-operacje.png",
+      "overflow": false,
+      "finalUrl": "https://companycore.luckysparrow.ch/react-company-os?area=06-kadry"
+    }
+  ],
+  "consoleIssues": [],
+  "failedRequests": [],
+  "overflowFailures": []
+}

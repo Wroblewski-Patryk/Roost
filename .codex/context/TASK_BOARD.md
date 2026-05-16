@@ -20,18 +20,10 @@
   - Goal: make `00 Main` the review/router for unclassified owner, client,
     provider, and Paperclip-created items before broad background automation.
     Start with a read-only review queue and classification/routing model.
-- V1OPS-002 Production operations cockpit smoke.
-  - Stage: planning
-  - Owner: Frontend Builder + Ops/Release
-  - Priority: P1
-  - Source: `docs/planning/v1-operations-cockpit-task-contract.md`
-  - Goal: after the next deploy, compare public health build metadata with the
-    pushed commit and run authenticated `/operations` smoke for client/task
-    creation, table/file coverage, and AI handoff readiness.
 ## In Progress
 
 - No active implementation task is currently in progress after the
-  V1 Company OS area-aware foundation proof.
+  V1 production smoke rollout proof.
 
 ## Blocked
 
@@ -112,6 +104,27 @@
   auto-deploy webhook administration task.
 
 ## Done
+
+- V1OPS-002 Production V1 smoke after Company OS area foundation.
+  - Evidence:
+    Production was manually rolled over to commit
+    `5f1fc71e44d09cb1780d29b2579c85023205efb9` with running container
+    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-5f1fc71`; previous backend
+    `backend-rnqqkhl3o3dut4qv56mlxly2-manual-d2c9b94` is retained stopped as
+    rollback. Public web/API `/health` returned `200` with the expected commit
+    and image. Authenticated production smoke verified `/operations`,
+    `/tasks-adapter`, `/data`, `/areas?area=04-operacje&view=overview`,
+    `/settings/drive`, and `/react-company-os?area=04-operacje`; direct AOG
+    smoke returned `strategy-governance` with `27` nodes and `32` edges.
+  - Validation: `npm run build`, `git diff --check`, VPS canary health,
+    public health, authenticated desktop/mobile Playwright proof, no
+    console/page errors, no non-font failed requests, no horizontal overflow,
+    remote/local rollout artifact cleanup, and no leftover validation browser
+    processes.
+  - Evidence directory:
+    `docs/ux/evidence/production-v1-5f1fc71-2026-05-16/`.
+  - Task contract:
+    `docs/planning/v1-production-smoke-rollout-task-contract.md`.
 
 - V1COS-001 Company OS Area-Aware V1 Foundation.
   - Evidence:

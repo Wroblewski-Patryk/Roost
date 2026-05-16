@@ -5,17 +5,18 @@ Last updated: 2026-05-16
 ## Current Product Target
 
 - Product: companycore
-- Current release or milestone: V1 web command surfaces are being closed with
-  local real-backend proof before the next production smoke.
+- Current release or milestone: V1 web command surfaces have production smoke
+  evidence for the Company OS area foundation; the next milestone is a bounded
+  route-level V1 capability slice.
 - Primary user: owner/operator and policy-bound AI agents
 - Primary outcome: CompanyCore becomes a production-quality human and agent
   Company OS control plane where the owner can supervise clients, tasks,
   evidence, files, and AI-agent handoff from V1 routes backed by real APIs.
-- Top blockers: production smoke for the locally verified V1 operations,
-  settings, and operating-graph surfaces; upstream Paperclip/OpenJarvis write
-  access remains external.
-- Next mission: run the next production smoke for locally verified V1 routes,
-  including `/react-company-os`, after the new pushed build is deployed.
+- Top blockers: deeper per-department read models and safe command contracts
+  remain incomplete; upstream Paperclip/OpenJarvis write access remains
+  external.
+- Next mission: deepen the next V1 capability from `/operations`, using an
+  existing backend contract first and keeping new writes command-shaped.
 - Closure handoff: `docs/operations/application-completion-audit-2026-05-14.md`.
 
 ## Source Inputs
@@ -48,12 +49,14 @@ Last updated: 2026-05-16
 | SRC-024 | UX/product | `docs/planning/v1-selected-area-knowledge-depth-task-contract.md`, `web/src/main.tsx`, `web/src/styles.css` | V1 selected-area knowledge depth that shows Drive scope, agent packet readiness, descriptions, freshness, source packet, and improvement queue without new Drive writes | active |
 | SRC-025 | UX/product | `docs/planning/v1-selected-area-tasks-depth-task-contract.md`, `web/src/main.tsx`, `web/src/styles.css` | V1 selected-area tasks depth that shows task evidence, execution tables, provider pressure, guarded ownership, execution packet, and owner action queue without fake task-to-area ownership | active |
 | SRC-026 | UX/product | `docs/planning/v1-company-os-area-foundation-task-contract.md`, `web/src/main.tsx`, `web/src/app-route-registry.ts` | V1 Company OS area-aware foundation that connects Company OS governance/runtime evidence and guarded commands to the `00`-`12` department management systems | active |
+| SRC-027 | release/evidence | `docs/planning/v1-production-smoke-rollout-task-contract.md`, `docs/operations/post-deploy-smoke.md`, `docs/ux/evidence/production-v1-5f1fc71-2026-05-16/` | Production rollout and authenticated route proof for the V1 Company OS area foundation commit `5f1fc71e44d09cb1780d29b2579c85023205efb9` | active |
 
 ## Module / Journey Map
 
 | ID | Module | Journey or screen | Layers needed | Current state | Evidence | Next mission |
 | --- | --- | --- | --- | --- | --- | --- |
 | CCORE-DM-001 | V1 release confidence | Local architecture-derived V1 closure | docs, API, DB, scripts, tests | verified | V1EVID-001 trace `v1evid-1778458446081`; V1EVID-002 trace `v1evid-om-1778459014284`; task board marks no active local V1 evidence tasks | Keep external blockers visible; do not reopen runtime scope without a fresh defect. |
+| CCORE-DM-001A | Production V1 release confidence | Manual rollout plus authenticated production proof for V1 owner routes and AOG | production Docker, public health, auth, React routes, API read, screenshots | verified | V1OPS-002 deployed `5f1fc71e44d09cb1780d29b2579c85023205efb9`; public web/API health matched commit/image; authenticated proof covered `/operations`, `/tasks-adapter`, `/data`, `04 Operacje`, `/settings/drive`, `/react-company-os`, and AOG `27` nodes / `32` edges; evidence in `docs/ux/evidence/production-v1-5f1fc71-2026-05-16/` | Start the next bounded V1 route capability slice. |
 | CCORE-DM-002 | Agent-First Company OS | MCP and HTTP command coverage for policy-bound agents | MCP bridge, HTTP API, auth capabilities, events, audit, docs | verified through first queue UI slice | `docs/planning/v1-architecture-control-map.md` Lane A; MCP-001..MCP-006; V1EVID-001 Company OS lifecycle evidence; V2AGENT-001 audit; V2AGENT-002 least-privilege fix; V2AGENT-003 approval-aware design; V2AGENT-004 bridge guard; V2AGENT-005 supervised operator smoke; V2AGENT-006/V2AGENT-006R agent command queue UI and render proof | Select the next V2 slice only after adding a fresh task contract to the canonical queue. |
 | CCORE-DM-003 | Operational Cockpit | Human owner cockpit for approvals, blocked work, automation evidence, MCP tool visibility, operating areas, graph relationships, command consequences, and controlled definition editing | React UI, route kit, API, auth, MCP manifest, UX evidence | verified through workflow recovery controls, workflow lineage, and collection fetch alignment | Company OS cockpit and React `/areas` are implemented; V2AGENT-006/R verified the first command queue UI; `docs/planning/human-agent-web-architecture-map.md` maps the human-agent web direction; V2WEB-AGENT-001 verified `/react-agent-tools`; V2WEB-AGENT-002 verified Company OS correlation timeline; V2WEB-AGENT-003 verified operating graph detail; V2WEB-AGENT-004 verified command preview; V2WEB-AGENT-005 added `docs/architecture/company-os-definition-editing-contract.md`; V2WEB-AGENT-006 added audited `standards` backend write routes and MCP exposure; V2WEB-AGENT-007/007R added and verified the standards web editor; V2WEB-AGENT-008 added workflow definition command contract; V2WEB-AGENT-009 added audited workflow draft/update/impact-preview backend routes; V2WEB-AGENT-010 added approval-aware procedure activation; V2WEB-AGENT-011 added process/pipeline versioning and activation; V2WEB-AGENT-012 added and verified guarded workflow draft create/preview/activation UI; V2WEB-AGENT-013 selected draft history/readback before archive/rollback; V2WEB-AGENT-014 added and verified draft list/detail/resume; V2WEB-AGENT-015 selected phased archive/rollback recovery commands; V2WEB-AGENT-016 added and verified inactive historical-version archive; V2WEB-AGENT-017 added and verified rollback-draft creation; V2WEB-AGENT-018/019 added and verified web recovery controls; V2WEB-AGENT-020/021 added explicit workflow root lineage and verified renamed pipeline rollback; V2WEB-AGENT-022 fixed Company OS collection fetch paths with clean render proof. | Prove recovery activation end to end in V2WEB-AGENT-023. |
 | CCORE-DM-004 | Provider Adapter Expansion | Google Drive and future providers through ToolAdapter and IntegrationCapability | provider APIs, OAuth, API, DB, owner UI, ops | partially verified / candidate | Google Drive foundation and AGRUN-007 owner consent/import are verified in production; future provider work remains candidate scope | Improve Drive freshness/content-quality proof or select a new provider task only after current ACF P1 blockers are closed or explicitly deferred. |

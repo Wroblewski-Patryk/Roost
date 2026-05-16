@@ -4,11 +4,11 @@ Last updated: 2026-05-16
 
 ## NOW
 
-1. Run the next production smoke for locally verified V1 routes after deploy.
+1. Deepen the next V1 capability from `/operations`.
    - Source: `docs/planning/mvp-next-commits.md`.
-   - Compare public `/health` build metadata with the pushed commit, then
-     smoke authenticated `/operations`, `/tasks-adapter`, AOG, settings,
-     `/data`, `04 Operacje`, and `/react-company-os`.
+   - Choose one route-level slice that already has backend contracts.
+   - Preferred order: compatibility alias cleanup, then one
+     department-specific read model or safe command contract.
 
 ## NEXT
 
@@ -66,11 +66,13 @@ Last updated: 2026-05-16
    - Use `DMS-07-001`, `DMS-03-005`, `DMS-03-006`, and `DMS-05-002` as the
      next scoped steps. Keep agents in analysis/proposal mode until pricing,
      invoice, payment, and discount write contracts are explicit.
-8. Run production smoke for the `04 Operacje` department system after deploy.
-   - Route: `/areas?area=04-operacje&view=overview`.
-   - Source: `docs/planning/operations-management-system-v1-task-contract.md`.
-   - Local database-backed proof is complete; target proof should compare the
-     deployed build metadata and use a real deployed owner session.
+8. Production smoke for the locally verified V1 routes is complete.
+   - Source:
+     `docs/planning/v1-production-smoke-rollout-task-contract.md`.
+   - Production now runs
+     `5f1fc71e44d09cb1780d29b2579c85023205efb9`; authenticated smoke covered
+     `/operations`, `/tasks-adapter`, AOG, settings, `/data`, `04 Operacje`,
+     and `/react-company-os`.
 9. AOG-BE-002 through AOG-BE-006 backend graph follow-ups.
    - After deployed AOG read proof is complete, plan and implement:
      `Target.metricId`,
