@@ -842,6 +842,11 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
 
   const selectedRootSet = useMemo(() => new Set(selectedRootIds), [selectedRootIds]);
   const allFolders = useMemo(() => resources.filter(isFolder), [resources]);
+  const hasActiveAssetFilters = query.trim().length > 0
+    || kindFilter !== "all"
+    || sort !== "name"
+    || Boolean(selectedFolderExternalId)
+    || selectedRootIds.length !== rootIds.length;
 
   const filteredResources = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -875,6 +880,14 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
     setSelectedFolderExternalId(externalId);
     setSelectedResourceId(folder.id);
     setExpandedFolderIds((current) => new Set(current).add(externalId));
+  }
+
+  function clearAssetFilters() {
+    setQuery("");
+    setKindFilter("all");
+    setSort("name");
+    setSelectedFolderExternalId(null);
+    setSelectedRootIds(rootIds);
   }
 
   return (
@@ -922,6 +935,11 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
                 <option value="source">{t("assets.sort.source")}</option>
               </select>
             </div>
+            {hasActiveAssetFilters ? (
+              <div className="flex justify-end">
+                <CcButton iconLeft="ph-x-circle" onClick={clearAssetFilters} size="sm" variant="ghost">{t("assets.clearFilters")}</CcButton>
+              </div>
+            ) : null}
           </div>
 
           <div className="overflow-y-auto xl:min-h-0">
@@ -935,8 +953,9 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
               <div className="grid h-full place-items-center rounded-company border border-dashed border-base-300 p-8 text-center">
                 <div>
                   <i className="ph-bold ph-folder-open text-3xl text-company-muted" aria-hidden="true"></i>
-                  <h2 className="mt-3 font-black text-company-ink">{t("assets.noItems")}</h2>
-                  <p className="mt-1 text-sm text-company-muted">{t("assets.noItems.detail")}</p>
+                  <h2 className="mt-3 font-black text-company-ink">{t(hasActiveAssetFilters ? "assets.noMatchingItems" : "assets.noItems")}</h2>
+                  <p className="mt-1 text-sm text-company-muted">{t(hasActiveAssetFilters ? "assets.noMatchingItems.detail" : "assets.noItems.detail")}</p>
+                  {hasActiveAssetFilters ? <CcButton className="mt-4" iconLeft="ph-x-circle" onClick={clearAssetFilters} variant="outline">{t("assets.clearFilters")}</CcButton> : null}
                 </div>
               </div>
             )}

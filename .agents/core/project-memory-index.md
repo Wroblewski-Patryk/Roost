@@ -171,8 +171,10 @@ continue from repository files alone:
   and Assets resource path/source/depth context beside file previews.
   OPS-ASSETS-DENSE-003 then added shared task search/priority filtering across
   Tasks and Calendar plus Assets file/folder card sorting by name, modified
-  date, type, or source. Build/validate and mocked desktop/mobile Playwright
-  proof passed on 2026-05-17.
+  date, type, or source. OPS-ASSETS-FILTER-004 added recoverable
+  filtered-empty states and clear-filter actions for Operations Tasks,
+  Operations Calendar, and Assets Files/Folders. Build/validate and mocked
+  desktop/mobile Playwright proof passed on 2026-05-17.
 - `docs/planning/web-foundation-quality-audit-2026-05-16.md` and
   `docs/planning/web-foundation-quality-audit-task-contract.md`: active web
   foundation quality audit. It reviewed `web/src/main.tsx`,

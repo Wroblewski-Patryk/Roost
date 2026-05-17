@@ -83,6 +83,9 @@ Last updated: 2026-05-17
     - `OPS-ASSETS-DENSE-003` is complete and verified locally: Tasks and
       Calendar share one task text/priority filter, and Assets files/folders
       can sort visible cards by name, modified date, type, or source.
+    - `OPS-ASSETS-FILTER-004` is complete and verified locally: Operations
+      Tasks/Calendar and Assets Files/Folders now have recoverable
+      filtered-empty states with clear-filter actions.
    - CompanyCore remains the company operating system; AI agents remain
      external API/MCP clients.
    - Keep writes behind explicit command contracts, audit/events, and API

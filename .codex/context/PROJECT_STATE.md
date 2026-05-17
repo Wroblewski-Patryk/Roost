@@ -285,6 +285,14 @@ Last updated: 2026-05-17
   for Operations task search, priority filtering, Calendar task filtering,
   Assets modified/type sorting, CSV/JSON previews, desktop/mobile no
   horizontal overflow, and no console/page errors.
+  OPS-ASSETS-FILTER-004 then made those controls recoverable: Operations Tasks
+  and Calendar now show a filter-specific `No matching tasks` state with a
+  clear-filter action, and Assets Files/Folders shows a `No matching files or
+  folders` state with one-click reset when query/type/folder/root-source/sort
+  filters hide resources. `npm run build:web`, `npm run validate`,
+  `git diff --check`, and Playwright static React proof on port `3388` passed
+  for filtered-empty recovery, CSV preview, desktop/mobile no horizontal
+  overflow, and no console/page errors.
   OPS-SURFACE-001 then polished the Roost visual hierarchy of `04 Operations`
   after owner feedback that the content area felt too uniformly dark compared
   with the sidebar. `web/src/styles.css` now defines reusable Roost workbench

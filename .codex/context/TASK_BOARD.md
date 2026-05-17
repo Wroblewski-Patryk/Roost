@@ -47,6 +47,15 @@
 
 ## Recent Checkpoints
 
+- 2026-05-17: Operations and Assets filter recovery states implemented.
+  Operations Tasks and Calendar now show a filter-specific `No matching tasks`
+  state when task filters hide all selected work, with clear-filter recovery.
+  Assets Files/Folders now shows `No matching files or folders` with one-click
+  reset when query, type, folder, root-source, or sort filters hide resources.
+  Validation: `npm run build:web`, `npm run validate`, `git diff --check`,
+  and Playwright static React proof on temporary port `3388` passed for
+  Tasks/Calendar/Assets filtered-empty recovery, CSV preview, desktop/mobile
+  no overflow, and no console/page errors.
 - 2026-05-17: Operations and Assets dense-data controls implemented.
   `04 Operations -> Tasks` and `Calendar` now share one task filter bar for
   text search and priority filtering, so the same narrowed task set is visible

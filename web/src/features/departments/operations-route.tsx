@@ -230,17 +230,20 @@ function OperationsTaskFilterBar({
   priorityFilter,
   visibleCount,
   onQueryChange,
-  onPriorityFilterChange
+  onPriorityFilterChange,
+  onClear
 }: {
   query: string;
   priorityFilter: TaskPriorityFilter;
   visibleCount: number;
   onQueryChange: (value: string) => void;
   onPriorityFilterChange: (value: TaskPriorityFilter) => void;
+  onClear: () => void;
 }) {
   const { t } = useLanguage();
+  const hasActiveFilter = query.trim().length > 0 || priorityFilter !== "all";
   return (
-    <div className="roost-work-panel grid gap-2 rounded-company p-2.5 md:grid-cols-[minmax(0,1fr)_12rem_auto] md:items-center">
+    <div className="roost-work-panel grid gap-2 rounded-company p-2.5 md:grid-cols-[minmax(0,1fr)_12rem_auto_auto] md:items-center">
       <label className="input input-bordered input-sm flex min-w-0 items-center gap-2 bg-base-200/40">
         <i className="ph-bold ph-magnifying-glass text-company-muted" aria-hidden="true"></i>
         <span className="sr-only">{t("operations.searchTasks")}</span>
@@ -251,6 +254,7 @@ function OperationsTaskFilterBar({
         {priorityOptions.map((priority) => <option key={priority} value={priority}>{priority}</option>)}
       </select>
       <span className="justify-self-start whitespace-nowrap text-xs font-bold text-company-muted md:justify-self-end">{t("operations.matchingTasks", { count: visibleCount })}</span>
+      <button className="btn btn-ghost btn-sm" disabled={!hasActiveFilter} onClick={onClear} type="button">{t("operations.clearTaskFilters")}</button>
     </div>
   );
 }
@@ -737,7 +741,8 @@ function OperationsBoard({
   taskQuery,
   priorityFilter,
   onTaskQueryChange,
-  onPriorityFilterChange
+  onPriorityFilterChange,
+  onClearTaskFilters
 }: {
   rows: OperationsWorkItem[];
   statuses: OperationsStatusColumn[];
@@ -750,6 +755,7 @@ function OperationsBoard({
   priorityFilter: TaskPriorityFilter;
   onTaskQueryChange: (value: string) => void;
   onPriorityFilterChange: (value: TaskPriorityFilter) => void;
+  onClearTaskFilters: () => void;
 }) {
   const { t } = useLanguage();
   const [draggedTaskId, setDraggedTaskId] = useState("");
@@ -766,6 +772,7 @@ function OperationsBoard({
     : allSelected
       ? t("operations.allTasks")
       : t("operations.selectedLists", { count: selectedSet.size });
+  const hasActiveTaskFilter = taskQuery.trim().length > 0 || priorityFilter !== "all";
 
   async function moveTaskToStatus(status: string) {
     if (!draggedTaskId) return;
@@ -817,6 +824,7 @@ function OperationsBoard({
 
         {moveError ? <CcNotice tone="error" title={moveError} live /> : null}
         <OperationsTaskFilterBar
+          onClear={onClearTaskFilters}
           onPriorityFilterChange={onPriorityFilterChange}
           onQueryChange={onTaskQueryChange}
           priorityFilter={priorityFilter}
@@ -830,6 +838,15 @@ function OperationsBoard({
               <i className="ph-bold ph-check-square-offset text-3xl text-company-muted" aria-hidden="true"></i>
               <h3 className="mt-3 font-black text-company-ink">{t("operations.noListsSelected")}</h3>
               <p className="mt-1 text-sm text-company-muted">{t("operations.noListsSelected.detail")}</p>
+            </div>
+          </div>
+        ) : hasActiveTaskFilter && visibleRows.length === 0 ? (
+          <div className="roost-empty-state grid min-h-0 place-items-center rounded-company p-8 text-center">
+            <div>
+              <i className="ph-bold ph-funnel-x text-3xl text-company-muted" aria-hidden="true"></i>
+              <h3 className="mt-3 font-black text-company-ink">{t("operations.noMatchingTasks")}</h3>
+              <p className="mt-1 text-sm text-company-muted">{t("operations.noMatchingTasks.detail")}</p>
+              <CcButton className="mt-4" iconLeft="ph-x-circle" onClick={onClearTaskFilters} variant="outline">{t("operations.clearTaskFilters")}</CcButton>
             </div>
           </div>
         ) : (
@@ -955,7 +972,8 @@ function OperationsCalendar({
   onCreateTask,
   onOpenWorkflowSettings,
   onTaskQueryChange,
-  onPriorityFilterChange
+  onPriorityFilterChange,
+  onClearTaskFilters
 }: {
   rows: OperationsWorkItem[];
   selectedListIds: string[];
@@ -966,6 +984,7 @@ function OperationsCalendar({
   onOpenWorkflowSettings: () => void;
   onTaskQueryChange: (value: string) => void;
   onPriorityFilterChange: (value: TaskPriorityFilter) => void;
+  onClearTaskFilters: () => void;
 }) {
   const { t } = useLanguage();
   const [mode, setMode] = useState<CalendarMode>("week");
@@ -997,6 +1016,7 @@ function OperationsCalendar({
     : mode === "week"
       ? `${new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(weekDays[0])} - ${new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(weekDays[6])}`
       : new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" }).format(anchorDate);
+  const hasActiveTaskFilter = taskQuery.trim().length > 0 || priorityFilter !== "all";
 
   function moveRange(direction: -1 | 1) {
     setAnchorDate((current) => mode === "month" ? addMonths(current, direction) : addDays(current, step * direction));
@@ -1064,6 +1084,7 @@ function OperationsCalendar({
       </div>
 
       <OperationsTaskFilterBar
+        onClear={onClearTaskFilters}
         onPriorityFilterChange={onPriorityFilterChange}
         onQueryChange={onTaskQueryChange}
         priorityFilter={priorityFilter}
@@ -1077,6 +1098,15 @@ function OperationsCalendar({
             <i className="ph-bold ph-calendar-x text-3xl text-company-muted" aria-hidden="true"></i>
             <h3 className="mt-3 font-black text-company-ink">{t("operations.noListsSelected")}</h3>
             <p className="mt-1 text-sm text-company-muted">{t("operations.noListsSelected.detail")}</p>
+          </div>
+        </div>
+      ) : hasActiveTaskFilter && rows.length === 0 ? (
+        <div className="roost-empty-state grid min-h-0 place-items-center rounded-company p-8 text-center">
+          <div>
+            <i className="ph-bold ph-funnel-x text-3xl text-company-muted" aria-hidden="true"></i>
+            <h3 className="mt-3 font-black text-company-ink">{t("operations.noMatchingTasks")}</h3>
+            <p className="mt-1 text-sm text-company-muted">{t("operations.noMatchingTasks.detail")}</p>
+            <CcButton className="mt-4" iconLeft="ph-x-circle" onClick={onClearTaskFilters} variant="outline">{t("operations.clearTaskFilters")}</CcButton>
           </div>
         </div>
       ) : mode === "day" ? (
@@ -1186,6 +1216,11 @@ export function OperationsRoute() {
     setIsCreateTaskOpen(true);
   }
 
+  function clearTaskFilters() {
+    setTaskQuery("");
+    setPriorityFilter("all");
+  }
+
   return (
     <Shell activeArea="04-operacje">
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
@@ -1212,6 +1247,7 @@ export function OperationsRoute() {
               onOpenWorkflowSettings={() => setIsWorkflowSettingsOpen(true)}
               onTaskQueryChange={setTaskQuery}
               onPriorityFilterChange={setPriorityFilter}
+              onClearTaskFilters={clearTaskFilters}
             />
           ) : (
             <OperationsBoard
@@ -1226,6 +1262,7 @@ export function OperationsRoute() {
               priorityFilter={priorityFilter}
               onTaskQueryChange={setTaskQuery}
               onPriorityFilterChange={setPriorityFilter}
+              onClearTaskFilters={clearTaskFilters}
             />
           )}
         </section>
