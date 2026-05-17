@@ -206,6 +206,20 @@
 
 ## Done
 
+- OPS-RESOURCE-SELECTOR-001 Operations resource selector cleanup.
+  - Evidence:
+    `04 Operations -> Tasks` now treats the list picker header as a reusable
+    resource-selector pattern: title plus create action, a checkbox-style
+    `All` control matching item checkboxes, and a secondary `Clear` action.
+    The previous `Empty` filter and empty-list labels were removed so the
+    selector no longer depends on task counts and can be reused by future
+    department resources.
+  - Validation: `npm run build:web`; `npm run validate`; Playwright fallback
+    on temporary mocked API port `3297` verified no visible `Empty` label, one
+    sticky selector checkbox, `Clear` unchecking all resources, rechecking
+    `All`, and no console/page errors. Browser plugin was available but had no
+    active Codex browser pane.
+
 - ROOST-BRAND-001 Roost brand definition and theme tokens.
   - Evidence:
     `docs/planning/roost-brand-theme-foundation-task-contract.md` records the

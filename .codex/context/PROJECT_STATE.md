@@ -207,7 +207,13 @@ Last updated: 2026-05-17
   list-edit options, calendar filters, and no console/page errors. Full
   owner-facing Department Settings remains future scope: backend operating-area
   management exists, but active web does not yet provide canonical department
-  editing for name, hierarchy/order, icon, and description.
+  editing for name, hierarchy/order, icon, and description. The 2026-05-17
+  selector cleanup then removed the confusing `Empty` list filter from the
+  Operations resource selector, replaced the segmented `All/Clear/Empty`
+  control with a checkbox-style `All` resource row plus secondary `Clear`
+  action, and decoupled the selector from task-count logic so the pattern can
+  be reused by future department resources. `npm run build:web`, `npm run
+  validate`, and Playwright fallback on mocked API port `3297` passed.
   As of 2026-05-16, DMS-OPS-001 added the first concrete Department Management
   System slice for `04 Operacje` on the selected-area route. It is a read-only
   Operations Management System board for planning, procedures, procedure

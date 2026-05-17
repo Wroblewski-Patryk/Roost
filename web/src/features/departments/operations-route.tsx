@@ -597,7 +597,6 @@ function WorkflowSettingsModal({
 function OperationsListSelector({
   taskLists,
   departments,
-  rows,
   selectedListIds,
   setSelectedListIds,
   setSelectedList,
@@ -605,7 +604,6 @@ function OperationsListSelector({
 }: {
   taskLists: OperationsTaskList[];
   departments: OperationsDepartment[];
-  rows: OperationsWorkItem[];
   selectedListIds: string[];
   setSelectedListIds: (listIds: string[]) => void;
   setSelectedList: (list: OperationsTaskList) => void;
@@ -624,7 +622,6 @@ function OperationsListSelector({
     lists: realLists.filter((list) => listDepartmentKey(list) === department.key)
   })).filter((group) => group.lists.length > 0);
   const noDepartment = realLists.filter((list) => !listDepartmentKey(list));
-  const emptyListIds = new Set(realLists.filter((list) => !rows.some((row) => taskBelongsToList(row, list.id))).map((list) => list.id));
 
   useEffect(() => {
     setOpenGroups((current) => {
@@ -641,10 +638,6 @@ function OperationsListSelector({
     setSelectedListIds(checked ? selectableListIds : []);
   }
 
-  function selectOnlyEmptyLists() {
-    setSelectedListIds(Array.from(emptyListIds));
-  }
-
   function toggleList(listId: string, checked: boolean) {
     const next = new Set(selectedSet);
     if (checked) next.add(listId);
@@ -654,7 +647,6 @@ function OperationsListSelector({
 
   function renderListButton(list: OperationsTaskList) {
     const checked = selectedSet.has(list.id);
-    const isEmpty = list.id !== "unassigned" && emptyListIds.has(list.id);
     return (
       <div className={`grid grid-cols-[2rem_minmax(0,1fr)_2rem] items-stretch rounded-company ${checked ? "bg-primary/10" : "hover:bg-base-200"}`} key={list.id}>
         <label className="grid place-items-center">
@@ -662,7 +654,7 @@ function OperationsListSelector({
         </label>
         <button className="grid min-w-0 gap-0.5 px-1 py-2 text-left" onClick={() => toggleList(list.id, !checked)} type="button">
           <strong className="truncate text-sm">{list.name}</strong>
-          <span className="truncate text-xs text-company-muted">{isEmpty ? t("operations.emptyList") : list.areaAssignment?.department?.key ? departmentLabel(list.areaAssignment.department.key, t) : list.project?.name || list.source || t("state.native")}</span>
+          <span className="truncate text-xs text-company-muted">{list.areaAssignment?.department?.key ? departmentLabel(list.areaAssignment.department.key, t) : list.project?.name || list.source || t("state.native")}</span>
         </button>
         <button className="text-company-muted hover:text-company-ink" aria-label={t("operations.editList")} onClick={() => setSelectedList(list)} type="button">
           <i className="ph-bold ph-gear-six" aria-hidden="true"></i>
@@ -678,11 +670,27 @@ function OperationsListSelector({
           <span className="text-xs font-black uppercase text-company-muted">{t("operations.lists")}</span>
           <CcButton ariaLabel={t("operations.newList")} iconLeft="ph-plus" onClick={onCreateList} size="xs" variant="primary">{t("operations.newList")}</CcButton>
         </div>
-        <div className="grid grid-cols-3 gap-1 rounded-company bg-base-200 p-1">
-          <button className={`btn btn-xs ${allSelected ? "btn-primary" : "btn-ghost"}`} onClick={() => toggleAllLists(true)} type="button">{t("operations.allTasks")}</button>
-          <button className={`btn btn-xs ${selectedListIds.length === 0 ? "btn-primary" : "btn-ghost"}`} onClick={() => toggleAllLists(false)} type="button">{t("operations.clearLists")}</button>
-          <button className="btn btn-ghost btn-xs" onClick={selectOnlyEmptyLists} disabled={!emptyListIds.size} type="button">{t("operations.emptyLists")}</button>
-        </div>
+        <label className={`grid cursor-pointer grid-cols-[2rem_minmax(0,1fr)_auto] items-center rounded-company border py-1.5 pr-1.5 transition ${allSelected ? "border-primary/40 bg-primary/10" : "border-base-300 bg-base-200/70 hover:bg-base-200"}`}>
+          <span className="grid place-items-center">
+            <input className="checkbox checkbox-primary checkbox-xs" checked={allSelected} onChange={(event) => toggleAllLists(event.target.checked)} type="checkbox" />
+          </span>
+          <span className="min-w-0">
+            <strong className="block truncate text-sm text-company-ink">{t("operations.allTasks")}</strong>
+            <small className="block truncate text-xs text-company-muted">{t("operations.visibleResources", { count: selectableListIds.length })}</small>
+          </span>
+          <button
+            className="btn btn-ghost btn-xs"
+            disabled={selectedListIds.length === 0}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              toggleAllLists(false);
+            }}
+            type="button"
+          >
+            {t("operations.clearLists")}
+          </button>
+        </label>
       </div>
 
       {groups.map((group) => (
@@ -1075,7 +1083,6 @@ export function OperationsRoute() {
           <OperationsListSelector
             departments={departments}
             onCreateList={() => setIsCreateListOpen(true)}
-            rows={rows}
             selectedListIds={selectedListIds}
             setSelectedList={setSelectedList}
             setSelectedListIds={setSelectedListIds}
