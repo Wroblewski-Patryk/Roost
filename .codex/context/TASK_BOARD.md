@@ -47,6 +47,14 @@
 
 ## Recent Checkpoints
 
+- 2026-05-18: People/Agents Directory UX/backend-data audit published.
+  `docs/ux/people-agents-directory-ux-backend-audit-2026-05-18.md` critically
+  reviews the current `06 People & Agents -> Directory` against backend
+  packet data, UI usefulness, Paperclip runtime clarity, governance, and
+  company-management value. The audit identifies the next priority as a
+  backend readiness/authority packet followed by a work/responsibility detail
+  tab, rather than more badges or counters. Validation: source review and
+  `npm run build:web` passed.
 - 2026-05-17: People/Agents Directory tool pass implemented. The Directory
   now has scope segments for all/humans/agents/needs-attention, sort controls,
   configuration readiness checks in the detail panel, manual sync proof for a
