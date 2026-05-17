@@ -86,6 +86,10 @@ Last updated: 2026-05-17
     - `OPS-ASSETS-FILTER-004` is complete and verified locally: Operations
       Tasks/Calendar and Assets Files/Folders now have recoverable
       filtered-empty states with clear-filter actions.
+    - `OPS-ASSETS-SMART-005` is complete and verified locally: Operations
+      Tasks/Calendar now share due-date scope filtering, and Assets
+      Files/Folders can filter by preview type including folders, Markdown,
+      CSV, JSON, images, PDF, text, and unsupported files.
    - CompanyCore remains the company operating system; AI agents remain
      external API/MCP clients.
    - Keep writes behind explicit command contracts, audit/events, and API

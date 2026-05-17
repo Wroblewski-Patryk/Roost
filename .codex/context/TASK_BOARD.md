@@ -47,6 +47,16 @@
 
 ## Recent Checkpoints
 
+- 2026-05-17: Operations and Assets smart filters implemented.
+  `04 Operations -> Tasks` and `Calendar` now share a due-date filter for all
+  dates, overdue, today, this week, and unscheduled tasks. `08 Assets -> Files
+  and folders` now filters visible resources by preview type: folders,
+  Markdown, CSV, JSON, images, PDF, text, and unsupported. Validation:
+  `npm run build:web`, `npm run validate`, `git diff --check`, and Playwright
+  fallback static React proof on temporary port `3394` passed for task
+  due-date filtering, calendar due-date filtering, Assets type filtering,
+  desktop/mobile no overflow, and no console/page errors. Browser plugin proof
+  was attempted first but timed out during mocked-server validation.
 - 2026-05-17: Operations and Assets filter recovery states implemented.
   Operations Tasks and Calendar now show a filter-specific `No matching tasks`
   state when task filters hide all selected work, with clear-filter recovery.

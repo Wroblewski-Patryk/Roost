@@ -15,6 +15,7 @@ import { departmentLabel } from "./department-labels";
 type OperationsView = "tasks" | "calendar";
 type CalendarMode = "day" | "week" | "month";
 type TaskPriorityFilter = "all" | string;
+type TaskDateFilter = "all" | "overdue" | "today" | "week" | "unscheduled";
 
 const fallbackStatuses: OperationsStatusColumn[] = [
   { key: "todo", label: "To do" },
@@ -62,6 +63,10 @@ function startOfWeek(value = new Date()) {
 
 function sameDay(left: Date, right: Date) {
   return startOfDay(left).getTime() === startOfDay(right).getTime();
+}
+
+function endOfWeek(value = new Date()) {
+  return addDays(startOfWeek(value), 6);
 }
 
 function daysInMonth(value: Date) {
@@ -129,11 +134,27 @@ function taskBelongsToList(task: OperationsWorkItem, listId: string) {
   return task.hierarchy?.taskList?.id === listId;
 }
 
-function taskMatchesFilters(row: OperationsWorkItem, query: string, priorityFilter: TaskPriorityFilter) {
+function taskMatchesDateFilter(row: OperationsWorkItem, dateFilter: TaskDateFilter) {
+  if (dateFilter === "all") return true;
+  if (!row.task.dueDate) return dateFilter === "unscheduled";
+  const dueDate = startOfDay(new Date(row.task.dueDate));
+  const today = startOfDay();
+  if (dateFilter === "overdue") return dueDate.getTime() < today.getTime() && row.task.status !== "done" && row.task.status !== "archived";
+  if (dateFilter === "today") return sameDay(dueDate, today);
+  if (dateFilter === "week") {
+    const weekStart = startOfWeek(today);
+    const weekEnd = endOfWeek(today);
+    return dueDate.getTime() >= weekStart.getTime() && dueDate.getTime() <= weekEnd.getTime();
+  }
+  return false;
+}
+
+function taskMatchesFilters(row: OperationsWorkItem, query: string, priorityFilter: TaskPriorityFilter, dateFilter: TaskDateFilter) {
   const normalizedQuery = query.trim().toLowerCase();
   const priority = (row.task.priority || "normal").toLowerCase();
   const priorityMatch = priorityFilter === "all" || priority === priorityFilter;
   if (!priorityMatch) return false;
+  if (!taskMatchesDateFilter(row, dateFilter)) return false;
   if (!normalizedQuery) return true;
   return [
     row.task.title,
@@ -228,22 +249,26 @@ function TaskCard({
 function OperationsTaskFilterBar({
   query,
   priorityFilter,
+  dateFilter,
   visibleCount,
   onQueryChange,
   onPriorityFilterChange,
+  onDateFilterChange,
   onClear
 }: {
   query: string;
   priorityFilter: TaskPriorityFilter;
+  dateFilter: TaskDateFilter;
   visibleCount: number;
   onQueryChange: (value: string) => void;
   onPriorityFilterChange: (value: TaskPriorityFilter) => void;
+  onDateFilterChange: (value: TaskDateFilter) => void;
   onClear: () => void;
 }) {
   const { t } = useLanguage();
-  const hasActiveFilter = query.trim().length > 0 || priorityFilter !== "all";
+  const hasActiveFilter = query.trim().length > 0 || priorityFilter !== "all" || dateFilter !== "all";
   return (
-    <div className="roost-work-panel grid gap-2 rounded-company p-2.5 md:grid-cols-[minmax(0,1fr)_12rem_auto_auto] md:items-center">
+    <div className="roost-work-panel grid gap-2 rounded-company p-2.5 md:grid-cols-[minmax(0,1fr)_12rem_12rem_auto_auto] md:items-center">
       <label className="input input-bordered input-sm flex min-w-0 items-center gap-2 bg-base-200/40">
         <i className="ph-bold ph-magnifying-glass text-company-muted" aria-hidden="true"></i>
         <span className="sr-only">{t("operations.searchTasks")}</span>
@@ -252,6 +277,11 @@ function OperationsTaskFilterBar({
       <select aria-label={t("operations.priorityFilter")} className="select select-bordered select-sm" onChange={(event) => onPriorityFilterChange(event.target.value)} value={priorityFilter}>
         <option value="all">{t("operations.allPriorities")}</option>
         {priorityOptions.map((priority) => <option key={priority} value={priority}>{priority}</option>)}
+      </select>
+      <select aria-label={t("operations.dateFilter")} className="select select-bordered select-sm" onChange={(event) => onDateFilterChange(event.target.value as TaskDateFilter)} value={dateFilter}>
+        {(["all", "overdue", "today", "week", "unscheduled"] as TaskDateFilter[]).map((option) => (
+          <option key={option} value={option}>{t(`operations.dateFilter.${option}`)}</option>
+        ))}
       </select>
       <span className="justify-self-start whitespace-nowrap text-xs font-bold text-company-muted md:justify-self-end">{t("operations.matchingTasks", { count: visibleCount })}</span>
       <button className="btn btn-ghost btn-sm" disabled={!hasActiveFilter} onClick={onClear} type="button">{t("operations.clearTaskFilters")}</button>
@@ -740,8 +770,10 @@ function OperationsBoard({
   onOpenWorkflowSettings,
   taskQuery,
   priorityFilter,
+  dateFilter,
   onTaskQueryChange,
   onPriorityFilterChange,
+  onDateFilterChange,
   onClearTaskFilters
 }: {
   rows: OperationsWorkItem[];
@@ -753,8 +785,10 @@ function OperationsBoard({
   onOpenWorkflowSettings: () => void;
   taskQuery: string;
   priorityFilter: TaskPriorityFilter;
+  dateFilter: TaskDateFilter;
   onTaskQueryChange: (value: string) => void;
   onPriorityFilterChange: (value: TaskPriorityFilter) => void;
+  onDateFilterChange: (value: TaskDateFilter) => void;
   onClearTaskFilters: () => void;
 }) {
   const { t } = useLanguage();
@@ -772,7 +806,7 @@ function OperationsBoard({
     : allSelected
       ? t("operations.allTasks")
       : t("operations.selectedLists", { count: selectedSet.size });
-  const hasActiveTaskFilter = taskQuery.trim().length > 0 || priorityFilter !== "all";
+  const hasActiveTaskFilter = taskQuery.trim().length > 0 || priorityFilter !== "all" || dateFilter !== "all";
 
   async function moveTaskToStatus(status: string) {
     if (!draggedTaskId) return;
@@ -824,7 +858,9 @@ function OperationsBoard({
 
         {moveError ? <CcNotice tone="error" title={moveError} live /> : null}
         <OperationsTaskFilterBar
+          dateFilter={dateFilter}
           onClear={onClearTaskFilters}
+          onDateFilterChange={onDateFilterChange}
           onPriorityFilterChange={onPriorityFilterChange}
           onQueryChange={onTaskQueryChange}
           priorityFilter={priorityFilter}
@@ -968,22 +1004,26 @@ function OperationsCalendar({
   selectedListIds,
   taskQuery,
   priorityFilter,
+  dateFilter,
   setSelectedTask,
   onCreateTask,
   onOpenWorkflowSettings,
   onTaskQueryChange,
   onPriorityFilterChange,
+  onDateFilterChange,
   onClearTaskFilters
 }: {
   rows: OperationsWorkItem[];
   selectedListIds: string[];
   taskQuery: string;
   priorityFilter: TaskPriorityFilter;
+  dateFilter: TaskDateFilter;
   setSelectedTask: (task: OperationsWorkItem) => void;
   onCreateTask: () => void;
   onOpenWorkflowSettings: () => void;
   onTaskQueryChange: (value: string) => void;
   onPriorityFilterChange: (value: TaskPriorityFilter) => void;
+  onDateFilterChange: (value: TaskDateFilter) => void;
   onClearTaskFilters: () => void;
 }) {
   const { t } = useLanguage();
@@ -1016,7 +1056,7 @@ function OperationsCalendar({
     : mode === "week"
       ? `${new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(weekDays[0])} - ${new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(weekDays[6])}`
       : new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" }).format(anchorDate);
-  const hasActiveTaskFilter = taskQuery.trim().length > 0 || priorityFilter !== "all";
+  const hasActiveTaskFilter = taskQuery.trim().length > 0 || priorityFilter !== "all" || dateFilter !== "all";
 
   function moveRange(direction: -1 | 1) {
     setAnchorDate((current) => mode === "month" ? addMonths(current, direction) : addDays(current, step * direction));
@@ -1084,7 +1124,9 @@ function OperationsCalendar({
       </div>
 
       <OperationsTaskFilterBar
+        dateFilter={dateFilter}
         onClear={onClearTaskFilters}
+        onDateFilterChange={onDateFilterChange}
         onPriorityFilterChange={onPriorityFilterChange}
         onQueryChange={onTaskQueryChange}
         priorityFilter={priorityFilter}
@@ -1180,6 +1222,7 @@ export function OperationsRoute() {
   const [isWorkflowSettingsOpen, setIsWorkflowSettingsOpen] = useState(false);
   const [taskQuery, setTaskQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState<TaskPriorityFilter>("all");
+  const [dateFilter, setDateFilter] = useState<TaskDateFilter>("all");
   const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200&refresh=${refreshKey}`, true, t);
   const rows = useMemo(() => (packet.data?.workItems || []).map((item) => ({ ...item, id: item.task.id })), [packet.data?.workItems]);
   const taskLists = packet.data?.taskLists || [];
@@ -1187,7 +1230,7 @@ export function OperationsRoute() {
   const statuses = packet.data?.statuses?.length ? packet.data.statuses : fallbackStatuses;
   const selectableListIds = selectableTaskListIds(taskLists);
   const selectedSet = new Set(selectedListIds);
-  const taskFilteredRows = useMemo(() => rows.filter((row) => taskMatchesFilters(row, taskQuery, priorityFilter)), [rows, taskQuery, priorityFilter]);
+  const taskFilteredRows = useMemo(() => rows.filter((row) => taskMatchesFilters(row, taskQuery, priorityFilter, dateFilter)), [rows, taskQuery, priorityFilter, dateFilter]);
   const filteredRows = taskFilteredRows.filter((row) => selectedSet.has(row.hierarchy?.taskList?.id || "unassigned"));
 
   useEffect(() => {
@@ -1219,6 +1262,7 @@ export function OperationsRoute() {
   function clearTaskFilters() {
     setTaskQuery("");
     setPriorityFilter("all");
+    setDateFilter("all");
   }
 
   return (
@@ -1242,11 +1286,13 @@ export function OperationsRoute() {
               selectedListIds={selectedListIds}
               taskQuery={taskQuery}
               priorityFilter={priorityFilter}
+              dateFilter={dateFilter}
               setSelectedTask={setSelectedTask}
               onCreateTask={() => openCreateTask(selectedListIds.length === 1 ? selectedListIds[0] : undefined)}
               onOpenWorkflowSettings={() => setIsWorkflowSettingsOpen(true)}
               onTaskQueryChange={setTaskQuery}
               onPriorityFilterChange={setPriorityFilter}
+              onDateFilterChange={setDateFilter}
               onClearTaskFilters={clearTaskFilters}
             />
           ) : (
@@ -1260,8 +1306,10 @@ export function OperationsRoute() {
               onOpenWorkflowSettings={() => setIsWorkflowSettingsOpen(true)}
               taskQuery={taskQuery}
               priorityFilter={priorityFilter}
+              dateFilter={dateFilter}
               onTaskQueryChange={setTaskQuery}
               onPriorityFilterChange={setPriorityFilter}
+              onDateFilterChange={setDateFilter}
               onClearTaskFilters={clearTaskFilters}
             />
           )}

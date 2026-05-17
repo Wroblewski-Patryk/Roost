@@ -293,6 +293,16 @@ Last updated: 2026-05-17
   `git diff --check`, and Playwright static React proof on port `3388` passed
   for filtered-empty recovery, CSV preview, desktop/mobile no horizontal
   overflow, and no console/page errors.
+  OPS-ASSETS-SMART-005 then added the next small layer of daily-use control:
+  Operations Tasks and Calendar share a due-date scope filter for all dates,
+  overdue, today, this week, and unscheduled work; Assets Files/Folders can
+  filter visible resources by preview type, including folders, Markdown, CSV,
+  JSON, image, PDF, text, and unsupported files. `npm run build:web`,
+  `npm run validate`, `git diff --check`, and Playwright fallback proof on
+  port `3394` passed for task date filtering, calendar date filtering, Assets
+  type filtering, desktop/mobile no horizontal overflow, and no console/page
+  errors. Browser plugin proof was attempted first but timed out during the
+  mocked-server validation path.
   OPS-SURFACE-001 then polished the Roost visual hierarchy of `04 Operations`
   after owner feedback that the content area felt too uniformly dark compared
   with the sidebar. `web/src/styles.css` now defines reusable Roost workbench

@@ -16,6 +16,7 @@ import { backendAreaToDepartmentKey, departmentLabel } from "./department-labels
 
 type AssetsView = "overview" | "files";
 type AssetKindFilter = "all" | "folders" | "files";
+type AssetTypeFilter = "all" | "folder" | "markdown" | "csv" | "json" | "image" | "pdf" | "text" | "unsupported";
 type AssetSort = "name" | "modified" | "type" | "source";
 
 function currentAssetsView(): AssetsView {
@@ -823,6 +824,7 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
   const rootIds = roots.map((root) => root.externalId);
   const [selectedRootIds, setSelectedRootIds] = useState<string[]>(rootIds);
   const [kindFilter, setKindFilter] = useState<AssetKindFilter>("all");
+  const [typeFilter, setTypeFilter] = useState<AssetTypeFilter>("all");
   const [sort, setSort] = useState<AssetSort>("name");
   const [query, setQuery] = useState("");
   const [selectedFolderExternalId, setSelectedFolderExternalId] = useState<string | null>(null);
@@ -844,6 +846,7 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
   const allFolders = useMemo(() => resources.filter(isFolder), [resources]);
   const hasActiveAssetFilters = query.trim().length > 0
     || kindFilter !== "all"
+    || typeFilter !== "all"
     || sort !== "name"
     || Boolean(selectedFolderExternalId)
     || selectedRootIds.length !== rootIds.length;
@@ -854,15 +857,16 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
       const rootExternalId = rootExternalIdForResource(resource, folderByExternalId);
       const rootMatch = roots.length === 0 || (rootExternalId ? selectedRootSet.has(rootExternalId) : selectedRootIds.length === 0);
       const kindMatch = kindFilter === "all" || (kindFilter === "folders" ? isFolder(resource) : !isFolder(resource));
+      const typeMatch = typeFilter === "all" || previewKind(resource) === typeFilter;
       const folderMatch = query.trim()
         ? true
         : !selectedFolderExternalId
           || sourceParentExternalId(resource) === selectedFolderExternalId
           || sourceExternalId(resource) === selectedFolderExternalId;
       const textMatch = !normalizedQuery || [resource.name, resourceType(resource), sourceProvider(resource), resourceSummary(resource)].join(" ").toLowerCase().includes(normalizedQuery);
-      return rootMatch && kindMatch && folderMatch && textMatch;
+      return rootMatch && kindMatch && typeMatch && folderMatch && textMatch;
     }).sort((left, right) => compareAssets(left, right, sort));
-  }, [resources, folderByExternalId, roots.length, selectedRootSet, selectedRootIds.length, kindFilter, query, selectedFolderExternalId, sort]);
+  }, [resources, folderByExternalId, roots.length, selectedRootSet, selectedRootIds.length, kindFilter, typeFilter, query, selectedFolderExternalId, sort]);
 
   const selectedResource = filteredResources.find((resource) => resource.id === selectedResourceId) || filteredResources[0] || null;
   const selectedFolder = selectedFolderExternalId ? folderByExternalId.get(selectedFolderExternalId) : null;
@@ -885,6 +889,7 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
   function clearAssetFilters() {
     setQuery("");
     setKindFilter("all");
+    setTypeFilter("all");
     setSort("name");
     setSelectedFolderExternalId(null);
     setSelectedRootIds(rootIds);
@@ -923,11 +928,16 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
                 ))}
               </div>
             </div>
-            <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_12rem]">
+            <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_12rem_12rem]">
               <label className="input input-bordered flex min-w-0 items-center gap-2">
                 <i className="ph-bold ph-magnifying-glass text-company-muted" aria-hidden="true"></i>
                 <input className="grow" onChange={(event) => setQuery(event.target.value)} placeholder={t("assets.searchPlaceholder")} type="search" value={query} />
               </label>
+              <select aria-label={t("assets.typeFilter.label")} className="select select-bordered" onChange={(event) => setTypeFilter(event.target.value as AssetTypeFilter)} value={typeFilter}>
+                {(["all", "folder", "markdown", "csv", "json", "image", "pdf", "text", "unsupported"] as AssetTypeFilter[]).map((type) => (
+                  <option key={type} value={type}>{t(`assets.typeFilter.${type}`)}</option>
+                ))}
+              </select>
               <select aria-label={t("assets.sort.label")} className="select select-bordered" onChange={(event) => setSort(event.target.value as AssetSort)} value={sort}>
                 <option value="name">{t("assets.sort.name")}</option>
                 <option value="modified">{t("assets.sort.modified")}</option>

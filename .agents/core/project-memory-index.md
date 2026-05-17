@@ -173,8 +173,11 @@ continue from repository files alone:
   Tasks and Calendar plus Assets file/folder card sorting by name, modified
   date, type, or source. OPS-ASSETS-FILTER-004 added recoverable
   filtered-empty states and clear-filter actions for Operations Tasks,
-  Operations Calendar, and Assets Files/Folders. Build/validate and mocked
-  desktop/mobile Playwright proof passed on 2026-05-17.
+  Operations Calendar, and Assets Files/Folders. OPS-ASSETS-SMART-005 added
+  shared Operations due-date scopes across Tasks/Calendar plus Assets preview
+  type filtering for folders, Markdown, CSV, JSON, images, PDF, text, and
+  unsupported files. Build/validate and mocked desktop/mobile Playwright proof
+  passed on 2026-05-17.
 - `docs/planning/web-foundation-quality-audit-2026-05-16.md` and
   `docs/planning/web-foundation-quality-audit-task-contract.md`: active web
   foundation quality audit. It reviewed `web/src/main.tsx`,
