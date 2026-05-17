@@ -193,6 +193,19 @@
 
 ## Done
 
+- OPS-LIST-FILTER-001 Operations list select-all sticky control.
+  - Evidence:
+    `docs/planning/operations-list-select-all-sticky-task-contract.md` records
+    the scoped interaction slice. The Operations list rail no longer shows the
+    helper text under `All`, the select-all row is sticky at the top of the
+    rail, and empty selection is now a real user-selected state rather than an
+    automatic fallback to all lists.
+  - Validation: `npm run build:web`; `git diff --check`; Playwright fallback
+    with a mocked Operations packet verified the helper text is gone, the
+    control has `position: sticky`, initial all-selected state, uncheck hides
+    task cards and shows `0 selected lists`, recheck restores task cards and
+    the `All` heading, no horizontal overflow, and no console/page errors.
+
 - OPS-DND-001 Operations drag-and-drop drop target feedback.
   - Evidence:
     `docs/planning/operations-dnd-drop-target-feedback-task-contract.md`

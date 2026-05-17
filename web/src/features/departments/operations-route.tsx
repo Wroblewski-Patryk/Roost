@@ -405,7 +405,7 @@ function OperationsBoard({
   const unassignedList = taskLists.find((list) => list.id === "unassigned");
   const realLists = taskLists.filter((list) => list.id !== "all" && list.id !== "unassigned" && rows.some((row) => taskBelongsToList(row, list.id)));
   const selectableListIds = [...realLists.map((list) => list.id), ...(unassignedList ? [unassignedList.id] : [])];
-  const selectedSet = new Set(selectedListIds.length ? selectedListIds : selectableListIds);
+  const selectedSet = new Set(selectedListIds);
   const allSelected = selectableListIds.length > 0 && selectableListIds.every((id) => selectedSet.has(id));
   const groups = departments.map((department) => ({
     id: department.key,
@@ -429,12 +429,6 @@ function OperationsBoard({
       return next;
     });
   }, [groups.map((group) => group.id).join("|")]);
-
-  useEffect(() => {
-    if (!selectedListIds.length && selectableListIds.length) {
-      setSelectedListIds(selectableListIds);
-    }
-  }, [selectableListIds.join("|"), selectedListIds.length, setSelectedListIds]);
 
   function toggleAllLists(checked: boolean) {
     setSelectedListIds(checked ? selectableListIds : []);
@@ -506,11 +500,10 @@ function OperationsBoard({
   return (
     <section className="grid h-[calc(100vh-12.5rem)] min-h-[34rem] gap-4 xl:grid-cols-[17rem_minmax(0,1fr)]">
       <aside className="grid min-h-0 content-start gap-3 overflow-y-auto rounded-company border border-base-300 bg-base-100 p-3">
-        <label className="grid grid-cols-[2rem_minmax(0,1fr)] items-center rounded-company px-1 py-2 hover:bg-base-200">
+        <label className="sticky top-0 z-10 grid grid-cols-[2rem_minmax(0,1fr)] items-center rounded-company border border-base-300 bg-base-100/95 px-1 py-2 shadow-sm backdrop-blur hover:bg-base-200" data-list-select-all>
           <input className="checkbox checkbox-primary checkbox-sm" checked={allSelected} onChange={(event) => toggleAllLists(event.target.checked)} type="checkbox" />
           <span className="grid min-w-0 gap-0.5">
             <strong className="block text-sm">{t("operations.allTasks")}</strong>
-            <span className="text-xs text-company-muted">{t("operations.allTasksDescription")}</span>
           </span>
         </label>
 
@@ -628,7 +621,7 @@ function OperationsCalendarFilters({
   const { t } = useLanguage();
   const selectableLists = taskLists.filter((list) => list.id !== "all");
   const selectableIds = selectableLists.map((list) => list.id);
-  const selectedSet = new Set(selectedListIds.length ? selectedListIds : selectableIds);
+  const selectedSet = new Set(selectedListIds);
   const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selectedSet.has(id));
 
   function toggleAll(checked: boolean) {
@@ -753,6 +746,7 @@ export function OperationsRoute() {
   const activeView = currentOperationsView();
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedListIds, setSelectedListIds] = useState<string[]>([]);
+  const [listSelectionInitialized, setListSelectionInitialized] = useState(false);
   const [selectedTask, setSelectedTask] = useState<OperationsWorkItem | null>(null);
   const [selectedList, setSelectedList] = useState<OperationsTaskList | null>(null);
   const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200&refresh=${refreshKey}`, true, t);
@@ -761,8 +755,25 @@ export function OperationsRoute() {
   const departments = packet.data?.departments || [];
   const statuses = packet.data?.statuses?.length ? packet.data.statuses : fallbackStatuses;
   const selectableListIds = taskLists.filter((list) => list.id !== "all").map((list) => list.id);
-  const selectedSet = new Set(selectedListIds.length ? selectedListIds : selectableListIds);
+  const selectedSet = new Set(selectedListIds);
   const filteredRows = rows.filter((row) => selectedSet.has(row.hierarchy?.taskList?.id || "unassigned"));
+
+  useEffect(() => {
+    if (packet.status !== "ready") return;
+    if (!selectableListIds.length) {
+      setSelectedListIds([]);
+      return;
+    }
+    if (!listSelectionInitialized) {
+      setSelectedListIds(selectableListIds);
+      setListSelectionInitialized(true);
+      return;
+    }
+    setSelectedListIds((current) => {
+      const validIds = current.filter((id) => selectableListIds.includes(id));
+      return validIds.length === current.length ? current : validIds;
+    });
+  }, [packet.status, selectableListIds.join("|"), listSelectionInitialized]);
 
   function refresh() {
     setRefreshKey((value) => value + 1);
