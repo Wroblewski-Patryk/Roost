@@ -71,10 +71,13 @@ Out of scope:
 
 ## Result Report
 
-Implemented. `docs/ux/web-view-creation-rules.md` now captures the app-wide
-authenticated-view rules derived from Operations and Assets. People/Agents
-Directory now uses a compact workbench header, filters, roster, and detail
-panel instead of the previous hero/KPI/badge-heavy composition.
+Implemented and continued. `docs/ux/web-view-creation-rules.md` now captures
+the app-wide authenticated-view rules derived from Operations and Assets.
+People/Agents Directory now uses a compact workbench header, filters, roster,
+and detail panel instead of the previous hero/KPI/badge-heavy composition.
+The follow-up tool pass added scope segments, `Needs attention`, sorting,
+configuration readiness checks, manual sync proof, and archive feedback backed
+by the existing `/v1/workforce` API surface.
 
 Verification evidence:
 
@@ -83,7 +86,7 @@ Verification evidence:
 - `npm run validate`
 - `git diff --check`
 - Playwright fallback proof on desktop, tablet, and mobile with screenshots in
-  `%TEMP%/companycore-directory-tool-qa`
+  `%TEMP%/companycore-directory-tool-v2-qa`
 - Process cleanup check found no `chrome-headless-shell` processes.
 
 Remaining follow-up:

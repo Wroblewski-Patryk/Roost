@@ -47,6 +47,14 @@
 
 ## Recent Checkpoints
 
+- 2026-05-17: People/Agents Directory tool pass implemented. The Directory
+  now has scope segments for all/humans/agents/needs-attention, sort controls,
+  configuration readiness checks in the detail panel, manual sync proof for a
+  selected agent, archive action feedback through the existing workforce
+  archive endpoint, and a fixed responsive filter row. Validation:
+  `npm run build:web` and Playwright fallback proof passed for desktop,
+  tablet, and mobile with no horizontal overflow, console errors, or failed
+  requests. Browser plugin setup timed out, so Playwright fallback was used.
 - 2026-05-17: Web view rules and People/Agents Directory cleanup implemented.
   `docs/ux/web-view-creation-rules.md` now defines authenticated app views as
   backend-connected tools, not landing pages, using the current

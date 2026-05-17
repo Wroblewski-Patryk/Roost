@@ -13,6 +13,9 @@ import { WorkforceEntity, WorkforcePacket } from "../../types";
 type TypeFilter = "all" | WorkforceEntity["type"];
 type StatusFilter = "all" | WorkforceEntity["status"];
 type DetailTab = "profile" | "sync" | "files";
+type ScopeFilter = "all" | "humans" | "agents" | "attention";
+type SortKey = "name" | "department" | "updated" | "sync";
+type RouteNotice = { tone: "success" | "error"; title: string };
 
 const runtimeLabels: Record<WorkforceEntity["runtimeMode"], string> = {
   manual: "Manual",
@@ -46,6 +49,49 @@ function typeLabel(type: WorkforceEntity["type"]) {
   return type === "human" ? "Human" : "Agent";
 }
 
+function isSyncBlocked(entity: WorkforceEntity) {
+  return entity.type === "agent" && (!entity.synchronizationEnabled || !entity.paperclipAgentId);
+}
+
+function needsAttention(entity: WorkforceEntity) {
+  return !entity.role
+    || !entity.description
+    || entity.status !== "active"
+    || isSyncBlocked(entity)
+    || entity.syncStatus === "failed"
+    || entity.syncStatus === "stale";
+}
+
+function readinessItems(entity: WorkforceEntity) {
+  return [
+    {
+      label: "Role assigned",
+      done: Boolean(entity.role),
+      detail: entity.role || "Add the working role."
+    },
+    {
+      label: "Responsibilities written",
+      done: Boolean(entity.description?.trim()),
+      detail: entity.description ? "Description feeds generated markdown." : "Add responsibilities before sync."
+    },
+    {
+      label: "Active status",
+      done: entity.status === "active",
+      detail: entity.status === "active" ? "Available for work." : `Current status: ${entity.status}.`
+    },
+    {
+      label: "Runtime link",
+      done: entity.type === "human" || Boolean(entity.paperclipAgentId),
+      detail: entity.type === "human" ? "Human records do not need Paperclip." : entity.paperclipAgentId || "Link a Paperclip agent ID."
+    },
+    {
+      label: "Sync enabled",
+      done: entity.type === "human" || entity.synchronizationEnabled,
+      detail: entity.type === "human" ? "Human record only." : entity.synchronizationEnabled ? "Manual sync can be queued." : "Enable sync before runtime update."
+    }
+  ];
+}
+
 function EntityAvatar({ entity }: { entity: WorkforceEntity }) {
   if (entity.avatar) {
     return <img alt="" className="h-11 w-11 rounded-company border border-base-300 object-cover" src={entity.avatar} />;
@@ -57,7 +103,10 @@ function EntityAvatar({ entity }: { entity: WorkforceEntity }) {
   );
 }
 
-function entityMatches(entity: WorkforceEntity, query: string, type: TypeFilter, status: StatusFilter) {
+function entityMatches(entity: WorkforceEntity, query: string, type: TypeFilter, status: StatusFilter, scope: ScopeFilter) {
+  if (scope === "humans" && entity.type !== "human") return false;
+  if (scope === "agents" && entity.type !== "agent") return false;
+  if (scope === "attention" && !needsAttention(entity)) return false;
   if (type !== "all" && entity.type !== type) return false;
   if (status !== "all" && entity.status !== status) return false;
   const normalized = query.trim().toLowerCase();
@@ -70,6 +119,21 @@ function entityMatches(entity: WorkforceEntity, query: string, type: TypeFilter,
     entity.paperclipAgentId,
     entity.model
   ].filter(Boolean).join(" ").toLowerCase().includes(normalized);
+}
+
+function sortEntities(entities: WorkforceEntity[], sort: SortKey) {
+  return [...entities].sort((a, b) => {
+    if (sort === "updated") {
+      return String(b.updatedAt || "").localeCompare(String(a.updatedAt || ""));
+    }
+    if (sort === "department") {
+      return `${a.department || ""} ${a.name}`.localeCompare(`${b.department || ""} ${b.name}`);
+    }
+    if (sort === "sync") {
+      return syncLabel(a).localeCompare(syncLabel(b)) || a.name.localeCompare(b.name);
+    }
+    return a.name.localeCompare(b.name);
+  });
 }
 
 function defaultEntity(): Partial<WorkforceEntity> {
@@ -252,13 +316,15 @@ function DetailPanel({
   tab,
   setTab,
   onEdit,
-  onSync
+  onSync,
+  onArchive
 }: {
   entity: WorkforceEntity | null;
   tab: DetailTab;
   setTab: (tab: DetailTab) => void;
   onEdit: (entity: WorkforceEntity) => void;
   onSync: (entity: WorkforceEntity) => void;
+  onArchive: (entity: WorkforceEntity) => void;
 }) {
   if (!entity) {
     return (
@@ -283,7 +349,12 @@ function DetailPanel({
             <p className="mt-1 text-xs font-bold uppercase text-company-muted">{typeLabel(entity.type)} / {runtimeLabels[entity.runtimeMode]} / {syncLabel(entity)}</p>
           </div>
         </div>
-        <CcButton iconLeft="ph-pencil-simple" onClick={() => onEdit(entity)} size="sm" variant="outline">Edit</CcButton>
+        <div className="flex shrink-0 gap-2">
+          <CcButton iconLeft="ph-pencil-simple" onClick={() => onEdit(entity)} size="sm" variant="outline">Edit</CcButton>
+          {entity.status !== "archived" ? (
+            <CcButton iconLeft="ph-archive" onClick={() => onArchive(entity)} size="sm" variant="ghost">Archive</CcButton>
+          ) : null}
+        </div>
       </header>
 
       <div className="join">
@@ -294,15 +365,36 @@ function DetailPanel({
 
       <div className="min-h-0 overflow-y-auto">
         {tab === "profile" ? (
-          <dl className="grid gap-3 text-sm md:grid-cols-2">
-            <div><dt className="font-bold text-company-muted">Slug</dt><dd className="break-all text-company-ink">{entity.slug}</dd></div>
-            <div><dt className="font-bold text-company-muted">Manager</dt><dd>{entity.manager?.name || "No manager"}</dd></div>
-            <div><dt className="font-bold text-company-muted">Personality</dt><dd>{entity.personalityProfile}</dd></div>
-            <div><dt className="font-bold text-company-muted">Model</dt><dd>{entity.model || "Not configured"}</dd></div>
-            <div><dt className="font-bold text-company-muted">Paperclip ID</dt><dd className="break-all">{entity.paperclipAgentId || "Not linked"}</dd></div>
-            <div><dt className="font-bold text-company-muted">Sync enabled</dt><dd>{entity.synchronizationEnabled ? "yes" : "no"}</dd></div>
-            <div className="md:col-span-2"><dt className="font-bold text-company-muted">Description</dt><dd className="mt-1 leading-6">{entity.description || "No responsibilities written yet."}</dd></div>
-          </dl>
+          <section className="grid gap-4">
+            <div className="rounded-company border border-base-300 bg-base-200/45 p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="font-black text-company-ink">Configuration readiness</h3>
+                <span className="text-sm font-bold text-company-muted">
+                  {readinessItems(entity).filter((item) => item.done).length} / {readinessItems(entity).length} ready
+                </span>
+              </div>
+              <div className="mt-3 grid gap-2">
+                {readinessItems(entity).map((item) => (
+                  <div className="flex items-start gap-2 rounded-company bg-base-100/70 p-2 text-sm" key={item.label}>
+                    <i className={`ph-bold ${item.done ? "ph-check-circle text-success" : "ph-warning-circle text-warning"} mt-0.5`} aria-hidden="true"></i>
+                    <div>
+                      <p className="font-bold text-company-ink">{item.label}</p>
+                      <p className="text-company-muted">{item.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <dl className="grid gap-3 text-sm md:grid-cols-2">
+              <div><dt className="font-bold text-company-muted">Slug</dt><dd className="break-all text-company-ink">{entity.slug}</dd></div>
+              <div><dt className="font-bold text-company-muted">Manager</dt><dd>{entity.manager?.name || "No manager"}</dd></div>
+              <div><dt className="font-bold text-company-muted">Personality</dt><dd>{entity.personalityProfile}</dd></div>
+              <div><dt className="font-bold text-company-muted">Model</dt><dd>{entity.model || "Not configured"}</dd></div>
+              <div><dt className="font-bold text-company-muted">Paperclip ID</dt><dd className="break-all">{entity.paperclipAgentId || "Not linked"}</dd></div>
+              <div><dt className="font-bold text-company-muted">Sync enabled</dt><dd>{entity.synchronizationEnabled ? "yes" : "no"}</dd></div>
+              <div className="md:col-span-2"><dt className="font-bold text-company-muted">Description</dt><dd className="mt-1 leading-6">{entity.description || "No responsibilities written yet."}</dd></div>
+            </dl>
+          </section>
         ) : null}
 
         {tab === "sync" ? (
@@ -344,15 +436,21 @@ export function PeopleAgentsRoute() {
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [scopeFilter, setScopeFilter] = useState<ScopeFilter>("all");
+  const [sortKey, setSortKey] = useState<SortKey>("name");
   const [selectedId, setSelectedId] = useState("");
   const [detailTab, setDetailTab] = useState<DetailTab>("profile");
   const [editingEntity, setEditingEntity] = useState<WorkforceEntity | null | undefined>(undefined);
-  const [notice, setNotice] = useState("");
+  const [notice, setNotice] = useState<RouteNotice | null>(null);
   const packet = useOwnerPacket<WorkforcePacket>(`/v1/workforce?refresh=${refreshKey}`, true, t);
   const entities = packet.data?.entities || [];
-  const filtered = useMemo(() => entities.filter((entity) => entityMatches(entity, query, typeFilter, statusFilter)), [entities, query, typeFilter, statusFilter]);
+  const filtered = useMemo(
+    () => sortEntities(entities.filter((entity) => entityMatches(entity, query, typeFilter, statusFilter, scopeFilter)), sortKey),
+    [entities, query, typeFilter, statusFilter, scopeFilter, sortKey]
+  );
   const selected = filtered.find((entity) => entity.id === selectedId) || filtered[0] || null;
-  const hasActiveFilters = query.trim().length > 0 || typeFilter !== "all" || statusFilter !== "all";
+  const hasActiveFilters = query.trim().length > 0 || typeFilter !== "all" || statusFilter !== "all" || scopeFilter !== "all" || sortKey !== "name";
+  const attentionCount = entities.filter(needsAttention).length;
 
   function refresh() {
     setRefreshKey((current) => current + 1);
@@ -362,17 +460,31 @@ export function PeopleAgentsRoute() {
     setQuery("");
     setTypeFilter("all");
     setStatusFilter("all");
+    setScopeFilter("all");
+    setSortKey("name");
   }
 
   async function syncEntity(entity: WorkforceEntity) {
     setNotice("");
     try {
       await api(`/v1/workforce/${entity.id}/actions/sync`, { method: "POST" });
-      setNotice("Paperclip synchronization was queued.");
+      setNotice({ tone: "success", title: "Paperclip synchronization was queued." });
       refresh();
       setDetailTab("sync");
     } catch (error) {
-      setNotice(userErrorMessage(error, t));
+      setNotice({ tone: "error", title: userErrorMessage(error, t) });
+    }
+  }
+
+  async function archiveEntity(entity: WorkforceEntity) {
+    if (!window.confirm(`Archive ${entity.name}? This keeps the record but removes it from active workforce use.`)) return;
+    setNotice("");
+    try {
+      await api(`/v1/workforce/${entity.id}`, { method: "DELETE" });
+      setNotice({ tone: "success", title: `${entity.name} was archived.` });
+      refresh();
+    } catch (error) {
+      setNotice({ tone: "error", title: userErrorMessage(error, t) });
     }
   }
 
@@ -380,7 +492,7 @@ export function PeopleAgentsRoute() {
     <Shell activeArea="06-kadry">
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
       {packet.status === "error" ? <CcNotice tone="error" title={packet.error || "People / Agents packet is unavailable."} live /> : null}
-      {notice ? <CcNotice tone={notice.includes("queued") ? "success" : "error"} title={notice} live /> : null}
+      {notice ? <CcNotice tone={notice.tone} title={notice.title} live /> : null}
 
       {packet.status === "ready" ? (
         <section className="grid min-h-[calc(100vh-10rem)] gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(24rem,0.95fr)]">
@@ -397,7 +509,25 @@ export function PeopleAgentsRoute() {
               </div>
             </header>
 
-            <div className="roost-work-panel grid gap-2 rounded-company p-2.5 md:grid-cols-[minmax(0,1fr)_10rem_10rem_auto] md:items-center">
+            <div className="roost-work-panel grid gap-2 rounded-company p-2.5">
+              <div className="flex flex-wrap gap-2">
+                {([
+                  ["all", "All"],
+                  ["humans", "Humans"],
+                  ["agents", "Agents"],
+                  ["attention", `Needs attention${attentionCount ? ` (${attentionCount})` : ""}`]
+                ] as Array<[ScopeFilter, string]>).map(([scope, label]) => (
+                  <button
+                    className={`btn btn-sm whitespace-nowrap ${scopeFilter === scope ? "btn-primary" : "btn-outline"}`}
+                    key={scope}
+                    onClick={() => setScopeFilter(scope)}
+                    type="button"
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="grid gap-2 md:grid-cols-2 2xl:grid-cols-[minmax(0,1fr)_10rem_10rem_10rem_max-content] 2xl:items-center">
               <label className="input input-bordered flex min-w-0 items-center gap-2 bg-base-100/65">
                 <i className="ph-bold ph-magnifying-glass text-company-muted" aria-hidden="true"></i>
                 <span className="sr-only">Search workforce</span>
@@ -412,7 +542,14 @@ export function PeopleAgentsRoute() {
                 <option value="all">All statuses</option>
                 {["active", "inactive", "paused", "archived"].map((status) => <option key={status} value={status}>{status}</option>)}
               </select>
-              <CcButton disabled={!hasActiveFilters} iconLeft="ph-x-circle" onClick={clearFilters} size="sm" variant="ghost">Clear</CcButton>
+              <select aria-label="Sort workforce" className="select select-bordered" onChange={(event) => setSortKey(event.target.value as SortKey)} value={sortKey}>
+                <option value="name">Name</option>
+                <option value="department">Department</option>
+                <option value="updated">Updated</option>
+                <option value="sync">Sync state</option>
+              </select>
+              <CcButton className="whitespace-nowrap md:col-span-2 2xl:col-span-1" disabled={!hasActiveFilters} iconLeft="ph-x-circle" onClick={clearFilters} size="sm" variant="ghost">Clear</CcButton>
+              </div>
             </div>
 
             <div className="min-h-0 overflow-y-auto">
@@ -438,6 +575,11 @@ export function PeopleAgentsRoute() {
                           <span className="truncate">{runtimeLabels[entity.runtimeMode]}</span>
                           <span className="truncate">{syncLabel(entity)}</span>
                         </div>
+                        {needsAttention(entity) ? (
+                          <p className="text-xs font-bold text-warning">
+                            {isSyncBlocked(entity) ? "Runtime link needs setup" : "Profile needs completion"}
+                          </p>
+                        ) : null}
                       </button>
                     ))}
                   </div>
@@ -453,7 +595,7 @@ export function PeopleAgentsRoute() {
               </div>
             </main>
 
-            <DetailPanel entity={selected} onEdit={setEditingEntity} onSync={syncEntity} setTab={setDetailTab} tab={detailTab} />
+            <DetailPanel entity={selected} onArchive={archiveEntity} onEdit={setEditingEntity} onSync={syncEntity} setTab={setDetailTab} tab={detailTab} />
         </section>
       ) : null}
 
