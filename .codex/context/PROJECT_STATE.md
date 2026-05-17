@@ -267,6 +267,16 @@ Last updated: 2026-05-17
   `3364` passed for Operations calendar, Operations tasks empty selection,
   Assets Markdown, CSV, JSON, SVG image, PDF handoff, desktop/mobile no
   horizontal overflow, and no console/page errors.
+  OPS-ASSETS-REFINE-002 then refined the same workbenches for denser real
+  data: the shared resource selector now supports search and no-match states,
+  Operations Calendar exposes Workflow settings and the same no-list-selection
+  state as Tasks, and Assets previews show resource path, source, modified
+  date, status, and folder depth near the content. `npm run build:web`,
+  `npm run validate`, `git diff --check`, and Playwright static React proofs
+  on ports `3384`, `3385`, and `3386` passed for Operations selector
+  search/no-match/empty states, Calendar unscheduled work, Assets Markdown,
+  CSV, JSON, SVG image preview, desktop/mobile no horizontal overflow, and no
+  console/page errors.
   OPS-SURFACE-001 then polished the Roost visual hierarchy of `04 Operations`
   after owner feedback that the content area felt too uniformly dark compared
   with the sidebar. `web/src/styles.css` now defines reusable Roost workbench

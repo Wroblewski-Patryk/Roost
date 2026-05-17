@@ -265,6 +265,22 @@ function departmentDisplayName(key: CoreAreaKey | "unassigned", t: Translate) {
   return key === "unassigned" ? t("state.unassigned") : departmentLabel(key, t);
 }
 
+function resourcePath(resource: AssetResource, folderByExternalId: Map<string, AssetResource>) {
+  const parts = [resource.name];
+  let parentExternalId = isFolder(resource) ? sourceParentExternalId(resource) : sourceParentExternalId(resource);
+  const visited = new Set<string>();
+
+  while (parentExternalId && !visited.has(parentExternalId)) {
+    visited.add(parentExternalId);
+    const parent = folderByExternalId.get(parentExternalId);
+    if (!parent) break;
+    parts.unshift(parent.name);
+    parentExternalId = sourceParentExternalId(parent);
+  }
+
+  return parts;
+}
+
 function AssetsOverview({ packet }: { packet: AssetsPacket | null }) {
   const { t } = useLanguage();
   return (
@@ -335,8 +351,11 @@ function RootFolderSelector({
       allDetail={t("assets.visibleSources", { count: roots.length })}
       allLabel={t("assets.allRootFolders")}
       clearLabel={t("operations.clearLists")}
+      emptyLabel={t("assets.noMatchingFolders")}
       groups={groups}
       onSelectedIdsChange={setSelectedRootIds}
+      searchLabel={t("assets.searchRootFolders")}
+      searchPlaceholder={t("assets.searchRootFolders")}
       selectedIds={selectedRootIds}
       title={t("assets.rootFolderFilter")}
       ungroupedItems={unassignedItems}
@@ -696,6 +715,7 @@ function FilePreviewPanel({
   const openUrl = sourceLink(resource);
   const rows = csvRowsFromResource(resource);
   const canEditContent = isEditableTextResource(resource);
+  const pathParts = resourcePath(resource, folderByExternalId);
 
   return (
     <aside className="roost-work-surface grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-company p-4 xl:col-span-2 2xl:col-span-1">
@@ -707,6 +727,14 @@ function FilePreviewPanel({
           <div className="min-w-0">
             <h2 className="line-clamp-2 font-black text-company-ink">{resource.name}</h2>
             <p className="mt-1 text-sm text-company-muted">{resourceKindLabel(resource, t)} - {departmentDisplayName(inheritedDepartment(resource, folderByExternalId), t)}</p>
+            <nav className="mt-2 flex flex-wrap items-center gap-1 text-xs text-company-muted" aria-label={t("assets.resourcePath")}>
+              {pathParts.map((part, index) => (
+                <span className="inline-flex min-w-0 items-center gap-1" key={`${part}-${index}`}>
+                  {index ? <i className="ph-bold ph-caret-right text-[0.65rem]" aria-hidden="true"></i> : null}
+                  <span className={index === pathParts.length - 1 ? "max-w-44 truncate text-company-ink" : "max-w-32 truncate"}>{part}</span>
+                </span>
+              ))}
+            </nav>
           </div>
         </div>
         <div className="flex shrink-0 flex-wrap justify-end gap-2">
@@ -758,9 +786,11 @@ function FilePreviewPanel({
 
       <footer className="grid gap-3 border-t border-base-300 pt-3">
         {resource.aiCompatibility?.contentSnapshot?.isTextTruncated ? <p className="text-xs text-company-muted">{t("assets.previewTruncated")}</p> : null}
-        <div className="grid grid-cols-2 gap-2 text-xs text-company-muted">
+        <div className="grid gap-2 text-xs text-company-muted sm:grid-cols-2">
+          <span>{t("assets.source")}: {sourceProvider(resource)}</span>
           <span>{t("table.status")}: {resource.organization?.status || resource.freshness?.syncStatus || "-"}</span>
           <span>{t("assets.modified")}: {formatDate(resource.freshness?.modifiedTime)}</span>
+          <span>{t("assets.pathDepth")}: {Math.max(pathParts.length - 1, 0)}</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {isFolder(resource) ? <CcButton iconLeft="ph-gear-six" onClick={() => onEditFolder(resource)} variant="outline">{t("assets.editFolder")}</CcButton> : null}

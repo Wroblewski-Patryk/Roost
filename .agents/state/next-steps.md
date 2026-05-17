@@ -75,6 +75,11 @@ Last updated: 2026-05-17
       cards plus a content-first preview panel. `npm run build:web`, `npm run
       validate`, `git diff --check`, and mocked desktop/mobile Playwright
       proof passed.
+    - `OPS-ASSETS-REFINE-002` is complete and verified locally: the shared
+      selector now supports search/no-match states, Operations Calendar has
+      Workflow access and empty-selection parity, and Assets previews show
+      resource path/source/depth context. `npm run build:web`, `npm run
+      validate`, `git diff --check`, and mocked Playwright proofs passed.
    - CompanyCore remains the company operating system; AI agents remain
      external API/MCP clients.
    - Keep writes behind explicit command contracts, audit/events, and API

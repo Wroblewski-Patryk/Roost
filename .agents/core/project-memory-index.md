@@ -166,8 +166,11 @@ continue from repository files alone:
   quality across `04 Operations` and `08 Assets`: undated tasks remain visible
   in Calendar, `Today` opens the day view, empty list selection has a clear
   state, and Assets cards/preview panels prioritize typed content previews and
-  primary file actions. Build/validate and mocked desktop/mobile Playwright
-  proof passed on 2026-05-17.
+  primary file actions. OPS-ASSETS-REFINE-002 then added shared selector
+  search/no-match states, Calendar Workflow access and empty-selection parity,
+  and Assets resource path/source/depth context beside file previews.
+  Build/validate and mocked desktop/mobile Playwright proof passed on
+  2026-05-17.
 - `docs/planning/web-foundation-quality-audit-2026-05-16.md` and
   `docs/planning/web-foundation-quality-audit-task-contract.md`: active web
   foundation quality audit. It reviewed `web/src/main.tsx`,

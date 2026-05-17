@@ -47,6 +47,18 @@
 
 ## Recent Checkpoints
 
+- 2026-05-17: Operations and Assets workbench refinement implemented.
+  Shared `CcResourceSelector` now supports search and no-match states, so
+  Operations lists and Assets root-folder filters scale better with dense real
+  data. `04 Operations -> Calendar` now exposes Workflow settings and matches
+  the Tasks no-list-selection state. `08 Assets -> Files and folders` now
+  shows resource path, source, status, modified date, and folder-depth context
+  beside content previews. Validation: `npm run build:web`,
+  `npm run validate`, `git diff --check`, and Playwright static React proofs
+  on temporary ports `3384`, `3385`, and `3386` passed for Operations selector
+  search/no-match/empty states, Calendar unscheduled work, Assets Markdown,
+  CSV, JSON, SVG preview, desktop/mobile no overflow, and no console/page
+  errors.
 - 2026-05-17: Operations and Assets workbench polish implemented.
   `04 Operations -> Calendar` now keeps tasks without due dates visible in an
   `Unscheduled` lane, `Today` switches into day mode, week navigation uses a

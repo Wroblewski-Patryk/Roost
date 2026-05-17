@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { CcButton } from "./cc-button";
 
 export type CcResourceSelectorItem = {
@@ -23,6 +23,9 @@ export function CcResourceSelector({
   allLabel,
   allDetail,
   clearLabel,
+  searchLabel = "Search",
+  searchPlaceholder = "Search...",
+  emptyLabel = "No matching resources",
   selectedIds,
   groups,
   ungroupedTitle,
@@ -37,6 +40,9 @@ export function CcResourceSelector({
   allLabel: string;
   allDetail: string;
   clearLabel: string;
+  searchLabel?: string;
+  searchPlaceholder?: string;
+  emptyLabel?: string;
   selectedIds: string[];
   groups: CcResourceSelectorGroup[];
   ungroupedTitle?: string;
@@ -46,9 +52,25 @@ export function CcResourceSelector({
   footer?: ReactNode;
 }) {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [query, setQuery] = useState("");
   const selectableIds = [...groups.flatMap((group) => group.items.map((item) => item.id)), ...ungroupedItems.map((item) => item.id)];
   const selectedSet = new Set(selectedIds);
   const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selectedSet.has(id));
+  const normalizedQuery = query.trim().toLowerCase();
+  const visibleGroups = useMemo(() => {
+    if (!normalizedQuery) return groups;
+    return groups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => [item.title, item.detail || ""].join(" ").toLowerCase().includes(normalizedQuery))
+      }))
+      .filter((group) => group.items.length > 0);
+  }, [groups, normalizedQuery]);
+  const visibleUngroupedItems = useMemo(() => {
+    if (!normalizedQuery) return ungroupedItems;
+    return ungroupedItems.filter((item) => [item.title, item.detail || ""].join(" ").toLowerCase().includes(normalizedQuery));
+  }, [ungroupedItems, normalizedQuery]);
+  const hasVisibleItems = visibleGroups.some((group) => group.items.length > 0) || visibleUngroupedItems.length > 0;
 
   useEffect(() => {
     setOpenGroups((current) => {
@@ -99,6 +121,11 @@ export function CcResourceSelector({
           <span className="text-xs font-black uppercase text-company-muted">{title}</span>
           {onCreate && createLabel ? <CcButton ariaLabel={createLabel} iconLeft={createIcon} onClick={onCreate} size="xs" variant="primary">{createLabel}</CcButton> : null}
         </div>
+        <label className="input input-bordered input-sm flex items-center gap-2 bg-base-200/40">
+          <i className="ph-bold ph-magnifying-glass text-company-muted" aria-hidden="true"></i>
+          <span className="sr-only">{searchLabel}</span>
+          <input className="grow" onChange={(event) => setQuery(event.target.value)} placeholder={searchPlaceholder} type="search" value={query} />
+        </label>
         <label className={`grid cursor-pointer grid-cols-[2rem_minmax(0,1fr)_auto] items-center rounded-company border py-1.5 pr-1.5 transition ${allSelected ? "border-primary/40 bg-primary/10" : "border-base-300/80 bg-base-200/45 hover:bg-base-200/70"}`}>
           <span className="grid place-items-center">
             <input className="checkbox checkbox-primary checkbox-xs" checked={allSelected} onChange={(event) => toggleAll(event.target.checked)} type="checkbox" />
@@ -122,7 +149,14 @@ export function CcResourceSelector({
         </label>
       </div>
 
-      {groups.map((group) => (
+      {hasVisibleItems ? null : (
+        <div className="roost-empty-state rounded-company p-4 text-center text-sm text-company-muted">
+          <i className="ph-bold ph-magnifying-glass text-xl" aria-hidden="true"></i>
+          <p className="mt-2">{emptyLabel}</p>
+        </div>
+      )}
+
+      {visibleGroups.map((group) => (
         <section className="grid gap-1" key={group.id}>
           <button className="flex items-center justify-between rounded-company px-2 py-1 text-left text-xs font-black uppercase text-company-muted hover:bg-base-200" onClick={() => setOpenGroups((current) => ({ ...current, [group.id]: !current[group.id] }))} type="button">
             {group.title}
@@ -132,13 +166,13 @@ export function CcResourceSelector({
         </section>
       ))}
 
-      {ungroupedTitle && ungroupedItems.length ? (
+      {ungroupedTitle && visibleUngroupedItems.length ? (
         <section className="grid gap-1 border-t border-base-300 pt-2">
           <button className="flex items-center justify-between rounded-company px-2 py-1 text-left text-xs font-black uppercase text-company-muted hover:bg-base-200" onClick={() => setOpenGroups((current) => ({ ...current, __ungrouped: !current.__ungrouped }))} type="button">
             {ungroupedTitle}
             <i className={`ph-bold ${openGroups.__ungrouped ? "ph-caret-up" : "ph-caret-down"}`} aria-hidden="true"></i>
           </button>
-          {openGroups.__ungrouped ? <div className="grid gap-1">{ungroupedItems.map(renderItem)}</div> : null}
+          {openGroups.__ungrouped ? <div className="grid gap-1">{visibleUngroupedItems.map(renderItem)}</div> : null}
         </section>
       ) : null}
 

@@ -647,9 +647,12 @@ function OperationsListSelector({
       allLabel={t("operations.allTasks")}
       clearLabel={t("operations.clearLists")}
       createLabel={t("operations.newList")}
+      emptyLabel={t("operations.noMatchingLists")}
       groups={groups}
       onCreate={onCreateList}
       onSelectedIdsChange={setSelectedListIds}
+      searchLabel={t("operations.searchLists")}
+      searchPlaceholder={t("operations.searchLists")}
       selectedIds={selectedListIds}
       title={t("operations.lists")}
       ungroupedItems={[
@@ -880,7 +883,19 @@ function CalendarUnscheduledPanel({ rows, setSelectedTask }: { rows: OperationsW
   );
 }
 
-function OperationsCalendar({ rows, setSelectedTask, onCreateTask }: { rows: OperationsWorkItem[]; setSelectedTask: (task: OperationsWorkItem) => void; onCreateTask: () => void }) {
+function OperationsCalendar({
+  rows,
+  selectedListIds,
+  setSelectedTask,
+  onCreateTask,
+  onOpenWorkflowSettings
+}: {
+  rows: OperationsWorkItem[];
+  selectedListIds: string[];
+  setSelectedTask: (task: OperationsWorkItem) => void;
+  onCreateTask: () => void;
+  onOpenWorkflowSettings: () => void;
+}) {
   const { t } = useLanguage();
   const [mode, setMode] = useState<CalendarMode>("week");
   const [anchorDate, setAnchorDate] = useState(() => startOfDay());
@@ -929,6 +944,7 @@ function OperationsCalendar({ rows, setSelectedTask, onCreateTask }: { rows: Ope
           <p className="text-sm text-company-muted">{rangeLabel}</p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
+          <CcButton onClick={onOpenWorkflowSettings} iconLeft="ph-sliders-horizontal" size="sm" variant="outline">{t("operations.workflowSettings.short")}</CcButton>
           <CcButton onClick={onCreateTask} iconLeft="ph-plus" size="sm" variant="primary">{t("operations.newTask")}</CcButton>
           <div className="join" aria-label={t("operations.calendar.viewSwitch")}>
             {(["day", "week", "month"] as CalendarMode[]).map((option) => (
@@ -976,7 +992,15 @@ function OperationsCalendar({ rows, setSelectedTask, onCreateTask }: { rows: Ope
         </div>
       </div>
 
-      {mode === "day" ? (
+      {selectedListIds.length === 0 ? (
+        <div className="roost-empty-state grid min-h-0 place-items-center rounded-company p-8 text-center">
+          <div>
+            <i className="ph-bold ph-calendar-x text-3xl text-company-muted" aria-hidden="true"></i>
+            <h3 className="mt-3 font-black text-company-ink">{t("operations.noListsSelected")}</h3>
+            <p className="mt-1 text-sm text-company-muted">{t("operations.noListsSelected.detail")}</p>
+          </div>
+        </div>
+      ) : mode === "day" ? (
         <div className="roost-work-panel grid min-h-0 grid-cols-[4.5rem_minmax(0,1fr)] overflow-y-auto rounded-company">
           <div className="border-b border-base-300/70 bg-base-200/35 px-3 py-4 text-xs font-black text-company-muted">{formatWeekday(anchorDate)}</div>
           <div className="grid gap-2 border-b border-base-300 p-3">
@@ -1028,7 +1052,7 @@ function OperationsCalendar({ rows, setSelectedTask, onCreateTask }: { rows: Ope
         </div>
       ) : null}
 
-      <CalendarUnscheduledPanel rows={unscheduledRows} setSelectedTask={setSelectedTask} />
+      {selectedListIds.length ? <CalendarUnscheduledPanel rows={unscheduledRows} setSelectedTask={setSelectedTask} /> : null}
     </section>
   );
 }
@@ -1096,7 +1120,13 @@ export function OperationsRoute() {
             taskLists={taskLists}
           />
           {activeView === "calendar" ? (
-            <OperationsCalendar rows={filteredRows} setSelectedTask={setSelectedTask} onCreateTask={() => openCreateTask(selectedListIds.length === 1 ? selectedListIds[0] : undefined)} />
+            <OperationsCalendar
+              rows={filteredRows}
+              selectedListIds={selectedListIds}
+              setSelectedTask={setSelectedTask}
+              onCreateTask={() => openCreateTask(selectedListIds.length === 1 ? selectedListIds[0] : undefined)}
+              onOpenWorkflowSettings={() => setIsWorkflowSettingsOpen(true)}
+            />
           ) : (
             <OperationsBoard
               rows={rows}
