@@ -91,6 +91,29 @@ function resourceIcon(resource: AssetResource) {
   return "ph-file-text";
 }
 
+function resourceIconTone(resource: AssetResource) {
+  const kind = previewKind(resource);
+  if (kind === "folder") return "text-primary";
+  if (kind === "image") return "text-accent";
+  if (kind === "pdf") return "text-error";
+  if (kind === "csv") return "text-success";
+  if (kind === "json") return "text-warning";
+  if (kind === "markdown" || kind === "text") return "text-info";
+  return "text-company-muted";
+}
+
+function resourceKindLabel(resource: AssetResource, t: Translate) {
+  const kind = previewKind(resource);
+  if (kind === "folder") return t("assets.folder");
+  if (kind === "markdown") return t("assets.preview.markdown");
+  if (kind === "csv") return t("assets.preview.csv");
+  if (kind === "json") return t("assets.preview.json");
+  if (kind === "image") return t("assets.preview.image");
+  if (kind === "pdf") return t("assets.preview.pdf");
+  if (kind === "text") return t("assets.preview.text");
+  return resourceType(resource);
+}
+
 function previewKind(resource: AssetResource) {
   const type = resourceType(resource);
   const contentKind = resource.aiCompatibility?.contentSnapshot?.contentKind || "";
@@ -284,7 +307,7 @@ function RootFolderSelector({
         .map((root) => ({
           id: root.externalId,
           title: root.resource.name,
-          detail: `${departmentLabel(area.key, t)} · ${root.children.length + root.files.length} ${t("state.resource")}`,
+          detail: `${departmentLabel(area.key, t)} - ${root.children.length + root.files.length} ${t("state.resource")}`,
           actionLabel: t("assets.editFolder"),
           actionIcon: "ph-gear-six",
           onAction: () => onEditFolder(root.resource)
@@ -301,7 +324,7 @@ function RootFolderSelector({
     .map((root) => ({
       id: root.externalId,
       title: root.resource.name,
-      detail: `${t("state.unassigned")} · ${root.children.length + root.files.length} ${t("state.resource")}`,
+      detail: `${t("state.unassigned")} - ${root.children.length + root.files.length} ${t("state.resource")}`,
       actionLabel: t("assets.editFolder"),
       actionIcon: "ph-gear-six",
       onAction: () => onEditFolder(root.resource)
@@ -336,15 +359,20 @@ function AssetCard({
   const { t } = useLanguage();
   const department = inheritedDepartment(resource, folderByExternalId);
   const summary = resourceSummary(resource).replace(/\s+/g, " ").trim();
+  const thumbnail = previewKind(resource) === "image" ? sourceContentLink(resource) : null;
   return (
-    <button className={`grid gap-2 rounded-company border p-3 text-left transition hover:border-primary hover:bg-primary/5 ${selected ? "border-primary/50 bg-primary/10" : "border-base-300 bg-base-100/55"}`} onClick={onSelect} type="button">
+    <button className={`roost-file-card grid gap-2 rounded-company border p-3 text-left transition hover:border-primary hover:bg-primary/5 ${selected ? "is-selected border-primary/50 bg-primary/10" : "border-base-300"}`} onClick={onSelect} type="button">
       <div className="flex items-start gap-3">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-company border border-base-300 bg-base-200/80 text-company-muted">
-          <i className={`ph-bold ${resourceIcon(resource)}`} aria-hidden="true"></i>
-        </span>
+        {thumbnail ? (
+          <img alt="" className="h-10 w-10 shrink-0 rounded-company border border-base-300 object-cover" src={thumbnail} />
+        ) : (
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-company border border-base-300 bg-base-200/80">
+            <i className={`ph-bold ${resourceIcon(resource)} ${resourceIconTone(resource)}`} aria-hidden="true"></i>
+          </span>
+        )}
         <span className="min-w-0 flex-1">
           <strong className="line-clamp-2 text-sm leading-5 text-company-ink">{resource.name}</strong>
-          <span className="mt-1 block truncate text-xs text-company-muted">{isFolder(resource) ? t("assets.folder") : resourceType(resource)} · {sourceProvider(resource)}</span>
+          <span className="mt-1 block truncate text-xs text-company-muted">{resourceKindLabel(resource, t)} - {sourceProvider(resource)}</span>
         </span>
       </div>
       {summary ? <p className="line-clamp-2 text-xs leading-5 text-company-muted">{summary}</p> : null}
@@ -667,22 +695,27 @@ function FilePreviewPanel({
   const imageUrl = sourceContentLink(resource);
   const openUrl = sourceLink(resource);
   const rows = csvRowsFromResource(resource);
+  const canEditContent = isEditableTextResource(resource);
 
   return (
     <aside className="roost-work-surface grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-company p-4 xl:col-span-2 2xl:col-span-1">
       <header className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-company border border-base-300 bg-base-200/80 text-company-muted">
-            <i className={`ph-bold ${resourceIcon(resource)}`} aria-hidden="true"></i>
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-company border border-base-300 bg-base-200/80">
+            <i className={`ph-bold ${resourceIcon(resource)} ${resourceIconTone(resource)}`} aria-hidden="true"></i>
           </span>
           <div className="min-w-0">
             <h2 className="line-clamp-2 font-black text-company-ink">{resource.name}</h2>
-            <p className="mt-1 text-sm text-company-muted">{resourceType(resource)} - {departmentDisplayName(inheritedDepartment(resource, folderByExternalId), t)}</p>
+            <p className="mt-1 text-sm text-company-muted">{resourceKindLabel(resource, t)} - {departmentDisplayName(inheritedDepartment(resource, folderByExternalId), t)}</p>
           </div>
+        </div>
+        <div className="flex shrink-0 flex-wrap justify-end gap-2">
+          {canEditContent ? <CcButton iconLeft="ph-pencil-simple" onClick={() => onEditContent(resource)} size="sm" variant="outline">{t("assets.editContent")}</CcButton> : null}
+          {openUrl ? <CcButton href={openUrl} iconLeft="ph-arrow-square-out" rel="noreferrer" size="sm" target="_blank" variant="primary">{t("assets.open")}</CcButton> : null}
         </div>
       </header>
 
-      <div className="min-h-0 overflow-y-auto rounded-company border border-base-300 bg-base-100/45 p-3">
+      <div className="roost-file-preview min-h-0 overflow-y-auto rounded-company p-3">
         {kind === "folder" ? (
           <div className="grid h-full place-items-center text-center">
             <div>
@@ -701,7 +734,7 @@ function FilePreviewPanel({
           <pre className="whitespace-pre-wrap break-words rounded-company bg-base-200/60 p-3 font-mono text-xs leading-6 text-company-ink">{text}</pre>
         ) : kind === "image" && imageUrl ? (
           <div className="grid h-full place-items-center">
-            <img alt={resource.name} className="max-h-full rounded-company object-contain" src={imageUrl} />
+            <img alt={resource.name} className="max-h-full max-w-full rounded-company object-contain" src={imageUrl} />
           </div>
         ) : kind === "pdf" && openUrl ? (
           <div className="grid h-full min-h-72 place-items-center text-center">
@@ -731,8 +764,6 @@ function FilePreviewPanel({
         </div>
         <div className="flex flex-wrap gap-2">
           {isFolder(resource) ? <CcButton iconLeft="ph-gear-six" onClick={() => onEditFolder(resource)} variant="outline">{t("assets.editFolder")}</CcButton> : null}
-          {isEditableTextResource(resource) ? <CcButton iconLeft="ph-pencil-simple" onClick={() => onEditContent(resource)} variant="outline">{t("assets.editContent")}</CcButton> : null}
-          {openUrl ? <CcButton href={openUrl} iconLeft="ph-arrow-square-out" rel="noreferrer" target="_blank" variant="primary">{t("assets.open")}</CcButton> : null}
         </div>
       </footer>
     </aside>

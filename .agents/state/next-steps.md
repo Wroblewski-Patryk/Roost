@@ -69,6 +69,12 @@ Last updated: 2026-05-17
       `PATCH /v1/assets/folders/:id`. Rerun `npm run test:api` when local
       PostgreSQL validation is configured, then production-smoke the real Drive
       tree after deploy.
+    - `OPS-ASSETS-POLISH-001` is complete and verified locally: Operations
+      Calendar keeps undated tasks visible, `Today` opens day mode, empty list
+      selection has a clear state, and Assets files/folders has stronger file
+      cards plus a content-first preview panel. `npm run build:web`, `npm run
+      validate`, `git diff --check`, and mocked desktop/mobile Playwright
+      proof passed.
    - CompanyCore remains the company operating system; AI agents remain
      external API/MCP clients.
    - Keep writes behind explicit command contracts, audit/events, and API

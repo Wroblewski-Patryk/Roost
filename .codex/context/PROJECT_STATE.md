@@ -257,6 +257,16 @@ Last updated: 2026-05-17
   `3342` passed for Markdown, CSV, JSON, SVG image, PDF handoff, no
   horizontal overflow, and no console errors. Full API tests still require a
   configured local `DATABASE_URL`.
+  OPS-ASSETS-POLISH-001 then tightened the two daily-use workbenches together:
+  Operations Calendar now keeps tasks without due dates visible in an
+  `Unscheduled` lane, `Today` opens the day view, week navigation uses a
+  native week input, and empty list selection has a clear state; Assets files
+  now use stronger typed file cards, image thumbnails, and a content-first
+  preview panel with primary open/edit actions. `npm run build:web`, `npm run
+  validate`, `git diff --check`, and Playwright static React proof on port
+  `3364` passed for Operations calendar, Operations tasks empty selection,
+  Assets Markdown, CSV, JSON, SVG image, PDF handoff, desktop/mobile no
+  horizontal overflow, and no console/page errors.
   OPS-SURFACE-001 then polished the Roost visual hierarchy of `04 Operations`
   after owner feedback that the content area felt too uniformly dark compared
   with the sidebar. `web/src/styles.css` now defines reusable Roost workbench

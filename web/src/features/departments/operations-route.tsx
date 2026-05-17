@@ -34,6 +34,14 @@ function formatDate(value?: string | null) {
   return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(new Date(value));
 }
 
+function formatLongDate(value: Date) {
+  return new Intl.DateTimeFormat(undefined, { weekday: "long", month: "short", day: "numeric", year: "numeric" }).format(value);
+}
+
+function formatWeekday(value: Date) {
+  return new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric" }).format(value);
+}
+
 function inputDate(value?: string | null) {
   return value ? value.slice(0, 10) : "";
 }
@@ -75,6 +83,22 @@ function addMonths(value: Date, amount: number) {
 
 function inputMonth(value: Date) {
   return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function inputWeek(value: Date) {
+  const date = startOfWeek(value);
+  const yearStart = startOfWeek(new Date(date.getFullYear(), 0, 4));
+  const week = Math.floor((date.getTime() - yearStart.getTime()) / 604800000) + 1;
+  return `${date.getFullYear()}-W${String(week).padStart(2, "0")}`;
+}
+
+function weekFromInput(value: string) {
+  const match = /^(\d{4})-W(\d{2})$/.exec(value);
+  if (!match) return startOfWeek();
+  const year = Number(match[1]);
+  const week = Number(match[2]);
+  const firstWeekStart = startOfWeek(new Date(year, 0, 4));
+  return addDays(firstWeekStart, (week - 1) * 7);
 }
 
 function monthFromInput(value: string) {
@@ -678,7 +702,11 @@ function OperationsBoard({
     return selectedSet.has(listId);
   });
   const allSelected = selectedListIds.length > 0 && visibleRows.length === rows.length;
-  const selectedLabel = allSelected ? t("operations.allTasks") : t("operations.selectedLists", { count: selectedSet.size });
+  const selectedLabel = selectedListIds.length === 0
+    ? t("operations.noListsSelected")
+    : allSelected
+      ? t("operations.allTasks")
+      : t("operations.selectedLists", { count: selectedSet.size });
 
   async function moveTaskToStatus(status: string) {
     if (!draggedTaskId) return;
@@ -730,6 +758,15 @@ function OperationsBoard({
 
         {moveError ? <CcNotice tone="error" title={moveError} live /> : null}
 
+        {selectedListIds.length === 0 ? (
+          <div className="roost-empty-state grid min-h-0 place-items-center rounded-company p-8 text-center">
+            <div>
+              <i className="ph-bold ph-check-square-offset text-3xl text-company-muted" aria-hidden="true"></i>
+              <h3 className="mt-3 font-black text-company-ink">{t("operations.noListsSelected")}</h3>
+              <p className="mt-1 text-sm text-company-muted">{t("operations.noListsSelected.detail")}</p>
+            </div>
+          </div>
+        ) : (
         <div className="grid min-h-0 auto-cols-[minmax(15rem,1fr)] grid-flow-col gap-3 overflow-x-auto pb-3 xl:auto-cols-[minmax(16rem,1fr)]">
           {statuses.map((status) => {
             const columnRows = visibleRows.filter((row) => row.task.status === status.key);
@@ -781,6 +818,7 @@ function OperationsBoard({
             );
           })}
         </div>
+        )}
     </div>
   );
 }
@@ -792,16 +830,21 @@ function CalendarTaskPill({ row, onOpen, density = "calendar" }: { row: Operatio
 function CalendarColumn({
   title,
   rows,
-  setSelectedTask
+  setSelectedTask,
+  isToday = false
 }: {
   title: string;
   rows: OperationsWorkItem[];
   setSelectedTask: (task: OperationsWorkItem) => void;
+  isToday?: boolean;
 }) {
   const { t } = useLanguage();
   return (
-    <section className="roost-work-panel grid min-w-40 min-h-0 grid-rows-[auto_minmax(0,1fr)] rounded-company p-3 lg:min-w-0">
-      <h3 className="pb-3 text-sm font-black text-company-ink">{title}</h3>
+    <section className={`roost-work-panel grid min-h-0 min-w-40 grid-rows-[auto_minmax(0,1fr)] rounded-company p-3 lg:min-w-0 ${isToday ? "ring-1 ring-primary/35" : ""}`}>
+      <div className="flex items-center justify-between gap-2 pb-3">
+        <h3 className="text-sm font-black text-company-ink">{title}</h3>
+        {isToday ? <span className="badge badge-primary badge-sm">{t("operations.calendar.today")}</span> : null}
+      </div>
       <div className="grid content-start gap-2 overflow-y-auto pr-1">
         {rows.length ? rows.map((row) => (
           <CalendarTaskPill key={row.id} row={row} onOpen={() => setSelectedTask(row)} />
@@ -812,6 +855,28 @@ function CalendarColumn({
         )}
       </div>
     </section>
+  );
+}
+
+function CalendarUnscheduledPanel({ rows, setSelectedTask }: { rows: OperationsWorkItem[]; setSelectedTask: (task: OperationsWorkItem) => void }) {
+  const { t } = useLanguage();
+  if (!rows.length) return null;
+
+  return (
+    <aside className="roost-work-panel grid max-h-52 content-start gap-2 overflow-y-auto rounded-company p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-black text-company-ink">{t("operations.unscheduled")}</h3>
+          <p className="text-xs text-company-muted">{t("operations.unscheduledHint")}</p>
+        </div>
+        <span className="badge badge-outline badge-sm">{rows.length}</span>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+        {rows.slice(0, 10).map((row) => (
+          <CalendarTaskPill density="calendar" key={row.id} row={row} onOpen={() => setSelectedTask(row)} />
+        ))}
+      </div>
+    </aside>
   );
 }
 
@@ -831,6 +896,7 @@ function OperationsCalendar({ rows, setSelectedTask, onCreateTask }: { rows: Ope
   };
   const step = mode === "day" ? 1 : mode === "week" ? 7 : 1;
   const datedRows = rows.filter((row) => row.task.dueDate);
+  const unscheduledRows = rows.filter((row) => !row.task.dueDate);
   const dayRows = datedRows.filter((row) => sameDay(new Date(row.task.dueDate!), anchorDate));
   const weekStart = startOfWeek(anchorDate);
   const weekDays = Array.from({ length: 7 }, (_, index) => {
@@ -841,7 +907,7 @@ function OperationsCalendar({ rows, setSelectedTask, onCreateTask }: { rows: Ope
   const monthDays = daysInMonth(anchorDate);
   const monthOffset = monthDays[0] ? ((monthDays[0].getDay() || 7) - 1) : 0;
   const rangeLabel = mode === "day"
-    ? new Intl.DateTimeFormat(undefined, { weekday: "long", month: "short", day: "numeric", year: "numeric" }).format(anchorDate)
+    ? formatLongDate(anchorDate)
     : mode === "week"
       ? `${new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(weekDays[0])} - ${new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(weekDays[6])}`
       : new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" }).format(anchorDate);
@@ -856,11 +922,11 @@ function OperationsCalendar({ rows, setSelectedTask, onCreateTask }: { rows: Ope
   }
 
   return (
-    <section className="roost-work-surface grid h-full min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-4 rounded-company p-4">
+    <section className="roost-work-surface grid h-full min-h-0 grid-rows-[auto_auto_minmax(0,1fr)_auto] gap-4 rounded-company p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-black text-company-ink">{t("operations.calendarTitle")}</h2>
-          <p className="text-sm text-company-muted">{t("operations.calendarDescription")}</p>
+          <p className="text-sm text-company-muted">{rangeLabel}</p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <CcButton onClick={onCreateTask} iconLeft="ph-plus" size="sm" variant="primary">{t("operations.newTask")}</CcButton>
@@ -898,18 +964,25 @@ function OperationsCalendar({ rows, setSelectedTask, onCreateTask }: { rows: Ope
         <div className="flex flex-wrap items-center justify-end gap-2">
           {mode === "month" ? (
             <input aria-label={t("operations.calendar.pickMonth")} className="input input-bordered input-sm w-36" onChange={(event) => setAnchorDate(monthFromInput(event.target.value))} type="month" value={inputMonth(anchorDate)} />
+          ) : mode === "week" ? (
+            <input aria-label={t("operations.calendar.pickWeek")} className="input input-bordered input-sm w-36" onChange={(event) => setAnchorDate(weekFromInput(event.target.value))} type="week" value={inputWeek(anchorDate)} />
           ) : (
-            <input aria-label={mode === "day" ? t("operations.calendar.pickDay") : t("operations.calendar.pickWeek")} className="input input-bordered input-sm w-36" onChange={(event) => updateDateInput(event.target.value)} type="date" value={inputDate(anchorDate.toISOString())} />
+            <input aria-label={t("operations.calendar.pickDay")} className="input input-bordered input-sm w-36" onChange={(event) => updateDateInput(event.target.value)} type="date" value={inputDate(anchorDate.toISOString())} />
           )}
-          <button className="btn btn-ghost btn-sm" onClick={() => setAnchorDate(startOfDay())} type="button">{t("operations.calendar.today")}</button>
+          <button className="btn btn-ghost btn-sm" onClick={() => {
+            setAnchorDate(startOfDay());
+            setMode("day");
+          }} type="button">{t("operations.calendar.today")}</button>
         </div>
       </div>
 
       {mode === "day" ? (
-        <div className="roost-work-panel grid min-h-0 grid-cols-[5rem_minmax(0,1fr)] overflow-y-auto rounded-company">
-          <div className="border-b border-base-300/70 bg-base-200/35 px-3 py-4 text-xs font-black text-company-muted">{new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric" }).format(anchorDate)}</div>
+        <div className="roost-work-panel grid min-h-0 grid-cols-[4.5rem_minmax(0,1fr)] overflow-y-auto rounded-company">
+          <div className="border-b border-base-300/70 bg-base-200/35 px-3 py-4 text-xs font-black text-company-muted">{formatWeekday(anchorDate)}</div>
           <div className="grid gap-2 border-b border-base-300 p-3">
-            {dayRows.length ? dayRows.map((row) => <CalendarTaskPill key={row.id} row={row} onOpen={() => setSelectedTask(row)} />) : <span className="text-sm text-company-muted">{t("operations.emptyCalendar")}</span>}
+            {dayRows.length ? dayRows.map((row) => <CalendarTaskPill key={row.id} row={row} onOpen={() => setSelectedTask(row)} />) : (
+              <div className="roost-empty-state grid min-h-24 place-items-center rounded-company px-3 text-center text-sm text-company-muted">{t("operations.emptyCalendar")}</div>
+            )}
           </div>
           {Array.from({ length: 12 }, (_, index) => index + 8).map((hour) => (
             <div className="contents" key={hour}>
@@ -924,7 +997,7 @@ function OperationsCalendar({ rows, setSelectedTask, onCreateTask }: { rows: Ope
         <div className="grid min-h-0 auto-cols-[minmax(10rem,1fr)] grid-flow-col gap-3 overflow-x-auto lg:grid-flow-row lg:grid-cols-7 lg:auto-cols-auto">
           {weekDays.map((day) => {
             const dayRows = datedRows.filter((row) => sameDay(new Date(row.task.dueDate!), day));
-            return <CalendarColumn key={day.toISOString()} title={new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric" }).format(day)} rows={dayRows} setSelectedTask={setSelectedTask} />;
+            return <CalendarColumn isToday={sameDay(day, new Date())} key={day.toISOString()} title={formatWeekday(day)} rows={dayRows} setSelectedTask={setSelectedTask} />;
           })}
         </div>
       ) : null}
@@ -954,6 +1027,8 @@ function OperationsCalendar({ rows, setSelectedTask, onCreateTask }: { rows: Ope
           })}
         </div>
       ) : null}
+
+      <CalendarUnscheduledPanel rows={unscheduledRows} setSelectedTask={setSelectedTask} />
     </section>
   );
 }

@@ -162,7 +162,12 @@ continue from repository files alone:
   structured preview metadata, Google Drive media extraction handles normal
   text/Markdown/CSV/JSON files, and editable text-file media uses the explicit
   `/v1/google-drive/files/:id/text-content` provider command instead of raw
-  snapshot/table mutation.
+  snapshot/table mutation. OPS-ASSETS-POLISH-001 then improved daily-use
+  quality across `04 Operations` and `08 Assets`: undated tasks remain visible
+  in Calendar, `Today` opens the day view, empty list selection has a clear
+  state, and Assets cards/preview panels prioritize typed content previews and
+  primary file actions. Build/validate and mocked desktop/mobile Playwright
+  proof passed on 2026-05-17.
 - `docs/planning/web-foundation-quality-audit-2026-05-16.md` and
   `docs/planning/web-foundation-quality-audit-task-contract.md`: active web
   foundation quality audit. It reviewed `web/src/main.tsx`,

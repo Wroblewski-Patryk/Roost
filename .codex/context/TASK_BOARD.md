@@ -47,6 +47,17 @@
 
 ## Recent Checkpoints
 
+- 2026-05-17: Operations and Assets workbench polish implemented.
+  `04 Operations -> Calendar` now keeps tasks without due dates visible in an
+  `Unscheduled` lane, `Today` switches into day mode, week navigation uses a
+  native week input, and empty list selection has an explicit owner-facing
+  state. `08 Assets -> Files and folders` now uses stronger typed file cards,
+  image thumbnails, and a content-first preview panel with primary open/edit
+  actions. Validation: `npm run build:web`, `npm run validate`, `git diff
+  --check`, and Playwright static React proof on temporary port `3364` passed
+  for Operations calendar, Operations tasks empty selection, Assets Markdown,
+  CSV, JSON, SVG image, PDF handoff, no desktop/mobile overflow, and no
+  console/page errors.
 - 2026-05-17: Assets file preview workbench implemented. `08 Assets -> Files
   and folders` now prioritizes file content over metadata: Markdown, CSV,
   JSON, image, text, folder, and PDF handoff states render in the detail panel;
