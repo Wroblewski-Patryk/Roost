@@ -63,8 +63,11 @@ web still does not have a full canonical Department Settings editor; that is
 the next dedicated slice if the owner wants to edit department name,
 hierarchy/order, icon, description, and resource ownership. Department work can
 now continue only through a scoped department-system contract, with production
-smoke for this Operations center, canonical Department Settings, or `05
-Relationships` as the likely next checkpoint.
+smoke for the Operations/Assets centers, canonical Department Settings, or `05
+Relationships` as the likely next checkpoint. ASSETS-FOLDERS-002 is now
+implemented with partial database-test confidence: Assets files/folders uses
+root folder source filters, a collapsible Drive tree, and a governed folder
+settings command with root-only department assignment and child inheritance.
 
 Current DMS focus: the first `00 Main` intake API/web panel, proposal-only
 route command, shared department shell, department subsystem registry, Finance

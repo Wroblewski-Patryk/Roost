@@ -206,6 +206,25 @@
 
 ## Done
 
+- ASSETS-FOLDERS-002 Assets folder tree and edit command.
+  - Evidence:
+    `08 Assets -> Files and folders` now uses root folders as source filters,
+    renders a collapsible folder/file tree, and exposes one folder settings
+    modal for root and nested folders. Root folders can edit department
+    assignment; nested folders can edit name/parent while department assignment
+    is disabled and inherited from the root. `PATCH /v1/assets/folders/:id`
+    updates CompanyCore folder metadata, rejects folder cycles, rejects direct
+    department assignment on child folders, and cascades root scope changes to
+    descendants. The route is exposed as `assets:write` in adapter/MCP
+    manifests and only added to the high-risk MCP operator profile.
+  - Validation:
+    `npm run build:server`, `npm run build:web`, `npm run validate`,
+    `npx prisma validate`, and `git diff --check` passed. Playwright fallback
+    on a temporary mocked Assets API verified desktop files view, tree folder
+    selection, child-folder edit modal with disabled department assignment,
+    save/refresh through `PATCH /v1/assets/folders/:id`, mobile files view,
+    and no console/page errors. `npm run test:api` was attempted but blocked
+    before test execution because local `DATABASE_URL` is not configured.
 - OPS-SURFACE-001 Operations Roost work-surface polish.
   - Evidence:
     The Operations content area now uses dedicated Roost workbench layering

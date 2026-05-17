@@ -62,6 +62,13 @@ Last updated: 2026-05-17
       Operations now displays and assigns task lists through canonical
       `00`-`12` departments instead of legacy operating-area names, and board
       plus Calendar filters support multi-list checkbox selection.
+    - `ASSETS-FOLDERS-002` is complete with partial database-test confidence:
+      `08 Assets -> Files and folders` now uses root folder source filters,
+      renders a collapsible Drive folder/file tree, and edits folder name,
+      parent, and root-only department assignment through
+      `PATCH /v1/assets/folders/:id`. Rerun `npm run test:api` when local
+      PostgreSQL validation is configured, then production-smoke the real Drive
+      tree after deploy.
    - CompanyCore remains the company operating system; AI agents remain
      external API/MCP clients.
    - Keep writes behind explicit command contracts, audit/events, and API

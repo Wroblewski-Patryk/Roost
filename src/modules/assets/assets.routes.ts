@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
+import { toJsonInput } from "../../integrations/integration-settings.service";
 import { asyncHandler } from "../../middleware/async-handler";
 import { resolveDepartmentEntry } from "../../operating-model/department-registry";
 
@@ -12,6 +13,12 @@ const querySchema = z.object({
   readiness: z.enum(["not_indexed", "metadata_ready", "content_ready", "summary_ready", "relation_ready", "ai_context_ready"]).optional(),
   areaKey: z.string().min(1).optional(),
   limit: z.coerce.number().int().min(1).max(200).default(DEFAULT_LIMIT)
+}).strict();
+
+const updateFolderSchema = z.object({
+  name: z.string().trim().min(1).max(255).optional(),
+  parentExternalId: z.string().trim().min(1).nullable().optional(),
+  departmentKey: z.string().trim().min(1).nullable().optional()
 }).strict();
 
 type ReadinessLabel = "not_indexed" | "metadata_ready" | "content_ready" | "summary_ready" | "relation_ready" | "ai_context_ready";
@@ -169,6 +176,266 @@ function blockedAssetsActions() {
     }
   ];
 }
+
+async function descendantExternalIds(workspaceId: string, rootExternalId: string) {
+  const externalIds = new Set([rootExternalId]);
+  let parents = [rootExternalId];
+
+  while (parents.length > 0) {
+    const children = await prisma.googleDriveFile.findMany({
+      where: {
+        workspaceId,
+        provider: "google_drive",
+        parentExternalId: { in: parents },
+        trashed: false
+      },
+      select: {
+        externalId: true
+      }
+    });
+    const nextParents: string[] = [];
+    for (const child of children) {
+      if (!externalIds.has(child.externalId)) {
+        externalIds.add(child.externalId);
+        nextParents.push(child.externalId);
+      }
+    }
+    parents = nextParents;
+  }
+
+  return [...externalIds];
+}
+
+async function driveFolderScopeRoot(workspaceId: string, folder: { externalId: string; parentExternalId: string | null; operatingAreaId: string | null }) {
+  let current = folder;
+  const visited = new Set<string>();
+
+  while (current.parentExternalId && !visited.has(current.externalId)) {
+    visited.add(current.externalId);
+    const parent = await prisma.googleDriveFile.findFirst({
+      where: {
+        workspaceId,
+        provider: "google_drive",
+        externalId: current.parentExternalId,
+        isFolder: true,
+        trashed: false
+      },
+      select: {
+        externalId: true,
+        parentExternalId: true,
+        operatingAreaId: true
+      }
+    });
+    if (!parent) {
+      break;
+    }
+    current = parent;
+  }
+
+  return current;
+}
+
+async function updateRootScopeMapping(workspaceId: string, folderExternalId: string, operatingAreaId: string | null) {
+  const settings = await prisma.integrationSetting.findUnique({
+    where: {
+      workspaceId_provider: {
+        workspaceId,
+        provider: "google_drive"
+      }
+    }
+  });
+  if (!settings) {
+    return;
+  }
+
+  const config = settings.config && typeof settings.config === "object" && !Array.isArray(settings.config)
+    ? settings.config as Record<string, unknown>
+    : {};
+  const existingMappings = Array.isArray(config.operatingScopeMappings)
+    ? config.operatingScopeMappings.filter((mapping) => (
+      mapping
+      && typeof mapping === "object"
+      && !Array.isArray(mapping)
+      && (mapping as Record<string, unknown>).folderId !== folderExternalId
+    )) as Record<string, unknown>[]
+    : [];
+
+  const operatingScopeMappings = operatingAreaId
+    ? [
+      ...existingMappings,
+      {
+        folderId: folderExternalId,
+        operatingAreaId
+      }
+    ]
+    : existingMappings;
+
+  await prisma.integrationSetting.update({
+    where: {
+      workspaceId_provider: {
+        workspaceId,
+        provider: "google_drive"
+      }
+    },
+    data: {
+      config: toJsonInput({
+        ...config,
+        operatingScopeMappings
+      })
+    }
+  });
+}
+
+function folderResponse(folder: {
+  id: string;
+  name: string;
+  externalId: string;
+  parentExternalId: string | null;
+  operatingArea?: { id: string; key: string; name: string } | null;
+}, updatedCount: number) {
+  return {
+    id: folder.id,
+    name: folder.name,
+    externalId: folder.externalId,
+    parentExternalId: folder.parentExternalId,
+    department: folder.operatingArea ? {
+      id: folder.operatingArea.id,
+      key: folder.operatingArea.key,
+      name: folder.operatingArea.name
+    } : null,
+    updatedCount
+  };
+}
+
+assetsRouter.patch("/folders/:id", asyncHandler(async (req, res) => {
+  const input = updateFolderSchema.parse(req.body);
+  const workspaceId = req.auth!.workspaceId;
+  const folderId = z.string().uuid().parse(req.params.id);
+
+  const folder = await prisma.googleDriveFile.findFirst({
+    where: {
+      id: folderId,
+      workspaceId,
+      provider: "google_drive",
+      isFolder: true,
+      trashed: false
+    },
+    include: {
+      operatingArea: true
+    }
+  });
+  if (!folder) {
+    return res.status(404).json({ error: "not_found" });
+  }
+
+  const descendantIds = await descendantExternalIds(workspaceId, folder.externalId);
+  let nextParentExternalId = folder.parentExternalId;
+  let inheritedAreaId = folder.operatingAreaId;
+  let movingToChild = false;
+
+  if (input.parentExternalId !== undefined) {
+    nextParentExternalId = input.parentExternalId;
+    if (input.parentExternalId !== null) {
+      if (input.parentExternalId === folder.externalId || descendantIds.includes(input.parentExternalId)) {
+        return res.status(409).json({ error: "folder_parent_cycle" });
+      }
+
+      const parent = await prisma.googleDriveFile.findFirst({
+        where: {
+          workspaceId,
+          provider: "google_drive",
+          externalId: input.parentExternalId,
+          isFolder: true,
+          trashed: false
+        },
+        select: {
+          externalId: true,
+          parentExternalId: true,
+          operatingAreaId: true
+        }
+      });
+      if (!parent) {
+        return res.status(404).json({ error: "parent_folder_not_found" });
+      }
+
+      const scopeRoot = await driveFolderScopeRoot(workspaceId, parent);
+      inheritedAreaId = scopeRoot.operatingAreaId ?? parent.operatingAreaId;
+      movingToChild = true;
+    }
+  }
+
+  if (nextParentExternalId && input.departmentKey !== undefined) {
+    return res.status(409).json({ error: "department_assignment_requires_root_folder" });
+  }
+
+  if (!nextParentExternalId && input.departmentKey !== undefined) {
+    if (input.departmentKey === null) {
+      inheritedAreaId = null;
+    } else {
+      const department = resolveDepartmentEntry(input.departmentKey);
+      if (!department) {
+        return res.status(422).json({ error: "invalid_department" });
+      }
+
+      const area = await prisma.operatingArea.findFirst({
+        where: {
+          workspaceId,
+          key: department.backendAreaKey
+        },
+        select: {
+          id: true
+        }
+      });
+      if (!area) {
+        return res.status(404).json({ error: "department_area_not_found" });
+      }
+      inheritedAreaId = area.id;
+    }
+  }
+
+  await prisma.googleDriveFile.update({
+    where: {
+      id: folder.id
+    },
+    data: {
+      ...(input.name !== undefined ? { name: input.name } : {}),
+      ...(input.parentExternalId !== undefined ? { parentExternalId: input.parentExternalId } : {})
+    }
+  });
+
+  const shouldCascadeScope = input.parentExternalId !== undefined || (!nextParentExternalId && input.departmentKey !== undefined);
+  if (shouldCascadeScope) {
+    await prisma.googleDriveFile.updateMany({
+      where: {
+        workspaceId,
+        provider: "google_drive",
+        externalId: { in: descendantIds }
+      },
+      data: {
+        operatingAreaId: inheritedAreaId
+      }
+    });
+  }
+
+  if (input.parentExternalId !== undefined || input.departmentKey !== undefined) {
+    await updateRootScopeMapping(workspaceId, folder.externalId, nextParentExternalId ? null : inheritedAreaId);
+  }
+
+  const updatedFolder = await prisma.googleDriveFile.findFirstOrThrow({
+    where: {
+      id: folder.id,
+      workspaceId,
+      provider: "google_drive"
+    },
+    include: {
+      operatingArea: true
+    }
+  });
+
+  return res.json({
+    data: folderResponse(updatedFolder, shouldCascadeScope || movingToChild ? descendantIds.length : 1)
+  });
+}));
 
 assetsRouter.get("/context", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;

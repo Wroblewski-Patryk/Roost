@@ -21,6 +21,7 @@ export const capabilities = [
   "operations:read",
   "operations:write",
   "assets:read",
+  "assets:write",
   "strategy:read",
   "operating-graph:read",
   "operating-model:read",
@@ -145,7 +146,8 @@ export const adapterManifest = {
       { method: "PATCH", path: "/v1/operations/work-items/:id", capability: "operations:write" }
     ],
     assets: [
-      { method: "GET", path: "/v1/assets/context", capability: "assets:read" }
+      { method: "GET", path: "/v1/assets/context", capability: "assets:read" },
+      { method: "PATCH", path: "/v1/assets/folders/:id", capability: "assets:write" }
     ],
     strategy: [
       { method: "GET", path: "/v1/strategy/context", capability: "strategy:read" }

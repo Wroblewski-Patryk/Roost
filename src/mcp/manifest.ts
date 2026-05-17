@@ -145,6 +145,10 @@ function routeDescription(route: ManifestRoute) {
     return "Read the 08 Assets and Resources context for files, folders, resources, knowledge, AI-readiness labels, relations, and blocked provider actions.";
   }
 
+  if (route.capability === "assets:write") {
+    return "Update 08 Assets folder metadata and department scope through governed CompanyCore folder commands instead of raw Drive table writes.";
+  }
+
   if (route.capability === "strategy:read") {
     return "Read the 01 Strategy management context for goals, targets, metrics, risks, decisions, strategic knowledge, documents, tasks, and safe agent planning handoff.";
   }

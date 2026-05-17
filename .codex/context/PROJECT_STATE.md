@@ -230,6 +230,21 @@ Last updated: 2026-05-17
   overflow, and no console/page errors. `npm run test:api` was attempted but
   blocked before test execution by missing local `DATABASE_URL` for Prisma
   migrate deploy.
+  ASSETS-FOLDERS-002 then upgraded the same surface into a real folder
+  management slice. `PATCH /v1/assets/folders/:id` updates Google Drive folder
+  metadata through the Assets domain contract, not raw table writes; it rejects
+  hierarchy cycles, allows direct department assignment only for root folders,
+  cascades root scope to descendants, and inherits department assignment when
+  a folder is nested under another folder. The route is exposed as
+  `assets:write` through adapter/MCP manifest and only added to the high-risk
+  MCP operator profile. The web view now uses root folders as source filters,
+  renders a collapsible folder/file tree, and provides one folder settings
+  modal for root and nested folders. `npm run validate`, `npx prisma
+  validate`, and Playwright fallback on temporary mocked Assets API port
+  `3315` passed for desktop tree rendering, folder selection, nested-folder
+  edit with disabled department assignment, save/refresh, mobile rendering,
+  and no console/page errors. `npm run test:api` remains blocked locally
+  because `DATABASE_URL` is not configured before Prisma migrate deploy.
   OPS-SURFACE-001 then polished the Roost visual hierarchy of `04 Operations`
   after owner feedback that the content area felt too uniformly dark compared
   with the sidebar. `web/src/styles.css` now defines reusable Roost workbench

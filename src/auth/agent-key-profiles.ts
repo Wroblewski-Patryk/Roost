@@ -133,6 +133,7 @@ export const agentKeyProfiles = [
       "sales:read",
       "operations:read",
       "assets:read",
+      "assets:write",
       "strategy:read",
       "company-os:workflow-definition:write",
       "company-os:workflow-definition:activate",

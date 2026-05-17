@@ -34,6 +34,24 @@ of rediscovering them.
 
 ## Entries
 
+### 2026-05-17 - Root Resource Tree Selector
+- Type: reusable_management_pattern
+- Context: Assets files/folders needed a more usable information architecture
+  than a flat department filter plus click-to-enter folder list. The owner
+  expects source-backed resources to show their full structure at a glance.
+- Decision: For hierarchy-owned resources, use a shared resource selector for
+  root sources on the left and a collapsible tree for child folders/files in
+  the work surface. Root nodes own cross-department assignment; children
+  inherit scope and show disabled assignment controls in the edit form.
+- Reuse when: Future departments expose source roots with nested children,
+  such as knowledge roots, repository trees, client folders, storage
+  locations, or provider containers.
+- Avoid when: The data is naturally flat, frequently resorted, or primarily
+  task/status driven; use board/table patterns instead.
+- Evidence: ASSETS-FOLDERS-002 implemented the pattern in
+  `08 Assets -> Files and folders` with Playwright desktop/mobile proof and a
+  governed `PATCH /v1/assets/folders/:id` command.
+
 ### 2026-05-17 - Roost Work Surface Layering
 - Type: visual_direction
 - Context: The owner accepted the Roost sidebar but flagged the Operations

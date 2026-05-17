@@ -1944,6 +1944,47 @@ test("CompanyCore v1 protected API flow", async () => {
       scanStatus: "scanned"
     }
   });
+  const assetsRootFolder = await prisma.googleDriveFile.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      operatingAreaId: assetsContextArea.id,
+      provider: "google_drive",
+      externalId: "assets-context-root-folder",
+      name: "Assets Root Folder",
+      mimeType: "application/vnd.google-apps.folder",
+      isFolder: true,
+      webViewLink: "https://drive.example/assets-root-folder",
+      syncStatus: "synced",
+      scanStatus: "scanned"
+    }
+  });
+  const assetsChildFolder = await prisma.googleDriveFile.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      operatingAreaId: assetsContextArea.id,
+      provider: "google_drive",
+      externalId: "assets-context-child-folder",
+      parentExternalId: "assets-context-root-folder",
+      name: "Assets Child Folder",
+      mimeType: "application/vnd.google-apps.folder",
+      isFolder: true,
+      syncStatus: "synced",
+      scanStatus: "scanned"
+    }
+  });
+  const assetsNestedFile = await prisma.googleDriveFile.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      operatingAreaId: assetsContextArea.id,
+      provider: "google_drive",
+      externalId: "assets-context-nested-file",
+      parentExternalId: "assets-context-child-folder",
+      name: "Nested asset note.txt",
+      mimeType: "text/plain",
+      syncStatus: "synced",
+      scanStatus: "scanned"
+    }
+  });
   const assetsDriveSnapshot = await prisma.googleDriveContentSnapshot.create({
     data: {
       workspaceId: ownerA.workspace.id,
@@ -2066,7 +2107,7 @@ test("CompanyCore v1 protected API flow", async () => {
         readiness: Record<string, number>;
         byType: Record<string, number>;
       };
-      folders: Array<{ id: string; name: string }>;
+      folders: Array<{ id: string; name: string; parentExternalId?: string | null }>;
       knowledgeRoots: Array<{ id: string; name: string; area: { key: string } | null }>;
       knowledgeItems: Array<{ id: string; title: string; relations: { project: { id: string } | null; client: { id: string } | null; agent: { id: string } | null } }>;
       resources: Array<{
@@ -2083,6 +2124,7 @@ test("CompanyCore v1 protected API flow", async () => {
         };
         relations: { projects: Array<{ id: string }>; operatingArea?: { id: string; key: string } | null };
         artifacts?: Array<{ id: string; name: string }>;
+        source?: { externalId?: string | null; parentExternalId?: string | null; isFolder?: boolean };
       }>;
       agentPacket: { mode: string; allowedActions: string[]; blockedActions: Array<{ action: string }> };
     };
@@ -2114,6 +2156,13 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(driveAssetItem.aiCompatibility.contentSnapshot?.id, assetsDriveSnapshot.id);
   assert.equal(driveAssetItem.aiCompatibility.contentSnapshot?.hasExtractedText, true);
   assert.equal(driveAssetItem.relations.operatingArea?.key, "assets-storage");
+  assert.ok(assetsContextBody.data.folders.some((folder) => (
+    folder.id === assetsChildFolder.id
+    && folder.parentExternalId === assetsRootFolder.externalId
+  )));
+  const nestedAssetItem = assetsContextBody.data.resources.find((item) => item.sourceId === assetsNestedFile.id);
+  assert.ok(nestedAssetItem);
+  assert.equal(nestedAssetItem.source?.parentExternalId, assetsChildFolder.externalId);
   const resourceAssetItem = assetsContextBody.data.resources.find((item) => item.sourceId === assetsResource.id);
   assert.ok(resourceAssetItem);
   assert.equal(resourceAssetItem.sourceModel, "Resource");
@@ -2151,6 +2200,60 @@ test("CompanyCore v1 protected API flow", async () => {
     && tool.riskLevel === "read"
     && tool.requiresApproval === false
   )));
+  assert.ok(assetsMcpManifestBody.data.tools.some((tool) => (
+    tool.name === "companycore_patch_assets_folders_by_id"
+    && tool.path === "/v1/assets/folders/:id"
+    && tool.capability === "assets:write"
+    && tool.riskLevel === "write"
+  )));
+
+  const childDepartmentPatch = await request(`/v1/assets/folders/${assetsChildFolder.id}`, {
+    method: "PATCH",
+    headers: authA,
+    body: JSON.stringify({ departmentKey: "04-operacje" })
+  });
+  assert.equal(childDepartmentPatch.status, 409);
+
+  const cycleFolderPatch = await request(`/v1/assets/folders/${assetsRootFolder.id}`, {
+    method: "PATCH",
+    headers: authA,
+    body: JSON.stringify({ parentExternalId: assetsChildFolder.externalId })
+  });
+  assert.equal(cycleFolderPatch.status, 409);
+
+  const rootFolderPatch = await request(`/v1/assets/folders/${assetsRootFolder.id}`, {
+    method: "PATCH",
+    headers: authA,
+    body: JSON.stringify({ name: "Assets Source Folder", departmentKey: null })
+  });
+  assert.equal(rootFolderPatch.status, 200);
+  assert.equal((rootFolderPatch.body as { data: { name: string; department: null | { key: string }; updatedCount: number } }).data.name, "Assets Source Folder");
+  assert.equal((rootFolderPatch.body as { data: { department: null | { key: string } } }).data.department, null);
+  assert.ok((rootFolderPatch.body as { data: { updatedCount: number } }).data.updatedCount >= 3);
+  const scopedAfterRootPatch = await prisma.googleDriveFile.findMany({
+    where: {
+      id: { in: [assetsRootFolder.id, assetsChildFolder.id, assetsNestedFile.id] }
+    },
+    select: {
+      id: true,
+      operatingAreaId: true
+    }
+  });
+  assert.ok(scopedAfterRootPatch.every((item) => item.operatingAreaId === null));
+
+  const childRootPatch = await request(`/v1/assets/folders/${assetsChildFolder.id}`, {
+    method: "PATCH",
+    headers: authA,
+    body: JSON.stringify({ name: "Assets Child Source", parentExternalId: null, departmentKey: "08-zasoby" })
+  });
+  assert.equal(childRootPatch.status, 200);
+  assert.equal((childRootPatch.body as { data: { parentExternalId: string | null; department: { key: string } | null } }).data.parentExternalId, null);
+  assert.equal((childRootPatch.body as { data: { parentExternalId: string | null; department: { key: string } | null } }).data.department?.key, "assets-storage");
+  const childAfterRootPatch = await prisma.googleDriveFile.findFirstOrThrow({ where: { id: assetsChildFolder.id } });
+  const nestedAfterRootPatch = await prisma.googleDriveFile.findFirstOrThrow({ where: { id: assetsNestedFile.id } });
+  assert.equal(childAfterRootPatch.parentExternalId, null);
+  assert.equal(childAfterRootPatch.operatingAreaId, assetsContextArea.id);
+  assert.equal(nestedAfterRootPatch.operatingAreaId, assetsContextArea.id);
 
   await prisma.googleDriveFile.delete({ where: { id: foreignAssetsDriveFile.id } });
   if (createdForeignAssetsArea) {
@@ -2163,6 +2266,9 @@ test("CompanyCore v1 protected API flow", async () => {
   await prisma.resource.delete({ where: { id: assetsResource.id } });
   await prisma.project.delete({ where: { id: assetsProject.id } });
   await prisma.googleDriveContentSnapshot.delete({ where: { id: assetsDriveSnapshot.id } });
+  await prisma.googleDriveFile.delete({ where: { id: assetsNestedFile.id } });
+  await prisma.googleDriveFile.delete({ where: { id: assetsChildFolder.id } });
+  await prisma.googleDriveFile.delete({ where: { id: assetsRootFolder.id } });
   await prisma.googleDriveFile.delete({ where: { id: assetsDriveFile.id } });
   await prisma.knowledgeRoot.delete({ where: { id: assetsKnowledgeRoot.id } });
   await prisma.operatingFolder.delete({ where: { id: assetsFolder.id } });
