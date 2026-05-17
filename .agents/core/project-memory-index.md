@@ -45,6 +45,12 @@ continue from repository files alone:
   future task approves another icon set. High-level dashboard and map work
   must still preserve the accepted Company City strategic-map direction unless
   a new decision supersedes it.
+- `docs/ux/web-view-creation-rules.md`: authenticated module views are tools,
+  not landing pages. Future web views must start from real backend-connected
+  work controls, compact scope headers, filters/selectors, primary work areas,
+  detail/preview panels, and recovery states. Avoid hero sections, generic KPI
+  bands, decorative badges, and explanatory first-viewport copy unless they
+  directly support an operator decision.
 - `docs/planning/human-agent-web-architecture-map.md`: current V2
   human-agent web direction. As of 2026-05-14, `/react-agent-tools` exposes
   the owner-visible MCP tool surface, and `/react-company-os` includes the

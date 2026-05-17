@@ -47,6 +47,17 @@
 
 ## Recent Checkpoints
 
+- 2026-05-17: Web view rules and People/Agents Directory cleanup implemented.
+  `docs/ux/web-view-creation-rules.md` now defines authenticated app views as
+  backend-connected tools, not landing pages, using the current
+  `04 Operations -> Tasks`, `04 Operations -> Calendar`, and
+  `08 Assets -> Files/Folders` patterns as the source. `06 People & Agents ->
+  Directory` no longer starts with a large hero, generic KPI cards, or
+  badge-heavy cards; it now opens as a compact roster/detail workbench with
+  search, type/status filters, create/edit, sync, and generated-file preview
+  controls in the first work surface. Validation: `npm run build:web` and
+  Playwright fallback proof passed for desktop, tablet, and mobile with no
+  horizontal overflow, console errors, or failed requests.
 - 2026-05-17: Responsive shell and People/Agents link fix implemented.
   `/people-agents` and `/workforce` now normalize to
   `/areas?area=06-kadry&view=directory`, so the `06 People & Agents` view has

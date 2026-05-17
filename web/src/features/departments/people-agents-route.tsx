@@ -9,7 +9,6 @@ import { Shell } from "../../layout/shell";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import { WorkforceEntity, WorkforcePacket } from "../../types";
-import { SummaryGrid } from "./shared";
 
 type TypeFilter = "all" | WorkforceEntity["type"];
 type StatusFilter = "all" | WorkforceEntity["status"];
@@ -35,6 +34,16 @@ function badgeTone(value?: string) {
   if (value === "queued" || value === "stale" || value === "paused") return "badge-warning";
   if (value === "archived" || value === "inactive" || value === "failed") return "badge-error";
   return "badge-outline";
+}
+
+function syncLabel(entity: WorkforceEntity) {
+  if (entity.type !== "agent") return "human record";
+  if (!entity.synchronizationEnabled) return "sync off";
+  return entity.syncStatus || "not_synced";
+}
+
+function typeLabel(type: WorkforceEntity["type"]) {
+  return type === "human" ? "Human" : "Agent";
 }
 
 function EntityAvatar({ entity }: { entity: WorkforceEntity }) {
@@ -271,11 +280,7 @@ function DetailPanel({
           <div className="min-w-0">
             <h2 className="truncate text-xl font-black text-company-ink">{entity.name}</h2>
             <p className="text-sm text-company-muted">{entity.role || "Unassigned role"} - {entity.department || "06-kadry"}</p>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              <span className={`badge badge-sm ${badgeTone(entity.status)}`}>{entity.status}</span>
-              <span className="badge badge-outline badge-sm">{entity.type}</span>
-              <span className="badge badge-outline badge-sm">{runtimeLabels[entity.runtimeMode]}</span>
-            </div>
+            <p className="mt-1 text-xs font-bold uppercase text-company-muted">{typeLabel(entity.type)} / {runtimeLabels[entity.runtimeMode]} / {syncLabel(entity)}</p>
           </div>
         </div>
         <CcButton iconLeft="ph-pencil-simple" onClick={() => onEdit(entity)} size="sm" variant="outline">Edit</CcButton>
@@ -347,9 +352,16 @@ export function PeopleAgentsRoute() {
   const entities = packet.data?.entities || [];
   const filtered = useMemo(() => entities.filter((entity) => entityMatches(entity, query, typeFilter, statusFilter)), [entities, query, typeFilter, statusFilter]);
   const selected = filtered.find((entity) => entity.id === selectedId) || filtered[0] || null;
+  const hasActiveFilters = query.trim().length > 0 || typeFilter !== "all" || statusFilter !== "all";
 
   function refresh() {
     setRefreshKey((current) => current + 1);
+  }
+
+  function clearFilters() {
+    setQuery("");
+    setTypeFilter("all");
+    setStatusFilter("all");
   }
 
   async function syncEntity(entity: WorkforceEntity) {
@@ -371,40 +383,39 @@ export function PeopleAgentsRoute() {
       {notice ? <CcNotice tone={notice.includes("queued") ? "success" : "error"} title={notice} live /> : null}
 
       {packet.status === "ready" ? (
-        <section className="grid gap-4">
-          <section className="rounded-company border border-base-300 bg-base-100 p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-sm font-black uppercase text-primary">06 People / Agents</p>
-                <h1 className="mt-2 text-3xl font-black text-company-ink">People and AI agent directory</h1>
-                <p className="mt-3 max-w-3xl leading-7 text-company-muted">One source of truth for humans, digital workers, roles, profiles, generated runtime files, and Paperclip synchronization.</p>
+        <section className="grid min-h-[calc(100vh-10rem)] gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(24rem,0.95fr)]">
+          <main className="roost-work-surface grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-3 rounded-company p-3">
+            <header className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-black uppercase text-primary">06 People / Agents</p>
+                <h1 className="truncate text-xl font-black text-company-ink">Directory</h1>
+                <p className="text-sm text-company-muted">{filtered.length} of {entities.length} workforce records visible</p>
               </div>
-              <CcButton iconLeft="ph-plus" onClick={() => setEditingEntity(null)} variant="primary">New entity</CcButton>
+              <div className="flex flex-wrap gap-2">
+                {selected ? <CcButton iconLeft="ph-pencil-simple" onClick={() => setEditingEntity(selected)} size="sm" variant="outline">Edit selected</CcButton> : null}
+                <CcButton iconLeft="ph-plus" onClick={() => setEditingEntity(null)} size="sm" variant="primary">New entity</CcButton>
+              </div>
+            </header>
+
+            <div className="roost-work-panel grid gap-2 rounded-company p-2.5 md:grid-cols-[minmax(0,1fr)_10rem_10rem_auto] md:items-center">
+              <label className="input input-bordered flex min-w-0 items-center gap-2 bg-base-100/65">
+                <i className="ph-bold ph-magnifying-glass text-company-muted" aria-hidden="true"></i>
+                <span className="sr-only">Search workforce</span>
+                <input className="grow" onChange={(event) => setQuery(event.target.value)} placeholder="Search people, agents, roles..." type="search" value={query} />
+              </label>
+              <select aria-label="Type filter" className="select select-bordered" onChange={(event) => setTypeFilter(event.target.value as TypeFilter)} value={typeFilter}>
+                <option value="all">All types</option>
+                <option value="human">Humans</option>
+                <option value="agent">Agents</option>
+              </select>
+              <select aria-label="Status filter" className="select select-bordered" onChange={(event) => setStatusFilter(event.target.value as StatusFilter)} value={statusFilter}>
+                <option value="all">All statuses</option>
+                {["active", "inactive", "paused", "archived"].map((status) => <option key={status} value={status}>{status}</option>)}
+              </select>
+              <CcButton disabled={!hasActiveFilters} iconLeft="ph-x-circle" onClick={clearFilters} size="sm" variant="ghost">Clear</CcButton>
             </div>
-          </section>
 
-          <SummaryGrid summary={packet.data?.summary} />
-
-          <section className="grid min-h-[34rem] gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(24rem,0.85fr)]">
-            <main className="roost-work-surface grid min-h-0 grid-rows-[auto_minmax(0,1fr)] gap-3 rounded-company p-4">
-              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_11rem_11rem]">
-                <label className="input input-bordered flex min-w-0 items-center gap-2 bg-base-200/40">
-                  <i className="ph-bold ph-magnifying-glass text-company-muted" aria-hidden="true"></i>
-                  <span className="sr-only">Search workforce</span>
-                  <input className="grow" onChange={(event) => setQuery(event.target.value)} placeholder="Search people, agents, roles..." type="search" value={query} />
-                </label>
-                <select aria-label="Type filter" className="select select-bordered" onChange={(event) => setTypeFilter(event.target.value as TypeFilter)} value={typeFilter}>
-                  <option value="all">All types</option>
-                  <option value="human">Humans</option>
-                  <option value="agent">Agents</option>
-                </select>
-                <select aria-label="Status filter" className="select select-bordered" onChange={(event) => setStatusFilter(event.target.value as StatusFilter)} value={statusFilter}>
-                  <option value="all">All statuses</option>
-                  {["active", "inactive", "paused", "archived"].map((status) => <option key={status} value={status}>{status}</option>)}
-                </select>
-              </div>
-
-              <div className="min-h-0 overflow-y-auto">
+            <div className="min-h-0 overflow-y-auto">
                 {filtered.length ? (
                   <div className="grid gap-2">
                     {filtered.map((entity) => (
@@ -422,11 +433,10 @@ export function PeopleAgentsRoute() {
                           </div>
                           <span className={`badge badge-sm shrink-0 ${badgeTone(entity.status)}`}>{entity.status}</span>
                         </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          <span className="badge badge-outline badge-sm">{entity.type}</span>
-                          <span className="badge badge-outline badge-sm">{runtimeLabels[entity.runtimeMode]}</span>
-                          <span className={`badge badge-sm ${badgeTone(entity.syncStatus)}`}>{entity.syncStatus || "not_synced"}</span>
-                          {entity.synchronizationEnabled ? <span className="badge badge-primary badge-outline badge-sm">Paperclip</span> : null}
+                        <div className="grid gap-1 text-xs text-company-muted sm:grid-cols-3">
+                          <span className="truncate"><strong className="text-company-ink">{typeLabel(entity.type)}</strong></span>
+                          <span className="truncate">{runtimeLabels[entity.runtimeMode]}</span>
+                          <span className="truncate">{syncLabel(entity)}</span>
                         </div>
                       </button>
                     ))}
@@ -444,7 +454,6 @@ export function PeopleAgentsRoute() {
             </main>
 
             <DetailPanel entity={selected} onEdit={setEditingEntity} onSync={syncEntity} setTab={setDetailTab} tab={detailTab} />
-          </section>
         </section>
       ) : null}
 

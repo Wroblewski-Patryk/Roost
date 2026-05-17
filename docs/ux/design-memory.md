@@ -34,6 +34,24 @@ of rediscovering them.
 
 ## Entries
 
+### 2026-05-17 - Authenticated Views Are Tools
+- Type: reusable_pattern
+- Context: `People & Agents -> Directory` initially copied a dashboard/hero
+  style with a large title, explanatory copy, broad counters, and many badges,
+  while `Operations -> Tasks`, `Operations -> Calendar`, and
+  `Assets -> Files/Folders` work better because they begin with real
+  backend-connected controls.
+- Decision: Authenticated module views must be workbenches. Start with compact
+  scope, filters, primary action, list/board/tree/calendar, and detail or
+  preview panels. Avoid hero sections, decorative KPI bands, and badge-heavy
+  cards unless the count/status directly changes an operator decision.
+- Reuse when: Creating or reactivating any department view, settings view,
+  resource view, CRM view, people/agent view, or backend-connected management
+  surface.
+- Avoid when: Building a public landing page, brand page, or explicitly
+  requested marketing surface.
+- Evidence: `docs/ux/web-view-creation-rules.md`.
+
 ### 2026-05-17 - Responsive Department Shell
 - Type: responsive_rule
 - Context: The desktop sidebar worked well, but mobile and tablet users lost
