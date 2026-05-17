@@ -102,10 +102,6 @@ function taskBelongsToList(task: OperationsWorkItem, listId: string) {
   return task.hierarchy?.taskList?.id === listId;
 }
 
-function missingFieldLabel(field: string) {
-  return field.replace(/^task\./, "").replace(/_/g, " ").replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase();
-}
-
 function departmentLabelKey(key: CoreAreaKey): MessageKey {
   if (key === "00-ogolny") return "areas.00.label";
   if (key === "04-operacje") return "areas.04.label";
@@ -157,18 +153,24 @@ function TaskCard({
   onOpen,
   onDragStart,
   onDragEnd,
-  isDragging
+  isDragging,
+  density = "board",
+  draggable = true
 }: {
   row: OperationsWorkItem;
   onOpen: () => void;
   onDragStart?: (event: DragEvent<HTMLButtonElement>) => void;
   onDragEnd?: () => void;
   isDragging?: boolean;
+  density?: "board" | "calendar" | "month";
+  draggable?: boolean;
 }) {
+  const isMonth = density === "month";
+  const isCalendar = density === "calendar";
   return (
     <button
-      className={`grid gap-2 rounded-company border p-3 text-left shadow-sm transition hover:border-primary hover:bg-primary/5 hover:shadow-md ${isDragging ? "opacity-55 ring-2 ring-primary/25" : ""} ${statusTone(row.task.status)}`}
-      draggable
+      className={`grid rounded-company border text-left shadow-sm transition hover:border-primary hover:bg-primary/5 hover:shadow-md ${isMonth ? "gap-1 px-2 py-1.5" : isCalendar ? "gap-1.5 p-2.5" : "gap-2 p-3"} ${isDragging ? "opacity-55 ring-2 ring-primary/25" : ""} ${statusTone(row.task.status)}`}
+      draggable={draggable}
       data-task-card-id={row.id}
       onClick={onOpen}
       onDragStart={onDragStart}
@@ -176,17 +178,17 @@ function TaskCard({
       type="button"
     >
       <div className="flex items-start justify-between gap-2">
-        <strong className="line-clamp-2 text-sm leading-5 text-company-ink">{row.task.title}</strong>
-        <i className="ph-bold ph-dots-six-vertical mt-0.5 shrink-0 text-company-muted" aria-hidden="true"></i>
+        <strong className={`${isMonth ? "line-clamp-1 text-xs" : isCalendar ? "line-clamp-2 text-xs leading-4" : "line-clamp-2 text-sm leading-5"} text-company-ink`}>{row.task.title}</strong>
+        {draggable ? <i className="ph-bold ph-dots-six-vertical mt-0.5 shrink-0 text-company-muted" aria-hidden="true"></i> : null}
       </div>
-      <div className="flex flex-wrap gap-1.5">
+      {!isMonth ? <div className="flex flex-wrap gap-1.5">
         <PriorityBadge priority={row.task.priority} />
-        <DueBadge dueDate={row.task.dueDate} overdue={row.readiness?.overdue} />
-        {row.task.description ? <span className="badge badge-ghost badge-sm gap-1"><i className="ph-bold ph-text-align-left" aria-hidden="true"></i></span> : null}
-        {row.evidence?.projectResources?.length ? <span className="badge badge-ghost badge-sm gap-1"><i className="ph-bold ph-paperclip" aria-hidden="true"></i></span> : null}
+        {!isCalendar ? <DueBadge dueDate={row.task.dueDate} overdue={row.readiness?.overdue} /> : null}
+        {!isCalendar && row.task.description ? <span className="badge badge-ghost badge-sm gap-1"><i className="ph-bold ph-text-align-left" aria-hidden="true"></i></span> : null}
+        {!isCalendar && row.evidence?.projectResources?.length ? <span className="badge badge-ghost badge-sm gap-1"><i className="ph-bold ph-paperclip" aria-hidden="true"></i></span> : null}
         {row.readiness?.blocked ? <span className="badge badge-error badge-outline badge-sm">{row.readiness.dependencyCount || "!"}</span> : null}
-      </div>
-      <span className="truncate text-xs text-company-muted">{row.hierarchy?.project?.name || row.hierarchy?.taskList?.name || row.task.source || "native"}</span>
+      </div> : null}
+      {!isMonth && !isCalendar ? <span className="truncate text-xs text-company-muted">{row.hierarchy?.project?.name || row.hierarchy?.taskList?.name || row.task.source || "native"}</span> : null}
     </button>
   );
 }
@@ -278,8 +280,6 @@ function TaskPreviewModal({
   const { t } = useLanguage();
   const [saveState, setSaveState] = useState<"idle" | "saving" | "error">("idle");
   const [error, setError] = useState("");
-  const missingFields = item.readiness?.missingFields || [];
-
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -327,7 +327,7 @@ function TaskPreviewModal({
           </CcButton>
         </div>
 
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem]">
           <section className="grid gap-4">
             <TaskFields item={item} mode="edit" statuses={statuses} taskLists={taskLists} />
             {error ? <CcNotice tone="error" title={error} live /> : null}
@@ -339,22 +339,9 @@ function TaskPreviewModal({
               <dl className="mt-3 grid gap-3 text-sm">
                 <div><dt className="font-bold text-company-muted">{t("table.list")}</dt><dd>{item.hierarchy?.taskList?.name || t("operations.unassigned")}</dd></div>
                 <div><dt className="font-bold text-company-muted">{t("operations.project")}</dt><dd>{item.hierarchy?.project?.name || "-"}</dd></div>
+                <div><dt className="font-bold text-company-muted">{t("table.status")}</dt><dd>{item.task.status || "-"}</dd></div>
                 <div><dt className="font-bold text-company-muted">{t("operations.updated")}</dt><dd>{formatDate(item.task.updatedAt)}</dd></div>
               </dl>
-            </section>
-
-            <section className="rounded-company border border-base-300 bg-base-100 p-4">
-              <h3 className="text-sm font-black uppercase text-company-ink">{t("operations.readinessTitle")}</h3>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {item.readiness?.blocked ? <span className="badge badge-error">{t("state.blocked")}</span> : <span className="badge badge-success">{t("state.ready")}</span>}
-                {item.readiness?.overdue ? <span className="badge badge-warning">{t("state.overdue")}</span> : null}
-                {item.readiness?.dependencyCount ? <span className="badge badge-outline">{item.readiness.dependencyCount} {t("operations.dependencies")}</span> : null}
-              </div>
-              {missingFields.length ? (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {missingFields.map((field) => <span className="badge badge-ghost badge-sm" key={field}>{missingFieldLabel(field)}</span>)}
-                </div>
-              ) : null}
             </section>
           </aside>
         </div>
@@ -554,6 +541,59 @@ function TaskListModal({
   );
 }
 
+function WorkflowSettingsModal({
+  statuses,
+  onClose
+}: {
+  statuses: OperationsStatusColumn[];
+  onClose: () => void;
+}) {
+  const { t } = useLanguage();
+  return (
+    <div className="fixed inset-0 z-30 grid place-items-center bg-neutral/55 p-4" role="dialog" aria-modal="true" aria-labelledby="operations-workflow-settings-title">
+      <section className="grid max-h-[92vh] w-full max-w-3xl gap-5 overflow-y-auto rounded-company border border-base-300 bg-base-100 p-5 shadow-2xl">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase text-primary">{t("operations.workflowSettings.eyebrow")}</p>
+            <h2 className="text-2xl font-black text-company-ink" id="operations-workflow-settings-title">{t("operations.workflowSettings.title")}</h2>
+            <p className="mt-1 max-w-2xl text-sm text-company-muted">{t("operations.workflowSettings.description")}</p>
+          </div>
+          <CcButton ariaLabel={t("operations.closeTask")} onClick={onClose} size="sm" variant="ghost">
+            <i className="ph-bold ph-x" aria-hidden="true"></i>
+            <span className="sr-only">{t("operations.closeTask")}</span>
+          </CcButton>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <section className="rounded-company border border-base-300 bg-base-200/50 p-4">
+            <h3 className="text-sm font-black uppercase text-company-ink">{t("operations.workflowSettings.statuses")}</h3>
+            <div className="mt-3 grid gap-2">
+              {statuses.map((status, index) => (
+                <div className="grid grid-cols-[2rem_minmax(0,1fr)] items-center gap-2 rounded-company border border-base-300 bg-base-100 px-3 py-2" key={status.key}>
+                  <span className="text-xs font-black text-company-muted">{index + 1}</span>
+                  <span className="truncate font-bold text-company-ink">{status.label}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-company border border-base-300 bg-base-200/50 p-4">
+            <h3 className="text-sm font-black uppercase text-company-ink">{t("operations.workflowSettings.priorities")}</h3>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {priorityOptions.map((priority) => <PriorityBadge key={priority} priority={priority} />)}
+            </div>
+            <p className="mt-4 text-sm leading-6 text-company-muted">{t("operations.workflowSettings.mappingNote")}</p>
+          </section>
+        </div>
+
+        <div className="rounded-company border border-dashed border-base-300 bg-base-200/40 p-4 text-sm text-company-muted">
+          {t("operations.workflowSettings.writeGuard")}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function OperationsListSelector({
   taskLists,
   departments,
@@ -633,14 +673,15 @@ function OperationsListSelector({
 
   return (
     <aside className="grid min-h-0 content-start gap-3 overflow-y-auto rounded-company border border-base-300 bg-base-100 p-3">
-      <div className="sticky top-0 z-10 grid gap-2 rounded-company border border-base-300 bg-base-100/95 p-2 shadow-sm backdrop-blur" data-list-select-all>
-        <div className="grid grid-cols-2 gap-1 rounded-company bg-base-200 p-1">
+      <div className="sticky top-0 z-10 grid gap-2 rounded-company border border-base-300 bg-base-100/95 p-2.5 shadow-sm backdrop-blur" data-list-select-all>
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-xs font-black uppercase text-company-muted">{t("operations.lists")}</span>
+          <CcButton ariaLabel={t("operations.newList")} iconLeft="ph-plus" onClick={onCreateList} size="xs" variant="primary">{t("operations.newList")}</CcButton>
+        </div>
+        <div className="grid grid-cols-3 gap-1 rounded-company bg-base-200 p-1">
           <button className={`btn btn-xs ${allSelected ? "btn-primary" : "btn-ghost"}`} onClick={() => toggleAllLists(true)} type="button">{t("operations.allTasks")}</button>
           <button className={`btn btn-xs ${selectedListIds.length === 0 ? "btn-primary" : "btn-ghost"}`} onClick={() => toggleAllLists(false)} type="button">{t("operations.clearLists")}</button>
-        </div>
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
-          <button className="btn btn-outline btn-xs" onClick={selectOnlyEmptyLists} disabled={!emptyListIds.size} type="button">{t("operations.emptyLists")}</button>
-          <CcButton ariaLabel={t("operations.newList")} iconLeft="ph-plus" onClick={onCreateList} size="sm" variant="primary">{t("operations.newList")}</CcButton>
+          <button className="btn btn-ghost btn-xs" onClick={selectOnlyEmptyLists} disabled={!emptyListIds.size} type="button">{t("operations.emptyLists")}</button>
         </div>
       </div>
 
@@ -676,7 +717,8 @@ function OperationsBoard({
   selectedListIds,
   setSelectedTask,
   onCreateTask,
-  onRefresh
+  onRefresh,
+  onOpenWorkflowSettings
 }: {
   rows: OperationsWorkItem[];
   statuses: OperationsStatusColumn[];
@@ -684,6 +726,7 @@ function OperationsBoard({
   setSelectedTask: (task: OperationsWorkItem) => void;
   onCreateTask: (defaultTaskListId?: string) => void;
   onRefresh: () => void;
+  onOpenWorkflowSettings: () => void;
 }) {
   const { t } = useLanguage();
   const [draggedTaskId, setDraggedTaskId] = useState("");
@@ -740,8 +783,8 @@ function OperationsBoard({
             <p className="line-clamp-1 text-sm text-company-muted">{t("operations.boardDescription")}</p>
           </div>
           <div className="flex gap-2">
-            <CcButton onClick={() => onCreateTask(selectedListIds.length === 1 ? selectedListIds[0] : undefined)} iconLeft="ph-plus" variant="primary">{t("operations.newTask")}</CcButton>
-            <CcButton onClick={onRefresh} iconLeft="ph-arrow-clockwise" variant="outline">{t("operations.refresh")}</CcButton>
+            <CcButton onClick={onOpenWorkflowSettings} iconLeft="ph-sliders-horizontal" size="sm" variant="outline">{t("operations.workflowSettings.short")}</CcButton>
+            <CcButton onClick={() => onCreateTask(selectedListIds.length === 1 ? selectedListIds[0] : undefined)} iconLeft="ph-plus" size="sm" variant="primary">{t("operations.newTask")}</CcButton>
           </div>
         </div>
 
@@ -802,12 +845,33 @@ function OperationsBoard({
   );
 }
 
-function CalendarTaskPill({ row, onOpen }: { row: OperationsWorkItem; onOpen: () => void }) {
+function CalendarTaskPill({ row, onOpen, density = "calendar" }: { row: OperationsWorkItem; onOpen: () => void; density?: "calendar" | "month" }) {
+  return <TaskCard density={density} draggable={false} row={row} onOpen={onOpen} />;
+}
+
+function CalendarColumn({
+  title,
+  rows,
+  setSelectedTask
+}: {
+  title: string;
+  rows: OperationsWorkItem[];
+  setSelectedTask: (task: OperationsWorkItem) => void;
+}) {
+  const { t } = useLanguage();
   return (
-    <button className={`rounded-company border px-3 py-2 text-left text-xs ${statusTone(row.task.status)}`} onClick={onOpen} type="button">
-      <strong className="line-clamp-1 block text-company-ink">{row.task.title}</strong>
-      <span className="mt-1 flex gap-1"><PriorityBadge priority={row.task.priority} /></span>
-    </button>
+    <section className="grid min-w-40 min-h-0 grid-rows-[auto_minmax(0,1fr)] rounded-company border border-base-300 bg-base-200/55 p-3 lg:min-w-0">
+      <h3 className="pb-3 text-sm font-black text-company-ink">{title}</h3>
+      <div className="grid content-start gap-2 overflow-y-auto pr-1">
+        {rows.length ? rows.map((row) => (
+          <CalendarTaskPill key={row.id} row={row} onOpen={() => setSelectedTask(row)} />
+        )) : (
+          <div className="grid min-h-24 place-items-center rounded-company border border-dashed border-base-300 bg-base-100/55 px-3 text-center text-sm text-company-muted">
+            {t("operations.emptyCalendar")}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -917,15 +981,10 @@ function OperationsCalendar({ rows, setSelectedTask, onCreateTask }: { rows: Ope
       ) : null}
 
       {mode === "week" ? (
-        <div className="grid min-h-0 auto-cols-[minmax(8rem,1fr)] grid-flow-col gap-3 overflow-x-auto lg:grid-flow-row lg:grid-cols-7 lg:auto-cols-auto">
+        <div className="grid min-h-0 auto-cols-[minmax(10rem,1fr)] grid-flow-col gap-3 overflow-x-auto lg:grid-flow-row lg:grid-cols-7 lg:auto-cols-auto">
           {weekDays.map((day) => {
             const dayRows = datedRows.filter((row) => sameDay(new Date(row.task.dueDate!), day));
-            return (
-              <section className="grid min-w-32 content-start gap-2 overflow-y-auto rounded-company border border-base-300 bg-base-200/55 p-3 lg:min-w-0" key={day.toISOString()}>
-                <h3 className="text-sm font-black text-company-ink">{new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric" }).format(day)}</h3>
-                {dayRows.length ? dayRows.map((row) => <CalendarTaskPill key={row.id} row={row} onOpen={() => setSelectedTask(row)} />) : <span className="text-sm text-company-muted">{t("operations.emptyCalendar")}</span>}
-              </section>
-            );
+            return <CalendarColumn key={day.toISOString()} title={new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric" }).format(day)} rows={dayRows} setSelectedTask={setSelectedTask} />;
           })}
         </div>
       ) : null}
@@ -938,16 +997,19 @@ function OperationsCalendar({ rows, setSelectedTask, onCreateTask }: { rows: Ope
           {monthDays.map((day) => {
             const dayRows = datedRows.filter((row) => sameDay(new Date(row.task.dueDate!), day));
             return (
-              <button className="grid min-h-24 content-start rounded-company border border-base-300 bg-base-200/45 p-2 text-left hover:border-primary hover:bg-primary/5" key={day.toISOString()} onClick={() => dayRows[0] ? setSelectedTask(dayRows[0]) : undefined} type="button">
+              <div className="grid min-h-24 content-start rounded-company border border-base-300 bg-base-200/45 p-2 text-left" key={day.toISOString()}>
                 <span className="text-sm font-black text-company-ink">{day.getDate()}</span>
                 {dayRows.length ? (
-                  <span className="mt-2 flex flex-wrap gap-1">
-                    <span className="badge badge-primary badge-sm">{dayRows.length}</span>
-                    {dayRows.some((row) => row.readiness?.blocked) ? <span className="badge badge-error badge-sm">!</span> : null}
-                    {dayRows.some((row) => row.readiness?.overdue) ? <span className="badge badge-warning badge-sm"><i className="ph-bold ph-clock" aria-hidden="true"></i></span> : null}
+                  <span className="mt-2 grid gap-1">
+                    <span className="flex flex-wrap gap-1">
+                      <span className="badge badge-primary badge-sm">{dayRows.length}</span>
+                      {dayRows.some((row) => row.readiness?.blocked) ? <span className="badge badge-error badge-sm">!</span> : null}
+                      {dayRows.some((row) => row.readiness?.overdue) ? <span className="badge badge-warning badge-sm"><i className="ph-bold ph-clock" aria-hidden="true"></i></span> : null}
+                    </span>
+                    {dayRows.slice(0, 2).map((row) => <CalendarTaskPill density="month" key={row.id} row={row} onOpen={() => setSelectedTask(row)} />)}
                   </span>
                 ) : null}
-              </button>
+              </div>
             );
           })}
         </div>
@@ -967,6 +1029,7 @@ export function OperationsRoute() {
   const [createTaskListId, setCreateTaskListId] = useState<string | null>(null);
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const [isCreateListOpen, setIsCreateListOpen] = useState(false);
+  const [isWorkflowSettingsOpen, setIsWorkflowSettingsOpen] = useState(false);
   const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200&refresh=${refreshKey}`, true, t);
   const rows = useMemo(() => (packet.data?.workItems || []).map((item) => ({ ...item, id: item.task.id })), [packet.data?.workItems]);
   const taskLists = packet.data?.taskLists || [];
@@ -1028,6 +1091,7 @@ export function OperationsRoute() {
               setSelectedTask={setSelectedTask}
               onCreateTask={openCreateTask}
               onRefresh={refresh}
+              onOpenWorkflowSettings={() => setIsWorkflowSettingsOpen(true)}
             />
           )}
         </section>
@@ -1037,6 +1101,7 @@ export function OperationsRoute() {
       {isCreateTaskOpen ? <TaskCreateModal taskLists={taskLists} statuses={statuses} defaultTaskListId={createTaskListId || undefined} onClose={() => setIsCreateTaskOpen(false)} onSaved={refresh} /> : null}
       {isCreateListOpen ? <TaskListModal departments={departments} onClose={() => setIsCreateListOpen(false)} onSaved={refresh} /> : null}
       {selectedList ? <TaskListModal list={selectedList} departments={departments} onClose={() => setSelectedList(null)} onSaved={refresh} /> : null}
+      {isWorkflowSettingsOpen ? <WorkflowSettingsModal statuses={statuses} onClose={() => setIsWorkflowSettingsOpen(false)} /> : null}
     </Shell>
   );
 }
