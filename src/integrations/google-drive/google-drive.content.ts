@@ -8,6 +8,13 @@ import { GoogleDriveClient, type GoogleDriveFileMetadata } from "./google-drive.
 
 const googleDocMimeType = "application/vnd.google-apps.document";
 const googleSheetMimeType = "application/vnd.google-apps.spreadsheet";
+const editableTextMimeTypes = new Set([
+  "text/plain",
+  "text/markdown",
+  "text/csv",
+  "application/csv",
+  "application/json"
+]);
 
 export async function listGoogleDriveFiles(workspaceId: string) {
   return prisma.googleDriveFile.findMany({
@@ -164,6 +171,31 @@ export async function updateGoogleSheetValues(input: {
   return { file: refreshedFile, snapshot };
 }
 
+export async function updateGoogleDriveTextFileContent(input: {
+  workspaceId: string;
+  fileId: string;
+  content: string;
+}) {
+  const file = await getWorkspaceDriveFile(input.workspaceId, input.fileId);
+  if (!isDriveTextFile(file)) {
+    throw new IntegrationError("unsupported_file_type", 422, "Only Drive text, Markdown, CSV, and JSON files can be edited as file media.");
+  }
+
+  const client = await getWorkspaceGoogleDriveClient(input.workspaceId);
+  await client.updateFileMedia(file.externalId, input.content, normalizedTextMimeType(file));
+  const metadata = await client.getFile(file.externalId);
+  const refreshedFile = await upsertGoogleDriveFileFromMetadata(input.workspaceId, metadata);
+  const snapshot = await refreshGoogleDriveFileContent({
+    workspaceId: input.workspaceId,
+    file: refreshedFile,
+    client
+  });
+  await emitFileEvent(input.workspaceId, "google_drive_text_file_updated", refreshedFile, {
+    contentKind: snapshot.contentKind
+  });
+  return { file: refreshedFile, snapshot };
+}
+
 async function getWorkspaceGoogleDriveClient(workspaceId: string) {
   return getGoogleDriveClientForWorkspace(workspaceId);
 }
@@ -258,6 +290,21 @@ async function extractSnapshot(input: {
     };
   }
 
+  if (isDriveTextFile(input.file)) {
+    const text = await input.client.downloadFileText(input.file.externalId);
+    const contentKind = contentKindForTextFile(input.file);
+    return {
+      sourceRevisionId: input.file.headRevisionId ?? `text:${input.file.externalId}`,
+      contentKind,
+      extractedText: text,
+      structuredPreview: structuredPreviewForTextFile(contentKind, text) as Prisma.InputJsonValue,
+      summary: summarizeText(input.file.name, text),
+      scanStatus: "completed",
+      errorCode: null,
+      metadata: toJsonInput({ fileId: input.file.externalId, mimeType: input.file.mimeType })
+    };
+  }
+
   return {
     sourceRevisionId: input.file.headRevisionId ?? `metadata:${input.file.externalId}`,
     contentKind: "binary_metadata_only",
@@ -268,6 +315,56 @@ async function extractSnapshot(input: {
     errorCode: null,
     metadata: toJsonInput({ mimeType: input.file.mimeType })
   };
+}
+
+function isDriveTextFile(file: Pick<GoogleDriveFile, "mimeType" | "name">) {
+  const name = file.name.toLowerCase();
+  return editableTextMimeTypes.has(file.mimeType)
+    || name.endsWith(".md")
+    || name.endsWith(".markdown")
+    || name.endsWith(".csv")
+    || name.endsWith(".json")
+    || name.endsWith(".txt");
+}
+
+function normalizedTextMimeType(file: Pick<GoogleDriveFile, "mimeType" | "name">) {
+  const name = file.name.toLowerCase();
+  if (file.mimeType && editableTextMimeTypes.has(file.mimeType)) {
+    return file.mimeType;
+  }
+  if (name.endsWith(".csv")) return "text/csv";
+  if (name.endsWith(".json")) return "application/json";
+  if (name.endsWith(".md") || name.endsWith(".markdown")) return "text/markdown";
+  return "text/plain";
+}
+
+function contentKindForTextFile(file: Pick<GoogleDriveFile, "mimeType" | "name">) {
+  const name = file.name.toLowerCase();
+  if (file.mimeType.includes("csv") || name.endsWith(".csv")) return "csv";
+  if (file.mimeType.includes("json") || name.endsWith(".json")) return "json";
+  if (file.mimeType.includes("markdown") || name.endsWith(".md") || name.endsWith(".markdown")) return "markdown";
+  return "plain_text";
+}
+
+function structuredPreviewForTextFile(contentKind: string, text: string) {
+  if (contentKind === "json") {
+    try {
+      return JSON.parse(text) as Prisma.InputJsonValue;
+    } catch {
+      return { parseError: "invalid_json" };
+    }
+  }
+
+  if (contentKind === "csv") {
+    return {
+      rows: text
+        .split(/\r?\n/)
+        .slice(0, 100)
+        .map((row) => row.split(",").map((cell) => cell.trim()))
+    };
+  }
+
+  return Prisma.JsonNull;
 }
 
 export async function upsertGoogleDriveFileFromMetadata(workspaceId: string, file: GoogleDriveFileMetadata) {

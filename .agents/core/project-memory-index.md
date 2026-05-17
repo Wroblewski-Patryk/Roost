@@ -157,6 +157,12 @@ continue from repository files alone:
   centralized notice/action feedback. Next V1 department work should start
   from `05 Relationships` only after that quality slice, through a scoped
   department-system task contract unless deployment smoke is selected first.
+  ASSETS-FILES-003 has since deepened `08 Assets -> Files and folders` into a
+  content-first workbench: Assets context exposes bounded preview text and
+  structured preview metadata, Google Drive media extraction handles normal
+  text/Markdown/CSV/JSON files, and editable text-file media uses the explicit
+  `/v1/google-drive/files/:id/text-content` provider command instead of raw
+  snapshot/table mutation.
 - `docs/planning/web-foundation-quality-audit-2026-05-16.md` and
   `docs/planning/web-foundation-quality-audit-task-contract.md`: active web
   foundation quality audit. It reviewed `web/src/main.tsx`,

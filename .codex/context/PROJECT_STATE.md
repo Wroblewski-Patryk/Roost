@@ -245,6 +245,18 @@ Last updated: 2026-05-17
   edit with disabled department assignment, save/refresh, mobile rendering,
   and no console/page errors. `npm run test:api` remains blocked locally
   because `DATABASE_URL` is not configured before Prisma migrate deploy.
+  ASSETS-FILES-003 then made file content the primary detail experience:
+  Google Drive media extraction reads normal text, Markdown, CSV, and JSON
+  files; `PATCH /v1/google-drive/files/:id/text-content` updates editable
+  text-file media through the provider adapter; `/v1/assets/context` exposes
+  bounded preview text, structured previews, source media links, and
+  CSV/JSON/PDF/image taxonomy; and the web workbench renders Markdown, CSV
+  tables, formatted JSON, images, PDF open-handoff, text, folder, and
+  unsupported states. `npm run build:server`, `npm run build:web`, `npm run
+  validate`, `git diff --check`, and Playwright static React proof on port
+  `3342` passed for Markdown, CSV, JSON, SVG image, PDF handoff, no
+  horizontal overflow, and no console errors. Full API tests still require a
+  configured local `DATABASE_URL`.
   OPS-SURFACE-001 then polished the Roost visual hierarchy of `04 Operations`
   after owner feedback that the content area felt too uniformly dark compared
   with the sidebar. `web/src/styles.css` now defines reusable Roost workbench

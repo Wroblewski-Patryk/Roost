@@ -2122,7 +2122,7 @@ test("CompanyCore v1 protected API flow", async () => {
           readiness: string;
           summary: string | null;
           aiContextReady: boolean;
-          contentSnapshot: { id: string; hasExtractedText: boolean; hasSummary: boolean } | null;
+          contentSnapshot: { id: string; hasExtractedText: boolean; hasSummary: boolean; previewText?: string | null; textLength?: number; isTextTruncated?: boolean } | null;
         };
         relations: { projects: Array<{ id: string }>; operatingArea?: { id: string; key: string } | null };
         artifacts?: Array<{ id: string; name: string }>;
@@ -2157,6 +2157,9 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(driveAssetItem.aiCompatibility.readiness, "ai_context_ready");
   assert.equal(driveAssetItem.aiCompatibility.contentSnapshot?.id, assetsDriveSnapshot.id);
   assert.equal(driveAssetItem.aiCompatibility.contentSnapshot?.hasExtractedText, true);
+  assert.equal(driveAssetItem.aiCompatibility.contentSnapshot?.previewText, "CompanyCore is the company operating system.");
+  assert.equal(driveAssetItem.aiCompatibility.contentSnapshot?.textLength, "CompanyCore is the company operating system.".length);
+  assert.equal(driveAssetItem.aiCompatibility.contentSnapshot?.isTextTruncated, false);
   assert.equal(driveAssetItem.relations.operatingArea?.key, "assets-storage");
   assert.ok(assetsContextBody.data.folders.some((folder) => (
     folder.id === assetsChildFolder.id
@@ -5422,6 +5425,11 @@ test("CompanyCore v1 protected API flow", async () => {
     && route.path === "/v1/google-drive/files/:id/description"
     && route.capability === "google-drive:files:write"
   )));
+  assert.ok(connectionBody.data.adapterManifest.routes.googleDrive.some((route) => (
+    route.method === "PATCH"
+    && route.path === "/v1/google-drive/files/:id/text-content"
+    && route.capability === "google-drive:files:write"
+  )));
   assert.ok(connectionBody.data.adapterManifest.routes.companyOs.some((route) => (
     route.method === "GET"
     && route.path === "/v1/company-os/:collection/:id"
@@ -7008,7 +7016,13 @@ test("CompanyCore v1 protected API flow", async () => {
     googleDriveCalls.push({
       path: url.pathname,
       method: init?.method ?? "GET",
-      body: init?.body ? JSON.parse(String(init.body)) : undefined
+      body: init?.body ? (() => {
+        try {
+          return JSON.parse(String(init.body));
+        } catch {
+          return String(init.body);
+        }
+      })() : undefined
     });
 
     if (url.pathname === "/drive/v3/files" && init?.method === "POST") {

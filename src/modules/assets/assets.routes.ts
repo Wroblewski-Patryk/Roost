@@ -7,6 +7,7 @@ import { isCanonicalDepartmentKey, resolveDepartmentEntry } from "../../operatin
 
 const ASSETS_DEPARTMENT_KEY = "08-zasoby";
 const DEFAULT_LIMIT = 100;
+const CONTENT_PREVIEW_LIMIT = 24_000;
 
 const querySchema = z.object({
   type: z.string().min(1).optional(),
@@ -52,15 +53,28 @@ function withCanonicalDepartmentMetadata(value: unknown, departmentKey: string |
 }
 
 function driveResourceType(file: { isFolder: boolean; mimeType: string; name: string }) {
+  const name = file.name.toLowerCase();
   if (file.isFolder) {
     return "folder";
+  }
+
+  if (file.mimeType.includes("json") || name.endsWith(".json")) {
+    return "json";
+  }
+
+  if (file.mimeType.includes("csv") || name.endsWith(".csv")) {
+    return "csv";
   }
 
   if (file.mimeType.includes("spreadsheet")) {
     return "spreadsheet";
   }
 
-  if (file.mimeType.startsWith("image/")) {
+  if (file.mimeType.includes("pdf") || name.endsWith(".pdf")) {
+    return "pdf";
+  }
+
+  if (file.mimeType.startsWith("image/") || name.endsWith(".svg")) {
     return "image";
   }
 
@@ -68,7 +82,7 @@ function driveResourceType(file: { isFolder: boolean; mimeType: string; name: st
     return "video";
   }
 
-  if (file.name.toLowerCase().endsWith(".md")) {
+  if (name.endsWith(".md") || name.endsWith(".markdown")) {
     return "markdown";
   }
 
@@ -85,6 +99,9 @@ function normalizeResourceType(type: string) {
     "document",
     "markdown",
     "spreadsheet",
+    "csv",
+    "json",
+    "pdf",
     "image",
     "video",
     "prompt",
@@ -98,6 +115,37 @@ function normalizeResourceType(type: string) {
   ]);
 
   return supported.has(normalized) ? normalized : "knowledge_note";
+}
+
+function snapshotPreview(snapshot: {
+  id: string;
+  contentKind: string;
+  scanStatus: string;
+  extractedText: string | null;
+  structuredPreview: unknown;
+  summary: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+} | null) {
+  if (!snapshot) {
+    return null;
+  }
+
+  const textLength = snapshot.extractedText?.length ?? 0;
+  return {
+    id: snapshot.id,
+    contentKind: snapshot.contentKind,
+    scanStatus: snapshot.scanStatus,
+    summary: snapshot.summary,
+    previewText: snapshot.extractedText ? snapshot.extractedText.slice(0, CONTENT_PREVIEW_LIMIT) : null,
+    textLength,
+    isTextTruncated: textLength > CONTENT_PREVIEW_LIMIT,
+    structuredPreview: snapshot.structuredPreview,
+    hasExtractedText: Boolean(snapshot.extractedText),
+    hasSummary: Boolean(snapshot.summary),
+    createdAt: snapshot.createdAt.toISOString(),
+    updatedAt: snapshot.updatedAt.toISOString()
+  };
 }
 
 function readinessForDriveFile(file: {
@@ -573,6 +621,9 @@ assetsRouter.get("/context", asyncHandler(async (req, res) => {
         externalId: file.externalId,
         parentExternalId: file.parentExternalId,
         webViewLink: file.webViewLink,
+        webContentLink: file.webContentLink,
+        thumbnailLink: file.thumbnailLink,
+        iconLink: file.iconLink,
         mimeType: file.mimeType,
         isFolder: file.isFolder
       },
@@ -592,14 +643,7 @@ assetsRouter.get("/context", asyncHandler(async (req, res) => {
         summary: latestSnapshot?.summary ?? file.description,
         extractedEntities: [],
         aiContextReady: readiness === "ai_context_ready",
-        contentSnapshot: latestSnapshot ? {
-          id: latestSnapshot.id,
-          contentKind: latestSnapshot.contentKind,
-          scanStatus: latestSnapshot.scanStatus,
-          hasExtractedText: Boolean(latestSnapshot.extractedText),
-          hasSummary: Boolean(latestSnapshot.summary),
-          createdAt: latestSnapshot.createdAt.toISOString()
-        } : null
+        contentSnapshot: snapshotPreview(latestSnapshot)
       },
       relations: {
         tasks: [],
@@ -632,6 +676,9 @@ assetsRouter.get("/context", asyncHandler(async (req, res) => {
         provider: resource.externalProvider,
         externalId: resource.externalId,
         webViewLink: resource.url,
+        webContentLink: null,
+        thumbnailLink: null,
+        iconLink: null,
         mimeType: null,
         isFolder: false
       },

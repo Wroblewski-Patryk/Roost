@@ -5,6 +5,7 @@ export class IntegrationError extends Error {
       | "integration_unavailable"
       | "integration_invalid_token"
       | "integration_rate_limited"
+      | "unsupported_file_type"
       | "sync_failed"
       | "invalid_webhook_payload"
       | "webhook_not_registered"

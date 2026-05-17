@@ -432,6 +432,34 @@ textarea:focus-visible,
   background: color-mix(in srgb, var(--color-base-200) 78%, var(--color-base-100) 22%);
 }
 
+.roost-file-prose {
+  display: grid;
+  gap: 0.65rem;
+  color: var(--color-company-muted);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+.roost-file-prose h2,
+.roost-file-prose h3,
+.roost-file-prose h4 {
+  color: var(--color-company-ink);
+  font-weight: 850;
+  line-height: 1.25;
+}
+
+.roost-file-prose h2 {
+  font-size: 1.35rem;
+}
+
+.roost-file-prose h3 {
+  font-size: 1.05rem;
+}
+
+.roost-file-prose h4 {
+  font-size: 0.95rem;
+}
+
 .btn,
 .badge {
   height: auto;

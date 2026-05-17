@@ -151,6 +151,9 @@ export type AssetResource = {
     externalId?: string | null;
     parentExternalId?: string | null;
     webViewLink?: string | null;
+    webContentLink?: string | null;
+    thumbnailLink?: string | null;
+    iconLink?: string | null;
     mimeType?: string | null;
     isFolder?: boolean;
   } | string | null;
@@ -175,9 +178,15 @@ export type AssetResource = {
       id: string;
       contentKind?: string;
       scanStatus?: string;
+      summary?: string | null;
+      previewText?: string | null;
+      textLength?: number;
+      isTextTruncated?: boolean;
+      structuredPreview?: unknown;
       hasExtractedText?: boolean;
       hasSummary?: boolean;
       createdAt?: string;
+      updatedAt?: string;
     } | null;
   };
   relations?: {

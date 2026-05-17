@@ -131,6 +131,23 @@ export class GoogleDriveClient {
     return this.request<Record<string, unknown>>(`${docsBaseUrl}/documents/${encodeURIComponent(documentId)}`);
   }
 
+  async downloadFileText(fileId: string) {
+    return this.requestText(`${driveBaseUrl}/files/${encodeURIComponent(fileId)}?alt=media&supportsAllDrives=true`);
+  }
+
+  async updateFileMedia(fileId: string, content: string, mimeType: string) {
+    return this.request<GoogleDriveFileMetadata>(
+      `https://www.googleapis.com/upload/drive/v3/files/${encodeURIComponent(fileId)}?uploadType=media&supportsAllDrives=true&fields=id,name,description,mimeType,driveId,parents,trashed,webViewLink,webContentLink,iconLink,thumbnailLink,size,headRevisionId,md5Checksum,modifiedTime`,
+      {
+        method: "PATCH",
+        body: content,
+        headers: {
+          "Content-Type": mimeType
+        }
+      }
+    );
+  }
+
   async updateDocument(documentId: string, requests: unknown[], writeControl?: Record<string, unknown>) {
     return this.request<Record<string, unknown>>(`${docsBaseUrl}/documents/${encodeURIComponent(documentId)}:batchUpdate`, {
       method: "POST",
@@ -200,5 +217,42 @@ export class GoogleDriveClient {
 
     const text = await response.text();
     return (text ? JSON.parse(text) : {}) as T;
+  }
+
+  private async requestText(pathOrUrl: string | URL, init: RequestInit = {}) {
+    const url = pathOrUrl instanceof URL ? pathOrUrl : new URL(pathOrUrl);
+    const response = await fetch(url, {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        ...(init.headers ?? {})
+      }
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new IntegrationError(
+          "integration_invalid_token",
+          401,
+          "Google rejected the configured OAuth token."
+        );
+      }
+
+      if (response.status === 429) {
+        throw new IntegrationError(
+          "integration_rate_limited",
+          429,
+          "Google Workspace rate limit was reached."
+        );
+      }
+
+      throw new IntegrationError(
+        "integration_unavailable",
+        502,
+        `Google Workspace request failed with status ${response.status}.`
+      );
+    }
+
+    return response.text();
   }
 }

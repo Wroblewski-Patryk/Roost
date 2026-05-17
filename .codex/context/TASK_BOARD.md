@@ -47,6 +47,16 @@
 
 ## Recent Checkpoints
 
+- 2026-05-17: Assets file preview workbench implemented. `08 Assets -> Files
+  and folders` now prioritizes file content over metadata: Markdown, CSV,
+  JSON, image, text, folder, and PDF handoff states render in the detail panel;
+  file cards use icons and content cues instead of noisy readiness badges.
+  Google Drive media extraction now supports text, Markdown, CSV, and JSON
+  files, and `PATCH /v1/google-drive/files/:id/text-content` provides the
+  explicit provider command for editable text-file media. Validation:
+  `npm run build:server`, `npm run build:web`, `npm run validate`, `git diff
+  --check`, and Playwright static React proof on port `3342` passed. Full
+  `npm run test:api` remains blocked locally by missing `DATABASE_URL`.
 - 2026-05-17: Coolify deploy audit. The `companycore` resource in
   `LuckySparrow / production` has `Auto Deploy` enabled on Git source
   `git@github.com:Wroblewski-Patryk/companycore.git`, branch `main`, `HEAD`,

@@ -9,6 +9,7 @@ import {
   listGoogleDriveFiles,
   readGoogleDriveFileContent,
   updateGoogleDoc,
+  updateGoogleDriveTextFileContent,
   updateGoogleSheetValues
 } from "../../integrations/google-drive/google-drive.content";
 import { asyncHandler } from "../../middleware/async-handler";
@@ -45,6 +46,10 @@ const updateDriveScopeSchema = z.object({
 
 const updateDriveDescriptionSchema = z.object({
   description: z.string().max(2000).nullable()
+}).strict();
+
+const updateDriveTextContentSchema = z.object({
+  content: z.string().max(500_000)
 }).strict();
 
 export const googleDriveRouter = Router();
@@ -213,6 +218,23 @@ googleDriveRouter.patch("/files/:id/description", asyncHandler(async (req, res) 
   });
 
   res.json({ data: updated });
+}));
+
+googleDriveRouter.patch("/files/:id/text-content", asyncHandler(async (req, res) => {
+  const input = updateDriveTextContentSchema.parse(req.body);
+  try {
+    const result = await updateGoogleDriveTextFileContent({
+      workspaceId: req.auth!.workspaceId,
+      fileId: String(req.params.id),
+      content: input.content
+    });
+    res.json({ data: result });
+  } catch (error) {
+    if (error instanceof IntegrationError) {
+      return res.status(error.status).json({ error: error.code });
+    }
+    throw error;
+  }
 }));
 
 googleDriveRouter.post("/docs", asyncHandler(async (req, res) => {

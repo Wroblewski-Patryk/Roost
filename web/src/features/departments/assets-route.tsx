@@ -35,6 +35,10 @@ function sourceLink(resource: AssetResource) {
   return sourceRecord(resource)?.webViewLink || resource.webViewLink || null;
 }
 
+function sourceContentLink(resource: AssetResource) {
+  return sourceRecord(resource)?.webContentLink || sourceRecord(resource)?.thumbnailLink || null;
+}
+
 function sourceExternalId(resource: AssetResource) {
   return sourceRecord(resource)?.externalId || null;
 }
@@ -51,14 +55,13 @@ function resourceType(resource: AssetResource) {
   return resource.resourceType || resource.type || "resource";
 }
 
-function resourceReadiness(resource: AssetResource) {
-  if (resource.aiCompatibility?.readiness) return resource.aiCompatibility.readiness;
-  if (resource.aiCompatibility?.aiContextReady || resource.aiContextReady) return "ai_context_ready";
-  return "metadata_ready";
-}
-
 function resourceSummary(resource: AssetResource) {
-  return resource.aiCompatibility?.summary || resource.organization?.folder || resource.organization?.knowledgeRoot || "";
+  return resource.aiCompatibility?.contentSnapshot?.summary
+    || resource.aiCompatibility?.summary
+    || resource.aiCompatibility?.contentSnapshot?.previewText
+    || resource.organization?.folder
+    || resource.organization?.knowledgeRoot
+    || "";
 }
 
 function formatDate(value?: string | null) {
@@ -76,6 +79,9 @@ function departmentForResource(resource: AssetResource): CoreAreaKey | "unassign
 function resourceIcon(resource: AssetResource) {
   const type = resourceType(resource);
   if (isFolder(resource)) return "ph-folder";
+  if (type === "csv") return "ph-table";
+  if (type === "json") return "ph-brackets-curly";
+  if (type === "pdf") return "ph-file-pdf";
   if (type === "spreadsheet") return "ph-table";
   if (type === "image" || type === "brand_asset") return "ph-image";
   if (type === "video") return "ph-video";
@@ -85,11 +91,67 @@ function resourceIcon(resource: AssetResource) {
   return "ph-file-text";
 }
 
-function readinessTone(readiness: string) {
-  if (readiness === "ai_context_ready") return "badge-success";
-  if (readiness === "relation_ready" || readiness === "summary_ready") return "badge-primary badge-outline";
-  if (readiness === "not_indexed") return "badge-warning";
-  return "badge-ghost";
+function previewKind(resource: AssetResource) {
+  const type = resourceType(resource);
+  const contentKind = resource.aiCompatibility?.contentSnapshot?.contentKind || "";
+  const mimeType = sourceRecord(resource)?.mimeType || "";
+  const name = resource.name.toLowerCase();
+
+  if (isFolder(resource)) return "folder";
+  if (type === "image" || mimeType.startsWith("image/") || /\.(png|jpe?g|gif|webp|svg)$/i.test(name)) return "image";
+  if (type === "pdf" || mimeType.includes("pdf") || name.endsWith(".pdf")) return "pdf";
+  if (type === "csv" || type === "spreadsheet" || contentKind === "csv" || contentKind === "google_sheet") return "csv";
+  if (type === "json" || contentKind === "json" || mimeType.includes("json") || name.endsWith(".json")) return "json";
+  if (type === "markdown" || contentKind === "markdown" || name.endsWith(".md") || name.endsWith(".markdown")) return "markdown";
+  if (contentKind === "plain_text" || mimeType.startsWith("text/") || name.endsWith(".txt")) return "text";
+  return "unsupported";
+}
+
+function isEditableTextResource(resource: AssetResource) {
+  const kind = previewKind(resource);
+  const mimeType = sourceRecord(resource)?.mimeType || "";
+  return Boolean(resource.sourceId)
+    && ["markdown", "csv", "json", "text"].includes(kind)
+    && !mimeType.startsWith("application/vnd.google-apps.");
+}
+
+function csvRowsFromResource(resource: AssetResource) {
+  const structured = resource.aiCompatibility?.contentSnapshot?.structuredPreview;
+  if (structured && typeof structured === "object" && !Array.isArray(structured)) {
+    const values = (structured as { values?: unknown; rows?: unknown }).values ?? (structured as { rows?: unknown }).rows;
+    if (Array.isArray(values)) {
+      return values
+        .filter((row): row is unknown[] => Array.isArray(row))
+        .map((row) => row.map((cell) => String(cell ?? "")));
+    }
+  }
+
+  const text = resource.aiCompatibility?.contentSnapshot?.previewText || "";
+  return text
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .slice(0, 80)
+    .map((row) => row.includes("|")
+      ? row.split("|").map((cell) => cell.trim())
+      : row.split(",").map((cell) => cell.trim()));
+}
+
+function prettyJson(resource: AssetResource) {
+  const structured = resource.aiCompatibility?.contentSnapshot?.structuredPreview;
+  if (structured && structured !== null) {
+    try {
+      return JSON.stringify(structured, null, 2);
+    } catch {
+      // fall through to raw text
+    }
+  }
+
+  const text = resource.aiCompatibility?.contentSnapshot?.previewText || "";
+  try {
+    return JSON.stringify(JSON.parse(text), null, 2);
+  } catch {
+    return text;
+  }
 }
 
 type FolderTreeNode = {
@@ -272,12 +334,12 @@ function AssetCard({
   onSelect: () => void;
 }) {
   const { t } = useLanguage();
-  const readiness = resourceReadiness(resource);
   const department = inheritedDepartment(resource, folderByExternalId);
+  const summary = resourceSummary(resource).replace(/\s+/g, " ").trim();
   return (
-    <button className={`grid gap-2 rounded-company border p-3 text-left transition hover:border-primary hover:bg-primary/5 ${selected ? "border-primary/50 bg-primary/10" : "border-base-300 bg-base-100"}`} onClick={onSelect} type="button">
+    <button className={`grid gap-2 rounded-company border p-3 text-left transition hover:border-primary hover:bg-primary/5 ${selected ? "border-primary/50 bg-primary/10" : "border-base-300 bg-base-100/55"}`} onClick={onSelect} type="button">
       <div className="flex items-start gap-3">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-company border border-base-300 bg-base-200 text-company-muted">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-company border border-base-300 bg-base-200/80 text-company-muted">
           <i className={`ph-bold ${resourceIcon(resource)}`} aria-hidden="true"></i>
         </span>
         <span className="min-w-0 flex-1">
@@ -285,11 +347,11 @@ function AssetCard({
           <span className="mt-1 block truncate text-xs text-company-muted">{isFolder(resource) ? t("assets.folder") : resourceType(resource)} · {sourceProvider(resource)}</span>
         </span>
       </div>
-      <div className="flex flex-wrap gap-1.5">
-        <span className={`badge badge-sm ${readinessTone(readiness)}`}>{readiness.replaceAll("_", " ")}</span>
-        <span className="badge badge-outline badge-sm">{department === "unassigned" ? t("state.unassigned") : departmentLabel(department, t)}</span>
+      {summary ? <p className="line-clamp-2 text-xs leading-5 text-company-muted">{summary}</p> : null}
+      <div className="flex items-center justify-between gap-2 text-xs text-company-muted">
+        <span className="truncate">{department === "unassigned" ? t("state.unassigned") : departmentLabel(department, t)}</span>
+        <span className="shrink-0">{formatDate(resource.freshness?.modifiedTime)}</span>
       </div>
-      <span className="truncate text-xs text-company-muted">{formatDate(resource.freshness?.modifiedTime)}</span>
     </button>
   );
 }
@@ -484,6 +546,199 @@ function FolderEditModal({
   );
 }
 
+function MarkdownPreview({ text }: { text: string }) {
+  const lines = text.split(/\r?\n/).slice(0, 260);
+  return (
+    <article className="roost-file-prose">
+      {lines.map((line, index) => {
+        if (line.startsWith("### ")) return <h4 key={index}>{line.slice(4)}</h4>;
+        if (line.startsWith("## ")) return <h3 key={index}>{line.slice(3)}</h3>;
+        if (line.startsWith("# ")) return <h2 key={index}>{line.slice(2)}</h2>;
+        if (line.startsWith("- ") || line.startsWith("* ")) return <p className="pl-3" key={index}>- {line.slice(2)}</p>;
+        if (!line.trim()) return <div className="h-3" key={index}></div>;
+        return <p key={index}>{line}</p>;
+      })}
+    </article>
+  );
+}
+
+function CsvPreview({ rows }: { rows: string[][] }) {
+  const previewRows = rows.slice(0, 80);
+  return (
+    <div className="overflow-auto rounded-company border border-base-300">
+      <table className="table table-sm w-full min-w-max">
+        <tbody>
+          {previewRows.map((row, rowIndex) => (
+            <tr className={rowIndex === 0 ? "bg-base-200/80 font-bold text-company-ink" : ""} key={rowIndex}>
+              {row.slice(0, 12).map((cell, cellIndex) => (
+                <td className="max-w-64 truncate" key={`${rowIndex}-${cellIndex}`}>{cell || "-"}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function FileContentEditor({
+  resource,
+  onClose,
+  onSaved
+}: {
+  resource: AssetResource;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const { t } = useLanguage();
+  const [content, setContent] = useState(resource.aiCompatibility?.contentSnapshot?.previewText || "");
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "error">("idle");
+  const [error, setError] = useState("");
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!resource.sourceId) return;
+    setSaveState("saving");
+    setError("");
+    try {
+      await api(`/v1/google-drive/files/${resource.sourceId}/text-content`, {
+        method: "PATCH",
+        body: JSON.stringify({ content })
+      });
+      onSaved();
+      onClose();
+    } catch (saveError) {
+      setSaveState("error");
+      setError(userErrorMessage(saveError, t));
+    } finally {
+      setSaveState((current) => current === "saving" ? "idle" : current);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-40 grid place-items-center bg-neutral/55 p-4" role="dialog" aria-modal="true" aria-labelledby="assets-content-editor-title">
+      <form className="roost-work-surface grid max-h-[92vh] w-full max-w-5xl gap-4 overflow-y-auto rounded-company p-5 shadow-2xl" onSubmit={submit}>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-black uppercase text-primary">{t("assets.contentEditor")}</p>
+            <h2 className="mt-1 text-2xl font-black text-company-ink" id="assets-content-editor-title">{resource.name}</h2>
+            <p className="mt-1 text-sm text-company-muted">{t("assets.contentEditorHint")}</p>
+          </div>
+          <button className="btn btn-ghost btn-sm btn-circle" aria-label={t("operations.cancel")} onClick={onClose} type="button">
+            <i className="ph-bold ph-x" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        {error ? <CcNotice tone="error" title={error} live /> : null}
+
+        <textarea
+          className="textarea textarea-bordered min-h-[55vh] w-full font-mono text-sm leading-6"
+          onChange={(event) => setContent(event.target.value)}
+          value={content}
+        ></textarea>
+
+        <div className="flex flex-wrap justify-end gap-2 border-t border-base-300 pt-4">
+          <CcButton onClick={onClose} type="button" variant="ghost">{t("operations.cancel")}</CcButton>
+          <CcButton loading={saveState === "saving"} type="submit" variant="primary">{t("assets.saveContent")}</CcButton>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function FilePreviewPanel({
+  resource,
+  folderByExternalId,
+  onEditFolder,
+  onEditContent
+}: {
+  resource: AssetResource | null;
+  folderByExternalId: Map<string, AssetResource>;
+  onEditFolder: (folder: AssetResource) => void;
+  onEditContent: (resource: AssetResource) => void;
+}) {
+  const { t } = useLanguage();
+  if (!resource) {
+    return <aside className="roost-work-surface rounded-company p-4 xl:col-span-2 2xl:col-span-1"><p className="text-sm text-company-muted">{t("assets.selectResource")}</p></aside>;
+  }
+
+  const kind = previewKind(resource);
+  const text = resource.aiCompatibility?.contentSnapshot?.previewText || "";
+  const imageUrl = sourceContentLink(resource);
+  const openUrl = sourceLink(resource);
+  const rows = csvRowsFromResource(resource);
+
+  return (
+    <aside className="roost-work-surface grid min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] gap-3 overflow-hidden rounded-company p-4 xl:col-span-2 2xl:col-span-1">
+      <header className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-company border border-base-300 bg-base-200/80 text-company-muted">
+            <i className={`ph-bold ${resourceIcon(resource)}`} aria-hidden="true"></i>
+          </span>
+          <div className="min-w-0">
+            <h2 className="line-clamp-2 font-black text-company-ink">{resource.name}</h2>
+            <p className="mt-1 text-sm text-company-muted">{resourceType(resource)} - {departmentDisplayName(inheritedDepartment(resource, folderByExternalId), t)}</p>
+          </div>
+        </div>
+      </header>
+
+      <div className="min-h-0 overflow-y-auto rounded-company border border-base-300 bg-base-100/45 p-3">
+        {kind === "folder" ? (
+          <div className="grid h-full place-items-center text-center">
+            <div>
+              <i className="ph-bold ph-folder-open text-4xl text-primary" aria-hidden="true"></i>
+              <h3 className="mt-3 font-black text-company-ink">{resource.name}</h3>
+              <p className="mt-1 text-sm text-company-muted">{t("assets.folderPreviewHint")}</p>
+            </div>
+          </div>
+        ) : kind === "markdown" && text ? (
+          <MarkdownPreview text={text} />
+        ) : kind === "csv" && rows.length ? (
+          <CsvPreview rows={rows} />
+        ) : kind === "json" && (prettyJson(resource) || text) ? (
+          <pre className="whitespace-pre-wrap break-words rounded-company bg-base-200/60 p-3 font-mono text-xs leading-6 text-company-ink">{prettyJson(resource)}</pre>
+        ) : kind === "text" && text ? (
+          <pre className="whitespace-pre-wrap break-words rounded-company bg-base-200/60 p-3 font-mono text-xs leading-6 text-company-ink">{text}</pre>
+        ) : kind === "image" && imageUrl ? (
+          <div className="grid h-full place-items-center">
+            <img alt={resource.name} className="max-h-full rounded-company object-contain" src={imageUrl} />
+          </div>
+        ) : kind === "pdf" && openUrl ? (
+          <div className="grid h-full min-h-72 place-items-center text-center">
+            <div>
+              <i className="ph-bold ph-file-pdf text-4xl text-company-muted" aria-hidden="true"></i>
+              <h3 className="mt-3 font-black text-company-ink">{t("assets.pdfPreviewTitle")}</h3>
+              <p className="mt-1 text-sm text-company-muted">{t("assets.pdfPreviewDetail")}</p>
+              <CcButton className="mt-4" href={openUrl} iconLeft="ph-arrow-square-out" rel="noreferrer" target="_blank" variant="primary">{t("assets.open")}</CcButton>
+            </div>
+          </div>
+        ) : (
+          <div className="grid h-full min-h-64 place-items-center text-center">
+            <div>
+              <i className="ph-bold ph-file-search text-4xl text-company-muted" aria-hidden="true"></i>
+              <h3 className="mt-3 font-black text-company-ink">{t("assets.noPreviewTitle")}</h3>
+              <p className="mt-1 text-sm text-company-muted">{resourceSummary(resource) || t("assets.noPreviewDetail")}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <footer className="grid gap-3 border-t border-base-300 pt-3">
+        {resource.aiCompatibility?.contentSnapshot?.isTextTruncated ? <p className="text-xs text-company-muted">{t("assets.previewTruncated")}</p> : null}
+        <div className="grid grid-cols-2 gap-2 text-xs text-company-muted">
+          <span>{t("table.status")}: {resource.organization?.status || resource.freshness?.syncStatus || "-"}</span>
+          <span>{t("assets.modified")}: {formatDate(resource.freshness?.modifiedTime)}</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {isFolder(resource) ? <CcButton iconLeft="ph-gear-six" onClick={() => onEditFolder(resource)} variant="outline">{t("assets.editFolder")}</CcButton> : null}
+          {isEditableTextResource(resource) ? <CcButton iconLeft="ph-pencil-simple" onClick={() => onEditContent(resource)} variant="outline">{t("assets.editContent")}</CcButton> : null}
+          {openUrl ? <CcButton href={openUrl} iconLeft="ph-arrow-square-out" rel="noreferrer" target="_blank" variant="primary">{t("assets.open")}</CcButton> : null}
+        </div>
+      </footer>
+    </aside>
+  );
+}
+
 function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefresh: () => void }) {
   const { t } = useLanguage();
   const resources = packet.resources || [];
@@ -496,6 +751,7 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
   const [selectedResourceId, setSelectedResourceId] = useState(resources[0]?.id || "");
   const [expandedFolderIds, setExpandedFolderIds] = useState<Set<string>>(() => new Set(rootIds));
   const [editingFolder, setEditingFolder] = useState<AssetResource | null>(null);
+  const [editingContent, setEditingContent] = useState<AssetResource | null>(null);
 
   useEffect(() => {
     setSelectedRootIds((current) => current.length ? current.filter((id) => rootIds.includes(id)) : rootIds);
@@ -546,7 +802,7 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
   return (
     <section className="grid gap-4 xl:h-[calc(100vh-12.5rem)] xl:min-h-[34rem] xl:grid-cols-[17rem_minmax(0,1fr)]">
       <RootFolderSelector roots={roots} selectedRootIds={selectedRootIds} setSelectedRootIds={setSelectedRootIds} onEditFolder={setEditingFolder} />
-      <div className="grid gap-4 xl:min-h-0 xl:grid-cols-[18rem_minmax(0,1fr)] 2xl:grid-cols-[18rem_minmax(0,1fr)_20rem]">
+      <div className="grid gap-4 xl:min-h-0 xl:grid-cols-[18rem_minmax(0,1fr)] 2xl:grid-cols-[18rem_minmax(0,0.9fr)_minmax(24rem,0.8fr)]">
         <FolderTree
           expandedFolderIds={expandedFolderIds}
           onEditFolder={setEditingFolder}
@@ -601,48 +857,16 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
           </div>
         </main>
 
-        <aside className="roost-work-surface overflow-y-auto rounded-company p-4 xl:col-span-2 xl:min-h-0 2xl:col-span-1">
-          {selectedResource ? (
-            <div className="grid gap-4">
-              <div className="flex items-start gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-company border border-base-300 bg-base-200 text-company-muted">
-                  <i className={`ph-bold ${resourceIcon(selectedResource)}`} aria-hidden="true"></i>
-                </span>
-                <div className="min-w-0">
-                  <h2 className="line-clamp-3 font-black text-company-ink">{selectedResource.name}</h2>
-                  <p className="mt-1 text-sm text-company-muted">{resourceType(selectedResource)} · {sourceProvider(selectedResource)}</p>
-                </div>
-              </div>
+        <FilePreviewPanel
+          folderByExternalId={folderByExternalId}
+          onEditContent={setEditingContent}
+          onEditFolder={setEditingFolder}
+          resource={selectedResource}
+        />
 
-              <div className="flex flex-wrap gap-1.5">
-                <span className={`badge badge-sm ${readinessTone(resourceReadiness(selectedResource))}`}>{resourceReadiness(selectedResource).replaceAll("_", " ")}</span>
-                <span className="badge badge-outline badge-sm">{selectedResource.organization?.visibility || "workspace"}</span>
-                {selectedResource.freshness?.needsCleanup ? <span className="badge badge-warning badge-sm">{t("assets.needsCleanup")}</span> : null}
-              </div>
-
-              {resourceSummary(selectedResource) ? <p className="rounded-company border border-base-300 bg-base-200/50 p-3 text-sm leading-6 text-company-muted">{resourceSummary(selectedResource)}</p> : null}
-
-              <dl className="grid gap-3 text-sm">
-                <div><dt className="font-bold text-company-muted">{t("table.source")}</dt><dd>{sourceProvider(selectedResource)}</dd></div>
-                <div><dt className="font-bold text-company-muted">{t("table.status")}</dt><dd>{selectedResource.organization?.status || selectedResource.freshness?.syncStatus || "-"}</dd></div>
-                <div><dt className="font-bold text-company-muted">{t("assets.departmentAssignment")}</dt><dd>{departmentDisplayName(inheritedDepartment(selectedResource, folderByExternalId), t)}</dd></div>
-                <div><dt className="font-bold text-company-muted">{t("table.readiness")}</dt><dd>{resourceReadiness(selectedResource).replaceAll("_", " ")}</dd></div>
-                <div><dt className="font-bold text-company-muted">{t("assets.modified")}</dt><dd>{formatDate(selectedResource.freshness?.modifiedTime)}</dd></div>
-                <div><dt className="font-bold text-company-muted">{t("assets.folder")}</dt><dd>{selectedResource.organization?.folder || "-"}</dd></div>
-                <div><dt className="font-bold text-company-muted">{t("assets.knowledgeRoot")}</dt><dd>{selectedResource.organization?.knowledgeRoot || "-"}</dd></div>
-              </dl>
-
-              <div className="flex flex-wrap gap-2">
-                {isFolder(selectedResource) ? <CcButton iconLeft="ph-gear-six" onClick={() => setEditingFolder(selectedResource)} variant="outline">{t("assets.editFolder")}</CcButton> : null}
-                {sourceLink(selectedResource) ? <CcButton href={sourceLink(selectedResource) || undefined} iconLeft="ph-arrow-square-out" rel="noreferrer" target="_blank" variant="primary">{t("assets.open")}</CcButton> : null}
-              </div>
-            </div>
-          ) : (
-            <p className="text-sm text-company-muted">{t("assets.selectResource")}</p>
-          )}
-        </aside>
       </div>
       {editingFolder ? <FolderEditModal allFolders={allFolders} folder={editingFolder} folderNodes={folderNodes} onClose={() => setEditingFolder(null)} onSaved={onRefresh} /> : null}
+      {editingContent ? <FileContentEditor resource={editingContent} onClose={() => setEditingContent(null)} onSaved={onRefresh} /> : null}
     </section>
   );
 }
