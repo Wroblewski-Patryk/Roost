@@ -45,6 +45,19 @@
 - No active implementation task is currently in progress after the
   OPS-MGMT-002 Operations management center deepening checkpoint.
 
+## Recent Checkpoints
+
+- 2026-05-17: Coolify deploy audit. The `companycore` resource in
+  `LuckySparrow / production` has `Auto Deploy` enabled on Git source
+  `git@github.com:Wroblewski-Patryk/companycore.git`, branch `main`, `HEAD`,
+  but the running deployment stayed on `511d834` after the local push to
+  `82d45f9`, so GitHub webhook delivery is not proven. Manual redeploy from
+  Coolify pulled `82d45f9142d6be9d4d154b9db246f1a50d7e0d74`, then `Include
+  Source Commit in Build` was enabled and a second redeploy made public
+  `/health` report the exact deployed commit. Production smoke after redeploy:
+  owner login, `08 Assets -> dashboard`, `08 Assets -> files`, and
+  `04 Operations -> tasks` loaded without the generic error.
+
 ## Blocked
 
 - AGRUN-010 Upstream Agent Source Merge Execution

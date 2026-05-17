@@ -112,7 +112,7 @@ Required smoke checks after deploy:
 
 GitHub-to-Coolify auto-deploy is not required for v1 runtime readiness.
 
-Current status as of 2026-05-15:
+Current status as of 2026-05-17:
 
 - Coolify services are healthy on the VPS.
 - CompanyCore manual runtime rollover is proven and documented.
@@ -133,12 +133,21 @@ Current status as of 2026-05-15:
   from `COMPANYCORE_BUILD_IMAGE`, Coolify/container identifiers, or
   `HOSTNAME`. `docker-compose.coolify.yml` maps `SOURCE_COMMIT` and
   `COOLIFY_CONTAINER_NAME` into the backend metadata path.
-- Coolify's `SOURCE_COMMIT` may require enabling `Include Source Commit in
-  Build` in the application Advanced settings when build args are needed. For
-  runtime health proof, keep `COMPANYCORE_BUILD_COMMIT=$SOURCE_COMMIT`
-  available to the backend service or use the compose mapping.
-- Auto-deploy should therefore be treated as unverified until a future task
-  records a push-to-running-image smoke in `docs/operations/post-deploy-smoke.md`.
+- Coolify `Auto Deploy` is enabled for the `companycore` application, with Git
+  source `git@github.com:Wroblewski-Patryk/companycore.git`, branch `main`, and
+  commit selector `HEAD`.
+- `Include Source Commit in Build` is enabled in the application Advanced
+  settings. This is required for the current compose/build metadata path to
+  expose the deployed commit through `GET /health`.
+- The 2026-05-17 manual redeploy for commit
+  `82d45f9142d6be9d4d154b9db246f1a50d7e0d74` succeeded and public health then
+  reported that exact commit.
+- GitHub-to-Coolify webhook delivery remains unverified. The Coolify webhook
+  page opens GitHub repository hook settings, but the Codex session does not
+  have GitHub web UI credentials and the available GitHub connector surface does
+  not expose repository webhook list/create/update/delete actions. Until GitHub
+  hooks are verified, auto-deploy should be treated as configured in Coolify but
+  not proven end-to-end.
 
 Until then, manual VPS/Coolify backend rollover remains the accepted and
 approved release path. It must preserve the PostgreSQL volume, record the
