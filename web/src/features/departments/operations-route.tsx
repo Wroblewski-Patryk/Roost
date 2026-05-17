@@ -292,6 +292,118 @@ function TaskPreviewModal({
   );
 }
 
+function TaskCreateModal({
+  taskLists,
+  statuses,
+  defaultTaskListId,
+  onClose,
+  onSaved
+}: {
+  taskLists: OperationsTaskList[];
+  statuses: OperationsStatusColumn[];
+  defaultTaskListId?: string;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const { t } = useLanguage();
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "error">("idle");
+  const [error, setError] = useState("");
+  const creatableLists = taskLists.filter((list) => list.id !== "all" && list.id !== "unassigned");
+  const defaultList = defaultTaskListId && creatableLists.some((list) => list.id === defaultTaskListId)
+    ? defaultTaskListId
+    : creatableLists[0]?.id || "";
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const dueDate = String(form.get("dueDate") || "");
+    const taskListId = String(form.get("taskListId") || "");
+    setSaveState("saving");
+    setError("");
+
+    try {
+      await api("/v1/tasks", {
+        method: "POST",
+        body: JSON.stringify({
+          title: String(form.get("title") || ""),
+          description: String(form.get("description") || ""),
+          status: String(form.get("status") || "todo"),
+          priority: String(form.get("priority") || ""),
+          taskListId: taskListId || undefined,
+          dueDate: dueDate ? new Date(`${dueDate}T00:00:00.000Z`).toISOString() : undefined
+        })
+      });
+      onSaved();
+      onClose();
+    } catch (saveError) {
+      setSaveState("error");
+      setError(userErrorMessage(saveError, t));
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-neutral/35 p-4" role="dialog" aria-modal="true" aria-labelledby="operations-create-task-title">
+      <form className="grid max-h-[92vh] w-full max-w-2xl gap-4 overflow-y-auto rounded-company border border-base-300 bg-base-100 p-5 shadow-2xl" onSubmit={onSubmit}>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-black uppercase text-primary">{t("operations.newTask")}</p>
+            <h2 className="text-2xl font-black text-company-ink" id="operations-create-task-title">{t("operations.createTask")}</h2>
+          </div>
+          <CcButton ariaLabel={t("operations.closeTask")} onClick={onClose} size="sm" variant="ghost">
+            <i className="ph-bold ph-x" aria-hidden="true"></i>
+            <span className="sr-only">{t("operations.closeTask")}</span>
+          </CcButton>
+        </div>
+
+        <CcField label={t("operations.titleField")} required>
+          {({ id, describedBy, invalid }) => <CcTextInput aria-describedby={describedBy} aria-invalid={invalid} autoFocus id={id} name="title" required />}
+        </CcField>
+
+        <label className="form-control">
+          <span className="label"><span className="label-text font-bold"><i className="ph-bold ph-text-align-left mr-1" aria-hidden="true"></i>{t("operations.descriptionField")}</span></span>
+          <textarea className="textarea textarea-bordered min-h-28" name="description"></textarea>
+        </label>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="form-control">
+            <span className="label"><span className="label-text font-bold">{t("operations.taskListField")}</span></span>
+            <select className="select select-bordered" name="taskListId" defaultValue={defaultList}>
+              <option value="">{t("operations.unassigned")}</option>
+              {creatableLists.map((list) => <option key={list.id} value={list.id}>{list.name}</option>)}
+            </select>
+          </label>
+
+          <label className="form-control">
+            <span className="label"><span className="label-text font-bold">{t("table.status")}</span></span>
+            <select className="select select-bordered" name="status" defaultValue={statuses[0]?.key || "todo"}>
+              {statuses.map((status) => <option key={status.key} value={status.key}>{status.label}</option>)}
+            </select>
+          </label>
+
+          <label className="form-control">
+            <span className="label"><span className="label-text font-bold">{t("table.priority")}</span></span>
+            <select className="select select-bordered" name="priority" defaultValue="medium">
+              {priorityOptions.map((priority) => <option key={priority} value={priority}>{priority}</option>)}
+            </select>
+          </label>
+
+          <label className="form-control">
+            <span className="label"><span className="label-text font-bold">{t("table.due")}</span></span>
+            <input className="input input-bordered" name="dueDate" type="date" />
+          </label>
+        </div>
+
+        {error ? <CcNotice tone="error" title={error} live /> : null}
+
+        <div className="flex flex-wrap justify-end gap-2">
+          <CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton>
+          <CcButton loading={saveState === "saving"} type="submit" variant="primary">{t("operations.createTask")}</CcButton>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 function TaskListModal({
   list,
   departments,
@@ -385,6 +497,7 @@ function OperationsBoard({
   setSelectedListIds,
   setSelectedTask,
   setSelectedList,
+  onCreateTask,
   onRefresh
 }: {
   rows: OperationsWorkItem[];
@@ -395,6 +508,7 @@ function OperationsBoard({
   setSelectedListIds: (listIds: string[]) => void;
   setSelectedTask: (task: OperationsWorkItem) => void;
   setSelectedList: (list: OperationsTaskList) => void;
+  onCreateTask: (defaultTaskListId?: string) => void;
   onRefresh: () => void;
 }) {
   const { t } = useLanguage();
@@ -538,6 +652,7 @@ function OperationsBoard({
             <p className="line-clamp-1 text-sm text-company-muted">{t("operations.boardDescription")}</p>
           </div>
           <div className="flex gap-2">
+            <CcButton onClick={() => onCreateTask(selectedListIds.length === 1 ? selectedListIds[0] : undefined)} iconLeft="ph-plus" variant="primary">{t("operations.newTask")}</CcButton>
             <CcButton onClick={onRefresh} iconLeft="ph-arrow-clockwise" variant="outline">{t("operations.refresh")}</CcButton>
           </div>
         </div>
@@ -651,7 +766,7 @@ function OperationsCalendarFilters({
   );
 }
 
-function OperationsCalendar({ rows, setSelectedTask }: { rows: OperationsWorkItem[]; setSelectedTask: (task: OperationsWorkItem) => void }) {
+function OperationsCalendar({ rows, setSelectedTask, onCreateTask }: { rows: OperationsWorkItem[]; setSelectedTask: (task: OperationsWorkItem) => void; onCreateTask: () => void }) {
   const { t } = useLanguage();
   const [mode, setMode] = useState<CalendarMode>("week");
   const calendarLabels: Record<CalendarMode, string> = {
@@ -677,12 +792,15 @@ function OperationsCalendar({ rows, setSelectedTask }: { rows: OperationsWorkIte
           <h2 className="text-xl font-black text-company-ink">{t("operations.calendarTitle")}</h2>
           <p className="text-sm text-company-muted">{t("operations.calendarDescription")}</p>
         </div>
-        <div className="join">
-          {(["today", "week", "month"] as CalendarMode[]).map((option) => (
-            <button className={`btn join-item btn-sm ${mode === option ? "btn-primary" : "btn-outline"}`} key={option} onClick={() => setMode(option)} type="button">
-              {calendarLabels[option]}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <CcButton onClick={onCreateTask} iconLeft="ph-plus" variant="primary">{t("operations.newTask")}</CcButton>
+          <div className="join">
+            {(["today", "week", "month"] as CalendarMode[]).map((option) => (
+              <button className={`btn join-item btn-sm ${mode === option ? "btn-primary" : "btn-outline"}`} key={option} onClick={() => setMode(option)} type="button">
+                {calendarLabels[option]}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -749,6 +867,8 @@ export function OperationsRoute() {
   const [listSelectionInitialized, setListSelectionInitialized] = useState(false);
   const [selectedTask, setSelectedTask] = useState<OperationsWorkItem | null>(null);
   const [selectedList, setSelectedList] = useState<OperationsTaskList | null>(null);
+  const [createTaskListId, setCreateTaskListId] = useState<string | null>(null);
+  const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
   const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200&refresh=${refreshKey}`, true, t);
   const rows = useMemo(() => (packet.data?.workItems || []).map((item) => ({ ...item, id: item.task.id })), [packet.data?.workItems]);
   const taskLists = packet.data?.taskLists || [];
@@ -779,6 +899,11 @@ export function OperationsRoute() {
     setRefreshKey((value) => value + 1);
   }
 
+  function openCreateTask(defaultTaskListId?: string) {
+    setCreateTaskListId(defaultTaskListId && defaultTaskListId !== "unassigned" ? defaultTaskListId : null);
+    setIsCreateTaskOpen(true);
+  }
+
   return (
     <Shell activeArea="04-operacje">
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
@@ -789,7 +914,7 @@ export function OperationsRoute() {
 
       {packet.status === "ready" ? (
         activeView === "calendar" ? (
-          <OperationsCalendar rows={filteredRows} setSelectedTask={setSelectedTask} />
+          <OperationsCalendar rows={filteredRows} setSelectedTask={setSelectedTask} onCreateTask={() => openCreateTask(selectedListIds.length === 1 ? selectedListIds[0] : undefined)} />
         ) : (
           <OperationsBoard
             rows={rows}
@@ -800,12 +925,14 @@ export function OperationsRoute() {
             setSelectedListIds={setSelectedListIds}
             setSelectedTask={setSelectedTask}
             setSelectedList={setSelectedList}
+            onCreateTask={openCreateTask}
             onRefresh={refresh}
           />
         )
       ) : null}
 
       {selectedTask ? <TaskPreviewModal item={selectedTask} statuses={statuses} onClose={() => setSelectedTask(null)} onSaved={refresh} /> : null}
+      {isCreateTaskOpen ? <TaskCreateModal taskLists={taskLists} statuses={statuses} defaultTaskListId={createTaskListId || undefined} onClose={() => setIsCreateTaskOpen(false)} onSaved={refresh} /> : null}
       {selectedList ? <TaskListModal list={selectedList} departments={departments} onClose={() => setSelectedList(null)} onSaved={refresh} /> : null}
     </Shell>
   );

@@ -193,6 +193,20 @@
 
 ## Done
 
+- OPS-TASK-CREATE-001 Operations new task creation.
+  - Evidence:
+    `docs/planning/operations-new-task-creation-task-contract.md` records the
+    scoped vertical slice. Production clickthrough confirmed the UX gap: Tasks
+    and Calendar did not expose an obvious task creation action. The active web
+    now adds a primary `New task` action to the Operations board and calendar,
+    opens a create modal, and submits to the existing governed
+    `POST /v1/tasks` command with title, description, task list, status,
+    priority, and due date.
+  - Validation: `npm run build:web`; Playwright fallback with a mocked
+    Operations packet verified button visibility, create modal, `POST /v1/tasks`
+    payload, modal close, refreshed task visibility, Calendar action
+    visibility, no horizontal overflow, and no console/page errors.
+
 - OPS-LIST-FILTER-001 Operations list select-all sticky control.
   - Evidence:
     `docs/planning/operations-list-select-all-sticky-task-contract.md` records
