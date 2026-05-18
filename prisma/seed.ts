@@ -1267,6 +1267,11 @@ const paperclipDirectorSeeds = [
 ] as const;
 
 async function ensureWorkforceFoundation(workspaceId: string, owner: { id: string; email: string; name: string | null }) {
+  const ownerDisplayName = owner.name || owner.email;
+  const ownerBigFive = { openness: 5, conscientiousness: 5, extraversion: 2, agreeableness: 3, neuroticism: 2 };
+  const ownerSkills = ["Company ownership", "Strategy", "Systems design", "Product direction", "AI agent orchestration"];
+  const ownerKnowledge = ["CompanyCore source of truth", "LuckySparrow operating model", "Paperclip runtime", "Workspace administration"];
+  const ownerTools = ["CompanyCore web", "Paperclip", "ClickUp", "Google Drive"];
   await prisma.workforceEntity.upsert({
     where: {
       workspaceId_source_externalId: {
@@ -1276,58 +1281,58 @@ async function ensureWorkforceFoundation(workspaceId: string, owner: { id: strin
       }
     },
     update: {
-      name: owner.name || owner.email,
+      name: ownerDisplayName,
       department: "06-kadry",
-      role: "Owner",
-      personalityProfile: "executive",
+      role: "Founder / Owner",
+      personalityProfile: "analytical",
       runtimeMode: "manual",
       hierarchyLevel: "owner",
-      bigFiveProfile: { openness: 4, conscientiousness: 5, extraversion: 4, agreeableness: 4, neuroticism: 2 },
-      skillIndex: ["Company ownership", "Approval", "Strategy"],
-      knowledgeIndex: ["CompanyCore source of truth", "Workspace administration"],
-      toolIndex: ["CompanyCore web"],
+      bigFiveProfile: ownerBigFive,
+      skillIndex: ownerSkills,
+      knowledgeIndex: ownerKnowledge,
+      toolIndex: ownerTools,
       generatedFiles: generatedWorkforceFiles({
-        name: owner.name || owner.email,
+        name: ownerDisplayName,
         type: "human",
-        role: "Owner",
+        role: "Founder / Owner",
         department: "06-kadry",
-        personalityProfile: "executive",
+        personalityProfile: "analytical",
         runtimeMode: "manual",
         hierarchyLevel: "owner",
-        bigFiveProfile: { openness: 4, conscientiousness: 5, extraversion: 4, agreeableness: 4, neuroticism: 2 },
-        skillIndex: ["Company ownership", "Approval", "Strategy"],
-        knowledgeIndex: ["CompanyCore source of truth", "Workspace administration"],
-        toolIndex: ["CompanyCore web"]
+        bigFiveProfile: ownerBigFive,
+        skillIndex: ownerSkills,
+        knowledgeIndex: ownerKnowledge,
+        toolIndex: ownerTools
       })
     },
     create: {
       workspaceId,
       type: "human",
       status: "active",
-      name: owner.name || owner.email,
+      name: ownerDisplayName,
       slug: `owner-${owner.id.slice(0, 8)}`,
       department: "06-kadry",
-      role: "Owner",
-      personalityProfile: "executive",
+      role: "Founder / Owner",
+      personalityProfile: "analytical",
       runtimeMode: "manual",
       synchronizationEnabled: false,
       hierarchyLevel: "owner",
-      bigFiveProfile: { openness: 4, conscientiousness: 5, extraversion: 4, agreeableness: 4, neuroticism: 2 },
-      skillIndex: ["Company ownership", "Approval", "Strategy"],
-      knowledgeIndex: ["CompanyCore source of truth", "Workspace administration"],
-      toolIndex: ["CompanyCore web"],
+      bigFiveProfile: ownerBigFive,
+      skillIndex: ownerSkills,
+      knowledgeIndex: ownerKnowledge,
+      toolIndex: ownerTools,
       generatedFiles: generatedWorkforceFiles({
-        name: owner.name || owner.email,
+        name: ownerDisplayName,
         type: "human",
-        role: "Owner",
+        role: "Founder / Owner",
         department: "06-kadry",
-        personalityProfile: "executive",
+        personalityProfile: "analytical",
         runtimeMode: "manual",
         hierarchyLevel: "owner",
-        bigFiveProfile: { openness: 4, conscientiousness: 5, extraversion: 4, agreeableness: 4, neuroticism: 2 },
-        skillIndex: ["Company ownership", "Approval", "Strategy"],
-        knowledgeIndex: ["CompanyCore source of truth", "Workspace administration"],
-        toolIndex: ["CompanyCore web"]
+        bigFiveProfile: ownerBigFive,
+        skillIndex: ownerSkills,
+        knowledgeIndex: ownerKnowledge,
+        toolIndex: ownerTools
       }),
       source: "user",
       externalId: owner.id
@@ -1462,16 +1467,19 @@ async function main() {
   const key = process.env.SEED_API_KEY ?? "dev-companycore-key";
   const ownerEmail = process.env.SEED_OWNER_EMAIL ?? "owner@example.com";
   const ownerPassword = process.env.SEED_OWNER_PASSWORD ?? "change-me-local-password";
+  const ownerName = process.env.SEED_OWNER_NAME ?? "Patryk Wroblewski";
   const workspaceName = process.env.SEED_WORKSPACE_NAME ?? "LuckySparrow";
 
   const passwordHash = await hashPassword(ownerPassword);
 
   const owner = await prisma.user.upsert({
     where: { email: ownerEmail },
-    update: {},
+    update: {
+      name: ownerName
+    },
     create: {
       email: ownerEmail,
-      name: "Local owner",
+      name: ownerName,
       passwordHash
     }
   });

@@ -5,6 +5,7 @@ import { asyncHandler } from "../../middleware/async-handler";
 import {
   archiveWorkforceEntity,
   createWorkforceEntity,
+  deleteWorkforceEntity,
   getWorkforceEntity,
   listWorkforceEntities,
   syncWorkforceEntity,
@@ -96,6 +97,18 @@ workforceRouter.delete("/:id", asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "not_found" });
   }
   res.json({ data: entity });
+}));
+
+workforceRouter.post("/:id/actions/delete", asyncHandler(async (req, res) => {
+  try {
+    const result = await deleteWorkforceEntity(req.auth!.workspaceId, z.string().uuid().parse(req.params.id));
+    if (!result) {
+      return res.status(404).json({ error: "not_found" });
+    }
+    res.json({ data: result });
+  } catch (error) {
+    return routeError(error, res);
+  }
 }));
 
 workforceRouter.post("/:id/actions/sync", asyncHandler(async (req, res) => {

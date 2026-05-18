@@ -153,6 +153,8 @@ export type WorkforceEntity = {
     runtimeMode: "manual" | "semi_autonomous" | "autonomous";
     paperclipAgentId?: string | null;
     synchronizationEnabled: boolean;
+    source?: string;
+    externalId?: string | null;
     hierarchyLevel?: string | null;
     bigFiveProfile?: Record<string, number>;
     skillIndex?: string[];

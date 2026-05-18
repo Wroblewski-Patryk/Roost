@@ -71,6 +71,9 @@ authRouter.post("/register", asyncHandler(async (req, res) => {
       personalityProfile: "executive",
       runtimeMode: "manual",
       synchronizationEnabled: false
+    }, {
+      source: "user",
+      externalId: result.user.id
     });
 
     res.status(201).json({

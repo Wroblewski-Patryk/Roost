@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../api/client";
 import { userErrorMessage } from "../../api/errors";
 import { CcButton } from "../../components/cc-button";
@@ -112,6 +112,37 @@ function EntityAvatar({ entity }: { entity: WorkforceEntity }) {
     <span className="grid h-11 w-11 shrink-0 place-items-center rounded-company border border-base-300 bg-base-200/70 text-sm font-black text-primary">
       {initials(entity.name)}
     </span>
+  );
+}
+
+function RowAction({
+  label,
+  icon,
+  tone = "ghost",
+  disabled,
+  onClick
+}: {
+  label: string;
+  icon: string;
+  tone?: "ghost" | "outline" | "error";
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  const toneClass = tone === "error" ? "btn-error btn-outline" : tone === "outline" ? "btn-outline" : "btn-ghost";
+  return (
+    <button
+      aria-label={label}
+      className={`btn btn-xs btn-square ${toneClass}`}
+      disabled={disabled}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
+      title={label}
+      type="button"
+    >
+      <i className={`ph-bold ${icon}`} aria-hidden="true"></i>
+    </button>
   );
 }
 
@@ -408,13 +439,17 @@ function DetailPanel({
   tab,
   setTab,
   onEdit,
-  onArchive
+  onArchive,
+  onDelete,
+  onClose
 }: {
   entity: WorkforceEntity | null;
   tab: DetailTab;
   setTab: (tab: DetailTab) => void;
   onEdit: (entity: WorkforceEntity) => void;
   onArchive: (entity: WorkforceEntity) => void;
+  onDelete: (entity: WorkforceEntity) => void;
+  onClose: () => void;
 }) {
   if (!entity) {
     return (
@@ -430,19 +465,23 @@ function DetailPanel({
 
   return (
     <aside className="roost-work-surface grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-4 rounded-company p-4">
-      <header className="flex items-start justify-between gap-3">
+      <header className="flex flex-col gap-3">
         <div className="flex min-w-0 items-start gap-3">
           <EntityAvatar entity={entity} />
           <div className="min-w-0">
-            <h2 className="truncate text-xl font-black text-company-ink">{entity.name}</h2>
+            <h2 className="break-words text-xl font-black leading-6 text-company-ink">{entity.name}</h2>
             <p className="text-sm text-company-muted">{entity.role || "Unassigned role"} - {entity.department || "06-kadry"}</p>
             <p className="mt-1 text-xs font-bold uppercase text-company-muted">{typeLabel(entity.type)} / {runtimeLabels[entity.runtimeMode]} / Paperclip {paperclipRuntime(entity)}</p>
           </div>
         </div>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex flex-wrap gap-2">
+          <CcButton iconLeft="ph-x" onClick={onClose} size="sm" variant="ghost">Close</CcButton>
           <CcButton iconLeft="ph-pencil-simple" onClick={() => onEdit(entity)} size="sm" variant="outline">Edit</CcButton>
           {entity.status !== "archived" ? (
             <CcButton iconLeft="ph-archive" onClick={() => onArchive(entity)} size="sm" variant="ghost">Archive</CcButton>
+          ) : null}
+          {entity.source !== "user" ? (
+            <CcButton iconLeft="ph-trash" onClick={() => onDelete(entity)} size="sm" variant="ghost">Delete</CcButton>
           ) : null}
         </div>
       </header>
@@ -628,15 +667,23 @@ export function PeopleAgentsRoute() {
   const [detailTab, setDetailTab] = useState<DetailTab>("profile");
   const [editingEntity, setEditingEntity] = useState<WorkforceEntity | null | undefined>(undefined);
   const [notice, setNotice] = useState<RouteNotice | null>(null);
+  const detailPanelRef = useRef<HTMLDivElement>(null);
   const packet = useOwnerPacket<WorkforcePacket>(`/v1/workforce?refresh=${refreshKey}`, true, t);
   const entities = packet.data?.entities || [];
   const filtered = useMemo(
     () => sortEntities(entities.filter((entity) => entityMatches(entity, query, typeFilter, statusFilter, scopeFilter)), sortKey),
     [entities, query, typeFilter, statusFilter, scopeFilter, sortKey]
   );
-  const selected = filtered.find((entity) => entity.id === selectedId) || filtered[0] || null;
+  const selected = selectedId ? filtered.find((entity) => entity.id === selectedId) || null : null;
   const hasActiveFilters = query.trim().length > 0 || typeFilter !== "all" || statusFilter !== "active" || scopeFilter !== "all" || sortKey !== "name";
   const attentionCount = entities.filter(needsAttention).length;
+
+  useEffect(() => {
+    if (!selectedId || typeof window === "undefined" || window.innerWidth >= 1280) return;
+    window.setTimeout(() => {
+      detailPanelRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    }, 0);
+  }, [selectedId]);
 
   function refresh() {
     setRefreshKey((current) => current + 1);
@@ -648,6 +695,7 @@ export function PeopleAgentsRoute() {
     setStatusFilter("active");
     setScopeFilter("all");
     setSortKey("name");
+    setSelectedId("");
   }
 
   async function archiveEntity(entity: WorkforceEntity) {
@@ -656,6 +704,20 @@ export function PeopleAgentsRoute() {
     try {
       await api(`/v1/workforce/${entity.id}`, { method: "DELETE" });
       setNotice({ tone: "success", title: `${entity.name} was archived.` });
+      setSelectedId("");
+      refresh();
+    } catch (error) {
+      setNotice({ tone: "error", title: userErrorMessage(error, t) });
+    }
+  }
+
+  async function deleteEntity(entity: WorkforceEntity) {
+    if (!window.confirm(`Delete ${entity.name}? This permanently removes the workforce record, but does not delete a user account or Paperclip runtime.`)) return;
+    setNotice(null);
+    try {
+      await api(`/v1/workforce/${entity.id}/actions/delete`, { method: "POST" });
+      setNotice({ tone: "success", title: `${entity.name} was deleted.` });
+      setSelectedId("");
       refresh();
     } catch (error) {
       setNotice({ tone: "error", title: userErrorMessage(error, t) });
@@ -669,7 +731,7 @@ export function PeopleAgentsRoute() {
       {notice ? <CcNotice tone={notice.tone} title={notice.title} live /> : null}
 
       {packet.status === "ready" ? (
-        <section className="grid min-h-[calc(100vh-10rem)] gap-4 xl:grid-cols-[minmax(0,1.05fr)_minmax(24rem,0.95fr)]">
+        <section className={`grid min-h-[calc(100vh-10rem)] gap-4 ${selected ? "xl:grid-cols-[minmax(0,1.05fr)_minmax(24rem,0.95fr)]" : ""}`}>
           <main className="roost-work-surface grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-3 rounded-company p-3">
             <header className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
@@ -678,7 +740,6 @@ export function PeopleAgentsRoute() {
                 <p className="text-sm text-company-muted">{filtered.length} of {entities.length} workforce records visible</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                {selected ? <CcButton iconLeft="ph-pencil-simple" onClick={() => setEditingEntity(selected)} size="sm" variant="outline">Edit selected</CcButton> : null}
                 <CcButton iconLeft="ph-plus" onClick={() => setEditingEntity(null)} size="sm" variant="primary">New entity</CcButton>
               </div>
             </header>
@@ -740,19 +801,27 @@ export function PeopleAgentsRoute() {
                 {filtered.length ? (
                   <div className="grid gap-2">
                     {filtered.map((entity) => (
-                      <button className={`grid gap-2 rounded-company border text-left transition hover:border-primary hover:bg-primary/5 ${density === "compact" ? "p-2" : "p-3"} ${selected?.id === entity.id ? "border-primary/60 bg-primary/10" : "border-base-300 bg-base-100/70"}`} key={entity.id} onClick={() => {
-                        setSelectedId(entity.id);
-                        setDetailTab("profile");
-                      }} type="button">
-                        <div className="flex items-start justify-between gap-3">
+                      <article className={`grid gap-2 rounded-company border text-left transition hover:border-primary hover:bg-primary/5 ${density === "compact" ? "p-2" : "p-3"} ${selected?.id === entity.id ? "border-primary/60 bg-primary/10" : "border-base-300 bg-base-100/70"}`} key={entity.id}>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                           <div className="flex min-w-0 items-start gap-3">
                             {density === "comfortable" ? <EntityAvatar entity={entity} /> : null}
                             <div className="min-w-0">
-                              <strong className="block truncate text-company-ink">{entity.name}</strong>
-                              <span className="block truncate text-sm text-company-muted">{entity.role || "Unassigned role"} - {entity.department || "06-kadry"}</span>
+                              <strong className="block break-words leading-5 text-company-ink">{entity.name}</strong>
+                              <span className="block break-words text-sm leading-5 text-company-muted">{entity.role || "Unassigned role"} - {entity.department || "06-kadry"}</span>
                             </div>
                           </div>
-                          <span className={`badge badge-sm shrink-0 ${badgeTone(entity.status)}`}>{entity.status}</span>
+                          <div className="flex w-full flex-wrap items-center justify-between gap-2 sm:w-auto sm:shrink-0 sm:justify-end">
+                            <span className={`badge badge-sm ${badgeTone(entity.status)}`}>{entity.status}</span>
+                            <div className="flex flex-wrap items-center justify-end gap-1">
+                              <RowAction icon="ph-eye" label="Preview" onClick={() => {
+                                setSelectedId(entity.id);
+                                setDetailTab("profile");
+                              }} tone="outline" />
+                              <RowAction icon="ph-pencil-simple" label="Edit" onClick={() => setEditingEntity(entity)} />
+                              <RowAction disabled={entity.status === "archived"} icon="ph-archive" label="Archive" onClick={() => archiveEntity(entity)} />
+                              <RowAction disabled={entity.source === "user"} icon="ph-trash" label={entity.source === "user" ? "User-backed owner record cannot be deleted" : "Delete"} onClick={() => deleteEntity(entity)} tone="error" />
+                            </div>
+                          </div>
                         </div>
                         <div className="grid gap-1 text-xs text-company-muted sm:grid-cols-3 lg:grid-cols-6">
                           <span className="truncate"><strong className="text-company-ink">{typeLabel(entity.type)}</strong></span>
@@ -772,7 +841,7 @@ export function PeopleAgentsRoute() {
                             {entity.readiness?.nextAction || "Profile needs completion"}
                           </p>
                         ) : null}
-                      </button>
+                      </article>
                     ))}
                   </div>
                 ) : (
@@ -787,7 +856,19 @@ export function PeopleAgentsRoute() {
               </div>
             </main>
 
-            <DetailPanel entity={selected} onArchive={archiveEntity} onEdit={setEditingEntity} setTab={setDetailTab} tab={detailTab} />
+            {selected ? (
+              <div className="order-first xl:order-none" ref={detailPanelRef}>
+                <DetailPanel
+                  entity={selected}
+                  onArchive={archiveEntity}
+                  onClose={() => setSelectedId("")}
+                  onDelete={deleteEntity}
+                  onEdit={setEditingEntity}
+                  setTab={setDetailTab}
+                  tab={detailTab}
+                />
+              </div>
+            ) : null}
         </section>
       ) : null}
 

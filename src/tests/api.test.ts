@@ -470,7 +470,8 @@ test("CompanyCore v1 protected API flow", async () => {
 
   const initialWorkforce = await request("/v1/workforce", { headers: authA });
   assert.equal(initialWorkforce.status, 200);
-  assert.equal((initialWorkforce.body as { data: { summary: { humans: number } } }).data.summary.humans, 1);
+  const initialWorkforceBody = initialWorkforce.body as { data: { summary: { humans: number }; entities: Array<{ id: string; source?: string }> } };
+  assert.equal(initialWorkforceBody.data.summary.humans, 1);
 
   const workforceAgent = await request("/v1/workforce", {
     method: "POST",
@@ -526,6 +527,25 @@ test("CompanyCore v1 protected API flow", async () => {
   const workforceSyncBody = workforceSync.body as { data: { entity: { syncStatus: string }; outboxId: string } };
   assert.equal(workforceSyncBody.data.entity.syncStatus, "queued");
   assert.ok(workforceSyncBody.data.outboxId);
+
+  const userBackedWorkforce = initialWorkforceBody.data.entities.find((entity) => entity.source === "user");
+  assert.ok(userBackedWorkforce);
+  const blockedOwnerDelete = await request(`/v1/workforce/${userBackedWorkforce.id}/actions/delete`, {
+    method: "POST",
+    headers: authA
+  });
+  assert.equal(blockedOwnerDelete.status, 409);
+  assert.equal((blockedOwnerDelete.body as { error: string }).error, "cannot_delete_user_backed_workforce_entity");
+
+  const workforceDelete = await request(`/v1/workforce/${workforceAgentBody.data.id}/actions/delete`, {
+    method: "POST",
+    headers: authA
+  });
+  assert.equal(workforceDelete.status, 200);
+  assert.equal((workforceDelete.body as { data: { deleted: boolean } }).data.deleted, true);
+
+  const deletedWorkforceRead = await request(`/v1/workforce/${workforceAgentBody.data.id}`, { headers: authA });
+  assert.equal(deletedWorkforceRead.status, 404);
 
   const workforceB = await request("/v1/workforce", { headers: authB });
   assert.equal(workforceB.status, 200);

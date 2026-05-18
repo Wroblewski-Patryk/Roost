@@ -7,10 +7,12 @@ Last updated: 2026-05-18
 1. Production-smoke `PEOPLE-AGENTS-PAPERCLIP-001` after redeploy.
    - Source:
      `docs/planning/people-agents-paperclip-directors-task-contract.md`.
-   - Local verification passed. After deploy, smoke that the 13 Paperclip
-     director agents appear as active workforce records, old non-director seed
-     agents are archived, and `/people-agents` opens the improved active
-     Directory list.
+   - Local verification passed, including the follow-up Directory management
+     UX slice. After deploy, smoke that the owner appears as
+     `Patryk Wroblewski`, the 13 Paperclip director agents appear as active
+     workforce records, old non-director seed agents are archived, row-local
+     Preview/Edit/Archive/Delete controls work, and `/people-agents` opens the
+     improved active Directory list.
 
 1. Deploy and smoke `DMS-06-WORKFORCE-001` when the next release window opens.
    - Source:

@@ -153,6 +153,7 @@ export const adapterManifest = {
       { method: "POST", path: "/v1/workforce", capability: "workforce:write" },
       { method: "PATCH", path: "/v1/workforce/:id", capability: "workforce:write" },
       { method: "DELETE", path: "/v1/workforce/:id", capability: "workforce:write" },
+      { method: "POST", path: "/v1/workforce/:id/actions/delete", capability: "workforce:write" },
       { method: "POST", path: "/v1/workforce/:id/actions/sync", capability: "workforce:write" }
     ],
     assets: [

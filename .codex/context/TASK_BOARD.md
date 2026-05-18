@@ -53,6 +53,18 @@
 
 ## Recent Checkpoints
 
+- 2026-05-18: People/Agents Directory management presentation improved.
+  `06 People & Agents -> Directory` now hides the detail inspector until an
+  explicit Preview action, exposes row-local Preview/Edit/Archive/Delete
+  controls, keeps archive as lifecycle state, adds guarded hard delete through
+  `/v1/workforce/:id/actions/delete`, blocks hard delete for user-backed owner
+  records, and renders the selected detail panel first on mobile/tablet.
+  Seed and registration now model the owner as `source=user`; the seed updates
+  the owner workforce record to `Patryk Wroblewski`, `Founder / Owner`,
+  analytical profile, and INTJ-aligned Big Five. Validation passed:
+  `npm run validate`, `npm run test:api:local`, disposable PostgreSQL
+  migration/seed smoke, and rendered desktop/tablet/mobile proof with no
+  horizontal overflow.
 - 2026-05-18: Paperclip director roster extension implemented for
   `06 People & Agents`. A read-only Paperclip audit captured 00 AIA plus 12
   department directors. `workforce_entities` now stores hierarchy level,

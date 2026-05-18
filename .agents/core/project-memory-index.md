@@ -51,6 +51,10 @@ continue from repository files alone:
   detail/preview panels, and recovery states. Avoid hero sections, generic KPI
   bands, decorative badges, and explanatory first-viewport copy unless they
   directly support an operator decision.
+- `docs/ux/design-memory.md`: reusable UX decisions. As of 2026-05-18,
+  management rosters should use deliberate Preview actions, row-local
+  management controls, guarded destructive semantics, and detail-first selected
+  state on mobile/tablet.
 - `docs/planning/foundation-p1-hardening-task-contract.md`: first P1
   hardening wave after the 2026-05-18 application foundation audit. It adds
   `npm run test:api:local`, route/capability drift validation inside

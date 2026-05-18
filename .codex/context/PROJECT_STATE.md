@@ -96,6 +96,17 @@ Last updated: 2026-05-18
   proving 13 active Paperclip directors, 0 active legacy seed agents, 0 bad
   manager links, Big Five present, and generated files present, plus rendered
   desktop/tablet/mobile UI proof with no horizontal overflow.
+  The follow-up `PEOPLE-AGENTS-DIRECTORY-UX-002` slice then improved the same
+  Directory as a management tool: preview is explicit instead of always showing
+  the first record, each roster row has local Preview/Edit/Archive/Delete
+  controls, archive remains lifecycle state, guarded hard delete is exposed via
+  `/v1/workforce/:id/actions/delete`, user-backed owner records cannot be
+  hard-deleted, and mobile/tablet render selected details before the long
+  roster. Registration-created workforce owner records now use `source=user`;
+  seed updates the owner to `Patryk Wroblewski`, `Founder / Owner`,
+  analytical profile, and INTJ-aligned Big Five scores. Validation passed:
+  `npm run validate`, `npm run test:api:local`, disposable PostgreSQL seed
+  smoke, and rendered desktop/tablet/mobile proof with no overflow.
   As of 2026-05-16, the architectural direction is expanded in
   `docs/architecture/unified-organizational-operating-system.md`: CompanyCore
   is the unified organizational world state and operational source of truth,

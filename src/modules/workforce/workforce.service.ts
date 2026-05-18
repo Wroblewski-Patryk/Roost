@@ -46,6 +46,11 @@ export type WorkforceEntityUpdate = Partial<Omit<WorkforceEntityInput, "type">> 
   type?: WorkforceEntityType;
 };
 
+type WorkforceEntityCreateOptions = {
+  source?: string;
+  externalId?: string | null;
+};
+
 function slugify(value: string) {
   return value
     .trim()
@@ -524,7 +529,7 @@ export async function getWorkforceEntity(workspaceId: string, id: string) {
   return entity ? withGeneratedFiles(entity) : null;
 }
 
-export async function createWorkforceEntity(workspaceId: string, input: WorkforceEntityInput) {
+export async function createWorkforceEntity(workspaceId: string, input: WorkforceEntityInput, options: WorkforceEntityCreateOptions = {}) {
   const slug = await uniqueSlug(workspaceId, input.name, input.slug);
   const generatedFiles = generateWorkforceMarkdown({
     name: input.name,
@@ -569,7 +574,9 @@ export async function createWorkforceEntity(workspaceId: string, input: Workforc
       toolIndex: toJsonInput(input.toolIndex ?? []),
       authorityScope: toJsonInput(input.authorityScope ?? []),
       paperclipProfile: toJsonInput(input.paperclipProfile ?? {}),
-      generatedFiles: toJsonInput(generatedFiles)
+      generatedFiles: toJsonInput(generatedFiles),
+      source: options.source ?? "companycore",
+      externalId: options.externalId ?? null
     }
   });
 
@@ -660,6 +667,46 @@ export async function updateWorkforceEntity(workspaceId: string, id: string, inp
 
 export async function archiveWorkforceEntity(workspaceId: string, id: string) {
   return updateWorkforceEntity(workspaceId, id, { status: "archived", synchronizationEnabled: false });
+}
+
+export async function deleteWorkforceEntity(workspaceId: string, id: string) {
+  const existing = await prisma.workforceEntity.findFirst({
+    where: { id, workspaceId },
+    select: {
+      id: true,
+      type: true,
+      name: true,
+      slug: true,
+      source: true,
+      directReports: { select: { id: true }, take: 1 }
+    }
+  });
+  if (!existing) return null;
+  if (existing.source === "user") {
+    throw Object.assign(new Error("cannot_delete_user_backed_workforce_entity"), { status: 409 });
+  }
+  if (existing.directReports.length > 0) {
+    throw Object.assign(new Error("cannot_delete_entity_with_direct_reports"), { status: 409 });
+  }
+
+  await prisma.workforceEntity.delete({ where: { id: existing.id } });
+
+  await createEvent({
+    type: "workforce_entity_deleted",
+    workspaceId,
+    source: "companycore",
+    payload: {
+      workforceEntityId: existing.id,
+      type: existing.type,
+      name: existing.name,
+      slug: existing.slug
+    }
+  });
+
+  return {
+    id: existing.id,
+    deleted: true
+  };
 }
 
 export async function syncWorkforceEntity(workspaceId: string, id: string, requestedByUserId?: string) {

@@ -1421,3 +1421,15 @@ of rediscovering them.
   in CompanyCore first. They may be simple names in V1, but the UI should treat
   them as actionable management data and leave room for future resource-linked
   records.
+
+### 2026-05-18 - Roster Preview Management Pattern
+
+- Dense management rosters should not auto-open the first record. Default state
+  should support scanning and filtering; detail panels appear only after an
+  explicit Preview action.
+- Record actions belong beside the record they affect. Prefer local icon
+  controls for Preview/Edit/Archive/Delete, with backend-confirmed destructive
+  semantics and disabled states for protected records.
+- On mobile/tablet, selected details should render before the long roster so a
+  tap immediately shows the selected profile instead of sending the operator to
+  the bottom of a list.
