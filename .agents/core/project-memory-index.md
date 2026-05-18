@@ -57,8 +57,9 @@ continue from repository files alone:
   `npm run validate`, compatible structured API error helper adoption for
   auth/API-key/central error paths, scoped-by-default owner API key creation,
   request IDs, security headers, and basic auth/API rate limits. Full API test
-  execution still needs a healthy local PostgreSQL/Docker environment or a
-  supplied validation `DATABASE_URL`.
+  execution is verified after recovering Docker Desktop: `npm run
+  test:api:local` applied all 24 migrations against disposable PostgreSQL and
+  passed 6/6 API subtests, then removed the validation container.
 - `docs/planning/human-agent-web-architecture-map.md`: current V2
   human-agent web direction. As of 2026-05-14, `/react-agent-tools` exposes
   the owner-visible MCP tool surface, and `/react-company-os` includes the

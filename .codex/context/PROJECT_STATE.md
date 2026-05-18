@@ -77,11 +77,11 @@ Last updated: 2026-05-18
   API key creation, request IDs, security headers, and basic auth/API rate
   limits. Validation passed: script syntax checks, route/capability drift
   check, `npm run build:server`, `npm run build:web`, `npm run validate`,
-  `git diff --check`, and `npm audit --json` with 0 vulnerabilities. Full API
-  integration test execution remains pending; `npm run test:api:local` now
-  fails cleanly when Docker availability times out instead of hanging, and
-  will run the full API gate when Docker/PostgreSQL is healthy or a validation
-  `DATABASE_URL` is supplied.
+  `git diff --check`, and `npm audit --json` with 0 vulnerabilities. Docker
+  Desktop was recovered locally, `docker info` reported engine `28.3.2`, and
+  `npm run test:api:local` passed against disposable PostgreSQL with all 24
+  migrations and 6/6 API integration subtests. The validation container was
+  removed afterwards.
   As of 2026-05-16, the architectural direction is expanded in
   `docs/architecture/unified-organizational-operating-system.md`: CompanyCore
   is the unified organizational world state and operational source of truth,

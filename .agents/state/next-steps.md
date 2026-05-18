@@ -4,17 +4,6 @@ Last updated: 2026-05-18
 
 ## NOW
 
-1. Verify `FOUNDATION-P1-001` in a healthy API test environment.
-   - Source:
-     `docs/planning/foundation-p1-hardening-task-contract.md`.
-   - Why now: the first hardening slice added `npm run test:api:local`, API
-     error helper adoption, scoped-by-default API key creation,
-     route/capability drift validation, request IDs, security headers, and
-     API/auth rate limits. The remaining confidence gap is full integration
-     execution in a healthy PostgreSQL/Docker environment.
-   - Acceptance: `npm run test:api:local` runs migrations and API tests,
-     records output, and cleans validation-owned resources.
-
 1. Deploy and smoke `DMS-06-WORKFORCE-001` when the next release window opens.
    - Source:
      `docs/planning/people-agents-workforce-v1-task-contract.md`.

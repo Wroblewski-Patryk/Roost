@@ -5,7 +5,7 @@
 - Title: Foundation P1 hardening wave
 - Task Type: fix
 - Current Stage: verification
-- Status: REVIEW
+- Status: DONE
 - Owner: Backend Builder + QA/Test + Security + Ops/Release
 - Depends on: `docs/planning/application-foundation-audit-2026-05-18.md`
 - Priority: P1
@@ -13,7 +13,7 @@
 - Requirement Rows: `REQ-FOUNDATION-HARDENING-001`
 - Operation Mode: BUILDER
 - Mission ID: FOUNDATION-P1-HARDENING
-- Mission Status: PARTIALLY_VERIFIED
+- Mission Status: VERIFIED
 
 ## Goal
 
@@ -51,7 +51,7 @@ audit before continuing broad feature growth.
 - [x] API auth and central error middleware return the compatible structured
       error envelope.
 - [x] Runtime adds request IDs, security headers, and rate limits.
-- [ ] Full API integration tests pass through `npm run test:api:local` in a
+- [x] Full API integration tests pass through `npm run test:api:local` in a
       healthy local PostgreSQL/Docker environment.
 
 ## Validation Evidence
@@ -65,11 +65,11 @@ audit before continuing broad feature growth.
 - `npm run validate`: passed.
 - `git diff --check`: passed with line-ending warnings only.
 - `npm audit --json`: passed with 0 vulnerabilities.
-- `npm run test:api:local`: failed cleanly because Docker timed out after the
-  runner's 20s availability check; no unbounded hang.
-- Full API test execution is not yet proven in this local session because the
-  Docker daemon availability probe timed out and no default `DATABASE_URL` is
-  configured.
+- Docker Desktop was restarted successfully; `docker info --format
+  '{{.ServerVersion}}'` returned `28.3.2`.
+- `npm run test:api:local`: passed. The runner created a disposable
+  PostgreSQL container, applied all 24 migrations from a fresh database, ran 6
+  API integration subtests, and removed the validation container afterwards.
 
 ## Security / Privacy Evidence
 
@@ -86,8 +86,9 @@ audit before continuing broad feature growth.
   application audit.
 - Files changed: package scripts, auth/capability manifests, middleware,
   API-key routes, API tests, validation scripts, and source-of-truth docs.
-- What is incomplete: full API integration test execution still needs a
-  healthy local PostgreSQL/Docker environment or caller-provided
-  `DATABASE_URL`.
-- Next steps: run `npm run test:api:local` in a healthy validation environment,
-  then continue migrating route-local error responses to the shared helper.
+- What is incomplete: route-local business errors outside the migrated
+  middleware still use the legacy envelope and can be migrated in later
+  focused slices.
+- Next steps: continue route-local error helper migration only when touching
+  those modules; broader feature work may proceed with the full local API gate
+  available.

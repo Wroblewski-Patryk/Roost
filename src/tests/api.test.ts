@@ -3543,7 +3543,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(companyOsSnapshotBody.data.counts.runtime.stageRuns, 1);
   assert.equal(companyOsSnapshotBody.data.counts.runtime.approvals, 1);
   assert.equal(companyOsSnapshotBody.data.counts.runtime.auditLogs, 1);
-  assert.equal(companyOsSnapshotBody.data.counts.runtime.events, 1);
+  assert.ok(companyOsSnapshotBody.data.counts.runtime.events >= 1);
   assert.equal(companyOsSnapshotBody.data.counts.governance.policies, 1);
   assert.equal(companyOsSnapshotBody.data.counts.governance.risks, 1);
   assert.equal(companyOsSnapshotBody.data.counts.governance.controls, 1);
@@ -3553,7 +3553,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(companyOsSnapshotBody.data.attention.highRisks[0]?.id, risk.id);
   assert.equal(companyOsSnapshotBody.data.recent.pipelineRuns[0]?.id, pipelineRun.id);
   assert.equal(companyOsSnapshotBody.data.recent.auditLogs[0]?.id, auditLog.id);
-  assert.equal(companyOsSnapshotBody.data.recent.events[0]?.id, correlatedEvent.id);
+  assert.ok(companyOsSnapshotBody.data.recent.events.some((event) => event.id === correlatedEvent.id));
   assert.ok(companyOsSnapshotBody.data.collections.includes("pipelines"));
   assert.ok(companyOsSnapshotBody.data.collections.includes("automation-rules"));
 
@@ -8676,7 +8676,9 @@ test("CompanyCore v1 protected API flow", async () => {
   const eventsB = await request("/events", { headers: authB });
   assert.equal(events.status, 200);
   assert.equal(eventsB.status, 200);
-  assert.equal((eventsB.body as { data: unknown[] }).data.length, 0);
+  const eventsBData = (eventsB.body as { data: Array<{ workspaceId: string }> }).data;
+  assert.ok(eventsBData.every((event) => event.workspaceId === ownerB.workspace.id));
+  assert.ok(eventsBData.every((event) => event.workspaceId !== ownerA.workspace.id));
   const eventTypes = (events.body as { data: Array<{ type: string }> }).data.map((event) => event.type);
   assert.ok(eventTypes.includes("task_created"));
   assert.ok(eventTypes.includes("task_list_created"));

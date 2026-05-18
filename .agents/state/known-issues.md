@@ -6,8 +6,6 @@ Last updated: 2026-05-18
 
 | ID | Severity | Area | Summary | Owner | Status | Next action |
 | --- | --- | --- | --- | --- | --- | --- |
-| KI-012 | P1 | Local validation environment | Full API integration validation has a one-command runner now, but the target proof remains blocked until local Docker/PostgreSQL is healthy or `DATABASE_URL` is supplied. | QA/Test + Ops/Release | MITIGATED | Run `npm run test:api:local` in a healthy validation environment and record cleanup evidence. |
-| KI-011 | P2 | Local validation environment | During OPS-MGMT-002, Docker CLI/daemon commands timed out while trying to start or inspect a disposable PostgreSQL container, blocking `npm run test:api` proof for the new Operations task-list endpoint. | QA/Test + Ops/Release | OPEN | Rerun `npm run test:api` on a healthy PostgreSQL validation environment before upgrading OPS-MGMT-002 confidence to High. |
 | KI-008 | P2 | Google Drive production OAuth write/read samples | Historical production OAuth decrypt/write-read evidence was stale after a prior secret incident. The 2026-05-16 production audit proves the stored Google Drive OAuth path can list/import selected folders and refresh content snapshots, but Docs/Sheets write samples and `changes/reconcile` still need targeted proof. | Ops/Release + Owner | MITIGATED | Run a target-safe Docs/Sheets write/read smoke and the KI-009 changes-reconcile diagnostic before closing the historical OAuth concern completely. |
 | KI-007 | P1 | Product data completeness | Production `/v1/operating-model` has 13 areas and 26 external mappings but `0` storage locations, `0` knowledge roots, `0` automation definitions, and `/v1/projects` returns `0` while tasks exist. | Product + Backend | OPEN | Execute ACF-PROD-001 to decide, seed, import, or explicitly defer these owner-facing operating model records. |
 | KI-002 | P2 | Release automation | GitHub-to-Coolify auto-deploy is not proven as reliable; manual VPS/Coolify backend rollover remains the accepted and approved path. | Ops/Release | ACCEPTED | After the next deploy, compare public `/health` `build.commit` with the pushed commit before claiming push-to-running-image proof. |
@@ -33,6 +31,14 @@ Last updated: 2026-05-18
 
 ## Recently Closed Issues
 
+- KI-012 Local API integration validation runner: closed on 2026-05-18 by
+  FOUNDATION-P1-001 after Docker Desktop was recovered, `docker info` reported
+  engine `28.3.2`, and `npm run test:api:local` passed against disposable
+  PostgreSQL with all 24 migrations and 6/6 API subtests. The validation
+  container was removed afterwards.
+- KI-011 Docker/PostgreSQL validation timeout for OPS-MGMT-002: closed on
+  2026-05-18 after Docker Desktop recovery and successful
+  `npm run test:api:local` execution against disposable PostgreSQL.
 - KI-014 New owner-created API keys defaulting to broad access: closed on
   2026-05-18 by FOUNDATION-P1-001. New API keys now require a profile,
   explicit scopes, or explicit `fullAccessConfirmed`; implicit empty scopes are

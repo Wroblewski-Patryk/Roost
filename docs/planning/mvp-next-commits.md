@@ -7,14 +7,6 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
-- [ ] Verify `FOUNDATION-P1-001` in a healthy API test environment.
-      The hardening implementation added `npm run test:api:local`,
-      route/capability drift checks inside `npm run validate`, compatible
-      structured API error helper adoption for auth/API-key/central error
-      paths, scoped-by-default owner API key creation, request IDs, security
-      headers, and auth/API rate limits. Remaining proof: run
-      `npm run test:api:local` successfully with Docker/PostgreSQL or a
-      supplied validation `DATABASE_URL`.
 - [ ] Continue V1 department systems with `DMS-NEXT-004` Relationships
       Management read packet and board, unless deployment smoke is selected
       first. The owner-approved `00 Main -> 04 Operations ->
