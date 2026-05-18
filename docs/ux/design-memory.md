@@ -1464,3 +1464,27 @@ of rediscovering them.
   `docs/planning/people-agents-directory-table-refinement-task-contract.md`,
   `web/src/components/cc-data-table.tsx`, and
   `docs/ux/evidence/people-agents-directory-table-*.png`.
+
+### 2026-05-19 - Managed Data Table Primitive
+- Type: reusable_pattern
+- Context: The owner defined the minimum reusable behavior expected from
+  CompanyCore management tables: table-wide controls, real table rows,
+  pagination controls, row selection, configurable actions, column visibility,
+  sorting, filtering, and modal confirmations instead of browser alerts.
+- Decision: Use `CcDataTable` as the managed table primitive for flat
+  backend-backed indexes. The component owns three stacked zones: filters and
+  table settings, the table itself, and pagination/page-size controls. It
+  should support search, quick filters, generated column filters for fixed
+  values, sortable headers, user-controlled column visibility, first-column
+  row selection, optional bulk actions, sticky row actions, and the page-size
+  set `10`, `25`, `50`, `100`, `250`, `500`.
+- Reuse when: A screen lists one primary object per row and needs management
+  operations such as Preview, Duplicate, Edit, Archive, Delete, or extra
+  domain-specific row actions.
+- Avoid when: The primary experience is a calendar, board, tree, file preview,
+  canvas, or a long record form that deserves a dedicated route.
+- Evidence:
+  `docs/planning/shared-managed-table-component-task-contract.md`,
+  `web/src/components/cc-data-table.tsx`,
+  `web/src/features/departments/people-agents-route.tsx`, and
+  `docs/ux/evidence/managed-table-preview-*.png`.

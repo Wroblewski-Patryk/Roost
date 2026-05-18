@@ -26,6 +26,27 @@ fixes for this repository.
 
 ## Entries
 
+### 2026-05-19 - Centralize Managed Table Mechanics
+- Context: The owner defined a reusable table contract for CompanyCore
+  management screens after the People/Agents Directory became a real roster.
+- Symptom: Rebuilding search, filters, sorting, actions, selection, column
+  visibility, pagination, and destructive confirmations route by route would
+  quickly create inconsistent management views.
+- Root cause: `CcDataTable` existed as a display primitive, but not yet as the
+  shared owner of table-state mechanics.
+- Guardrail: Flat management indexes should put reusable table behavior in
+  `CcDataTable`, then let routes provide columns, rows, fixed-value filters,
+  row actions, bulk actions, and modal implementations.
+- Preferred pattern: Three stacked zones: filters/settings, min-width table,
+  pagination/page-size controls. Keep Preview/Duplicate/Edit/Archive/Delete as
+  row-local actions and use DaisyUI modals for destructive confirmations.
+- Avoid: Route-local duplicate table mechanics, `window.confirm`, and table
+  pages that cannot hide columns or paginate dense backend records.
+- Evidence: `CC-DATA-TABLE-MANAGED-005` passed `npm run build:web`, `npm run
+  validate`, `npm run test:api:local`, and responsive Playwright proof covering
+  filters, pagination, selection, column visibility, duplicate modal, archive
+  modal, and no overflow.
+
 ### 2026-05-18 - Prefer Operational Tables For Flat Management Indexes
 - Context: `06 People & Agents -> Directory` had already moved away from a
   permanent detail inspector, but the route-local roster still looked more

@@ -1,6 +1,6 @@
 # Next Steps
 
-Last updated: 2026-05-18
+Last updated: 2026-05-19
 
 ## NOW
 
@@ -8,11 +8,16 @@ Last updated: 2026-05-18
    - Source:
      `docs/planning/people-agents-paperclip-directors-task-contract.md`.
    - Local verification passed, including the follow-up Directory management
-     UX/table slices. After deploy, smoke that the owner appears as
+     UX/table slices and managed `CcDataTable` controls. After deploy, smoke
+     that the owner appears as
      `Patryk Wroblewski`, the 13 Paperclip director agents appear as active
      workforce records, old non-director seed agents are archived, row-local
-     Preview/Edit/Archive/Delete controls are sticky and work, Preview opens a
-     profile modal, New/Edit open the refined form modal, and
+     Preview/Duplicate/Edit/Archive/Delete controls are sticky and work,
+     Preview opens a profile modal, New/Edit/Duplicate open the refined form
+     modal, archive/delete use DaisyUI confirmation modals, table search,
+     quick filters, generated column filters, sorting, column visibility, row
+     selection, page-size changes, next/previous pagination, and page input
+     work, and
      `/people-agents` opens the improved active Directory table with one row
      per workforce entity and visible People/Agents scope chips.
 

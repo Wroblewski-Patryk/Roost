@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Last updated: 2026-05-18
+Last updated: 2026-05-19
 
 ## Product Snapshot
 - Name: LuckySparrow Company Core
@@ -128,6 +128,21 @@ Last updated: 2026-05-18
   with exactly one table, no card roster articles, People = 1, Agents = 13,
   visible Preview action without horizontal scrolling, no console issues, and
   no page overflow.
+  On 2026-05-19, CC-DATA-TABLE-MANAGED-005 expanded `CcDataTable` into the
+  reusable managed-table primitive requested for future CompanyCore flat
+  indexes. The component now owns a filter/settings zone, a min-width table
+  zone, and a pagination/page-size zone; supports search, generated
+  fixed-value column filters, sortable headers, column visibility, first-column
+  row selection, optional bulk actions, row action items, page input, and
+  10/25/50/100/250/500 page sizes. `06 People & Agents -> Directory` now
+  consumes that primitive with active workforce defaults, People/Agents,
+  Directors, and Needs-attention quick filters, Preview/Duplicate/Edit/Archive/Delete
+  row actions, duplicate modal create mode, and DaisyUI archive/delete
+  confirmation modals. Validation passed: `npm run build:web`,
+  `npm run validate`, `npm run test:api:local` with all 25 migrations and 6/6
+  API tests, plus Playwright desktop/tablet/mobile proof covering filters,
+  page-size changes, pagination, page input, row selection, column hiding,
+  duplicate modal, archive modal, and no page overflow.
   As of 2026-05-16, the architectural direction is expanded in
   `docs/architecture/unified-organizational-operating-system.md`: CompanyCore
   is the unified organizational world state and operational source of truth,

@@ -2,7 +2,7 @@ import { FormEvent, useMemo, useState } from "react";
 import { api } from "../../api/client";
 import { userErrorMessage } from "../../api/errors";
 import { CcButton } from "../../components/cc-button";
-import { CcDataTable, type CcTableColumn } from "../../components/cc-data-table";
+import { CcDataTable, type CcTableColumn, type CcTableQuickFilter, type CcTableRowAction } from "../../components/cc-data-table";
 import { CcField } from "../../components/cc-field";
 import { CcNotice } from "../../components/cc-notice";
 import { CcTextInput } from "../../components/cc-text-input";
@@ -11,11 +11,9 @@ import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import { WorkforceEntity, WorkforcePacket } from "../../types";
 
-type StatusFilter = "all" | WorkforceEntity["status"];
 type DetailTab = "profile" | "access" | "work" | "authority" | "files";
-type ScopeFilter = "all" | "humans" | "agents" | "directors" | "attention";
-type SortKey = "name" | "department" | "updated" | "work" | "tools" | "knowledge";
 type RouteNotice = { tone: "success" | "error"; title: string };
+type ConfirmAction = { type: "archive" | "delete"; entity: WorkforceEntity } | null;
 
 const runtimeLabels: Record<WorkforceEntity["runtimeMode"], string> = {
   manual: "Manual",
@@ -41,10 +39,6 @@ function badgeTone(value?: string) {
 
 function typeLabel(type: WorkforceEntity["type"]) {
   return type === "human" ? "Human" : "Agent";
-}
-
-function listCount(value?: string[]) {
-  return Array.isArray(value) ? value.length : 0;
 }
 
 function bigFiveSummary(entity: WorkforceEntity) {
@@ -114,79 +108,6 @@ function EntityAvatar({ entity }: { entity: WorkforceEntity }) {
   );
 }
 
-function RowAction({
-  label,
-  icon,
-  tone = "ghost",
-  disabled,
-  onClick
-}: {
-  label: string;
-  icon: string;
-  tone?: "ghost" | "outline" | "error";
-  disabled?: boolean;
-  onClick: () => void;
-}) {
-  const toneClass = tone === "error" ? "btn-error btn-outline" : tone === "outline" ? "btn-outline" : "btn-ghost";
-  return (
-    <button
-      aria-label={label}
-      className={`btn btn-xs btn-square ${toneClass}`}
-      disabled={disabled}
-      onClick={(event) => {
-        event.stopPropagation();
-        onClick();
-      }}
-      title={label}
-      type="button"
-    >
-      <i className={`ph-bold ${icon}`} aria-hidden="true"></i>
-    </button>
-  );
-}
-
-function entityMatches(entity: WorkforceEntity, query: string, status: StatusFilter, scope: ScopeFilter) {
-  if (scope === "humans" && entity.type !== "human") return false;
-  if (scope === "agents" && entity.type !== "agent") return false;
-  if (scope === "directors" && entity.hierarchyLevel !== "department_director" && entity.hierarchyLevel !== "executive_root") return false;
-  if (scope === "attention" && !needsAttention(entity)) return false;
-  if (status !== "all" && entity.status !== status) return false;
-  const normalized = query.trim().toLowerCase();
-  if (!normalized) return true;
-  return [
-    entity.name,
-    entity.slug,
-    entity.role,
-    entity.department,
-    entity.model,
-    entity.hierarchyLevel,
-    ...(entity.skillIndex || []),
-    ...(entity.knowledgeIndex || []),
-    ...(entity.toolIndex || [])
-  ].filter(Boolean).join(" ").toLowerCase().includes(normalized);
-}
-
-function sortEntities(entities: WorkforceEntity[], sort: SortKey) {
-  return [...entities].sort((a, b) => {
-    if (sort === "updated") {
-      return String(b.updatedAt || "").localeCompare(String(a.updatedAt || ""));
-    }
-    if (sort === "department") {
-      return `${a.department || ""} ${a.name}`.localeCompare(`${b.department || ""} ${b.name}`);
-    }
-    if (sort === "work") {
-      return (b.work?.summary.active ?? 0) - (a.work?.summary.active ?? 0) || a.name.localeCompare(b.name);
-    }
-    if (sort === "tools") {
-      return listCount(b.toolIndex) - listCount(a.toolIndex) || a.name.localeCompare(b.name);
-    }
-    if (sort === "knowledge") {
-      return listCount(b.knowledgeIndex) - listCount(a.knowledgeIndex) || a.name.localeCompare(b.name);
-    }
-    return a.name.localeCompare(b.name);
-  });
-}
-
 function defaultEntity(): Partial<WorkforceEntity> {
   return {
     type: "agent",
@@ -215,12 +136,14 @@ function splitIndex(value: FormDataEntryValue | null) {
 
 function WorkforceForm({
   entity,
+  mode = "edit",
   managers,
   dictionaries,
   onClose,
   onSaved
 }: {
   entity?: WorkforceEntity | null;
+  mode?: "create" | "edit";
   managers: WorkforceEntity[];
   dictionaries?: WorkforcePacket["dictionaries"];
   onClose: () => void;
@@ -234,6 +157,7 @@ function WorkforceForm({
   const statuses = dictionaries?.statuses || ["active", "inactive", "paused", "archived"];
   const runtimeModes = dictionaries?.runtimeModes || Object.keys(runtimeLabels) as WorkforceEntity["runtimeMode"][];
   const personalityProfiles = dictionaries?.personalityProfiles || ["analytical", "creative", "executive", "supportive", "researcher", "custom"];
+  const isEditMode = mode === "edit" && Boolean(entity?.id);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -271,8 +195,8 @@ function WorkforceForm({
     setSaveState("saving");
     setError("");
     try {
-      await api(entity ? `/v1/workforce/${entity.id}` : "/v1/workforce", {
-        method: entity ? "PATCH" : "POST",
+      await api(isEditMode ? `/v1/workforce/${entity!.id}` : "/v1/workforce", {
+        method: isEditMode ? "PATCH" : "POST",
         body: JSON.stringify(body)
       });
       onSaved();
@@ -291,8 +215,8 @@ function WorkforceForm({
         <div className="flex items-start justify-between gap-3 border-b border-base-300 p-4 sm:p-5">
           <div>
             <p className="text-sm font-black uppercase text-primary">06 People / Agents</p>
-            <h2 className="mt-1 text-2xl font-black text-company-ink" id="workforce-form-title">{entity ? "Edit workforce entity" : "New workforce entity"}</h2>
-            <p className="mt-1 text-sm text-company-muted">{entity ? "Update identity, responsibility, runtime access, and generated context." : "Create a human or AI workforce record connected to CompanyCore truth."}</p>
+            <h2 className="mt-1 text-2xl font-black text-company-ink" id="workforce-form-title">{isEditMode ? "Edit workforce entity" : entity ? "Duplicate workforce entity" : "New workforce entity"}</h2>
+            <p className="mt-1 text-sm text-company-muted">{isEditMode ? "Update identity, responsibility, runtime access, and generated context." : "Create a human or AI workforce record connected to CompanyCore truth."}</p>
           </div>
           <button className="btn btn-ghost btn-sm btn-circle" aria-label="Close" onClick={onClose} type="button">
             <i className="ph-bold ph-x" aria-hidden="true"></i>
@@ -307,7 +231,7 @@ function WorkforceForm({
               <h3 className="font-black text-company-ink">Identity and role</h3>
               <div className="mt-3 grid gap-4 md:grid-cols-2">
                 <CcField label="Name" required>
-                  {({ id }) => <CcTextInput autoFocus={!entity} defaultValue={values.name || ""} id={id} name="name" required />}
+                  {({ id }) => <CcTextInput autoFocus={!isEditMode} defaultValue={values.name || ""} id={id} name="name" required />}
                 </CcField>
                 <CcField label="Slug">
                   {({ id }) => <CcTextInput defaultValue={values.slug || ""} id={id} name="slug" />}
@@ -662,31 +586,98 @@ function DetailModal({
   );
 }
 
+function ConfirmEntityModal({
+  action,
+  entity,
+  onCancel,
+  onConfirm
+}: {
+  action: "archive" | "delete";
+  entity: WorkforceEntity;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const isDelete = action === "delete";
+  return (
+    <dialog className="modal modal-open" open>
+      <div className="modal-box max-w-xl border border-base-300 bg-base-100">
+        <button className="btn btn-ghost btn-sm btn-circle absolute right-3 top-3" aria-label="Close" onClick={onCancel} type="button">
+          <i className="ph-bold ph-x" aria-hidden="true"></i>
+        </button>
+        <p className={`text-sm font-black uppercase ${isDelete ? "text-error" : "text-warning"}`}>
+          {isDelete ? "Delete workforce record" : "Archive workforce record"}
+        </p>
+        <h2 className="mt-2 text-2xl font-black text-company-ink">{entity.name}</h2>
+        <p className="mt-3 text-sm leading-6 text-company-muted">
+          {isDelete
+            ? "This permanently removes the workforce record. It does not delete a user account or the Paperclip runtime, but the CompanyCore source-of-truth row will be gone."
+            : "This keeps the record for history, but removes it from active workforce use."}
+        </p>
+        <div className="mt-4 rounded-company border border-base-300 bg-base-200/50 p-3 text-sm">
+          <strong className="text-company-ink">{typeLabel(entity.type)}</strong>
+          <span className="mx-2 text-company-muted">/</span>
+          <span>{entity.role || "Unassigned role"}</span>
+          <span className="mx-2 text-company-muted">/</span>
+          <span>{entity.department || "No department"}</span>
+        </div>
+        <div className="modal-action">
+          <CcButton onClick={onCancel} variant="ghost">Cancel</CcButton>
+          <CcButton iconLeft={isDelete ? "ph-trash" : "ph-archive"} onClick={onConfirm} variant={isDelete ? "danger" : "warning"}>
+            {isDelete ? "Delete" : "Archive"}
+          </CcButton>
+        </div>
+      </div>
+      <form className="modal-backdrop" method="dialog">
+        <button onClick={onCancel}>close</button>
+      </form>
+    </dialog>
+  );
+}
+
 export function PeopleAgentsRoute() {
   const { t } = useLanguage();
   const [refreshKey, setRefreshKey] = useState(0);
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("active");
-  const [scopeFilter, setScopeFilter] = useState<ScopeFilter>("all");
-  const [sortKey, setSortKey] = useState<SortKey>("name");
   const [selectedId, setSelectedId] = useState("");
   const [detailTab, setDetailTab] = useState<DetailTab>("profile");
-  const [editingEntity, setEditingEntity] = useState<WorkforceEntity | null | undefined>(undefined);
+  const [editingEntity, setEditingEntity] = useState<{ entity?: WorkforceEntity | null; mode?: "create" | "edit" } | undefined>(undefined);
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
   const [notice, setNotice] = useState<RouteNotice | null>(null);
   const packet = useOwnerPacket<WorkforcePacket>(`/v1/workforce?refresh=${refreshKey}`, true, t);
   const entities = packet.data?.entities || [];
-  const filtered = useMemo(
-    () => sortEntities(entities.filter((entity) => entityMatches(entity, query, statusFilter, scopeFilter)), sortKey),
-    [entities, query, statusFilter, scopeFilter, sortKey]
-  );
   const selected = selectedId ? entities.find((entity) => entity.id === selectedId) || null : null;
-  const hasActiveFilters = query.trim().length > 0 || statusFilter !== "active" || scopeFilter !== "all" || sortKey !== "name";
   const attentionCount = entities.filter(needsAttention).length;
+  const duplicateEntity = (entity: WorkforceEntity): WorkforceEntity => ({
+    ...entity,
+    id: "",
+    name: `${entity.name} copy`,
+    slug: `${entity.slug || entity.name.toLowerCase().replace(/\s+/g, "-")}-copy`,
+    paperclipAgentId: null,
+    source: "manual",
+    externalId: null,
+    syncStatus: "not_synced",
+    syncLog: [],
+    createdAt: undefined,
+    updatedAt: undefined
+  });
   const tableColumns = useMemo<Array<CcTableColumn<WorkforceEntity>>>(() => [
     {
       key: "person",
       header: "Person / Agent",
       mobileLabel: "Record",
+      required: true,
+      sortable: true,
+      sortValue: (entity) => entity.name,
+      searchValue: (entity) => [
+        entity.name,
+        entity.slug,
+        entity.role,
+        entity.department,
+        entity.model,
+        entity.hierarchyLevel,
+        ...(entity.skillIndex || []),
+        ...(entity.knowledgeIndex || []),
+        ...(entity.toolIndex || [])
+      ].filter(Boolean).join(" "),
       className: "min-w-[15rem]",
       cell: (entity) => (
         <div className="flex min-w-0 items-center gap-3">
@@ -702,6 +693,14 @@ export function PeopleAgentsRoute() {
       key: "kind",
       header: "Kind",
       mobileLabel: "Kind",
+      filterable: true,
+      filterLabel: "Type",
+      filterValue: (entity) => entity.type,
+      filterOptions: [
+        { value: "human", label: "Human" },
+        { value: "agent", label: "Agent" }
+      ],
+      sortable: true,
       cell: (entity) => <span className="font-bold text-company-ink">{typeLabel(entity.type)}</span>
     },
     {
@@ -709,6 +708,8 @@ export function PeopleAgentsRoute() {
       header: "Role / Department",
       mobileLabel: "Role",
       className: "min-w-[13rem]",
+      sortable: true,
+      sortValue: (entity) => `${entity.department || ""} ${entity.role || ""}`,
       cell: (entity) => (
         <div className="min-w-0">
           <span className="block truncate text-company-ink">{entity.role || "Unassigned role"}</span>
@@ -721,12 +722,24 @@ export function PeopleAgentsRoute() {
       header: "Manager",
       mobileLabel: "Manager",
       className: "min-w-[10rem]",
+      sortable: true,
+      sortValue: (entity) => entity.manager?.name || "",
       cell: (entity) => <span className="block truncate">{entity.manager?.name || "No manager"}</span>
     },
     {
       key: "status",
       header: "Status",
       mobileLabel: "Status",
+      filterable: true,
+      filterLabel: "Status",
+      filterValue: (entity) => entity.status,
+      filterOptions: [
+        { value: "active", label: "active" },
+        { value: "inactive", label: "inactive" },
+        { value: "paused", label: "paused" },
+        { value: "archived", label: "archived" }
+      ],
+      sortable: true,
       cell: (entity) => <span className={`badge badge-sm ${badgeTone(entity.status)}`}>{entity.status}</span>
     },
     {
@@ -734,6 +747,16 @@ export function PeopleAgentsRoute() {
       header: "Runtime",
       mobileLabel: "Runtime",
       className: "min-w-[10rem]",
+      filterable: true,
+      filterLabel: "Runtime",
+      filterValue: (entity) => entity.runtimeMode,
+      filterOptions: [
+        { value: "manual", label: "Manual" },
+        { value: "semi_autonomous", label: "Semi-autonomous" },
+        { value: "autonomous", label: "Autonomous" }
+      ],
+      sortable: true,
+      sortValue: (entity) => entity.hierarchyLevel || entity.runtimeMode,
       cell: (entity) => (
         <div>
           <span className="block text-company-ink">{entity.hierarchyLevel || runtimeLabels[entity.runtimeMode]}</span>
@@ -742,26 +765,68 @@ export function PeopleAgentsRoute() {
       )
     }
   ], []);
+  const quickFilters = useMemo<Array<CcTableQuickFilter<WorkforceEntity>>>(() => [
+    { key: "all", label: "All", predicate: () => true },
+    { key: "people", label: "People", predicate: (entity) => entity.type === "human" },
+    { key: "agents", label: "Agents", predicate: (entity) => entity.type === "agent" },
+    { key: "directors", label: "Directors", predicate: (entity) => entity.hierarchyLevel === "department_director" || entity.hierarchyLevel === "executive_root" },
+    { key: "attention", label: `Needs attention${attentionCount ? ` (${attentionCount})` : ""}`, predicate: needsAttention }
+  ], [attentionCount]);
+  const rowActionItems = useMemo<Array<CcTableRowAction<WorkforceEntity>>>(() => [
+    {
+      key: "preview",
+      label: "Preview",
+      icon: "ph-eye",
+      tone: "outline",
+      onClick: (entity) => {
+        setSelectedId(entity.id);
+        setDetailTab("profile");
+      }
+    },
+    {
+      key: "duplicate",
+      label: "Duplicate",
+      icon: "ph-copy",
+      tone: "ghost",
+      onClick: (entity) => setEditingEntity({ entity: duplicateEntity(entity), mode: "create" })
+    },
+    {
+      key: "edit",
+      label: "Edit",
+      icon: "ph-pencil-simple",
+      tone: "ghost",
+      onClick: (entity) => setEditingEntity({ entity, mode: "edit" })
+    },
+    {
+      key: "archive",
+      label: "Archive",
+      icon: "ph-archive",
+      tone: "warning",
+      disabled: (entity) => entity.status === "archived",
+      onClick: (entity) => setConfirmAction({ type: "archive", entity })
+    },
+    {
+      key: "delete",
+      label: "Delete",
+      icon: "ph-trash",
+      tone: "danger",
+      disabled: (entity) => entity.source === "user",
+      disabledLabel: () => "User-backed owner record cannot be deleted",
+      onClick: (entity) => setConfirmAction({ type: "delete", entity })
+    }
+  ], []);
 
   function refresh() {
     setRefreshKey((current) => current + 1);
   }
 
-  function clearFilters() {
-    setQuery("");
-    setStatusFilter("active");
-    setScopeFilter("all");
-    setSortKey("name");
-    setSelectedId("");
-  }
-
   async function archiveEntity(entity: WorkforceEntity) {
-    if (!window.confirm(`Archive ${entity.name}? This keeps the record but removes it from active workforce use.`)) return;
     setNotice(null);
     try {
       await api(`/v1/workforce/${entity.id}`, { method: "DELETE" });
       setNotice({ tone: "success", title: `${entity.name} was archived.` });
       setSelectedId("");
+      setConfirmAction(null);
       refresh();
     } catch (error) {
       setNotice({ tone: "error", title: userErrorMessage(error, t) });
@@ -769,12 +834,12 @@ export function PeopleAgentsRoute() {
   }
 
   async function deleteEntity(entity: WorkforceEntity) {
-    if (!window.confirm(`Delete ${entity.name}? This permanently removes the workforce record, but does not delete a user account or Paperclip runtime.`)) return;
     setNotice(null);
     try {
       await api(`/v1/workforce/${entity.id}/actions/delete`, { method: "POST" });
       setNotice({ tone: "success", title: `${entity.name} was deleted.` });
       setSelectedId("");
+      setConfirmAction(null);
       refresh();
     } catch (error) {
       setNotice({ tone: "error", title: userErrorMessage(error, t) });
@@ -794,53 +859,12 @@ export function PeopleAgentsRoute() {
               <div className="min-w-0">
                 <p className="text-xs font-black uppercase text-primary">06 People / Agents</p>
                 <h1 className="truncate text-xl font-black text-company-ink">Directory</h1>
-                <p className="text-sm text-company-muted">{filtered.length} of {entities.length} workforce records visible</p>
+                <p className="text-sm text-company-muted">{entities.length} workforce records loaded</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <CcButton iconLeft="ph-plus" onClick={() => setEditingEntity(null)} size="sm" variant="primary">New entity</CcButton>
+                <CcButton iconLeft="ph-plus" onClick={() => setEditingEntity({ entity: null, mode: "create" })} size="sm" variant="primary">New entity</CcButton>
               </div>
             </header>
-
-            <div className="roost-work-panel grid gap-2 rounded-company p-2.5">
-              <div className="flex flex-wrap gap-2">
-                {([
-                  ["all", "All"],
-                  ["humans", "People"],
-                  ["agents", "Agents"],
-                  ["directors", "Directors"],
-                  ["attention", `Needs attention${attentionCount ? ` (${attentionCount})` : ""}`]
-                ] as Array<[ScopeFilter, string]>).map(([scope, label]) => (
-                  <button
-                    className={`btn btn-sm whitespace-nowrap ${scopeFilter === scope ? "btn-primary" : "btn-outline"}`}
-                    key={scope}
-                    onClick={() => setScopeFilter(scope)}
-                    type="button"
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-              <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_10rem_10rem_max-content] md:items-center">
-              <label className="input input-bordered flex min-w-0 items-center gap-2 bg-base-100/65">
-                <i className="ph-bold ph-magnifying-glass text-company-muted" aria-hidden="true"></i>
-                <span className="sr-only">Search workforce</span>
-                <input className="grow" onChange={(event) => setQuery(event.target.value)} placeholder="Search people, agents, roles..." type="search" value={query} />
-              </label>
-              <select aria-label="Status filter" className="select select-bordered" onChange={(event) => setStatusFilter(event.target.value as StatusFilter)} value={statusFilter}>
-                <option value="all">All statuses</option>
-                {["active", "inactive", "paused", "archived"].map((status) => <option key={status} value={status}>{status}</option>)}
-              </select>
-              <select aria-label="Sort workforce" className="select select-bordered" onChange={(event) => setSortKey(event.target.value as SortKey)} value={sortKey}>
-                <option value="name">Name</option>
-                <option value="department">Department</option>
-                <option value="updated">Updated</option>
-                <option value="work">Active work</option>
-                <option value="tools">Tools</option>
-                <option value="knowledge">Knowledge</option>
-              </select>
-              <CcButton className="whitespace-nowrap" disabled={!hasActiveFilters} iconLeft="ph-x-circle" onClick={clearFilters} size="sm" variant="ghost">Clear</CcButton>
-              </div>
-            </div>
 
             <div className="min-h-0 overflow-y-auto">
               <CcDataTable
@@ -849,19 +873,15 @@ export function PeopleAgentsRoute() {
                 emptyTitle="No matching workforce entities"
                 emptyDetail="Clear filters or create the first person/agent profile."
                 getRowClassName={(entity) => needsAttention(entity) ? "bg-warning/5" : ""}
-                rows={filtered}
+                getRowLabel={(entity) => entity.name}
+                initialColumnFilters={{ status: "active" }}
+                initialPageSize={25}
+                initialSort={{ key: "person", direction: "asc" }}
+                quickFilters={quickFilters}
+                rowActionItems={rowActionItems}
+                rows={entities}
+                searchPlaceholder="Search people, agents, roles..."
                 tableMinWidthClassName="min-w-[900px]"
-                rowActions={(entity) => (
-                  <div className="flex items-center gap-1">
-                    <RowAction icon="ph-eye" label="Preview" onClick={() => {
-                      setSelectedId(entity.id);
-                      setDetailTab("profile");
-                    }} tone="outline" />
-                    <RowAction icon="ph-pencil-simple" label="Edit" onClick={() => setEditingEntity(entity)} />
-                    <RowAction disabled={entity.status === "archived"} icon="ph-archive" label="Archive" onClick={() => archiveEntity(entity)} />
-                    <RowAction disabled={entity.source === "user"} icon="ph-trash" label={entity.source === "user" ? "User-backed owner record cannot be deleted" : "Delete"} onClick={() => deleteEntity(entity)} tone="error" />
-                  </div>
-                )}
               />
               </div>
             </main>
@@ -872,12 +892,12 @@ export function PeopleAgentsRoute() {
       {selected ? (
         <DetailModal
           entity={selected}
-          onArchive={archiveEntity}
+          onArchive={(entity) => setConfirmAction({ type: "archive", entity })}
           onClose={() => setSelectedId("")}
-          onDelete={deleteEntity}
+          onDelete={(entity) => setConfirmAction({ type: "delete", entity })}
           onEdit={(entity) => {
             setSelectedId("");
-            setEditingEntity(entity);
+            setEditingEntity({ entity, mode: "edit" });
           }}
           setTab={setDetailTab}
           tab={detailTab}
@@ -886,11 +906,20 @@ export function PeopleAgentsRoute() {
 
       {editingEntity !== undefined ? (
         <WorkforceForm
-          entity={editingEntity}
+          entity={editingEntity.entity}
+          mode={editingEntity.mode}
           managers={entities}
           dictionaries={packet.data?.dictionaries}
           onClose={() => setEditingEntity(undefined)}
           onSaved={refresh}
+        />
+      ) : null}
+      {confirmAction ? (
+        <ConfirmEntityModal
+          action={confirmAction.type}
+          entity={confirmAction.entity}
+          onCancel={() => setConfirmAction(null)}
+          onConfirm={() => confirmAction.type === "archive" ? archiveEntity(confirmAction.entity) : deleteEntity(confirmAction.entity)}
         />
       ) : null}
     </Shell>

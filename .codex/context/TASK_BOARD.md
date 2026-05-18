@@ -53,6 +53,19 @@
 
 ## Recent Checkpoints
 
+- 2026-05-19: Managed data table primitive implemented and adopted in
+  People/Agents Directory. `CcDataTable` now provides the reusable
+  three-zone management table contract: filtering/settings, min-width table,
+  and pagination/page-size controls. It supports search, generated fixed-value
+  filters, sortable columns, column visibility, first-column row selection,
+  optional bulk actions, row action items, and 10/25/50/100/250/500 page sizes.
+  `06 People & Agents -> Directory` now uses that primitive for active
+  workforce defaults, quick filters, Preview/Duplicate/Edit/Archive/Delete
+  row actions, duplicate create mode, and DaisyUI archive/delete confirmation
+  modals. Validation passed: `npm run build:web`, `npm run validate`,
+  `npm run test:api:local`, and Playwright proof on desktop/tablet/mobile with
+  filters, pagination, selection, column hiding, duplicate modal, archive
+  modal, and no page overflow.
 - 2026-05-18: People/Agents Directory table refinement implemented.
   `06 People & Agents -> Directory` now uses the shared `CcDataTable` as a
   real management table with one row per workforce entity, explicit People and

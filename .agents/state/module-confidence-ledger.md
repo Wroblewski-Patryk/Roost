@@ -1,6 +1,20 @@
 # Module Confidence Ledger
 
-Last updated: 2026-05-18
+Last updated: 2026-05-19
+
+Managed table primitive note: REQ-CC-DATA-TABLE-MANAGED-005 is VERIFIED
+locally. `CcDataTable` now owns reusable flat-index mechanics: a
+filter/settings zone, min-width table zone, pagination/page-size zone,
+search, generated fixed-value filters, sortable columns, column visibility,
+row selection, optional bulk actions, sticky row actions, and 10/25/50/100/250/500
+page sizes. `06 People & Agents -> Directory` consumes those mechanics for
+Preview/Duplicate/Edit/Archive/Delete, active workforce defaults, quick
+filters, duplicate create mode, and DaisyUI archive/delete confirmation
+modals. Evidence: `npm run build:web`, `npm run validate`,
+`npm run test:api:local` with 25 migrations and 6/6 API tests, and Playwright
+desktop/tablet/mobile proof covering filters, page sizes, pagination, page
+input, row selection, column hiding, duplicate modal, archive modal, and no
+page overflow. Screenshots: `docs/ux/evidence/managed-table-preview-*.png`.
 
 People/Agents Directory table note: REQ-PA-DIRECTORY-TABLE-UX-004 is VERIFIED
 locally. The Directory now uses the shared `CcDataTable` as one operational

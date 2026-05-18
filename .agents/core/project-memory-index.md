@@ -1,6 +1,6 @@
 # Project Memory Index
 
-Last updated: 2026-05-18
+Last updated: 2026-05-19
 
 ## Purpose
 
@@ -58,7 +58,11 @@ continue from repository files alone:
   reusable `CcDataTable` pattern: one backend-backed object per row, compact
   operational columns, explicit scope chips such as People/Agents where useful,
   and a sticky action column instead of route-local card rosters or density
-  toggles.
+  toggles. As of 2026-05-19, `CcDataTable` is the managed table primitive for
+  flat indexes: it owns the filter/settings zone, min-width table zone,
+  pagination/page-size zone, search, generated fixed-value filters, sortable
+  headers, column visibility, first-column selection, optional bulk actions,
+  row action items, page input, and 10/25/50/100/250/500 page sizes.
 - `docs/planning/foundation-p1-hardening-task-contract.md`: first P1
   hardening wave after the 2026-05-18 application foundation audit. It adds
   `npm run test:api:local`, route/capability drift validation inside
