@@ -143,6 +143,17 @@ Last updated: 2026-05-19
   API tests, plus Playwright desktop/tablet/mobile proof covering filters,
   page-size changes, pagination, page input, row selection, column hiding,
   duplicate modal, archive modal, and no page overflow.
+  Later on 2026-05-19, PA-DIRECTORY-PREMIUM-UX-006 polished the same surface:
+  managed table filters gained visible labels, `/people-agents` and
+  `/workforce` were added to the Express React route allowlist, and
+  People/Agents preview plus New/Edit modals gained a dependency-free Big Five
+  radar chart, stronger profile hierarchy, clearer form sectioning, and
+  access-index guidance. Browser plugin setup reported no active Codex browser
+  pane, so Playwright fallback proved a real Express/PostgreSQL flow across
+  desktop/tablet/mobile with direct `/people-agents`, filter labels, preview
+  radar, edit radar, new modal radar updates, no relevant console/page errors,
+  and no page overflow. `npm run validate`, `npm run test:api:local`, and
+  `git diff --check` passed.
   As of 2026-05-16, the architectural direction is expanded in
   `docs/architecture/unified-organizational-operating-system.md`: CompanyCore
   is the unified organizational world state and operational source of truth,

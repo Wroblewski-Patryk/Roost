@@ -354,32 +354,41 @@ export function CcDataTable<Row extends { id: string }>({
       <div className="grid gap-2 md:grid-cols-[minmax(14rem,1fr)_auto] md:items-start">
         <div className="grid gap-2 md:grid-cols-[minmax(12rem,1fr)_repeat(auto-fit,minmax(10rem,12rem))]">
           {enableSearch ? (
-            <label className="input input-bordered flex min-w-0 items-center gap-2 bg-base-100/65">
-              <i className="ph-bold ph-magnifying-glass text-company-muted" aria-hidden="true"></i>
-              <span className="sr-only">{tableLabels.search}</span>
-              <input
-                className="grow"
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={searchPlaceholder || `${tableLabels.search}...`}
-                type="search"
-                value={query}
-              />
+            <label className="form-control min-w-0">
+              <span className="label py-0 pb-1">
+                <span className="label-text text-xs font-black uppercase tracking-wide text-company-muted">{tableLabels.search}</span>
+              </span>
+              <span className="input input-bordered flex min-w-0 items-center gap-2 bg-base-100/65">
+                <i className="ph-bold ph-magnifying-glass text-company-muted" aria-hidden="true"></i>
+                <input
+                  className="grow"
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder={searchPlaceholder || `${tableLabels.search}...`}
+                  type="search"
+                  value={query}
+                />
+              </span>
             </label>
           ) : null}
           {filterableColumns.map((column) => {
             const options = uniqueOptions(rows, column);
             if (!options.length) return null;
+            const label = column.filterLabel || column.header;
             return (
-              <select
-                aria-label={column.filterLabel || column.header}
-                className="select select-bordered bg-base-100/65"
-                key={column.key}
-                onChange={(event) => setColumnFilters((current) => ({ ...current, [column.key]: event.target.value }))}
-                value={columnFilters[column.key] || "all"}
-              >
-                <option value="all">{column.filterLabel || column.header}</option>
-                {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-              </select>
+              <label className="form-control min-w-0" key={column.key}>
+                <span className="label py-0 pb-1">
+                  <span className="label-text text-xs font-black uppercase tracking-wide text-company-muted">{label}</span>
+                </span>
+                <select
+                  aria-label={label}
+                  className="select select-bordered bg-base-100/65"
+                  onChange={(event) => setColumnFilters((current) => ({ ...current, [column.key]: event.target.value }))}
+                  value={columnFilters[column.key] || "all"}
+                >
+                  <option value="all">All {label.toLowerCase()}</option>
+                  {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </select>
+              </label>
             );
           })}
         </div>

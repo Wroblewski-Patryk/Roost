@@ -84,6 +84,8 @@ function isApiHost(host = "") {
 
 const reactAppRoutes = [
   "/operations",
+  "/people-agents",
+  "/workforce",
   "/dashboard",
   "/areas",
   "/account/settings",

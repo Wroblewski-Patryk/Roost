@@ -2,6 +2,20 @@
 
 Last updated: 2026-05-19
 
+People/Agents premium UX note: REQ-PA-DIRECTORY-PREMIUM-UX-006 is VERIFIED
+locally. The Directory now exposes visible table filter labels, a clearer
+source-of-truth header, and the direct `/people-agents` plus `/workforce`
+Express React aliases. Workforce preview and New/Edit modals now include a
+dependency-free Big Five radar chart, stronger profile hierarchy, clearer
+section framing, and better access-index guidance while preserving the
+existing `/v1/workforce` API contract. Evidence: Browser plugin attempt
+reported no active in-app browser pane; Playwright fallback on real
+Express/PostgreSQL proved desktop/tablet/mobile Directory labels, preview
+radar, edit modal radar, new modal radar updates, and no page overflow.
+Screenshots: `docs/ux/evidence/people-agents-premium-*.png`. `npm run
+validate`, `npm run test:api:local` with 25 migrations and 6/6 API tests, and
+`git diff --check` passed.
+
 Managed table primitive note: REQ-CC-DATA-TABLE-MANAGED-005 is VERIFIED
 locally. `CcDataTable` now owns reusable flat-index mechanics: a
 filter/settings zone, min-width table zone, pagination/page-size zone,

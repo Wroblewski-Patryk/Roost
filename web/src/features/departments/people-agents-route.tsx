@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useId, useMemo, useState } from "react";
 import { api } from "../../api/client";
 import { userErrorMessage } from "../../api/errors";
 import { CcButton } from "../../components/cc-button";
@@ -20,6 +20,14 @@ const runtimeLabels: Record<WorkforceEntity["runtimeMode"], string> = {
   semi_autonomous: "Semi-autonomous",
   autonomous: "Autonomous"
 };
+
+const bigFiveTraits = [
+  { key: "openness", label: "Openness", short: "O" },
+  { key: "conscientiousness", label: "Conscientiousness", short: "C" },
+  { key: "extraversion", label: "Extraversion", short: "E" },
+  { key: "agreeableness", label: "Agreeableness", short: "A" },
+  { key: "neuroticism", label: "Neuroticism", short: "N" }
+] as const;
 
 function initials(name: string) {
   return name
@@ -50,6 +58,117 @@ function bigFiveSummary(entity: WorkforceEntity) {
     .slice(0, 2)
     .map(([key, value]) => `${key.slice(0, 1).toUpperCase()}${key.slice(1, 3)} ${value}`)
     .join(" / ");
+}
+
+function normalizedBigFive(profile?: Record<string, number>) {
+  return bigFiveTraits.map((trait) => ({
+    ...trait,
+    value: Math.min(5, Math.max(0, Number(profile?.[trait.key] ?? 0)))
+  }));
+}
+
+function radarPoint(index: number, value: number, radius = 78, center = 96) {
+  const angle = -Math.PI / 2 + (index * 2 * Math.PI) / bigFiveTraits.length;
+  const distance = (value / 5) * radius;
+  return {
+    x: center + Math.cos(angle) * distance,
+    y: center + Math.sin(angle) * distance
+  };
+}
+
+function radarRingPoints(level: number, radius = 78, center = 96) {
+  return bigFiveTraits
+    .map((_, index) => {
+      const point = radarPoint(index, level, radius, center);
+      return `${point.x.toFixed(1)},${point.y.toFixed(1)}`;
+    })
+    .join(" ");
+}
+
+function BigFiveRadarChart({
+  profile,
+  compact = false
+}: {
+  profile?: Record<string, number>;
+  compact?: boolean;
+}) {
+  const gradientId = `big-five-radar-${useId().replace(/:/g, "")}`;
+  const traits = normalizedBigFive(profile);
+  const polygon = traits
+    .map((trait, index) => {
+      const point = radarPoint(index, trait.value);
+      return `${point.x.toFixed(1)},${point.y.toFixed(1)}`;
+    })
+    .join(" ");
+  const strongest = [...traits].sort((left, right) => right.value - left.value).slice(0, 2);
+
+  return (
+    <div className={`rounded-company border border-base-300 bg-base-100/75 ${compact ? "p-3" : "p-4"}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-black uppercase tracking-wide text-primary">Big Five</p>
+          <h3 className="mt-1 font-black text-company-ink">Personality shape</h3>
+        </div>
+        <div className="text-right text-xs font-bold text-company-muted">
+          {strongest.map((trait) => `${trait.short} ${trait.value}`).join(" / ")}
+        </div>
+      </div>
+      <div className={`mt-3 grid gap-3 ${compact ? "" : "lg:grid-cols-[13rem_minmax(0,1fr)] lg:items-center"}`}>
+        <svg className="mx-auto h-52 w-52 max-w-full" role="img" viewBox="0 0 192 192" aria-label="Big Five radar chart">
+          <defs>
+            <linearGradient id={gradientId} x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stopColor="rgb(79, 70, 229)" stopOpacity="0.36" />
+              <stop offset="100%" stopColor="rgb(14, 165, 233)" stopOpacity="0.14" />
+            </linearGradient>
+          </defs>
+          {[1, 2, 3, 4, 5].map((level) => (
+            <polygon
+              className="fill-none stroke-base-300"
+              key={level}
+              points={radarRingPoints(level)}
+              strokeWidth={level === 5 ? 1.4 : 1}
+            />
+          ))}
+          {bigFiveTraits.map((trait, index) => {
+            const edge = radarPoint(index, 5);
+            const label = radarPoint(index, 5.72);
+            return (
+              <g key={trait.key}>
+                <line className="stroke-base-300" x1="96" x2={edge.x} y1="96" y2={edge.y} strokeWidth="1" />
+                <text
+                  className="fill-company-muted text-[9px] font-bold"
+                  textAnchor={label.x < 84 ? "end" : label.x > 108 ? "start" : "middle"}
+                  x={label.x}
+                  y={label.y}
+                >
+                  {trait.short}
+                </text>
+              </g>
+            );
+          })}
+          <polygon points={polygon} fill={`url(#${gradientId})`} stroke="rgb(79, 70, 229)" strokeLinejoin="round" strokeWidth="2.5" />
+          {traits.map((trait, index) => {
+            const point = radarPoint(index, trait.value);
+            return <circle className="fill-primary stroke-base-100" cx={point.x} cy={point.y} key={trait.key} r="4" strokeWidth="2" />;
+          })}
+        </svg>
+        <div className="grid gap-2">
+          {traits.map((trait) => (
+            <div className="grid grid-cols-[minmax(7rem,1fr)_2.5rem] items-center gap-2 text-sm" key={trait.key}>
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-bold text-company-ink">{trait.label}</span>
+                  <span className="font-black text-primary">{trait.value}/5</span>
+                </div>
+                <progress className="progress progress-primary h-1.5 w-full" max={5} value={trait.value}></progress>
+              </div>
+              <span className="grid h-8 w-8 place-items-center rounded-company border border-base-300 bg-base-200/70 text-xs font-black text-company-muted">{trait.short}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function paperclipRuntime(entity: WorkforceEntity) {
@@ -158,6 +277,15 @@ function WorkforceForm({
   const runtimeModes = dictionaries?.runtimeModes || Object.keys(runtimeLabels) as WorkforceEntity["runtimeMode"][];
   const personalityProfiles = dictionaries?.personalityProfiles || ["analytical", "creative", "executive", "supportive", "researcher", "custom"];
   const isEditMode = mode === "edit" && Boolean(entity?.id);
+  const [bigFiveDraft, setBigFiveDraft] = useState<Record<string, number>>(() => {
+    const current = values.bigFiveProfile || {};
+    return Object.fromEntries(bigFiveTraits.map((trait) => [trait.key, Number(current[trait.key] ?? 0)]));
+  });
+
+  function updateBigFiveValue(key: string, value: string) {
+    const nextValue = Math.min(5, Math.max(0, Number(value || 0)));
+    setBigFiveDraft((current) => ({ ...current, [key]: nextValue }));
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -212,23 +340,35 @@ function WorkforceForm({
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-neutral/60 p-3 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="workforce-form-title">
       <form className="roost-work-surface grid max-h-[92vh] w-full max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden rounded-company shadow-2xl" onSubmit={submit}>
-        <div className="flex items-start justify-between gap-3 border-b border-base-300 p-4 sm:p-5">
-          <div>
+        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-base-300 bg-base-100/45 p-4 sm:p-5">
+          <div className="min-w-0">
             <p className="text-sm font-black uppercase text-primary">06 People / Agents</p>
             <h2 className="mt-1 text-2xl font-black text-company-ink" id="workforce-form-title">{isEditMode ? "Edit workforce entity" : entity ? "Duplicate workforce entity" : "New workforce entity"}</h2>
             <p className="mt-1 text-sm text-company-muted">{isEditMode ? "Update identity, responsibility, runtime access, and generated context." : "Create a human or AI workforce record connected to CompanyCore truth."}</p>
           </div>
-          <button className="btn btn-ghost btn-sm btn-circle" aria-label="Close" onClick={onClose} type="button">
-            <i className="ph-bold ph-x" aria-hidden="true"></i>
-          </button>
+          <div className="flex items-start gap-2">
+            <div className="hidden rounded-company border border-base-300 bg-base-100/75 px-3 py-2 text-right text-xs font-bold text-company-muted sm:block">
+              <span className="block text-company-ink">{typeLabel((values.type || "agent") as WorkforceEntity["type"])}</span>
+              <span>{values.status || "active"} / {runtimeLabels[(values.runtimeMode || "manual") as WorkforceEntity["runtimeMode"]]}</span>
+            </div>
+            <button className="btn btn-ghost btn-sm btn-circle" aria-label="Close" onClick={onClose} type="button">
+              <i className="ph-bold ph-x" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
 
         <div className="min-h-0 overflow-y-auto px-4 sm:px-5">
           {error ? <CcNotice tone="error" title={error} live /> : null}
 
           <section className="grid gap-4 py-4">
-            <div className="rounded-company border border-base-300 bg-base-100/60 p-3">
-              <h3 className="font-black text-company-ink">Identity and role</h3>
+            <div className="rounded-company border border-base-300 bg-base-100/70 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h3 className="font-black text-company-ink">Identity and role</h3>
+                  <p className="text-sm text-company-muted">The canonical CompanyCore identity shown in rosters and generated context files.</p>
+                </div>
+                <span className="rounded-company border border-primary/25 bg-primary/10 px-2 py-1 text-xs font-black uppercase text-primary">source of truth</span>
+              </div>
               <div className="mt-3 grid gap-4 md:grid-cols-2">
                 <CcField label="Name" required>
                   {({ id }) => <CcTextInput autoFocus={!isEditMode} defaultValue={values.name || ""} id={id} name="name" required />}
@@ -279,59 +419,67 @@ function WorkforceForm({
               </div>
             </div>
 
-            <div className="rounded-company border border-base-300 bg-base-100/60 p-3">
-              <h3 className="font-black text-company-ink">Runtime and personality</h3>
-              <div className="mt-3 grid gap-4 md:grid-cols-2">
-                <label className="form-control">
-                  <span className="label"><span className="label-text font-bold">Personality profile</span></span>
-                  <select className="select select-bordered" defaultValue={values.personalityProfile || "supportive"} name="personalityProfile">
-                    {personalityProfiles.map((profile) => <option key={profile} value={profile}>{profile}</option>)}
-                  </select>
-                </label>
-                <label className="form-control">
-                  <span className="label"><span className="label-text font-bold">Runtime mode</span></span>
-                  <select className="select select-bordered" defaultValue={values.runtimeMode || "manual"} name="runtimeMode">
-                    {runtimeModes.map((mode) => <option key={mode} value={mode}>{runtimeLabels[mode]}</option>)}
-                  </select>
-                </label>
-                <CcField label="Model">
-                  {({ id }) => <CcTextInput defaultValue={values.model || ""} id={id} name="model" placeholder="gpt-5.4, claude, local..." />}
-                </CcField>
-                <CcField label="Paperclip agent ID">
-                  {({ id }) => <CcTextInput defaultValue={values.paperclipAgentId || ""} id={id} name="paperclipAgentId" placeholder="Runtime UUID or slug" />}
-                </CcField>
-                <CcField label="Hierarchy level">
-                  {({ id }) => <CcTextInput defaultValue={values.hierarchyLevel || ""} id={id} name="hierarchyLevel" placeholder="executive_root, department_director..." />}
-                </CcField>
-                <label className="form-control">
-                  <span className="label"><span className="label-text font-bold">Paperclip sync</span></span>
-                  <span className="flex min-h-12 items-center gap-3 rounded-company border border-base-300 bg-base-100 px-3">
-                    <input className="checkbox checkbox-primary" defaultChecked={Boolean(values.synchronizationEnabled)} name="synchronizationEnabled" type="checkbox" />
-                    <span className="text-sm font-bold text-company-ink">Enable generated file sync queue</span>
-                  </span>
-                </label>
-              </div>
-              <fieldset className="mt-4 grid gap-2 rounded-company border border-base-300 p-3">
-                <legend className="px-1 text-sm font-bold text-company-muted">Big Five</legend>
-                <div className="grid gap-2 sm:grid-cols-5">
-                  {[
-                    ["bigFiveOpenness", "Openness", values.bigFiveProfile?.openness],
-                    ["bigFiveConscientiousness", "Conscientiousness", values.bigFiveProfile?.conscientiousness],
-                    ["bigFiveExtraversion", "Extraversion", values.bigFiveProfile?.extraversion],
-                    ["bigFiveAgreeableness", "Agreeableness", values.bigFiveProfile?.agreeableness],
-                    ["bigFiveNeuroticism", "Neuroticism", values.bigFiveProfile?.neuroticism]
-                  ].map(([name, label, value]) => (
-                    <label className="form-control" key={String(name)}>
-                      <span className="label"><span className="label-text text-xs font-bold">{label}</span></span>
-                      <input className="input input-bordered" defaultValue={Number(value || 0)} max={5} min={0} name={String(name)} step={1} type="number" />
-                    </label>
-                  ))}
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+              <div className="rounded-company border border-base-300 bg-base-100/70 p-4">
+                <h3 className="font-black text-company-ink">Runtime and personality</h3>
+                <p className="text-sm text-company-muted">Runtime metadata stays in CompanyCore; Paperclip remains the execution layer.</p>
+                <div className="mt-3 grid gap-4 md:grid-cols-2">
+                  <label className="form-control">
+                    <span className="label"><span className="label-text font-bold">Personality profile</span></span>
+                    <select className="select select-bordered" defaultValue={values.personalityProfile || "supportive"} name="personalityProfile">
+                      {personalityProfiles.map((profile) => <option key={profile} value={profile}>{profile}</option>)}
+                    </select>
+                  </label>
+                  <label className="form-control">
+                    <span className="label"><span className="label-text font-bold">Runtime mode</span></span>
+                    <select className="select select-bordered" defaultValue={values.runtimeMode || "manual"} name="runtimeMode">
+                      {runtimeModes.map((mode) => <option key={mode} value={mode}>{runtimeLabels[mode]}</option>)}
+                    </select>
+                  </label>
+                  <CcField label="Model">
+                    {({ id }) => <CcTextInput defaultValue={values.model || ""} id={id} name="model" placeholder="gpt-5.4, claude, local..." />}
+                  </CcField>
+                  <CcField label="Paperclip agent ID">
+                    {({ id }) => <CcTextInput defaultValue={values.paperclipAgentId || ""} id={id} name="paperclipAgentId" placeholder="Runtime UUID or slug" />}
+                  </CcField>
+                  <CcField label="Hierarchy level">
+                    {({ id }) => <CcTextInput defaultValue={values.hierarchyLevel || ""} id={id} name="hierarchyLevel" placeholder="executive_root, department_director..." />}
+                  </CcField>
+                  <label className="form-control">
+                    <span className="label"><span className="label-text font-bold">Paperclip sync</span></span>
+                    <span className="flex min-h-12 items-center gap-3 rounded-company border border-base-300 bg-base-100 px-3">
+                      <input className="checkbox checkbox-primary" defaultChecked={Boolean(values.synchronizationEnabled)} name="synchronizationEnabled" type="checkbox" />
+                      <span className="text-sm font-bold text-company-ink">Enable generated file sync queue</span>
+                    </span>
+                  </label>
                 </div>
-              </fieldset>
+                <fieldset className="mt-4 grid gap-2 rounded-company border border-base-300 bg-base-200/30 p-3">
+                  <legend className="px-1 text-sm font-bold text-company-muted">Big Five values</legend>
+                  <div className="grid gap-2 sm:grid-cols-5 lg:grid-cols-1 xl:grid-cols-5">
+                    {bigFiveTraits.map((trait) => (
+                      <label className="form-control" key={trait.key}>
+                        <span className="label"><span className="label-text text-xs font-bold">{trait.label}</span></span>
+                        <input
+                          className="input input-bordered"
+                          max={5}
+                          min={0}
+                          name={`bigFive${trait.label}`}
+                          onChange={(event) => updateBigFiveValue(trait.key, event.target.value)}
+                          step={1}
+                          type="number"
+                          value={bigFiveDraft[trait.key] ?? 0}
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              </div>
+              <BigFiveRadarChart profile={bigFiveDraft} compact />
             </div>
 
-            <div className="rounded-company border border-base-300 bg-base-100/60 p-3">
+            <div className="rounded-company border border-base-300 bg-base-100/70 p-4">
               <h3 className="font-black text-company-ink">Access indexes</h3>
+              <p className="text-sm text-company-muted">One item per line or comma-separated. These names become the first lightweight map of skills, knowledge, tools, and authority.</p>
               <div className="mt-3 grid gap-4 md:grid-cols-2">
                 {[
                   ["skillIndex", "Skills index", values.skillIndex],
@@ -341,7 +489,12 @@ function WorkforceForm({
                 ].map(([name, label, value]) => (
                   <label className="form-control" key={String(name)}>
                     <span className="label"><span className="label-text font-bold">{label}</span></span>
-                    <textarea className="textarea textarea-bordered min-h-24" defaultValue={Array.isArray(value) ? value.join("\n") : ""} name={String(name)}></textarea>
+                    <textarea
+                      className="textarea textarea-bordered min-h-24"
+                      defaultValue={Array.isArray(value) ? value.join("\n") : ""}
+                      name={String(name)}
+                      placeholder="One item per line"
+                    ></textarea>
                   </label>
                 ))}
               </div>
@@ -396,17 +549,26 @@ function DetailModal({
   return (
     <div className="fixed inset-0 z-40 grid place-items-center bg-neutral/60 p-3 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="workforce-preview-title">
     <aside className="roost-work-surface grid max-h-[92vh] w-full max-w-6xl min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-4 overflow-hidden rounded-company p-4 shadow-2xl sm:p-5">
-      <header className="flex flex-col gap-3">
+      <header className="grid gap-3 rounded-company border border-base-300 bg-base-100/50 p-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
         <div className="flex min-w-0 items-start gap-3">
           <EntityAvatar entity={entity} />
-          <div className="min-w-0">
-            <h2 className="break-words text-xl font-black leading-6 text-company-ink sm:text-2xl" id="workforce-preview-title">{entity.name}</h2>
-            <p className="text-sm text-company-muted">{entity.role || "Unassigned role"} - {entity.department || "06-kadry"}</p>
-            <p className="mt-1 text-xs font-bold uppercase text-company-muted">{typeLabel(entity.type)} / {runtimeLabels[entity.runtimeMode]} / Paperclip {paperclipRuntime(entity)}</p>
+          <div className="min-w-0 space-y-2">
+            <div>
+              <h2 className="break-words text-xl font-black leading-6 text-company-ink sm:text-2xl" id="workforce-preview-title">{entity.name}</h2>
+              <p className="text-sm text-company-muted">{entity.role || "Unassigned role"} / {entity.department || "06-kadry"}</p>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <span className="badge badge-outline">{typeLabel(entity.type)}</span>
+              <span className={`badge ${badgeTone(entity.status)}`}>{entity.status}</span>
+              <span className="badge badge-outline">{runtimeLabels[entity.runtimeMode]}</span>
+              <span className={`badge ${badgeTone(paperclipRuntime(entity))}`}>runtime {paperclipRuntime(entity)}</span>
+            </div>
+            <p className="text-xs font-bold uppercase text-company-muted">
+              {entity.hierarchyLevel || "No hierarchy"} / manager {entity.manager?.name || "none"} / {entity.directReportCount ?? 0} direct reports
+            </p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <CcButton iconLeft="ph-x" onClick={onClose} size="sm" variant="ghost">Close</CcButton>
+        <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
           <CcButton iconLeft="ph-pencil-simple" onClick={() => onEdit(entity)} size="sm" variant="outline">Edit</CcButton>
           {entity.status !== "archived" ? (
             <CcButton iconLeft="ph-archive" onClick={() => onArchive(entity)} size="sm" variant="ghost">Archive</CcButton>
@@ -414,6 +576,7 @@ function DetailModal({
           {entity.source !== "user" ? (
             <CcButton iconLeft="ph-trash" onClick={() => onDelete(entity)} size="sm" variant="ghost">Delete</CcButton>
           ) : null}
+          <CcButton iconLeft="ph-x" onClick={onClose} size="sm" variant="ghost">Close</CcButton>
         </div>
       </header>
 
@@ -425,8 +588,9 @@ function DetailModal({
 
       <div className="min-h-0 overflow-y-auto">
         {tab === "profile" ? (
-          <section className="grid gap-4">
-            <div className="rounded-company border border-base-300 bg-base-200/45 p-3">
+          <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+            <div className="grid gap-4">
+            <div className="rounded-company border border-base-300 bg-base-200/45 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="font-black text-company-ink">Configuration readiness</h3>
                 <span className="text-sm font-bold text-company-muted">
@@ -447,16 +611,28 @@ function DetailModal({
               </div>
             </div>
             <dl className="grid gap-3 text-sm md:grid-cols-2">
-              <div><dt className="font-bold text-company-muted">Slug</dt><dd className="break-all text-company-ink">{entity.slug}</dd></div>
-              <div><dt className="font-bold text-company-muted">Manager</dt><dd>{entity.manager?.name || "No manager"}</dd></div>
-              <div><dt className="font-bold text-company-muted">Personality</dt><dd>{entity.personalityProfile}</dd></div>
-              <div><dt className="font-bold text-company-muted">Model</dt><dd>{entity.model || "Not configured"}</dd></div>
-              <div><dt className="font-bold text-company-muted">Hierarchy</dt><dd>{entity.hierarchyLevel || "Not configured"}</dd></div>
-              <div><dt className="font-bold text-company-muted">Paperclip</dt><dd className="break-all">{entity.paperclipAgentId || "Not linked"}</dd></div>
-              <div><dt className="font-bold text-company-muted">Direct reports</dt><dd>{entity.directReportCount ?? 0}</dd></div>
-              <div><dt className="font-bold text-company-muted">Big Five</dt><dd>{bigFiveSummary(entity)}</dd></div>
-              <div className="md:col-span-2"><dt className="font-bold text-company-muted">Description</dt><dd className="mt-1 leading-6">{entity.description || "No responsibilities written yet."}</dd></div>
+              {[
+                ["Slug", entity.slug],
+                ["Manager", entity.manager?.name || "No manager"],
+                ["Personality", entity.personalityProfile],
+                ["Model", entity.model || "Not configured"],
+                ["Hierarchy", entity.hierarchyLevel || "Not configured"],
+                ["Paperclip", entity.paperclipAgentId || "Not linked"],
+                ["Direct reports", String(entity.directReportCount ?? 0)],
+                ["Big Five", bigFiveSummary(entity)]
+              ].map(([label, value]) => (
+                <div className="rounded-company border border-base-300 bg-base-100/75 p-3" key={label}>
+                  <dt className="text-xs font-black uppercase tracking-wide text-company-muted">{label}</dt>
+                  <dd className="mt-1 break-words font-bold text-company-ink">{value}</dd>
+                </div>
+              ))}
+              <div className="rounded-company border border-base-300 bg-base-100/75 p-3 md:col-span-2">
+                <dt className="text-xs font-black uppercase tracking-wide text-company-muted">Description</dt>
+                <dd className="mt-1 leading-6 text-company-ink">{entity.description || "No responsibilities written yet."}</dd>
+              </div>
             </dl>
+            </div>
+            <BigFiveRadarChart profile={entity.bigFiveProfile} compact />
           </section>
         ) : null}
 
@@ -855,13 +1031,16 @@ export function PeopleAgentsRoute() {
       {packet.status === "ready" ? (
         <section className="grid min-h-[calc(100vh-10rem)] gap-4">
           <main className="roost-work-surface grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-3 rounded-company p-3">
-            <header className="flex flex-wrap items-center justify-between gap-3">
+            <header className="grid gap-3 border-b border-base-300 pb-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
               <div className="min-w-0">
                 <p className="text-xs font-black uppercase text-primary">06 People / Agents</p>
                 <h1 className="truncate text-xl font-black text-company-ink">Directory</h1>
-                <p className="text-sm text-company-muted">{entities.length} workforce records loaded</p>
+                <p className="text-sm text-company-muted">Source-of-truth roster for humans, AI directors, responsibilities, runtime context, and generated files.</p>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-end">
+                <span className="rounded-company border border-base-300 bg-base-100/70 px-3 py-2 text-xs font-bold text-company-muted">
+                  {entities.length} records loaded
+                </span>
                 <CcButton iconLeft="ph-plus" onClick={() => setEditingEntity({ entity: null, mode: "create" })} size="sm" variant="primary">New entity</CcButton>
               </div>
             </header>

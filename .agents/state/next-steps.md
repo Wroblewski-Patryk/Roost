@@ -17,9 +17,11 @@ Last updated: 2026-05-19
      modal, archive/delete use DaisyUI confirmation modals, table search,
      quick filters, generated column filters, sorting, column visibility, row
      selection, page-size changes, next/previous pagination, and page input
-     work, and
+     work, Big Five radar charts render in Preview and New/Edit, and
      `/people-agents` opens the improved active Directory table with one row
-     per workforce entity and visible People/Agents scope chips.
+     per workforce entity and visible People/Agents scope chips. Also verify
+     `/workforce` serves the same React route instead of a protected JSON API
+     response.
 
 1. Deploy and smoke `DMS-06-WORKFORCE-001` when the next release window opens.
    - Source:

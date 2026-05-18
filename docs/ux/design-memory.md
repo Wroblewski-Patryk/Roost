@@ -1488,3 +1488,20 @@ of rediscovering them.
   `web/src/components/cc-data-table.tsx`,
   `web/src/features/departments/people-agents-route.tsx`, and
   `docs/ux/evidence/managed-table-preview-*.png`.
+
+### 2026-05-19 - Workforce Profile Visualization Pattern
+- Type: reusable_pattern
+- Context: People/Agents records include personality and authority data that
+  is hard to scan when shown only as text, especially for AI director profiles.
+- Decision: Use a compact radar chart for Big Five profile shape in workforce
+  preview and edit contexts. Keep the chart dependency-free with SVG, pair it
+  with exact numeric bars, and keep it close to role/runtime/readiness context
+  instead of making it a decorative dashboard chart.
+- Reuse when: A person, agent, role, or capability profile needs quick shape
+  comparison across a small fixed trait set.
+- Avoid when: The data is transactional, time-series, or too sparse to support
+  a meaningful profile comparison.
+- Evidence:
+  `docs/planning/people-agents-directory-premium-ux-task-contract.md`,
+  `web/src/features/departments/people-agents-route.tsx`, and
+  `docs/ux/evidence/people-agents-premium-*.png`.

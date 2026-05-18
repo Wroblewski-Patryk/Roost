@@ -53,6 +53,18 @@
 
 ## Recent Checkpoints
 
+- 2026-05-19: People/Agents Directory premium UX polish implemented.
+  Directory table filters now have visible labels, `/people-agents` and
+  `/workforce` are served as React routes by Express, and the Directory header
+  reads as a source-of-truth work surface instead of a generic counter strip.
+  Workforce preview and New/Edit modals now use a dependency-free Big Five
+  radar chart with exact trait bars, stronger profile hierarchy, clearer form
+  sections, and access-index guidance. Browser plugin setup reported no active
+  Codex browser pane, so Playwright fallback proved the real Express/PostgreSQL
+  flow on desktop/tablet/mobile: direct `/people-agents`, filter labels,
+  preview radar, edit radar, new modal radar updates, and no page overflow.
+  Validation passed: `npm run validate`, `npm run test:api:local`, and
+  `git diff --check`.
 - 2026-05-19: Managed data table primitive implemented and adopted in
   People/Agents Directory. `CcDataTable` now provides the reusable
   three-zone management table contract: filtering/settings, min-width table,

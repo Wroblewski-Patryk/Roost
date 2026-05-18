@@ -62,7 +62,10 @@ continue from repository files alone:
   flat indexes: it owns the filter/settings zone, min-width table zone,
   pagination/page-size zone, search, generated fixed-value filters, sortable
   headers, column visibility, first-column selection, optional bulk actions,
-  row action items, page input, and 10/25/50/100/250/500 page sizes.
+  row action items, page input, and 10/25/50/100/250/500 page sizes. The
+  People/Agents profile pattern now also uses a dependency-free Big Five radar
+  visualization in workforce preview and edit contexts, paired with exact
+  numeric trait bars.
 - `docs/planning/foundation-p1-hardening-task-contract.md`: first P1
   hardening wave after the 2026-05-18 application foundation audit. It adds
   `npm run test:api:local`, route/capability drift validation inside
