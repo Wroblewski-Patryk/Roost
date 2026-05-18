@@ -170,6 +170,7 @@ export const adapterManifest = {
       { method: "GET", path: "/v1/connection", capability: "operating-model:read" },
       { method: "GET", path: "/v1/operating-model", capability: "operating-model:read" },
       { method: "GET", path: "/v1/operating-model/areas", capability: "operating-model:read" },
+      { method: "GET", path: "/v1/operating-model/area-inventory", capability: "operating-model:read" },
       { method: "POST", path: "/v1/operating-model/areas", capability: "operating-model:write" },
       { method: "PATCH", path: "/v1/operating-model/areas/:id", capability: "operating-model:write" },
       { method: "DELETE", path: "/v1/operating-model/areas/:id", capability: "operating-model:write" },
@@ -233,6 +234,7 @@ export const adapterManifest = {
       { method: "PATCH", path: "/v1/tasks/:id", capability: "tasks:write" },
       { method: "DELETE", path: "/v1/tasks/:id", capability: "tasks:write" },
       { method: "POST", path: "/v1/tasks/:id/clickup/custom-fields/:fieldId", capability: "tasks:clickup:custom-fields:write" },
+      { method: "POST", path: "/v1/tasks/sync/clickup", capability: "tasks:sync:clickup" },
       { method: "POST", path: "/v1/tasks/sync/clickup/native", capability: "tasks:sync:clickup" }
     ],
     clients: [

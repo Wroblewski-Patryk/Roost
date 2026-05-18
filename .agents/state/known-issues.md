@@ -1,14 +1,12 @@
 # Known Issues
 
-Last updated: 2026-05-17
+Last updated: 2026-05-18
 
 ## Open Issues
 
 | ID | Severity | Area | Summary | Owner | Status | Next action |
 | --- | --- | --- | --- | --- | --- | --- |
-| KI-014 | P1 | API/service-key security | New owner-created API keys can default to broad access because empty scopes are treated as broad compatibility and the API-key create route uses `[]` when no profile/scopes are supplied. | Security + Backend Builder | OPEN | Implement `FOUNDATION-003`: require a profile or explicit scopes for new keys, preserving broad handling only for legacy compatibility or explicit full-access confirmation. |
-| KI-013 | P1 | API contract consistency | Backend routes commonly return `{ error: "code" }` while the documented API error contract expects a stable `error.code` and safe message envelope. | Backend Builder + Frontend Builder | OPEN | Implement `FOUNDATION-002`: add a shared API error helper and migrate high-traffic routes first while preserving frontend compatibility. |
-| KI-012 | P1 | Local validation environment | Full API integration validation is not one-command reliable: `DATABASE_URL` is not set by default in the shell, and Docker daemon commands timed out during the 2026-05-18 foundation audit. | QA/Test + Ops/Release | OPEN | Implement `FOUNDATION-001`: add a repeatable local API test database runner with disposable PostgreSQL setup, migration/test execution, and cleanup. |
+| KI-012 | P1 | Local validation environment | Full API integration validation has a one-command runner now, but the target proof remains blocked until local Docker/PostgreSQL is healthy or `DATABASE_URL` is supplied. | QA/Test + Ops/Release | MITIGATED | Run `npm run test:api:local` in a healthy validation environment and record cleanup evidence. |
 | KI-011 | P2 | Local validation environment | During OPS-MGMT-002, Docker CLI/daemon commands timed out while trying to start or inspect a disposable PostgreSQL container, blocking `npm run test:api` proof for the new Operations task-list endpoint. | QA/Test + Ops/Release | OPEN | Rerun `npm run test:api` on a healthy PostgreSQL validation environment before upgrading OPS-MGMT-002 confidence to High. |
 | KI-008 | P2 | Google Drive production OAuth write/read samples | Historical production OAuth decrypt/write-read evidence was stale after a prior secret incident. The 2026-05-16 production audit proves the stored Google Drive OAuth path can list/import selected folders and refresh content snapshots, but Docs/Sheets write samples and `changes/reconcile` still need targeted proof. | Ops/Release + Owner | MITIGATED | Run a target-safe Docs/Sheets write/read smoke and the KI-009 changes-reconcile diagnostic before closing the historical OAuth concern completely. |
 | KI-007 | P1 | Product data completeness | Production `/v1/operating-model` has 13 areas and 26 external mappings but `0` storage locations, `0` knowledge roots, `0` automation definitions, and `/v1/projects` returns `0` while tasks exist. | Product + Backend | OPEN | Execute ACF-PROD-001 to decide, seed, import, or explicitly defer these owner-facing operating model records. |
@@ -35,6 +33,16 @@ Last updated: 2026-05-17
 
 ## Recently Closed Issues
 
+- KI-014 New owner-created API keys defaulting to broad access: closed on
+  2026-05-18 by FOUNDATION-P1-001. New API keys now require a profile,
+  explicit scopes, or explicit `fullAccessConfirmed`; implicit empty scopes are
+  no longer created by the owner route. Legacy broad-scope compatibility
+  remains intentionally supported for existing keys.
+- KI-013 API error envelope inconsistency first slice: closed on 2026-05-18 by
+  FOUNDATION-P1-001 for auth, central error handling, and API-key management
+  paths. The shared helper preserves `{ error: "code" }` while adding safe
+  `message`, `requestId`, and `errorDetails.code`. Migrating every route-local
+  response remains future cleanup, not an open blocker for the first slice.
 - KI-010 Paperclip runtime key selection: closed on 2026-05-16 after production
   Paperclip DB/runtime proof showed `company_core_settings` is configured with
   CompanyCore base URL, a knowledge key, and a tools key. Knowledge calls to

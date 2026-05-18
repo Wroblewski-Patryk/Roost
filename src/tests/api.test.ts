@@ -4896,6 +4896,17 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(login.status, 200);
 
+  const unscopedKey = await request("/v1/api-keys", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({
+      name: "Unscoped adapter"
+    })
+  });
+  assert.equal(unscopedKey.status, 400);
+  assert.equal((unscopedKey.body as { error: string; errorDetails?: { code: string } }).error, "api_key_scope_required");
+  assert.equal((unscopedKey.body as { errorDetails?: { code: string } }).errorDetails?.code, "api_key_scope_required");
+
   const createdKey = await request("/v1/api-keys", {
     method: "POST",
     headers: authA,

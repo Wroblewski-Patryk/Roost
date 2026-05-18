@@ -5,11 +5,13 @@ import { prisma } from "../../db/prisma";
 import { apiKeyPrefix, generateApiKey, hashApiKey } from "../../auth/api-key";
 import { agentKeyProfiles, findAgentKeyProfile } from "../../auth/agent-key-profiles";
 import { asyncHandler } from "../../middleware/async-handler";
+import { sendApiError } from "../../middleware/api-error";
 
 const createApiKeySchema = z.object({
   name: z.string().min(1),
   scopes: z.array(z.string().min(1)).optional(),
-  profileId: z.string().min(1).optional()
+  profileId: z.string().min(1).optional(),
+  fullAccessConfirmed: z.boolean().optional()
 }).strict();
 
 const updateApiKeySchema = z.object({
@@ -20,7 +22,7 @@ export const apiKeysRouter = Router();
 
 function requireOwner(req: Request, res: Response) {
   if (req.auth?.authType !== "user" || !req.auth.userId) {
-    res.status(403).json({ error: "forbidden" });
+    sendApiError(res, 403, "forbidden");
     return false;
   }
   return true;
@@ -79,10 +81,14 @@ apiKeysRouter.post("/", asyncHandler(async (req, res) => {
   const input = createApiKeySchema.parse(req.body);
   const profile = findAgentKeyProfile(input.profileId);
   if (input.profileId && !profile) {
-    return res.status(400).json({ error: "invalid_api_key_profile" });
+    return sendApiError(res, 400, "invalid_api_key_profile");
   }
 
-  const scopes = input.scopes ?? profile?.scopes ?? [];
+  if (!profile && !input.scopes?.length && !input.fullAccessConfirmed) {
+    return sendApiError(res, 400, "api_key_scope_required");
+  }
+
+  const scopes = input.scopes?.length ? input.scopes : profile?.scopes ?? ["companycore:*"];
   const rawKey = generateApiKey();
   const record = await prisma.apiKey.create({
     data: {
@@ -123,7 +129,7 @@ apiKeysRouter.patch("/:id", asyncHandler(async (req, res) => {
   });
 
   if (!existing) {
-    return res.status(404).json({ error: "not_found" });
+    return sendApiError(res, 404, "not_found");
   }
 
   const record = await prisma.apiKey.update({

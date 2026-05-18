@@ -7,17 +7,23 @@ is not enough.
 ## Required Commands
 
 - Static public JS check: `npm run check:public-js`
+- Route/capability drift check: `npm run check:route-capabilities`
 - Typecheck/build: `npm run build`
 - Combined local validation: `npm run validate`
-- Integration tests: `npm test` or `npm run test:api`
+- Integration tests: `npm test`, `npm run test:api`, or
+  `npm run test:api:local`
 - Docker smoke: `docker compose up -d --build`
 
 Keep this file aligned with `.codex/context/PROJECT_STATE.md`.
 
 `npm test` delegates to `npm run test:api` and expects `DATABASE_URL` to point
-at a disposable PostgreSQL database. The script builds TypeScript, applies
-migrations with `prisma migrate deploy`, and runs Node's built-in test runner
-against the compiled API integration tests.
+at a disposable PostgreSQL database. `npm run test:api:local` is the preferred
+local entrypoint: it reuses `DATABASE_URL` when it is already set, or starts a
+validation-owned Docker PostgreSQL on port `55432`, applies migrations, runs
+the API tests, and removes the validation container unless
+`COMPANYCORE_TEST_DB_KEEP=1` is set. The underlying API test script builds
+TypeScript, applies migrations with `prisma migrate deploy`, and runs Node's
+built-in test runner against the compiled API integration tests.
 
 Example local disposable database:
 
@@ -28,8 +34,7 @@ docker run -d --name companycore-test-postgres `
   -e POSTGRES_PASSWORD=companycore `
   -p 55432:5432 postgres:16-alpine
 
-$env:DATABASE_URL='postgresql://companycore:companycore@localhost:55432/companycore_test?schema=public'
-npm test
+npm run test:api:local
 ```
 
 Migration files must be UTF-8 without BOM. A fresh `prisma migrate deploy`
@@ -130,10 +135,14 @@ Required minimum codes:
 Raw backend, Prisma, provider, or validation internals should not be returned
 directly to API clients.
 
-Every error-contract test should verify:
+The current API envelope preserves legacy client compatibility with
+`{ "error": "stable_code" }` and adds `message`, `requestId`, and
+`errorDetails.code` for structured consumers. Every error-contract test should
+verify:
 
 - HTTP status code
-- `error.code`
+- stable error code through `error` and, for migrated routes,
+  `errorDetails.code`
 - safe `error.message`
 - absence of secret values
 - absence of raw provider, Prisma, stack trace, or password/API key material

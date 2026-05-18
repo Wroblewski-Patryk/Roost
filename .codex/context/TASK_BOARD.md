@@ -42,11 +42,28 @@
     Start with a read-only review queue and classification/routing model.
 ## In Progress
 
-- No active implementation task is currently in progress after the
-  ASSETS-GDRIVE-006 Google Drive coverage checkpoint.
+- FOUNDATION-P1-001 Foundation P1 hardening wave.
+  - Stage: verification
+  - Owner: Backend Builder + QA/Test + Security + Ops/Release
+  - Priority: P1
+  - Source: `docs/planning/application-foundation-audit-2026-05-18.md`.
+  - Goal: close the first P1 foundation gaps: local API test runner, API error
+    helper, scoped-by-default API keys, route/capability drift check, request
+    IDs, security headers, and API/auth rate limits.
 
 ## Recent Checkpoints
 
+- 2026-05-18: Foundation P1 hardening wave implemented. Added
+  `npm run test:api:local`, `npm run check:route-capabilities`, request IDs,
+  security headers, API/auth rate limits, a compatible structured API error
+  helper, scoped-by-default owner API key creation, and regression coverage for
+  unscoped key rejection. Validation passed: script syntax checks,
+  route/capability drift check, `npm run build:server`, `npm run build:web`,
+  `npm run validate`, `git diff --check`, and `npm audit --json` with 0
+  vulnerabilities. `npm run test:api:local` failed cleanly because Docker
+  timed out after the runner's 20s availability check; full API test execution
+  remains pending until Docker/PostgreSQL is healthy or a validation
+  `DATABASE_URL` is supplied.
 - 2026-05-18: Application foundation audit published.
   `docs/planning/application-foundation-audit-2026-05-18.md` reviews backend,
   Prisma, auth/permissions, integrations, web, UX, tests, deployment,
@@ -236,16 +253,15 @@
 
 ## Blocked
 
-- FOUNDATION-001 Reliable local API test database runner.
-  - Stage: planning
+- FOUNDATION-001 Reliable local API test database runner target proof.
+  - Stage: verification
   - Owner: QA/Test + Backend Builder + Ops/Release
   - Priority: P1
   - Source: `docs/planning/application-foundation-audit-2026-05-18.md`.
   - Blocked by: current local Docker daemon commands timed out and
     `DATABASE_URL` is not configured by default in the shell.
-  - Goal: make full API integration tests one-command reliable by starting or
-    verifying a disposable PostgreSQL, setting `DATABASE_URL`, running
-    migrations/tests, and cleaning validation-owned resources.
+  - Goal: run `npm run test:api:local` successfully in a healthy validation
+    environment and record cleanup evidence.
 
 - AGRUN-010 Upstream Agent Source Merge Execution
   - Stage: planning

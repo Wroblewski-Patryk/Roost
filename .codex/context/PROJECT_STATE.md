@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Last updated: 2026-05-17
+Last updated: 2026-05-18
 
 ## Product Snapshot
 - Name: LuckySparrow Company Core
@@ -70,6 +70,18 @@ Last updated: 2026-05-17
   `git diff --check`, and Playwright fallback desktop/mobile proof passed.
   Full `npm run test:api` remains pending because local Docker/PostgreSQL
   validation was unavailable.
+  On 2026-05-18, FOUNDATION-P1-001 implemented the first hardening wave from
+  the application foundation audit: `npm run test:api:local`, route/capability
+  drift validation inside `npm run validate`, compatible structured API error
+  helper adoption for auth/API-key/central error paths, scoped-by-default owner
+  API key creation, request IDs, security headers, and basic auth/API rate
+  limits. Validation passed: script syntax checks, route/capability drift
+  check, `npm run build:server`, `npm run build:web`, `npm run validate`,
+  `git diff --check`, and `npm audit --json` with 0 vulnerabilities. Full API
+  integration test execution remains pending; `npm run test:api:local` now
+  fails cleanly when Docker availability times out instead of hanging, and
+  will run the full API gate when Docker/PostgreSQL is healthy or a validation
+  `DATABASE_URL` is supplied.
   As of 2026-05-16, the architectural direction is expanded in
   `docs/architecture/unified-organizational-operating-system.md`: CompanyCore
   is the unified organizational world state and operational source of truth,

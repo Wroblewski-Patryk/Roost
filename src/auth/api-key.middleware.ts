@@ -3,6 +3,7 @@ import { prisma } from "../db/prisma";
 import { hashApiKey } from "./api-key";
 import { capabilityForRequest, hasCapability } from "./capabilities";
 import { verifyAuthToken } from "./token";
+import { sendApiError } from "../middleware/api-error";
 
 export type AuthContext = {
   userId?: string;
@@ -34,7 +35,7 @@ export async function requireAuthContext(req: Request, res: Response, next: Next
   if (token) {
     const payload = verifyAuthToken(token);
     if (!payload) {
-      return res.status(401).json({ error: "invalid_auth_token" });
+      return sendApiError(res, 401, "invalid_auth_token");
     }
 
     const membership = await prisma.workspaceMembership.findUnique({
@@ -47,7 +48,7 @@ export async function requireAuthContext(req: Request, res: Response, next: Next
     });
 
     if (!membership) {
-      return res.status(403).json({ error: "forbidden" });
+      return sendApiError(res, 403, "forbidden");
     }
 
     req.auth = {
@@ -61,7 +62,7 @@ export async function requireAuthContext(req: Request, res: Response, next: Next
   const apiKey = req.header("X-API-Key");
 
   if (!apiKey) {
-    return res.status(401).json({ error: "missing_api_key" });
+    return sendApiError(res, 401, "missing_api_key");
   }
 
   const apiKeyHash = hashApiKey(apiKey);
@@ -78,11 +79,11 @@ export async function requireAuthContext(req: Request, res: Response, next: Next
   });
 
   if (!record?.active) {
-    return res.status(403).json({ error: "invalid_api_key" });
+    return sendApiError(res, 403, "invalid_api_key");
   }
 
   if (!record.workspaceId) {
-    return res.status(422).json({ error: "workspace_required" });
+    return sendApiError(res, 422, "workspace_required");
   }
 
   const scopes = Array.isArray(record.scopes)
@@ -90,7 +91,7 @@ export async function requireAuthContext(req: Request, res: Response, next: Next
     : [];
   const requiredCapability = capabilityForRequest(req);
   if (requiredCapability && !hasCapability(scopes, requiredCapability)) {
-    return res.status(403).json({ error: "forbidden" });
+    return sendApiError(res, 403, "forbidden");
   }
 
   await prisma.apiKey.update({

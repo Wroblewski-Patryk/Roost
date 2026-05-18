@@ -26,9 +26,11 @@
     "google-drive:smoke": "node scripts/google-drive-production-smoke.mjs",
     "clickup:bootstrap": "node scripts/clickup-production-bootstrap.mjs",
     "check:public-js": "node -e \"console.log('legacy public JS removed; React/Vite build is the web syntax gate')\"",
+    "check:route-capabilities": "node scripts/check-route-capabilities.mjs",
     "test:api": "npm run build && npm run prisma:migrate:deploy && node --test \"dist/tests/api.test.js\"",
+    "test:api:local": "node scripts/test-api-local.mjs",
     "test": "npm run test:api",
-    "validate": "npm run check:public-js && npm run build"
+    "validate": "npm run check:public-js && npm run check:route-capabilities && npm run build"
   },
   "dependencies": {
     "@phosphor-icons/web": "^2.1.2",

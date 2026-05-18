@@ -1,6 +1,6 @@
 # Project Memory Index
 
-Last updated: 2026-05-17
+Last updated: 2026-05-18
 
 ## Purpose
 
@@ -51,6 +51,14 @@ continue from repository files alone:
   detail/preview panels, and recovery states. Avoid hero sections, generic KPI
   bands, decorative badges, and explanatory first-viewport copy unless they
   directly support an operator decision.
+- `docs/planning/foundation-p1-hardening-task-contract.md`: first P1
+  hardening wave after the 2026-05-18 application foundation audit. It adds
+  `npm run test:api:local`, route/capability drift validation inside
+  `npm run validate`, compatible structured API error helper adoption for
+  auth/API-key/central error paths, scoped-by-default owner API key creation,
+  request IDs, security headers, and basic auth/API rate limits. Full API test
+  execution still needs a healthy local PostgreSQL/Docker environment or a
+  supplied validation `DATABASE_URL`.
 - `docs/planning/human-agent-web-architecture-map.md`: current V2
   human-agent web direction. As of 2026-05-14, `/react-agent-tools` exposes
   the owner-visible MCP tool surface, and `/react-company-os` includes the

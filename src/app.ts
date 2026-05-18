@@ -4,6 +4,7 @@ import path from "path";
 import { requireApiKey } from "./auth/api-key.middleware";
 import { env } from "./config/env";
 import { errorHandler } from "./middleware/error-handler";
+import { createRateLimiter, requestContext, securityHeaders } from "./middleware/security";
 import { agentLogsRouter } from "./modules/agent-logs/agent-logs.routes";
 import { agentEventsRouter } from "./modules/agent-events/agent-events.routes";
 import { agentsRouter } from "./modules/agents/agents.routes";
@@ -110,11 +111,27 @@ function createCorsMiddleware() {
   });
 }
 
+const authRateLimiter = createRateLimiter({
+  keyPrefix: "auth",
+  max: env.nodeEnv === "test" ? 1000 : 40,
+  windowMs: 15 * 60 * 1000,
+  skip: (req) => req.method === "OPTIONS"
+});
+
+const apiRateLimiter = createRateLimiter({
+  keyPrefix: "api",
+  max: env.nodeEnv === "test" ? 10000 : 1200,
+  windowMs: 15 * 60 * 1000,
+  skip: (req) => req.method === "OPTIONS" || req.path === "/health" || req.path === "/v1/health"
+});
+
 export function createApp() {
   const app = express();
   const publicRoot = path.join(process.cwd(), "public");
   const staticFiles = express.static(publicRoot);
 
+  app.use(requestContext);
+  app.use(securityHeaders);
   app.use(createCorsMiddleware());
   app.use("/v1/webhooks/clickup", express.raw({ type: "application/json", limit: "1mb" }), clickUpWebhooksRouter);
   app.use(express.json({ limit: "1mb" }));
@@ -152,9 +169,11 @@ export function createApp() {
   });
   app.use("/health", healthRouter);
   app.use("/v1/health", healthRouter);
+  app.use(["/auth", "/v1/auth"], authRateLimiter);
   app.use("/auth", authRouter);
   app.use("/v1/auth", authRouter);
 
+  app.use(apiRateLimiter);
   app.use(requireApiKey);
   mountProtectedRoutes(app);
 
