@@ -542,16 +542,49 @@ function WorkforceForm({
 
 function MarkdownPreview({ files }: { files?: Record<string, string> }) {
   const [selectedFile, setSelectedFile] = useState("agent.md");
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const names = Object.keys(files || {});
   const active = files?.[selectedFile] ?? files?.[names[0] || ""] ?? "";
   if (!files || names.length === 0) return <p className="text-sm text-company-muted">Generated files are not available yet.</p>;
 
+  async function copyActiveFile() {
+    try {
+      await navigator.clipboard.writeText(active);
+      setCopyState("copied");
+    } catch {
+      setCopyState("failed");
+    }
+  }
+
   return (
     <section className="grid min-h-0 gap-3">
-      <div className="join">
-        {names.map((name) => (
-          <button className={`btn join-item btn-sm ${selectedFile === name ? "btn-primary" : "btn-outline"}`} key={name} onClick={() => setSelectedFile(name)} type="button">{name}</button>
-        ))}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="join">
+          {names.map((name) => (
+            <button
+              className={`btn join-item btn-sm ${selectedFile === name ? "btn-primary" : "btn-outline"}`}
+              key={name}
+              onClick={() => {
+                setSelectedFile(name);
+                setCopyState("idle");
+              }}
+              type="button"
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          {copyState !== "idle" ? (
+            <span className={`text-xs font-bold ${copyState === "copied" ? "text-success" : "text-error"}`}>
+              {copyState === "copied" ? "Copied" : "Copy failed"}
+            </span>
+          ) : null}
+          <button className="btn btn-sm btn-outline" onClick={copyActiveFile} type="button">
+            <i className="ph-bold ph-copy" aria-hidden="true"></i>
+            <span>Copy file</span>
+          </button>
+        </div>
       </div>
       <pre className="max-h-[42vh] overflow-auto whitespace-pre-wrap break-words rounded-company border border-base-300 bg-base-200/60 p-3 font-mono text-xs leading-6 text-company-ink">{active}</pre>
     </section>
@@ -647,9 +680,9 @@ function DetailModal({
             <div className="grid gap-4">
             <div className="rounded-company border border-base-300 bg-base-200/45 p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3 className="font-black text-company-ink">Configuration readiness</h3>
-                <span className="text-sm font-bold text-company-muted">
-                  {entity.readiness?.score ?? readinessItems(entity).filter((item) => item.done).length} / {entity.readiness?.total ?? readinessItems(entity).length} ready
+                <h3 className="font-black text-company-ink">Readiness checklist</h3>
+                <span className={`rounded-company px-2 py-1 text-xs font-black uppercase ${entity.readiness?.status === "ready" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"}`}>
+                  {entity.readiness?.status === "ready" ? "ready" : "needs attention"}
                 </span>
               </div>
               {entity.readiness?.nextAction ? <p className="mt-2 text-sm font-bold text-primary">{entity.readiness.nextAction}</p> : null}
@@ -1058,9 +1091,6 @@ export function PeopleAgentsRoute() {
                 <p className="text-sm text-company-muted">Source-of-truth roster for humans, AI directors, responsibilities, runtime context, and generated files.</p>
               </div>
               <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-end">
-                <span className="rounded-company border border-base-300 bg-base-100/70 px-3 py-2 text-xs font-bold text-company-muted">
-                  {entities.length} records loaded
-                </span>
                 <CcButton iconLeft="ph-plus" onClick={() => setEditingEntity({ entity: null, mode: "create" })} size="sm" variant="primary">New entity</CcButton>
               </div>
             </header>

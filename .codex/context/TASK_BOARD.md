@@ -53,6 +53,14 @@
 
 ## Recent Checkpoints
 
+- 2026-05-19: People/Agents pro polish checkpoint implemented. Directory no
+  longer shows the `records loaded` counter. Preview profile now uses
+  `Readiness checklist` with a simple ready/needs-attention state instead of
+  fractional `x/y ready` copy. Generated files preview gained a real `Copy
+  file` action for the active markdown file. Validation passed:
+  `npm run validate`, `git diff --check`, and Playwright real-server proof for
+  Directory, Preview profile, Files tab copy action, and mobile Directory with
+  no console errors or horizontal overflow.
 - 2026-05-19: People/Agents preview modal polish implemented. The workforce
   preview header now uses a structured profile summary instead of badge-heavy
   runtime text, tabs use a compact tab control, the Access tab no longer shows
