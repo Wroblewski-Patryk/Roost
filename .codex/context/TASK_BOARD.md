@@ -53,6 +53,16 @@
 
 ## Recent Checkpoints
 
+- 2026-05-19: People/Agents final UX audit and reusable complex management
+  view standard published. The audit covers `06 People & Agents -> Directory`,
+  workforce preview modal, and New/Edit modal, recording the durable
+  conclusions from the owner feedback loop: authenticated management screens
+  are tools, flat indexes use shared table primitives, one object belongs in
+  one row, filters need labels, row actions stay local, decorative counters
+  and duplicate chips stay out of dense work surfaces, and verbose runtime or
+  generated-file context belongs in detail tabs. Evidence:
+  `docs/ux/people-agents-directory-final-ux-audit-2026-05-19.md` and
+  `docs/ux/design-memory.md`.
 - 2026-05-19: People/Agents Directory table cleanup implemented. Directory
   now separates `Role` and `Department`, removes row-level slug and
   `Paperclip not_synced` secondary text, removes the quick-filter strip above

@@ -1505,3 +1505,33 @@ of rediscovering them.
   `docs/planning/people-agents-directory-premium-ux-task-contract.md`,
   `web/src/features/departments/people-agents-route.tsx`, and
   `docs/ux/evidence/people-agents-premium-*.png`.
+
+### 2026-05-19 - Complex Management View Composition Standard
+- Type: reusable_pattern
+- Context: The owner reviewed the `06 People & Agents -> Directory`, preview,
+  and new/edit modal workstream and repeatedly corrected drift toward
+  decorative UI: oversized page titles, counter strips, duplicate chips,
+  badge noise, card-like rows, always-visible detail panels, and raw provider
+  implementation text in the roster.
+- Decision: Complex authenticated management views must be built as tools.
+  Start by defining the operator job, then split the surface into collection,
+  inspection, edit, destructive confirmation, and state surfaces. Use shared
+  primitives first, especially `CcDataTable` for flat backend-backed indexes.
+  The first viewport must expose real records, filters, visible actions, and
+  backend-connected decisions. Keep one object per table row, make the
+  name/title and actions columns mandatory, keep row actions local, label all
+  filters, avoid duplicate quick filters, hide lower-priority columns through
+  column visibility, and put verbose runtime/generated/provider details in
+  preview tabs instead of row subtitles. Use modal previews/forms for
+  small-to-medium records and dedicated routes for long workflows.
+- Reuse when: Building or auditing any dense CompanyCore/Roost module:
+  people, agents, roles, permissions, CRM, relationships, provider resources,
+  tasks, operations, assets, settings indexes, or future department management
+  systems.
+- Avoid when: Building a public landing page, brand narrative, immersive map,
+  hierarchy browser, calendar, kanban board, or long wizard where another
+  canonical pattern is a better primary surface.
+- Evidence:
+  `docs/ux/people-agents-directory-final-ux-audit-2026-05-19.md`,
+  `web/src/components/cc-data-table.tsx`, and
+  `web/src/features/departments/people-agents-route.tsx`.

@@ -65,7 +65,12 @@ continue from repository files alone:
   row action items, page input, and 10/25/50/100/250/500 page sizes. The
   People/Agents profile pattern now also uses a dependency-free Big Five radar
   visualization in workforce preview and edit contexts, paired with exact
-  numeric trait bars.
+  numeric trait bars. As of 2026-05-19, complex management views must follow
+  the composition standard captured from the People/Agents final audit:
+  define the operator job, split collection/inspection/edit/destructive/state
+  surfaces, reuse shared primitives first, keep first-viewport functionality
+  ahead of decorative counters or badge noise, and place verbose provider,
+  runtime, or generated-file data in details rather than roster rows.
 - `docs/planning/foundation-p1-hardening-task-contract.md`: first P1
   hardening wave after the 2026-05-18 application foundation audit. It adds
   `npm run test:api:local`, route/capability drift validation inside
