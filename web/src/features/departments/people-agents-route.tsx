@@ -2,7 +2,7 @@ import { FormEvent, useId, useMemo, useState } from "react";
 import { api } from "../../api/client";
 import { userErrorMessage } from "../../api/errors";
 import { CcButton } from "../../components/cc-button";
-import { CcDataTable, type CcTableColumn, type CcTableQuickFilter, type CcTableRowAction } from "../../components/cc-data-table";
+import { CcDataTable, type CcTableColumn, type CcTableRowAction } from "../../components/cc-data-table";
 import { CcField } from "../../components/cc-field";
 import { CcNotice } from "../../components/cc-notice";
 import { CcTextInput } from "../../components/cc-text-input";
@@ -821,7 +821,6 @@ export function PeopleAgentsRoute() {
   const packet = useOwnerPacket<WorkforcePacket>(`/v1/workforce?refresh=${refreshKey}`, true, t);
   const entities = packet.data?.entities || [];
   const selected = selectedId ? entities.find((entity) => entity.id === selectedId) || null : null;
-  const attentionCount = entities.filter(needsAttention).length;
   const duplicateEntity = (entity: WorkforceEntity): WorkforceEntity => ({
     ...entity,
     id: "",
@@ -854,13 +853,12 @@ export function PeopleAgentsRoute() {
         ...(entity.knowledgeIndex || []),
         ...(entity.toolIndex || [])
       ].filter(Boolean).join(" "),
-      className: "min-w-[15rem]",
+      className: "min-w-[13rem]",
       cell: (entity) => (
         <div className="flex min-w-0 items-center gap-3">
           <EntityAvatar entity={entity} />
           <div className="min-w-0">
             <strong className="block truncate text-company-ink">{entity.name}</strong>
-            <span className="block truncate text-xs text-company-muted">{entity.slug}</span>
           </div>
         </div>
       )
@@ -881,23 +879,28 @@ export function PeopleAgentsRoute() {
     },
     {
       key: "role",
-      header: "Role / Department",
+      header: "Role",
       mobileLabel: "Role",
-      className: "min-w-[13rem]",
+      className: "min-w-[12rem]",
       sortable: true,
-      sortValue: (entity) => `${entity.department || ""} ${entity.role || ""}`,
-      cell: (entity) => (
-        <div className="min-w-0">
-          <span className="block truncate text-company-ink">{entity.role || "Unassigned role"}</span>
-          <span className="block truncate text-xs text-company-muted">{entity.department || "06-kadry"}</span>
-        </div>
-      )
+      sortValue: (entity) => entity.role || "",
+      cell: (entity) => <span className="block truncate text-company-ink">{entity.role || "Unassigned role"}</span>
+    },
+    {
+      key: "department",
+      header: "Department",
+      mobileLabel: "Department",
+      className: "w-32 min-w-32",
+      sortable: true,
+      sortValue: (entity) => entity.department || "",
+      cell: (entity) => <span className="block truncate text-company-ink">{entity.department || "06-kadry"}</span>
     },
     {
       key: "manager",
       header: "Manager",
       mobileLabel: "Manager",
-      className: "min-w-[10rem]",
+      className: "w-36 min-w-36",
+      visibleByDefault: false,
       sortable: true,
       sortValue: (entity) => entity.manager?.name || "",
       cell: (entity) => <span className="block truncate">{entity.manager?.name || "No manager"}</span>
@@ -906,6 +909,7 @@ export function PeopleAgentsRoute() {
       key: "status",
       header: "Status",
       mobileLabel: "Status",
+      className: "w-24 min-w-24",
       filterable: true,
       filterLabel: "Status",
       filterValue: (entity) => entity.status,
@@ -922,7 +926,8 @@ export function PeopleAgentsRoute() {
       key: "runtime",
       header: "Runtime",
       mobileLabel: "Runtime",
-      className: "min-w-[10rem]",
+      className: "w-36 min-w-36",
+      visibleByDefault: false,
       filterable: true,
       filterLabel: "Runtime",
       filterValue: (entity) => entity.runtimeMode,
@@ -933,21 +938,9 @@ export function PeopleAgentsRoute() {
       ],
       sortable: true,
       sortValue: (entity) => entity.hierarchyLevel || entity.runtimeMode,
-      cell: (entity) => (
-        <div>
-          <span className="block text-company-ink">{entity.hierarchyLevel || runtimeLabels[entity.runtimeMode]}</span>
-          <span className="block text-xs text-company-muted">Paperclip {paperclipRuntime(entity)}</span>
-        </div>
-      )
+      cell: (entity) => <span className="block truncate text-company-ink">{entity.hierarchyLevel || runtimeLabels[entity.runtimeMode]}</span>
     }
   ], []);
-  const quickFilters = useMemo<Array<CcTableQuickFilter<WorkforceEntity>>>(() => [
-    { key: "all", label: "All", predicate: () => true },
-    { key: "people", label: "People", predicate: (entity) => entity.type === "human" },
-    { key: "agents", label: "Agents", predicate: (entity) => entity.type === "agent" },
-    { key: "directors", label: "Directors", predicate: (entity) => entity.hierarchyLevel === "department_director" || entity.hierarchyLevel === "executive_root" },
-    { key: "attention", label: `Needs attention${attentionCount ? ` (${attentionCount})` : ""}`, predicate: needsAttention }
-  ], [attentionCount]);
   const rowActionItems = useMemo<Array<CcTableRowAction<WorkforceEntity>>>(() => [
     {
       key: "preview",
@@ -1056,11 +1049,10 @@ export function PeopleAgentsRoute() {
                 initialColumnFilters={{ status: "active" }}
                 initialPageSize={25}
                 initialSort={{ key: "person", direction: "asc" }}
-                quickFilters={quickFilters}
                 rowActionItems={rowActionItems}
                 rows={entities}
                 searchPlaceholder="Search people, agents, roles..."
-                tableMinWidthClassName="min-w-[900px]"
+                tableMinWidthClassName="min-w-[1000px]"
               />
               </div>
             </main>

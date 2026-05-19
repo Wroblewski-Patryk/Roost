@@ -53,6 +53,16 @@
 
 ## Recent Checkpoints
 
+- 2026-05-19: People/Agents Directory table cleanup implemented. Directory
+  now separates `Role` and `Department`, removes row-level slug and
+  `Paperclip not_synced` secondary text, removes the quick-filter strip above
+  the table, uses clearer caret sort icons, and adds DaisyUI row hover. The
+  default table keeps actions visible by showing `Manager` and `Runtime` as
+  optional column-picker fields instead of first-load columns. Validation
+  passed: `npm run validate`, `git diff --check`, and Playwright real-server
+  proof for direct `/people-agents`, visible Role/Department/Status/Actions,
+  no forbidden row text, visible action buttons, hover rows, and new sort
+  icons.
 - 2026-05-19: People/Agents Directory premium UX polish implemented.
   Directory table filters now have visible labels, `/people-agents` and
   `/workforce` are served as React routes by Express, and the Directory header

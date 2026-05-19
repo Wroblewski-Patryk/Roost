@@ -95,6 +95,7 @@ export type CcDataTableProps<Row extends { id: string }> = {
   getRowLabel?: (row: Row) => string;
   getRowClassName?: (row: Row) => string;
   tableMinWidthClassName?: string;
+  stickyActions?: boolean;
   searchPlaceholder?: string;
   enableSearch?: boolean;
   enableColumnVisibility?: boolean;
@@ -148,6 +149,11 @@ function actionToneClass(tone: CcTableRowAction<never>["tone"] | CcTableBulkActi
   if (tone === "danger") return "btn-error";
   if (tone === "ghost") return "btn-ghost";
   return "btn-neutral";
+}
+
+function sortIcon(active: boolean, direction?: SortDirection) {
+  if (!active) return "ph-caret-up-down";
+  return direction === "desc" ? "ph-caret-down" : "ph-caret-up";
 }
 
 function uniqueOptions<Row>(rows: Row[], column: CcTableColumn<Row>) {
@@ -217,6 +223,7 @@ export function CcDataTable<Row extends { id: string }>({
   getRowLabel,
   getRowClassName,
   tableMinWidthClassName = "min-w-full",
+  stickyActions = true,
   searchPlaceholder,
   enableSearch = true,
   enableColumnVisibility = true,
@@ -229,7 +236,9 @@ export function CcDataTable<Row extends { id: string }>({
 }: CcDataTableProps<Row>) {
   const tableDensityClass = density === "compact" ? "table-sm" : "";
   const tableLabels = { ...defaultLabels, ...labels };
-  const actionColumnClass = "sticky right-0 z-10 bg-base-100 shadow-[-14px_0_18px_-18px_rgba(15,23,42,0.72)]";
+  const actionColumnClass = stickyActions
+    ? "sticky right-0 z-10 bg-base-100 shadow-[-14px_0_18px_-18px_rgba(15,23,42,0.72)]"
+    : "bg-base-100";
   const selectColumnClass = "sticky left-0 z-10 w-12 bg-base-100";
   const [query, setQuery] = useState("");
   const [activeQuickFilter, setActiveQuickFilter] = useState(initialQuickFilter);
@@ -503,7 +512,7 @@ export function CcDataTable<Row extends { id: string }>({
                     type="button"
                   >
                     <span>{column.header}</span>
-                    {sortable ? <i className={`ph-bold ${active && sort.direction === "desc" ? "ph-sort-descending" : "ph-sort-ascending"} text-xs`} aria-hidden="true"></i> : null}
+                    {sortable ? <i className={`ph-bold ${sortIcon(active, sort?.direction)} text-xs ${active ? "text-primary" : "text-company-muted"}`} aria-hidden="true"></i> : null}
                   </button>
                 </th>
               );
@@ -513,7 +522,7 @@ export function CcDataTable<Row extends { id: string }>({
         </thead>
         <tbody>
           {displayedRows.length ? displayedRows.map((row) => (
-            <tr className={getRowClassName?.(row)} key={row.id}>
+            <tr className={["hover transition-colors", getRowClassName?.(row)].filter(Boolean).join(" ")} key={row.id}>
               {enableSelection ? (
                 <td className={selectColumnClass}>
                   <input
