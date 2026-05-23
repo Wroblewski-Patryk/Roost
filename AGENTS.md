@@ -18,6 +18,18 @@ Required startup behavior:
 
 Single-lane exception: small, obvious, low-risk edits may be implemented directly, but the coordinator still owns validation and reporting. More agents are not better by default; better ownership is the goal.
 
+## Runtime Cleanup And Local Process Hygiene
+
+Agents may start local dev servers, preview processes, Playwright browsers, Docker containers, databases, queues, or background watchers when they are needed for implementation or verification. They must also clean up after themselves.
+
+- Before starting a server, check whether an equivalent process is already running for the same project and reuse it when safe.
+- Track every process, port, container, browser, or watcher started during the task.
+- Stop processes started by the agent before finishing unless the user explicitly asked to keep them running or the next active agent needs them.
+- Do not stop another user's active project processes. If unsure, inspect the command line, working directory, port, and container name first.
+- Close Playwright/headless browser sessions, temporary preview servers, test database containers, and local mail/search/cache services after validation.
+- If a process must remain running, report it in the final handoff with the project name, command, port/container, and reason.
+- Prefer project-native shutdown commands such as `docker compose down`, `npm run stop`, or documented teardown scripts when they exist. Avoid broad process kills unless the target is clearly owned by the current task.
+
 
 ## Purpose
 
