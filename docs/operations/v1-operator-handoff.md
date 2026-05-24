@@ -142,7 +142,7 @@ environment. Do not print raw API keys in terminals, logs, docs, or chat.
 
 - GitHub-to-Coolify auto-deploy:
   - GitHub repository visibility shows admin permission for
-    `Wroblewski-Patryk/companycore`.
+    `Wroblewski-Patryk/Roost`.
   - Available GitHub connector tools do not expose repository webhook
     administration.
   - Local `gh` CLI is not installed.

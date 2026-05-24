@@ -898,7 +898,7 @@ resolved in the current tool/session context.
 ### Scope
 - Local GitHub CLI availability.
 - Available GitHub connector tool surface.
-- GitHub repository visibility and permissions for `Wroblewski-Patryk/companycore`.
+- GitHub repository visibility and permissions for `Wroblewski-Patryk/Roost`.
 - Coolify service health.
 - CompanyCore release docs and planning/context files.
 
@@ -938,7 +938,7 @@ resolved in the current tool/session context.
   `docs/operations/coolify-vps-deployment-contract.md`, and
   `docs/operations/v1-release-readiness.md`.
 - How tested: `gh auth status` failed because `gh` is not installed; GitHub
-  connector repository listing showed `Wroblewski-Patryk/companycore` with
+  connector repository listing showed `Wroblewski-Patryk/Roost` with
   `admin=true`; available GitHub connector tools do not include repository
   webhook list/create/update/delete; VPS inspection confirmed Coolify and
   CompanyCore containers are healthy; `git diff --check`; `npm run build`;

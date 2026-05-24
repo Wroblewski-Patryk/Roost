@@ -1,9 +1,45 @@
 # Module Confidence Ledger
 
-Last updated: 2026-05-20
+Last updated: 2026-05-24
+
+Management department catalog note: MGMT-DEPT-001 is VERIFIED locally. `12
+Management -> Departments` now exposes the workspace department catalog through
+`workspace_departments` and `/v1/departments`, supports editable system
+department names/descriptions/icons/order/linked views, supports custom
+department creation, and feeds the authenticated sidebar from the same packet.
+Custom departments are linked-view shells in this slice: they can point to
+approved existing views such as Operations tasks or Assets files, but they do
+not yet own dedicated backend read packets. Evidence: `npm run validate`,
+`npm run test:api:local` with all 27 migrations and 6/6 API subtests, Browser
+plugin rendered proof for creating `13 Marketing Lab`, and `git diff --check`
+with line-ending warnings only. Next proof: add dedicated `/v1/departments`
+API subtests in a later hardening slice.
+
+Full-function architecture audit note: FULL-FUNCTION-ARCH-AUDIT-001 is
+VERIFIED locally for the active runtime scope. Three read-only subagent lanes
+audited backend/API, frontend/route UX, and QA/security/ops. Confirmed drift
+was fixed: destructive API tests now refuse non-local/non-test `DATABASE_URL`
+unless explicitly overridden; custom broad `adapter:*` API key scopes require
+`fullAccessConfirmed`; `mcp_operator` now includes `operations:write` and API
+tests assert the Operations write tool appears in its MCP manifest; Operations
+PATCH responses include responsibility/schedule fields; Dashboard blocked
+actions no longer say assignment/schedule are unmodeled after the schema
+landed; Operations agent packets separate read actions from write commands and
+required capabilities; Dashboard command sections show loading/error notices
+instead of false empty states; route metadata is selected-area query aware;
+planned dashboard department cards are non-interactive; Operations distinguishes
+true no-list state from no-selection state; and web route ownership docs now
+include `06 People / Agents`, account settings, workspace settings, aliases,
+and current subviews. Evidence: `npm run validate`, unsafe `DATABASE_URL`
+refusal proof, `npm run test:api:local` with all 26 migrations and 6/6 API
+tests, Playwright static DOM proof for Dashboard error semantics and Operations
+true-empty state, `git diff --check`, no remaining validation PostgreSQL
+container, and no `chrome-headless-shell` process found. Production deploy
+smoke and real provider credential workflows remain separate target-environment
+proofs, not part of this local audit.
 
 Dashboard/Operations/Workforce foundation note: DMS-FOUNDATION-001 is
-PARTIALLY_VERIFIED locally with high API/build confidence. The logged-in
+VERIFIED locally with high confidence. The logged-in
 General dashboard now consumes a real `/v1/dashboard/command` packet with
 workspace-scoped signals across intake, operations, workforce, assets,
 approvals, risks, next actions, department health, and explicit blocked
@@ -14,10 +50,16 @@ entry point lazy-loads department/settings surfaces, and Vite now emits
 separate route chunks. Evidence: `npm run validate` passed with 173 manifest
 routes and 33 protected route files; `npm run test:api:local` passed with all
 25 migrations and 6/6 API tests, including dashboard command, MCP manifest,
-Operations work-item create, event evidence, and workspace isolation. Browser
-plugin cleanup was attempted; rendered private-route proof was not completed
-because the local validation server path hit environment/auth setup issues, so
-the frontend visual state remains a follow-up proof item.
+Operations work-item create, event evidence, and workspace isolation. The
+follow-up responsibility/schedule slice added task owner, assigned workforce
+entity, reviewer, start/end dates, estimated duration, recurrence rule,
+fresh migration `202605201_operations_task_responsibility_schedule`, API
+read/create/update support, Operations UI fields, and calendar start-date
+fallback. Render proof on a validation-owned server confirmed the dashboard
+command packet and Operations task rendering with assignment and zero console
+issues. Browser plugin had no active Codex browser pane, so Playwright fallback
+was used; validation server, test PostgreSQL container, and headless browser
+processes were cleaned up.
 
 Authenticated shell density note: WEB-SHELL-DENSITY-001 is VERIFIED locally.
 `web/src/layout/shell.tsx` now uses denser Roost sidebar rows, lighter active

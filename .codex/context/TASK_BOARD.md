@@ -53,6 +53,77 @@
 
 ## Recent Checkpoints
 
+- 2026-05-24: Repository remote renamed locally for the GitHub repository
+  rename from `Wroblewski-Patryk/companycore` to `Wroblewski-Patryk/Roost`.
+  Local `origin` now uses `https://github.com/Wroblewski-Patryk/Roost.git`.
+  Coolify was checked under the `LuckySparrow` team; project `LuckySparrow`,
+  production application `Roost` now has Git Source repository
+  `Wroblewski-Patryk/Roost`, branch `main`, commit selector `HEAD`. No manual
+  redeploy was triggered in this checkpoint.
+- 2026-05-24: Management department catalog implemented. `12 Management`
+  now has a `Departments` table backed by new `workspace_departments`
+  persistence and `/v1/departments`. The authenticated sidebar reads the same
+  catalog with the old static department list as fallback, and custom
+  departments can be added with linked views from approved existing module
+  surfaces. Validation passed: `npm run prisma:generate`, `npx prisma
+  validate` with a local `DATABASE_URL`, `npm run validate`, `npm run
+  test:api:local` with all 27 migrations and 6/6 API subtests, Browser plugin
+  rendered proof for creating `13 Marketing Lab`, and `git diff --check`
+  with line-ending warnings only. Task contract:
+  `docs/planning/management-department-catalog-task-contract.md`.
+- 2026-05-20: Full active function architecture audit completed. Backend/API,
+  frontend/route UX, and QA/security/ops subagent lanes inspected the active
+  runtime. Fixes landed for destructive test database guardrails, broad custom
+  API key scope confirmation, `mcp_operator` Operations write visibility,
+  Operations PATCH responsibility/schedule readback, Dashboard and Operations
+  agent-packet semantics, stale React route ownership docs, Dashboard
+  loading/error empty states, query-aware route metadata, planned dashboard
+  cards, and Operations true-empty task-list state. Validation passed:
+  `npm run validate`, unsafe `DATABASE_URL` refusal proof,
+  `npm run test:api:local` with all 26 migrations and 6/6 API tests,
+  Playwright static DOM proof for Dashboard/Operations states, and
+  `git diff --check`. Cleanup checks found no test DB container and no
+  `chrome-headless-shell` process. Production deploy smoke remains a separate
+  follow-up.
+- 2026-05-20: Dashboard, Operations, and People/Agents foundation slice
+  implemented. Added `GET /v1/dashboard/command` plus `dashboard:read` MCP/API
+  exposure so the logged-in dashboard can show real cross-department command
+  signals, next actions, department health, and blocked responsibility/calendar
+  actions. Added `POST /v1/operations/work-items` so Operations task creation
+  uses the domain adapter with relation validation, ClickUp create writeback,
+  and event evidence. The dashboard frontend now consumes the command packet,
+  Operations create uses the domain route, and route modules are lazy-loaded.
+  Validation passed: `npm run validate`; `npm run test:api:local` with 25
+  migrations and 6/6 API tests. Remaining follow-up: complete rendered
+  private-route browser proof and decide the assignment ownership plus
+  recurring schedule schema before deeper calendar/ownership writes.
+- 2026-05-20: DMS foundation follow-up completed the assignment and schedule
+  model for Operations tasks. Added migration
+  `202605201_operations_task_responsibility_schedule`, Prisma relations for
+  owner/reviewer users and assigned workforce entities, start/end schedule
+  fields, estimated duration, and recurrence rule. Operations packets now
+  include assignment options; create/update support the fields; task readiness
+  no longer hardcodes owner/reviewer/assignee/duration as unmodeled gaps; the
+  React task modal exposes the controls; calendar views use `startDate` with
+  `dueDate` fallback. Validation passed: `npm run prisma:generate`,
+  `npm run validate`, `npm run test:api:local` with 26 migrations and 6/6 API
+  tests, `git diff --check`, and Playwright fallback render proof with zero
+  console issues. Browser plugin had no active Codex browser pane, so the
+  rendered proof used Playwright fallback. Validation processes and container
+  were cleaned up.
+- 2026-05-19: Authenticated shell sidebar/footer polish implemented.
+  Desktop department rows are denser and less visually heavy, active
+  People/Agents keeps its child views without consuming as much vertical
+  space, workspace controls are tighter, the mobile fake quick strip has been
+  replaced by a current department/view control that opens the full drawer, and
+  the footer now reads as a quiet Roost layout band with the existing
+  attribution and language selector. Validation passed: `npm run build:web`,
+  `npm run validate`, `git diff --check`, and Playwright fallback
+  desktop/mobile shell proof with no page-level horizontal overflow, console
+  warnings, or console errors.
+  Browser plugin was attempted first, but its local page evaluation surface did
+  not expose `sessionStorage`, so signed-in private-route setup required the
+  Playwright fallback.
 - 2026-05-19: People/Agents pro polish checkpoint implemented. Directory no
   longer shows the `records loaded` counter. Preview profile now uses
   `Readiness checklist` with a simple ready/needs-attention state instead of
@@ -354,7 +425,7 @@
   `npm run test:api` remains blocked locally by missing `DATABASE_URL`.
 - 2026-05-17: Coolify deploy audit. The `companycore` resource in
   `LuckySparrow / production` has `Auto Deploy` enabled on Git source
-  `git@github.com:Wroblewski-Patryk/companycore.git`, branch `main`, `HEAD`,
+  `git@github.com:Wroblewski-Patryk/Roost.git`, branch `main`, `HEAD`,
   but the running deployment stayed on `511d834` after the local push to
   `82d45f9`, so GitHub webhook delivery is not proven. Manual redeploy from
   Coolify pulled `82d45f9142d6be9d4d154b9db246f1a50d7e0d74`, then `Include

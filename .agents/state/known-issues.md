@@ -1,6 +1,6 @@
 # Known Issues
 
-Last updated: 2026-05-18
+Last updated: 2026-05-20
 
 ## Open Issues
 
@@ -8,7 +8,7 @@ Last updated: 2026-05-18
 | --- | --- | --- | --- | --- | --- | --- |
 | KI-008 | P2 | Google Drive production OAuth write/read samples | Historical production OAuth decrypt/write-read evidence was stale after a prior secret incident. The 2026-05-16 production audit proves the stored Google Drive OAuth path can list/import selected folders and refresh content snapshots, but Docs/Sheets write samples and `changes/reconcile` still need targeted proof. | Ops/Release + Owner | MITIGATED | Run a target-safe Docs/Sheets write/read smoke and the KI-009 changes-reconcile diagnostic before closing the historical OAuth concern completely. |
 | KI-007 | P1 | Product data completeness | Production `/v1/operating-model` has 13 areas and 26 external mappings but `0` storage locations, `0` knowledge roots, `0` automation definitions, and `/v1/projects` returns `0` while tasks exist. | Product + Backend | OPEN | Execute ACF-PROD-001 to decide, seed, import, or explicitly defer these owner-facing operating model records. |
-| KI-002 | P2 | Release automation | GitHub-to-Coolify auto-deploy is not proven as reliable; manual VPS/Coolify backend rollover remains the accepted and approved path. | Ops/Release | ACCEPTED | After the next deploy, compare public `/health` `build.commit` with the pushed commit before claiming push-to-running-image proof. |
+| KI-002 | P2 | Release automation | Coolify is configured through the official GitHub App and recent manual redeploys reported source commits correctly, but the next normal push still needs an end-to-end proof that Coolify creates a `Webhook` deployment record and that public `/health` reports the pushed commit. Manual VPS/Coolify backend rollover remains the fallback release path. | Ops/Release | MITIGATED | After the next push/deploy, compare public `/health` `build.commit` with the pushed commit and record whether the deployment was webhook-triggered or manual. |
 | KI-003 | P2 | Source handoff | Paperclip and OpenJarvis validated source changes could not be pushed upstream because GitHub returned `403`. | Ops/Release | BLOCKED | Resume AGRUN-010 after write access or an approved fork/PR route exists. |
 
 ## Accepted Residual Risks

@@ -112,12 +112,12 @@ Required smoke checks after deploy:
 
 GitHub-to-Coolify auto-deploy is not required for v1 runtime readiness.
 
-Current status as of 2026-05-17:
+Current status as of 2026-05-24:
 
 - Coolify services are healthy on the VPS.
 - CompanyCore manual runtime rollover is proven and documented.
-- The GitHub app can see `Wroblewski-Patryk/companycore` with admin
-  permissions.
+- The GitHub app previously saw the pre-rename repository with admin
+  permissions; the current repository is `Wroblewski-Patryk/Roost`.
 - The available GitHub connector tool surface does not expose repository
   webhook list/create/update/delete actions.
 - The local `gh` CLI is not installed in the Codex workspace.
@@ -133,26 +133,46 @@ Current status as of 2026-05-17:
   from `COMPANYCORE_BUILD_IMAGE`, Coolify/container identifiers, or
   `HOSTNAME`. `docker-compose.coolify.yml` maps `SOURCE_COMMIT` and
   `COOLIFY_CONTAINER_NAME` into the backend metadata path.
-- Coolify `Auto Deploy` is enabled for the `companycore` application, with Git
-  source `git@github.com:Wroblewski-Patryk/companycore.git`, branch `main`, and
-  commit selector `HEAD`.
+- Coolify `Auto Deploy` is enabled for the `companycore` application.
+- On 2026-05-19, the pre-rename Coolify source was aligned with the working
+  LuckySparrow projects:
+  - Git source: official Coolify GitHub App `vps-luckysparrow`.
+  - Repository then: `Wroblewski-Patryk/companycore`.
+  - Branch: `main`.
+  - Commit selector: `HEAD`.
+  - Deploy key removed from the application source so Coolify no longer treats
+    the app as a deploy-key/SSH repository.
+  - Coolify application metadata now records GitHub repository project id
+    `1227435697`, which is required for official GitHub App push webhook
+    routing.
+- The Coolify webhooks screen now reports: official Git App is in use and
+  manual webhooks are not required.
 - `Include Source Commit in Build` is enabled in the application Advanced
   settings. This is required for the current compose/build metadata path to
   expose the deployed commit through `GET /health`.
 - The 2026-05-17 manual redeploy for commit
   `82d45f9142d6be9d4d154b9db246f1a50d7e0d74` succeeded and public health then
   reported that exact commit.
-- GitHub-to-Coolify webhook delivery remains unverified. The Coolify webhook
-  page opens GitHub repository hook settings, but the Codex session does not
-  have GitHub web UI credentials and the available GitHub connector surface does
-  not expose repository webhook list/create/update/delete actions. Until GitHub
-  hooks are verified, auto-deploy should be treated as configured in Coolify but
-  not proven end-to-end.
+- The 2026-05-19 Coolify redeploy after GitHub App source alignment succeeded
+  with deployment id `mdpc5qc8p8olnerkovmz8k9n`. The Coolify configuration
+  banner disappeared after redeploy, and both public health endpoints reported
+  commit `1b9414e674e2dd76eca0fa6045ac4ce94d23259c`.
+- GitHub-to-Coolify webhook delivery is configured through the official Coolify
+  GitHub App and no paid GitHub feature is required. The next normal push to
+  `main` should be used as the end-to-end proof that Coolify creates a
+  `Webhook` deployment record for `companycore`.
+- On 2026-05-24, the GitHub repository was renamed to
+  `Wroblewski-Patryk/Roost`. Local `origin` now points to
+  `https://github.com/Wroblewski-Patryk/Roost.git`. Coolify was checked under
+  the `LuckySparrow` team, project `LuckySparrow`, production environment,
+  application `Roost`; its Git Source now uses `Wroblewski-Patryk/Roost` on
+  branch `main` with commit selector `HEAD`. No manual redeploy was triggered
+  during the rename checkpoint.
 
-Until then, manual VPS/Coolify backend rollover remains the accepted and
-approved release path. It must preserve the PostgreSQL volume, record the
-previous and new build commits or the absence of build metadata, verify public
-health, and retain or document a rollback image/container.
+Manual VPS/Coolify backend rollover remains the fallback release path. It must
+preserve the PostgreSQL volume, record the previous and new build commits or the
+absence of build metadata, verify public health, and retain or document a
+rollback image/container.
 
 Rollback trigger:
 

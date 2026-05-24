@@ -1,6 +1,87 @@
 # PROJECT_STATE
 
-Last updated: 2026-05-19
+Last updated: 2026-05-20
+
+## Latest Shell Checkpoint
+- 2026-05-24: Repository rename checkpoint. The local Git remote `origin` was
+  updated from `https://github.com/Wroblewski-Patryk/companycore.git` to
+  `https://github.com/Wroblewski-Patryk/Roost.git` after the GitHub repository
+  was renamed. Coolify was checked under the `LuckySparrow` team and the
+  `Roost` application Git Source now uses `Wroblewski-Patryk/Roost`, branch
+  `main`, commit selector `HEAD`. No manual redeploy was triggered in this
+  checkpoint.
+- 2026-05-24: MGMT-DEPT-001 implemented the first owner-facing department
+  administration slice. `12 Management -> Departments` now exposes a
+  workspace-scoped department catalog, backed by `workspace_departments` and
+  `/v1/departments`, where system departments can be edited and custom
+  departments can be created with linked views from existing module surfaces.
+  The authenticated sidebar reads the same catalog, so custom departments show
+  in navigation after reload while unfinished departments remain non-clickable
+  unless they have linked views. Validation passed: `npm run prisma:generate`,
+  `npx prisma validate` with local `DATABASE_URL`, `npm run validate`, `npm
+  run test:api:local` with all 27 migrations and 6/6 API subtests, Browser
+  plugin rendered proof for adding `13 Marketing Lab` with linked Operations
+  and Assets views, and `git diff --check` with line-ending warnings only.
+- 2026-05-20: FULL-FUNCTION-ARCH-AUDIT-001 completed a coordinated active
+  function architecture audit with backend/API, frontend/route UX, and
+  QA/security/ops subagent lanes. Confirmed issues were repaired in the local
+  scope: destructive API tests now refuse non-local/non-test `DATABASE_URL`
+  unless explicitly overridden; broad custom `adapter:*` API key scopes require
+  `fullAccessConfirmed`; `mcp_operator` exposes Operations write tools;
+  Operations PATCH responses include responsibility/schedule readback;
+  Dashboard/Operations agent packets no longer misstate assignment/schedule
+  architecture; Dashboard loading/error states no longer show false empty
+  command signals; selected-area route metadata is query-aware; planned
+  dashboard department cards are non-interactive; Operations distinguishes
+  true no-task-list state from no-selection state; and
+  `docs/architecture/web-layer-react-ownership.md` now matches the active
+  `06 People / Agents`, account settings, workspace settings, aliases, and
+  subviews. Validation passed: `npm run validate`, unsafe `DATABASE_URL`
+  refusal proof, `npm run test:api:local` with 26 migrations and 6/6 API
+  tests, Playwright static DOM proof for Dashboard/Operations states, and
+  `git diff --check` with only line-ending warnings. Cleanup checks found no
+  `companycore-test-postgres` container and no `chrome-headless-shell`
+  process. Production deploy smoke and real provider credential flows remain
+  separate target-environment proof.
+- 2026-05-20: DMS-FOUNDATION-001 improved the audited Dashboard,
+  Operations Tasks/Calendar, and People/Agents foundation without adding a new
+  schema workaround. The authenticated dashboard now has
+  `GET /v1/dashboard/command`, a workspace-scoped command packet over intake,
+  Operations, Workforce, Assets, approvals, risks, next actions, department
+  health, and explicit blocked actions for assignment/calendar writes that
+  still need architecture decisions. Operations task creation now uses
+  `POST /v1/operations/work-items` with existing relation checks, ClickUp
+  create writeback, and `operations_work_item_created` event evidence. React
+  dashboard consumes the packet, Operations create uses the domain route, and
+  the web entry lazy-loads dashboard/Operations/People/Assets/settings route
+  modules. Validation passed: `npm run validate` and `npm run test:api:local`
+  with all 25 migrations and 6/6 API tests. The follow-up coordination pass
+  then added migration `202605201_operations_task_responsibility_schedule`:
+  tasks now model `owner_user_id`, `assigned_workforce_entity_id`,
+  `reviewer_user_id`, `start_date`, `estimated_end_date`,
+  `estimated_duration_minutes`, and `recurrence_rule`. Operations API
+  create/read/update and the React task modal now support those fields, and
+  the calendar uses `startDate` with `dueDate` fallback. Final validation
+  passed: `npm run prisma:generate`, `npm run validate`, `npm run
+  test:api:local` with 26 migrations and 6/6 API tests, and Playwright
+  fallback render proof on a validation-owned server for dashboard command
+  packet and Operations task assignment rendering. Browser plugin had no
+  active Codex browser pane for this proof. Validation Node process,
+  PostgreSQL container, and headless browser processes were cleaned up.
+- 2026-05-19: WEB-SHELL-DENSITY-001 polished the authenticated Roost shell
+  without changing navigation content or route contracts. The desktop
+  department sidebar now uses denser rows, lighter active treatment, compact
+  child-view rows, and tighter workspace controls. The mobile shell replaces
+  the old partial horizontal quick strip with a current department/view control
+  that opens the full department drawer; the drawer now presents brand, active
+  area/view, workspace, workspace settings, and full department navigation as
+  one hierarchy. The shared footer now reads as a quiet Roost layout band with
+  the existing LuckySparrow attribution and language selector. Validation
+  passed: `npm run build:web`, `npm run validate`, `git diff --check`, and
+  Playwright fallback desktop/mobile shell proof with no page-level horizontal
+  overflow, console warnings, or console errors. Browser plugin was attempted
+  first, but its local page evaluation surface did not expose `sessionStorage`,
+  so private route visual proof used Playwright fallback.
 
 ## Product Snapshot
 - Name: LuckySparrow Company Core
@@ -3436,7 +3517,7 @@ Last updated: 2026-05-19
 - 2026-05-03: Completed CCV1-059 by auditing GitHub-to-Coolify auto-deploy
   capability after v1 runtime closure. `gh auth status` could not run because
   `gh` is not installed. The GitHub connector lists
-  `Wroblewski-Patryk/companycore` with `admin=true`, but the available GitHub
+  `Wroblewski-Patryk/Roost` with `admin=true`, but the available GitHub
   connector actions include repository contents, branches, refs, blobs, files,
   repository listing, and PR metadata, not webhook administration. Coolify,
   Coolify DB/Redis/realtime/proxy, CompanyCore backend, and CompanyCore
@@ -3762,6 +3843,9 @@ Last updated: 2026-05-19
 - Keep repository artifacts in English.
 - Communicate with users in their language.
 - Delegate with explicit ownership and avoid overlapping subagent write scope.
+- Treat the active chat as coordinator: subagent reports are evidence, not
+  approval, and the coordinator owns integration, validation, learning capture,
+  and final done-state.
 - Use the default loop:
   `analyze -> select one task -> plan -> implement -> verify -> self-review -> sync knowledge`.
 - Use `docs/governance/autonomous-engineering-loop.md` for process self-audit,
@@ -3781,9 +3865,12 @@ Last updated: 2026-05-19
 - `.codex/context/PROJECT_STATE.md`
 - `.codex/context/TASK_BOARD.md`
 - `.codex/context/LEARNING_JOURNAL.md`
+- `.agents/state/active-mission.md`
+- `.agents/state/responsibility-learning.md`
 - `.agents/workflows/general.md`
 - `.agents/workflows/documentation-governance.md`
 - `.agents/workflows/subagent-orchestration.md`
+- `.agents/workflows/responsibility-lanes.md`
 - `.agents/workflows/user-collaboration.md`
 - `.agents/workflows/world-class-delivery.md`
 

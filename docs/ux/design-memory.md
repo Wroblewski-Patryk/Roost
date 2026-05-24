@@ -34,6 +34,30 @@ of rediscovering them.
 
 ## Entries
 
+### 2026-05-19 - Dense Department Sidebar Rows
+- Type: reusable_pattern
+- Context: The authenticated Roost sidebar had few departments, but the main
+  rows were tall enough that opening People/Agents child views made the rail
+  feel heavier than the work surface. Mobile also had a partial horizontal
+  quick strip that looked like global navigation while exposing only a subset
+  of the full department IA.
+- Decision: Department sidebar rows should stay compact and hierarchy-led:
+  small icon frames, 13px primary labels, 11px supporting copy, subtle active
+  fills, a thin active rail cue, and denser child rows. Keep all text labels
+  visible, preserve separate expand buttons, and avoid adding navigation
+  content just to make the rail feel richer. On mobile, do not use a partial
+  chip strip as fake global navigation; show the current department/view as a
+  compact context control and open the full drawer for navigation. Footer
+  attribution and language controls should sit in a quiet layout band rather
+  than a loose line below the work surface.
+- Reuse when: Adding child views to future departments, polishing the mobile
+  drawer or header, or reviewing Roost shell density.
+- Avoid when: A new navigation model or route taxonomy is required; this
+  pattern only tunes the existing area-first shell.
+- Evidence:
+  `docs/planning/web-shell-sidebar-footer-polish-task-contract.md` and
+  `web/src/layout/shell.tsx`.
+
 ### 2026-05-17 - Authenticated Views Are Tools
 - Type: reusable_pattern
 - Context: `People & Agents -> Directory` initially copied a dashboard/hero

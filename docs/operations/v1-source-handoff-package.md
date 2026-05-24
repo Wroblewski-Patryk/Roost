@@ -14,7 +14,7 @@ external applications that consume CompanyCore.
 
 ## Current Runtime Truth
 
-- CompanyCore is deployed from `Wroblewski-Patryk/companycore` `main` at
+- CompanyCore is deployed from `Wroblewski-Patryk/Roost` `main` at
   `c00a92b`.
 - OpenJarvis production has the CompanyCore connector and chat context hygiene
   deployed.

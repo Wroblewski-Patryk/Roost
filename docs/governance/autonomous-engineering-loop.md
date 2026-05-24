@@ -39,6 +39,24 @@ Every iteration must complete all seven steps:
 Do not merge steps together in task evidence. Small tasks may have concise
 evidence, but every step must be represented.
 
+## Coordinator Gate
+
+When subagents are used, the active agent is the coordinator. The seven-step
+loop still belongs to the coordinator, not to the subagents. Subagents may
+produce analysis, implementation, QA, security, UX, or documentation evidence,
+but only the coordinator can close the parent task.
+
+Before moving from verification to `DONE`, the coordinator must confirm:
+
+- every required delegated lane is complete, intentionally rejected, or tracked
+  as a follow-up
+- delegated write scopes were reviewed for conflicts and overlap
+- subagent reports were checked against parent acceptance criteria
+- parent-level validation ran after integration, or missing validation is
+  recorded as residual risk
+- reusable learning from subagents was persisted in the correct project memory
+  or source-of-truth file
+
 ## Step Requirements
 
 ### 1. Analyze Current State
@@ -113,6 +131,8 @@ Critically evaluate:
 - Did the change introduce technical debt?
 - Is the result scalable enough for the declared scope?
 - Are docs, task evidence, and project state aligned?
+- If subagents were used, did the coordinator independently verify their
+  reports and integrate only accepted work?
 
 If a refinement is required, complete it before closing the iteration.
 

@@ -1,8 +1,17 @@
 # Next Steps
 
-Last updated: 2026-05-19
+Last updated: 2026-05-24
 
 ## NOW
+
+1. Prove Coolify webhook/build metadata after the repository rename.
+   - Source:
+     `docs/planning/repository-rename-coolify-source-task-contract.md`.
+   - Local Git and Coolify source configuration now point to
+     `Wroblewski-Patryk/Roost`, branch `main`, commit selector `HEAD`.
+   - Use the next normal push to `main` or a deliberate manual redeploy to
+     verify that Coolify creates the expected deployment record and public
+     `/health` reports fresh build metadata.
 
 1. Production-smoke `PEOPLE-AGENTS-PAPERCLIP-001` after redeploy.
    - Source:
@@ -176,12 +185,13 @@ Last updated: 2026-05-19
      consume a verified backend contract.
    - Add MCP tools/resources only from the same API contracts, with capability
      filtering, blocked actions, approval metadata, events, and audit.
-3. Canonical Department Settings module.
+3. Department catalog hardening after `MGMT-DEPT-001`.
    - Source:
-     `docs/planning/operations-canonical-department-filtering-task-contract.md`.
-   - Goal: expose owner-facing workspace settings for canonical departments:
-     display name, hierarchy/order number, icon, description, and resource
-     ownership rules, while preserving backend operating-area compatibility.
+     `docs/planning/management-department-catalog-task-contract.md`.
+   - Goal: add dedicated `/v1/departments` API regression assertions and decide
+     whether custom departments remain linked-view shells or gain their own
+     department-specific read packets before any custom-department writes are
+     added.
 4. Use the CompanyCore business module map during upcoming product intake.
    - Source: `docs/architecture/companycore-business-module-map.md`.
    - Apply it before settings, Drive, ClickUp, CRM, pipeline, knowledge,

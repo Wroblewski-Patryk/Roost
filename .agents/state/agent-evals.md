@@ -1,13 +1,13 @@
 # Agent Process Evals
 
-Last updated: YYYY-MM-DD
+Last updated: 2026-05-20
 
 Use this ledger to improve how Codex agents work together. It evaluates the
 process, not only the code.
 
 | ID | Date | Mission/task | Coordinator score | Lane split score | Brief clarity score | Proof score | Memory score | Main failure mode | Improvement for next mission | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| AEV-000 | YYYY-MM-DD | Example mission | 0-5 | 0-5 | 0-5 | 0-5 | 0-5 | Replace sample row. | Replace sample row. | open |
+| AEV-001 | 2026-05-20 | FULL-FUNCTION-ARCH-AUDIT-001 | 4 | 5 | 4 | 5 | 4 | Initial parent validation ran before all lane findings were integrated, so one validation pass had to be repeated after fixes. | For broad audits, run quick safe gates early, but reserve the final full gate until all lane findings have either been fixed or explicitly rejected. | closed |
 
 ## Scoring
 

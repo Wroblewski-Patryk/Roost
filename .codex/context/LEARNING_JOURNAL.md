@@ -26,6 +26,25 @@ fixes for this repository.
 
 ## Entries
 
+### 2026-05-20 - Stop Local Prisma Servers Before Client Generation
+- Context: Adding Operations task responsibility and schedule fields required
+  regenerating Prisma Client on Windows.
+- Symptom: `npm run prisma:generate` failed with `EPERM: operation not
+  permitted, rename ... query_engine-windows.dll.node.tmp...`.
+- Root cause: Local `node dist/server.js` processes were holding Prisma's
+  Windows query engine DLL open.
+- Guardrail: Before Prisma Client generation after schema edits, check for
+  local CompanyCore `node dist/server.js` processes and stop only those app
+  server processes if they are holding the query engine.
+- Preferred pattern: Use `Get-CimInstance Win32_Process -Filter "name =
+  'node.exe'"` to inspect command lines, stop only current-app
+  `dist/server.js` processes, then rerun `npm run prisma:generate`.
+- Avoid: Killing unrelated Node/Vite/Codex processes or retrying Prisma
+  generation repeatedly while the DLL remains locked.
+- Evidence: The first `npm run prisma:generate` failed with EPERM; after
+  stopping only `node dist/server.js` processes, the same command generated
+  Prisma Client successfully.
+
 ### 2026-05-19 - Centralize Managed Table Mechanics
 - Context: The owner defined a reusable table contract for CompanyCore
   management screens after the People/Agents Directory became a real roster.
