@@ -113,6 +113,18 @@ function routeDescription(route: ManifestRoute) {
     return "Read the global 00 Main intake queue and route proposal lifecycle evidence for agent output, provider signals, unassigned resources, approvals, risks, feedback, and routing candidates.";
   }
 
+  if (route.capability === "dashboard:read") {
+    return "Read the logged-in CompanyCore command packet across intake, operations, workforce, assets, approvals, risks, and next-action signals.";
+  }
+
+  if (route.capability === "departments:read") {
+    return "Read the workspace department catalog, sidebar navigation rows, and the approved view templates that can be linked into departments.";
+  }
+
+  if (route.capability === "departments:write") {
+    return "Create or update workspace departments and their linked view templates without mutating the underlying department modules or provider records.";
+  }
+
   if (route.capability === "intake:write") {
     return "Create proposal-only global intake classification and routing evidence without acknowledging agent events, mutating providers, approving work, invoicing, discounting, deleting, or executing commercial/legal actions.";
   }

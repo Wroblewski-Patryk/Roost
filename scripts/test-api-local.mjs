@@ -5,6 +5,21 @@ const port = process.env.COMPANYCORE_TEST_DB_PORT || "55432";
 const databaseUrl = process.env.DATABASE_URL || `postgresql://companycore:companycore@127.0.0.1:${port}/companycore_test?schema=public`;
 const keepDb = process.env.COMPANYCORE_TEST_DB_KEEP === "1";
 
+function assertSafeTestDatabaseUrl(url) {
+  if (process.env.COMPANYCORE_ALLOW_DESTRUCTIVE_TEST_DB === "1") {
+    return;
+  }
+
+  const parsed = new URL(url);
+  const safeHosts = new Set(["127.0.0.1", "localhost", "::1"]);
+  const databaseName = parsed.pathname.replace(/^\/+/, "");
+  if (!safeHosts.has(parsed.hostname) || !/^companycore(_|-)?test/i.test(databaseName)) {
+    throw new Error(
+      "Refusing to run destructive API tests against DATABASE_URL. Use a local database named companycore_test or set COMPANYCORE_ALLOW_DESTRUCTIVE_TEST_DB=1 for an explicit override."
+    );
+  }
+}
+
 function run(command, args, options = {}) {
   return new Promise((resolve) => {
     let settled = false;
@@ -116,6 +131,7 @@ async function cleanupDatabase() {
 }
 
 try {
+  assertSafeTestDatabaseUrl(databaseUrl);
   if (!process.env.DATABASE_URL) {
     await startDatabase();
   }

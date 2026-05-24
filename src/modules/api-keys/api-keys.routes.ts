@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "../../db/prisma";
 import { apiKeyPrefix, generateApiKey, hashApiKey } from "../../auth/api-key";
 import { agentKeyProfiles, findAgentKeyProfile } from "../../auth/agent-key-profiles";
+import { capabilities, scopesAreBroad } from "../../auth/capabilities";
 import { asyncHandler } from "../../middleware/async-handler";
 import { sendApiError } from "../../middleware/api-error";
 
@@ -89,6 +90,15 @@ apiKeysRouter.post("/", asyncHandler(async (req, res) => {
   }
 
   const scopes = input.scopes?.length ? input.scopes : profile?.scopes ?? ["companycore:*"];
+  const requestedCustomScopes = input.scopes ?? [];
+  const unknownScopes = requestedCustomScopes.filter((scope) => !capabilities.includes(scope as never) && !scopesAreBroad([scope]));
+  if (unknownScopes.length) {
+    return sendApiError(res, 400, "invalid_api_key_scope", { details: { scopes: unknownScopes } });
+  }
+  if (requestedCustomScopes.length && scopesAreBroad(requestedCustomScopes) && !input.fullAccessConfirmed) {
+    return sendApiError(res, 400, "api_key_full_access_confirmation_required");
+  }
+
   const rawKey = generateApiKey();
   const record = await prisma.apiKey.create({
     data: {

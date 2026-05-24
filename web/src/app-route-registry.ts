@@ -20,6 +20,7 @@ export const canonicalGeneralDashboardPath = "/areas?area=00-ogolny&view=overvie
 export const canonicalOperationsPath = "/areas?area=04-operacje&view=tasks";
 export const canonicalPeopleAgentsPath = "/areas?area=06-kadry&view=directory";
 export const canonicalAssetsPath = "/areas?area=08-zasoby&view=overview";
+export const canonicalManagementDepartmentsPath = "/areas?area=12-zarzadzanie&view=departments";
 
 export const publicHomeRoute: AppRouteMeta = {
   id: "home",
@@ -98,6 +99,15 @@ export const appRouteGroups: AppRouteGroup[] = [
         canonicalSource: "docs/planning/cc-08-002-assets-context-read-api-task-contract.md"
       },
       {
+        id: "management",
+        href: canonicalManagementDepartmentsPath,
+        label: "12 Management",
+        title: "12 Management",
+        icon: "ph-chart-line-up",
+        private: true,
+        canonicalSource: "docs/architecture/department-management-systems-architecture.md"
+      },
+      {
         id: "account-settings",
         href: "/account/settings",
         label: "Account settings",
@@ -145,6 +155,25 @@ export function routeMatches(route: Pick<AppRouteMeta, "href" | "aliases" | "mat
 }
 
 export function resolveRouteMeta(pathname: string) {
+  const [rawPath, rawQuery = ""] = pathname.split("?");
+  if (normalizeRoutePath(rawPath) === "/areas") {
+    const params = new URLSearchParams(rawQuery);
+    const area = params.get("area");
+    if (area === "04-operacje") {
+      return appRoutes.find((route) => route.id === "operations");
+    }
+    if (area === "06-kadry") {
+      return appRoutes.find((route) => route.id === "people-agents");
+    }
+    if (area === "08-zasoby") {
+      return appRoutes.find((route) => route.id === "assets");
+    }
+    if (area === "12-zarzadzanie") {
+      return appRoutes.find((route) => route.id === "management");
+    }
+    return appRoutes.find((route) => route.id === "dashboard");
+  }
+
   return appRoutes.find((route) => routeMatches(route, pathname));
 }
 
@@ -169,6 +198,9 @@ export function canonicalPostAuthPath(pathname?: string | null) {
       const view = params.get("view");
       return view === "files" ? "/areas?area=08-zasoby&view=files" : canonicalAssetsPath;
     }
+    if (area === "12-zarzadzanie") {
+      return canonicalManagementDepartmentsPath;
+    }
     return canonicalGeneralDashboardPath;
   }
 
@@ -187,6 +219,10 @@ export function canonicalPostAuthPath(pathname?: string | null) {
 
   if (route.id === "assets") {
     return canonicalAssetsPath;
+  }
+
+  if (route.id === "management") {
+    return canonicalManagementDepartmentsPath;
   }
 
   if (route.id === "account-settings" || route.id === "workspace-settings") {

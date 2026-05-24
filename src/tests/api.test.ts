@@ -24,7 +24,24 @@ type RegisteredOwner = {
   workspace: { id: string };
 };
 
+function assertSafeTestDatabase() {
+  if (process.env.COMPANYCORE_ALLOW_DESTRUCTIVE_TEST_DB === "1") {
+    return;
+  }
+
+  const databaseUrl = process.env.DATABASE_URL;
+  assert.ok(databaseUrl, "DATABASE_URL is required for destructive API tests.");
+  const parsed = new URL(databaseUrl);
+  const safeHosts = new Set(["127.0.0.1", "localhost", "::1"]);
+  const databaseName = parsed.pathname.replace(/^\/+/, "");
+  assert.ok(
+    safeHosts.has(parsed.hostname) && /^companycore(_|-)?test/i.test(databaseName),
+    "Refusing to run destructive API tests against a non-local or non-test DATABASE_URL."
+  );
+}
+
 async function resetDatabase() {
+  assertSafeTestDatabase();
   await prisma.event.deleteMany();
   await prisma.googleDriveContentSnapshot.deleteMany();
   await prisma.googleDriveFile.deleteMany();
@@ -1484,6 +1501,9 @@ test("CompanyCore v1 protected API flow", async () => {
       status: "active"
     }
   });
+  const workspaceAForOperations = await prisma.workspace.findUniqueOrThrow({
+    where: { id: ownerA.workspace.id }
+  });
   const operationsResource = await prisma.resource.create({
     data: {
       workspaceId: ownerA.workspace.id,
@@ -1522,7 +1542,15 @@ test("CompanyCore v1 protected API flow", async () => {
       title: "Operations procedure review",
       description: "Review SOP, dependency, and approval context.",
       status: "in_progress",
-      priority: "high"
+      priority: "high",
+      dueDate: new Date("2026-05-19T00:00:00.000Z"),
+      startDate: new Date("2026-05-18T00:00:00.000Z"),
+      estimatedEndDate: new Date("2026-05-20T00:00:00.000Z"),
+      estimatedDurationMinutes: 90,
+      recurrenceRule: "FREQ=WEEKLY;INTERVAL=1",
+      ownerUserId: workspaceAForOperations.ownerUserId,
+      assignedWorkforceEntityId: userBackedWorkforce.id,
+      reviewerUserId: workspaceAForOperations.ownerUserId
     }
   });
   const operationsTaskDependency = await prisma.dependency.create({
@@ -1740,6 +1768,45 @@ test("CompanyCore v1 protected API flow", async () => {
     && tool.riskLevel === "read"
     && tool.requiresApproval === false
   )));
+  assert.ok(operationsMcpManifestBody.data.tools.some((tool) => (
+    tool.name === "companycore_post_operations_work_items"
+    && tool.path === "/v1/operations/work-items"
+    && tool.capability === "operations:write"
+    && tool.riskLevel === "write"
+    && tool.requiresApproval === false
+  )));
+  assert.ok(operationsMcpManifestBody.data.tools.some((tool) => (
+    tool.name === "companycore_get_dashboard_command"
+    && tool.path === "/v1/dashboard/command"
+    && tool.capability === "dashboard:read"
+    && tool.riskLevel === "read"
+    && tool.requiresApproval === false
+  )));
+
+  const dashboardCommand = await request("/v1/dashboard/command", { headers: authA });
+  assert.equal(dashboardCommand.status, 200);
+  const dashboardCommandBody = dashboardCommand.body as {
+    data: {
+      summary: { openTasks: number; pendingApprovals: number; workforceEntities: number; driveFiles: number };
+      departmentSignals: Array<{ key: string; health: string; count: number; href: string }>;
+      priorityItems: Array<{ id: string; title: string; source: string }>;
+      nextActions: Array<{ key: string; label: string; count: number }>;
+      blockedActions: Array<{ action: string; reason: string }>;
+      agentPacket: { mode: string; blockedActions: string[] };
+    };
+  };
+  assert.ok(dashboardCommandBody.data.summary.openTasks >= 1);
+  assert.ok(dashboardCommandBody.data.summary.pendingApprovals >= 1);
+  assert.ok(dashboardCommandBody.data.summary.workforceEntities >= 1);
+  assert.ok(dashboardCommandBody.data.summary.driveFiles >= 1);
+  assert.ok(dashboardCommandBody.data.departmentSignals.some((signal) => (
+    signal.key === "04-operacje"
+    && signal.href === "/areas?area=04-operacje&view=tasks"
+  )));
+  assert.ok(Array.isArray(dashboardCommandBody.data.priorityItems));
+  assert.ok(dashboardCommandBody.data.nextActions.some((action) => action.key === "review_approvals"));
+  assert.ok(dashboardCommandBody.data.blockedActions.some((action) => action.action === "assign_human_or_agent_from_dashboard"));
+  assert.equal(dashboardCommandBody.data.agentPacket.mode, "read_only_command_center");
 
   const operationsWorkItemCountsBefore = {
     tasks: await prisma.task.count({ where: { workspaceId: ownerA.workspace.id } }),
@@ -1771,10 +1838,31 @@ test("CompanyCore v1 protected API flow", async () => {
       operatingAreas: Array<{ id: string; key: string; name: string }>;
       departments: Array<{ key: string; backendAreaKey: string; operatingArea?: { id: string; key: string } | null }>;
       taskLists: Array<{ id: string; name: string; source: string | null; taskCount: number; areaAssignment?: { department?: { key: string } | null; area?: { id: string; key: string } | null } | null }>;
+      assignmentOptions: {
+        users: Array<{ id: string; name: string | null; email: string }>;
+        workforceEntities: Array<{ id: string; name: string; type: string }>;
+      };
       statuses: Array<{ key: string; label: string }>;
       workItems: Array<{
-        task: { id: string; status: string; normalizedStatus: string; completedAt: string | null; estimatedDurationMinutes: number | null };
-        responsibility: { status: string; evidence: Array<{ id: string; agentName: string | null }> };
+        task: {
+          id: string;
+          status: string;
+          normalizedStatus: string;
+          dueDate: string | null;
+          startDate: string | null;
+          estimatedEndDate: string | null;
+          completedAt: string | null;
+          estimatedDurationMinutes: number | null;
+          recurrenceRule: string | null;
+        };
+        responsibility: {
+          status: string;
+          ownerUserId: string | null;
+          assignedWorkforceEntityId: string | null;
+          reviewerUserId: string | null;
+          assignedWorkforceEntity: { id: string; name: string } | null;
+          evidence: Array<{ id: string; agentName: string | null }>;
+        };
         hierarchy: { project: { id: string; name: string } | null; taskList: { id: string; name: string } | null };
         operationalContext: { pipelineRuns: Array<{ id: string; currentStage: { procedure: { id: string } | null } | null; stageRuns: Array<{ id: string }> }> };
         readiness: { blocked: boolean; dependencyCount: number; riskLevel: string; missingFields: string[] };
@@ -1785,7 +1873,13 @@ test("CompanyCore v1 protected API flow", async () => {
           projectResources: Array<{ id: string; name: string }>;
         };
       }>;
-      agentPacket: { mode: string; allowedActions: string[]; blockedActions: Array<{ action: string }> };
+      agentPacket: {
+        mode: string;
+        allowedReadActions: string[];
+        availableWriteCommands: string[];
+        requiredCapabilities: Record<string, string>;
+        blockedActions: Array<{ action: string }>;
+      };
     };
   };
   assert.equal(operationsWorkItemsBody.data.department.canonicalKey, "04-operacje");
@@ -1814,6 +1908,8 @@ test("CompanyCore v1 protected API flow", async () => {
     && list.taskCount >= 1
   )));
   assert.ok(operationsWorkItemsBody.data.taskLists.some((list) => list.id === "unassigned"));
+  assert.ok(operationsWorkItemsBody.data.assignmentOptions.users.some((user) => user.id === workspaceAForOperations.ownerUserId));
+  assert.ok(operationsWorkItemsBody.data.assignmentOptions.workforceEntities.some((entity) => entity.id === userBackedWorkforce.id));
   assert.deepEqual(
     operationsWorkItemsBody.data.statuses.map((status) => status.key),
     ["todo", "in_progress", "blocked", "done", "archived"]
@@ -1823,8 +1919,16 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(operationsWorkItem);
   assert.equal(operationsWorkItem.task.status, "in_progress");
   assert.equal(operationsWorkItem.task.normalizedStatus, "in_progress");
-  assert.equal(operationsWorkItem.task.estimatedDurationMinutes, null);
-  assert.equal(operationsWorkItem.responsibility.status, "not_modeled");
+  assert.equal(operationsWorkItem.task.dueDate, "2026-05-19T00:00:00.000Z");
+  assert.equal(operationsWorkItem.task.startDate, "2026-05-18T00:00:00.000Z");
+  assert.equal(operationsWorkItem.task.estimatedEndDate, "2026-05-20T00:00:00.000Z");
+  assert.equal(operationsWorkItem.task.estimatedDurationMinutes, 90);
+  assert.equal(operationsWorkItem.task.recurrenceRule, "FREQ=WEEKLY;INTERVAL=1");
+  assert.equal(operationsWorkItem.responsibility.status, "modeled");
+  assert.equal(operationsWorkItem.responsibility.ownerUserId, workspaceAForOperations.ownerUserId);
+  assert.equal(operationsWorkItem.responsibility.assignedWorkforceEntityId, userBackedWorkforce.id);
+  assert.equal(operationsWorkItem.responsibility.reviewerUserId, workspaceAForOperations.ownerUserId);
+  assert.equal(operationsWorkItem.responsibility.assignedWorkforceEntity?.id, userBackedWorkforce.id);
   assert.ok(operationsWorkItem.responsibility.evidence.some((log) => log.id === operationsAgentLog.id));
   assert.equal(operationsWorkItem.hierarchy.project?.id, operationsProject.id);
   assert.equal(operationsWorkItem.hierarchy.taskList?.id, operationsTaskList.id);
@@ -1836,14 +1940,20 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(operationsWorkItem.readiness.blocked, true);
   assert.equal(operationsWorkItem.readiness.dependencyCount, 1);
   assert.equal(operationsWorkItem.readiness.riskLevel, "high");
-  assert.ok(operationsWorkItem.readiness.missingFields.includes("owner_user_id"));
+  assert.ok(!operationsWorkItem.readiness.missingFields.includes("owner_user_id"));
+  assert.ok(!operationsWorkItem.readiness.missingFields.includes("assigned_workforce_entity_id"));
+  assert.ok(!operationsWorkItem.readiness.missingFields.includes("reviewer_user_id"));
+  assert.ok(!operationsWorkItem.readiness.missingFields.includes("estimated_duration_minutes"));
   assert.ok(operationsWorkItem.evidence.dependencies.some((dependency) => dependency.id === operationsTaskDependency.id));
   assert.ok(operationsWorkItem.evidence.notes.some((note) => note.id === operationsTaskNote.id));
   assert.ok(operationsWorkItem.evidence.events.some((event) => event.id === operationsTaskEvent.id));
   assert.ok(operationsWorkItem.evidence.projectResources.some((resource) => resource.id === operationsResource.id));
-  assert.equal(operationsWorkItemsBody.data.agentPacket.mode, "read_only");
-  assert.ok(operationsWorkItemsBody.data.agentPacket.allowedActions.includes("read_operations_work_items"));
-  assert.ok(operationsWorkItemsBody.data.agentPacket.blockedActions.some((action) => action.action === "assign_human_or_agent"));
+  assert.equal(operationsWorkItemsBody.data.agentPacket.mode, "read_with_domain_commands");
+  assert.ok(operationsWorkItemsBody.data.agentPacket.allowedReadActions.includes("read_operations_work_items"));
+  assert.ok(operationsWorkItemsBody.data.agentPacket.availableWriteCommands.includes("assign_owner_reviewer_or_workforce_entity"));
+  assert.ok(operationsWorkItemsBody.data.agentPacket.availableWriteCommands.includes("schedule_work_item"));
+  assert.equal(operationsWorkItemsBody.data.agentPacket.requiredCapabilities.assign_owner_reviewer_or_workforce_entity, "operations:write");
+  assert.equal(operationsWorkItemsBody.data.agentPacket.requiredCapabilities.schedule_work_item, "operations:write");
   const operationsWorkItemCountsAfter = {
     tasks: await prisma.task.count({ where: { workspaceId: ownerA.workspace.id } }),
     dependencies: await prisma.dependency.count({ where: { workspaceId: ownerA.workspace.id } }),
@@ -1854,6 +1964,75 @@ test("CompanyCore v1 protected API flow", async () => {
     googleDriveFiles: await prisma.googleDriveFile.count({ where: { workspaceId: ownerA.workspace.id } })
   };
   assert.deepEqual(operationsWorkItemCountsAfter, operationsWorkItemCountsBefore);
+
+  const createdOperationsWorkItem = await request("/v1/operations/work-items", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({
+      title: "Operations command-created task",
+      description: "Created through the Operations work item adapter.",
+      status: "todo",
+      priority: "normal",
+      dueDate: "2026-05-21T00:00:00.000Z",
+      startDate: "2026-05-20T00:00:00.000Z",
+      estimatedEndDate: "2026-05-22T00:00:00.000Z",
+      estimatedDurationMinutes: 45,
+      recurrenceRule: "FREQ=DAILY;INTERVAL=1",
+      projectId: operationsProject.id,
+      taskListId: operationsTaskList.id,
+      ownerUserId: workspaceAForOperations.ownerUserId,
+      assignedWorkforceEntityId: userBackedWorkforce.id,
+      reviewerUserId: workspaceAForOperations.ownerUserId
+    })
+  });
+  assert.equal(createdOperationsWorkItem.status, 201);
+  const createdOperationsWorkItemBody = createdOperationsWorkItem.body as {
+    data: {
+      id: string;
+      title: string;
+      source: string | null;
+      taskListId: string | null;
+      projectId: string | null;
+      startDate: string | null;
+      estimatedEndDate: string | null;
+      estimatedDurationMinutes: number | null;
+      recurrenceRule: string | null;
+      ownerUserId: string | null;
+      assignedWorkforceEntityId: string | null;
+      reviewerUserId: string | null;
+    };
+  };
+  assert.equal(createdOperationsWorkItemBody.data.title, "Operations command-created task");
+  assert.equal(createdOperationsWorkItemBody.data.source, "companycore");
+  assert.equal(createdOperationsWorkItemBody.data.taskListId, operationsTaskList.id);
+  assert.equal(createdOperationsWorkItemBody.data.projectId, operationsProject.id);
+  assert.equal(createdOperationsWorkItemBody.data.startDate, "2026-05-20T00:00:00.000Z");
+  assert.equal(createdOperationsWorkItemBody.data.estimatedEndDate, "2026-05-22T00:00:00.000Z");
+  assert.equal(createdOperationsWorkItemBody.data.estimatedDurationMinutes, 45);
+  assert.equal(createdOperationsWorkItemBody.data.recurrenceRule, "FREQ=DAILY;INTERVAL=1");
+  assert.equal(createdOperationsWorkItemBody.data.ownerUserId, workspaceAForOperations.ownerUserId);
+  assert.equal(createdOperationsWorkItemBody.data.assignedWorkforceEntityId, userBackedWorkforce.id);
+  assert.equal(createdOperationsWorkItemBody.data.reviewerUserId, workspaceAForOperations.ownerUserId);
+  const operationsWorkItemCreatedEvent = await prisma.event.findFirst({
+    where: {
+      workspaceId: ownerA.workspace.id,
+      taskId: createdOperationsWorkItemBody.data.id,
+      type: "operations_work_item_created"
+    }
+  });
+  assert.ok(operationsWorkItemCreatedEvent);
+  const foreignOperationsCreate = await request("/v1/operations/work-items", {
+    method: "POST",
+    headers: authB,
+    body: JSON.stringify({
+      title: "Foreign workspace cannot use A task list",
+      taskListId: operationsTaskList.id
+    })
+  });
+  assert.equal(foreignOperationsCreate.status, 404);
+  await prisma.event.deleteMany({ where: { taskId: createdOperationsWorkItemBody.data.id } });
+  await prisma.task.delete({ where: { id: createdOperationsWorkItemBody.data.id } });
+
   const foreignOperationsWorkItems = await request("/v1/operations/work-items?limit=50", { headers: authB });
   assert.equal(foreignOperationsWorkItems.status, 200);
   const foreignOperationsWorkItemsBody = foreignOperationsWorkItems.body as {
@@ -1877,21 +2056,55 @@ test("CompanyCore v1 protected API flow", async () => {
       status: "done",
       priority: "critical",
       dueDate: "2026-05-20T00:00:00.000Z",
+      startDate: "2026-05-20T00:00:00.000Z",
+      estimatedEndDate: "2026-05-21T00:00:00.000Z",
+      estimatedDurationMinutes: 120,
+      recurrenceRule: "FREQ=MONTHLY;INTERVAL=1",
+      ownerUserId: workspaceAForOperations.ownerUserId,
+      assignedWorkforceEntityId: userBackedWorkforce.id,
+      reviewerUserId: workspaceAForOperations.ownerUserId,
       taskListId: operationsTaskList.id
     })
   });
   assert.equal(patchedOperationsWorkItem.status, 200);
   const patchedOperationsWorkItemBody = patchedOperationsWorkItem.body as {
-    data: { id: string; title: string; status: string; priority: string | null; dueDate: string | null };
+    data: {
+      id: string;
+      title: string;
+      status: string;
+      priority: string | null;
+      dueDate: string | null;
+      startDate: string | null;
+      estimatedEndDate: string | null;
+      estimatedDurationMinutes: number | null;
+      recurrenceRule: string | null;
+      ownerUserId: string | null;
+      assignedWorkforceEntityId: string | null;
+      reviewerUserId: string | null;
+    };
   };
   assert.equal(patchedOperationsWorkItemBody.data.id, operationsTask.id);
   assert.equal(patchedOperationsWorkItemBody.data.title, "Operations procedure review updated");
   assert.equal(patchedOperationsWorkItemBody.data.status, "done");
   assert.equal(patchedOperationsWorkItemBody.data.priority, "critical");
   assert.equal(patchedOperationsWorkItemBody.data.dueDate, "2026-05-20T00:00:00.000Z");
+  assert.equal(patchedOperationsWorkItemBody.data.startDate, "2026-05-20T00:00:00.000Z");
+  assert.equal(patchedOperationsWorkItemBody.data.estimatedEndDate, "2026-05-21T00:00:00.000Z");
+  assert.equal(patchedOperationsWorkItemBody.data.estimatedDurationMinutes, 120);
+  assert.equal(patchedOperationsWorkItemBody.data.recurrenceRule, "FREQ=MONTHLY;INTERVAL=1");
+  assert.equal(patchedOperationsWorkItemBody.data.ownerUserId, workspaceAForOperations.ownerUserId);
+  assert.equal(patchedOperationsWorkItemBody.data.assignedWorkforceEntityId, userBackedWorkforce.id);
+  assert.equal(patchedOperationsWorkItemBody.data.reviewerUserId, workspaceAForOperations.ownerUserId);
   const updatedOperationsTask = await prisma.task.findUniqueOrThrow({ where: { id: operationsTask.id } });
   assert.equal(updatedOperationsTask.title, "Operations procedure review updated");
   assert.equal(updatedOperationsTask.status, "done");
+  assert.equal(updatedOperationsTask.startDate?.toISOString(), "2026-05-20T00:00:00.000Z");
+  assert.equal(updatedOperationsTask.estimatedEndDate?.toISOString(), "2026-05-21T00:00:00.000Z");
+  assert.equal(updatedOperationsTask.estimatedDurationMinutes, 120);
+  assert.equal(updatedOperationsTask.recurrenceRule, "FREQ=MONTHLY;INTERVAL=1");
+  assert.equal(updatedOperationsTask.ownerUserId, workspaceAForOperations.ownerUserId);
+  assert.equal(updatedOperationsTask.assignedWorkforceEntityId, userBackedWorkforce.id);
+  assert.equal(updatedOperationsTask.reviewerUserId, workspaceAForOperations.ownerUserId);
   const operationsWorkItemUpdatedEvent = await prisma.event.findFirst({
     where: {
       workspaceId: ownerA.workspace.id,
@@ -4955,7 +5168,8 @@ test("CompanyCore v1 protected API flow", async () => {
     headers: authA,
     body: JSON.stringify({
       name: "Jarvan adapter",
-      scopes: ["adapter:jarvan"]
+      scopes: ["adapter:jarvan"],
+      fullAccessConfirmed: true
     })
   });
   assert.equal(createdKey.status, 201);
@@ -4966,6 +5180,17 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(createdKeyBody.data.keyPrefix);
 
   const serviceKey = createdKeyBody.data.key;
+
+  const deniedBroadAdapterKey = await request("/v1/api-keys", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({
+      name: "Adapter without full access confirmation",
+      scopes: ["adapter:jarvan"]
+    })
+  });
+  assert.equal(deniedBroadAdapterKey.status, 400);
+  assert.equal((deniedBroadAdapterKey.body as { error: string }).error, "api_key_full_access_confirmation_required");
 
   const listedKeys = await request("/v1/api-keys", { headers: authA });
   assert.equal(listedKeys.status, 200);
@@ -5153,9 +5378,20 @@ test("CompanyCore v1 protected API flow", async () => {
     data: { key: string; profile: { id: string }; scopes: string[] };
   };
   assert.equal(createdOperatorProfileKeyBody.data.profile.id, "mcp_operator");
+  assert.ok(createdOperatorProfileKeyBody.data.scopes.includes("operations:write"));
   assert.ok(createdOperatorProfileKeyBody.data.scopes.includes("company-os:stage-run:write"));
   assert.ok(createdOperatorProfileKeyBody.data.scopes.includes("company-os:workflow-definition:write"));
   assert.ok(createdOperatorProfileKeyBody.data.scopes.includes("company-os:workflow-definition:activate"));
+  const operatorProfileMcpManifest = await request("/v1/mcp/manifest", { headers: { "X-API-Key": createdOperatorProfileKeyBody.data.key } });
+  assert.equal(operatorProfileMcpManifest.status, 200);
+  const operatorProfileMcpManifestBody = operatorProfileMcpManifest.body as {
+    data: { tools: Array<{ name: string; path: string; capability: string }> };
+  };
+  assert.ok(operatorProfileMcpManifestBody.data.tools.some((tool) => (
+    tool.name === "companycore_post_operations_work_items"
+    && tool.path === "/v1/operations/work-items"
+    && tool.capability === "operations:write"
+  )));
   await runMcpBridgeSmoke(createdOperatorProfileKeyBody.data.key, {
     toolName: "companycore_post_company_os_stage_runs_by_id_actions_complete",
     expectError: true,

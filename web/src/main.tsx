@@ -1,26 +1,45 @@
-import React, { useMemo } from "react";
+import React, { Suspense, lazy, useMemo } from "react";
 import { createRoot } from "react-dom/client";
 import {
   canonicalGeneralDashboardPath,
+  canonicalManagementDepartmentsPath,
   canonicalOperationsPath,
   canonicalPeopleAgentsPath,
   resolveRouteMeta
 } from "./app-route-registry";
 import { isSignedIn } from "./api/auth-token";
 import { AuthRoute } from "./features/auth/auth-pages";
-import { AssetsRoute } from "./features/departments/assets-route";
-import { GeneralDashboard } from "./features/departments/general-dashboard";
-import { OperationsRoute } from "./features/departments/operations-route";
-import { PeopleAgentsRoute } from "./features/departments/people-agents-route";
 import { PublicHomeRoute } from "./features/public/public-home";
-import { AccountSettingsRoute, WorkspaceSettingsRoute } from "./features/settings/settings-routes";
 import { LanguageProvider } from "./i18n/i18n";
 import "./styles.css";
+
+const AssetsRoute = lazy(() => import("./features/departments/assets-route").then((module) => ({ default: module.AssetsRoute })));
+const GeneralDashboard = lazy(() => import("./features/departments/general-dashboard").then((module) => ({ default: module.GeneralDashboard })));
+const OperationsRoute = lazy(() => import("./features/departments/operations-route").then((module) => ({ default: module.OperationsRoute })));
+const PeopleAgentsRoute = lazy(() => import("./features/departments/people-agents-route").then((module) => ({ default: module.PeopleAgentsRoute })));
+const ManagementRoute = lazy(() => import("./features/departments/management-route").then((module) => ({ default: module.ManagementRoute })));
+const AccountSettingsRoute = lazy(() => import("./features/settings/settings-routes").then((module) => ({ default: module.AccountSettingsRoute })));
+const WorkspaceSettingsRoute = lazy(() => import("./features/settings/settings-routes").then((module) => ({ default: module.WorkspaceSettingsRoute })));
+
+function RouteFallback() {
+  return (
+    <div className="grid min-h-screen place-items-center bg-base-200 px-6 text-center">
+      <div className="rounded-company border border-base-300 bg-base-100 p-6 shadow-sm">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+        <p className="mt-3 text-sm font-bold text-company-muted">Loading CompanyCore</p>
+      </div>
+    </div>
+  );
+}
+
+function LazyRoute({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={<RouteFallback />}>{children}</Suspense>;
+}
 
 function currentAreaKey() {
   const params = new URLSearchParams(window.location.search);
   const key = params.get("area");
-  if (key === "04-operacje" || key === "06-kadry" || key === "08-zasoby" || key === "00-ogolny") {
+  if (key === "04-operacje" || key === "06-kadry" || key === "08-zasoby" || key === "12-zarzadzanie" || key === "00-ogolny") {
     return key;
   }
   return "00-ogolny";
@@ -55,42 +74,49 @@ function App() {
     if (pathname !== "/areas" || window.location.search !== "?area=00-ogolny&view=overview") {
       window.history.replaceState(null, "", canonicalGeneralDashboardPath);
     }
-    return <PrivateRoute><GeneralDashboard /></PrivateRoute>;
+    return <PrivateRoute><LazyRoute><GeneralDashboard /></LazyRoute></PrivateRoute>;
   }
 
   if (pathname === "/operations" || (pathname === "/areas" && currentAreaKey() === "04-operacje")) {
     if (pathname !== "/areas") {
       window.history.replaceState(null, "", canonicalOperationsPath);
     }
-    return <PrivateRoute><OperationsRoute /></PrivateRoute>;
+    return <PrivateRoute><LazyRoute><OperationsRoute /></LazyRoute></PrivateRoute>;
   }
 
   if (pathname === "/people-agents" || pathname === "/workforce" || (pathname === "/areas" && currentAreaKey() === "06-kadry")) {
     if (pathname !== "/areas" || window.location.search !== "?area=06-kadry&view=directory") {
       window.history.replaceState(null, "", canonicalPeopleAgentsPath);
     }
-    return <PrivateRoute><PeopleAgentsRoute /></PrivateRoute>;
+    return <PrivateRoute><LazyRoute><PeopleAgentsRoute /></LazyRoute></PrivateRoute>;
   }
 
   if (pathname === "/areas" && currentAreaKey() === "08-zasoby") {
-    return <PrivateRoute><AssetsRoute /></PrivateRoute>;
+    return <PrivateRoute><LazyRoute><AssetsRoute /></LazyRoute></PrivateRoute>;
+  }
+
+  if (pathname === "/areas" && currentAreaKey() === "12-zarzadzanie") {
+    if (window.location.search !== "?area=12-zarzadzanie&view=departments") {
+      window.history.replaceState(null, "", canonicalManagementDepartmentsPath);
+    }
+    return <PrivateRoute><LazyRoute><ManagementRoute /></LazyRoute></PrivateRoute>;
   }
 
   if (pathname === "/account/settings") {
-    return <PrivateRoute><AccountSettingsRoute /></PrivateRoute>;
+    return <PrivateRoute><LazyRoute><AccountSettingsRoute /></LazyRoute></PrivateRoute>;
   }
 
   if (pathname === "/workspace/settings") {
-    return <PrivateRoute><WorkspaceSettingsRoute /></PrivateRoute>;
+    return <PrivateRoute><LazyRoute><WorkspaceSettingsRoute /></LazyRoute></PrivateRoute>;
   }
 
   if (route?.private) {
-    return <PrivateRoute><GeneralDashboard /></PrivateRoute>;
+    return <PrivateRoute><LazyRoute><GeneralDashboard /></LazyRoute></PrivateRoute>;
   }
 
   if (isSignedIn()) {
     window.history.replaceState(null, "", canonicalGeneralDashboardPath);
-    return <PrivateRoute><GeneralDashboard /></PrivateRoute>;
+    return <PrivateRoute><LazyRoute><GeneralDashboard /></LazyRoute></PrivateRoute>;
   }
 
   return <AuthRoute mode="login" />;

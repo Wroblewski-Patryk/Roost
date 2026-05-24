@@ -16,6 +16,8 @@ import { companyOsRouter } from "./modules/company-os/company-os.routes";
 import { commercialExceptionsRouter } from "./modules/commercial-exceptions/commercial-exceptions.routes";
 import { connectionRouter } from "./modules/connection/connection.routes";
 import { dealsRouter } from "./modules/deals/deals.routes";
+import { departmentsRouter } from "./modules/departments/departments.routes";
+import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
 import { decisionsRouter } from "./modules/decisions/decisions.routes";
 import { eventsRouter } from "./modules/events/events.routes";
 import { financeRouter } from "./modules/finance/finance.routes";
@@ -48,6 +50,8 @@ function mountProtectedRoutes(router: Router) {
   router.use("/company-os", companyOsRouter);
   router.use("/commercial-exceptions", commercialExceptionsRouter);
   router.use("/connection", connectionRouter);
+  router.use("/dashboard", dashboardRouter);
+  router.use("/departments", departmentsRouter);
   router.use("/workspaces", workspacesRouter);
   router.use("/mcp", mcpRouter);
   router.use("/operating-graph", operatingGraphRouter);

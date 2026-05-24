@@ -45,6 +45,49 @@ export type RouteProposalPacket = {
   blockedActions?: string[];
 };
 
+export type DashboardPriorityItem = {
+  id: string;
+  title: string;
+  source: string;
+  severity?: string;
+  status?: string;
+  category?: string | null;
+  outcome?: string | null;
+  dueDate?: string | null;
+  updatedAt?: string;
+};
+
+export type DashboardNextAction = {
+  key: string;
+  label: string;
+  target?: string;
+  count?: number;
+  priority?: string;
+};
+
+export type DashboardDepartmentSignal = {
+  key: CoreAreaKey;
+  label: string;
+  health: "ready" | "watch" | "blocked";
+  count: number;
+  href: string;
+};
+
+export type DashboardCommandPacket = {
+  generatedAt?: string;
+  summary?: Record<string, number>;
+  departmentSignals?: DashboardDepartmentSignal[];
+  priorityItems?: DashboardPriorityItem[];
+  nextActions?: DashboardNextAction[];
+  latestRouteProposals?: RouteProposal[];
+  blockedActions?: Array<string | { action?: string; reason?: string }>;
+  agentPacket?: {
+    mode?: string;
+    instructions?: string[];
+    blockedActions?: Array<string | { action?: string; reason?: string }>;
+  };
+};
+
 export type OperationsWorkItem = {
   id: string;
   task: {
@@ -55,6 +98,10 @@ export type OperationsWorkItem = {
     normalizedStatus?: string;
     priority?: string;
     dueDate?: string | null;
+    startDate?: string | null;
+    estimatedEndDate?: string | null;
+    estimatedDurationMinutes?: number | null;
+    recurrenceRule?: string | null;
     source?: string | null;
     externalId?: string | null;
     updatedAt?: string;
@@ -72,6 +119,20 @@ export type OperationsWorkItem = {
   };
   responsibility?: {
     status?: string;
+    ownerUserId?: string | null;
+    ownerUser?: { id: string; name?: string | null; email?: string | null } | null;
+    assignedWorkforceEntityId?: string | null;
+    assignedWorkforceEntity?: {
+      id: string;
+      type?: "human" | "agent";
+      name: string;
+      slug?: string;
+      department?: string | null;
+      role?: string | null;
+      runtimeMode?: string;
+    } | null;
+    reviewerUserId?: string | null;
+    reviewerUser?: { id: string; name?: string | null; email?: string | null } | null;
     evidence?: Array<{ type?: string; status?: string; source?: string }>;
   };
   operationalContext?: {
@@ -126,6 +187,19 @@ export type OperationsPacket = {
   operatingAreas?: OperationsArea[];
   departments?: OperationsDepartment[];
   taskLists?: OperationsTaskList[];
+  assignmentOptions?: {
+    users?: Array<{ id: string; name?: string | null; email?: string | null; role?: string }>;
+    workforceEntities?: Array<{
+      id: string;
+      type?: "human" | "agent";
+      name: string;
+      slug?: string;
+      department?: string | null;
+      role?: string | null;
+      runtimeMode?: string;
+      status?: string;
+    }>;
+  };
   statuses?: OperationsStatusColumn[];
   workItems?: OperationsWorkItem[];
   blockedActions?: Array<string | { action?: string; reason?: string }>;
@@ -227,6 +301,9 @@ export type WorkforcePacket = {
   agentPacket?: {
     mode?: string;
     allowedActions?: string[];
+    allowedReadActions?: string[];
+    availableWriteCommands?: string[];
+    requiredCapabilities?: Record<string, string>;
     blockedActions?: Array<string | { action?: string; reason?: string }>;
   };
 };
@@ -337,7 +414,7 @@ export type CoreAreaKey =
   | "12-zarzadzanie";
 
 export type CoreArea = {
-  key: CoreAreaKey;
+  key: string;
   labelKey: string;
   eyebrowKey: string;
   href?: string;
@@ -353,4 +430,33 @@ export type DepartmentView = {
   href?: string;
   icon?: string;
   enabled?: boolean;
+};
+
+export type DepartmentCatalogView = {
+  id: string;
+  label: string;
+  href?: string | null;
+  icon: string;
+  sourceDepartmentKey: string;
+  enabled: boolean;
+};
+
+export type WorkspaceDepartment = {
+  id: string;
+  key: string;
+  name: string;
+  description?: string | null;
+  icon: string;
+  position: number;
+  isSystem: boolean;
+  status: string;
+  linkedViews: string[];
+  views: DepartmentCatalogView[];
+  href?: string | null;
+  updatedAt: string;
+};
+
+export type DepartmentCatalogPacket = {
+  departments: WorkspaceDepartment[];
+  availableViews: DepartmentCatalogView[];
 };

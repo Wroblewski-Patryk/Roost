@@ -11,6 +11,9 @@ export const capabilities = [
   "company-os:pipeline-run:write",
   "company-os:stage-run:write",
   "company-os:automation:execute",
+  "dashboard:read",
+  "departments:read",
+  "departments:write",
   "mcp:read",
   "intake:read",
   "intake:write",
@@ -124,6 +127,14 @@ export const adapterManifest = {
     mcp: [
       { method: "GET", path: "/v1/mcp/manifest", capability: "mcp:read" }
     ],
+    dashboard: [
+      { method: "GET", path: "/v1/dashboard/command", capability: "dashboard:read" }
+    ],
+    departments: [
+      { method: "GET", path: "/v1/departments", capability: "departments:read" },
+      { method: "POST", path: "/v1/departments", capability: "departments:write" },
+      { method: "PATCH", path: "/v1/departments/:id", capability: "departments:write" }
+    ],
     intake: [
       { method: "GET", path: "/v1/intake", capability: "intake:read" },
       { method: "GET", path: "/v1/intake/route-proposals", capability: "intake:read" },
@@ -144,6 +155,7 @@ export const adapterManifest = {
     operations: [
       { method: "GET", path: "/v1/operations/context", capability: "operations:read" },
       { method: "GET", path: "/v1/operations/work-items", capability: "operations:read" },
+      { method: "POST", path: "/v1/operations/work-items", capability: "operations:write" },
       { method: "PATCH", path: "/v1/operations/task-lists/:id", capability: "operations:write" },
       { method: "PATCH", path: "/v1/operations/work-items/:id", capability: "operations:write" }
     ],

@@ -1,4 +1,5 @@
 import {
+  canonicalManagementDepartmentsPath,
   canonicalAssetsPath,
   canonicalGeneralDashboardPath,
   canonicalOperationsPath,
@@ -141,10 +142,18 @@ export const coreAreas: CoreArea[] = [
     key: "12-zarzadzanie",
     labelKey: "departments.12",
     eyebrowKey: "departments.12.eyebrow",
+    href: canonicalManagementDepartmentsPath,
     descriptionKey: "departments.12.description",
     icon: "ph-chart-line-up",
-    enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
+    enabled: true,
+    views: [
+      { key: "departments", labelKey: "views.12.departments", href: canonicalManagementDepartmentsPath, icon: "ph-buildings", enabled: true },
+      { key: "approvals", labelKey: "views.12.approvals", icon: "ph-seal-check", enabled: false },
+      { key: "portfolio", labelKey: "views.12.portfolio", icon: "ph-briefcase", enabled: false },
+      { key: "kpis", labelKey: "views.12.kpis", icon: "ph-chart-line-up", enabled: false },
+      { key: "escalations", labelKey: "views.12.escalations", icon: "ph-warning-octagon", enabled: false },
+      { key: "reviews", labelKey: "views.12.reviews", icon: "ph-clipboard-text", enabled: false }
+    ]
   }
 ];
 
@@ -156,6 +165,5 @@ export const plannedDepartments = [
   "departments.07",
   "departments.09",
   "departments.10",
-  "departments.11",
-  "departments.12"
+  "departments.11"
 ] as const;

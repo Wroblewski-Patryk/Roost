@@ -136,8 +136,9 @@ function taskBelongsToList(task: OperationsWorkItem, listId: string) {
 
 function taskMatchesDateFilter(row: OperationsWorkItem, dateFilter: TaskDateFilter) {
   if (dateFilter === "all") return true;
-  if (!row.task.dueDate) return dateFilter === "unscheduled";
-  const dueDate = startOfDay(new Date(row.task.dueDate));
+  const calendarDate = row.task.startDate || row.task.dueDate;
+  if (!calendarDate) return dateFilter === "unscheduled";
+  const dueDate = startOfDay(new Date(calendarDate));
   const today = startOfDay();
   if (dateFilter === "overdue") return dueDate.getTime() < today.getTime() && row.task.status !== "done" && row.task.status !== "archived";
   if (dateFilter === "today") return sameDay(dueDate, today);
@@ -147,6 +148,10 @@ function taskMatchesDateFilter(row: OperationsWorkItem, dateFilter: TaskDateFilt
     return dueDate.getTime() >= weekStart.getTime() && dueDate.getTime() <= weekEnd.getTime();
   }
   return false;
+}
+
+function taskCalendarDate(row: OperationsWorkItem) {
+  return row.task.startDate || row.task.dueDate || null;
 }
 
 function taskMatchesFilters(row: OperationsWorkItem, query: string, priorityFilter: TaskPriorityFilter, dateFilter: TaskDateFilter) {
@@ -239,6 +244,8 @@ function TaskCard({
         {!isCalendar ? <DueBadge dueDate={row.task.dueDate} overdue={row.readiness?.overdue} /> : null}
         {!isCalendar && row.task.description ? <span className="badge badge-ghost badge-sm gap-1"><i className="ph-bold ph-text-align-left" aria-hidden="true"></i></span> : null}
         {!isCalendar && row.evidence?.projectResources?.length ? <span className="badge badge-ghost badge-sm gap-1"><i className="ph-bold ph-paperclip" aria-hidden="true"></i></span> : null}
+        {!isCalendar && row.responsibility?.assignedWorkforceEntity ? <span className="badge badge-ghost badge-sm gap-1"><i className="ph-bold ph-user-focus" aria-hidden="true"></i>{row.responsibility.assignedWorkforceEntity.name}</span> : null}
+        {!isCalendar && row.task.startDate ? <span className="badge badge-outline badge-sm gap-1"><i className="ph-bold ph-play-circle" aria-hidden="true"></i>{formatDate(row.task.startDate)}</span> : null}
         {row.readiness?.blocked ? <span className="badge badge-error badge-outline badge-sm">{row.readiness.dependencyCount || "!"}</span> : null}
       </div> : null}
       {!isMonth && !isCalendar ? <span className="truncate text-xs text-company-muted">{row.hierarchy?.project?.name || row.hierarchy?.taskList?.name || row.task.source || "native"}</span> : null}
@@ -293,17 +300,21 @@ function TaskFields({
   mode,
   taskLists,
   statuses,
+  assignmentOptions,
   item,
   defaultTaskListId
 }: {
   mode: "create" | "edit";
   taskLists: OperationsTaskList[];
   statuses: OperationsStatusColumn[];
+  assignmentOptions?: OperationsPacket["assignmentOptions"];
   item?: OperationsWorkItem;
   defaultTaskListId?: string;
 }) {
   const { t } = useLanguage();
   const lists = selectableTaskLists(taskLists);
+  const users = assignmentOptions?.users || [];
+  const workforceEntities = assignmentOptions?.workforceEntities || [];
   const defaultList = item?.hierarchy?.taskList?.id
     ?? (defaultTaskListId && lists.some((list) => list.id === defaultTaskListId) ? defaultTaskListId : lists[0]?.id)
     ?? "";
@@ -356,6 +367,53 @@ function TaskFields({
           {({ id }) => <CcTextInput id={id} name="dueDate" type="date" defaultValue={inputDate(item?.task.dueDate)} />}
         </CcField>
       </div>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <CcField label="Start date">
+          {({ id }) => <CcTextInput id={id} name="startDate" type="date" defaultValue={inputDate(item?.task.startDate)} />}
+        </CcField>
+        <CcField label="Estimated end">
+          {({ id }) => <CcTextInput id={id} name="estimatedEndDate" type="date" defaultValue={inputDate(item?.task.estimatedEndDate)} />}
+        </CcField>
+        <CcField label="Duration minutes">
+          {({ id }) => (
+            <CcTextInput
+              id={id}
+              min={0}
+              name="estimatedDurationMinutes"
+              type="number"
+              defaultValue={item?.task.estimatedDurationMinutes == null ? "" : String(item.task.estimatedDurationMinutes)}
+            />
+          )}
+        </CcField>
+        <CcField label="Recurrence rule">
+          {({ id }) => <CcTextInput id={id} name="recurrenceRule" placeholder="FREQ=WEEKLY;INTERVAL=1" defaultValue={item?.task.recurrenceRule || ""} />}
+        </CcField>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <label className="form-control">
+          <span className="label"><span className="label-text font-bold">Owner</span></span>
+          <select className="select select-bordered w-full" name="ownerUserId" defaultValue={item?.responsibility?.ownerUserId || ""}>
+            <option value="">Unassigned owner</option>
+            {users.map((user) => <option key={user.id} value={user.id}>{user.name || user.email || user.id}</option>)}
+          </select>
+        </label>
+        <label className="form-control">
+          <span className="label"><span className="label-text font-bold">Assigned person/agent</span></span>
+          <select className="select select-bordered w-full" name="assignedWorkforceEntityId" defaultValue={item?.responsibility?.assignedWorkforceEntityId || ""}>
+            <option value="">Unassigned execution</option>
+            {workforceEntities.map((entity) => <option key={entity.id} value={entity.id}>{entity.name} ({entity.type || "entity"})</option>)}
+          </select>
+        </label>
+        <label className="form-control">
+          <span className="label"><span className="label-text font-bold">Reviewer</span></span>
+          <select className="select select-bordered w-full" name="reviewerUserId" defaultValue={item?.responsibility?.reviewerUserId || ""}>
+            <option value="">No reviewer</option>
+            {users.map((user) => <option key={user.id} value={user.id}>{user.name || user.email || user.id}</option>)}
+          </select>
+        </label>
+      </div>
     </section>
   );
 }
@@ -364,12 +422,14 @@ function TaskPreviewModal({
   item,
   taskLists,
   statuses,
+  assignmentOptions,
   onClose,
   onSaved
 }: {
   item: OperationsWorkItem;
   taskLists: OperationsTaskList[];
   statuses: OperationsStatusColumn[];
+  assignmentOptions?: OperationsPacket["assignmentOptions"];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -380,7 +440,14 @@ function TaskPreviewModal({
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const dueDate = String(form.get("dueDate") || "");
+    const startDate = String(form.get("startDate") || "");
+    const estimatedEndDate = String(form.get("estimatedEndDate") || "");
+    const estimatedDurationMinutes = String(form.get("estimatedDurationMinutes") || "");
     const taskListId = String(form.get("taskListId") || "");
+    const ownerUserId = String(form.get("ownerUserId") || "");
+    const assignedWorkforceEntityId = String(form.get("assignedWorkforceEntityId") || "");
+    const reviewerUserId = String(form.get("reviewerUserId") || "");
+    const recurrenceRule = String(form.get("recurrenceRule") || "");
     setSaveState("saving");
     setError("");
 
@@ -393,7 +460,14 @@ function TaskPreviewModal({
           status: String(form.get("status") || "todo"),
           priority: String(form.get("priority") || ""),
           taskListId: taskListId || null,
-          dueDate: dueDate ? new Date(`${dueDate}T00:00:00.000Z`).toISOString() : null
+          dueDate: dueDate ? new Date(`${dueDate}T00:00:00.000Z`).toISOString() : null,
+          startDate: startDate ? new Date(`${startDate}T00:00:00.000Z`).toISOString() : null,
+          estimatedEndDate: estimatedEndDate ? new Date(`${estimatedEndDate}T00:00:00.000Z`).toISOString() : null,
+          estimatedDurationMinutes: estimatedDurationMinutes ? Number(estimatedDurationMinutes) : null,
+          recurrenceRule: recurrenceRule || null,
+          ownerUserId: ownerUserId || null,
+          assignedWorkforceEntityId: assignedWorkforceEntityId || null,
+          reviewerUserId: reviewerUserId || null
         })
       });
       onSaved();
@@ -425,7 +499,7 @@ function TaskPreviewModal({
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem]">
           <section className="grid gap-4">
-            <TaskFields item={item} mode="edit" statuses={statuses} taskLists={taskLists} />
+            <TaskFields assignmentOptions={assignmentOptions} item={item} mode="edit" statuses={statuses} taskLists={taskLists} />
             {error ? <CcNotice tone="error" title={error} live /> : null}
           </section>
 
@@ -436,6 +510,10 @@ function TaskPreviewModal({
                 <div><dt className="font-bold text-company-muted">{t("table.list")}</dt><dd>{item.hierarchy?.taskList?.name || t("operations.unassigned")}</dd></div>
                 <div><dt className="font-bold text-company-muted">{t("operations.project")}</dt><dd>{item.hierarchy?.project?.name || "-"}</dd></div>
                 <div><dt className="font-bold text-company-muted">{t("table.status")}</dt><dd>{item.task.status || "-"}</dd></div>
+                <div><dt className="font-bold text-company-muted">Owner</dt><dd>{item.responsibility?.ownerUser?.name || item.responsibility?.ownerUser?.email || "-"}</dd></div>
+                <div><dt className="font-bold text-company-muted">Assigned</dt><dd>{item.responsibility?.assignedWorkforceEntity?.name || "-"}</dd></div>
+                <div><dt className="font-bold text-company-muted">Schedule</dt><dd>{formatDate(item.task.startDate)} {"->"} {formatDate(item.task.estimatedEndDate || item.task.dueDate)}</dd></div>
+                <div><dt className="font-bold text-company-muted">Duration</dt><dd>{item.task.estimatedDurationMinutes ? `${item.task.estimatedDurationMinutes} min` : "-"}</dd></div>
                 <div><dt className="font-bold text-company-muted">{t("operations.updated")}</dt><dd>{formatDate(item.task.updatedAt)}</dd></div>
               </dl>
             </section>
@@ -454,12 +532,14 @@ function TaskPreviewModal({
 function TaskCreateModal({
   taskLists,
   statuses,
+  assignmentOptions,
   defaultTaskListId,
   onClose,
   onSaved
 }: {
   taskLists: OperationsTaskList[];
   statuses: OperationsStatusColumn[];
+  assignmentOptions?: OperationsPacket["assignmentOptions"];
   defaultTaskListId?: string;
   onClose: () => void;
   onSaved: () => void;
@@ -472,12 +552,19 @@ function TaskCreateModal({
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const dueDate = String(form.get("dueDate") || "");
+    const startDate = String(form.get("startDate") || "");
+    const estimatedEndDate = String(form.get("estimatedEndDate") || "");
+    const estimatedDurationMinutes = String(form.get("estimatedDurationMinutes") || "");
     const taskListId = String(form.get("taskListId") || "");
+    const ownerUserId = String(form.get("ownerUserId") || "");
+    const assignedWorkforceEntityId = String(form.get("assignedWorkforceEntityId") || "");
+    const reviewerUserId = String(form.get("reviewerUserId") || "");
+    const recurrenceRule = String(form.get("recurrenceRule") || "");
     setSaveState("saving");
     setError("");
 
     try {
-      await api("/v1/tasks", {
+      await api("/v1/operations/work-items", {
         method: "POST",
         body: JSON.stringify({
           title: String(form.get("title") || ""),
@@ -485,7 +572,14 @@ function TaskCreateModal({
           status: String(form.get("status") || "todo"),
           priority: String(form.get("priority") || ""),
           taskListId: taskListId || undefined,
-          dueDate: dueDate ? new Date(`${dueDate}T00:00:00.000Z`).toISOString() : undefined
+          dueDate: dueDate ? new Date(`${dueDate}T00:00:00.000Z`).toISOString() : undefined,
+          startDate: startDate ? new Date(`${startDate}T00:00:00.000Z`).toISOString() : undefined,
+          estimatedEndDate: estimatedEndDate ? new Date(`${estimatedEndDate}T00:00:00.000Z`).toISOString() : undefined,
+          estimatedDurationMinutes: estimatedDurationMinutes ? Number(estimatedDurationMinutes) : undefined,
+          recurrenceRule: recurrenceRule || undefined,
+          ownerUserId: ownerUserId || undefined,
+          assignedWorkforceEntityId: assignedWorkforceEntityId || undefined,
+          reviewerUserId: reviewerUserId || undefined
         })
       });
       onSaved();
@@ -510,7 +604,7 @@ function TaskCreateModal({
           </CcButton>
         </div>
 
-        <TaskFields defaultTaskListId={defaultTaskListId} mode="create" statuses={statuses} taskLists={taskLists} />
+        <TaskFields assignmentOptions={assignmentOptions} defaultTaskListId={defaultTaskListId} mode="create" statuses={statuses} taskLists={taskLists} />
 
         {error ? <CcNotice tone="error" title={error} live /> : null}
 
@@ -764,6 +858,7 @@ function OperationsBoard({
   rows,
   statuses,
   selectedListIds,
+  hasSelectableLists,
   setSelectedTask,
   onCreateTask,
   onRefresh,
@@ -779,6 +874,7 @@ function OperationsBoard({
   rows: OperationsWorkItem[];
   statuses: OperationsStatusColumn[];
   selectedListIds: string[];
+  hasSelectableLists: boolean;
   setSelectedTask: (task: OperationsWorkItem) => void;
   onCreateTask: (defaultTaskListId?: string) => void;
   onRefresh: () => void;
@@ -801,7 +897,9 @@ function OperationsBoard({
     return selectedSet.has(listId);
   });
   const allSelected = selectedListIds.length > 0 && visibleRows.length === rows.length;
-  const selectedLabel = selectedListIds.length === 0
+  const selectedLabel = !hasSelectableLists
+    ? t("operations.noTaskLists")
+    : selectedListIds.length === 0
     ? t("operations.noListsSelected")
     : allSelected
       ? t("operations.allTasks")
@@ -868,7 +966,16 @@ function OperationsBoard({
           visibleCount={visibleRows.length}
         />
 
-        {selectedListIds.length === 0 ? (
+        {!hasSelectableLists ? (
+          <div className="roost-empty-state grid min-h-0 place-items-center rounded-company p-8 text-center">
+            <div>
+              <i className="ph-bold ph-list-plus text-3xl text-company-muted" aria-hidden="true"></i>
+              <h3 className="mt-3 font-black text-company-ink">{t("operations.noTaskLists")}</h3>
+              <p className="mt-1 text-sm text-company-muted">{t("operations.noTaskLists.detail")}</p>
+              <CcButton className="mt-4" iconLeft="ph-plus" onClick={() => onCreateTask()} variant="primary">{t("operations.newTask")}</CcButton>
+            </div>
+          </div>
+        ) : selectedListIds.length === 0 ? (
           <div className="roost-empty-state grid min-h-0 place-items-center rounded-company p-8 text-center">
             <div>
               <i className="ph-bold ph-check-square-offset text-3xl text-company-muted" aria-hidden="true"></i>
@@ -1002,6 +1109,7 @@ function CalendarUnscheduledPanel({ rows, setSelectedTask }: { rows: OperationsW
 function OperationsCalendar({
   rows,
   selectedListIds,
+  hasSelectableLists,
   taskQuery,
   priorityFilter,
   dateFilter,
@@ -1015,6 +1123,7 @@ function OperationsCalendar({
 }: {
   rows: OperationsWorkItem[];
   selectedListIds: string[];
+  hasSelectableLists: boolean;
   taskQuery: string;
   priorityFilter: TaskPriorityFilter;
   dateFilter: TaskDateFilter;
@@ -1040,9 +1149,9 @@ function OperationsCalendar({
     month: "ph-calendar-dots"
   };
   const step = mode === "day" ? 1 : mode === "week" ? 7 : 1;
-  const datedRows = rows.filter((row) => row.task.dueDate);
-  const unscheduledRows = rows.filter((row) => !row.task.dueDate);
-  const dayRows = datedRows.filter((row) => sameDay(new Date(row.task.dueDate!), anchorDate));
+  const datedRows = rows.filter((row) => taskCalendarDate(row));
+  const unscheduledRows = rows.filter((row) => !taskCalendarDate(row));
+  const dayRows = datedRows.filter((row) => sameDay(new Date(taskCalendarDate(row)!), anchorDate));
   const weekStart = startOfWeek(anchorDate);
   const weekDays = Array.from({ length: 7 }, (_, index) => {
     const day = new Date(weekStart);
@@ -1134,7 +1243,16 @@ function OperationsCalendar({
         visibleCount={rows.length}
       />
 
-      {selectedListIds.length === 0 ? (
+      {!hasSelectableLists ? (
+        <div className="roost-empty-state grid min-h-0 place-items-center rounded-company p-8 text-center">
+          <div>
+            <i className="ph-bold ph-calendar-plus text-3xl text-company-muted" aria-hidden="true"></i>
+            <h3 className="mt-3 font-black text-company-ink">{t("operations.noTaskLists")}</h3>
+            <p className="mt-1 text-sm text-company-muted">{t("operations.noTaskLists.detail")}</p>
+            <CcButton className="mt-4" iconLeft="ph-plus" onClick={onCreateTask} variant="primary">{t("operations.newTask")}</CcButton>
+          </div>
+        </div>
+      ) : selectedListIds.length === 0 ? (
         <div className="roost-empty-state grid min-h-0 place-items-center rounded-company p-8 text-center">
           <div>
             <i className="ph-bold ph-calendar-x text-3xl text-company-muted" aria-hidden="true"></i>
@@ -1171,7 +1289,7 @@ function OperationsCalendar({
       {mode === "week" ? (
         <div className="grid min-h-0 auto-cols-[minmax(10rem,1fr)] grid-flow-col gap-3 overflow-x-auto lg:grid-flow-row lg:grid-cols-7 lg:auto-cols-auto">
           {weekDays.map((day) => {
-            const dayRows = datedRows.filter((row) => sameDay(new Date(row.task.dueDate!), day));
+            const dayRows = datedRows.filter((row) => sameDay(new Date(taskCalendarDate(row)!), day));
             return <CalendarColumn isToday={sameDay(day, new Date())} key={day.toISOString()} title={formatWeekday(day)} rows={dayRows} setSelectedTask={setSelectedTask} />;
           })}
         </div>
@@ -1183,7 +1301,7 @@ function OperationsCalendar({
             <div aria-hidden="true" className="roost-work-panel-muted min-h-24 rounded-company opacity-60" key={`blank-${index}`}></div>
           ))}
           {monthDays.map((day) => {
-            const dayRows = datedRows.filter((row) => sameDay(new Date(row.task.dueDate!), day));
+            const dayRows = datedRows.filter((row) => sameDay(new Date(taskCalendarDate(row)!), day));
             return (
               <div className="roost-work-panel grid min-h-24 content-start rounded-company p-2 text-left" key={day.toISOString()}>
                 <span className="text-sm font-black text-company-ink">{day.getDate()}</span>
@@ -1227,6 +1345,7 @@ export function OperationsRoute() {
   const rows = useMemo(() => (packet.data?.workItems || []).map((item) => ({ ...item, id: item.task.id })), [packet.data?.workItems]);
   const taskLists = packet.data?.taskLists || [];
   const departments = packet.data?.departments || [];
+  const assignmentOptions = packet.data?.assignmentOptions;
   const statuses = packet.data?.statuses?.length ? packet.data.statuses : fallbackStatuses;
   const selectableListIds = selectableTaskListIds(taskLists);
   const selectedSet = new Set(selectedListIds);
@@ -1284,6 +1403,7 @@ export function OperationsRoute() {
             <OperationsCalendar
               rows={filteredRows}
               selectedListIds={selectedListIds}
+              hasSelectableLists={selectableListIds.length > 0}
               taskQuery={taskQuery}
               priorityFilter={priorityFilter}
               dateFilter={dateFilter}
@@ -1300,6 +1420,7 @@ export function OperationsRoute() {
               rows={taskFilteredRows}
               statuses={statuses}
               selectedListIds={selectedListIds}
+              hasSelectableLists={selectableListIds.length > 0}
               setSelectedTask={setSelectedTask}
               onCreateTask={openCreateTask}
               onRefresh={refresh}
@@ -1316,8 +1437,8 @@ export function OperationsRoute() {
         </section>
       ) : null}
 
-      {selectedTask ? <TaskPreviewModal item={selectedTask} statuses={statuses} taskLists={taskLists} onClose={() => setSelectedTask(null)} onSaved={refresh} /> : null}
-      {isCreateTaskOpen ? <TaskCreateModal taskLists={taskLists} statuses={statuses} defaultTaskListId={createTaskListId || undefined} onClose={() => setIsCreateTaskOpen(false)} onSaved={refresh} /> : null}
+      {selectedTask ? <TaskPreviewModal assignmentOptions={assignmentOptions} item={selectedTask} statuses={statuses} taskLists={taskLists} onClose={() => setSelectedTask(null)} onSaved={refresh} /> : null}
+      {isCreateTaskOpen ? <TaskCreateModal assignmentOptions={assignmentOptions} taskLists={taskLists} statuses={statuses} defaultTaskListId={createTaskListId || undefined} onClose={() => setIsCreateTaskOpen(false)} onSaved={refresh} /> : null}
       {isCreateListOpen ? <TaskListModal departments={departments} onClose={() => setIsCreateListOpen(false)} onSaved={refresh} /> : null}
       {selectedList ? <TaskListModal list={selectedList} departments={departments} onClose={() => setSelectedList(null)} onSaved={refresh} /> : null}
       {isWorkflowSettingsOpen ? <WorkflowSettingsModal statuses={statuses} onClose={() => setIsWorkflowSettingsOpen(false)} /> : null}

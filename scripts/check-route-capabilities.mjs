@@ -16,6 +16,8 @@ const protectedMounts = new Map([
   ["company-os.routes.ts", "/company-os"],
   ["workflow-definition-drafts.routes.ts", "/company-os/workflow-definitions/drafts"],
   ["connection.routes.ts", "/connection"],
+  ["dashboard.routes.ts", "/dashboard"],
+  ["departments.routes.ts", "/departments"],
   ["finance.routes.ts", "/finance"],
   ["intake.routes.ts", "/intake"],
   ["mcp.routes.ts", "/mcp"],

@@ -212,6 +212,8 @@ model User {
   ownedWorkspaces Workspace[]           @relation("WorkspaceOwner")
   memberships     WorkspaceMembership[]
   approvalDecisions Approval[]          @relation("ApprovalApproverUser")
+  ownedTasks       Task[]               @relation("TaskOwnerUser")
+  reviewTasks      Task[]               @relation("TaskReviewerUser")
   createdAt       DateTime              @default(now()) @map("created_at")
   updatedAt       DateTime              @updatedAt @map("updated_at")
 
@@ -278,6 +280,7 @@ model Workspace {
   automationDefinitions        AutomationDefinition[]
   googleDriveFiles             GoogleDriveFile[]
   googleDriveContentSnapshots  GoogleDriveContentSnapshot[]
+  departments                  WorkspaceDepartment[]
   externalWebhookRegistrations ExternalWebhookRegistration[]
   providerEventInbox           ProviderEventInbox[]
   agentEventOutbox             AgentEventOutbox[]
@@ -309,6 +312,28 @@ model OperatingArea {
   @@unique([workspaceId, key])
   @@index([workspaceId, position])
   @@map("operating_areas")
+}
+
+model WorkspaceDepartment {
+  id          String    @id @default(uuid()) @db.Uuid
+  workspaceId String    @map("workspace_id") @db.Uuid
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  key         String
+  name        String
+  description String?
+  icon        String    @default("ph-buildings")
+  position    Int       @default(0)
+  isSystem    Boolean   @default(false) @map("is_system")
+  status      String    @default("active")
+  linkedViews Json      @default("[]") @map("linked_views")
+  metadata    Json      @default("{}")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, key])
+  @@index([workspaceId, position])
+  @@index([workspaceId, status])
+  @@map("workspace_departments")
 }
 
 model OperatingFolder {
@@ -1464,11 +1489,21 @@ model Task {
   target      Target?    @relation(fields: [targetId], references: [id], onDelete: SetNull)
   taskListId  String?    @map("task_list_id") @db.Uuid
   taskList    TaskList?  @relation(fields: [taskListId], references: [id], onDelete: SetNull)
+  ownerUserId String?    @map("owner_user_id") @db.Uuid
+  ownerUser   User?      @relation("TaskOwnerUser", fields: [ownerUserId], references: [id], onDelete: SetNull)
+  assignedWorkforceEntityId String? @map("assigned_workforce_entity_id") @db.Uuid
+  assignedWorkforceEntity WorkforceEntity? @relation("TaskAssignedWorkforce", fields: [assignedWorkforceEntityId], references: [id], onDelete: SetNull)
+  reviewerUserId String? @map("reviewer_user_id") @db.Uuid
+  reviewerUser User?     @relation("TaskReviewerUser", fields: [reviewerUserId], references: [id], onDelete: SetNull)
   title       String
   description String?
   status      TaskStatus @default(todo)
   priority    String?
   dueDate     DateTime?  @map("due_date")
+  startDate   DateTime?  @map("start_date")
+  estimatedEndDate DateTime? @map("estimated_end_date")
+  estimatedDurationMinutes Int? @map("estimated_duration_minutes")
+  recurrenceRule String? @map("recurrence_rule")
   externalId  String?    @map("external_id")
   source      String?    @default("companycore")
   notes       Note[]
@@ -1477,6 +1512,10 @@ model Task {
   updatedAt   DateTime   @updatedAt @map("updated_at")
 
   @@unique([workspaceId, source, externalId])
+  @@index([workspaceId, ownerUserId])
+  @@index([workspaceId, assignedWorkforceEntityId])
+  @@index([workspaceId, reviewerUserId])
+  @@index([workspaceId, startDate])
   @@map("tasks")
 }
 
@@ -1641,6 +1680,7 @@ model WorkforceEntity {
   id                         String                      @id @default(uuid()) @db.Uuid
   workspaceId                String                      @map("workspace_id") @db.Uuid
   workspace                  Workspace                   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  assignedTasks              Task[]                      @relation("TaskAssignedWorkforce")
   type                       WorkforceEntityType
   status                     WorkforceEntityStatus       @default(active)
   name                       String

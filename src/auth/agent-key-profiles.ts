@@ -23,6 +23,8 @@ export const agentKeyProfiles = [
     riskLevel: "low",
     scopes: [
       ...mcpBaseScopes,
+      "dashboard:read",
+      "departments:read",
       "company-os:read",
       "intake:read",
       "commercial-exceptions:read",
@@ -45,6 +47,8 @@ export const agentKeyProfiles = [
     riskLevel: "low",
     scopes: [
       ...mcpBaseScopes,
+      "dashboard:read",
+      "departments:read",
       "company-os:read",
       "intake:read",
       "commercial-exceptions:read",
@@ -70,6 +74,8 @@ export const agentKeyProfiles = [
     riskLevel: "medium",
     scopes: [
       ...mcpBaseScopes,
+      "dashboard:read",
+      "departments:read",
       "company-os:read",
       "intake:read",
       "commercial-exceptions:read",
@@ -101,6 +107,8 @@ export const agentKeyProfiles = [
     riskLevel: "medium",
     scopes: [
       ...mcpBaseScopes,
+      "dashboard:read",
+      "departments:read",
       "company-os:read",
       "intake:read",
       "commercial-exceptions:read",
@@ -128,6 +136,9 @@ export const agentKeyProfiles = [
     riskLevel: "high",
     scopes: [
       ...mcpBaseScopes,
+      "dashboard:read",
+      "departments:read",
+      "departments:write",
       "company-os:read",
       "intake:read",
       "intake:write",
@@ -136,6 +147,7 @@ export const agentKeyProfiles = [
       "relationships:read",
       "sales:read",
       "operations:read",
+      "operations:write",
       "workforce:read",
       "workforce:write",
       "assets:read",

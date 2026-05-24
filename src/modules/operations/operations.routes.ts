@@ -3,7 +3,7 @@ import { Prisma, TaskStatus } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
 import { IntegrationError } from "../../integrations/errors";
-import { writeBackCompanyCoreTaskToClickUp } from "../../integrations/clickup/clickup.webhooks";
+import { createCompanyCoreTaskInClickUp, writeBackCompanyCoreTaskToClickUp } from "../../integrations/clickup/clickup.webhooks";
 import { asyncHandler } from "../../middleware/async-handler";
 import { departmentRegistry, resolveDepartmentEntry } from "../../operating-model/department-registry";
 import { createEvent } from "../events/event.service";
@@ -27,10 +27,36 @@ const updateWorkItemSchema = z.object({
   status: z.nativeEnum(TaskStatus).optional(),
   priority: z.string().nullable().optional(),
   dueDate: z.coerce.date().nullable().optional(),
+  startDate: z.coerce.date().nullable().optional(),
+  estimatedEndDate: z.coerce.date().nullable().optional(),
+  estimatedDurationMinutes: z.coerce.number().int().min(0).max(100000).nullable().optional(),
+  recurrenceRule: z.string().trim().max(255).nullable().optional(),
   projectId: z.string().uuid().nullable().optional(),
   goalId: z.string().uuid().nullable().optional(),
   targetId: z.string().uuid().nullable().optional(),
-  taskListId: z.string().uuid().nullable().optional()
+  taskListId: z.string().uuid().nullable().optional(),
+  ownerUserId: z.string().uuid().nullable().optional(),
+  assignedWorkforceEntityId: z.string().uuid().nullable().optional(),
+  reviewerUserId: z.string().uuid().nullable().optional()
+}).strict();
+
+const createWorkItemSchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  status: z.nativeEnum(TaskStatus).optional(),
+  priority: z.string().optional(),
+  dueDate: z.coerce.date().optional(),
+  startDate: z.coerce.date().optional(),
+  estimatedEndDate: z.coerce.date().optional(),
+  estimatedDurationMinutes: z.coerce.number().int().min(0).max(100000).optional(),
+  recurrenceRule: z.string().trim().max(255).optional(),
+  projectId: z.string().uuid().optional(),
+  goalId: z.string().uuid().optional(),
+  targetId: z.string().uuid().optional(),
+  taskListId: z.string().uuid().optional(),
+  ownerUserId: z.string().uuid().optional(),
+  assignedWorkforceEntityId: z.string().uuid().optional(),
+  reviewerUserId: z.string().uuid().optional()
 }).strict();
 
 const updateOperationsTaskListSchema = z.object({
@@ -67,12 +93,15 @@ function normalizedTaskStatus(status: string) {
   return statusMap[status] ?? status;
 }
 
-async function visibleWorkItemRelations(workspaceId: string, input: z.infer<typeof updateWorkItemSchema>) {
+async function visibleWorkItemRelations(workspaceId: string, input: z.infer<typeof updateWorkItemSchema> | z.infer<typeof createWorkItemSchema>) {
   const checks = [
     input.projectId ? prisma.project.findFirst({ where: { id: input.projectId, workspaceId } }) : null,
     input.goalId ? prisma.goal.findFirst({ where: { id: input.goalId, workspaceId } }) : null,
     input.targetId ? prisma.target.findFirst({ where: { id: input.targetId, workspaceId } }) : null,
-    input.taskListId ? prisma.taskList.findFirst({ where: { id: input.taskListId, workspaceId } }) : null
+    input.taskListId ? prisma.taskList.findFirst({ where: { id: input.taskListId, workspaceId } }) : null,
+    input.ownerUserId ? prisma.workspaceMembership.findFirst({ where: { workspaceId, userId: input.ownerUserId } }) : null,
+    input.reviewerUserId ? prisma.workspaceMembership.findFirst({ where: { workspaceId, userId: input.reviewerUserId } }) : null,
+    input.assignedWorkforceEntityId ? prisma.workforceEntity.findFirst({ where: { id: input.assignedWorkforceEntityId, workspaceId } }) : null
   ].filter(Boolean);
 
   const relations = await Promise.all(checks);
@@ -91,14 +120,23 @@ function taskRiskLevel(task: { status: string; dueDate: Date | null }, dependenc
   return "low";
 }
 
-function taskReadiness(task: { status: string; dueDate: Date | null; projectId: string | null; taskListId: string | null }, dependencyCount: number) {
+function taskReadiness(task: {
+  status: string;
+  dueDate: Date | null;
+  projectId: string | null;
+  taskListId: string | null;
+  ownerUserId: string | null;
+  assignedWorkforceEntityId: string | null;
+  reviewerUserId: string | null;
+  estimatedDurationMinutes: number | null;
+}, dependencyCount: number) {
   const missingFields = [
     task.projectId ? null : "project",
     task.taskListId ? null : "task_list",
-    "owner_user_id",
-    "assigned_agent_id",
-    "reviewer_id",
-    "estimated_duration_minutes",
+    task.ownerUserId ? null : "owner_user_id",
+    task.assignedWorkforceEntityId ? null : "assigned_workforce_entity_id",
+    task.reviewerUserId ? null : "reviewer_user_id",
+    task.estimatedDurationMinutes ? null : "estimated_duration_minutes",
     "related_resources"
   ].filter((field): field is string => Boolean(field));
 
@@ -121,10 +159,6 @@ function mapBlockedOperationsActions() {
     {
       action: "change_task_status",
       reason: "Task status changes must use the existing task command route or a future audited Operations command."
-    },
-    {
-      action: "assign_human_or_agent",
-      reason: "Human and AI-agent assignment needs an explicit responsibility model before writes are exposed."
     },
     {
       action: "create_checklist_or_subtask",
@@ -199,6 +233,92 @@ function resolveTaskListDepartment(mapping: {
 
 export const operationsRouter = Router();
 
+operationsRouter.post("/work-items", asyncHandler(async (req, res) => {
+  const workspaceId = req.auth!.workspaceId;
+  const input = createWorkItemSchema.parse(req.body);
+  if (!await visibleWorkItemRelations(workspaceId, input)) {
+    return res.status(404).json({ error: "not_found" });
+  }
+
+  const taskList = input.taskListId
+    ? await prisma.taskList.findFirst({
+      where: {
+        id: input.taskListId,
+        workspaceId
+      }
+    })
+    : null;
+
+  let providerFields: Pick<Prisma.TaskUncheckedCreateInput, "externalId" | "source"> = {
+    source: "companycore"
+  };
+
+  if (taskList?.source === "clickup" && taskList.externalId) {
+    try {
+      const clickUpTask = await createCompanyCoreTaskInClickUp({
+        workspaceId,
+        listExternalId: taskList.externalId,
+        task: input
+      });
+      providerFields = {
+        externalId: clickUpTask.id,
+        source: "clickup"
+      };
+    } catch (error) {
+      if (error instanceof IntegrationError) {
+        await createEvent({
+          type: "clickup_create_failed",
+          workspaceId,
+          source: "clickup",
+          payload: {
+            provider: "clickup",
+            listExternalId: taskList.externalId,
+            errorCode: error.code,
+            command: "operations_work_item_create"
+          }
+        });
+        return res.status(error.status).json({ error: error.code });
+      }
+      throw error;
+    }
+  }
+
+  const task = await prisma.task.create({
+    data: {
+      ...input,
+      ...providerFields,
+      workspaceId
+    },
+    include: {
+      project: true,
+      goal: true,
+      target: true,
+      taskList: true,
+      ownerUser: { select: { id: true, name: true, email: true } },
+      reviewerUser: { select: { id: true, name: true, email: true } },
+      assignedWorkforceEntity: true,
+      notes: { orderBy: { createdAt: "desc" }, take: 5 },
+      events: { orderBy: { createdAt: "desc" }, take: 8 }
+    }
+  });
+
+  await createEvent({
+    type: "operations_work_item_created",
+    workspaceId,
+    projectId: task.projectId,
+    taskId: task.id,
+    source: task.source,
+    payload: {
+      taskId: task.id,
+      title: task.title,
+      taskListId: task.taskListId,
+      command: "operations_work_item_create"
+    }
+  });
+
+  res.status(201).json({ data: task });
+}));
+
 operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
   const query = workItemsQuerySchema.parse(req.query);
@@ -225,12 +345,15 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
       goal: true,
       target: true,
       taskList: true,
+      ownerUser: { select: { id: true, name: true, email: true } },
+      reviewerUser: { select: { id: true, name: true, email: true } },
+      assignedWorkforceEntity: true,
       notes: { orderBy: { createdAt: "desc" }, take: 5 },
       events: { orderBy: { createdAt: "desc" }, take: 8 }
     }
   });
 
-  const [taskLists, taskCountByList] = await Promise.all([
+  const [taskLists, taskCountByList, workspaceMembers, workforceEntities] = await Promise.all([
     prisma.taskList.findMany({
       where: { workspaceId, status: { not: "archived" } },
       orderBy: [{ source: "asc" }, { name: "asc" }],
@@ -240,6 +363,16 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
       by: ["taskListId"],
       where: { workspaceId },
       _count: { _all: true }
+    }),
+    prisma.workspaceMembership.findMany({
+      where: { workspaceId },
+      orderBy: { createdAt: "asc" },
+      include: { user: { select: { id: true, name: true, email: true } } }
+    }),
+    prisma.workforceEntity.findMany({
+      where: { workspaceId, status: { not: "archived" } },
+      orderBy: [{ type: "asc" }, { name: "asc" }],
+      take: 200
     })
   ]);
 
@@ -352,23 +485,43 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
         normalizedStatus: normalizedTaskStatus(task.status),
         priority: task.priority ?? "medium",
         dueDate: task.dueDate?.toISOString() ?? null,
-        startDate: null,
-        estimatedEndDate: null,
+        startDate: task.startDate?.toISOString() ?? null,
+        estimatedEndDate: task.estimatedEndDate?.toISOString() ?? null,
         completedAt: task.status === "done" ? task.updatedAt.toISOString() : null,
-        estimatedDurationMinutes: null,
+        estimatedDurationMinutes: task.estimatedDurationMinutes,
         actualDurationMinutes: null,
         trackedTimeMinutes: null,
+        recurrenceRule: task.recurrenceRule,
         source: task.source,
         externalId: task.externalId,
         createdAt: task.createdAt.toISOString(),
         updatedAt: task.updatedAt.toISOString()
       },
       responsibility: {
-        ownerUserId: null,
-        assignedAgentId: null,
-        reviewerId: null,
+        ownerUserId: task.ownerUserId,
+        ownerUser: task.ownerUser ? {
+          id: task.ownerUser.id,
+          name: task.ownerUser.name,
+          email: task.ownerUser.email
+        } : null,
+        assignedWorkforceEntityId: task.assignedWorkforceEntityId,
+        assignedWorkforceEntity: task.assignedWorkforceEntity ? {
+          id: task.assignedWorkforceEntity.id,
+          type: task.assignedWorkforceEntity.type,
+          name: task.assignedWorkforceEntity.name,
+          slug: task.assignedWorkforceEntity.slug,
+          department: task.assignedWorkforceEntity.department,
+          role: task.assignedWorkforceEntity.role,
+          runtimeMode: task.assignedWorkforceEntity.runtimeMode
+        } : null,
+        reviewerUserId: task.reviewerUserId,
+        reviewerUser: task.reviewerUser ? {
+          id: task.reviewerUser.id,
+          name: task.reviewerUser.name,
+          email: task.reviewerUser.email
+        } : null,
         teamId: null,
-        status: "not_modeled",
+        status: task.ownerUserId || task.assignedWorkforceEntityId || task.reviewerUserId ? "modeled" : "unassigned",
         evidence: taskAgentLogs.map((log) => ({
           id: log.id,
           agentId: log.agentId,
@@ -548,17 +701,43 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
           taskCount: taskCountByListId.get(taskList.id) ?? 0
         }))
       ],
+      assignmentOptions: {
+        users: workspaceMembers.map((membership) => ({
+          id: membership.user.id,
+          name: membership.user.name,
+          email: membership.user.email,
+          role: membership.role
+        })),
+        workforceEntities: workforceEntities.map((entity) => ({
+          id: entity.id,
+          type: entity.type,
+          name: entity.name,
+          slug: entity.slug,
+          department: entity.department,
+          role: entity.role,
+          runtimeMode: entity.runtimeMode,
+          status: entity.status
+        }))
+      },
       statuses,
       workItems,
       agentPacket: {
-        mode: "read_only",
-        allowedActions: [
+        mode: "read_with_domain_commands",
+        allowedReadActions: [
           "read_operations_work_items",
           "inspect_task",
           "inspect_task_evidence",
           "inspect_pipeline_run_evidence",
           "inspect_operations_drive_context"
         ],
+        availableWriteCommands: [
+          "assign_owner_reviewer_or_workforce_entity",
+          "schedule_work_item"
+        ],
+        requiredCapabilities: {
+          assign_owner_reviewer_or_workforce_entity: "operations:write",
+          schedule_work_item: "operations:write"
+        },
         blockedActions: mapBlockedOperationsActions()
       }
     }
@@ -778,6 +957,14 @@ operationsRouter.patch("/work-items/:id", asyncHandler(async (req, res) => {
       status: task.status,
       priority: task.priority,
       dueDate: task.dueDate?.toISOString() ?? null,
+      startDate: task.startDate?.toISOString() ?? null,
+      estimatedEndDate: task.estimatedEndDate?.toISOString() ?? null,
+      estimatedDurationMinutes: task.estimatedDurationMinutes,
+      recurrenceRule: task.recurrenceRule,
+      taskListId: task.taskListId,
+      ownerUserId: task.ownerUserId,
+      assignedWorkforceEntityId: task.assignedWorkforceEntityId,
+      reviewerUserId: task.reviewerUserId,
       source: task.source,
       externalId: task.externalId,
       updatedAt: task.updatedAt.toISOString()
