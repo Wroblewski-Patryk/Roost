@@ -6,7 +6,7 @@ export function LanguageSelector({ compact = false }: { compact?: boolean }) {
   return (
     <label className={`form-control ${compact ? "w-32" : "w-40"}`}>
       <span className="label py-0 pb-1">
-        <span className="label-text text-xs font-black uppercase text-company-muted">{t("language.label")}</span>
+        <span className="label-text text-xs font-black uppercase text-base-content/60">{t("language.label")}</span>
       </span>
       <select
         aria-label={t("language.label")}

@@ -83,6 +83,11 @@ Implemented:
   and `luckysparrow.ch`.
 - Added `docs/ux/roost-brand-book.md` with the supplied brand system and
   reference-image facts.
+- Follow-up visual parity pass after owner feedback: replaced the remaining
+  light public frame with a dark Roost cockpit header/footer, centered concept
+  nav, large `ROOST` wordmark hero, orbit topology, right status rail, and
+  three-module feature strip matching the approved generated concept more
+  closely.
 
 Validation:
 
@@ -105,6 +110,11 @@ Validation:
 - Evidence screenshots:
   `docs/ux/evidence/public-home-roost-desktop.png` and
   `docs/ux/evidence/public-home-roost-mobile.png`.
+- Follow-up local proof on `http://127.0.0.1:3241/` after the concept-match
+  pass verified desktop `1440x1100` and mobile `390x900`: no console errors,
+  no horizontal overflow, no separate `Home` nav item, language selector in the
+  footer, `luckysparrow.ch` footer link present, and the orbit node set includes
+  people, agents, processes, assets, tasks, and knowledge.
 
 Residual risk:
 
