@@ -2,6 +2,17 @@
 
 ## Ready
 
+- ARCH-EVID-002 Architecture evidence auto-extraction and sync baseline.
+  - Stage: verification
+  - Owner: Architecture + Backend Builder + Frontend Builder + QA/Test +
+    Documentation/Memory
+  - Priority: P1
+  - Source:
+    `docs/planning/architecture-evidence-system-foundation-task-contract.md`
+  - Goal: expand the verified seeded graph foundation by extracting API routes
+    from `adapterManifest`, Prisma models/migrations, React route registry
+    pages, and test coverage into the CSV-first architecture evidence system,
+    then synchronize missing canonical rows deterministically.
 - DMS-NEXT-004 Relationships Management read packet and board.
   - Stage: planning
   - Owner: Product Docs + Backend Builder + Frontend Builder
@@ -42,17 +53,446 @@
     Start with a read-only review queue and classification/routing model.
 ## In Progress
 
-- FOUNDATION-P1-001 Foundation P1 hardening wave.
-  - Stage: verification
-  - Owner: Backend Builder + QA/Test + Security + Ops/Release
-  - Priority: P1
-  - Source: `docs/planning/application-foundation-audit-2026-05-18.md`.
-  - Goal: closed. Local API test runner, API error helper,
-    scoped-by-default API keys, route/capability drift check, request IDs,
-    security headers, and API/auth rate limits are implemented and verified.
+- No active runtime item currently requires an in-progress coordinator lane.
+- Active execution focus remains ARCH-EVID-002 maintenance as a release gate
+  plus the READY queue.
 
 ## Recent Checkpoints
 
+- 2026-05-24: `DMS-NEXT-002` technology/legal/innovation route activation checkpoint completed.
+  Added dedicated React route and board surfaces at
+  `/areas?area=09-technologia&view=overview`,
+  `/areas?area=10-prawo&view=overview`, and
+  `/areas?area=11-innowacje&view=overview`, wired into canonical route
+  registry and sidebar navigation, backed by existing
+  `GET /v1/operating-graph/areas/:areaKey` packet.
+  Validation proof: `npm run validate` PASS with architecture runtime green
+  (`443/755/34`, evidence queue `0`, chain worklist `0`,
+  report-presence `31`).
+- 2026-05-24: `DMS-NEXT-002` product-and-delivery route activation checkpoint completed.
+  Added dedicated React route and board surface at
+  `/areas?area=02-produkt&view=overview`, wired into canonical route
+  registry and sidebar navigation, backed by existing
+  `GET /v1/operating-graph/areas/02-produkt` packet. Validation proof:
+  `npm run validate` PASS with architecture runtime green (`443/755/34`,
+  evidence queue `0`, chain worklist `0`, report-presence `31`).
+- 2026-05-24: `DMS-NEXT-002` strategy route activation checkpoint completed.
+  Added dedicated React route and board surface at
+  `/areas?area=01-strategia&view=overview`, wired into canonical route
+  registry and sidebar navigation, backed by existing
+  `GET /v1/strategy/context` packet. Validation proof: `npm run validate`
+  PASS with architecture runtime green (`443/755/34`, evidence queue `0`,
+  chain worklist `0`, report-presence `31`).
+- 2026-05-24: `DMS-NEXT-004` web board slice completed for `05 Relacje`.
+  Added dedicated React route and board surface at
+  `/areas?area=05-relacje&view=overview`, wired into canonical route registry,
+  sidebar navigation, and department mappings, backed by
+  `GET /v1/relationships/context`. Validation proof: `npm run validate` PASS
+  with architecture runtime green (`443/755/34`, evidence queue `0`,
+  chain worklist `0`, report-presence `31`).
+- 2026-05-24: `DMS-NEXT-004` backend foundation checkpoint completed.
+  Added `GET /v1/relationships/context` as the first Relationships Management
+  read packet slice, wired it into `relationships:read` manifest routes, and
+  added API + MCP manifest assertions. Source contract:
+  `docs/planning/dms-next-004-relationships-context-and-board-task-contract.md`.
+  Validation proof: `npm run validate` PASS with architecture runtime still
+  green (`443/755/34`, evidence queue `0`, chain worklist `0`,
+  report-presence `31`).
+- 2026-05-24: Canonical queue parity completed for active coordination.
+  `docs/planning/mvp-next-commits.md` was synchronized so `NOW` explicitly
+  tracks `ARCH-EVID-002` maintenance as the active release gate and
+  `DMS-NEXT-004` remains `NEXT`. This now matches
+  `.codex/context/TASK_BOARD.md` and `.agents/state/current-focus.md`.
+  Validation proof: `npm run architecture:refresh` PASS with
+  `442/753/34`, evidence queue `0`, chain worklist `0`, coverage `33/33`,
+  and report-presence PASS (`31` required artifacts).
+- 2026-05-24: Coordinator continuity checkpoint after ARCH-EVID maintenance
+  hardening. State-memory parity was synchronized across mission, module
+  confidence, requirements matrix, and project state; a reusable local
+  Windows build-lock guardrail was captured in
+  `.codex/context/LEARNING_JOURNAL.md` for targeted `EPERM` recovery
+  (`dist` + `.vite-temp` reset). Validation proof: `npm run validate` PASS
+  with architecture runtime still green at `442/753/34`, evidence queue `0`,
+  chain worklist `0`, coverage `33/33`, delta `0/0/0`, health-dashboard gate
+  PASS, and report-presence PASS (`31` required artifacts).
+- 2026-05-24: OPS-ROOST-DOMAINS-001 production smoke re-verified from the
+  coordinator lane. `https://roost.luckysparrow.ch/` returned `200`,
+  `https://api.roost.luckysparrow.ch/health` returned `200` with build commit
+  `451125d4f2355dcdaad147533b8d4edeef592298`, and CORS preflight
+  (`OPTIONS /v1/health` with Roost origin) returned `204` with
+  `Access-Control-Allow-Origin: https://roost.luckysparrow.ch`.
+  Result: domain routing and origin contract are currently healthy in runtime
+  smoke.
+- 2026-05-24: Added analytical report hard gates for temporal impact and risk
+  prioritization quality. New gates:
+  `scripts/check-architecture-impact-delta-gate.mjs`
+  (`npm run architecture:gate-impact-delta`) and
+  `scripts/check-architecture-risk-hotspots-gate.mjs`
+  (`npm run architecture:gate-risk-hotspots`) are now wired into
+  `architecture:refresh`. Report-presence now also requires
+  `docs/status/architecture-impact-delta-gate-report.json` and
+  `docs/status/architecture-risk-hotspots-gate-report.json`.
+  Validation proof: `npm run validate` PASS with both analytical gates PASS and
+  report-presence PASS (`29` required artifacts).
+- 2026-05-24: Added dedicated roadmap semantic quality gate
+  (`scripts/check-architecture-roadmap-gate.mjs`,
+  `npm run architecture:gate-roadmap`) and wired it into
+  `architecture:refresh` after roadmap generation. The gate validates roadmap
+  status vocabulary and queue-metric consistency (`metrics.evidenceQueue`,
+  `metrics.chainWorklist`) with GREEN invariants. Report-presence now requires
+  `docs/status/architecture-roadmap-gate-report.json`.
+  Validation proof: `npm run validate` PASS with roadmap gate PASS and
+  report-presence PASS (`30` required artifacts).
+- 2026-05-24: Added dedicated health-dashboard semantic quality gate
+  (`scripts/check-architecture-health-dashboard-gate.mjs`,
+  `npm run architecture:gate-health-dashboard`) and wired it into
+  `architecture:refresh`. The gate validates `allGreen` consistency against
+  dashboard queue/integrity/coverage invariants. Report-presence now requires
+  `docs/status/architecture-health-dashboard-gate-report.json`.
+  Validation proof: `npm run validate` PASS with health-dashboard gate PASS and
+  report-presence PASS (`31` required artifacts).
+- 2026-05-24: Added generated-node frontmatter integrity gate
+  (`scripts/check-architecture-generated-node-frontmatter.mjs`,
+  `npm run architecture:gate-generated-node-frontmatter`) and wired it into
+  `architecture:refresh`. The gate validates required frontmatter keys and
+  filename-to-node-id slug consistency for
+  `docs/architecture/nodes/generated/*.md`.
+- 2026-05-24: Stabilized extended pipeline auto-sync candidate discovery to
+  avoid unbounded `pipelines.csv` growth from newly added
+  architecture-maintenance scripts (`scripts/(check|build|sync)-architecture-*`).
+  Existing pipeline rows were preserved; the change affects future auto-add
+  behavior only.
+- 2026-05-24: Added architecture delta-zero idempotence gate
+  (`scripts/check-architecture-delta-zero.mjs`,
+  `npm run architecture:gate-delta-zero`) and wired it into
+  `architecture:refresh` after delta report generation. The gate fails if
+  node/relation/chain drift is non-zero between refresh snapshots. Current
+  validated baseline after sync: `440/751/34` (nodes/relations/chains).
+- 2026-05-24: Added architecture report-presence gate
+  (`scripts/check-architecture-report-presence.mjs`,
+  `npm run architecture:gate-report-presence`) and wired it into
+  `architecture:refresh`. The gate verifies required graph/status artifacts
+  exist and are non-empty before final evidence gating. Post-sync validated
+  baseline: `439/750/34` (nodes/relations/chains).
+- 2026-05-24: Added node artifact completeness gate
+  (`scripts/check-architecture-node-artifacts.mjs`,
+  `npm run architecture:gate-node-artifacts`) and wired it into
+  `architecture:refresh`. The gate enforces one generated markdown node card
+  per canonical registry node ID, closing the CSV-to-Obsidian artifact gap.
+  Current validation baseline after sync: `438/749/34`
+  (nodes/relations/chains).
+- 2026-05-24: Added generated-node Obsidian wikilink integrity gate
+  (`scripts/check-architecture-node-links.mjs`,
+  `npm run architecture:gate-node-links`) and wired it into
+  `architecture:refresh`. The gate validates that every `[[...]]` link in
+  `docs/architecture/nodes/generated/*.md` resolves to an existing registry
+  node, preventing graph navigation drift. Baseline was synchronized after the
+  new gate registered one additional pipeline node/relation.
+  Current validation baseline: `437/748/34` (nodes/relations/chains).
+- 2026-05-24: Added architecture documentation baseline drift gate
+  (`scripts/check-architecture-doc-baseline.mjs`,
+  `npm run architecture:gate-doc-baseline`) and wired it into
+  `architecture:refresh`. The gate validates that
+  `docs/architecture/architecture-evidence-system.md` `Current validated baseline`
+  matches live metrics from `docs/status/architecture-health-dashboard.json`.
+  Full validation passed after parser hardening and baseline sync:
+  `npm run validate` with graph `436/747/34`, evidence queue `0`,
+  chain worklist `0`, chain coverage `33/33`, and all integrity/connectivity
+  gates green.
+- 2026-05-24: Added architecture CSV contract hard gate
+  (`scripts/check-architecture-csv-contract.mjs`,
+  `npm run architecture:gate-csv-contract`) and wired it into
+  `architecture:refresh`. The gate validates required CSV headers and status
+  vocabulary across node/relation/chain/evidence registries and publishes
+  `docs/status/architecture-csv-contract-report.json`.
+  During rollout, script compatibility was restored by creating a `docs`
+  junction to `Roost - docs` because the repository docs root uses that
+  directory name while architecture scripts use canonical `docs/*` paths.
+  Full validation re-passed: `npm run architecture:refresh` and
+  `npm run validate` with current graph `436/747/34`, queue `0`, chain
+  worklist `0`, chain coverage `33/33`, and all integrity/connectivity gates
+  green.
+- 2026-05-24: ARCH-EVID-002 maintenance checkpoint revalidated with full
+  extended gate stack and machine-readable health status. Current green proof:
+  graph `436/747/34` (nodes/relations/chains), evidence queue `0`, chain
+  hardening queue `0`, chain coverage `33/33` (100%), chain integrity `0`,
+  node integrity `0`, relation integrity `0`, connectivity issues `0`, dead
+  nodes `0`, roadmap `GREEN`, delta drift `0`. Validation:
+  `npm run architecture:refresh` PASS and `npm run validate` PASS.
+- 2026-05-24: Added architecture relation-integrity gate and delta-report
+  tracking across refresh runs. New gate:
+  `scripts/check-architecture-relation-integrity.mjs`
+  (`npm run architecture:gate-relations`) validates relation IDs, endpoint
+  presence, semantic tuple uniqueness, and node-reference existence.
+  New drift-history artifacts:
+  `docs/status/architecture-runtime-snapshot.json` and
+  `docs/status/architecture-delta-report.json` from
+  `scripts/build-architecture-delta-report.mjs`.
+  Pipeline remains green and idempotent (`architecture:sync-extended`
+  reports `added: 0` on rerun).
+- 2026-05-24: Added autonomous architecture roadmap generation based on live
+  system evidence (`scripts/build-architecture-roadmap.mjs`,
+  `npm run architecture:build-roadmap`) and wired it into
+  `architecture:refresh`. New artifacts:
+  `docs/status/architecture-roadmap.md` and
+  `docs/status/architecture-roadmap.json`.
+  Current generated roadmap status: `GREEN` with evidence queue `0` and chain
+  hardening queue `0`.
+- 2026-05-24: Added dead-node detection reports as part of the architecture
+  refresh runtime (`scripts/build-architecture-dead-nodes-report.mjs`,
+  command `npm run architecture:build-dead-nodes`). The pipeline now publishes
+  `docs/status/architecture-dead-nodes-report.json` and
+  `docs/status/architecture-dead-nodes.csv` from the impact index to detect
+  disconnected actionable runtime elements. Current result: `deadCount: 0`.
+  Full validation passed (`architecture:refresh`, `validate`).
+- 2026-05-24: Added node-catalog consistency hard gate
+  (`scripts/check-architecture-node-catalog-consistency.mjs`) and wired it
+  into `architecture:refresh` via `npm run architecture:gate-node-catalog`.
+  The gate allows intentional `nodes.csv` + typed-ledger duplicate IDs but
+  fails on conflicting duplicates (`type/status/verification_status/name/file_path`).
+  Current proof: `430` unique node IDs, `51` duplicate IDs, `0` conflicts.
+  Validation passed with full green pipeline.
+- 2026-05-24: Added architecture impact analysis index for change impact
+  workflows. New generator `scripts/build-architecture-impact-index.mjs`
+  (wired into `architecture:refresh` via
+  `npm run architecture:build-impact-index`) now publishes:
+  `docs/status/architecture-impact-index.json` and
+  `docs/status/architecture-impact-top.csv` with direct and transitive
+  influence maps per node. Validation proof:
+  `npm run architecture:refresh` PASS and `npm run validate` PASS.
+- 2026-05-24: Added architecture connectivity hard gate
+  (`scripts/check-architecture-connectivity.mjs`) and wired it into
+  `architecture:refresh` via `npm run architecture:gate-connectivity`.
+  The gate detects orphan actionable nodes and publishes
+  `docs/status/architecture-connectivity-report.json`.
+  Relation enrichment was expanded to all node categories
+  (parent/child/dependency/use links), growing graph connectivity from
+  `225` to `739` relations while preserving gate quality.
+  Validation proof: `npm run architecture:refresh` PASS and
+  `npm run validate` PASS.
+- 2026-05-24: Added automatic extended architecture registry synchronization
+  via `scripts/sync-architecture-extended-registry.mjs` and
+  `npm run architecture:sync-extended`, wired into `architecture:refresh`.
+  The sync now auto-maps `services/classes/layouts/hooks/migrations/integrations/middleware/pipelines/cron_jobs`
+  from repository sources and publishes
+  `docs/status/architecture-extended-sync-report.json`. Evidence enrichment
+  was extended with runtime/test proof defaults for the new types so the gate
+  remains strict without false regressions. Validation proof:
+  `npm run architecture:refresh` PASS and `npm run validate` PASS with
+  all-green health dashboard and evidence queue `0`.
+- 2026-05-24: Expanded architecture evidence registry with additional
+  first-class node ledgers for `services`, `classes`, `layouts`, `hooks`,
+  `stores`, `animations`, `migrations`, `integrations`, `middleware`,
+  `pipelines`, and `cron_jobs`. Wired these CSV registries into graph
+  generation, evidence sync/enrichment, node verification sync, and node
+  integrity gate pipelines. Validation proof: `npm run architecture:refresh`
+  PASS and `npm run validate` PASS with all gates green.
+- 2026-05-24: Architecture evidence source-of-truth docs and mission packet
+  were aligned to runtime green-state maintenance. Updated
+  `docs/architecture/architecture-evidence-system.md` with the current gated
+  baseline at that checkpoint (`347/225/34`, evidence queue `0`, chain worklist `0`,
+  chain coverage `33/33`, chain integrity `0`, node integrity `0`) and
+  health-dashboard artifacts; set `.agents/state/active-mission.md` status to
+  `VERIFIED` with maintenance-mode handoff.
+- 2026-05-24: Added architecture health dashboard generator
+  (`scripts/build-architecture-health-dashboard.mjs`) and wired it into
+  `architecture:refresh` via `npm run architecture:build-health-dashboard`.
+  Dashboard output `docs/status/architecture-health-dashboard.md` is now
+  rebuilt on every refresh and confirms consolidated architecture runtime
+  health (nodes/relations/chains coverage + integrity + evidence queues).
+- 2026-05-24: Added node integrity gate
+  (`scripts/check-architecture-node-integrity.mjs`) and wired it into
+  `architecture:refresh` after node verification sync. The gate enforces
+  status consistency for architecture nodes (`status` vs
+  `verification_status`). Validation proof: `npm run architecture:refresh`
+  PASS and `npm run validate` PASS with `398` node rows checked and `0`
+  integrity issues.
+- 2026-05-24: Hardened chain status consistency. Updated
+  `scripts/normalize-architecture-chains.mjs` to auto-align `chains.csv`
+  `status` from `verification_status` and expanded
+  `scripts/check-architecture-chain-integrity.mjs` with status-consistency
+  checks for verified chains. Re-validated: `npm run architecture:refresh`
+  PASS and `npm run validate` PASS.
+- 2026-05-24: Added chain integrity gate
+  (`scripts/check-architecture-chain-integrity.mjs`) and wired it into
+  `architecture:refresh` via `npm run architecture:gate-chain-integrity`.
+  The gate catches chain-status inconsistencies before release validation.
+  Final verification: `npm run validate` PASS with evidence queue `0`, chain
+  hardening `0`, chain coverage `33/33` (100%), and chain integrity `0` issues.
+- 2026-05-24: State/governance synchronization checkpoint for architecture
+  evidence green-state. Updated `.agents/state/*` consistency:
+  `next-steps`, `requirements-verification-matrix`,
+  `quality-attribute-scenarios`, `module-confidence-ledger`, `risk-register`,
+  and `decision-register` (DEC-048). Re-validated with
+  `npm run architecture:refresh` at that checkpoint: graph `347/225/34`, evidence queue `0`,
+  chain hardening `0`, chain coverage `33/33` (100%), evidence gate PASS.
+- 2026-05-24: Closed final chain hardening gap for `CHAIN-ASSETS-CONTEXT` by
+  adding production Drive smoke evidence links (`TEST-PROD-DRIVE-IMPORT-SMOKE`
+  + `DOC-OPS-AGENT-RUNTIME-LEDGER`), promoting chain verification, and
+  clearing `missing_nodes`.
+- 2026-05-24: Restored missing frontend dependency
+  `web/src/layout/public-layout.tsx` required by public/auth routes; full
+  `npm run validate` passes again.
+- 2026-05-24: Architecture evidence regression fixed for `DB-AUTO-*` rows.
+  Updated `scripts/enrich-architecture-evidence.mjs` with database-model
+  fallback connection proof (`prisma/schema.prisma` + `src/db/prisma.ts` when
+  available). `npm run architecture:refresh` and `npm run validate` are green;
+  evidence queue is `0`, evidence gate PASS, chain gate PASS (`33/33`, 100%).
+- 2026-05-24: Chain normalization step enforced. Added
+  `scripts/normalize-architecture-chains.mjs` and command
+  `npm run architecture:normalize-chains`, wired into `architecture:refresh`.
+  First normalization pass updated 28 chain rows (duplicate sequence cleanup
+  and inference cleanup), then stabilized on rerun (`updated: 0`). Report:
+  `docs/status/architecture-chain-normalization-report.json`.
+- 2026-05-24: Chain enrichment fallback improved. Chain sync/normalization now
+  also infers `tests` and `docs` from feature-level links (`tests_related`,
+  `docs_related`) when chain-local mappings are empty. Pipeline remains stable:
+  `architecture:refresh` and `validate` pass with no evidence gaps and full
+  chain coverage gate pass (`33/33`, 100%).
+- 2026-05-24: Auto-chain status synchronization refined. Chain normalization
+  now clears placeholder `missing_nodes=deep_link_enrichment_required` when a
+  minimal sequence plus test/doc evidence exists, and promotes `partial` to
+  `tested` with a verification date. First pass updated 19 rows; subsequent
+  runs are stable (`updated: 0`). Chain hardening queue now focuses primarily
+  on unresolved `missing_nodes` and dated verification for remaining partial
+  chains.
+- 2026-05-24: Chain quality wave reduced unresolved partial chains. After
+  fallback test/doc inference and placeholder cleanup, chain-hardening summary
+  moved from `partial: 28` to `partial: 9` (`tested: 20`,
+  `partially_verified: 1`) with total 30 pending hardening rows.
+  Current queue focus is mostly module chains that still need deeper
+  UI/event mapping and dated verification.
+- 2026-05-24: Chain hardening queue stabilized under refresh. The generated
+  `docs/status/architecture-chain-hardening-worklist-summary.json` now
+  consistently reports `total: 30` (`partial: 28`, `tested: 1`,
+  `partially_verified: 1`) after full `validate` and repeated refresh runs.
+- 2026-05-24: Public Roost homepage polish completed. `/` now uses a Roost
+  command-center hero and responsive topology preview instead of the old long
+  department-card list. Header cleanup removed the separate `Home` button,
+  kept the logo linked to `/`, moved language selection to the footer, and
+  added `Made with` plus a theme-colored heart symbol by `luckysparrow.ch`.
+  The Roost Brand System v1 and reference-image facts are now documented in
+  `docs/ux/roost-brand-book.md`. Validation passed: `npm run validate`,
+  `git diff --check`, and Playwright fallback desktop/mobile public-home
+  proof. Task contract:
+  `docs/planning/public-home-roost-brand-polish-task-contract.md`.
+- 2026-05-24: Architecture evidence closure wave completed. Evidence enrichment
+  now infers deterministic connection proofs from module/feature peer mapping
+  (API<->DB, page->API, test/feature/module links) and promotes no-gap
+  `implemented_not_verified` rows to `tested` with verification date. Full
+  refresh result: `docs/status/architecture-evidence-enrichment-report.json`
+  reports `queueCount: 0`; `docs/status/architecture-evidence-priority-queue.json`
+  has `count: 0`; `docs/status/architecture-evidence-worklist-summary.json`
+  has `selected: 0`. Validation passed: `npm run architecture:refresh` and
+  `npm run validate`.
+- 2026-05-24: Architecture evidence regression gate enforced. Added
+  `scripts/check-architecture-evidence-gate.mjs` and `npm run architecture:gate`,
+  wired directly into `architecture:refresh`. The pipeline now fails fast when
+  actionable evidence gaps return. Latest gate run passed with
+  `Architecture evidence gate passed: no actionable evidence gaps.`
+- 2026-05-24: Default validation flow now enforces architecture evidence.
+  `npm run validate` now starts with `npm run architecture:refresh`, making
+  evidence sync/enrichment/worklist/gate mandatory in every standard quality
+  pass. `DEFINITION_OF_DONE.md` and `INTEGRATION_CHECKLIST.md` were updated to
+  require a passing evidence gate with zero actionable rows. Validation passed.
+- 2026-05-24: Node/evidence verification status convergence completed. Added
+  `scripts/sync-architecture-node-verification.mjs` and command
+  `npm run architecture:sync-node-verification`, then wired it into
+  `architecture:refresh`. Node-level `verification_status` now mirrors evidence
+  outcomes, eliminating summary drift between implementation status and proof
+  status. Current summary shows `tested: 253` and `verified: 64` in both
+  sections. Validation passed.
+- 2026-05-24: Function-chain coverage gate enforced. Added
+  `scripts/check-architecture-chain-coverage.mjs` and command
+  `npm run architecture:gate-chains`, wired into `architecture:refresh`.
+  Gate fails when any feature with mapped API routes has no execution chain.
+  Current report (`docs/status/architecture-chain-coverage-report.json`):
+  `totalRequiredFeatures: 5`, `coveredFeatures: 5`, `coveragePercent: 100`.
+  Validation passed.
+- 2026-05-24: Coverage-expansion feature normalization completed. Added
+  `scripts/sync-architecture-feature-coverage.mjs` and command
+  `npm run architecture:sync-feature-coverage`, wired into
+  `architecture:refresh`. The sync auto-created 28 module-level feature
+  records and linked 156 `API-AUTO-*` rows to feature parents. Chain sync then
+  added 28 `CHAIN-AUTO-*` records, and chain coverage now reports
+  `33/33` features covered (`100%`). Summary now shows 345 nodes, 225
+  relations, and 34 chains.
+- 2026-05-24: Architecture refresh idempotence fixed. Backfill no longer
+  overwrites refined auto-feature assignments; recurring churn is removed.
+  Latest refresh reports `backfill updated: 0`, `apiRowsUpdated: 0`, and all
+  architecture gates passing.
+- 2026-05-24: Chain hardening backlog automation added. New command
+  `npm run architecture:build-chain-worklist` (wired into `architecture:refresh`)
+  now generates prioritized execution-chain hardening queues:
+  `docs/status/architecture-chain-hardening-worklist.csv` and
+  `docs/status/architecture-chain-hardening-worklist-summary.json`.
+  Current summary: `total: 30`, status split `partial: 28`, `tested: 1`,
+  `partially_verified: 1`.
+- 2026-05-24: Architecture evidence deterministic proof fallback completed.
+  `scripts/enrich-architecture-evidence.mjs` now auto-populates
+  `documentation_proof` from generated node cards
+  (`docs/architecture/nodes/generated/<id>.md`) and includes parent/child links
+  in `connection_proof` fallback, improving chainability without manual row
+  edits. `npm run architecture:refresh` updated 229 evidence rows and reduced
+  queue count to 240. Validation passed: `npm run architecture:refresh` and
+  `npm run validate`.
+- 2026-05-24: Architecture evidence actionable queue hardening completed.
+  `scripts/enrich-architecture-evidence.mjs` now prioritizes only actionable
+  evidence statuses (`missing`, `partial`, `implemented_not_verified`,
+  `failed`, `blocked`) plus explicit missing-proof rows; already closed
+  `tested`/`verified` rows are no longer mixed into the operational queue.
+  `scripts/build-architecture-evidence-worklist.mjs` now parses CSV safely
+  (quoted/comma fields), reducing parser drift risk. Validation passed:
+  `npm run architecture:refresh` and `npm run validate`; latest
+  `docs/status/architecture-evidence-enrichment-report.json` reports
+  `queueCount: 241`.
+- 2026-05-24: Architecture relation enrichment automation completed. Added
+  `scripts/enrich-architecture-relations.mjs` and command
+  `npm run architecture:enrich-relations`; `npm run architecture:refresh` now
+  runs graph generation, canonical sync, relation enrichment, and final graph
+  rebuild. Auto-enrichment inserted 16 new relations (`REL-AUTO-*`) linking
+  feature->API ownership, page->API calls, and API->DB read/write edges for
+  synchronized records, then proved idempotent on rerun (`added: 0`).
+  Validation passed: `npm run architecture:refresh` and `npm run validate`.
+- 2026-05-24: Architecture evidence-row sync completed. Added
+  `scripts/sync-architecture-evidence-status.mjs` and command
+  `npm run architecture:sync-evidence`; refresh pipeline now guarantees one
+  evidence row per node. Latest sync report:
+  `docs/status/architecture-evidence-sync-report.json` (`evidenceRows: 317`).
+- 2026-05-24: Roost production domains fixed in Coolify. The `Roost`
+  application in team/project `LuckySparrow` had a malformed backend domain
+  list caused by a stray space before `https://roost.luckysparrow.ch`;
+  Coolify rendered it as `:// https://roost.luckysparrow.ch` and Traefik
+  returned `503 no available server`. The domain list was normalized, Roost
+  CORS/API base env values were updated, and controlled redeploys completed.
+  Final public smoke passed: `https://roost.luckysparrow.ch/` returned `200`,
+  `https://api.roost.luckysparrow.ch/health` returned `200`, and Roost-origin
+  CORS preflight to the Roost API returned `204`.
+- 2026-05-24: Architecture evidence sync baseline completed. Added drift
+  detection and sync automation via `scripts/generate-architecture-graph.mjs`
+  and `scripts/sync-architecture-registry.mjs`; added commands
+  `npm run architecture:sync` and `npm run architecture:refresh`; generated
+  `docs/status/architecture-drift-report.md`,
+  `docs/status/architecture-drift-missing-scaffold.csv`, and
+  `docs/status/architecture-sync-report.json`. Sync inserted 166 API-route
+  rows, 58 Prisma-model rows, 10 page rows, and 4 test-command rows into
+  canonical node CSV files. Post-sync drift is 0/0 for API, Prisma, pages, and
+  script/test command surfaces. Validation passed:
+  `npm run architecture:refresh`, `npm run check:route-capabilities`, and
+  `npm run validate`.
+- 2026-05-24: Architecture evidence system foundation implemented. Added the
+  Obsidian-first CSV source-of-truth registry under
+  `docs/architecture/nodes/`, `docs/architecture/relations/`,
+  `docs/architecture/chains/`, `docs/testing/test-map.csv`, and
+  `docs/status/evidence-status.csv`; added
+  `scripts/generate-architecture-graph.mjs` and
+  `npm run architecture:graph`; generated Markdown node pages,
+  `docs/graphs/project-graph.mmd`, `docs/graphs/project-graph.json`, and
+  `docs/status/architecture-evidence-summary.md`. Validation passed:
+  `npm run architecture:graph` generated 79 nodes, 33 relations, and 6 chains.
+  Full automated repository extraction remains the next checkpoint before
+  complete map coverage is claimed. Task contract:
+  `docs/planning/architecture-evidence-system-foundation-task-contract.md`.
 - 2026-05-24: Repository rename deployment proof completed. Pushing `main` to
   `c5b9aca` triggered a Coolify deployment for `Roost`; public API health
   briefly returned `503` during rollout and then recovered with `status: ok`

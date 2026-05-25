@@ -420,6 +420,76 @@ test("production CORS allows approved origins and rejects unknown browser origin
   assert.equal(summary.deniedOrigin, null);
 });
 
+test("production defaults recognize Roost web and API domains", async () => {
+  const result = await runNodeScript(`
+    const http = await import("node:http");
+    const { createApp } = await import("./dist/app.js");
+    const server = createApp().listen(0);
+    await new Promise((resolve) => server.once("listening", resolve));
+    const { port } = server.address();
+    function request(options) {
+      return new Promise((resolve, reject) => {
+        const req = http.request({ hostname: "127.0.0.1", port, ...options }, (res) => {
+          let body = "";
+          res.setEncoding("utf8");
+          res.on("data", (chunk) => body += chunk);
+          res.on("end", () => resolve({ status: res.statusCode, headers: res.headers, body }));
+        });
+        req.on("error", reject);
+        req.end();
+      });
+    }
+    const headers = {
+      "Access-Control-Request-Method": "GET"
+    };
+    const roostCors = await request({
+      method: "OPTIONS",
+      path: "/health",
+      headers: {
+        ...headers,
+        Origin: "https://roost.luckysparrow.ch"
+      }
+    });
+    const apiRoot = await request({
+      method: "GET",
+      path: "/",
+      headers: {
+        Host: "api.roost.luckysparrow.ch"
+      }
+    });
+    const apiRootBody = JSON.parse(apiRoot.body);
+    console.log(JSON.stringify({
+      roostCorsStatus: roostCors.status,
+      roostCorsOrigin: roostCors.headers["access-control-allow-origin"],
+      apiRootStatus: apiRoot.status,
+      apiRootData: apiRootBody.data
+    }));
+    await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  `, {
+    NODE_ENV: "production",
+    DATABASE_URL: "postgresql://companycore:companycore@localhost:5432/companycore?schema=public",
+    AUTH_TOKEN_SECRET: "production-auth-token-secret-for-tests",
+    INTEGRATION_SECRET_KEY: "production-integration-secret-for-tests",
+    API_KEY_HASH_SECRET: "production-api-key-hash-secret-for-tests",
+    COMPANYCORE_ALLOWED_ORIGINS: undefined,
+    COMPANYCORE_API_HOSTS: undefined
+  });
+
+  assert.equal(result.exitCode, 0, `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
+  const summary = JSON.parse(result.stdout) as {
+    roostCorsStatus: number;
+    roostCorsOrigin: string | null;
+    apiRootStatus: number;
+    apiRootData: { service: string; web: string; api: string };
+  };
+  assert.equal(summary.roostCorsStatus, 204);
+  assert.equal(summary.roostCorsOrigin, "https://roost.luckysparrow.ch");
+  assert.equal(summary.apiRootStatus, 200);
+  assert.equal(summary.apiRootData.service, "companycore");
+  assert.equal(summary.apiRootData.web, "https://roost.luckysparrow.ch");
+  assert.equal(summary.apiRootData.api, "https://api.roost.luckysparrow.ch");
+});
+
 before(async () => {
   await resetDatabase();
   const app = createApp();
@@ -3109,6 +3179,134 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(relationshipGraphBody.data.summary.confidence.needsReview >= 2);
   assert.ok(relationshipGraphBody.data.summary.confidence.unsupported > 0);
 
+  const relationshipsContextArea = await prisma.operatingArea.findFirstOrThrow({
+    where: { workspaceId: ownerA.workspace.id, key: "relationships-client-success" }
+  });
+  const relationshipsClient = await prisma.client.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      name: "Relationship Context Client",
+      companyName: "Relationship Context Co",
+      email: "context-client@example.com",
+      status: "active"
+    }
+  });
+  const relationshipsInteraction = await prisma.interaction.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      clientId: relationshipsClient.id,
+      type: "support_follow_up",
+      summary: "Relationship context support follow-up required."
+    }
+  });
+  const relationshipsStakeholder = await prisma.stakeholder.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      clientId: relationshipsClient.id,
+      name: "Relationship Context Stakeholder",
+      type: "client_contact",
+      role: "Head of Success",
+      email: "stakeholder@example.com",
+      status: "active"
+    }
+  });
+  const relationshipsDeal = await prisma.deal.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      clientId: relationshipsClient.id,
+      title: "Relationship Context Renewal",
+      status: "open"
+    }
+  });
+  const relationshipsNote = await prisma.note.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      clientId: relationshipsClient.id,
+      content: "Client relationship and retention context note."
+    }
+  });
+  const relationshipsDecision = await prisma.decision.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      title: "Relationship retention policy",
+      rationale: "Improve client success and long-term retention.",
+      status: "active"
+    }
+  });
+  const relationshipsTask = await prisma.task.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      title: "Relationship follow-up with client",
+      description: "Client support and relationship continuity check.",
+      status: "todo"
+    }
+  });
+  const relationshipsDriveFile = await prisma.googleDriveFile.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      externalId: "rel-context-drive-doc",
+      name: "Client relationship health report",
+      mimeType: "application/vnd.google-apps.document",
+      operatingAreaId: relationshipsContextArea.id
+    }
+  });
+
+  const unauthenticatedRelationshipsContext = await request("/v1/relationships/context");
+  assert.equal(unauthenticatedRelationshipsContext.status, 401);
+  const relationshipsContext = await request("/v1/relationships/context", { headers: authA });
+  assert.equal(relationshipsContext.status, 200);
+  const relationshipsContextBody = relationshipsContext.body as {
+    data: {
+      department: { canonicalKey: string; backendAreaKey: string };
+      summary: { clients: number; activeClients: number; relationshipTasks: number; relationshipDriveFiles: number };
+      clients: Array<{ id: string; interactions: Array<{ id: string }>; stakeholders: Array<{ id: string }> }>;
+      interactions: Array<{ id: string; client: { id: string } | null }>;
+      stakeholders: Array<{ id: string; client: { id: string } | null }>;
+      deals: Array<{ id: string; client: { id: string } | null }>;
+      notes: Array<{ id: string; client: { id: string } | null }>;
+      decisions: Array<{ id: string }>;
+      tasks: Array<{ id: string }>;
+      driveFiles: Array<{ id: string; operatingAreaKey: string | null }>;
+      agentPacket: { mode: string; allowedActions: string[]; blockedActions: Array<{ action: string }> };
+    };
+  };
+  assert.equal(relationshipsContextBody.data.department.canonicalKey, "05-relacje");
+  assert.equal(relationshipsContextBody.data.department.backendAreaKey, "relationships-client-success");
+  assert.ok(relationshipsContextBody.data.summary.clients >= 1);
+  assert.ok(relationshipsContextBody.data.summary.activeClients >= 1);
+  assert.ok(relationshipsContextBody.data.summary.relationshipTasks >= 1);
+  assert.ok(relationshipsContextBody.data.summary.relationshipDriveFiles >= 1);
+  assert.ok(relationshipsContextBody.data.clients.some((client) => (
+    client.id === relationshipsClient.id
+    && client.interactions.some((interaction) => interaction.id === relationshipsInteraction.id)
+    && client.stakeholders.some((stakeholder) => stakeholder.id === relationshipsStakeholder.id)
+  )));
+  assert.ok(relationshipsContextBody.data.interactions.some((interaction) => (
+    interaction.id === relationshipsInteraction.id
+    && interaction.client?.id === relationshipsClient.id
+  )));
+  assert.ok(relationshipsContextBody.data.stakeholders.some((stakeholder) => (
+    stakeholder.id === relationshipsStakeholder.id
+    && stakeholder.client?.id === relationshipsClient.id
+  )));
+  assert.ok(relationshipsContextBody.data.deals.some((deal) => (
+    deal.id === relationshipsDeal.id
+    && deal.client?.id === relationshipsClient.id
+  )));
+  assert.ok(relationshipsContextBody.data.notes.some((note) => (
+    note.id === relationshipsNote.id
+    && note.client?.id === relationshipsClient.id
+  )));
+  assert.ok(relationshipsContextBody.data.decisions.some((decision) => decision.id === relationshipsDecision.id));
+  assert.ok(relationshipsContextBody.data.tasks.some((task) => task.id === relationshipsTask.id));
+  assert.ok(relationshipsContextBody.data.driveFiles.some((file) => (
+    file.id === relationshipsDriveFile.id
+    && file.operatingAreaKey === "relationships-client-success"
+  )));
+  assert.equal(relationshipsContextBody.data.agentPacket.mode, "read_only");
+  assert.ok(relationshipsContextBody.data.agentPacket.allowedActions.includes("read_relationships_context"));
+  assert.ok(relationshipsContextBody.data.agentPacket.blockedActions.some((action) => action.action === "send_outreach_or_commitment"));
+
   const graphStrategyArea = await prisma.operatingArea.findFirstOrThrow({
     where: { workspaceId: ownerA.workspace.id, key: "strategy-governance" },
     include: { tables: true }
@@ -5266,6 +5464,10 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(profileMcpManifestBody.data.tools.some((tool) => tool.path === "/v1/company-os"));
   assert.ok(profileMcpManifestBody.data.tools.some((tool) => (
     tool.path === "/v1/relationships/graph"
+    && tool.capability === "relationships:read"
+  )));
+  assert.ok(profileMcpManifestBody.data.tools.some((tool) => (
+    tool.path === "/v1/relationships/context"
     && tool.capability === "relationships:read"
   )));
   assert.ok(profileMcpManifestBody.data.tools.some((tool) => (

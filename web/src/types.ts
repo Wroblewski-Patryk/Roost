@@ -398,6 +398,266 @@ export type AssetsPacket = {
   agentPacket?: { mode?: string; instructions?: string[]; allowedActions?: string[]; blockedActions?: Array<string | { action?: string; reason?: string }> };
 };
 
+export type RelationshipsPacket = {
+  department?: { canonicalKey?: string; backendAreaKey?: string; name?: string; purpose?: string };
+  summary?: Record<string, unknown>;
+  clients?: Array<{
+    id: string;
+    name: string;
+    companyName?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    status?: string;
+    source?: string | null;
+    deals?: Array<{ id: string; title: string; status?: string; value?: number | null; currency?: string | null }>;
+    interactions?: Array<{ id: string; type: string; summary?: string | null; status?: string; occurredAt?: string | null }>;
+    stakeholders?: Array<{ id: string; name: string; role?: string | null; email?: string | null; status?: string }>;
+  }>;
+  interactions?: Array<{
+    id: string;
+    type: string;
+    summary?: string | null;
+    status?: string;
+    occurredAt?: string | null;
+    client?: { id: string; name: string; companyName?: string | null; status?: string } | null;
+  }>;
+  stakeholders?: Array<{
+    id: string;
+    name: string;
+    role?: string | null;
+    email?: string | null;
+    status?: string;
+    client?: { id: string; name: string; companyName?: string | null } | null;
+  }>;
+  deals?: Array<{
+    id: string;
+    title: string;
+    value?: number | null;
+    currency?: string | null;
+    status?: string;
+    stage?: { id: string; name: string } | null;
+    client?: { id: string; name: string; companyName?: string | null } | null;
+  }>;
+  notes?: Array<{
+    id: string;
+    content: string;
+    status?: string;
+    source?: string | null;
+    updatedAt?: string | null;
+    client?: { id: string; name: string; companyName?: string | null } | null;
+  }>;
+  decisions?: Array<{ id: string; title: string; rationale?: string | null; outcome?: string | null; status?: string }>;
+  tasks?: Array<{ id: string; title: string; status?: string; priority?: string | null; dueDate?: string | null; source?: string | null }>;
+  driveFiles?: Array<{
+    id: string;
+    name: string;
+    description?: string | null;
+    mimeType?: string | null;
+    webViewLink?: string | null;
+    operatingAreaKey?: string | null;
+    modifiedTime?: string | null;
+  }>;
+  blockedActions?: Array<string | { action?: string; reason?: string }>;
+  agentPacket?: {
+    mode?: string;
+    allowedActions?: string[];
+    blockedActions?: Array<string | { action?: string; reason?: string }>;
+  };
+};
+
+export type StrategyPacket = {
+  department?: { canonicalKey?: string; backendAreaKey?: string; name?: string; purpose?: string };
+  summary?: Record<string, unknown>;
+  goals?: Array<{
+    id: string;
+    title: string;
+    description?: string | null;
+    status?: string;
+    source?: string | null;
+    targets?: Array<{
+      id: string;
+      title: string;
+      description?: string | null;
+      metric?: string | null;
+      targetValue?: number | null;
+      currentValue?: number | null;
+      dueDate?: string | null;
+      status?: string;
+    }>;
+    tasks?: Array<{ id: string; title: string; status?: string; priority?: string | null; dueDate?: string | null }>;
+  }>;
+  metrics?: Array<{ id: string; name: string; category?: string | null; status?: string; targetValue?: number | null; currentValue?: number | null }>;
+  risks?: Array<{ id: string; name: string; category?: string | null; riskLevel?: string; status?: string; controls?: Array<{ id: string; name: string; status?: string }> }>;
+  decisionLogs?: Array<{ id: string; context?: string | null; chosenOption?: string | null; decidedAt?: string }>;
+  decisions?: Array<{ id: string; title: string; rationale?: string | null; outcome?: string | null; status?: string }>;
+  knowledgeItems?: Array<{ id: string; title: string; itemType?: string | null; summary?: string | null; status?: string }>;
+  driveFiles?: Array<{ id: string; name: string; operatingAreaKey?: string | null; webViewLink?: string | null; modifiedTime?: string | null }>;
+  tasks?: Array<{ id: string; title: string; status?: string; priority?: string | null; dueDate?: string | null; source?: string | null }>;
+  blockedActions?: Array<string | { action?: string; reason?: string }>;
+  agentPacket?: {
+    mode?: string;
+    allowedActions?: string[];
+    blockedActions?: Array<string | { action?: string; reason?: string }>;
+  };
+};
+
+export type SalesPacket = {
+  department?: { canonicalKey?: string; backendAreaKey?: string; name?: string; purpose?: string };
+  summary?: Record<string, unknown>;
+  clients?: Array<{
+    id: string;
+    name: string;
+    companyName?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    status?: string;
+    deals?: Array<{ id: string; title: string; value?: number | null; currency?: string | null; status?: string; pipelineStageName?: string | null }>;
+    lastInteraction?: { id: string; type: string; summary?: string | null; occurredAt?: string | null } | null;
+  }>;
+  deals?: Array<{
+    id: string;
+    title: string;
+    clientName?: string | null;
+    pipelineStageName?: string | null;
+    value?: number | null;
+    currency?: string | null;
+    status?: string;
+  }>;
+  interactions?: Array<{ id: string; clientName?: string | null; type: string; summary?: string | null; status?: string; occurredAt?: string | null }>;
+  followUpTasks?: Array<{ id: string; title: string; description?: string | null; status?: string; priority?: string | null; dueDate?: string | null }>;
+  salesNotes?: Array<{ id: string; content: string; clientName?: string | null; status?: string; updatedAt?: string }>;
+  salesDriveFiles?: Array<{ id: string; name: string; webViewLink?: string | null; operatingAreaKey?: string | null; modifiedTime?: string | null }>;
+  currentClientWork?: Array<{
+    id: string;
+    clientName?: string | null;
+    title: string;
+    status?: string;
+    value?: number | null;
+    currency?: string | null;
+    pipelineStageName?: string | null;
+    invoiceReadiness?: string;
+    riskFlags?: string[];
+  }>;
+  blockedActions?: Array<string | { action?: string; reason?: string }>;
+  agentPacket?: {
+    mode?: string;
+    blockedActions?: Array<string | { action?: string; reason?: string }>;
+  };
+};
+
+export type FinancePacket = {
+  summary?: Record<string, unknown>;
+  pricingModels?: Array<{
+    id: string;
+    name: string;
+    market?: string;
+    currency?: string;
+    setupFee?: number | null;
+    recurringFee?: number | null;
+    minimumTermMonths?: number | null;
+    hourlyValue?: number | null;
+    status?: string;
+    ownerDecisionNeeded?: boolean;
+    riskFlags?: string[];
+  }>;
+  hourlyValueAssumptions?: Array<{
+    id: string;
+    roleOrUnit: string;
+    valuePerHour?: number | null;
+    currency?: string;
+    status?: string;
+    riskFlags?: string[];
+  }>;
+  workValuations?: Array<{
+    id: string;
+    clientName?: string | null;
+    dealId?: string | null;
+    grossValue?: number | null;
+    finalValue?: number | null;
+    currency?: string | null;
+    readinessStatus?: string;
+    riskFlags?: string[];
+  }>;
+  commercialExceptions?: Array<{
+    id: string;
+    clientName?: string | null;
+    dealId?: string | null;
+    status?: string;
+    risk?: string;
+    discountPercent?: number | null;
+    invoiceReadiness?: string;
+  }>;
+  invoiceReadiness?: Array<{
+    id: string;
+    clientId?: string | null;
+    dealId?: string | null;
+    readinessStatus?: string;
+    missingEvidence?: string[];
+  }>;
+  paymentContext?: Array<{
+    id: string;
+    sourceModel?: string;
+    title?: string;
+    status?: string;
+    dueDate?: string | null;
+  }>;
+  risks?: Array<{ id: string; name: string; category?: string | null; riskLevel?: string; status?: string }>;
+  sourceConflicts?: Array<{ type?: string; status?: string; message?: string }>;
+  blockedActions?: Array<string | { action?: string; reason?: string }>;
+  agentPacket?: {
+    mode?: string;
+    blockedActions?: Array<string | { action?: string; reason?: string }>;
+  };
+};
+
+export type OperatingGraphPacket = {
+  area?: {
+    id?: string;
+    key?: string;
+    canonicalKey?: string;
+    resolvedKey?: string;
+    name?: string;
+    description?: string | null;
+    position?: number;
+  };
+  summary?: Record<string, unknown>;
+  nodes?: Array<{
+    id: string;
+    type: string;
+    label: string;
+    summary?: string | null;
+    metadata?: Record<string, unknown>;
+  }>;
+  edges?: Array<{
+    id: string;
+    from: string;
+    to: string;
+    label: string;
+    confidence: string;
+    sourceModel: string;
+    sourceField: string;
+  }>;
+  gaps?: Array<{
+    id: string;
+    severity: "info" | "warning" | "critical";
+    layer: "goals" | "workflows" | "tasks" | "knowledge" | "sources";
+    title: string;
+    detail: string;
+  }>;
+  reviewItems?: Array<{
+    id: string;
+    severity: "warning" | "critical";
+    layer: "goals" | "workflows" | "tasks" | "knowledge" | "sources";
+    title: string;
+    detail: string;
+  }>;
+  unsupportedFamilies?: Array<{
+    family: string;
+    reason: string;
+    nextAction: string;
+  }>;
+};
+
 export type CoreAreaKey =
   | "00-ogolny"
   | "01-strategia"

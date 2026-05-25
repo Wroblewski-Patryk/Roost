@@ -1,0 +1,241 @@
+{
+  "checkedAt": "2026-05-24T21:32:56.284Z",
+  "totalRequiredFeatures": 33,
+  "coveredFeatures": 33,
+  "missingFeatures": 0,
+  "coveragePercent": 100,
+  "covered": [
+    {
+      "feature_id": "FEAT-MGMT-DEPT-CATALOG",
+      "feature_name": "Management Department Catalog",
+      "module": "management",
+      "chain_id": "CHAIN-MGMT-DEPT-CATALOG",
+      "chain_status": "verified"
+    },
+    {
+      "feature_id": "FEAT-OPERATIONS-WORK-ITEMS",
+      "feature_name": "Operations Work Items",
+      "module": "operations",
+      "chain_id": "CHAIN-OPERATIONS-WORK-ITEM",
+      "chain_status": "verified"
+    },
+    {
+      "feature_id": "FEAT-DASHBOARD-COMMAND",
+      "feature_name": "Dashboard Command Packet",
+      "module": "dashboard",
+      "chain_id": "CHAIN-DASHBOARD-COMMAND",
+      "chain_status": "verified"
+    },
+    {
+      "feature_id": "FEAT-PEOPLE-AGENTS-DIRECTORY",
+      "feature_name": "People and Agents Directory",
+      "module": "workforce",
+      "chain_id": "CHAIN-PEOPLE-AGENTS-DIRECTORY",
+      "chain_status": "verified"
+    },
+    {
+      "feature_id": "FEAT-ASSETS-CONTEXT",
+      "feature_name": "Assets Context Workbench",
+      "module": "assets",
+      "chain_id": "CHAIN-ASSETS-CONTEXT",
+      "chain_status": "verified"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0001",
+      "feature_name": "Agent Events Coverage Expansion",
+      "module": "agent-events",
+      "chain_id": "CHAIN-AUTO-0001",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0002",
+      "feature_name": "Agent Logs Coverage Expansion",
+      "module": "agent-logs",
+      "chain_id": "CHAIN-AUTO-0002",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0003",
+      "feature_name": "Agents Coverage Expansion",
+      "module": "agents",
+      "chain_id": "CHAIN-AUTO-0003",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0004",
+      "feature_name": "Clients Coverage Expansion",
+      "module": "clients",
+      "chain_id": "CHAIN-AUTO-0004",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0005",
+      "feature_name": "Commercial Exceptions Coverage Expansion",
+      "module": "commercial-exceptions",
+      "chain_id": "CHAIN-AUTO-0005",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0006",
+      "feature_name": "Company Os Coverage Expansion",
+      "module": "company-os",
+      "chain_id": "CHAIN-AUTO-0006",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0007",
+      "feature_name": "Connection Coverage Expansion",
+      "module": "connection",
+      "chain_id": "CHAIN-AUTO-0007",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0008",
+      "feature_name": "Deals Coverage Expansion",
+      "module": "deals",
+      "chain_id": "CHAIN-AUTO-0008",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0009",
+      "feature_name": "Decisions Coverage Expansion",
+      "module": "decisions",
+      "chain_id": "CHAIN-AUTO-0009",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0010",
+      "feature_name": "Events Coverage Expansion",
+      "module": "events",
+      "chain_id": "CHAIN-AUTO-0010",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0011",
+      "feature_name": "Finance Coverage Expansion",
+      "module": "finance",
+      "chain_id": "CHAIN-AUTO-0011",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0012",
+      "feature_name": "Goals Coverage Expansion",
+      "module": "goals",
+      "chain_id": "CHAIN-AUTO-0012",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0013",
+      "feature_name": "Google Drive Coverage Expansion",
+      "module": "google-drive",
+      "chain_id": "CHAIN-AUTO-0013",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0014",
+      "feature_name": "Intake Coverage Expansion",
+      "module": "intake",
+      "chain_id": "CHAIN-AUTO-0014",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0015",
+      "feature_name": "Integration Settings Coverage Expansion",
+      "module": "integration-settings",
+      "chain_id": "CHAIN-AUTO-0015",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0016",
+      "feature_name": "Interactions Coverage Expansion",
+      "module": "interactions",
+      "chain_id": "CHAIN-AUTO-0016",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0017",
+      "feature_name": "Mcp Coverage Expansion",
+      "module": "mcp",
+      "chain_id": "CHAIN-AUTO-0017",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0018",
+      "feature_name": "Notes Coverage Expansion",
+      "module": "notes",
+      "chain_id": "CHAIN-AUTO-0018",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0019",
+      "feature_name": "Operating Graph Coverage Expansion",
+      "module": "operating-graph",
+      "chain_id": "CHAIN-AUTO-0019",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0020",
+      "feature_name": "Operating Model Coverage Expansion",
+      "module": "operating-model",
+      "chain_id": "CHAIN-AUTO-0020",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0021",
+      "feature_name": "Pipeline Stages Coverage Expansion",
+      "module": "pipeline-stages",
+      "chain_id": "CHAIN-AUTO-0021",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0022",
+      "feature_name": "Projects Coverage Expansion",
+      "module": "projects",
+      "chain_id": "CHAIN-AUTO-0022",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0023",
+      "feature_name": "Relationships Coverage Expansion",
+      "module": "relationships",
+      "chain_id": "CHAIN-AUTO-0023",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0024",
+      "feature_name": "Sales Coverage Expansion",
+      "module": "sales",
+      "chain_id": "CHAIN-AUTO-0024",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0025",
+      "feature_name": "Strategy Coverage Expansion",
+      "module": "strategy",
+      "chain_id": "CHAIN-AUTO-0025",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0026",
+      "feature_name": "Targets Coverage Expansion",
+      "module": "targets",
+      "chain_id": "CHAIN-AUTO-0026",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0027",
+      "feature_name": "Task Lists Coverage Expansion",
+      "module": "task-lists",
+      "chain_id": "CHAIN-AUTO-0027",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0028",
+      "feature_name": "Tasks Coverage Expansion",
+      "module": "tasks",
+      "chain_id": "CHAIN-AUTO-0028",
+      "chain_status": "tested"
+    }
+  ],
+  "missing": []
+}

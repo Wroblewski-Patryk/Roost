@@ -1,0 +1,25 @@
+{
+  "backfilledAt": "2026-05-24T21:32:50.913Z",
+  "results": [
+    {
+      "file": "docs/architecture/nodes/api_routes.csv",
+      "updated": 0,
+      "total": 176
+    },
+    {
+      "file": "docs/architecture/nodes/database_models.csv",
+      "updated": 0,
+      "total": 62
+    },
+    {
+      "file": "docs/architecture/nodes/pages.csv",
+      "updated": 0,
+      "total": 15
+    },
+    {
+      "file": "docs/architecture/nodes/tests.csv",
+      "updated": 0,
+      "total": 13
+    }
+  ]
+}

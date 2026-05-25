@@ -1,0 +1,150 @@
+[
+  {
+    "name": "home",
+    "kind": "desktop",
+    "url": "https://companycore.luckysparrow.ch/",
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-ff5e041-2026-05-15\\home-desktop.png",
+    "consoleErrors": [],
+    "failed": [],
+    "title": "CompanyCore CompanyCore",
+    "text": "CompanyCore\nLuckySparrow operating system\nHome\nSign in\nCreate account\n\nCOMPANYCORE V1\n\nOne calm operating room for your company.\n\nCompanyCore connects departments, work, knowledge, providers, decisions, and AI handoff into a single owner-readable system.\n\nOpen owner workspace\nCreate workspace\nLuckySparrow\nCompany Atlas\nReady\n00\n01\n02\n03\n04\n05\n06\n07\n08\n09\n10\n11\n12\nAtlas\n12 areas + 00\nStrategy\nGoals, workflows, decisions\nKnowledge\nDrive proof and records\nAI handoff\nGuarded agent context",
+    "overflow": false,
+    "path": "/",
+    "href": "https://companycore.luckysparrow.ch/",
+    "hasRoot": true
+  },
+  {
+    "name": "login",
+    "kind": "desktop",
+    "url": "https://companycore.luckysparrow.ch/auth/login",
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-ff5e041-2026-05-15\\login-desktop.png",
+    "consoleErrors": [],
+    "failed": [],
+    "title": "CompanyCore Sign in",
+    "text": "CompanyCore\nLuckySparrow operating system\nHome\nSign in\nCreate account\n\nOWNER ACCESS\n\nReturn to your company operating room.\n\nSign in to review departments, evidence, decisions, and guarded AI handoff. Registration creates the first owner workspace.\n\nCompany Atlas\nAll 00-12 areas\nArea detail\nGoals, tasks, knowledge\nAI guardrails\nMCP and owner approval\nEvidence\nTables, Drive, providers\n\nPRIVATE WORKSPACE\n\nSign in\nEmail\nPassword\nSign in\n\nNo account yet? Create one",
+    "overflow": false,
+    "path": "/auth/login",
+    "href": "https://companycore.luckysparrow.ch/auth/login",
+    "hasRoot": true
+  },
+  {
+    "name": "register",
+    "kind": "desktop",
+    "url": "https://companycore.luckysparrow.ch/auth/register",
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-ff5e041-2026-05-15\\register-desktop.png",
+    "consoleErrors": [],
+    "failed": [],
+    "title": "CompanyCore Create account",
+    "text": "CompanyCore\nLuckySparrow operating system\nHome\nSign in\nCreate account\n\nWORKSPACE BOOTSTRAP\n\nCreate the company control plane.\n\nSign in to review departments, evidence, decisions, and guarded AI handoff. Registration creates the first owner workspace.\n\nCompany Atlas\nAll 00-12 areas\nArea detail\nGoals, tasks, knowledge\nAI guardrails\nMCP and owner approval\nEvidence\nTables, Drive, providers\n\nNEW WORKSPACE\n\nCreate account\nName\nEmail\nPassword\nWorkspace name\nCreate workspace\n\nAlready have an account? Sign in",
+    "overflow": false,
+    "path": "/auth/register",
+    "href": "https://companycore.luckysparrow.ch/auth/register",
+    "hasRoot": true
+  },
+  {
+    "name": "dashboard-signed-out",
+    "kind": "desktop",
+    "url": "https://companycore.luckysparrow.ch/dashboard",
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-ff5e041-2026-05-15\\dashboard-signed-out-desktop.png",
+    "consoleErrors": [],
+    "failed": [
+      "GET https://companycore.luckysparrow.ch/vendor/phosphor/bold/Phosphor-Bold.woff2 net::ERR_ABORTED"
+    ],
+    "title": "CompanyCore Sign in",
+    "text": "CompanyCore\nLuckySparrow operating system\nHome\nSign in\nCreate account\n\nOWNER ACCESS\n\nReturn to your company operating room.\n\nSign in to review departments, evidence, decisions, and guarded AI handoff. Registration creates the first owner workspace.\n\nCompany Atlas\nAll 00-12 areas\nArea detail\nGoals, tasks, knowledge\nAI guardrails\nMCP and owner approval\nEvidence\nTables, Drive, providers\n\nPRIVATE WORKSPACE\n\nSign in\nEmail\nPassword\nSign in\n\nNo account yet? Create one",
+    "overflow": false,
+    "path": "/auth/login",
+    "href": "https://companycore.luckysparrow.ch/auth/login",
+    "hasRoot": true
+  },
+  {
+    "name": "area-signed-out",
+    "kind": "desktop",
+    "url": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=overview",
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-ff5e041-2026-05-15\\area-signed-out-desktop.png",
+    "consoleErrors": [],
+    "failed": [
+      "GET https://companycore.luckysparrow.ch/vendor/phosphor/bold/Phosphor-Bold.woff2 net::ERR_ABORTED"
+    ],
+    "title": "CompanyCore Sign in",
+    "text": "CompanyCore\nLuckySparrow operating system\nHome\nSign in\nCreate account\n\nOWNER ACCESS\n\nReturn to your company operating room.\n\nSign in to review departments, evidence, decisions, and guarded AI handoff. Registration creates the first owner workspace.\n\nCompany Atlas\nAll 00-12 areas\nArea detail\nGoals, tasks, knowledge\nAI guardrails\nMCP and owner approval\nEvidence\nTables, Drive, providers\n\nPRIVATE WORKSPACE\n\nSign in\nEmail\nPassword\nSign in\n\nNo account yet? Create one",
+    "overflow": false,
+    "path": "/auth/login",
+    "href": "https://companycore.luckysparrow.ch/auth/login",
+    "hasRoot": true
+  },
+  {
+    "name": "home",
+    "kind": "mobile",
+    "url": "https://companycore.luckysparrow.ch/",
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-ff5e041-2026-05-15\\home-mobile.png",
+    "consoleErrors": [],
+    "failed": [],
+    "title": "CompanyCore CompanyCore",
+    "text": "CompanyCore\nHome\nSign in\nCreate account\n\nCOMPANYCORE V1\n\nOne calm operating room for your company.\n\nCompanyCore connects departments, work, knowledge, providers, decisions, and AI handoff into a single owner-readable system.\n\nOpen owner workspace\nCreate workspace\nLuckySparrow\nCompany Atlas\nReady\n00\n01\n02\n03\n04\n05\n06\n07\n08\n09\n10\n11\n12\nAtlas\n12 areas + 00\nStrategy\nGoals, workflows, decisions\nKnowledge\nDrive proof and records\nAI handoff\nGuarded agent context",
+    "overflow": false,
+    "path": "/",
+    "href": "https://companycore.luckysparrow.ch/",
+    "hasRoot": true
+  },
+  {
+    "name": "login",
+    "kind": "mobile",
+    "url": "https://companycore.luckysparrow.ch/auth/login",
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-ff5e041-2026-05-15\\login-mobile.png",
+    "consoleErrors": [],
+    "failed": [],
+    "title": "CompanyCore Sign in",
+    "text": "CompanyCore\nHome\nSign in\nCreate account\n\nOWNER ACCESS\n\nReturn to your company operating room.\n\nSign in to review departments, evidence, decisions, and guarded AI handoff. Registration creates the first owner workspace.\n\nCompany Atlas\nAll 00-12 areas\nArea detail\nGoals, tasks, knowledge\nAI guardrails\nMCP and owner approval\nEvidence\nTables, Drive, providers\n\nPRIVATE WORKSPACE\n\nSign in\nEmail\nPassword\nSign in\n\nNo account yet? Create one",
+    "overflow": false,
+    "path": "/auth/login",
+    "href": "https://companycore.luckysparrow.ch/auth/login",
+    "hasRoot": true
+  },
+  {
+    "name": "register",
+    "kind": "mobile",
+    "url": "https://companycore.luckysparrow.ch/auth/register",
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-ff5e041-2026-05-15\\register-mobile.png",
+    "consoleErrors": [],
+    "failed": [],
+    "title": "CompanyCore Create account",
+    "text": "CompanyCore\nHome\nSign in\nCreate account\n\nWORKSPACE BOOTSTRAP\n\nCreate the company control plane.\n\nSign in to review departments, evidence, decisions, and guarded AI handoff. Registration creates the first owner workspace.\n\nCompany Atlas\nAll 00-12 areas\nArea detail\nGoals, tasks, knowledge\nAI guardrails\nMCP and owner approval\nEvidence\nTables, Drive, providers\n\nNEW WORKSPACE\n\nCreate account\nName\nEmail\nPassword\nWorkspace name\nCreate workspace\n\nAlready have an account? Sign in",
+    "overflow": false,
+    "path": "/auth/register",
+    "href": "https://companycore.luckysparrow.ch/auth/register",
+    "hasRoot": true
+  },
+  {
+    "name": "dashboard-signed-out",
+    "kind": "mobile",
+    "url": "https://companycore.luckysparrow.ch/dashboard",
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-ff5e041-2026-05-15\\dashboard-signed-out-mobile.png",
+    "consoleErrors": [],
+    "failed": [
+      "GET https://companycore.luckysparrow.ch/vendor/phosphor/bold/Phosphor-Bold.woff2 net::ERR_ABORTED"
+    ],
+    "title": "CompanyCore Sign in",
+    "text": "CompanyCore\nHome\nSign in\nCreate account\n\nOWNER ACCESS\n\nReturn to your company operating room.\n\nSign in to review departments, evidence, decisions, and guarded AI handoff. Registration creates the first owner workspace.\n\nCompany Atlas\nAll 00-12 areas\nArea detail\nGoals, tasks, knowledge\nAI guardrails\nMCP and owner approval\nEvidence\nTables, Drive, providers\n\nPRIVATE WORKSPACE\n\nSign in\nEmail\nPassword\nSign in\n\nNo account yet? Create one",
+    "overflow": false,
+    "path": "/auth/login",
+    "href": "https://companycore.luckysparrow.ch/auth/login",
+    "hasRoot": true
+  },
+  {
+    "name": "area-signed-out",
+    "kind": "mobile",
+    "url": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=overview",
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-v1-ff5e041-2026-05-15\\area-signed-out-mobile.png",
+    "consoleErrors": [],
+    "failed": [
+      "GET https://companycore.luckysparrow.ch/vendor/phosphor/bold/Phosphor-Bold.woff2 net::ERR_ABORTED"
+    ],
+    "title": "CompanyCore Sign in",
+    "text": "CompanyCore\nHome\nSign in\nCreate account\n\nOWNER ACCESS\n\nReturn to your company operating room.\n\nSign in to review departments, evidence, decisions, and guarded AI handoff. Registration creates the first owner workspace.\n\nCompany Atlas\nAll 00-12 areas\nArea detail\nGoals, tasks, knowledge\nAI guardrails\nMCP and owner approval\nEvidence\nTables, Drive, providers\n\nPRIVATE WORKSPACE\n\nSign in\nEmail\nPassword\nSign in\n\nNo account yet? Create one",
+    "overflow": false,
+    "path": "/auth/login",
+    "href": "https://companycore.luckysparrow.ch/auth/login",
+    "hasRoot": true
+  }
+]

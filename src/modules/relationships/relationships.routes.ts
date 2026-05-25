@@ -3,10 +3,13 @@ import { z } from "zod";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
 import { ensureOperatingModelForWorkspace } from "../../operating-model/catalog";
+import { resolveDepartmentEntry } from "../../operating-model/department-registry";
 
 const graphQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(500).optional()
 }).strict();
+const RELATIONSHIPS_DEPARTMENT_KEY = "05-relacje";
+const RELATIONSHIPS_LIMIT = 12;
 
 type RelationshipConfidence = "direct" | "provider_hierarchy" | "route_inferred" | "needs_review" | "unsupported";
 
@@ -84,6 +87,299 @@ function scopeActionHint(kind: "mapping" | "drive", id: string) {
 function scopedLabel(parts: Array<string | null | undefined>) {
   return parts.filter(Boolean).join(" / ") || "Unscoped";
 }
+
+function textMatchesRelationships(...values: Array<string | null | undefined>) {
+  const text = values.filter(Boolean).join(" ").toLowerCase();
+  return [
+    "relationship",
+    "relacje",
+    "client",
+    "customer",
+    "support",
+    "feedback",
+    "stakeholder",
+    "success",
+    "retention",
+    "satisfaction",
+    "follow-up",
+    "follow up",
+    "nps",
+    "referral"
+  ].some((term) => text.includes(term));
+}
+
+function asDate(value: Date | null | undefined) {
+  return value?.toISOString() ?? null;
+}
+
+relationshipsRouter.get("/context", asyncHandler(async (req, res) => {
+  const workspaceId = req.auth!.workspaceId;
+  const department = resolveDepartmentEntry(RELATIONSHIPS_DEPARTMENT_KEY);
+  const [clients, interactions, stakeholders, deals, notes, decisions, tasks, driveFiles, counts] = await Promise.all([
+    prisma.client.findMany({
+      where: { workspaceId },
+      orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
+      take: RELATIONSHIPS_LIMIT,
+      include: {
+        deals: { orderBy: { updatedAt: "desc" }, take: 6 },
+        interactions: { orderBy: { occurredAt: "desc" }, take: 8 },
+        stakeholders: { orderBy: { updatedAt: "desc" }, take: 8 }
+      }
+    }),
+    prisma.interaction.findMany({
+      where: { workspaceId },
+      orderBy: [{ occurredAt: "desc" }, { updatedAt: "desc" }],
+      take: 50,
+      include: { client: true }
+    }),
+    prisma.stakeholder.findMany({
+      where: { workspaceId },
+      orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
+      take: 50,
+      include: { client: true }
+    }),
+    prisma.deal.findMany({
+      where: { workspaceId },
+      orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
+      take: 50,
+      include: { client: true, pipelineStage: true }
+    }),
+    prisma.note.findMany({
+      where: { workspaceId, clientId: { not: null } },
+      orderBy: { updatedAt: "desc" },
+      take: 50,
+      include: { client: true }
+    }),
+    prisma.decision.findMany({
+      where: { workspaceId },
+      orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
+      take: 50
+    }),
+    prisma.task.findMany({
+      where: { workspaceId },
+      orderBy: { updatedAt: "desc" },
+      take: 80
+    }),
+    prisma.googleDriveFile.findMany({
+      where: { workspaceId, trashed: false },
+      orderBy: [{ modifiedTime: "desc" }, { updatedAt: "desc" }],
+      take: 80,
+      include: { operatingArea: true }
+    }),
+    Promise.all([
+      prisma.client.count({ where: { workspaceId } }),
+      prisma.client.count({ where: { workspaceId, status: "active" } }),
+      prisma.client.count({ where: { workspaceId, status: "archived" } }),
+      prisma.interaction.count({ where: { workspaceId } }),
+      prisma.interaction.count({ where: { workspaceId, status: "active" } }),
+      prisma.stakeholder.count({ where: { workspaceId } }),
+      prisma.stakeholder.count({ where: { workspaceId, status: "active" } }),
+      prisma.deal.count({ where: { workspaceId, status: "open" } }),
+      prisma.note.count({ where: { workspaceId, clientId: { not: null } } }),
+      prisma.task.count({ where: { workspaceId, status: { in: ["todo", "in_progress", "blocked"] } } }),
+      prisma.task.count({ where: { workspaceId, status: "blocked" } }),
+      prisma.decision.count({ where: { workspaceId, status: "active" } })
+    ])
+  ]);
+
+  const relationshipTasks = tasks.filter((task) => textMatchesRelationships(task.title, task.description)).slice(0, RELATIONSHIPS_LIMIT);
+  const relationshipDecisions = decisions.filter((decision) => (
+    textMatchesRelationships(decision.title, decision.rationale, decision.outcome)
+  )).slice(0, RELATIONSHIPS_LIMIT);
+  const relationshipNotes = notes.filter((note) => textMatchesRelationships(note.content)).slice(0, RELATIONSHIPS_LIMIT);
+  const relationshipDriveFiles = driveFiles.filter((file) => (
+    file.operatingArea?.key === (department?.backendAreaKey ?? "relationships-client-success")
+    || textMatchesRelationships(file.name, file.description, file.mimeType)
+  )).slice(0, RELATIONSHIPS_LIMIT);
+  const supportInteractions = interactions.filter((interaction) => (
+    textMatchesRelationships(interaction.type, interaction.summary)
+  )).slice(0, RELATIONSHIPS_LIMIT);
+  const openDeals = deals.filter((deal) => deal.status === "open").slice(0, RELATIONSHIPS_LIMIT);
+
+  const [
+    clientCount,
+    activeClientCount,
+    archivedClientCount,
+    interactionCount,
+    activeInteractionCount,
+    stakeholderCount,
+    activeStakeholderCount,
+    openDealCount,
+    relationshipNoteCount,
+    openTaskCount,
+    blockedTaskCount,
+    activeDecisionCount
+  ] = counts;
+
+  return res.json({
+    data: {
+      department: {
+        canonicalKey: department?.canonicalKey ?? RELATIONSHIPS_DEPARTMENT_KEY,
+        backendAreaKey: department?.backendAreaKey ?? "relationships-client-success",
+        name: "Relationships Management System",
+        purpose: "Protect client trust, relationship continuity, and delivery confidence through evidence-backed client context, interaction history, and follow-up obligations."
+      },
+      summary: {
+        clients: clientCount,
+        activeClients: activeClientCount,
+        archivedClients: archivedClientCount,
+        interactions: interactionCount,
+        activeInteractions: activeInteractionCount,
+        stakeholders: stakeholderCount,
+        activeStakeholders: activeStakeholderCount,
+        openDeals: openDealCount,
+        relationshipNotes: relationshipNoteCount,
+        openTasks: openTaskCount,
+        blockedTasks: blockedTaskCount,
+        activeDecisions: activeDecisionCount,
+        supportInteractions: supportInteractions.length,
+        relationshipTasks: relationshipTasks.length,
+        relationshipDriveFiles: relationshipDriveFiles.length
+      },
+      clients: clients.map((client) => ({
+        id: client.id,
+        name: client.name,
+        companyName: client.companyName,
+        email: client.email,
+        phone: client.phone,
+        status: client.status,
+        source: client.source,
+        deals: client.deals.map((deal) => ({
+          id: deal.id,
+          title: deal.title,
+          status: deal.status,
+          value: deal.value,
+          currency: deal.currency
+        })),
+        interactions: client.interactions.map((interaction) => ({
+          id: interaction.id,
+          type: interaction.type,
+          summary: interaction.summary,
+          status: interaction.status,
+          occurredAt: asDate(interaction.occurredAt)
+        })),
+        stakeholders: client.stakeholders.map((stakeholder) => ({
+          id: stakeholder.id,
+          name: stakeholder.name,
+          role: stakeholder.role,
+          email: stakeholder.email,
+          status: stakeholder.status
+        }))
+      })),
+      interactions: supportInteractions.map((interaction) => ({
+        id: interaction.id,
+        type: interaction.type,
+        summary: interaction.summary,
+        status: interaction.status,
+        occurredAt: asDate(interaction.occurredAt),
+        client: interaction.client ? {
+          id: interaction.client.id,
+          name: interaction.client.name,
+          companyName: interaction.client.companyName,
+          status: interaction.client.status
+        } : null
+      })),
+      stakeholders: stakeholders.slice(0, RELATIONSHIPS_LIMIT).map((stakeholder) => ({
+        id: stakeholder.id,
+        name: stakeholder.name,
+        role: stakeholder.role,
+        email: stakeholder.email,
+        status: stakeholder.status,
+        client: stakeholder.client ? {
+          id: stakeholder.client.id,
+          name: stakeholder.client.name,
+          companyName: stakeholder.client.companyName
+        } : null
+      })),
+      deals: openDeals.map((deal) => ({
+        id: deal.id,
+        title: deal.title,
+        value: deal.value,
+        currency: deal.currency,
+        status: deal.status,
+        stage: deal.pipelineStage ? {
+          id: deal.pipelineStage.id,
+          name: deal.pipelineStage.name
+        } : null,
+        client: deal.client ? {
+          id: deal.client.id,
+          name: deal.client.name,
+          companyName: deal.client.companyName
+        } : null
+      })),
+      notes: relationshipNotes.map((note) => ({
+        id: note.id,
+        content: note.content,
+        status: note.status,
+        source: note.source,
+        updatedAt: asDate(note.updatedAt),
+        client: note.client ? {
+          id: note.client.id,
+          name: note.client.name,
+          companyName: note.client.companyName
+        } : null
+      })),
+      decisions: relationshipDecisions.map((decision) => ({
+        id: decision.id,
+        title: decision.title,
+        rationale: decision.rationale,
+        outcome: decision.outcome,
+        status: decision.status
+      })),
+      tasks: relationshipTasks.map((task) => ({
+        id: task.id,
+        title: task.title,
+        status: task.status,
+        priority: task.priority,
+        dueDate: asDate(task.dueDate),
+        source: task.source
+      })),
+      driveFiles: relationshipDriveFiles.map((file) => ({
+        id: file.id,
+        name: file.name,
+        description: file.description,
+        mimeType: file.mimeType,
+        webViewLink: file.webViewLink,
+        operatingAreaKey: file.operatingArea?.key ?? null,
+        modifiedTime: asDate(file.modifiedTime)
+      })),
+      agentPacket: {
+        mode: "read_only",
+        recommendedNextActions: [
+          "Review clients with sparse recent interactions before proposing new work.",
+          "Use stakeholder context before creating follow-up tasks or outreach proposals.",
+          "Treat archived clients as learning evidence, not as active outreach targets.",
+          "Escalate pricing, discount, invoice, and payment decisions to Sales or Finance command surfaces."
+        ],
+        allowedActions: [
+          "read_relationships_context",
+          "inspect_client",
+          "inspect_interaction_history",
+          "inspect_stakeholder",
+          "propose_relationship_follow_up"
+        ],
+        blockedActions: [
+          {
+            action: "send_outreach_or_commitment",
+            reason: "Outbound promises and commitments require explicit owner-approved command flows."
+          },
+          {
+            action: "change_contract_terms",
+            reason: "Commercial terms and negotiations must stay in Sales and Finance governed command surfaces."
+          },
+          {
+            action: "archive_or_delete_client",
+            reason: "Client lifecycle writes require dedicated command routes and explicit approval context."
+          },
+          {
+            action: "execute_provider_side_updates",
+            reason: "Provider-side relationship mutations must stay behind integration-specific audited commands."
+          }
+        ]
+      }
+    }
+  });
+}));
 
 relationshipsRouter.get("/graph", asyncHandler(async (req, res) => {
   const input = graphQuerySchema.parse(req.query);
@@ -655,4 +951,3 @@ relationshipsRouter.get("/graph", asyncHandler(async (req, res) => {
     }
   });
 }));
-

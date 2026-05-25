@@ -147,7 +147,8 @@ export const adapterManifest = {
       { method: "GET", path: "/v1/finance/context", capability: "finance:read" }
     ],
     relationships: [
-      { method: "GET", path: "/v1/relationships/graph", capability: "relationships:read" }
+      { method: "GET", path: "/v1/relationships/graph", capability: "relationships:read" },
+      { method: "GET", path: "/v1/relationships/context", capability: "relationships:read" }
     ],
     sales: [
       { method: "GET", path: "/v1/sales/context", capability: "sales:read" }

@@ -1,0 +1,1199 @@
+graph TD
+  FEAT-ARCH-EVIDENCE-SYSTEM["Architecture Evidence System<br/>feature / tested"]
+  DOC-ARCH-EVIDENCE-SYSTEM["Architecture evidence source doc<br/>documentation / verified"]
+  SCRIPT-ARCH-GRAPH-GENERATOR["Architecture graph generator<br/>script / tested"]
+  CSV-NODES["Node registry CSV<br/>registry / tested"]
+  CSV-RELATIONS["Dependency relation CSV<br/>registry / tested"]
+  CSV-CHAINS["Function chain CSV<br/>registry / tested"]
+  CSV-TESTS["Test map CSV<br/>registry / tested"]
+  DOC-ARCH-SOURCE-OF-TRUTH["Architecture source of truth<br/>documentation / verified"]
+  DOC-ARCH-README["Architecture README<br/>documentation / verified"]
+  API-DEPARTMENTS-LIST["GET /v1/departments<br/>api_route / verified"]
+  API-DEPARTMENTS-CREATE["POST /v1/departments<br/>api_route / verified"]
+  API-DEPARTMENTS-UPDATE["PATCH /v1/departments/:id<br/>api_route / verified"]
+  DB-WORKSPACE-DEPARTMENTS["workspace_departments model<br/>database_model / verified"]
+  COMP-MANAGEMENT-ROUTE["ManagementRoute component<br/>component / verified"]
+  COMP-SHELL["Authenticated Shell component<br/>component / verified"]
+  ROUTE-REGISTRY["React app route registry<br/>module / verified"]
+  UI-MGMT-DEPARTMENT-FORM["Department catalog form<br/>ui_element / verified"]
+  FEAT-MGMT-DEPT-CATALOG["Management Department Catalog<br/>feature / verified"]
+  DOC-MGMT-DEPT-CONTRACT["Management department catalog task contract<br/>documentation / verified"]
+  DOC-DMS-ARCH["Department management systems architecture<br/>documentation / verified"]
+  DOC-WEB-LAYER-OWNERSHIP["Web layer React ownership<br/>documentation / verified"]
+  API-OPERATIONS-WORK-ITEMS["GET /v1/operations/work-items<br/>api_route / verified"]
+  API-OPERATIONS-CREATE-WORK-ITEM["POST /v1/operations/work-items<br/>api_route / verified"]
+  API-OPERATIONS-UPDATE-WORK-ITEM["PATCH /v1/operations/work-items/:id<br/>api_route / verified"]
+  DB-TASK["Task model<br/>database_model / verified"]
+  COMP-OPERATIONS-ROUTE["OperationsRoute component<br/>component / verified"]
+  UI-OPERATIONS-TASK-CARD["Operations task card and modal<br/>ui_element / verified"]
+  EVENT-OPERATIONS-WORK-ITEM-CREATED["operations_work_item_created<br/>event / verified"]
+  FEAT-OPERATIONS-WORK-ITEMS["Operations Work Items<br/>feature / verified"]
+  DOC-OPS-WORK-ITEM-CONTRACT["Operations foundation task contract<br/>documentation / verified"]
+  API-DASHBOARD-COMMAND["GET /v1/dashboard/command<br/>api_route / verified"]
+  COMP-GENERAL-DASHBOARD["GeneralDashboard component<br/>component / verified"]
+  UI-DASHBOARD-NEXT-ACTION["Dashboard next action panel<br/>ui_element / verified"]
+  FEAT-DASHBOARD-COMMAND["Dashboard Command Packet<br/>feature / verified"]
+  DOC-DASHBOARD-CONTRACT["Dashboard operations workforce foundation contract<br/>documentation / verified"]
+  API-WORKFORCE-LIST["GET /v1/workforce<br/>api_route / verified"]
+  DB-WORKFORCE-ENTITY["workforce_entities model<br/>database_model / verified"]
+  COMP-PEOPLE-AGENTS-ROUTE["PeopleAgentsRoute component<br/>component / verified"]
+  UI-PEOPLE-AGENTS-TABLE["People/Agents managed table<br/>ui_element / verified"]
+  FEAT-PEOPLE-AGENTS-DIRECTORY["People and Agents Directory<br/>feature / verified"]
+  DOC-PEOPLE-AGENTS-CONTRACT["People/Agents premium UX contract<br/>documentation / verified"]
+  DOC-UNIFIED-ORG["Unified organizational operating system architecture<br/>documentation / verified"]
+  API-ASSETS-CONTEXT["GET /v1/assets/context<br/>api_route / tested"]
+  DB-GOOGLE-DRIVE-FILE["google_drive_files model<br/>database_model / tested"]
+  COMP-ASSETS-ROUTE["AssetsRoute component<br/>component / verified"]
+  UI-ASSETS-FILE-PREVIEW["Assets file preview<br/>ui_element / verified"]
+  FEAT-ASSETS-CONTEXT["Assets Context Workbench<br/>feature / tested"]
+  DOC-ASSETS-CONTEXT-CONTRACT["Assets context task contract<br/>documentation / verified"]
+  COMP-CC-DATA-TABLE["CcDataTable component<br/>component / verified"]
+  FEAT-MANAGED-TABLE["Shared Managed Table<br/>feature / verified"]
+  DOC-SHARED-TABLE-CONTRACT["Shared managed table task contract<br/>documentation / verified"]
+  DOC-DESIGN-MEMORY["Design memory<br/>documentation / verified"]
+  TEST-API-LOCAL["npm run test:api:local<br/>test / verified"]
+  TEST-ROUTE-CAPABILITY["npm run check:route-capabilities<br/>test / verified"]
+  TEST-ARCH-GRAPH["npm run architecture:graph<br/>test / tested"]
+  TEST-BROWSER-MGMT-DEPT["Browser rendered department catalog proof<br/>test / verified"]
+  TEST-PLAYWRIGHT-OPS["Playwright Operations render proof<br/>test / verified"]
+  TEST-PLAYWRIGHT-DASHBOARD["Playwright dashboard render proof<br/>test / verified"]
+  TEST-PLAYWRIGHT-PEOPLE["Playwright People/Agents proof<br/>test / verified"]
+  TEST-PLAYWRIGHT-ASSETS["Playwright Assets proof<br/>test / verified"]
+  DOC-TESTING["Testing documentation<br/>documentation / verified"]
+  AGENT-COORDINATOR["Coordinator agent role<br/>agent / verified"]
+  CONFIG-PACKAGE-JSON["package.json scripts<br/>config / verified"]
+  FEAT-AUTO-0001["Agent Events Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0002["Agent Logs Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0003["Agents Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0004["Clients Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0005["Commercial Exceptions Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0006["Company Os Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0007["Connection Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0008["Deals Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0009["Decisions Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0010["Events Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0011["Finance Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0012["Goals Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0013["Google Drive Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0014["Intake Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0015["Integration Settings Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0016["Interactions Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0017["Mcp Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0018["Notes Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0019["Operating Graph Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0020["Operating Model Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0021["Pipeline Stages Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0022["Projects Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0023["Relationships Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0024["Sales Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0025["Strategy Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0026["Targets Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0027["Task Lists Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0028["Tasks Coverage Expansion<br/>feature / tested"]
+  FUNC-ENSURE-DEFAULT-DEPARTMENTS["ensureDefaultDepartments<br/>function / verified"]
+  FUNC-SERIALIZE-DEPARTMENT["serializeDepartment<br/>function / verified"]
+  FUNC-VISIBLE-WORK-ITEM-RELATIONS["visibleWorkItemRelations<br/>function / verified"]
+  FUNC-DASHBOARD-RISK-RANK["riskRank<br/>function / verified"]
+  FUNC-GENERATE-ARCH-GRAPH["generateArchitectureGraph<br/>function / tested"]
+  SVC-AUTO-0001["Integration Settings.Service<br/>service / tested"]
+  SVC-AUTO-0002["Event.Service<br/>service / tested"]
+  SVC-AUTO-0003["Workforce.Service<br/>service / tested"]
+  CLS-AUTO-0001["Clickup.Client<br/>class / tested"]
+  CLS-AUTO-0002["Errors<br/>class / tested"]
+  CLS-AUTO-0003["Google Drive.Client<br/>class / tested"]
+  CLS-AUTO-0004["Client<br/>class / tested"]
+  API-AUTO-0001["DELETE /v1/agents/:id<br/>api_route / tested"]
+  API-AUTO-0002["DELETE /v1/clients/:id<br/>api_route / tested"]
+  API-AUTO-0003["DELETE /v1/company-os/standards/:id<br/>api_route / tested"]
+  API-AUTO-0004["DELETE /v1/deals/:id<br/>api_route / tested"]
+  API-AUTO-0005["DELETE /v1/decisions/:id<br/>api_route / tested"]
+  API-AUTO-0006["DELETE /v1/goals/:id<br/>api_route / tested"]
+  API-AUTO-0007["DELETE /v1/integration-settings/clickup/webhooks/:id<br/>api_route / tested"]
+  API-AUTO-0008["DELETE /v1/interactions/:id<br/>api_route / tested"]
+  API-AUTO-0009["DELETE /v1/notes/:id<br/>api_route / tested"]
+  API-AUTO-0010["DELETE /v1/operating-model/areas/:id<br/>api_route / tested"]
+  API-AUTO-0011["DELETE /v1/operating-model/automation-definitions/:id<br/>api_route / tested"]
+  API-AUTO-0012["DELETE /v1/operating-model/folders/:id<br/>api_route / tested"]
+  API-AUTO-0013["DELETE /v1/operating-model/knowledge-roots/:id<br/>api_route / tested"]
+  API-AUTO-0014["DELETE /v1/operating-model/storage-locations/:id<br/>api_route / tested"]
+  API-AUTO-0015["DELETE /v1/pipeline-stages/:id<br/>api_route / tested"]
+  API-AUTO-0016["DELETE /v1/projects/:id<br/>api_route / tested"]
+  API-AUTO-0017["DELETE /v1/targets/:id<br/>api_route / tested"]
+  API-AUTO-0018["DELETE /v1/task-lists/:id<br/>api_route / tested"]
+  API-AUTO-0019["DELETE /v1/tasks/:id<br/>api_route / tested"]
+  API-AUTO-0020["DELETE /v1/workforce/:id<br/>api_route / tested"]
+  API-AUTO-0021["GET /v1/agent-events<br/>api_route / tested"]
+  API-AUTO-0022["GET /v1/agent-logs<br/>api_route / tested"]
+  API-AUTO-0023["GET /v1/agent-logs/:id<br/>api_route / tested"]
+  API-AUTO-0024["GET /v1/agents<br/>api_route / tested"]
+  API-AUTO-0025["GET /v1/agents/:id<br/>api_route / tested"]
+  API-AUTO-0026["GET /v1/assets/files/:id/preview<br/>api_route / tested"]
+  API-AUTO-0027["GET /v1/clients<br/>api_route / tested"]
+  API-AUTO-0028["GET /v1/clients/:id<br/>api_route / tested"]
+  API-AUTO-0029["GET /v1/commercial-exceptions<br/>api_route / tested"]
+  API-AUTO-0030["GET /v1/company-os<br/>api_route / tested"]
+  API-AUTO-0031["GET /v1/company-os/:collection<br/>api_route / tested"]
+  API-AUTO-0032["GET /v1/company-os/:collection/:id<br/>api_route / tested"]
+  API-AUTO-0033["GET /v1/company-os/workflow-definitions/drafts<br/>api_route / tested"]
+  API-AUTO-0034["GET /v1/company-os/workflow-definitions/drafts/:id<br/>api_route / tested"]
+  API-AUTO-0035["GET /v1/connection<br/>api_route / tested"]
+  API-AUTO-0036["GET /v1/deals<br/>api_route / tested"]
+  API-AUTO-0037["GET /v1/deals/:id<br/>api_route / tested"]
+  API-AUTO-0038["GET /v1/decisions<br/>api_route / tested"]
+  API-AUTO-0039["GET /v1/decisions/:id<br/>api_route / tested"]
+  API-AUTO-0040["GET /v1/events<br/>api_route / tested"]
+  API-AUTO-0041["GET /v1/finance/context<br/>api_route / tested"]
+  API-AUTO-0042["GET /v1/goals<br/>api_route / tested"]
+  API-AUTO-0043["GET /v1/goals/:id<br/>api_route / tested"]
+  API-AUTO-0044["GET /v1/google-drive/files<br/>api_route / tested"]
+  API-AUTO-0045["GET /v1/google-drive/files/:id/content<br/>api_route / tested"]
+  API-AUTO-0046["GET /v1/intake<br/>api_route / tested"]
+  API-AUTO-0047["GET /v1/intake/route-proposals<br/>api_route / tested"]
+  API-AUTO-0048["GET /v1/integration-settings/clickup<br/>api_route / tested"]
+  API-AUTO-0049["GET /v1/integration-settings/clickup/events<br/>api_route / tested"]
+  API-AUTO-0050["GET /v1/integration-settings/clickup/webhooks<br/>api_route / tested"]
+  API-AUTO-0051["GET /v1/integration-settings/google_drive<br/>api_route / tested"]
+  API-AUTO-0052["GET /v1/integration-settings/google_drive/folders/discover<br/>api_route / tested"]
+  API-AUTO-0053["GET /v1/interactions<br/>api_route / tested"]
+  API-AUTO-0054["GET /v1/interactions/:id<br/>api_route / tested"]
+  API-AUTO-0055["GET /v1/mcp/manifest<br/>api_route / tested"]
+  API-AUTO-0056["GET /v1/notes<br/>api_route / tested"]
+  API-AUTO-0057["GET /v1/notes/:id<br/>api_route / tested"]
+  API-AUTO-0058["GET /v1/operating-graph/areas/:areaKey<br/>api_route / tested"]
+  API-AUTO-0059["GET /v1/operating-model<br/>api_route / tested"]
+  API-AUTO-0060["GET /v1/operating-model/area-inventory<br/>api_route / tested"]
+  API-AUTO-0061["GET /v1/operating-model/areas<br/>api_route / tested"]
+  API-AUTO-0062["GET /v1/operating-model/automation-definitions<br/>api_route / tested"]
+  API-AUTO-0063["GET /v1/operating-model/automation-definitions/:id<br/>api_route / tested"]
+  API-AUTO-0064["GET /v1/operating-model/external-fields<br/>api_route / tested"]
+  API-AUTO-0065["GET /v1/operating-model/external-mappings<br/>api_route / tested"]
+  API-AUTO-0066["GET /v1/operating-model/folders<br/>api_route / tested"]
+  API-AUTO-0067["GET /v1/operating-model/folders/:id<br/>api_route / tested"]
+  API-AUTO-0068["GET /v1/operating-model/knowledge-roots<br/>api_route / tested"]
+  API-AUTO-0069["GET /v1/operating-model/knowledge-roots/:id<br/>api_route / tested"]
+  API-AUTO-0070["GET /v1/operating-model/storage-locations<br/>api_route / tested"]
+  API-AUTO-0071["GET /v1/operating-model/storage-locations/:id<br/>api_route / tested"]
+  API-AUTO-0072["GET /v1/operating-model/tables<br/>api_route / tested"]
+  API-AUTO-0073["GET /v1/operations/context<br/>api_route / tested"]
+  API-AUTO-0074["GET /v1/pipeline-stages<br/>api_route / tested"]
+  API-AUTO-0075["GET /v1/pipeline-stages/:id<br/>api_route / tested"]
+  API-AUTO-0076["GET /v1/projects<br/>api_route / tested"]
+  API-AUTO-0077["GET /v1/projects/:id<br/>api_route / tested"]
+  API-AUTO-0078["GET /v1/relationships/graph<br/>api_route / tested"]
+  API-AUTO-0079["GET /v1/sales/context<br/>api_route / tested"]
+  API-AUTO-0080["GET /v1/strategy/context<br/>api_route / tested"]
+  API-AUTO-0081["GET /v1/targets<br/>api_route / tested"]
+  API-AUTO-0082["GET /v1/targets/:id<br/>api_route / tested"]
+  API-AUTO-0083["GET /v1/task-lists<br/>api_route / tested"]
+  API-AUTO-0084["GET /v1/task-lists/:id<br/>api_route / tested"]
+  API-AUTO-0085["GET /v1/tasks<br/>api_route / tested"]
+  API-AUTO-0086["GET /v1/tasks/:id<br/>api_route / tested"]
+  API-AUTO-0087["GET /v1/workforce/:id<br/>api_route / tested"]
+  API-AUTO-0088["PATCH /v1/agents/:id<br/>api_route / tested"]
+  API-AUTO-0089["PATCH /v1/assets/folders/:id<br/>api_route / tested"]
+  API-AUTO-0090["PATCH /v1/clients/:id<br/>api_route / tested"]
+  API-AUTO-0091["PATCH /v1/company-os/standards/:id<br/>api_route / tested"]
+  API-AUTO-0092["PATCH /v1/company-os/workflow-definitions/drafts/:id<br/>api_route / tested"]
+  API-AUTO-0093["PATCH /v1/deals/:id<br/>api_route / tested"]
+  API-AUTO-0094["PATCH /v1/decisions/:id<br/>api_route / tested"]
+  API-AUTO-0095["PATCH /v1/goals/:id<br/>api_route / tested"]
+  API-AUTO-0096["PATCH /v1/google-drive/docs/:id<br/>api_route / tested"]
+  API-AUTO-0097["PATCH /v1/google-drive/files/:id/description<br/>api_route / tested"]
+  API-AUTO-0098["PATCH /v1/google-drive/files/:id/scope<br/>api_route / tested"]
+  API-AUTO-0099["PATCH /v1/google-drive/files/:id/text-content<br/>api_route / tested"]
+  API-AUTO-0100["PATCH /v1/interactions/:id<br/>api_route / tested"]
+  API-AUTO-0101["PATCH /v1/notes/:id<br/>api_route / tested"]
+  API-AUTO-0102["PATCH /v1/operating-model/areas/:id<br/>api_route / tested"]
+  API-AUTO-0103["PATCH /v1/operating-model/automation-definitions/:id<br/>api_route / tested"]
+  API-AUTO-0104["PATCH /v1/operating-model/external-mappings/:id/scope<br/>api_route / tested"]
+  API-AUTO-0105["PATCH /v1/operating-model/folders/:id<br/>api_route / tested"]
+  API-AUTO-0106["PATCH /v1/operating-model/knowledge-roots/:id<br/>api_route / tested"]
+  API-AUTO-0107["PATCH /v1/operating-model/storage-locations/:id<br/>api_route / tested"]
+  API-AUTO-0108["PATCH /v1/operations/task-lists/:id<br/>api_route / tested"]
+  API-AUTO-0109["PATCH /v1/pipeline-stages/:id<br/>api_route / tested"]
+  API-AUTO-0110["PATCH /v1/projects/:id<br/>api_route / tested"]
+  API-AUTO-0111["PATCH /v1/targets/:id<br/>api_route / tested"]
+  API-AUTO-0112["PATCH /v1/task-lists/:id<br/>api_route / tested"]
+  API-AUTO-0113["PATCH /v1/tasks/:id<br/>api_route / tested"]
+  API-AUTO-0114["PATCH /v1/workforce/:id<br/>api_route / tested"]
+  API-AUTO-0115["POST /v1/agent-events/:id/ack<br/>api_route / tested"]
+  API-AUTO-0116["POST /v1/agent-logs<br/>api_route / tested"]
+  API-AUTO-0117["POST /v1/agents<br/>api_route / tested"]
+  API-AUTO-0118["POST /v1/clients<br/>api_route / tested"]
+  API-AUTO-0119["POST /v1/company-os/approvals/:id/decision<br/>api_route / tested"]
+  API-AUTO-0120["POST /v1/company-os/approvals/request<br/>api_route / tested"]
+  API-AUTO-0121["POST /v1/company-os/events/:id/actions/evaluate-automation-rules<br/>api_route / tested"]
+  API-AUTO-0122["POST /v1/company-os/pipeline-runs/:id/actions/start-stage<br/>api_route / tested"]
+  API-AUTO-0123["POST /v1/company-os/stage-runs/:id/actions/block<br/>api_route / tested"]
+  API-AUTO-0124["POST /v1/company-os/stage-runs/:id/actions/complete<br/>api_route / tested"]
+  API-AUTO-0125["POST /v1/company-os/stage-runs/:id/actions/validate<br/>api_route / tested"]
+  API-AUTO-0126["POST /v1/company-os/standards<br/>api_route / tested"]
+  API-AUTO-0127["POST /v1/company-os/workflow-definitions/:rootObjectType/:rootObjectId/actions/archive<br/>api_route / tested"]
+  API-AUTO-0128["POST /v1/company-os/workflow-definitions/:rootObjectType/:rootObjectId/actions/create-rollback-draft<br/>api_route / tested"]
+  API-AUTO-0129["POST /v1/company-os/workflow-definitions/drafts<br/>api_route / tested"]
+  API-AUTO-0130["POST /v1/company-os/workflow-definitions/drafts/:id/actions/activate<br/>api_route / tested"]
+  API-AUTO-0131["POST /v1/company-os/workflow-definitions/drafts/:id/actions/preview-impact<br/>api_route / tested"]
+  API-AUTO-0132["POST /v1/deals<br/>api_route / tested"]
+  API-AUTO-0133["POST /v1/decisions<br/>api_route / tested"]
+  API-AUTO-0134["POST /v1/goals<br/>api_route / tested"]
+  API-AUTO-0135["POST /v1/google-drive/docs<br/>api_route / tested"]
+  API-AUTO-0136["POST /v1/google-drive/sheets<br/>api_route / tested"]
+  API-AUTO-0137["POST /v1/intake/actions/propose-route<br/>api_route / tested"]
+  API-AUTO-0138["POST /v1/integration-settings/clickup/discover<br/>api_route / tested"]
+  API-AUTO-0139["POST /v1/integration-settings/clickup/events/retry-failed<br/>api_route / tested"]
+  API-AUTO-0140["POST /v1/integration-settings/clickup/maintenance/run<br/>api_route / tested"]
+  API-AUTO-0141["POST /v1/integration-settings/clickup/webhooks/reconcile<br/>api_route / tested"]
+  API-AUTO-0142["POST /v1/integration-settings/google_drive/changes/reconcile<br/>api_route / tested"]
+  API-AUTO-0143["POST /v1/integration-settings/google_drive/import<br/>api_route / tested"]
+  API-AUTO-0144["POST /v1/integration-settings/google_drive/oauth/authorize-url<br/>api_route / tested"]
+  API-AUTO-0145["POST /v1/integration-settings/google_drive/oauth/exchange<br/>api_route / tested"]
+  API-AUTO-0146["POST /v1/interactions<br/>api_route / tested"]
+  API-AUTO-0147["POST /v1/notes<br/>api_route / tested"]
+  API-AUTO-0148["POST /v1/operating-model/areas<br/>api_route / tested"]
+  API-AUTO-0149["POST /v1/operating-model/automation-definitions<br/>api_route / tested"]
+  API-AUTO-0150["POST /v1/operating-model/folders<br/>api_route / tested"]
+  API-AUTO-0151["POST /v1/operating-model/knowledge-roots<br/>api_route / tested"]
+  API-AUTO-0152["POST /v1/operating-model/storage-locations<br/>api_route / tested"]
+  API-AUTO-0153["POST /v1/pipeline-stages<br/>api_route / tested"]
+  API-AUTO-0154["POST /v1/projects<br/>api_route / tested"]
+  API-AUTO-0155["POST /v1/targets<br/>api_route / tested"]
+  API-AUTO-0156["POST /v1/task-lists<br/>api_route / tested"]
+  API-AUTO-0157["POST /v1/tasks<br/>api_route / tested"]
+  API-AUTO-0158["POST /v1/tasks/:id/clickup/custom-fields/:fieldId<br/>api_route / tested"]
+  API-AUTO-0159["POST /v1/tasks/sync/clickup<br/>api_route / tested"]
+  API-AUTO-0160["POST /v1/tasks/sync/clickup/native<br/>api_route / tested"]
+  API-AUTO-0161["POST /v1/workforce<br/>api_route / tested"]
+  API-AUTO-0162["POST /v1/workforce/:id/actions/delete<br/>api_route / tested"]
+  API-AUTO-0163["POST /v1/workforce/:id/actions/sync<br/>api_route / tested"]
+  API-AUTO-0164["PUT /v1/google-drive/sheets/:id/values<br/>api_route / tested"]
+  API-AUTO-0165["PUT /v1/integration-settings/clickup<br/>api_route / tested"]
+  API-AUTO-0166["PUT /v1/integration-settings/google_drive<br/>api_route / tested"]
+  API-AUTO-0167["GET /v1/relationships/context<br/>api_route / tested"]
+  PAGE-00-GENERAL["/areas?area=00-ogolny&amp;view=overview<br/>page / verified"]
+  PAGE-04-OPERATIONS-TASKS["/areas?area=04-operacje&amp;view=tasks<br/>page / verified"]
+  PAGE-06-PEOPLE-AGENTS["/areas?area=06-kadry&amp;view=directory<br/>page / verified"]
+  PAGE-08-ASSETS-FILES["/areas?area=08-zasoby&amp;view=files<br/>page / verified"]
+  PAGE-12-MANAGEMENT-DEPARTMENTS["/areas?area=12-zarzadzanie&amp;view=departments<br/>page / verified"]
+  PAGE-AUTO-0001["/account/settings<br/>page / tested"]
+  PAGE-AUTO-0002["/areas<br/>page / tested"]
+  PAGE-AUTO-0003["/auth/login<br/>page / tested"]
+  PAGE-AUTO-0004["/auth/register<br/>page / tested"]
+  PAGE-AUTO-0005["/dashboard<br/>page / tested"]
+  PAGE-AUTO-0006["/operations<br/>page / tested"]
+  PAGE-AUTO-0007["/people-agents<br/>page / tested"]
+  PAGE-AUTO-0008["/react-dashboard<br/>page / tested"]
+  PAGE-AUTO-0009["/workforce<br/>page / tested"]
+  PAGE-AUTO-0010["/workspace/settings<br/>page / tested"]
+  LAY-AUTO-0001["Public Layout<br/>layout / tested"]
+  LAY-AUTO-0002["Shell<br/>layout / tested"]
+  HOOK-AUTO-0001["Use Owner Packet<br/>hook / tested"]
+  UI-SIDEBAR-DEPARTMENT-NAV["Sidebar department navigation<br/>ui_element / verified"]
+  DB-AUTO-0001["acceptance_criteria model<br/>database_model / tested"]
+  DB-AUTO-0002["agent_event_outbox model<br/>database_model / tested"]
+  DB-AUTO-0003["agent_logs model<br/>database_model / tested"]
+  DB-AUTO-0004["agents model<br/>database_model / tested"]
+  DB-AUTO-0005["api_keys model<br/>database_model / tested"]
+  DB-AUTO-0006["approvals model<br/>database_model / tested"]
+  DB-AUTO-0007["artifacts model<br/>database_model / tested"]
+  DB-AUTO-0008["audit_logs model<br/>database_model / tested"]
+  DB-AUTO-0009["automation_definitions model<br/>database_model / tested"]
+  DB-AUTO-0010["automation_rules model<br/>database_model / tested"]
+  DB-AUTO-0011["business_functions model<br/>database_model / tested"]
+  DB-AUTO-0012["checklist_items model<br/>database_model / tested"]
+  DB-AUTO-0013["checklist_templates model<br/>database_model / tested"]
+  DB-AUTO-0014["clients model<br/>database_model / tested"]
+  DB-AUTO-0015["company_roles model<br/>database_model / tested"]
+  DB-AUTO-0016["controls model<br/>database_model / tested"]
+  DB-AUTO-0017["deals model<br/>database_model / tested"]
+  DB-AUTO-0018["decision_logs model<br/>database_model / tested"]
+  DB-AUTO-0019["decisions model<br/>database_model / tested"]
+  DB-AUTO-0020["dependencies model<br/>database_model / tested"]
+  DB-AUTO-0021["events model<br/>database_model / tested"]
+  DB-AUTO-0022["external_container_mappings model<br/>database_model / tested"]
+  DB-AUTO-0023["external_field_mappings model<br/>database_model / tested"]
+  DB-AUTO-0024["external_webhook_registrations model<br/>database_model / tested"]
+  DB-AUTO-0025["goals model<br/>database_model / tested"]
+  DB-AUTO-0026["google_drive_content_snapshots model<br/>database_model / tested"]
+  DB-AUTO-0027["integration_capabilities model<br/>database_model / tested"]
+  DB-AUTO-0028["integration_settings model<br/>database_model / tested"]
+  DB-AUTO-0029["interactions model<br/>database_model / tested"]
+  DB-AUTO-0030["knowledge_items model<br/>database_model / tested"]
+  DB-AUTO-0031["knowledge_roots model<br/>database_model / tested"]
+  DB-AUTO-0032["metrics model<br/>database_model / tested"]
+  DB-AUTO-0033["notes model<br/>database_model / tested"]
+  DB-AUTO-0034["operating_areas model<br/>database_model / tested"]
+  DB-AUTO-0035["operating_folders model<br/>database_model / tested"]
+  DB-AUTO-0036["operating_tables model<br/>database_model / tested"]
+  DB-AUTO-0037["pipeline_runs model<br/>database_model / tested"]
+  DB-AUTO-0038["pipeline_stages model<br/>database_model / tested"]
+  DB-AUTO-0039["pipelines model<br/>database_model / tested"]
+  DB-AUTO-0040["policies model<br/>database_model / tested"]
+  DB-AUTO-0041["procedure_steps model<br/>database_model / tested"]
+  DB-AUTO-0042["procedures model<br/>database_model / tested"]
+  DB-AUTO-0043["processes model<br/>database_model / tested"]
+  DB-AUTO-0044["projects model<br/>database_model / tested"]
+  DB-AUTO-0045["provider_event_inbox model<br/>database_model / tested"]
+  DB-AUTO-0046["resources model<br/>database_model / tested"]
+  DB-AUTO-0047["risks model<br/>database_model / tested"]
+  DB-AUTO-0048["stage_runs model<br/>database_model / tested"]
+  DB-AUTO-0049["stakeholders model<br/>database_model / tested"]
+  DB-AUTO-0050["standards model<br/>database_model / tested"]
+  DB-AUTO-0051["storage_locations model<br/>database_model / tested"]
+  DB-AUTO-0052["targets model<br/>database_model / tested"]
+  DB-AUTO-0053["task_lists model<br/>database_model / tested"]
+  DB-AUTO-0054["tool_adapters model<br/>database_model / tested"]
+  DB-AUTO-0055["triggers model<br/>database_model / tested"]
+  DB-AUTO-0056["users model<br/>database_model / tested"]
+  DB-AUTO-0057["workspace_memberships model<br/>database_model / tested"]
+  DB-AUTO-0058["workspaces model<br/>database_model / tested"]
+  MIG-AUTO-0001["Migration<br/>migration / tested"]
+  MIG-AUTO-0002["Migration<br/>migration / tested"]
+  MIG-AUTO-0003["Migration<br/>migration / tested"]
+  MIG-AUTO-0004["Migration<br/>migration / tested"]
+  MIG-AUTO-0005["Migration<br/>migration / tested"]
+  MIG-AUTO-0006["Migration<br/>migration / tested"]
+  MIG-AUTO-0007["Migration<br/>migration / tested"]
+  MIG-AUTO-0008["Migration<br/>migration / tested"]
+  MIG-AUTO-0009["Migration<br/>migration / tested"]
+  MIG-AUTO-0010["Migration<br/>migration / tested"]
+  MIG-AUTO-0011["Migration<br/>migration / tested"]
+  MIG-AUTO-0012["Migration<br/>migration / tested"]
+  MIG-AUTO-0013["Migration<br/>migration / tested"]
+  MIG-AUTO-0014["Migration<br/>migration / tested"]
+  MIG-AUTO-0015["Migration<br/>migration / tested"]
+  MIG-AUTO-0016["Migration<br/>migration / tested"]
+  MIG-AUTO-0017["Migration<br/>migration / tested"]
+  MIG-AUTO-0018["Migration<br/>migration / tested"]
+  MIG-AUTO-0019["Migration<br/>migration / tested"]
+  MIG-AUTO-0020["Migration<br/>migration / tested"]
+  MIG-AUTO-0021["Migration<br/>migration / tested"]
+  MIG-AUTO-0022["Migration<br/>migration / tested"]
+  MIG-AUTO-0023["Migration<br/>migration / tested"]
+  MIG-AUTO-0024["Migration<br/>migration / tested"]
+  MIG-AUTO-0025["Migration<br/>migration / tested"]
+  MIG-AUTO-0026["Migration<br/>migration / tested"]
+  MIG-AUTO-0027["Migration<br/>migration / tested"]
+  INT-AUTO-0001["Clickup.Client<br/>integration / tested"]
+  INT-AUTO-0002["Clickup.Maintenance Scheduler<br/>integration / tested"]
+  INT-AUTO-0003["Clickup.Mapper<br/>integration / tested"]
+  INT-AUTO-0004["Clickup.Sync<br/>integration / tested"]
+  INT-AUTO-0005["Clickup.Webhooks<br/>integration / tested"]
+  INT-AUTO-0006["Webhook Signature<br/>integration / tested"]
+  INT-AUTO-0007["Errors<br/>integration / tested"]
+  INT-AUTO-0008["Google Drive.Auth<br/>integration / tested"]
+  INT-AUTO-0009["Google Drive.Client<br/>integration / tested"]
+  INT-AUTO-0010["Google Drive.Content<br/>integration / tested"]
+  INT-AUTO-0011["Google Drive.Sync<br/>integration / tested"]
+  INT-AUTO-0012["Integration Settings.Service<br/>integration / tested"]
+  INT-AUTO-0013["Secrets<br/>integration / tested"]
+  MW-AUTO-0001["Api Key.Middleware<br/>middleware / tested"]
+  MW-AUTO-0002["Api Error<br/>middleware / tested"]
+  MW-AUTO-0003["Async Handler<br/>middleware / tested"]
+  MW-AUTO-0004["Error Handler<br/>middleware / tested"]
+  MW-AUTO-0005["Security<br/>middleware / tested"]
+  PIPE-AUTO-0001["Adapter Smoke<br/>pipeline / tested"]
+  PIPE-AUTO-0002["Agent Training Smoke<br/>pipeline / tested"]
+  PIPE-AUTO-0003["Build Architecture Chain Hardening Worklist<br/>pipeline / tested"]
+  PIPE-AUTO-0004["Build Architecture Evidence Worklist<br/>pipeline / tested"]
+  PIPE-AUTO-0005["Build Architecture Health Dashboard<br/>pipeline / tested"]
+  PIPE-AUTO-0006["Check Architecture Chain Coverage<br/>pipeline / tested"]
+  PIPE-AUTO-0007["Check Architecture Chain Integrity<br/>pipeline / tested"]
+  PIPE-AUTO-0008["Check Architecture Evidence Gate<br/>pipeline / tested"]
+  PIPE-AUTO-0009["Check Architecture Node Integrity<br/>pipeline / tested"]
+  PIPE-AUTO-0010["Check Route Capabilities<br/>pipeline / tested"]
+  PIPE-AUTO-0011["Clean React Build<br/>pipeline / tested"]
+  PIPE-AUTO-0012["Clickup Production Bootstrap<br/>pipeline / tested"]
+  PIPE-AUTO-0013["Company Os Lifecycle Trace Smoke<br/>pipeline / tested"]
+  PIPE-AUTO-0014["Companycore Ai Ready Smoke<br/>pipeline / tested"]
+  PIPE-AUTO-0015["Companycore Mcp Smoke<br/>pipeline / tested"]
+  PIPE-AUTO-0016["Google Drive Production Smoke<br/>pipeline / tested"]
+  PIPE-AUTO-0017["Operating Model Registry Lifecycle Smoke<br/>pipeline / tested"]
+  PIPE-AUTO-0018["Owner Console Ux Smoke<br/>pipeline / tested"]
+  PIPE-AUTO-0019["Sync Architecture Chains<br/>pipeline / tested"]
+  PIPE-AUTO-0020["Sync Architecture Evidence Status<br/>pipeline / tested"]
+  PIPE-AUTO-0021["Sync Architecture Extended Registry<br/>pipeline / tested"]
+  PIPE-AUTO-0022["Sync Architecture Feature Coverage<br/>pipeline / tested"]
+  PIPE-AUTO-0023["Sync Architecture Node Verification<br/>pipeline / tested"]
+  PIPE-AUTO-0024["Sync Architecture Registry<br/>pipeline / tested"]
+  PIPE-AUTO-0025["Check Architecture Connectivity<br/>pipeline / tested"]
+  PIPE-AUTO-0026["Build Architecture Impact Index<br/>pipeline / tested"]
+  PIPE-AUTO-0027["Check Architecture Node Catalog Consistency<br/>pipeline / tested"]
+  PIPE-AUTO-0028["Build Architecture Dead Nodes Report<br/>pipeline / tested"]
+  PIPE-AUTO-0029["Build Architecture Roadmap<br/>pipeline / tested"]
+  PIPE-AUTO-0030["Check Architecture Relation Integrity<br/>pipeline / tested"]
+  PIPE-AUTO-0031["Build Architecture Delta Report<br/>pipeline / tested"]
+  PIPE-AUTO-0032["Check Architecture Csv Contract<br/>pipeline / tested"]
+  PIPE-AUTO-0033["Check Architecture Doc Baseline<br/>pipeline / tested"]
+  PIPE-AUTO-0034["Check Architecture Node Links<br/>pipeline / tested"]
+  PIPE-AUTO-0035["Check Architecture Node Artifacts<br/>pipeline / tested"]
+  PIPE-AUTO-0036["Check Architecture Report Presence<br/>pipeline / tested"]
+  PIPE-AUTO-0037["Check Architecture Delta Zero<br/>pipeline / tested"]
+  PIPE-AUTO-0038["Sync Architecture Doc Baseline<br/>pipeline / tested"]
+  PIPE-AUTO-0039["Build Architecture Registry Catalog<br/>pipeline / tested"]
+  CRON-AUTO-0001["Clickup.Maintenance Scheduler<br/>cron_job / tested"]
+  TEST-PROD-DRIVE-IMPORT-SMOKE["Production Drive import and freshness smoke<br/>test / verified"]
+  TEST-AUTO-0001["npm run check:public-js<br/>test / tested"]
+  TEST-AUTO-0002["npm run test<br/>test / tested"]
+  TEST-AUTO-0003["npm run test:api<br/>test / tested"]
+  TEST-AUTO-0004["npm run validate<br/>test / tested"]
+  DOC-OPS-AGENT-RUNTIME-LEDGER["Operations agent runtime coverage ledger<br/>documentation / verified"]
+  AGENT-DOCUMENTATION-MEMORY["Documentation and memory lane<br/>agent / tested"]
+  PROMPT-ARCH-GRAPH-CHECK["Architecture graph check prompt<br/>prompt / tested"]
+  EVENT-PAPERCLIP-SYNC-REQUESTED["paperclip_agent_config_sync_requested<br/>event / verified"]
+  WORKFLOW-AGENT-FUNCTION-CHECK["Systemic function verification workflow<br/>workflow / tested"]
+  WORKFLOW-NEW-FEATURE-REGISTRY-GATE["New feature registry gate<br/>workflow / tested"]
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|documented_by| DOC-ARCH-EVIDENCE-SYSTEM
+  SCRIPT-ARCH-GRAPH-GENERATOR -->|reads| CSV-NODES
+  SCRIPT-ARCH-GRAPH-GENERATOR -->|reads| CSV-RELATIONS
+  SCRIPT-ARCH-GRAPH-GENERATOR -->|reads| CSV-CHAINS
+  TEST-ARCH-GRAPH -->|executes| SCRIPT-ARCH-GRAPH-GENERATOR
+  PAGE-12-MANAGEMENT-DEPARTMENTS -->|renders| COMP-MANAGEMENT-ROUTE
+  COMP-MANAGEMENT-ROUTE -->|calls| API-DEPARTMENTS-LIST
+  COMP-MANAGEMENT-ROUTE -->|calls| API-DEPARTMENTS-CREATE
+  API-DEPARTMENTS-LIST -->|reads| DB-WORKSPACE-DEPARTMENTS
+  API-DEPARTMENTS-CREATE -->|writes| DB-WORKSPACE-DEPARTMENTS
+  COMP-SHELL -->|calls| API-DEPARTMENTS-LIST
+  PAGE-04-OPERATIONS-TASKS -->|renders| COMP-OPERATIONS-ROUTE
+  COMP-OPERATIONS-ROUTE -->|calls| API-OPERATIONS-WORK-ITEMS
+  COMP-OPERATIONS-ROUTE -->|calls| API-OPERATIONS-CREATE-WORK-ITEM
+  COMP-OPERATIONS-ROUTE -->|calls| API-OPERATIONS-UPDATE-WORK-ITEM
+  API-OPERATIONS-WORK-ITEMS -->|reads| DB-TASK
+  API-OPERATIONS-CREATE-WORK-ITEM -->|writes| DB-TASK
+  API-OPERATIONS-CREATE-WORK-ITEM -->|emits| EVENT-OPERATIONS-WORK-ITEM-CREATED
+  PAGE-00-GENERAL -->|renders| COMP-GENERAL-DASHBOARD
+  COMP-GENERAL-DASHBOARD -->|calls| API-DASHBOARD-COMMAND
+  API-DASHBOARD-COMMAND -->|reads| DB-TASK
+  API-DASHBOARD-COMMAND -->|reads| DB-WORKFORCE-ENTITY
+  API-DASHBOARD-COMMAND -->|reads| DB-GOOGLE-DRIVE-FILE
+  PAGE-06-PEOPLE-AGENTS -->|renders| COMP-PEOPLE-AGENTS-ROUTE
+  COMP-PEOPLE-AGENTS-ROUTE -->|calls| API-WORKFORCE-LIST
+  API-WORKFORCE-LIST -->|reads| DB-WORKFORCE-ENTITY
+  PAGE-08-ASSETS-FILES -->|renders| COMP-ASSETS-ROUTE
+  COMP-ASSETS-ROUTE -->|calls| API-ASSETS-CONTEXT
+  API-ASSETS-CONTEXT -->|reads| DB-GOOGLE-DRIVE-FILE
+  COMP-PEOPLE-AGENTS-ROUTE -->|uses| COMP-CC-DATA-TABLE
+  COMP-MANAGEMENT-ROUTE -->|uses| COMP-CC-DATA-TABLE
+  TEST-API-LOCAL -->|covers| API-DEPARTMENTS-LIST
+  TEST-BROWSER-MGMT-DEPT -->|covers| COMP-MANAGEMENT-ROUTE
+  FEAT-MGMT-DEPT-CATALOG -->|owns| API-DEPARTMENTS-LIST
+  FEAT-MGMT-DEPT-CATALOG -->|owns| API-DEPARTMENTS-CREATE
+  FEAT-MGMT-DEPT-CATALOG -->|owns| API-DEPARTMENTS-UPDATE
+  API-DEPARTMENTS-UPDATE -->|writes| DB-WORKSPACE-DEPARTMENTS
+  FEAT-OPERATIONS-WORK-ITEMS -->|owns| API-OPERATIONS-WORK-ITEMS
+  FEAT-OPERATIONS-WORK-ITEMS -->|owns| API-OPERATIONS-CREATE-WORK-ITEM
+  FEAT-OPERATIONS-WORK-ITEMS -->|owns| API-OPERATIONS-UPDATE-WORK-ITEM
+  API-OPERATIONS-UPDATE-WORK-ITEM -->|writes| DB-TASK
+  FEAT-DASHBOARD-COMMAND -->|owns| API-DASHBOARD-COMMAND
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|owns| API-WORKFORCE-LIST
+  FEAT-ASSETS-CONTEXT -->|owns| API-ASSETS-CONTEXT
+  PAGE-00-GENERAL -->|calls| API-DASHBOARD-COMMAND
+  PAGE-04-OPERATIONS-TASKS -->|calls| API-OPERATIONS-WORK-ITEMS
+  PAGE-06-PEOPLE-AGENTS -->|calls| API-WORKFORCE-LIST
+  PAGE-08-ASSETS-FILES -->|calls| API-ASSETS-CONTEXT
+  PAGE-12-MANAGEMENT-DEPARTMENTS -->|calls| API-DEPARTMENTS-LIST
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|owns| API-AUTO-0020
+  API-AUTO-0020 -->|writes| DB-WORKFORCE-ENTITY
+  FEAT-ASSETS-CONTEXT -->|owns| API-AUTO-0026
+  API-AUTO-0026 -->|reads| DB-GOOGLE-DRIVE-FILE
+  FEAT-OPERATIONS-WORK-ITEMS -->|owns| API-AUTO-0073
+  API-AUTO-0073 -->|reads| DB-TASK
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|owns| API-AUTO-0087
+  API-AUTO-0087 -->|reads| DB-WORKFORCE-ENTITY
+  FEAT-ASSETS-CONTEXT -->|owns| API-AUTO-0089
+  API-AUTO-0089 -->|writes| DB-GOOGLE-DRIVE-FILE
+  FEAT-OPERATIONS-WORK-ITEMS -->|owns| API-AUTO-0108
+  API-AUTO-0108 -->|writes| DB-TASK
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|owns| API-AUTO-0114
+  API-AUTO-0114 -->|writes| DB-WORKFORCE-ENTITY
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|owns| API-AUTO-0161
+  API-AUTO-0161 -->|writes| DB-WORKFORCE-ENTITY
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|owns| API-AUTO-0162
+  API-AUTO-0162 -->|writes| DB-WORKFORCE-ENTITY
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|owns| API-AUTO-0163
+  API-AUTO-0163 -->|writes| DB-WORKFORCE-ENTITY
+  FEAT-AUTO-0003 -->|owns| API-AUTO-0001
+  FEAT-AUTO-0004 -->|owns| API-AUTO-0002
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0003
+  FEAT-AUTO-0008 -->|owns| API-AUTO-0004
+  FEAT-AUTO-0009 -->|owns| API-AUTO-0005
+  FEAT-AUTO-0012 -->|owns| API-AUTO-0006
+  FEAT-AUTO-0015 -->|owns| API-AUTO-0007
+  FEAT-AUTO-0016 -->|owns| API-AUTO-0008
+  FEAT-AUTO-0018 -->|owns| API-AUTO-0009
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0010
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0011
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0012
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0013
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0014
+  FEAT-AUTO-0021 -->|owns| API-AUTO-0015
+  FEAT-AUTO-0022 -->|owns| API-AUTO-0016
+  FEAT-AUTO-0026 -->|owns| API-AUTO-0017
+  FEAT-AUTO-0027 -->|owns| API-AUTO-0018
+  FEAT-AUTO-0028 -->|owns| API-AUTO-0019
+  FEAT-AUTO-0001 -->|owns| API-AUTO-0021
+  FEAT-AUTO-0002 -->|owns| API-AUTO-0022
+  FEAT-AUTO-0002 -->|owns| API-AUTO-0023
+  FEAT-AUTO-0003 -->|owns| API-AUTO-0024
+  FEAT-AUTO-0003 -->|owns| API-AUTO-0025
+  FEAT-AUTO-0004 -->|owns| API-AUTO-0027
+  FEAT-AUTO-0004 -->|owns| API-AUTO-0028
+  FEAT-AUTO-0005 -->|owns| API-AUTO-0029
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0030
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0031
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0032
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0033
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0034
+  FEAT-AUTO-0007 -->|owns| API-AUTO-0035
+  FEAT-AUTO-0008 -->|owns| API-AUTO-0036
+  FEAT-AUTO-0008 -->|owns| API-AUTO-0037
+  FEAT-AUTO-0009 -->|owns| API-AUTO-0038
+  FEAT-AUTO-0009 -->|owns| API-AUTO-0039
+  FEAT-AUTO-0010 -->|owns| API-AUTO-0040
+  FEAT-AUTO-0011 -->|owns| API-AUTO-0041
+  FEAT-AUTO-0012 -->|owns| API-AUTO-0042
+  FEAT-AUTO-0012 -->|owns| API-AUTO-0043
+  FEAT-AUTO-0013 -->|owns| API-AUTO-0044
+  FEAT-AUTO-0013 -->|owns| API-AUTO-0045
+  FEAT-AUTO-0014 -->|owns| API-AUTO-0046
+  FEAT-AUTO-0014 -->|owns| API-AUTO-0047
+  FEAT-AUTO-0015 -->|owns| API-AUTO-0048
+  FEAT-AUTO-0015 -->|owns| API-AUTO-0049
+  FEAT-AUTO-0015 -->|owns| API-AUTO-0050
+  FEAT-AUTO-0015 -->|owns| API-AUTO-0051
+  FEAT-AUTO-0015 -->|owns| API-AUTO-0052
+  FEAT-AUTO-0016 -->|owns| API-AUTO-0053
+  FEAT-AUTO-0016 -->|owns| API-AUTO-0054
+  FEAT-AUTO-0017 -->|owns| API-AUTO-0055
+  FEAT-AUTO-0018 -->|owns| API-AUTO-0056
+  FEAT-AUTO-0018 -->|owns| API-AUTO-0057
+  FEAT-AUTO-0019 -->|owns| API-AUTO-0058
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0059
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0060
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0061
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0062
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0063
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0064
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0065
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0066
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0067
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0068
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0069
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0070
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0071
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0072
+  FEAT-AUTO-0021 -->|owns| API-AUTO-0074
+  FEAT-AUTO-0021 -->|owns| API-AUTO-0075
+  FEAT-AUTO-0022 -->|owns| API-AUTO-0076
+  FEAT-AUTO-0022 -->|owns| API-AUTO-0077
+  FEAT-AUTO-0023 -->|owns| API-AUTO-0078
+  FEAT-AUTO-0024 -->|owns| API-AUTO-0079
+  FEAT-AUTO-0025 -->|owns| API-AUTO-0080
+  FEAT-AUTO-0026 -->|owns| API-AUTO-0081
+  FEAT-AUTO-0026 -->|owns| API-AUTO-0082
+  FEAT-AUTO-0027 -->|owns| API-AUTO-0083
+  FEAT-AUTO-0027 -->|owns| API-AUTO-0084
+  FEAT-AUTO-0028 -->|owns| API-AUTO-0085
+  FEAT-AUTO-0028 -->|owns| API-AUTO-0086
+  FEAT-AUTO-0003 -->|owns| API-AUTO-0088
+  FEAT-AUTO-0004 -->|owns| API-AUTO-0090
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0091
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0092
+  FEAT-AUTO-0008 -->|owns| API-AUTO-0093
+  FEAT-AUTO-0009 -->|owns| API-AUTO-0094
+  FEAT-AUTO-0012 -->|owns| API-AUTO-0095
+  FEAT-AUTO-0013 -->|owns| API-AUTO-0096
+  FEAT-AUTO-0013 -->|owns| API-AUTO-0097
+  FEAT-AUTO-0013 -->|owns| API-AUTO-0098
+  FEAT-AUTO-0013 -->|owns| API-AUTO-0099
+  FEAT-AUTO-0016 -->|owns| API-AUTO-0100
+  FEAT-AUTO-0018 -->|owns| API-AUTO-0101
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0102
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0103
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0104
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0105
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0106
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0107
+  FEAT-AUTO-0021 -->|owns| API-AUTO-0109
+  FEAT-AUTO-0022 -->|owns| API-AUTO-0110
+  FEAT-AUTO-0026 -->|owns| API-AUTO-0111
+  FEAT-AUTO-0027 -->|owns| API-AUTO-0112
+  FEAT-AUTO-0028 -->|owns| API-AUTO-0113
+  FEAT-AUTO-0001 -->|owns| API-AUTO-0115
+  FEAT-AUTO-0002 -->|owns| API-AUTO-0116
+  FEAT-AUTO-0003 -->|owns| API-AUTO-0117
+  FEAT-AUTO-0004 -->|owns| API-AUTO-0118
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0119
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0120
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0121
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0122
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0123
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0124
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0125
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0126
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0127
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0128
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0129
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0130
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0131
+  FEAT-AUTO-0008 -->|owns| API-AUTO-0132
+  FEAT-AUTO-0009 -->|owns| API-AUTO-0133
+  FEAT-AUTO-0012 -->|owns| API-AUTO-0134
+  FEAT-AUTO-0013 -->|owns| API-AUTO-0135
+  FEAT-AUTO-0013 -->|owns| API-AUTO-0136
+  FEAT-AUTO-0014 -->|owns| API-AUTO-0137
+  FEAT-AUTO-0015 -->|owns| API-AUTO-0138
+  FEAT-AUTO-0015 -->|owns| API-AUTO-0139
+  FEAT-AUTO-0015 -->|owns| API-AUTO-0140
+  FEAT-AUTO-0015 -->|owns| API-AUTO-0141
+  FEAT-AUTO-0015 -->|owns| API-AUTO-0142
+  FEAT-AUTO-0015 -->|owns| API-AUTO-0143
+  FEAT-AUTO-0015 -->|owns| API-AUTO-0144
+  FEAT-AUTO-0015 -->|owns| API-AUTO-0145
+  FEAT-AUTO-0016 -->|owns| API-AUTO-0146
+  FEAT-AUTO-0018 -->|owns| API-AUTO-0147
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0148
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0149
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0150
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0151
+  FEAT-AUTO-0020 -->|owns| API-AUTO-0152
+  FEAT-AUTO-0021 -->|owns| API-AUTO-0153
+  FEAT-AUTO-0022 -->|owns| API-AUTO-0154
+  FEAT-AUTO-0026 -->|owns| API-AUTO-0155
+  FEAT-AUTO-0027 -->|owns| API-AUTO-0156
+  FEAT-AUTO-0028 -->|owns| API-AUTO-0157
+  FEAT-AUTO-0028 -->|owns| API-AUTO-0158
+  FEAT-AUTO-0028 -->|owns| API-AUTO-0159
+  FEAT-AUTO-0028 -->|owns| API-AUTO-0160
+  FEAT-AUTO-0013 -->|owns| API-AUTO-0164
+  FEAT-AUTO-0015 -->|owns| API-AUTO-0165
+  FEAT-AUTO-0015 -->|owns| API-AUTO-0166
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| DOC-ARCH-EVIDENCE-SYSTEM
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| SCRIPT-ARCH-GRAPH-GENERATOR
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| CSV-NODES
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| CSV-RELATIONS
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| CSV-CHAINS
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| CSV-TESTS
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|depends_on| DOC-ARCH-SOURCE-OF-TRUTH
+  AGENT-COORDINATOR -->|depends_on| FEAT-ARCH-EVIDENCE-SYSTEM
+  DOC-ARCH-EVIDENCE-SYSTEM -->|depends_on| DOC-ARCH-SOURCE-OF-TRUTH
+  AGENT-COORDINATOR -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  SCRIPT-ARCH-GRAPH-GENERATOR -->|depends_on| CSV-NODES
+  SCRIPT-ARCH-GRAPH-GENERATOR -->|depends_on| CSV-RELATIONS
+  SCRIPT-ARCH-GRAPH-GENERATOR -->|depends_on| CSV-CHAINS
+  SCRIPT-ARCH-GRAPH-GENERATOR -->|depends_on| CSV-TESTS
+  AGENT-COORDINATOR -->|depends_on| SCRIPT-ARCH-GRAPH-GENERATOR
+  CSV-NODES -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  CSV-RELATIONS -->|depends_on| CSV-NODES
+  CSV-CHAINS -->|depends_on| CSV-NODES
+  CSV-TESTS -->|depends_on| CSV-NODES
+  DOC-ARCH-README -->|contains| DOC-ARCH-SOURCE-OF-TRUTH
+  AGENT-COORDINATOR -->|depends_on| DOC-ARCH-SOURCE-OF-TRUTH
+  DOC-ARCH-SOURCE-OF-TRUTH -->|contains| DOC-ARCH-README
+  DOC-ARCH-README -->|depends_on| DOC-ARCH-SOURCE-OF-TRUTH
+  AGENT-COORDINATOR -->|depends_on| DOC-ARCH-README
+  FEAT-MGMT-DEPT-CATALOG -->|contains| API-DEPARTMENTS-LIST
+  API-DEPARTMENTS-LIST -->|depends_on| DB-WORKSPACE-DEPARTMENTS
+  COMP-MANAGEMENT-ROUTE -->|depends_on| API-DEPARTMENTS-LIST
+  COMP-SHELL -->|depends_on| API-DEPARTMENTS-LIST
+  FEAT-MGMT-DEPT-CATALOG -->|contains| API-DEPARTMENTS-CREATE
+  API-DEPARTMENTS-CREATE -->|depends_on| DB-WORKSPACE-DEPARTMENTS
+  COMP-MANAGEMENT-ROUTE -->|depends_on| API-DEPARTMENTS-CREATE
+  FEAT-MGMT-DEPT-CATALOG -->|contains| API-DEPARTMENTS-UPDATE
+  API-DEPARTMENTS-UPDATE -->|depends_on| DB-WORKSPACE-DEPARTMENTS
+  COMP-MANAGEMENT-ROUTE -->|depends_on| API-DEPARTMENTS-UPDATE
+  FEAT-MGMT-DEPT-CATALOG -->|contains| DB-WORKSPACE-DEPARTMENTS
+  DB-WORKSPACE-DEPARTMENTS -->|depends_on| API-DEPARTMENTS-LIST
+  DB-WORKSPACE-DEPARTMENTS -->|depends_on| API-DEPARTMENTS-CREATE
+  DB-WORKSPACE-DEPARTMENTS -->|depends_on| API-DEPARTMENTS-UPDATE
+  COMP-SHELL -->|depends_on| DB-WORKSPACE-DEPARTMENTS
+  FEAT-MGMT-DEPT-CATALOG -->|contains| COMP-MANAGEMENT-ROUTE
+  COMP-MANAGEMENT-ROUTE -->|depends_on| COMP-CC-DATA-TABLE
+  COMP-SHELL -->|depends_on| COMP-MANAGEMENT-ROUTE
+  COMP-SHELL -->|depends_on| ROUTE-REGISTRY
+  COMP-SHELL -->|contains| ROUTE-REGISTRY
+  ROUTE-REGISTRY -->|depends_on| DOC-WEB-LAYER-OWNERSHIP
+  COMP-MANAGEMENT-ROUTE -->|contains| UI-MGMT-DEPARTMENT-FORM
+  UI-MGMT-DEPARTMENT-FORM -->|depends_on| COMP-MANAGEMENT-ROUTE
+  UI-MGMT-DEPARTMENT-FORM -->|depends_on| API-DEPARTMENTS-CREATE
+  COMP-MANAGEMENT-ROUTE -->|depends_on| UI-MGMT-DEPARTMENT-FORM
+  FEAT-MGMT-DEPT-CATALOG -->|contains| UI-MGMT-DEPARTMENT-FORM
+  FEAT-MGMT-DEPT-CATALOG -->|depends_on| DOC-DMS-ARCH
+  COMP-SHELL -->|depends_on| FEAT-MGMT-DEPT-CATALOG
+  FEAT-MGMT-DEPT-CATALOG -->|contains| DOC-MGMT-DEPT-CONTRACT
+  AGENT-COORDINATOR -->|depends_on| DOC-MGMT-DEPT-CONTRACT
+  DOC-ARCH-SOURCE-OF-TRUTH -->|contains| DOC-DMS-ARCH
+  DOC-DMS-ARCH -->|depends_on| DOC-ARCH-SOURCE-OF-TRUTH
+  AGENT-COORDINATOR -->|depends_on| DOC-DMS-ARCH
+  DOC-ARCH-SOURCE-OF-TRUTH -->|contains| DOC-WEB-LAYER-OWNERSHIP
+  DOC-WEB-LAYER-OWNERSHIP -->|depends_on| DOC-ARCH-SOURCE-OF-TRUTH
+  COMP-SHELL -->|depends_on| DOC-WEB-LAYER-OWNERSHIP
+  FEAT-OPERATIONS-WORK-ITEMS -->|contains| API-OPERATIONS-WORK-ITEMS
+  API-OPERATIONS-WORK-ITEMS -->|depends_on| DB-TASK
+  COMP-OPERATIONS-ROUTE -->|depends_on| API-OPERATIONS-WORK-ITEMS
+  FEAT-OPERATIONS-WORK-ITEMS -->|contains| API-OPERATIONS-CREATE-WORK-ITEM
+  API-OPERATIONS-CREATE-WORK-ITEM -->|depends_on| DB-TASK
+  COMP-OPERATIONS-ROUTE -->|depends_on| API-OPERATIONS-CREATE-WORK-ITEM
+  FEAT-OPERATIONS-WORK-ITEMS -->|contains| API-OPERATIONS-UPDATE-WORK-ITEM
+  API-OPERATIONS-UPDATE-WORK-ITEM -->|depends_on| DB-TASK
+  COMP-OPERATIONS-ROUTE -->|depends_on| API-OPERATIONS-UPDATE-WORK-ITEM
+  FEAT-OPERATIONS-WORK-ITEMS -->|contains| DB-TASK
+  DB-TASK -->|depends_on| API-OPERATIONS-WORK-ITEMS
+  DB-TASK -->|depends_on| API-OPERATIONS-CREATE-WORK-ITEM
+  DB-TASK -->|depends_on| API-OPERATIONS-UPDATE-WORK-ITEM
+  COMP-OPERATIONS-ROUTE -->|depends_on| DB-TASK
+  FEAT-OPERATIONS-WORK-ITEMS -->|contains| COMP-OPERATIONS-ROUTE
+  COMP-OPERATIONS-ROUTE -->|depends_on| COMP-CC-DATA-TABLE
+  COMP-SHELL -->|depends_on| COMP-OPERATIONS-ROUTE
+  COMP-OPERATIONS-ROUTE -->|contains| UI-OPERATIONS-TASK-CARD
+  UI-OPERATIONS-TASK-CARD -->|depends_on| COMP-OPERATIONS-ROUTE
+  UI-OPERATIONS-TASK-CARD -->|depends_on| API-OPERATIONS-UPDATE-WORK-ITEM
+  COMP-OPERATIONS-ROUTE -->|depends_on| UI-OPERATIONS-TASK-CARD
+  FEAT-OPERATIONS-WORK-ITEMS -->|contains| EVENT-OPERATIONS-WORK-ITEM-CREATED
+  EVENT-OPERATIONS-WORK-ITEM-CREATED -->|depends_on| API-OPERATIONS-CREATE-WORK-ITEM
+  API-DASHBOARD-COMMAND -->|depends_on| EVENT-OPERATIONS-WORK-ITEM-CREATED
+  FEAT-OPERATIONS-WORK-ITEMS -->|depends_on| DOC-DMS-ARCH
+  COMP-SHELL -->|depends_on| FEAT-OPERATIONS-WORK-ITEMS
+  FEAT-OPERATIONS-WORK-ITEMS -->|contains| DOC-OPS-WORK-ITEM-CONTRACT
+  AGENT-COORDINATOR -->|depends_on| DOC-OPS-WORK-ITEM-CONTRACT
+  FEAT-DASHBOARD-COMMAND -->|contains| API-DASHBOARD-COMMAND
+  API-DASHBOARD-COMMAND -->|depends_on| DB-TASK
+  API-DASHBOARD-COMMAND -->|depends_on| DB-WORKFORCE-ENTITY
+  API-DASHBOARD-COMMAND -->|depends_on| DB-GOOGLE-DRIVE-FILE
+  COMP-GENERAL-DASHBOARD -->|depends_on| API-DASHBOARD-COMMAND
+  FEAT-DASHBOARD-COMMAND -->|contains| COMP-GENERAL-DASHBOARD
+  COMP-GENERAL-DASHBOARD -->|depends_on| COMP-SHELL
+  COMP-SHELL -->|depends_on| COMP-GENERAL-DASHBOARD
+  COMP-GENERAL-DASHBOARD -->|contains| UI-DASHBOARD-NEXT-ACTION
+  UI-DASHBOARD-NEXT-ACTION -->|depends_on| COMP-GENERAL-DASHBOARD
+  UI-DASHBOARD-NEXT-ACTION -->|depends_on| API-DASHBOARD-COMMAND
+  COMP-GENERAL-DASHBOARD -->|depends_on| UI-DASHBOARD-NEXT-ACTION
+  FEAT-DASHBOARD-COMMAND -->|contains| UI-DASHBOARD-NEXT-ACTION
+  FEAT-DASHBOARD-COMMAND -->|depends_on| DOC-DMS-ARCH
+  COMP-SHELL -->|depends_on| FEAT-DASHBOARD-COMMAND
+  FEAT-DASHBOARD-COMMAND -->|contains| DOC-DASHBOARD-CONTRACT
+  AGENT-COORDINATOR -->|depends_on| DOC-DASHBOARD-CONTRACT
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|contains| API-WORKFORCE-LIST
+  API-WORKFORCE-LIST -->|depends_on| DB-WORKFORCE-ENTITY
+  COMP-PEOPLE-AGENTS-ROUTE -->|depends_on| API-WORKFORCE-LIST
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|contains| DB-WORKFORCE-ENTITY
+  DB-WORKFORCE-ENTITY -->|depends_on| API-WORKFORCE-LIST
+  COMP-PEOPLE-AGENTS-ROUTE -->|depends_on| DB-WORKFORCE-ENTITY
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|contains| COMP-PEOPLE-AGENTS-ROUTE
+  COMP-PEOPLE-AGENTS-ROUTE -->|depends_on| COMP-CC-DATA-TABLE
+  COMP-SHELL -->|depends_on| COMP-PEOPLE-AGENTS-ROUTE
+  COMP-PEOPLE-AGENTS-ROUTE -->|contains| UI-PEOPLE-AGENTS-TABLE
+  UI-PEOPLE-AGENTS-TABLE -->|depends_on| COMP-CC-DATA-TABLE
+  UI-PEOPLE-AGENTS-TABLE -->|depends_on| API-WORKFORCE-LIST
+  COMP-PEOPLE-AGENTS-ROUTE -->|depends_on| UI-PEOPLE-AGENTS-TABLE
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|contains| UI-PEOPLE-AGENTS-TABLE
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|depends_on| DOC-UNIFIED-ORG
+  COMP-SHELL -->|depends_on| FEAT-PEOPLE-AGENTS-DIRECTORY
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|contains| DOC-PEOPLE-AGENTS-CONTRACT
+  AGENT-COORDINATOR -->|depends_on| DOC-PEOPLE-AGENTS-CONTRACT
+  DOC-ARCH-SOURCE-OF-TRUTH -->|contains| DOC-UNIFIED-ORG
+  DOC-UNIFIED-ORG -->|depends_on| DOC-ARCH-SOURCE-OF-TRUTH
+  AGENT-COORDINATOR -->|depends_on| DOC-UNIFIED-ORG
+  FEAT-ASSETS-CONTEXT -->|contains| API-ASSETS-CONTEXT
+  API-ASSETS-CONTEXT -->|depends_on| DB-GOOGLE-DRIVE-FILE
+  COMP-ASSETS-ROUTE -->|depends_on| API-ASSETS-CONTEXT
+  FEAT-ASSETS-CONTEXT -->|contains| DB-GOOGLE-DRIVE-FILE
+  DB-GOOGLE-DRIVE-FILE -->|depends_on| API-ASSETS-CONTEXT
+  COMP-ASSETS-ROUTE -->|depends_on| DB-GOOGLE-DRIVE-FILE
+  FEAT-ASSETS-CONTEXT -->|contains| COMP-ASSETS-ROUTE
+  COMP-SHELL -->|depends_on| COMP-ASSETS-ROUTE
+  COMP-ASSETS-ROUTE -->|contains| UI-ASSETS-FILE-PREVIEW
+  UI-ASSETS-FILE-PREVIEW -->|depends_on| COMP-ASSETS-ROUTE
+  UI-ASSETS-FILE-PREVIEW -->|depends_on| API-ASSETS-CONTEXT
+  COMP-ASSETS-ROUTE -->|depends_on| UI-ASSETS-FILE-PREVIEW
+  FEAT-ASSETS-CONTEXT -->|contains| UI-ASSETS-FILE-PREVIEW
+  FEAT-ASSETS-CONTEXT -->|depends_on| DOC-DMS-ARCH
+  COMP-SHELL -->|depends_on| FEAT-ASSETS-CONTEXT
+  FEAT-ASSETS-CONTEXT -->|contains| DOC-ASSETS-CONTEXT-CONTRACT
+  AGENT-COORDINATOR -->|depends_on| DOC-ASSETS-CONTEXT-CONTRACT
+  FEAT-MANAGED-TABLE -->|contains| COMP-CC-DATA-TABLE
+  COMP-CC-DATA-TABLE -->|depends_on| DOC-DESIGN-MEMORY
+  FEAT-MANAGED-TABLE -->|depends_on| DOC-DESIGN-MEMORY
+  COMP-PEOPLE-AGENTS-ROUTE -->|depends_on| FEAT-MANAGED-TABLE
+  COMP-MANAGEMENT-ROUTE -->|depends_on| FEAT-MANAGED-TABLE
+  FEAT-MANAGED-TABLE -->|contains| DOC-SHARED-TABLE-CONTRACT
+  AGENT-COORDINATOR -->|depends_on| DOC-SHARED-TABLE-CONTRACT
+  DOC-ARCH-SOURCE-OF-TRUTH -->|contains| DOC-DESIGN-MEMORY
+  DOC-DESIGN-MEMORY -->|depends_on| DOC-ARCH-SOURCE-OF-TRUTH
+  TEST-API-LOCAL -->|depends_on| CONFIG-PACKAGE-JSON
+  AGENT-COORDINATOR -->|depends_on| TEST-API-LOCAL
+  TEST-ROUTE-CAPABILITY -->|depends_on| CONFIG-PACKAGE-JSON
+  AGENT-COORDINATOR -->|depends_on| TEST-ROUTE-CAPABILITY
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| TEST-ARCH-GRAPH
+  TEST-ARCH-GRAPH -->|depends_on| CSV-NODES
+  TEST-ARCH-GRAPH -->|depends_on| CSV-RELATIONS
+  TEST-ARCH-GRAPH -->|depends_on| CSV-CHAINS
+  TEST-ARCH-GRAPH -->|depends_on| CSV-TESTS
+  AGENT-COORDINATOR -->|depends_on| TEST-ARCH-GRAPH
+  FEAT-MGMT-DEPT-CATALOG -->|contains| TEST-BROWSER-MGMT-DEPT
+  TEST-BROWSER-MGMT-DEPT -->|depends_on| COMP-MANAGEMENT-ROUTE
+  AGENT-COORDINATOR -->|depends_on| TEST-BROWSER-MGMT-DEPT
+  FEAT-OPERATIONS-WORK-ITEMS -->|contains| TEST-PLAYWRIGHT-OPS
+  TEST-PLAYWRIGHT-OPS -->|depends_on| COMP-OPERATIONS-ROUTE
+  AGENT-COORDINATOR -->|depends_on| TEST-PLAYWRIGHT-OPS
+  FEAT-DASHBOARD-COMMAND -->|contains| TEST-PLAYWRIGHT-DASHBOARD
+  TEST-PLAYWRIGHT-DASHBOARD -->|depends_on| COMP-GENERAL-DASHBOARD
+  AGENT-COORDINATOR -->|depends_on| TEST-PLAYWRIGHT-DASHBOARD
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|contains| TEST-PLAYWRIGHT-PEOPLE
+  TEST-PLAYWRIGHT-PEOPLE -->|depends_on| COMP-PEOPLE-AGENTS-ROUTE
+  AGENT-COORDINATOR -->|depends_on| TEST-PLAYWRIGHT-PEOPLE
+  FEAT-ASSETS-CONTEXT -->|contains| TEST-PLAYWRIGHT-ASSETS
+  TEST-PLAYWRIGHT-ASSETS -->|depends_on| COMP-ASSETS-ROUTE
+  AGENT-COORDINATOR -->|depends_on| TEST-PLAYWRIGHT-ASSETS
+  DOC-ARCH-SOURCE-OF-TRUTH -->|contains| DOC-TESTING
+  DOC-TESTING -->|depends_on| DOC-ARCH-SOURCE-OF-TRUTH
+  AGENT-COORDINATOR -->|depends_on| DOC-TESTING
+  AGENT-COORDINATOR -->|depends_on| AGENT-COORDINATOR
+  CONFIG-PACKAGE-JSON -->|contains| TEST-API-LOCAL
+  CONFIG-PACKAGE-JSON -->|contains| TEST-ROUTE-CAPABILITY
+  CONFIG-PACKAGE-JSON -->|contains| TEST-ARCH-GRAPH
+  AGENT-COORDINATOR -->|depends_on| CONFIG-PACKAGE-JSON
+  FEAT-AUTO-0001 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0001
+  FEAT-AUTO-0002 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0002
+  FEAT-AUTO-0003 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0003
+  FEAT-AUTO-0004 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0004
+  FEAT-AUTO-0005 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0005
+  FEAT-AUTO-0006 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0006
+  FEAT-AUTO-0007 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0007
+  FEAT-AUTO-0008 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0008
+  FEAT-AUTO-0009 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0009
+  FEAT-AUTO-0010 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0010
+  FEAT-AUTO-0011 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0011
+  FEAT-AUTO-0012 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0012
+  FEAT-AUTO-0013 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0013
+  FEAT-AUTO-0014 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0014
+  FEAT-AUTO-0015 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0015
+  FEAT-AUTO-0016 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0016
+  FEAT-AUTO-0017 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0017
+  FEAT-AUTO-0018 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0018
+  FEAT-AUTO-0019 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0019
+  FEAT-AUTO-0020 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0020
+  FEAT-AUTO-0021 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0021
+  FEAT-AUTO-0022 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0022
+  FEAT-AUTO-0023 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0023
+  FEAT-AUTO-0024 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0024
+  FEAT-AUTO-0025 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0025
+  FEAT-AUTO-0026 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0026
+  FEAT-AUTO-0027 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0027
+  FEAT-AUTO-0028 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0028
+  FEAT-MGMT-DEPT-CATALOG -->|contains| FUNC-ENSURE-DEFAULT-DEPARTMENTS
+  FUNC-ENSURE-DEFAULT-DEPARTMENTS -->|depends_on| DB-WORKSPACE-DEPARTMENTS
+  API-DEPARTMENTS-LIST -->|depends_on| FUNC-ENSURE-DEFAULT-DEPARTMENTS
+  FEAT-MGMT-DEPT-CATALOG -->|contains| FUNC-SERIALIZE-DEPARTMENT
+  FUNC-SERIALIZE-DEPARTMENT -->|depends_on| DB-WORKSPACE-DEPARTMENTS
+  API-DEPARTMENTS-LIST -->|depends_on| FUNC-SERIALIZE-DEPARTMENT
+  API-DEPARTMENTS-CREATE -->|depends_on| FUNC-SERIALIZE-DEPARTMENT
+  API-DEPARTMENTS-UPDATE -->|depends_on| FUNC-SERIALIZE-DEPARTMENT
+  FEAT-OPERATIONS-WORK-ITEMS -->|contains| FUNC-VISIBLE-WORK-ITEM-RELATIONS
+  FUNC-VISIBLE-WORK-ITEM-RELATIONS -->|depends_on| DB-TASK
+  API-OPERATIONS-CREATE-WORK-ITEM -->|depends_on| FUNC-VISIBLE-WORK-ITEM-RELATIONS
+  API-OPERATIONS-UPDATE-WORK-ITEM -->|depends_on| FUNC-VISIBLE-WORK-ITEM-RELATIONS
+  FEAT-DASHBOARD-COMMAND -->|contains| FUNC-DASHBOARD-RISK-RANK
+  API-DASHBOARD-COMMAND -->|depends_on| FUNC-DASHBOARD-RISK-RANK
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| FUNC-GENERATE-ARCH-GRAPH
+  FUNC-GENERATE-ARCH-GRAPH -->|depends_on| CSV-NODES
+  SCRIPT-ARCH-GRAPH-GENERATOR -->|depends_on| FUNC-GENERATE-ARCH-GRAPH
+  FEAT-ASSETS-CONTEXT -->|contains| SVC-AUTO-0001
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|contains| SVC-AUTO-0003
+  FEAT-ASSETS-CONTEXT -->|contains| CLS-AUTO-0001
+  FEAT-ASSETS-CONTEXT -->|contains| CLS-AUTO-0002
+  FEAT-ASSETS-CONTEXT -->|contains| CLS-AUTO-0003
+  FEAT-AUTO-0003 -->|contains| API-AUTO-0001
+  FEAT-AUTO-0004 -->|contains| API-AUTO-0002
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0003
+  FEAT-AUTO-0008 -->|contains| API-AUTO-0004
+  FEAT-AUTO-0009 -->|contains| API-AUTO-0005
+  FEAT-AUTO-0012 -->|contains| API-AUTO-0006
+  FEAT-AUTO-0015 -->|contains| API-AUTO-0007
+  FEAT-AUTO-0016 -->|contains| API-AUTO-0008
+  FEAT-AUTO-0018 -->|contains| API-AUTO-0009
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0010
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0011
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0012
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0013
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0014
+  FEAT-AUTO-0021 -->|contains| API-AUTO-0015
+  FEAT-AUTO-0022 -->|contains| API-AUTO-0016
+  FEAT-AUTO-0026 -->|contains| API-AUTO-0017
+  FEAT-AUTO-0027 -->|contains| API-AUTO-0018
+  FEAT-AUTO-0028 -->|contains| API-AUTO-0019
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|contains| API-AUTO-0020
+  FEAT-AUTO-0001 -->|contains| API-AUTO-0021
+  FEAT-AUTO-0002 -->|contains| API-AUTO-0022
+  FEAT-AUTO-0002 -->|contains| API-AUTO-0023
+  FEAT-AUTO-0003 -->|contains| API-AUTO-0024
+  FEAT-AUTO-0003 -->|contains| API-AUTO-0025
+  FEAT-ASSETS-CONTEXT -->|contains| API-AUTO-0026
+  FEAT-AUTO-0004 -->|contains| API-AUTO-0027
+  FEAT-AUTO-0004 -->|contains| API-AUTO-0028
+  FEAT-AUTO-0005 -->|contains| API-AUTO-0029
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0030
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0031
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0032
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0033
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0034
+  FEAT-AUTO-0007 -->|contains| API-AUTO-0035
+  FEAT-AUTO-0008 -->|contains| API-AUTO-0036
+  FEAT-AUTO-0008 -->|contains| API-AUTO-0037
+  FEAT-AUTO-0009 -->|contains| API-AUTO-0038
+  FEAT-AUTO-0009 -->|contains| API-AUTO-0039
+  FEAT-AUTO-0010 -->|contains| API-AUTO-0040
+  FEAT-AUTO-0011 -->|contains| API-AUTO-0041
+  FEAT-AUTO-0012 -->|contains| API-AUTO-0042
+  FEAT-AUTO-0012 -->|contains| API-AUTO-0043
+  FEAT-AUTO-0013 -->|contains| API-AUTO-0044
+  FEAT-AUTO-0013 -->|contains| API-AUTO-0045
+  FEAT-AUTO-0014 -->|contains| API-AUTO-0046
+  FEAT-AUTO-0014 -->|contains| API-AUTO-0047
+  FEAT-AUTO-0015 -->|contains| API-AUTO-0048
+  FEAT-AUTO-0015 -->|contains| API-AUTO-0049
+  FEAT-AUTO-0015 -->|contains| API-AUTO-0050
+  FEAT-AUTO-0015 -->|contains| API-AUTO-0051
+  FEAT-AUTO-0015 -->|contains| API-AUTO-0052
+  FEAT-AUTO-0016 -->|contains| API-AUTO-0053
+  FEAT-AUTO-0016 -->|contains| API-AUTO-0054
+  FEAT-AUTO-0017 -->|contains| API-AUTO-0055
+  FEAT-AUTO-0018 -->|contains| API-AUTO-0056
+  FEAT-AUTO-0018 -->|contains| API-AUTO-0057
+  FEAT-AUTO-0019 -->|contains| API-AUTO-0058
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0059
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0060
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0061
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0062
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0063
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0064
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0065
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0066
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0067
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0068
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0069
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0070
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0071
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0072
+  FEAT-OPERATIONS-WORK-ITEMS -->|contains| API-AUTO-0073
+  FEAT-AUTO-0021 -->|contains| API-AUTO-0074
+  FEAT-AUTO-0021 -->|contains| API-AUTO-0075
+  FEAT-AUTO-0022 -->|contains| API-AUTO-0076
+  FEAT-AUTO-0022 -->|contains| API-AUTO-0077
+  FEAT-AUTO-0023 -->|contains| API-AUTO-0078
+  FEAT-AUTO-0024 -->|contains| API-AUTO-0079
+  FEAT-AUTO-0025 -->|contains| API-AUTO-0080
+  FEAT-AUTO-0026 -->|contains| API-AUTO-0081
+  FEAT-AUTO-0026 -->|contains| API-AUTO-0082
+  FEAT-AUTO-0027 -->|contains| API-AUTO-0083
+  FEAT-AUTO-0027 -->|contains| API-AUTO-0084
+  FEAT-AUTO-0028 -->|contains| API-AUTO-0085
+  FEAT-AUTO-0028 -->|contains| API-AUTO-0086
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|contains| API-AUTO-0087
+  FEAT-AUTO-0003 -->|contains| API-AUTO-0088
+  FEAT-ASSETS-CONTEXT -->|contains| API-AUTO-0089
+  FEAT-AUTO-0004 -->|contains| API-AUTO-0090
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0091
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0092
+  FEAT-AUTO-0008 -->|contains| API-AUTO-0093
+  FEAT-AUTO-0009 -->|contains| API-AUTO-0094
+  FEAT-AUTO-0012 -->|contains| API-AUTO-0095
+  FEAT-AUTO-0013 -->|contains| API-AUTO-0096
+  FEAT-AUTO-0013 -->|contains| API-AUTO-0097
+  FEAT-AUTO-0013 -->|contains| API-AUTO-0098
+  FEAT-AUTO-0013 -->|contains| API-AUTO-0099
+  FEAT-AUTO-0016 -->|contains| API-AUTO-0100
+  FEAT-AUTO-0018 -->|contains| API-AUTO-0101
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0102
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0103
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0104
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0105
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0106
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0107
+  FEAT-OPERATIONS-WORK-ITEMS -->|contains| API-AUTO-0108
+  FEAT-AUTO-0021 -->|contains| API-AUTO-0109
+  FEAT-AUTO-0022 -->|contains| API-AUTO-0110
+  FEAT-AUTO-0026 -->|contains| API-AUTO-0111
+  FEAT-AUTO-0027 -->|contains| API-AUTO-0112
+  FEAT-AUTO-0028 -->|contains| API-AUTO-0113
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|contains| API-AUTO-0114
+  FEAT-AUTO-0001 -->|contains| API-AUTO-0115
+  FEAT-AUTO-0002 -->|contains| API-AUTO-0116
+  FEAT-AUTO-0003 -->|contains| API-AUTO-0117
+  FEAT-AUTO-0004 -->|contains| API-AUTO-0118
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0119
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0120
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0121
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0122
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0123
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0124
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0125
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0126
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0127
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0128
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0129
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0130
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0131
+  FEAT-AUTO-0008 -->|contains| API-AUTO-0132
+  FEAT-AUTO-0009 -->|contains| API-AUTO-0133
+  FEAT-AUTO-0012 -->|contains| API-AUTO-0134
+  FEAT-AUTO-0013 -->|contains| API-AUTO-0135
+  FEAT-AUTO-0013 -->|contains| API-AUTO-0136
+  FEAT-AUTO-0014 -->|contains| API-AUTO-0137
+  FEAT-AUTO-0015 -->|contains| API-AUTO-0138
+  FEAT-AUTO-0015 -->|contains| API-AUTO-0139
+  FEAT-AUTO-0015 -->|contains| API-AUTO-0140
+  FEAT-AUTO-0015 -->|contains| API-AUTO-0141
+  FEAT-AUTO-0015 -->|contains| API-AUTO-0142
+  FEAT-AUTO-0015 -->|contains| API-AUTO-0143
+  FEAT-AUTO-0015 -->|contains| API-AUTO-0144
+  FEAT-AUTO-0015 -->|contains| API-AUTO-0145
+  FEAT-AUTO-0016 -->|contains| API-AUTO-0146
+  FEAT-AUTO-0018 -->|contains| API-AUTO-0147
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0148
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0149
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0150
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0151
+  FEAT-AUTO-0020 -->|contains| API-AUTO-0152
+  FEAT-AUTO-0021 -->|contains| API-AUTO-0153
+  FEAT-AUTO-0022 -->|contains| API-AUTO-0154
+  FEAT-AUTO-0026 -->|contains| API-AUTO-0155
+  FEAT-AUTO-0027 -->|contains| API-AUTO-0156
+  FEAT-AUTO-0028 -->|contains| API-AUTO-0157
+  FEAT-AUTO-0028 -->|contains| API-AUTO-0158
+  FEAT-AUTO-0028 -->|contains| API-AUTO-0159
+  FEAT-AUTO-0028 -->|contains| API-AUTO-0160
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|contains| API-AUTO-0161
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|contains| API-AUTO-0162
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|contains| API-AUTO-0163
+  FEAT-AUTO-0013 -->|contains| API-AUTO-0164
+  FEAT-AUTO-0015 -->|contains| API-AUTO-0165
+  FEAT-AUTO-0015 -->|contains| API-AUTO-0166
+  COMP-SHELL -->|contains| PAGE-00-GENERAL
+  PAGE-00-GENERAL -->|depends_on| COMP-GENERAL-DASHBOARD
+  AGENT-COORDINATOR -->|depends_on| PAGE-00-GENERAL
+  COMP-SHELL -->|contains| PAGE-04-OPERATIONS-TASKS
+  PAGE-04-OPERATIONS-TASKS -->|depends_on| COMP-OPERATIONS-ROUTE
+  AGENT-COORDINATOR -->|depends_on| PAGE-04-OPERATIONS-TASKS
+  COMP-SHELL -->|contains| PAGE-06-PEOPLE-AGENTS
+  PAGE-06-PEOPLE-AGENTS -->|depends_on| COMP-PEOPLE-AGENTS-ROUTE
+  AGENT-COORDINATOR -->|depends_on| PAGE-06-PEOPLE-AGENTS
+  COMP-SHELL -->|contains| PAGE-08-ASSETS-FILES
+  PAGE-08-ASSETS-FILES -->|depends_on| COMP-ASSETS-ROUTE
+  AGENT-COORDINATOR -->|depends_on| PAGE-08-ASSETS-FILES
+  COMP-SHELL -->|contains| PAGE-12-MANAGEMENT-DEPARTMENTS
+  PAGE-12-MANAGEMENT-DEPARTMENTS -->|depends_on| COMP-MANAGEMENT-ROUTE
+  AGENT-COORDINATOR -->|depends_on| PAGE-12-MANAGEMENT-DEPARTMENTS
+  FEAT-DASHBOARD-COMMAND -->|contains| PAGE-AUTO-0002
+  FEAT-DASHBOARD-COMMAND -->|contains| PAGE-AUTO-0005
+  FEAT-OPERATIONS-WORK-ITEMS -->|contains| PAGE-AUTO-0006
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|contains| PAGE-AUTO-0007
+  FEAT-DASHBOARD-COMMAND -->|contains| PAGE-AUTO-0008
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|contains| PAGE-AUTO-0009
+  COMP-SHELL -->|contains| UI-SIDEBAR-DEPARTMENT-NAV
+  UI-SIDEBAR-DEPARTMENT-NAV -->|depends_on| API-DEPARTMENTS-LIST
+  AGENT-COORDINATOR -->|depends_on| UI-SIDEBAR-DEPARTMENT-NAV
+  FEAT-ASSETS-CONTEXT -->|contains| DB-AUTO-0026
+  FEAT-ASSETS-CONTEXT -->|contains| INT-AUTO-0001
+  FEAT-ASSETS-CONTEXT -->|contains| INT-AUTO-0002
+  FEAT-ASSETS-CONTEXT -->|contains| INT-AUTO-0003
+  FEAT-ASSETS-CONTEXT -->|contains| INT-AUTO-0004
+  FEAT-ASSETS-CONTEXT -->|contains| INT-AUTO-0005
+  FEAT-ASSETS-CONTEXT -->|contains| INT-AUTO-0006
+  FEAT-ASSETS-CONTEXT -->|contains| INT-AUTO-0007
+  FEAT-ASSETS-CONTEXT -->|contains| INT-AUTO-0008
+  FEAT-ASSETS-CONTEXT -->|contains| INT-AUTO-0009
+  FEAT-ASSETS-CONTEXT -->|contains| INT-AUTO-0010
+  FEAT-ASSETS-CONTEXT -->|contains| INT-AUTO-0011
+  FEAT-ASSETS-CONTEXT -->|contains| INT-AUTO-0012
+  FEAT-ASSETS-CONTEXT -->|contains| INT-AUTO-0013
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0001
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0002
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0003
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0004
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0005
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0006
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0007
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0008
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0009
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0010
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0011
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0012
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0013
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0014
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0015
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0016
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0017
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0018
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0019
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0020
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0021
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0022
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0023
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0024
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0025
+  FEAT-ASSETS-CONTEXT -->|contains| CRON-AUTO-0001
+  FEAT-ASSETS-CONTEXT -->|contains| TEST-PROD-DRIVE-IMPORT-SMOKE
+  TEST-PROD-DRIVE-IMPORT-SMOKE -->|depends_on| API-ASSETS-CONTEXT
+  AGENT-COORDINATOR -->|depends_on| TEST-PROD-DRIVE-IMPORT-SMOKE
+  FEAT-ASSETS-CONTEXT -->|contains| DOC-OPS-AGENT-RUNTIME-LEDGER
+  DOC-OPS-AGENT-RUNTIME-LEDGER -->|depends_on| DOC-ASSETS-CONTEXT-CONTRACT
+  AGENT-COORDINATOR -->|depends_on| DOC-OPS-AGENT-RUNTIME-LEDGER
+  AGENT-COORDINATOR -->|contains| AGENT-DOCUMENTATION-MEMORY
+  AGENT-DOCUMENTATION-MEMORY -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| AGENT-DOCUMENTATION-MEMORY
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PROMPT-ARCH-GRAPH-CHECK
+  PROMPT-ARCH-GRAPH-CHECK -->|depends_on| CSV-CHAINS
+  AGENT-COORDINATOR -->|depends_on| PROMPT-ARCH-GRAPH-CHECK
+  FEAT-PEOPLE-AGENTS-DIRECTORY -->|contains| EVENT-PAPERCLIP-SYNC-REQUESTED
+  EVENT-PAPERCLIP-SYNC-REQUESTED -->|depends_on| API-WORKFORCE-LIST
+  API-DASHBOARD-COMMAND -->|depends_on| EVENT-PAPERCLIP-SYNC-REQUESTED
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| WORKFLOW-AGENT-FUNCTION-CHECK
+  WORKFLOW-AGENT-FUNCTION-CHECK -->|depends_on| CSV-CHAINS
+  AGENT-COORDINATOR -->|depends_on| WORKFLOW-AGENT-FUNCTION-CHECK
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| WORKFLOW-NEW-FEATURE-REGISTRY-GATE
+  WORKFLOW-NEW-FEATURE-REGISTRY-GATE -->|depends_on| CSV-NODES
+  AGENT-COORDINATOR -->|depends_on| WORKFLOW-NEW-FEATURE-REGISTRY-GATE
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0026
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0027
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0028
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0029
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0030
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0031
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0032
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0033
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0034
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0035
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0036
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0037
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0038
+  FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0039
+  FEAT-AUTO-0023 -->|owns| API-AUTO-0167
+  FEAT-AUTO-0023 -->|contains| API-AUTO-0167

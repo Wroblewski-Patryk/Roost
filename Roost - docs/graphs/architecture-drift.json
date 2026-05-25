@@ -1,0 +1,33 @@
+{
+  "generatedAt": "2026-05-24T21:32:59.241Z",
+  "sections": [
+    {
+      "title": "API Routes",
+      "codeCount": 176,
+      "registryCount": 176,
+      "missingInRegistry": [],
+      "missingInCode": []
+    },
+    {
+      "title": "Prisma Models",
+      "codeCount": 62,
+      "registryCount": 62,
+      "missingInRegistry": [],
+      "missingInCode": []
+    },
+    {
+      "title": "React App Routes",
+      "codeCount": 10,
+      "registryCount": 10,
+      "missingInRegistry": [],
+      "missingInCode": []
+    },
+    {
+      "title": "Script/Test Commands",
+      "codeCount": 7,
+      "registryCount": 7,
+      "missingInRegistry": [],
+      "missingInCode": []
+    }
+  ]
+}

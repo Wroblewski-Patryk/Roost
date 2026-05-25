@@ -1,0 +1,111 @@
+{
+  "consoleErrors": [],
+  "failed": [],
+  "results": [
+    {
+      "name": "area-overview",
+      "kind": "desktop",
+      "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-area-operating-room-95927f6-2026-05-15\\area-overview-desktop.png",
+      "href": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=overview",
+      "title": "CompanyCore Areas",
+      "overflowX": false,
+      "hasOperatingGraph": true,
+      "hasLayerContext": true,
+      "hasKnowledgeTree": true,
+      "hasBackendTables": true,
+      "textStart": "LuckySparrow\nCompany Atlas\nCompany Atlas\n\nDZIALY\n\n00 Ogolny\n8\n01 Strategia\n8\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\n+ Add view\n02 Produkt\n8\n03 Sprzedaz\n8\n04 Operacje\n8\n05 Relacje\n12\n06 Kadry\n2\n07 Finanse\n1\n08 Zasoby\n3\n09 Technologia\n6\n10 Prawo\n6\n11 Innowacje\n3\n12 Zarzadzanie\n6\nWorkspace settings\nOwner\nLuckySparrow\n\nLuckySparrow / Company Atlas\n\n13 areas\n100% ownership\n0 decisions\n\nLUCKYSPARROW / GOVERN\n\n01 Strategia\n\n8 linked tables in the current workspace.\n\nReview operating system\nBack to atlas\n01\nREADY\n8\nTABLES\n0\nRECORDS\n4\nDRIVE\n2\nPROVIDER\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\nAdd view\n\nOPERATING BOARD\n\nObserve, decide, execute, delegate\nOBSERVE\nOperating health\n\nThis department has mapped backend context and can be inspected by owner and AI workflows.\n\nReady\nDECIDE\nOwner decisions\n\nUnassigned provider or Drive resources still need a MECE owner before delegation.\n\n5\nEXECUTE\nTasks and workflows\n\nTask and workflow pressure can be reviewed from the task workbench and Company OS cockpit.\n\nReady\nDELEGATE\nAI handoff\n\nJarvis and Paperclip can use read-safe context; risky commands still need owner approval.\n\nGuarded\n\nSELECTED VIEW\n\nOverview\nOVERVIEW\n\n8 linked tables in the current workspace.\n\nSTATUS\nReady\nTABLES\n8\nLENS\nGovern\nRECORDS\n0\n\nOPERATING GRAPH\n\nGoals to workflows to tasks to knowledge to sources\n8 tables\nGoals + targets\nStrategic intent, target values, success metrics, and standards visible for this department.\n3\nWorkflows\nProcesses, pipelines, procedures, dependencies, runs, and automation rhythm.\n1\nTasks\nExecution pressure from task records, task lists, pipeline runs, and acceptance criteria.\n0\nKnowledge\nDrive folde"
+    },
+    {
+      "name": "area-overview",
+      "kind": "mobile",
+      "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-area-operating-room-95927f6-2026-05-15\\area-overview-mobile.png",
+      "href": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=overview",
+      "title": "CompanyCore Areas",
+      "overflowX": false,
+      "hasOperatingGraph": true,
+      "hasLayerContext": true,
+      "hasKnowledgeTree": true,
+      "hasBackendTables": true,
+      "textStart": "LuckySparrow\nDzialy\nMap\n00 Ogolny\n01 Strategia\n02 Produkt\n03 Sprzedaz\n04 Operacje\n05 Relacje\n06 Kadry\n07 Finanse\n08 Zasoby\n09 Technologia\n10 Prawo\n11 Innowacje\n12 Zarzadzanie\n\nLUCKYSPARROW / GOVERN\n\n01 Strategia\n\n8 linked tables in the current workspace.\n\nReview operating system\nBack to atlas\n01\nREADY\n8\nTABLES\n0\nRECORDS\n4\nDRIVE\n2\nPROVIDER\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\nAdd view\n\nOPERATING BOARD\n\nObserve, decide, execute, delegate\nOBSERVE\nOperating health\n\nThis department has mapped backend context and can be inspected by owner and AI workflows.\n\nReady\nDECIDE\nOwner decisions\n\nUnassigned provider or Drive resources still need a MECE owner before delegation.\n\n5\nEXECUTE\nTasks and workflows\n\nTask and workflow pressure can be reviewed from the task workbench and Company OS cockpit.\n\nReady\nDELEGATE\nAI handoff\n\nJarvis and Paperclip can use read-safe context; risky commands still need owner approval.\n\nGuarded\n\nSELECTED VIEW\n\nOverview\nOVERVIEW\n\n8 linked tables in the current workspace.\n\nSTATUS\nReady\nTABLES\n8\nLENS\nGovern\nRECORDS\n0\n\nOPERATING GRAPH\n\nGoals to workflows to tasks to knowledge to sources\n8 tables\nGoals + targets\nStrategic intent, target values, success metrics, and standards visible for this department.\n3\nWorkflows\nProcesses, pipelines, procedures, dependencies, runs, and automation rhythm.\n1\nTasks\nExecution pressure from task records, task lists, pipeline runs, and acceptance criteria.\n0\nKnowledge\nDrive folders, docs, sheets, notes, artifacts, and proof sources connected to this area.\n4\nSources\nBackend tables, provider containers, and synced files that explain where the view comes from.\n6\n\nLAYER CONTEXT\n\nOverview as a working layer\n\nThe "
+    },
+    {
+      "name": "area-goals",
+      "kind": "desktop",
+      "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-area-operating-room-95927f6-2026-05-15\\area-goals-desktop.png",
+      "href": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=goals",
+      "title": "CompanyCore Areas",
+      "overflowX": false,
+      "hasOperatingGraph": true,
+      "hasLayerContext": true,
+      "hasKnowledgeTree": true,
+      "hasBackendTables": true,
+      "textStart": "LuckySparrow\nCompany Atlas\nCompany Atlas\n\nDZIALY\n\n00 Ogolny\n8\n01 Strategia\n8\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\n+ Add view\n02 Produkt\n8\n03 Sprzedaz\n8\n04 Operacje\n8\n05 Relacje\n12\n06 Kadry\n2\n07 Finanse\n1\n08 Zasoby\n3\n09 Technologia\n6\n10 Prawo\n6\n11 Innowacje\n3\n12 Zarzadzanie\n6\nWorkspace settings\nOwner\nLuckySparrow\n\nLuckySparrow / Company Atlas\n\n13 areas\n100% ownership\n0 decisions\n\nLUCKYSPARROW / GOVERN\n\n01 Strategia\n\n8 linked tables in the current workspace.\n\nReview operating system\nBack to atlas\n01\nREADY\n8\nTABLES\n0\nRECORDS\n4\nDRIVE\n2\nPROVIDER\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\nAdd view\n\nOPERATING BOARD\n\nObserve, decide, execute, delegate\nOBSERVE\nOperating health\n\nThis department has mapped backend context and can be inspected by owner and AI workflows.\n\nReady\nDECIDE\nOwner decisions\n\nUnassigned provider or Drive resources still need a MECE owner before delegation.\n\n5\nEXECUTE\nTasks and workflows\n\nTask and workflow pressure can be reviewed from the task workbench and Company OS cockpit.\n\nReady\nDELEGATE\nAI handoff\n\nJarvis and Paperclip can use read-safe context; risky commands still need owner approval.\n\nGuarded\n\nSELECTED VIEW\n\nGoals and success signals\nGOALS\n\nUse Company OS records for process, approval, risk, audit, and workflow evidence. This dashboard keeps the area context first, then links into the deeper workbench.\n\nAREA\nGovern\nTABLES\n3\nRECORDS\n0\nRECORDS\n0\n\nOPERATING GRAPH\n\nGoals to workflows to tasks to knowledge to sources\n8 tables\nGoals + targets\nStrategic intent, target values, success metrics, and standards visible for this department.\n3\nWorkflows\nProcesses, pipelines, procedures, dependencies, runs, and automa"
+    },
+    {
+      "name": "area-goals",
+      "kind": "mobile",
+      "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-area-operating-room-95927f6-2026-05-15\\area-goals-mobile.png",
+      "href": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=goals",
+      "title": "CompanyCore Areas",
+      "overflowX": false,
+      "hasOperatingGraph": true,
+      "hasLayerContext": true,
+      "hasKnowledgeTree": true,
+      "hasBackendTables": true,
+      "textStart": "LuckySparrow\nDzialy\nMap\n00 Ogolny\n01 Strategia\n02 Produkt\n03 Sprzedaz\n04 Operacje\n05 Relacje\n06 Kadry\n07 Finanse\n08 Zasoby\n09 Technologia\n10 Prawo\n11 Innowacje\n12 Zarzadzanie\n\nLUCKYSPARROW / GOVERN\n\n01 Strategia\n\n8 linked tables in the current workspace.\n\nReview operating system\nBack to atlas\n01\nREADY\n8\nTABLES\n0\nRECORDS\n4\nDRIVE\n2\nPROVIDER\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\nAdd view\n\nOPERATING BOARD\n\nObserve, decide, execute, delegate\nOBSERVE\nOperating health\n\nThis department has mapped backend context and can be inspected by owner and AI workflows.\n\nReady\nDECIDE\nOwner decisions\n\nUnassigned provider or Drive resources still need a MECE owner before delegation.\n\n5\nEXECUTE\nTasks and workflows\n\nTask and workflow pressure can be reviewed from the task workbench and Company OS cockpit.\n\nReady\nDELEGATE\nAI handoff\n\nJarvis and Paperclip can use read-safe context; risky commands still need owner approval.\n\nGuarded\n\nSELECTED VIEW\n\nGoals and success signals\nGOALS\n\nUse Company OS records for process, approval, risk, audit, and workflow evidence. This dashboard keeps the area context first, then links into the deeper workbench.\n\nAREA\nGovern\nTABLES\n3\nRECORDS\n0\nRECORDS\n0\n\nOPERATING GRAPH\n\nGoals to workflows to tasks to knowledge to sources\n8 tables\nGoals + targets\nStrategic intent, target values, success metrics, and standards visible for this department.\n3\nWorkflows\nProcesses, pipelines, procedures, dependencies, runs, and automation rhythm.\n1\nTasks\nExecution pressure from task records, task lists, pipeline runs, and acceptance criteria.\n0\nKnowledge\nDrive folders, docs, sheets, notes, artifacts, and proof sources connected to this area.\n4\nSources\nBackend tab"
+    },
+    {
+      "name": "area-workflows",
+      "kind": "desktop",
+      "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-area-operating-room-95927f6-2026-05-15\\area-workflows-desktop.png",
+      "href": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=workflows",
+      "title": "CompanyCore Areas",
+      "overflowX": false,
+      "hasOperatingGraph": true,
+      "hasLayerContext": true,
+      "hasKnowledgeTree": true,
+      "hasBackendTables": true,
+      "textStart": "LuckySparrow\nCompany Atlas\nCompany Atlas\n\nDZIALY\n\n00 Ogolny\n8\n01 Strategia\n8\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\n+ Add view\n02 Produkt\n8\n03 Sprzedaz\n8\n04 Operacje\n8\n05 Relacje\n12\n06 Kadry\n2\n07 Finanse\n1\n08 Zasoby\n3\n09 Technologia\n6\n10 Prawo\n6\n11 Innowacje\n3\n12 Zarzadzanie\n6\nWorkspace settings\nOwner\nLuckySparrow\n\nLuckySparrow / Company Atlas\n\n13 areas\n100% ownership\n0 decisions\n\nLUCKYSPARROW / GOVERN\n\n01 Strategia\n\n8 linked tables in the current workspace.\n\nReview operating system\nBack to atlas\n01\nREADY\n8\nTABLES\n0\nRECORDS\n4\nDRIVE\n2\nPROVIDER\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\nAdd view\n\nOPERATING BOARD\n\nObserve, decide, execute, delegate\nOBSERVE\nOperating health\n\nThis department has mapped backend context and can be inspected by owner and AI workflows.\n\nReady\nDECIDE\nOwner decisions\n\nUnassigned provider or Drive resources still need a MECE owner before delegation.\n\n5\nEXECUTE\nTasks and workflows\n\nTask and workflow pressure can be reviewed from the task workbench and Company OS cockpit.\n\nReady\nDELEGATE\nAI handoff\n\nJarvis and Paperclip can use read-safe context; risky commands still need owner approval.\n\nGuarded\n\nSELECTED VIEW\n\nWorkflows and operating rhythm\nWORKFLOWS\n\nUse Company OS records for process, approval, risk, audit, and workflow evidence. This dashboard keeps the area context first, then links into the deeper workbench.\n\nAREA\nGovern\nTABLES\n1\nRECORDS\n0\nRECORDS\n0\n\nOPERATING GRAPH\n\nGoals to workflows to tasks to knowledge to sources\n8 tables\nGoals + targets\nStrategic intent, target values, success metrics, and standards visible for this department.\n3\nWorkflows\nProcesses, pipelines, procedures, dependencies, runs, a"
+    },
+    {
+      "name": "area-workflows",
+      "kind": "mobile",
+      "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-area-operating-room-95927f6-2026-05-15\\area-workflows-mobile.png",
+      "href": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=workflows",
+      "title": "CompanyCore Areas",
+      "overflowX": false,
+      "hasOperatingGraph": true,
+      "hasLayerContext": true,
+      "hasKnowledgeTree": true,
+      "hasBackendTables": true,
+      "textStart": "LuckySparrow\nDzialy\nMap\n00 Ogolny\n01 Strategia\n02 Produkt\n03 Sprzedaz\n04 Operacje\n05 Relacje\n06 Kadry\n07 Finanse\n08 Zasoby\n09 Technologia\n10 Prawo\n11 Innowacje\n12 Zarzadzanie\n\nLUCKYSPARROW / GOVERN\n\n01 Strategia\n\n8 linked tables in the current workspace.\n\nReview operating system\nBack to atlas\n01\nREADY\n8\nTABLES\n0\nRECORDS\n4\nDRIVE\n2\nPROVIDER\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\nAdd view\n\nOPERATING BOARD\n\nObserve, decide, execute, delegate\nOBSERVE\nOperating health\n\nThis department has mapped backend context and can be inspected by owner and AI workflows.\n\nReady\nDECIDE\nOwner decisions\n\nUnassigned provider or Drive resources still need a MECE owner before delegation.\n\n5\nEXECUTE\nTasks and workflows\n\nTask and workflow pressure can be reviewed from the task workbench and Company OS cockpit.\n\nReady\nDELEGATE\nAI handoff\n\nJarvis and Paperclip can use read-safe context; risky commands still need owner approval.\n\nGuarded\n\nSELECTED VIEW\n\nWorkflows and operating rhythm\nWORKFLOWS\n\nUse Company OS records for process, approval, risk, audit, and workflow evidence. This dashboard keeps the area context first, then links into the deeper workbench.\n\nAREA\nGovern\nTABLES\n1\nRECORDS\n0\nRECORDS\n0\n\nOPERATING GRAPH\n\nGoals to workflows to tasks to knowledge to sources\n8 tables\nGoals + targets\nStrategic intent, target values, success metrics, and standards visible for this department.\n3\nWorkflows\nProcesses, pipelines, procedures, dependencies, runs, and automation rhythm.\n1\nTasks\nExecution pressure from task records, task lists, pipeline runs, and acceptance criteria.\n0\nKnowledge\nDrive folders, docs, sheets, notes, artifacts, and proof sources connected to this area.\n4\nSources\nBa"
+    },
+    {
+      "name": "area-knowledge",
+      "kind": "desktop",
+      "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-area-operating-room-95927f6-2026-05-15\\area-knowledge-desktop.png",
+      "href": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=knowledge",
+      "title": "CompanyCore Areas",
+      "overflowX": false,
+      "hasOperatingGraph": true,
+      "hasLayerContext": true,
+      "hasKnowledgeTree": true,
+      "hasBackendTables": true,
+      "textStart": "LuckySparrow\nCompany Atlas\nCompany Atlas\n\nDZIALY\n\n00 Ogolny\n8\n01 Strategia\n8\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\n+ Add view\n02 Produkt\n8\n03 Sprzedaz\n8\n04 Operacje\n8\n05 Relacje\n12\n06 Kadry\n2\n07 Finanse\n1\n08 Zasoby\n3\n09 Technologia\n6\n10 Prawo\n6\n11 Innowacje\n3\n12 Zarzadzanie\n6\nWorkspace settings\nOwner\nLuckySparrow\n\nLuckySparrow / Company Atlas\n\n13 areas\n100% ownership\n0 decisions\n\nLUCKYSPARROW / GOVERN\n\n01 Strategia\n\n8 linked tables in the current workspace.\n\nReview operating system\nBack to atlas\n01\nREADY\n8\nTABLES\n0\nRECORDS\n4\nDRIVE\n2\nPROVIDER\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\nAdd view\n\nOPERATING BOARD\n\nObserve, decide, execute, delegate\nOBSERVE\nOperating health\n\nThis department has mapped backend context and can be inspected by owner and AI workflows.\n\nReady\nDECIDE\nOwner decisions\n\nUnassigned provider or Drive resources still need a MECE owner before delegation.\n\n5\nEXECUTE\nTasks and workflows\n\nTask and workflow pressure can be reviewed from the task workbench and Company OS cockpit.\n\nReady\nDELEGATE\nAI handoff\n\nJarvis and Paperclip can use read-safe context; risky commands still need owner approval.\n\nGuarded\n\nSELECTED VIEW\n\nKnowledge and proof\nKNOWLEDGE\n\nGoogle Drive is configured. Area knowledge can be reviewed from Drive mappings and imported files.\n\nDRIVE\nActive\nFILES\n4\nRECORDS\n0\nRECORDS\n0\n\nOPERATING GRAPH\n\nGoals to workflows to tasks to knowledge to sources\n8 tables\nGoals + targets\nStrategic intent, target values, success metrics, and standards visible for this department.\n3\nWorkflows\nProcesses, pipelines, procedures, dependencies, runs, and automation rhythm.\n1\nTasks\nExecution pressure from task records, task list"
+    },
+    {
+      "name": "area-knowledge",
+      "kind": "mobile",
+      "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-area-operating-room-95927f6-2026-05-15\\area-knowledge-mobile.png",
+      "href": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=knowledge",
+      "title": "CompanyCore Areas",
+      "overflowX": false,
+      "hasOperatingGraph": true,
+      "hasLayerContext": true,
+      "hasKnowledgeTree": true,
+      "hasBackendTables": true,
+      "textStart": "LuckySparrow\nDzialy\nMap\n00 Ogolny\n01 Strategia\n02 Produkt\n03 Sprzedaz\n04 Operacje\n05 Relacje\n06 Kadry\n07 Finanse\n08 Zasoby\n09 Technologia\n10 Prawo\n11 Innowacje\n12 Zarzadzanie\n\nLUCKYSPARROW / GOVERN\n\n01 Strategia\n\n8 linked tables in the current workspace.\n\nReview operating system\nBack to atlas\n01\nREADY\n8\nTABLES\n0\nRECORDS\n4\nDRIVE\n2\nPROVIDER\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\nAdd view\n\nOPERATING BOARD\n\nObserve, decide, execute, delegate\nOBSERVE\nOperating health\n\nThis department has mapped backend context and can be inspected by owner and AI workflows.\n\nReady\nDECIDE\nOwner decisions\n\nUnassigned provider or Drive resources still need a MECE owner before delegation.\n\n5\nEXECUTE\nTasks and workflows\n\nTask and workflow pressure can be reviewed from the task workbench and Company OS cockpit.\n\nReady\nDELEGATE\nAI handoff\n\nJarvis and Paperclip can use read-safe context; risky commands still need owner approval.\n\nGuarded\n\nSELECTED VIEW\n\nKnowledge and proof\nKNOWLEDGE\n\nGoogle Drive is configured. Area knowledge can be reviewed from Drive mappings and imported files.\n\nDRIVE\nActive\nFILES\n4\nRECORDS\n0\nRECORDS\n0\n\nOPERATING GRAPH\n\nGoals to workflows to tasks to knowledge to sources\n8 tables\nGoals + targets\nStrategic intent, target values, success metrics, and standards visible for this department.\n3\nWorkflows\nProcesses, pipelines, procedures, dependencies, runs, and automation rhythm.\n1\nTasks\nExecution pressure from task records, task lists, pipeline runs, and acceptance criteria.\n0\nKnowledge\nDrive folders, docs, sheets, notes, artifacts, and proof sources connected to this area.\n4\nSources\nBackend tables, provider containers, and synced files that explain where the vi"
+    }
+  ],
+  "assertionMode": "case-insensitive rerun over captured route text"
+}

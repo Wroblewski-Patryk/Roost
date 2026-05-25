@@ -1,73 +1,26 @@
 # Current Focus
 
-Last updated: 2026-05-17
+Last updated: 2026-05-24
 
 ## Active Focus
 
-Current owner-approved focus: CompanyCore is now explicitly recorded as the
-company operating system, not an embedded AI system. Humans use responsive web
-UI and AI agents use API/MCP as external clients. The active near-term mission
-is the `00 Main -> 04 Operations -> 08 Assets` operating loop from
-`docs/planning/companycore-00-04-08-operating-loop-plan.md`, starting with
-shared component inventory (`CC-UI-001`) so future screens reuse
-Tailwind/DaisyUI primitives instead of accumulating page-local UI variants.
-The first planning/analysis checkpoint in this loop is complete as of
-2026-05-16: `CC-UI-001`, `CC-00-001`, `CC-04-001`, and `CC-08-001` are saved
-under `docs/planning/` with task contracts. `CC-UI-002` introduced the shared
-`CcButton` primitive and `CC-UI-003` introduced the shared `CcDataTable`
-primitive. `CC-00-002` is now verified: `GET /v1/intake/route-proposals`
-exposes read-only route proposal lifecycle evidence under `intake:read` and
-MCP. `CC-04-002` is now verified: `GET /v1/operations/work-items` exposes a
-read-only Operations work item packet under `operations:read` and MCP. The
-`CC-08-002` Assets context read API is now verified: `GET /v1/assets/context`
-exposes a read-only Assets packet under `assets:read` and MCP. `CC-UI-004`
-then completed the selected-area UI adoption checkpoint: `00 Main` renders
-route proposal lifecycle readback, `04 Operations` renders Operations work
-items, and `08 Assets` renders the Assets resource packet using shared
-`CcDataTable`/`CcButton` paths. `CC-AUDIT-001` then audited the three
-priority sections and closed the main UX/architecture mismatch: successful
-auth and the `/dashboard` compatibility alias now open
-`/areas?area=00-ogolny&view=overview`, so `00 Ogolny` is the first company
-dashboard after login. `npm run build:web`, `npm run build:server`, rendered
-route proof, and `git diff --check` passed. `WEB-CORE-001` then narrowed the
-active web runtime to the owner-approved current surfaces only: public home,
-auth, `00 General`, `04 Operations`, and `08 Assets`. Old private web
-workbenches are no longer React app routes, while backend APIs remain available
-for future rebuilds. `WEB-QA-AUDIT-001` then audited that cleaned web
-foundation. `WEB-QA-001` then implemented the shared web quality foundation:
-default-English i18n, selectable/persisted Polish, `<html lang>` sync, typed
-API errors, user-facing auth and packet errors, shared notice feedback, shared
-form fields, localized validation, translated table states, and a
-layout/auth/department/API module split. The post-implementation audit fixed
-locale contract extraction, planned department label localization, and API
-error normalization for string, nested, and backend `internal_server_error`
-payloads, then passed Browser, Playwright, build, validation, responsive, and
-accessibility smoke gates. The sidebar foundation now shows the CompanyCore
-logo/name, company/workspace selector, all `00`-`12` departments, disabled
-planned departments, and expandable view lists for active `00/04/08` systems.
-OPS-BOARD-UX-001 then polished the active `04 Operations` management surface:
-the shell content is full width, sidebar scrolling is stable, the task board
-starts with `All`, status lanes keep readable widths, task cards show
-priority/due/readiness visually, technical blocked-action diagnostics are no
-longer board content, and a first calendar view is available. OPS-MGMT-002 then
-made `Tasks` the canonical Operations work view, removed the active duplicate
-Operations overview, grouped task lists by department with unassigned lists
-last, added a domain list-edit endpoint and modal, added drag/drop status
-movement, and replaced the calendar placeholder with day/week/month modes. The
-runtime slice is locally build- and Playwright-verified, but API integration
-test confidence remains partial until Docker/PostgreSQL validation can be rerun
-on a healthy local database environment. OPS-DEPT-FILTER-001 then aligned
-Operations list assignment and filters with canonical `00`-`12` departments,
-while keeping legacy backend operating areas as compatibility buckets. Active
-web still does not have a full canonical Department Settings editor; that is
-the next dedicated slice if the owner wants to edit department name,
-hierarchy/order, icon, description, and resource ownership. Department work can
-now continue only through a scoped department-system contract, with production
-smoke for the Operations/Assets centers, canonical Department Settings, or `05
-Relationships` as the likely next checkpoint. ASSETS-FOLDERS-002 is now
-implemented with partial database-test confidence: Assets files/folders uses
-root folder source filters, a collapsible Drive tree, and a governed folder
-settings command with root-only department assignment and child inheritance.
+Current execution focus is ARCH-EVID-002 continuation as a release-quality
+maintenance gate for the CSV-first architecture nervous system. The runtime is
+currently green and deterministic (`442` nodes / `753` relations / `34`
+chains, evidence queue `0`, chain worklist `0`, chain coverage `33/33`,
+delta `0/0/0`, report-presence `31` artifacts). The coordinator lane is
+actively maintaining source-of-truth parity across mission/state/board files
+while keeping `npm run architecture:refresh` and `npm run validate` as hard
+acceptance gates.
+
+In parallel, the next feature-delivery candidate remains
+`DMS-NEXT-004` (Relationships Management read packet and board), but it should
+only be activated when architecture maintenance stays green and no new queue
+gaps appear in generated status artifacts.
+Backend context-packet foundation for `DMS-NEXT-004` is now complete:
+`GET /v1/relationships/context` is implemented and verified; remaining scope
+was the department board surface over this read packet, now implemented and
+verified at `/areas?area=05-relacje&view=overview`.
 
 Current DMS focus: the first `00 Main` intake API/web panel, proposal-only
 route command, shared department shell, department subsystem registry, Finance

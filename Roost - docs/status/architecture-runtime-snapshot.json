@@ -1,0 +1,16 @@
+{
+  "generatedAt": "2026-05-24T21:33:08.347Z",
+  "graph": {
+    "nodes": 0,
+    "relations": 0,
+    "chains": 0
+  },
+  "evidenceQueue": 0,
+  "chainWorklist": 0,
+  "chainCoveragePercent": 100,
+  "chainIntegrityIssues": 0,
+  "nodeIntegrityIssues": 0,
+  "connectivityIssues": 0,
+  "deadNodes": 0,
+  "roadmapStatus": "GREEN"
+}

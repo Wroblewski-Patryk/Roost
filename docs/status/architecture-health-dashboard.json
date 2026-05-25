@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-05-24T21:33:09.426Z",
+  "allGreen": true,
+  "evidenceQueue": 0,
+  "chainCoverageCovered": 33,
+  "chainCoverageTotal": 33,
+  "chainIntegrityIssues": 0,
+  "nodeIntegrityIssues": 0,
+  "relationIntegrityIssues": 0,
+  "connectivityIssues": 0,
+  "deadNodes": 0,
+  "roadmapStatus": "GREEN",
+  "chainWorklistTotal": 0,
+  "delta": {
+    "nodes": 0,
+    "relations": 0,
+    "chains": 0,
+    "evidenceQueue": 0
+  },
+  "graph": {
+    "nodes": 443,
+    "relations": 755,
+    "chains": 34
+  }
+}

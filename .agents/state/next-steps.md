@@ -4,6 +4,29 @@ Last updated: 2026-05-24
 
 ## NOW
 
+1. Keep `ARCH-EVID-002` in green-state maintenance mode.
+   - Source:
+     `docs/planning/architecture-evidence-system-foundation-task-contract.md`.
+   - Current state is verified: `npm run architecture:refresh` and `npm run
+     validate` pass; graph is `442/753/34` (nodes/relations/chains); evidence
+     queue is `0`; chain hardening worklist is `0`; chain coverage gate is
+     `33/33` features (100%); CSV contract, command-contract, report-presence,
+     proof-bundle, and doc-baseline gates pass.
+   - Next slice: keep this as a release gate and only open focused follow-up
+     tasks when a new gap appears in generated status artifacts.
+
+1. Continue V1 department systems with `DMS-NEXT-004` Relationships Management
+   read packet and board, unless deployment smoke is selected first.
+   - Source:
+     `docs/planning/companycore-00-04-08-operating-loop-plan.md`.
+   - `00 -> 04 -> 08` loop foundations are complete and verified; next
+     executable functional slice remains `05 Relationships` with system-level
+     read packet + board semantics.
+   - CompanyCore remains the company operating system; AI agents remain
+     external API/MCP clients.
+   - Keep writes behind explicit command contracts, audit/events, and API
+     tests.
+
 1. Production-smoke `PEOPLE-AGENTS-PAPERCLIP-001` after redeploy.
    - Source:
      `docs/planning/people-agents-paperclip-directors-task-contract.md`.
@@ -23,6 +46,11 @@ Last updated: 2026-05-24
      `/workforce` serves the same React route instead of a protected JSON API
      response.
 
+## NEXT
+
+1. PUBLIC-HOME-ROOST-001 follow-up: replace placeholder mark with owner
+   final SVG logo without changing the approved brand system contract.
+
 1. Deploy and smoke `DMS-06-WORKFORCE-001` when the next release window opens.
    - Source:
      `docs/planning/people-agents-workforce-v1-task-contract.md`.
@@ -35,106 +63,6 @@ Last updated: 2026-05-24
      the real owner UI, and verify Paperclip consumes the queued
      `paperclip_agent_config_sync_requested` event in a separate integration
      task.
-
-1. Continue V1 department systems with `DMS-NEXT-004` Relationships Management
-   read packet and board, unless deployment smoke is selected first.
-   - Source:
-     `docs/planning/companycore-00-04-08-operating-loop-plan.md`.
-   - `CC-UI-001`, `CC-00-001`, `CC-04-001`, and `CC-08-001` are now complete
-     as planning/analysis checkpoints with task contracts and diff hygiene.
-   - `CC-UI-002` shared action/button primitive and `CC-UI-003` shared
-     table/list primitive are complete.
-   - `CC-00-002` route proposal lifecycle readback API is complete and
-     verified with `npm run test:api` against disposable PostgreSQL.
-   - `CC-04-002` Operations task read model v1 is complete and verified with
-     `npm run test:api` against disposable PostgreSQL.
-   - `CC-08-002` Assets context read API is complete and verified with
-     `npm run test:api` against disposable PostgreSQL.
-   - `CC-UI-004` selected-area UI adoption is complete and verified:
-     `00 Main` consumes route proposal lifecycle readback, `04 Operations`
-     consumes Operations work items, and `08 Assets` consumes Assets context
-     through shared `CcDataTable`/`CcButton` paths.
-   - `CC-AUDIT-001` architecture/UX audit is complete and verified:
-     successful auth and `/dashboard` now open
-     `/areas?area=00-ogolny&view=overview`, so `00 Ogolny` is the company
-     dashboard after login. Evidence screenshots live under
-     `docs/ux/evidence/cc-audit-001-*.png`.
-   - `WEB-CORE-001` web cleanup is complete and verified: the active web
-     runtime now contains only public home, auth, `00 General`, `04
-     Operations`, and `08 Assets`; old private workbench paths are no longer
-     React app routes while backend APIs remain available.
-    - `WEB-QA-001` is complete and verified: active React web now has
-      default-English i18n, selectable/persisted Polish, `<html lang>` sync,
-      typed API errors, friendly auth and packet errors, shared notice feedback,
-      shared form fields, localized validation, translated table states, and a
-      layout/auth/department/API module split. Its post-implementation audit
-      also fixed locale contract extraction, planned department label
-      localization, and API error normalization for string, nested, and backend
-      `internal_server_error` payloads.
-    - `WEB-SIDEBAR-001` is complete and verified: authenticated sidebar now
-      shows logo/name, company/workspace selector, all `00`-`12` departments,
-      disabled planned modules, active `00/04/08` dashboard links, and separate
-      expand arrows for active module view lists.
-    - `OPS-BOARD-001` is complete and verified: `04 Operations -> Tasks` now
-      uses the Operations work-item packet as a list board with task-list
-      selection, canonical CompanyCore status columns, task cards, and a modal
-      edit form backed by `PATCH /v1/operations/work-items/:id`.
-    - `OPS-BOARD-UX-001` is complete and verified: the authenticated shell is
-      full width for management views, the sidebar scrolls independently, the
-      Operations board starts with `All`, uses stable status lanes, shows
-      visual priority/due/readiness signals, hides technical blocked-action
-      diagnostics from the owner board, and adds the first calendar view.
-    - `OPS-MGMT-002` is complete with partial database-test confidence:
-      Operations now has one canonical task board, department-grouped task
-      lists, editable list metadata and department assignment, drag/drop status
-      movement, and day/week/month calendar modes. `npm run validate` and
-      Playwright proof passed; rerun `npm run test:api` when local
-      Docker/PostgreSQL validation is healthy.
-    - `OPS-DEPT-FILTER-001` is complete with partial database-test confidence:
-      Operations now displays and assigns task lists through canonical
-      `00`-`12` departments instead of legacy operating-area names, and board
-      plus Calendar filters support multi-list checkbox selection.
-    - `ASSETS-FOLDERS-002` is complete with partial database-test confidence:
-      `08 Assets -> Files and folders` now uses root folder source filters,
-      renders a collapsible Drive folder/file tree, and edits folder name,
-      parent, and root-only department assignment through
-      `PATCH /v1/assets/folders/:id`. Rerun `npm run test:api` when local
-      PostgreSQL validation is configured, then production-smoke the real Drive
-      tree after deploy.
-    - `OPS-ASSETS-POLISH-001` is complete and verified locally: Operations
-      Calendar keeps undated tasks visible, `Today` opens day mode, empty list
-      selection has a clear state, and Assets files/folders has stronger file
-      cards plus a content-first preview panel. `npm run build:web`, `npm run
-      validate`, `git diff --check`, and mocked desktop/mobile Playwright
-      proof passed.
-    - `OPS-ASSETS-REFINE-002` is complete and verified locally: the shared
-      selector now supports search/no-match states, Operations Calendar has
-      Workflow access and empty-selection parity, and Assets previews show
-      resource path/source/depth context. `npm run build:web`, `npm run
-      validate`, `git diff --check`, and mocked Playwright proofs passed.
-    - `OPS-ASSETS-DENSE-003` is complete and verified locally: Tasks and
-      Calendar share one task text/priority filter, and Assets files/folders
-      can sort visible cards by name, modified date, type, or source.
-    - `OPS-ASSETS-FILTER-004` is complete and verified locally: Operations
-      Tasks/Calendar and Assets Files/Folders now have recoverable
-      filtered-empty states with clear-filter actions.
-    - `OPS-ASSETS-SMART-005` is complete and verified locally: Operations
-      Tasks/Calendar now share due-date scope filtering, and Assets
-      Files/Folders can filter by preview type including folders, Markdown,
-      CSV, JSON, images, PDF, text, and unsupported files.
-    - `ASSETS-IMAGE-PREVIEW-004` is complete and verified locally: Drive image
-      files now render through a workspace-scoped authenticated CompanyCore
-      preview route and frontend blob rendering instead of fragile direct
-      Drive image URLs.
-   - CompanyCore remains the company operating system; AI agents remain
-     external API/MCP clients.
-   - Keep writes behind explicit command contracts, audit/events, and API
-     tests.
-   - Next department work must first reintroduce any needed web surface through
-     the route registry, a task contract, and the same selected-area packet
-     pattern instead of restoring old page-local workbenches.
-
-## NEXT
 
 1. Decide and implement external identity mapping before ClickUp assignee or
    Google Drive sharing writes.

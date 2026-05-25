@@ -1,8 +1,215 @@
 # PROJECT_STATE
 
-Last updated: 2026-05-20
+Last updated: 2026-05-24
 
 ## Latest Shell Checkpoint
+- 2026-05-24: Coordinator queue-parity checkpoint completed. Canonical
+  execution queues were synchronized so active priority is explicit and
+  consistent across source-of-truth files:
+  `.codex/context/TASK_BOARD.md` (`In Progress` cleaned of stale items),
+  `.agents/state/current-focus.md` (ARCH-EVID-002 as active release gate), and
+  `docs/planning/mvp-next-commits.md` (`NOW` = ARCH-EVID-002 maintenance,
+  `NEXT` = DMS-NEXT-004). Validation proof: `npm run architecture:refresh`
+  PASS with architecture runtime unchanged and green
+  (`442/753/34`, evidence queue `0`, chain worklist `0`, coverage `33/33`,
+  delta `0/0/0`, report-presence `31` artifacts).
+- 2026-05-24: ARCH-EVID-002 continuation checkpoint re-synchronized
+  source-of-truth state rows (`active-mission`, `task board`,
+  `module-confidence-ledger`, `requirements-verification-matrix`) to the
+  current architecture runtime baseline and completed a local Windows build
+  artifact recovery (`dist` + `node_modules/.vite-temp` reset) after
+  reproducible `EPERM` write locks. Final proof: `npm run architecture:refresh`
+  PASS and `npm run validate` PASS with graph `442/753/34`, evidence queue `0`,
+  chain hardening `0`, chain coverage `33/33`, delta drift `0/0/0`,
+  health-dashboard gate PASS, and report-presence gate PASS (`31` required
+  artifacts).
+- 2026-05-24: ARCH-EVID-002 health-dashboard semantic gate integrated into
+  the mandatory refresh pipeline. Added
+  `scripts/check-architecture-health-dashboard-gate.mjs`,
+  `architecture:gate-health-dashboard`, and report-presence enforcement for
+  `docs/status/architecture-health-dashboard-gate-report.json`. Validation
+  proof: `npm run validate` PASS with dashboard gate PASS, roadmap/impact/risk
+  analytical gates PASS, and report-presence gate confirming `31` required
+  artifacts.
+- 2026-05-24: OPS-ROOST-DOMAINS-001 runtime smoke reconfirmed from repository
+  coordinator flow. External checks reported:
+  `https://roost.luckysparrow.ch/` -> `200`,
+  `https://api.roost.luckysparrow.ch/health` -> `200` with build commit
+  `451125d4f2355dcdaad147533b8d4edeef592298`,
+  and preflight
+  `OPTIONS https://api.roost.luckysparrow.ch/v1/health` from
+  `Origin: https://roost.luckysparrow.ch` -> `204` with
+  `Access-Control-Allow-Origin: https://roost.luckysparrow.ch`.
+  Domain routing and CORS origin contract are currently healthy.
+- 2026-05-24: ARCH-EVID-002 analytical proof quality hardening completed.
+  Added semantic validation gates for both temporal impact drift and risk
+  prioritization outputs: `architecture:gate-impact-delta` and
+  `architecture:gate-risk-hotspots`. New required artifacts:
+  `docs/status/architecture-impact-delta-gate-report.json` and
+  `docs/status/architecture-risk-hotspots-gate-report.json`. Validation proof:
+  `npm run validate` PASS with `impact-delta` gate PASS, `risk-hotspots` gate
+  PASS, and `architecture:gate-report-presence` confirming `29` required
+  artifacts.
+- 2026-05-24: ARCH-EVID-002 integrated automated risk hot-spot prioritization
+  into the mandatory architecture refresh loop. Added
+  `scripts/build-architecture-risk-hotspots-report.mjs`,
+  `architecture:build-risk-hotspots-report`, and report-presence enforcement
+  for `docs/status/architecture-risk-hotspots-report.json`. This turns impact
+  and integrity evidence into an always-fresh risk-ranked attention queue for
+  system-level change analysis. Validation proof: `npm run architecture:refresh`
+  PASS and `npm run validate` PASS with graph `442/753/34`, evidence queue `0`,
+  chain hardening `0`, coverage `33/33`, delta drift `0/0/0`, roadmap `GREEN`,
+  proof bundle `allGatesPass=true`, and report-presence gate `27` artifacts.
+- 2026-05-24: ARCH-EVID-002 now includes continuous impact-delta auditing as
+  part of the default architecture refresh runtime. Added
+  `scripts/build-architecture-impact-delta-report.mjs`,
+  `architecture:build-impact-delta-report`, and report-presence enforcement
+  for `docs/status/architecture-impact-delta-report.json`. This closes the
+  last gap between static impact snapshots and temporal change-impact evidence:
+  every refresh now emits both current impact index and previous-vs-current
+  impact deltas. Validation proof: `npm run architecture:refresh` PASS and
+  `npm run validate` PASS with graph `442/753/34`, evidence queue `0`, chain
+  hardening `0`, coverage `33/33`, delta drift `0/0/0`, roadmap `GREEN`,
+  proof bundle `allGatesPass=true`, and report-presence gate `26` artifacts.
+- 2026-05-24: ARCH-EVID-002 maintenance checkpoint re-verified with the full
+  hardened architecture gate stack after command-contract and semantic
+  report-presence enforcement. `npm run validate` passed end-to-end and the
+  architecture refresh pipeline remained idempotent. Current green baseline:
+  graph `442` nodes, `753` relations, `34` chains; evidence queue `0`; chain
+  hardening `0`; chain coverage `33/33` (100%); integrity/connectivity/dead
+  nodes `0`; delta `0/0/0`; roadmap `GREEN`; proof bundle
+  `allGatesPass=true`; command contract `30` required scripts present; and
+  report-presence gate confirmed all required artifacts with semantic status
+  checks.
+- 2026-05-24: ARCH-EVID-002 added delta-zero idempotence gating
+  (`npm run architecture:gate-delta-zero`) to enforce stable architecture
+  refresh snapshots (`nodes/relations/chains delta == 0`) before release-level
+  evidence acceptance. The gate writes
+  `docs/status/architecture-delta-zero-report.json`. Current green baseline:
+  graph `440` nodes, `751` relations, `34` chains; evidence queue `0`; chain
+  hardening `0`; chain coverage `33/33` (100%); and all integrity,
+  connectivity, link, artifact, report-presence, doc-baseline, delta-zero, and
+  evidence gates passing.
+- 2026-05-24: ARCH-EVID-002 added report-presence gating
+  (`npm run architecture:gate-report-presence`) to ensure required
+  architecture graph and status artifacts are present and non-empty on every
+  refresh. The gate writes
+  `docs/status/architecture-report-presence-report.json` and now runs before
+  the final evidence gate. Current green baseline is graph `439` nodes, `750`
+  relations, `34` chains with evidence queue `0`, chain hardening `0`, chain
+  coverage `33/33` (100%), and all integrity/connectivity/link/artifact/
+  report-presence/doc-baseline gates passing.
+- 2026-05-24: ARCH-EVID-002 added node artifact completeness gating
+  (`npm run architecture:gate-node-artifacts`) so every canonical architecture
+  node row must have a generated Obsidian markdown card under
+  `docs/architecture/nodes/generated/`. The gate writes
+  `docs/status/architecture-node-artifacts-report.json` and is enforced inside
+  `architecture:refresh`. Current verification baseline is green at graph
+  `438` nodes, `749` relations, `34` chains with evidence queue `0`, chain
+  hardening `0`, chain coverage `33/33` (100%), and all
+  integrity/connectivity/link/artifact/doc-baseline gates passing.
+- 2026-05-24: ARCH-EVID-002 hardening wave added generated-node wikilink
+  integrity gating (`npm run architecture:gate-node-links`) to validate that
+  every `[[...]]` reference in `docs/architecture/nodes/generated/*.md`
+  resolves to a canonical registry node. The gate is now part of
+  `architecture:refresh` and writes
+  `docs/status/architecture-node-links-report.json`. Current verification is
+  green: `npm run architecture:refresh` and `npm run validate` PASS with graph
+  `437` nodes, `748` relations, `34` chains, evidence queue `0`, chain
+  hardening `0`, chain coverage `33/33` (100%), and all
+  integrity/connectivity/dead-node/doc-baseline/link gates passing.
+- 2026-05-24: ARCH-EVID-002 hardening wave added a strict CSV contract gate
+  (`npm run architecture:gate-csv-contract`) enforcing required registry
+  headers and status vocabularies across nodes, relations, chains, and
+  evidence. The architecture refresh pipeline now runs this gate by default.
+  During rollout, the repository docs root was found under `Roost - docs`
+  while scripts rely on `docs/*`; a local `docs` junction to `Roost - docs`
+  was created to preserve deterministic script paths without rewriting all
+  architecture tooling. Current verification is green:
+  `npm run architecture:refresh` and `npm run validate` PASS with graph `436`
+  nodes, `747` relations, `34` chains, evidence queue `0`, chain hardening
+  `0`, chain coverage `33/33` (100%), and all integrity/connectivity/dead-node
+  gates passing.
+- 2026-05-24: ARCH-EVID-002 maintenance re-verified after extended gate stack
+  hardening. Earlier same-day runtime snapshot (superseded by later checkpoint)
+  was green and idempotent:
+  `npm run architecture:refresh` and `npm run validate` PASS with graph `434`
+  nodes, `745` relations, `34` chains, evidence queue `0`, chain hardening
+  worklist `0`, chain coverage `33/33` (100%), chain integrity issues `0`,
+  node integrity issues `0`, relation integrity issues `0`, connectivity
+  issues `0`, dead nodes `0`, roadmap status `GREEN`, and delta drift `0`.
+  `architecture:sync-extended` remains stable (`added: 0` for all extended
+  ledgers).
+- 2026-05-24: ARCH-EVID-002 continuation reached green end-to-end gate state.
+  Historical earlier baseline in the same delivery wave:
+  `npm run architecture:refresh` reports graph `347` nodes, `225` relations,
+  `34` chains, evidence queue `0`, chain hardening worklist `0`, evidence gate
+  PASS, and chain coverage gate `33/33` features (100%). The final residual
+  chain gap (`CHAIN-ASSETS-CONTEXT`) was closed with production Drive smoke
+  evidence links, and the DB auto-node evidence regression was fixed by
+  stabilizing `database_model` connection-proof fallback in
+  `scripts/enrich-architecture-evidence.mjs`.
+- 2026-05-24: Validation build blocker fixed during architecture mission
+  continuation. `npm run validate` initially failed due to unresolved import
+  `../../layout/public-layout` in public/auth routes. Restored missing
+  `web/src/layout/public-layout.tsx`; full `npm run validate` now passes again.
+- 2026-05-24: PUBLIC-HOME-ROOST-001 polished the public Roost homepage. The
+  `/` route now presents a dark Roost command-center hero with a responsive
+  topology preview instead of the previous long department-card list. Public
+  navigation no longer has a separate `Home` button because the logo/wordmark
+  links to `/`; the language selector moved to the footer; and the footer now
+  includes the LuckySparrow attribution with a theme-colored heart symbol and
+  `luckysparrow.ch`. The supplied Roost Brand System v1 plus reference-image
+  facts are recorded in `docs/ux/roost-brand-book.md` and linked from
+  `docs/ux/design-system-contract.md`. Validation passed: `npm run build:web`,
+  `npm run build:server`, `npm run validate`, `git diff --check`, and
+  Playwright fallback on real Express `/` at desktop `1440x1000` and mobile
+  `390x844` with no console warnings, no page errors, no horizontal overflow,
+  no header language selector, no Home nav item, and zero old department-list
+  hero cards. Evidence screenshots:
+  `docs/ux/evidence/public-home-roost-desktop.png` and
+  `docs/ux/evidence/public-home-roost-mobile.png`. The scoped public-home
+  commit `0bf78784a0806873ce5531223185769b40b1b433` was pushed to `main`.
+  Production smoke then passed: `https://api.roost.luckysparrow.ch/health`
+  reported the same commit, `https://roost.luckysparrow.ch/` returned `200`,
+  and Playwright production proof found the new hero, no separate `Home` nav
+  item, footer language selector, zero old department-list hero cards, no
+  console/page errors, and no horizontal overflow.
+- 2026-05-24: OPS-ROOST-DOMAINS-001 diagnosed the new Roost production
+  domains. DNS for `roost.luckysparrow.ch` and
+  `api.roost.luckysparrow.ch` resolves to `141.227.149.67`.
+  `https://api.roost.luckysparrow.ch/health` returns `200` with build commit
+  `3e9319292f8f33c4a1c4892477b9363a501253a2`, but
+  `https://roost.luckysparrow.ch/` returns `503 Service Unavailable` with
+  `no available server`, indicating Coolify/Traefik has not attached the web
+  host to the running backend service. The deployed image also rejects
+  `Origin: https://roost.luckysparrow.ch` to the Roost API with `403`, so the
+  repository-side domain contract now adds Roost CORS/API-host defaults. The
+  remaining operator action is to attach the web domain to backend port `3000`
+  in Coolify and redeploy the current commit.
+- 2026-05-24: OPS-ROOST-DOMAINS-001 Coolify remediation completed. In team
+  `LuckySparrow`, project `LuckySparrow`, production app `Roost`, the backend
+  domain field contained a stray space before
+  `https://roost.luckysparrow.ch`, which Coolify rendered as malformed
+  `:// https://roost.luckysparrow.ch`. The domain list was normalized,
+  Roost CORS/API base environment variables were updated, and two controlled
+  Roost redeploys completed. Final smoke passed:
+  `https://roost.luckysparrow.ch/` returned `200`,
+  `https://api.roost.luckysparrow.ch/health` returned `200`, and CORS
+  preflight from `https://roost.luckysparrow.ch` to the Roost API returned
+  `204` with the Roost origin allowed.
+- 2026-05-24: ARCH-EVID-001 implemented the first architecture evidence system
+  foundation. The project now has CSV-first registries for architecture nodes,
+  features, functions, components, API routes, pages, UI elements, agents,
+  prompts, events, workflows, dependency relations, function chains, test
+  mappings, and evidence status. `scripts/generate-architecture-graph.mjs`
+  validates graph references and generates Obsidian Markdown node pages,
+  `docs/graphs/project-graph.mmd`, `docs/graphs/project-graph.json`, and
+  `docs/status/architecture-evidence-summary.md`. Validation passed:
+  `npm run architecture:graph` generated 79 nodes, 33 relations, and 6 chains.
+  The foundation explicitly does not claim full repository coverage yet; the
+  next checkpoint is automated extraction from `adapterManifest`, Prisma
+  schema, React route registry, and tests.
 - 2026-05-24: Repository rename deployment proof completed. After pushing
   `main` to `c5b9aca`, Coolify created an in-progress `Roost` deployment,
   public API health briefly returned `503` during rollout, and

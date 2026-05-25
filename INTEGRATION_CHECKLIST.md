@@ -20,6 +20,9 @@ Use this checklist before marking any integrated feature complete.
 - [ ] Feature works after refresh, restart, or reload.
 - [ ] No regression is introduced in adjacent flows.
 - [ ] Logs and errors do not leak secrets or private data.
+- [ ] Architecture evidence registry and proofs are refreshed and pass the
+  evidence gate with zero actionable items.
+- [ ] Function-chain coverage passes for all features with API routes.
 
 ## Vertical Slice Rule
 

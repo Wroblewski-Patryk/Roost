@@ -1,0 +1,102 @@
+[
+  {
+    "name": "dashboard",
+    "kind": "desktop",
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-auth-v1-2026-05-15\\dashboard-desktop.png",
+    "consoleErrors": [],
+    "failed": [],
+    "href": "https://companycore.luckysparrow.ch/dashboard",
+    "path": "/dashboard",
+    "title": "CompanyCore Company Atlas",
+    "text": "LuckySparrow\nCompany Atlas\nCompany Atlas\n\nDZIALY\n\n00 Ogolny\n0\n01 Strategia\n0\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\n+ Add view\n02 Produkt\n0\n03 Sprzedaz\n0\n04 Operacje\n0\n05 Relacje\n0\n06 Kadry\n0\n07 Finanse\n0\n08 Zasoby\n0\n09 Technologia\n0\n10 Prawo\n0\n11 Innowacje\n0\n12 Zarzadzanie\n0\nWorkspace settings\nOwner\nLuckySparrow\n\nLuckySparrow / Company Atlas\n\n13 areas\n8% ownership\n1 decisions\n\nAPQC LENS\n\nCompany operating system\nAll\nGovern\nBuild\nSell\nDeliver\nLearn\nAutomate\n00 Ogolny\nReview\n01\nStrategia\n02\nProdukt\n03\nSprzedaz\n04\nOperacje\n05\nRelacje\n06\nKadry\n07\nFinanse\n08\nZasoby\n09\nTechnologia\n10\nPrawo\n11\nInnowacje\n12\nZarzadzanie\nReady\nReview\nEmpty accepted\n\nGOVERN AREA\n\n01 Strategia\nGoals, governance, planning\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\nStrategia is healthy.\n1 decisions need review.\nArea signals\n4\nGoals\n3\nWorkflows\n12\nTasks\n8\nKnowledge\nJarvis read-only ready\nContext is trusted for read access.\nReady\nReview strategy decisions\nOpen area detail\nMECE accountability: one accountable owner per goal, workflow, and AI action.\nToday\nCompany priority\n3 unassigned resources in 00 Ogolny.\nOpen\nStrategy decision\nQuarterly goal review needs your decision.\n1 open\nAI handoff\nJarvis can summarize strategy context.\nReady\nProof\nDrive sync healthy 8m ago.\nOpen\nSources\n/v1/connection\nOperating model\nMCP scope\nOverview\nSee the whole\nArea\nFocus the company\nCapability\nChoose what matters\nRecord\nOpen the right record\nEvidence\nVerify with proof\nAI action\nDelegate or execute",
+    "overflow": false,
+    "oldAuth": false,
+    "oldDashboardError": false,
+    "hasAtlas": true,
+    "hasStrategia": true
+  },
+  {
+    "name": "area-overview",
+    "kind": "desktop",
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-auth-v1-2026-05-15\\area-overview-desktop.png",
+    "consoleErrors": [],
+    "failed": [],
+    "href": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=overview",
+    "path": "/areas?area=01-strategia&view=overview",
+    "title": "CompanyCore Areas",
+    "text": "CC\nCompanyCore\nNo active workspace\n\nACTIVE WORKSPACE\n\nNo active workspace\nSigned-out preview\nareas\n\nCOMMAND\n\nCompany map\n\nAREAS\n\nAreas & resources\nRelationship review\nCompany data\n\nWORKFLOWS\n\nTasks & delivery\nPipeline / CRM\nCompany OS\n\nINTEGRATIONS & AGENTS\n\nIntegration health\nClickUp bridge\nGoogle Drive\nAgent access\nMCP tools\n\nWORKSPACE\n\nAccount & readiness\nWaiting for owner session\n\nCOMPANY COMMAND\n\nAreas & resources\nSigned-out preview\nNo active workspace\nareas\nLoading operating areas\n\nCompanyCore is reading departments, mapped tables, provider ownership, and agent-visible capability context.",
+    "overflow": false,
+    "oldAuth": false,
+    "oldDashboardError": false,
+    "hasAtlas": false,
+    "hasStrategia": false
+  },
+  {
+    "name": "area-ai",
+    "kind": "desktop",
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-auth-v1-2026-05-15\\area-ai-desktop.png",
+    "consoleErrors": [],
+    "failed": [
+      "GET https://companycore.luckysparrow.ch/v1/google-drive/files net::ERR_ABORTED"
+    ],
+    "href": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=ai",
+    "path": "/areas?area=01-strategia&view=ai",
+    "title": "CompanyCore Areas",
+    "text": "CC\nCompanyCore\nNo active workspace\n\nACTIVE WORKSPACE\n\nNo active workspace\nSigned-out preview\nareas\n\nCOMMAND\n\nCompany map\n\nAREAS\n\nAreas & resources\nRelationship review\nCompany data\n\nWORKFLOWS\n\nTasks & delivery\nPipeline / CRM\nCompany OS\n\nINTEGRATIONS & AGENTS\n\nIntegration health\nClickUp bridge\nGoogle Drive\nAgent access\nMCP tools\n\nWORKSPACE\n\nAccount & readiness\nWaiting for owner session\n\nCOMPANY COMMAND\n\nAreas & resources\nSigned-out preview\nNo active workspace\nareas\nLoading operating areas\n\nCompanyCore is reading departments, mapped tables, provider ownership, and agent-visible capability context.",
+    "overflow": false,
+    "oldAuth": false,
+    "oldDashboardError": false,
+    "hasAtlas": false,
+    "hasStrategia": false
+  },
+  {
+    "name": "dashboard",
+    "kind": "mobile",
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-auth-v1-2026-05-15\\dashboard-mobile.png",
+    "consoleErrors": [],
+    "failed": [],
+    "href": "https://companycore.luckysparrow.ch/dashboard",
+    "path": "/dashboard",
+    "title": "CompanyCore Company Atlas",
+    "text": "LuckySparrow\nCompany Atlas\n\nArea-first company control\n\nOpen priority\n13\nareas\n8%\nownership\n1\ndecisions\nAI\nguarded\nDzialy\nMap\n00 Ogolny\n01 Strategia\n02 Produkt\n03 Sprzedaz\n04 Operacje\n05 Relacje\n06 Kadry\n07 Finanse\n08 Zasoby\n09 Technologia\n10 Prawo\n11 Innowacje\n12 Zarzadzanie\nCompany overview\nOverview\nArea\nCapability\n00 Ogolny\nReview\n01\n02\n03\n04\n05\n06\n07\n08\n09\n10\n11\n12\nReady\nReview\nEmpty accepted\n\nGOVERN AREA\n\n01 Strategia\nGoals, governance, planning\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\nStrategia is healthy.\n1 decisions need review.\nArea signals\n4\nGoals\n3\nWorkflows\n12\nTasks\n8\nKnowledge\nJarvis read-only ready\nContext is trusted for read access.\nReady\nReview strategy decisions\nOpen area detail\nMECE accountability: one accountable owner per goal, workflow, and AI action.\nToday\nCompany priority\n3 unassigned resources in 00 Ogolny.\nOpen\nStrategy decision\nQuarterly goal review needs your decision.\n1 open\nAI handoff\nJarvis can summarize strategy context.\nReady\nProof\nDrive sync healthy 8m ago.\nOpen\nSources\n/v1/connection\nOperating model\nMCP scope\nAtlas\nArea\nTasks\nKnowledge\nAI",
+    "overflow": false,
+    "oldAuth": false,
+    "oldDashboardError": false,
+    "hasAtlas": true,
+    "hasStrategia": true
+  },
+  {
+    "name": "area-overview",
+    "kind": "mobile",
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-auth-v1-2026-05-15\\area-overview-mobile.png",
+    "consoleErrors": [],
+    "failed": [],
+    "href": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=overview",
+    "path": "/areas?area=01-strategia&view=overview",
+    "title": "CompanyCore Areas",
+    "text": "CC\n\nCOMPANY COMMAND\n\nAreas & resources\nCompany map\nAreas & resources\nRelationship review\nCompany data\nTasks & delivery\nPipeline / CRM\nCompany OS\nIntegration health\nLoading operating areas\n\nCompanyCore is reading departments, mapped tables, provider ownership, and agent-visible capability context.",
+    "overflow": false,
+    "oldAuth": false,
+    "oldDashboardError": false,
+    "hasAtlas": false,
+    "hasStrategia": false
+  },
+  {
+    "name": "area-ai",
+    "kind": "mobile",
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-auth-v1-2026-05-15\\area-ai-mobile.png",
+    "consoleErrors": [],
+    "failed": [
+      "GET https://companycore.luckysparrow.ch/v1/google-drive/files net::ERR_ABORTED"
+    ],
+    "href": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=ai",
+    "path": "/areas?area=01-strategia&view=ai",
+    "title": "CompanyCore Areas",
+    "text": "CC\n\nCOMPANY COMMAND\n\nAreas & resources\nCompany map\nAreas & resources\nRelationship review\nCompany data\nTasks & delivery\nPipeline / CRM\nCompany OS\nIntegration health\nLoading operating areas\n\nCompanyCore is reading departments, mapped tables, provider ownership, and agent-visible capability context.",
+    "overflow": false,
+    "oldAuth": false,
+    "oldDashboardError": false,
+    "hasAtlas": false,
+    "hasStrategia": false
+  }
+]

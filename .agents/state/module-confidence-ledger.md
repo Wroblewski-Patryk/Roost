@@ -2,6 +2,39 @@
 
 Last updated: 2026-05-24
 
+Public homepage brand note: PUBLIC-HOME-ROOST-001 is VERIFIED locally. The
+public `/` surface now uses a Roost command-center hero with topology preview
+instead of the old long department-card list. The public header no longer has
+a separate `Home` button because the wordmark links to `/`; language selection
+now lives in the footer, and the footer attribution reads as `Made with` plus
+a theme-colored heart symbol by `luckysparrow.ch`. The supplied Roost Brand
+System v1 is recorded in `docs/ux/roost-brand-book.md` and linked from the
+design-system contract. Evidence: `npm run build:web`, `npm run build:server`,
+`npm run validate`, `git diff --check`, and Playwright fallback on real
+Express `/` for desktop `1440x1000` and mobile `390x844` with no console
+warnings, page errors, horizontal overflow, header language selector, Home nav
+item, or old department-list hero cards. A follow-up concept-parity pass after
+owner feedback replaced the remaining light public frame with the dark Roost
+cockpit header/footer, centered concept nav, large wordmark hero, orbit
+topology, status rail, and three-module feature strip; Playwright proof on
+`http://127.0.0.1:3241/` passed for desktop `1440x1100` and mobile `390x900`.
+Screenshots:
+`docs/ux/evidence/public-home-roost-desktop.png` and
+`docs/ux/evidence/public-home-roost-mobile.png`. Residual risk: final logo SVG
+is pending, so the UI intentionally uses a restrained placeholder mark.
+
+Architecture evidence system note: ARCH-EVID-002 continuation is VERIFIED for
+the active runtime scope. The CSV-first architecture system now runs as a
+deterministic gate pipeline (docs-root preflight/graph/sync/extended-sync/
+csv-contract/backfill/coverage/evidence/chains/relations/worklists/gates) and
+is green end-to-end. Latest proof on 2026-05-24:
+`npm run architecture:refresh` and `npm run validate` passed with graph `442`
+nodes, `753` relations, `34` chains, evidence queue `0`, chain hardening
+worklist `0`, chain coverage gate `33/33` features (100%), CSV contract gate
+pass, and doc-baseline gate pass. The previous DB auto-node evidence regression
+was fixed by adding stable database-model connection-proof fallback in
+`scripts/enrich-architecture-evidence.mjs`.
+
 Management department catalog note: MGMT-DEPT-001 is VERIFIED locally. `12
 Management -> Departments` now exposes the workspace department catalog through
 `workspace_departments` and `/v1/departments`, supports editable system

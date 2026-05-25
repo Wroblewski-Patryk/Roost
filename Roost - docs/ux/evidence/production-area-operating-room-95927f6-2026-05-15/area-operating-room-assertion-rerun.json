@@ -1,0 +1,78 @@
+{
+  "consoleErrors": [],
+  "failed": [],
+  "checks": [
+    {
+      "name": "area-overview",
+      "kind": "desktop",
+      "overflowX": false,
+      "hasOperatingGraph": true,
+      "hasLayerContext": true,
+      "hasKnowledgeTree": true,
+      "hasBackendTables": true
+    },
+    {
+      "name": "area-overview",
+      "kind": "mobile",
+      "overflowX": false,
+      "hasOperatingGraph": true,
+      "hasLayerContext": true,
+      "hasKnowledgeTree": true,
+      "hasBackendTables": true
+    },
+    {
+      "name": "area-goals",
+      "kind": "desktop",
+      "overflowX": false,
+      "hasOperatingGraph": true,
+      "hasLayerContext": true,
+      "hasKnowledgeTree": true,
+      "hasBackendTables": true
+    },
+    {
+      "name": "area-goals",
+      "kind": "mobile",
+      "overflowX": false,
+      "hasOperatingGraph": true,
+      "hasLayerContext": true,
+      "hasKnowledgeTree": true,
+      "hasBackendTables": true
+    },
+    {
+      "name": "area-workflows",
+      "kind": "desktop",
+      "overflowX": false,
+      "hasOperatingGraph": true,
+      "hasLayerContext": true,
+      "hasKnowledgeTree": true,
+      "hasBackendTables": true
+    },
+    {
+      "name": "area-workflows",
+      "kind": "mobile",
+      "overflowX": false,
+      "hasOperatingGraph": true,
+      "hasLayerContext": true,
+      "hasKnowledgeTree": true,
+      "hasBackendTables": true
+    },
+    {
+      "name": "area-knowledge",
+      "kind": "desktop",
+      "overflowX": false,
+      "hasOperatingGraph": true,
+      "hasLayerContext": true,
+      "hasKnowledgeTree": true,
+      "hasBackendTables": true
+    },
+    {
+      "name": "area-knowledge",
+      "kind": "mobile",
+      "overflowX": false,
+      "hasOperatingGraph": true,
+      "hasLayerContext": true,
+      "hasKnowledgeTree": true,
+      "hasBackendTables": true
+    }
+  ]
+}

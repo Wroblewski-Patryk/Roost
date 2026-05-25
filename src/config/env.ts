@@ -1,8 +1,15 @@
 import "dotenv/config";
 
 const productionCorsFallbackOrigins = [
+  "https://roost.luckysparrow.ch",
+  "https://api.roost.luckysparrow.ch",
   "https://companycore.luckysparrow.ch",
   "https://api.companycore.luckysparrow.ch"
+];
+
+const productionApiHostFallbacks = [
+  "api.roost.luckysparrow.ch",
+  "api.companycore.luckysparrow.ch"
 ];
 
 function splitCsv(value: string | undefined) {
@@ -56,6 +63,13 @@ function getCorsAllowedOrigins() {
     : productionCorsFallbackOrigins;
 }
 
+function getApiHostnames() {
+  const configuredHosts = splitCsv(process.env.COMPANYCORE_API_HOSTS);
+  return configuredHosts.length > 0
+    ? configuredHosts
+    : productionApiHostFallbacks;
+}
+
 const nodeEnv = process.env.NODE_ENV ?? "development";
 
 export const env = {
@@ -63,6 +77,7 @@ export const env = {
   port: Number(process.env.PORT ?? 3102),
   databaseUrl: requireProductionValue("DATABASE_URL"),
   publicApiBaseUrl: process.env.COMPANYCORE_PUBLIC_API_BASE_URL,
+  apiHostnames: getApiHostnames(),
   googleOAuthClientId: process.env.GOOGLE_OAUTH_CLIENT_ID ?? (process.env.NODE_ENV === "production" ? undefined : "dev-google-oauth-client-id"),
   googleOAuthClientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET ?? (process.env.NODE_ENV === "production" ? undefined : "dev-google-oauth-client-secret"),
   buildCommit: firstEnv([

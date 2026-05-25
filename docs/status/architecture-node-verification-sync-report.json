@@ -1,0 +1,136 @@
+{
+  "synchronizedAt": "2026-05-24T21:32:53.380Z",
+  "updated": 0,
+  "files": [
+    {
+      "file": "docs/architecture/nodes/nodes.csv",
+      "updated": 0,
+      "total": 63
+    },
+    {
+      "file": "docs/architecture/nodes/features.csv",
+      "updated": 0,
+      "total": 34
+    },
+    {
+      "file": "docs/architecture/nodes/functions.csv",
+      "updated": 0,
+      "total": 5
+    },
+    {
+      "file": "docs/architecture/nodes/components.csv",
+      "updated": 0,
+      "total": 7
+    },
+    {
+      "file": "docs/architecture/nodes/services.csv",
+      "updated": 0,
+      "total": 3
+    },
+    {
+      "file": "docs/architecture/nodes/classes.csv",
+      "updated": 0,
+      "total": 4
+    },
+    {
+      "file": "docs/architecture/nodes/api_routes.csv",
+      "updated": 0,
+      "total": 176
+    },
+    {
+      "file": "docs/architecture/nodes/pages.csv",
+      "updated": 0,
+      "total": 15
+    },
+    {
+      "file": "docs/architecture/nodes/layouts.csv",
+      "updated": 0,
+      "total": 2
+    },
+    {
+      "file": "docs/architecture/nodes/hooks.csv",
+      "updated": 0,
+      "total": 1
+    },
+    {
+      "file": "docs/architecture/nodes/stores.csv",
+      "updated": 0,
+      "total": 0
+    },
+    {
+      "file": "docs/architecture/nodes/ui_elements.csv",
+      "updated": 0,
+      "total": 6
+    },
+    {
+      "file": "docs/architecture/nodes/animations.csv",
+      "updated": 0,
+      "total": 0
+    },
+    {
+      "file": "docs/architecture/nodes/database_models.csv",
+      "updated": 0,
+      "total": 62
+    },
+    {
+      "file": "docs/architecture/nodes/migrations.csv",
+      "updated": 0,
+      "total": 27
+    },
+    {
+      "file": "docs/architecture/nodes/integrations.csv",
+      "updated": 0,
+      "total": 13
+    },
+    {
+      "file": "docs/architecture/nodes/middleware.csv",
+      "updated": 0,
+      "total": 5
+    },
+    {
+      "file": "docs/architecture/nodes/pipelines.csv",
+      "updated": 0,
+      "total": 39
+    },
+    {
+      "file": "docs/architecture/nodes/cron_jobs.csv",
+      "updated": 0,
+      "total": 1
+    },
+    {
+      "file": "docs/architecture/nodes/tests.csv",
+      "updated": 0,
+      "total": 13
+    },
+    {
+      "file": "docs/architecture/nodes/docs.csv",
+      "updated": 0,
+      "total": 10
+    },
+    {
+      "file": "docs/architecture/nodes/config_files.csv",
+      "updated": 0,
+      "total": 1
+    },
+    {
+      "file": "docs/architecture/nodes/agents.csv",
+      "updated": 0,
+      "total": 2
+    },
+    {
+      "file": "docs/architecture/nodes/prompts.csv",
+      "updated": 0,
+      "total": 1
+    },
+    {
+      "file": "docs/architecture/nodes/events.csv",
+      "updated": 0,
+      "total": 2
+    },
+    {
+      "file": "docs/architecture/nodes/workflows.csv",
+      "updated": 0,
+      "total": 2
+    }
+  ]
+}

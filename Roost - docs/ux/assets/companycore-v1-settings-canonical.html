@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CompanyCore Contextual Integration Settings Canonical</title>
+  <style>
+    :root {
+      --ink: #071225;
+      --muted: #5a687d;
+      --line: #d1deee;
+      --blue: #2563df;
+      --nav: #07162b;
+      --surface: #eef5fb;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--surface); font-weight: 700; }
+    .desktop { width: 1365px; min-height: 900px; display: grid; grid-template-columns: 232px 1fr; }
+    .sidebar {
+      background: linear-gradient(180deg, var(--nav), #06101f);
+      color: #eaf3ff;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .brand { display: grid; grid-template-columns: 38px 1fr; gap: 12px; align-items: center; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,.12); }
+    .mark { width: 38px; height: 38px; border-radius: 8px; background: linear-gradient(135deg, #1d64c8, #0f9b70); }
+    .brand small { display: block; color: #9fb1ca; font-size: 12px; }
+    .nav-title { color: #9fb1ca; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; }
+    .nav-item { min-height: 36px; padding: 8px 10px; border-radius: 7px; color: #dfeaff; font-size: 13px; display: flex; justify-content: space-between; }
+    .nav-item.active { border: 1px solid rgba(89,142,255,.68); background: rgba(86,127,196,.25); color: white; }
+    .sidebar-bottom { margin-top: auto; display: grid; gap: 10px; border-top: 1px solid rgba(255,255,255,.12); padding-top: 12px; }
+    .workspace-link, .owner-card { border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.055); border-radius: 7px; padding: 12px; }
+    .main { display: grid; grid-template-rows: 70px 1fr; min-width: 0; }
+    .topbar { background: rgba(255,255,255,.88); border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 22px; }
+    .breadcrumb { color: #53637b; font-size: 14px; }
+    .avatar { width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 8px; background: #f7fbff; }
+    .content { padding: 24px; display: grid; gap: 18px; align-content: start; max-width: 850px; }
+    .eyebrow { margin: 0 0 6px; color: #536782; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; }
+    h1, h2, p { margin: 0; }
+    h1 { font-size: 34px; line-height: 1.08; letter-spacing: 0; }
+    h2 { font-size: 20px; line-height: 1.18; }
+    p { color: var(--muted); font-size: 14px; line-height: 1.55; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tab { border: 1px solid var(--line); border-radius: 7px; background: white; padding: 10px 14px; font-size: 13px; }
+    .tab.active { border-color: var(--blue); background: var(--blue); color: white; }
+    .panel { border: 1px solid var(--line); border-radius: 8px; background: white; padding: 18px; display: grid; gap: 16px; box-shadow: 0 16px 34px rgba(36,55,82,.07); }
+    .integration-layout { display: grid; grid-template-columns: 270px 1fr; gap: 14px; align-items: start; }
+    .integration-list { display: grid; gap: 8px; }
+    .integration-option { border: 1px solid var(--line); border-radius: 8px; background: white; padding: 14px; display: grid; gap: 6px; }
+    .integration-option.active { border-color: var(--blue); background: #f3f7ff; }
+    .integration-option strong { font-size: 14px; }
+    .integration-option span { color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .integration-switch { border-top: 1px solid var(--line); margin: 8px -14px -14px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
+    .toggle { width: 38px; height: 22px; border-radius: 999px; background: var(--blue); position: relative; }
+    .toggle::after { content: ""; position: absolute; top: 3px; right: 3px; width: 16px; height: 16px; border-radius: 999px; background: white; }
+    .switch-row { border: 1px solid var(--line); border-radius: 8px; background: #f5f9fd; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+    .policy-note { border-top: 1px solid var(--line); padding-top: 12px; }
+    .form-grid { display: grid; gap: 14px; }
+    .field { display: grid; gap: 6px; }
+    label { font-size: 13px; font-weight: 900; }
+    input, select { width: 100%; min-height: 44px; border: 1px solid var(--line); border-radius: 7px; padding: 0 12px; font: inherit; color: var(--ink); background: #fbfdff; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .btn { min-height: 40px; border-radius: 7px; border: 1px solid var(--blue); background: var(--blue); color: white; padding: 0 14px; font-weight: 900; width: fit-content; }
+    .quiet { color: var(--muted); font-size: 12px; }
+    .mobile { display: none; }
+    @media (max-width: 600px) {
+      .desktop { display: none; }
+      .mobile { display: block; width: 390px; min-height: 980px; background: var(--surface); }
+      .mobile-top { height: 70px; background: white; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 54px 1fr 54px; align-items: center; padding: 0 14px; }
+      .mobile-brand { text-align: center; font-size: 16px; }
+      .mobile-orb { width: 44px; height: 44px; border-radius: 99px; border: 1px solid var(--line); background: #f6fbff; }
+      .mobile-content { padding: 18px 14px 40px; display: grid; gap: 16px; }
+      .mobile h1 { font-size: 30px; }
+      .mobile .tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+      .mobile .tab { white-space: nowrap; }
+      .mobile .two { grid-template-columns: 1fr; }
+      .mobile .integration-layout { grid-template-columns: 1fr; }
+      .mobile .integration-list { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="desktop">
+    <aside class="sidebar">
+      <div class="brand"><div class="mark"></div><div><strong>LuckySparrow</strong><small>Company Atlas</small></div></div>
+      <div class="nav-item">Company Atlas</div>
+      <div class="nav-title">Dzialy</div>
+      <div class="nav-item">00 Ogolny <span>0</span></div>
+      <div class="nav-item">01 Strategia <span>9</span></div>
+      <div class="nav-item">02 Produkt <span>1</span></div>
+      <div class="nav-item">03 Sprzedaz <span>0</span></div>
+      <div class="nav-item">04 Operacje <span>0</span></div>
+      <div class="nav-item">05 Relacje <span>0</span></div>
+      <div class="nav-item">06 Kadry <span>0</span></div>
+      <div class="nav-item">07 Finanse <span>0</span></div>
+      <div class="nav-item">08 Zasoby <span>0</span></div>
+      <div class="nav-item">09 Technologia <span>0</span></div>
+      <div class="nav-item">10 Prawo <span>0</span></div>
+      <div class="nav-item">11 Innowacje <span>0</span></div>
+      <div class="nav-item">12 Zarzadzanie <span>0</span></div>
+      <div class="sidebar-bottom"><div class="workspace-link">Workspace settings</div><div class="owner-card">Owner<br><small>Owner</small></div></div>
+    </aside>
+    <main class="main">
+      <div class="topbar"><div class="breadcrumb">LuckySparrow / Settings</div><div class="avatar"></div></div>
+      <div class="content">
+        <section>
+          <p class="eyebrow">Settings</p>
+          <h1>Integration settings.</h1>
+          <p>Pick a connector and edit only the credentials and sync policy that backend supports for that connector.</p>
+        </section>
+        <nav class="tabs"><span class="tab active">Integrations</span><span class="tab">Agent keys</span><span class="tab">MCP</span></nav>
+        <section class="integration-layout">
+          <aside class="integration-list">
+            <div class="integration-option active"><strong>ClickUp</strong><span>Tasks, spaces, folders, lists, webhooks, and task sync.</span><small>Configured</small><div class="integration-switch"><b>Active</b><i class="toggle"></i></div></div>
+            <div class="integration-option"><strong>Google Drive</strong><span>Knowledge files, folder scope, OAuth, and Drive change sync.</span><small>Needs OAuth token</small><div class="integration-switch"><b>Disabled</b><i class="toggle" style="background:#9aacbf"></i></div></div>
+          </aside>
+          <section class="panel">
+            <div>
+              <h2>ClickUp</h2>
+              <p>Task sync configuration stored by `/v1/integration-settings/clickup`.</p>
+            </div>
+            <div class="switch-row"><strong>Integration active</strong><span>On</span></div>
+            <div class="form-grid">
+              <div class="field"><label>API token</label><input type="password" placeholder="Leave empty to keep saved token" /></div>
+              <div class="two">
+                <div class="field"><label>Workspace / team ID</label><input placeholder="ClickUp team ID" /></div>
+                <div class="field"><label>List IDs</label><input placeholder="Comma-separated list IDs" /></div>
+                <div class="field"><label>Space IDs</label><input placeholder="Optional, comma-separated" /></div>
+                <div class="field"><label>Folder IDs</label><input placeholder="Optional, comma-separated" /></div>
+              </div>
+              <div class="policy-note">
+                <h2>Sync policy</h2>
+                <div class="two">
+                  <div class="field"><label>Sync mode</label><select><option>Pull into CompanyCore</option><option>Two-way</option></select></div>
+                  <div class="field"><label>Import mode</label><select><option>Merge</option><option>Skip existing</option><option>Inspect only</option></select></div>
+                </div>
+                <p class="quiet">This saves settings only. Import, reconcile, mapping, and review stay in work views.</p>
+              </div>
+              <button class="btn">Save ClickUp</button>
+            </div>
+          </section>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="mobile">
+    <div class="mobile-top"><div></div><div class="mobile-brand">LuckySparrow</div><div class="mobile-orb"></div></div>
+    <div class="mobile-content">
+      <section>
+        <p class="eyebrow">Settings</p>
+        <h1>Integration settings.</h1>
+        <p>Pick a connector, then edit its credentials and sync policy.</p>
+      </section>
+      <nav class="tabs"><span class="tab active">Integrations</span><span class="tab">Agent keys</span><span class="tab">MCP</span></nav>
+      <section class="integration-layout">
+        <aside class="integration-list">
+          <div class="integration-option active"><strong>ClickUp</strong><span>Tasks and sync</span><div class="integration-switch"><b>Active</b><i class="toggle"></i></div></div>
+          <div class="integration-option"><strong>Google Drive</strong><span>Knowledge and folders</span><div class="integration-switch"><b>Disabled</b><i class="toggle" style="background:#9aacbf"></i></div></div>
+        </aside>
+        <section class="panel">
+          <h2>ClickUp</h2>
+          <div class="switch-row"><strong>Integration active</strong><span>On</span></div>
+          <div class="field"><label>API token</label><input type="password" placeholder="pk_..." /></div>
+          <div class="field"><label>Workspace / team ID</label><input placeholder="ClickUp team ID" /></div>
+          <div class="field"><label>List IDs</label><input placeholder="Comma-separated list IDs" /></div>
+          <div class="field"><label>Sync mode</label><select><option>Pull into CompanyCore</option><option>Two-way</option></select></div>
+          <div class="field"><label>Import mode</label><select><option>Merge</option><option>Inspect only</option></select></div>
+          <button class="btn">Save ClickUp</button>
+        </section>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

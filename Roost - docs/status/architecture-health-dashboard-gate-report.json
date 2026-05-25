@@ -1,0 +1,10 @@
+{
+  "generatedAt": "2026-05-24T21:33:10.180Z",
+  "status": "passed",
+  "allGreen": true,
+  "expectedAllGreen": true,
+  "evidenceQueue": 0,
+  "chainWorklist": 0,
+  "chainCoverage": "33/33",
+  "roadmapStatus": "GREEN"
+}

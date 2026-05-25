@@ -1,0 +1,16 @@
+[
+  {
+    "viewport": "desktop",
+    "url": "http://127.0.0.1:3416/areas?area=06-kadry&view=directory",
+    "overflow": false,
+    "consoleErrors": [],
+    "failedRequests": []
+  },
+  {
+    "viewport": "mobile",
+    "url": "http://127.0.0.1:3416/areas?area=06-kadry&view=directory",
+    "overflow": false,
+    "consoleErrors": [],
+    "failedRequests": []
+  }
+]

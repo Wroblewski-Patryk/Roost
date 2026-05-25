@@ -2,8 +2,16 @@ import {
   canonicalManagementDepartmentsPath,
   canonicalAssetsPath,
   canonicalGeneralDashboardPath,
+  canonicalStrategyPath,
+  canonicalProductDeliveryPath,
+  canonicalSalesPath,
   canonicalOperationsPath,
-  canonicalPeopleAgentsPath
+  canonicalRelationshipsPath,
+  canonicalPeopleAgentsPath,
+  canonicalFinancePath,
+  canonicalTechnologyPath,
+  canonicalLegalPath,
+  canonicalInnovationPath
 } from "../../app-route-registry";
 import { CoreArea } from "../../types";
 
@@ -26,28 +34,31 @@ export const coreAreas: CoreArea[] = [
     key: "01-strategia",
     labelKey: "departments.01",
     eyebrowKey: "departments.01.eyebrow",
+    href: canonicalStrategyPath,
     descriptionKey: "departments.01.description",
     icon: "ph-target",
-    enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
+    enabled: true,
+    views: [{ key: "overview", labelKey: "views.default.overview", href: canonicalStrategyPath, icon: "ph-gauge", enabled: true }]
   },
   {
     key: "02-produkt",
     labelKey: "departments.02",
     eyebrowKey: "departments.02.eyebrow",
+    href: canonicalProductDeliveryPath,
     descriptionKey: "departments.02.description",
     icon: "ph-package",
-    enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
+    enabled: true,
+    views: [{ key: "overview", labelKey: "views.default.overview", href: canonicalProductDeliveryPath, icon: "ph-gauge", enabled: true }]
   },
   {
     key: "03-sprzedaz",
     labelKey: "departments.03",
     eyebrowKey: "departments.03.eyebrow",
+    href: canonicalSalesPath,
     descriptionKey: "departments.03.description",
     icon: "ph-handshake",
-    enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
+    enabled: true,
+    views: [{ key: "overview", labelKey: "views.default.overview", href: canonicalSalesPath, icon: "ph-gauge", enabled: true }]
   },
   {
     key: "04-operacje",
@@ -68,10 +79,11 @@ export const coreAreas: CoreArea[] = [
     key: "05-relacje",
     labelKey: "departments.05",
     eyebrowKey: "departments.05.eyebrow",
+    href: canonicalRelationshipsPath,
     descriptionKey: "departments.05.description",
     icon: "ph-address-book",
-    enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
+    enabled: true,
+    views: [{ key: "overview", labelKey: "views.default.overview", href: canonicalRelationshipsPath, icon: "ph-gauge", enabled: true }]
   },
   {
     key: "06-kadry",
@@ -91,10 +103,11 @@ export const coreAreas: CoreArea[] = [
     key: "07-finanse",
     labelKey: "departments.07",
     eyebrowKey: "departments.07.eyebrow",
+    href: canonicalFinancePath,
     descriptionKey: "departments.07.description",
     icon: "ph-bank",
-    enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
+    enabled: true,
+    views: [{ key: "overview", labelKey: "views.default.overview", href: canonicalFinancePath, icon: "ph-gauge", enabled: true }]
   },
   {
     key: "08-zasoby",
@@ -115,28 +128,31 @@ export const coreAreas: CoreArea[] = [
     key: "09-technologia",
     labelKey: "departments.09",
     eyebrowKey: "departments.09.eyebrow",
+    href: canonicalTechnologyPath,
     descriptionKey: "departments.09.description",
     icon: "ph-cpu",
-    enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
+    enabled: true,
+    views: [{ key: "overview", labelKey: "views.default.overview", href: canonicalTechnologyPath, icon: "ph-gauge", enabled: true }]
   },
   {
     key: "10-prawo",
     labelKey: "departments.10",
     eyebrowKey: "departments.10.eyebrow",
+    href: canonicalLegalPath,
     descriptionKey: "departments.10.description",
     icon: "ph-scales",
-    enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
+    enabled: true,
+    views: [{ key: "overview", labelKey: "views.default.overview", href: canonicalLegalPath, icon: "ph-gauge", enabled: true }]
   },
   {
     key: "11-innowacje",
     labelKey: "departments.11",
     eyebrowKey: "departments.11.eyebrow",
+    href: canonicalInnovationPath,
     descriptionKey: "departments.11.description",
     icon: "ph-lightbulb",
-    enabled: false,
-    views: [{ key: "overview", labelKey: "views.default.overview", icon: "ph-gauge", enabled: false }]
+    enabled: true,
+    views: [{ key: "overview", labelKey: "views.default.overview", href: canonicalInnovationPath, icon: "ph-gauge", enabled: true }]
   },
   {
     key: "12-zarzadzanie",
@@ -157,13 +173,4 @@ export const coreAreas: CoreArea[] = [
   }
 ];
 
-export const plannedDepartments = [
-  "departments.01",
-  "departments.02",
-  "departments.03",
-  "departments.05",
-  "departments.07",
-  "departments.09",
-  "departments.10",
-  "departments.11"
-] as const;
+export const plannedDepartments: string[] = [];

@@ -26,6 +26,46 @@ fixes for this repository.
 
 ## Entries
 
+### 2026-05-24 - Recover Windows Build EPERM by Resetting Build Artifacts
+- Context: ARCH-EVID-002 continuation ran repeated full validation
+  (`npm run validate`) after architecture gate hardening.
+- Symptom: `npm run build:server` and `npm run build:web` intermittently
+  failed with `EPERM` on write/open inside `dist/*` and
+  `node_modules/.vite-temp/*`.
+- Root cause: Local Windows file locks and stale build-temp artifacts can
+  leave specific generated files unwritable across sequential validation runs.
+- Guardrail: When `tsc` or Vite fails with targeted `EPERM` on build outputs,
+  treat it as a local artifact-state issue first (not runtime logic regression).
+- Preferred pattern: Reset build outputs deterministically:
+  1) remove/recreate `dist/`,
+  2) remove/recreate `node_modules/.vite-temp`,
+  3) rerun `npm run build:server`, then `npm run build:web`, then full
+     `npm run validate`.
+- Avoid: Repeatedly retrying full validation without artifact reset, or
+  changing application code to bypass local lock symptoms.
+- Evidence: After `dist` and `.vite-temp` reset, `npm run build:server`,
+  `npm run build:web`, and full `npm run validate` passed in the same
+  checkpoint.
+
+### 2026-05-24 - Stabilize Architecture Docs Root Before Evidence Pipeline
+- Context: Architecture evidence scripts use canonical `docs/*` paths across
+  graph/sync/gate/build steps.
+- Symptom: `architecture:refresh` became partially nondeterministic when the
+  repository had `Roost - docs/` as the physical docs root and `docs/` was
+  missing, causing ENOENT failures in mid-pipeline (`features.csv` lookup).
+- Root cause: Path coupling to `docs/*` with no preflight alias/bootstrap for
+  repositories that rename the docs directory.
+- Guardrail: Always run a docs-root preflight before architecture refresh to
+  guarantee `docs/*` exists as a real directory or a valid alias.
+- Preferred pattern: Keep scripts on canonical `docs/*` paths and add a single
+  runtime preflight (`npm run architecture:ensure-docs-root`) that creates
+  `docs -> Roost - docs` when needed.
+- Avoid: Ad hoc manual junction creation during failures or broad multi-script
+  path rewrites under release pressure.
+- Evidence: `scripts/ensure-architecture-docs-root.mjs` added and wired into
+  `architecture:refresh`; subsequent `npm run architecture:refresh` and
+  `npm run validate` passed with all gates green.
+
 ### 2026-05-20 - Stop Local Prisma Servers Before Client Generation
 - Context: Adding Operations task responsibility and schedule fields required
   regenerating Prisma Client on Windows.

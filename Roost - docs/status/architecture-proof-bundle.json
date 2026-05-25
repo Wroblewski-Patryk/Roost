@@ -1,0 +1,78 @@
+{
+  "generatedAt": "2026-05-24T21:33:11.697Z",
+  "graph": {
+    "nodes": 443,
+    "relations": 755,
+    "chains": 34
+  },
+  "evidenceQueue": 0,
+  "chainWorklist": 0,
+  "delta": {
+    "nodes": 0,
+    "relations": 0,
+    "chains": 0
+  },
+  "allGatesPass": true,
+  "gates": [
+    {
+      "file": "docs/status/architecture-csv-contract-report.json",
+      "status": "passed"
+    },
+    {
+      "file": "docs/status/architecture-node-integrity-report.json",
+      "status": "passed"
+    },
+    {
+      "file": "docs/status/architecture-node-catalog-consistency-report.json",
+      "status": "passed"
+    },
+    {
+      "file": "docs/status/architecture-chain-coverage-report.json",
+      "status": "passed"
+    },
+    {
+      "file": "docs/status/architecture-chain-integrity-report.json",
+      "status": "passed"
+    },
+    {
+      "file": "docs/status/architecture-relation-integrity-report.json",
+      "status": "passed"
+    },
+    {
+      "file": "docs/status/architecture-connectivity-report.json",
+      "status": "passed"
+    },
+    {
+      "file": "docs/status/architecture-node-links-report.json",
+      "status": "passed"
+    },
+    {
+      "file": "docs/status/architecture-node-artifacts-report.json",
+      "status": "passed"
+    },
+    {
+      "file": "docs/status/architecture-generated-node-frontmatter-report.json",
+      "status": "passed"
+    },
+    {
+      "file": "docs/status/architecture-pipeline-nodes-report.json",
+      "status": "passed"
+    },
+    {
+      "file": "docs/status/architecture-evidence-cardinality-report.json",
+      "status": "passed"
+    },
+    {
+      "file": "docs/status/architecture-graph-artifact-consistency-report.json",
+      "status": "passed"
+    },
+    {
+      "file": "docs/status/architecture-delta-zero-report.json",
+      "status": "passed"
+    },
+    {
+      "file": "docs/status/architecture-doc-baseline-report.json",
+      "status": "passed"
+    }
+  ]
+}

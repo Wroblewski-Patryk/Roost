@@ -83,7 +83,17 @@ function mountProtectedRoutes(router: Router) {
 }
 
 function isApiHost(host = "") {
-  return host.split(":")[0] === "api.companycore.luckysparrow.ch";
+  return env.apiHostnames.includes(host.split(":")[0]);
+}
+
+function publicUrlsForHost(host = "") {
+  const apiHost = host.split(":")[0] || env.apiHostnames[0] || "api.roost.luckysparrow.ch";
+  const webHost = apiHost.startsWith("api.") ? apiHost.slice(4) : "roost.luckysparrow.ch";
+
+  return {
+    web: `https://${webHost}`,
+    api: `https://${apiHost}`
+  };
 }
 
 const reactAppRoutes = [
@@ -147,11 +157,13 @@ export function createApp() {
       return;
     }
 
+    const publicUrls = publicUrlsForHost(req.headers.host);
+
     res.json({
       data: {
         service: "companycore",
-        web: "https://companycore.luckysparrow.ch",
-        api: "https://api.companycore.luckysparrow.ch",
+        web: publicUrls.web,
+        api: publicUrls.api,
         health: "/health",
         version: "v1"
       }

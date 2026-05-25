@@ -1,0 +1,13 @@
+{
+  "generatedAt": "2026-05-24T21:33:04.558Z",
+  "status": "passed",
+  "firstRun": false,
+  "summary": {
+    "changedNodes": 0,
+    "enteredTopCount": 0,
+    "leftTopCount": 0
+  },
+  "enteredTopNodes": [],
+  "leftTopNodes": [],
+  "topImpactDelta": []
+}

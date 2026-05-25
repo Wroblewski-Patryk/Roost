@@ -51,9 +51,17 @@ function DepartmentSidebar({
     || coreAreas;
   const [openAreas, setOpenAreas] = useState<Partial<Record<string, boolean>>>({
     "00-ogolny": activeArea === "00-ogolny",
+    "01-strategia": activeArea === "01-strategia",
+    "02-produkt": activeArea === "02-produkt",
+    "03-sprzedaz": activeArea === "03-sprzedaz",
     "04-operacje": activeArea === "04-operacje",
+    "05-relacje": activeArea === "05-relacje",
     "06-kadry": activeArea === "06-kadry",
+    "07-finanse": activeArea === "07-finanse",
     "08-zasoby": activeArea === "08-zasoby",
+    "09-technologia": activeArea === "09-technologia",
+    "10-prawo": activeArea === "10-prawo",
+    "11-innowacje": activeArea === "11-innowacje",
     "12-zarzadzanie": activeArea === "12-zarzadzanie"
   });
 

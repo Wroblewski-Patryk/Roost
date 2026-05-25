@@ -1,0 +1,188 @@
+{
+  "generatedAt": "2026-05-24T21:33:10.763Z",
+  "totalFiles": 30,
+  "missingFiles": 0,
+  "totalRows": 1734,
+  "files": [
+    {
+      "file": "docs/architecture/nodes/nodes.csv",
+      "exists": true,
+      "rowCount": 63,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/features.csv",
+      "exists": true,
+      "rowCount": 34,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/functions.csv",
+      "exists": true,
+      "rowCount": 5,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/components.csv",
+      "exists": true,
+      "rowCount": 7,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/services.csv",
+      "exists": true,
+      "rowCount": 3,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/classes.csv",
+      "exists": true,
+      "rowCount": 4,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/api_routes.csv",
+      "exists": true,
+      "rowCount": 176,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/pages.csv",
+      "exists": true,
+      "rowCount": 15,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/layouts.csv",
+      "exists": true,
+      "rowCount": 2,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/hooks.csv",
+      "exists": true,
+      "rowCount": 1,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/stores.csv",
+      "exists": true,
+      "rowCount": 0,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/ui_elements.csv",
+      "exists": true,
+      "rowCount": 6,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/animations.csv",
+      "exists": true,
+      "rowCount": 0,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/database_models.csv",
+      "exists": true,
+      "rowCount": 62,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/migrations.csv",
+      "exists": true,
+      "rowCount": 27,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/integrations.csv",
+      "exists": true,
+      "rowCount": 13,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/middleware.csv",
+      "exists": true,
+      "rowCount": 5,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/pipelines.csv",
+      "exists": true,
+      "rowCount": 39,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/cron_jobs.csv",
+      "exists": true,
+      "rowCount": 1,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/tests.csv",
+      "exists": true,
+      "rowCount": 13,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/docs.csv",
+      "exists": true,
+      "rowCount": 10,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/config_files.csv",
+      "exists": true,
+      "rowCount": 1,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/agents.csv",
+      "exists": true,
+      "rowCount": 2,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/prompts.csv",
+      "exists": true,
+      "rowCount": 1,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/events.csv",
+      "exists": true,
+      "rowCount": 2,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/nodes/workflows.csv",
+      "exists": true,
+      "rowCount": 2,
+      "headerCount": 26
+    },
+    {
+      "file": "docs/architecture/relations/dependencies.csv",
+      "exists": true,
+      "rowCount": 755,
+      "headerCount": 10
+    },
+    {
+      "file": "docs/architecture/chains/chains.csv",
+      "exists": true,
+      "rowCount": 34,
+      "headerCount": 15
+    },
+    {
+      "file": "docs/testing/test-map.csv",
+      "exists": true,
+      "rowCount": 8,
+      "headerCount": 13
+    },
+    {
+      "file": "docs/status/evidence-status.csv",
+      "exists": true,
+      "rowCount": 443,
+      "headerCount": 11
+    }
+  ]
+}

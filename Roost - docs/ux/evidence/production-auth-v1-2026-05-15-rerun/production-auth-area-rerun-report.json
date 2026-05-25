@@ -1,0 +1,59 @@
+{
+  "consoleErrors": [],
+  "failed": [],
+  "storage": {},
+  "results": [
+    {
+      "name": "area-overview",
+      "kind": "desktop",
+      "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-auth-v1-2026-05-15-rerun\\area-overview-desktop.png",
+      "href": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=overview",
+      "title": "CompanyCore Areas",
+      "overflowX": false,
+      "hasCanonicalArea": true,
+      "stillLoading": false,
+      "ownerSession": true,
+      "textStart": "LuckySparrow\nCompany Atlas\nCompany Atlas\n\nDZIALY\n\n00 Ogolny\n0\n01 Strategia\n0\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\n+ Add view\n02 Produkt\n0\n03 Sprzedaz\n0\n04 Operacje\n0\n05 Relacje\n0\n06 Kadry\n0\n07 Finanse\n0\n08 Zasoby\n0\n09 Technologia\n0\n10 Prawo\n0\n11 Innowacje\n0\n12 Zarzadzanie\n0\nWorkspace settings\nOwner\nLuckySparrow\n\nLuckySparrow / Company Atlas\n\n13 areas\n8% ownership\n1 decisions\n\nLUCKYSPARROW / GOVERN\n\n01 Strategia\n\nArea exists in the V1 operating map, but no backend area match is visible yet.\n\nReview operating system\nBack to atlas\n01\nEMPTY\n0\nTABLES\n0\nRECORDS\n0\nDRIVE\n0\nPROVIDER\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\nAdd view\n\nOPERATING BOARD\n\nObserve, decide, execute, delegate\nOBSERVE\nOperating health\n\nThis department needs ownership or resource review before it becomes reliable operating context.\n\nEmpty\nDECIDE\nOwner decisions\n\nUnassigned provider or Drive resources still need a MECE owner before delegation.\n\n5\nEXECUTE\nTasks and workflows\n\nTask and workflow pressure can be reviewed from the task workbench and Company OS cockpit.\n\nReady\nDELEGATE\nAI handoff\n\nJarvis and Paperclip can use read-safe context; risky commands still need owner approval.\n\nGuarded\n\nSELECTED VIEW\n\nOverview\nOVERVIEW\n\nArea exists in the V1 operating map, but no backend area match is visible yet.\n\nSTATUS\nEmpty\nTABLES\n0\nLENS\nGovern\nRECORDS\n0\n\nOverview connects th",
+      "localStorageKeys": []
+    },
+    {
+      "name": "area-overview",
+      "kind": "mobile",
+      "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-auth-v1-2026-05-15-rerun\\area-overview-mobile.png",
+      "href": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=overview",
+      "title": "CompanyCore Areas",
+      "overflowX": false,
+      "hasCanonicalArea": true,
+      "stillLoading": false,
+      "ownerSession": true,
+      "textStart": "LuckySparrow\nDzialy\nMap\n00 Ogolny\n01 Strategia\n02 Produkt\n03 Sprzedaz\n04 Operacje\n05 Relacje\n06 Kadry\n07 Finanse\n08 Zasoby\n09 Technologia\n10 Prawo\n11 Innowacje\n12 Zarzadzanie\n\nLUCKYSPARROW / GOVERN\n\n01 Strategia\n\nArea exists in the V1 operating map, but no backend area match is visible yet.\n\nReview operating system\nBack to atlas\n01\nEMPTY\n0\nTABLES\n0\nRECORDS\n0\nDRIVE\n0\nPROVIDER\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\nAdd view\n\nOPERATING BOARD\n\nObserve, decide, execute, delegate\nOBSERVE\nOperating health\n\nThis department needs ownership or resource review before it becomes reliable operating context.\n\nEmpty\nDECIDE\nOwner decisions\n\nUnassigned provider or Drive resources still need a MECE owner before delegation.\n\n5\nEXECUTE\nTasks and workflows\n\nTask and workflow pressure can be reviewed from the task workbench and Company OS cockpit.\n\nReady\nDELEGATE\nAI handoff\n\nJarvis and Paperclip can use read-safe context; risky commands still need owner approval.\n\nGuarded\n\nSELECTED VIEW\n\nOverview\nOVERVIEW\n\nArea exists in the V1 operating map, but no backend area match is visible yet.\n\nSTATUS\nEmpty\nTABLES\n0\nLENS\nGovern\nRECORDS\n0\n\nOverview connects the department health, records, providers, knowledge, and AI readiness in one scan.\n\nRecent records\n0\n\nNo records are loaded for this department yet.\n\nLinked evidence\n0\n\nNo evidence is scoped to this department yet.\n\nArea tables\n0\n\n",
+      "localStorageKeys": []
+    },
+    {
+      "name": "area-ai",
+      "kind": "desktop",
+      "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-auth-v1-2026-05-15-rerun\\area-ai-desktop.png",
+      "href": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=ai",
+      "title": "CompanyCore Areas",
+      "overflowX": false,
+      "hasCanonicalArea": true,
+      "stillLoading": false,
+      "ownerSession": true,
+      "textStart": "LuckySparrow\nCompany Atlas\nCompany Atlas\n\nDZIALY\n\n00 Ogolny\n0\n01 Strategia\n0\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\n+ Add view\n02 Produkt\n0\n03 Sprzedaz\n0\n04 Operacje\n0\n05 Relacje\n0\n06 Kadry\n0\n07 Finanse\n0\n08 Zasoby\n0\n09 Technologia\n0\n10 Prawo\n0\n11 Innowacje\n0\n12 Zarzadzanie\n0\nWorkspace settings\nOwner\nLuckySparrow\n\nLuckySparrow / Company Atlas\n\n13 areas\n8% ownership\n1 decisions\n\nLUCKYSPARROW / GOVERN\n\n01 Strategia\n\nArea exists in the V1 operating map, but no backend area match is visible yet.\n\nReview operating system\nBack to atlas\n01\nEMPTY\n0\nTABLES\n0\nRECORDS\n0\nDRIVE\n0\nPROVIDER\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\nAdd view\n\nOPERATING BOARD\n\nObserve, decide, execute, delegate\nOBSERVE\nOperating health\n\nThis department needs ownership or resource review before it becomes reliable operating context.\n\nEmpty\nDECIDE\nOwner decisions\n\nUnassigned provider or Drive resources still need a MECE owner before delegation.\n\n5\nEXECUTE\nTasks and workflows\n\nTask and workflow pressure can be reviewed from the task workbench and Company OS cockpit.\n\nReady\nDELEGATE\nAI handoff\n\nJarvis and Paperclip can use read-safe context; risky commands still need owner approval.\n\nGuarded\n\nSELECTED VIEW\n\nAI handoff readiness\nAI\n\nMCP context is visible to the owner. Use supervised command surfaces for risky actions.\n\nCAPABILITIES\n63\nMCP\nVisible\nTOOLS\n146\nRECORDS\n0\n\nA",
+      "localStorageKeys": []
+    },
+    {
+      "name": "area-ai",
+      "kind": "mobile",
+      "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\companycore\\docs\\ux\\evidence\\production-auth-v1-2026-05-15-rerun\\area-ai-mobile.png",
+      "href": "https://companycore.luckysparrow.ch/areas?area=01-strategia&view=ai",
+      "title": "CompanyCore Areas",
+      "overflowX": false,
+      "hasCanonicalArea": true,
+      "stillLoading": false,
+      "ownerSession": true,
+      "textStart": "LuckySparrow\nDzialy\nMap\n00 Ogolny\n01 Strategia\n02 Produkt\n03 Sprzedaz\n04 Operacje\n05 Relacje\n06 Kadry\n07 Finanse\n08 Zasoby\n09 Technologia\n10 Prawo\n11 Innowacje\n12 Zarzadzanie\n\nLUCKYSPARROW / GOVERN\n\n01 Strategia\n\nArea exists in the V1 operating map, but no backend area match is visible yet.\n\nReview operating system\nBack to atlas\n01\nEMPTY\n0\nTABLES\n0\nRECORDS\n0\nDRIVE\n0\nPROVIDER\nOverview\nGoals\nWorkflows\nTasks\nKnowledge\nResources\nDecisions\nAI\nAdd view\n\nOPERATING BOARD\n\nObserve, decide, execute, delegate\nOBSERVE\nOperating health\n\nThis department needs ownership or resource review before it becomes reliable operating context.\n\nEmpty\nDECIDE\nOwner decisions\n\nUnassigned provider or Drive resources still need a MECE owner before delegation.\n\n5\nEXECUTE\nTasks and workflows\n\nTask and workflow pressure can be reviewed from the task workbench and Company OS cockpit.\n\nReady\nDELEGATE\nAI handoff\n\nJarvis and Paperclip can use read-safe context; risky commands still need owner approval.\n\nGuarded\n\nSELECTED VIEW\n\nAI handoff readiness\nAI\n\nMCP context is visible to the owner. Use supervised command surfaces for risky actions.\n\nCAPABILITIES\n63\nMCP\nVisible\nTOOLS\n146\nRECORDS\n0\n\nAI handoff stays useful only when tools, knowledge, ownership, and approval boundaries are visible together.\n\nAgent tools\n6\nGET /v1/connection\nGET /v1/connection\nread\nGET /v1/company-os\nGET /v1/company-os\nread\nGET /v1/company-os/wo",
+      "localStorageKeys": []
+    }
+  ]
+}

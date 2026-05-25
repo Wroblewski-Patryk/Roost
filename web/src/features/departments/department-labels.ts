@@ -21,6 +21,7 @@ export function backendAreaToDepartmentKey(value?: string | null): CoreAreaKey |
     "projects-delivery": "02-produkt",
     "sales-crm": "03-sprzedaz",
     "operations-administration": "04-operacje",
+    "relationships-client-success": "05-relacje",
     "people-roles": "06-kadry",
     "finance-billing": "07-finanse",
     "assets-storage": "08-zasoby",
