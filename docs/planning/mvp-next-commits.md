@@ -188,7 +188,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [x] AOG-BE-005 Knowledge/source link contract:
       connect knowledge items, Drive files, and snapshots to supported graph
       target families with guarded command-shaped writes later.
-- [ ] AOG-BE-006 Area operating graph MCP read tool:
+- [x] AOG-BE-006 Area operating graph MCP read tool:
       expose the verified area operating graph as a read-only MCP tool for
       Jarvis and Paperclip.
 - [ ] AGRUN-010 Upstream Agent Source Merge Execution:

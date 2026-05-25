@@ -5588,6 +5588,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(createdProfileKeyBody.data.scopes.includes("sales:read"));
   assert.ok(createdProfileKeyBody.data.scopes.includes("operations:read"));
   assert.ok(createdProfileKeyBody.data.scopes.includes("strategy:read"));
+  assert.ok(createdProfileKeyBody.data.scopes.includes("operating-graph:read"));
   assert.ok(!createdProfileKeyBody.data.scopes.includes("company-os:definition:write"));
   assert.ok(!createdProfileKeyBody.data.scopes.includes("company-os:workflow-definition:write"));
   assert.ok(!createdProfileKeyBody.data.scopes.includes("company-os:workflow-definition:activate"));
@@ -5627,6 +5628,10 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(profileMcpManifestBody.data.tools.some((tool) => (
     tool.path === "/v1/strategy/context"
     && tool.capability === "strategy:read"
+  )));
+  assert.ok(profileMcpManifestBody.data.tools.some((tool) => (
+    tool.path === "/v1/operating-graph/areas/:areaKey"
+    && tool.capability === "operating-graph:read"
   )));
   assert.ok(!profileMcpManifestBody.data.tools.some((tool) => tool.capability === "company-os:definition:write"));
   assert.ok(!profileMcpManifestBody.data.tools.some((tool) => tool.capability === "company-os:workflow-definition:write"));

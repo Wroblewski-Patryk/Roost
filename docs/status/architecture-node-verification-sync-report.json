@@ -1,6 +1,6 @@
 {
-  "synchronizedAt": "2026-05-25T01:20:26.304Z",
-  "updated": 3,
+  "synchronizedAt": "2026-05-25T01:23:21.541Z",
+  "updated": 0,
   "files": [
     {
       "file": "docs/architecture/nodes/nodes.csv",
@@ -34,7 +34,7 @@
     },
     {
       "file": "docs/architecture/nodes/api_routes.csv",
-      "updated": 1,
+      "updated": 0,
       "total": 178
     },
     {
@@ -69,12 +69,12 @@
     },
     {
       "file": "docs/architecture/nodes/database_models.csv",
-      "updated": 1,
+      "updated": 0,
       "total": 64
     },
     {
       "file": "docs/architecture/nodes/migrations.csv",
-      "updated": 1,
+      "updated": 0,
       "total": 31
     },
     {

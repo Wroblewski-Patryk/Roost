@@ -15,16 +15,18 @@ Last updated: 2026-05-25
    - Next slice: keep this as a release gate and only open focused follow-up
      tasks when a new gap appears in generated status artifacts.
 
-1. Start `AOG-BE-006` area operating graph MCP read tool slice.
+1. Run deploy-time smoke for the completed AOG backend sequence (`AOG-BE-002` to `AOG-BE-006`).
    - Source:
      `docs/planning/v1-area-operating-graph-backend-gap-plan.md`.
-   - `AOG-BE-002`, `AOG-BE-003`, `AOG-BE-004`, and `AOG-BE-005` are implemented
-     and verified locally. The next executable backend gap is read-only MCP
-     exposure for the area operating graph over existing API contracts.
+   - `AOG-BE-002`, `AOG-BE-003`, `AOG-BE-004`, `AOG-BE-005`, and `AOG-BE-006`
+     are implemented and verified locally.
+   - Next proof is deployment/runtime smoke for
+     `/v1/operating-graph/areas/01-strategia` plus MCP manifest visibility
+     through reader profiles.
    - CompanyCore remains the company operating system; AI agents remain
      external API/MCP clients.
-   - Keep strict capability filtering and do not introduce generic write-edge
-     operations.
+   - Keep strict capability filtering and preserve read-only graph exposure for
+     MCP reader lanes.
 
 1. Production-smoke `PEOPLE-AGENTS-PAPERCLIP-001` after redeploy.
    - Source:
