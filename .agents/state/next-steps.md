@@ -15,17 +15,16 @@ Last updated: 2026-05-25
    - Next slice: keep this as a release gate and only open focused follow-up
      tasks when a new gap appears in generated status artifacts.
 
-1. Start `AOG-BE-005` knowledge/source link contract slice.
+1. Start `AOG-BE-006` area operating graph MCP read tool slice.
    - Source:
      `docs/planning/v1-area-operating-graph-backend-gap-plan.md`.
-   - `AOG-BE-002`, `AOG-BE-003`, and `AOG-BE-004` are implemented and verified
-     locally. The next executable backend gap is a scoped knowledge/source link
-     contract so evidence can be attached to `goal|target|metric|process|pipeline|task`
-     without introducing generic editable edges.
+   - `AOG-BE-002`, `AOG-BE-003`, `AOG-BE-004`, and `AOG-BE-005` are implemented
+     and verified locally. The next executable backend gap is read-only MCP
+     exposure for the area operating graph over existing API contracts.
    - CompanyCore remains the company operating system; AI agents remain
      external API/MCP clients.
-   - Keep writes behind explicit command contracts, audit/events, and API
-     tests.
+   - Keep strict capability filtering and do not introduce generic write-edge
+     operations.
 
 1. Production-smoke `PEOPLE-AGENTS-PAPERCLIP-001` after redeploy.
    - Source:

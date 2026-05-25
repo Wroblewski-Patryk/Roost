@@ -264,6 +264,7 @@ model Workspace {
   risks                        Risk[]
   controls                     Control[]
   knowledgeItems               KnowledgeItem[]
+  knowledgeLinks               KnowledgeLink[]
   decisionLogs                 DecisionLog[]
   automationRules              AutomationRule[]
   triggers                     Trigger[]
@@ -988,6 +989,7 @@ model KnowledgeItem {
   client            Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
   agentId           String?         @map("agent_id") @db.Uuid
   agent             Agent?          @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  knowledgeLinks    KnowledgeLink[]
   status            OperatingStatus @default(active)
   createdAt         DateTime        @default(now()) @map("created_at")
   updatedAt         DateTime        @updatedAt @map("updated_at")
@@ -1294,6 +1296,7 @@ model GoogleDriveFile {
   lastSyncedAt      DateTime?                    @map("last_synced_at")
   lastScannedAt     DateTime?                    @map("last_scanned_at")
   rawMetadata       Json                         @default("{}") @map("raw_metadata")
+  knowledgeLinks    KnowledgeLink[]
   contentSnapshots  GoogleDriveContentSnapshot[]
   createdAt         DateTime                     @default(now()) @map("created_at")
   updatedAt         DateTime                     @updatedAt @map("updated_at")
@@ -1323,6 +1326,7 @@ model GoogleDriveContentSnapshot {
   scanStatus        String          @default("completed") @map("scan_status")
   errorCode         String?         @map("error_code")
   metadata          Json            @default("{}")
+  knowledgeLinks    KnowledgeLink[]
   createdAt         DateTime        @default(now()) @map("created_at")
   updatedAt         DateTime        @updatedAt @map("updated_at")
 
@@ -1330,6 +1334,31 @@ model GoogleDriveContentSnapshot {
   @@index([workspaceId, contentKind])
   @@index([workspaceId, scanStatus])
   @@map("google_drive_content_snapshots")
+}
+
+model KnowledgeLink {
+  id                     String                     @id @default(uuid()) @db.Uuid
+  workspaceId            String                     @map("workspace_id") @db.Uuid
+  workspace              Workspace                  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  knowledgeItemId        String?                    @map("knowledge_item_id") @db.Uuid
+  knowledgeItem          KnowledgeItem?             @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
+  googleDriveFileId      String?                    @map("google_drive_file_id") @db.Uuid
+  googleDriveFile        GoogleDriveFile?           @relation(fields: [googleDriveFileId], references: [id], onDelete: Cascade)
+  contentSnapshotId      String?                    @map("content_snapshot_id") @db.Uuid
+  contentSnapshot        GoogleDriveContentSnapshot? @relation(fields: [contentSnapshotId], references: [id], onDelete: Cascade)
+  targetType             String                     @map("target_type")
+  targetId               String                     @map("target_id")
+  linkType               String                     @map("link_type")
+  confidence             String                     @default("direct")
+  metadata               Json                       @default("{}")
+  createdAt              DateTime                   @default(now()) @map("created_at")
+  updatedAt              DateTime                   @updatedAt @map("updated_at")
+
+  @@index([workspaceId, targetType, targetId])
+  @@index([workspaceId, knowledgeItemId])
+  @@index([workspaceId, googleDriveFileId])
+  @@index([workspaceId, contentSnapshotId])
+  @@map("knowledge_links")
 }
 
 model ExternalWebhookRegistration {

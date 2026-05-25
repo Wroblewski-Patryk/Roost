@@ -182,10 +182,10 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 - [ ] AOG-BE-003 Goal/workflow bridge:
       add the minimal durable connection between goals/targets and
       process/pipeline roots after the read model proves ownership.
-- [ ] AOG-BE-004 Workflow task link normalization:
+- [x] AOG-BE-004 Workflow task link normalization:
       normalize runtime workflow-to-task evidence instead of relying only on
       JSON `linkedTaskIds`.
-- [ ] AOG-BE-005 Knowledge/source link contract:
+- [x] AOG-BE-005 Knowledge/source link contract:
       connect knowledge items, Drive files, and snapshots to supported graph
       target families with guarded command-shaped writes later.
 - [ ] AOG-BE-006 Area operating graph MCP read tool:

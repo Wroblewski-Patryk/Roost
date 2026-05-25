@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-25T01:13:53.726Z",
+  "generatedAt": "2026-05-25T01:20:40.476Z",
   "allGreen": true,
   "evidenceQueue": 0,
   "chainCoverageCovered": 33,
@@ -18,8 +18,8 @@
     "evidenceQueue": 0
   },
   "graph": {
-    "nodes": 448,
-    "relations": 758,
+    "nodes": 451,
+    "relations": 760,
     "chains": 34
   }
 }

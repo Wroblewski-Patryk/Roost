@@ -43,6 +43,7 @@ function assertSafeTestDatabase() {
 async function resetDatabase() {
   assertSafeTestDatabase();
   await prisma.event.deleteMany();
+  await prisma.knowledgeLink.deleteMany();
   await prisma.googleDriveContentSnapshot.deleteMany();
   await prisma.googleDriveFile.deleteMany();
   await prisma.auditLog.deleteMany();
@@ -3414,6 +3415,16 @@ test("CompanyCore v1 protected API flow", async () => {
       status: "active"
     }
   });
+  await prisma.knowledgeLink.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      knowledgeItemId: graphKnowledgeItem.id,
+      targetType: "goal",
+      targetId: graphGoal.id,
+      linkType: "evidence",
+      confidence: "owner_assigned"
+    }
+  });
   const graphAreaDriveFile = await prisma.googleDriveFile.create({
     data: {
       workspaceId: ownerA.workspace.id,
@@ -3501,6 +3512,12 @@ test("CompanyCore v1 protected API flow", async () => {
     && edge.sourceModel === "PipelineRunTaskLink"
     && edge.sourceField === "pipelineRunId/taskId"
   )));
+  assert.ok(areaGraphBody.data.edges.some((edge) => (
+    edge.from === `knowledge_item:${graphKnowledgeItem.id}`
+    && edge.to === `goal:${graphGoal.id}`
+    && edge.sourceModel === "KnowledgeLink"
+    && edge.sourceField === "targetType/targetId"
+  )));
   assert.ok(areaGraphBody.data.edges.some((edge) => edge.confidence === "content_inferred"));
   assert.ok(areaGraphBody.data.layers.goals.includes(`goal:${graphGoal.id}`));
   assert.ok(areaGraphBody.data.layers.workflows.includes(`process:${graphProcess.id}`));
@@ -3509,6 +3526,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(areaGraphBody.data.gaps.some((gap) => gap.id === `gap:goal:${graphLonelyGoal.id}:target`));
   assert.ok(areaGraphBody.data.reviewItems.some((item) => item.id === `gap:goal:${graphLonelyGoal.id}:target`));
   assert.ok(!areaGraphBody.data.unsupportedFamilies.some((family) => family.family === "target_metric_fk"));
+  assert.ok(!areaGraphBody.data.unsupportedFamilies.some((family) => family.family === "knowledge_goal_task_links"));
 
   const salesAreaGraph = await request("/v1/operating-graph/areas/03-sprzedaz?limit=20", { headers: authA });
   assert.equal(salesAreaGraph.status, 200);
@@ -4192,6 +4210,55 @@ test("CompanyCore v1 protected API flow", async () => {
     })
   });
   assert.equal(deniedPipelineRunTaskLink.status, 404);
+  const linkedKnowledgeItem = await prisma.knowledgeItem.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      title: "Lifecycle link note",
+      itemType: "note",
+      summary: "Lifecycle evidence link test."
+    }
+  });
+  const knowledgeLinkCreate = await request("/v1/company-os/knowledge-links", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({
+      knowledgeItemId: linkedKnowledgeItem.id,
+      targetType: "task",
+      targetId: operationsTask.id,
+      linkType: "evidence",
+      confidence: "owner_assigned"
+    })
+  });
+  assert.equal(knowledgeLinkCreate.status, 201);
+  const knowledgeLinkCreateBody = knowledgeLinkCreate.body as {
+    data: { id: string; targetType: string; targetId: string; correlationId: string; auditLogId: string };
+  };
+  assert.equal(knowledgeLinkCreateBody.data.targetType, "task");
+  assert.equal(knowledgeLinkCreateBody.data.targetId, operationsTask.id);
+  const knowledgeLinkAudit = await prisma.auditLog.findUniqueOrThrow({
+    where: { id: knowledgeLinkCreateBody.data.auditLogId }
+  });
+  assert.equal(knowledgeLinkAudit.action, "knowledge_link.created");
+  const knowledgeLinkEvent = await prisma.event.findFirstOrThrow({
+    where: {
+      workspaceId: ownerA.workspace.id,
+      type: "knowledge_link_created",
+      resourceId: knowledgeLinkCreateBody.data.id,
+      correlationId: knowledgeLinkCreateBody.data.correlationId
+    }
+  });
+  assert.equal(knowledgeLinkEvent.resourceType, "knowledge_link");
+  const deniedKnowledgeLinkCreate = await request("/v1/company-os/knowledge-links", {
+    method: "POST",
+    headers: authB,
+    body: JSON.stringify({
+      knowledgeItemId: linkedKnowledgeItem.id,
+      targetType: "task",
+      targetId: operationsTask.id,
+      linkType: "evidence"
+    })
+  });
+  assert.equal(deniedKnowledgeLinkCreate.status, 404);
 
   const startedStageRun = await request(`/v1/company-os/pipeline-runs/${pipelineRun.id}/actions/start-stage`, {
     method: "POST",
@@ -6106,6 +6173,11 @@ test("CompanyCore v1 protected API flow", async () => {
     route.method === "POST"
     && route.path === "/v1/company-os/pipeline-runs/:id/task-links"
     && route.capability === "company-os:pipeline-run:write"
+  )));
+  assert.ok(connectionBody.data.adapterManifest.routes.companyOs.some((route) => (
+    route.method === "POST"
+    && route.path === "/v1/company-os/knowledge-links"
+    && route.capability === "company-os:definition:write"
   )));
   assert.ok(connectionBody.data.adapterManifest.routes.companyOs.some((route) => (
     route.method === "POST"

@@ -10,7 +10,7 @@ const querySchema = z.object({
   limit: z.coerce.number().int().min(1).max(500).optional()
 }).strict();
 
-type EdgeConfidence = "direct" | "route_inferred" | "provider_hierarchy" | "content_inferred" | "needs_review" | "unsupported";
+type EdgeConfidence = "direct" | "owner_assigned" | "route_inferred" | "provider_hierarchy" | "content_inferred" | "needs_review" | "unsupported";
 
 type GraphNode = {
   id: string;
@@ -69,6 +69,22 @@ const EMPTY_UUID = "00000000-0000-0000-0000-000000000000";
 
 function graphId(type: string, id: string) {
   return `${type}:${id}`;
+}
+
+function linkTargetGraphId(targetType: string, targetId: string) {
+  switch (targetType) {
+    case "goal":
+    case "target":
+    case "metric":
+    case "process":
+    case "pipeline":
+    case "task":
+    case "operating_area":
+    case "operating_table":
+      return graphId(targetType, targetId);
+    default:
+      return null;
+  }
 }
 
 function addNode(nodes: Map<string, GraphNode>, layers: Record<LayerKey, string[]>, layer: LayerKey | null, node: GraphNode) {
@@ -251,6 +267,7 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
     pipelineRunTaskLinks,
     metrics,
     knowledgeItems,
+    knowledgeLinks,
     driveFiles,
     externalMappings,
     storageLocations,
@@ -314,6 +331,11 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
       orderBy: { updatedAt: "desc" },
       take: limit,
       include: { process: true, pipeline: true, project: true, client: true, agent: true }
+    }),
+    prisma.knowledgeLink.findMany({
+      where: { workspaceId },
+      orderBy: { createdAt: "desc" },
+      take: limit * 3
     }),
     prisma.googleDriveFile.findMany({
       where: {
@@ -868,6 +890,36 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
       }
     }
   }
+  for (const link of knowledgeLinks) {
+    const targetNode = linkTargetGraphId(link.targetType, link.targetId);
+    if (!targetNode) {
+      continue;
+    }
+    const sourceNode = link.knowledgeItemId
+      ? graphId("knowledge_item", link.knowledgeItemId)
+      : link.googleDriveFileId
+        ? graphId("google_drive_file", link.googleDriveFileId)
+        : link.contentSnapshotId
+          ? graphId("google_drive_content_snapshot", link.contentSnapshotId)
+          : null;
+    if (!sourceNode) {
+      continue;
+    }
+    addEdge(edges, {
+      id: `knowledge_link:${link.id}`,
+      from: sourceNode,
+      to: targetNode,
+      label: link.linkType,
+      confidence: link.confidence as EdgeConfidence,
+      sourceModel: "KnowledgeLink",
+      sourceField: "targetType/targetId",
+      actionHint: actionHint("Create knowledge link", "POST", "/v1/company-os/knowledge-links"),
+      evidence: evidence("KnowledgeLink", link.id, "targetType/targetId", {
+        targetType: link.targetType,
+        targetId: link.targetId
+      })
+    });
+  }
 
   const driveNodeByExternalId = new Map<string, string>();
   for (const file of driveFiles) {
@@ -1069,11 +1121,6 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
       family: "generic_editable_edges",
       reason: "The project has no approved broad edge editor for arbitrary business entities.",
       nextAction: "Use explicit model relations or command-shaped link contracts after AOG-BE-001 is proven."
-    },
-    {
-      family: "knowledge_goal_task_links",
-      reason: "Knowledge currently links to processes, pipelines, projects, clients, and agents, not directly to goals, targets, metrics, or tasks.",
-      nextAction: "Implement AOG-BE-005 with a guarded knowledge/source link contract."
     }
   ];
 

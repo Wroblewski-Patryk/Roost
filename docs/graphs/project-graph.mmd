@@ -270,6 +270,7 @@ graph TD
   API-AUTO-0166["PUT /v1/integration-settings/google_drive<br/>api_route / tested"]
   API-AUTO-0167["GET /v1/relationships/context<br/>api_route / tested"]
   API-AUTO-0168["POST /v1/company-os/pipeline-runs/:id/task-links<br/>api_route / tested"]
+  API-AUTO-0169["POST /v1/company-os/knowledge-links<br/>api_route / tested"]
   PAGE-00-GENERAL["/areas?area=00-ogolny&amp;view=overview<br/>page / verified"]
   PAGE-04-OPERATIONS-TASKS["/areas?area=04-operacje&amp;view=tasks<br/>page / verified"]
   PAGE-06-PEOPLE-AGENTS["/areas?area=06-kadry&amp;view=directory<br/>page / verified"]
@@ -348,6 +349,7 @@ graph TD
   DB-AUTO-0057["workspace_memberships model<br/>database_model / tested"]
   DB-AUTO-0058["workspaces model<br/>database_model / tested"]
   DB-AUTO-0059["pipeline_run_task_links model<br/>database_model / tested"]
+  DB-AUTO-0060["knowledge_links model<br/>database_model / tested"]
   MIG-AUTO-0001["Migration<br/>migration / tested"]
   MIG-AUTO-0002["Migration<br/>migration / tested"]
   MIG-AUTO-0003["Migration<br/>migration / tested"]
@@ -378,6 +380,7 @@ graph TD
   MIG-AUTO-0028["Migration<br/>migration / tested"]
   MIG-AUTO-0029["Migration<br/>migration / tested"]
   MIG-AUTO-0030["Migration<br/>migration / tested"]
+  MIG-AUTO-0031["Migration<br/>migration / tested"]
   INT-AUTO-0001["Clickup.Client<br/>integration / tested"]
   INT-AUTO-0002["Clickup.Maintenance Scheduler<br/>integration / tested"]
   INT-AUTO-0003["Clickup.Mapper<br/>integration / tested"]
@@ -1205,3 +1208,5 @@ graph TD
   FEAT-AUTO-0006 -->|owns| API-AUTO-0168
   FEAT-AUTO-0006 -->|contains| API-AUTO-0168
   FEAT-OPERATIONS-WORK-ITEMS -->|contains| DB-AUTO-0059
+  FEAT-AUTO-0006 -->|owns| API-AUTO-0169
+  FEAT-AUTO-0006 -->|contains| API-AUTO-0169

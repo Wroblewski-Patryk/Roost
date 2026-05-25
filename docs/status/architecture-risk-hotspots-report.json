@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-25T01:13:49.226Z",
+  "generatedAt": "2026-05-25T01:20:37.139Z",
   "status": "passed",
   "summary": {
     "hotspotCount": 25,
-    "highestRiskScore": 468
+    "highestRiskScore": 469
   },
   "globalRiskSignals": {
     "evidenceQueue": 0,
@@ -21,10 +21,10 @@
       "module": "agents",
       "feature": "agent-workflow",
       "status": "verified",
-      "risk_score": 468,
-      "impact_score": 468,
+      "risk_score": 469,
+      "impact_score": 469,
       "impact_delta": 0,
-      "transitive_out_count": 342,
+      "transitive_out_count": 343,
       "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
@@ -60,10 +60,10 @@
       "module": "company-os",
       "feature": "company-os-coverage",
       "status": "implemented",
-      "risk_score": 183,
-      "impact_score": 183,
+      "risk_score": 186,
+      "impact_score": 186,
       "impact_delta": 0,
-      "transitive_out_count": 134,
+      "transitive_out_count": 135,
       "reasons": "high_transitive_impact;wide_change_surface"
     },
     {

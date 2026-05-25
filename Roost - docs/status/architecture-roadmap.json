@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-25T01:13:51.206Z",
+  "generatedAt": "2026-05-25T01:20:38.692Z",
   "status": "GREEN",
   "previousHealthStatus": "GREEN",
   "metrics": {
@@ -19,9 +19,9 @@
     {
       "node_id": "AGENT-COORDINATOR",
       "node_name": "Coordinator agent role",
-      "impact_score": 468,
+      "impact_score": 469,
       "direct_out_count": 63,
-      "transitive_out_count": 342
+      "transitive_out_count": 343
     },
     {
       "node_id": "FEAT-AUTO-0020",
@@ -40,9 +40,9 @@
     {
       "node_id": "FEAT-AUTO-0006",
       "node_name": "Company Os Coverage Expansion",
-      "impact_score": 183,
-      "direct_out_count": 24,
-      "transitive_out_count": 134
+      "impact_score": 186,
+      "direct_out_count": 25,
+      "transitive_out_count": 135
     },
     {
       "node_id": "FEAT-ASSETS-CONTEXT",

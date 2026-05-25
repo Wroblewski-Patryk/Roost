@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-05-25T01:13:41.971Z",
+  "generatedAt": "2026-05-25T01:20:31.060Z",
   "sections": [
     {
       "title": "API Routes",
-      "codeCount": 177,
-      "registryCount": 177,
+      "codeCount": 178,
+      "registryCount": 178,
       "missingInRegistry": [],
       "missingInCode": []
     },
     {
       "title": "Prisma Models",
-      "codeCount": 63,
-      "registryCount": 63,
+      "codeCount": 64,
+      "registryCount": 64,
       "missingInRegistry": [],
       "missingInCode": []
     },

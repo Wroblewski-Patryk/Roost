@@ -1,8 +1,8 @@
 node_id,node_name,type,module,feature,status,risk_score,impact_score,impact_delta,transitive_out_count,reasons
-AGENT-COORDINATOR,Coordinator agent role,agent,agents,agent-workflow,verified,468,468,0,342,high_transitive_impact;wide_change_surface
+AGENT-COORDINATOR,Coordinator agent role,agent,agents,agent-workflow,verified,469,469,0,343,high_transitive_impact;wide_change_surface
 FEAT-AUTO-0020,Operating Model Coverage Expansion,feature,operating-model,operating-model-coverage,implemented,207,207,0,142,high_transitive_impact;wide_change_surface
 TEST-API-LOCAL,npm run test:api:local,test,cross-app,cross-app,verified,197,197,0,111,high_transitive_impact;wide_change_surface
-FEAT-AUTO-0006,Company Os Coverage Expansion,feature,company-os,company-os-coverage,implemented,183,183,0,134,high_transitive_impact;wide_change_surface
+FEAT-AUTO-0006,Company Os Coverage Expansion,feature,company-os,company-os-coverage,implemented,186,186,0,135,high_transitive_impact;wide_change_surface
 FEAT-ASSETS-CONTEXT,Assets Context Workbench,feature,assets,assets-context,verified,176,176,0,111,high_transitive_impact;wide_change_surface
 FEAT-AUTO-0015,Integration Settings Coverage Expansion,feature,integration-settings,integration-settings-coverage,implemented,165,165,0,128,high_transitive_impact;wide_change_surface
 FEAT-ARCH-EVIDENCE-SYSTEM,Architecture Evidence System,feature,architecture,architecture-evidence,implemented,160,160,0,57,high_transitive_impact;wide_change_surface

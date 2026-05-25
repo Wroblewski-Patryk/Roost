@@ -30,6 +30,7 @@ const collectionNames = [
   "risks",
   "controls",
   "knowledge-items",
+  "knowledge-links",
   "decision-logs",
   "automation-rules",
   "triggers",
@@ -90,6 +91,25 @@ const completeStageSchema = z.object({
   validationResult: z.record(z.unknown()).default({}),
   approvalId: z.string().uuid().optional()
 }).strict();
+const knowledgeLinkSchema = z.object({
+  knowledgeItemId: z.string().uuid().optional(),
+  googleDriveFileId: z.string().uuid().optional(),
+  contentSnapshotId: z.string().uuid().optional(),
+  targetType: z.enum(["goal", "target", "metric", "process", "pipeline", "task", "operating_area", "operating_table"]),
+  targetId: z.string().trim().min(1).max(120),
+  linkType: z.string().trim().min(1).max(80),
+  confidence: z.enum(["direct", "owner_assigned", "content_inferred", "provider_hierarchy"]).default("direct"),
+  metadata: z.record(z.unknown()).default({})
+}).strict().superRefine((value, ctx) => {
+  const sourceCount = [
+    value.knowledgeItemId,
+    value.googleDriveFileId,
+    value.contentSnapshotId
+  ].filter(Boolean).length;
+  if (sourceCount === 0) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "At least one knowledge source id is required." });
+  }
+});
 const pipelineRunTaskLinkSchema = z.object({
   taskId: z.string().uuid(),
   linkType: z.string().trim().min(1).max(64).default("evidence"),
@@ -1293,6 +1313,18 @@ const collectionReaders: Record<CollectionName, CollectionReader> = {
       include: { process: true, pipeline: true, project: true, client: true, agent: true }
     })
   },
+  "knowledge-links": {
+    list: (workspaceId, take) => prisma.knowledgeLink.findMany({
+      where: workspaceWhere(workspaceId),
+      orderBy: { createdAt: "desc" },
+      take,
+      include: { knowledgeItem: true, googleDriveFile: true, contentSnapshot: true }
+    }),
+    get: (workspaceId, id) => prisma.knowledgeLink.findFirst({
+      where: { id, workspaceId },
+      include: { knowledgeItem: true, googleDriveFile: true, contentSnapshot: true }
+    })
+  },
   "decision-logs": {
     list: (workspaceId, take) => prisma.decisionLog.findMany({
       where: workspaceWhere(workspaceId),
@@ -1992,6 +2024,114 @@ companyOsRouter.post("/pipeline-runs/:id/task-links", asyncHandler(async (req, r
         source: input.source,
         auditLogId: auditLog.id
       }
+    }
+  });
+
+  res.status(201).json({
+    data: {
+      ...link,
+      correlationId,
+      auditLogId: auditLog.id
+    }
+  });
+}));
+
+companyOsRouter.post("/knowledge-links", asyncHandler(async (req, res) => {
+  const workspaceId = req.auth!.workspaceId;
+  const input = knowledgeLinkSchema.parse(req.body);
+  const actor = authActor(req);
+  const correlationId = randomUUID();
+
+  const sourceChecks = await Promise.all([
+    input.knowledgeItemId
+      ? prisma.knowledgeItem.findFirst({ where: { id: input.knowledgeItemId, workspaceId } })
+      : Promise.resolve(null),
+    input.googleDriveFileId
+      ? prisma.googleDriveFile.findFirst({ where: { id: input.googleDriveFileId, workspaceId } })
+      : Promise.resolve(null),
+    input.contentSnapshotId
+      ? prisma.googleDriveContentSnapshot.findFirst({ where: { id: input.contentSnapshotId, workspaceId } })
+      : Promise.resolve(null)
+  ]);
+  if (
+    (input.knowledgeItemId && !sourceChecks[0])
+    || (input.googleDriveFileId && !sourceChecks[1])
+    || (input.contentSnapshotId && !sourceChecks[2])
+  ) {
+    return res.status(404).json({ error: "not_found" });
+  }
+
+  const targetExists = await (async () => {
+    switch (input.targetType) {
+      case "goal":
+        return Boolean(await prisma.goal.findFirst({ where: { id: input.targetId, workspaceId } }));
+      case "target":
+        return Boolean(await prisma.target.findFirst({ where: { id: input.targetId, workspaceId } }));
+      case "metric":
+        return Boolean(await prisma.metric.findFirst({ where: { id: input.targetId, workspaceId } }));
+      case "process":
+        return Boolean(await prisma.process.findFirst({ where: { id: input.targetId, workspaceId } }));
+      case "pipeline":
+        return Boolean(await prisma.pipeline.findFirst({ where: { id: input.targetId, workspaceId } }));
+      case "task":
+        return Boolean(await prisma.task.findFirst({ where: { id: input.targetId, workspaceId } }));
+      case "operating_area":
+        return Boolean(await prisma.operatingArea.findFirst({ where: { id: input.targetId, workspaceId } }));
+      case "operating_table":
+        return Boolean(await prisma.operatingTable.findFirst({ where: { id: input.targetId, workspaceId } }));
+      default:
+        return false;
+    }
+  })();
+
+  if (!targetExists) {
+    return res.status(404).json({ error: "not_found" });
+  }
+
+  const link = await prisma.knowledgeLink.create({
+    data: {
+      workspaceId,
+      knowledgeItemId: input.knowledgeItemId,
+      googleDriveFileId: input.googleDriveFileId,
+      contentSnapshotId: input.contentSnapshotId,
+      targetType: input.targetType,
+      targetId: input.targetId,
+      linkType: input.linkType,
+      confidence: input.confidence,
+      metadata: asInputJson(input.metadata)
+    }
+  });
+
+  const auditLog = await prisma.auditLog.create({
+    data: {
+      workspaceId,
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      action: "knowledge_link.created",
+      resourceType: "knowledge_link",
+      resourceId: link.id,
+      inputPayload: asInputJson(input as unknown as Record<string, unknown>),
+      outputPayload: asInputJson({ knowledgeLinkId: link.id }),
+      correlationId
+    }
+  });
+
+  await prisma.event.create({
+    data: {
+      workspaceId,
+      type: "knowledge_link_created",
+      source: "companycore",
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      resourceType: "knowledge_link",
+      resourceId: link.id,
+      correlationId,
+      payload: asInputJson({
+        knowledgeLinkId: link.id,
+        targetType: link.targetType,
+        targetId: link.targetId,
+        auditLogId: auditLog.id
+      })
     }
   });
 

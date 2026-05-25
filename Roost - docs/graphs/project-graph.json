@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-25T01:13:41.971Z",
+  "generatedAt": "2026-05-25T01:20:31.060Z",
   "nodes": [
     {
       "id": "FEAT-ARCH-EVIDENCE-SYSTEM",
@@ -4067,6 +4067,21 @@
       ]
     },
     {
+      "id": "API-AUTO-0169",
+      "name": "POST /v1/company-os/knowledge-links",
+      "type": "api_route",
+      "status": "implemented",
+      "layer": "backend",
+      "module": "company-os",
+      "feature": "company-os-coverage",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "src/modules/company-os/company-os.routes.ts",
+      "tags": [
+        "#api #auto-scaffold #missing"
+      ]
+    },
+    {
       "id": "PAGE-00-GENERAL",
       "name": "/areas?area=00-ogolny&view=overview",
       "type": "page",
@@ -5237,6 +5252,21 @@
       ]
     },
     {
+      "id": "DB-AUTO-0060",
+      "name": "knowledge_links model",
+      "type": "database_model",
+      "status": "implemented",
+      "layer": "database",
+      "module": "core",
+      "feature": "coverage-expansion",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "prisma/schema.prisma",
+      "tags": [
+        "#database #auto-scaffold #missing"
+      ]
+    },
+    {
       "id": "MIG-AUTO-0001",
       "name": "Migration",
       "type": "migration",
@@ -5682,6 +5712,21 @@
       "verificationStatus": "tested",
       "riskLevel": "medium",
       "filePath": "prisma/migrations/202605253_aog_be_004_pipeline_run_task_links/migration.sql",
+      "tags": [
+        "#migration #auto"
+      ]
+    },
+    {
+      "id": "MIG-AUTO-0031",
+      "name": "Migration",
+      "type": "migration",
+      "status": "implemented",
+      "layer": "database",
+      "module": "database",
+      "feature": "coverage-expansion",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "prisma/migrations/202605254_aog_be_005_knowledge_links/migration.sql",
       "tags": [
         "#migration #auto"
       ]
@@ -12026,6 +12071,20 @@
       "id": "REL-AUTO-0725",
       "source": "FEAT-OPERATIONS-WORK-ITEMS",
       "target": "DB-AUTO-0059",
+      "type": "contains",
+      "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0726",
+      "source": "FEAT-AUTO-0006",
+      "target": "API-AUTO-0169",
+      "type": "owns",
+      "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0727",
+      "source": "FEAT-AUTO-0006",
+      "target": "API-AUTO-0169",
       "type": "contains",
       "status": "partial"
     }
