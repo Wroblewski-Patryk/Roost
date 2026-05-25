@@ -18,7 +18,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NEXT
 
-- [ ] Continue V1 department systems with `DMS-NEXT-004` Relationships
+- [x] Continue V1 department systems with `DMS-NEXT-004` Relationships
       Management read packet and board after ARCH-EVID maintenance remains
       green. The owner-approved `00 Main -> 04 Operations -> 08 Assets`
       checkpoint is complete through shared primitives, verified backend

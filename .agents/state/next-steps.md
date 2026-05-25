@@ -1,6 +1,6 @@
 # Next Steps
 
-Last updated: 2026-05-24
+Last updated: 2026-05-25
 
 ## NOW
 
@@ -15,13 +15,13 @@ Last updated: 2026-05-24
    - Next slice: keep this as a release gate and only open focused follow-up
      tasks when a new gap appears in generated status artifacts.
 
-1. Continue V1 department systems with `DMS-NEXT-004` Relationships Management
-   read packet and board, unless deployment smoke is selected first.
+1. Start `AOG-BE-002` target-metric relation decision and implementation slice.
    - Source:
-     `docs/planning/companycore-00-04-08-operating-loop-plan.md`.
-   - `00 -> 04 -> 08` loop foundations are complete and verified; next
-     executable functional slice remains `05 Relationships` with system-level
-     read packet + board semantics.
+     `docs/planning/v1-area-operating-graph-backend-gap-plan.md`.
+   - `DMS-NEXT-004` and `DMS-NEXT-002` route activations are implemented and
+     verified locally. The next executable backend gap is adding optional
+     `Target.metricId` while preserving compatibility for existing
+     `Target.metric` text.
    - CompanyCore remains the company operating system; AI agents remain
      external API/MCP clients.
    - Keep writes behind explicit command contracts, audit/events, and API
