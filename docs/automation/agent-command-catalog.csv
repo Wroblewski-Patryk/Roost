@@ -1,0 +1,2 @@
+Command,Type,Purpose,Safety class,Requires approval,Required capability,Evidence,Owner,Notes
+npm test,shell,Run tests,safe_read,no,,Command output,Engineering,Example only.

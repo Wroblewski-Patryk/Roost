@@ -1,0 +1,2 @@
+id,name,status,page_or_component,action_or_state,feature,file_path,chain_id,tests_related,evidence,risk_level,last_verified_at,notes
+UI-000,Example UI element,planned,PAGE-000,click,example,src/README.md,CHAIN-000,,,medium,YYYY-MM-DD,Example only.

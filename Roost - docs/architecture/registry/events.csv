@@ -1,0 +1,2 @@
+id,name,status,module,feature,producer,consumer,payload_contract,tests_related,docs_related,evidence,risk_level,last_verified_at,notes
+EVENT-000,Example event,planned,example,example,,,,,,,medium,YYYY-MM-DD,Example only.

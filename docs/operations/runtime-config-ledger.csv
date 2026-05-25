@@ -1,0 +1,2 @@
+Service,Environment,Config key,Secret,Required,Owner,Source of truth,Validation,Last verified,Notes
+api,local,EXAMPLE_ENV,no,yes,Owner,.env.example,Startup check,YYYY-MM-DD,Example only.

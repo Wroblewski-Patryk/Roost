@@ -1,0 +1,2 @@
+id,name,status,module,feature,file_path,used_by,inputs,outputs,tests_related,docs_related,evidence,risk_level,last_verified_at,notes
+PROMPT-000,Example prompt,planned,example,example,.agents/prompts/planner.md,,,,,,,medium,YYYY-MM-DD,Example only.

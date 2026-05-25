@@ -1,0 +1,2 @@
+id,name,status,route,module,feature,file_path,components,api_related,tests_related,docs_related,evidence,risk_level,last_verified_at,notes
+PAGE-000,Example page,planned,/example,example,example,src/README.md,,,,,,medium,YYYY-MM-DD,Example only.
