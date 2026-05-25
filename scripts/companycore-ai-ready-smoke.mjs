@@ -228,9 +228,9 @@ async function main() {
   const areaGraph = areaGraphResult.body;
   assert(areaGraph && typeof areaGraph === "object", "Operating graph response did not return data.");
   assert(areaGraph.area && typeof areaGraph.area.key === "string", "Operating graph did not return area metadata.");
-  assert(Array.isArray(areaGraph.graph?.nodes), "Operating graph did not return graph.nodes.");
-  assert(Array.isArray(areaGraph.graph?.edges), "Operating graph did not return graph.edges.");
-  assert(Array.isArray(areaGraph.graph?.gaps), "Operating graph did not return graph.gaps.");
+  assert(Array.isArray(areaGraph.nodes), "Operating graph did not return nodes.");
+  assert(Array.isArray(areaGraph.edges), "Operating graph did not return edges.");
+  assert(Array.isArray(areaGraph.gaps), "Operating graph did not return gaps.");
 
   const graphBridgeSmoke = await runMcpSmoke(readerKey.key, {
     toolName: "companycore_get_relationships_graph",
@@ -275,9 +275,9 @@ async function main() {
     operatingGraph: {
       requestedAreaKey: areaGraphResult.areaKey,
       resolvedAreaKey: areaGraph.area.key,
-      nodes: areaGraph.graph.nodes.length,
-      edges: areaGraph.graph.edges.length,
-      gaps: areaGraph.graph.gaps.length
+      nodes: areaGraph.nodes.length,
+      edges: areaGraph.edges.length,
+      gaps: areaGraph.gaps.length
     },
     mcpBridge: {
       graphTool: graphBridgeSmoke.calledTool,

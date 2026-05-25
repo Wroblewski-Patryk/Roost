@@ -30,6 +30,9 @@ Last updated: 2026-05-25
    - Prefer `npm run ai-ready:smoke` as the canonical runtime proof for this
      slice; it now includes authenticated HTTP + MCP checks for
      `/v1/operating-graph/areas/:areaKey`.
+   - Local replay proof is complete (`ok: true` with MCP operating graph status
+     `200` and guarded-command fail-closed). Next required evidence is the same
+     smoke on target deployed runtime.
    - Local harness note: `scripts/test-api-local.mjs` now runs
      `build -> migrate -> seed -> dist API tests`; remaining failing assertion
      in `CompanyCore v1 protected API flow` should be handled as a focused
