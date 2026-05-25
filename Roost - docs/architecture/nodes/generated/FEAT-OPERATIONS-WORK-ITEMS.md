@@ -61,6 +61,7 @@ Operations work-management packet and domain commands for tasks, responsibility,
 - contains -> [[API-AUTO-0073|GET /v1/operations/context]] (partial)
 - contains -> [[API-AUTO-0108|PATCH /v1/operations/task-lists/:id]] (partial)
 - contains -> [[PAGE-AUTO-0006|/operations]] (partial)
+- contains -> [[DB-AUTO-0059|pipeline_run_task_links model]] (partial)
 - [[COMP-SHELL|Authenticated Shell component]] -> depends_on (partial)
 
 ## Chains

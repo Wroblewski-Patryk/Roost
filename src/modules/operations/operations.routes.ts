@@ -412,6 +412,7 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
   const [
     dependencies,
     pipelineRuns,
+    pipelineRunTaskLinks,
     agentLogs,
     projectResources,
     operationsDriveFiles
@@ -444,6 +445,13 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
         }
       }
     }),
+    taskIds.length
+      ? prisma.pipelineRunTaskLink.findMany({
+        where: { workspaceId, taskId: { in: taskIds } },
+        orderBy: { createdAt: "desc" },
+        take: 400
+      })
+      : Promise.resolve([]),
     prisma.agentLog.findMany({
       where: { workspaceId },
       orderBy: { createdAt: "desc" },
@@ -471,7 +479,10 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
       (dependency.fromEntityType === "task" && dependency.fromEntityId === task.id)
       || (dependency.toEntityType === "task" && dependency.toEntityId === task.id)
     ));
-    const taskPipelineRuns = pipelineRuns.filter((run) => asStringArray(run.linkedTaskIds).includes(task.id));
+    const taskPipelineRuns = pipelineRuns.filter((run) => (
+      asStringArray(run.linkedTaskIds).includes(task.id)
+      || pipelineRunTaskLinks.some((link) => link.pipelineRunId === run.id && link.taskId === task.id)
+    ));
     const taskAgentLogs = agentLogs.filter((log) => jsonReferencesTask(log.metadata, task)).slice(0, 5);
     const taskResources = projectResources.filter((resource) => resource.relatedProjectId === task.projectId).slice(0, 8);
     const readiness = taskReadiness(task, taskDependencies.length);

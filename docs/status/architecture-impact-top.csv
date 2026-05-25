@@ -1,51 +1,51 @@
 node_id,node_name,type,module,feature,status,impact_score,direct_out_count,direct_in_count,transitive_out_count,transitive_in_count
-AGENT-COORDINATOR,Coordinator agent role,agent,agents,agent-workflow,verified,466,63,0,340,0
-FEAT-AUTO-0020,Operating Model Coverage Expansion,feature,operating-model,operating-model-coverage,implemented,206,32,1,141,1
-TEST-API-LOCAL,npm run test:api:local,test,cross-app,cross-app,verified,196,7,72,110,101
-FEAT-AUTO-0006,Company Os Coverage Expansion,feature,company-os,company-os-coverage,implemented,179,23,1,132,1
-FEAT-ASSETS-CONTEXT,Assets Context Workbench,feature,assets,assets-context,verified,175,32,1,110,101
-FEAT-AUTO-0015,Integration Settings Coverage Expansion,feature,integration-settings,integration-settings-coverage,implemented,164,18,1,127,1
+AGENT-COORDINATOR,Coordinator agent role,agent,agents,agent-workflow,verified,468,63,0,342,0
+FEAT-AUTO-0020,Operating Model Coverage Expansion,feature,operating-model,operating-model-coverage,implemented,207,32,1,142,1
+TEST-API-LOCAL,npm run test:api:local,test,cross-app,cross-app,verified,197,7,72,111,101
+FEAT-AUTO-0006,Company Os Coverage Expansion,feature,company-os,company-os-coverage,implemented,183,24,1,134,1
+FEAT-ASSETS-CONTEXT,Assets Context Workbench,feature,assets,assets-context,verified,176,32,1,111,101
+FEAT-AUTO-0015,Integration Settings Coverage Expansion,feature,integration-settings,integration-settings-coverage,implemented,165,18,1,128,1
 FEAT-ARCH-EVIDENCE-SYSTEM,Architecture Evidence System,feature,architecture,architecture-evidence,implemented,160,51,1,57,1
-COMP-SHELL,Authenticated Shell component,component,shell,cross-app,verified,159,21,7,110,101
-FEAT-PEOPLE-AGENTS-DIRECTORY,People and Agents Directory,feature,workforce,people-agents-directory,verified,149,19,1,110,101
-FEAT-AUTO-0013,Google Drive Coverage Expansion,feature,google-drive,google-drive-coverage,implemented,143,11,1,120,1
-DB-TASK,Task model,database_model,operations,operations-work-items,verified,142,7,18,110,101
-FEAT-OPERATIONS-WORK-ITEMS,Operations Work Items,feature,operations,operations-work-items,verified,141,15,1,110,101
-FEAT-DASHBOARD-COMMAND,Dashboard Command Packet,feature,dashboard,dashboard-command,verified,141,15,1,110,101
-FEAT-AUTO-0028,Tasks Coverage Expansion,feature,tasks,tasks-coverage,implemented,140,10,1,119,1
-FEAT-MGMT-DEPT-CATALOG,Management Department Catalog,feature,management,management-department-catalog,verified,137,13,1,110,101
-DB-WORKFORCE-ENTITY,workforce_entities model,database_model,workforce,people-agents-directory,verified,137,4,19,110,101
-COMP-OPERATIONS-ROUTE,OperationsRoute component,component,operations,operations-work-items,verified,134,9,6,110,101
-COMP-MANAGEMENT-ROUTE,ManagementRoute component,component,management,management-department-catalog,verified,133,9,5,110,101
-DB-GOOGLE-DRIVE-FILE,google_drive_files model,database_model,assets,assets-context,verified,133,4,15,110,101
-DB-WORKSPACE-DEPARTMENTS,workspace_departments model,database_model,departments,management-department-catalog,verified,132,5,12,110,101
-API-DASHBOARD-COMMAND,GET /v1/dashboard/command,api_route,dashboard,dashboard-command,verified,132,8,6,110,101
-API-DEPARTMENTS-LIST,GET /v1/departments,api_route,departments,management-department-catalog,verified,131,6,9,110,101
-COMP-GENERAL-DASHBOARD,GeneralDashboard component,component,dashboard,dashboard-command,verified,131,8,5,110,101
-FEAT-AUTO-0003,Agents Coverage Expansion,feature,agents,agents-coverage,implemented,131,7,1,116,1
-FEAT-AUTO-0004,Clients Coverage Expansion,feature,clients,clients-coverage,implemented,131,7,1,116,1
-FEAT-AUTO-0008,Deals Coverage Expansion,feature,deals,deals-coverage,implemented,131,7,1,116,1
-FEAT-AUTO-0009,Decisions Coverage Expansion,feature,decisions,decisions-coverage,implemented,131,7,1,116,1
-FEAT-AUTO-0012,Goals Coverage Expansion,feature,goals,goals-coverage,implemented,131,7,1,116,1
-FEAT-AUTO-0016,Interactions Coverage Expansion,feature,interactions,interactions-coverage,implemented,131,7,1,116,1
-FEAT-AUTO-0018,Notes Coverage Expansion,feature,notes,notes-coverage,implemented,131,7,1,116,1
-FEAT-AUTO-0021,Pipeline Stages Coverage Expansion,feature,pipeline-stages,pipeline-stages-coverage,implemented,131,7,1,116,1
-FEAT-AUTO-0022,Projects Coverage Expansion,feature,projects,projects-coverage,implemented,131,7,1,116,1
-FEAT-AUTO-0026,Targets Coverage Expansion,feature,targets,targets-coverage,implemented,131,7,1,116,1
-FEAT-AUTO-0027,Task Lists Coverage Expansion,feature,task-lists,task-lists-coverage,implemented,131,7,1,116,1
-UI-DASHBOARD-NEXT-ACTION,Dashboard next action panel,ui_element,dashboard,dashboard-command,verified,129,8,3,110,101
-COMP-PEOPLE-AGENTS-ROUTE,PeopleAgentsRoute component,component,workforce,people-agents-directory,verified,128,7,4,110,101
-DOC-PEOPLE-AGENTS-CONTRACT,People/Agents premium UX contract,documentation,workforce,people-agents-directory,verified,128,1,16,110,101
-TEST-PLAYWRIGHT-DASHBOARD,Playwright dashboard render proof,test,dashboard,dashboard-command,verified,128,6,6,110,101
-API-OPERATIONS-CREATE-WORK-ITEM,POST /v1/operations/work-items,api_route,operations,operations-work-items,verified,126,5,6,110,101
-TEST-BROWSER-MGMT-DEPT,Browser rendered department catalog proof,test,management,management-department-catalog,verified,126,4,8,110,101
-TEST-PLAYWRIGHT-PEOPLE,Playwright People/Agents proof,test,workforce,people-agents-directory,verified,126,4,8,110,101
-TEST-PLAYWRIGHT-ASSETS,Playwright Assets proof,test,assets,assets-context,verified,126,5,6,110,101
-API-DEPARTMENTS-CREATE,POST /v1/departments,api_route,departments,management-department-catalog,verified,125,5,5,110,101
-COMP-ASSETS-ROUTE,AssetsRoute component,component,assets,assets-context,verified,125,5,5,110,101
-FEAT-AUTO-0002,Agent Logs Coverage Expansion,feature,agent-logs,agent-logs-coverage,implemented,125,5,1,114,1
-FEAT-AUTO-0014,Intake Coverage Expansion,feature,intake,intake-coverage,implemented,125,5,1,114,1
-PAGE-04-OPERATIONS-TASKS,/areas?area=04-operacje&view=tasks,page,operations,operations-work-items,verified,125,6,3,110,101
-PAGE-06-PEOPLE-AGENTS,/areas?area=06-kadry&view=directory,page,workforce,people-agents-directory,verified,125,6,3,110,101
-PAGE-08-ASSETS-FILES,/areas?area=08-zasoby&view=files,page,assets,assets-context,verified,125,6,3,110,101
-PAGE-12-MANAGEMENT-DEPARTMENTS,/areas?area=12-zarzadzanie&view=departments,page,management,management-department-catalog,verified,125,6,3,110,101
+COMP-SHELL,Authenticated Shell component,component,shell,cross-app,verified,160,21,7,111,101
+FEAT-PEOPLE-AGENTS-DIRECTORY,People and Agents Directory,feature,workforce,people-agents-directory,verified,150,19,1,111,101
+FEAT-OPERATIONS-WORK-ITEMS,Operations Work Items,feature,operations,operations-work-items,verified,144,16,1,111,101
+FEAT-AUTO-0013,Google Drive Coverage Expansion,feature,google-drive,google-drive-coverage,implemented,144,11,1,121,1
+DB-TASK,Task model,database_model,operations,operations-work-items,verified,143,7,18,111,101
+FEAT-DASHBOARD-COMMAND,Dashboard Command Packet,feature,dashboard,dashboard-command,verified,142,15,1,111,101
+FEAT-AUTO-0028,Tasks Coverage Expansion,feature,tasks,tasks-coverage,implemented,141,10,1,120,1
+FEAT-MGMT-DEPT-CATALOG,Management Department Catalog,feature,management,management-department-catalog,verified,138,13,1,111,101
+DB-WORKFORCE-ENTITY,workforce_entities model,database_model,workforce,people-agents-directory,verified,138,4,19,111,101
+COMP-OPERATIONS-ROUTE,OperationsRoute component,component,operations,operations-work-items,verified,135,9,6,111,101
+COMP-MANAGEMENT-ROUTE,ManagementRoute component,component,management,management-department-catalog,verified,134,9,5,111,101
+DB-GOOGLE-DRIVE-FILE,google_drive_files model,database_model,assets,assets-context,verified,134,4,15,111,101
+DB-WORKSPACE-DEPARTMENTS,workspace_departments model,database_model,departments,management-department-catalog,verified,133,5,12,111,101
+API-DASHBOARD-COMMAND,GET /v1/dashboard/command,api_route,dashboard,dashboard-command,verified,133,8,6,111,101
+API-DEPARTMENTS-LIST,GET /v1/departments,api_route,departments,management-department-catalog,verified,132,6,9,111,101
+COMP-GENERAL-DASHBOARD,GeneralDashboard component,component,dashboard,dashboard-command,verified,132,8,5,111,101
+FEAT-AUTO-0003,Agents Coverage Expansion,feature,agents,agents-coverage,implemented,132,7,1,117,1
+FEAT-AUTO-0004,Clients Coverage Expansion,feature,clients,clients-coverage,implemented,132,7,1,117,1
+FEAT-AUTO-0008,Deals Coverage Expansion,feature,deals,deals-coverage,implemented,132,7,1,117,1
+FEAT-AUTO-0009,Decisions Coverage Expansion,feature,decisions,decisions-coverage,implemented,132,7,1,117,1
+FEAT-AUTO-0012,Goals Coverage Expansion,feature,goals,goals-coverage,implemented,132,7,1,117,1
+FEAT-AUTO-0016,Interactions Coverage Expansion,feature,interactions,interactions-coverage,implemented,132,7,1,117,1
+FEAT-AUTO-0018,Notes Coverage Expansion,feature,notes,notes-coverage,implemented,132,7,1,117,1
+FEAT-AUTO-0021,Pipeline Stages Coverage Expansion,feature,pipeline-stages,pipeline-stages-coverage,implemented,132,7,1,117,1
+FEAT-AUTO-0022,Projects Coverage Expansion,feature,projects,projects-coverage,implemented,132,7,1,117,1
+FEAT-AUTO-0026,Targets Coverage Expansion,feature,targets,targets-coverage,implemented,132,7,1,117,1
+FEAT-AUTO-0027,Task Lists Coverage Expansion,feature,task-lists,task-lists-coverage,implemented,132,7,1,117,1
+UI-DASHBOARD-NEXT-ACTION,Dashboard next action panel,ui_element,dashboard,dashboard-command,verified,130,8,3,111,101
+COMP-PEOPLE-AGENTS-ROUTE,PeopleAgentsRoute component,component,workforce,people-agents-directory,verified,129,7,4,111,101
+DOC-PEOPLE-AGENTS-CONTRACT,People/Agents premium UX contract,documentation,workforce,people-agents-directory,verified,129,1,16,111,101
+TEST-PLAYWRIGHT-DASHBOARD,Playwright dashboard render proof,test,dashboard,dashboard-command,verified,129,6,6,111,101
+API-OPERATIONS-CREATE-WORK-ITEM,POST /v1/operations/work-items,api_route,operations,operations-work-items,verified,127,5,6,111,101
+TEST-BROWSER-MGMT-DEPT,Browser rendered department catalog proof,test,management,management-department-catalog,verified,127,4,8,111,101
+TEST-PLAYWRIGHT-PEOPLE,Playwright People/Agents proof,test,workforce,people-agents-directory,verified,127,4,8,111,101
+TEST-PLAYWRIGHT-ASSETS,Playwright Assets proof,test,assets,assets-context,verified,127,5,6,111,101
+API-DEPARTMENTS-CREATE,POST /v1/departments,api_route,departments,management-department-catalog,verified,126,5,5,111,101
+COMP-ASSETS-ROUTE,AssetsRoute component,component,assets,assets-context,verified,126,5,5,111,101
+FEAT-AUTO-0002,Agent Logs Coverage Expansion,feature,agent-logs,agent-logs-coverage,implemented,126,5,1,115,1
+FEAT-AUTO-0014,Intake Coverage Expansion,feature,intake,intake-coverage,implemented,126,5,1,115,1
+PAGE-04-OPERATIONS-TASKS,/areas?area=04-operacje&view=tasks,page,operations,operations-work-items,verified,126,6,3,111,101
+PAGE-06-PEOPLE-AGENTS,/areas?area=06-kadry&view=directory,page,workforce,people-agents-directory,verified,126,6,3,111,101
+PAGE-08-ASSETS-FILES,/areas?area=08-zasoby&view=files,page,assets,assets-context,verified,126,6,3,111,101
+PAGE-12-MANAGEMENT-DEPARTMENTS,/areas?area=12-zarzadzanie&view=departments,page,management,management-department-catalog,verified,126,6,3,111,101

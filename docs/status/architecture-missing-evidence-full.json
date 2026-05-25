@@ -1,23 +1,5 @@
 {
-  "generatedAt": "2026-05-25T01:08:22.174Z",
-  "count": 1,
-  "items": [
-    {
-      "__source": "docs/status/evidence-status.csv",
-      "__line": 446,
-      "__columnCount": 11,
-      "__headerCount": 11,
-      "id": "EVID-AUTO-00439",
-      "node_id": "MIG-AUTO-0029",
-      "implementation_proof": "prisma/migrations/202605252_aog_be_003_goal_workflow_bridge/migration.sql",
-      "test_proof": "npm run prisma:migrate:deploy",
-      "runtime_proof": "npm run prisma:migrate:deploy",
-      "connection_proof": "",
-      "documentation_proof": "",
-      "overall_status": "implemented_not_verified",
-      "last_verified_at": "",
-      "missing_evidence": "docs",
-      "next_action": "Add missing proof fields then upgrade to tested/verified with dated evidence."
-    }
-  ]
+  "generatedAt": "2026-05-25T01:13:41.971Z",
+  "count": 0,
+  "items": []
 }

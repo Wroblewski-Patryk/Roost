@@ -252,6 +252,7 @@ model Workspace {
   integrationCapabilities      IntegrationCapability[]
   standards                    Standard[]
   pipelineRuns                 PipelineRun[]
+  pipelineRunTaskLinks         PipelineRunTaskLink[]
   stageRuns                    StageRun[]
   approvals                    Approval[]
   auditLogs                    AuditLog[]
@@ -672,6 +673,7 @@ model PipelineRun {
   linkedProjectId   String?           @map("linked_project_id") @db.Uuid
   linkedProject     Project?          @relation(fields: [linkedProjectId], references: [id], onDelete: SetNull)
   correlationId     String            @map("correlation_id")
+  taskLinks         PipelineRunTaskLink[]
   stageRuns         StageRun[]
   approvals         Approval[]
   auditLogs         AuditLog[]
@@ -685,6 +687,25 @@ model PipelineRun {
   @@index([workspaceId, linkedClientId])
   @@index([workspaceId, linkedProjectId])
   @@map("pipeline_runs")
+}
+
+model PipelineRunTaskLink {
+  id            String      @id @default(uuid()) @db.Uuid
+  workspaceId   String      @map("workspace_id") @db.Uuid
+  workspace     Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  pipelineRunId String      @map("pipeline_run_id") @db.Uuid
+  pipelineRun   PipelineRun @relation(fields: [pipelineRunId], references: [id], onDelete: Cascade)
+  taskId        String      @map("task_id") @db.Uuid
+  task          Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  linkType      String      @default("evidence") @map("link_type")
+  source        String      @default("companycore")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, pipelineRunId, taskId, linkType])
+  @@index([workspaceId, pipelineRunId])
+  @@index([workspaceId, taskId])
+  @@map("pipeline_run_task_links")
 }
 
 model StageRun {
@@ -1518,6 +1539,7 @@ model Task {
   recurrenceRule String? @map("recurrence_rule")
   externalId  String?    @map("external_id")
   source      String?    @default("companycore")
+  pipelineRunTaskLinks PipelineRunTaskLink[]
   notes       Note[]
   events      Event[]
   createdAt   DateTime   @default(now()) @map("created_at")

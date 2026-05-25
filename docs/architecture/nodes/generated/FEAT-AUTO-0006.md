@@ -86,6 +86,8 @@ Auto-generated feature grouping for company-os API coverage expansion.
 - contains -> [[API-AUTO-0129|POST /v1/company-os/workflow-definitions/drafts]] (partial)
 - contains -> [[API-AUTO-0130|POST /v1/company-os/workflow-definitions/drafts/:id/actions/activate]] (partial)
 - contains -> [[API-AUTO-0131|POST /v1/company-os/workflow-definitions/drafts/:id/actions/preview-impact]] (partial)
+- owns -> [[API-AUTO-0168|POST /v1/company-os/pipeline-runs/:id/task-links]] (partial)
+- contains -> [[API-AUTO-0168|POST /v1/company-os/pipeline-runs/:id/task-links]] (partial)
 - [[AGENT-COORDINATOR|Coordinator agent role]] -> depends_on (partial)
 
 ## Chains

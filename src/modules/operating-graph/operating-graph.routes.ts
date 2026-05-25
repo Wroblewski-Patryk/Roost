@@ -248,6 +248,7 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
     processes,
     pipelines,
     pipelineRuns,
+    pipelineRunTaskLinks,
     metrics,
     knowledgeItems,
     driveFiles,
@@ -296,6 +297,11 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
       orderBy: { createdAt: "desc" },
       take: limit,
       include: { pipeline: true, currentStage: true }
+    }),
+    prisma.pipelineRunTaskLink.findMany({
+      where: { workspaceId },
+      orderBy: { createdAt: "desc" },
+      take: limit * 3
     }),
     prisma.metric.findMany({
       where: { workspaceId, ...(shouldLoadAllMetrics ? {} : { OR: [{ process: { department: { contains: area.name, mode: "insensitive" } } }, { pipeline: { process: { department: { contains: area.name, mode: "insensitive" } } } }] }) },
@@ -726,7 +732,27 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
       sourceField: "pipelineId",
       evidence: evidence("PipelineRun", run.id, "pipelineId", run.pipelineId)
     });
+    const normalizedLinks = pipelineRunTaskLinks.filter((link) => link.pipelineRunId === run.id);
+    for (const link of normalizedLinks) {
+      addEdge(edges, {
+        id: `pipeline_run:${run.id}->task:${link.taskId}:link:${link.id}`,
+        from: id,
+        to: graphId("task", link.taskId),
+        label: "links task",
+        confidence: "direct",
+        sourceModel: "PipelineRunTaskLink",
+        sourceField: "pipelineRunId/taskId",
+        evidence: evidence("PipelineRunTaskLink", link.id, "pipelineRunId/taskId", {
+          pipelineRunId: link.pipelineRunId,
+          taskId: link.taskId,
+          linkType: link.linkType
+        })
+      });
+    }
     for (const taskId of asStringArray(run.linkedTaskIds)) {
+      if (normalizedLinks.some((link) => link.taskId === taskId)) {
+        continue;
+      }
       addEdge(edges, {
         id: `pipeline_run:${run.id}->task:${taskId}:linkedTaskIds`,
         from: id,

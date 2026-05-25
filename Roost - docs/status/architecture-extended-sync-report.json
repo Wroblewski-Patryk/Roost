@@ -1,5 +1,5 @@
 {
-  "synchronizedAt": "2026-05-25T01:08:13.207Z",
+  "synchronizedAt": "2026-05-25T01:13:31.639Z",
   "results": [
     {
       "file": "docs/architecture/nodes/services.csv",
@@ -46,9 +46,9 @@
     {
       "file": "docs/architecture/nodes/migrations.csv",
       "type": "migration",
-      "candidates": 29,
-      "added": 1,
-      "total": 29
+      "candidates": 30,
+      "added": 0,
+      "total": 30
     },
     {
       "file": "docs/architecture/nodes/integrations.csv",

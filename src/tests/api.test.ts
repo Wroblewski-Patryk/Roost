@@ -61,6 +61,7 @@ async function resetDatabase() {
   await prisma.acceptanceCriterion.deleteMany();
   await prisma.approval.deleteMany();
   await prisma.stageRun.deleteMany();
+  await prisma.pipelineRunTaskLink.deleteMany();
   await prisma.pipelineRun.deleteMany();
   await prisma.checklistItem.deleteMany();
   await prisma.checklistTemplate.deleteMany();
@@ -3393,6 +3394,15 @@ test("CompanyCore v1 protected API flow", async () => {
       correlationId: "operating-graph-api-test"
     }
   });
+  await prisma.pipelineRunTaskLink.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      pipelineRunId: graphPipelineRun.id,
+      taskId: graphTask.id,
+      linkType: "execution_evidence",
+      source: "companycore"
+    }
+  });
   const graphKnowledgeItem = await prisma.knowledgeItem.create({
     data: {
       workspaceId: ownerA.workspace.id,
@@ -3487,8 +3497,9 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(areaGraphBody.data.edges.some((edge) => (
     edge.from === `pipeline_run:${graphPipelineRun.id}`
     && edge.to === `task:${graphTask.id}`
-    && edge.confidence === "route_inferred"
-    && edge.sourceField === "linkedTaskIds"
+    && edge.confidence === "direct"
+    && edge.sourceModel === "PipelineRunTaskLink"
+    && edge.sourceField === "pipelineRunId/taskId"
   )));
   assert.ok(areaGraphBody.data.edges.some((edge) => edge.confidence === "content_inferred"));
   assert.ok(areaGraphBody.data.layers.goals.includes(`goal:${graphGoal.id}`));
@@ -4141,6 +4152,46 @@ test("CompanyCore v1 protected API flow", async () => {
     })
   });
   assert.equal(crossWorkspaceApprovalDecision.status, 404);
+
+  const pipelineRunTaskLink = await request(`/v1/company-os/pipeline-runs/${pipelineRun.id}/task-links`, {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({
+      taskId: operationsTask.id,
+      linkType: "execution_evidence",
+      source: "companycore"
+    })
+  });
+  assert.equal(pipelineRunTaskLink.status, 201);
+  const pipelineRunTaskLinkBody = pipelineRunTaskLink.body as {
+    data: { id: string; taskId: string; pipelineRunId: string; linkType: string; correlationId: string; auditLogId: string };
+  };
+  assert.equal(pipelineRunTaskLinkBody.data.taskId, operationsTask.id);
+  assert.equal(pipelineRunTaskLinkBody.data.pipelineRunId, pipelineRun.id);
+  assert.equal(pipelineRunTaskLinkBody.data.linkType, "execution_evidence");
+  const pipelineRunTaskLinkAudit = await prisma.auditLog.findUniqueOrThrow({
+    where: { id: pipelineRunTaskLinkBody.data.auditLogId }
+  });
+  assert.equal(pipelineRunTaskLinkAudit.action, "pipeline_run.task_linked");
+  const pipelineRunTaskLinkEvent = await prisma.event.findFirstOrThrow({
+    where: {
+      workspaceId: ownerA.workspace.id,
+      type: "pipeline_run_task_linked",
+      resourceId: pipelineRunTaskLinkBody.data.id,
+      correlationId: pipelineRunTaskLinkBody.data.correlationId
+    }
+  });
+  assert.equal(pipelineRunTaskLinkEvent.resourceType, "pipeline_run_task_link");
+  const deniedPipelineRunTaskLink = await request(`/v1/company-os/pipeline-runs/${pipelineRun.id}/task-links`, {
+    method: "POST",
+    headers: authB,
+    body: JSON.stringify({
+      taskId: operationsTask.id,
+      linkType: "execution_evidence",
+      source: "companycore"
+    })
+  });
+  assert.equal(deniedPipelineRunTaskLink.status, 404);
 
   const startedStageRun = await request(`/v1/company-os/pipeline-runs/${pipelineRun.id}/actions/start-stage`, {
     method: "POST",
@@ -6049,6 +6100,11 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(connectionBody.data.adapterManifest.routes.companyOs.some((route) => (
     route.method === "POST"
     && route.path === "/v1/company-os/pipeline-runs/:id/actions/start-stage"
+    && route.capability === "company-os:pipeline-run:write"
+  )));
+  assert.ok(connectionBody.data.adapterManifest.routes.companyOs.some((route) => (
+    route.method === "POST"
+    && route.path === "/v1/company-os/pipeline-runs/:id/task-links"
     && route.capability === "company-os:pipeline-run:write"
   )));
   assert.ok(connectionBody.data.adapterManifest.routes.companyOs.some((route) => (

@@ -18,6 +18,7 @@ const collectionNames = [
   "integration-capabilities",
   "standards",
   "pipeline-runs",
+  "pipeline-run-task-links",
   "stage-runs",
   "approvals",
   "checklist-templates",
@@ -88,6 +89,11 @@ const completeStageSchema = z.object({
   outputPayload: jsonObjectSchema,
   validationResult: z.record(z.unknown()).default({}),
   approvalId: z.string().uuid().optional()
+}).strict();
+const pipelineRunTaskLinkSchema = z.object({
+  taskId: z.string().uuid(),
+  linkType: z.string().trim().min(1).max(64).default("evidence"),
+  source: z.string().trim().min(1).max(64).default("companycore")
 }).strict();
 const automationEvaluationSchema = z.object({
   ruleIds: z.array(z.string().uuid()).max(25).optional(),
@@ -1143,6 +1149,18 @@ const collectionReaders: Record<CollectionName, CollectionReader> = {
       include: { pipeline: true, currentStage: true, stageRuns: true, approvals: true, auditLogs: true }
     })
   },
+  "pipeline-run-task-links": {
+    list: (workspaceId, take) => prisma.pipelineRunTaskLink.findMany({
+      where: workspaceWhere(workspaceId),
+      orderBy: { createdAt: "desc" },
+      take,
+      include: { pipelineRun: true, task: true }
+    }),
+    get: (workspaceId, id) => prisma.pipelineRunTaskLink.findFirst({
+      where: { id, workspaceId },
+      include: { pipelineRun: true, task: true }
+    })
+  },
   "stage-runs": {
     list: (workspaceId, take) => prisma.stageRun.findMany({
       where: workspaceWhere(workspaceId),
@@ -1894,6 +1912,94 @@ companyOsRouter.post("/pipeline-runs/:id/actions/start-stage", asyncHandler(asyn
       ...result.stageRun,
       correlationId: result.correlationId,
       auditLogId: result.auditLog.id
+    }
+  });
+}));
+
+companyOsRouter.post("/pipeline-runs/:id/task-links", asyncHandler(async (req, res) => {
+  const workspaceId = req.auth!.workspaceId;
+  const pipelineRunId = z.string().uuid().parse(req.params.id);
+  const input = pipelineRunTaskLinkSchema.parse(req.body);
+  const actor = authActor(req);
+  const correlationId = randomUUID();
+
+  const [pipelineRun, task] = await Promise.all([
+    prisma.pipelineRun.findFirst({ where: { id: pipelineRunId, workspaceId } }),
+    prisma.task.findFirst({ where: { id: input.taskId, workspaceId } })
+  ]);
+
+  if (!pipelineRun || !task) {
+    return res.status(404).json({ error: "not_found" });
+  }
+
+  const link = await prisma.pipelineRunTaskLink.upsert({
+    where: {
+      workspaceId_pipelineRunId_taskId_linkType: {
+        workspaceId,
+        pipelineRunId,
+        taskId: input.taskId,
+        linkType: input.linkType
+      }
+    },
+    update: {
+      source: input.source
+    },
+    create: {
+      workspaceId,
+      pipelineRunId,
+      taskId: input.taskId,
+      linkType: input.linkType,
+      source: input.source
+    }
+  });
+
+  const auditLog = await prisma.auditLog.create({
+    data: {
+      workspaceId,
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      action: "pipeline_run.task_linked",
+      resourceType: "pipeline_run_task_link",
+      resourceId: link.id,
+      pipelineRunId,
+      inputPayload: {
+        taskId: input.taskId,
+        linkType: input.linkType,
+        source: input.source
+      },
+      outputPayload: {
+        pipelineRunTaskLinkId: link.id
+      },
+      correlationId
+    }
+  });
+
+  await prisma.event.create({
+    data: {
+      workspaceId,
+      type: "pipeline_run_task_linked",
+      source: "companycore",
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      resourceType: "pipeline_run_task_link",
+      resourceId: link.id,
+      correlationId,
+      payload: {
+        pipelineRunTaskLinkId: link.id,
+        pipelineRunId,
+        taskId: input.taskId,
+        linkType: input.linkType,
+        source: input.source,
+        auditLogId: auditLog.id
+      }
+    }
+  });
+
+  res.status(201).json({
+    data: {
+      ...link,
+      correlationId,
+      auditLogId: auditLog.id
     }
   });
 }));

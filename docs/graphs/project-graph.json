@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-25T01:08:22.174Z",
+  "generatedAt": "2026-05-25T01:13:41.971Z",
   "nodes": [
     {
       "id": "FEAT-ARCH-EVIDENCE-SYSTEM",
@@ -4052,6 +4052,21 @@
       ]
     },
     {
+      "id": "API-AUTO-0168",
+      "name": "POST /v1/company-os/pipeline-runs/:id/task-links",
+      "type": "api_route",
+      "status": "implemented",
+      "layer": "backend",
+      "module": "company-os",
+      "feature": "company-os-coverage",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "src/modules/company-os/company-os.routes.ts",
+      "tags": [
+        "#api #auto-scaffold #missing"
+      ]
+    },
+    {
       "id": "PAGE-00-GENERAL",
       "name": "/areas?area=00-ogolny&view=overview",
       "type": "page",
@@ -5207,6 +5222,21 @@
       ]
     },
     {
+      "id": "DB-AUTO-0059",
+      "name": "pipeline_run_task_links model",
+      "type": "database_model",
+      "status": "implemented",
+      "layer": "database",
+      "module": "core",
+      "feature": "operations-work-items",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "prisma/schema.prisma",
+      "tags": [
+        "#database #auto-scaffold #missing"
+      ]
+    },
+    {
       "id": "MIG-AUTO-0001",
       "name": "Migration",
       "type": "migration",
@@ -5634,9 +5664,24 @@
       "layer": "database",
       "module": "database",
       "feature": "coverage-expansion",
-      "verificationStatus": "implemented_not_verified",
+      "verificationStatus": "tested",
       "riskLevel": "medium",
       "filePath": "prisma/migrations/202605252_aog_be_003_goal_workflow_bridge/migration.sql",
+      "tags": [
+        "#migration #auto"
+      ]
+    },
+    {
+      "id": "MIG-AUTO-0030",
+      "name": "Migration",
+      "type": "migration",
+      "status": "implemented",
+      "layer": "database",
+      "module": "database",
+      "feature": "coverage-expansion",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "prisma/migrations/202605253_aog_be_004_pipeline_run_task_links/migration.sql",
       "tags": [
         "#migration #auto"
       ]
@@ -11960,6 +12005,27 @@
       "id": "REL-AUTO-0722",
       "source": "FEAT-AUTO-0023",
       "target": "API-AUTO-0167",
+      "type": "contains",
+      "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0723",
+      "source": "FEAT-AUTO-0006",
+      "target": "API-AUTO-0168",
+      "type": "owns",
+      "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0724",
+      "source": "FEAT-AUTO-0006",
+      "target": "API-AUTO-0168",
+      "type": "contains",
+      "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0725",
+      "source": "FEAT-OPERATIONS-WORK-ITEMS",
+      "target": "DB-AUTO-0059",
       "type": "contains",
       "status": "partial"
     }

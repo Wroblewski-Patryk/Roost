@@ -119,6 +119,7 @@ export const adapterManifest = {
       { method: "POST", path: "/v1/company-os/approvals/request", capability: "company-os:approval:request" },
       { method: "POST", path: "/v1/company-os/approvals/:id/decision", capability: "company-os:approval:decide" },
       { method: "POST", path: "/v1/company-os/pipeline-runs/:id/actions/start-stage", capability: "company-os:pipeline-run:write" },
+      { method: "POST", path: "/v1/company-os/pipeline-runs/:id/task-links", capability: "company-os:pipeline-run:write" },
       { method: "POST", path: "/v1/company-os/stage-runs/:id/actions/block", capability: "company-os:stage-run:write" },
       { method: "POST", path: "/v1/company-os/stage-runs/:id/actions/validate", capability: "company-os:stage-run:write" },
       { method: "POST", path: "/v1/company-os/stage-runs/:id/actions/complete", capability: "company-os:stage-run:write" },

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-25T01:08:30.022Z",
+  "generatedAt": "2026-05-25T01:13:51.206Z",
   "status": "GREEN",
   "previousHealthStatus": "GREEN",
   "metrics": {
@@ -19,44 +19,44 @@
     {
       "node_id": "AGENT-COORDINATOR",
       "node_name": "Coordinator agent role",
-      "impact_score": 466,
+      "impact_score": 468,
       "direct_out_count": 63,
-      "transitive_out_count": 340
+      "transitive_out_count": 342
     },
     {
       "node_id": "FEAT-AUTO-0020",
       "node_name": "Operating Model Coverage Expansion",
-      "impact_score": 206,
+      "impact_score": 207,
       "direct_out_count": 32,
-      "transitive_out_count": 141
+      "transitive_out_count": 142
     },
     {
       "node_id": "TEST-API-LOCAL",
       "node_name": "npm run test:api:local",
-      "impact_score": 196,
+      "impact_score": 197,
       "direct_out_count": 7,
-      "transitive_out_count": 110
+      "transitive_out_count": 111
     },
     {
       "node_id": "FEAT-AUTO-0006",
       "node_name": "Company Os Coverage Expansion",
-      "impact_score": 179,
-      "direct_out_count": 23,
-      "transitive_out_count": 132
+      "impact_score": 183,
+      "direct_out_count": 24,
+      "transitive_out_count": 134
     },
     {
       "node_id": "FEAT-ASSETS-CONTEXT",
       "node_name": "Assets Context Workbench",
-      "impact_score": 175,
+      "impact_score": 176,
       "direct_out_count": 32,
-      "transitive_out_count": 110
+      "transitive_out_count": 111
     },
     {
       "node_id": "FEAT-AUTO-0015",
       "node_name": "Integration Settings Coverage Expansion",
-      "impact_score": 164,
+      "impact_score": 165,
       "direct_out_count": 18,
-      "transitive_out_count": 127
+      "transitive_out_count": 128
     },
     {
       "node_id": "FEAT-ARCH-EVIDENCE-SYSTEM",
@@ -68,93 +68,93 @@
     {
       "node_id": "COMP-SHELL",
       "node_name": "Authenticated Shell component",
-      "impact_score": 159,
+      "impact_score": 160,
       "direct_out_count": 21,
-      "transitive_out_count": 110
+      "transitive_out_count": 111
     },
     {
       "node_id": "FEAT-PEOPLE-AGENTS-DIRECTORY",
       "node_name": "People and Agents Directory",
-      "impact_score": 149,
+      "impact_score": 150,
       "direct_out_count": 19,
-      "transitive_out_count": 110
-    },
-    {
-      "node_id": "FEAT-AUTO-0013",
-      "node_name": "Google Drive Coverage Expansion",
-      "impact_score": 143,
-      "direct_out_count": 11,
-      "transitive_out_count": 120
-    },
-    {
-      "node_id": "DB-TASK",
-      "node_name": "Task model",
-      "impact_score": 142,
-      "direct_out_count": 7,
-      "transitive_out_count": 110
+      "transitive_out_count": 111
     },
     {
       "node_id": "FEAT-OPERATIONS-WORK-ITEMS",
       "node_name": "Operations Work Items",
-      "impact_score": 141,
-      "direct_out_count": 15,
-      "transitive_out_count": 110
+      "impact_score": 144,
+      "direct_out_count": 16,
+      "transitive_out_count": 111
+    },
+    {
+      "node_id": "FEAT-AUTO-0013",
+      "node_name": "Google Drive Coverage Expansion",
+      "impact_score": 144,
+      "direct_out_count": 11,
+      "transitive_out_count": 121
+    },
+    {
+      "node_id": "DB-TASK",
+      "node_name": "Task model",
+      "impact_score": 143,
+      "direct_out_count": 7,
+      "transitive_out_count": 111
     },
     {
       "node_id": "FEAT-DASHBOARD-COMMAND",
       "node_name": "Dashboard Command Packet",
-      "impact_score": 141,
+      "impact_score": 142,
       "direct_out_count": 15,
-      "transitive_out_count": 110
+      "transitive_out_count": 111
     },
     {
       "node_id": "FEAT-AUTO-0028",
       "node_name": "Tasks Coverage Expansion",
-      "impact_score": 140,
+      "impact_score": 141,
       "direct_out_count": 10,
-      "transitive_out_count": 119
+      "transitive_out_count": 120
     },
     {
       "node_id": "FEAT-MGMT-DEPT-CATALOG",
       "node_name": "Management Department Catalog",
-      "impact_score": 137,
+      "impact_score": 138,
       "direct_out_count": 13,
-      "transitive_out_count": 110
+      "transitive_out_count": 111
     },
     {
       "node_id": "DB-WORKFORCE-ENTITY",
       "node_name": "workforce_entities model",
-      "impact_score": 137,
+      "impact_score": 138,
       "direct_out_count": 4,
-      "transitive_out_count": 110
+      "transitive_out_count": 111
     },
     {
       "node_id": "COMP-OPERATIONS-ROUTE",
       "node_name": "OperationsRoute component",
-      "impact_score": 134,
+      "impact_score": 135,
       "direct_out_count": 9,
-      "transitive_out_count": 110
+      "transitive_out_count": 111
     },
     {
       "node_id": "COMP-MANAGEMENT-ROUTE",
       "node_name": "ManagementRoute component",
-      "impact_score": 133,
+      "impact_score": 134,
       "direct_out_count": 9,
-      "transitive_out_count": 110
+      "transitive_out_count": 111
     },
     {
       "node_id": "DB-GOOGLE-DRIVE-FILE",
       "node_name": "google_drive_files model",
-      "impact_score": 133,
+      "impact_score": 134,
       "direct_out_count": 4,
-      "transitive_out_count": 110
+      "transitive_out_count": 111
     },
     {
       "node_id": "DB-WORKSPACE-DEPARTMENTS",
       "node_name": "workspace_departments model",
-      "impact_score": 132,
+      "impact_score": 133,
       "direct_out_count": 5,
-      "transitive_out_count": 110
+      "transitive_out_count": 111
     }
   ]
 }

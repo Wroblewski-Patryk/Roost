@@ -1,13 +1,13 @@
 # Architecture Drift Report
 
-Generated at: 2026-05-25T01:08:22.174Z
+Generated at: 2026-05-25T01:13:41.971Z
 
 This report compares live code surfaces against architecture registry CSV entries.
 
 ### API Routes
 
-- Code sources: 176
-- Registry rows: 176
+- Code sources: 177
+- Registry rows: 177
 - Missing in registry: 0
 - Missing in code: 0
 
@@ -19,8 +19,8 @@ Missing in code:
 
 ### Prisma Models
 
-- Code sources: 62
-- Registry rows: 62
+- Code sources: 63
+- Registry rows: 63
 - Missing in registry: 0
 - Missing in code: 0
 

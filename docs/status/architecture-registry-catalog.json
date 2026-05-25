@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-05-25T01:08:33.279Z",
+  "generatedAt": "2026-05-25T01:13:55.082Z",
   "totalFiles": 30,
   "missingFiles": 0,
-  "totalRows": 1738,
+  "totalRows": 1747,
   "files": [
     {
       "file": "docs/architecture/nodes/nodes.csv",
@@ -43,7 +43,7 @@
     {
       "file": "docs/architecture/nodes/api_routes.csv",
       "exists": true,
-      "rowCount": 176,
+      "rowCount": 177,
       "headerCount": 26
     },
     {
@@ -85,13 +85,13 @@
     {
       "file": "docs/architecture/nodes/database_models.csv",
       "exists": true,
-      "rowCount": 62,
+      "rowCount": 63,
       "headerCount": 26
     },
     {
       "file": "docs/architecture/nodes/migrations.csv",
       "exists": true,
-      "rowCount": 29,
+      "rowCount": 30,
       "headerCount": 26
     },
     {
@@ -163,7 +163,7 @@
     {
       "file": "docs/architecture/relations/dependencies.csv",
       "exists": true,
-      "rowCount": 755,
+      "rowCount": 758,
       "headerCount": 10
     },
     {
@@ -181,7 +181,7 @@
     {
       "file": "docs/status/evidence-status.csv",
       "exists": true,
-      "rowCount": 445,
+      "rowCount": 448,
       "headerCount": 11
     }
   ]
