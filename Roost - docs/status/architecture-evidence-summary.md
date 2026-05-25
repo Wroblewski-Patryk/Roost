@@ -1,28 +1,30 @@
 # Architecture Evidence Summary
 
-Generated at: 2026-05-25T01:00:56.109Z
+Generated at: 2026-05-25T01:04:48.587Z
 
 ## Counts
 
-- Nodes: 443
+- Nodes: 444
 - Relations: 755
 - Chains: 34
 - Test mappings: 8
-- Evidence rows: 443
+- Evidence rows: 444
 
 ## Verification Status
 
+- implemented_not_verified: 1
 - tested: 377
 - verified: 66
 
 ## Evidence Status
 
+- implemented_not_verified: 1
 - tested: 377
 - verified: 66
 
 ## Missing Evidence Queue
 
-- No missing evidence recorded.
+- `MIG-AUTO-0028`: docs -> Add missing proof fields then upgrade to tested/verified with dated evidence.
 
 ## Drift Detection
 

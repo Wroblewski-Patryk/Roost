@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-05-25T01:00:58.726Z",
+  "checkedAt": "2026-05-25T01:04:51.555Z",
   "status": "passed",
-  "uniqueNodes": 443,
-  "evidenceRows": 443,
-  "coveredNodes": 443
+  "uniqueNodes": 444,
+  "evidenceRows": 444,
+  "coveredNodes": 444
 }

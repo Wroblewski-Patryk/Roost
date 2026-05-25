@@ -3477,7 +3477,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(areaGraphBody.data.layers.knowledge.includes(`knowledge_item:${graphKnowledgeItem.id}`));
   assert.ok(areaGraphBody.data.gaps.some((gap) => gap.id === `gap:goal:${graphLonelyGoal.id}:target`));
   assert.ok(areaGraphBody.data.reviewItems.some((item) => item.id === `gap:goal:${graphLonelyGoal.id}:target`));
-  assert.ok(areaGraphBody.data.unsupportedFamilies.some((family) => family.family === "target_metric_fk"));
+  assert.ok(!areaGraphBody.data.unsupportedFamilies.some((family) => family.family === "target_metric_fk"));
 
   const salesAreaGraph = await request("/v1/operating-graph/areas/03-sprzedaz?limit=20", { headers: authA });
   assert.equal(salesAreaGraph.status, 200);
@@ -6493,12 +6493,22 @@ test("CompanyCore v1 protected API flow", async () => {
     })
   });
   assert.equal(updatedGoal.status, 200);
+  const targetMetric = await prisma.metric.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      name: "Target metric relation proof",
+      category: "strategy",
+      measurementType: "count",
+      status: "active"
+    }
+  });
 
   const target = await request("/v1/targets", {
     method: "POST",
     headers: authA,
     body: JSON.stringify({
       goalId,
+      metricId: targetMetric.id,
       title: "Agent-readable target",
       metric: "records",
       targetValue: 3
@@ -6509,6 +6519,8 @@ test("CompanyCore v1 protected API flow", async () => {
 
   const readTarget = await request(`/v1/targets/${targetId}`, { headers: authA });
   assert.equal(readTarget.status, 200);
+  assert.equal((readTarget.body as { data: { metricId: string; metricRef: { id: string } } }).data.metricId, targetMetric.id);
+  assert.equal((readTarget.body as { data: { metricRef: { id: string } } }).data.metricRef.id, targetMetric.id);
   const updatedTarget = await request(`/v1/targets/${targetId}`, {
     method: "PATCH",
     headers: authA,

@@ -1,10 +1,10 @@
 # Architecture Registry Catalog
 
-Generated at: 2026-05-25T01:01:05.477Z
+Generated at: 2026-05-25T01:04:58.388Z
 
 - Total CSV files: 30
 - Missing files: 0
-- Total rows: 1734
+- Total rows: 1736
 
 | File | Exists | Rows | Headers |
 | --- | --- | ---: | ---: |
@@ -22,7 +22,7 @@ Generated at: 2026-05-25T01:01:05.477Z
 | `docs/architecture/nodes/ui_elements.csv` | yes | 6 | 26 |
 | `docs/architecture/nodes/animations.csv` | yes | 0 | 26 |
 | `docs/architecture/nodes/database_models.csv` | yes | 62 | 26 |
-| `docs/architecture/nodes/migrations.csv` | yes | 27 | 26 |
+| `docs/architecture/nodes/migrations.csv` | yes | 28 | 26 |
 | `docs/architecture/nodes/integrations.csv` | yes | 13 | 26 |
 | `docs/architecture/nodes/middleware.csv` | yes | 5 | 26 |
 | `docs/architecture/nodes/pipelines.csv` | yes | 39 | 26 |
@@ -37,4 +37,4 @@ Generated at: 2026-05-25T01:01:05.477Z
 | `docs/architecture/relations/dependencies.csv` | yes | 755 | 10 |
 | `docs/architecture/chains/chains.csv` | yes | 34 | 15 |
 | `docs/testing/test-map.csv` | yes | 8 | 13 |
-| `docs/status/evidence-status.csv` | yes | 443 | 11 |
+| `docs/status/evidence-status.csv` | yes | 444 | 11 |

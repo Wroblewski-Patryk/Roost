@@ -41,7 +41,11 @@ strategyRouter.get("/context", asyncHandler(async (req, res) => {
       orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
       take: STRATEGY_LIMIT,
       include: {
-        targets: { orderBy: [{ status: "asc" }, { updatedAt: "desc" }], take: 8 },
+        targets: {
+          orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
+          take: 8,
+          include: { metricRef: true }
+        },
         tasks: { orderBy: { updatedAt: "desc" }, take: 8 }
       }
     }),
@@ -155,6 +159,15 @@ strategyRouter.get("/context", asyncHandler(async (req, res) => {
           title: target.title,
           description: target.description,
           metric: target.metric,
+          metricId: target.metricId,
+          metricRef: target.metricRef ? {
+            id: target.metricRef.id,
+            name: target.metricRef.name,
+            category: target.metricRef.category,
+            measurementType: target.metricRef.measurementType,
+            unit: target.metricRef.unit,
+            status: target.metricRef.status
+          } : null,
           targetValue: target.targetValue,
           currentValue: target.currentValue,
           dueDate: target.dueDate?.toISOString() ?? null,

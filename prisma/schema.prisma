@@ -884,6 +884,7 @@ model Metric {
   process         Process?     @relation(fields: [processId], references: [id], onDelete: SetNull)
   pipelineId      String?      @map("pipeline_id") @db.Uuid
   pipeline        Pipeline?    @relation(fields: [pipelineId], references: [id], onDelete: SetNull)
+  targets         Target[]     @relation("TargetMetric")
   status          OperatingStatus @default(active)
   createdAt       DateTime     @default(now()) @map("created_at")
   updatedAt       DateTime     @updatedAt @map("updated_at")
@@ -1446,6 +1447,8 @@ model Target {
   title        String
   description  String?
   metric       String?
+  metricId     String?    @map("metric_id") @db.Uuid
+  metricRef    Metric?    @relation("TargetMetric", fields: [metricId], references: [id], onDelete: SetNull)
   targetValue  Float?     @map("target_value")
   currentValue Float?     @default(0) @map("current_value")
   dueDate      DateTime?  @map("due_date")
@@ -1457,6 +1460,7 @@ model Target {
   updatedAt    DateTime   @updatedAt @map("updated_at")
 
   @@map("targets")
+  @@index([metricId])
 }
 
 model TaskList {

@@ -265,7 +265,7 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
       where: { workspaceId, ...(shouldLoadAllTargets ? {} : { id: EMPTY_UUID }) },
       orderBy: { createdAt: "desc" },
       take: limit,
-      include: { goal: true, tasks: true }
+      include: { goal: true, tasks: true, metricRef: true }
     }),
     prisma.taskList.findMany({
       where: { workspaceId, ...(shouldLoadAllTaskLists ? {} : { id: EMPTY_UUID }) },
@@ -445,6 +445,7 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
       metadata: {
         status: target.status,
         metric: target.metric,
+        metricId: target.metricId,
         targetValue: target.targetValue,
         currentValue: target.currentValue,
         dueDate: target.dueDate
@@ -475,7 +476,19 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
         evidence: evidence("Target", target.id, "goalId", target.goalId)
       });
     }
-    if (!target.metric) {
+    if (target.metricId && target.metricRef) {
+      addEdge(edges, {
+        id: `target:${target.id}->metric:${target.metricRef.id}`,
+        from: id,
+        to: graphId("metric", target.metricRef.id),
+        label: "tracks metric",
+        confidence: "direct",
+        sourceModel: "Target",
+        sourceField: "metricId",
+        evidence: evidence("Target", target.id, "metricId", target.metricId)
+      });
+    }
+    if (!target.metric && !target.metricId) {
       gaps.push({
         id: `gap:target:${target.id}:metric`,
         severity: "warning",
@@ -484,7 +497,7 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
         title: "Target has no metric label",
         detail: `${target.title} needs a metric name or future metric relation before KPI progress is reliable.`,
         actionHint: actionHint("Update target", "PATCH", `/v1/targets/${target.id}`),
-        evidence: evidence("Target", target.id, "metric", target.metric)
+        evidence: evidence("Target", target.id, "metric|metricId", { metric: target.metric, metricId: target.metricId })
       });
     }
   }
@@ -981,11 +994,6 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
       family: "generic_editable_edges",
       reason: "The project has no approved broad edge editor for arbitrary business entities.",
       nextAction: "Use explicit model relations or command-shaped link contracts after AOG-BE-001 is proven."
-    },
-    {
-      family: "target_metric_fk",
-      reason: "`Target.metric` is currently text, not a durable relation to `Metric`.",
-      nextAction: "Implement AOG-BE-002 with optional `Target.metricId`."
     },
     {
       family: "knowledge_goal_task_links",
