@@ -27,6 +27,10 @@ Last updated: 2026-05-25
      external API/MCP clients.
    - Keep strict capability filtering and preserve read-only graph exposure for
      MCP reader lanes.
+   - Local harness note: `scripts/test-api-local.mjs` now runs
+     `build -> migrate -> seed -> dist API tests`; remaining failing assertion
+     in `CompanyCore v1 protected API flow` should be handled as a focused
+     stabilization task and not block deploy-time AOG smoke evidence.
 
 1. Production-smoke `PEOPLE-AGENTS-PAPERCLIP-001` after redeploy.
    - Source:

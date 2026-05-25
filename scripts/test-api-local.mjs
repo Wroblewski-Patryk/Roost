@@ -135,7 +135,28 @@ try {
   if (!process.env.DATABASE_URL) {
     await startDatabase();
   }
-  const result = await run("npm", ["run", "test:api"], {
+  const buildResult = await run("npm", ["run", "build"], {
+    env: { DATABASE_URL: databaseUrl, NODE_ENV: "test" }
+  });
+  if ((buildResult.code ?? 1) !== 0) {
+    await cleanupDatabase();
+    process.exit(buildResult.code ?? 1);
+  }
+  const migrateResult = await run("npm", ["run", "prisma:migrate:deploy"], {
+    env: { DATABASE_URL: databaseUrl, NODE_ENV: "test" }
+  });
+  if ((migrateResult.code ?? 1) !== 0) {
+    await cleanupDatabase();
+    process.exit(migrateResult.code ?? 1);
+  }
+  const seedResult = await run("npm", ["run", "seed"], {
+    env: { DATABASE_URL: databaseUrl, NODE_ENV: "test" }
+  });
+  if ((seedResult.code ?? 1) !== 0) {
+    await cleanupDatabase();
+    process.exit(seedResult.code ?? 1);
+  }
+  const result = await run("node", ["--test", "dist/tests/api.test.js"], {
     env: { DATABASE_URL: databaseUrl, NODE_ENV: "test" }
   });
   await cleanupDatabase();
