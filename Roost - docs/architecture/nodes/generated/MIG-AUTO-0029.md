@@ -1,5 +1,5 @@
 ---
-id: "MIG-AUTO-0028"
+id: "MIG-AUTO-0029"
 name: "Migration"
 type: "migration"
 status: "implemented"
@@ -8,21 +8,21 @@ module: "database"
 feature: "coverage-expansion"
 risk_level: "medium"
 completion_percent: "0"
-verification_status: "tested"
-last_verified_at: "2026-05-25"
+verification_status: "implemented_not_verified"
+last_verified_at: ""
 tags: "#migration #auto"
 ---
 
 # Migration
 
-- ID: `MIG-AUTO-0028`
+- ID: `MIG-AUTO-0029`
 - Type: `migration`
 - Status: `implemented`
-- Verification: `tested`
+- Verification: `implemented_not_verified`
 - Layer: `database`
 - Module: `database`
 - Feature: `coverage-expansion`
-- File: `prisma/migrations/202605251_aog_be_002_target_metric_fk/migration.sql`
+- File: `prisma/migrations/202605252_aog_be_003_goal_workflow_bridge/migration.sql`
 
 ## Description
 
@@ -56,7 +56,7 @@ Auto-synchronized migration node from repository source.
 
 ## Evidence
 
-- `EVID-AUTO-00438` tested: missing none
+- `EVID-AUTO-00439` implemented_not_verified: missing docs
 
 ## Notes
 

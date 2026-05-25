@@ -8,8 +8,8 @@ module: "database"
 feature: "coverage-expansion"
 risk_level: "medium"
 completion_percent: "0"
-verification_status: "implemented_not_verified"
-last_verified_at: ""
+verification_status: "tested"
+last_verified_at: "2026-05-25"
 tags: "#migration #auto"
 ---
 
@@ -18,7 +18,7 @@ tags: "#migration #auto"
 - ID: `MIG-AUTO-0028`
 - Type: `migration`
 - Status: `implemented`
-- Verification: `implemented_not_verified`
+- Verification: `tested`
 - Layer: `database`
 - Module: `database`
 - Feature: `coverage-expansion`
@@ -56,7 +56,7 @@ Auto-synchronized migration node from repository source.
 
 ## Evidence
 
-- `EVID-AUTO-00438` implemented_not_verified: missing docs
+- `EVID-AUTO-00438` tested: missing none
 
 ## Notes
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-25T01:04:48.587Z",
+  "generatedAt": "2026-05-25T01:08:22.174Z",
   "nodes": [
     {
       "id": "FEAT-ARCH-EVIDENCE-SYSTEM",
@@ -5619,9 +5619,24 @@
       "layer": "database",
       "module": "database",
       "feature": "coverage-expansion",
-      "verificationStatus": "implemented_not_verified",
+      "verificationStatus": "tested",
       "riskLevel": "medium",
       "filePath": "prisma/migrations/202605251_aog_be_002_target_metric_fk/migration.sql",
+      "tags": [
+        "#migration #auto"
+      ]
+    },
+    {
+      "id": "MIG-AUTO-0029",
+      "name": "Migration",
+      "type": "migration",
+      "status": "implemented",
+      "layer": "database",
+      "module": "database",
+      "feature": "coverage-expansion",
+      "verificationStatus": "implemented_not_verified",
+      "riskLevel": "medium",
+      "filePath": "prisma/migrations/202605252_aog_be_003_goal_workflow_bridge/migration.sql",
       "tags": [
         "#migration #auto"
       ]

@@ -41,10 +41,11 @@ strategyRouter.get("/context", asyncHandler(async (req, res) => {
       orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
       take: STRATEGY_LIMIT,
       include: {
+        process: true,
         targets: {
           orderBy: [{ status: "asc" }, { updatedAt: "desc" }],
           take: 8,
-          include: { metricRef: true }
+          include: { metricRef: true, pipeline: true }
         },
         tasks: { orderBy: { updatedAt: "desc" }, take: 8 }
       }
@@ -154,10 +155,24 @@ strategyRouter.get("/context", asyncHandler(async (req, res) => {
         description: goal.description,
         status: goal.status,
         source: goal.source,
+        processId: goal.processId,
+        process: goal.process ? {
+          id: goal.process.id,
+          name: goal.process.name,
+          status: goal.process.status,
+          category: goal.process.category
+        } : null,
         targets: goal.targets.map((target) => ({
           id: target.id,
           title: target.title,
           description: target.description,
+          pipelineId: target.pipelineId,
+          pipeline: target.pipeline ? {
+            id: target.pipeline.id,
+            name: target.pipeline.name,
+            status: target.pipeline.status,
+            triggerType: target.pipeline.triggerType
+          } : null,
           metric: target.metric,
           metricId: target.metricId,
           metricRef: target.metricRef ? {

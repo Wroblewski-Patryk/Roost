@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-05-25T01:04:58.388Z",
+  "generatedAt": "2026-05-25T01:08:33.279Z",
   "totalFiles": 30,
   "missingFiles": 0,
-  "totalRows": 1736,
+  "totalRows": 1738,
   "files": [
     {
       "file": "docs/architecture/nodes/nodes.csv",
@@ -91,7 +91,7 @@
     {
       "file": "docs/architecture/nodes/migrations.csv",
       "exists": true,
-      "rowCount": 28,
+      "rowCount": 29,
       "headerCount": 26
     },
     {
@@ -181,7 +181,7 @@
     {
       "file": "docs/status/evidence-status.csv",
       "exists": true,
-      "rowCount": 444,
+      "rowCount": 445,
       "headerCount": 11
     }
   ]

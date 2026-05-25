@@ -3361,6 +3361,14 @@ test("CompanyCore v1 protected API flow", async () => {
       status: "active"
     }
   });
+  await prisma.goal.update({
+    where: { id: graphGoal.id },
+    data: { processId: graphProcess.id }
+  });
+  await prisma.target.update({
+    where: { id: graphTarget.id },
+    data: { pipelineId: graphPipeline.id }
+  });
   const graphMetric = await prisma.metric.create({
     data: {
       workspaceId: ownerA.workspace.id,
@@ -3463,6 +3471,18 @@ test("CompanyCore v1 protected API flow", async () => {
     && edge.sourceModel === "Target"
     && edge.sourceField === "goalId"
     && edge.evidence.length > 0
+  )));
+  assert.ok(areaGraphBody.data.edges.some((edge) => (
+    edge.from === `goal:${graphGoal.id}`
+    && edge.to === `process:${graphProcess.id}`
+    && edge.sourceModel === "Goal"
+    && edge.sourceField === "processId"
+  )));
+  assert.ok(areaGraphBody.data.edges.some((edge) => (
+    edge.from === `pipeline:${graphPipeline.id}`
+    && edge.to === `target:${graphTarget.id}`
+    && edge.sourceModel === "Target"
+    && edge.sourceField === "pipelineId"
   )));
   assert.ok(areaGraphBody.data.edges.some((edge) => (
     edge.from === `pipeline_run:${graphPipelineRun.id}`
@@ -6407,6 +6427,31 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal((projectListB.body as { data: unknown[] }).data.length, 0);
 
   const projectAId = (serviceProject.body as { data: { id: string } }).data.id;
+  const workflowProcess = await request("/v1/company-os/processes", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({
+      name: "Agent-readable execution process",
+      description: "Process for goal/workflow bridge assertions.",
+      department: "Strategy",
+      category: "execution",
+      status: "active"
+    })
+  });
+  assert.equal(workflowProcess.status, 201);
+  const processIdA = (workflowProcess.body as { data: { id: string } }).data.id;
+  const workflowPipeline = await request("/v1/company-os/pipelines", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({
+      name: "Agent-readable execution pipeline",
+      purpose: "Pipeline for target/workflow bridge assertions.",
+      processId: processIdA,
+      status: "active"
+    })
+  });
+  assert.equal(workflowPipeline.status, 201);
+  const pipelineAId = (workflowPipeline.body as { data: { id: string } }).data.id;
 
   const readProject = await request(`/v1/projects/${projectAId}`, { headers: authA });
   assert.equal(readProject.status, 200);
@@ -6475,6 +6520,7 @@ test("CompanyCore v1 protected API flow", async () => {
     headers: authA,
     body: JSON.stringify({
       projectId: projectAId,
+      processId: processIdA,
       title: "Agent-readable goal"
     })
   });
@@ -6484,6 +6530,7 @@ test("CompanyCore v1 protected API flow", async () => {
   const readGoal = await request(`/v1/goals/${goalId}`, { headers: authA });
   assert.equal(readGoal.status, 200);
   assert.equal((readGoal.body as { data: { title: string } }).data.title, "Agent-readable goal");
+  assert.equal((readGoal.body as { data: { processId: string } }).data.processId, processIdA);
 
   const updatedGoal = await request(`/v1/goals/${goalId}`, {
     method: "PATCH",
@@ -6508,6 +6555,7 @@ test("CompanyCore v1 protected API flow", async () => {
     headers: authA,
     body: JSON.stringify({
       goalId,
+      pipelineId: pipelineAId,
       metricId: targetMetric.id,
       title: "Agent-readable target",
       metric: "records",
@@ -6519,6 +6567,7 @@ test("CompanyCore v1 protected API flow", async () => {
 
   const readTarget = await request(`/v1/targets/${targetId}`, { headers: authA });
   assert.equal(readTarget.status, 200);
+  assert.equal((readTarget.body as { data: { pipelineId: string } }).data.pipelineId, pipelineAId);
   assert.equal((readTarget.body as { data: { metricId: string; metricRef: { id: string } } }).data.metricId, targetMetric.id);
   assert.equal((readTarget.body as { data: { metricRef: { id: string } } }).data.metricRef.id, targetMetric.id);
   const updatedTarget = await request(`/v1/targets/${targetId}`, {

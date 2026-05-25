@@ -6,6 +6,7 @@ import { createEvent } from "../events/event.service";
 
 const createTargetSchema = z.object({
   goalId: z.string().uuid().optional(),
+  pipelineId: z.string().uuid().nullable().optional(),
   metricId: z.string().uuid().nullable().optional(),
   title: z.string().min(1),
   description: z.string().optional(),
@@ -49,11 +50,23 @@ async function metricIsVisible(workspaceId: string, metricId?: string | null) {
   return Boolean(metric);
 }
 
+async function pipelineIsVisible(workspaceId: string, pipelineId?: string | null) {
+  if (!pipelineId) {
+    return true;
+  }
+
+  const pipeline = await prisma.pipeline.findFirst({
+    where: { id: pipelineId, workspaceId }
+  });
+
+  return Boolean(pipeline);
+}
+
 targetsRouter.get("/", asyncHandler(async (req, res) => {
   const targets = await prisma.target.findMany({
     where: { workspaceId: req.auth!.workspaceId },
     orderBy: { createdAt: "desc" },
-    include: { metricRef: true }
+    include: { metricRef: true, pipeline: true }
   });
   res.json({ data: targets });
 }));
@@ -61,7 +74,7 @@ targetsRouter.get("/", asyncHandler(async (req, res) => {
 targetsRouter.get("/:id", asyncHandler(async (req, res) => {
   const target = await prisma.target.findFirst({
     where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId },
-    include: { metricRef: true }
+    include: { metricRef: true, pipeline: true }
   });
 
   if (!target) {
@@ -79,13 +92,16 @@ targetsRouter.post("/", asyncHandler(async (req, res) => {
   if (!await metricIsVisible(req.auth!.workspaceId, input.metricId)) {
     return res.status(404).json({ error: "not_found" });
   }
+  if (!await pipelineIsVisible(req.auth!.workspaceId, input.pipelineId)) {
+    return res.status(404).json({ error: "not_found" });
+  }
 
   const target = await prisma.target.create({
     data: {
       ...input,
       workspaceId: req.auth!.workspaceId
     },
-    include: { metricRef: true }
+    include: { metricRef: true, pipeline: true }
   });
   await createEvent({
     type: "target_created",
@@ -104,6 +120,9 @@ targetsRouter.patch("/:id", asyncHandler(async (req, res) => {
   if (!await metricIsVisible(req.auth!.workspaceId, input.metricId)) {
     return res.status(404).json({ error: "not_found" });
   }
+  if (!await pipelineIsVisible(req.auth!.workspaceId, input.pipelineId)) {
+    return res.status(404).json({ error: "not_found" });
+  }
 
   const existing = await prisma.target.findFirst({
     where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId }
@@ -116,7 +135,7 @@ targetsRouter.patch("/:id", asyncHandler(async (req, res) => {
   const target = await prisma.target.update({
     where: { id: existing.id },
     data: input,
-    include: { metricRef: true }
+    include: { metricRef: true, pipeline: true }
   });
 
   await createEvent({
@@ -141,7 +160,7 @@ targetsRouter.delete("/:id", asyncHandler(async (req, res) => {
   const target = await prisma.target.update({
     where: { id: existing.id },
     data: { status: "archived" },
-    include: { metricRef: true }
+    include: { metricRef: true, pipeline: true }
   });
 
   await createEvent({

@@ -259,13 +259,13 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
       where: { workspaceId, ...(shouldLoadAllGoals ? {} : { id: EMPTY_UUID }) },
       orderBy: { createdAt: "desc" },
       take: limit,
-      include: { targets: true, tasks: true, project: true }
+      include: { targets: true, tasks: true, project: true, process: true }
     }),
     prisma.target.findMany({
       where: { workspaceId, ...(shouldLoadAllTargets ? {} : { id: EMPTY_UUID }) },
       orderBy: { createdAt: "desc" },
       take: limit,
-      include: { goal: true, tasks: true, metricRef: true }
+      include: { goal: true, tasks: true, metricRef: true, pipeline: true }
     }),
     prisma.taskList.findMany({
       where: { workspaceId, ...(shouldLoadAllTaskLists ? {} : { id: EMPTY_UUID }) },
@@ -408,6 +408,18 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
       summary: goal.description,
       metadata: { status: goal.status, source: goal.source, projectId: goal.projectId }
     });
+    if (goal.processId) {
+      addEdge(edges, {
+        id: `goal:${goal.id}->process:${goal.processId}`,
+        from: id,
+        to: graphId("process", goal.processId),
+        label: "owned by process",
+        confidence: "direct",
+        sourceModel: "Goal",
+        sourceField: "processId",
+        evidence: evidence("Goal", goal.id, "processId", goal.processId)
+      });
+    }
     const goalTable = area.tables.find((table) => table.apiSlug === "goals");
     if (goalTable) {
       addEdge(edges, {
@@ -433,6 +445,18 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
         evidence: evidence("Goal", goal.id, "targets", 0)
       });
     }
+    if (!goal.processId) {
+      gaps.push({
+        id: `gap:goal:${goal.id}:process`,
+        severity: "warning",
+        layer: "workflows",
+        nodeId: id,
+        title: "Goal has no process link",
+        detail: `${goal.title} should be linked to the process that owns its execution domain.`,
+        actionHint: actionHint("Update goal", "PATCH", `/v1/goals/${goal.id}`),
+        evidence: evidence("Goal", goal.id, "processId", goal.processId)
+      });
+    }
   }
 
   for (const target of targets) {
@@ -444,6 +468,7 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
       summary: target.description,
       metadata: {
         status: target.status,
+        pipelineId: target.pipelineId,
         metric: target.metric,
         metricId: target.metricId,
         targetValue: target.targetValue,
@@ -488,6 +513,18 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
         evidence: evidence("Target", target.id, "metricId", target.metricId)
       });
     }
+    if (target.pipelineId) {
+      addEdge(edges, {
+        id: `pipeline:${target.pipelineId}->target:${target.id}`,
+        from: graphId("pipeline", target.pipelineId),
+        to: id,
+        label: "moves target",
+        confidence: "direct",
+        sourceModel: "Target",
+        sourceField: "pipelineId",
+        evidence: evidence("Target", target.id, "pipelineId", target.pipelineId)
+      });
+    }
     if (!target.metric && !target.metricId) {
       gaps.push({
         id: `gap:target:${target.id}:metric`,
@@ -498,6 +535,18 @@ operatingGraphRouter.get("/areas/:areaKey", asyncHandler(async (req, res) => {
         detail: `${target.title} needs a metric name or future metric relation before KPI progress is reliable.`,
         actionHint: actionHint("Update target", "PATCH", `/v1/targets/${target.id}`),
         evidence: evidence("Target", target.id, "metric|metricId", { metric: target.metric, metricId: target.metricId })
+      });
+    }
+    if (!target.pipelineId) {
+      gaps.push({
+        id: `gap:target:${target.id}:pipeline`,
+        severity: "warning",
+        layer: "workflows",
+        nodeId: id,
+        title: "Target has no pipeline link",
+        detail: `${target.title} should point to a pipeline to prove how execution moves this target.`,
+        actionHint: actionHint("Update target", "PATCH", `/v1/targets/${target.id}`),
+        evidence: evidence("Target", target.id, "pipelineId", target.pipelineId)
       });
     }
   }

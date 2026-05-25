@@ -1,9 +1,9 @@
 {
-  "syncedAt": "2026-05-25T01:05:00.491Z",
+  "syncedAt": "2026-05-25T01:08:35.208Z",
   "status": "passed",
   "changed": true,
   "graph": {
-    "nodes": 444,
+    "nodes": 445,
     "relations": 755,
     "chains": 34
   }

@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-05-25T01:04:52.948Z",
-  "nodes": 444,
+  "generatedAt": "2026-05-25T01:08:26.688Z",
+  "nodes": 445,
   "relations": 755,
   "chains": 34,
   "topByImpact": [
@@ -7736,6 +7736,23 @@
     },
     {
       "node_id": "MIG-AUTO-0028",
+      "node_name": "Migration",
+      "type": "migration",
+      "module": "database",
+      "feature": "coverage-expansion",
+      "status": "implemented",
+      "direct_out_count": 0,
+      "direct_in_count": 0,
+      "transitive_out_count": 0,
+      "transitive_in_count": 0,
+      "impact_score": 0,
+      "direct_out_nodes": "",
+      "direct_in_nodes": "",
+      "transitive_out_nodes": "",
+      "transitive_in_nodes": ""
+    },
+    {
+      "node_id": "MIG-AUTO-0029",
       "node_name": "Migration",
       "type": "migration",
       "module": "database",

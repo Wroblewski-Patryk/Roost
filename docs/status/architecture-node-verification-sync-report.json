@@ -1,6 +1,6 @@
 {
-  "synchronizedAt": "2026-05-25T01:04:43.637Z",
-  "updated": 1,
+  "synchronizedAt": "2026-05-25T01:08:16.603Z",
+  "updated": 2,
   "files": [
     {
       "file": "docs/architecture/nodes/nodes.csv",
@@ -74,8 +74,8 @@
     },
     {
       "file": "docs/architecture/nodes/migrations.csv",
-      "updated": 1,
-      "total": 28
+      "updated": 2,
+      "total": 29
     },
     {
       "file": "docs/architecture/nodes/integrations.csv",

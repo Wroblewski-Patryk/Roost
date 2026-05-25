@@ -6,6 +6,7 @@ import { createEvent } from "../events/event.service";
 
 const createGoalSchema = z.object({
   projectId: z.string().uuid().optional(),
+  processId: z.string().uuid().nullable().optional(),
   title: z.string().min(1),
   description: z.string().optional(),
   status: z.string().optional(),
@@ -32,17 +33,31 @@ async function projectIsVisible(workspaceId: string, projectId?: string) {
   return Boolean(project);
 }
 
+async function processIsVisible(workspaceId: string, processId?: string | null) {
+  if (!processId) {
+    return true;
+  }
+
+  const process = await prisma.process.findFirst({
+    where: { id: processId, workspaceId }
+  });
+
+  return Boolean(process);
+}
+
 goalsRouter.get("/", asyncHandler(async (req, res) => {
   const goals = await prisma.goal.findMany({
     where: { workspaceId: req.auth!.workspaceId },
-    orderBy: { createdAt: "desc" }
+    orderBy: { createdAt: "desc" },
+    include: { process: true }
   });
   res.json({ data: goals });
 }));
 
 goalsRouter.get("/:id", asyncHandler(async (req, res) => {
   const goal = await prisma.goal.findFirst({
-    where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId }
+    where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId },
+    include: { process: true }
   });
 
   if (!goal) {
@@ -57,12 +72,16 @@ goalsRouter.post("/", asyncHandler(async (req, res) => {
   if (!await projectIsVisible(req.auth!.workspaceId, input.projectId)) {
     return res.status(404).json({ error: "not_found" });
   }
+  if (!await processIsVisible(req.auth!.workspaceId, input.processId)) {
+    return res.status(404).json({ error: "not_found" });
+  }
 
   const goal = await prisma.goal.create({
     data: {
       ...input,
       workspaceId: req.auth!.workspaceId
-    }
+    },
+    include: { process: true }
   });
   await createEvent({
     type: "goal_created",
@@ -79,6 +98,9 @@ goalsRouter.patch("/:id", asyncHandler(async (req, res) => {
   if (!await projectIsVisible(req.auth!.workspaceId, input.projectId)) {
     return res.status(404).json({ error: "not_found" });
   }
+  if (!await processIsVisible(req.auth!.workspaceId, input.processId)) {
+    return res.status(404).json({ error: "not_found" });
+  }
 
   const existing = await prisma.goal.findFirst({
     where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId }
@@ -90,7 +112,8 @@ goalsRouter.patch("/:id", asyncHandler(async (req, res) => {
 
   const goal = await prisma.goal.update({
     where: { id: existing.id },
-    data: input
+    data: input,
+    include: { process: true }
   });
 
   await createEvent({
@@ -115,7 +138,8 @@ goalsRouter.delete("/:id", asyncHandler(async (req, res) => {
 
   const goal = await prisma.goal.update({
     where: { id: existing.id },
-    data: { status: "archived" }
+    data: { status: "archived" },
+    include: { process: true }
   });
 
   await createEvent({

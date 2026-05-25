@@ -1,8 +1,8 @@
 # Architecture Proof Bundle
 
-Generated at: 2026-05-25T01:04:59.322Z
+Generated at: 2026-05-25T01:08:34.297Z
 
-- Graph: `444` nodes / `755` relations / `34` chains
+- Graph: `445` nodes / `755` relations / `34` chains
 - Evidence queue: `0`
 - Chain worklist: `0`
 - Delta: nodes=`0`, relations=`0`, chains=`0`

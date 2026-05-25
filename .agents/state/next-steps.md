@@ -15,13 +15,13 @@ Last updated: 2026-05-25
    - Next slice: keep this as a release gate and only open focused follow-up
      tasks when a new gap appears in generated status artifacts.
 
-1. Start `AOG-BE-002` target-metric relation decision and implementation slice.
+1. Start `AOG-BE-004` workflow-task link normalization slice.
    - Source:
      `docs/planning/v1-area-operating-graph-backend-gap-plan.md`.
-   - `DMS-NEXT-004` and `DMS-NEXT-002` route activations are implemented and
-     verified locally. The next executable backend gap is adding optional
-     `Target.metricId` while preserving compatibility for existing
-     `Target.metric` text.
+   - `AOG-BE-002` and `AOG-BE-003` are implemented and verified locally.
+     The next executable backend gap is normalizing workflow runtime task links
+     (away from JSON-only `PipelineRun.linkedTaskIds`) with a command-shaped
+     relation contract.
    - CompanyCore remains the company operating system; AI agents remain
      external API/MCP clients.
    - Keep writes behind explicit command contracts, audit/events, and API

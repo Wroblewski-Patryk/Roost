@@ -448,6 +448,7 @@ model Process {
   resources          Resource[]
   policies           Policy[]
   metrics            Metric[]
+  goals              Goal[]
   risks              Risk[]
   knowledgeItems     KnowledgeItem[]
   decisionLogs       DecisionLog[]
@@ -482,6 +483,7 @@ model Pipeline {
   stages             PipelineStage[]
   runs               PipelineRun[]
   metrics            Metric[]
+  targets            Target[]
   risks              Risk[]
   knowledgeItems     KnowledgeItem[]
   decisionLogs       DecisionLog[]
@@ -1425,6 +1427,8 @@ model Goal {
   workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   projectId   String?    @map("project_id") @db.Uuid
   project     Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  processId   String?    @map("process_id") @db.Uuid
+  process     Process?   @relation(fields: [processId], references: [id], onDelete: SetNull)
   title       String
   description String?
   status      String     @default("active")
@@ -1436,6 +1440,7 @@ model Goal {
   updatedAt   DateTime   @updatedAt @map("updated_at")
 
   @@map("goals")
+  @@index([processId])
 }
 
 model Target {
@@ -1444,6 +1449,8 @@ model Target {
   workspace    Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   goalId       String?    @map("goal_id") @db.Uuid
   goal         Goal?      @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  pipelineId   String?    @map("pipeline_id") @db.Uuid
+  pipeline     Pipeline?  @relation(fields: [pipelineId], references: [id], onDelete: SetNull)
   title        String
   description  String?
   metric       String?
@@ -1461,6 +1468,7 @@ model Target {
 
   @@map("targets")
   @@index([metricId])
+  @@index([pipelineId])
 }
 
 model TaskList {
