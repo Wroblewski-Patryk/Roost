@@ -6,7 +6,7 @@ Last updated: 2026-05-24
 
 Current execution focus is ARCH-EVID-002 continuation as a release-quality
 maintenance gate for the CSV-first architecture nervous system. The runtime is
-currently green and deterministic (`442` nodes / `753` relations / `34`
+currently green and deterministic (`443` nodes / `755` relations / `34`
 chains, evidence queue `0`, chain worklist `0`, chain coverage `33/33`,
 delta `0/0/0`, report-presence `31` artifacts). The coordinator lane is
 actively maintaining source-of-truth parity across mission/state/board files

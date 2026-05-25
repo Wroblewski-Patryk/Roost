@@ -9,7 +9,7 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 - [ ] Keep `ARCH-EVID-002` as an active release gate and maintenance lane.
       Runtime must stay green on every checkpoint:
-      graph `442/753/34` (nodes/relations/chains), evidence queue `0`,
+      graph `443/755/34` (nodes/relations/chains), evidence queue `0`,
       chain worklist `0`, coverage `33/33`, delta `0/0/0`,
       report-presence `31` required artifacts, and full
       `npm run architecture:refresh` + `npm run validate` PASS.

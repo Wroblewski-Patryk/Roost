@@ -8,7 +8,7 @@ Last updated: 2026-05-24
    - Source:
      `docs/planning/architecture-evidence-system-foundation-task-contract.md`.
    - Current state is verified: `npm run architecture:refresh` and `npm run
-     validate` pass; graph is `442/753/34` (nodes/relations/chains); evidence
+     validate` pass; graph is `443/755/34` (nodes/relations/chains); evidence
      queue is `0`; chain hardening worklist is `0`; chain coverage gate is
      `33/33` features (100%); CSV contract, command-contract, report-presence,
      proof-bundle, and doc-baseline gates pass.
