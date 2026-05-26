@@ -59,6 +59,14 @@
 
 ## Recent Checkpoints
 
+- 2026-05-26: `LUC-190` `[Roost][Prep] Activation readiness review after SCM
+  cleanup` completed as a preparation-only PM checkpoint. Published
+  `docs/planning/luc-190-activation-readiness-review-after-scm-cleanup.md`.
+  Review confirms SCM cleanup commit `c678fa9` landed, canonical docs-root
+  contract remains pinned to `docs/**`, working tree is clean, and
+  `npm run architecture:status` stays green (`452/761/34`, queues `0`, all
+  gates pass). Disposition: readiness `GO` for the next narrow protected-proof
+  lane only; broad Roost implementation remains activation-gated.
 - 2026-05-26: `LUC-188` `[Roost][Prep] SCM-only legacy docs root cleanup`
   completed. Commit `c678fa9` removed tracked legacy path churn under
   `Roost - docs/**` (`1120` files, `146404` deletions) and preserved canonical

@@ -66,7 +66,18 @@ Last updated: 2026-05-26
 
 ## NEXT
 
-1. Activate from the pinned Roost docs-root and takeover handoff packet (`LUC-187`).
+1. Execute the post-review protected proof lane approved by `LUC-190`.
+   - Source:
+     `docs/planning/luc-190-activation-readiness-review-after-scm-cleanup.md`.
+   - Readiness review after SCM cleanup is `GO` for a narrow Backend+QA proof
+     lane only.
+   - Run:
+     `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch COMPANYCORE_API_KEY=<key> npm run aog:deploy-smoke`
+     in an approved secure environment.
+   - Keep `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=true` disabled unless
+     explicit production smoke-user approval is granted.
+
+1. Keep activation anchored to the pinned Roost docs-root and takeover handoff packet (`LUC-187`).
    - Source:
      `docs/planning/luc-187-canonical-docs-root-and-takeover-handoff.md`.
    - Canonical docs references stay on repository `docs/...` paths; do not

@@ -3,6 +3,15 @@
 Last updated: 2026-05-26
 
 ## Latest Shell Checkpoint
+- 2026-05-26: `LUC-190` `[Roost][Prep] Activation readiness review after SCM
+  cleanup` completed as preparation-only decision work. Published
+  `docs/planning/luc-190-activation-readiness-review-after-scm-cleanup.md`.
+  Post-cleanup gates are green: SCM cleanup commit `c678fa9` confirmed,
+  repository working tree clean (`git status --short` empty), and
+  `npm run architecture:status` PASS (`452` nodes / `761` relations /
+  `34` chains, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass `yes`). Readiness decision is `GO` for the next narrow
+  protected-proof lane only; broad implementation remains activation-gated.
 - 2026-05-26: `LUC-188` `[Roost][Prep] SCM-only legacy docs root cleanup`
   completed. Commit `c678fa9` removed the tracked legacy `Roost - docs/**`
   tree (`1120` files, `146404` deletions) after prior equivalence proof from
