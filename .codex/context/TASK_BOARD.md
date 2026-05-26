@@ -59,6 +59,13 @@
 
 ## Recent Checkpoints
 
+- 2026-05-26: `LUC-186` legacy docs deletion-churn triage completed in strict
+  read-only preparation scope. Evidence shows `1119` deleted
+  `Roost - docs/**` paths with `1119/1119` direct mapped counterparts under
+  canonical `docs/**` and zero mapped misses, indicating path-root migration
+  churn rather than content loss. Published decision packet:
+  `docs/planning/luc-186-legacy-docs-deletion-churn-triage.md`. No
+  restore/remove/archive, deploy, secret, or production mutation was executed.
 - 2026-05-26: `LUC-185` final reconciliation pass confirmed stale
   filesystem-path contracts were removed from both Roost prep docs and the
   active Paperclip instruction bundle (`shared/00-current-pilot.md` for this

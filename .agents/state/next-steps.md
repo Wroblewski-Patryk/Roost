@@ -1,6 +1,6 @@
 # Next Steps
 
-Last updated: 2026-05-25
+Last updated: 2026-05-26
 
 ## NOW
 
@@ -66,9 +66,25 @@ Last updated: 2026-05-25
 
 ## NEXT
 
-1. Portfolio activation handoff for `LUC-101` baseline.
+1. Activate from the pinned Roost docs-root and takeover handoff packet (`LUC-187`).
    - Source:
-     `docs/planning/luc-101-roost-takeover-readiness-known-state-baseline.md`.
+     `docs/planning/luc-187-canonical-docs-root-and-takeover-handoff.md`.
+   - Canonical docs references stay on repository `docs/...` paths; do not
+     fork references into `Roost - docs/...`.
+   - Activation sequence remains anchored to
+     `docs/planning/luc-101-roost-takeover-readiness-known-state-baseline.md`
+     and its first specialist-lane recommendations.
+
+1. `LUC-183` intake scope is complete; keep post-intake activation gated.
+   - Intake closure note:
+     `docs/planning/luc-183-intake-readiness-scan-note.md`.
+   - Unblock owner/action: Portfolio Director/Board approves Roost activation
+     handoff and starts the first specialist lane issues from the baseline
+     recommendations.
+
+1. Portfolio activation handoff for `LUC-101` baseline.
+  - Source:
+    `docs/planning/luc-101-roost-takeover-readiness-known-state-baseline.md`.
    - Use the documented first takeover lanes (PM queue reconciliation,
      backend deploy-smoke verification, QA regression conversion, ops release
      evidence, docs-memory normalization) as the activation kickoff pack.

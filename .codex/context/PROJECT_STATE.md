@@ -3,6 +3,16 @@
 Last updated: 2026-05-26
 
 ## Latest Shell Checkpoint
+- 2026-05-26: `LUC-186` `[Roost][Prep] Triage legacy docs deletion churn`
+  completed as read-only decision work. Git working tree showed `1119`
+  deletions under legacy `Roost - docs/**`; path-equivalence checks confirmed
+  `1119/1119` counterparts exist under canonical `docs/**` with zero mapped
+  misses. Published
+  `docs/planning/luc-186-legacy-docs-deletion-churn-triage.md` with
+  category counts, representative paths, equivalence proof, and operator-safe
+  resolution (`defer destructive action`, cleanup in dedicated SCM lane).
+  No restore/remove/archive, deploy, secret, or production mutation was
+  executed.
 - 2026-05-26: `LUC-185` final pass reconciled stale path contracts in both
   Roost prep artifacts and the active Paperclip role instructions bundle.
   Canonical prep contract is
