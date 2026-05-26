@@ -66,6 +66,13 @@ Last updated: 2026-05-25
 
 ## NEXT
 
+1. Portfolio activation handoff for `LUC-101` baseline.
+   - Source:
+     `docs/planning/luc-101-roost-takeover-readiness-known-state-baseline.md`.
+   - Use the documented first takeover lanes (PM queue reconciliation,
+     backend deploy-smoke verification, QA regression conversion, ops release
+     evidence, docs-memory normalization) as the activation kickoff pack.
+
 1. PUBLIC-HOME-ROOST-001 follow-up: replace placeholder mark with owner
    final SVG logo without changing the approved brand system contract.
 

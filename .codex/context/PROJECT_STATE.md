@@ -1,8 +1,17 @@
 # PROJECT_STATE
 
-Last updated: 2026-05-24
+Last updated: 2026-05-26
 
 ## Latest Shell Checkpoint
+- 2026-05-26: `LUC-101` Roost takeover-readiness baseline checkpoint completed
+  in preparation mode. Published
+  `docs/planning/luc-101-roost-takeover-readiness-known-state-baseline.md`
+  with evidence-backed status for product purpose, runtime entry points, docs
+  inventory, architecture graph tooling, validation confidence, deploy surfaces,
+  secret boundaries, and activation-ready specialist lanes. Verification proof:
+  `npm run architecture:status` PASS (`452` nodes / `761` relations / `34`
+  chains, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass `yes`).
 - 2026-05-24: Coordinator queue-parity checkpoint completed. Canonical
   execution queues were synchronized so active priority is explicit and
   consistent across source-of-truth files:

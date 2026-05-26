@@ -59,6 +59,21 @@
 
 ## Recent Checkpoints
 
+- 2026-05-26: `LUC-101` wake reconciliation completed. Incoming wake metadata
+  reported issue state `blocked`, but canonical repository evidence remained
+  aligned to completion (`done`) for the preparation-only baseline lane:
+  `docs/planning/luc-101-roost-takeover-readiness-known-state-baseline.md`,
+  `.codex/context/PROJECT_STATE.md`, and `.agents/state/active-mission.md`.
+  Disposition policy for this lane remains: keep `done`, reopen only with
+  explicit `resume: true` plus new scope.
+- 2026-05-26: `LUC-101` Roost takeover-readiness known-state baseline
+  completed (preparation lane only). Added
+  `docs/planning/luc-101-roost-takeover-readiness-known-state-baseline.md`
+  with explicit claim statuses (`implemented and verified`, `implemented but not
+  verified`, `present in code, behavior unknown`, `missing`, `blocked by error`)
+  and first post-activation specialist lane recommendations.
+  Validation proof: `npm run architecture:status` PASS (`452/761/34`,
+  evidence queue `0`, chain worklist `0`, all gates pass `yes`).
 - 2026-05-24: `DMS-NEXT-002` technology/legal/innovation route activation checkpoint completed.
   Added dedicated React route and board surfaces at
   `/areas?area=09-technologia&view=overview`,

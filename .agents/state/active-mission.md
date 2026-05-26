@@ -1,6 +1,6 @@
 # Active Mission Packet
 
-Last updated: 2026-05-25
+Last updated: 2026-05-26
 
 ## Current Mission
 
@@ -51,6 +51,8 @@ Last updated: 2026-05-25
 
 | Date | Checkpoint | Result | Evidence | Next action |
 | --- | --- | --- | --- | --- |
+| 2026-05-26 | `LUC-101` wake reconciliation: blocked-status drift audited against durable baseline artifacts | DONE | Wake payload showed `blocked`, but repo source-of-truth remained consistent with completion: `docs/planning/luc-101-roost-takeover-readiness-known-state-baseline.md` (`Status: DONE`), `.codex/context/TASK_BOARD.md` recent checkpoint, `.codex/context/PROJECT_STATE.md` baseline completion note, `.agents/state/next-steps.md` activation handoff pointer | Keep issue disposition `done`; only reopen with explicit `resume: true` and new takeover scope |
+| 2026-05-26 | `LUC-101` Roost takeover readiness known-state baseline published (preparation lane) | DONE | `docs/planning/luc-101-roost-takeover-readiness-known-state-baseline.md`; role and shared contracts loaded from LuckySparrow bundle; `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass) | Keep Roost in preparation mode until Portfolio activation; use recommended first takeover lanes as activation entrypoint |
 | 2026-05-25 | One-command deploy smoke orchestrator for AOG/MCP evidence | DONE | Added `scripts/aog-deploy-smoke.mjs` and npm script `aog:deploy-smoke`; enforces `COMPANYCORE_BASE_URL` + `COMPANYCORE_API_KEY`, runs `mcp:smoke`, and optionally runs `ai-ready:smoke` when `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=true`; `node --check scripts/aog-deploy-smoke.mjs` PASS; `npm run validate` PASS | Execute `npm run aog:deploy-smoke` on target runtime with production key, then archive evidence in operations smoke logs |
 | 2026-05-25 | Deploy runtime reachability proof for AOG/MCP smoke gate | PARTIAL | Public target runtime endpoints are healthy: `https://api.roost.luckysparrow.ch/health` -> `200`, `https://roost.luckysparrow.ch/` -> `200`; protected deploy-time smoke (`npm run ai-ready:smoke` against production base URL) is blocked in this coordinator lane because `COMPANYCORE_API_KEY` is not available in environment | Run protected deploy-time smoke immediately after injecting runtime key: `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch COMPANYCORE_API_KEY=<key> npm run mcp:smoke` plus `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch npm run ai-ready:smoke` if owner approves smoke user creation on target |
 | 2026-05-25 | Deploy-shape AOG/MCP smoke proof replayed locally on live API runtime | DONE | Started local API runtime against disposable PostgreSQL, executed `npm run ai-ready:smoke` with `COMPANYCORE_BASE_URL=http://127.0.0.1:3102`; proof returned `ok: true`, MCP operating graph tool status `200`, HTTP area graph status `200` with `requestedAreaKey=01-strategia`, and guarded command failed closed as `mcp_tool_requires_supervision`; cleaned runtime processes (`node` PID 67660, `companycore-test-postgres` container removed) | Continue with target deploy-time smoke run and archive evidence under operations handoff docs |
