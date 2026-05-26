@@ -3,6 +3,37 @@
 Last updated: 2026-05-26
 
 ## Latest Shell Checkpoint
+- 2026-05-26: `LUC-185` final pass reconciled stale path contracts in both
+  Roost prep artifacts and the active Paperclip role instructions bundle.
+  Canonical prep contract is
+  `C:\Personal\Projekty\Aplikacje\Roost` + `...\Roost\docs`; legacy
+  `...\Aplikacje\companycore` and `Roost/companycore` wording was removed from
+  current prep contract surfaces.
+- 2026-05-26: `LUC-185` reconciled stale companycore path contracts in preparation docs/state artifacts. Updated `LUC-101` and `LUC-183` planning packets plus template propagation indexes to align workspace/path wording with active Roost repository semantics (`docs/` canonical root, legacy `C:\Personal\Projekty\Aplikacje\companycore` marked as old context). Scope remained documentation-memory only with no runtime/deploy/secret mutation.
+- 2026-05-26: `LUC-187` pinned canonical documentation-root contract and
+  published takeover handoff packet:
+  `docs/planning/luc-187-canonical-docs-root-and-takeover-handoff.md`.
+  Canonical repository docs references are now explicitly anchored to `docs/`
+  (with local `Roost - docs` physical compatibility noted). Handoff points to
+  `LUC-101` baseline and first activation lanes. No runtime/deploy/production
+  mutation executed.
+- 2026-05-26: `LUC-184` resume delta reconciled after assignee comment
+  `e51987c4-59f0-4ae8-bf28-8a73fd64fa63`. Comment confirms no disposition drift:
+  `LUC-184` remains `done` and linked lane `LUC-183` remains `blocked` pending
+  explicit Portfolio activation approval. No runtime/deploy mutation executed.
+- 2026-05-26: `LUC-183` intake readiness-scan closure checkpoint completed.
+  Published `docs/planning/luc-183-intake-readiness-scan-note.md` from the
+  corrected workspace path (`C:\Personal\Projekty\Aplikacje\Roost`) with
+  strict non-mutating scope: scanned paths, current-state summary, canonical
+  naming gaps, equivalent artifacts, and minimal next issue tree. Intake scope
+  is complete; implementation/deploy work remains activation-gated.
+- 2026-05-26: `LUC-184` applied intake-scan evidence from the blocked checkout
+  run (`LUC-183`) into canonical repository memory. This heartbeat remained in
+  Roost preparation mode only and performed no implementation/deploy mutation.
+  Durable conclusion remains unchanged: `LUC-183` stays `blocked` until
+  explicit Portfolio activation approval with unblock owner/action
+  `Portfolio Director/Board -> approve activation handoff and open first
+  specialist child lanes`.
 - 2026-05-26: `LUC-101` Roost takeover-readiness baseline checkpoint completed
   in preparation mode. Published
   `docs/planning/luc-101-roost-takeover-readiness-known-state-baseline.md`

@@ -2,7 +2,7 @@
 
 Purpose: pre-propagation inventory before installing the project-map, idea, pipeline, graph, and history backbone from !template.
 
-- Project: companycore
+- Project: Roost
 - Documentation root used: docs
 - Indexed files excluding generated/vendor folders: 1312
 - Project-relevant indexed files: 1197

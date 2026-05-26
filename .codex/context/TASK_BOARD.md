@@ -59,6 +59,43 @@
 
 ## Recent Checkpoints
 
+- 2026-05-26: `LUC-185` final reconciliation pass confirmed stale
+  filesystem-path contracts were removed from both Roost prep docs and the
+  active Paperclip instruction bundle (`shared/00-current-pilot.md` for this
+  role). Canonical contract is now
+  `C:\Personal\Projekty\Aplikacje\Roost` workspace with
+  `C:\Personal\Projekty\Aplikacje\Roost\docs` documentation root.
+- 2026-05-26: `LUC-185` `[Roost][Prep] Reconcile stale companycore path contracts` completed in docs-memory lane. Reconciled stale preparation path contracts and project naming drift by updating:
+  `docs/planning/luc-101-roost-takeover-readiness-known-state-baseline.md`,
+  `docs/planning/luc-183-intake-readiness-scan-note.md`,
+  `docs/status/template-propagation-index-2026-05-25.md`, and
+  `docs/status/advanced-template-propagation-index-2026-05-25.md`.
+  Scope was documentation/state only; no runtime/deploy/secret mutation.
+- 2026-05-26: `LUC-187` completed as a preparation-lane PM documentation
+  checkpoint. Published
+  `docs/planning/luc-187-canonical-docs-root-and-takeover-handoff.md` and
+  pinned canonical documentation root usage to repository path `docs/...`
+  (with local physical-root compatibility noted). Synced takeover handoff
+  pointer to `LUC-101` baseline and activation lane sequence. No runtime,
+  deploy, credential, or production mutation was executed.
+- 2026-05-26: `LUC-184` resume delta reconciled after assignee comment
+  `e51987c4-59f0-4ae8-bf28-8a73fd64fa63`. Comment evidence confirms canonical
+  disposition remains correct: `LUC-184` `done`; linked intake lane `LUC-183`
+  `blocked` pending explicit Portfolio activation approval. No runtime or
+  production mutation was required in this reconciliation heartbeat.
+- 2026-05-26: `LUC-183` intake readiness scan finalized for corrected Roost
+  workspace path (`C:\Personal\Projekty\Aplikacje\Roost`) in strict
+  preparation-only mode. Published
+  `docs/planning/luc-183-intake-readiness-scan-note.md` with exact scanned
+  paths, current-state summary, canonical naming gaps, equivalent artifacts,
+  and minimal next issue tree. No runtime/deploy/secret/production mutation
+  was executed.
+- 2026-05-26: `LUC-184` completed as a preparation-lane documentation
+  checkpoint. Applied the already-verified `LUC-183` blocked intake-scan
+  conclusion to canonical mission and project memory so the blocked checkout
+  run evidence is durable and recoverable in-repo. No runtime or production
+  mutation was executed. Disposition guidance: close `LUC-184` as `done`; keep
+  `LUC-183` `blocked` until explicit Portfolio activation approval.
 - 2026-05-26: `LUC-101` wake reconciliation completed. Incoming wake metadata
   reported issue state `blocked`, but canonical repository evidence remained
   aligned to completion (`done`) for the preparation-only baseline lane:

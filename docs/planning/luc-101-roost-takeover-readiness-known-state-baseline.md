@@ -12,7 +12,7 @@
 - Mission Status: VERIFIED
 
 ## Goal
-Create an evidence-backed baseline for Roost/companycore takeover readiness in preparation mode, without implementation or deploy changes.
+Create an evidence-backed baseline for Roost takeover readiness in preparation mode, without implementation or deploy changes.
 
 ## Scope
 - `README.md`
@@ -20,7 +20,7 @@ Create an evidence-backed baseline for Roost/companycore takeover readiness in p
 - `src/`
 - `web/`
 - `prisma/`
-- `docs/` (`Roost - docs` physical root)
+- `docs/`
 - `.agents/state/*` (read-only context + mission continuity updates)
 
 ## Deliverable For This Stage
@@ -32,7 +32,7 @@ A durable known-state document covering product purpose, runtime surfaces, doc/s
 
 | Claim | Status | Evidence |
 | --- | --- | --- |
-| Roost/companycore is the internal source-of-truth system for LuckySparrow operations and AI/runtime integrations. | implemented and verified | `README.md`, `docs/README.md` |
+| Roost is the internal source-of-truth system for LuckySparrow operations and AI/runtime integrations. | implemented and verified | `README.md`, `docs/README.md` |
 | Current practical target is release confidence through architecture evidence runtime plus selected DMS and AOG slices, not greenfield product redefinition. | implemented and verified | `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`, `.agents/state/current-focus.md` |
 
 ### 2. Codebase Structure And Runtime Entry Points
@@ -47,7 +47,7 @@ A durable known-state document covering product purpose, runtime surfaces, doc/s
 
 | Claim | Status | Evidence |
 | --- | --- | --- |
-| Canonical docs root is `docs/`, with physical root currently under `Roost - docs` and compatibility handled in tooling. | implemented and verified | `.codex/context/PROJECT_STATE.md` notes; `docs/documentation-map.md` |
+| Canonical docs root is `docs/` and is directly present in the repository workspace. | implemented and verified | `docs/documentation-map.md`; repository path inspection in `LUC-185` prep checkpoint |
 | Core architecture, planning, operations, security, and UX source-of-truth collections exist and are populated. | implemented and verified | `docs/architecture/README.md`, `docs/planning/*`, `docs/operations/*`, `docs/security/*`, `docs/ux/*` |
 
 ### 4. Architecture Graph/Index Tooling

@@ -2,7 +2,7 @@
 
 Purpose: advanced project creation structure propagated from !template.
 
-- Project: companycore
+- Project: Roost
 - Documentation root used: docs
 - Files copied: 25
 - Existing files skipped: 0
