@@ -83,7 +83,10 @@
   `docs/planning/luc-187-canonical-docs-root-and-takeover-handoff.md` and
   pinned canonical documentation root usage to repository path `docs/...`
   (with local physical-root compatibility noted). Synced takeover handoff
-  pointer to `LUC-101` baseline and activation lane sequence. No runtime,
+  pointer to `LUC-101` baseline and activation lane sequence. Explicit
+  readiness is `planning-ready`; after `LUC-186`, proposed gated follow-ups are
+  `LUC-188` (SCM-only legacy docs root cleanup), `LUC-189` (activation
+  readiness review), then `LUC-190` (protected proof replay). No runtime,
   deploy, credential, or production mutation was executed.
 - 2026-05-26: `LUC-184` resume delta reconciled after assignee comment
   `e51987c4-59f0-4ae8-bf28-8a73fd64fa63`. Comment evidence confirms canonical
