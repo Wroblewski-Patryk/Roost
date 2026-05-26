@@ -59,6 +59,13 @@
 
 ## Recent Checkpoints
 
+- 2026-05-26: `LUC-188` `[Roost][Prep] SCM-only legacy docs root cleanup`
+  completed. Commit `c678fa9` removed tracked legacy path churn under
+  `Roost - docs/**` (`1120` files, `146404` deletions) and preserved canonical
+  repository documentation root `docs/**`. Updated
+  `docs/documentation-map.md` to explicitly state canonical-root usage.
+  Verification proof: cleanup scope remained docs-only in `git diff --stat`,
+  and post-commit working tree is clean (`git status --short` empty).
 - 2026-05-26: `LUC-186` legacy docs deletion-churn triage completed in strict
   read-only preparation scope. Evidence shows `1119` deleted
   `Roost - docs/**` paths with `1119/1119` direct mapped counterparts under
