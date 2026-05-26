@@ -1,8 +1,12 @@
 # Documentation Map
 
-Updated: YYYY-MM-DD
+Updated: 2026-05-26
 
 This is the main entrypoint for current project documentation.
+
+Canonical root rule: use `docs/` as the repository source-of-truth path in all
+contracts, links, and agent updates. Legacy references to `Roost - docs` are
+historical only; operational and canonical references remain `docs/...`.
 
 Use it to find the current source of truth. Historical task files, old plans,
 audits, proof artifacts, release packets, and raw generated outputs belong in

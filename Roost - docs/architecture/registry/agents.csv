@@ -1,2 +1,0 @@
-id,name,status,module,feature,agent_type,entrypoint,tools_or_permissions,side_effect_posture,tests_related,docs_related,evidence,risk_level,last_verified_at,notes
-AGENT-000,Example agent,planned,example,example,processor,,,,,,,medium,YYYY-MM-DD,Example only.

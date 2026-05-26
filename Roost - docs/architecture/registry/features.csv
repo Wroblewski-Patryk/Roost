@@ -1,2 +1,0 @@
-id,name,status,module,description,owner,chain_id,tests_related,docs_related,evidence,risk_level,last_verified_at,notes
-FEATURE-000,Example feature,planned,example,Replace this sample row.,Owner,CHAIN-000,,docs/architecture/architecture-evidence-graph-system.md,,medium,YYYY-MM-DD,Example only.
