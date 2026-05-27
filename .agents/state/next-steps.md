@@ -1,21 +1,36 @@
 # Next Steps
 
-Last updated: 2026-05-27
+Last updated: 2026-05-28
 
 ## NOW
 
-1. Execute the protected proof lane confirmed by `LUC-261` takeover baseline.
+1. Keep the protected proof lane blocked per board control-loop sync (`a029bb67-d7eb-4a38-9385-cd19d664aebd`).
    - Source:
      `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md`.
-   - Run:
-     `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch COMPANYCORE_API_KEY=<key> npm run aog:deploy-smoke`
-     in an approved secure environment.
+   - Execution policy: do not rerun protected smoke from assignment/recovery alone.
+   - Rerun is allowed only when one of these is true:
+     1. fresh accepted credential scope/permission evidence exists, or
+     2. board/operator gives explicit one-run approval.
+   - Approved one-run command:
+     `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch COMPANYCORE_API_KEY=<key> npm run aog:deploy-smoke`.
    - Keep
      `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=true`
      disabled unless explicit production approval is granted.
-   - Current state: blocked in coordinator environment until approved secure
-     `COMPANYCORE_API_KEY` is provided by Portfolio Director/Board or runtime
-     secret owner.
+  - Current state: the latest successful protected rerun evidence remains
+   `UTC=2026-05-27T19:27:56.0347897Z` with preflight rejection
+    (`status=403`, `requestId=528d4005-eb98-4d3f-8e10-a6727da862e9`,
+    `error=invalid_api_key`). The most recent continuation heartbeat
+    (`2026-05-28`) confirmed the cancellation reason and intentionally skipped
+    protected rerun because no new one-run approval and no fresh accepted
+    key-scope evidence were provided under board gate
+    `a029bb67-d7eb-4a38-9385-cd19d664aebd`.
+   - Diagnostic upgrade: `scripts/companycore-mcp-smoke.mjs` now performs a
+     direct manifest preflight and reports `status`, `x-request-id`,
+     `www-authenticate`, and parsed body with explicit `401` vs `403`
+     classification. Use this output as the unblock evidence packet.
+   - Next unblock condition (2026-05-27): runtime secret owner rotates/provides
+     a valid key for the target runtime and executes exactly one authorized
+     same-session rerun, recording UTC pass/fail evidence.
 
 1. Keep `ARCH-EVID-002` in green-state maintenance mode.
    - Source:
@@ -309,3 +324,4 @@ Last updated: 2026-05-27
   unresolved.
 - Keep this file synchronized with `.codex/context/TASK_BOARD.md` and
   `docs/planning/mvp-next-commits.md`.
+

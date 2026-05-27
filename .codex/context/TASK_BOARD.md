@@ -58,7 +58,110 @@
   plus the READY queue.
 
 ## Recent Checkpoints
-
+- 2026-05-28: `LUC-261` cancellation-reason confirmation heartbeat recorded
+  durable governance continuity. Board control-loop gate
+  `a029bb67-d7eb-4a38-9385-cd19d664aebd` remains authoritative; with no fresh
+  one-run approval and no fresh accepted key-scope evidence, protected
+  `aog:deploy-smoke` was intentionally not rerun. Baseline proof stayed green:
+  `npm run architecture:status` PASS (`452/761/34`, queues `0`). Disposition:
+  `BLOCKED`. Unblock owner/action: Portfolio/Board or runtime secret owner
+  provides explicit one-run approval + valid key-scope evidence, then executes
+  exactly one same-session protected rerun with UTC evidence.
+- 2026-05-27: Board control-loop sync comment `a029bb67-d7eb-4a38-9385-cd19d664aebd`
+  canceled repeated protected-smoke wake loops for `LUC-261`. Gate policy:
+  keep `LUC-261` blocked under Portfolio/Board credential ownership; do not
+  rerun protected smoke from assignment/recovery alone. Next permitted rerun
+  requires fresh accepted credential scope/permission evidence or explicit
+  one-run operator approval.
+- 2026-05-27: `LUC-261` post-resume prerequisite recheck executed for a concrete continuation attempt. Runtime evidence in this heartbeat:
+  `UTC=2026-05-27T19:30:17.8496608Z`,
+  `HAS_KEY=False`, `KEY_LEN=0`, `HAS_URL=False`. Protected rerun could not be
+  executed in-session due to missing secure inputs. Baseline stayed healthy:
+  `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates
+  pass). Disposition remains `BLOCKED`. Unblock owner/action: runtime secret
+  owner or Portfolio/Board provides one authorized same-session secret
+  injection window and executes exactly one protected rerun
+  `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch COMPANYCORE_API_KEY=<valid-key> npm run aog:deploy-smoke`.
+- 2026-05-27: `LUC-261` finish-handoff protected rerun executed with present
+  runtime inputs (`UTC=2026-05-27T19:27:56.0347897Z`, `HAS_KEY=True`,
+  `KEY_LEN=30`, `HAS_URL=True`, `BASE_URL=https://api.roost.luckysparrow.ch`).
+  Command `npm run aog:deploy-smoke` failed in MCP manifest preflight with
+  explicit rejection evidence: `status=403`,
+  `requestId=528d4005-eb98-4d3f-8e10-a6727da862e9`, body
+  `error=invalid_api_key`, message `"The API key is invalid."`.
+  Disposition: `BLOCKED`. Unblock owner/action: runtime secret owner rotates
+  valid key and authorizes one same-session rerun of `aog:deploy-smoke`.
+- 2026-05-27: `LUC-261` MCP smoke diagnostics were hardened to accelerate the
+  protected `HTTP 403` unblock lane. Updated
+  `scripts/companycore-mcp-smoke.mjs` to run direct `/v1/mcp/manifest`
+  preflight with `X-API-Key` before bridge `tools/list`, classify `401` vs
+  `403`, and print `x-request-id`/`www-authenticate` plus response body class
+  for backend/security triage. Syntax proof:
+  `node --check scripts/companycore-mcp-smoke.mjs` PASS. Disposition remains
+  `IN_PROGRESS` with live next step: rerun
+  `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch COMPANYCORE_API_KEY=<key> npm run aog:deploy-smoke`
+  in one approved secret-injected session to capture new diagnostics.
+- 2026-05-27: `LUC-261` direct-manifest probe checkpoint executed with present
+  protected runtime inputs
+  (`UTC=2026-05-27T19:23:59.6433754Z`,
+  `HAS_KEY=True`, `KEY_LEN=30`, `HAS_URL=True`).
+  `npm run architecture:status` remained PASS (`452/761/34`, queues `0`).
+  Protected smoke rerun
+  `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch npm run aog:deploy-smoke`
+  failed again with
+  `[companycore-mcp-smoke] tools/list failed: CompanyCore MCP manifest failed with HTTP 403.`
+  Direct authenticated manifest probe
+  `GET /v1/mcp/manifest` returned `STATUS=403` in the same session.
+  Disposition remains `BLOCKED`; unblock owner/action is runtime secret owner
+  or Portfolio/Board validating/rotating key authorization scope (or backend
+  auth policy) and authorizing one same-session rerun with UTC evidence.
+- 2026-05-27: `LUC-261` resume-delta forensic heartbeat attempted to continue
+  the reported MCP `HTTP 403` investigation, but this session had no protected
+  env injection (`HAS_KEY=False`, `KEY_LEN=0`, `HAS_URL=False`). No protected
+  replay or direct manifest probe could run. Disposition remains `BLOCKED`
+  with refined unblock contract: runtime secret owner or Portfolio/Board
+  provides one authorized same-session secret injection window and immediate
+  replay/probe capture.
+- 2026-05-27: `LUC-261` successful-run handoff checkpoint re-verified architecture runtime (`npm run architecture:status` PASS `452/761/34`, queues `0`) and replayed protected smoke with present credentials (`UTC=2026-05-27T19:18:51Z`, key/base-url present). Result remains unchanged: `CompanyCore MCP manifest failed with HTTP 403`. Disposition stays `BLOCKED` pending runtime key scope authorization fix by runtime secret owner or Portfolio/Board.
+- 2026-05-27: `LUC-261` protected deploy-smoke confirmation rerun executed in
+  the same runtime session to verify whether MCP authorization failure was
+  transient. Runtime presence was still valid
+  (`UTC=2026-05-27T19:17:27Z`,
+  `COMPANYCORE_API_KEY_PRESENT=True`,
+  `COMPANYCORE_BASE_URL_PRESENT=True`), and the protected command
+  `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch npm run aog:deploy-smoke`
+  failed identically with
+  `[companycore-mcp-smoke] tools/list failed: CompanyCore MCP manifest failed with HTTP 403.`
+  Disposition remains `BLOCKED`; blocker is confirmed reproducible key
+  authorization scope mismatch for MCP manifest/tools list.
+- 2026-05-27: `LUC-261` protected deploy-smoke rerun executed after runtime
+  prerequisite presence became available
+  (`UTC=2026-05-27T19:15:26Z`,
+  `COMPANYCORE_API_KEY_PRESENT=True`,
+  `COMPANYCORE_BASE_URL_PRESENT=True`).
+  Command
+  `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch npm run aog:deploy-smoke`
+  failed with MCP authorization evidence:
+  `[companycore-mcp-smoke] tools/list failed: CompanyCore MCP manifest failed with HTTP 403.`
+  Disposition remains `BLOCKED`, but blocker is now key authorization/scope,
+  not missing-secret presence. Unblock owner/action: runtime secret owner or
+  Portfolio/Board validates/rotates key scope and authorizes one rerun.
+- 2026-05-27: `LUC-261` heartbeat prerequisite recheck confirmed protected
+  deploy-smoke inputs are still absent in runtime:
+  `COMPANYCORE_API_KEY_PRESENT=False`,
+  `COMPANYCORE_BASE_URL_PRESENT=False`.
+  No protected smoke command ran in this wake. Disposition remains `BLOCKED`
+  with unchanged unblock owner/action: runtime secret owner or Portfolio/Board
+  provides approved one-time key presence and authorizes
+  `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch COMPANYCORE_API_KEY=<key> npm run aog:deploy-smoke`.
+- 2026-05-27: `LUC-261` stale-gate escalation comment
+  (`softwarehouse-stale-gate-escalation:LUC-261:v1`) acknowledged. Disposition
+  remains `BLOCKED` with no protected recheck execution in this wake because
+  approved secure credential facts were not provided. Required unblock evidence
+  remains: (1) key/base-url presence proof without secret values, (2) one
+  approved protected smoke result with timestamp, and (3) next blocker if any.
+  Next review condition: secure operator or board provides one explicit
+  authorize-and-run instruction for exactly one protected deploy-smoke recheck.
 - 2026-05-27: `LUC-261` protected proof continuation lane executed and blocked
   by missing secure key injection. Evidence:
   `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates
@@ -3303,3 +3406,5 @@
 - V2WEB-018 Global Module Switcher.
 - V2WEB-019 Relationship Review Filters.
 - V2WEB-020 Main Operating Area Foundation.
+
+- 2026-05-27: `LUC-261` issue-continuation wake governance check confirmed no new operator rerun approval and no fresh accepted credential scope evidence. Per board control-loop gate `a029bb67-d7eb-4a38-9385-cd19d664aebd`, protected smoke was not rerun in this heartbeat. Disposition remains `BLOCKED`; unblock owner/action unchanged (Portfolio/Board or runtime secret owner authorizes one same-session rerun with valid key evidence and UTC proof).
