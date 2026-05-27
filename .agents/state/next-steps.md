@@ -1,8 +1,21 @@
 # Next Steps
 
-Last updated: 2026-05-26
+Last updated: 2026-05-27
 
 ## NOW
+
+1. Execute the protected proof lane confirmed by `LUC-261` takeover baseline.
+   - Source:
+     `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md`.
+   - Run:
+     `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch COMPANYCORE_API_KEY=<key> npm run aog:deploy-smoke`
+     in an approved secure environment.
+   - Keep
+     `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=true`
+     disabled unless explicit production approval is granted.
+   - Current state: blocked in coordinator environment until approved secure
+     `COMPANYCORE_API_KEY` is provided by Portfolio Director/Board or runtime
+     secret owner.
 
 1. Keep `ARCH-EVID-002` in green-state maintenance mode.
    - Source:

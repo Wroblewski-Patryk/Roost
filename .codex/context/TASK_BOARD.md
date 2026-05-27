@@ -59,6 +59,22 @@
 
 ## Recent Checkpoints
 
+- 2026-05-27: `LUC-261` protected proof continuation lane executed and blocked
+  by missing secure key injection. Evidence:
+  `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates
+  pass) and protected command attempt
+  `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch npm run aog:deploy-smoke`
+  failed with `[aog-deploy-smoke] COMPANYCORE_API_KEY is required.`.
+  Unblock owner/action: Portfolio Director/Board or runtime secret owner
+  provides approved `COMPANYCORE_API_KEY` and reruns
+  `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch COMPANYCORE_API_KEY=<key> npm run aog:deploy-smoke`.
+- 2026-05-27: `LUC-261` `[Roost] Full takeover audit and operating baseline`
+  completed as a preparation-only PM checkpoint. Published
+  `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and
+  synchronized canonical memory (`.agents/state/active-mission.md`,
+  `.codex/context/PROJECT_STATE.md`, `.agents/state/next-steps.md`). Baseline
+  disposition: preparation baseline `DONE`; next executable lane remains the
+  protected deploy-smoke proof with approved runtime key injection.
 - 2026-05-26: `LUC-190` `[Roost][Prep] Activation readiness review after SCM
   cleanup` completed as a preparation-only PM checkpoint. Published
   `docs/planning/luc-190-activation-readiness-review-after-scm-cleanup.md`.

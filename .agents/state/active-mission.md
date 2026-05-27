@@ -1,21 +1,22 @@
 # Active Mission Packet
 
-Last updated: 2026-05-26
+Last updated: 2026-05-27
 
 ## Current Mission
 
-- Mission ID: ARCH-EVID-002-CONTINUATION
-- Status: VERIFIED
-- Selected objective: Complete the CSV-first architecture evidence nervous
-  system with zero actionable gaps across evidence, chain coverage, and chain
-  hardening outputs.
-- Why this mission now: The owner requested uninterrupted continuation until
-  the full architecture mapping and proof system is correctly implemented.
-- Release objective or product milestone advanced: Architecture evidence
-  runtime as canonical AI-operable project map.
-- Stop conditions: no temporary bypasses; no unresolved evidence/chain queue
-  rows in generated status artifacts; full integrity and coverage gates pass.
-- Parent validation gate: `npm run architecture:refresh` and `npm run validate`.
+- Mission ID: LUC-261-TAKEOVER-BASELINE
+- Status: BLOCKED
+- Selected objective: Publish and synchronize a full Roost takeover audit and
+  operating baseline as durable repository state.
+- Why this mission now: Wake payload for `LUC-261` is the highest-priority
+  heartbeat scope and required concrete takeover action.
+- Release objective or product milestone advanced: Reliable takeover continuity
+  with explicit activation gate and next protected-proof lane.
+- Stop conditions: baseline packet exists, source-of-truth files are synced,
+  issue disposition is explicit, and protected deploy-smoke lane is either
+  executed with approved key injection or explicitly blocked with owner/action.
+- Parent validation gate: state parity check across mission, task board,
+  project state, and next-steps docs.
 
 ## Source Rows
 
@@ -51,6 +52,8 @@ Last updated: 2026-05-26
 
 | Date | Checkpoint | Result | Evidence | Next action |
 | --- | --- | --- | --- | --- |
+| 2026-05-27 | `LUC-261` protected deploy-smoke execution attempt | BLOCKED | `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass). Protected lane attempt failed deterministically with `[aog-deploy-smoke] COMPANYCORE_API_KEY is required.` when running `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch npm run aog:deploy-smoke`. | Unblock owner: Portfolio Director/Board or runtime secret owner. Action: inject approved `COMPANYCORE_API_KEY` in secure environment and rerun `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch COMPANYCORE_API_KEY=<key> npm run aog:deploy-smoke`. |
+| 2026-05-27 | `LUC-261` full takeover audit and operating baseline | DONE | Published `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and synchronized canonical memory (`active-mission`, `TASK_BOARD`, `PROJECT_STATE`, `next-steps`). Baseline confirms prep lane completion and activation-gated protected-proof next lane. | Execute protected deploy-smoke lane with approved runtime key injection; keep broad implementation activation-gated. |
 | 2026-05-26 | `LUC-190` activation readiness review after SCM cleanup | DONE | Published `docs/planning/luc-190-activation-readiness-review-after-scm-cleanup.md` with post-cleanup gate review: SCM cleanup commit `c678fa9` confirmed, `git status --short` clean, and `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass). | Proceed only with the next narrow protected proof lane (Backend + QA) using approved secure key injection path; keep broader Roost implementation still activation-gated. |
 | 2026-05-26 | `LUC-186` legacy docs deletion churn read-only triage | DONE | Classified `1119` deleted `Roost - docs/**` paths and verified `1119/1119` direct mapped counterparts exist in canonical `docs/**` (`mapped_missing=0`), with only one extra current docs file (`docs/planning/luc-183-intake-readiness-scan-note.md`). Published decision packet: `docs/planning/luc-186-legacy-docs-deletion-churn-triage.md`. No destructive restore/remove/archive, deploy, or secret/runtime mutation executed. | Route any physical cleanup to a dedicated SCM owner lane that preserves `docs/**` as canonical root and performs no runtime changes. |
 | 2026-05-26 | `LUC-185` path-contract reconciliation finalized with instruction-bundle correction | DONE | In-repo prep/doc-memory contracts were already corrected (`docs/planning/luc-101-roost-takeover-readiness-known-state-baseline.md`, `docs/planning/luc-183-intake-readiness-scan-note.md`, `docs/status/template-propagation-index-2026-05-25.md`, `docs/status/advanced-template-propagation-index-2026-05-25.md`). Additionally corrected stale shared-instruction pilot paths at `C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse/.paperclip/runtime/home/instances/default/companies/f13051a7-d0aa-4261-9254-d3ab90735de5/agents/b9b164f9-ed85-4386-a4c2-903dda46675f/instructions/shared/00-current-pilot.md` (`Roost/companycore` -> `Roost`, workspace/docs paths -> `.../Roost` and `.../Roost/docs`). | Keep future prep lanes aligned to Roost canonical path contract; treat `companycore` runtime/tool identifiers as product naming unless they encode filesystem contracts. |
