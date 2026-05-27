@@ -62,6 +62,33 @@ function fail(message) {
   process.exit(1);
 }
 
+async function preflightManifest() {
+  const response = await fetch(`${baseUrl}/v1/mcp/manifest`, {
+    headers: {
+      Accept: "application/json",
+      "X-API-Key": apiKey
+    }
+  });
+  const text = await response.text();
+  let body = null;
+  if (text) {
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = { raw: text };
+    }
+  }
+  const requestId = response.headers.get("x-request-id") ?? null;
+  const authenticate = response.headers.get("www-authenticate") ?? null;
+  return {
+    ok: response.ok,
+    status: response.status,
+    requestId,
+    authenticate,
+    body
+  };
+}
+
 if (process.argv.includes("--help")) {
   printHelp();
   process.exit(0);
@@ -69,6 +96,16 @@ if (process.argv.includes("--help")) {
 
 if (!apiKey) {
   fail("COMPANYCORE_API_KEY is required.");
+}
+
+const manifestPreflight = await preflightManifest();
+if (!manifestPreflight.ok) {
+  const hint = manifestPreflight.status === 401
+    ? "api key rejected or malformed"
+    : manifestPreflight.status === 403
+      ? "api key accepted but lacks permission or policy denies manifest"
+      : "unexpected manifest response";
+  fail(`manifest preflight failed (${hint}): status=${manifestPreflight.status}, requestId=${manifestPreflight.requestId ?? "n/a"}, wwwAuthenticate=${manifestPreflight.authenticate ?? "n/a"}, body=${JSON.stringify(manifestPreflight.body)}`);
 }
 
 function parseJsonLines(buffer) {
@@ -199,6 +236,8 @@ child.on("close", (code) => {
   process.stdout.write(JSON.stringify({
     ok: true,
     baseUrl,
+    manifestPreflightStatus: manifestPreflight.status,
+    manifestPreflightRequestId: manifestPreflight.requestId,
     toolCount: tools.length,
     calledTool: smokeToolName,
     callStatus: toolCall.result.structuredContent.status,
