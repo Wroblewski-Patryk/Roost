@@ -3,6 +3,43 @@
 Last updated: 2026-05-28
 
 ## Latest Shell Checkpoint
+- 2026-05-28: `LUC-419` source-scoped recovery replay heartbeat completed.
+  Action: reran `npm run architecture:status` and reconfirmed baseline PASS
+  (`452/761/34`, evidence queue `0`, chain worklist `0`, all gates pass
+  `yes`). No additional implementation/deploy/runtime mutation was required.
+  Disposition for this heartbeat: `done`.
+- 2026-05-28: `LUC-419` issue-continuation reconciliation heartbeat completed
+  for wake reason `issue_continuation_needed` (no new comments). Baseline was
+  revalidated with `npm run architecture:status` PASS (`452/761/34`, evidence
+  queue `0`, chain worklist `0`, all gates pass `yes`). No additional
+  implementation/deploy/runtime mutation was required. Disposition for this
+  heartbeat: `done`.
+- 2026-05-28: `LUC-419` role-contract reconciliation heartbeat completed.
+  Loaded LuckySparrow shared contract bundle (`shared/00..95`) and
+  role contract (`roles/roost-project-manager.md`) as required, then
+  revalidated baseline with `npm run architecture:status` PASS
+  (`452/761/34`, queues `0`, all gates pass `yes`). Scope remains complete for
+  `LUC-419`; no additional implementation/deploy/runtime mutation was needed.
+  Disposition for this heartbeat: `done`.
+- 2026-05-28: `LUC-419` source-scoped recovery wake (`reason:
+  source_scoped_recovery_action`) reconciled against repository truth.
+  Completion state remains valid for this issue scope; no additional
+  implementation/runtime/deploy mutation was necessary. Disposition for this
+  heartbeat: `done`.
+- 2026-05-28: `LUC-419` resume-delta reconciliation heartbeat closed
+  issue-status drift only. Incoming wake metadata showed `in_progress`, but
+  canonical repository truth remains complete (`LUC-419` baseline packet
+  status `DONE`). No additional implementation/deploy/runtime mutation was
+  required. Disposition for this continuation heartbeat: `done`.
+- 2026-05-28: `LUC-419` known-state evidence collection and architecture
+  baseline refresh completed in preparation-only mode. Published
+  `docs/planning/luc-419-known-state-evidence-collection-and-architecture-baseline.md`
+  and synchronized mission/queue/project memory pointers for durable
+  continuation. Baseline command proof:
+  `npm run architecture:status` PASS (`452/761/34`, queues `0`, delta
+  `0/0/0`, all gates pass `yes`). Disposition for this issue scope: `done`.
+  Protected deploy-smoke lane status remains unchanged (`blocked` under
+  explicit one-run approval + valid key-scope evidence gate).
 - 2026-05-28: `LUC-261` cancellation-reason confirmation heartbeat completed.
   Board gate `a029bb67-d7eb-4a38-9385-cd19d664aebd` remains in force: no
   protected rerun from assignment/recovery alone. This heartbeat received no

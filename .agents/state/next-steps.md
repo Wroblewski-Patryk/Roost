@@ -4,6 +4,13 @@ Last updated: 2026-05-28
 
 ## NOW
 
+1. Keep `LUC-419` known-state baseline as the active preparation reference.
+   - Source:
+     `docs/planning/luc-419-known-state-evidence-collection-and-architecture-baseline.md`.
+   - Baseline proof in this heartbeat:
+     `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass `yes`).
+   - Scope policy: preparation-only, no deploy/production mutation.
+
 1. Keep the protected proof lane blocked per board control-loop sync (`a029bb67-d7eb-4a38-9385-cd19d664aebd`).
    - Source:
      `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md`.

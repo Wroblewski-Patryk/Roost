@@ -58,6 +58,38 @@
   plus the READY queue.
 
 ## Recent Checkpoints
+- 2026-05-28: `LUC-419` source-scoped recovery replay heartbeat completed.
+  Baseline was revalidated again via `npm run architecture:status`
+  (PASS: `452/761/34`, evidence queue `0`, chain worklist `0`, all gates pass
+  `yes`) and no additional implementation/deploy/runtime action was required.
+  Disposition: `DONE`.
+- 2026-05-28: `LUC-419` issue-continuation reconciliation heartbeat completed.
+  Wake reason was `issue_continuation_needed` with no new comments; baseline
+  was revalidated via `npm run architecture:status` (PASS: `452/761/34`,
+  evidence queue `0`, chain worklist `0`, all gates pass `yes`).
+  Disposition: `DONE`.
+- 2026-05-28: `LUC-419` role-contract reconciliation heartbeat completed.
+  Loaded LuckySparrow shared contracts (`shared/00..95`) plus
+  `roles/roost-project-manager.md` before action, re-ran
+  `npm run architecture:status` (PASS: `452/761/34`, queues `0`, all gates
+  pass `yes`), and confirmed no additional scope remains for `LUC-419`.
+  Disposition: `DONE`.
+- 2026-05-28: `LUC-419` source-scoped recovery wake reconciled. Wake payload
+  requested continuation despite completed baseline packet; canonical
+  repository state remains complete for this issue scope. No additional
+  implementation/deploy/runtime mutation was required. Disposition: `DONE`.
+- 2026-05-28: `LUC-419` resume-delta reconciliation completed. Wake metadata
+  reported `in_progress`, but canonical repository evidence remains aligned to
+  completion (`docs/planning/luc-419-known-state-evidence-collection-and-architecture-baseline.md`
+  is `Status: DONE`). No additional runtime/deploy mutation was required in
+  this heartbeat. Disposition for this scope: `DONE`.
+- 2026-05-28: `LUC-419` known-state evidence collection and architecture
+  baseline refresh completed in preparation mode. Published
+  `docs/planning/luc-419-known-state-evidence-collection-and-architecture-baseline.md`
+  and synchronized canonical mission/board/state pointers. Baseline proof:
+  `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates
+  pass `yes`). Disposition for this issue scope: `DONE`. Protected runtime
+  proof lane remains externally gated and unchanged.
 - 2026-05-28: `LUC-261` cancellation-reason confirmation heartbeat recorded
   durable governance continuity. Board control-loop gate
   `a029bb67-d7eb-4a38-9385-cd19d664aebd` remains authoritative; with no fresh
