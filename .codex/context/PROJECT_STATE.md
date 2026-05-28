@@ -3,6 +3,8 @@
 Last updated: 2026-05-28
 
 ## Latest Shell Checkpoint
+- 2026-05-28: `LUC-525` issue_commented sidecar heartbeat completed. Action: acknowledged board-created unblocked lane for source-control closure, classified local dirty state for `LUC-261` continuity, and published `docs/planning/luc-525-source-control-closure-for-luc-261-dirty-state.md` with per-file ownership/decision table. No runtime/deploy/protected-smoke action executed. Disposition for this heartbeat: `done`.
+- 2026-05-28: `LUC-521` issue_assigned known-state evidence heartbeat completed. Action: reloaded LuckySparrow shared contracts + role file, reran `npm run architecture:status` (PASS `452/761/34`, evidence queue `0`, chain worklist `0`, all gates pass `yes`), published `docs/planning/luc-521-known-state-evidence-collection-and-architecture-baseline.md`, and synchronized canonical state pointers. No runtime/deploy mutation executed. Disposition for this heartbeat: `done`.
 - 2026-05-28: `LUC-419` source-scoped recovery replay heartbeat completed.
   Action: reran `npm run architecture:status` and reconfirmed baseline PASS
   (`452/761/34`, evidence queue `0`, chain worklist `0`, all gates pass

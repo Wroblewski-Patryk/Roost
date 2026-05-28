@@ -58,6 +58,8 @@
   plus the READY queue.
 
 ## Recent Checkpoints
+- 2026-05-28: `LUC-525` `[Roost][Source Control Closure]` sidecar lane completed. Local dirty state linked to `LUC-261` continuity was classified as coherent docs-only carryover and closed with explicit per-file ownership/decision evidence in `docs/planning/luc-525-source-control-closure-for-luc-261-dirty-state.md`. Disposition: `DONE`.
+- 2026-05-28: `LUC-521` known-state evidence collection and architecture baseline completed in preparation mode. Published `docs/planning/luc-521-known-state-evidence-collection-and-architecture-baseline.md` and revalidated baseline via `npm run architecture:status` (PASS: `452/761/34`, queues `0`, all gates pass `yes`). Disposition: `DONE`.
 - 2026-05-28: `LUC-419` source-scoped recovery replay heartbeat completed.
   Baseline was revalidated again via `npm run architecture:status`
   (PASS: `452/761/34`, evidence queue `0`, chain worklist `0`, all gates pass

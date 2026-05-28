@@ -4,12 +4,12 @@ Last updated: 2026-05-28
 
 ## Current Mission
 
-- Mission ID: LUC-419-KNOWN-STATE-BASELINE
+- Mission ID: LUC-525-SOURCE-CONTROL-CLOSURE
 - Status: VERIFIED
-- Selected objective: Collect known-state evidence and publish a refreshed
-  Roost architecture baseline packet as durable repository state.
-- Why this mission now: Wake payload for `LUC-419` is the highest-priority
-  heartbeat scope and required concrete baseline refresh action.
+- Selected objective: Classify and close local dirty source-control state
+  linked to the blocked `LUC-261` lane.
+- Why this mission now: Board comment opened an unblocked sidecar lane for
+  local source-control closure and requested evidence back to target issue.
 - Release objective or product milestone advanced: Reliable takeover continuity
   with explicit activation gate and next protected-proof lane.
 - Stop conditions: baseline packet exists, source-of-truth files are synced,
@@ -52,6 +52,8 @@ Last updated: 2026-05-28
 
 | Date | Checkpoint | Result | Evidence | Next action |
 | --- | --- | --- | --- | --- |
+| 2026-05-28 | `LUC-525` source-control closure classification for `LUC-261` sidecar lane | DONE | Classified dirty files as coherent docs-only carryover, published `docs/planning/luc-525-source-control-closure-for-luc-261-dirty-state.md`, and synchronized mission/board/project pointers for this closure heartbeat. | Keep protected deploy-smoke lane blocked under `LUC-261` until explicit one-run approval + valid key-scope evidence is provided. |
+| 2026-05-28 | `LUC-521` known-state evidence collection and architecture baseline | DONE | Published `docs/planning/luc-521-known-state-evidence-collection-and-architecture-baseline.md`; baseline proof `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass `yes`); canonical mission/board/project/next-steps files synced. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
 | 2026-05-28 | `LUC-419` role-contract reconciliation heartbeat | DONE | LuckySparrow shared contracts (`shared/00..95`) + role file reloaded; `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass `yes`); no new comments/scope changes. | Keep `LUC-419` closed and route protected runtime proof through `LUC-261` unblock policy only. |
 | 2026-05-28 | `LUC-419` known-state evidence collection and architecture baseline refresh | DONE | Published `docs/planning/luc-419-known-state-evidence-collection-and-architecture-baseline.md`; baseline proof `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass `yes`); canonical mission/board/project/next-steps files synced. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
 | 2026-05-28 | `LUC-261` cancellation-reason confirmation before rerun | BLOCKED | Board gate `a029bb67-d7eb-4a38-9385-cd19d664aebd` still blocks assignment-only protected reruns; no new one-run approval or accepted key-scope evidence in this heartbeat. Baseline remains healthy via `npm run architecture:status` PASS (`452/761/34`, queues `0`). | Unblock owner: Portfolio/Board or runtime secret owner. Action: provide explicit one-run approval + valid key-scope evidence, then execute one same-session `aog:deploy-smoke` rerun with UTC proof. |
