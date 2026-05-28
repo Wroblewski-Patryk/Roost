@@ -58,3 +58,4 @@ Classify current local dirty files related to recent `LUC-261`/known-state conti
 - Follow-up gaps: protected runtime smoke for `LUC-261` remains separately blocked by credential/approval ownership and is intentionally out of scope for this lane.
 - Commit/no-commit decision: committed as `ec30c06` (`docs: close LUC-525 local dirty state classification`).
 - Replay commit/no-commit decision (2026-05-28): no new code changes required; closure remains valid with worktree clean and evidence packet complete.
+- Idempotent closure guard: for repeated `softwarehouse-local-repair-lane-starter:v1` ticks with no new dirty files and no scope delta, run verification only (`git status`, short `git log`) and keep `no-commit` unless a new classification delta appears.
