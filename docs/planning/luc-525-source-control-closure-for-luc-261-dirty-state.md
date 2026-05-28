@@ -46,6 +46,9 @@ Classify current local dirty files related to recent `LUC-261`/known-state conti
 - `git status --porcelain=v1`
 - `git diff --name-status`
 - `git diff -- .agents/state/active-mission.md .agents/state/next-steps.md .codex/context/PROJECT_STATE.md .codex/context/TASK_BOARD.md`
+- Replay checkpoint (2026-05-28 board tick):
+  - `git status --porcelain=v1` -> clean (no output)
+  - `git log --oneline -3` -> latest closure commits present (`100dbc4`, `ec30c06`)
 
 ## Result Report
 - Outcome: dirty state is classified as coherent, docs-only, and attributable to the same preparation continuity lane; no unrelated churn or secret-bearing artifacts detected.
@@ -54,3 +57,4 @@ Classify current local dirty files related to recent `LUC-261`/known-state conti
 - Regression risk: low; changes are documentation/state-pointer only, with no code/runtime behavior mutation.
 - Follow-up gaps: protected runtime smoke for `LUC-261` remains separately blocked by credential/approval ownership and is intentionally out of scope for this lane.
 - Commit/no-commit decision: committed as `ec30c06` (`docs: close LUC-525 local dirty state classification`).
+- Replay commit/no-commit decision (2026-05-28): no new code changes required; closure remains valid with worktree clean and evidence packet complete.
