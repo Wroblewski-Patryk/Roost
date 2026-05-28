@@ -20,6 +20,18 @@ Classify current local dirty files related to recent `LUC-261`/known-state conti
 - `.codex/context/TASK_BOARD.md`
 - `docs/planning/luc-521-known-state-evidence-collection-and-architecture-baseline.md`
 
+## Affected Capability/Chain/Files
+- Capability: source-control closure for prep-lane canonical-memory continuity (`LUC-261` dependent state context, no runtime mutation).
+- Chain:
+  `issue wake -> dirty-state inspection -> classification -> closure packet -> local commit -> clean worktree`.
+- Files:
+  `.agents/state/active-mission.md`,
+  `.agents/state/next-steps.md`,
+  `.codex/context/PROJECT_STATE.md`,
+  `.codex/context/TASK_BOARD.md`,
+  `docs/planning/luc-521-known-state-evidence-collection-and-architecture-baseline.md`,
+  `docs/planning/luc-525-source-control-closure-for-luc-261-dirty-state.md`.
+
 ## Dirty-State Classification (2026-05-28)
 
 | Path | Git state | Classification | Owner lane | Decision |
@@ -39,4 +51,6 @@ Classify current local dirty files related to recent `LUC-261`/known-state conti
 - Outcome: dirty state is classified as coherent, docs-only, and attributable to the same preparation continuity lane; no unrelated churn or secret-bearing artifacts detected.
 - Source-control closure decision: preserve this change set as one scoped closure packet tied to `LUC-525`.
 - Deploy impact: none.
-- Residual risk: none inside this scope; protected runtime smoke for `LUC-261` remains separately blocked by credential/approval ownership.
+- Regression risk: low; changes are documentation/state-pointer only, with no code/runtime behavior mutation.
+- Follow-up gaps: protected runtime smoke for `LUC-261` remains separately blocked by credential/approval ownership and is intentionally out of scope for this lane.
+- Commit/no-commit decision: committed as `ec30c06` (`docs: close LUC-525 local dirty state classification`).
