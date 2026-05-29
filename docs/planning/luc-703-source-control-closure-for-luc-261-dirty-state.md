@@ -56,4 +56,4 @@ Classify current local dirty files related to `LUC-261` continuity and leave an 
 - Deploy impact: none.
 - Regression risk: low; changes are documentation/state-pointer only, with no code/runtime behavior mutation.
 - Follow-up gaps: protected runtime smoke for `LUC-261` remains separately blocked by credential/approval ownership and is intentionally out of scope for this lane.
-- Commit/no-commit decision: not committed in this heartbeat.
+- Commit/no-commit decision: committed locally as `256ab4b` (`docs: close LUC-703 source-control dirty-state classification`); push intentionally not performed in this lane.
