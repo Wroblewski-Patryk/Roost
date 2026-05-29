@@ -58,6 +58,7 @@
   plus the READY queue.
 
 ## Recent Checkpoints
+- 2026-05-29: `LUC-525` local-repair lane replay heartbeat completed after board comment `8f39222f-bbcf-4eeb-b40f-cbe2d1869098`. Revalidated source-control closure evidence (`git status --porcelain=v1` clean; closure chain still present in `git log --oneline -5`) and updated `docs/planning/luc-525-source-control-closure-for-luc-261-dirty-state.md` with replay checkpoint plus explicit `no-commit` decision. Disposition: `DONE`.
 - 2026-05-29: `LUC-585` known-state evidence collection and architecture baseline completed in preparation mode. Published `docs/planning/luc-585-known-state-evidence-collection-and-architecture-baseline.md` and revalidated baseline via `npm run architecture:status` (PASS: `452/761/34`, queues `0`, all gates pass `yes`). Disposition: `DONE`.
 - 2026-05-28: `LUC-525` board-comment replay checkpoint completed. Closure packet now includes explicit capability/chain/files mapping, validation commands/results, regression risk, follow-up gaps, and commit/no-commit decision per local-repair lane checklist. Disposition: `DONE`.
 - 2026-05-28: `LUC-525` `[Roost][Source Control Closure]` sidecar lane completed. Local dirty state linked to `LUC-261` continuity was classified as coherent docs-only carryover and closed with explicit per-file ownership/decision evidence in `docs/planning/luc-525-source-control-closure-for-luc-261-dirty-state.md`. Disposition: `DONE`.
