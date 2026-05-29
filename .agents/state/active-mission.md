@@ -4,12 +4,12 @@ Last updated: 2026-05-29
 
 ## Current Mission
 
-- Mission ID: LUC-585-KNOWN-STATE-BASELINE
+- Mission ID: LUC-703-SOURCE-CONTROL-CLOSURE
 - Status: VERIFIED
 - Selected objective: Refresh and publish known-state evidence plus architecture
   baseline continuity for the currently assigned preparation issue.
-- Why this mission now: Wake payload assigned `LUC-585` and requested concrete
-  continuation with durable baseline evidence and canonical-state sync.
+- Why this mission now: Wake payload assigned `LUC-703` and requested concrete
+  source-control dirty-state classification/closure for `LUC-261` continuity.
 - Release objective or product milestone advanced: Reliable takeover continuity
   with explicit activation gate and next protected-proof lane.
 - Stop conditions: baseline packet exists, source-of-truth files are synced,
@@ -52,6 +52,9 @@ Last updated: 2026-05-29
 
 | Date | Checkpoint | Result | Evidence | Next action |
 | --- | --- | --- | --- | --- |
+| 2026-05-29 | `LUC-703` source-control closure classification for `LUC-261` continuity | DONE | Inspected dirty set (`git status --short --branch`; file-level diffs) and classified all deltas as coherent PM prep-lane docs/state-pointer carryover (`LUC-699` packet + canonical pointer sync). Published `docs/planning/luc-703-source-control-closure-for-luc-261-dirty-state.md` and synchronized canonical source-of-truth pointers to this closure packet. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
+| 2026-05-29 | `LUC-699` finish-successful-run handoff replay | DONE | Idempotent closure replay: verified baseline packet/pointers for `LUC-699` remain present and reran `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass `yes`). No additional implementation/deploy mutation was executed. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
+| 2026-05-29 | `LUC-699` known-state evidence collection and architecture baseline | DONE | Published `docs/planning/luc-699-known-state-evidence-collection-and-architecture-baseline.md`; baseline proof `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass `yes`); canonical mission/board/project/next-steps files synced. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
 | 2026-05-29 | `LUC-525` local-repair lane replay (`softwarehouse-local-repair-lane-starter:v1`, comment `d1ac9f32-908d-4bbf-bf28-c3823f0330c3`) | DONE | Re-acknowledged local-repair wake, verified clean worktree (`git status --short` no output), confirmed closure chain (`git log --oneline -6` includes `5f42858`, `240a5de`, `d4cdb2d`), and ran local non-protected script checks: `node --check scripts/companycore-mcp-smoke.mjs`, `node --check scripts/test-api-local.mjs`, `node scripts/companycore-mcp-smoke.mjs --help` (all pass). | Keep `LUC-525` closed with `no-commit` for unchanged local-repair replays; keep `LUC-261` protected proof gated by board/credential owner. |
 | 2026-05-29 | `LUC-525` finish-successful-run handoff replay | DONE | Idempotent closure verification only: `git status --short` clean, `git log --oneline -6` confirms latest closure commit `240a5de` and prior chain, and canonical closure/state pointers for `LUC-525` remain present. No additional dirty-state delta detected. | Keep issue closed as `done`; no further `LUC-525` action unless new dirty-state delta appears. |
 | 2026-05-29 | `LUC-525` local-repair lane replay (`softwarehouse-local-repair-lane-starter:v1`) | DONE | Re-acknowledged board local-repair comment, reloaded LuckySparrow shared contracts + role file, and revalidated source-control closure evidence: `git status --porcelain=v1` clean plus closure chain still present in `git log --oneline -5` (`414f77e`, `f4f48c3`, `100dbc4`, `ec30c06`, `9d0c99e`). Updated `docs/planning/luc-525-source-control-closure-for-luc-261-dirty-state.md` with replay checkpoint and explicit no-commit decision. | Keep `LUC-525` closed with `no-commit` on unchanged replay ticks; keep `LUC-261` protected smoke blocked behind board/credential gate. |
