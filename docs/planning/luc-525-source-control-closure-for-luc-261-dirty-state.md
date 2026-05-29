@@ -52,6 +52,12 @@ Classify current local dirty files related to recent `LUC-261`/known-state conti
 - Replay checkpoint (2026-05-29 local-repair lane tick):
   - `git status --porcelain=v1` -> clean (no output)
   - `git log --oneline -5` -> closure chain still present (`414f77e`, `f4f48c3`, `100dbc4`, `ec30c06`, `9d0c99e`)
+- Replay checkpoint (2026-05-29 local-repair lane tick, comment `d1ac9f32-908d-4bbf-bf28-c3823f0330c3`):
+  - `git status --short` -> clean (no output)
+  - `git log --oneline -6` -> closure chain intact with latest replay commit `5f42858` (`5f42858`, `240a5de`, `d4cdb2d`, `b3e56a0`, `414f77e`, `f4f48c3`)
+  - `node --check scripts/companycore-mcp-smoke.mjs` -> pass
+  - `node --check scripts/test-api-local.mjs` -> pass
+  - `node scripts/companycore-mcp-smoke.mjs --help` -> pass (usage output rendered)
 
 ## Result Report
 - Outcome: dirty state is classified as coherent, docs-only, and attributable to the same preparation continuity lane; no unrelated churn or secret-bearing artifacts detected.
@@ -62,4 +68,5 @@ Classify current local dirty files related to recent `LUC-261`/known-state conti
 - Commit/no-commit decision: committed as `ec30c06` (`docs: close LUC-525 local dirty state classification`).
 - Replay commit/no-commit decision (2026-05-28): no new code changes required; closure remains valid with worktree clean and evidence packet complete.
 - Replay commit/no-commit decision (2026-05-29): no new code changes required; closure remains valid with worktree clean and unchanged closure evidence.
+- Replay commit/no-commit decision (2026-05-29, comment `d1ac9f32-908d-4bbf-bf28-c3823f0330c3`): no new code changes required; closure remains valid with clean worktree, intact closure chain, and passing local script-level validation.
 - Idempotent closure guard: for repeated `softwarehouse-local-repair-lane-starter:v1` ticks with no new dirty files and no scope delta, run verification only (`git status`, short `git log`) and keep `no-commit` unless a new classification delta appears.
