@@ -1,15 +1,15 @@
 # Active Mission Packet
 
-Last updated: 2026-05-28
+Last updated: 2026-05-29
 
 ## Current Mission
 
-- Mission ID: LUC-525-SOURCE-CONTROL-CLOSURE
+- Mission ID: LUC-585-KNOWN-STATE-BASELINE
 - Status: VERIFIED
-- Selected objective: Classify and close local dirty source-control state
-  linked to the blocked `LUC-261` lane.
-- Why this mission now: Board comment opened an unblocked sidecar lane for
-  local source-control closure and requested evidence back to target issue.
+- Selected objective: Refresh and publish known-state evidence plus architecture
+  baseline continuity for the currently assigned preparation issue.
+- Why this mission now: Wake payload assigned `LUC-585` and requested concrete
+  continuation with durable baseline evidence and canonical-state sync.
 - Release objective or product milestone advanced: Reliable takeover continuity
   with explicit activation gate and next protected-proof lane.
 - Stop conditions: baseline packet exists, source-of-truth files are synced,
@@ -52,6 +52,7 @@ Last updated: 2026-05-28
 
 | Date | Checkpoint | Result | Evidence | Next action |
 | --- | --- | --- | --- | --- |
+| 2026-05-29 | `LUC-585` known-state evidence collection and architecture baseline | DONE | Published `docs/planning/luc-585-known-state-evidence-collection-and-architecture-baseline.md`; baseline proof `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass `yes`); canonical mission/board/project/next-steps files synced. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
 | 2026-05-28 | `LUC-525` source-control closure idempotent replay (`source_scoped_recovery_action`) | DONE | Verified local state remains closure-clean and unchanged: `git status --porcelain=v1` returned no output; latest closure chain present in `git log --oneline -5` (`414f77e`, `f4f48c3`, `100dbc4`, `ec30c06`, `9d0c99e`); canonical closure packet `docs/planning/luc-525-source-control-closure-for-luc-261-dirty-state.md` already marked `Status: DONE`. | Keep `LUC-525` closed with `no-commit` for unchanged replays; keep protected rerun lane under `LUC-261` board/credential gate only. |
 | 2026-05-28 | `LUC-525` source-control closure classification for `LUC-261` sidecar lane | DONE | Classified dirty files as coherent docs-only carryover, published `docs/planning/luc-525-source-control-closure-for-luc-261-dirty-state.md`, and synchronized mission/board/project pointers for this closure heartbeat. | Keep protected deploy-smoke lane blocked under `LUC-261` until explicit one-run approval + valid key-scope evidence is provided. |
 | 2026-05-28 | `LUC-521` known-state evidence collection and architecture baseline | DONE | Published `docs/planning/luc-521-known-state-evidence-collection-and-architecture-baseline.md`; baseline proof `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass `yes`); canonical mission/board/project/next-steps files synced. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |

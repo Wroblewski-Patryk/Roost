@@ -1,17 +1,12 @@
 # Next Steps
 
-Last updated: 2026-05-28
+Last updated: 2026-05-29
 
 ## NOW
 
-1. Keep `LUC-525` source-control closure packet as the active reference for this heartbeat.
+1. Keep `LUC-585` known-state baseline packet as the active reference for this heartbeat.
    - Source:
-     `docs/planning/luc-525-source-control-closure-for-luc-261-dirty-state.md`.
-   - Scope policy: local git classification/closure only, no deploy/production mutation.
-
-1. Keep `LUC-521` known-state baseline as the continuity reference.
-   - Source:
-     `docs/planning/luc-521-known-state-evidence-collection-and-architecture-baseline.md`.
+     `docs/planning/luc-585-known-state-evidence-collection-and-architecture-baseline.md`.
    - Baseline proof in this heartbeat:
      `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass `yes`).
    - Scope policy: preparation-only, no deploy/production mutation.
