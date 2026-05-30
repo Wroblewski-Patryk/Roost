@@ -109,3 +109,21 @@ Classify current local dirty files related to `LUC-261` continuity and leave an 
   - `node scripts/companycore-mcp-smoke.mjs --help` -> pass
 - Commit/no-commit decision for this continuation heartbeat: `no-commit` (no new dirty delta after validation).
 - Disposition: `done` for `LUC-860`; residual external blocker unchanged (`LUC-261` protected runtime smoke still requires credential/approval owner action).
+
+## Continuation Addendum (2026-05-30, issue_assigned from board comment `81878b61-44db-4d2d-aa09-8dbc4899bf92`)
+
+- Wake acknowledgement: board comment requested autonomous local repair/source-control closure lane execution while protected delivery remains fail-closed.
+- Role/runtime contracts loaded before action:
+  - LuckySparrow shared contracts `shared/00..95`
+  - `roles/roost-project-manager.md`
+- Fresh local closure evidence:
+  - `git status --short` -> no entries (clean worktree)
+  - `git rev-parse HEAD` -> `f3530417e1f99b09dc841db36ff65303ef3030ef`
+  - `node --check scripts/companycore-mcp-smoke.mjs` -> pass
+  - `node --check scripts/test-api-local.mjs` -> pass
+  - `node scripts/companycore-mcp-smoke.mjs --help` -> pass
+- Regression risk and follow-up gaps:
+  - Runtime risk unchanged for this lane (`LUC-261` protected smoke remains externally blocked by credential/approval owner action).
+  - No code/runtime mutation performed in this heartbeat.
+- Commit/no-commit decision for this continuation heartbeat: `no-commit` (no local dirty delta existed after verification).
+- Disposition: `done` for `LUC-860`; protected delivery gate remains fail-closed and out of scope for this local closure lane.

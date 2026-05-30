@@ -7,10 +7,12 @@ Last updated: 2026-05-30
 1. Keep `LUC-860` source-control closure packet current in preparation mode.
    - Source:
      `docs/planning/luc-860-source-control-closure-for-luc-261-dirty-state.md`.
-   - Latest proof (2026-05-30, issue_assigned heartbeat):
-     `git status --porcelain=v1 -uall` and focused `git diff` confirm only
-     docs/state continuity files are dirty; classification packet for `LUC-860`
-     is published with explicit per-file ownership/decision.
+   - Latest proof (2026-05-30, issue_assigned heartbeat from comment `81878b61-44db-4d2d-aa09-8dbc4899bf92`):
+     `git status --short` is clean, `git rev-parse HEAD` is
+     `f3530417e1f99b09dc841db36ff65303ef3030ef`, and non-protected affected-file
+     checks passed (`node --check scripts/companycore-mcp-smoke.mjs`,
+     `node --check scripts/test-api-local.mjs`,
+     `node scripts/companycore-mcp-smoke.mjs --help`).
    - Scope policy: preparation-only, no deploy/production mutation.
 
 1. Keep the protected proof lane blocked per board control-loop sync (`a029bb67-d7eb-4a38-9385-cd19d664aebd`).
