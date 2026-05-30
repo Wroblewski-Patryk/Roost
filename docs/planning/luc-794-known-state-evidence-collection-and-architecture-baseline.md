@@ -75,3 +75,21 @@ Collect fresh local evidence for repository known-state and convert the findings
 - Deployment/runtime mutation: none.
 - Residual risk: protected runtime proof remains externally blocked by board/credential gate.
 - Final disposition for this issue scope: `done`.
+
+## Source-Control Closure (Local Repair Lane)
+- Affected capability/chain/files:
+  - Capability: Roost preparation-mode known-state continuity and canonical state-pointer parity.
+  - Chain: issue wake -> local evidence collection -> planning packet refresh -> state pointer sync.
+  - Files: `.agents/state/active-mission.md`, `.agents/state/next-steps.md`, `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`, `docs/planning/luc-790-known-state-refresh-evidence-delta-and-next-repair-lanes.md`, `docs/planning/luc-794-known-state-evidence-collection-and-architecture-baseline.md`.
+- Validation commands and results:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, all gates pass `yes`).
+  - `git status --short --branch` -> docs/state-only dirty set (no runtime code files).
+  - `git diff` for touched files -> planning/state evidence updates only.
+- Regression risk:
+  - Low runtime risk (no app/runtime source touched).
+  - Medium coordination risk if canonical pointers are left unsynced across mission/board/project/next-steps.
+- Follow-up gaps:
+  - Protected proof lane remains blocked under `LUC-261` governance/credential gate.
+  - Activation-lane specialist work still requires explicit Portfolio activation.
+- Commit/no-commit decision:
+  - Decision: `commit` (docs/history/evidence/context-only closure set).
