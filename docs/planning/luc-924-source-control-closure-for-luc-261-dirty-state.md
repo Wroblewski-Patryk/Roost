@@ -42,3 +42,9 @@ Classify current local dirty files related to `LUC-261` continuity and leave an 
 - Push status: `not needed`.
 - Deploy impact: `none`.
 - Residual risk: low for this lane (docs/state-only changes); protected runtime smoke for `LUC-261` remains separately blocked by credential/approval owner action.
+
+## Continuation Checkpoint (2026-05-30)
+- Wake reason: `issue_continuation_needed` with no new pending comments.
+- Idempotent replay proof: `git status --short` (clean), `git rev-parse HEAD` (`b555d2b7312aac805ad883058b676e0dc84f625d`), `git log --oneline -n 3` (head continuity), `git diff --check` (pass).
+- Classification for this replay: no dirty groups present; prior closure commit remains authoritative for this lane.
+- Commit decision for this replay heartbeat: `commit` docs/state evidence checkpoint only.
