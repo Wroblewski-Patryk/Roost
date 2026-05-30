@@ -7,9 +7,9 @@ Last updated: 2026-05-30
 1. Keep `LUC-860` source-control closure packet current in preparation mode.
    - Source:
      `docs/planning/luc-860-source-control-closure-for-luc-261-dirty-state.md`.
-   - Latest proof (2026-05-30, issue_assigned heartbeat from comment `81878b61-44db-4d2d-aa09-8dbc4899bf92`):
+   - Latest proof (2026-05-30, issue_continuation_needed replay):
      `git status --short` is clean, `git rev-parse HEAD` is
-     `f3530417e1f99b09dc841db36ff65303ef3030ef`, and non-protected affected-file
+     `cd2dc3284ba626c8c146485d9e50e494b9820e8c`, and non-protected affected-file
      checks passed (`node --check scripts/companycore-mcp-smoke.mjs`,
      `node --check scripts/test-api-local.mjs`,
      `node scripts/companycore-mcp-smoke.mjs --help`).
