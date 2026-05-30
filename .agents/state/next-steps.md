@@ -1,14 +1,15 @@
 # Next Steps
 
-Last updated: 2026-05-29
+Last updated: 2026-05-30
 
 ## NOW
 
-1. Keep `LUC-703` source-control closure packet as the active reference for this heartbeat.
+1. Keep `LUC-794` known-state evidence packet current in preparation mode.
    - Source:
-     `docs/planning/luc-703-source-control-closure-for-luc-261-dirty-state.md`.
-   - Dirty-state proof in this heartbeat:
-     `git status --short --branch` + targeted `git diff` inspection for all touched files.
+     `docs/planning/luc-794-known-state-evidence-collection-and-architecture-baseline.md`.
+   - Latest proof (2026-05-30):
+     `npm run architecture:status` PASS (`452/761/34`, queue `0`, all gates pass `yes`),
+     docs/state-pointer delta captured (`git status --short`), and continuity captured (`git log --oneline -6`).
    - Scope policy: preparation-only, no deploy/production mutation.
 
 1. Keep the protected proof lane blocked per board control-loop sync (`a029bb67-d7eb-4a38-9385-cd19d664aebd`).
@@ -43,7 +44,7 @@ Last updated: 2026-05-29
    - Source:
      `docs/planning/architecture-evidence-system-foundation-task-contract.md`.
    - Current state is verified: `npm run architecture:refresh` and `npm run
-     validate` pass; graph is `443/755/34` (nodes/relations/chains); evidence
+     validate` pass; graph is `452/761/34` (nodes/relations/chains); evidence
      queue is `0`; chain hardening worklist is `0`; chain coverage gate is
      `33/33` features (100%); CSV contract, command-contract, report-presence,
      proof-bundle, and doc-baseline gates pass.
@@ -331,4 +332,6 @@ Last updated: 2026-05-29
   unresolved.
 - Keep this file synchronized with `.codex/context/TASK_BOARD.md` and
   `docs/planning/mvp-next-commits.md`.
+
+
 

@@ -1,15 +1,15 @@
 # Active Mission Packet
 
-Last updated: 2026-05-29
+Last updated: 2026-05-30
 
 ## Current Mission
 
-- Mission ID: LUC-703-SOURCE-CONTROL-CLOSURE
+- Mission ID: LUC-794-KNOWN-STATE-EVIDENCE
 - Status: VERIFIED
-- Selected objective: Refresh and publish known-state evidence plus architecture
-  baseline continuity for the currently assigned preparation issue.
-- Why this mission now: Wake payload assigned `LUC-703` and requested concrete
-  source-control dirty-state classification/closure for `LUC-261` continuity.
+- Selected objective: Collect fresh local known-state evidence and publish the
+  architecture baseline plus concrete next repair lanes for the assigned issue.
+- Why this mission now: Wake payload assigned `LUC-794` with an explicit request
+  to start local evidence collection and convert findings into repair lanes.
 - Release objective or product milestone advanced: Reliable takeover continuity
   with explicit activation gate and next protected-proof lane.
 - Stop conditions: baseline packet exists, source-of-truth files are synced,
@@ -21,7 +21,7 @@ Last updated: 2026-05-29
 ## Source Rows
 
 - Task contract:
-  `docs/planning/architecture-evidence-system-foundation-task-contract.md`.
+  `docs/planning/luc-794-known-state-evidence-collection-and-architecture-baseline.md`.
 - Architecture source of truth:
   `docs/architecture/architecture-evidence-system.md`.
 - Owner input: "digital nervous system" requirement with full chain/evidence
@@ -50,8 +50,10 @@ Last updated: 2026-05-29
 
 ## Checkpoint Log
 
-| Date | Checkpoint | Result | Evidence | Next action |
-| --- | --- | --- | --- | --- |
+| 2026-05-30 | `LUC-790` issue_continuation_needed replay | DONE | Revalidated baseline (`npm run architecture:status` PASS `452/761/34`, queues `0`, all gates pass `yes`), confirmed unchanged docs/state-pointer dirty set via `git status --short`, and confirmed commit continuity via `git log --oneline -6`. No new runtime/deploy mutation. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
+| 2026-05-30 | `LUC-794` known-state evidence collection and architecture baseline | DONE | Reloaded LuckySparrow shared contracts + role, ran `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass `yes`), captured source-control delta (`git status --short`) and commit continuity (`git log --oneline -6`), inventoried validation/runtime scripts from `package.json`, and verified canonical docs presence for architecture/operations/engineering/security. Published `docs/planning/luc-794-known-state-evidence-collection-and-architecture-baseline.md`. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
+| 2026-05-30 | `LUC-790` source_scoped_recovery_action replay | DONE | Reloaded LuckySparrow shared contracts + `portfolio-director` role, reran minimal baseline proof (`npm run architecture:status` PASS `452/761/34`, queues `0`, all gates pass `yes`), verified unchanged docs/state-pointer dirty set (`git status --short`), and unchanged commit continuity (`git log --oneline -6`). | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
+| 2026-05-30 | `LUC-790` known-state refresh evidence delta and next repair lanes | DONE | Reloaded role/shared contracts, ran fresh baseline proof (`npm run architecture:status` PASS `452/761/34`, queues `0`, all gates pass `yes`), captured active docs/state-pointer dirty set (`git status --short` shows four modified state files plus untracked `LUC-790` packet), and verified continuity chain (`git log --oneline -6`). Published `docs/planning/luc-790-known-state-refresh-evidence-delta-and-next-repair-lanes.md` and synced canonical pointers. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
 | 2026-05-29 | `LUC-703` source-control closure classification for `LUC-261` continuity | DONE | Inspected dirty set (`git status --short --branch`; file-level diffs) and classified all deltas as coherent PM prep-lane docs/state-pointer carryover (`LUC-699` packet + canonical pointer sync). Published `docs/planning/luc-703-source-control-closure-for-luc-261-dirty-state.md` and synchronized canonical source-of-truth pointers to this closure packet. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
 | 2026-05-29 | `LUC-699` finish-successful-run handoff replay | DONE | Idempotent closure replay: verified baseline packet/pointers for `LUC-699` remain present and reran `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass `yes`). No additional implementation/deploy mutation was executed. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
 | 2026-05-29 | `LUC-699` known-state evidence collection and architecture baseline | DONE | Published `docs/planning/luc-699-known-state-evidence-collection-and-architecture-baseline.md`; baseline proof `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass `yes`); canonical mission/board/project/next-steps files synced. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
@@ -121,3 +123,5 @@ Last updated: 2026-05-29
 | 2026-05-24 | DMS-NEXT-004 web board slice (`05 Relacje`) | DONE | `web/src/features/departments/relationships-route.tsx`, `web/src/main.tsx`, `web/src/app-route-registry.ts`, `web/src/features/departments/core-area-data.ts`, `web/src/layout/shell.tsx`, `npm run validate` PASS | Move queue to next department/system slice with architecture gate still green |
 
 | 2026-05-27 | `LUC-261` issue-continuation wake governance check | BLOCKED | Resume delta had no new operator one-run approval and no fresh accepted credential scope evidence; board control-loop gate `a029bb67-d7eb-4a38-9385-cd19d664aebd` still forbids rerun from assignment/recovery alone. | Unblock owner: Portfolio/Board or runtime secret owner. Action: provide explicit one-run authorization + valid key-scope evidence, then execute one same-session `aog:deploy-smoke` rerun with UTC proof. |
+
+
