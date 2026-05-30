@@ -54,3 +54,15 @@ Classify current local dirty files related to `LUC-261` continuity and leave an 
 - Regression risk: low; changes are documentation/state-pointer only, with no code/runtime behavior mutation.
 - Follow-up gaps: protected runtime smoke for `LUC-261` remains separately blocked by credential/approval ownership and is intentionally out of scope for this lane.
 - Commit/no-commit decision: not committed in this heartbeat.
+
+## Continuation Addendum (2026-05-30, source_scoped_recovery_action)
+
+- Wake acknowledgement: no new issue comment delta was provided in the payload; action remained scoped to local closure revalidation only.
+- Role/runtime contracts loaded before action:
+  - LuckySparrow shared contracts `shared/00..95`
+  - `roles/portfolio-director.md`
+- Fresh local closure evidence:
+  - `git status --short` -> no entries (clean worktree)
+  - `git rev-parse HEAD` -> `d05faf4258dae6774b7169f2b2af0ad830d0745f`
+- Commit/no-commit decision for this continuation heartbeat: `no-commit` (no new local delta to classify or preserve).
+- Disposition: `done` for `LUC-860`; residual external blocker remains unchanged and out of scope (`LUC-261` protected runtime smoke requires credential/approval owner action).
