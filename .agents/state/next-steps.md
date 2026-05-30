@@ -4,12 +4,13 @@ Last updated: 2026-05-30
 
 ## NOW
 
-1. Keep `LUC-794` known-state evidence packet current in preparation mode.
+1. Keep `LUC-860` source-control closure packet current in preparation mode.
    - Source:
-     `docs/planning/luc-794-known-state-evidence-collection-and-architecture-baseline.md`.
-   - Latest proof (2026-05-30):
-     `npm run architecture:status` PASS (`452/761/34`, queue `0`, all gates pass `yes`),
-     docs/state-pointer delta captured (`git status --short`), and continuity captured (`git log --oneline -6`).
+     `docs/planning/luc-860-source-control-closure-for-luc-261-dirty-state.md`.
+   - Latest proof (2026-05-30, issue_assigned heartbeat):
+     `git status --porcelain=v1 -uall` and focused `git diff` confirm only
+     docs/state continuity files are dirty; classification packet for `LUC-860`
+     is published with explicit per-file ownership/decision.
    - Scope policy: preparation-only, no deploy/production mutation.
 
 1. Keep the protected proof lane blocked per board control-loop sync (`a029bb67-d7eb-4a38-9385-cd19d664aebd`).

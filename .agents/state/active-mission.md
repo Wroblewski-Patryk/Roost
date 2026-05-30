@@ -4,12 +4,12 @@ Last updated: 2026-05-30
 
 ## Current Mission
 
-- Mission ID: LUC-794-KNOWN-STATE-EVIDENCE
+- Mission ID: LUC-860-SOURCE-CONTROL-CLOSURE
 - Status: VERIFIED
-- Selected objective: Collect fresh local known-state evidence and publish the
-  architecture baseline plus concrete next repair lanes for the assigned issue.
-- Why this mission now: Wake payload assigned `LUC-794` with an explicit request
-  to start local evidence collection and convert findings into repair lanes.
+- Selected objective: Classify and close local dirty state for `LUC-261`
+  continuity with explicit source-control evidence.
+- Why this mission now: Wake payload assigned `LUC-860` with source-control
+  closure scope for the current docs/state dirty set.
 - Release objective or product milestone advanced: Reliable takeover continuity
   with explicit activation gate and next protected-proof lane.
 - Stop conditions: baseline packet exists, source-of-truth files are synced,
@@ -21,7 +21,7 @@ Last updated: 2026-05-30
 ## Source Rows
 
 - Task contract:
-  `docs/planning/luc-794-known-state-evidence-collection-and-architecture-baseline.md`.
+  `docs/planning/luc-860-source-control-closure-for-luc-261-dirty-state.md`.
 - Architecture source of truth:
   `docs/architecture/architecture-evidence-system.md`.
 - Owner input: "digital nervous system" requirement with full chain/evidence
@@ -50,6 +50,11 @@ Last updated: 2026-05-30
 
 ## Checkpoint Log
 
+| 2026-05-30 | `LUC-860` issue_assigned source-control closure classification | DONE | Inspected local dirty set (`git status --porcelain=v1 -uall`, focused `git diff`, `rg` trace), classified all changed files as coherent PM prep-lane docs/state continuity tied to `LUC-261` governance context, and published `docs/planning/luc-860-source-control-closure-for-luc-261-dirty-state.md`. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
+| 2026-05-30 | `LUC-790` issue_continuation_needed closure-ready replay | DONE | Revalidated minimal evidence (`npm run architecture:status` PASS `452/761/34`, `git status --short` unchanged docs/state-pointer set, `git log --oneline -6` continuity unchanged) with no new comments and no scope expansion. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
+| 2026-05-30 | `LUC-790` source_scoped_recovery_action CTO continuation replay | DONE | Revalidated minimal evidence (`npm run architecture:status` PASS `452/761/34`, `git status --short` shows canonical docs/state-pointer set with `LUC-790` packet as tracked `M`, `git log --oneline -6` continuity unchanged) and corrected source-control delta wording in the `LUC-790` packet (`??` -> `M`). | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
+| 2026-05-30 | `LUC-790` issue_commented stale-blocked triage application | DONE | Applied board comment `b0294c23-8c11-4078-a2f1-8f3ba5f178b2` (triage result from `LUC-853`): `LUC-790` blocked classification is stale relative to existing completion evidence. Revalidated minimal proof (`npm run architecture:status` PASS `452/761/34`, `git status --short` expected docs/state-pointer set, `git log --oneline -6` continuity unchanged). | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
+| 2026-05-30 | `LUC-790` issue_reopened_via_comment triage reconciliation | DONE | Acknowledged board comment `6142e0c7-b0e2-4a30-a16b-23e0f9c9f37f` (triage probe from `LUC-853`), reran minimal proof (`npm run architecture:status` PASS `452/761/34`, `git status --short` clean, `git log --oneline -6` continuity), and reconciled mission pointer drift from `LUC-794` back to active `LUC-790` scope. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
 | 2026-05-30 | `LUC-790` issue_continuation_needed replay | DONE | Revalidated baseline (`npm run architecture:status` PASS `452/761/34`, queues `0`, all gates pass `yes`), confirmed unchanged docs/state-pointer dirty set via `git status --short`, and confirmed commit continuity via `git log --oneline -6`. No new runtime/deploy mutation. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
 | 2026-05-30 | `LUC-794` source_scoped_recovery_action reconciliation | DONE | Reloaded LuckySparrow shared contracts + `portfolio-director` role, revalidated minimal closure proof (`git status --short --branch` clean/ahead-only, `npm run architecture:status` PASS `452/761/34`, `git log --oneline -3` closure chain `19e2a83`, `dde9414`, `6ecb917`), and refreshed the `LUC-794` planning packet continuation block for wake-status drift handling. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
 | 2026-05-30 | `LUC-794` known-state evidence collection and architecture baseline | DONE | Reloaded LuckySparrow shared contracts + role, ran `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass `yes`), captured source-control delta (`git status --short`) and commit continuity (`git log --oneline -6`), inventoried validation/runtime scripts from `package.json`, and verified canonical docs presence for architecture/operations/engineering/security. Published `docs/planning/luc-794-known-state-evidence-collection-and-architecture-baseline.md`. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
