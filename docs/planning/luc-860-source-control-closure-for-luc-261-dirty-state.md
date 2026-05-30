@@ -201,3 +201,21 @@ Classify current local dirty files related to `LUC-261` continuity and leave an 
 - Dirty-state classification: `clean` before this documentation update.
 - Commit/no-commit decision for this continuation heartbeat: `commit` for docs/state evidence updates created by this replay checkpoint only.
 - Disposition: `done` for `LUC-860`; residual external blocker unchanged (`LUC-261` protected runtime smoke remains credential/approval gated).
+
+## Continuation Addendum (2026-05-30, issue_assigned from board comment `5a7bf80e-32c3-4446-a3ef-a2a10e9966c1`)
+
+- Wake acknowledgement: board comment requested autonomous local repair/source-control closure lane execution while protected delivery remains fail-closed.
+- Role/runtime contracts loaded before action:
+  - LuckySparrow shared contracts `shared/00..95`
+  - `roles/roost-project-manager.md`
+- Fresh local closure evidence:
+  - `git status --short` -> no entries (clean worktree)
+  - `git rev-parse HEAD` -> `faa326f60bef0cd6a21cf4c5c3e5252f69be4728`
+  - `node --check scripts/companycore-mcp-smoke.mjs` -> pass
+  - `node --check scripts/test-api-local.mjs` -> pass
+  - `node scripts/companycore-mcp-smoke.mjs --help` -> pass
+- Regression risk and follow-up gaps:
+  - Runtime risk unchanged for this lane (`LUC-261` protected smoke remains externally blocked by credential/approval owner action).
+  - No code/runtime mutation performed in this heartbeat.
+- Commit/no-commit decision for this continuation heartbeat: `commit` for docs/state evidence updates created by this replay checkpoint only.
+- Disposition: `done` for `LUC-860`; protected delivery gate remains fail-closed and out of scope for this local closure lane.
