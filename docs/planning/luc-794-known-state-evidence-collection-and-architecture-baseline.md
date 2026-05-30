@@ -102,3 +102,12 @@ Collect fresh local evidence for repository known-state and convert the findings
   - `git log --oneline -3` -> latest closure chain intact (`6ecb917`, `61656b6`, `0bf9b13`).
 - Scope confirmation: no product/runtime/deploy/protected mutation; evidence-only reconciliation.
 - Disposition for this continuation heartbeat: `done`.
+
+## Continuation Checkpoint (2026-05-30, issue_continuation_needed replay)
+- Trigger: harness wake `issue_continuation_needed` with no new comments.
+- Revalidated evidence:
+  - `git status --short --branch` -> clean worktree, branch ahead only (`ahead 28` before this checkpoint commit).
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, all gates pass `yes`).
+  - `git log --oneline -3` -> closure chain intact (`dde9414`, `6ecb917`, `61656b6`).
+- Scope confirmation: no product/runtime/deploy/protected mutation; idempotent evidence replay only.
+- Disposition for this continuation heartbeat: `done`.
