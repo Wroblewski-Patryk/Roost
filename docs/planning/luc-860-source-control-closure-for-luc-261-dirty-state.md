@@ -84,3 +84,15 @@ Classify current local dirty files related to `LUC-261` continuity and leave an 
   - No code/runtime mutation performed in this heartbeat.
 - Commit/no-commit decision for this continuation heartbeat: `no-commit` (no local dirty delta existed after verification).
 - Disposition: `done` for `LUC-860`; protected delivery gate remains fail-closed and out of scope for this local closure lane.
+
+## Continuation Addendum (2026-05-30, issue_continuation_needed)
+
+- Wake acknowledgement: no new comment delta was present; continuation was scoped to idempotent local closure revalidation.
+- Fresh local closure evidence:
+  - `git status --short` -> no entries (clean worktree)
+  - `git rev-parse HEAD` -> `63865576248781fe12235d6cd95ea497f75268be`
+  - `node --check scripts/companycore-mcp-smoke.mjs` -> pass
+  - `node --check scripts/test-api-local.mjs` -> pass
+  - `node scripts/companycore-mcp-smoke.mjs --help` -> pass
+- Commit/no-commit decision for this continuation heartbeat: `no-commit` (no new dirty delta after validation).
+- Disposition: `done` for `LUC-860`; residual external blocker unchanged (`LUC-261` protected runtime smoke still requires credential/approval owner action).
