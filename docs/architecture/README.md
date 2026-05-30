@@ -35,12 +35,13 @@ Those belong elsewhere:
 6. `organizational-architecture-bridge.md`
 7. `unified-organizational-operating-system.md`
 8. `companycore-business-module-map.md`
-9. `companycore-global-business-flow.md`
-10. `department-management-systems-architecture.md`
-11. `department-management-systems-v1-blueprint.md`
-12. `company-os-definition-editing-contract.md`
-13. `company-os-workflow-definition-command-contract.md`
-14. any project-specific architecture or ADR files added later
+9. `business-ontology-import-strategy.md`
+10. `companycore-global-business-flow.md`
+11. `department-management-systems-architecture.md`
+12. `department-management-systems-v1-blueprint.md`
+13. `company-os-definition-editing-contract.md`
+14. `company-os-workflow-definition-command-contract.md`
+15. any project-specific architecture or ADR files added later
 
 ## Evidence Graph
 

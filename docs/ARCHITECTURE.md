@@ -7,6 +7,9 @@ The long-term product shape is a company operating bridge, not only a backend
 integration dashboard. The model-level module map for scaling UI, API, MCP,
 provider, and agent work is
 `docs/architecture/companycore-business-module-map.md`.
+The business ontology import strategy for APQC PCF, SIPOC, org-chart CSV,
+role/ACL mapping, and SOP templates is
+`docs/architecture/business-ontology-import-strategy.md`.
 The unified organizational operating-system direction is documented in
 `docs/architecture/unified-organizational-operating-system.md`: CompanyCore is
 the non-AI organizational world state where humans and AI agents are both

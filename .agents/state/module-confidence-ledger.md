@@ -1,6 +1,6 @@
 # Module Confidence Ledger
 
-Last updated: 2026-05-24
+Last updated: 2026-05-30
 
 Public homepage brand note: PUBLIC-HOME-ROOST-001 is VERIFIED locally. The
 public `/` surface now uses a Roost command-center hero with topology preview
@@ -22,6 +22,16 @@ Screenshots:
 `docs/ux/evidence/public-home-roost-desktop.png` and
 `docs/ux/evidence/public-home-roost-mobile.png`. Residual risk: final logo SVG
 is pending, so the UI intentionally uses a restrained placeholder mark.
+
+Business ontology import note: ONTOLOGY-001 is ACCEPTED as architecture and
+planning direction, not runtime implementation. Owner-provided APQC PCF,
+SIPOC, org-chart CSV, role/ACL mapping, and SOP template notes are captured in
+`docs/architecture/business-ontology-import-strategy.md`. Future work should
+use these sources to plan process-domain taxonomy, MECE responsibilities,
+PAEI tagging, hierarchy, Paperclip planning packets, and import validation.
+Missing proof: no runtime import, schema, or validator exists yet. Next
+smallest action is `ONTOLOGY-002` source inventory/import contract followed by
+`ONTOLOGY-004` CSV validator.
 
 Architecture evidence system note: ARCH-EVID-002 continuation is VERIFIED for
 the active runtime scope. The CSV-first architecture system now runs as a
@@ -298,6 +308,7 @@ it honest. Do not turn uncertainty into optimism.
 
 | ID | Module | Journey / function | Priority | Status | Confidence | Evidence | Missing proof or defect | Next smallest action | Owner | Last verified |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| ONTOLOGY-001 | Business ontology imports | APQC/SIPOC/org-chart/ACL/SOP source-to-CompanyCore mapping for future Paperclip planning | P1 | DEFERRED | Medium | `docs/architecture/business-ontology-import-strategy.md`; DEC-049; REQ-ONTOLOGY-001; RISK-ONTOLOGY-001. | No sample CSV validator, import review UI/API, process-domain taxonomy runtime, or Paperclip planning packet exists yet. | Create `ONTOLOGY-002` source inventory/import contract, then implement `ONTOLOGY-004` validator before runtime import. | Product Docs + Architecture + Backend | 2026-05-30 |
 | FOUNDATION-HARDENING-001 | Cross-app foundation | P1 hardening for API test runner, error envelopes, service-key safety, route/capability drift, and API abuse controls | P1 | VERIFIED | High | `scripts/test-api-local.mjs` adds `npm run test:api:local`; `scripts/check-route-capabilities.mjs` adds `npm run check:route-capabilities` and `npm run validate` coverage; auth/API-key/error middleware use the compatible structured error helper; new API keys require profile/scopes/full-access confirmation; request IDs, security headers, and auth/API rate limits are mounted. Docker Desktop was recovered and reported engine `28.3.2`. Validation passed: script syntax checks, route/capability drift check over 170 manifest routes and 32 route files, `npm run build:server`, `npm run build:web`, `npm run validate`, `git diff --check`, `npm audit --json` with 0 vulnerabilities, and `npm run test:api:local` with all 24 migrations plus 6/6 API subtests. | Route-local business errors outside the migrated middleware still commonly return legacy `{ error: "code" }` until later cleanup, but the compatible helper is available and covered on high-traffic auth/error/API-key paths. | Continue route-local error helper migration opportunistically in focused module slices. | Backend Builder + QA/Test + Security + Ops/Release | 2026-05-18 |
 | FOUNDATION-AUDIT-001 | Cross-app foundation | Application-wide engineering, architecture, security, testing, deployment, UX, and maintainability audit | P1 | VERIFIED | High | `docs/planning/application-foundation-audit-2026-05-18.md` reviews source-of-truth docs, `src/app.ts`, auth/capabilities, modules, Prisma schema, web layer, testing scripts, deployment docs, Docker/Coolify files, and state ledgers. Validation passed: `npm run validate`, dummy-url `npx prisma validate`, `npm audit --json` with 0 vulnerabilities, and `git diff --check`. | Full `npm run test:api` could not run because the local shell has no `DATABASE_URL` and Docker daemon commands timed out. Audit found P1 hardening needs for local API test runner, API error envelope, scoped-by-default API keys, route/capability drift tests, rate limiting/security headers, and maintainability splits. | Start `FOUNDATION-001` reliable local API test database runner before another broad department module. | Architecture + Backend Builder + QA/Test + Security + Frontend Builder + Ops/Release | 2026-05-18 |
 | PA-UX-001 | 06 People & Agents | Non-Paperclip management tooling: readiness, authority, work responsibility, canonical form data, compact roster | P1 | VERIFIED | High | `/v1/workforce` returns readiness, authority, inferred work, direct report count, and canonical department dictionaries. `web/src/features/departments/people-agents-route.tsx` renders profile/work/authority/files tabs, uses backend dictionaries, provides compact roster density, and hides Paperclip sync from visible UI. `npm run build:server`, `npm run build:web`, `npm run validate`, `git diff --check`, and Playwright fallback desktop/tablet/mobile proof passed with no overflow, console errors, or failed requests. | Work responsibility is intentionally inferred from department/role/task text until a direct assignment model exists. Browser plugin proof was blocked by the local plugin bundle missing `browser-client.mjs`, so Playwright fallback evidence was used. | Add direct assignment model only after explicit schema/command contract; otherwise production-smoke `/people-agents` after deploy. | Backend Builder + Frontend Builder + QA/Test | 2026-05-18 |

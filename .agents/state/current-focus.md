@@ -1,8 +1,16 @@
 # Current Focus
 
-Last updated: 2026-05-24
+Last updated: 2026-05-30
 
 ## Active Focus
+
+Current planning addendum: ONTOLOGY-001 records owner-provided APQC PCF,
+SIPOC, org-chart CSV, role/ACL mapping, and SOP template material as a future
+business-ontology import lane for CompanyCore/Paperclip. This is architecture
+and planning direction only; it does not displace protected deploy-smoke gates
+or active architecture evidence maintenance. Future implementation should start
+with source inventory and CSV validation before runtime import, schema, or
+permission behavior.
 
 Current execution focus is ARCH-EVID-002 continuation as a release-quality
 maintenance gate for the CSV-first architecture nervous system. The runtime is

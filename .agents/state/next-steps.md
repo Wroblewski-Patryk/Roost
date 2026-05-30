@@ -4,6 +4,21 @@ Last updated: 2026-05-30
 
 ## NOW
 
+1. Complete `LUC-922` known-state evidence packet continuity in preparation mode.
+   - Source:
+     `docs/planning/luc-922-known-state-evidence-collection-and-architecture-baseline.md`.
+   - Latest proof (2026-05-30): `npm run architecture:status` PASS
+     (`452/761/34`, queue `0`, worklist `0`, all gates pass `yes`);
+     `git status --short --branch` captured active docs/state delta;
+     `git log --oneline -6` continuity captured; scoped known-state inventory
+     captured (`1347` files in `src/web/prisma/scripts/docs`, `39` route
+     files, `141` test/spec files, `31` migrations, `63` scripts).
+   - Next lane conversion: protect runtime lane gating (`LUC-261`) and route
+     concrete follow-ups to `ONTOLOGY-002` (source inventory/import contract),
+     `ONTOLOGY-004` (CSV validator), and a dedicated API/test verification
+     lane for route/capability confidence mapping.
+   - Scope policy: preparation-only, no deploy/production mutation.
+
 1. Keep `LUC-860` source-control closure packet current in preparation mode.
    - Source:
      `docs/planning/luc-860-source-control-closure-for-luc-261-dirty-state.md`.
@@ -104,6 +119,27 @@ Last updated: 2026-05-30
      response.
 
 ## NEXT
+
+1. ONTOLOGY-002 source inventory and import contract for business ontology
+   sources.
+   - Source:
+     `docs/planning/ontology-001-business-ontology-import-foundation-task-contract.md`.
+   - Goal: inventory actual APQC PCF, SIPOC, org-chart CSV, role/ACL, and SOP
+     source files or sample rows, define accepted source versions/licensing,
+     and produce the exact sample import contract.
+   - Required next proof: every sample row preserves source ID/version, maps
+     to exactly one department, one PAEI, one owner role, lifecycle status,
+     blocked actions, and notes.
+   - Scope policy: planning/import validation only; no runtime authority,
+     schema, Paperclip execution, or permission behavior.
+
+1. ONTOLOGY-004 CSV validator for APQC/SIPOC/org/ACL import candidates.
+   - Source:
+     `docs/architecture/business-ontology-import-strategy.md`.
+   - Goal: create a validation command that checks required columns, duplicate
+     rows, one-department ownership, one PAEI tag, owner presence, blocked
+     action metadata for ACL rows, and preserved source IDs before any import.
+   - Execution policy: validator first, runtime import later.
 
 1. Execute the post-review protected proof lane approved by `LUC-190`.
    - Source:

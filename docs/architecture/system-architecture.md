@@ -15,7 +15,13 @@ accepted bridge direction is documented in
 `docs/architecture/organizational-architecture-bridge.md`. The model-level
 business modules that keep this direction scalable across UI, API, MCP,
 providers, and agents are documented in
-`docs/architecture/companycore-business-module-map.md`. The end-to-end
+`docs/architecture/companycore-business-module-map.md`. The business ontology
+import direction for APQC PCF, SIPOC, organization-chart CSV, role/ACL
+mappings, and SOP templates is documented in
+`docs/architecture/business-ontology-import-strategy.md`. These sources may
+guide process taxonomy, MECE ownership, PAEI tagging, Paperclip context, and
+import validation, but they must map into CompanyCore contracts before runtime
+authority or schema expansion. The end-to-end
 business value flow that connects market presence, lead qualification,
 discovery, offer, product/service delivery, acceptance, payment, support,
 feedback, and operating-system improvement is documented in

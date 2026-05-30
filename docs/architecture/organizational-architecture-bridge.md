@@ -1,6 +1,6 @@
 # Organizational Architecture Bridge
 
-Last updated: 2026-05-15
+Last updated: 2026-05-30
 
 ## Purpose
 
@@ -36,6 +36,13 @@ API, MCP, provider, and UI surfaces lives in
 `docs/architecture/companycore-business-module-map.md`. Use that document to
 classify future work as native core, provider-backed, future adapter, or
 derived view before implementation.
+
+External business operating taxonomies and templates are governed by
+`docs/architecture/business-ontology-import-strategy.md`. APQC PCF, SIPOC,
+organization-chart CSV, role/ACL mapping, and SOP templates are useful future
+inputs for process domains, responsibilities, hierarchy, and Paperclip
+planning context, but they must be imported through CompanyCore contracts and
+must not become a parallel source of truth.
 
 ## Foundational Principle
 
@@ -98,6 +105,11 @@ PipelineRun -> StageRun -> Approval / AcceptanceCriterion / AuditLog
 Future APQC alignment should extend this graph with process-domain taxonomy and
 classification, not replace the workflow command model.
 
+Imported APQC rows should keep original source IDs and source versions, then
+map to exactly one of the canonical CompanyCore departments and one dominant
+PAEI tag. Multi-owner rows must be split before import so the process map
+stays MECE and agent-readable.
+
 ### MECE Responsibility Structure
 
 Every meaningful responsibility must have exactly one accountable owner, even
@@ -111,6 +123,10 @@ when many roles contribute. Responsibility records should connect to:
 
 No high-impact process, automation, workflow, resource, or KPI should be
 enabled for autonomous agent action until accountability is explicit.
+
+Organization-chart and responsibility CSV imports are valid starter inputs for
+this layer only after they reconcile with current `workforce_entities`,
+`users`, `agents`, `company_roles`, and `business_functions`.
 
 ### PAEI Behavioral Profiles
 
@@ -332,3 +348,6 @@ tool needed to close one planning-to-task loop.
    responsibility, tools, knowledge, KPI, and resource relationships.
 6. Add web and future mobile surfaces that make the graph understandable for
    humans while keeping MCP tools usable for agents.
+7. Add a validated ontology-import lane for APQC PCF, SIPOC, org-chart,
+   role/ACL, and SOP templates, starting with read-only mapping and import
+   validation before any runtime write automation.

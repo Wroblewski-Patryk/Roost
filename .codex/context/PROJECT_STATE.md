@@ -2,6 +2,56 @@
 
 Last updated: 2026-05-30
 
+- 2026-05-30: `LUC-924` issue_assigned source-control closure heartbeat completed. Action: acknowledged no pending comment delta in wake payload, loaded LuckySparrow shared contracts (`shared/00..95`) plus `roles/roost-project-manager.md`, inspected dirty state (`git status --short`, `git status`, `git diff --stat`, `git log --oneline -n 12`, `rg` trace), and classified all local deltas as coherent Roost preparation-lane docs/state continuity tied to `LUC-261` governance context. Published `docs/planning/luc-924-source-control-closure-for-luc-261-dirty-state.md`. Commit SHA: `not committed`; push status: `not needed`; deploy impact: `none`; no deploy/protected-smoke/production mutation executed. Disposition for this heartbeat: `done`.
+- 2026-05-30: `LUC-922` `[Roost] [Known State] Evidence collection and
+  architecture baseline` heartbeat completed. Action: acknowledged
+  `issue_assigned` wake in preparation-only mode, reloaded LuckySparrow shared
+  contracts (`shared/00..95`) plus `roles/roost-project-manager.md`, captured
+  baseline proof (`npm run architecture:status` PASS `452/761/34`, evidence
+  queue `0`, chain worklist `0`, all gates pass `yes`), source-control
+  continuity (`git status --short --branch`, `git log --oneline -6`), scripts
+  inventory (`package.json`), and canonical architecture/operations/
+  engineering/security/state docs presence checks (`True`). Published
+  `docs/planning/luc-922-known-state-evidence-collection-and-architecture-baseline.md`
+  and synchronized pointers across mission/board/project/next-steps files.
+  No deploy/push/protected-smoke/production mutation executed. Disposition for
+  this heartbeat: `done`.
+- 2026-05-30: `LUC-922` board wake comment `e96d4f38-8034-4029-85e0-c3a9f8233765`
+  (`softwarehouse-known-state-wakeup:v1`) applied. Action: executed local
+  evidence collection beyond baseline gate status and converted findings into
+  concrete repair lanes. New evidence captured: scoped repository footprint
+  `1347` files (`src/web/prisma/scripts/docs`), `39` route files, `141`
+  test/spec files, `31` Prisma migrations, and `63` scripts. Updated
+  `docs/planning/luc-922-known-state-evidence-collection-and-architecture-baseline.md`
+  with lane-ready follow-ups (protected runtime proof unblock, API/test
+  verification mapping, ontology source inventory, ontology CSV validator,
+  architecture maintenance) and synced canonical pointers (`active-mission`,
+  `next-steps`, `TASK_BOARD`, `PROJECT_STATE`). No deploy/push/restart/
+  protected-smoke/production mutation executed. Disposition for this heartbeat:
+  `done`.
+- 2026-05-30: `LUC-922` finish-successful-run handoff replay completed.
+  Action: reran minimal closure proof (`npm run architecture:status` GREEN
+  `452/761/34`, queue `0`, worklist `0`; `git status --short --branch`
+  unchanged preparation-lane docs/state delta; `git rev-parse HEAD`
+  `692268a0922beb3b41bece29529ae7081c3edc4d`) and appended the continuation
+  checkpoint in
+  `docs/planning/luc-922-known-state-evidence-collection-and-architecture-baseline.md`.
+  No deploy/push/restart/protected-smoke/production mutation executed.
+  Disposition for this heartbeat: `done`.
+- 2026-05-30: ONTOLOGY-001 planning checkpoint completed for owner-provided
+  APQC PCF, SIPOC, org-chart CSV, role/ACL mapping, and SOP template material.
+  Action: published `docs/architecture/business-ontology-import-strategy.md`,
+  linked it from architecture source-of-truth, organizational architecture
+  bridge, and business module map, added DEC-049, REQ-ONTOLOGY-001,
+  QA-ONTOLOGY-001, RISK-ONTOLOGY-001, delivery-map/module-confidence rows, and
+  `docs/planning/ontology-001-business-ontology-import-foundation-task-contract.md`.
+  Scope: docs/source-of-truth only; no runtime code, schema, API, MCP, UI,
+  deploy, protected-smoke, or production mutation executed. Next action:
+  implement source inventory/import contract and CSV validator before any
+  runtime import or permission behavior. Validation: `git diff --check` passed
+  with line-ending warnings only; `npm run architecture:status` returned GREEN
+  (`452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass `yes`).
 - 2026-05-30: `LUC-860` issue_assigned continuation heartbeat completed from board comment `5a7bf80e-32c3-4446-a3ef-a2a10e9966c1` (`softwarehouse-local-repair-lane-starter:v1`). Action: reloaded LuckySparrow shared contracts (`shared/00..95`) + `roost-project-manager` role, revalidated local closure state (`git status --short` clean; `git rev-parse HEAD` at `faa326f60bef0cd6a21cf4c5c3e5252f69be4728`), and ran non-protected script checks (`node --check scripts/companycore-mcp-smoke.mjs`, `node --check scripts/test-api-local.mjs`, `node scripts/companycore-mcp-smoke.mjs --help` all pass). Continuation evidence appended to `docs/planning/luc-860-source-control-closure-for-luc-261-dirty-state.md`. Commit/no-commit decision for this heartbeat: `commit` for docs/state evidence delta generated by this replay checkpoint only. No deploy/push/protected-smoke/production mutation executed. Disposition for this heartbeat: `done`.
 - 2026-05-30: `LUC-860` source_scoped_recovery_action replay-3 heartbeat completed. Action: no comment delta; idempotent local closure verification passed (`git status --short` clean; `git rev-parse HEAD` `f6ff6c9665aae1953e57867d2953c16a8c55d367`; `git diff --check` pass) plus non-protected script checks (`node --check scripts/companycore-mcp-smoke.mjs`, `node --check scripts/test-api-local.mjs`, `node scripts/companycore-mcp-smoke.mjs --help` all pass). Commit decision: `commit` for docs/state evidence delta only. No deploy/push/protected-smoke/production mutation executed. Disposition for this heartbeat: `done`.
 - 2026-05-30: `LUC-860` issue_continuation_needed replay-2 heartbeat completed. Action: reran idempotent local closure verification (`git status --short` clean; `git rev-parse HEAD` `c7b6aa68cd1612815cc0406075dc15e71b85b85f`) and non-protected script checks (`node --check scripts/companycore-mcp-smoke.mjs`, `node --check scripts/test-api-local.mjs`, `node scripts/companycore-mcp-smoke.mjs --help`, `git diff --check` all pass). Continuation evidence appended to `docs/planning/luc-860-source-control-closure-for-luc-261-dirty-state.md`. Commit/no-commit decision for this heartbeat: `commit` for docs/state evidence delta generated by this replay checkpoint only. No deploy/push/protected-smoke/production mutation executed. Disposition for this heartbeat: `done`.

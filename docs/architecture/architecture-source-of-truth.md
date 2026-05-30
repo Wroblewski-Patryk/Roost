@@ -68,6 +68,7 @@ At minimum, keep these files aligned:
 - `docs/architecture/organizational-architecture-bridge.md`
 - `docs/architecture/unified-organizational-operating-system.md`
 - `docs/architecture/companycore-business-module-map.md`
+- `docs/architecture/business-ontology-import-strategy.md`
 - `docs/architecture/companycore-global-business-flow.md`
 - `docs/architecture/department-management-systems-architecture.md`
 - `docs/architecture/department-management-systems-v1-blueprint.md`
@@ -145,6 +146,14 @@ The approved v1 direction is:
   agent tools should derive from those modules and classify work as native
   core, provider-backed, future adapter, or derived view before adding schema,
   API, UI, or MCP surfaces.
+- Business ontology imports are governed by
+  `docs/architecture/business-ontology-import-strategy.md`. APQC PCF,
+  SIPOC, organization-chart CSV, role/ACL mapping, and one-page SOP templates
+  are accepted as future input sources for process classification,
+  responsibility ownership, workforce hierarchy, agent planning context, and
+  validation. They must map into existing CompanyCore processes, roles,
+  workforce, capabilities, approvals, knowledge, and audit foundations before
+  new tables or autonomous authority are added.
 - CompanyCore's global business flow is recorded in
   `docs/architecture/companycore-global-business-flow.md`. Future CRM,
   marketing, product/service delivery, finance, support, feedback, and

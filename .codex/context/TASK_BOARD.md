@@ -2,6 +2,16 @@
 
 ## Ready
 
+- ONTOLOGY-002 Business ontology source inventory and import contract.
+  - Stage: planning
+  - Owner: Product Docs + Architecture + Backend Builder
+  - Priority: P1
+  - Source:
+    `docs/planning/ontology-001-business-ontology-import-foundation-task-contract.md`
+  - Goal: inventory actual APQC PCF, SIPOC, org-chart CSV, role/ACL mapping,
+    and SOP source files or samples, define accepted source versions/licensing,
+    and produce a sample import contract before runtime import, schema, API,
+    MCP, or permission behavior.
 - ARCH-EVID-002 Architecture evidence auto-extraction and sync baseline.
   - Stage: verification
   - Owner: Architecture + Backend Builder + Frontend Builder + QA/Test +
@@ -53,6 +63,18 @@
     Start with a read-only review queue and classification/routing model.
 ## In Progress
 
+- 2026-05-30: `LUC-924` `[Roost][Source Control Closure]` heartbeat completed. Acknowledged `issue_assigned` wake and loaded LuckySparrow shared contracts plus `roost-project-manager` role, inspected current dirty set via `git status --short`, `git status`, `git diff --stat`, `git log --oneline -n 12`, and `rg` trace, then classified all deltas as coherent preparation-lane docs/state continuity tied to `LUC-261` governance context (no runtime/deploy/protected mutation). Published `docs/planning/luc-924-source-control-closure-for-luc-261-dirty-state.md`. Commit status: `not committed`; push status: `not needed`; deploy impact: `none`. Disposition: `DONE`.
+- 2026-05-30: `LUC-922` `[Roost] [Known State] Evidence collection and architecture baseline` heartbeat completed in preparation mode. Reloaded LuckySparrow shared contracts plus `roost-project-manager` role, captured baseline proof (`npm run architecture:status` PASS `452/761/34`, queue `0`, worklist `0`, all gates pass `yes`), source-control continuity (`git status --short --branch`, `git log --oneline -6`), scripts inventory (`package.json`), and canonical architecture/operations/engineering/security/state docs presence checks (`True`). Published `docs/planning/luc-922-known-state-evidence-collection-and-architecture-baseline.md` and synced canonical state pointers. No deploy/push/protected-smoke/production mutation executed. Disposition: `DONE`.
+- 2026-05-30: `LUC-922` board wake `e96d4f38-8034-4029-85e0-c3a9f8233765` applied with concrete action. Local evidence sweep added hard inventory signals (`1347` scoped files, `39` `*.routes.ts` files, `141` test/spec files, `31` Prisma migrations, `63` scripts) and converted the findings into lane-ready follow-ups in `docs/planning/luc-922-known-state-evidence-collection-and-architecture-baseline.md` (protected runtime proof unblock, API/test verification mapping, ontology source inventory, ontology CSV validator, architecture gate maintenance). No deploy/push/protected-smoke/production mutation executed. Disposition: `DONE`.
+- 2026-05-30: `LUC-922` `finish_successful_run_handoff` replay completed. Idempotent revalidation passed (`npm run architecture:status` GREEN `452/761/34`, queue `0`, worklist `0`; `git status --short --branch` unchanged prep-lane docs/state delta; `git rev-parse HEAD` `692268a0922beb3b41bece29529ae7081c3edc4d`). `LUC-922` packet updated with continuation checkpoint only; no deploy/push/protected-smoke/production mutation executed. Disposition: `DONE`.
+- 2026-05-30: `ONTOLOGY-001` business ontology planning checkpoint completed.
+  APQC PCF, SIPOC, org-chart CSV, role/ACL mapping, and SOP template material
+  is now captured as future CompanyCore/Paperclip business-ontology import
+  direction in `docs/architecture/business-ontology-import-strategy.md` and
+  `docs/planning/ontology-001-business-ontology-import-foundation-task-contract.md`.
+  Scope was docs/source-of-truth only; no runtime, schema, API, MCP, UI,
+  deploy, protected-smoke, or production mutation executed. Disposition:
+  `DONE`.
 - 2026-05-30: `LUC-860` `issue_assigned` continuation heartbeat completed from board comment `5a7bf80e-32c3-4446-a3ef-a2a10e9966c1` (`softwarehouse-local-repair-lane-starter:v1`). Local source-control closure was revalidated (`git status --short` clean; `git rev-parse HEAD` `faa326f60bef0cd6a21cf4c5c3e5252f69be4728`), and non-protected affected-file checks passed (`node --check scripts/companycore-mcp-smoke.mjs`, `node --check scripts/test-api-local.mjs`, `node scripts/companycore-mcp-smoke.mjs --help`). `LUC-860` packet updated with continuation evidence; commit decision for this heartbeat: commit docs/state evidence delta only. Disposition: `DONE`.
 - 2026-05-30: `LUC-860` `source_scoped_recovery_action` replay-3 heartbeat completed. Wake had no comment delta; idempotent local closure verification passed (`git status --short` clean, `git rev-parse HEAD` `f6ff6c9665aae1953e57867d2953c16a8c55d367`, `git diff --check` pass) and non-protected checks passed (`node --check scripts/companycore-mcp-smoke.mjs`, `node --check scripts/test-api-local.mjs`, `node scripts/companycore-mcp-smoke.mjs --help`). `LUC-860` packet updated; commit decision for this heartbeat: docs/state evidence commit only. Disposition: `DONE`.
 - 2026-05-30: `LUC-860` `issue_continuation_needed` replay-2 heartbeat completed. Idempotent local closure revalidation passed (`git status --short` clean; `git rev-parse HEAD` `c7b6aa68cd1612815cc0406075dc15e71b85b85f`) and non-protected affected-file checks passed (`node --check scripts/companycore-mcp-smoke.mjs`, `node --check scripts/test-api-local.mjs`, `node scripts/companycore-mcp-smoke.mjs --help`, `git diff --check`). `LUC-860` packet updated with continuation evidence; commit decision for this heartbeat: commit docs/state evidence delta only. Disposition: `DONE`.

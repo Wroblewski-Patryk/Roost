@@ -18,6 +18,15 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NEXT
 
+- [ ] ONTOLOGY-002 Business ontology source inventory and import contract:
+      owner-provided APQC PCF, SIPOC, org-chart CSV, role/ACL mapping, and SOP
+      templates are now accepted as future business-ontology inputs through
+      `docs/architecture/business-ontology-import-strategy.md`. First
+      executable follow-up is source inventory/import contract, then a CSV
+      validator that checks source IDs, one department, one PAEI, owner role,
+      lifecycle status, blocked actions, and duplicate/MECE issues. No runtime
+      import, schema, API, MCP, UI, or permission behavior is approved by this
+      planning checkpoint.
 - [x] Continue V1 department systems with `DMS-NEXT-004` Relationships
       Management read packet and board after ARCH-EVID maintenance remains
       green. The owner-approved `00 Main -> 04 Operations -> 08 Assets`

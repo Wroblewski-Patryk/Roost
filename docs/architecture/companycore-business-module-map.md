@@ -1,6 +1,6 @@
 # CompanyCore Business Module Map
 
-Last updated: 2026-05-15
+Last updated: 2026-05-30
 
 ## Purpose
 
@@ -21,6 +21,9 @@ owner and agent surfaces lives in
 `docs/architecture/department-management-systems-architecture.md`.
 The unified workforce and organizational world-state target lives in
 `docs/architecture/unified-organizational-operating-system.md`.
+The external taxonomy and template import strategy for APQC PCF, SIPOC,
+organization-chart CSV, role/ACL mapping, and SOP templates lives in
+`docs/architecture/business-ontology-import-strategy.md`.
 
 ## Product Direction
 
@@ -78,6 +81,7 @@ resource, knowledge, integration, or governance records.
 | Strategy, Goals, And Targets | Native core | Turn owner intent into measurable direction and execution targets. | `goals`, `targets`, `metrics`, decisions | dashboard brief, selected-area goals tab, future planning views | Agents can align proposed work with company priorities. |
 | Work And Tasks | Native core plus provider-backed ClickUp | Manage executable work, lists, status, priority, comments, and provider sync. | `tasks`, `task_lists`, ClickUp adapter, provider event inbox/outbox | tasks workbench, selected-area tasks tab, ClickUp settings | Agents can create, inspect, update, or report work through scoped commands. |
 | Processes And Pipelines | Native core | Define how work moves across departments from intake to outcome. | `processes`, `pipelines`, `pipeline_stages`, `procedures`, `procedure_steps`, workflow drafts | pipeline workbench, Company OS cockpit, selected-area workflows tab | Agents can follow approved procedures and avoid inventing workflow state. |
+| Business Ontology Imports | Provider-backed source input plus native mapping | Convert external process, SOP, hierarchy, responsibility, and ACL references into CompanyCore-owned process and authority context. | APQC/SIPOC/org/ACL/SOP source files, future import validators, existing processes, workforce, roles, capabilities, knowledge, and audit | future ontology import review, process taxonomy workbench, Paperclip planning packet | Agents can classify work, find owners, and propose tasks from trusted business operating context without direct CSV/provider authority. |
 | Runtime Execution And Evidence | Native core | Record concrete workflow runs, stage runs, approvals, validation, and evidence. | `pipeline_runs`, `stage_runs`, `approvals`, `acceptance_criteria`, `audit_logs`, `events` | Company OS cockpit, approval queue, correlation timeline | Agents can act with supervision and leave proof instead of hidden side effects. |
 | Knowledge And Decisions | Native core plus provider-backed content | Store searchable company memory, decisions, notes, standards, and knowledge sources. | `knowledge_roots`, `knowledge_items`, `notes`, `decisions`, `decision_logs`, Drive snapshots | selected-area knowledge/decisions tabs, future knowledge workbench | Agents can cite trusted context and learn from decisions. |
 | Storage And Documents | Provider-backed | Connect folders, files, Docs, Sheets, assets, and snapshots to company areas and work. | Google Drive adapter, `google_drive_files`, content snapshots, storage locations | Drive workbench, settings integrations, selected-area resources tab | Agents can read or create documents through CompanyCore without raw provider tokens. |
@@ -201,3 +205,5 @@ business plan / owner intent
 4. Add explicit responsibility, process-domain, PAEI, and governance-rule
    slices only when an implementation task proves the current models cannot
    express the needed behavior.
+5. Add an ontology-import source inventory and CSV validator before importing
+   APQC, SIPOC, org-chart, role/ACL, or SOP data into runtime records.

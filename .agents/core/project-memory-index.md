@@ -1,6 +1,6 @@
 # Project Memory Index
 
-Last updated: 2026-05-19
+Last updated: 2026-05-30
 
 ## Purpose
 
@@ -336,6 +336,16 @@ continue from repository files alone:
   knowledge, storage/documents, CRM, resources, integrations, agents/MCP,
   governance, and metrics. Future UI/API/MCP work should derive from this map
   before adding new schema, provider-specific surfaces, or agent tools.
+- `docs/architecture/business-ontology-import-strategy.md`: accepted
+  business-ontology import direction from 2026-05-30. APQC PCF, SIPOC,
+  organization-chart CSV, role/ACL mapping, and one-page SOP templates are
+  useful future input sources for process taxonomy, MECE responsibility
+  ownership, PAEI tags, hierarchy, Paperclip planning packets, and import
+  validation. They are not runtime authority by themselves. Future work must
+  start with source inventory and CSV validation, preserve source IDs and
+  versions, map each row to one department and one dominant PAEI tag, name an
+  owner role, expose blocked actions where relevant, and keep permissions
+  enforced by CompanyCore API/MCP/capability/approval gates.
 - `docs/architecture/companycore-global-business-flow.md`: accepted global
   business value-flow model. As of 2026-05-16, CompanyCore has one central
   pipeline for products, services, and hybrid delivery:

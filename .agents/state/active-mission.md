@@ -4,53 +4,57 @@ Last updated: 2026-05-30
 
 ## Current Mission
 
-- Mission ID: LUC-860-SOURCE-CONTROL-CLOSURE
+- Mission ID: LUC-922-KNOWN-STATE-EVIDENCE
 - Status: VERIFIED
-- Selected objective: Classify and close local dirty state for `LUC-261`
-  continuity with explicit source-control evidence.
-- Why this mission now: Wake payload assigned `LUC-860` with source-control
-  closure scope for the current docs/state dirty set.
-- Release objective or product milestone advanced: Reliable takeover continuity
-  with explicit activation gate and next protected-proof lane.
-- Stop conditions: baseline packet exists, source-of-truth files are synced,
-  issue disposition is explicit, and next protected-proof lane remains clearly
-  gated with owner/action.
-- Parent validation gate: state parity check across mission, task board,
-  project state, and next-steps docs.
+- Selected objective: Publish a fresh preparation-mode known-state evidence
+  packet for `LUC-922` with architecture baseline proof and explicit next
+  lanes.
+- Why this mission now: `LUC-922` is the active high-priority wake and requires
+  concrete baseline evidence plus durable state-pointer sync.
+- Release objective or product milestone advanced: Roost preparation continuity
+  remains evidence-backed without entering implementation/deploy scope.
+- Stop conditions: `LUC-922` packet published, command evidence captured,
+  canonical pointers synced (`active-mission`, `next-steps`, `TASK_BOARD`,
+  `PROJECT_STATE`), no runtime/deploy/protected mutation performed.
+- Parent validation gate: `npm run architecture:status` plus source-control and
+  canonical-doc presence evidence.
 
 ## Source Rows
 
 - Task contract:
-  `docs/planning/luc-860-source-control-closure-for-luc-261-dirty-state.md`.
-- Architecture source of truth:
-  `docs/architecture/architecture-evidence-system.md`.
-- Owner input: "digital nervous system" requirement with full chain/evidence
-  graph mapping and AI-operable system behavior.
+  `docs/planning/luc-922-known-state-evidence-collection-and-architecture-baseline.md`.
+- Canonical state pointers:
+  `.agents/state/next-steps.md`, `.codex/context/TASK_BOARD.md`,
+  `.codex/context/PROJECT_STATE.md`.
+- Baseline evidence commands:
+  `npm run architecture:status`, `git status --short --branch`,
+  `git log --oneline -6`.
 
 ## Responsibility Lanes
 
 | Lane | Owner | Source docs/state | Owned files/surfaces | Output | Validation/proof | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| Coordinator | Active chat | AGENTS, mission control, task contract | Mission integration, state updates, acceptance | Verified mission packet | Parent validation gate | VERIFIED |
-| Architecture Runtime | Active chat | `docs/architecture/architecture-evidence-system.md` | `scripts/*architecture*`, `docs/status/*architecture*` | Deterministic refresh pipeline + gates | `npm run architecture:refresh` | VERIFIED |
-| Data Integrity | Active chat | Node/chain/evidence CSV registries | `docs/architecture/nodes/*.csv`, `docs/architecture/chains/chains.csv` | Status/verification integrity convergence | integrity reports + zero actionable queues | VERIFIED |
-| QA/Test | Active chat | DoD and integration checklist | Architecture pipeline + global validation | End-to-end proof | `npm run validate` | VERIFIED |
-| Release/Handoff | Active chat | Project state and task board | State docs + architecture docs | Durable handoff and residual risk report | Validation summary | VERIFIED |
+| Coordinator | Active chat | AGENTS, mission control, task contract | Mission integration, state updates, acceptance | Mission packet | Parent validation gate | VERIFIED |
+| Product/Requirements | Active chat | Owner notes, attachments, requirement matrix | Import assumptions and acceptance criteria | REQ/quality/risk rows | Source review | VERIFIED |
+| Architecture | Active chat | `organizational-architecture-bridge`, `companycore-business-module-map` | `business-ontology-import-strategy` and links | Architecture import guardrails | `git diff --check` | VERIFIED |
+| Documentation/Memory | Active chat | State ledgers, task board, project state | Durable planning/source-of-truth sync | Queue and memory updates | docs parity | VERIFIED |
+| Runtime/Implementation | Future builder | future task contracts | CSV validator/import APIs | No runtime change in this mission | not applicable | DEFERRED |
 
 ## Delegation Plan
 
 - Lanes kept local: all lanes.
 - Lanes delegated: none.
-- Reason delegation was not used: this continuation checkpoint is a tightly
-  coupled architecture-runtime hardening lane (`scripts/*architecture*` +
-  source-of-truth/state sync), so serialization in one coordinator lane
-  minimized cross-file drift.
-- Known overlap risks: repository already contains unrelated in-progress
-  architecture/deployment changes; this mission did not revert them.
+- Reason delegation was not used: this is a documentation/source-of-truth
+  integration checkpoint over tightly coupled architecture and state files.
+- Known overlap risks: existing protected deploy-smoke and LUC queue gates
+  remain active and must not be displaced by ontology planning work.
 
 ## Checkpoint Log
 
+| 2026-05-30 | `LUC-922` known-state evidence collection and architecture baseline | DONE | Loaded LuckySparrow shared contracts + `roost-project-manager` role, ran `npm run architecture:status` PASS (`452/761/34`, queue `0`, worklist `0`, all gates pass `yes`), captured source-control continuity (`git status --short --branch`, `git log --oneline -6`), inventoried scripts from `package.json`, validated canonical docs presence checks, and published `docs/planning/luc-922-known-state-evidence-collection-and-architecture-baseline.md`. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
+| 2026-05-30 | `LUC-922` board wake `e96d4f38-8034-4029-85e0-c3a9f8233765` evidence-to-lanes conversion | DONE | Acknowledged wake requirement to start local evidence collection and convert to concrete repair lanes. Captured fresh scope signals (`1347` scoped files, `39` route files, `141` test/spec files, `31` migrations, `63` scripts) plus baseline gate proof (`npm run architecture:status` PASS `452/761/34`) and updated `docs/planning/luc-922-known-state-evidence-collection-and-architecture-baseline.md` with lane-ready next actions. | Keep runtime/deploy/protected actions blocked in prep lane; route implementation to dedicated specialist lanes after activation/approval gates. |
 | 2026-05-30 | `LUC-860` issue_assigned source-control closure classification | DONE | Inspected local dirty set (`git status --porcelain=v1 -uall`, focused `git diff`, `rg` trace), classified all changed files as coherent PM prep-lane docs/state continuity tied to `LUC-261` governance context, and published `docs/planning/luc-860-source-control-closure-for-luc-261-dirty-state.md`. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
+| 2026-05-30 | `ONTOLOGY-001` business ontology import foundation | DONE | Captured APQC PCF, SIPOC, org-chart CSV, role/ACL mapping, and SOP template direction in `docs/architecture/business-ontology-import-strategy.md`; added DEC/REQ/risk/quality/module/delivery planning rows; created `docs/planning/ontology-001-business-ontology-import-foundation-task-contract.md`; `git diff --check` passed with line-ending warnings only. | Keep runtime import/permission behavior deferred until source inventory and CSV validator are implemented. |
 | 2026-05-30 | `LUC-790` issue_continuation_needed closure-ready replay | DONE | Revalidated minimal evidence (`npm run architecture:status` PASS `452/761/34`, `git status --short` unchanged docs/state-pointer set, `git log --oneline -6` continuity unchanged) with no new comments and no scope expansion. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
 | 2026-05-30 | `LUC-790` source_scoped_recovery_action CTO continuation replay | DONE | Revalidated minimal evidence (`npm run architecture:status` PASS `452/761/34`, `git status --short` shows canonical docs/state-pointer set with `LUC-790` packet as tracked `M`, `git log --oneline -6` continuity unchanged) and corrected source-control delta wording in the `LUC-790` packet (`??` -> `M`). | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
 | 2026-05-30 | `LUC-790` issue_commented stale-blocked triage application | DONE | Applied board comment `b0294c23-8c11-4078-a2f1-8f3ba5f178b2` (triage result from `LUC-853`): `LUC-790` blocked classification is stale relative to existing completion evidence. Revalidated minimal proof (`npm run architecture:status` PASS `452/761/34`, `git status --short` expected docs/state-pointer set, `git log --oneline -6` continuity unchanged). | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
