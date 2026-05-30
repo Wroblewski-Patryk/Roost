@@ -173,3 +173,17 @@ Classify current local dirty files related to `LUC-261` continuity and leave an 
   - No code/runtime mutation performed in this heartbeat.
 - Commit/no-commit decision for this continuation heartbeat: `commit` for docs/state evidence updates created by this replay checkpoint only.
 - Disposition: `done` for `LUC-860`; protected delivery gate remains fail-closed and out of scope for this local closure lane.
+
+## Continuation Addendum (2026-05-30, issue_continuation_needed replay-2)
+
+- Wake acknowledgement: no pending comment delta; continuation executed as idempotent local closure replay.
+- Fresh local closure evidence:
+  - `git status --short` -> no entries (clean worktree)
+  - `git rev-parse HEAD` -> `c7b6aa68cd1612815cc0406075dc15e71b85b85f`
+  - `node --check scripts/companycore-mcp-smoke.mjs` -> pass
+  - `node --check scripts/test-api-local.mjs` -> pass
+  - `node scripts/companycore-mcp-smoke.mjs --help` -> pass
+  - `git diff --check` -> pass
+- Dirty-state classification: `clean` before this documentation update.
+- Commit/no-commit decision for this continuation heartbeat: `commit` for docs/state evidence updates created by this replay checkpoint only.
+- Disposition: `done` for `LUC-860`; residual external blocker unchanged (`LUC-261` protected runtime smoke remains credential/approval gated).
