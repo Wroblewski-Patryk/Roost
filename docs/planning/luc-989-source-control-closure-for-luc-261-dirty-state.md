@@ -40,6 +40,12 @@ Classify current local dirty files related to `LUC-261` continuity and leave an 
 - Verification commands: `git status --short --branch`, `git rev-parse HEAD`, `git log --oneline -n 5`.
 - Commit decision for this replay: `commit` docs/state evidence continuity only.
 
+## Continuation Checkpoint (2026-05-31, replay-3)
+- Wake payload acknowledged from `source_scoped_recovery_action` with no pending comment delta.
+- Replay result: worktree remains clean (`git status --short --branch` -> `## main...origin/main [ahead 53]`), head continuity at `b7a1b9205bd5bf6fbc8d845d2b339dd0590c5056`, and no dirty-path reclassification required.
+- Verification commands: `git status --short --branch`, `git rev-parse HEAD`, `git log --oneline -n 3`, `git diff --check`.
+- Commit decision for this replay: `commit` docs evidence checkpoint only.
+
 ## Continuation Checkpoint (2026-05-31, finish_successful_run_handoff)
 - Wake payload acknowledged from `finish_successful_run_handoff` with no pending comment delta.
 - Replay result: worktree remains clean (`git status --short --branch` -> `## main...origin/main [ahead 52]`), syntax/whitespace check passes (`git diff --check`), and latest closure evidence remains authoritative (`git show --stat --oneline -n 1 HEAD` -> `3834b94 docs: close LUC-989 local dirty state for LUC-261/LUC-984`).
