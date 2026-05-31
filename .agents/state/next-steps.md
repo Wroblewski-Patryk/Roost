@@ -4,6 +4,40 @@ Last updated: 2026-05-31
 
 ## NOW
 
+1. Complete `LUC-1057` source-control closure for `LUC-1055` dirty-state continuity.
+   - Source:
+     `docs/planning/luc-1057-source-control-closure-for-luc-1055-dirty-state.md`.
+   - Latest proof (2026-05-31): local dirty set classified via
+     `git status --short --branch`, `git status --porcelain=v1 -uall`,
+     `git diff --stat`, `git rev-parse HEAD`, `git log --oneline -n 5`,
+     `git diff --check`.
+   - Decision: all current dirty paths are coherent preparation-lane continuity
+     tied to `LUC-1055` evidence/state updates; no rollback/revert lane needed.
+   - Scope policy: preparation-only, no deploy/production mutation.
+
+1. Complete `LUC-1055` known-state evidence packet continuity in preparation mode.
+   - Source:
+     `docs/planning/luc-1055-known-state-evidence-collection-and-architecture-baseline.md`.
+   - Latest proof (2026-05-31): `npm run architecture:status` PASS
+     (`452/761/34`, queue `0`, worklist `0`, all gates pass `yes`);
+     `node scripts/build-architecture-awareness-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost`
+     regenerated `docs/graphs/*` + `docs/status/*` artifacts;
+     `git status --short --branch` (`main...origin/main [ahead 56]`);
+     `git log --oneline -6` continuity captured;
+     scoped evidence refreshed (`1369` files in
+     `src/web/prisma/scripts/docs`, `39` route-like files, `1` test/spec file,
+     `31` migration files, `63` scripts).
+   - Continuation proof (2026-05-31, no comment delta):
+     stack/runtime/deploy/doc topology captured in packet (`package.json` stack,
+     runtime entries `src/server.ts` + `web/src/main.tsx` + `prisma/schema.prisma`,
+     deploy files `Dockerfile` + `docker-compose*.yml`, markdown docs count
+     `907`, scoped topology `docs=1152/src=80/dist=73/scripts=63/web=41/prisma=33/public=3/history=1/integrations=1`,
+     test file list limited to `src/tests/api.test.ts`).
+   - Next lane conversion: protected gate unblock (`LUC-261`) plus concrete
+     follow-ups for API confidence mapping, test-surface reconciliation,
+     and ontology inventory/validator planning.
+   - Scope policy: preparation-only, no deploy/production mutation.
+
 1. Keep `LUC-261` full takeover audit baseline as the active blocked mission packet.
    - Source:
      `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md`.
@@ -383,3 +417,4 @@ Last updated: 2026-05-31
 
 
 
+- Continuation proof (2026-05-31, source-scoped recovery wake, no comment delta): required graph refresh rerun completed (`entities=8707`, `relations=10111`, `files=13552`) and required artifact readback confirmed (`architecture-health`, `architecture-proof-register`, dependency/ownership/task-sync reports). Current scan deltas: dependency edges `432`, entities with dependencies `94`, implementation entities without task links `439`, tasks without architecture links `0`, owner distribution `Docs Memory Lead=6622 / Engineering Delivery Lead=2084 / Roost Project Manager=1`.

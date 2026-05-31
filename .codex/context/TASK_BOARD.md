@@ -2,6 +2,58 @@
 
 ## Ready
 
+- 2026-05-31: `LUC-1057` `[Roost][Source Control Closure]` heartbeat completed.
+  Acknowledged assigned wake and kept scope strictly in preparation/local-SCM
+  mode. Classified the active dirty set as coherent `LUC-1055` continuity:
+  modified state pointers (`.agents/state/active-mission.md`,
+  `.agents/state/next-steps.md`, `.codex/context/PROJECT_STATE.md`,
+  `.codex/context/TASK_BOARD.md`) plus untracked `LUC-1055` planning packet and
+  generated architecture-awareness/status artifacts (`docs/graphs/*`,
+  `docs/status/*`). Published
+  `docs/planning/luc-1057-source-control-closure-for-luc-1055-dirty-state.md`.
+  Verification evidence: `git status --short --branch`,
+  `git status --porcelain=v1 -uall`, `git diff --stat`,
+  `git rev-parse HEAD` (`05a84136f07454383bdfbbe8bfcb3aef749471e7`),
+  `git log --oneline -n 5`, `git diff --check`. Commit status:
+  `not committed`; push status: `not needed`; deploy impact: `none`.
+  Disposition: `DONE`.
+
+- 2026-05-31: `LUC-1055` `issue_continuation_needed` wake applied (no pending
+  comments). Concrete continuation action executed: extended known-state packet
+  with stack/topology/deploy/doc/test/historical-surface evidence in
+  `docs/planning/luc-1055-known-state-evidence-collection-and-architecture-baseline.md`.
+  Fresh scan proof captured: runtime stack from `package.json` (Node/TS/Express/
+  Prisma/React/Vite/Tailwind), deploy files present (`Dockerfile`,
+  `docker-compose.yml`, `docker-compose.coolify.yml`), docs markdown count
+  `907`, scoped topology (`docs=1152`, `src=80`, `dist=73`, `scripts=63`,
+  `web=41`, `prisma=33`, `public=3`, `history=1`, `integrations=1`), test
+  surface exact file list (`src/tests/api.test.ts`). No push/deploy/restart/
+  protected-smoke/production mutation executed. Disposition: `DONE`.
+
+- 2026-05-31: `LUC-1055` `issue_commented` wake from board comment
+  `c3bb2d04-dff8-4bc4-bc1e-e9704d85b382` applied. Comment was bookkeeping-only
+  (live-run janitor sync), so preparation scope stayed unchanged. Concrete
+  action executed: architectural awareness refresh
+  (`node scripts/build-architecture-awareness-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost`)
+  plus evidence recheck (`npm run architecture:status` PASS `GREEN`
+  `452/761/34`, queue `0`, worklist `0`, all gates pass `yes`; scoped
+  inventory refresh `1369/39/1/31/63`). Required graph/status artifacts were
+  verified present and freshly updated under `docs/graphs/*` and
+  `docs/status/*`. No push/deploy/restart/protected-smoke/production mutation
+  executed. Disposition: `DONE`.
+
+- 2026-05-31: `LUC-1055` `issue_commented` wake from board comment
+  `95488b27-9e34-4196-adac-f35adc0e2027` applied. Action: executed local
+  known-state evidence collection and converted findings into concrete next
+  repair lanes in
+  `docs/planning/luc-1055-known-state-evidence-collection-and-architecture-baseline.md`.
+  Fresh proof captured: `npm run architecture:status` PASS (`GREEN`,
+  `452/761/34`, queue `0`, worklist `0`, all gates pass `yes`),
+  `git status --short --branch` (`main...origin/main [ahead 56]`),
+  `git log --oneline -6`, and scoped inventory (`1358` files, `39` route-like
+  files, `31` migration files, `63` scripts). No push/deploy/restart/protected
+  smoke/production mutation executed. Disposition: `DONE`.
+
 - 2026-05-31: `LUC-261` `issue_continuation_needed` governance-hold replay processed with no fresh rerun approval in this wake (`pending comments: 0/0`). Protected runtime recheck was intentionally not rerun. Continuity proof executed: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`) and `git rev-parse --short HEAD` -> `8d4106f`. Disposition remains `BLOCKED`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session `npm run adapter:smoke` rerun).
 - 2026-05-31: `LUC-261` `issue_reopened_via_comment` wake executed under board approval `7ad5fd1c-d853-43e0-9358-1731c0d0b7fe` (`softwarehouse-runtime-gate-binding-repair:LUC-261:v1`). Single approved responsible recheck executed: `npm run adapter:smoke`. Result: `FAIL` with `GET /v1/connection failed: 403 invalid_api_key` after targeting `https://api.roost.luckysparrow.ch`. Disposition: `BLOCKED`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
 - 2026-05-31: `LUC-261` `source_scoped_recovery_action` continuity replay processed with no fresh rerun approval in the wake payload (`pending comments: 0/0`). Protected runtime recheck was intentionally not rerun. Continuity proof executed: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`) and `git rev-parse --short HEAD` -> `c87784e`. Disposition remains `BLOCKED`; unblock owner/action unchanged (authorized `/v1/connection` key scope + one fresh board-approved same-session `npm run adapter:smoke` rerun).
@@ -3516,3 +3568,4 @@
 - 2026-05-27: `LUC-261` issue-continuation wake governance check confirmed no new operator rerun approval and no fresh accepted credential scope evidence. Per board control-loop gate `a029bb67-d7eb-4a38-9385-cd19d664aebd`, protected smoke was not rerun in this heartbeat. Disposition remains `BLOCKED`; unblock owner/action unchanged (Portfolio/Board or runtime secret owner authorizes one same-session rerun with valid key evidence and UTC proof).
 
 
+- 2026-05-31: `LUC-1055` `source_scoped_recovery_action` wake applied (no pending comments). Concrete continuation action executed: required architecture-awareness refresh and required artifact reread. Fresh proof: `node scripts/build-architecture-awareness-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost` -> `entities=8707`, `relations=10111`, `files=13552`; `docs/status/architecture-dependency-report.md` -> dependencies `432`, entities `94`; `docs/status/architecture-ownership-report.md` -> owner split `Docs Memory Lead=6622`, `Engineering Delivery Lead=2084`, `Roost Project Manager=1`; `docs/status/task-synchronization-report.md` -> `implementation without task links=439`, `tasks without architecture links=0`. No push/deploy/restart/protected-smoke/production mutation executed. Disposition: `DONE`.

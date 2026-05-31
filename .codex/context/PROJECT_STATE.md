@@ -2,6 +2,80 @@
 
 Last updated: 2026-05-31
 
+- 2026-05-31: `LUC-1057` source-control closure heartbeat completed for
+  `[Roost][Source Control Closure] Classify and close local dirty state for
+  LUC-1055`. Action: classified current dirty files as coherent preparation-lane
+  continuity rather than conflict/churn. Classified sets:
+  state-pointer updates (`.agents/state/active-mission.md`,
+  `.agents/state/next-steps.md`, `.codex/context/PROJECT_STATE.md`,
+  `.codex/context/TASK_BOARD.md`), known-state packet
+  (`docs/planning/luc-1055-known-state-evidence-collection-and-architecture-baseline.md`),
+  and generated awareness/status outputs (`docs/graphs/*`, `docs/status/*`).
+  Published closure packet:
+  `docs/planning/luc-1057-source-control-closure-for-luc-1055-dirty-state.md`.
+  Proof: `git status --short --branch`, `git status --porcelain=v1 -uall`,
+  `git diff --stat`, `git rev-parse HEAD`
+  (`05a84136f07454383bdfbbe8bfcb3aef749471e7`), `git log --oneline -n 5`,
+  `git diff --check`. Commit/no-commit decision: `not committed`
+  (classification/docs-state lane only). Push status: `not needed`; deploy
+  impact: `none`; no deploy/push/restart/protected-smoke/production mutation
+  executed. Disposition: `done`.
+
+- 2026-05-31: `LUC-1055` `issue_continuation_needed` heartbeat completed
+  (no pending comments). Action: continued known-state harvesting by extending
+  the issue packet with stack/topology/deploy/doc/test/legacy-surface evidence.
+  Captured proof:
+  - stack/runtime from `package.json`: Node.js + TypeScript + Express + Prisma
+    + React/Vite + Tailwind/DaisyUI,
+  - runtime entries present: `src/server.ts`, `web/src/main.tsx`,
+    `prisma/schema.prisma`,
+  - deploy hints present: `Dockerfile`, `docker-compose.yml`,
+    `docker-compose.coolify.yml`,
+  - docs markdown inventory: `907`,
+  - scoped topology counts: `docs=1152`, `src=80`, `dist=73`, `scripts=63`,
+    `web=41`, `prisma=33`, `public=3`, `history=1`, `integrations=1`,
+  - test/spec scan exact file: `src/tests/api.test.ts`.
+  Commit/no-commit decision: `not committed` (docs/state continuity lane only).
+  Push status: `not needed`; deploy impact: `none`; no deploy/push/restart/
+  protected-smoke/production mutation executed. Disposition: `done`.
+
+- 2026-05-31: `LUC-1055` `issue_commented` heartbeat completed from board
+  comment `c3bb2d04-dff8-4bc4-bc1e-e9704d85b382`
+  (`softwarehouse-known-state-wakeup:v1`). Comment impact: bookkeeping-only
+  live-run sync (no scope change). Action: refreshed architecture awareness
+  graph exports via
+  `node scripts/build-architecture-awareness-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost`,
+  then revalidated baseline gate with `npm run architecture:status` PASS
+  (`GREEN`, `452/761/34`, queue `0`, worklist `0`, all gates pass `yes`).
+  Required artifacts were confirmed present and fresh:
+  `docs/graphs/architecture-health.json`,
+  `docs/graphs/architecture-proof-register.csv`,
+  `docs/status/architecture-dependency-report.md`,
+  `docs/status/architecture-ownership-report.md`,
+  `docs/status/task-synchronization-report.md`. Inventory refresh:
+  scoped files `1369`, route-like `39`, test/spec `1`, migrations `31`,
+  scripts `63`. Commit/no-commit decision: `not committed` (docs/state and
+  generated evidence continuity only). Push status: `not needed`; deploy
+  impact: `none`; no deploy/push/restart/protected-smoke/production mutation
+  executed. Disposition: `done`.
+
+- 2026-05-31: `LUC-1055` `issue_commented` heartbeat completed from board
+  comment `95488b27-9e34-4196-adac-f35adc0e2027`
+  (`softwarehouse-known-state-wakeup:v1`). Action: performed local
+  preparation-mode evidence collection and published
+  `docs/planning/luc-1055-known-state-evidence-collection-and-architecture-baseline.md`
+  with concrete next repair lanes (`Lane A` protected gate unblock, `Lane B`
+  API confidence mapping, `Lane C` test-surface reconciliation, `Lane D`
+  ontology inventory/validator readiness, `Lane E` state-pointer continuity).
+  Fresh proof: `npm run architecture:status` PASS (`GREEN`, `452/761/34`,
+  queue `0`, worklist `0`, all gates pass `yes`),
+  `git status --short --branch` (`main...origin/main [ahead 56]`),
+  `git log --oneline -6`, inventory signals (`1358` files, `39` route-like
+  files, `31` migration files, `63` scripts). Commit/no-commit decision:
+  `not committed` (docs/state synchronization only). Push status:
+  `not needed`; deploy impact: `none`; no deploy/push/restart/protected-smoke/
+  production mutation executed. Disposition: `done`.
+
 - 2026-05-31: `LUC-261` `issue_continuation_needed` governance-hold replay heartbeat completed. Action: no fresh board/operator rerun approval was present in this wake (`pending comments: 0/0`), so protected runtime rerun was intentionally not executed. Continuity proof executed: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`) and `git rev-parse --short HEAD` -> `8d4106f`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md`. Commit/no-commit decision: `not committed` (docs/state sync only). Push status: `not needed`; deploy impact: `none`; no deploy/push/restart/production mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session `npm run adapter:smoke` rerun).
 - 2026-05-31: `LUC-261` `issue_reopened_via_comment` heartbeat completed from board comment `7ad5fd1c-d853-43e0-9358-1731c0d0b7fe` (`softwarehouse-runtime-gate-binding-repair:LUC-261:v1`). Action: executed exactly one approved responsible gate recheck (`npm run adapter:smoke`). Result: `CompanyCore adapter smoke starting for https://api.roost.luckysparrow.ch` followed by `GET /v1/connection failed: 403 invalid_api_key`. Commit/no-commit decision: `not committed` (docs/state evidence sync only). Push status: `not needed`; deploy impact: `none`; no deploy/push/restart/production mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
 - 2026-05-31: `LUC-261` `source_scoped_recovery_action` continuity replay heartbeat completed. Action: no fresh board/operator one-run approval was present in this wake (`pending comments: 0/0`), so protected runtime rerun was intentionally not executed. Continuity proof executed: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`) and `git rev-parse --short HEAD` -> `c87784e`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md`. Commit/no-commit decision: `not committed` (docs/state sync only). Push status: `not needed`; deploy impact: `none`; no deploy/push/restart/production mutation executed. Disposition: `blocked`; unblock owner/action unchanged (authorized `/v1/connection` key scope + one fresh board-approved same-session `npm run adapter:smoke` rerun).
@@ -4464,3 +4538,4 @@ Last updated: 2026-05-31
 - 2026-05-27: `LUC-261` issue-continuation wake governance check completed against board control-loop gate `a029bb67-d7eb-4a38-9385-cd19d664aebd`. This wake carried no new operator rerun approval and no fresh credential scope/permission evidence, so protected deploy-smoke was intentionally not executed. Disposition: `blocked` by governance/credential ownership policy (not by missing execution intent). Unblock owner/action remains Portfolio/Board or runtime secret owner -> authorize one same-session rerun with valid key evidence and persist UTC pass/fail proof.
 
 
+- 2026-05-31: `LUC-1055` `source_scoped_recovery_action` heartbeat completed. Action: reran the required architectural-awareness refresh and reread required generated artifacts. Proof: `node scripts/build-architecture-awareness-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost` -> `entities=8707`, `relations=10111`, `files=13552`; `docs/status/architecture-dependency-report.md` confirms `432` dependency relations / `94` entities with dependencies; `docs/status/architecture-ownership-report.md` confirms owner split (`Docs Memory Lead=6622`, `Engineering Delivery Lead=2084`, `Roost Project Manager=1`); `docs/status/task-synchronization-report.md` confirms `implementation without task links=439` and `tasks without architecture links=0`. Commit/no-commit decision: `not committed` (prep-lane docs/state continuity and generated evidence only). Push status: `not needed`; deploy impact: `none`; no deploy/push/restart/protected-smoke/production mutation executed. Disposition: `done`.
