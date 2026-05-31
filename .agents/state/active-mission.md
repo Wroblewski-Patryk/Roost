@@ -4,20 +4,20 @@ Last updated: 2026-05-31
 
 ## Current Mission
 
-- Mission ID: LUC-984-TAKEOVER-BASELINE
-- Status: VERIFIED
-- Selected objective: Publish a fresh preparation-mode full takeover audit and
-  operating baseline packet for `LUC-984` with explicit evidence statuses and
-  activation-safe next lanes.
-- Why this mission now: `LUC-984` is the active assigned wake and requires a
-  durable takeover baseline artifact, not only replay commentary.
-- Release objective or product milestone advanced: Roost preparation continuity
-  remains evidence-backed without entering implementation/deploy scope.
-- Stop conditions: `LUC-984` packet published, command evidence captured,
-  canonical pointers synced (`active-mission`, `next-steps`, `TASK_BOARD`,
-  `PROJECT_STATE`), no runtime/deploy/protected mutation performed.
-- Parent validation gate: `npm run architecture:status` plus source-control and
-  canonical-doc presence evidence.
+- Mission ID: LUC-261-TAKEOVER-BASELINE
+- Status: BLOCKED
+- Selected objective: Clear the runtime start-policy gate for `LUC-261` and
+  resume the full takeover audit lanes only after adapter smoke passes.
+- Why this mission now: `LUC-261` is the scoped heartbeat issue and governs the
+  release-readiness baseline mission.
+- Release objective or product milestone advanced: blocker classification is
+  stable and session-gate requirements are now explicit for fast authorized
+  recovery.
+- Stop conditions: one board-approved same-session rerun of
+  `npm run adapter:smoke` executed and recorded, then either gate pass (move to
+  lane execution) or gate fail with precise auth evidence.
+- Parent validation gate: successful `adapter:smoke` with valid
+  `COMPANYCORE_BASE_URL` + `COMPANYCORE_API_KEY` binding.
 
 ## Source Rows
 

@@ -4,14 +4,14 @@ Last updated: 2026-05-31
 
 ## NOW
 
-1. Keep `LUC-984` full takeover audit baseline as the active preparation packet.
+1. Keep `LUC-261` full takeover audit baseline as the active blocked mission packet.
    - Source:
-     `docs/planning/luc-984-full-takeover-audit-and-operating-baseline.md`.
+     `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md`.
    - Latest proof (2026-05-31): `npm run architecture:status` PASS
      (`452/761/34`, queue `0`, worklist `0`, all gates pass `yes`);
-     `git status --short --branch` continuity captured; `git log --oneline -6`
-     continuity captured.
-   - Scope policy: preparation-only, no deploy/production mutation.
+     mission pointer reconciled to `LUC-261` in `.agents/state/active-mission.md`.
+   - Scope policy: source-scoped continuity only until one approved same-session
+     `npm run adapter:smoke` gate recheck is authorized.
 
 1. Complete `LUC-922` known-state evidence packet continuity in preparation mode.
    - Source:
