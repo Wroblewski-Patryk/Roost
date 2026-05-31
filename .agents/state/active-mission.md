@@ -18,6 +18,10 @@ Last updated: 2026-05-31
   lane execution) or gate fail with precise auth evidence.
 - Parent validation gate: successful `adapter:smoke` with valid
   `COMPANYCORE_BASE_URL` + `COMPANYCORE_API_KEY` binding.
+- Latest checkpoint (2026-05-31T15:21:07.3088821Z): `npm run adapter:smoke`
+  rerun still fails with `GET /v1/connection failed: 403 invalid_api_key`
+  against `https://api.roost.luckysparrow.ch`; continuity remains
+  `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`).
 
 ## Source Rows
 
@@ -148,3 +152,4 @@ Last updated: 2026-05-31
 
 | 2026-05-31 | `LUC-1055` source_scoped continuation checkpoint | DONE | No new comment delta; executed required known-state recovery action by rerunning `node scripts/build-architecture-awareness-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost` and re-reading required artifacts. Captured current graph/status signals: `entities=8707`, `relations=10111`, `files=13552`, dependency edges `432`, entities with dependencies `94`, implementation-without-task-links `439`, and ownership split (`Docs Memory Lead=6622`, `Engineering Delivery Lead=2084`, `Roost Project Manager=1`). | Keep preparation-only mode and keep protected runtime proof lane (`LUC-261`) blocked until explicit authorized rerun gate. |
 | 2026-05-31 | `LUC-1057` source-control closure classification for `LUC-1055` dirty state | DONE | Classified the active dirty set as coherent preparation-lane continuity: state pointers (`.agents/state/active-mission.md`, `.agents/state/next-steps.md`, `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`) plus generated awareness/status artifacts and `LUC-1055` planning packet. Published `docs/planning/luc-1057-source-control-closure-for-luc-1055-dirty-state.md` with per-path decisions and verification (`git status --short --branch`, `git status --porcelain=v1 -uall`, `git diff --stat`, `git rev-parse HEAD`, `git log --oneline -n 5`, `git diff --check`). | Keep preparation-only scope; no deploy/push/restart/protected-smoke mutation; runtime gate remains blocked in `LUC-261`. |
+| 2026-05-31 | `LUC-261` issue_reopened_via_comment autonomous standing recheck (`fc07a582-5b38-4c43-9bbd-b2bda6fac1ef`) | BLOCKED | Executed exactly one approved narrow protected recheck lane: `npm run adapter:smoke` -> `FAIL` (`GET /v1/connection failed: 403 invalid_api_key`) at `https://api.roost.luckysparrow.ch`; continuity proof `npm run architecture:status` PASS (`452/761/34`, queue `0`, gates `yes`), `git rev-parse --short HEAD` `d117b46`, UTC `2026-05-31T15:19:39Z`. | Unblock owner: runtime secret owner + board/operator. Action: rotate/provision key scope for `/v1/connection` then grant one same-session rerun. |

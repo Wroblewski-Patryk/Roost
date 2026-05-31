@@ -587,3 +587,58 @@ Verified takeover operating baseline with synchronized source-of-truth updates.
   1. Roost Project Manager or runtime secret owner attaches one accepted fresh gate fact.
   2. Board/operator grants one explicit same-session rerun of `npm run adapter:smoke`.
   3. If rerun still fails (`403 invalid_api_key`), backend auth owner triages API-key validation policy for this workspace/runtime.
+
+## Continuation Addendum (2026-05-31, source_scoped_recovery_action continuity replay)
+
+- Trigger: Paperclip wake `source_scoped_recovery_action` with `pending comments: 0/0`.
+- Governance action:
+  - No fresh explicit protected-recheck approval was present in this wake.
+  - Protected runtime rerun was intentionally not executed.
+- Continuity proof executed:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `d117b46`.
+  - `UTC checkpoint` -> `2026-05-31T15:22:32.2588718Z`.
+- Next-review condition (timestamped):
+  - Keep `LUC-261` blocked until one accepted fresh gate fact exists:
+    1. credential metadata rotation/approval fact for `COMPANYCORE_API_KEY` scope on `/v1/connection`, or
+    2. explicit one-run protected recheck approval.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Roost Project Manager or runtime secret owner attaches one accepted fresh gate fact.
+  2. Board/operator grants one explicit same-session rerun of `npm run adapter:smoke`.
+  3. If rerun still fails (`403 invalid_api_key`), backend auth owner triages API-key validation policy for this workspace/runtime.
+
+## Continuation Addendum (2026-05-31, issue_reopened_via_comment autonomous standing recheck `fc07a582-5b38-4c43-9bbd-b2bda6fac1ef`)
+
+- Trigger: board comment `fc07a582-5b38-4c43-9bbd-b2bda6fac1ef` (`softwarehouse-autonomous-gate-approval:LUC-261:v1`) approving exactly one narrow protected Roost gate recheck.
+- Scope honored: executed exactly one responsible recheck lane; no product-code mutation, deploy/push/restart, or runtime-state broadening.
+- Commands and evidence:
+  - `npm run adapter:smoke` -> `FAIL` (`GET /v1/connection failed: 403 invalid_api_key`).
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `d117b46`.
+  - UTC checkpoint -> `2026-05-31T15:19:39Z`.
+- Outcome:
+  - Start-policy gate remains blocked on runtime key authorization/scope for `/v1/connection` at `https://api.roost.luckysparrow.ch`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with valid `/v1/connection` scope.
+  2. Board/operator grants one fresh same-session rerun of `npm run adapter:smoke`.
+  3. If still failing (`403 invalid_api_key`), backend auth owner triages API-key validation policy for this workspace/runtime.
+
+## Continuation Addendum (2026-05-31, issue_continuation_needed runtime gate recheck replay)
+
+- Trigger: heartbeat wake `issue_continuation_needed` for `LUC-261` with `fallbackFetchNeeded=false` and no comment delta in this batch.
+- Scope honored: executed a concrete protected gate recheck lane only; no product/runtime mutation beyond smoke evidence.
+- Commands and evidence:
+  - `npm run adapter:smoke` -> `FAIL` (`GET /v1/connection failed: 403 invalid_api_key`).
+  - Target printed by smoke script: `https://api.roost.luckysparrow.ch`.
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `d117b46`.
+  - UTC checkpoint -> `2026-05-31T15:21:07.3088821Z`.
+- Outcome:
+  - Runtime start-policy gate remains blocked on API-key authorization/scope for `/v1/connection`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action (unchanged):
+  1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with valid `/v1/connection` scope.
+  2. Board/operator grants one fresh same-session rerun of `npm run adapter:smoke`.
+  3. If still failing (`403 invalid_api_key`), backend auth owner triages API-key validation policy for this workspace/runtime.
