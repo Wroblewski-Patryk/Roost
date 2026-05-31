@@ -40,6 +40,12 @@ Classify current local dirty files related to `LUC-261` continuity and leave an 
 - Verification commands: `git status --short --branch`, `git rev-parse HEAD`, `git log --oneline -n 5`.
 - Commit decision for this replay: `commit` docs/state evidence continuity only.
 
+## Continuation Checkpoint (2026-05-31, finish_successful_run_handoff)
+- Wake payload acknowledged from `finish_successful_run_handoff` with no pending comment delta.
+- Replay result: worktree remains clean (`git status --short --branch` -> `## main...origin/main [ahead 52]`), syntax/whitespace check passes (`git diff --check`), and latest closure evidence remains authoritative (`git show --stat --oneline -n 1 HEAD` -> `3834b94 docs: close LUC-989 local dirty state for LUC-261/LUC-984`).
+- Verification commands: `git status --short --branch`, `git diff --check`, `git show --stat --oneline -n 1 HEAD`.
+- Commit decision for this replay: `not committed` (no new dirty-path delta to close).
+
 ## Result Report
 - Outcome: source-control state is currently clean for `LUC-989` verification scope; prior closure packets remain authoritative.
 - Source-control closure decision: record clean-state confirmation and close heartbeat as `DONE`.
