@@ -1,6 +1,6 @@
 # Active Mission Packet
 
-Last updated: 2026-05-30
+Last updated: 2026-05-31
 
 ## Current Mission
 
@@ -51,6 +51,7 @@ Last updated: 2026-05-30
 
 ## Checkpoint Log
 
+| 2026-05-31 | `LUC-989` source-control closure classification | DONE | Acknowledged wake with no pending comment delta and executed direct local classification proof: `git status --short --branch` clean (ahead-only marker), `git rev-parse HEAD` `a3629f8fc9cbeb6e436856e88679177c314c64ac`, `git log --oneline -n 5` continuity, and `git diff --check` pass. Published `docs/planning/luc-989-source-control-closure-for-luc-261-dirty-state.md` and synced canonical state pointers. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
 | 2026-05-30 | `LUC-922` known-state evidence collection and architecture baseline | DONE | Loaded LuckySparrow shared contracts + `roost-project-manager` role, ran `npm run architecture:status` PASS (`452/761/34`, queue `0`, worklist `0`, all gates pass `yes`), captured source-control continuity (`git status --short --branch`, `git log --oneline -6`), inventoried scripts from `package.json`, validated canonical docs presence checks, and published `docs/planning/luc-922-known-state-evidence-collection-and-architecture-baseline.md`. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
 | 2026-05-30 | `LUC-922` board wake `e96d4f38-8034-4029-85e0-c3a9f8233765` evidence-to-lanes conversion | DONE | Acknowledged wake requirement to start local evidence collection and convert to concrete repair lanes. Captured fresh scope signals (`1347` scoped files, `39` route files, `141` test/spec files, `31` migrations, `63` scripts) plus baseline gate proof (`npm run architecture:status` PASS `452/761/34`) and updated `docs/planning/luc-922-known-state-evidence-collection-and-architecture-baseline.md` with lane-ready next actions. | Keep runtime/deploy/protected actions blocked in prep lane; route implementation to dedicated specialist lanes after activation/approval gates. |
 | 2026-05-30 | `LUC-860` issue_assigned source-control closure classification | DONE | Inspected local dirty set (`git status --porcelain=v1 -uall`, focused `git diff`, `rg` trace), classified all changed files as coherent PM prep-lane docs/state continuity tied to `LUC-261` governance context, and published `docs/planning/luc-860-source-control-closure-for-luc-261-dirty-state.md`. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
