@@ -34,6 +34,12 @@ Classify current local dirty files related to `LUC-261` continuity and leave an 
 - Lane instruction impact: keep scope strictly in local source-control closure for `LUC-261` sidecar and do not treat dependency-blocked protected gates as unblocked.
 - Replay result: worktree remains clean (`git status --short --branch` -> `## main...origin/main [ahead 46]`); no dirty path classification delta and no follow-up repair commit required.
 
+## Continuation Checkpoint (2026-05-31, replay-2)
+- Wake payload acknowledged from `source_scoped_recovery_action` with no pending comment delta.
+- Replay result: worktree remains clean (`git status --short --branch` -> `## main...origin/main [ahead 49]`), head continuity at `a0cee95d348f8fe59a579e61fefa9d135818201e`, and no dirty-path reclassification required.
+- Verification commands: `git status --short --branch`, `git rev-parse HEAD`, `git log --oneline -n 5`.
+- Commit decision for this replay: `commit` docs/state evidence continuity only.
+
 ## Result Report
 - Outcome: source-control state is currently clean for `LUC-989` verification scope; prior closure packets remain authoritative.
 - Source-control closure decision: record clean-state confirmation and close heartbeat as `DONE`.
