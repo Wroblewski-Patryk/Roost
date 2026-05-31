@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-05-31T09:10:09.646Z
+Generated: 2026-05-31T20:34:08.159Z
 
 ## Canonical Exports
 
@@ -1001,6 +1001,7 @@ Generated: 2026-05-31T09:10:09.646Z
 | documents | document:legacy-archive-policy:36668ee5e4 | module:docs:6784d83cb0 | docs/governance/legacy-archive-policy.md |
 | documents | document:local-development:a611abe27f | module:docs:6784d83cb0 | docs/engineering/local-development.md |
 | documents | document:luc-1055-known-state-evidence-collection-and-architecture-baseline-md:edfe33628f | module:docs:6784d83cb0 | docs/planning/luc-1055-known-state-evidence-collection-and-architecture-baseline.md |
+| documents | document:luc-1099-source-control-closure-for-luc-261-dirty-state:c349f0ce07 | module:docs:6784d83cb0 | docs/planning/luc-1099-source-control-closure-for-luc-261-dirty-state.md |
 | documents | document:luc-183-readiness-scan-note-preparation-only-non-mutating:f06e6aa7cb | module:docs:6784d83cb0 | docs/planning/luc-183-intake-readiness-scan-note.md |
 | documents | document:luc-186-legacy-docs-deletion-churn-triage-read-only:ecf1c8a2cd | module:docs:6784d83cb0 | docs/planning/luc-186-legacy-docs-deletion-churn-triage.md |
 | documents | document:luc-187-canonical-docs-root-pin-and-takeover-handoff-preparation:96aa64c52d | module:docs:6784d83cb0 | docs/planning/luc-187-canonical-docs-root-and-takeover-handoff.md |
@@ -1217,4 +1218,3 @@ Generated: 2026-05-31T09:10:09.646Z
 | documents | document:production-drive-import-and-freshness-smoke:ef45388c71 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-PROD-DRIVE-IMPORT-SMOKE.md |
 | documents | document:production-google-drive-changes-baseline-task-contract:0986db6a59 | module:docs:6784d83cb0 | docs/planning/prod-google-drive-changes-baseline-task-contract.md |
 | documents | document:production-google-drive-index-and-paperclip-access-audit-task-contract:c0b3c6e3c0 | module:docs:6784d83cb0 | docs/planning/production-google-drive-index-paperclip-access-audit-task-contract.md |
-| documents | document:project-control-system:0f7b2d0635 | module:docs:6784d83cb0 | docs/operations/project-control-system.md |

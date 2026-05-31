@@ -4,6 +4,22 @@ Last updated: 2026-05-31
 
 ## NOW
 
+1. Complete `LUC-1149` known-state refresh continuity.
+   - Source:
+     `docs/planning/luc-1149-known-state-refresh-evidence-delta-and-next-repair-lanes.md`.
+   - Latest proof (2026-05-31 continuation): `npm run architecture:status`
+     PASS (`452/761/34`, queue `0`, worklist `0`, all gates pass `yes`);
+     architecture-awareness rebuild from Paperclip scanner path produced
+     `entities=8710`, `relations=10117`, `files=13555`; task-sync remains
+     `tasks without architecture links=0`, `verified entities without proof=0`,
+     and `implementation entities without task links=439`.
+   - Next lane conversion: keep protected gate unblock in `LUC-261`, maintain
+     canonical pointer sync, and keep activation-ready specialist handoff prep.
+   - Current highest-impact unresolved flows: `LUC-261` protected runtime gate
+     (`blocked`), `WEB-V1-PROD-PARITY` (`blocked`), `OPS-MGMT-002` (`partial`),
+     and `ASSETS-FILES-001` (`partial`) per module-confidence evidence.
+   - Scope policy: preparation-only, no deploy/production mutation.
+
 1. Complete `LUC-1057` source-control closure for `LUC-1055` dirty-state continuity.
    - Source:
      `docs/planning/luc-1057-source-control-closure-for-luc-1055-dirty-state.md`.
@@ -418,3 +434,8 @@ Last updated: 2026-05-31
 
 
 - Continuation proof (2026-05-31, source-scoped recovery wake, no comment delta): required graph refresh rerun completed (`entities=8707`, `relations=10111`, `files=13552`) and required artifact readback confirmed (`architecture-health`, `architecture-proof-register`, dependency/ownership/task-sync reports). Current scan deltas: dependency edges `432`, entities with dependencies `94`, implementation entities without task links `439`, tasks without architecture links `0`, owner distribution `Docs Memory Lead=6622 / Engineering Delivery Lead=2084 / Roost Project Manager=1`.
+
+- 2026-05-31: `LUC-1149` source-scoped continuation refresh completed (`2026-05-31T20:34:39Z` UTC).
+  - Proof rerun remained stable: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, gates `yes`), scanner rerun `entities=8710`, `relations=10117`, `files=13555`.
+  - No new local regression was detected; top unresolved gap remains `implementation without task links=439`.
+  - Next owners unchanged: runtime secret owner + board/operator for `LUC-261` gate, QA/backend for `OPS-MGMT-002`, QA/frontend/backend for `ASSETS-FILES-001`.
