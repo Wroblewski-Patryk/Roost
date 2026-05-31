@@ -157,3 +157,14 @@ or architecture truth:
 - `../.codex/templates/app-blueprint-template.md`
 - `../.codex/templates/user-feedback-item-template.md`
 - `../.codex/templates/handoff-packet-template.md`
+
+## Obsidian Vault Layer
+
+- `obsidian/README.md`
+- `obsidian/project-vault-dashboard.md`
+- `obsidian/code-to-docs-atlas.md`
+- `obsidian/function-journey-hotlist.md`
+- `obsidian/ai-navigation-brief.md`
+- `obsidian/paperclip-cleanup-brief.md`
+- `maps/roost-obsidian-dashboard.canvas`
+- `maps/roost-function-journey.canvas`

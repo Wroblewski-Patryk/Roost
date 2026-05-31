@@ -82,3 +82,7 @@ to the historical record from the current owner doc.
 Every feature, route, module, data model, pipeline, deployment behavior, agent
 behavior, or test coverage change must update the matching traceability docs in
 the same task.
+
+## Obsidian Vault Layer
+
+Start at `docs/obsidian/project-vault-dashboard.md` for Obsidian navigation, AI read order, graph/chain review, and Paperclip cleanup delegation.

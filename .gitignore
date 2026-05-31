@@ -28,3 +28,12 @@ public/react/
 
 # Local automation session artifacts
 .tmp-*.json
+
+# Local Obsidian runtime/plugin state
+docs/.obsidian/plugins/
+docs/.obsidian/themes/
+docs/.obsidian/community-plugins.json
+docs/.obsidian/hotkeys.json
+docs/.obsidian/templates.json
+docs/.obsidian/types.json
+docs/.obsidian/workspace.json
