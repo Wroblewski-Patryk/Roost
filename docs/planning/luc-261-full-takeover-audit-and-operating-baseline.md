@@ -524,3 +524,66 @@ Verified takeover operating baseline with synchronized source-of-truth updates.
   1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with valid `/v1/connection` scope on `https://api.roost.luckysparrow.ch`.
   2. Board grants one fresh same-session rerun of `npm run adapter:smoke`.
   3. If still failing (`403 invalid_api_key`), backend auth owner triages API-key validation policy for this workspace/runtime.
+
+## Continuation Addendum (2026-05-31, source_scoped_recovery_action governance hold replay-3)
+
+- Trigger: Paperclip wake `source_scoped_recovery_action` with `pending comments: 0/0` and no new rerun approval/fresh gate fact in this batch.
+- Governance action:
+  - Protected runtime recheck was intentionally not executed in this heartbeat.
+- Continuity proof executed:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `199099d`.
+  - UTC checkpoint -> `2026-05-31T12:04:33Z`.
+- Outcome:
+  - Start-policy gate remains blocked pending one fresh approved same-session `npm run adapter:smoke` rerun with valid `/v1/connection` key scope.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action (unchanged):
+  1. Roost Project Manager or runtime secret owner provides one accepted fresh gate fact (credential rotation/approval metadata for `COMPANYCORE_API_KEY` scope on `/v1/connection`).
+  2. Board/operator grants one explicit same-session rerun of `npm run adapter:smoke`.
+  3. If still failing (`403 invalid_api_key`), backend auth owner triages API-key validation policy for this workspace/runtime.
+
+## Continuation Addendum (2026-05-31, issue_reopened_via_comment autonomy-governor escalation tick)
+
+- Trigger: board comment `20a7ddbd-5992-4886-97c7-39d05f14a669` (`Autonomy-governor escalation`) at `2026-05-31T12:01:41Z`, requiring either fresh gate fact + approved narrow rerun or timestamped blocked next-review condition.
+- Fresh-fact audit for this wake:
+  - No new credential-rotation metadata fact was provided in payload.
+  - No explicit protected recheck approval was provided in payload.
+- Governance action:
+  - Protected runtime recheck was intentionally not executed in this heartbeat.
+  - Blocked next-review condition was restated with timestamp per escalation instruction.
+- Continuity proof executed:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `199099d`.
+  - `UTC checkpoint` -> `2026-05-31T12:01:56Z`.
+- Next-review condition (timestamped):
+  - Keep `LUC-261` blocked until one accepted fresh fact exists:
+    1. credential metadata rotation/approval fact for `COMPANYCORE_API_KEY` scope on `/v1/connection`, or
+    2. explicit one-run protected recheck approval.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Roost Project Manager or runtime secret owner attaches fresh accepted gate fact (credential rotation/approval evidence).
+  2. Board (or operator) grants one explicit same-session rerun of `npm run adapter:smoke`.
+  3. If rerun still fails (`403 invalid_api_key`), backend auth owner triages API-key validation policy for this workspace/runtime.
+
+## Continuation Addendum (2026-05-31, issue_continuation_needed escalation hold continuation)
+
+- Trigger: Paperclip wake `issue_continuation_needed` with `pending comments: 0/0` and no new fresh-fact payload.
+- Fresh-fact/approval audit:
+  - No new credential metadata rotation/approval fact provided in this wake.
+  - No explicit protected recheck approval provided in this wake.
+- Governance action:
+  - Protected runtime recheck was intentionally not executed.
+  - Blocked next-review condition remains active and was restated with fresh timestamp.
+- Continuity proof executed:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `199099d`.
+  - `UTC checkpoint` -> `2026-05-31T12:03:16Z`.
+- Next-review condition (timestamped):
+  - Keep `LUC-261` blocked until one accepted fresh fact exists:
+    1. credential metadata rotation/approval fact for `COMPANYCORE_API_KEY` scope on `/v1/connection`, or
+    2. explicit one-run protected recheck approval.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Roost Project Manager or runtime secret owner attaches one accepted fresh gate fact.
+  2. Board/operator grants one explicit same-session rerun of `npm run adapter:smoke`.
+  3. If rerun still fails (`403 invalid_api_key`), backend auth owner triages API-key validation policy for this workspace/runtime.
