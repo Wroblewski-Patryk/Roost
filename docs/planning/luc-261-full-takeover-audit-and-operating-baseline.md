@@ -357,3 +357,19 @@ Verified takeover operating baseline with synchronized source-of-truth updates.
   2. Execute exactly once in the same session:
      `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch COMPANYCORE_API_KEY=<valid-key> npm run aog:deploy-smoke`.
   3. Persist UTC proof with pass/fail and next blocker classification.
+
+## Continuation Addendum (2026-05-31, source_scoped_recovery_action)
+
+- Trigger: Paperclip wake `source_scoped_recovery_action` for `LUC-261`.
+- Concrete gate action executed in this heartbeat:
+  - `npm run adapter:smoke` -> `FAIL`
+  - Error: `Missing COMPANYCORE_BASE_URL or COMPANYCORE_API_KEY.`
+- Verification detail:
+  - `scripts/adapter-smoke.mjs` reads `process.env.COMPANYCORE_BASE_URL` and `process.env.COMPANYCORE_API_KEY` directly and fails closed when either is missing.
+  - No `.env` autoload path is used by this smoke command.
+- Outcome: start-policy prerequisite still not satisfied in the active session; takeover audit lanes cannot start.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rebinds `COMPANYCORE_BASE_URL` and `COMPANYCORE_API_KEY` in this responsible session.
+  2. Approve one fresh recheck heartbeat to rerun `npm run adapter:smoke`.
+  3. If adapter smoke passes, immediately continue `LUC-261` lane execution from backlog gate into architecture/product/runtime/ops/doc baseline evidence collection.

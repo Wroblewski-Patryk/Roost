@@ -4,16 +4,16 @@ Last updated: 2026-05-31
 
 ## Current Mission
 
-- Mission ID: LUC-922-KNOWN-STATE-EVIDENCE
+- Mission ID: LUC-984-TAKEOVER-BASELINE
 - Status: VERIFIED
-- Selected objective: Publish a fresh preparation-mode known-state evidence
-  packet for `LUC-922` with architecture baseline proof and explicit next
-  lanes.
-- Why this mission now: `LUC-922` is the active high-priority wake and requires
-  concrete baseline evidence plus durable state-pointer sync.
+- Selected objective: Publish a fresh preparation-mode full takeover audit and
+  operating baseline packet for `LUC-984` with explicit evidence statuses and
+  activation-safe next lanes.
+- Why this mission now: `LUC-984` is the active assigned wake and requires a
+  durable takeover baseline artifact, not only replay commentary.
 - Release objective or product milestone advanced: Roost preparation continuity
   remains evidence-backed without entering implementation/deploy scope.
-- Stop conditions: `LUC-922` packet published, command evidence captured,
+- Stop conditions: `LUC-984` packet published, command evidence captured,
   canonical pointers synced (`active-mission`, `next-steps`, `TASK_BOARD`,
   `PROJECT_STATE`), no runtime/deploy/protected mutation performed.
 - Parent validation gate: `npm run architecture:status` plus source-control and
@@ -22,7 +22,7 @@ Last updated: 2026-05-31
 ## Source Rows
 
 - Task contract:
-  `docs/planning/luc-922-known-state-evidence-collection-and-architecture-baseline.md`.
+  `docs/planning/luc-984-full-takeover-audit-and-operating-baseline.md`.
 - Canonical state pointers:
   `.agents/state/next-steps.md`, `.codex/context/TASK_BOARD.md`,
   `.codex/context/PROJECT_STATE.md`.
@@ -51,7 +51,10 @@ Last updated: 2026-05-31
 
 ## Checkpoint Log
 
+| 2026-05-31 | `LUC-984` source_scoped_recovery_action drift reconciliation | DONE | Acknowledged wake with no pending comment delta and reconciled status drift (`blocked` wake metadata vs canonical `LUC-984` packet `DONE/VERIFIED`) using minimal replay proof: `npm run architecture:status` PASS (`452/761/34`, queue `0`, worklist `0`, all gates pass `yes`), `git status --short --branch` continuity delta, `git rev-parse HEAD` `cfad89e01cca6651e1899a50bc3364f3eba7f3c2`, `git log --oneline -5` continuity. | Keep prep-mode baseline closure as authoritative for `LUC-984`; no runtime/deploy/protected mutation in this reconciliation heartbeat. |
+| 2026-05-31 | `LUC-984` finish_successful_run_handoff replay | DONE | Revalidated `LUC-984` closure continuity with `npm run architecture:status` PASS (`452/761/34`, queue `0`, worklist `0`, all gates pass `yes`), `git status --short --branch` unchanged prep-lane docs/state delta, `git rev-parse HEAD` `cfad89e01cca6651e1899a50bc3364f3eba7f3c2`, and `git log --oneline -5` continuity. | Keep runtime/deploy mutation blocked in preparation mode; run protected smoke only after explicit one-run approval + valid credential scope evidence. |
 | 2026-05-31 | `LUC-989` issue_continuation_needed replay | DONE | Revalidated local source-control closure state with no pending comments: `git status --short --branch` clean (`## main...origin/main [ahead 48]`), `git rev-parse HEAD` `ab2e224c9e58dd968bbe8b7b25c90cbe4c72a3ca`, `git log --oneline -n 5` continuity, and `git diff --check` pass. No dirty-path reclassification or protected/runtime mutation required. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
+| 2026-05-31 | `LUC-984` full takeover audit and operating baseline | DONE | Loaded LuckySparrow shared contracts + `roost-project-manager` role, captured fresh baseline proof (`npm run architecture:status` PASS `452/761/34`, queue `0`, worklist `0`, all gates pass `yes`), source-control continuity (`git status --short --branch`, `git log --oneline -6`), runtime script inventory (`package.json`), and published `docs/planning/luc-984-full-takeover-audit-and-operating-baseline.md` with explicit claim statuses and next-lane mapping. | Keep runtime/deploy mutation blocked in preparation mode; run protected smoke only after explicit one-run approval + valid credential scope evidence. |
 | 2026-05-31 | `LUC-989` source_scoped_recovery_action replay-2 | DONE | Acknowledged wake payload with no pending comment delta and reran local source-control closure verification only: `git status --short --branch` clean (`## main...origin/main [ahead 49]`), `git rev-parse HEAD` `a0cee95d348f8fe59a579e61fefa9d135818201e`, and `git log --oneline -n 5` continuity. No dirty-path reclassification or protected/runtime mutation required. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
 | 2026-05-31 | `LUC-989` board-comment continuation (`74450663-4cc3-444e-801b-2c15f3f14678`) | DONE | Acknowledged sidecar local-repair instruction and kept scope restricted to local source-control closure only while `LUC-261` protected gates remain blocked. Replayed closure evidence: `git status --short --branch` clean (`## main...origin/main [ahead 46]`), `git rev-parse HEAD` `99ab34998286e7841fb19fdaa35dc17bc4af5eff`, `git log --oneline -n 5` continuity, and `git diff --check` pass. Synced `LUC-989` packet and canonical pointers. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
 | 2026-05-31 | `LUC-989` source-control closure classification | DONE | Acknowledged wake with no pending comment delta and executed direct local classification proof: `git status --short --branch` clean (ahead-only marker), `git rev-parse HEAD` `a3629f8fc9cbeb6e436856e88679177c314c64ac`, `git log --oneline -n 5` continuity, and `git diff --check` pass. Published `docs/planning/luc-989-source-control-closure-for-luc-261-dirty-state.md` and synced canonical state pointers. | Keep protected deploy-smoke lane blocked until explicit one-run approval + valid key-scope evidence, then run one same-session `aog:deploy-smoke`. |
