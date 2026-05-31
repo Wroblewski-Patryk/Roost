@@ -25,15 +25,19 @@ Classify current local dirty files related to `LUC-261` continuity and leave an 
 
 ## Verification Evidence
 - `git status --short --branch`
-- `git rev-parse HEAD` -> `a3629f8fc9cbeb6e436856e88679177c314c64ac`
+- `git rev-parse HEAD` -> `99ab34998286e7841fb19fdaa35dc17bc4af5eff`
 - `git log --oneline -n 5`
 - `git diff --check`
+
+## Continuation Checkpoint (2026-05-31)
+- Wake comment acknowledged: `74450663-4cc3-444e-801b-2c15f3f14678` (`softwarehouse-local-repair-lane-starter:v1`).
+- Lane instruction impact: keep scope strictly in local source-control closure for `LUC-261` sidecar and do not treat dependency-blocked protected gates as unblocked.
+- Replay result: worktree remains clean (`git status --short --branch` -> `## main...origin/main [ahead 46]`); no dirty path classification delta and no follow-up repair commit required.
 
 ## Result Report
 - Outcome: source-control state is currently clean for `LUC-989` verification scope; prior closure packets remain authoritative.
 - Source-control closure decision: record clean-state confirmation and close heartbeat as `DONE`.
-- Commit SHA: `not committed` in this heartbeat.
+- Commit SHA: `not committed` in this continuation heartbeat.
 - Push status: `not needed`.
 - Deploy impact: `none`.
 - Residual risk: low; this lane performed verification/documentation only and did not touch runtime or protected smoke.
-
