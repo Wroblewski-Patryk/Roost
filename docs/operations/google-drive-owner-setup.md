@@ -9,13 +9,13 @@ without storing raw Google credentials in docs or chat.
 
 ## What You Need
 
-- Owner login for `https://companycore.luckysparrow.ch`.
+- Owner login for `https://roost.luckysparrow.ch`.
 - Access to the Google account or Google Workspace that owns the target Drive
   folders.
 - Access to the production environment variables for the CompanyCore backend.
-- A public HTTPS CompanyCore URL. Production uses:
-  - web: `https://companycore.luckysparrow.ch`
-  - API: `https://api.companycore.luckysparrow.ch`
+- A public HTTPS Roost URL. Production uses:
+  - web: `https://roost.luckysparrow.ch`
+  - API: `https://api.roost.luckysparrow.ch`
 
 ## Google Cloud Setup
 
@@ -69,7 +69,7 @@ Drive. Publish or verify the app only when broader Google accounts need access.
 5. Add this Authorized redirect URI:
 
 ```text
-https://companycore.luckysparrow.ch/settings/drive
+https://roost.luckysparrow.ch/settings/drive
 ```
 
 6. Click `Create`.
@@ -85,7 +85,7 @@ in Coolify:
 ```text
 GOOGLE_OAUTH_CLIENT_ID=<client-id-from-google>
 GOOGLE_OAUTH_CLIENT_SECRET=<client-secret-from-google>
-COMPANYCORE_PUBLIC_API_BASE_URL=https://api.companycore.luckysparrow.ch
+COMPANYCORE_PUBLIC_API_BASE_URL=https://api.roost.luckysparrow.ch
 ```
 
 Then redeploy or restart the CompanyCore backend so the OAuth client values are
@@ -93,9 +93,9 @@ loaded.
 
 Required safety checks after restart:
 
-1. `GET https://api.companycore.luckysparrow.ch/health` returns healthy JSON.
-2. `GET https://api.companycore.luckysparrow.ch/v1/health` returns healthy JSON.
-3. Owner can sign in at `https://companycore.luckysparrow.ch/auth/login`.
+1. `GET https://api.roost.luckysparrow.ch/health` returns healthy JSON.
+2. `GET https://api.roost.luckysparrow.ch/v1/health` returns healthy JSON.
+3. Owner can sign in at `https://roost.luckysparrow.ch/auth/login`.
 
 ## Drive Folder Selection
 
@@ -117,18 +117,18 @@ Use folder IDs, not folder names. Names can change and are not unique.
 
 ## CompanyCore Owner UI Setup
 
-1. Open `https://companycore.luckysparrow.ch/auth/login`.
+1. Open `https://roost.luckysparrow.ch/auth/login`.
 2. Sign in as the CompanyCore workspace owner.
 3. Open `Drive` in the sidebar, or go directly to:
 
 ```text
-https://companycore.luckysparrow.ch/settings/drive
+https://roost.luckysparrow.ch/settings/drive
 ```
 
 4. Confirm the `Redirect URI` field shows:
 
 ```text
-https://companycore.luckysparrow.ch/settings/drive
+https://roost.luckysparrow.ch/settings/drive
 ```
 
 5. Paste the selected Google Drive folder IDs into `Folder IDs to import`,
@@ -176,7 +176,7 @@ service key.
 ## Troubleshooting
 
 - `redirect_uri_mismatch`: the redirect URI in Google Cloud must exactly match
-  `https://companycore.luckysparrow.ch/settings/drive`.
+  `https://roost.luckysparrow.ch/settings/drive`.
 - `access_denied`: the selected Google account did not grant consent, or the
   account is not allowed by the OAuth consent screen test users.
 - `integration_not_configured`: the backend may not have

@@ -33,7 +33,7 @@ npm run mcp:server
 Required environment:
 
 ```bash
-COMPANYCORE_BASE_URL=https://api.companycore.luckysparrow.ch
+COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch
 COMPANYCORE_API_KEY=cc_v1_workspace_service_key
 ```
 

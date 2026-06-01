@@ -8,7 +8,7 @@ tools such as ClickUp.
 ## Production Base URL
 
 ```text
-https://api.companycore.luckysparrow.ch
+https://api.roost.luckysparrow.ch
 ```
 
 v1 routes use `/v1/*` without an `/api` prefix because the API already has a
@@ -17,7 +17,7 @@ dedicated domain.
 ## Required Adapter Environment
 
 ```text
-COMPANYCORE_BASE_URL=https://api.companycore.luckysparrow.ch
+COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch
 COMPANYCORE_API_KEY=cc_v1_...
 ```
 
@@ -124,7 +124,7 @@ After an owner creates a workspace service API key, run the adapter smoke script
 before wiring Paperclip or Jarvis:
 
 ```powershell
-$env:COMPANYCORE_BASE_URL="https://api.companycore.luckysparrow.ch"
+$env:COMPANYCORE_BASE_URL="https://api.roost.luckysparrow.ch"
 $env:COMPANYCORE_API_KEY="cc_v1_..."
 $env:COMPANYCORE_ADAPTER_NAME="Jarvis"
 $env:COMPANYCORE_ADAPTER_SOURCE="jarvis"

@@ -1,4 +1,4 @@
-# CompanyCore V1 Operator Handoff
+# Roost V1 Operator Handoff
 
 Last updated: 2026-05-14
 
@@ -34,10 +34,10 @@ achievement boundary and external blocker list.
 
 ## Production Endpoints
 
-- Web console: `https://companycore.luckysparrow.ch/`
-- API: `https://api.companycore.luckysparrow.ch/`
-- Health: `https://api.companycore.luckysparrow.ch/health`
-- V1 health: `https://api.companycore.luckysparrow.ch/v1/health`
+- Web console: `https://roost.luckysparrow.ch/`
+- API: `https://api.roost.luckysparrow.ch/`
+- Health: `https://api.roost.luckysparrow.ch/health`
+- V1 health: `https://api.roost.luckysparrow.ch/v1/health`
 - Jarvis: `https://jarvis.luckysparrow.ch/`
 - Paperclip: `https://paperclip.luckysparrow.ch/`
 
@@ -113,9 +113,9 @@ achievement boundary and external blocker list.
 Run after any deploy, credential rotation, or provider incident:
 
 ```bash
-curl -fsS https://api.companycore.luckysparrow.ch/health
-curl -fsS https://api.companycore.luckysparrow.ch/v1/health
-curl -fsS https://companycore.luckysparrow.ch/
+curl -fsS https://api.roost.luckysparrow.ch/health
+curl -fsS https://api.roost.luckysparrow.ch/v1/health
+curl -fsS https://roost.luckysparrow.ch/
 curl -fsS https://paperclip.luckysparrow.ch/api/health
 curl -fsS https://jarvis.luckysparrow.ch/health
 ```

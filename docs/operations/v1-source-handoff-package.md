@@ -149,8 +149,8 @@ next Paperclip upgrade.
 
 ## Production Smoke To Repeat After Handoff
 
-- `GET https://api.companycore.luckysparrow.ch/health` returns `200`.
-- `GET https://api.companycore.luckysparrow.ch/v1/health` returns `200`.
+- `GET https://api.roost.luckysparrow.ch/health` returns `200`.
+- `GET https://api.roost.luckysparrow.ch/v1/health` returns `200`.
 - Jarvis authenticated `GET /v1/connectors/companycore` returns
   `connected=true`.
 - Jarvis authenticated CompanyCore sync finishes without connector error.

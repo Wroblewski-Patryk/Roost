@@ -1,32 +1,38 @@
 # Active Mission Packet
 
-Last updated: 2026-05-31
+Last updated: 2026-06-01
 
 ## Current Mission
 
-- Mission ID: LUC-261-TAKEOVER-BASELINE
-- Status: BLOCKED
-- Selected objective: Clear the runtime start-policy gate for `LUC-261` and
-  resume the full takeover audit lanes only after adapter smoke passes.
-- Why this mission now: `LUC-261` is the scoped heartbeat issue and governs the
-  release-readiness baseline mission.
-- Release objective or product milestone advanced: blocker classification is
-  stable and session-gate requirements are now explicit for fast authorized
-  recovery.
-- Stop conditions: one board-approved same-session rerun of
-  `npm run adapter:smoke` executed and recorded, then either gate pass (move to
-  lane execution) or gate fail with precise auth evidence.
-- Parent validation gate: successful `adapter:smoke` with valid
-  `COMPANYCORE_BASE_URL` + `COMPANYCORE_API_KEY` binding.
-- Latest checkpoint (2026-05-31T15:21:07.3088821Z): `npm run adapter:smoke`
-  rerun still fails with `GET /v1/connection failed: 403 invalid_api_key`
-  against `https://api.roost.luckysparrow.ch`; continuity remains
-  `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`).
+- Mission ID: PROCESS-CORE-001
+- Status: VERIFIED
+- Selected objective: Capture the owner-provided Process Core / Workflow Core
+  direction as durable Roost architecture and future-agent execution memory.
+- Why this mission now: the owner explicitly asked to install the provided
+  Roost + Paperclip direction into architecture so agents can pursue an
+  autonomous company operating system target.
+- Release objective or product milestone advanced: future workflow, pipeline,
+  procedure, evidence, approval, asset, and Paperclip synchronization work now
+  has a reusable source-of-truth target instead of department-local pipeline
+  assumptions.
+- Stop conditions: architecture doc, source-of-truth links, planning contract,
+  requirement, risk, quality, module-confidence, delivery-map, task-board, and
+  next-step rows are updated and validation passes.
+- Parent validation gate: `git diff --check` and `npm run architecture:status`.
+- Latest checkpoint (2026-06-01): `PROCESS-CORE-001` architecture capture is
+  complete as documentation/source-of-truth scope; no runtime, deploy, or
+  protected production mutation was performed.
+
+## Previous Blocked Mission Pointer
+
+- `LUC-261-TAKEOVER-BASELINE` remains externally blocked by protected runtime
+  key scope (`GET /v1/connection failed: 403 invalid_api_key`) and must not be
+  rerun without fresh one-run approval plus valid key-scope evidence.
 
 ## Source Rows
 
 - Task contract:
-  `docs/planning/luc-984-full-takeover-audit-and-operating-baseline.md`.
+  `docs/planning/process-core-workflow-core-architecture-task-contract.md`.
 - Canonical state pointers:
   `.agents/state/next-steps.md`, `.codex/context/TASK_BOARD.md`,
   `.codex/context/PROJECT_STATE.md`.
@@ -39,10 +45,10 @@ Last updated: 2026-05-31
 | Lane | Owner | Source docs/state | Owned files/surfaces | Output | Validation/proof | Status |
 | --- | --- | --- | --- | --- | --- | --- |
 | Coordinator | Active chat | AGENTS, mission control, task contract | Mission integration, state updates, acceptance | Mission packet | Parent validation gate | VERIFIED |
-| Product/Requirements | Active chat | Owner notes, attachments, requirement matrix | Import assumptions and acceptance criteria | REQ/quality/risk rows | Source review | VERIFIED |
-| Architecture | Active chat | `organizational-architecture-bridge`, `companycore-business-module-map` | `business-ontology-import-strategy` and links | Architecture import guardrails | `git diff --check` | VERIFIED |
+| Product/Requirements | Active chat | Owner attachment, requirement matrix | Process Core assumptions and acceptance criteria | REQ/quality/risk rows | Source review | VERIFIED |
+| Architecture | Active chat | `system-architecture`, `unified-organizational-operating-system`, `companycore-business-module-map` | `process-core-workflow-core-architecture` and links | Architecture Process Core guardrails | `git diff --check` | VERIFIED |
 | Documentation/Memory | Active chat | State ledgers, task board, project state | Durable planning/source-of-truth sync | Queue and memory updates | docs parity | VERIFIED |
-| Runtime/Implementation | Future builder | future task contracts | CSV validator/import APIs | No runtime change in this mission | not applicable | DEFERRED |
+| Runtime/Implementation | Future builder | future task contracts | Prisma/API/MCP/UI Process Core slices | No runtime change in this mission | not applicable | DEFERRED |
 
 ## Delegation Plan
 

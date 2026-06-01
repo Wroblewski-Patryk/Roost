@@ -2,6 +2,23 @@
 
 ## Ready
 
+- 2026-06-01: `WEB-ROUTE-LOADING-001` authenticated route loading theme continuity completed. Scope: frontend-only shared lazy-route fallback. Files: `web/src/components/cc-route-loading.tsx`, `web/src/main.tsx`, `web/src/styles.css`, and `docs/planning/web-route-loading-theme-continuity-task-contract.md`. Evidence: `npm run build:web` PASS, `npm run build:server` PASS, `git diff --check` PASS with line-ending warnings only, Browser public render smoke PASS, Playwright delayed desktop route-chunk proof PASS (`data-theme="roost"`, dark fallback background `rgb(22, 27, 34)`, no framework overlay), Playwright delayed mobile route-chunk proof PASS (dark fallback, no horizontal overflow). Validation processes cleaned up. Disposition: DONE; deploy impact: frontend bundle only.
+
+- 2026-06-01: `PROCESS-CORE-001` Process Core / Workflow Core architecture
+  checkpoint completed. Concrete action: converted owner-provided Roost +
+  Paperclip target into durable source-of-truth architecture at
+  `docs/architecture/process-core-workflow-core-architecture.md`, created
+  `docs/planning/process-core-workflow-core-architecture-task-contract.md`,
+  and synchronized architecture source-of-truth docs, project memory, delivery
+  map, decision, requirement, risk, quality, module-confidence, active-mission,
+  next-steps, project-state, and MVP queue rows. Scope stayed documentation and
+  planning only: no Prisma migration, API/MCP route, UI surface, deploy,
+  protected smoke, or production mutation. Disposition: `DONE`. Next action:
+  `PROCESS-CORE-002` current Company OS workflow gap audit before migrations or
+  runtime implementation. Validation: `git diff --check` PASS with
+  line-ending warnings only; `npm run architecture:status` PASS (`GREEN`,
+  `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+
 - 2026-05-31: `LUC-1153` `issue_commented` heartbeat from board comment `9bd19829-aed8-4727-8797-3881b6b19b17` (`softwarehouse-local-repair-lane-starter:v1`) processed with strict sidecar scope. Concrete action: reran local source-control closure evidence for `LUC-1149` continuity (`git status --short --branch`, `git status --porcelain=v1 -uall`, `git diff --stat`, `git rev-parse HEAD`=`57cce02cb6bad5d5e47e39efd6269cba3b687b36`, `git log --oneline -n 5`, `git diff --check`). Classification remained coherent and lane-related (`.agents/state/*`, `.codex/context/*`, `docs/graphs/*`, `docs/status/*`, and planning packets for `LUC-1149`/`LUC-1153`), with no secret-bearing or out-of-scope paths detected. Commit status: `not committed` (evidence-closure lane); push status: `not needed`; deploy impact: `none`. Disposition: `DONE`.
 - 2026-05-31: `LUC-261` `source_scoped_recovery_action` continuity replay processed (`pending comments: 0/0`). No fresh explicit protected-recheck approval was present in this wake, so protected runtime rerun was intentionally not executed. Continuity anchors: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `d117b46`, UTC checkpoint `2026-05-31T15:22:32.2588718Z`. Disposition remains `BLOCKED`; next-review condition unchanged (accepted fresh gate fact or explicit one-run approval required before `npm run adapter:smoke`).
 - 2026-05-31: `LUC-261` `issue_continuation_needed` runtime gate recheck replay processed (`pending comments: 0/0`). Executed concrete continuation action `npm run adapter:smoke`; result remained `FAIL` with `GET /v1/connection failed: 403 invalid_api_key` while targeting `https://api.roost.luckysparrow.ch`. Continuity proof executed: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `d117b46`, UTC checkpoint `2026-05-31T15:21:07.3088821Z`. Disposition remains `BLOCKED`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session `npm run adapter:smoke` rerun).

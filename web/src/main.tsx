@@ -19,6 +19,7 @@ import { isSignedIn } from "./api/auth-token";
 import { AuthRoute } from "./features/auth/auth-pages";
 import { PublicHomeRoute } from "./features/public/public-home";
 import { LanguageProvider } from "./i18n/i18n";
+import { CcRouteLoading } from "./components/cc-route-loading";
 import "./styles.css";
 
 const AssetsRoute = lazy(() => import("./features/departments/assets-route").then((module) => ({ default: module.AssetsRoute })));
@@ -37,19 +38,8 @@ const ManagementRoute = lazy(() => import("./features/departments/management-rou
 const AccountSettingsRoute = lazy(() => import("./features/settings/settings-routes").then((module) => ({ default: module.AccountSettingsRoute })));
 const WorkspaceSettingsRoute = lazy(() => import("./features/settings/settings-routes").then((module) => ({ default: module.WorkspaceSettingsRoute })));
 
-function RouteFallback() {
-  return (
-    <div className="grid min-h-screen place-items-center bg-base-200 px-6 text-center">
-      <div className="rounded-company border border-base-300 bg-base-100 p-6 shadow-sm">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
-        <p className="mt-3 text-sm font-bold text-company-muted">Loading CompanyCore</p>
-      </div>
-    </div>
-  );
-}
-
 function LazyRoute({ children }: { children: React.ReactNode }) {
-  return <Suspense fallback={<RouteFallback />}>{children}</Suspense>;
+  return <Suspense fallback={<CcRouteLoading />}>{children}</Suspense>;
 }
 
 function currentAreaKey() {

@@ -12,8 +12,6 @@ PostgreSQL data.
 - Public domains:
   - Web UI: `roost.luckysparrow.ch`
   - API: `api.roost.luckysparrow.ch`
-  - Legacy web UI: `companycore.luckysparrow.ch`
-  - Legacy API: `api.companycore.luckysparrow.ch`
 - Public service: `backend` on container port `3000`.
 - Public web surface: minimal owner console served by `backend` at `/`.
 - Private services: `postgres`.
@@ -60,11 +58,11 @@ Current foundation secrets:
 - `INTEGRATION_SECRET_KEY`
 - `COMPANYCORE_ALLOWED_ORIGINS` as a comma-separated allowlist for browser
   CORS. Production defaults to
-  `https://roost.luckysparrow.ch,https://api.roost.luckysparrow.ch,https://companycore.luckysparrow.ch,https://api.companycore.luckysparrow.ch`
+  `https://roost.luckysparrow.ch,https://api.roost.luckysparrow.ch`
   when the value is omitted.
 - `COMPANYCORE_API_HOSTS` as a comma-separated list of hostnames that should
   receive API metadata at `/` instead of the web app. Production defaults to
-  `api.roost.luckysparrow.ch,api.companycore.luckysparrow.ch`.
+  `api.roost.luckysparrow.ch`.
 - optional `PORT`
 
 Production startup fails closed when `DATABASE_URL`, `AUTH_TOKEN_SECRET`, or

@@ -1,6 +1,17 @@
 # Module Confidence Ledger
 
-Last updated: 2026-05-30
+Last updated: 2026-06-01
+
+Authenticated route loading note: WEB-ROUTE-LOADING-001 is VERIFIED locally.
+Lazy-loaded authenticated React views now use shared `CcRouteLoading` instead
+of a page-local fallback outside the Roost theme context. The fallback applies
+`data-theme="roost"` at its root, mirrors the authenticated shell skeleton, and
+keeps document/root background continuity while mounted. Evidence:
+`npm run build:web`, `npm run build:server`, `git diff --check` with
+line-ending warnings only, Browser public render smoke, Playwright delayed
+`strategy-route-*.js` desktop proof, and Playwright delayed
+`management-route-*.js` mobile proof. Residual risk: production smoke after
+deploy.
 
 Public homepage brand note: PUBLIC-HOME-ROOST-001 is VERIFIED locally. The
 public `/` surface now uses a Roost command-center hero with topology preview
@@ -22,6 +33,18 @@ Screenshots:
 `docs/ux/evidence/public-home-roost-desktop.png` and
 `docs/ux/evidence/public-home-roost-mobile.png`. Residual risk: final logo SVG
 is pending, so the UI intentionally uses a restrained placeholder mark.
+
+Process Core architecture note: PROCESS-CORE-001 is ACCEPTED as architecture
+and planning direction, not runtime implementation. Owner-provided Process
+Core / Workflow Core guidance is captured in
+`docs/architecture/process-core-workflow-core-architecture.md`. Future work
+must treat pipelines, stages, transitions, workflow items, procedures,
+checklists, evidence logs, approval policies, blueprints, linked assets, and
+Paperclip sync contexts as reusable Company OS capabilities across departments
+and entity types. Missing proof: no current-state gap audit, schema extension,
+read-only packet, API/MCP tool, or UI board/table implementation exists yet.
+Next smallest action is `PROCESS-CORE-002` current Company OS workflow gap
+audit.
 
 Business ontology import note: ONTOLOGY-001 is ACCEPTED as architecture and
 planning direction, not runtime implementation. Owner-provided APQC PCF,
@@ -308,6 +331,7 @@ it honest. Do not turn uncertainty into optimism.
 
 | ID | Module | Journey / function | Priority | Status | Confidence | Evidence | Missing proof or defect | Next smallest action | Owner | Last verified |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| PROCESS-CORE-001 | Process Core / Workflow Core | Reusable workflow architecture for pipelines, stages, transitions, workflow items, procedures, checklists, evidence, approvals, blueprints, linked assets, and Paperclip sync contexts across departments and entity types | P1 | DEFERRED | Medium | `docs/architecture/process-core-workflow-core-architecture.md`; DEC-050; REQ-PROCESS-CORE-001; RISK-PROCESS-CORE-001; `docs/planning/process-core-workflow-core-architecture-task-contract.md`. | Runtime implementation is not part of this checkpoint. No gap audit, migrations, read packets, command routes, MCP tools, or department views have been implemented for the full target. | Start `PROCESS-CORE-002` current Company OS workflow gap audit, then plan read-only global pipelines/procedures/Paperclip sync packets before schema work. | Product Docs + Architecture + Backend + Security | 2026-06-01 |
 | ONTOLOGY-001 | Business ontology imports | APQC/SIPOC/org-chart/ACL/SOP source-to-CompanyCore mapping for future Paperclip planning | P1 | DEFERRED | Medium | `docs/architecture/business-ontology-import-strategy.md`; DEC-049; REQ-ONTOLOGY-001; RISK-ONTOLOGY-001. | No sample CSV validator, import review UI/API, process-domain taxonomy runtime, or Paperclip planning packet exists yet. | Create `ONTOLOGY-002` source inventory/import contract, then implement `ONTOLOGY-004` validator before runtime import. | Product Docs + Architecture + Backend | 2026-05-30 |
 | FOUNDATION-HARDENING-001 | Cross-app foundation | P1 hardening for API test runner, error envelopes, service-key safety, route/capability drift, and API abuse controls | P1 | VERIFIED | High | `scripts/test-api-local.mjs` adds `npm run test:api:local`; `scripts/check-route-capabilities.mjs` adds `npm run check:route-capabilities` and `npm run validate` coverage; auth/API-key/error middleware use the compatible structured error helper; new API keys require profile/scopes/full-access confirmation; request IDs, security headers, and auth/API rate limits are mounted. Docker Desktop was recovered and reported engine `28.3.2`. Validation passed: script syntax checks, route/capability drift check over 170 manifest routes and 32 route files, `npm run build:server`, `npm run build:web`, `npm run validate`, `git diff --check`, `npm audit --json` with 0 vulnerabilities, and `npm run test:api:local` with all 24 migrations plus 6/6 API subtests. | Route-local business errors outside the migrated middleware still commonly return legacy `{ error: "code" }` until later cleanup, but the compatible helper is available and covered on high-traffic auth/error/API-key paths. | Continue route-local error helper migration opportunistically in focused module slices. | Backend Builder + QA/Test + Security + Ops/Release | 2026-05-18 |
 | FOUNDATION-AUDIT-001 | Cross-app foundation | Application-wide engineering, architecture, security, testing, deployment, UX, and maintainability audit | P1 | VERIFIED | High | `docs/planning/application-foundation-audit-2026-05-18.md` reviews source-of-truth docs, `src/app.ts`, auth/capabilities, modules, Prisma schema, web layer, testing scripts, deployment docs, Docker/Coolify files, and state ledgers. Validation passed: `npm run validate`, dummy-url `npx prisma validate`, `npm audit --json` with 0 vulnerabilities, and `git diff --check`. | Full `npm run test:api` could not run because the local shell has no `DATABASE_URL` and Docker daemon commands timed out. Audit found P1 hardening needs for local API test runner, API error envelope, scoped-by-default API keys, route/capability drift tests, rate limiting/security headers, and maintainability splits. | Start `FOUNDATION-001` reliable local API test database runner before another broad department module. | Architecture + Backend Builder + QA/Test + Security + Frontend Builder + Ops/Release | 2026-05-18 |

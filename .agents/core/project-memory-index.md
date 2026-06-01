@@ -1,6 +1,6 @@
 # Project Memory Index
 
-Last updated: 2026-05-30
+Last updated: 2026-06-01
 
 ## Purpose
 
@@ -158,6 +158,18 @@ continue from repository files alone:
   scanning. The follow-up Directory table refinement moves the roster onto
   shared `CcDataTable`, removes duplicate type/density controls, and records
   sticky row actions as the reusable flat management-index pattern.
+- `docs/architecture/process-core-workflow-core-architecture.md`: accepted
+  Process Core / Workflow Core direction from 2026-06-01. Roost should treat
+  pipelines, stages, transitions, workflow items, procedures, checklists,
+  evidence logs, approval policies, blueprints, linked assets, and Paperclip
+  sync contexts as reusable Company OS capabilities across all departments and
+  entity types. Roost remains source of truth; Paperclip remains an external
+  supervised execution layer through API/MCP. Future runtime work must begin
+  with a current Company OS workflow gap audit before migrations, API/MCP
+  tools, or department views. Agents must preserve the distinction between
+  clients, service projects, internal projects, innovation projects, products,
+  subscription products, applications, tasks, procedures, departments, humans,
+  agents, assets, repositories, and files.
 - `docs/architecture/autonomous-company-operating-system.md`: accepted
   explicit architecture boundary from 2026-05-16. CompanyCore is the company
   operating system, not an embedded AI system. Humans use responsive web UI;

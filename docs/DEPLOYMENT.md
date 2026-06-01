@@ -48,8 +48,8 @@ and `docker-compose.coolify.yml` as the compose file.
 
 Public domains:
 
-- Web domain: `https://companycore.luckysparrow.ch`
-- API domain: `https://api.companycore.luckysparrow.ch`
+- Web domain: `https://roost.luckysparrow.ch`
+- API domain: `https://api.roost.luckysparrow.ch`
 
 Required environment values:
 
@@ -60,7 +60,9 @@ Required environment values:
   `AUTH_TOKEN_SECRET` to preserve existing service API key hashes.
 - `INTEGRATION_SECRET_KEY`
 - `COMPANYCORE_ALLOWED_ORIGINS` if the production browser allowlist differs
-  from `https://companycore.luckysparrow.ch,https://api.companycore.luckysparrow.ch`
+  from `https://roost.luckysparrow.ch,https://api.roost.luckysparrow.ch`
+- `COMPANYCORE_API_HOSTS` if API metadata should be served on hostnames other
+  than `api.roost.luckysparrow.ch`
 
 Production startup fails when required secrets are missing or still use the
 committed development placeholder values.
@@ -89,20 +91,20 @@ Migration release checklist:
 ## Smoke Check
 
 ```bash
-curl https://api.companycore.luckysparrow.ch/health
-curl https://companycore.luckysparrow.ch/
-curl https://api.companycore.luckysparrow.ch/
-curl -H "X-API-Key: <workspace-api-key>" https://api.companycore.luckysparrow.ch/projects
-curl -H "Authorization: Bearer <owner-token>" https://api.companycore.luckysparrow.ch/integration-settings/clickup
-curl -X POST -H "Authorization: Bearer <owner-token>" https://api.companycore.luckysparrow.ch/tasks/sync/clickup/native
-curl -H "Authorization: Bearer <owner-token>" https://api.companycore.luckysparrow.ch/events
+curl https://api.roost.luckysparrow.ch/health
+curl https://roost.luckysparrow.ch/
+curl https://api.roost.luckysparrow.ch/
+curl -H "X-API-Key: <workspace-api-key>" https://api.roost.luckysparrow.ch/projects
+curl -H "Authorization: Bearer <owner-token>" https://api.roost.luckysparrow.ch/integration-settings/clickup
+curl -X POST -H "Authorization: Bearer <owner-token>" https://api.roost.luckysparrow.ch/tasks/sync/clickup/native
+curl -H "Authorization: Bearer <owner-token>" https://api.roost.luckysparrow.ch/events
 ```
 
 Expected smoke evidence:
 
 - `/health` returns healthy status.
-- `https://companycore.luckysparrow.ch/` returns the owner console assets.
-- `https://api.companycore.luckysparrow.ch/` returns API metadata.
+- `https://roost.luckysparrow.ch/` returns the owner console assets.
+- `https://api.roost.luckysparrow.ch/` returns API metadata.
 - Protected API rejects missing auth and accepts owner token or workspace API
   key.
 - Owner console can log in, check a ClickUp token, select a ClickUp Workspace,

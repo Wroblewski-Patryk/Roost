@@ -57,7 +57,7 @@ in repository files or prompt text.
 Every runtime should start the same bridge process:
 
 ```bash
-COMPANYCORE_BASE_URL=https://api.companycore.luckysparrow.ch \
+COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch \
 COMPANYCORE_API_KEY=cc_v1_workspace_service_key \
 npm run mcp:server
 ```
@@ -90,10 +90,10 @@ store or environment and reference it at process launch.
 [mcp_servers.companycore]
 command = "npm"
 args = ["run", "mcp:server"]
-cwd = "C:\\Personal\\Projekty\\Aplikacje\\companycore"
+cwd = "C:\\Personal\\Projekty\\Aplikacje\\Roost"
 
 [mcp_servers.companycore.env]
-COMPANYCORE_BASE_URL = "https://api.companycore.luckysparrow.ch"
+COMPANYCORE_BASE_URL = "https://api.roost.luckysparrow.ch"
 COMPANYCORE_API_KEY = "cc_v1_workspace_service_key"
 ```
 
@@ -113,9 +113,9 @@ Paperclip-style task executors should usually use `mcp_event_worker`.
     "companycore": {
       "command": "npm",
       "args": ["run", "mcp:server"],
-      "cwd": "C:\\Personal\\Projekty\\Aplikacje\\companycore",
+      "cwd": "C:\\Personal\\Projekty\\Aplikacje\\Roost",
       "env": {
-        "COMPANYCORE_BASE_URL": "https://api.companycore.luckysparrow.ch",
+        "COMPANYCORE_BASE_URL": "https://api.roost.luckysparrow.ch",
         "COMPANYCORE_API_KEY": "cc_v1_workspace_service_key"
       }
     }
@@ -142,14 +142,14 @@ Any MCP-compatible runtime needs only a stdio process plus environment:
   "args": ["run", "mcp:server"],
   "cwd": "/path/to/companycore",
   "env": {
-    "COMPANYCORE_BASE_URL": "https://api.companycore.luckysparrow.ch",
+    "COMPANYCORE_BASE_URL": "https://api.roost.luckysparrow.ch",
     "COMPANYCORE_API_KEY": "cc_v1_workspace_service_key"
   }
 }
 ```
 
 If the runtime runs outside this repository, call the bridge script directly
-from a deployed package or checked-out CompanyCore workspace:
+from a deployed package or checked-out Roost workspace:
 
 ```bash
 node scripts/companycore-mcp-server.mjs

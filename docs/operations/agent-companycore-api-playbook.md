@@ -10,7 +10,7 @@ Agents must use the HTTP API. They must not connect directly to PostgreSQL.
 
 ## Required Inputs
 
-- `COMPANYCORE_BASE_URL`, for example `https://api.companycore.luckysparrow.ch`
+- `COMPANYCORE_BASE_URL`, for example `https://api.roost.luckysparrow.ch`
 - `COMPANYCORE_API_KEY`, a workspace-scoped service key
 - optional agent identity, for example `jarvis`, `paperclip`, or `aviary`
 

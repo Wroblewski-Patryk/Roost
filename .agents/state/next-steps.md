@@ -1,6 +1,6 @@
 # Next Steps
 
-Last updated: 2026-05-31
+Last updated: 2026-06-01
 
 ## NOW
 
@@ -178,6 +178,18 @@ Last updated: 2026-05-31
      response.
 
 ## NEXT
+
+1. PROCESS-CORE-002 current Company OS workflow gap audit.
+   - Source:
+     `docs/architecture/process-core-workflow-core-architecture.md`.
+   - Goal: compare existing Company OS workflow, runtime evidence, approval,
+     audit, resource, workforce, capability, and MCP foundations against the
+     reusable Process Core target.
+   - Required next proof: table of target concepts already covered, partially
+     covered, missing, or intentionally deferred; exact recommendation for
+     read-only packets before any migration or write command.
+   - Scope policy: audit/planning only; no Prisma migration, API/MCP write
+     tool, UI implementation, Paperclip runtime mutation, or seed data.
 
 1. ONTOLOGY-002 source inventory and import contract for business ontology
    sources.

@@ -35,8 +35,8 @@ services:
       COMPANYCORE_PUBLIC_API_BASE_URL: ${COMPANYCORE_PUBLIC_API_BASE_URL:-https://api.roost.luckysparrow.ch}
       COMPANYCORE_BUILD_COMMIT: ${SOURCE_COMMIT:-unknown}
       COMPANYCORE_BUILD_IMAGE: ${COOLIFY_CONTAINER_NAME:-unknown}
-      COMPANYCORE_ALLOWED_ORIGINS: "${COMPANYCORE_ALLOWED_ORIGINS:-https://roost.luckysparrow.ch,https://api.roost.luckysparrow.ch,https://companycore.luckysparrow.ch,https://api.companycore.luckysparrow.ch}"
-      COMPANYCORE_API_HOSTS: ${COMPANYCORE_API_HOSTS:-api.roost.luckysparrow.ch,api.companycore.luckysparrow.ch}
+      COMPANYCORE_ALLOWED_ORIGINS: "${COMPANYCORE_ALLOWED_ORIGINS:-https://roost.luckysparrow.ch,https://api.roost.luckysparrow.ch}"
+      COMPANYCORE_API_HOSTS: ${COMPANYCORE_API_HOSTS:-api.roost.luckysparrow.ch}
       SERVICE_URL_BACKEND_3000: ${SERVICE_URL_BACKEND_3000}
     expose:
       - "3000"

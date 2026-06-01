@@ -1,6 +1,27 @@
 # PROJECT_STATE
 
-Last updated: 2026-05-31
+Last updated: 2026-06-01
+
+- 2026-06-01: `WEB-ROUTE-LOADING-001` completed. Action: replaced the authenticated lazy-route white fallback with shared `CcRouteLoading`, applied `data-theme="roost"` directly to the fallback root, mirrored the shell skeleton, and added root/background continuity while the fallback is mounted. Proof: `npm run build:web` PASS; `npm run build:server` PASS; `git diff --check` PASS with line-ending warnings only; Browser public render smoke PASS; Playwright delayed `strategy-route-*.js` desktop proof showed fallback `data-theme="roost"` with dark body/fallback background `rgb(22, 27, 34)` and no framework overlay, then final shell rendered with no horizontal overflow; Playwright delayed `management-route-*.js` mobile proof showed dark fallback and no horizontal overflow. Validation-owned Vite, Express, PowerShell, and headless-browser processes were cleaned up. Deploy impact: frontend bundle change only; production smoke still needed after deploy.
+
+- 2026-06-01: `PROCESS-CORE-001` architecture/source-of-truth checkpoint
+  completed from owner Process Core / Workflow Core guidance. Action: added
+  `docs/architecture/process-core-workflow-core-architecture.md`, linked it
+  from architecture reading order/source-of-truth, system architecture,
+  unified organizational OS, business module map, project memory, delivery
+  map, decision register, requirements matrix, risk register, quality
+  scenarios, module confidence, active mission, task board, next steps, and
+  MVP queue. The checkpoint records Roost as source of truth and Paperclip as
+  external supervised execution through API/MCP, with reusable pipelines,
+  stages, transitions, workflow items, procedures, checklists, evidence logs,
+  approvals, blueprints, linked assets, and Paperclip sync contexts across
+  departments and entity types. Runtime/schema/API/MCP/UI implementation is
+  intentionally deferred to `PROCESS-CORE-002` current workflow gap audit.
+  Validation: `git diff --check` PASS with line-ending warnings only;
+  `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`,
+  worklist `0`, delta `0/0/0`, gates `yes`).
+  Deploy impact: `none`; no runtime, protected smoke, production, push, or
+  process mutation executed. Disposition: `done`.
 
 - 2026-05-31: `LUC-1149` continuation heartbeat (`issue_continuation_needed`, no comment delta) completed. Action: executed concrete known-state refresh in preparation scope, reran architecture status and awareness scanner, and expanded the packet with highest-impact unresolved user-flow statuses plus owner-scoped repair lanes. Fresh proof: `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, queue `0`, worklist `0`, gates `yes`); `node scripts/build-architecture-awareness-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost` (from `C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse`) -> `entities=8710`, `relations=10117`, `files=13555`; `docs/status/task-synchronization-report.md` (`Generated: 2026-05-31T20:32:36.966Z`) remains `tasks without architecture links=0`, `verified entities without proof evidence=0`, `implementation entities without task links=439`. Commit/no-commit decision: `not committed` (docs/state continuity lane only). Push status: `not needed`; deploy impact: `none`; no deploy/push/restart/protected-smoke/production mutation executed. Disposition: `done`.
 - 2026-05-31: `LUC-1149` continuation checkpoint applied from wake comment `ab5ac537-c7dc-455d-baee-6258d972b0cf` (`softwarehouse-idle-known-state-refresh-wakeup:v1`). Action: acknowledged comment and executed concrete known-state delta continuation in preparation scope only. Fresh proof captured: `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, queue `0`, worklist `0`, gates `yes`) and architecture-awareness rebuild via Paperclip scanner path (`node scripts/build-architecture-awareness-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost`) with output `entities=8710`, `relations=10117`, `files=13555`. Task-sync evidence remains stable (`tasks without architecture links=0`, `verified entities without proof evidence=0`, `implementation entities without task links=439`). Commit/no-commit decision: `not committed` (docs/state continuity lane only). Push status: `not needed`; deploy impact: `none`; no deploy/push/restart/protected-smoke/production mutation executed. Disposition: `done`.

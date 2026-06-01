@@ -6,15 +6,26 @@ repository.
 ## Purpose
 
 The `docs/architecture/` folder is the canonical record of the application's
-approved architecture:
+architecture knowledge. Its authority depends on project maturity: early
+projects use it to grow owner thoughts into assumptions and candidate
+architecture, while mature projects use approved entries as implementation
+constraints.
+
+It records:
 
 - system boundaries
 - ownership of data and state
 - module and integration contracts
 - deployment shape
 - technology choices that are already decided
+- architecturally important product decisions that future implementation must
+  preserve
+- owner notes, questions, and assumptions that still need to be promoted into
+  approved architecture before implementation depends on them
 
-Treat these files as implementation constraints, not as loose suggestions.
+Treat approved entries as implementation constraints, not as loose suggestions.
+Treat exploratory entries as product and architecture input that must be
+clarified, scoped, and verified before coding.
 
 ## Default Rule
 
@@ -68,6 +79,7 @@ At minimum, keep these files aligned:
 - `docs/architecture/organizational-architecture-bridge.md`
 - `docs/architecture/unified-organizational-operating-system.md`
 - `docs/architecture/companycore-business-module-map.md`
+- `docs/architecture/process-core-workflow-core-architecture.md`
 - `docs/architecture/business-ontology-import-strategy.md`
 - `docs/architecture/companycore-global-business-flow.md`
 - `docs/architecture/department-management-systems-architecture.md`
@@ -146,6 +158,13 @@ The approved v1 direction is:
   agent tools should derive from those modules and classify work as native
   core, provider-backed, future adapter, or derived view before adding schema,
   API, UI, or MCP surfaces.
+- CompanyCore/Roost Process Core is recorded in
+  `docs/architecture/process-core-workflow-core-architecture.md`. Pipelines,
+  stages, transitions, workflow items, procedures, checklists, evidence logs,
+  approval policies, blueprints, linked assets, and Paperclip sync contexts
+  are shared system capabilities, not department-local screens. Future agents
+  must preserve the boundary that Roost is the source of truth and Paperclip is
+  an external supervised execution layer using API/MCP.
 - Business ontology imports are governed by
   `docs/architecture/business-ontology-import-strategy.md`. APQC PCF,
   SIPOC, organization-chart CSV, role/ACL mapping, and one-page SOP templates

@@ -36,7 +36,7 @@ patch or replacing it with an upstream Paperclip commit reference.
 
 Paperclip must have these runtime variables:
 
-- `COMPANYCORE_BASE_URL=https://api.companycore.luckysparrow.ch`
+- `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch`
 - `COMPANYCORE_API_KEY=<Paperclip workspace service API key>`
 - `COMPANYCORE_ADAPTER_SOURCE=paperclip`
 

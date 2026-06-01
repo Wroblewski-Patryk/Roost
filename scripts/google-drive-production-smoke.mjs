@@ -1,4 +1,4 @@
-const baseUrl = process.env.COMPANYCORE_BASE_URL ?? "https://api.companycore.luckysparrow.ch";
+const baseUrl = process.env.COMPANYCORE_BASE_URL ?? "https://api.roost.luckysparrow.ch";
 const apiKey = process.env.COMPANYCORE_API_KEY;
 
 if (!apiKey) {

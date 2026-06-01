@@ -18,6 +18,17 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NEXT
 
+- [ ] PROCESS-CORE-002 Current Company OS workflow gap audit:
+      use `docs/architecture/process-core-workflow-core-architecture.md` to
+      audit existing `processes`, `pipelines`, `pipeline_stages`,
+      `procedures`, `procedure_steps`, `pipeline_runs`, `stage_runs`,
+      approvals, acceptance criteria, audit/events, resources, workforce,
+      capabilities, and MCP manifest exposure against the target reusable
+      Process Core. Output must decide which target concepts are already
+      covered, which need read-only packets, and which truly require schema
+      changes. No migration, API/MCP write tool, or UI implementation is
+      approved before this audit.
+
 - [ ] ONTOLOGY-002 Business ontology source inventory and import contract:
       owner-provided APQC PCF, SIPOC, org-chart CSV, role/ACL mapping, and SOP
       templates are now accepted as future business-ontology inputs through

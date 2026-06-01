@@ -36,6 +36,7 @@ The current implementation already contains important foundations:
 | Roles and authority | `company_roles`, API scopes, capabilities, service-key profiles | evolve into rank, role, department, and project-context derived permissions |
 | Tasks | `tasks`, `task_lists`, ClickUp sync, Operations read packets | evolve from todo/status records into recursive delegated work items |
 | Workflows | `processes`, `pipelines`, `pipeline_stages`, `procedures`, `procedure_steps` | remain the canonical process/procedure model for human and agent execution |
+| Process Core | existing workflow definitions, runtime runs, approvals, events, audit, resources, workforce, and MCP manifest foundations | evolve into reusable workflow-item attachment, evidence, approval-policy, checklist, blueprint, linked-asset, and Paperclip sync context contracts across departments and entity types |
 | Runtime state | `pipeline_runs`, `stage_runs`, `approvals`, `acceptance_criteria`, `events`, `audit_logs` | remain the auditable evidence layer for work, escalation, approval, and automation |
 | Resources and knowledge | `resources`, Drive files/snapshots, `knowledge_roots`, `knowledge_items`, notes, decisions | expose organizational context to humans and agents through permissioned read packets |
 | MCP/API | capability manifest, scoped key profiles, `/v1/mcp/manifest`, `/v1/connection` | become the primary structured world-state interface for external agents |
@@ -357,6 +358,7 @@ This direction extends and does not supersede:
 - `autonomous-company-operating-system.md`;
 - `organizational-architecture-bridge.md`;
 - `companycore-business-module-map.md`;
+- `process-core-workflow-core-architecture.md`;
 - `companycore-global-business-flow.md`;
 - `department-management-systems-architecture.md`;
 - `department-management-systems-v1-blueprint.md`;

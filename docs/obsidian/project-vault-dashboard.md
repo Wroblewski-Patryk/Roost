@@ -4,7 +4,10 @@ Updated: 2026-05-31
 
 ## Purpose
 
-Use this as the first opened note in Obsidian. It makes the project readable for a human owner and for AI agents by connecting docs, graph files, function journeys, and cleanup work.
+Use this as the first opened note in Obsidian. The vault root is the whole
+`docs/` folder; this dashboard makes the project readable for a human owner and
+for AI agents by connecting docs, graph files, function journeys, and cleanup
+work.
 
 ## Fast Routes
 

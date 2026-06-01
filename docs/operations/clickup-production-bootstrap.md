@@ -15,7 +15,7 @@ encrypted workspace-owned integration settings.
 Set these only for the bootstrap command:
 
 - `COMPANYCORE_BASE_URL`: production API base URL, for example
-  `https://api.companycore.luckysparrow.ch`
+  `https://api.roost.luckysparrow.ch`
 - `COMPANYCORE_API_KEY`: workspace-scoped CompanyCore service key
 - `CLICKUP_API_TOKEN`: ClickUp token from the owner's ClickUp account
 - `CLICKUP_TEAM_ID`: ClickUp team/workspace ID to sync from

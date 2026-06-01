@@ -2,14 +2,11 @@ import "dotenv/config";
 
 const productionCorsFallbackOrigins = [
   "https://roost.luckysparrow.ch",
-  "https://api.roost.luckysparrow.ch",
-  "https://companycore.luckysparrow.ch",
-  "https://api.companycore.luckysparrow.ch"
+  "https://api.roost.luckysparrow.ch"
 ];
 
 const productionApiHostFallbacks = [
-  "api.roost.luckysparrow.ch",
-  "api.companycore.luckysparrow.ch"
+  "api.roost.luckysparrow.ch"
 ];
 
 function splitCsv(value: string | undefined) {

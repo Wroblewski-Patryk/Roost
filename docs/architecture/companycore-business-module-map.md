@@ -21,6 +21,8 @@ owner and agent surfaces lives in
 `docs/architecture/department-management-systems-architecture.md`.
 The unified workforce and organizational world-state target lives in
 `docs/architecture/unified-organizational-operating-system.md`.
+The reusable Process Core / Workflow Core target lives in
+`docs/architecture/process-core-workflow-core-architecture.md`.
 The external taxonomy and template import strategy for APQC PCF, SIPOC,
 organization-chart CSV, role/ACL mapping, and SOP templates lives in
 `docs/architecture/business-ontology-import-strategy.md`.
@@ -80,7 +82,7 @@ resource, knowledge, integration, or governance records.
 | Unified Workforce And Authority | Native core | Treat humans and AI agents as organizational members with departments, roles, ranks, supervisors, workload, context access, and escalation paths. | `users`, `agents`, `company_roles`, service API keys, capabilities, future workforce profile layer | People/Agents board, authority map, agent key/profile workbench, contextual navigation | Agents and humans can receive work, report progress, escalate, and use permissions from the same organizational model. |
 | Strategy, Goals, And Targets | Native core | Turn owner intent into measurable direction and execution targets. | `goals`, `targets`, `metrics`, decisions | dashboard brief, selected-area goals tab, future planning views | Agents can align proposed work with company priorities. |
 | Work And Tasks | Native core plus provider-backed ClickUp | Manage executable work, lists, status, priority, comments, and provider sync. | `tasks`, `task_lists`, ClickUp adapter, provider event inbox/outbox | tasks workbench, selected-area tasks tab, ClickUp settings | Agents can create, inspect, update, or report work through scoped commands. |
-| Processes And Pipelines | Native core | Define how work moves across departments from intake to outcome. | `processes`, `pipelines`, `pipeline_stages`, `procedures`, `procedure_steps`, workflow drafts | pipeline workbench, Company OS cockpit, selected-area workflows tab | Agents can follow approved procedures and avoid inventing workflow state. |
+| Process Core / Workflow Core | Native core | Define reusable pipelines, stages, transitions, workflow items, procedures, checklists, evidence, approvals, blueprints, linked assets, and Paperclip sync contexts across all departments and entity types. | `processes`, `pipelines`, `pipeline_stages`, `procedures`, `procedure_steps`, workflow drafts, `pipeline_runs`, `stage_runs`, approvals, audit/events, resources; target gaps documented in `process-core-workflow-core-architecture.md` | global pipelines, global procedures, department pipeline boards, Company OS cockpit, Paperclip sync/control, selected-area workflows tab | Agents can understand object state, allowed actions, blocked actions, required procedure, required evidence, and approval gates before acting. |
 | Business Ontology Imports | Provider-backed source input plus native mapping | Convert external process, SOP, hierarchy, responsibility, and ACL references into CompanyCore-owned process and authority context. | APQC/SIPOC/org/ACL/SOP source files, future import validators, existing processes, workforce, roles, capabilities, knowledge, and audit | future ontology import review, process taxonomy workbench, Paperclip planning packet | Agents can classify work, find owners, and propose tasks from trusted business operating context without direct CSV/provider authority. |
 | Runtime Execution And Evidence | Native core | Record concrete workflow runs, stage runs, approvals, validation, and evidence. | `pipeline_runs`, `stage_runs`, `approvals`, `acceptance_criteria`, `audit_logs`, `events` | Company OS cockpit, approval queue, correlation timeline | Agents can act with supervision and leave proof instead of hidden side effects. |
 | Knowledge And Decisions | Native core plus provider-backed content | Store searchable company memory, decisions, notes, standards, and knowledge sources. | `knowledge_roots`, `knowledge_items`, `notes`, `decisions`, `decision_logs`, Drive snapshots | selected-area knowledge/decisions tabs, future knowledge workbench | Agents can cite trusted context and learn from decisions. |
@@ -202,8 +204,11 @@ business plan / owner intent
    Drive, ClickUp, CRM, pipeline, knowledge, resources, and agent tools.
 3. Add a Paperclip-ready planning-to-task requirement only after current
    knowledge, task, ClickUp, MCP, approval, and audit surfaces are verified.
-4. Add explicit responsibility, process-domain, PAEI, and governance-rule
+4. Audit the current Company OS workflow tables against the Process Core target
+   before adding new migrations for workflow item attachment, evidence logs,
+   linked assets, blueprints, or Paperclip sync contexts.
+5. Add explicit responsibility, process-domain, PAEI, and governance-rule
    slices only when an implementation task proves the current models cannot
    express the needed behavior.
-5. Add an ontology-import source inventory and CSV validator before importing
+6. Add an ontology-import source inventory and CSV validator before importing
    APQC, SIPOC, org-chart, role/ACL, or SOP data into runtime records.

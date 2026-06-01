@@ -2,7 +2,10 @@
 
 Updated: 2026-05-31
 
-This folder is the Obsidian-facing navigation layer for Roost. It links canonical docs, graph registries, cleanup notes, and AI operating briefs without replacing source-of-truth documents.
+The whole `docs/` tree is the Obsidian vault for Roost. This folder is only
+the Obsidian-facing navigation layer: it links canonical docs, graph
+registries, cleanup notes, and AI operating briefs without replacing
+source-of-truth documents in the rest of the vault.
 
 ## Start Here
 

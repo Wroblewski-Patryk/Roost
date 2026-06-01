@@ -383,7 +383,7 @@ test("production CORS allows approved origins and rejects unknown browser origin
       method: "OPTIONS",
       headers: {
         ...headers,
-        Origin: "https://companycore.luckysparrow.ch"
+        Origin: "https://roost.luckysparrow.ch"
       }
     });
     const denied = await fetch(baseUrl + "/health", {
@@ -406,7 +406,7 @@ test("production CORS allows approved origins and rejects unknown browser origin
     AUTH_TOKEN_SECRET: "production-auth-token-secret-for-tests",
     INTEGRATION_SECRET_KEY: "production-integration-secret-for-tests",
     API_KEY_HASH_SECRET: "production-api-key-hash-secret-for-tests",
-    COMPANYCORE_ALLOWED_ORIGINS: "https://companycore.luckysparrow.ch"
+    COMPANYCORE_ALLOWED_ORIGINS: "https://roost.luckysparrow.ch"
   });
 
   assert.equal(result.exitCode, 0, `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
@@ -417,7 +417,7 @@ test("production CORS allows approved origins and rejects unknown browser origin
     deniedOrigin: string | null;
   };
   assert.equal(summary.allowedStatus, 204);
-  assert.equal(summary.allowedOrigin, "https://companycore.luckysparrow.ch");
+  assert.equal(summary.allowedOrigin, "https://roost.luckysparrow.ch");
   assert.equal(summary.deniedStatus, 403);
   assert.equal(summary.deniedOrigin, null);
 });
@@ -7413,7 +7413,7 @@ test("CompanyCore v1 protected API flow", async () => {
     method: "POST",
     headers: authA,
     body: JSON.stringify({
-      redirectUri: "https://companycore.luckysparrow.ch/settings/google-drive/callback",
+      redirectUri: "https://roost.luckysparrow.ch/settings/google-drive/callback",
       state: "workspace-a-google-drive",
       loginHint: "owner-a@example.com"
     })
@@ -7430,7 +7430,7 @@ test("CompanyCore v1 protected API flow", async () => {
     method: "POST",
     headers: { "X-API-Key": serviceKey },
     body: JSON.stringify({
-      redirectUri: "https://companycore.luckysparrow.ch/settings/google-drive/callback"
+      redirectUri: "https://roost.luckysparrow.ch/settings/google-drive/callback"
     })
   });
   assert.equal(serviceCannotCreateGoogleDriveAuthUrl.status, 403);
@@ -7451,7 +7451,7 @@ test("CompanyCore v1 protected API flow", async () => {
     method: "POST",
     headers: authA,
     body: JSON.stringify({
-      redirectUri: "https://companycore.luckysparrow.ch/settings/drive",
+      redirectUri: "https://roost.luckysparrow.ch/settings/drive",
       state: "repair-google-drive-oauth"
     })
   });
@@ -7478,7 +7478,7 @@ test("CompanyCore v1 protected API flow", async () => {
       headers: authA,
       body: JSON.stringify({
         code: "repair-google-drive-code",
-        redirectUri: "https://companycore.luckysparrow.ch/settings/drive",
+        redirectUri: "https://roost.luckysparrow.ch/settings/drive",
         active: true,
         config: {
           rootFolderIds: ["drive-folder-root"],

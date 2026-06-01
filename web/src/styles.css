@@ -126,6 +126,12 @@
   --cc-panel-shadow: var(--shadow-company-soft);
 }
 
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
 [data-theme="roost"] {
   --color-company-ink: var(--color-roost-text);
   --color-company-muted: var(--color-roost-text-secondary);
@@ -157,6 +163,10 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   background: var(--color-base-200);
+}
+
+body:has(.cc-route-loading) {
+  background: var(--color-roost-surface);
 }
 
 ::selection {

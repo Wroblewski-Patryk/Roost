@@ -31,7 +31,14 @@ analytics, and mobile app scope beyond the accepted v1/v2 web-console slice.
 
 ## Documentation Index
 
-Use `docs/` as the canonical home for CompanyCore documentation.
+Use `docs/` as the canonical home for CompanyCore documentation and as the
+project's Obsidian vault. Every subfolder should remain browsable from
+Obsidian through Markdown-first files, stable relative links, and clear index
+notes.
+
+`docs/obsidian/` is the navigation layer for Obsidian. It does not replace the
+rest of `docs/`; it points humans and agents into product, architecture,
+operations, planning, UX, security, and evidence notes across the whole vault.
 
 ## Recommended Structure
 

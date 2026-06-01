@@ -25,8 +25,8 @@ installed. Manual deploy and rollback paths are proven.
 
 | Surface | Evidence | Result |
 | --- | --- | --- |
-| CompanyCore public health | `GET https://api.companycore.luckysparrow.ch/health` | `200` |
-| CompanyCore v1 health | `GET https://api.companycore.luckysparrow.ch/v1/health` | `200` |
+| Roost public health | `GET https://api.roost.luckysparrow.ch/health` | `200` |
+| Roost v1 health | `GET https://api.roost.luckysparrow.ch/v1/health` | `200` |
 | Service API connection | Jarvis key against `/v1/connection` | `200`, workspace `LuckySparrow`, ClickUp configured |
 | ClickUp maintenance | `POST /v1/integration-settings/clickup/maintenance/run` with `inspect_only` | `21` webhooks, `219` ClickUp tasks, `0` failed inbox rows |
 | ClickUp scheduler | Backend logs | `clickup maintenance scheduler enabled every 15 minutes` |

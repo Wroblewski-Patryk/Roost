@@ -16,7 +16,13 @@ accepted bridge direction is documented in
 business modules that keep this direction scalable across UI, API, MCP,
 providers, and agents are documented in
 `docs/architecture/companycore-business-module-map.md`. The business ontology
-import direction for APQC PCF, SIPOC, organization-chart CSV, role/ACL
+map is extended by the Process Core / Workflow Core target in
+`docs/architecture/process-core-workflow-core-architecture.md`, which defines
+reusable pipelines, stages, transitions, workflow items, procedures,
+checklists, evidence, approvals, blueprints, linked assets, and Paperclip sync
+contexts as shared system capabilities across all departments and entity
+types. The business ontology import direction for APQC PCF, SIPOC,
+organization-chart CSV, role/ACL
 mappings, and SOP templates is documented in
 `docs/architecture/business-ontology-import-strategy.md`. These sources may
 guide process taxonomy, MECE ownership, PAEI tagging, Paperclip context, and
@@ -99,6 +105,11 @@ foundation target.
   integration capabilities, and quality standards.
 - Shared pipelines: reusable workflow definitions and ordered workflow/status
   stages that can be used by any department.
+- Process Core: reusable workflow item attachments, procedure/checklist
+  execution, evidence logs, approval policies, blueprints, linked assets, and
+  Paperclip sync contexts that can attach to products, subscription products,
+  service projects, clients, tasks, releases, deployments, people, agents,
+  assets, repositories, files, and departments.
 - CRM and sales: clients, deals, interactions, and CRM usage of shared
   pipelines where needed.
 - Knowledge: notes, decisions.
@@ -250,6 +261,13 @@ describe the cross-department flow from input to outcome. Stages describe the
 ordered state and handoff conditions inside a pipeline. Procedures and steps
 describe how a stage is executed, including expected input/output, validation,
 tools, rollback instructions, and approval needs.
+
+Process Core must remain reusable across entity types. A client, a service
+project, an internal project, an innovation project, a product, and a
+subscription product are distinct business concepts even when they use the
+same pipeline, procedure, checklist, evidence, and approval foundations. A
+named client or relationship must not be modeled as a subscription product
+unless a separate product entity is explicitly created.
 
 `company_roles` is the role catalog for humans, agents, and system actors.
 Every important process and pipeline should have exactly one accountable role
@@ -872,8 +890,8 @@ directly to PostgreSQL.
 - Runtime services: `backend`, `postgres`.
 - Public entry point: backend service on port `3000`.
 - Production domains to document and verify:
-  - `companycore.luckysparrow.ch`
-  - `api.companycore.luckysparrow.ch`
+  - `roost.luckysparrow.ch`
+  - `api.roost.luckysparrow.ch`
 - Private infrastructure: PostgreSQL service and persistent Docker volume.
 - Health/readiness endpoint: `GET /health`.
 - Required persistence: `companycore_postgres` Docker volume.
