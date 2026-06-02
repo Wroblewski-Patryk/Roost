@@ -4,6 +4,11 @@ Last updated: 2026-06-01
 
 ## NOW
 
+1. `LUC-1214` parent coordination lane closed (`done`).
+   - Source: `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md`.
+   - Closure evidence: `INT-01..INT-06` completed with integrated child-lane outputs (`LUC-1215`, `LUC-1216`, `LUC-1217`, `LUC-1218`).
+   - Next owner path: move execution to downstream scoped lane `PROCESS-CORE-002`.
+
 1. Complete `LUC-1149` known-state refresh continuity.
    - Source:
      `docs/planning/luc-1149-known-state-refresh-evidence-delta-and-next-repair-lanes.md`.

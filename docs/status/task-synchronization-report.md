@@ -1,6 +1,6 @@
 # Task Synchronization Report
 
-Generated: 2026-05-31T20:34:08.159Z
+Generated: 2026-06-01T07:01:05.836Z
 
 ## Contract
 
@@ -9,7 +9,7 @@ Every task should identify the feature/module it changes, dependency expectation
 ## Signals
 
 - Tasks without architecture links: 0
-- Implementation entities without task links: 439
+- Implementation entities without task links: 440
 - Verified entities without proof evidence: 0
 
 ## Tasks Without Architecture Links
@@ -79,6 +79,7 @@ Every task should identify the feature/module it changes, dependency expectation
 - component: cc-field.tsx (web/src/components/cc-field.tsx)
 - component: cc-notice.tsx (web/src/components/cc-notice.tsx)
 - component: cc-resource-selector.tsx (web/src/components/cc-resource-selector.tsx)
+- component: cc-route-loading.tsx (web/src/components/cc-route-loading.tsx)
 - component: cc-text-input.tsx (web/src/components/cc-text-input.tsx)
 - feature: mock-server.cjs (.tmp/web-qa-001/mock-server.cjs)
 - feature: validate.cjs (.tmp/web-qa-001/validate.cjs)
@@ -93,7 +94,6 @@ Every task should identify the feature/module it changes, dependency expectation
 - feature: main.js (docs/.obsidian/plugins/table-editor-obsidian/main.js)
 - feature: main.js (docs/.obsidian/plugins/templater-obsidian/main.js)
 - feature: seed.ts (prisma/seed.ts)
-- feature: assets-route-BdTnKfmp.js (public/react/assets/assets-route-BdTnKfmp.js)
+- feature: assets-route-CMLeJhyZ.js (public/react/assets/assets-route-CMLeJhyZ.js)
 - feature: cc-data-table-BnsGuHlR.js (public/react/assets/cc-data-table-BnsGuHlR.js)
 - feature: department-labels-CPPlGh9W.js (public/react/assets/department-labels-CPPlGh9W.js)
-- feature: finance-route-bx7cib8s.js (public/react/assets/finance-route-bx7cib8s.js)

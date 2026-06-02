@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-05-31T20:34:08.159Z
+Generated: 2026-06-01T07:01:05.836Z
 
 ## Canonical Exports
 
@@ -122,6 +122,7 @@ Generated: 2026-05-31T20:34:08.159Z
 | component | implemented | cc-field.tsx | web/src/components/cc-field.tsx | Engineering Delivery Lead |
 | component | implemented | cc-notice.tsx | web/src/components/cc-notice.tsx | Engineering Delivery Lead |
 | component | implemented | cc-resource-selector.tsx | web/src/components/cc-resource-selector.tsx | Engineering Delivery Lead |
+| component | implemented | cc-route-loading.tsx | web/src/components/cc-route-loading.tsx | Engineering Delivery Lead |
 | component | implemented | cc-text-input.tsx | web/src/components/cc-text-input.tsx | Engineering Delivery Lead |
 | document | implemented | pull_request_template.md | .github/pull_request_template.md | Engineering Delivery Lead |
 | document | implemented | Workflow Guidance | .github/workflows/README.md | Engineering Delivery Lead |
@@ -512,7 +513,6 @@ Generated: 2026-05-31T20:34:08.159Z
 | document | implemented | Migration | docs/architecture/nodes/generated/MIG-AUTO-0029.md | Docs Memory Lead |
 | document | implemented | Migration | docs/architecture/nodes/generated/MIG-AUTO-0030.md | Docs Memory Lead |
 | document | implemented | Migration | docs/architecture/nodes/generated/MIG-AUTO-0031.md | Docs Memory Lead |
-| document | implemented | Api Key.Middleware | docs/architecture/nodes/generated/MW-AUTO-0001.md | Docs Memory Lead |
 
 ## Relation Index
 
@@ -784,7 +784,6 @@ Generated: 2026-05-31T20:34:08.159Z
 | documents | document:companycore-mcp-bridge:ecc584a940 | module:docs:6784d83cb0 | docs/operations/companycore-mcp-bridge.md |
 | documents | document:companycore-mcp-smoke:577e032900 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PIPE-AUTO-0015.md |
 | documents | document:companycore-v1-achievement-and-blocker-handoff:8ae971d5ef | module:docs:6784d83cb0 | docs/operations/v1-achievement-and-blocker-handoff.md |
-| documents | document:companycore-v1-operator-handoff:2b30ad3afd | module:docs:6784d83cb0 | docs/operations/v1-operator-handoff.md |
 | documents | document:companycore-v1-release-readiness:43f1d13622 | module:docs:6784d83cb0 | docs/operations/v1-release-readiness.md |
 | documents | document:companycore-v1-simple-dashboard-canonical-audit:9b3a28fcca | module:docs:6784d83cb0 | docs/ux/v1-simple-dashboard-canonical-audit-2026-05-15.md |
 | documents | document:companycore-v1-simple-dashboard-canonical-spec:9caeb68764 | module:docs:6784d83cb0 | docs/ux/v1-simple-dashboard-canonical-spec-2026-05-15.md |
@@ -1211,6 +1210,7 @@ Generated: 2026-05-31T20:34:08.159Z
 | documents | document:problem-statement:cf26f163de | module:docs:6784d83cb0 | docs/product/problem-statement.md |
 | documents | document:procedure-steps-model:1ab0e8bea3 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0041.md |
 | documents | document:procedures-model:a5acad74e8 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0042.md |
+| documents | document:process-core-workflow-core-architecture:f96383f7d0 | module:docs:6784d83cb0 | docs/architecture/process-core-workflow-core-architecture.md |
 | documents | document:processes-model:8823cf557b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0043.md |
 | documents | document:product-definition:d21d8473bb | module:docs:6784d83cb0 | docs/product/product.md |
 | documents | document:product-map:dc083bb565 | module:docs:6784d83cb0 | docs/maps/product-map.md |

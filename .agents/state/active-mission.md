@@ -4,30 +4,124 @@ Last updated: 2026-06-01
 
 ## Current Mission
 
-- Mission ID: PROCESS-CORE-001
-- Status: VERIFIED
-- Selected objective: Capture the owner-provided Process Core / Workflow Core
-  direction as durable Roost architecture and future-agent execution memory.
-- Why this mission now: the owner explicitly asked to install the provided
-  Roost + Paperclip direction into architecture so agents can pursue an
-  autonomous company operating system target.
-- Release objective or product milestone advanced: future workflow, pipeline,
-  procedure, evidence, approval, asset, and Paperclip synchronization work now
-  has a reusable source-of-truth target instead of department-local pipeline
-  assumptions.
-- Stop conditions: architecture doc, source-of-truth links, planning contract,
-  requirement, risk, quality, module-confidence, delivery-map, task-board, and
-  next-step rows are updated and validation passes.
-- Parent validation gate: `git diff --check` and `npm run architecture:status`.
-- Latest checkpoint (2026-06-01): `PROCESS-CORE-001` architecture capture is
-  complete as documentation/source-of-truth scope; no runtime, deploy, or
-  protected production mutation was performed.
+- Mission ID: LUC-1257-KNOWN-STATE-BASELINE
+- Status: DONE
+- Selected objective: Collect local evidence and convert findings into concrete
+  next repair lanes for the Roost known-state baseline wake.
+- Why this mission now: board wake explicitly requested local evidence
+  collection and lane conversion before any broader action.
+- Release objective or product milestone advanced: preparation-mode known-state
+  confidence and takeover-ready lane routing.
+- Stop conditions: evidence packet published and canonical state pointers synced
+  (`active-mission`, `next-steps`, `TASK_BOARD`, `PROJECT_STATE`).
+- Parent validation gate: lane handoff readiness documented without runtime or
+  release mutation.
+- Latest checkpoint (2026-06-01, wake comment
+  `01adbc29-ed58-439c-b3ec-2ddf45d36729`): published
+  `docs/planning/luc-1257-known-state-evidence-and-architecture-baseline.md`
+  with fresh local evidence (`architecture:status`, graph export presence,
+  topology/test signals, git continuity) and concrete lanes A-E.
+- Latest checkpoint (2026-06-01, wake comment
+  `0190675c-5d35-47b5-abd9-fc6e653f8a35`): acknowledged bookkeeping-only
+  liveness comment, reran minimal continuity proof (`architecture:status`
+  `GREEN`, `git rev-parse --short HEAD`=`8f887de`), and synchronized queue
+  state by removing `LUC-1257` from active `NOW` as closure-complete.
+- Latest checkpoint (2026-06-01, `issue_continuation_needed`,
+  pending comments `0/0`): executed the required architecture-awareness
+  refresh and artifact readback for this lane (`entities=8725`,
+  `relations=10147`, `files=13570`; refreshed `docs/graphs/*` and
+  `docs/status/*` timestamps), then revalidated baseline gate
+  `npm run architecture:status` -> `GREEN`.
+- Latest checkpoint (2026-06-01, `source_scoped_recovery_action`,
+  pending comments `0/0`): replayed required known-state evidence continuity
+  for status-drift-safe closure (`node scripts/build-architecture-awareness-index.mjs`
+  rerun -> `entities=8725`, `relations=10147`, `files=13570`) and revalidated
+  baseline gate `npm run architecture:status` -> `GREEN`.
+- Latest checkpoint (2026-06-01): created
+  `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md` and
+  synchronized source-of-truth pointers in planning/state files.
+- Latest checkpoint (2026-06-01, wake comment
+  `d38879bc-b49c-41b5-abc2-d570717c6fde`): approved first safe-wave child
+  issues were created as planning packets:
+  `docs/planning/luc-1214-child-arch-be-process-core-002-audit.md`,
+  `docs/planning/luc-1214-child-qa-release-proof-planning.md`,
+  `docs/planning/luc-1214-child-product-ux-owner-workflow-planning.md`,
+  `docs/planning/luc-1214-child-docs-memory-sync-lane.md`.
+- Latest checkpoint (2026-06-01, wake comment
+  `5f057099-9ad7-4701-ac1e-2a3dd8e14ece`): board approval for child-lane
+  creation-only was consumed; parent remains coordinator/integration gate and
+  live continuation path is execution of scoped child lanes plus parent
+  integration.
+- Latest checkpoint (2026-06-01, finish_successful_run_handoff wake): child
+  lane execution order was pinned in `.agents/state/next-steps.md` so
+  continuation is actionable and non-polling for specialist runs.
+- Latest checkpoint (2026-06-01, wake comment `ab393448-f2d6-44c9-829a-5938839f51fc`): board confirmed child issues are materialized as `LUC-1215..LUC-1218`; parent mission moved to integration-monitoring mode with `INT-01/02/03/04` mapped to child outputs and `INT-05` as active closure gate.
+- Latest checkpoint (2026-06-01, source_scoped_recovery_action wake): parent
+  integration gate checklist (`INT-01..INT-06`) was added to
+  `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md` so
+  child-lane completion and parent final disposition use one explicit closure
+  contract.
+- Latest checkpoint (2026-06-01, `LUC-1218` issue_assigned planning wake):
+  published docs-memory delegated-wave planning packet
+  `docs/planning/luc-1218-documentation-and-memory-sync-for-delegated-wave.md`
+  and synchronized canonical state pointers for planning-only continuation.
+- Latest checkpoint (2026-06-01, `LUC-1216` issue_assigned planning wake):
+  completed QA release-proof planning lane and published
+  `docs/planning/luc-1216-qa-release-proof-plan.md`; child packet
+  `docs/planning/luc-1214-child-qa-release-proof-planning.md` moved to `DONE`
+  and parent integration gate `INT-03` is now marked complete.
+- Latest checkpoint (2026-06-01, `LUC-1217` issue_assigned planning wake):
+  completed Product/UX planning lane and published
+  `docs/planning/luc-1217-product-and-ux-planning-next-owner-workflow.md`
+  with selected next useful owner workflow, UX state contract, and explicit
+  open decisions for parent coordinator confirmation before implementation
+  lane creation.
+- Latest checkpoint (2026-06-01, `LUC-1215` issue_assigned planning wake):
+  completed architecture/backend audit-planning lane and published
+  `docs/planning/luc-1215-process-core-002-architecture-backend-workflow-gap-audit-plan.md`;
+  child packet `docs/planning/luc-1214-child-arch-be-process-core-002-audit.md`
+  moved to `DONE` with output reference.
+- Latest checkpoint (2026-06-01, `LUC-1217` issue_continuation_needed wake):
+  reconciled parent integration-gate drift by marking `INT-02` complete in
+  `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md` using
+  existing child output evidence from
+  `docs/planning/luc-1217-product-and-ux-planning-next-owner-workflow.md`.
+- Latest checkpoint (2026-06-01, `LUC-1216` source_scoped_recovery_action wake):
+  reconciled wake-status drift (`blocked` vs child packet `DONE`) by appending
+  a continuation checkpoint to
+  `docs/planning/luc-1216-qa-release-proof-plan.md` and preserving this lane as
+  planning-complete unless new scope is assigned.
+- Latest checkpoint (2026-06-01, `LUC-1215` continuation planning wake):
+  integrated completed child planning outputs into the parent coordinator
+  summary and marked `INT-05` complete in
+  `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md`; next
+  parent gate is final disposition sync (`INT-06`).
+- Latest checkpoint (2026-06-01, `LUC-1214` issue_continuation_needed wake):
+  reconciled mission-state drift by aligning parent closure state to
+  `DONE` after `INT-06` completion in
+  `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md`.
+- Latest checkpoint (2026-06-01, `LUC-1217` issue_continuation_needed wake):
+  closed the remaining child-contract quality gap by adding explicit acceptance
+  criteria to
+  `docs/planning/luc-1214-child-product-ux-owner-workflow-planning.md` and
+  preserving this lane as planning-complete (`DONE`) with no implementation
+  scope expansion.
+- Latest checkpoint (2026-06-01, `LUC-1214` source_scoped_recovery_action wake):
+  reconciled wake status drift (`blocked`) against canonical parent closure
+  evidence and appended a continuation checkpoint in
+  `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md`;
+  final parent disposition remains `done` with no scope expansion.
 
-## Previous Blocked Mission Pointer
+## Blocking Dependency Context
 
-- `LUC-261-TAKEOVER-BASELINE` remains externally blocked by protected runtime
-  key scope (`GET /v1/connection failed: 403 invalid_api_key`) and must not be
-  rerun without fresh one-run approval plus valid key-scope evidence.
+- `LUC-261` runtime protected smoke remains externally blocked on valid runtime
+  key scope and explicit one-run approval. This dependency is tracked but not
+  executed in this planning heartbeat.
+
+## Previous Mission Pointer
+
+- `PROCESS-CORE-001` remains verified as documentation-only architecture
+  capture and is not the active lane for this scoped heartbeat.
 
 ## Source Rows
 
@@ -53,9 +147,12 @@ Last updated: 2026-06-01
 ## Delegation Plan
 
 - Lanes kept local: all lanes.
-- Lanes delegated: none.
-- Reason delegation was not used: this is a documentation/source-of-truth
-  integration checkpoint over tightly coupled architecture and state files.
+- Lanes delegated: first safe-wave packets created and ready for assignment.
+- Delegated lanes:
+  1. Architecture/Backend audit (`LUC-1214-CHILD-ARCH-BE-AUDIT`)
+  2. QA/Release proof planning (`LUC-1214-CHILD-QA-RELEASE-PROOF-PLAN`)
+  3. Product/UX owner workflow planning (`LUC-1214-CHILD-PRODUCT-UX-OWNER-FLOW`)
+  4. Docs/Memory sync (`LUC-1214-CHILD-DOCS-MEMORY-SYNC`)
 - Known overlap risks: existing protected deploy-smoke and LUC queue gates
   remain active and must not be displaced by ontology planning work.
 

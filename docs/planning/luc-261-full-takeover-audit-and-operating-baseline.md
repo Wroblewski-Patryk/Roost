@@ -118,6 +118,64 @@ Verified takeover operating baseline with synchronized source-of-truth updates.
 - Outcome: protected smoke remains blocked before execution because required secure inputs are still absent in this runtime.
 - Unblock owner/action:
   1. Portfolio Director/Board or runtime secret owner provides secure runtime presence proof and one-time authorization for protected smoke.
+
+## Continuation Addendum (2026-06-01, source-scoped recovery action)
+
+- Heartbeat objective: execute concrete continuity action for `LUC-261` without expanding scope beyond allowed wake delta.
+- Commands run:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, gates `yes`)
+  - `git rev-parse --short HEAD` -> `8f887de`
+  - `Get-Date -Format o` -> `2026-06-01T09:32:05.6232340+02:00`
+- Outcome: no fresh one-run protected approval payload exists in this wake and no key-scope repair evidence was provided, so protected `adapter:smoke` rerun was not executed.
+- Disposition: `BLOCKED`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` valid for `/v1/connection`.
+  2. Board/operator grants one fresh same-session rerun of `npm run adapter:smoke`.
+  3. If rerun still fails with `403 invalid_api_key`, backend auth owner triages runtime key-validation policy.
+
+## Continuation Addendum (2026-06-01, issue reopened via comment `6e7c02e5-aefd-41e1-b77a-fa8cc6834045`)
+
+- Heartbeat objective: consume standing approval and execute exactly one protected deploy-smoke recheck lane.
+- Commands run:
+  - `npm run adapter:smoke` -> FAIL (`GET /v1/connection failed: 403 invalid_api_key`)
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, gates `yes`)
+  - `git rev-parse --short HEAD` -> `8f887de`
+  - `Get-Date -Format o` -> `2026-06-01T13:54:16.0531926+02:00`
+- Outcome: protected rerun executed as requested; credential remained invalid for `/v1/connection`.
+- Disposition: `BLOCKED`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with confirmed `/v1/connection` scope.
+  2. Board/operator grants one fresh same-session rerun of `npm run adapter:smoke`.
+  3. If rerun still fails with `403 invalid_api_key`, backend auth owner triages key-validation and auth policy at runtime.
+
+## Continuation Addendum (2026-06-01, finish-successful-run handoff)
+
+- Heartbeat objective: execute concrete non-polling continuity action and confirm blocker state before any new protected rerun.
+- Commands run:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, gates `yes`)
+  - `git rev-parse --short HEAD` -> `8f887de`
+  - `Get-Date -Format o` -> `2026-06-01T13:56:14.6619339+02:00`
+- Outcome: no fresh approval/comment delta or key-scope repair evidence in this wake, so no additional protected rerun was executed.
+- Disposition: `BLOCKED`.
+- Unblock owner/action unchanged:
+  1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with confirmed `/v1/connection` scope.
+  2. Board/operator grants one fresh same-session rerun of `npm run adapter:smoke`.
+  3. If rerun still fails with `403 invalid_api_key`, backend auth owner triages key-validation and auth policy at runtime.
+
+## Continuation Addendum (2026-06-01, issue reopened via comment `f3110601-da2f-4b5a-b8da-10a1f652eb46`)
+
+- Heartbeat objective: consume explicit autonomous gate approval and execute exactly one protected Roost/CompanyCore recheck lane.
+- Commands run:
+  - `npm run adapter:smoke` -> FAIL (`GET /v1/connection failed: 403 invalid_api_key`)
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, gates `yes`)
+  - `git rev-parse --short HEAD` -> `8f887de`
+  - `Get-Date -Format o` -> `2026-06-01T15:35:21.0639944+02:00`
+- Outcome: approved single protected rerun executed; credential remained invalid for `/v1/connection`.
+- Disposition: `BLOCKED`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with confirmed `/v1/connection` scope.
+  2. Board/operator grants one fresh same-session rerun of `npm run adapter:smoke`.
+  3. If rerun still fails with `403 invalid_api_key`, backend auth owner triages key-validation/auth policy at runtime.
   2. Run exactly once:
      `COMPANYCORE_BASE_URL=https://api.roost.luckysparrow.ch COMPANYCORE_API_KEY=<key> npm run aog:deploy-smoke`
   3. Record result with UTC timestamp and resulting next blocker/state.
@@ -642,3 +700,267 @@ Verified takeover operating baseline with synchronized source-of-truth updates.
   1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with valid `/v1/connection` scope.
   2. Board/operator grants one fresh same-session rerun of `npm run adapter:smoke`.
   3. If still failing (`403 invalid_api_key`), backend auth owner triages API-key validation policy for this workspace/runtime.
+
+## Continuation Addendum (2026-06-01, issue_reopened_via_comment protected deploy-smoke recheck `26eb62cf-16c1-4db2-9590-87264b69c60c`)
+
+- Trigger: board/operator comment indicated fresher credential metadata or standing approval and required exactly one protected deploy-smoke recheck via approved `COMPANYCORE_API_KEY` path.
+- Scope honored: executed exactly one protected smoke command with no product-code mutation, push, deploy expansion, restart, or unrelated runtime change.
+- Commands and evidence:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - Failure detail from MCP preflight: `status=403`, `error=invalid_api_key`, `requestId=f42e9460-264a-43d6-9c95-67bbf97e6fce`.
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `8f887de`.
+  - UTC checkpoint -> `2026-06-01T01:48:42.7076602Z`.
+  - `git diff --check` -> EOF-newline warnings only (pre-existing workspace hygiene noise).
+- Outcome:
+  - Protected gate remains blocked because approved path still yields invalid API key at runtime.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a valid `COMPANYCORE_API_KEY` for `https://api.roost.luckysparrow.ch`.
+  2. Board/operator grants one fresh same-session rerun of `npm run aog:deploy-smoke`.
+  3. If failure persists, backend auth owner triages key-profile validation using the latest request ID `f42e9460-264a-43d6-9c95-67bbf97e6fce`.
+
+## Continuation Addendum (2026-06-01, issue_reopened_via_comment autonomous standing recheck `a2ef3da6-9069-46fe-89b5-72fb8a934bb4`)
+
+- Trigger: board comment `a2ef3da6-9069-46fe-89b5-72fb8a934bb4` (`softwarehouse-autonomous-gate-approval:LUC-261:v1`) approving exactly one narrow protected Roost gate recheck with existing credential metadata.
+- Scope honored: executed exactly one responsible recheck lane; no product-code mutation, push, deploy expansion, runtime restart, or unrelated runtime change.
+- Commands and evidence:
+  - `npm run adapter:smoke` -> `FAIL` (`GET /v1/connection failed: 403 invalid_api_key`).
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `8f887de`.
+  - UTC checkpoint -> `2026-06-01T00:47:08.8314054Z`.
+- Outcome:
+  - Start-policy gate remains blocked on runtime key authorization/scope for `/v1/connection` at `https://api.roost.luckysparrow.ch`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with valid `/v1/connection` scope.
+  2. Board/operator grants one fresh same-session rerun of `npm run adapter:smoke`.
+  3. If still failing (`403 invalid_api_key`), backend auth owner triages API-key validation policy for this workspace/runtime.
+
+## Continuation Addendum (2026-06-01, finish_successful_run_handoff continuity checkpoint)
+
+- Trigger: heartbeat wake `finish_successful_run_handoff` with `pending comments: 0/0` and no fresh protected recheck approval payload.
+- Governance action:
+  - Protected runtime rerun was intentionally not executed in this heartbeat.
+  - This checkpoint only confirms continuity and preserves blocker ownership/action.
+- Continuity proof executed:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `8f887de`.
+  - UTC checkpoint -> `2026-06-01T00:48:56.6827876Z`.
+- Outcome:
+  - Runtime start-policy gate remains blocked on API-key authorization/scope for `/v1/connection` at `https://api.roost.luckysparrow.ch`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action (unchanged):
+  1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with valid `/v1/connection` scope.
+  2. Board/operator grants one fresh same-session rerun of `npm run adapter:smoke`.
+  3. If still failing (`403 invalid_api_key`), backend auth owner triages API-key validation policy for this workspace/runtime.
+
+## Continuation Addendum (2026-06-01, source_scoped_recovery_action continuity replay)
+
+- Trigger: heartbeat wake `source_scoped_recovery_action` with `pending comments: 0/0`, issue status `blocked`, and no fresh one-run protected recheck approval in this batch.
+- Governance action:
+  - Protected runtime rerun was intentionally not executed in this heartbeat.
+  - Scope remained continuity-only with canonical state synchronization.
+- Continuity proof executed:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `8f887de`.
+  - UTC checkpoint -> `2026-06-01T00:50:26.1007083Z`.
+  - `git diff --check` -> PASS (line-ending warnings only).
+- Outcome:
+  - Runtime start-policy gate remains blocked on API-key authorization/scope for `/v1/connection` at `https://api.roost.luckysparrow.ch`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action (unchanged):
+  1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with valid `/v1/connection` scope.
+  2. Board/operator grants one fresh same-session rerun of `npm run adapter:smoke`.
+  3. If still failing (`403 invalid_api_key`), backend auth owner triages API-key validation policy for this workspace/runtime.
+
+## Continuation Addendum (2026-06-01, issue_continuation_needed governance continuity checkpoint)
+
+- Trigger: heartbeat wake `issue_continuation_needed` with `pending comments: 0/0` and no fresh one-run approval payload in this batch.
+- Governance action:
+  - Protected runtime recheck was intentionally not executed in this heartbeat.
+  - Cancellation reason confirmed: this wake carried no new authorization delta beyond the already-consumed one-time protected rerun.
+- Continuity proof executed:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `8f887de`.
+  - UTC checkpoint -> `2026-06-01T01:50:52.0722347Z`.
+  - `git diff --check` -> EOF-newline warnings only (pre-existing workspace hygiene noise).
+- Outcome:
+  - Runtime start-policy gate remains blocked on API-key authorization/scope for target protected smoke.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action (unchanged):
+  1. Runtime secret owner rotates/provisions a valid `COMPANYCORE_API_KEY` for `https://api.roost.luckysparrow.ch`.
+  2. Board/operator grants one fresh same-session rerun of `npm run aog:deploy-smoke`.
+  3. If still failing, backend auth owner triages key-profile validation using latest request ID `f42e9460-264a-43d6-9c95-67bbf97e6fce`.
+
+## Continuation Addendum (2026-06-01, issue_continuation_needed governance continuity checkpoint-2)
+
+- Trigger: heartbeat wake `issue_continuation_needed` with `pending comments: 0/0` and no fresh approval payload.
+- Governance action:
+  - Protected runtime recheck was intentionally not executed.
+  - Cancellation reason re-confirmed: no new one-run authorization delta after the last consumed protected rerun.
+- Continuity proof executed:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `8f887de`.
+  - UTC checkpoint -> `2026-06-01T01:52:17.4181746Z`.
+  - `git diff --check` -> EOF-newline warnings only (pre-existing workspace hygiene noise).
+- Outcome:
+  - Runtime start-policy gate remains blocked on API-key authorization/scope for target protected smoke.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action (unchanged):
+  1. Runtime secret owner rotates/provisions a valid `COMPANYCORE_API_KEY` for `https://api.roost.luckysparrow.ch`.
+  2. Board/operator grants one fresh same-session rerun of `npm run aog:deploy-smoke`.
+  3. If still failing, backend auth owner triages key-profile validation using request ID `f42e9460-264a-43d6-9c95-67bbf97e6fce`.
+
+## Continuation Addendum (2026-06-01, source_scoped_recovery_action continuity replay-2)
+
+- Trigger: heartbeat wake `source_scoped_recovery_action` with `pending comments: 0/0`, issue status `blocked`, and no fresh protected recheck approval payload.
+- Governance action:
+  - Protected runtime rerun was intentionally not executed in this heartbeat.
+  - Scope remained continuity-only with canonical state synchronization.
+- Continuity proof executed:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `8f887de`.
+  - UTC checkpoint -> `2026-06-01T01:53:57.3430552Z`.
+- Outcome:
+  - Runtime start-policy gate remains blocked on API-key authorization/scope for `/v1/connection` at `https://api.roost.luckysparrow.ch`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action (unchanged):
+  1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with valid `/v1/connection` scope.
+  2. Board/operator grants one fresh same-session rerun of `npm run adapter:smoke`.
+  3. If still failing (`403 invalid_api_key`), backend auth owner triages API-key validation policy for this workspace/runtime.
+
+## Continuation Addendum (2026-06-01, issue_reopened_via_comment autonomous standing recheck `6e69a088-b1e4-4cf6-8b8d-021563f0066d`)
+
+- Trigger: board comment `6e69a088-b1e4-4cf6-8b8d-021563f0066d` (`softwarehouse-autonomous-gate-approval:LUC-261:v1`) approving exactly one narrow protected Roost/CompanyCore smoke recheck.
+- Scope honored: executed exactly one responsible recheck lane with no product-code mutation, push, deploy expansion, restart, secret disclosure, or unrelated runtime change.
+- Commands and evidence:
+  - `npm run adapter:smoke` -> `FAIL` (`GET /v1/connection failed: 403 invalid_api_key`).
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `8f887de`.
+  - UTC checkpoint -> `2026-06-01T07:26:44.3922598Z`.
+- Outcome:
+  - Start-policy gate remains blocked on runtime key authorization/scope for `/v1/connection` at `https://api.roost.luckysparrow.ch`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with valid `/v1/connection` scope.
+  2. Board/operator grants one fresh same-session rerun of `npm run adapter:smoke`.
+  3. If still failing (`403 invalid_api_key`), backend auth owner triages API-key validation policy for this workspace/runtime.
+
+## Continuation Addendum (2026-06-01, issue_continuation_needed governance continuity checkpoint-3)
+
+- Trigger: heartbeat wake `issue_continuation_needed` with `pending comments: 0/0` and no fresh one-run protected recheck approval payload in this batch.
+- Governance action:
+  - Protected runtime rerun was intentionally not executed in this heartbeat.
+  - Cancellation reason confirmed: no new authorization delta after the one-time approved recheck was consumed in the prior heartbeat.
+- Continuity proof executed:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `8f887de`.
+  - UTC checkpoint -> `2026-06-01T07:28:44.9921053Z`.
+- Outcome:
+  - Runtime start-policy gate remains blocked on API-key authorization/scope for `/v1/connection` at `https://api.roost.luckysparrow.ch`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action (unchanged):
+  1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with valid `/v1/connection` scope.
+  2. Board/operator grants one fresh same-session rerun of `npm run adapter:smoke`.
+  3. If still failing (`403 invalid_api_key`), backend auth owner triages API-key validation policy for this workspace/runtime.
+
+## Continuation Addendum (2026-06-01, finish-successful-run handoff)
+
+- Heartbeat objective: execute concrete continuity action and reconfirm blocker state before any protected rerun.
+- Commands run:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, gates `yes`)
+  - `git rev-parse --short HEAD` -> `8f887de`
+  - `Get-Date -Format o` -> `2026-06-01T15:36:51.6478834+02:00`
+- Outcome: no fresh approval/comment delta or key-scope repair evidence in this wake, so no additional protected rerun was executed.
+- Disposition: `BLOCKED`.
+- Unblock owner/action unchanged:
+  1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with confirmed `/v1/connection` scope.
+  2. Board/operator grants one fresh same-session rerun of `npm run adapter:smoke`.
+  3. If rerun still fails with `403 invalid_api_key`, backend auth owner triages key-validation/auth policy at runtime.
+
+## Continuation Addendum (2026-06-01, source-scoped recovery action)
+
+- Heartbeat objective: execute concrete continuity checkpoint and preserve blocker governance without expanding runtime scope.
+- Commands run:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, gates `yes`)
+  - `git rev-parse --short HEAD` -> `8f887de`
+  - `Get-Date -Format o` -> `2026-06-01T18:08:17.6500180+02:00`
+- Outcome: no fresh approval/comment delta or key-scope repair evidence was present in this wake, so no protected rerun was executed.
+- Disposition: `BLOCKED`.
+- Unblock owner/action unchanged:
+  1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with confirmed `/v1/connection` scope.
+  2. Board/operator grants one fresh same-session rerun of `npm run adapter:smoke`.
+  3. If rerun still fails with `403 invalid_api_key`, backend auth owner triages key-validation/auth policy at runtime.
+
+## Continuation Addendum (2026-06-01, source_scoped_recovery_action continuity replay-3)
+
+- Trigger: heartbeat wake `source_scoped_recovery_action` with `pending comments: 0/0`, issue status `blocked`, and no fresh protected recheck approval payload.
+- Governance action:
+  - Protected runtime rerun was intentionally not executed in this heartbeat.
+  - Cancellation reason confirmed: no new authorization/comment delta or key-scope repair evidence was provided in this wake.
+- Continuity proof executed:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `8f887de`.
+  - UTC checkpoint -> `2026-06-01T13:39:20.8109208Z`.
+- Outcome:
+  - Runtime start-policy gate remains blocked on API-key authorization/scope for `/v1/connection` at `https://api.roost.luckysparrow.ch`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action (unchanged):
+  1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with valid `/v1/connection` scope.
+  2. Board/operator grants one fresh same-session rerun of `npm run adapter:smoke`.
+  3. If still failing (`403 invalid_api_key`), backend auth owner triages API-key validation policy for this workspace/runtime.
+
+## Continuation Addendum (2026-06-01, issue_reopened_via_comment protected deploy-smoke recheck `89d359d7-31ab-4ca7-991e-db1419194f0d`)
+
+- Trigger: board comment `89d359d7-31ab-4ca7-991e-db1419194f0d` requiring exactly one protected deploy-smoke recheck via approved `COMPANYCORE_API_KEY` path.
+- Scope honored: executed exactly one protected smoke command; no product-code mutation, push, deploy expansion, or unrelated runtime change.
+- Commands and evidence:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - Failure detail from MCP preflight: `status=403`, `error=invalid_api_key`, `requestId=13a42bb4-11f2-4e5b-8f59-4a2984d78479`.
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `8f887de`.
+  - UTC checkpoint -> `2026-06-01T16:04:17.3993706Z`.
+- Outcome:
+  - Protected gate remains blocked because approved credential path still yields invalid API key at runtime.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a valid `COMPANYCORE_API_KEY` for `https://api.roost.luckysparrow.ch` with manifest/tools-list access.
+  2. Board/operator grants one fresh same-session rerun of `npm run aog:deploy-smoke`.
+  3. If failure persists, backend auth owner triages key-profile validation using request ID `13a42bb4-11f2-4e5b-8f59-4a2984d78479`.
+
+## Continuation Addendum (2026-06-01, issue_continuation_needed governance continuity checkpoint-4)
+
+- Trigger: heartbeat wake `issue_continuation_needed` with `pending comments: 0/0` and no fresh protected recheck approval payload in this batch.
+- Governance action:
+  - Protected runtime rerun was intentionally not executed in this heartbeat.
+  - Cancellation reason confirmed: no new authorization/comment delta after the previously consumed approved protected recheck.
+- Continuity proof executed:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `8f887de`.
+  - UTC checkpoint -> `2026-06-01T16:06:13.9141726Z`.
+- Outcome:
+  - Runtime start-policy gate remains blocked on API-key authorization/scope at `https://api.roost.luckysparrow.ch`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action (unchanged):
+  1. Runtime secret owner rotates/provisions a valid `COMPANYCORE_API_KEY` with required scope.
+  2. Board/operator grants one fresh same-session rerun of `npm run aog:deploy-smoke`.
+  3. If failure persists, backend auth owner triages key-profile validation with latest request-id evidence.
+
+## Continuation Addendum (2026-06-01, issue_continuation_needed governance continuity checkpoint-5)
+
+- Trigger: heartbeat wake `issue_continuation_needed` with `pending comments: 0/0` and no fresh protected recheck approval payload in this batch.
+- Governance action:
+  - Protected runtime rerun was intentionally not executed in this heartbeat.
+  - Cancellation reason confirmed: no new authorization/comment delta after previously consumed approved protected recheck.
+- Continuity proof executed:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `8f887de`.
+  - UTC checkpoint -> `2026-06-01T16:07:10.0972456Z`.
+- Outcome:
+  - Runtime start-policy gate remains blocked on API-key authorization/scope at `https://api.roost.luckysparrow.ch`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action (unchanged):
+  1. Runtime secret owner rotates/provisions a valid `COMPANYCORE_API_KEY` with required scope.
+  2. Board/operator grants one fresh same-session rerun of `npm run aog:deploy-smoke`.
+  3. If failure persists, backend auth owner triages key-profile validation with latest request-id evidence.

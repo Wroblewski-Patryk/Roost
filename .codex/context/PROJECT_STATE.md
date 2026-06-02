@@ -1,6 +1,336 @@
 # PROJECT_STATE
 
 Last updated: 2026-06-01
+- 2026-06-01: `LUC-261` `source_scoped_recovery_action` heartbeat completed (`pending comments: 0/0`). Action: executed continuity checkpoint and reconfirmed blocker state. Evidence: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, timestamp `2026-06-01T18:08:17.6500180+02:00`. No fresh approval/comment delta or key-scope repair evidence was present in this wake, so no protected rerun was executed. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state continuity only). Push status: `not needed`; deploy impact: `none`; no code mutation, push, deploy expansion, or unrelated runtime mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
+- 2026-06-01: `LUC-261` `issue_reopened_via_comment` heartbeat completed from board comment `89d359d7-31ab-4ca7-991e-db1419194f0d`. Action: executed exactly one board-approved protected deploy-smoke recheck (`npm run aog:deploy-smoke`) on approved `COMPANYCORE_API_KEY` path. Result: `FAIL` at MCP preflight with `status=403`, `error=invalid_api_key`, `requestId=13a42bb4-11f2-4e5b-8f59-4a2984d78479`. Continuity proof: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC checkpoint `2026-06-01T16:04:17.3993706Z`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state continuity only). Push status: `not needed`; deploy impact: `none`; no product-code mutation/push/deploy expansion/unrelated runtime mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key rotation/scope repair + one fresh board-approved same-session rerun).
+- 2026-06-01: `LUC-261` `source_scoped_recovery_action` heartbeat completed (`pending comments: 0/0`). Action: confirmed cancellation reason before any protected rerun and executed continuity proof only because no fresh approval/comment delta or key-scope repair evidence was present in this wake. Continuity proof executed: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC checkpoint `2026-06-01T13:39:20.8109208Z`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state continuity only). Push status: `not needed`; deploy impact: `none`; no deploy/push/restart/production mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
+- 2026-06-01: `LUC-261` `finish_successful_run_handoff` heartbeat completed (`pending comments: 0/0`). Action: executed concrete continuity proof and reconfirmed blocker state before any protected rerun. Evidence: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, timestamp `2026-06-01T15:36:51.6478834+02:00`. No fresh approval/comment delta or key-scope repair evidence was present in this wake, so no additional protected rerun was executed. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state continuity only). Push status: `not needed`; deploy impact: `none`; no code mutation, push, deploy expansion, or unrelated runtime mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
+- 2026-06-01: `LUC-261` `issue_reopened_via_comment` heartbeat completed from board comment `f3110601-da2f-4b5a-b8da-10a1f652eb46` (`softwarehouse-autonomous-gate-approval:LUC-261:v1`). Action: consumed explicit autonomous approval and executed exactly one protected recheck lane: `npm run adapter:smoke`. Result: `FAIL` with `GET /v1/connection failed: 403 invalid_api_key` against `https://api.roost.luckysparrow.ch`. Continuity proof: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, timestamp `2026-06-01T15:35:21.0639944+02:00`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state sync only). Push status: `not needed`; deploy impact: `none`; no product-code mutation, push, deploy expansion, or unrelated runtime mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
+- 2026-06-01: `LUC-261` `finish_successful_run_handoff` heartbeat completed (`pending comments: 0/0`). Action: executed concrete continuity proof and reconfirmed blocker state before any protected rerun. Evidence: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, timestamp `2026-06-01T13:56:14.6619339+02:00`. No fresh approval/comment delta or key-scope repair evidence was present in this wake, so no additional protected rerun was executed. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state continuity only). Push status: `not needed`; deploy impact: `none`; no code mutation, push, deploy expansion, or unrelated runtime mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
+- 2026-06-01: `LUC-261` `issue_reopened_via_comment` heartbeat completed from board comment `6e7c02e5-aefd-41e1-b77a-fa8cc6834045`. Action: consumed standing autonomous approval and executed exactly one protected recheck lane: `npm run adapter:smoke`. Result: `FAIL` with `GET /v1/connection failed: 403 invalid_api_key` against `https://api.roost.luckysparrow.ch`. Continuity proof: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, timestamp `2026-06-01T13:54:16.0531926+02:00`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state sync only). Push status: `not needed`; deploy impact: `none`; no code mutation, push, deploy expansion, or unrelated runtime mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
+- 2026-06-01: `LUC-261` `source_scoped_recovery_action` heartbeat completed (`pending comments: 0/0`). Action: executed concrete continuity proof and reconfirmed cancellation reason unchanged before any protected rerun. Fresh evidence: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, timestamp `2026-06-01T09:32:05.6232340+02:00`. No fresh one-run protected approval payload and no new key-scope repair evidence were present, so protected rerun was intentionally not executed. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state continuity only). Push status: `not needed`; deploy impact: `none`; no deploy/push/restart/production mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
+- 2026-06-01: `LUC-261` `issue_continuation_needed` heartbeat completed (`pending comments: 0/0`). Action: confirmed cancellation reason before any protected rerun and executed continuity proof only because no fresh one-run approval payload was present in this wake. Cancellation reason remains unchanged: no new authorization delta after the previously consumed approved recheck. Continuity proof executed: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC checkpoint `2026-06-01T07:28:44.9921053Z`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state continuity only). Push status: `not needed`; deploy impact: `none`; no deploy/push/restart/production mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
+- 2026-06-01: `LUC-261` `issue_reopened_via_comment` heartbeat completed from board comment `6e69a088-b1e4-4cf6-8b8d-021563f0066d` (`softwarehouse-autonomous-gate-approval:LUC-261:v1`). Action: executed exactly one approved narrow protected recheck lane (`npm run adapter:smoke`) with no scope broadening. Result remains blocked at protected auth layer: `GET /v1/connection failed: 403 invalid_api_key` while targeting `https://api.roost.luckysparrow.ch`. Continuity proof executed: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC checkpoint `2026-06-01T07:26:44.3922598Z`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state sync only). Push status: `not needed`; deploy impact: `none`. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
+- 2026-06-01: `LUC-1257` source-scoped recovery heartbeat completed
+  (`source_scoped_recovery_action`, pending comments `0/0`). Action:
+  acknowledged wake intent and reran required known-state evidence refresh:
+  `node scripts/build-architecture-awareness-index.mjs --project Roost --root C:\Personal\Projekty\Aplikacje\Roost`
+  from Paperclip script root with result `entities=8725`, `relations=10147`,
+  `files=13570`. Baseline gate proof: `npm run architecture:status` PASS
+  (`GREEN`, `452/761/34`, queue `0`, worklist `0`, gates `yes`). Commit/
+  no-commit decision: `not committed` (docs/state/evidence lane). Push status:
+  `not needed`; deploy impact: `none`; no deploy/push/restart/protected smoke/
+  production mutation executed. Disposition: `done`.
+
+- 2026-06-01: `LUC-1257` continuation heartbeat completed
+  (`issue_continuation_needed`, pending comments `0/0`). Action: executed the
+  required architecture-awareness refresh from Paperclip script root and
+  re-read required graph/status artifacts for known-state evidence continuity.
+  Refresh result: `entities=8725`, `relations=10147`, `files=13570`; refreshed
+  artifacts include `docs/graphs/architecture-health.json`,
+  `docs/graphs/architecture-proof-register.csv`,
+  `docs/status/architecture-dependency-report.md`,
+  `docs/status/architecture-ownership-report.md`, and
+  `docs/status/task-synchronization-report.md` (all regenerated
+  `2026-06-01T06:52:55.104Z`). Baseline gate proof:
+  `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`,
+  worklist `0`, gates `yes`). Commit/no-commit decision: `not committed`
+  (docs/state/evidence lane). Push status: `not needed`; deploy impact:
+  `none`; no deploy/push/restart/protected smoke/production mutation executed.
+  Disposition: `done`.
+
+- 2026-06-01: `LUC-1257` bookkeeping-comment continuation heartbeat completed
+  (`issue_commented`, pending comments `1/1`, comment
+  `0190675c-5d35-47b5-abd9-fc6e653f8a35`). Action: treated the comment as
+  liveness bookkeeping only, reran continuity proof, and synchronized queue
+  state by removing closed `LUC-1257` work from active `NOW`. Proof:
+  `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`,
+  worklist `0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`,
+  `git status --short --branch` -> `main...origin/main`. Commit/no-commit
+  decision: `not committed` (docs/state continuity lane). Push status:
+  `not needed`; deploy impact: `none`; no deploy/push/restart/protected smoke/
+  production mutation executed. Disposition: `done`.
+
+- 2026-06-01: `LUC-1257` issue-comment heartbeat completed
+  (`issue_commented`, pending comments `1/1`, comment
+  `01adbc29-ed58-439c-b3ec-2ddf45d36729`). Action: executed local known-state
+  evidence collection and converted findings into concrete repair lanes in
+  `docs/planning/luc-1257-known-state-evidence-and-architecture-baseline.md`.
+  Fresh proof: `npm run architecture:status` PASS (`GREEN`, `452/761/34`,
+  queue `0`, worklist `0`, gates `yes`), architecture graph export presence in
+  `docs/graphs/*`, `git rev-parse --short HEAD` -> `8f887de`, repository
+  topology counts refreshed, and test-surface signal captured. Commit/no-commit
+  decision: `not committed` (docs/state continuity lane). Push status:
+  `not needed`; deploy impact: `none`; no deploy/push/restart/protected smoke/
+  production mutation executed. Disposition: `done`.
+
+- 2026-06-01: `LUC-261` `source_scoped_recovery_action` heartbeat completed.
+  Action: no fresh protected recheck approval payload was present in this wake
+  (`pending comments: 0/0`), so protected runtime rerun was intentionally not
+  executed. Continuity proof executed: `npm run architecture:status` PASS
+  (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`,
+  gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC checkpoint
+  `2026-06-01T01:53:57.3430552Z`. Durable evidence synced in
+  `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and
+  `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed`
+  (docs/state evidence sync only). Push status: `not needed`; deploy impact:
+  `none`; no deploy/push/restart/production mutation executed. Disposition:
+  `blocked`; unblock owner/action unchanged (runtime secret owner key-scope
+  repair + one fresh board-approved same-session rerun).
+
+- 2026-06-01: `LUC-1217` source-scoped recovery heartbeat completed
+  (`source_scoped_recovery_action`, pending comments `0/0`). Action:
+  reconciled wake metadata drift (`blocked`) against canonical planning
+  closure evidence in
+  `docs/planning/luc-1217-product-and-ux-planning-next-owner-workflow.md`
+  (`Status: DONE`, acceptance criteria complete, no net-new planning scope).
+  Scope remained planning/docs only: no implementation, deploy/push/restart,
+  protected smoke, schema migration, API/MCP write implementation, or runtime
+  mutation. Commit/no-commit decision: `not committed` (docs/state
+  reconciliation lane). Push status: `not needed`; deploy impact: `none`.
+  Disposition: `done`.
+
+- 2026-06-01: `LUC-1214` source-scoped recovery heartbeat completed
+  (`source_scoped_recovery_action`, pending comments `0/0`). Action:
+  reconciled wake metadata drift (`blocked`) against canonical parent closure
+  evidence (`Mission Status: DONE`, `INT-01..INT-06` complete, and
+  `.agents/state/next-steps.md` parent lane closed) and appended a durable
+  continuation checkpoint in
+  `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md`. Scope
+  remained coordination/planning only: no implementation, deploy/push/restart,
+  protected smoke, schema migration, API/MCP write implementation, or runtime
+  mutation. Commit/no-commit decision: `not committed` (docs/state
+  reconciliation lane). Push status: `not needed`; deploy impact: `none`.
+  Disposition: `done`.
+
+- 2026-06-01: `LUC-1217` finish-successful-run handoff checkpoint completed
+  (`finish_successful_run_handoff`, planning-only directive). Action:
+  appended a continuation checkpoint to
+  `docs/planning/luc-1217-product-and-ux-planning-next-owner-workflow.md`
+  confirming acceptance-criteria continuity and no additional planning scope.
+  Scope remained planning/docs only: no implementation, deploy/push/restart,
+  protected smoke, schema migration, API/MCP write implementation, or runtime
+  mutation. Commit/no-commit decision: `not committed` (docs/state planning
+  lane). Push status: `not needed`; deploy impact: `none`. Disposition:
+  `done`.
+
+- 2026-06-01: `LUC-1215` continuation reconciliation heartbeat completed
+  (`issue_continuation_needed`, planning-only directive). Action: executed an
+  idempotent closure recheck for
+  `docs/planning/luc-1215-process-core-002-architecture-backend-workflow-gap-audit-plan.md`
+  and confirmed objective/acceptance/report remain complete with no new scope.
+  Parent dependency `LUC-1214` is already closed (`INT-01..INT-06` complete),
+  so this lane remains final-state `done`. Scope stayed planning-only: no
+  implementation, deploy/push/restart, protected smoke, schema migration,
+  API/MCP write implementation, or runtime mutation. Commit/no-commit decision:
+  `not committed` (docs/state continuity lane). Push status: `not needed`;
+  deploy impact: `none`. Disposition: `done`.
+
+- 2026-06-01: `LUC-1214` issue-continuation reconciliation heartbeat completed
+  (`issue_continuation_needed`, pending comments `0/0`). Action: reconciled
+  residual parent-state drift by aligning `.agents/state/active-mission.md`
+  and `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md` to
+  `DONE` after previously completed `INT-06` closure. Scope remained
+  coordination/planning only: no implementation, deploy/push/restart,
+  protected smoke, schema migration, API/MCP write implementation, or runtime
+  mutation. Commit/no-commit decision: `not committed` (docs/state
+  reconciliation lane). Push status: `not needed`; deploy impact: `none`.
+  Disposition: `done`.
+- 2026-06-01: `LUC-1217` continuation planning-contract hardening completed
+  (`issue_continuation_needed`, planning-only directive). Action: added
+  explicit acceptance criteria to
+  `docs/planning/luc-1214-child-product-ux-owner-workflow-planning.md` to
+  satisfy the repository requirement that each task contract is testable and
+  closure-safe. Scope remained planning/docs only: no implementation,
+  deploy/push/restart, protected smoke, schema migration, API/MCP write
+  implementation, or runtime mutation. Commit/no-commit decision:
+  `not committed` (docs/state planning lane). Push status: `not needed`;
+  deploy impact: `none`. Disposition: `done`.
+
+- 2026-06-01: `LUC-1214` run-liveness continuation heartbeat completed
+  (`run_liveness_continuation`, pending comments `0/0`). Action: executed
+  final parent gate `INT-06` in
+  `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md` after
+  confirming integrated closure of `INT-01..INT-05` from child outputs
+  (`LUC-1215`, `LUC-1216`, `LUC-1217`, `LUC-1218`). Scope remained
+  coordination/planning only: no implementation, deploy/push/restart,
+  protected smoke, schema migration, API/MCP write implementation, or runtime
+  mutation. Commit/no-commit decision: `not committed` (docs/state
+  coordination lane). Push status: `not needed`; deploy impact: `none`.
+  Disposition: `done` for parent coordinator scope.
+- 2026-06-01: `LUC-1218` source-scoped recovery reconciliation completed
+  (`source_scoped_recovery_action`, planning-only directive). Action: executed
+  a fresh cross-file parity recheck for the docs-memory lane and reconciled a
+  status mismatch where wake metadata reported `blocked` while canonical lane
+  artifacts remain `DONE`. Updated
+  `docs/planning/luc-1218-documentation-and-memory-sync-for-delegated-wave.md`
+  with a recovery checkpoint that records no content drift and a final
+  disposition recommendation of `done`. Scope remained planning-only: no
+  implementation, deploy/push/restart, protected smoke, schema migration,
+  API/MCP write implementation, or runtime mutation. Commit/no-commit decision:
+  `not committed` (docs/state planning lane). Push status: `not needed`; deploy
+  impact: `none`. Disposition: `done`.
+
+- 2026-06-01: `LUC-1217` continuation heartbeat completed
+  (`issue_continuation_needed`).
+  Action: reconciled parent integration-gate drift by marking `INT-02` as
+  `DONE` in `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md`
+  using existing evidence from
+  `docs/planning/luc-1217-product-and-ux-planning-next-owner-workflow.md`.
+  Canonical sync applied in `.agents/state/active-mission.md` and
+  `.agents/state/next-steps.md`. Scope remained planning-only: no
+  implementation, deploy/push/restart, protected smoke, schema migration,
+  API/MCP write implementation, or runtime mutation. Commit/no-commit decision:
+  `not committed` (docs/state planning heartbeat). Push status: `not needed`;
+  deploy impact: `none`. Disposition: `done`.
+- 2026-06-01: `LUC-1218` continuation parity checkpoint completed
+  (`issue_continuation_needed`, planning-only directive). Action: executed a
+  cross-file parity recheck across `LUC-1218` docs-memory sources of truth
+  (`docs/planning/luc-1218-documentation-and-memory-sync-for-delegated-wave.md`,
+  `.agents/state/active-mission.md`, `.agents/state/next-steps.md`,
+  `.codex/context/TASK_BOARD.md`, `.codex/context/PROJECT_STATE.md`), then
+  updated the `LUC-1218` packet with continuation evidence, explicit drift list
+  (`none`), and reaffirmed `done` disposition recommendation for this planning
+  lane. Scope remained planning-only: no implementation, deploy/push/restart,
+  protected smoke, schema migration, API/MCP write implementation, or runtime
+  mutation. Commit/no-commit decision: `not committed` (docs/state planning
+  lane). Push status: `not needed`; deploy impact: `none`. Disposition: `done`.
+
+- 2026-06-01: `LUC-1215` issue-assigned planning heartbeat completed for
+  `[Roost][LUC-1214-A] PROCESS-CORE-002 architecture/backend workflow gap audit`.
+  Action: created planning contract
+  `docs/planning/luc-1215-process-core-002-architecture-backend-workflow-gap-audit-plan.md`
+  defining exact audit matrix shape, coverage statuses (`covered/partial/missing/deferred`),
+  read-first sequencing, and specialist handoff output requirements. Child
+  packet `docs/planning/luc-1214-child-arch-be-process-core-002-audit.md` was
+  advanced to `DONE` with output reference. Scope stayed planning-only: no
+  code implementation, schema migration, API/MCP write implementation,
+  deploy/push/restart, protected smoke, or runtime mutation. Commit/no-commit
+  decision: `not committed` (docs/state planning lane). Push status:
+  `not needed`; deploy impact: `none`. Disposition: `done`.
+
+- 2026-06-01: `LUC-1216` planning heartbeat completed for
+  `[Roost][LUC-1214-B] QA and release proof planning for unverified Roost journeys`.
+  Action: published `docs/planning/luc-1216-qa-release-proof-plan.md` with
+  owner-scoped local and production proof ladders for current
+  `PARTIAL/BLOCKED` release-critical journeys, then marked
+  `docs/planning/luc-1214-child-qa-release-proof-planning.md` as `DONE` and
+  updated parent integration gate `INT-03` to complete in
+  `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md`.
+  Scope stayed planning-only: no implementation, deploy/push/restart,
+  protected smoke rerun, schema migration, API/MCP write implementation, or
+  runtime mutation. Commit/no-commit decision: `not committed` (docs/state
+  planning lane). Push status: `not needed`; deploy impact: `none`.
+  Disposition: `done`.
+
+- 2026-06-01: `LUC-1218` issue-assigned planning heartbeat completed.
+  Action: produced docs-memory delegated-wave planning packet
+  `docs/planning/luc-1218-documentation-and-memory-sync-for-delegated-wave.md`
+  and synchronized canonical pointers in `.agents/state/active-mission.md`,
+  `.agents/state/next-steps.md`, and `.codex/context/TASK_BOARD.md`.
+  Scope stayed planning-only: no implementation, deploy/push/restart,
+  protected smoke, schema migration, API/MCP write implementation, or
+  runtime mutation. Commit/no-commit decision: `not committed` (docs/state
+  planning lane). Push status: `not needed`; deploy impact: `none`.
+  Disposition: `done`.
+
+- 2026-06-01: `LUC-1217` planning heartbeat completed for
+  `[Roost][LUC-1214-C] Product and UX planning for next useful owner workflow`.
+  Action: created dedicated planning packet
+  `docs/planning/luc-1217-product-and-ux-planning-next-owner-workflow.md`
+  with selected workflow (`Workflow Activation Readiness Board`), owner-value
+  rationale, UX state contract (`loading/empty/error/success`), responsive and
+  accessibility checks, acceptance criteria, and explicit coordinator open
+  decisions before implementation-lane creation. Scope remained planning-only:
+  no code implementation, deploy/push/restart, protected smoke, schema
+  migration, API/MCP write implementation, or runtime mutation. Commit/no-commit
+  decision: `not committed` (docs/state planning heartbeat). Push status:
+  `not needed`; deploy impact: `none`. Disposition: `done`.
+
+- 2026-06-01: `LUC-1214` source-scoped recovery heartbeat completed.
+  Action: strengthened parent coordinator control by adding explicit
+  integration gates `INT-01..INT-06` in
+  `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md` and
+  syncing the continuation pointer in `.agents/state/next-steps.md`. The new
+  gate binds each child-lane output to required proof before the parent can
+  move from `in_progress` to a final disposition. Scope remained
+  non-implementation: no deploy/push/restart, protected smoke, schema
+  migration, API/MCP write implementation, or runtime mutation. Commit/no-commit
+  decision: `not committed` (docs/state-only heartbeat). Push status:
+  `not needed`; deploy impact: `none`. Disposition: `in_progress`.
+
+- 2026-06-01: `LUC-1214` finish-successful-run handoff wake completed.
+  Action: pinned actionable child-lane execution order in
+  `.agents/state/next-steps.md` to maintain a live non-polling continuation
+  path for the coordinator parent issue:
+  `LUC-1214-CHILD-ARCH-BE-AUDIT` ->
+  `LUC-1214-CHILD-PRODUCT-UX-OWNER-FLOW` ->
+  `LUC-1214-CHILD-QA-RELEASE-PROOF-PLAN` ->
+  `LUC-1214-CHILD-DOCS-MEMORY-SYNC`. Scope remained non-implementation:
+  no deploy/push/restart, protected smoke, schema migration, API/MCP write
+  implementation, or runtime mutation. Commit/no-commit decision:
+  `not committed` (docs/state-only heartbeat). Push status: `not needed`;
+  deploy impact: `none`. Disposition: `in_progress`.
+
+- 2026-06-01: `LUC-1214` board-approval wake
+  (`5f057099-9ad7-4701-ac1e-2a3dd8e14ece`,
+  `operator-approval:roost-luc-1214-child-lane-creation-only:v2`) completed.
+  Action: consumed the explicit approval and confirmed the first safe-wave
+  child lanes already exist with owner-scoped packets:
+  `LUC-1214-CHILD-ARCH-BE-AUDIT`,
+  `LUC-1214-CHILD-QA-RELEASE-PROOF-PLAN`,
+  `LUC-1214-CHILD-PRODUCT-UX-OWNER-FLOW`,
+  `LUC-1214-CHILD-DOCS-MEMORY-SYNC`. Parent remained a coordinator/integration
+  gate only. Scope remained non-implementation: no deploy/push/restart,
+  protected smoke, schema migration, API/MCP write implementation, or runtime
+  mutation. Commit/no-commit decision: `not committed` (docs/state-only
+  heartbeat). Push status: `not needed`; deploy impact: `none`.
+  Disposition: `in_progress` with live continuation path via child-lane
+  execution and parent integration.
+
+- 2026-06-01: `LUC-1214` board-confirmed first safe-wave child creation
+  heartbeat completed from comment `d38879bc-b49c-41b5-abc2-d570717c6fde`
+  (`operator-confirmation:roost-luc-1214-first-safe-wave:v1`). Action:
+  created four planning-only child issue packets with explicit owner, scope,
+  forbidden actions, validation/proof, expected report, and residual-risk
+  contract: `docs/planning/luc-1214-child-arch-be-process-core-002-audit.md`,
+  `docs/planning/luc-1214-child-qa-release-proof-planning.md`,
+  `docs/planning/luc-1214-child-product-ux-owner-workflow-planning.md`,
+  `docs/planning/luc-1214-child-docs-memory-sync-lane.md`; parent packet
+  updated in `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md`.
+  Scope remained planning-only: no implementation, deploy/push, protected
+  smoke rerun, or runtime mutation. Commit/no-commit decision: `not committed`
+  (docs/state-only heartbeat). Push status: `not needed`; deploy impact:
+  `none`. Disposition: `in_progress` with live continuation path through child
+  lane assignment/execution and parent integration.
+
+- 2026-06-01: `LUC-1214` planning continuation heartbeat completed
+  (`issue_continuation_needed`). Action: updated
+  `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md` to
+  include explicit stage-exit criteria, acceptance completion for planning,
+  and a concrete approval interaction path (`in_review` pending board/user
+  confirmation and child-lane authorization). Scope remained planning-only:
+  no code implementation, deploy/push, protected-smoke rerun, or runtime
+  mutation. Commit/no-commit decision: `not committed` (docs/state-only
+  heartbeat). Push status: `not needed`; deploy impact: `none`.
+  Disposition: `in_review`.
+
+- 2026-06-01: `LUC-1214` planning heartbeat completed. Action: acknowledged
+  issue-assigned wake and planning directive, then created
+  `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md` with
+  explicit multi-lane ownership, sequencing, proof contracts, and gating.
+  Canonical pointer sync completed in `.agents/state/active-mission.md`,
+  `.agents/state/next-steps.md`, and `.codex/context/TASK_BOARD.md`. This
+  heartbeat remained planning-only: no implementation, no deploy/push, no
+  protected smoke rerun, and no runtime mutation. Commit/no-commit decision:
+  `not committed` (planning/state synchronization lane). Push status:
+  `not needed`; deploy impact: `none`. Disposition: `in_review` pending
+  board/user confirmation of the plan before specialist child-lane creation.
+
+- 2026-06-01: `LUC-261` `source_scoped_recovery_action` heartbeat completed. Action: no fresh one-run protected recheck approval was present in this wake (`pending comments: 0/0`), so protected runtime rerun was intentionally not executed. Continuity proof executed: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC checkpoint `2026-06-01T00:50:26.1007083Z`, and `git diff --check` PASS (line-ending warnings only). Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state evidence sync only). Push status: `not needed`; deploy impact: `none`; no deploy/push/restart/production mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
+- 2026-06-01: `LUC-261` `finish_successful_run_handoff` heartbeat completed. Action: no fresh protected recheck approval was present in this wake (`pending comments: 0/0`), so protected runtime rerun was intentionally not executed. Continuity proof executed: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC checkpoint `2026-06-01T00:48:56.6827876Z`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state evidence sync only). Push status: `not needed`; deploy impact: `none`; no deploy/push/restart/production mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
+
+- 2026-06-01: `LUC-261` `issue_reopened_via_comment` heartbeat completed from board comment `a2ef3da6-9069-46fe-89b5-72fb8a934bb4` (`softwarehouse-autonomous-gate-approval:LUC-261:v1`). Action: executed exactly one approved narrow protected recheck lane (`npm run adapter:smoke`) with no scope broadening. Result remains blocked at protected auth layer: `GET /v1/connection failed: 403 invalid_api_key` while target `https://api.roost.luckysparrow.ch` was printed by the smoke script. Continuity proof executed: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC checkpoint `2026-06-01T00:47:08.8314054Z`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state evidence sync only). Push status: `not needed`; deploy impact: `none`; no deploy/push/restart/production mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
 
 - 2026-06-01: `WEB-ROUTE-LOADING-001` completed. Action: replaced the authenticated lazy-route white fallback with shared `CcRouteLoading`, applied `data-theme="roost"` directly to the fallback root, mirrored the shell skeleton, and added root/background continuity while the fallback is mounted. Proof: `npm run build:web` PASS; `npm run build:server` PASS; `git diff --check` PASS with line-ending warnings only; Browser public render smoke PASS; Playwright delayed `strategy-route-*.js` desktop proof showed fallback `data-theme="roost"` with dark body/fallback background `rgb(22, 27, 34)` and no framework overlay, then final shell rendered with no horizontal overflow; Playwright delayed `management-route-*.js` mobile proof showed dark fallback and no horizontal overflow. Validation-owned Vite, Express, PowerShell, and headless-browser processes were cleaned up. Deploy impact: frontend bundle change only; production smoke still needed after deploy.
 
@@ -4569,4 +4899,14 @@ Last updated: 2026-06-01
 
 - 2026-05-31: `LUC-1055` `source_scoped_recovery_action` heartbeat completed. Action: reran the required architectural-awareness refresh and reread required generated artifacts. Proof: `node scripts/build-architecture-awareness-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost` -> `entities=8707`, `relations=10111`, `files=13552`; `docs/status/architecture-dependency-report.md` confirms `432` dependency relations / `94` entities with dependencies; `docs/status/architecture-ownership-report.md` confirms owner split (`Docs Memory Lead=6622`, `Engineering Delivery Lead=2084`, `Roost Project Manager=1`); `docs/status/task-synchronization-report.md` confirms `implementation without task links=439` and `tasks without architecture links=0`. Commit/no-commit decision: `not committed` (prep-lane docs/state continuity and generated evidence only). Push status: `not needed`; deploy impact: `none`; no deploy/push/restart/protected-smoke/production mutation executed. Disposition: `done`.
 - 2026-05-31: `LUC-261` `issue_reopened_via_comment` heartbeat completed from board comment `fc07a582-5b38-4c43-9bbd-b2bda6fac1ef` (`softwarehouse-autonomous-gate-approval:LUC-261:v1`). Action: executed exactly one approved narrow protected recheck lane (`npm run adapter:smoke`) with no scope broadening and no runtime/product mutation. Result: `GET /v1/connection failed: 403 invalid_api_key` while targeting `https://api.roost.luckysparrow.ch`. Continuity proof: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `d117b46`, UTC checkpoint `2026-05-31T15:19:39Z`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state sync only). Push status: `not needed`; deploy impact: `none`. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
+- 2026-06-01: `LUC-261` `issue_reopened_via_comment` heartbeat completed from board comment `26eb62cf-16c1-4db2-9590-87264b69c60c` instructing exactly one protected deploy-smoke recheck on approved `COMPANYCORE_API_KEY` path. Action: executed one command only, `npm run aog:deploy-smoke`, with no product-code mutation, push, deploy expansion, restart, or unrelated runtime change. Result: `FAIL` in MCP preflight with `status=403`, `error=invalid_api_key`, `requestId=f42e9460-264a-43d6-9c95-67bbf97e6fce`. Continuity proof: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC `2026-06-01T01:48:42.7076602Z`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state sync only). Push status: `not needed`; deploy impact: `none`. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key repair + one fresh board-approved same-session rerun).
+- 2026-06-01: `LUC-261` `issue_continuation_needed` heartbeat completed (`pending comments: 0/0`). Action: confirmed cancellation reason before any new protected run and executed continuity proof only because no fresh one-run approval payload was present in this wake. Cancellation reason remains: one-time protected rerun was already consumed, and no new authorization delta was provided. Continuity proof: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC `2026-06-01T01:50:52.0722347Z`, `git diff --check` -> EOF-newline warnings only (pre-existing workspace hygiene noise). Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state continuity only). Push status: `not needed`; deploy impact: `none`. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key repair + one fresh board-approved same-session rerun of `npm run aog:deploy-smoke`).
+- 2026-06-01: `LUC-261` `issue_continuation_needed` heartbeat completed (`pending comments: 0/0`, checkpoint-2). Action: re-confirmed cancellation reason before any new protected run and executed continuity proof only because no fresh one-run approval payload was present. Cancellation reason remains unchanged: one-time protected rerun already consumed, with no new authorization delta. Continuity proof: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC `2026-06-01T01:52:17.4181746Z`, `git diff --check` -> EOF-newline warnings only (pre-existing workspace hygiene noise). Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state continuity only). Push status: `not needed`; deploy impact: `none`. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key repair + one fresh board-approved same-session rerun of `npm run aog:deploy-smoke`).
 - 2026-05-31: `LUC-1149` source-scoped continuation checkpoint completed in preparation-only lane (`2026-05-31T20:34:39Z` UTC). Evidence rerun stable: architecture status `GREEN` (`452/761/34`, queue `0`, worklist `0`, all gates pass) and awareness scanner `entities=8710`, `relations=10117`, `files=13555`. No runtime/deploy/protected mutation was performed; protected adapter gate remains externally blocked in `LUC-261` pending key-scope repair and one approved same-session rerun.
+
+
+
+
+
+- 2026-06-01: `LUC-261` `issue_continuation_needed` heartbeat completed (`pending comments: 0/0`). Action: confirmed cancellation reason before any protected rerun and executed continuity proof only because no fresh approval/comment delta was present in this wake. Continuity proof executed: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC checkpoint `2026-06-01T16:06:13.9141726Z`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state continuity only). Push status: `not needed`; deploy impact: `none`; no product-code mutation/push/deploy expansion/unrelated runtime mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key rotation/scope repair + one fresh board-approved same-session rerun).
+- 2026-06-01: `LUC-261` `issue_continuation_needed` heartbeat completed (`pending comments: 0/0`). Action: confirmed cancellation reason before any protected rerun and executed continuity proof only because no fresh approval/comment delta was present in this wake. Continuity proof executed: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC checkpoint `2026-06-01T16:07:10.0972456Z`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state continuity only). Push status: `not needed`; deploy impact: `none`; no product-code mutation/push/deploy expansion/unrelated runtime mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key rotation/scope repair + one fresh board-approved same-session rerun).

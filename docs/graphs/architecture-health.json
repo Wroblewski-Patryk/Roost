@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-05-31T20:34:08.159Z",
+  "generated_at": "2026-06-01T07:01:05.836Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 8710,
-    "relations": 10117,
+    "entities": 8725,
+    "relations": 10147,
     "by_type": {
       "agent": 47,
       "api_endpoint": 57,
-      "component": 6,
-      "document": 867,
+      "component": 7,
+      "document": 881,
       "feature": 198,
       "function": 7257,
       "migration": 31,
@@ -24,14 +24,14 @@
     "by_status": {
       "blocked": 4,
       "deprecated": 6,
-      "implemented": 8691,
+      "implemented": 8706,
       "in_progress": 1,
       "tested": 8
     }
   },
   "signals": {
     "implementation_without_tests": {
-      "count": 7517,
+      "count": 7518,
       "items": [
         {
           "id": "api_endpoint:use-react:1a47f6396c",
@@ -530,6 +530,14 @@
           "owner": "Engineering Delivery Lead"
         },
         {
+          "id": "component:cc-route-loading-tsx:920cadd9c7",
+          "type": "component",
+          "name": "cc-route-loading.tsx",
+          "path": "web/src/components/cc-route-loading.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
           "id": "component:cc-text-input-tsx:8a4c63b1b4",
           "type": "component",
           "name": "cc-text-input.tsx",
@@ -642,10 +650,10 @@
           "owner": "Engineering Delivery Lead"
         },
         {
-          "id": "feature:assets-route-bdtnkfmp-js:094912cf69",
+          "id": "feature:assets-route-cmlejhyz-js:0e220bc808",
           "type": "feature",
-          "name": "assets-route-BdTnKfmp.js",
-          "path": "public/react/assets/assets-route-BdTnKfmp.js",
+          "name": "assets-route-CMLeJhyZ.js",
+          "path": "public/react/assets/assets-route-CMLeJhyZ.js",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
@@ -682,10 +690,10 @@
           "owner": "Engineering Delivery Lead"
         },
         {
-          "id": "feature:index-d0x855ss-js:43c5117cb6",
+          "id": "feature:index-dqhrbmta-js:b878b0559b",
           "type": "feature",
-          "name": "index-D0X855ss.js",
-          "path": "public/react/assets/index-D0X855ss.js",
+          "name": "index-DQHrBmTA.js",
+          "path": "public/react/assets/index-DQHrBmTA.js",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
@@ -722,18 +730,18 @@
           "owner": "Engineering Delivery Lead"
         },
         {
-          "id": "feature:operations-route-dkgbzdhq-js:f3e3a1e073",
+          "id": "feature:operations-route-1rtyc9bn-js:7214027e47",
           "type": "feature",
-          "name": "operations-route-DkGbZdHq.js",
-          "path": "public/react/assets/operations-route-DkGbZdHq.js",
+          "name": "operations-route-1rtYC9bN.js",
+          "path": "public/react/assets/operations-route-1rtYC9bN.js",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
         {
-          "id": "feature:people-agents-route-dqtjpbao-js:08ad8bf2e4",
+          "id": "feature:people-agents-route-wenf5kgh-js:1809e49cea",
           "type": "feature",
-          "name": "people-agents-route-DqtjPBaO.js",
-          "path": "public/react/assets/people-agents-route-DqtjPBaO.js",
+          "name": "people-agents-route-wenF5kgh.js",
+          "path": "public/react/assets/people-agents-route-wenF5kgh.js",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
@@ -1622,21 +1630,13 @@
           "type": "feature",
           "name": "deals.routes.ts",
           "path": "src/modules/deals/deals.routes.ts",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "feature:decisions-routes-ts:bdcded1491",
-          "type": "feature",
-          "name": "decisions.routes.ts",
-          "path": "src/modules/decisions/decisions.routes.ts",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         }
       ]
     },
     "implementation_without_docs": {
-      "count": 439,
+      "count": 440,
       "items": [
         {
           "id": "api_endpoint:use-react:1a47f6396c",
@@ -2135,6 +2135,14 @@
           "owner": "Engineering Delivery Lead"
         },
         {
+          "id": "component:cc-route-loading-tsx:920cadd9c7",
+          "type": "component",
+          "name": "cc-route-loading.tsx",
+          "path": "web/src/components/cc-route-loading.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
           "id": "component:cc-text-input-tsx:8a4c63b1b4",
           "type": "component",
           "name": "cc-text-input.tsx",
@@ -2247,10 +2255,10 @@
           "owner": "Engineering Delivery Lead"
         },
         {
-          "id": "feature:assets-route-bdtnkfmp-js:094912cf69",
+          "id": "feature:assets-route-cmlejhyz-js:0e220bc808",
           "type": "feature",
-          "name": "assets-route-BdTnKfmp.js",
-          "path": "public/react/assets/assets-route-BdTnKfmp.js",
+          "name": "assets-route-CMLeJhyZ.js",
+          "path": "public/react/assets/assets-route-CMLeJhyZ.js",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
@@ -2287,10 +2295,10 @@
           "owner": "Engineering Delivery Lead"
         },
         {
-          "id": "feature:index-d0x855ss-js:43c5117cb6",
+          "id": "feature:index-dqhrbmta-js:b878b0559b",
           "type": "feature",
-          "name": "index-D0X855ss.js",
-          "path": "public/react/assets/index-D0X855ss.js",
+          "name": "index-DQHrBmTA.js",
+          "path": "public/react/assets/index-DQHrBmTA.js",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
@@ -2327,18 +2335,18 @@
           "owner": "Engineering Delivery Lead"
         },
         {
-          "id": "feature:operations-route-dkgbzdhq-js:f3e3a1e073",
+          "id": "feature:operations-route-1rtyc9bn-js:7214027e47",
           "type": "feature",
-          "name": "operations-route-DkGbZdHq.js",
-          "path": "public/react/assets/operations-route-DkGbZdHq.js",
+          "name": "operations-route-1rtYC9bN.js",
+          "path": "public/react/assets/operations-route-1rtYC9bN.js",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
         {
-          "id": "feature:people-agents-route-dqtjpbao-js:08ad8bf2e4",
+          "id": "feature:people-agents-route-wenf5kgh-js:1809e49cea",
           "type": "feature",
-          "name": "people-agents-route-DqtjPBaO.js",
-          "path": "public/react/assets/people-agents-route-DqtjPBaO.js",
+          "name": "people-agents-route-wenF5kgh.js",
+          "path": "public/react/assets/people-agents-route-wenF5kgh.js",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
@@ -3227,14 +3235,6 @@
           "type": "feature",
           "name": "deals.routes.ts",
           "path": "src/modules/deals/deals.routes.ts",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "feature:decisions-routes-ts:bdcded1491",
-          "type": "feature",
-          "name": "decisions.routes.ts",
-          "path": "src/modules/decisions/decisions.routes.ts",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         }
@@ -3253,7 +3253,7 @@
       "items": []
     },
     "implementation_without_task": {
-      "count": 439,
+      "count": 440,
       "items": [
         {
           "id": "api_endpoint:use-react:1a47f6396c",
@@ -3752,6 +3752,14 @@
           "owner": "Engineering Delivery Lead"
         },
         {
+          "id": "component:cc-route-loading-tsx:920cadd9c7",
+          "type": "component",
+          "name": "cc-route-loading.tsx",
+          "path": "web/src/components/cc-route-loading.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
           "id": "component:cc-text-input-tsx:8a4c63b1b4",
           "type": "component",
           "name": "cc-text-input.tsx",
@@ -3864,10 +3872,10 @@
           "owner": "Engineering Delivery Lead"
         },
         {
-          "id": "feature:assets-route-bdtnkfmp-js:094912cf69",
+          "id": "feature:assets-route-cmlejhyz-js:0e220bc808",
           "type": "feature",
-          "name": "assets-route-BdTnKfmp.js",
-          "path": "public/react/assets/assets-route-BdTnKfmp.js",
+          "name": "assets-route-CMLeJhyZ.js",
+          "path": "public/react/assets/assets-route-CMLeJhyZ.js",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
@@ -3904,10 +3912,10 @@
           "owner": "Engineering Delivery Lead"
         },
         {
-          "id": "feature:index-d0x855ss-js:43c5117cb6",
+          "id": "feature:index-dqhrbmta-js:b878b0559b",
           "type": "feature",
-          "name": "index-D0X855ss.js",
-          "path": "public/react/assets/index-D0X855ss.js",
+          "name": "index-DQHrBmTA.js",
+          "path": "public/react/assets/index-DQHrBmTA.js",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
@@ -3944,18 +3952,18 @@
           "owner": "Engineering Delivery Lead"
         },
         {
-          "id": "feature:operations-route-dkgbzdhq-js:f3e3a1e073",
+          "id": "feature:operations-route-1rtyc9bn-js:7214027e47",
           "type": "feature",
-          "name": "operations-route-DkGbZdHq.js",
-          "path": "public/react/assets/operations-route-DkGbZdHq.js",
+          "name": "operations-route-1rtYC9bN.js",
+          "path": "public/react/assets/operations-route-1rtYC9bN.js",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
         {
-          "id": "feature:people-agents-route-dqtjpbao-js:08ad8bf2e4",
+          "id": "feature:people-agents-route-wenf5kgh-js:1809e49cea",
           "type": "feature",
-          "name": "people-agents-route-DqtjPBaO.js",
-          "path": "public/react/assets/people-agents-route-DqtjPBaO.js",
+          "name": "people-agents-route-wenF5kgh.js",
+          "path": "public/react/assets/people-agents-route-wenF5kgh.js",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
@@ -4844,14 +4852,6 @@
           "type": "feature",
           "name": "deals.routes.ts",
           "path": "src/modules/deals/deals.routes.ts",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "feature:decisions-routes-ts:bdcded1491",
-          "type": "feature",
-          "name": "decisions.routes.ts",
-          "path": "src/modules/decisions/decisions.routes.ts",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         }

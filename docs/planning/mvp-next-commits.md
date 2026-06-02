@@ -7,6 +7,26 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-1215 planning contract for `PROCESS-CORE-002` architecture/backend
+      workflow gap audit:
+      published
+      `docs/planning/luc-1215-process-core-002-architecture-backend-workflow-gap-audit-plan.md`
+      with a bounded audit method (target matrix, coverage statuses,
+      backend-risk pass, read-first packet sequence, specialist handoff
+      output) and no runtime implementation.
+- [x] LUC-1217 Product and UX planning for next useful owner workflow:
+      published planning-only packet
+      `docs/planning/luc-1217-product-and-ux-planning-next-owner-workflow.md`
+      with selected owner workflow (`Workflow Activation Readiness Board`),
+      UX state contract (`loading/empty/error/success`), responsive and
+      accessibility checks, and coordinator decisions required before
+      implementation child lanes.
+- [ ] LUC-1214 Roost delivery-lanes coordination plan:
+      planning-only coordinator checkpoint to decompose the broad "usable app"
+      objective into owner-scoped Softwarehouse lanes with explicit acceptance
+      gates, validation proof contracts, and dependency sequencing. Execution
+      remains blocked on board/user plan confirmation before specialist child
+      issues are opened.
 - [ ] Keep `ARCH-EVID-002` as an active release gate and maintenance lane.
       Runtime must stay green on every checkpoint:
       graph `443/755/34` (nodes/relations/chains), evidence queue `0`,

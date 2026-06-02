@@ -1,10 +1,10 @@
 # Dependency Report
 
-Generated: 2026-05-31T20:34:08.159Z
+Generated: 2026-06-01T07:01:05.836Z
 
 ## Summary
 
-- Dependency relations: 432
+- Dependency relations: 433
 - Entities with dependencies: 94
 
 ## Dependency Edges
@@ -267,6 +267,7 @@ Generated: 2026-05-31T20:34:08.159Z
 | main.tsx | uses | auth-pages.tsx | web/src/features/auth/auth-pages |
 | main.tsx | uses | public-home.tsx | web/src/features/public/public-home |
 | main.tsx | uses | i18n.tsx | web/src/i18n/i18n |
+| main.tsx | uses | cc-route-loading.tsx | web/src/components/cc-route-loading |
 | management-route.tsx | uses | client.ts | web/src/api/client |
 | management-route.tsx | uses | errors.ts | web/src/api/errors |
 | management-route.tsx | uses | cc-button.tsx | web/src/components/cc-button |
