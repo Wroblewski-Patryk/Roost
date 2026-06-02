@@ -1,6 +1,18 @@
 # TASK_BOARD
 
 ## Ready
+- 2026-06-02: `LUC-1401` completed source-control evidence incorporation for
+  `LUC-261` from `LUC-1392`. Concrete action: added `LUC-1392` closure commit
+  `8cbb89e` and verification summary to
+  `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md`.
+  Evidence: `git status --short --branch` -> `main...origin/main [ahead 1]`;
+  `git show -s --format="%h %s" HEAD` -> `8cbb89e docs: close Roost
+  source-control continuity for LUC-1392`; originating closure evidence
+  reported architecture status green and `git diff --check` PASS. Scope
+  remained docs/state/evidence only: no push, deploy, protected smoke, runtime
+  mutation, product-code change, or secret disclosure. Disposition: `DONE`;
+  target `LUC-261` blocker remains runtime key-scope repair plus one fresh
+  approved same-session protected proof rerun.
 - 2026-06-01: `LUC-261` source-scoped recovery heartbeat completed (`source_scoped_recovery_action`, pending comments `0/0`). Concrete action: executed continuity checkpoint and reconfirmed blocker state. Evidence: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, timestamp `2026-06-01T18:08:17.6500180+02:00`. No fresh approval/comment delta or key-scope repair evidence was present in this wake, so no protected rerun was executed. Scope remained continuity/docs-state only: no code mutation, push, deploy expansion, or runtime-state mutation. Disposition: `BLOCKED`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
 - 2026-06-01: `LUC-261` issue-continuation heartbeat completed (`issue_continuation_needed`, pending comments `0/0`). Concrete action: confirmed cancellation reason before any protected rerun and executed continuity proof only because no fresh approval/comment delta was present in this wake. Continuity proof: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC `2026-06-01T16:07:10.0972456Z`. Scope remained continuity/docs-state only: no product-code mutation, deploy, push, restart, or runtime-state mutation. Disposition: `BLOCKED`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
 - 2026-06-01: `LUC-261` issue-continuation heartbeat completed (`issue_continuation_needed`, pending comments `0/0`). Concrete action: confirmed cancellation reason before any protected rerun and executed continuity proof only because no fresh approval/comment delta was present in this wake. Continuity proof: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC `2026-06-01T16:06:13.9141726Z`. Scope remained continuity/docs-state only: no product-code mutation, deploy, push, restart, or runtime-state mutation. Disposition: `BLOCKED`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).

@@ -1,6 +1,6 @@
 # Active Mission Packet
 
-Last updated: 2026-06-01
+Last updated: 2026-06-02
 
 ## Current Mission
 
@@ -37,6 +37,14 @@ Last updated: 2026-06-01
   for status-drift-safe closure (`node scripts/build-architecture-awareness-index.mjs`
   rerun -> `entities=8725`, `relations=10147`, `files=13570`) and revalidated
   baseline gate `npm run architecture:status` -> `GREEN`.
+- Latest checkpoint (2026-06-02, `LUC-1401` issue_assigned wake): incorporated
+  `LUC-1392` source-control closure evidence into the `LUC-261` continuation
+  packet. Evidence now visible in
+  `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md`:
+  closure commit `8cbb89e`, current worktree ahead-only marker, originating
+  architecture-status PASS, and no push/deploy/protected-smoke/runtime mutation.
+  `LUC-261` remains blocked only on runtime key-scope repair plus one fresh
+  approved same-session protected proof rerun.
 - Latest checkpoint (2026-06-01): created
   `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md` and
   synchronized source-of-truth pointers in planning/state files.

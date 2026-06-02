@@ -964,3 +964,30 @@ Verified takeover operating baseline with synchronized source-of-truth updates.
   1. Runtime secret owner rotates/provisions a valid `COMPANYCORE_API_KEY` with required scope.
   2. Board/operator grants one fresh same-session rerun of `npm run aog:deploy-smoke`.
   3. If failure persists, backend auth owner triages key-profile validation with latest request-id evidence.
+
+## Continuation Addendum (2026-06-02, source-control closure evidence incorporated from LUC-1392)
+
+- Trigger: follow-up issue `LUC-1401` required the completed source-control
+  closure evidence from `LUC-1392` to be visible in this target baseline packet
+  after direct target-thread commenting was rejected for the sidecar owner.
+- Source-control evidence incorporated:
+  - `LUC-1392` closure commit: `8cbb89e` (`docs: close Roost source-control continuity for LUC-1392`).
+  - `git status --short --branch` during this incorporation heartbeat:
+    `## main...origin/main [ahead 1]`.
+  - `git show -s --format="%h %s" HEAD` -> `8cbb89e docs: close Roost source-control continuity for LUC-1392`.
+  - Originating closure evidence reported `npm run architecture:status` PASS
+    (`GREEN`, `452 nodes / 761 relations / 34 chains`, evidence queue `0`,
+    chain worklist `0`, all gates pass `yes`), `git diff --cached --check`
+    PASS, post-commit `git diff --check` PASS, and clean worktree except the
+    expected ahead-only marker.
+- Scope classification:
+  - Source-control closure was docs/state/evidence/context only.
+  - No product-code change, secret disclosure, env/log/screenshot/database dump,
+    push, deploy, protected smoke, runtime mutation, or production action was
+    part of `LUC-1392` or this incorporation checkpoint.
+- Outcome:
+  - Source-control closure evidence is now durable in the `LUC-261` continuation
+    notes.
+  - Runtime protected proof remains blocked for the same reason as before:
+    runtime secret owner must rotate/provision a valid key and board/operator
+    must grant one fresh same-session rerun approval.

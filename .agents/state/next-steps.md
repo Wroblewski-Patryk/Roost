@@ -1,6 +1,6 @@
 # Next Steps
 
-Last updated: 2026-06-01
+Last updated: 2026-06-02
 
 ## NOW
 
@@ -62,6 +62,12 @@ Last updated: 2026-06-01
 1. Keep `LUC-261` full takeover audit baseline as the active blocked mission packet.
    - Source:
      `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md`.
+   - Source-control continuity update (2026-06-02): `LUC-1401` incorporated
+     `LUC-1392` closure evidence into the baseline packet. Closure commit
+     `8cbb89e` is current `HEAD`; local status is clean except
+     `main...origin/main [ahead 1]`; the sidecar reported
+     `architecture:status` PASS and `git diff --check` PASS. This does not
+     unblock protected runtime proof.
    - Latest proof (2026-05-31): `npm run architecture:status` PASS
      (`452/761/34`, queue `0`, worklist `0`, all gates pass `yes`);
      mission pointer reconciled to `LUC-261` in `.agents/state/active-mission.md`.

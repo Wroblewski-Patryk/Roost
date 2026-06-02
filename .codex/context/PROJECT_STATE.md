@@ -1,6 +1,19 @@
 # PROJECT_STATE
 
-Last updated: 2026-06-01
+Last updated: 2026-06-02
+- 2026-06-02: `LUC-1401` incorporation heartbeat completed for `LUC-261`
+  source-control closure evidence from `LUC-1392`. Action: added the
+  `LUC-1392` closure commit and verification summary to
+  `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` after
+  the sidecar owner could not comment directly on the target thread. Evidence:
+  `git status --short --branch` -> `main...origin/main [ahead 1]`; `git show
+  -s --format="%h %s" HEAD` -> `8cbb89e docs: close Roost source-control
+  continuity for LUC-1392`; originating closure evidence reported
+  `architecture:status` PASS and `git diff --check` PASS. Scope:
+  docs/state/evidence only; no push, deploy, protected smoke, runtime mutation,
+  product-code change, or secret disclosure. Disposition: `done`; `LUC-261`
+  remains blocked only on runtime key-scope repair plus one fresh approved
+  same-session protected proof rerun.
 - 2026-06-01: `LUC-261` `source_scoped_recovery_action` heartbeat completed (`pending comments: 0/0`). Action: executed continuity checkpoint and reconfirmed blocker state. Evidence: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, timestamp `2026-06-01T18:08:17.6500180+02:00`. No fresh approval/comment delta or key-scope repair evidence was present in this wake, so no protected rerun was executed. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state continuity only). Push status: `not needed`; deploy impact: `none`; no code mutation, push, deploy expansion, or unrelated runtime mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
 - 2026-06-01: `LUC-261` `issue_reopened_via_comment` heartbeat completed from board comment `89d359d7-31ab-4ca7-991e-db1419194f0d`. Action: executed exactly one board-approved protected deploy-smoke recheck (`npm run aog:deploy-smoke`) on approved `COMPANYCORE_API_KEY` path. Result: `FAIL` at MCP preflight with `status=403`, `error=invalid_api_key`, `requestId=13a42bb4-11f2-4e5b-8f59-4a2984d78479`. Continuity proof: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC checkpoint `2026-06-01T16:04:17.3993706Z`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state continuity only). Push status: `not needed`; deploy impact: `none`; no product-code mutation/push/deploy expansion/unrelated runtime mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key rotation/scope repair + one fresh board-approved same-session rerun).
 - 2026-06-01: `LUC-261` `source_scoped_recovery_action` heartbeat completed (`pending comments: 0/0`). Action: confirmed cancellation reason before any protected rerun and executed continuity proof only because no fresh approval/comment delta or key-scope repair evidence was present in this wake. Continuity proof executed: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC checkpoint `2026-06-01T13:39:20.8109208Z`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state continuity only). Push status: `not needed`; deploy impact: `none`; no deploy/push/restart/production mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key-scope repair + one fresh board-approved same-session rerun).
