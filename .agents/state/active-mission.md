@@ -4,6 +4,39 @@ Last updated: 2026-06-03
 
 ## Current Mission
 
+- Mission ID: LUC-1815-KNOWN-STATE-BASELINE
+- Status: DONE
+- Selected objective: Refresh Roost/companycore known-state evidence and
+  architecture baseline in the Roost Project Manager preparation lane.
+- Why this mission now: Paperclip assigned `[LUC-1815](/LUC/issues/LUC-1815)`
+  directly to the Roost Project Manager; the wake payload required concrete
+  action in this heartbeat and no pending comment delta required broader thread
+  fetch.
+- Scope: architecture-awareness refresh, architecture status proof, task/proof
+  synchronization, dependency and ownership report readback, repository
+  topology, Git continuity, and source-of-truth sync.
+- Exclusions: no runtime code, schema, migration, deploy, protected smoke,
+  production mutation, push, server/browser/database process, restart, or
+  secret access.
+- Output:
+  `docs/planning/luc-1815-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip scanner refresh from
+  `C:\Personal\Projekty\Aplikacje\Paperclip_Softwarehouse` produced
+  `entities=8726`, `relations=10149`, `files=13566`, with no scanner
+  overrides applied; `npm run architecture:status` PASS (`GREEN`, graph
+  `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass `yes`); task-sync has `tasks without architecture links=0`,
+  `verified entities without proof evidence=0`, and `implementation entities
+  without task links=440`; dependency report has `433` dependency relations
+  across `94` entities; ownership split is Docs Memory Lead `6640`,
+  Engineering Delivery Lead `2085`, Roost Project Manager `1`; scoped topology
+  has `1420` files; current `HEAD` is `6903557`.
+- Final disposition: done. The only protected runtime proof lane remains
+  separately blocked in `[LUC-261](/LUC/issues/LUC-261)` by target-runtime key
+  repair plus fresh same-session approval.
+
+## Previous Mission
+
 - Mission ID: LUC-1808-KNOWN-STATE-BASELINE
 - Status: DONE
 - Selected objective: Refresh Roost known-state evidence and architecture

@@ -4,6 +4,21 @@ Last updated: 2026-06-03
 
 ## NOW
 
+1. `LUC-1815` known-state evidence and architecture baseline is complete.
+   - Source:
+     `docs/planning/luc-1815-known-state-evidence-and-architecture-baseline.md`.
+   - Proof: Paperclip scanner refresh produced `entities=8726`,
+     `relations=10149`, `files=13566`; `npm run architecture:status` PASS
+     (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass `yes`); task-sync remains healthy for task
+     and proof links (`0` tasks without architecture links, `0` verified
+     entities without proof evidence) with `440` implementation entities
+     without task links.
+   - Next lane conversion: none for this issue. Use LUC-1680, LUC-1681, and
+     LUC-1682 packets for route/QA/docs follow-ups; keep protected runtime
+     proof gated in LUC-261.
+   - Scope policy: preparation-only; no runtime/deploy/protected mutation.
+
 1. `LUC-1808` known-state evidence and architecture baseline is complete.
    - Source:
      `docs/planning/luc-1808-known-state-evidence-and-architecture-baseline.md`.

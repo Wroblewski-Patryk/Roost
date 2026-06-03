@@ -1,6 +1,20 @@
 # TASK_BOARD
 
 ## Ready
+- 2026-06-03: `LUC-1815` known-state evidence and architecture baseline
+  completed in the Roost Project Manager preparation lane. Durable packet:
+  `docs/planning/luc-1815-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh produced `entities=8726`,
+  `relations=10149`, `files=13566`, no scanner overrides; `npm run
+  architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass `yes`); task-sync has `0`
+  tasks without architecture links, `0` verified entities without proof
+  evidence, and `440` implementation entities without task links; dependency
+  report has `433` dependency relations across `94` entities; current
+  `HEAD=6903557`. Scope: no runtime code, schema, migration, deploy,
+  protected smoke, production mutation, push, server/browser/database process,
+  restart, or secret access. Disposition: `DONE`; `LUC-261` remains the
+  separate protected runtime blocker.
 - 2026-06-03: `LUC-1808` known-state evidence and architecture baseline
   completed in a CTO Architect preparation lane. Durable packet:
   `docs/planning/luc-1808-known-state-evidence-and-architecture-baseline.md`.
