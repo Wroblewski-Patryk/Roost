@@ -2,6 +2,17 @@
 
 Last updated: 2026-06-03
 
+Known-state architecture baseline note: LUC-1808 is VERIFIED as a CTO
+Architect preparation lane. The refreshed architecture-awareness exports
+produced `entities=8725`, `relations=10147`, `files=13565`, with no scanner
+overrides applied. `npm run architecture:status` passed with graph
+`452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, and all
+gates passing. Task/proof linkage remains healthy (`tasks without architecture
+links=0`, `verified entities without proof evidence=0`); the residual
+`implementation entities without task links=440` is still a classifier/review
+follow-up, not immediate runtime repair. Protected runtime confidence remains
+separate and blocked in `LUC-261`.
+
 API route confidence note: LUC-1680 is DONE as a read-only Backend API
 Engineer preparation lane. The route/capability matrix is recorded in
 `docs/planning/luc-1680-api-route-confidence-matrix.md`. Evidence: refreshed

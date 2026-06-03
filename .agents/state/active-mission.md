@@ -4,6 +4,38 @@ Last updated: 2026-06-03
 
 ## Current Mission
 
+- Mission ID: LUC-1808-KNOWN-STATE-BASELINE
+- Status: DONE
+- Selected objective: Refresh Roost known-state evidence and architecture
+  baseline in the CTO Architect preparation lane.
+- Why this mission now: Paperclip assigned `[LUC-1808](/LUC/issues/LUC-1808)`
+  directly to the CTO Architect; the wake payload required concrete action in
+  this heartbeat and no pending comment delta required broader thread fetch.
+- Scope: architecture-awareness refresh, architecture status proof, task/proof
+  synchronization, dependency and ownership report readback, repository
+  topology, Git continuity, and source-of-truth sync.
+- Exclusions: no runtime code, schema, migration, deploy, protected smoke,
+  production mutation, push, server/browser/database process, restart, or
+  secret access.
+- Output:
+  `docs/planning/luc-1808-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip scanner refresh from
+  `C:\Personal\Projekty\Aplikacje\Paperclip_Softwarehouse` produced
+  `entities=8725`, `relations=10147`, `files=13565`, with no scanner overrides
+  applied; `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+  `yes`); task-sync has `tasks without architecture links=0`, `verified
+  entities without proof evidence=0`, and `implementation entities without
+  task links=440`; dependency report has `433` dependency relations across
+  `94` entities; ownership split is Docs Memory Lead `6639`, Engineering
+  Delivery Lead `2085`, Roost Project Manager `1`; scoped topology has `1419`
+  files; current `HEAD` is `5c6fff3`.
+- Final disposition: done. The only protected runtime proof lane remains
+  separately blocked in `[LUC-261](/LUC/issues/LUC-261)` by target-runtime key
+  repair plus fresh same-session approval.
+
+## Previous Mission
+
 - Mission ID: LUC-1719-SOURCE-CONTROL-CLOSURE
 - Status: DONE
 - Selected objective: Classify and close the 2026-06-03 dirty docs/state/context

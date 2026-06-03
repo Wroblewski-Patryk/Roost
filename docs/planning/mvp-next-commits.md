@@ -7,6 +7,16 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-1808 known-state evidence and architecture baseline:
+      published
+      `docs/planning/luc-1808-known-state-evidence-and-architecture-baseline.md`
+      after refreshing architecture-awareness exports (`8725` entities,
+      `10147` relations, `13565` files), verifying `npm run
+      architecture:status` PASS (`GREEN`, graph `452/761/34`, queues `0`,
+      delta `0/0/0`), and recording task-sync/dependency/ownership/topology
+      signals. Scope stayed preparation-only with no runtime, deploy,
+      protected smoke, production, push, server/browser/database, or secret
+      mutation.
 - [x] LUC-1215 planning contract for `PROCESS-CORE-002` architecture/backend
       workflow gap audit:
       published

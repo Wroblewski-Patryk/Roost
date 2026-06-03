@@ -1,6 +1,24 @@
 # PROJECT_STATE
 
 Last updated: 2026-06-03
+- 2026-06-03: `LUC-1808` known-state evidence and architecture baseline
+  completed in the CTO Architect preparation lane. Output:
+  `docs/planning/luc-1808-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip scanner refresh from
+  `C:\Personal\Projekty\Aplikacje\Paperclip_Softwarehouse` produced
+  `entities=8725`, `relations=10147`, `files=13565`, with no scanner
+  overrides applied; `npm run architecture:status` PASS (`GREEN`, graph
+  `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass `yes`); task-sync reports `tasks without architecture links=0`,
+  `verified entities without proof evidence=0`, and `implementation entities
+  without task links=440`; dependency report has `433` dependency relations
+  across `94` entities; ownership split is Docs Memory Lead `6639`,
+  Engineering Delivery Lead `2085`, Roost Project Manager `1`; scoped topology
+  has `1419` files and current `HEAD=5c6fff3`. Scope remained
+  preparation-only: no runtime code, schema, migration, deploy, protected
+  smoke, production mutation, push, server/browser/database process, restart,
+  or secret access. Disposition: `done`; protected runtime proof remains
+  separately blocked in `LUC-261`.
 - 2026-06-03: `LUC-1719` source-control closure completed for the dirty
   docs/state/context packet. Published
   `docs/planning/luc-1719-source-control-closure-for-2026-06-03-dirty-docs-state-context-packet.md`.

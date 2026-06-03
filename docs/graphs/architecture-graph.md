@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-03T05:40:24.489Z
+Generated: 2026-06-03T15:59:03.936Z
 
 ## Canonical Exports
 
@@ -664,7 +664,6 @@ Generated: 2026-06-03T05:40:24.489Z
 | documents | document:approval-aware-agent-command-flow:0786da2dd2 | module:docs:6784d83cb0 | docs/operations/approval-aware-agent-command-flow.md |
 | documents | document:approval-aware-mcp-command-flow:6e97e6838d | module:docs:6784d83cb0 | docs/operations/approval-aware-mcp-command-flow.md |
 | documents | document:approvals-model:fb962cf3cd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0006.md |
-| documents | document:architecture-awareness-report:ce0eb33e65 | module:docs:6784d83cb0 | docs/status/architecture-awareness-report.md |
 | documents | document:architecture-documentation:80d86f79f2 | module:docs:6784d83cb0 | docs/architecture/README.md |
 | documents | document:architecture-drift-report:2048752ce8 | module:docs:6784d83cb0 | docs/status/architecture-drift-report.md |
 | documents | document:architecture-evidence-graph-system:0193b4b4eb | module:docs:6784d83cb0 | docs/architecture/architecture-evidence-graph-system.md |
@@ -674,7 +673,6 @@ Generated: 2026-06-03T05:40:24.489Z
 | documents | document:architecture-evidence-system:a7d552a139 | module:docs:6784d83cb0 | docs/architecture/architecture-evidence-system.md |
 | documents | document:architecture-graph-check-prompt:784b214385 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PROMPT-ARCH-GRAPH-CHECK.md |
 | documents | document:architecture-graph-generator:2fc512b479 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/SCRIPT-ARCH-GRAPH-GENERATOR.md |
-| documents | document:architecture-graph:07b63d1420 | module:docs:6784d83cb0 | docs/graphs/architecture-graph.md |
 | documents | document:architecture-health-dashboard:3341f66d62 | module:docs:6784d83cb0 | docs/status/architecture-health-dashboard.md |
 | documents | document:architecture-map-status:40009e1221 | module:docs:6784d83cb0 | docs/status/architecture-map-status.md |
 | documents | document:architecture-map:9fa8863725 | module:docs:6784d83cb0 | docs/maps/architecture-map.md |
@@ -833,7 +831,6 @@ Generated: 2026-06-03T05:40:24.489Z
 | documents | document:department-management-systems-v1-blueprint:6b147b19d9 | module:docs:6784d83cb0 | docs/architecture/department-management-systems-v1-blueprint.md |
 | documents | document:dependencies-model:dcedb370d9 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0020.md |
 | documents | document:dependency-relation-csv:7f2e92b2e9 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/CSV-RELATIONS.md |
-| documents | document:dependency-report:8708d02330 | module:docs:6784d83cb0 | docs/status/architecture-dependency-report.md |
 | documents | document:deployment-gate:a45551c4d4 | module:item:884f3f28db | DEPLOYMENT_GATE.md |
 | documents | document:deployment-template-local-stage-production:ccee546c5b | module:docs:6784d83cb0 | docs/operations/deployment-template-local-stage-production.md |
 | documents | document:deployment:a292540d71 | module:docs:6784d83cb0 | docs/DEPLOYMENT.md |
@@ -1002,6 +999,10 @@ Generated: 2026-06-03T05:40:24.489Z
 | documents | document:luc-1055-known-state-evidence-collection-and-architecture-baseline-md:edfe33628f | module:docs:6784d83cb0 | docs/planning/luc-1055-known-state-evidence-collection-and-architecture-baseline.md |
 | documents | document:luc-1099-source-control-closure-for-luc-261-dirty-state:c349f0ce07 | module:docs:6784d83cb0 | docs/planning/luc-1099-source-control-closure-for-luc-261-dirty-state.md |
 | documents | document:luc-1392-source-control-closure-for-luc-261-luc-1214-luc-1215-luc-1216-plus-3:fddab300bd | module:docs:6784d83cb0 | docs/planning/luc-1392-source-control-closure-luc-261-1214-1218-plus.md |
+| documents | document:luc-1680-api-route-confidence-matrix:678ea79f24 | module:docs:6784d83cb0 | docs/planning/luc-1680-api-route-confidence-matrix.md |
+| documents | document:luc-1681-test-surface-reconciliation-from-known-state-baseline:438b57cb70 | module:docs:6784d83cb0 | docs/planning/luc-1681-test-surface-reconciliation.md |
+| documents | document:luc-1682-docs-and-architecture-graph-synchronization-hygiene-review:a75227756e | module:docs:6784d83cb0 | docs/planning/luc-1682-docs-and-architecture-graph-synchronization-hygiene-review.md |
+| documents | document:luc-1719-source-control-closure-for-2026-06-03-dirty-docs-state-context-packet:616515911f | module:docs:6784d83cb0 | docs/planning/luc-1719-source-control-closure-for-2026-06-03-dirty-docs-state-context-packet.md |
 | documents | document:luc-183-readiness-scan-note-preparation-only-non-mutating:f06e6aa7cb | module:docs:6784d83cb0 | docs/planning/luc-183-intake-readiness-scan-note.md |
 | documents | document:luc-186-legacy-docs-deletion-churn-triage-read-only:ecf1c8a2cd | module:docs:6784d83cb0 | docs/planning/luc-186-legacy-docs-deletion-churn-triage.md |
 | documents | document:luc-187-canonical-docs-root-pin-and-takeover-handoff-preparation:96aa64c52d | module:docs:6784d83cb0 | docs/planning/luc-187-canonical-docs-root-and-takeover-handoff.md |
@@ -1093,7 +1094,6 @@ Generated: 2026-06-03T05:40:24.489Z
 | documents | document:ops-task-create-001-operations-new-task-creation-task-contract:cacb486aed | module:docs:6784d83cb0 | docs/planning/operations-new-task-creation-task-contract.md |
 | documents | document:organizational-architecture-bridge:c88be3eb97 | module:docs:6784d83cb0 | docs/architecture/organizational-architecture-bridge.md |
 | documents | document:owner-console-ux-smoke:704065c955 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PIPE-AUTO-0018.md |
-| documents | document:ownership-report:955545cfcc | module:docs:6784d83cb0 | docs/status/architecture-ownership-report.md |
 | documents | document:package-json-scripts:db131fbecc | module:docs:6784d83cb0 | docs/architecture/nodes/generated/CONFIG-PACKAGE-JSON.md |
 | documents | document:paperclip-agent-config-sync-requested:71d452a382 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/EVENT-PAPERCLIP-SYNC-REQUESTED.md |
 | documents | document:paperclip-company-building-architecture-direction:6da45b3166 | module:docs:6784d83cb0 | docs/planning/paperclip-company-building-architecture-task-contract.md |
