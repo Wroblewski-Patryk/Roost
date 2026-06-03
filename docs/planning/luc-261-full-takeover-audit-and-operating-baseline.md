@@ -991,3 +991,108 @@ Verified takeover operating baseline with synchronized source-of-truth updates.
   - Runtime protected proof remains blocked for the same reason as before:
     runtime secret owner must rotate/provision a valid key and board/operator
     must grant one fresh same-session rerun approval.
+
+## Continuation Addendum (2026-06-02, issue_children_completed integration checkpoint)
+
+- Trigger: heartbeat wake `issue_children_completed` for `LUC-261`.
+- Child-lane integration decision:
+  - Completed child/source-control lanes have been incorporated into this
+    baseline packet, including `LUC-1392` closure evidence via `LUC-1401`.
+  - The full takeover audit baseline remains structurally verified, but the
+    parent issue cannot close because its runtime start-policy proof remains
+    externally blocked.
+- Fresh non-protected proof executed in this heartbeat:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`,
+    worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git diff --check` -> PASS.
+  - `git rev-parse --short HEAD` -> `b46a0e5`.
+  - Local timestamp -> `2026-06-02T05:25:31.4931311+02:00`.
+  - `git status --short --branch` before edits -> `## main...origin/main [ahead 2]`.
+- Protected-runtime action:
+  - Not executed. This wake contains no fresh key-scope repair evidence and no
+    fresh same-session protected rerun approval.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions `COMPANYCORE_API_KEY` with confirmed
+     `/v1/connection` and protected smoke scope for
+     `https://api.roost.luckysparrow.ch`.
+  2. Board/operator grants one fresh same-session rerun approval for exactly one
+     protected command (`npm run adapter:smoke` or the approved deploy-smoke
+     command named by the board).
+  3. If the rerun still fails with `403 invalid_api_key`, backend auth owner
+     triages key-validation/auth policy using the latest request-id evidence.
+
+## Continuation Addendum (2026-06-02, issue_reopened_via_comment protected deploy-smoke recheck `aa25eb01-bf18-4e4f-9931-81c766819018`)
+
+- Trigger: board/local watcher comment
+  `aa25eb01-bf18-4e4f-9931-81c766819018` reported fresher credential metadata,
+  standing autonomous approval, or explicit operator approval after the latest
+  blocker and required exactly one protected deploy-smoke recheck using the
+  approved `COMPANYCORE_API_KEY` path.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, secret disclosure, or additional protected rerun was
+    performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`, `error=invalid_api_key`,
+    `requestId=8608c18c-384e-44a4-b4d0-04cf924c49fb`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`,
+    worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `b46a0e5`.
+  - `git diff --check` -> PASS with line-ending warnings only on existing
+    dirty state/planning files.
+  - UTC checkpoint -> `2026-06-02T03:28:21.0062451Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    credential path is still rejected by the production runtime as
+    `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a valid `COMPANYCORE_API_KEY` for
+     `https://api.roost.luckysparrow.ch` with manifest/tools-list access.
+  2. Board/operator grants one fresh same-session rerun of exactly
+     `npm run aog:deploy-smoke`.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `8608c18c-384e-44a4-b4d0-04cf924c49fb`.
+
+## Continuation Addendum (2026-06-02, issue_reopened_via_comment protected deploy-smoke recheck `a0788079-d202-404d-b36f-85cfbef9eeda`)
+
+- Trigger: board/local watcher comment
+  `a0788079-d202-404d-b36f-85cfbef9eeda` reported fresher credential metadata,
+  standing autonomous approval, or explicit operator approval after the latest
+  blocker and required exactly one protected deploy-smoke recheck using the
+  approved `COMPANYCORE_API_KEY` path.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, secret disclosure, or second protected rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`, `error=invalid_api_key`,
+    `requestId=88024139-2756-4d84-a8d8-23d2eb1e8d9a`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, queue `0`,
+    worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `b46a0e5`.
+  - `git diff --check` -> PASS with line-ending warnings only on existing
+    dirty state/planning files.
+  - UTC checkpoint -> `2026-06-02T16:00:13.7509594Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    credential path is still rejected by the production runtime as
+    `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a valid `COMPANYCORE_API_KEY` for
+     `https://api.roost.luckysparrow.ch` with manifest/tools-list access.
+  2. Board/operator grants one fresh same-session rerun of exactly
+     `npm run aog:deploy-smoke` after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `88024139-2756-4d84-a8d8-23d2eb1e8d9a`.

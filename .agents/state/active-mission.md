@@ -1,21 +1,143 @@
 # Active Mission Packet
 
-Last updated: 2026-06-02
+Last updated: 2026-06-03
 
 ## Current Mission
 
-- Mission ID: LUC-1257-KNOWN-STATE-BASELINE
+- Mission ID: LUC-1719-SOURCE-CONTROL-CLOSURE
 - Status: DONE
-- Selected objective: Collect local evidence and convert findings into concrete
-  next repair lanes for the Roost known-state baseline wake.
-- Why this mission now: board wake explicitly requested local evidence
-  collection and lane conversion before any broader action.
-- Release objective or product milestone advanced: preparation-mode known-state
-  confidence and takeover-ready lane routing.
-- Stop conditions: evidence packet published and canonical state pointers synced
-  (`active-mission`, `next-steps`, `TASK_BOARD`, `PROJECT_STATE`).
-- Parent validation gate: lane handoff readiness documented without runtime or
-  release mutation.
+- Selected objective: Classify and close the 2026-06-03 dirty docs/state/context
+  packet without reverting related preparation-lane work.
+- Why this mission now: Paperclip assigned `LUC-1719` directly to the Roost
+  Project Manager; the wake payload required concrete action in this heartbeat.
+- Scope: source-control classification and closure over the dirty state,
+  context, and planning packet files listed in
+  `docs/planning/luc-1719-source-control-closure-for-2026-06-03-dirty-docs-state-context-packet.md`.
+- Exclusions: no runtime code, schema, deploy, protected smoke, production
+  mutation, server/database/browser process, push, restart, or secret access.
+- Output:
+  `docs/planning/luc-1719-source-control-closure-for-2026-06-03-dirty-docs-state-context-packet.md`.
+- Evidence: `git status --short --branch` showed `main...origin/main [ahead 4]`
+  with seven modified docs/state/context files and three untracked planning
+  packets; `git diff --stat`, `git diff --name-status`, and recent commit
+  history showed a coherent preparation-lane packet from LUC-1680, LUC-1681,
+  LUC-1682, and LUC-261 continuity.
+- Final disposition: done after diff hygiene and commit; no push or deploy
+  needed. LUC-261 protected runtime proof remains separately blocked by invalid
+  target-runtime API key evidence.
+
+## Previous Mission
+
+- Mission ID: LUC-1680-API-ROUTE-CONFIDENCE
+- Status: DONE
+- Selected objective: Publish a read-only API route/capability confidence
+  matrix from the refreshed architecture baseline.
+- Why this mission now: Paperclip assigned `LUC-1680` directly to the Backend
+  API Engineer; the wake payload required concrete action in this heartbeat.
+- Scope: API route/capability audit over `src/app.ts`, `src/modules/**`,
+  `src/auth/**`, `src/mcp/**`, `src/tests/api.test.ts`,
+  `docs/graphs/architecture-awareness.json`, and
+  `docs/status/task-synchronization-report.md`.
+- Exclusions: no runtime code, schema change, deploy, protected smoke,
+  credential use, browser session, Docker/database mutation, production
+  mutation, push, or restart.
+- Output: `docs/planning/luc-1680-api-route-confidence-matrix.md`.
+- Evidence: refreshed architecture baseline has `57` `api_endpoint` entities;
+  task-sync report has `Tasks without architecture links: 0`,
+  `Implementation entities without task links: 440`, and `Verified entities
+  without proof evidence: 0`; source inventory found `38` route files;
+  capability manifest extraction found `179` manifest route entries; static
+  API-test request extraction found `189` unique `/auth` or `/v1` request path
+  shapes.
+- Final disposition: done; follow-up candidates are separate route/task-link
+  cleanup, provider-safe production read smoke after key repair, and focused
+  assertions for any route whose manifest entry lacks explicit API-test proof.
+
+## Older Previous Mission
+
+- Mission ID: LUC-1682-DOCS-GRAPH-SYNC-HYGIENE
+- Status: DONE
+- Selected objective: Verify Roost documentation memory and generated
+  architecture graph synchronization hygiene in the Docs Memory preparation
+  lane.
+- Why this mission now: Paperclip assigned `LUC-1682` directly to the Docs
+  Memory Lead; the wake payload required concrete action in this heartbeat.
+- Scope: docs/state/generated-graph review over Roost `docs/graphs`,
+  `docs/status`, source-of-truth state files, and a LUC-1682 planning packet.
+- Exclusions: no runtime code, schema change, deploy, protected smoke,
+  credential use, browser session, Docker/database mutation, production
+  mutation, push, or restart.
+- Output:
+  `docs/planning/luc-1682-docs-and-architecture-graph-synchronization-hygiene-review.md`.
+- Evidence: Paperclip scanner refresh against Roost produced `entities=8726`,
+  `relations=10149`, `files=13571`, with no scanner overrides applied;
+  `npm run architecture:status` PASS (`GREEN`, `452/761/34`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass `yes`);
+  synchronization report shows `tasks without architecture links=0`,
+  `verified entities without proof evidence=0`, and `implementation entities
+  without task links=440`.
+- Final disposition: done; only follow-up candidate is a separate
+  classifier/exclusion review for temporary/generated/vendor implementation
+  entities before any repair tasks are created.
+
+## Older Previous Mission
+
+The prior active mission was `LUC-1681-TEST-SURFACE-RECONCILIATION` and is
+closed as `done` in
+`docs/planning/luc-1681-test-surface-reconciliation.md`. The older
+`LUC-261-TAKEOVER-BASELINE` remains blocked outside this Docs Memory lane on
+runtime key-scope repair plus one fresh approved same-session protected proof
+rerun.
+
+## Archived Previous Active Mission
+
+- Mission ID: LUC-261-TAKEOVER-BASELINE
+- Status: BLOCKED
+- Selected objective: Integrate completed child/source-control evidence into the
+  Roost full takeover baseline and preserve the correct protected-runtime gate.
+- Why this mission now: Paperclip woke the parent on `issue_children_completed`;
+  the coordinator must integrate child lane outputs and give the parent a clear
+  final disposition.
+- Release objective or product milestone advanced: takeover baseline remains
+  structurally verified and source-control continuity evidence is incorporated.
+- Stop conditions: child-completion integration checkpoint published, canonical
+  state pointers synced, and `LUC-261` remains blocked only on named runtime
+  credential/approval owners.
+- Parent validation gate: non-protected architecture/source-control proof is
+  green; protected runtime proof is not rerun without fresh key-scope evidence
+  and fresh same-session approval.
+- Latest checkpoint (2026-06-02, `LUC-261` `issue_children_completed` wake):
+  integrated completed child/source-control lane state into
+  `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md`.
+  Evidence: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue
+  `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git diff --check` PASS,
+  `git rev-parse --short HEAD`=`b46a0e5`, timestamp
+  `2026-06-02T05:25:31.4931311+02:00`. No fresh key-scope repair evidence or
+  protected rerun approval was present, so protected smoke was not executed.
+- Latest checkpoint (2026-06-02, wake comment
+  `aa25eb01-bf18-4e4f-9931-81c766819018`): executed the single approved
+  protected deploy-smoke recheck on the approved `COMPANYCORE_API_KEY` path:
+  `npm run aog:deploy-smoke` -> `FAIL` at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=8608c18c-384e-44a4-b4d0-04cf924c49fb`. Continuity proof:
+  `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`,
+  gates `yes`), `git rev-parse --short HEAD`=`b46a0e5`, UTC
+  `2026-06-02T03:28:21.0062451Z`. Scope remained smoke-only: no code mutation,
+  push, deploy expansion, restart, unrelated runtime change, or secret
+  disclosure. `LUC-261` remains blocked on runtime key repair plus one fresh
+  approved same-session rerun.
+- Latest checkpoint (2026-06-02, wake comment
+  `a0788079-d202-404d-b36f-85cfbef9eeda`): executed the single approved
+  protected deploy-smoke recheck on the approved `COMPANYCORE_API_KEY` path:
+  `npm run aog:deploy-smoke` -> `FAIL` at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=88024139-2756-4d84-a8d8-23d2eb1e8d9a`. Continuity proof:
+  `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`,
+  gates `yes`), `git rev-parse --short HEAD`=`b46a0e5`, UTC
+  `2026-06-02T16:00:13.7509594Z`. Scope remained smoke-only: no code mutation,
+  push, deploy expansion, restart, unrelated runtime change, or secret
+  disclosure. `LUC-261` remains blocked on runtime key repair plus one fresh
+  approved same-session rerun after repair evidence exists.
 - Latest checkpoint (2026-06-01, wake comment
   `01adbc29-ed58-439c-b3ec-2ddf45d36729`): published
   `docs/planning/luc-1257-known-state-evidence-and-architecture-baseline.md`

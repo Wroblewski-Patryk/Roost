@@ -1,6 +1,99 @@
 # TASK_BOARD
 
 ## Ready
+- 2026-06-03: `LUC-1719` source-control closure for the dirty docs/state/context
+  packet completed. Durable packet:
+  `docs/planning/luc-1719-source-control-closure-for-2026-06-03-dirty-docs-state-context-packet.md`.
+  Decision: preserve and commit the coherent preparation-lane evidence packet
+  covering `LUC-1680`, `LUC-1681`, `LUC-1682`, and `LUC-261` continuity; no
+  revert lane needed. Scope: no runtime code, schema, deploy, protected smoke,
+  production mutation, server/database/browser process, restart, push, or
+  secret access. Disposition: `DONE`; ongoing protected runtime blocker remains
+  isolated to `LUC-261`.
+- 2026-06-03: `LUC-1680` API route confidence matrix completed in a read-only
+  Backend API Engineer preparation lane. Durable packet:
+  `docs/planning/luc-1680-api-route-confidence-matrix.md`. Evidence:
+  architecture baseline `57` API endpoint entities, task-sync `0` tasks
+  without architecture links / `440` implementation entities without task links
+  / `0` verified entities without proof evidence, `38` route files, `179`
+  manifest route entries, and `189` unique `/auth` or `/v1` API-test request
+  path shapes by static extraction. Scope: no code, schema, deploy, protected
+  smoke, production mutation, server/database/browser process, push, or secret
+  access. Disposition: `DONE`; follow-up lanes should be separate
+  route/task-link cleanup, provider-safe production read smoke after key
+  repair, or focused API assertions for manifest entries without explicit
+  proof.
+- 2026-06-03: `LUC-1682` docs and architecture graph synchronization hygiene
+  review completed (`issue_assigned`, pending comments `0/0`). Concrete action:
+  refreshed Roost architecture-awareness exports from the Paperclip scanner root
+  (`entities=8726`, `relations=10149`, `files=13571`, no scanner overrides
+  applied) and revalidated `npm run architecture:status` -> PASS (`GREEN`,
+  graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass `yes`). Synchronization result: `tasks without architecture
+  links=0`, `verified entities without proof evidence=0`, and `implementation
+  entities without task links=440`. Durable packet:
+  `docs/planning/luc-1682-docs-and-architecture-graph-synchronization-hygiene-review.md`.
+  Scope remained Docs Memory preparation only: no runtime code, schema, deploy,
+  protected smoke, credential, production, push, or restart mutation.
+  Disposition: `DONE`; follow-up candidate is a narrow classifier/exclusion
+  review for temporary/generated/vendor artifacts before any repair tasks.
+- 2026-06-03: `LUC-1681` test-surface reconciliation completed in
+  preparation-only QA scope. Published
+  `docs/planning/luc-1681-test-surface-reconciliation.md`. Evidence:
+  `npm run check:public-js` PASS; `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=179`, `checkedRouteFiles=34`, `status=ok`);
+  source scan found only one executable source test file,
+  `src/tests/api.test.ts`, with `7` top-level tests, `1536` assertion calls,
+  `197` helper request calls, and `96` unique literal request paths. No
+  product-code fix, deploy, protected smoke, runtime server, browser session,
+  Docker container, database mutation, or credential use occurred.
+  Disposition: `DONE`; first follow-up verification lanes are recorded in the
+  packet.
+- 2026-06-02: `LUC-261` issue-comment heartbeat completed
+  (`issue_reopened_via_comment`, pending comments `1/1`, comment
+  `a0788079-d202-404d-b36f-85cfbef9eeda`). Concrete action: consumed fresh
+  watcher/board authorization and executed exactly one protected deploy-smoke
+  recheck on the approved `COMPANYCORE_API_KEY` path:
+  `npm run aog:deploy-smoke` -> `FAIL`. Failure evidence: MCP manifest
+  preflight `status=403`, `error=invalid_api_key`,
+  `requestId=88024139-2756-4d84-a8d8-23d2eb1e8d9a`. Continuity proof:
+  `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`,
+  worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` ->
+  `b46a0e5`, UTC `2026-06-02T16:00:13.7509594Z`. Scope remained smoke-only:
+  no product-code mutation, push, deploy expansion, restart, unrelated runtime
+  change, or secret disclosure. Disposition: `BLOCKED`; unblock owner/action
+  unchanged (runtime secret owner key rotation/scope repair + one fresh
+  board/operator-approved same-session rerun after repair evidence exists).
+- 2026-06-02: `LUC-261` issue-comment heartbeat completed
+  (`issue_reopened_via_comment`, pending comments `1/1`, comment
+  `aa25eb01-bf18-4e4f-9931-81c766819018`). Concrete action: consumed fresh
+  watcher/board authorization and executed exactly one protected deploy-smoke
+  recheck on the approved `COMPANYCORE_API_KEY` path:
+  `npm run aog:deploy-smoke` -> `FAIL`. Failure evidence: MCP manifest
+  preflight `status=403`, `error=invalid_api_key`,
+  `requestId=8608c18c-384e-44a4-b4d0-04cf924c49fb`. Continuity proof:
+  `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`,
+  worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` ->
+  `b46a0e5`, UTC `2026-06-02T03:28:21.0062451Z`. Scope remained smoke-only:
+  no product-code mutation, push, deploy expansion, restart, unrelated runtime
+  change, or secret disclosure. Disposition: `BLOCKED`; unblock owner/action
+  unchanged (runtime secret owner key rotation/scope repair + one fresh
+  board/operator-approved same-session rerun).
+- 2026-06-02: `LUC-261` child-completion integration heartbeat completed
+  (`issue_children_completed`). Concrete action: integrated completed
+  child/source-control lane state into
+  `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and
+  confirmed the only remaining blocker is still protected runtime credential
+  scope plus fresh same-session approval. Evidence: `npm run
+  architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`,
+  delta `0/0/0`, gates `yes`); `git diff --check` PASS; `git rev-parse --short
+  HEAD` -> `b46a0e5`; timestamp `2026-06-02T05:25:31.4931311+02:00`. No fresh
+  approval/comment delta or key-scope repair evidence was present in this wake,
+  so no protected smoke rerun was executed. Scope remained docs/state/evidence
+  only: no code mutation, push, deploy, restart, runtime mutation, protected
+  smoke, or secret disclosure. Disposition: `BLOCKED`; unblock owner/action
+  unchanged (runtime secret owner key-scope repair + one fresh board-approved
+  same-session protected proof rerun).
 - 2026-06-02: `LUC-1401` completed source-control evidence incorporation for
   `LUC-261` from `LUC-1392`. Concrete action: added `LUC-1392` closure commit
   `8cbb89e` and verification summary to

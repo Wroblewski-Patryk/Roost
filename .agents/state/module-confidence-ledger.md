@@ -1,6 +1,48 @@
 # Module Confidence Ledger
 
-Last updated: 2026-06-01
+Last updated: 2026-06-03
+
+API route confidence note: LUC-1680 is DONE as a read-only Backend API
+Engineer preparation lane. The route/capability matrix is recorded in
+`docs/planning/luc-1680-api-route-confidence-matrix.md`. Evidence: refreshed
+architecture baseline has `57` `api_endpoint` entities; task-sync reports `0`
+tasks without architecture links, `440` implementation entities without task
+links, and `0` verified entities without proof evidence; source inventory found
+`38` route files; capability manifest extraction found `179` route entries;
+static extraction from `src/tests/api.test.ts` found `189` unique `/auth` or
+`/v1` request path shapes. Local high-risk groups such as Auth, MCP, Company
+OS commands, Operations, Assets, Intake, commercial/finance/sales/strategy/
+relationships, Operating Graph, Operating Model, Workforce, and Workspaces are
+classified in the matrix. Provider/live confidence remains separate from local
+route confidence and is blocked by the existing protected runtime key gate in
+`LUC-261`.
+
+Docs and architecture graph synchronization note: LUC-1682 is VERIFIED for the
+Docs Memory preparation lane. The architecture-awareness exports were refreshed
+from the Paperclip scanner root against Roost and produced `entities=8726`,
+`relations=10149`, `files=13571`, with no scanner overrides applied.
+`npm run architecture:status` passed after refresh with graph `452/761/34`,
+evidence queue `0`, chain worklist `0`, delta `0/0/0`, and all gates passing.
+Task synchronization is healthy for current task/proof expectations:
+`tasks without architecture links=0` and `verified entities without proof
+evidence=0`. Residual hygiene follow-up is classification, not immediate
+runtime repair: `implementation entities without task links=440`, led by
+temporary QA mocks, mounted API route aggregations, shared web components,
+Obsidian plugin files, seed script, and generated/public React assets.
+
+Test surface reconciliation note: LUC-1681 is VERIFIED as a QA
+preparation-only reconciliation, not as expanded runtime coverage. The current
+architecture health snapshot reports `8726` entities, `57` API endpoint
+entities, and `1` test entity, with `7518` implementation-without-tests signal.
+Executable source test discovery found one API test file,
+`src/tests/api.test.ts`, with `7` top-level Node tests, `1536` assertion calls,
+`197` helper request calls, and `96` unique literal request paths. Evidence:
+`docs/planning/luc-1681-test-surface-reconciliation.md`,
+`npm run check:public-js` PASS, and `npm run check:route-capabilities` PASS
+(`checkedManifestRoutes=179`, `checkedRouteFiles=34`, `status=ok`). Status:
+repeatable API/static checks are partially verified; UI, integration,
+protected runtime, and AI protocol coverage require owner-scoped follow-up
+lanes before being marked verified.
 
 Authenticated route loading note: WEB-ROUTE-LOADING-001 is VERIFIED locally.
 Lazy-loaded authenticated React views now use shared `CcRouteLoading` instead

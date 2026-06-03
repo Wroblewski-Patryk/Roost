@@ -1,8 +1,63 @@
 # Next Steps
 
-Last updated: 2026-06-02
+Last updated: 2026-06-03
 
 ## NOW
+
+1. `LUC-1719` source-control closure for the 2026-06-03 dirty
+   docs/state/context packet is complete.
+   - Source:
+     `docs/planning/luc-1719-source-control-closure-for-2026-06-03-dirty-docs-state-context-packet.md`.
+   - Decision: preserve the coherent preparation-lane packet from LUC-1680,
+     LUC-1681, LUC-1682, and LUC-261 continuity; no revert lane is needed.
+   - Scope policy: source-control closure only; no runtime code, schema,
+     deploy, protected smoke, production mutation, push, restart, server,
+     database, browser process, or secret access.
+   - Next lane conversion: none for this issue. The only continuing blocker is
+     the separate LUC-261 protected runtime key gate.
+
+1. `LUC-1680` API route confidence matrix is complete.
+   - Source: `docs/planning/luc-1680-api-route-confidence-matrix.md`.
+   - Proof: refreshed baseline `57` API endpoint entities, task-sync `0`
+     tasks without architecture links / `440` implementation entities without
+     task links / `0` verified entities without proof evidence, `38` route
+     files, `179` manifest route entries, and `189` unique `/auth` or `/v1`
+     API-test request path shapes by static extraction.
+   - Next lane conversion: keep as preparation evidence. If activated, create
+     separate lanes for route/task-link cleanup, provider-safe production read
+     smoke after protected key repair, or focused API assertions for manifest
+     entries without explicit proof.
+   - Scope policy: preparation-only; no runtime/deploy/protected mutation.
+
+1. `LUC-1682` docs and architecture graph synchronization hygiene review is
+   complete.
+   - Source:
+     `docs/planning/luc-1682-docs-and-architecture-graph-synchronization-hygiene-review.md`.
+   - Proof: Paperclip scanner refresh against Roost produced `entities=8726`,
+     `relations=10149`, `files=13571`; `npm run architecture:status` PASS
+     (`GREEN`, `452/761/34`, evidence queue `0`, chain worklist `0`, delta
+     `0/0/0`, all gates pass `yes`).
+   - Hygiene state: `tasks without architecture links=0`, `verified entities
+     without proof evidence=0`, `implementation entities without task links=440`.
+   - Next lane candidate: classifier/exclusion review for temporary QA mocks,
+     generated/public assets, vendor plugin files, mounted API route
+     aggregations, and shared primitives before creating repair tasks.
+   - Scope policy: preparation-only; no runtime/deploy/protected mutation.
+
+1. `LUC-1681` test-surface reconciliation is complete.
+   - Source: `docs/planning/luc-1681-test-surface-reconciliation.md`.
+   - Proof: `npm run check:public-js` PASS; `npm run check:route-capabilities`
+     PASS (`checkedManifestRoutes=179`, `checkedRouteFiles=34`,
+     `status=ok`); source scan found one executable API test file
+     (`src/tests/api.test.ts`) with `7` top-level tests, `1536` assertion
+     calls, `197` helper request calls, and `96` unique literal request paths.
+   - Reconciliation: API/static proof is concentrated and repeatable; UI proof
+     is mostly historical smoke evidence; protected runtime smokes remain
+     separate gated lanes; `test:api:local` is safe only as a disposable local
+     DB/container lifecycle and was not run in this read-only issue.
+   - Next lane conversion: choose one of `QA-API-001`, `QA-ROUTE-001`,
+     `QA-UI-001`, `QA-INTEGRATION-001`, or `QA-AI-001` from the packet when
+     the Roost PM wants worker-ready follow-up issues.
 
 1. `LUC-1214` parent coordination lane closed (`done`).
    - Source: `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md`.
@@ -62,10 +117,38 @@ Last updated: 2026-06-02
 1. Keep `LUC-261` full takeover audit baseline as the active blocked mission packet.
    - Source:
      `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md`.
+   - Protected deploy-smoke recheck (2026-06-02, comment
+     `aa25eb01-bf18-4e4f-9931-81c766819018`): executed exactly one approved
+     `npm run aog:deploy-smoke` using the approved `COMPANYCORE_API_KEY` path.
+     Result remains blocked: MCP manifest preflight `status=403`,
+     `error=invalid_api_key`,
+     `requestId=8608c18c-384e-44a4-b4d0-04cf924c49fb`. Continuity proof:
+     `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`,
+     gates `yes`), `git rev-parse --short HEAD` -> `b46a0e5`, UTC
+     `2026-06-02T03:28:21.0062451Z`. No product-code mutation, push, deploy
+     expansion, restart, unrelated runtime change, or secret disclosure.
+   - Protected deploy-smoke recheck (2026-06-02, comment
+     `a0788079-d202-404d-b36f-85cfbef9eeda`): executed exactly one approved
+     `npm run aog:deploy-smoke` using the approved `COMPANYCORE_API_KEY` path.
+     Result remains blocked: MCP manifest preflight `status=403`,
+     `error=invalid_api_key`,
+     `requestId=88024139-2756-4d84-a8d8-23d2eb1e8d9a`. Continuity proof:
+     `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`,
+     gates `yes`), `git rev-parse --short HEAD` -> `b46a0e5`, UTC
+     `2026-06-02T16:00:13.7509594Z`. No product-code mutation, push, deploy
+     expansion, restart, unrelated runtime change, or secret disclosure.
+   - Child-completion integration update (2026-06-02): direct child/source-control
+     lanes reached terminal state and were integrated into the parent baseline
+     packet. Fresh non-protected proof: `npm run architecture:status` PASS
+     (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates
+     `yes`); `git diff --check` PASS; `git rev-parse --short HEAD` ->
+     `b46a0e5`; timestamp `2026-06-02T05:25:31.4931311+02:00`. No protected
+     smoke rerun was executed because this wake carried no fresh key-scope
+     repair evidence and no fresh same-session protected rerun approval.
    - Source-control continuity update (2026-06-02): `LUC-1401` incorporated
      `LUC-1392` closure evidence into the baseline packet. Closure commit
-     `8cbb89e` is current `HEAD`; local status is clean except
-     `main...origin/main [ahead 1]`; the sidecar reported
+     `8cbb89e` was the incorporated closure commit; the later child-completion
+     integration checkpoint now observes `HEAD` at `b46a0e5`; the sidecar reported
      `architecture:status` PASS and `git diff --check` PASS. This does not
      unblock protected runtime proof.
    - Latest proof (2026-05-31): `npm run architecture:status` PASS
