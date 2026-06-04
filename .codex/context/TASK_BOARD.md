@@ -1,6 +1,15 @@
 # TASK_BOARD
 
 ## Ready
+- 2026-06-04: `LUC-261` fail-closed gate correction triaged from comment
+  `6c461982-0ed5-43ea-8b70-40c09770c10a`. Concrete action: updated the durable
+  baseline gate in
+  `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and
+  source-of-truth pointers. No protected smoke, credential probe, production
+  mutation, deploy, push, restart, or secret disclosure was performed.
+  Disposition remains `BLOCKED`; unblock owner/action is runtime secret owner
+  or board/operator providing approved CompanyCore credential/base-url metadata
+  or explicit protected deploy-smoke approval before one same-session recheck.
 - 2026-06-03: `LUC-1815` known-state evidence and architecture baseline
   completed in the Roost Project Manager preparation lane. Durable packet:
   `docs/planning/luc-1815-known-state-evidence-and-architecture-baseline.md`.

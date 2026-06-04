@@ -1,6 +1,14 @@
 # PROJECT_STATE
 
-Last updated: 2026-06-03
+Last updated: 2026-06-04
+- 2026-06-04: `LUC-261` fail-closed protected-gate correction is now the
+  current Roost runtime blocker. Triggering comment:
+  `6c461982-0ed5-43ea-8b70-40c09770c10a`. Action: updated the durable
+  baseline packet and state pointers without running protected smoke or probing
+  credentials. Required unblock is approved CompanyCore credential/base-url
+  metadata or explicit protected deploy-smoke approval before recheck. While
+  blocked, push, deploy, production mutation, protected recheck, and secret
+  disclosure remain forbidden. Disposition: `blocked`.
 - 2026-06-03: `LUC-1815` known-state evidence and architecture baseline
   completed in the Roost Project Manager preparation lane. Output:
   `docs/planning/luc-1815-known-state-evidence-and-architecture-baseline.md`.

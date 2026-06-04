@@ -1,6 +1,6 @@
 # Active Mission Packet
 
-Last updated: 2026-06-03
+Last updated: 2026-06-04
 
 ## Current Mission
 
@@ -312,6 +312,12 @@ rerun.
 - `LUC-261` runtime protected smoke remains externally blocked on valid runtime
   key scope and explicit one-run approval. This dependency is tracked but not
   executed in this planning heartbeat.
+- 2026-06-04 fail-closed correction: comment
+  `6c461982-0ed5-43ea-8b70-40c09770c10a` controls the current gate. Unblock
+  requires approved CompanyCore credential/base-url metadata or explicit
+  protected deploy-smoke approval before recheck. Forbidden while blocked:
+  push, deploy, production mutation, protected smoke recheck, and secret
+  disclosure.
 
 ## Previous Mission Pointer
 

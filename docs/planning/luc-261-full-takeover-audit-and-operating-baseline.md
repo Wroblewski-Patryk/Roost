@@ -96,6 +96,29 @@ Verified takeover operating baseline with synchronized source-of-truth updates.
   - `LUC-261` disposition is `blocked` until the protected deploy-smoke proof is executed with approved secure credentials.
   - Broader implementation remains activation-gated pending approved protected-proof execution.
 
+## Continuation Addendum (2026-06-04, fail-closed gate correction)
+
+- Triggering comment:
+  `6c461982-0ed5-43ea-8b70-40c09770c10a`.
+- Heartbeat objective: acknowledge the fail-closed correction and update the
+  durable gate without treating the blocked deliverable as unblocked.
+- Action taken: source-of-truth triage only. No protected smoke, credential
+  probe, production mutation, deploy, push, restart, or secret disclosure was
+  performed.
+- Controlling gate: this issue remains blocked until one of these exists:
+  1. approved CompanyCore credential/base-url metadata that proves the target
+     runtime key scope is repaired, or
+  2. explicit protected deploy-smoke approval before recheck.
+- Forbidden while blocked: push, deploy, production mutation, protected smoke
+  recheck, and secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action:
+  1. Runtime secret owner provides approved CompanyCore credential/base-url
+     metadata for the target runtime, or board/operator grants explicit
+     protected deploy-smoke approval.
+  2. After that approval exists, Roost Project Manager may execute one
+     same-session `npm run aog:deploy-smoke` recheck and record UTC evidence.
+
 ## Continuation Addendum (2026-05-27)
 
 - Heartbeat objective: execute the first protected proof lane after baseline publication.

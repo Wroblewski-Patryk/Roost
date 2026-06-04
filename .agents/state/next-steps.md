@@ -1,6 +1,6 @@
 # Next Steps
 
-Last updated: 2026-06-03
+Last updated: 2026-06-04
 
 ## NOW
 
@@ -147,6 +147,12 @@ Last updated: 2026-06-03
 1. Keep `LUC-261` full takeover audit baseline as the active blocked mission packet.
    - Source:
      `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md`.
+   - Current controlling gate (2026-06-04, comment
+     `6c461982-0ed5-43ea-8b70-40c09770c10a`): fail closed until approved
+     CompanyCore credential/base-url metadata exists or explicit protected
+     deploy-smoke approval is granted before recheck.
+   - Forbidden while blocked: push, deploy, production mutation, protected
+     smoke recheck, and secret disclosure.
    - Protected deploy-smoke recheck (2026-06-02, comment
      `aa25eb01-bf18-4e4f-9931-81c766819018`): executed exactly one approved
      `npm run aog:deploy-smoke` using the approved `COMPANYCORE_API_KEY` path.
