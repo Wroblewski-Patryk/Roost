@@ -350,6 +350,77 @@ rerun.
   remains GREEN (`452/761/34`, queues `0`, all gates pass `yes`), `HEAD=adfb3ba`.
   `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
   approval.
+- 2026-06-04 child-completion integration: direct child `LUC-1975` closed the
+  fourth protected-recheck docs/state dirty batch with commit `ef6396a`
+  (`docs: close Roost fourth protected recheck state`). Non-protected
+  continuity proof remains GREEN (`452/761/34`, queues `0`, all gates pass
+  `yes`), `git diff --check` PASS, `HEAD=ef6396a`. No protected smoke was run
+  because this wake had no fresh gate approval comment and the latest protected
+  proof still fails with `invalid_api_key`.
+- 2026-06-04 fifth gate recheck: comment
+  `89eef94a-81c9-4fb3-a557-e025cac0fdfe` opened exactly one protected
+  `npm run aog:deploy-smoke` recheck. Result: FAIL at MCP manifest preflight
+  with `status=403`, `error=invalid_api_key`,
+  `requestId=58e95ef7-79e5-4347-85f7-0a1988a30a97`. Architecture continuity
+  remains GREEN (`452/761/34`, queues `0`, all gates pass `yes`), `HEAD=ef6396a`.
+  `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
+  approval.
+- 2026-06-04 sixth gate recheck: comment
+  `e0b64d45-270e-495a-8125-6faf17a4572f` opened exactly one protected
+  `npm run aog:deploy-smoke` recheck. Result: FAIL at MCP manifest preflight
+  with `status=403`, `error=invalid_api_key`,
+  `requestId=2dae9c54-70cc-417e-9dec-b7cecca7398d`. Architecture continuity
+  remains GREEN (`452/761/34`, queues `0`, all gates pass `yes`), `HEAD=ef6396a`.
+  `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
+  approval.
+- 2026-06-04 seventh gate recheck: comment
+  `64dfe5bf-623a-4e2c-a8b4-f4a2b313f4be` opened exactly one protected
+  `npm run aog:deploy-smoke` recheck. Result: FAIL at MCP manifest preflight
+  with `status=403`, `error=invalid_api_key`,
+  `requestId=aebe8171-064e-4090-881b-fa64c1e22ce3`. Architecture continuity
+  remains GREEN (`452/761/34`, queues `0`, all gates pass `yes`), `HEAD=ef6396a`.
+  `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
+  approval.
+- 2026-06-04 eighth gate recheck: comment
+  `95258183-ab63-4206-8b7b-3b04c78a4b1c` opened exactly one protected
+  `npm run aog:deploy-smoke` recheck. Result: FAIL at MCP manifest preflight
+  with `status=403`, `error=invalid_api_key`,
+  `requestId=f91d7ccf-c681-4a81-a640-e158ccb0460d`. Architecture continuity
+  remains GREEN (`452/761/34`, queues `0`, all gates pass `yes`), `HEAD=ef6396a`.
+  `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
+  approval.
+- 2026-06-04 ninth gate recheck: comment
+  `de6149a3-6565-4036-8bad-e98b6eead692` opened exactly one protected
+  `npm run aog:deploy-smoke` recheck. Result: FAIL at MCP manifest preflight
+  with `status=403`, `error=invalid_api_key`,
+  `requestId=73216cd3-02b7-483d-b9c2-1a7861005d8f`. Architecture continuity
+  remains GREEN (`452/761/34`, queues `0`, all gates pass `yes`), `HEAD=ef6396a`.
+  `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
+  approval.
+- 2026-06-04 tenth gate recheck: comment
+  `115ade85-bbd6-47fa-a975-c409248668fb` opened exactly one protected
+  `npm run aog:deploy-smoke` recheck. Result: FAIL at MCP manifest preflight
+  with `status=403`, `error=invalid_api_key`,
+  `requestId=deaf36d9-de1a-4d40-b790-8c046a2d9cf6`. Architecture continuity
+  remains GREEN (`452/761/34`, queues `0`, all gates pass `yes`), `HEAD=ef6396a`.
+  `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
+  approval.
+- 2026-06-04 eleventh gate recheck: comment
+  `58b3fa64-6f64-4c4f-bb17-98e81bf1d0a8` opened exactly one protected
+  `npm run aog:deploy-smoke` recheck. Result: FAIL at MCP manifest preflight
+  with `status=403`, `error=invalid_api_key`,
+  `requestId=8a731347-2fb4-438c-aada-495328e961cb`. Architecture continuity
+  remains GREEN (`452/761/34`, queues `0`, all gates pass `yes`), `HEAD=ef6396a`.
+  `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
+  approval.
+- 2026-06-04 twelfth gate recheck: comment
+  `3c7e9040-59e1-4d75-9129-7148e5b5fe13` opened exactly one protected
+  `npm run aog:deploy-smoke` recheck. Result: FAIL at MCP manifest preflight
+  with `status=403`, `error=invalid_api_key`,
+  `requestId=ccd58e17-5b20-484a-885d-c5352a1ead71`. Architecture continuity
+  remains GREEN (`452/761/34`, queues `0`, all gates pass `yes`), `HEAD=ef6396a`.
+  `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
+  approval.
 
 ## Previous Mission Pointer
 
