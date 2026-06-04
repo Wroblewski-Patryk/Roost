@@ -318,6 +318,38 @@ rerun.
   protected deploy-smoke approval before recheck. Forbidden while blocked:
   push, deploy, production mutation, protected smoke recheck, and secret
   disclosure.
+- 2026-06-04 gate recheck: comment
+  `13d83c76-0949-437a-a612-4deca58b5c6a` opened exactly one protected
+  `npm run aog:deploy-smoke` recheck. Result: FAIL at MCP manifest preflight
+  with `status=403`, `error=invalid_api_key`,
+  `requestId=9b5fe213-3cb9-45e4-aae0-d83588d91a12`. Architecture continuity
+  remains GREEN (`452/761/34`, queues `0`, all gates pass `yes`), `HEAD=adfb3ba`.
+  `LUC-261` returns to BLOCKED pending runtime key repair plus fresh one-run
+  approval.
+- 2026-06-04 second gate recheck: comment
+  `adf19153-ceef-4fe7-8825-70449adf9e1a` opened exactly one protected
+  `npm run aog:deploy-smoke` recheck. Result: FAIL at MCP manifest preflight
+  with `status=403`, `error=invalid_api_key`,
+  `requestId=1872b7a8-b1df-4b3f-a0cb-5897c5be1b74`. Architecture continuity
+  remains GREEN (`452/761/34`, queues `0`, all gates pass `yes`), `HEAD=adfb3ba`.
+  `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
+  approval.
+- 2026-06-04 third gate recheck: comment
+  `f7319290-2acf-41ee-b20b-5333b794eea2` opened exactly one protected
+  `npm run aog:deploy-smoke` recheck. Result: FAIL at MCP manifest preflight
+  with `status=403`, `error=invalid_api_key`,
+  `requestId=c6ea4cc4-ff94-4aa9-b5b2-683c4306d2ce`. Architecture continuity
+  remains GREEN (`452/761/34`, queues `0`, all gates pass `yes`), `HEAD=adfb3ba`.
+  `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
+  approval.
+- 2026-06-04 fourth gate recheck: comment
+  `c9b16c1d-fe95-4374-8542-d29ee9be00bd` opened exactly one protected
+  `npm run aog:deploy-smoke` recheck. Result: FAIL at MCP manifest preflight
+  with `status=403`, `error=invalid_api_key`,
+  `requestId=195f6fa8-c6df-4c7b-9b66-0761cdd8a461`. Architecture continuity
+  remains GREEN (`452/761/34`, queues `0`, all gates pass `yes`), `HEAD=adfb3ba`.
+  `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
+  approval.
 
 ## Previous Mission Pointer
 

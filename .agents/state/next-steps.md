@@ -147,6 +147,50 @@ Last updated: 2026-06-04
 1. Keep `LUC-261` full takeover audit baseline as the active blocked mission packet.
    - Source:
      `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md`.
+   - Latest protected recheck (2026-06-04, comment
+     `c9b16c1d-fe95-4374-8542-d29ee9be00bd`): executed exactly one approved
+     `npm run aog:deploy-smoke` using the approved `COMPANYCORE_API_KEY` path.
+     Result remains blocked: MCP manifest preflight `status=403`,
+     `error=invalid_api_key`,
+     `requestId=195f6fa8-c6df-4c7b-9b66-0761cdd8a461`. Continuity proof:
+     `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+     evidence queue `0`, chain worklist `0`, all gates pass `yes`),
+     `HEAD=adfb3ba`, UTC `2026-06-04T12:03:15.1350726Z`. No product-code
+     mutation, push, deploy expansion, unrelated runtime change, restart,
+     production mutation, or secret disclosure.
+   - Latest protected recheck (2026-06-04, comment
+     `f7319290-2acf-41ee-b20b-5333b794eea2`): executed exactly one approved
+     `npm run aog:deploy-smoke` using the approved `COMPANYCORE_API_KEY` path.
+     Result remains blocked: MCP manifest preflight `status=403`,
+     `error=invalid_api_key`,
+     `requestId=c6ea4cc4-ff94-4aa9-b5b2-683c4306d2ce`. Continuity proof:
+     `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+     evidence queue `0`, chain worklist `0`, all gates pass `yes`),
+     `HEAD=adfb3ba`, UTC `2026-06-04T11:33:14.0882201Z`. No product-code
+     mutation, push, deploy expansion, unrelated runtime change, restart,
+     production mutation, or secret disclosure.
+   - Latest protected recheck (2026-06-04, comment
+     `adf19153-ceef-4fe7-8825-70449adf9e1a`): executed exactly one approved
+     `npm run aog:deploy-smoke` using the approved `COMPANYCORE_API_KEY` path.
+     Result remains blocked: MCP manifest preflight `status=403`,
+     `error=invalid_api_key`,
+     `requestId=1872b7a8-b1df-4b3f-a0cb-5897c5be1b74`. Continuity proof:
+     `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+     evidence queue `0`, chain worklist `0`, all gates pass `yes`),
+     `HEAD=adfb3ba`, UTC `2026-06-04T11:02:43.0415855Z`. No product-code
+     mutation, push, deploy expansion, unrelated runtime change, restart,
+     production mutation, or secret disclosure.
+   - Latest protected recheck (2026-06-04, comment
+     `13d83c76-0949-437a-a612-4deca58b5c6a`): executed exactly one approved
+     `npm run aog:deploy-smoke` using the approved `COMPANYCORE_API_KEY` path.
+     Result remains blocked: MCP manifest preflight `status=403`,
+     `error=invalid_api_key`,
+     `requestId=9b5fe213-3cb9-45e4-aae0-d83588d91a12`. Continuity proof:
+     `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+     evidence queue `0`, chain worklist `0`, all gates pass `yes`),
+     `HEAD=adfb3ba`, UTC `2026-06-04T10:33:48.8066845Z`. No product-code
+     mutation, push, deploy expansion, unrelated runtime change, restart, or
+     secret disclosure.
    - Current controlling gate (2026-06-04, comment
      `6c461982-0ed5-43ea-8b70-40c09770c10a`): fail closed until approved
      CompanyCore credential/base-url metadata exists or explicit protected
