@@ -1,6 +1,101 @@
 # TASK_BOARD
 
 ## Ready
+- 2026-06-05: `LUC-261` sixtieth gate freshness approval consumed from
+  comment `1e477ff8-c09c-4e8c-9932-79e5df9c75d9`. Concrete action: executed
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path. Runtime presence proof:
+  `COMPANYCORE_API_KEY_PRESENT=True`, `COMPANYCORE_BASE_URL_PRESENT=True`,
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`. Result:
+  `npm run aog:deploy-smoke` -> `FAIL` at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=2e48fbc9-cca3-439a-a3be-1b44ea8c9036`. Continuity proof:
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, all gates pass `yes`), `HEAD=de95ec8`, UTC
+  `2026-06-05T20:03:18.5529733Z`. Scope remained smoke-only: no product-code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `BLOCKED`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` fifty-ninth gate freshness approval consumed from
+  comment `a0d1ce61-c2fc-45fe-bf74-1804c41f19d8`. Concrete action: executed
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path. Runtime presence proof:
+  `COMPANYCORE_API_KEY_PRESENT=True`, `COMPANYCORE_BASE_URL_PRESENT=True`,
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`. Result:
+  `npm run aog:deploy-smoke` -> `FAIL` at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=2a9d9804-ffe4-4178-abe7-3c58736def8d`. Continuity proof:
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, all gates pass `yes`), `HEAD=de95ec8`, UTC
+  `2026-06-05T19:32:15.7105528Z`. Scope remained smoke-only: no product-code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `BLOCKED`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` fifty-eighth gate freshness approval consumed from
+  comment `38a9f270-06fc-48fa-b45a-37f3b7e34472`. Concrete action: executed
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path. Runtime presence proof:
+  `COMPANYCORE_API_KEY_PRESENT=True`, `COMPANYCORE_BASE_URL_PRESENT=True`,
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`. Result:
+  `npm run aog:deploy-smoke` -> `FAIL` at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=c4e505ea-92f8-47bf-8660-4376047897ec`. Continuity proof:
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, all gates pass `yes`), `HEAD=de95ec8`, UTC
+  `2026-06-05T19:02:36.2670224Z`. Scope remained smoke-only: no product-code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `BLOCKED`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` fifty-seventh gate freshness approval consumed from
+  comment `e11853ce-c43c-4b39-be52-6fa38315d616`. Concrete action: executed
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path. Runtime presence proof:
+  `COMPANYCORE_API_KEY_PRESENT=True`, `COMPANYCORE_BASE_URL_PRESENT=True`,
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`. Result:
+  `npm run aog:deploy-smoke` -> `FAIL` at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=6790e5ab-539c-41f9-ad14-9ee33a917092`. Continuity proof:
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, all gates pass `yes`), `HEAD=de95ec8`, UTC
+  `2026-06-05T18:32:31.7526184Z`. Scope remained smoke-only: no product-code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `BLOCKED`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` fifty-sixth gate freshness approval consumed from
+  comment `19019f2e-5267-4f87-ae14-b05bdd3eb334`. Concrete action: executed
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path. Runtime presence proof:
+  `COMPANYCORE_API_KEY_PRESENT=True`, `COMPANYCORE_BASE_URL_PRESENT=True`,
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`. Result:
+  `npm run aog:deploy-smoke` -> `FAIL` at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=13b11b85-f38c-495e-8e80-c876418f0416`. Continuity proof:
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, all gates pass `yes`), `HEAD=de95ec8`, UTC
+  `2026-06-05T18:01:54.1422792Z`. Scope remained smoke-only: no product-code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `BLOCKED`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` blocker-resolution wake reviewed without a protected
+  smoke rerun. Wake reason: `issue_blockers_resolved`; pending comments `0/0`;
+  latest comment id unknown. Runtime presence proof showed
+  `COMPANYCORE_API_KEY_PRESENT=True`, `COMPANYCORE_BASE_URL_PRESENT=True`, and
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset` at UTC
+  `2026-06-05T17:38:00.2044256Z`. Because there was no fresh one-run gate
+  approval comment in this wake, no protected `npm run aog:deploy-smoke` was
+  run. Continuity proof: `npm run architecture:status` PASS (`GREEN`, graph
+  `452/761/34`, evidence queue `0`, chain worklist `0`, all gates pass
+  `yes`), `HEAD=de95ec8`, clean worktree before this docs/state update.
+  Scope remained non-protected and docs/state-only: no product-code mutation,
+  protected smoke, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `BLOCKED`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
 - 2026-06-05: `LUC-261` fifty-fifth gate freshness approval consumed from
   comment `b43bbc59-4425-463d-878a-a7bb18ea8670`. Concrete action: executed
   exactly one protected deploy-smoke recheck using the approved
