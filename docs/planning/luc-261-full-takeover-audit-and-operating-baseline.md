@@ -784,6 +784,992 @@ Verified takeover operating baseline with synchronized source-of-truth updates.
   board/operator must provide a fresh one-run protected deploy-smoke approval
   before another recheck.
 
+## Continuation Addendum (2026-06-05, child-completion source-control integration)
+
+- Trigger: heartbeat wake `issue_children_completed` for `LUC-261`.
+- Child-lane integration decision:
+  - Incorporated `LUC-2050`, which classified and closed the current
+    `LUC-261` docs/state dirty packet from the board janitor.
+  - Closure commit: `3aacc65` (`docs: close Roost LUC-261 janitor packet`).
+  - Files closed by child lane:
+    `.agents/state/active-mission.md`, `.agents/state/next-steps.md`,
+    `.codex/context/PROJECT_STATE.md`, `.codex/context/TASK_BOARD.md`, and
+    `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md`.
+- Fresh non-protected proof executed in this heartbeat:
+  - `git status --short --branch` -> clean worktree, ahead-only
+    (`## main...origin/main [ahead 6]`).
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git diff --check` -> PASS.
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-04T23:10:58.8409790Z`.
+- Protected-runtime action:
+  - Not executed. This wake contains child completion evidence, not a fresh
+    gate-freshness approval for another protected deploy-smoke recheck.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, twenty-third gate recheck ready)
+
+- Triggering comment:
+  `605a6659-393f-4981-a971-eedf6d0abce6`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-04T23:31:50.0280832Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=408ba0b4-82b0-438a-ba01-7af8c0a501f1`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-04T23:32:06.8060427Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, twenty-fourth gate recheck ready)
+
+- Triggering comment:
+  `b655c02a-32c7-406c-ac45-dfe30ba08d53`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T00:35:12.1868675Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=eeefa86f-7ab6-47af-a4fb-cd27eeeaf7bb`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T00:35:39.7703425Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, twenty-fifth gate recheck ready)
+
+- Triggering comment:
+  `9d01b83b-14c2-4e20-a698-6cf5a1f53f56`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T03:16:34.0853555Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=bdcc9a17-4d68-4a8b-818d-976b4cd2f941`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T03:17:04.7006098Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, twenty-sixth gate recheck ready)
+
+- Triggering comment:
+  `11c03304-6d55-4f6a-9e3f-84ec6e6b7d99`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T03:31:51.0934677Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=f7c29d91-0fcb-4c8d-a3e1-3a3ca725c7ba`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T03:32:06.7154542Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, twenty-seventh gate recheck ready)
+
+- Triggering comment:
+  `2e8604c9-b920-4b6b-b743-616c0356a4fd`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T04:01:54.8487982Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=6153b308-3624-4c58-bc3a-3e229a61a7f8`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T04:02:11.0367160Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, twenty-eighth gate recheck ready)
+
+- Triggering comment:
+  `3bef8307-9ac5-4520-bef0-d62d74085a48`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T04:32:25.3680478Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=cc808ca6-3277-4fad-af78-c9a3698b58d3`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T04:32:43.3357691Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, twenty-ninth gate recheck ready)
+
+- Triggering comment:
+  `69495438-8ddc-4cbb-9ccb-3e1faa592b45`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T05:01:52.8463450Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=b65fdb5f-c5d0-4c6a-82c3-38fcc8f8d321`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T05:02:09.1534020Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, thirtieth gate recheck ready)
+
+- Triggering comment:
+  `bc78599d-402c-488c-bac6-b5fcadec793a`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T05:32:00.4140844Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=3763bf9d-db15-4f89-8e22-3c14d4dd7d08`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T05:32:18.4850102Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, thirty-first gate recheck ready)
+
+- Triggering comment:
+  `679d0b99-5e1b-4caf-9590-9e7c460caa83`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T06:02:16.8969956Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=8bde79c7-afe1-42b1-b646-3a747fc05c34`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T06:02:35.8060441Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, thirty-second gate recheck ready)
+
+- Triggering comment:
+  `1c7492ff-aa41-4c72-8ff1-42f7ba95783a`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T06:32:00.5645979Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=1054bbf4-10ac-4b4a-bc6e-6fbb490efa80`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T06:32:33.1075950Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, thirty-third gate recheck ready)
+
+- Triggering comment:
+  `4f2c2673-5e43-4370-9aa5-1c8f56b113ff`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T07:03:12.0285434Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=87b1a2af-476e-40c4-8944-a7bf1831d068`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T07:03:33.8643257Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, thirty-fourth gate recheck ready)
+
+- Triggering comment:
+  `dcba6fef-a015-4d75-910b-c9893f6c6109`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T07:32:07.8594948Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=ee44e6f4-2c63-4c9e-8afd-f61c7e0dc3bf`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T07:32:25.0299459Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, thirty-fifth gate recheck ready)
+
+- Triggering comment:
+  `afe378f9-a825-4622-b411-f413ca5cdcdb`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T08:02:11.1380713Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=439f1570-e33c-4f47-8e56-f369c05e0e16`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T08:02:32.5090057Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, thirty-sixth gate recheck ready)
+
+- Triggering comment:
+  `c4fb1c02-b5e9-4534-93d9-437bba7634b4`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T08:32:29.1688668Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=39e70c5a-d562-47e4-8007-d33e9e9dd2fa`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T08:32:48.9889963Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, thirty-seventh gate recheck ready)
+
+- Triggering comment:
+  `d3144714-2389-42b4-ad92-1d6ed310ff65`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T09:02:21.9685618Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=86abb206-7754-4bad-9773-f5676f1de76e`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T09:02:39.8745558Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, thirty-eighth gate recheck ready)
+
+- Triggering comment:
+  `a39e708f-201b-4ca9-90a3-b8fbacbe812a`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T09:07:30.1841977Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=6af7e12d-2e72-49b3-8f79-51a9de83eb93`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T09:07:53.5274217Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, thirty-ninth gate recheck ready)
+
+- Triggering comment:
+  `6424681c-e35b-45d1-bdb5-01ff63d260d5`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T09:32:34.7519300Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=c7275b95-a8f9-4d77-afb9-7a14ca1b605a`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T09:32:54.5880435Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, fortieth gate recheck ready)
+
+- Triggering comment:
+  `11390a98-f5de-4900-9393-8dbafd71d578`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T10:02:43.0553997Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=e4ef45b6-f805-4649-a980-b7204e5167c8`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T10:03:54.5600760Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, forty-first gate recheck ready)
+
+- Triggering comment:
+  `0668e44d-3802-4560-983e-c3ecd7eb6503`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T10:32:25.4837959Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=a1a1446e-524b-4138-99ef-6fad9bcef338`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T10:32:46.2312576Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, forty-second gate recheck ready)
+
+- Triggering comment:
+  `601829b6-fa51-4178-ab33-795adac23ec9`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T11:03:02.7357011Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=91881ef4-cd50-4c1b-bfb3-2d34092a9798`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T11:03:26.4158177Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, forty-third gate recheck ready)
+
+- Triggering comment:
+  `3617fe70-eb28-4604-a859-645438ee551a`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T11:32:43.9077847Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=04c7d22f-422b-42a4-9655-a858d732fb9d`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T11:33:02.7012704Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, forty-fourth gate recheck ready)
+
+- Triggering comment:
+  `b0483c2e-7317-456b-8325-928c30c9e51e`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T12:03:05.0316406Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=354ec1e8-590b-4f70-8762-cb0a0724dc56`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T12:03:28.2723452Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, forty-fifth gate recheck ready)
+
+- Triggering comment:
+  `6b133e54-789c-4e26-8057-3b1b521a291c`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T12:34:26.3066657Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=c8ee06c1-993b-40cc-88e6-1f2092f45f9a`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T12:34:48.8782564Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, forty-sixth gate recheck ready)
+
+- Triggering comment:
+  `60628579-7c22-4c45-8ae2-7e2970290fad`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T13:02:12.8719704Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=bbfe8396-ae78-4053-b284-6244ba5d5349`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T13:02:29.9688633Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, forty-seventh gate recheck ready)
+
+- Triggering comment:
+  `0cb6d49a-8ec6-4648-aa11-6c5def5f1bd3`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T13:32:14.8460087Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=cf878a17-1e86-4d90-a959-97ff4e494804`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T13:32:35.7572141Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, forty-eighth gate recheck ready)
+
+- Triggering comment:
+  `4b379f7d-3181-4bc6-a95b-2de57c2c3c92`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T14:02:16.8591490Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=23e11040-b7c0-485b-b8ea-bd98247c90e0`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T14:02:36.8620242Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, forty-ninth gate recheck ready)
+
+- Triggering comment:
+  `134c2047-c03c-440a-8c9f-01b7be52e73e`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T14:31:56.9627631Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=bd0408ac-65ba-443f-878c-690e91a00de8`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T14:32:24.0301585Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, fiftieth gate recheck ready)
+
+- Triggering comment:
+  `a06db914-b295-49c8-857d-a5dea3677bd1`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T15:01:56.6533582Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=572ec6da-54b1-4fd1-811b-0da8d791b1d4`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T15:02:17.3996886Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, fifty-first gate recheck ready)
+
+- Triggering comment:
+  `f2951298-e6e6-4e16-89cb-4a517fe31850`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T15:32:58.2024205Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=06ea6382-529b-4e5e-90fa-7d2b89f06a24`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T15:33:19.9277413Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, fifty-second gate recheck ready)
+
+- Triggering comment:
+  `404c43c4-0a73-4952-9e85-18c42fb7c03c`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T16:02:54.5344430Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=f2df3979-cc4d-419e-a943-12c288d8fb19`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T16:03:17.7467453Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, fifty-third gate recheck ready)
+
+- Triggering comment:
+  `8d066f8f-1039-4728-8f73-fcb912d2a105`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T16:32:12.7816910Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=eb27dd7c-20ad-4ef2-b966-c8d3a484e5ac`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T16:32:42.6220274Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, fifty-fourth gate recheck ready)
+
+- Triggering comment:
+  `5c506625-486c-42d1-b7c0-e71c1193c68d`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T17:02:20.3830667Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=774e78da-1637-40b7-9f36-d6e18f1730b6`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T17:02:43.7434152Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-05, fifty-fifth gate recheck ready)
+
+- Triggering comment:
+  `b43bbc59-4425-463d-878a-a7bb18ea8670`.
+- Heartbeat objective: consume the newer gate freshness approval and execute
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-05T17:32:18.5725770Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=896406ee-77ec-4a70-9345-5a8b5ce01b92`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `3aacc65`.
+  - UTC evidence timestamp: `2026-06-05T17:32:44.2596162Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
 ## Continuation Addendum (2026-05-27)
 
 - Heartbeat objective: execute the first protected proof lane after baseline publication.
