@@ -4,6 +4,38 @@ Last updated: 2026-06-05
 
 ## NOW
 
+1. `LUC-261` protected runtime start-policy proof remains blocked after the
+   seventy-fourth approved recheck.
+   - Trigger: gate freshness approval comment
+     `18e11960-68fc-4084-b2b3-d558fb0ca80a`.
+   - Action: ran exactly one protected `npm run aog:deploy-smoke` using the
+     approved `COMPANYCORE_API_KEY` path.
+   - Result: FAIL at MCP manifest preflight with `status=403`,
+     `error=invalid_api_key`,
+     `requestId=1c824a04-7b3c-4bcc-877f-b18ff6033b7a`.
+   - Continuity proof: `npm run architecture:status` PASS (`GREEN`,
+     `452/761/34`, queues `0`, all gates pass `yes`), `HEAD=598b3a4`, UTC
+     `2026-06-06T02:22:03.4134369Z`.
+   - Next unblock: runtime secret owner repairs/provisions a CompanyCore key
+     accepted by the target MCP manifest policy, then board/operator grants a
+     fresh one-run protected deploy-smoke approval.
+
+1. `LUC-261` remains blocked after the latest blocker-resolution wake review.
+   - Trigger: `issue_blockers_resolved` wake with no pending comments and no
+     latest comment id.
+   - Protected smoke: not run, because this wake did not include a fresh
+     one-run gate approval comment.
+   - Runtime presence proof: `COMPANYCORE_API_KEY_PRESENT=True`,
+     `COMPANYCORE_BASE_URL_PRESENT=True`,
+     `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`, UTC
+     `2026-06-06T02:12:24.7802965Z`.
+   - Continuity proof: `npm run architecture:status` PASS (`GREEN`,
+     `452/761/34`, queues `0`, all gates pass `yes`), `HEAD=598b3a4`,
+     clean worktree before this docs/state update.
+   - Next unblock: runtime secret owner repairs/provisions a CompanyCore key
+     accepted by the target MCP manifest policy, then board/operator grants a
+     fresh one-run protected deploy-smoke approval.
+
 1. `LUC-261` remains blocked after the latest blocker-resolution wake review.
    - Trigger: `issue_blockers_resolved` wake with no pending comments and no
      latest comment id.

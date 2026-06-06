@@ -4,6 +4,31 @@ Last updated: 2026-06-05
 
 ## Current Mission
 
+- Mission ID: LUC-2401-SOURCE-CONTROL-CLASSIFICATION
+- Status: DONE
+- Selected objective: Classify and close the current `LUC-261` dirty docs/state
+  packet without reverting related runtime-gate continuity work.
+- Why this mission now: Paperclip assigned `[LUC-2401](/LUC/issues/LUC-2401)`
+  directly to the Roost Project Manager; the wake payload required concrete
+  source-control classification action in this heartbeat.
+- Scope: source-control classification over the dirty `LUC-261` docs/state
+  packet and durable closure evidence.
+- Exclusions: no runtime code, schema, migration, deploy, push, protected
+  smoke, production mutation, server/browser/database process, restart, or
+  secret access.
+- Output:
+  `docs/planning/luc-2401-source-control-classification-for-luc-261-dirty-docs-state-packet.md`.
+- Evidence: `git status --short --branch` showed `main...origin/main [ahead
+  10]` with five modified docs/state/planning files; `git diff --stat` showed
+  `177 insertions(+)`; `git diff --name-status` showed only modifications;
+  `git diff --check` returned no whitespace/conflict-marker errors beyond
+  line-ending normalization warnings.
+- Final disposition: done after classification and source-control closure.
+  `LUC-261` remains separately blocked by target-runtime key repair plus fresh
+  one-run protected deploy-smoke approval.
+
+## Previous Mission
+
 - Mission ID: LUC-1815-KNOWN-STATE-BASELINE
 - Status: DONE
 - Selected objective: Refresh Roost/companycore known-state evidence and
@@ -980,6 +1005,27 @@ rerun.
   registration flag `unset`) at UTC `2026-06-06T01:15:39.4631534Z`.
   Architecture continuity remains GREEN (`452/761/34`, queues `0`, all gates
   pass `yes`), `HEAD=2f20491`, clean worktree before this docs/state update.
+  `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
+  protected deploy-smoke approval.
+- 2026-06-06 follow-up blocker-resolution review: wake reason
+  `issue_blockers_resolved` again carried no fresh gate approval comment
+  (`pending comments: 0/0`, latest comment unknown), so no protected
+  `npm run aog:deploy-smoke` was run. Runtime presence remained true
+  (`COMPANYCORE_API_KEY_PRESENT=True`, `COMPANYCORE_BASE_URL_PRESENT=True`,
+  registration flag `unset`) at UTC `2026-06-06T02:12:24.7802965Z`.
+  Architecture continuity remains GREEN (`452/761/34`, queues `0`, all gates
+  pass `yes`), `HEAD=598b3a4`, clean worktree before this docs/state update.
+  `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
+  protected deploy-smoke approval.
+- 2026-06-06 seventy-fourth gate recheck: comment
+  `18e11960-68fc-4084-b2b3-d558fb0ca80a` opened exactly one protected
+  `npm run aog:deploy-smoke` recheck. Result: FAIL at MCP manifest preflight
+  with `status=403`, `error=invalid_api_key`,
+  `requestId=1c824a04-7b3c-4bcc-877f-b18ff6033b7a`. Architecture continuity
+  remains GREEN (`452/761/34`, queues `0`, all gates pass `yes`),
+  `HEAD=598b3a4`, UTC `2026-06-06T02:22:03.4134369Z`. Scope stayed
+  smoke-only: no product-code mutation, push, deploy expansion, unrelated
+  runtime change, restart, production mutation, or secret disclosure.
   `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
   protected deploy-smoke approval.
 

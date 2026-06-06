@@ -1,6 +1,44 @@
 # TASK_BOARD
 
 ## Ready
+- 2026-06-06: `LUC-2401` classified the current `LUC-261` dirty docs/state
+  packet as coherent source-control continuity. Output:
+  `docs/planning/luc-2401-source-control-classification-for-luc-261-dirty-docs-state-packet.md`.
+  Verification covered branch status, porcelain dirty set, diff stat,
+  name-status, whitespace/conflict hygiene, and scoped secret-risk search.
+  Scope remained docs/state-only: no product-code mutation, schema, migration,
+  generated graph, protected smoke, deploy, push, restart, production mutation,
+  or secret disclosure. Disposition: `DONE`; `LUC-261` remains separately
+  blocked by runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-06: `LUC-261` seventy-fourth gate freshness approval consumed from
+  comment `18e11960-68fc-4084-b2b3-d558fb0ca80a`. Concrete action: executed
+  exactly one protected deploy-smoke recheck using the approved
+  `COMPANYCORE_API_KEY` path. Result: `npm run aog:deploy-smoke` -> `FAIL`
+  at MCP manifest preflight with `status=403`, `error=invalid_api_key`,
+  `requestId=1c824a04-7b3c-4bcc-877f-b18ff6033b7a`. Continuity proof:
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, all gates pass `yes`), `HEAD=598b3a4`, UTC
+  `2026-06-06T02:22:03.4134369Z`. Scope remained smoke-only: no product-code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `BLOCKED`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-06: `LUC-261` follow-up blocker-resolution wake reviewed without a
+  protected smoke rerun. Wake reason: `issue_blockers_resolved`; pending
+  comments `0/0`; latest comment id unknown. Runtime presence proof showed
+  `COMPANYCORE_API_KEY_PRESENT=True`, `COMPANYCORE_BASE_URL_PRESENT=True`, and
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset` at UTC
+  `2026-06-06T02:12:24.7802965Z`. Because there was no fresh one-run gate
+  approval comment in this wake, no protected `npm run aog:deploy-smoke` was
+  run. Continuity proof: `npm run architecture:status` PASS (`GREEN`, graph
+  `452/761/34`, evidence queue `0`, chain worklist `0`, all gates pass
+  `yes`), `HEAD=598b3a4`, clean worktree before this docs/state update.
+  Scope remained non-protected and docs/state-only: no product-code mutation,
+  protected smoke, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `BLOCKED`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
 - 2026-06-06: `LUC-261` blocker-resolution wake reviewed without a protected
   smoke rerun. Wake reason: `issue_blockers_resolved`; pending comments `0/0`;
   latest comment id unknown. Runtime presence proof showed
