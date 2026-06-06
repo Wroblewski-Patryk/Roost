@@ -1,6 +1,19 @@
 # PROJECT_STATE
 
-Last updated: 2026-06-05
+Last updated: 2026-06-06
+- 2026-06-06: `LUC-261` blocker-resolution wake reviewed without protected
+  smoke. Wake reason was `issue_blockers_resolved`, but the payload had no
+  pending comments and no fresh gate approval comment. Runtime presence proof
+  showed `COMPANYCORE_API_KEY_PRESENT=True`,
+  `COMPANYCORE_BASE_URL_PRESENT=True`, and registration disabled at UTC
+  `2026-06-06T01:15:39.4631534Z`. Continuity remains green:
+  `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass
+  `yes`), `HEAD=2f20491`, clean worktree before this docs/state update. Scope
+  remained non-protected and docs/state-only: no protected smoke, code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
 - 2026-06-06: `LUC-261` seventy-third protected deploy-smoke recheck executed
   exactly once after gate freshness approval from comment
   `9e7bf0d6-ae55-495f-829d-1234941e38fe`. Result:

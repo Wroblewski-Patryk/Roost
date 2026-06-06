@@ -972,6 +972,16 @@ rerun.
   runtime change, restart, production mutation, or secret disclosure.
   `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
   protected deploy-smoke approval.
+- 2026-06-06 blocker-resolution review: wake reason
+  `issue_blockers_resolved` carried no fresh gate approval comment
+  (`pending comments: 0/0`, latest comment unknown), so no protected
+  `npm run aog:deploy-smoke` was run. Runtime presence remained true
+  (`COMPANYCORE_API_KEY_PRESENT=True`, `COMPANYCORE_BASE_URL_PRESENT=True`,
+  registration flag `unset`) at UTC `2026-06-06T01:15:39.4631534Z`.
+  Architecture continuity remains GREEN (`452/761/34`, queues `0`, all gates
+  pass `yes`), `HEAD=2f20491`, clean worktree before this docs/state update.
+  `LUC-261` remains BLOCKED pending runtime key repair plus fresh one-run
+  protected deploy-smoke approval.
 
 ## Previous Mission Pointer
 
