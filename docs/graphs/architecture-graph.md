@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-03T16:10:07.842Z
+Generated: 2026-06-06T14:38:37.948Z
 
 ## Canonical Exports
 
@@ -1004,10 +1004,13 @@ Generated: 2026-06-03T16:10:07.842Z
 | documents | document:luc-1682-docs-and-architecture-graph-synchronization-hygiene-review:a75227756e | module:docs:6784d83cb0 | docs/planning/luc-1682-docs-and-architecture-graph-synchronization-hygiene-review.md |
 | documents | document:luc-1719-source-control-closure-for-2026-06-03-dirty-docs-state-context-packet:616515911f | module:docs:6784d83cb0 | docs/planning/luc-1719-source-control-closure-for-2026-06-03-dirty-docs-state-context-packet.md |
 | documents | document:luc-1808-known-state-evidence-and-architecture-baseline:0ca23d812b | module:docs:6784d83cb0 | docs/planning/luc-1808-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-1815-known-state-evidence-and-architecture-baseline:12fde20414 | module:docs:6784d83cb0 | docs/planning/luc-1815-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-183-readiness-scan-note-preparation-only-non-mutating:f06e6aa7cb | module:docs:6784d83cb0 | docs/planning/luc-183-intake-readiness-scan-note.md |
 | documents | document:luc-186-legacy-docs-deletion-churn-triage-read-only:ecf1c8a2cd | module:docs:6784d83cb0 | docs/planning/luc-186-legacy-docs-deletion-churn-triage.md |
 | documents | document:luc-187-canonical-docs-root-pin-and-takeover-handoff-preparation:96aa64c52d | module:docs:6784d83cb0 | docs/planning/luc-187-canonical-docs-root-and-takeover-handoff.md |
 | documents | document:luc-190-activation-readiness-review-after-scm-cleanup:72fd11995b | module:docs:6784d83cb0 | docs/planning/luc-190-activation-readiness-review-after-scm-cleanup.md |
+| documents | document:luc-2362-dirty-state-context-docs-classification:45e28d0a3a | module:docs:6784d83cb0 | docs/planning/luc-2362-dirty-state-context-docs-classification.md |
+| documents | document:luc-2401-source-control-classification-for-luc-261-dirty-docs-state-packet:6d04a28fc2 | module:docs:6784d83cb0 | docs/planning/luc-2401-source-control-classification-for-luc-261-dirty-docs-state-packet.md |
 | documents | document:luc-271-deployment-mode-acceptance-criteria-clarification:f101ba18a7 | module:docs:6784d83cb0 | docs/planning/luc-271-deployment-mode-acceptance-criteria.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-06-03T16:10:07.842Z
 | documents | document:process-core-workflow-core-architecture:f96383f7d0 | module:docs:6784d83cb0 | docs/architecture/process-core-workflow-core-architecture.md |
 | documents | document:processes-model:8823cf557b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0043.md |
 | documents | document:product-definition:d21d8473bb | module:docs:6784d83cb0 | docs/product/product.md |
-| documents | document:product-map:dc083bb565 | module:docs:6784d83cb0 | docs/maps/product-map.md |
-| documents | document:product-overview:7aa6455942 | module:docs:6784d83cb0 | docs/product/overview.md |
-| documents | document:production-drive-import-and-freshness-smoke:ef45388c71 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-PROD-DRIVE-IMPORT-SMOKE.md |

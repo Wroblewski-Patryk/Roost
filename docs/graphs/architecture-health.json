@@ -1,17 +1,17 @@
 {
-  "generated_at": "2026-06-03T16:10:07.842Z",
+  "generated_at": "2026-06-06T14:38:37.948Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 8726,
-    "relations": 10149,
+    "entities": 8729,
+    "relations": 10155,
     "by_type": {
       "agent": 47,
       "api_endpoint": 57,
       "component": 7,
-      "document": 882,
+      "document": 885,
       "feature": 198,
       "function": 7257,
       "migration": 31,
@@ -24,7 +24,7 @@
     "by_status": {
       "blocked": 4,
       "deprecated": 4,
-      "implemented": 8709,
+      "implemented": 8712,
       "in_progress": 1,
       "tested": 8
     }
@@ -3237,6 +3237,5025 @@
           "path": "src/modules/deals/deals.routes.ts",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
+        }
+      ]
+    },
+    "actionable_implementation_without_tests": {
+      "count": 1911,
+      "items": [
+        {
+          "id": "api_endpoint:use-react:1a47f6396c",
+          "type": "api_endpoint",
+          "name": "USE /react",
+          "path": ".tmp/web-qa-001/mock-server.cjs#/react",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:get-v1-assets-context:19f2e7b147",
+          "type": "api_endpoint",
+          "name": "GET /v1/assets/context",
+          "path": ".tmp/web-qa-001/mock-server.cjs#/v1/assets/context",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:post-v1-auth-login:4e16f8d385",
+          "type": "api_endpoint",
+          "name": "POST /v1/auth/login",
+          "path": ".tmp/web-qa-001/mock-server.cjs#/v1/auth/login",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:post-v1-auth-register:973f9054a3",
+          "type": "api_endpoint",
+          "name": "POST /v1/auth/register",
+          "path": ".tmp/web-qa-001/mock-server.cjs#/v1/auth/register",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:get-v1-intake-route-proposals:dc04b3537f",
+          "type": "api_endpoint",
+          "name": "GET /v1/intake/route-proposals",
+          "path": ".tmp/web-qa-001/mock-server.cjs#/v1/intake/route-proposals",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:get-v1-operations-work-items:a9a4855d33",
+          "type": "api_endpoint",
+          "name": "GET /v1/operations/work-items",
+          "path": ".tmp/web-qa-001/mock-server.cjs#/v1/operations/work-items",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-vendor:2796cb47d4",
+          "type": "api_endpoint",
+          "name": "USE /vendor",
+          "path": ".tmp/web-qa-001/mock-server.cjs#/vendor",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:get:2fca106599",
+          "type": "api_endpoint",
+          "name": "GET *",
+          "path": ".tmp/web-qa-audit/mock-server.cjs#*",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-react:d61fd4e50b",
+          "type": "api_endpoint",
+          "name": "USE /react",
+          "path": ".tmp/web-qa-audit/mock-server.cjs#/react",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:get-v1-assets-context:b9c8ae1f0e",
+          "type": "api_endpoint",
+          "name": "GET /v1/assets/context",
+          "path": ".tmp/web-qa-audit/mock-server.cjs#/v1/assets/context",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:post-v1-auth-login:bab7225625",
+          "type": "api_endpoint",
+          "name": "POST /v1/auth/login",
+          "path": ".tmp/web-qa-audit/mock-server.cjs#/v1/auth/login",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:post-v1-auth-register:e22696693b",
+          "type": "api_endpoint",
+          "name": "POST /v1/auth/register",
+          "path": ".tmp/web-qa-audit/mock-server.cjs#/v1/auth/register",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:get-v1-intake-route-proposals:0701737457",
+          "type": "api_endpoint",
+          "name": "GET /v1/intake/route-proposals",
+          "path": ".tmp/web-qa-audit/mock-server.cjs#/v1/intake/route-proposals",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:get-v1-operations-work-items:0dbb0056b9",
+          "type": "api_endpoint",
+          "name": "GET /v1/operations/work-items",
+          "path": ".tmp/web-qa-audit/mock-server.cjs#/v1/operations/work-items",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-vendor:e48525ffb0",
+          "type": "api_endpoint",
+          "name": "USE /vendor",
+          "path": ".tmp/web-qa-audit/mock-server.cjs#/vendor",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:get:1998daec82",
+          "type": "api_endpoint",
+          "name": "GET /",
+          "path": "src/app.ts#/",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-agent-events:1b4c65ace9",
+          "type": "api_endpoint",
+          "name": "USE /agent-events",
+          "path": "src/app.ts#/agent-events",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-agent-logs:fe1d6cbaa9",
+          "type": "api_endpoint",
+          "name": "USE /agent-logs",
+          "path": "src/app.ts#/agent-logs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-agents:1c136317c6",
+          "type": "api_endpoint",
+          "name": "USE /agents",
+          "path": "src/app.ts#/agents",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-api-keys:d7553f1e44",
+          "type": "api_endpoint",
+          "name": "USE /api-keys",
+          "path": "src/app.ts#/api-keys",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-assets:ac41eec16d",
+          "type": "api_endpoint",
+          "name": "USE /assets",
+          "path": "src/app.ts#/assets",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-auth:d272d61067",
+          "type": "api_endpoint",
+          "name": "USE /auth",
+          "path": "src/app.ts#/auth",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-clients:da4494ab5d",
+          "type": "api_endpoint",
+          "name": "USE /clients",
+          "path": "src/app.ts#/clients",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-commercial-exceptions:18765c44f9",
+          "type": "api_endpoint",
+          "name": "USE /commercial-exceptions",
+          "path": "src/app.ts#/commercial-exceptions",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-company-os:fb1b853293",
+          "type": "api_endpoint",
+          "name": "USE /company-os",
+          "path": "src/app.ts#/company-os",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-connection:b52b509477",
+          "type": "api_endpoint",
+          "name": "USE /connection",
+          "path": "src/app.ts#/connection",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-dashboard:a4fbc07380",
+          "type": "api_endpoint",
+          "name": "USE /dashboard",
+          "path": "src/app.ts#/dashboard",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-deals:2ceaef3b27",
+          "type": "api_endpoint",
+          "name": "USE /deals",
+          "path": "src/app.ts#/deals",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-decisions:b29cd45684",
+          "type": "api_endpoint",
+          "name": "USE /decisions",
+          "path": "src/app.ts#/decisions",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-departments:876f72fd71",
+          "type": "api_endpoint",
+          "name": "USE /departments",
+          "path": "src/app.ts#/departments",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-events:679c33c90e",
+          "type": "api_endpoint",
+          "name": "USE /events",
+          "path": "src/app.ts#/events",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-finance:b8821dee32",
+          "type": "api_endpoint",
+          "name": "USE /finance",
+          "path": "src/app.ts#/finance",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-goals:da30547c55",
+          "type": "api_endpoint",
+          "name": "USE /goals",
+          "path": "src/app.ts#/goals",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-google-drive:2b5bd7ccd8",
+          "type": "api_endpoint",
+          "name": "USE /google-drive",
+          "path": "src/app.ts#/google-drive",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-health:8aa829ec00",
+          "type": "api_endpoint",
+          "name": "USE /health",
+          "path": "src/app.ts#/health",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-intake:3c22276373",
+          "type": "api_endpoint",
+          "name": "USE /intake",
+          "path": "src/app.ts#/intake",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-integration-settings:7da089bd2f",
+          "type": "api_endpoint",
+          "name": "USE /integration-settings",
+          "path": "src/app.ts#/integration-settings",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-interactions:eb228af9f5",
+          "type": "api_endpoint",
+          "name": "USE /interactions",
+          "path": "src/app.ts#/interactions",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-mcp:3055a10566",
+          "type": "api_endpoint",
+          "name": "USE /mcp",
+          "path": "src/app.ts#/mcp",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-notes:c833b4443f",
+          "type": "api_endpoint",
+          "name": "USE /notes",
+          "path": "src/app.ts#/notes",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-operating-graph:90c17b9387",
+          "type": "api_endpoint",
+          "name": "USE /operating-graph",
+          "path": "src/app.ts#/operating-graph",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-operating-model:dcc5e71b5f",
+          "type": "api_endpoint",
+          "name": "USE /operating-model",
+          "path": "src/app.ts#/operating-model",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-operations:f4ce71f687",
+          "type": "api_endpoint",
+          "name": "USE /operations",
+          "path": "src/app.ts#/operations",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-pipeline-stages:d21ba6038b",
+          "type": "api_endpoint",
+          "name": "USE /pipeline-stages",
+          "path": "src/app.ts#/pipeline-stages",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-projects:2ab7f26357",
+          "type": "api_endpoint",
+          "name": "USE /projects",
+          "path": "src/app.ts#/projects",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-relationships:acd9b6327c",
+          "type": "api_endpoint",
+          "name": "USE /relationships",
+          "path": "src/app.ts#/relationships",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-sales:0c7ec2cf8b",
+          "type": "api_endpoint",
+          "name": "USE /sales",
+          "path": "src/app.ts#/sales",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-strategy:0ead398998",
+          "type": "api_endpoint",
+          "name": "USE /strategy",
+          "path": "src/app.ts#/strategy",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-targets:7ea27c60ae",
+          "type": "api_endpoint",
+          "name": "USE /targets",
+          "path": "src/app.ts#/targets",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-task-lists:7770c51ee4",
+          "type": "api_endpoint",
+          "name": "USE /task-lists",
+          "path": "src/app.ts#/task-lists",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-tasks:de5ac00ee8",
+          "type": "api_endpoint",
+          "name": "USE /tasks",
+          "path": "src/app.ts#/tasks",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-v1:347b48829e",
+          "type": "api_endpoint",
+          "name": "USE /v1",
+          "path": "src/app.ts#/v1",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-v1-auth:02d088cd05",
+          "type": "api_endpoint",
+          "name": "USE /v1/auth",
+          "path": "src/app.ts#/v1/auth",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-v1-health:145d12bca3",
+          "type": "api_endpoint",
+          "name": "USE /v1/health",
+          "path": "src/app.ts#/v1/health",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-v1-webhooks-clickup:61d965c5ad",
+          "type": "api_endpoint",
+          "name": "USE /v1/webhooks/clickup",
+          "path": "src/app.ts#/v1/webhooks/clickup",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-workforce:a03aa869cd",
+          "type": "api_endpoint",
+          "name": "USE /workforce",
+          "path": "src/app.ts#/workforce",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-workspaces:8d243549bd",
+          "type": "api_endpoint",
+          "name": "USE /workspaces",
+          "path": "src/app.ts#/workspaces",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "component:cc-button-tsx:dff712debb",
+          "type": "component",
+          "name": "cc-button.tsx",
+          "path": "web/src/components/cc-button.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "component:cc-data-table-tsx:b40c218327",
+          "type": "component",
+          "name": "cc-data-table.tsx",
+          "path": "web/src/components/cc-data-table.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "component:cc-field-tsx:8702870575",
+          "type": "component",
+          "name": "cc-field.tsx",
+          "path": "web/src/components/cc-field.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "component:cc-notice-tsx:9eefa3dd0b",
+          "type": "component",
+          "name": "cc-notice.tsx",
+          "path": "web/src/components/cc-notice.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "component:cc-resource-selector-tsx:370866b79c",
+          "type": "component",
+          "name": "cc-resource-selector.tsx",
+          "path": "web/src/components/cc-resource-selector.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "component:cc-route-loading-tsx:920cadd9c7",
+          "type": "component",
+          "name": "cc-route-loading.tsx",
+          "path": "web/src/components/cc-route-loading.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "component:cc-text-input-tsx:8a4c63b1b4",
+          "type": "component",
+          "name": "cc-text-input.tsx",
+          "path": "web/src/components/cc-text-input.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:mock-server-cjs:c7deb5b2d7",
+          "type": "feature",
+          "name": "mock-server.cjs",
+          "path": ".tmp/web-qa-001/mock-server.cjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:validate-cjs:91c5fc4ae2",
+          "type": "feature",
+          "name": "validate.cjs",
+          "path": ".tmp/web-qa-001/validate.cjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:audit-cjs:e6864b0f54",
+          "type": "feature",
+          "name": "audit.cjs",
+          "path": ".tmp/web-qa-audit/audit.cjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:mock-server-cjs:41fe70c101",
+          "type": "feature",
+          "name": "mock-server.cjs",
+          "path": ".tmp/web-qa-audit/mock-server.cjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:seed-ts:8119101cd7",
+          "type": "feature",
+          "name": "seed.ts",
+          "path": "prisma/seed.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:assets-route-cmlejhyz-js:0e220bc808",
+          "type": "feature",
+          "name": "assets-route-CMLeJhyZ.js",
+          "path": "public/react/assets/assets-route-CMLeJhyZ.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:cc-data-table-bnsguhlr-js:01c7d7c1bb",
+          "type": "feature",
+          "name": "cc-data-table-BnsGuHlR.js",
+          "path": "public/react/assets/cc-data-table-BnsGuHlR.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:department-labels-cpplgh9w-js:915e885303",
+          "type": "feature",
+          "name": "department-labels-CPPlGh9W.js",
+          "path": "public/react/assets/department-labels-CPPlGh9W.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:finance-route-bx7cib8s-js:6f8df3db33",
+          "type": "feature",
+          "name": "finance-route-bx7cib8s.js",
+          "path": "public/react/assets/finance-route-bx7cib8s.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:general-dashboard-ddaipobr-js:f69baa78a2",
+          "type": "feature",
+          "name": "general-dashboard-DDaIpoBR.js",
+          "path": "public/react/assets/general-dashboard-DDaIpoBR.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:index-dqhrbmta-js:b878b0559b",
+          "type": "feature",
+          "name": "index-DQHrBmTA.js",
+          "path": "public/react/assets/index-DQHrBmTA.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:innovation-route-2v8hqxlf-js:dc00d779d5",
+          "type": "feature",
+          "name": "innovation-route-2v8hqXlf.js",
+          "path": "public/react/assets/innovation-route-2v8hqXlf.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:language-selector-uquudur8-js:bc9d7b91e2",
+          "type": "feature",
+          "name": "language-selector-UqUuduR8.js",
+          "path": "public/react/assets/language-selector-UqUuduR8.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:legal-route-dlb60fuo-js:247bae8a3c",
+          "type": "feature",
+          "name": "legal-route-Dlb60fuo.js",
+          "path": "public/react/assets/legal-route-Dlb60fuo.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:management-route-dqybmdsm-js:26dfa9082c",
+          "type": "feature",
+          "name": "management-route-DqybMDSM.js",
+          "path": "public/react/assets/management-route-DqybMDSM.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:operations-route-1rtyc9bn-js:7214027e47",
+          "type": "feature",
+          "name": "operations-route-1rtYC9bN.js",
+          "path": "public/react/assets/operations-route-1rtYC9bN.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:people-agents-route-wenf5kgh-js:1809e49cea",
+          "type": "feature",
+          "name": "people-agents-route-wenF5kgh.js",
+          "path": "public/react/assets/people-agents-route-wenF5kgh.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:product-delivery-route-itnymvf9-js:48045e7090",
+          "type": "feature",
+          "name": "product-delivery-route-ITNYMVF9.js",
+          "path": "public/react/assets/product-delivery-route-ITNYMVF9.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:relationships-route-butpfoxy-js:b695d073b8",
+          "type": "feature",
+          "name": "relationships-route-ButpFoxY.js",
+          "path": "public/react/assets/relationships-route-ButpFoxY.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sales-route-czbffw3x-js:a337b7a796",
+          "type": "feature",
+          "name": "sales-route-CzBfFW3X.js",
+          "path": "public/react/assets/sales-route-CzBfFW3X.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:settings-routes-dxfry-vf-js:24eff98d02",
+          "type": "feature",
+          "name": "settings-routes-DXFRY-VF.js",
+          "path": "public/react/assets/settings-routes-DXFRY-VF.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:shared-dljqsdmz-js:8c85eea2cb",
+          "type": "feature",
+          "name": "shared-DljqSdmz.js",
+          "path": "public/react/assets/shared-DljqSdmz.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:shell-d-m2z3y7-js:b63b2832c7",
+          "type": "feature",
+          "name": "shell-D-M2z3y7.js",
+          "path": "public/react/assets/shell-D-M2z3y7.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:strategy-route-ifubea2h-js:3dd28548ec",
+          "type": "feature",
+          "name": "strategy-route-IfUbEa2h.js",
+          "path": "public/react/assets/strategy-route-IfUbEa2h.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:technology-route-wpsfw92a-js:41537db97d",
+          "type": "feature",
+          "name": "technology-route-wpSFw92A.js",
+          "path": "public/react/assets/technology-route-wpSFw92A.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:adapter-smoke-mjs:a70330596e",
+          "type": "feature",
+          "name": "adapter-smoke.mjs",
+          "path": "scripts/adapter-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:agent-training-smoke-mjs:454c2b0a08",
+          "type": "feature",
+          "name": "agent-training-smoke.mjs",
+          "path": "scripts/agent-training-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:aog-deploy-smoke-mjs:4950b48d18",
+          "type": "feature",
+          "name": "aog-deploy-smoke.mjs",
+          "path": "scripts/aog-deploy-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:backfill-architecture-nodes-mjs:e5fc8db033",
+          "type": "feature",
+          "name": "backfill-architecture-nodes.mjs",
+          "path": "scripts/backfill-architecture-nodes.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-chain-hardening-worklist-mjs:76048d5afb",
+          "type": "feature",
+          "name": "build-architecture-chain-hardening-worklist.mjs",
+          "path": "scripts/build-architecture-chain-hardening-worklist.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-dead-nodes-report-mjs:bb8975559f",
+          "type": "feature",
+          "name": "build-architecture-dead-nodes-report.mjs",
+          "path": "scripts/build-architecture-dead-nodes-report.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-delta-report-mjs:01dbd621ee",
+          "type": "feature",
+          "name": "build-architecture-delta-report.mjs",
+          "path": "scripts/build-architecture-delta-report.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-evidence-worklist-mjs:de807410aa",
+          "type": "feature",
+          "name": "build-architecture-evidence-worklist.mjs",
+          "path": "scripts/build-architecture-evidence-worklist.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-health-dashboard-mjs:f597bc0ac8",
+          "type": "feature",
+          "name": "build-architecture-health-dashboard.mjs",
+          "path": "scripts/build-architecture-health-dashboard.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-impact-delta-report-mjs:2ce37590c4",
+          "type": "feature",
+          "name": "build-architecture-impact-delta-report.mjs",
+          "path": "scripts/build-architecture-impact-delta-report.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-impact-index-mjs:3371d8a6ef",
+          "type": "feature",
+          "name": "build-architecture-impact-index.mjs",
+          "path": "scripts/build-architecture-impact-index.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-proof-bundle-mjs:28e35ef266",
+          "type": "feature",
+          "name": "build-architecture-proof-bundle.mjs",
+          "path": "scripts/build-architecture-proof-bundle.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-registry-catalog-mjs:a492a3dc59",
+          "type": "feature",
+          "name": "build-architecture-registry-catalog.mjs",
+          "path": "scripts/build-architecture-registry-catalog.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-risk-hotspots-report-mjs:9e2ca6c9a1",
+          "type": "feature",
+          "name": "build-architecture-risk-hotspots-report.mjs",
+          "path": "scripts/build-architecture-risk-hotspots-report.mjs",
+          "status": "deprecated",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-roadmap-mjs:0310317884",
+          "type": "feature",
+          "name": "build-architecture-roadmap.mjs",
+          "path": "scripts/build-architecture-roadmap.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-chain-coverage-mjs:4152b061a3",
+          "type": "feature",
+          "name": "check-architecture-chain-coverage.mjs",
+          "path": "scripts/check-architecture-chain-coverage.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-chain-integrity-mjs:6b9a42b230",
+          "type": "feature",
+          "name": "check-architecture-chain-integrity.mjs",
+          "path": "scripts/check-architecture-chain-integrity.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-command-contract-mjs:0c35fdb41d",
+          "type": "feature",
+          "name": "check-architecture-command-contract.mjs",
+          "path": "scripts/check-architecture-command-contract.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-connectivity-mjs:228dc3e4e3",
+          "type": "feature",
+          "name": "check-architecture-connectivity.mjs",
+          "path": "scripts/check-architecture-connectivity.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-csv-contract-mjs:e91c71cfa5",
+          "type": "feature",
+          "name": "check-architecture-csv-contract.mjs",
+          "path": "scripts/check-architecture-csv-contract.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-delta-zero-mjs:74049bc5b7",
+          "type": "feature",
+          "name": "check-architecture-delta-zero.mjs",
+          "path": "scripts/check-architecture-delta-zero.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-doc-baseline-mjs:a5ad3b00de",
+          "type": "feature",
+          "name": "check-architecture-doc-baseline.mjs",
+          "path": "scripts/check-architecture-doc-baseline.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-evidence-cardinality-mjs:381575c72b",
+          "type": "feature",
+          "name": "check-architecture-evidence-cardinality.mjs",
+          "path": "scripts/check-architecture-evidence-cardinality.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-evidence-gate-mjs:781bf73563",
+          "type": "feature",
+          "name": "check-architecture-evidence-gate.mjs",
+          "path": "scripts/check-architecture-evidence-gate.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-generated-node-frontmatter-mjs:ddbbafa011",
+          "type": "feature",
+          "name": "check-architecture-generated-node-frontmatter.mjs",
+          "path": "scripts/check-architecture-generated-node-frontmatter.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-graph-artifact-consistency-mjs:64c3a44f24",
+          "type": "feature",
+          "name": "check-architecture-graph-artifact-consistency.mjs",
+          "path": "scripts/check-architecture-graph-artifact-consistency.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-health-dashboard-gate-mjs:d6a4964ca2",
+          "type": "feature",
+          "name": "check-architecture-health-dashboard-gate.mjs",
+          "path": "scripts/check-architecture-health-dashboard-gate.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-impact-delta-gate-mjs:9814b543c4",
+          "type": "feature",
+          "name": "check-architecture-impact-delta-gate.mjs",
+          "path": "scripts/check-architecture-impact-delta-gate.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-node-artifacts-mjs:fa88014c2c",
+          "type": "feature",
+          "name": "check-architecture-node-artifacts.mjs",
+          "path": "scripts/check-architecture-node-artifacts.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-node-catalog-consistency-mjs:3036946037",
+          "type": "feature",
+          "name": "check-architecture-node-catalog-consistency.mjs",
+          "path": "scripts/check-architecture-node-catalog-consistency.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-node-integrity-mjs:0e4d4d0b7d",
+          "type": "feature",
+          "name": "check-architecture-node-integrity.mjs",
+          "path": "scripts/check-architecture-node-integrity.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-node-links-mjs:7902816cff",
+          "type": "feature",
+          "name": "check-architecture-node-links.mjs",
+          "path": "scripts/check-architecture-node-links.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-pipeline-nodes-mjs:489110dee7",
+          "type": "feature",
+          "name": "check-architecture-pipeline-nodes.mjs",
+          "path": "scripts/check-architecture-pipeline-nodes.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-proof-bundle-gate-mjs:b677160750",
+          "type": "feature",
+          "name": "check-architecture-proof-bundle-gate.mjs",
+          "path": "scripts/check-architecture-proof-bundle-gate.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-relation-integrity-mjs:bb30ffe683",
+          "type": "feature",
+          "name": "check-architecture-relation-integrity.mjs",
+          "path": "scripts/check-architecture-relation-integrity.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-report-presence-mjs:b598887394",
+          "type": "feature",
+          "name": "check-architecture-report-presence.mjs",
+          "path": "scripts/check-architecture-report-presence.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-risk-hotspots-gate-mjs:495ecb4d7c",
+          "type": "feature",
+          "name": "check-architecture-risk-hotspots-gate.mjs",
+          "path": "scripts/check-architecture-risk-hotspots-gate.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-roadmap-gate-mjs:8ca270d844",
+          "type": "feature",
+          "name": "check-architecture-roadmap-gate.mjs",
+          "path": "scripts/check-architecture-roadmap-gate.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-route-capabilities-mjs:d574fd7464",
+          "type": "feature",
+          "name": "check-route-capabilities.mjs",
+          "path": "scripts/check-route-capabilities.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:clean-react-build-mjs:e14fb2290f",
+          "type": "feature",
+          "name": "clean-react-build.mjs",
+          "path": "scripts/clean-react-build.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:clickup-production-bootstrap-mjs:b9e95dee4f",
+          "type": "feature",
+          "name": "clickup-production-bootstrap.mjs",
+          "path": "scripts/clickup-production-bootstrap.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:company-os-lifecycle-trace-smoke-mjs:e5d0515cf5",
+          "type": "feature",
+          "name": "company-os-lifecycle-trace-smoke.mjs",
+          "path": "scripts/company-os-lifecycle-trace-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:companycore-ai-ready-smoke-mjs:8c9373a5d3",
+          "type": "feature",
+          "name": "companycore-ai-ready-smoke.mjs",
+          "path": "scripts/companycore-ai-ready-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:companycore-mcp-server-mjs:0c499f7f8f",
+          "type": "feature",
+          "name": "companycore-mcp-server.mjs",
+          "path": "scripts/companycore-mcp-server.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:companycore-mcp-smoke-mjs:5c2b80710f",
+          "type": "feature",
+          "name": "companycore-mcp-smoke.mjs",
+          "path": "scripts/companycore-mcp-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:enrich-architecture-evidence-mjs:d139955132",
+          "type": "feature",
+          "name": "enrich-architecture-evidence.mjs",
+          "path": "scripts/enrich-architecture-evidence.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:enrich-architecture-relations-mjs:dad0c90c38",
+          "type": "feature",
+          "name": "enrich-architecture-relations.mjs",
+          "path": "scripts/enrich-architecture-relations.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:ensure-architecture-docs-root-mjs:59f620ca7e",
+          "type": "feature",
+          "name": "ensure-architecture-docs-root.mjs",
+          "path": "scripts/ensure-architecture-docs-root.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:generate-architecture-graph-mjs:6a94a319b6",
+          "type": "feature",
+          "name": "generate-architecture-graph.mjs",
+          "path": "scripts/generate-architecture-graph.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:google-drive-production-smoke-mjs:14cc73731b",
+          "type": "feature",
+          "name": "google-drive-production-smoke.mjs",
+          "path": "scripts/google-drive-production-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:normalize-architecture-chains-mjs:4c5fc38145",
+          "type": "feature",
+          "name": "normalize-architecture-chains.mjs",
+          "path": "scripts/normalize-architecture-chains.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:operating-model-registry-lifecycle-smoke-mjs:ec398b8193",
+          "type": "feature",
+          "name": "operating-model-registry-lifecycle-smoke.mjs",
+          "path": "scripts/operating-model-registry-lifecycle-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:owner-console-ux-smoke-mjs:2bf3cdabf0",
+          "type": "feature",
+          "name": "owner-console-ux-smoke.mjs",
+          "path": "scripts/owner-console-ux-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:print-architecture-status-mjs:8d03732be7",
+          "type": "feature",
+          "name": "print-architecture-status.mjs",
+          "path": "scripts/print-architecture-status.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sync-architecture-chains-mjs:68a6bb7b0f",
+          "type": "feature",
+          "name": "sync-architecture-chains.mjs",
+          "path": "scripts/sync-architecture-chains.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sync-architecture-doc-baseline-mjs:d39517d291",
+          "type": "feature",
+          "name": "sync-architecture-doc-baseline.mjs",
+          "path": "scripts/sync-architecture-doc-baseline.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sync-architecture-evidence-status-mjs:0c9d8601cb",
+          "type": "feature",
+          "name": "sync-architecture-evidence-status.mjs",
+          "path": "scripts/sync-architecture-evidence-status.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sync-architecture-extended-registry-mjs:eae70ecc44",
+          "type": "feature",
+          "name": "sync-architecture-extended-registry.mjs",
+          "path": "scripts/sync-architecture-extended-registry.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sync-architecture-feature-coverage-mjs:765c646613",
+          "type": "feature",
+          "name": "sync-architecture-feature-coverage.mjs",
+          "path": "scripts/sync-architecture-feature-coverage.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sync-architecture-node-verification-mjs:46cb9752d1",
+          "type": "feature",
+          "name": "sync-architecture-node-verification.mjs",
+          "path": "scripts/sync-architecture-node-verification.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sync-architecture-registry-mjs:6b16b02cdf",
+          "type": "feature",
+          "name": "sync-architecture-registry.mjs",
+          "path": "scripts/sync-architecture-registry.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:test-api-local-mjs:fef8423ba8",
+          "type": "feature",
+          "name": "test-api-local.mjs",
+          "path": "scripts/test-api-local.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:app-ts:e798655a78",
+          "type": "feature",
+          "name": "app.ts",
+          "path": "src/app.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:agent-key-profiles-ts:5c15d0332b",
+          "type": "feature",
+          "name": "agent-key-profiles.ts",
+          "path": "src/auth/agent-key-profiles.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:api-key-middleware-ts:b3416cccca",
+          "type": "feature",
+          "name": "api-key.middleware.ts",
+          "path": "src/auth/api-key.middleware.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:api-key-ts:ad12ed7339",
+          "type": "feature",
+          "name": "api-key.ts",
+          "path": "src/auth/api-key.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:capabilities-ts:8aa6c04dd1",
+          "type": "feature",
+          "name": "capabilities.ts",
+          "path": "src/auth/capabilities.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:password-ts:e497710000",
+          "type": "feature",
+          "name": "password.ts",
+          "path": "src/auth/password.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:token-ts:50c86e6225",
+          "type": "feature",
+          "name": "token.ts",
+          "path": "src/auth/token.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:env-ts:5b349453d9",
+          "type": "feature",
+          "name": "env.ts",
+          "path": "src/config/env.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:prisma-ts:dafac5460d",
+          "type": "feature",
+          "name": "prisma.ts",
+          "path": "src/db/prisma.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:health-routes-ts:bbcf23ef19",
+          "type": "feature",
+          "name": "health.routes.ts",
+          "path": "src/health/health.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:clickup-client-ts:9d4c2f90ac",
+          "type": "feature",
+          "name": "clickup.client.ts",
+          "path": "src/integrations/clickup/clickup.client.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:clickup-maintenance-scheduler-ts:b786011e97",
+          "type": "feature",
+          "name": "clickup.maintenance-scheduler.ts",
+          "path": "src/integrations/clickup/clickup.maintenance-scheduler.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:clickup-mapper-ts:12006caf8a",
+          "type": "feature",
+          "name": "clickup.mapper.ts",
+          "path": "src/integrations/clickup/clickup.mapper.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:clickup-sync-ts:4016035158",
+          "type": "feature",
+          "name": "clickup.sync.ts",
+          "path": "src/integrations/clickup/clickup.sync.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:clickup-webhooks-ts:d7a007967a",
+          "type": "feature",
+          "name": "clickup.webhooks.ts",
+          "path": "src/integrations/clickup/clickup.webhooks.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:webhook-signature-ts:6831ccdf43",
+          "type": "feature",
+          "name": "webhook-signature.ts",
+          "path": "src/integrations/clickup/webhook-signature.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:errors-ts:6cad1638b0",
+          "type": "feature",
+          "name": "errors.ts",
+          "path": "src/integrations/errors.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:google-drive-auth-ts:3aca51d9d5",
+          "type": "feature",
+          "name": "google-drive.auth.ts",
+          "path": "src/integrations/google-drive/google-drive.auth.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:google-drive-client-ts:e2fe799173",
+          "type": "feature",
+          "name": "google-drive.client.ts",
+          "path": "src/integrations/google-drive/google-drive.client.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:google-drive-content-ts:dfd2b35d30",
+          "type": "feature",
+          "name": "google-drive.content.ts",
+          "path": "src/integrations/google-drive/google-drive.content.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:google-drive-sync-ts:a520eba9b8",
+          "type": "feature",
+          "name": "google-drive.sync.ts",
+          "path": "src/integrations/google-drive/google-drive.sync.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:integration-settings-service-ts:33ba35e79f",
+          "type": "feature",
+          "name": "integration-settings.service.ts",
+          "path": "src/integrations/integration-settings.service.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:secrets-ts:9896d14c7b",
+          "type": "feature",
+          "name": "secrets.ts",
+          "path": "src/integrations/secrets.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:manifest-ts:2707975c5f",
+          "type": "feature",
+          "name": "manifest.ts",
+          "path": "src/mcp/manifest.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:api-error-ts:d388409f24",
+          "type": "feature",
+          "name": "api-error.ts",
+          "path": "src/middleware/api-error.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:async-handler-ts:d4ef00961e",
+          "type": "feature",
+          "name": "async-handler.ts",
+          "path": "src/middleware/async-handler.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:error-handler-ts:f4e312ac90",
+          "type": "feature",
+          "name": "error-handler.ts",
+          "path": "src/middleware/error-handler.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:security-ts:cf15e1a8d7",
+          "type": "feature",
+          "name": "security.ts",
+          "path": "src/middleware/security.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:agent-events-routes-ts:d7cd99ecf1",
+          "type": "feature",
+          "name": "agent-events.routes.ts",
+          "path": "src/modules/agent-events/agent-events.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:agent-logs-routes-ts:81332abd40",
+          "type": "feature",
+          "name": "agent-logs.routes.ts",
+          "path": "src/modules/agent-logs/agent-logs.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:agents-routes-ts:4741433416",
+          "type": "feature",
+          "name": "agents.routes.ts",
+          "path": "src/modules/agents/agents.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:api-keys-routes-ts:3f908ca65c",
+          "type": "feature",
+          "name": "api-keys.routes.ts",
+          "path": "src/modules/api-keys/api-keys.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:assets-routes-ts:98ce76e11e",
+          "type": "feature",
+          "name": "assets.routes.ts",
+          "path": "src/modules/assets/assets.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:auth-routes-ts:ee1c62d0bd",
+          "type": "feature",
+          "name": "auth.routes.ts",
+          "path": "src/modules/auth/auth.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:clients-routes-ts:d8c621f2e6",
+          "type": "feature",
+          "name": "clients.routes.ts",
+          "path": "src/modules/clients/clients.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:commercial-exceptions-routes-ts:321a46ce03",
+          "type": "feature",
+          "name": "commercial-exceptions.routes.ts",
+          "path": "src/modules/commercial-exceptions/commercial-exceptions.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:company-os-routes-ts:e81f3be58a",
+          "type": "feature",
+          "name": "company-os.routes.ts",
+          "path": "src/modules/company-os/company-os.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:workflow-definition-drafts-routes-ts:88debdc871",
+          "type": "feature",
+          "name": "workflow-definition-drafts.routes.ts",
+          "path": "src/modules/company-os/workflow-definition-drafts.routes.ts",
+          "status": "deprecated",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:connection-routes-ts:889d2c0f84",
+          "type": "feature",
+          "name": "connection.routes.ts",
+          "path": "src/modules/connection/connection.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:dashboard-routes-ts:cb24115ec5",
+          "type": "feature",
+          "name": "dashboard.routes.ts",
+          "path": "src/modules/dashboard/dashboard.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:deals-routes-ts:b4d6b1f392",
+          "type": "feature",
+          "name": "deals.routes.ts",
+          "path": "src/modules/deals/deals.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:decisions-routes-ts:bdcded1491",
+          "type": "feature",
+          "name": "decisions.routes.ts",
+          "path": "src/modules/decisions/decisions.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:departments-routes-ts:1655b724d7",
+          "type": "feature",
+          "name": "departments.routes.ts",
+          "path": "src/modules/departments/departments.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:event-service-ts:99dfd5c248",
+          "type": "feature",
+          "name": "event.service.ts",
+          "path": "src/modules/events/event.service.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:events-routes-ts:2a36233b4e",
+          "type": "feature",
+          "name": "events.routes.ts",
+          "path": "src/modules/events/events.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:finance-routes-ts:63aa31648e",
+          "type": "feature",
+          "name": "finance.routes.ts",
+          "path": "src/modules/finance/finance.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:goals-routes-ts:feebefb863",
+          "type": "feature",
+          "name": "goals.routes.ts",
+          "path": "src/modules/goals/goals.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:google-drive-routes-ts:a2179e9c5d",
+          "type": "feature",
+          "name": "google-drive.routes.ts",
+          "path": "src/modules/google-drive/google-drive.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:intake-routes-ts:b8449a4adf",
+          "type": "feature",
+          "name": "intake.routes.ts",
+          "path": "src/modules/intake/intake.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        }
+      ]
+    },
+    "actionable_implementation_without_docs": {
+      "count": 261,
+      "items": [
+        {
+          "id": "api_endpoint:use-react:1a47f6396c",
+          "type": "api_endpoint",
+          "name": "USE /react",
+          "path": ".tmp/web-qa-001/mock-server.cjs#/react",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:get-v1-assets-context:19f2e7b147",
+          "type": "api_endpoint",
+          "name": "GET /v1/assets/context",
+          "path": ".tmp/web-qa-001/mock-server.cjs#/v1/assets/context",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:post-v1-auth-login:4e16f8d385",
+          "type": "api_endpoint",
+          "name": "POST /v1/auth/login",
+          "path": ".tmp/web-qa-001/mock-server.cjs#/v1/auth/login",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:post-v1-auth-register:973f9054a3",
+          "type": "api_endpoint",
+          "name": "POST /v1/auth/register",
+          "path": ".tmp/web-qa-001/mock-server.cjs#/v1/auth/register",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:get-v1-intake-route-proposals:dc04b3537f",
+          "type": "api_endpoint",
+          "name": "GET /v1/intake/route-proposals",
+          "path": ".tmp/web-qa-001/mock-server.cjs#/v1/intake/route-proposals",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:get-v1-operations-work-items:a9a4855d33",
+          "type": "api_endpoint",
+          "name": "GET /v1/operations/work-items",
+          "path": ".tmp/web-qa-001/mock-server.cjs#/v1/operations/work-items",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-vendor:2796cb47d4",
+          "type": "api_endpoint",
+          "name": "USE /vendor",
+          "path": ".tmp/web-qa-001/mock-server.cjs#/vendor",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:get:2fca106599",
+          "type": "api_endpoint",
+          "name": "GET *",
+          "path": ".tmp/web-qa-audit/mock-server.cjs#*",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-react:d61fd4e50b",
+          "type": "api_endpoint",
+          "name": "USE /react",
+          "path": ".tmp/web-qa-audit/mock-server.cjs#/react",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:get-v1-assets-context:b9c8ae1f0e",
+          "type": "api_endpoint",
+          "name": "GET /v1/assets/context",
+          "path": ".tmp/web-qa-audit/mock-server.cjs#/v1/assets/context",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:post-v1-auth-login:bab7225625",
+          "type": "api_endpoint",
+          "name": "POST /v1/auth/login",
+          "path": ".tmp/web-qa-audit/mock-server.cjs#/v1/auth/login",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:post-v1-auth-register:e22696693b",
+          "type": "api_endpoint",
+          "name": "POST /v1/auth/register",
+          "path": ".tmp/web-qa-audit/mock-server.cjs#/v1/auth/register",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:get-v1-intake-route-proposals:0701737457",
+          "type": "api_endpoint",
+          "name": "GET /v1/intake/route-proposals",
+          "path": ".tmp/web-qa-audit/mock-server.cjs#/v1/intake/route-proposals",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:get-v1-operations-work-items:0dbb0056b9",
+          "type": "api_endpoint",
+          "name": "GET /v1/operations/work-items",
+          "path": ".tmp/web-qa-audit/mock-server.cjs#/v1/operations/work-items",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-vendor:e48525ffb0",
+          "type": "api_endpoint",
+          "name": "USE /vendor",
+          "path": ".tmp/web-qa-audit/mock-server.cjs#/vendor",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:get:1998daec82",
+          "type": "api_endpoint",
+          "name": "GET /",
+          "path": "src/app.ts#/",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-agent-events:1b4c65ace9",
+          "type": "api_endpoint",
+          "name": "USE /agent-events",
+          "path": "src/app.ts#/agent-events",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-agent-logs:fe1d6cbaa9",
+          "type": "api_endpoint",
+          "name": "USE /agent-logs",
+          "path": "src/app.ts#/agent-logs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-agents:1c136317c6",
+          "type": "api_endpoint",
+          "name": "USE /agents",
+          "path": "src/app.ts#/agents",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-api-keys:d7553f1e44",
+          "type": "api_endpoint",
+          "name": "USE /api-keys",
+          "path": "src/app.ts#/api-keys",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-assets:ac41eec16d",
+          "type": "api_endpoint",
+          "name": "USE /assets",
+          "path": "src/app.ts#/assets",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-auth:d272d61067",
+          "type": "api_endpoint",
+          "name": "USE /auth",
+          "path": "src/app.ts#/auth",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-clients:da4494ab5d",
+          "type": "api_endpoint",
+          "name": "USE /clients",
+          "path": "src/app.ts#/clients",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-commercial-exceptions:18765c44f9",
+          "type": "api_endpoint",
+          "name": "USE /commercial-exceptions",
+          "path": "src/app.ts#/commercial-exceptions",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-company-os:fb1b853293",
+          "type": "api_endpoint",
+          "name": "USE /company-os",
+          "path": "src/app.ts#/company-os",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-connection:b52b509477",
+          "type": "api_endpoint",
+          "name": "USE /connection",
+          "path": "src/app.ts#/connection",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-dashboard:a4fbc07380",
+          "type": "api_endpoint",
+          "name": "USE /dashboard",
+          "path": "src/app.ts#/dashboard",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-deals:2ceaef3b27",
+          "type": "api_endpoint",
+          "name": "USE /deals",
+          "path": "src/app.ts#/deals",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-decisions:b29cd45684",
+          "type": "api_endpoint",
+          "name": "USE /decisions",
+          "path": "src/app.ts#/decisions",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-departments:876f72fd71",
+          "type": "api_endpoint",
+          "name": "USE /departments",
+          "path": "src/app.ts#/departments",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-events:679c33c90e",
+          "type": "api_endpoint",
+          "name": "USE /events",
+          "path": "src/app.ts#/events",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-finance:b8821dee32",
+          "type": "api_endpoint",
+          "name": "USE /finance",
+          "path": "src/app.ts#/finance",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-goals:da30547c55",
+          "type": "api_endpoint",
+          "name": "USE /goals",
+          "path": "src/app.ts#/goals",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-google-drive:2b5bd7ccd8",
+          "type": "api_endpoint",
+          "name": "USE /google-drive",
+          "path": "src/app.ts#/google-drive",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-health:8aa829ec00",
+          "type": "api_endpoint",
+          "name": "USE /health",
+          "path": "src/app.ts#/health",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-intake:3c22276373",
+          "type": "api_endpoint",
+          "name": "USE /intake",
+          "path": "src/app.ts#/intake",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-integration-settings:7da089bd2f",
+          "type": "api_endpoint",
+          "name": "USE /integration-settings",
+          "path": "src/app.ts#/integration-settings",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-interactions:eb228af9f5",
+          "type": "api_endpoint",
+          "name": "USE /interactions",
+          "path": "src/app.ts#/interactions",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-mcp:3055a10566",
+          "type": "api_endpoint",
+          "name": "USE /mcp",
+          "path": "src/app.ts#/mcp",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-notes:c833b4443f",
+          "type": "api_endpoint",
+          "name": "USE /notes",
+          "path": "src/app.ts#/notes",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-operating-graph:90c17b9387",
+          "type": "api_endpoint",
+          "name": "USE /operating-graph",
+          "path": "src/app.ts#/operating-graph",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-operating-model:dcc5e71b5f",
+          "type": "api_endpoint",
+          "name": "USE /operating-model",
+          "path": "src/app.ts#/operating-model",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-operations:f4ce71f687",
+          "type": "api_endpoint",
+          "name": "USE /operations",
+          "path": "src/app.ts#/operations",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-pipeline-stages:d21ba6038b",
+          "type": "api_endpoint",
+          "name": "USE /pipeline-stages",
+          "path": "src/app.ts#/pipeline-stages",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-projects:2ab7f26357",
+          "type": "api_endpoint",
+          "name": "USE /projects",
+          "path": "src/app.ts#/projects",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-relationships:acd9b6327c",
+          "type": "api_endpoint",
+          "name": "USE /relationships",
+          "path": "src/app.ts#/relationships",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-sales:0c7ec2cf8b",
+          "type": "api_endpoint",
+          "name": "USE /sales",
+          "path": "src/app.ts#/sales",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-strategy:0ead398998",
+          "type": "api_endpoint",
+          "name": "USE /strategy",
+          "path": "src/app.ts#/strategy",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-targets:7ea27c60ae",
+          "type": "api_endpoint",
+          "name": "USE /targets",
+          "path": "src/app.ts#/targets",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-task-lists:7770c51ee4",
+          "type": "api_endpoint",
+          "name": "USE /task-lists",
+          "path": "src/app.ts#/task-lists",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-tasks:de5ac00ee8",
+          "type": "api_endpoint",
+          "name": "USE /tasks",
+          "path": "src/app.ts#/tasks",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-v1:347b48829e",
+          "type": "api_endpoint",
+          "name": "USE /v1",
+          "path": "src/app.ts#/v1",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-v1-auth:02d088cd05",
+          "type": "api_endpoint",
+          "name": "USE /v1/auth",
+          "path": "src/app.ts#/v1/auth",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-v1-health:145d12bca3",
+          "type": "api_endpoint",
+          "name": "USE /v1/health",
+          "path": "src/app.ts#/v1/health",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-v1-webhooks-clickup:61d965c5ad",
+          "type": "api_endpoint",
+          "name": "USE /v1/webhooks/clickup",
+          "path": "src/app.ts#/v1/webhooks/clickup",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-workforce:a03aa869cd",
+          "type": "api_endpoint",
+          "name": "USE /workforce",
+          "path": "src/app.ts#/workforce",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "api_endpoint:use-workspaces:8d243549bd",
+          "type": "api_endpoint",
+          "name": "USE /workspaces",
+          "path": "src/app.ts#/workspaces",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "component:cc-button-tsx:dff712debb",
+          "type": "component",
+          "name": "cc-button.tsx",
+          "path": "web/src/components/cc-button.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "component:cc-data-table-tsx:b40c218327",
+          "type": "component",
+          "name": "cc-data-table.tsx",
+          "path": "web/src/components/cc-data-table.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "component:cc-field-tsx:8702870575",
+          "type": "component",
+          "name": "cc-field.tsx",
+          "path": "web/src/components/cc-field.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "component:cc-notice-tsx:9eefa3dd0b",
+          "type": "component",
+          "name": "cc-notice.tsx",
+          "path": "web/src/components/cc-notice.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "component:cc-resource-selector-tsx:370866b79c",
+          "type": "component",
+          "name": "cc-resource-selector.tsx",
+          "path": "web/src/components/cc-resource-selector.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "component:cc-route-loading-tsx:920cadd9c7",
+          "type": "component",
+          "name": "cc-route-loading.tsx",
+          "path": "web/src/components/cc-route-loading.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "component:cc-text-input-tsx:8a4c63b1b4",
+          "type": "component",
+          "name": "cc-text-input.tsx",
+          "path": "web/src/components/cc-text-input.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:mock-server-cjs:c7deb5b2d7",
+          "type": "feature",
+          "name": "mock-server.cjs",
+          "path": ".tmp/web-qa-001/mock-server.cjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:validate-cjs:91c5fc4ae2",
+          "type": "feature",
+          "name": "validate.cjs",
+          "path": ".tmp/web-qa-001/validate.cjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:audit-cjs:e6864b0f54",
+          "type": "feature",
+          "name": "audit.cjs",
+          "path": ".tmp/web-qa-audit/audit.cjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:mock-server-cjs:41fe70c101",
+          "type": "feature",
+          "name": "mock-server.cjs",
+          "path": ".tmp/web-qa-audit/mock-server.cjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:seed-ts:8119101cd7",
+          "type": "feature",
+          "name": "seed.ts",
+          "path": "prisma/seed.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:assets-route-cmlejhyz-js:0e220bc808",
+          "type": "feature",
+          "name": "assets-route-CMLeJhyZ.js",
+          "path": "public/react/assets/assets-route-CMLeJhyZ.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:cc-data-table-bnsguhlr-js:01c7d7c1bb",
+          "type": "feature",
+          "name": "cc-data-table-BnsGuHlR.js",
+          "path": "public/react/assets/cc-data-table-BnsGuHlR.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:department-labels-cpplgh9w-js:915e885303",
+          "type": "feature",
+          "name": "department-labels-CPPlGh9W.js",
+          "path": "public/react/assets/department-labels-CPPlGh9W.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:finance-route-bx7cib8s-js:6f8df3db33",
+          "type": "feature",
+          "name": "finance-route-bx7cib8s.js",
+          "path": "public/react/assets/finance-route-bx7cib8s.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:general-dashboard-ddaipobr-js:f69baa78a2",
+          "type": "feature",
+          "name": "general-dashboard-DDaIpoBR.js",
+          "path": "public/react/assets/general-dashboard-DDaIpoBR.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:index-dqhrbmta-js:b878b0559b",
+          "type": "feature",
+          "name": "index-DQHrBmTA.js",
+          "path": "public/react/assets/index-DQHrBmTA.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:innovation-route-2v8hqxlf-js:dc00d779d5",
+          "type": "feature",
+          "name": "innovation-route-2v8hqXlf.js",
+          "path": "public/react/assets/innovation-route-2v8hqXlf.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:language-selector-uquudur8-js:bc9d7b91e2",
+          "type": "feature",
+          "name": "language-selector-UqUuduR8.js",
+          "path": "public/react/assets/language-selector-UqUuduR8.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:legal-route-dlb60fuo-js:247bae8a3c",
+          "type": "feature",
+          "name": "legal-route-Dlb60fuo.js",
+          "path": "public/react/assets/legal-route-Dlb60fuo.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:management-route-dqybmdsm-js:26dfa9082c",
+          "type": "feature",
+          "name": "management-route-DqybMDSM.js",
+          "path": "public/react/assets/management-route-DqybMDSM.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:operations-route-1rtyc9bn-js:7214027e47",
+          "type": "feature",
+          "name": "operations-route-1rtYC9bN.js",
+          "path": "public/react/assets/operations-route-1rtYC9bN.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:people-agents-route-wenf5kgh-js:1809e49cea",
+          "type": "feature",
+          "name": "people-agents-route-wenF5kgh.js",
+          "path": "public/react/assets/people-agents-route-wenF5kgh.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:product-delivery-route-itnymvf9-js:48045e7090",
+          "type": "feature",
+          "name": "product-delivery-route-ITNYMVF9.js",
+          "path": "public/react/assets/product-delivery-route-ITNYMVF9.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:relationships-route-butpfoxy-js:b695d073b8",
+          "type": "feature",
+          "name": "relationships-route-ButpFoxY.js",
+          "path": "public/react/assets/relationships-route-ButpFoxY.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sales-route-czbffw3x-js:a337b7a796",
+          "type": "feature",
+          "name": "sales-route-CzBfFW3X.js",
+          "path": "public/react/assets/sales-route-CzBfFW3X.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:settings-routes-dxfry-vf-js:24eff98d02",
+          "type": "feature",
+          "name": "settings-routes-DXFRY-VF.js",
+          "path": "public/react/assets/settings-routes-DXFRY-VF.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:shared-dljqsdmz-js:8c85eea2cb",
+          "type": "feature",
+          "name": "shared-DljqSdmz.js",
+          "path": "public/react/assets/shared-DljqSdmz.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:shell-d-m2z3y7-js:b63b2832c7",
+          "type": "feature",
+          "name": "shell-D-M2z3y7.js",
+          "path": "public/react/assets/shell-D-M2z3y7.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:strategy-route-ifubea2h-js:3dd28548ec",
+          "type": "feature",
+          "name": "strategy-route-IfUbEa2h.js",
+          "path": "public/react/assets/strategy-route-IfUbEa2h.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:technology-route-wpsfw92a-js:41537db97d",
+          "type": "feature",
+          "name": "technology-route-wpSFw92A.js",
+          "path": "public/react/assets/technology-route-wpSFw92A.js",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:adapter-smoke-mjs:a70330596e",
+          "type": "feature",
+          "name": "adapter-smoke.mjs",
+          "path": "scripts/adapter-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:agent-training-smoke-mjs:454c2b0a08",
+          "type": "feature",
+          "name": "agent-training-smoke.mjs",
+          "path": "scripts/agent-training-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:aog-deploy-smoke-mjs:4950b48d18",
+          "type": "feature",
+          "name": "aog-deploy-smoke.mjs",
+          "path": "scripts/aog-deploy-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:backfill-architecture-nodes-mjs:e5fc8db033",
+          "type": "feature",
+          "name": "backfill-architecture-nodes.mjs",
+          "path": "scripts/backfill-architecture-nodes.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-chain-hardening-worklist-mjs:76048d5afb",
+          "type": "feature",
+          "name": "build-architecture-chain-hardening-worklist.mjs",
+          "path": "scripts/build-architecture-chain-hardening-worklist.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-dead-nodes-report-mjs:bb8975559f",
+          "type": "feature",
+          "name": "build-architecture-dead-nodes-report.mjs",
+          "path": "scripts/build-architecture-dead-nodes-report.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-delta-report-mjs:01dbd621ee",
+          "type": "feature",
+          "name": "build-architecture-delta-report.mjs",
+          "path": "scripts/build-architecture-delta-report.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-evidence-worklist-mjs:de807410aa",
+          "type": "feature",
+          "name": "build-architecture-evidence-worklist.mjs",
+          "path": "scripts/build-architecture-evidence-worklist.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-health-dashboard-mjs:f597bc0ac8",
+          "type": "feature",
+          "name": "build-architecture-health-dashboard.mjs",
+          "path": "scripts/build-architecture-health-dashboard.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-impact-delta-report-mjs:2ce37590c4",
+          "type": "feature",
+          "name": "build-architecture-impact-delta-report.mjs",
+          "path": "scripts/build-architecture-impact-delta-report.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-impact-index-mjs:3371d8a6ef",
+          "type": "feature",
+          "name": "build-architecture-impact-index.mjs",
+          "path": "scripts/build-architecture-impact-index.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-proof-bundle-mjs:28e35ef266",
+          "type": "feature",
+          "name": "build-architecture-proof-bundle.mjs",
+          "path": "scripts/build-architecture-proof-bundle.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-registry-catalog-mjs:a492a3dc59",
+          "type": "feature",
+          "name": "build-architecture-registry-catalog.mjs",
+          "path": "scripts/build-architecture-registry-catalog.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-risk-hotspots-report-mjs:9e2ca6c9a1",
+          "type": "feature",
+          "name": "build-architecture-risk-hotspots-report.mjs",
+          "path": "scripts/build-architecture-risk-hotspots-report.mjs",
+          "status": "deprecated",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:build-architecture-roadmap-mjs:0310317884",
+          "type": "feature",
+          "name": "build-architecture-roadmap.mjs",
+          "path": "scripts/build-architecture-roadmap.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-chain-coverage-mjs:4152b061a3",
+          "type": "feature",
+          "name": "check-architecture-chain-coverage.mjs",
+          "path": "scripts/check-architecture-chain-coverage.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-chain-integrity-mjs:6b9a42b230",
+          "type": "feature",
+          "name": "check-architecture-chain-integrity.mjs",
+          "path": "scripts/check-architecture-chain-integrity.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-command-contract-mjs:0c35fdb41d",
+          "type": "feature",
+          "name": "check-architecture-command-contract.mjs",
+          "path": "scripts/check-architecture-command-contract.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-connectivity-mjs:228dc3e4e3",
+          "type": "feature",
+          "name": "check-architecture-connectivity.mjs",
+          "path": "scripts/check-architecture-connectivity.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-csv-contract-mjs:e91c71cfa5",
+          "type": "feature",
+          "name": "check-architecture-csv-contract.mjs",
+          "path": "scripts/check-architecture-csv-contract.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-delta-zero-mjs:74049bc5b7",
+          "type": "feature",
+          "name": "check-architecture-delta-zero.mjs",
+          "path": "scripts/check-architecture-delta-zero.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-doc-baseline-mjs:a5ad3b00de",
+          "type": "feature",
+          "name": "check-architecture-doc-baseline.mjs",
+          "path": "scripts/check-architecture-doc-baseline.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-evidence-cardinality-mjs:381575c72b",
+          "type": "feature",
+          "name": "check-architecture-evidence-cardinality.mjs",
+          "path": "scripts/check-architecture-evidence-cardinality.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-evidence-gate-mjs:781bf73563",
+          "type": "feature",
+          "name": "check-architecture-evidence-gate.mjs",
+          "path": "scripts/check-architecture-evidence-gate.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-generated-node-frontmatter-mjs:ddbbafa011",
+          "type": "feature",
+          "name": "check-architecture-generated-node-frontmatter.mjs",
+          "path": "scripts/check-architecture-generated-node-frontmatter.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-graph-artifact-consistency-mjs:64c3a44f24",
+          "type": "feature",
+          "name": "check-architecture-graph-artifact-consistency.mjs",
+          "path": "scripts/check-architecture-graph-artifact-consistency.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-health-dashboard-gate-mjs:d6a4964ca2",
+          "type": "feature",
+          "name": "check-architecture-health-dashboard-gate.mjs",
+          "path": "scripts/check-architecture-health-dashboard-gate.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-impact-delta-gate-mjs:9814b543c4",
+          "type": "feature",
+          "name": "check-architecture-impact-delta-gate.mjs",
+          "path": "scripts/check-architecture-impact-delta-gate.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-node-artifacts-mjs:fa88014c2c",
+          "type": "feature",
+          "name": "check-architecture-node-artifacts.mjs",
+          "path": "scripts/check-architecture-node-artifacts.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-node-catalog-consistency-mjs:3036946037",
+          "type": "feature",
+          "name": "check-architecture-node-catalog-consistency.mjs",
+          "path": "scripts/check-architecture-node-catalog-consistency.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-node-integrity-mjs:0e4d4d0b7d",
+          "type": "feature",
+          "name": "check-architecture-node-integrity.mjs",
+          "path": "scripts/check-architecture-node-integrity.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-node-links-mjs:7902816cff",
+          "type": "feature",
+          "name": "check-architecture-node-links.mjs",
+          "path": "scripts/check-architecture-node-links.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-pipeline-nodes-mjs:489110dee7",
+          "type": "feature",
+          "name": "check-architecture-pipeline-nodes.mjs",
+          "path": "scripts/check-architecture-pipeline-nodes.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-proof-bundle-gate-mjs:b677160750",
+          "type": "feature",
+          "name": "check-architecture-proof-bundle-gate.mjs",
+          "path": "scripts/check-architecture-proof-bundle-gate.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-relation-integrity-mjs:bb30ffe683",
+          "type": "feature",
+          "name": "check-architecture-relation-integrity.mjs",
+          "path": "scripts/check-architecture-relation-integrity.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-report-presence-mjs:b598887394",
+          "type": "feature",
+          "name": "check-architecture-report-presence.mjs",
+          "path": "scripts/check-architecture-report-presence.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-risk-hotspots-gate-mjs:495ecb4d7c",
+          "type": "feature",
+          "name": "check-architecture-risk-hotspots-gate.mjs",
+          "path": "scripts/check-architecture-risk-hotspots-gate.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-architecture-roadmap-gate-mjs:8ca270d844",
+          "type": "feature",
+          "name": "check-architecture-roadmap-gate.mjs",
+          "path": "scripts/check-architecture-roadmap-gate.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:check-route-capabilities-mjs:d574fd7464",
+          "type": "feature",
+          "name": "check-route-capabilities.mjs",
+          "path": "scripts/check-route-capabilities.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:clean-react-build-mjs:e14fb2290f",
+          "type": "feature",
+          "name": "clean-react-build.mjs",
+          "path": "scripts/clean-react-build.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:clickup-production-bootstrap-mjs:b9e95dee4f",
+          "type": "feature",
+          "name": "clickup-production-bootstrap.mjs",
+          "path": "scripts/clickup-production-bootstrap.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:company-os-lifecycle-trace-smoke-mjs:e5d0515cf5",
+          "type": "feature",
+          "name": "company-os-lifecycle-trace-smoke.mjs",
+          "path": "scripts/company-os-lifecycle-trace-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:companycore-ai-ready-smoke-mjs:8c9373a5d3",
+          "type": "feature",
+          "name": "companycore-ai-ready-smoke.mjs",
+          "path": "scripts/companycore-ai-ready-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:companycore-mcp-server-mjs:0c499f7f8f",
+          "type": "feature",
+          "name": "companycore-mcp-server.mjs",
+          "path": "scripts/companycore-mcp-server.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:companycore-mcp-smoke-mjs:5c2b80710f",
+          "type": "feature",
+          "name": "companycore-mcp-smoke.mjs",
+          "path": "scripts/companycore-mcp-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:enrich-architecture-evidence-mjs:d139955132",
+          "type": "feature",
+          "name": "enrich-architecture-evidence.mjs",
+          "path": "scripts/enrich-architecture-evidence.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:enrich-architecture-relations-mjs:dad0c90c38",
+          "type": "feature",
+          "name": "enrich-architecture-relations.mjs",
+          "path": "scripts/enrich-architecture-relations.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:ensure-architecture-docs-root-mjs:59f620ca7e",
+          "type": "feature",
+          "name": "ensure-architecture-docs-root.mjs",
+          "path": "scripts/ensure-architecture-docs-root.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:generate-architecture-graph-mjs:6a94a319b6",
+          "type": "feature",
+          "name": "generate-architecture-graph.mjs",
+          "path": "scripts/generate-architecture-graph.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:google-drive-production-smoke-mjs:14cc73731b",
+          "type": "feature",
+          "name": "google-drive-production-smoke.mjs",
+          "path": "scripts/google-drive-production-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:normalize-architecture-chains-mjs:4c5fc38145",
+          "type": "feature",
+          "name": "normalize-architecture-chains.mjs",
+          "path": "scripts/normalize-architecture-chains.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:operating-model-registry-lifecycle-smoke-mjs:ec398b8193",
+          "type": "feature",
+          "name": "operating-model-registry-lifecycle-smoke.mjs",
+          "path": "scripts/operating-model-registry-lifecycle-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:owner-console-ux-smoke-mjs:2bf3cdabf0",
+          "type": "feature",
+          "name": "owner-console-ux-smoke.mjs",
+          "path": "scripts/owner-console-ux-smoke.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:print-architecture-status-mjs:8d03732be7",
+          "type": "feature",
+          "name": "print-architecture-status.mjs",
+          "path": "scripts/print-architecture-status.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sync-architecture-chains-mjs:68a6bb7b0f",
+          "type": "feature",
+          "name": "sync-architecture-chains.mjs",
+          "path": "scripts/sync-architecture-chains.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sync-architecture-doc-baseline-mjs:d39517d291",
+          "type": "feature",
+          "name": "sync-architecture-doc-baseline.mjs",
+          "path": "scripts/sync-architecture-doc-baseline.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sync-architecture-evidence-status-mjs:0c9d8601cb",
+          "type": "feature",
+          "name": "sync-architecture-evidence-status.mjs",
+          "path": "scripts/sync-architecture-evidence-status.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sync-architecture-extended-registry-mjs:eae70ecc44",
+          "type": "feature",
+          "name": "sync-architecture-extended-registry.mjs",
+          "path": "scripts/sync-architecture-extended-registry.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sync-architecture-feature-coverage-mjs:765c646613",
+          "type": "feature",
+          "name": "sync-architecture-feature-coverage.mjs",
+          "path": "scripts/sync-architecture-feature-coverage.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sync-architecture-node-verification-mjs:46cb9752d1",
+          "type": "feature",
+          "name": "sync-architecture-node-verification.mjs",
+          "path": "scripts/sync-architecture-node-verification.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sync-architecture-registry-mjs:6b16b02cdf",
+          "type": "feature",
+          "name": "sync-architecture-registry.mjs",
+          "path": "scripts/sync-architecture-registry.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:test-api-local-mjs:fef8423ba8",
+          "type": "feature",
+          "name": "test-api-local.mjs",
+          "path": "scripts/test-api-local.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:app-ts:e798655a78",
+          "type": "feature",
+          "name": "app.ts",
+          "path": "src/app.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:agent-key-profiles-ts:5c15d0332b",
+          "type": "feature",
+          "name": "agent-key-profiles.ts",
+          "path": "src/auth/agent-key-profiles.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:api-key-middleware-ts:b3416cccca",
+          "type": "feature",
+          "name": "api-key.middleware.ts",
+          "path": "src/auth/api-key.middleware.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:api-key-ts:ad12ed7339",
+          "type": "feature",
+          "name": "api-key.ts",
+          "path": "src/auth/api-key.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:capabilities-ts:8aa6c04dd1",
+          "type": "feature",
+          "name": "capabilities.ts",
+          "path": "src/auth/capabilities.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:password-ts:e497710000",
+          "type": "feature",
+          "name": "password.ts",
+          "path": "src/auth/password.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:token-ts:50c86e6225",
+          "type": "feature",
+          "name": "token.ts",
+          "path": "src/auth/token.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:env-ts:5b349453d9",
+          "type": "feature",
+          "name": "env.ts",
+          "path": "src/config/env.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:prisma-ts:dafac5460d",
+          "type": "feature",
+          "name": "prisma.ts",
+          "path": "src/db/prisma.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:health-routes-ts:bbcf23ef19",
+          "type": "feature",
+          "name": "health.routes.ts",
+          "path": "src/health/health.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:clickup-client-ts:9d4c2f90ac",
+          "type": "feature",
+          "name": "clickup.client.ts",
+          "path": "src/integrations/clickup/clickup.client.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:clickup-maintenance-scheduler-ts:b786011e97",
+          "type": "feature",
+          "name": "clickup.maintenance-scheduler.ts",
+          "path": "src/integrations/clickup/clickup.maintenance-scheduler.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:clickup-mapper-ts:12006caf8a",
+          "type": "feature",
+          "name": "clickup.mapper.ts",
+          "path": "src/integrations/clickup/clickup.mapper.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:clickup-sync-ts:4016035158",
+          "type": "feature",
+          "name": "clickup.sync.ts",
+          "path": "src/integrations/clickup/clickup.sync.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:clickup-webhooks-ts:d7a007967a",
+          "type": "feature",
+          "name": "clickup.webhooks.ts",
+          "path": "src/integrations/clickup/clickup.webhooks.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:webhook-signature-ts:6831ccdf43",
+          "type": "feature",
+          "name": "webhook-signature.ts",
+          "path": "src/integrations/clickup/webhook-signature.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:errors-ts:6cad1638b0",
+          "type": "feature",
+          "name": "errors.ts",
+          "path": "src/integrations/errors.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:google-drive-auth-ts:3aca51d9d5",
+          "type": "feature",
+          "name": "google-drive.auth.ts",
+          "path": "src/integrations/google-drive/google-drive.auth.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:google-drive-client-ts:e2fe799173",
+          "type": "feature",
+          "name": "google-drive.client.ts",
+          "path": "src/integrations/google-drive/google-drive.client.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:google-drive-content-ts:dfd2b35d30",
+          "type": "feature",
+          "name": "google-drive.content.ts",
+          "path": "src/integrations/google-drive/google-drive.content.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:google-drive-sync-ts:a520eba9b8",
+          "type": "feature",
+          "name": "google-drive.sync.ts",
+          "path": "src/integrations/google-drive/google-drive.sync.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:integration-settings-service-ts:33ba35e79f",
+          "type": "feature",
+          "name": "integration-settings.service.ts",
+          "path": "src/integrations/integration-settings.service.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:secrets-ts:9896d14c7b",
+          "type": "feature",
+          "name": "secrets.ts",
+          "path": "src/integrations/secrets.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:manifest-ts:2707975c5f",
+          "type": "feature",
+          "name": "manifest.ts",
+          "path": "src/mcp/manifest.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:api-error-ts:d388409f24",
+          "type": "feature",
+          "name": "api-error.ts",
+          "path": "src/middleware/api-error.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:async-handler-ts:d4ef00961e",
+          "type": "feature",
+          "name": "async-handler.ts",
+          "path": "src/middleware/async-handler.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:error-handler-ts:f4e312ac90",
+          "type": "feature",
+          "name": "error-handler.ts",
+          "path": "src/middleware/error-handler.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:security-ts:cf15e1a8d7",
+          "type": "feature",
+          "name": "security.ts",
+          "path": "src/middleware/security.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:agent-events-routes-ts:d7cd99ecf1",
+          "type": "feature",
+          "name": "agent-events.routes.ts",
+          "path": "src/modules/agent-events/agent-events.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:agent-logs-routes-ts:81332abd40",
+          "type": "feature",
+          "name": "agent-logs.routes.ts",
+          "path": "src/modules/agent-logs/agent-logs.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:agents-routes-ts:4741433416",
+          "type": "feature",
+          "name": "agents.routes.ts",
+          "path": "src/modules/agents/agents.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:api-keys-routes-ts:3f908ca65c",
+          "type": "feature",
+          "name": "api-keys.routes.ts",
+          "path": "src/modules/api-keys/api-keys.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:assets-routes-ts:98ce76e11e",
+          "type": "feature",
+          "name": "assets.routes.ts",
+          "path": "src/modules/assets/assets.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:auth-routes-ts:ee1c62d0bd",
+          "type": "feature",
+          "name": "auth.routes.ts",
+          "path": "src/modules/auth/auth.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:clients-routes-ts:d8c621f2e6",
+          "type": "feature",
+          "name": "clients.routes.ts",
+          "path": "src/modules/clients/clients.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:commercial-exceptions-routes-ts:321a46ce03",
+          "type": "feature",
+          "name": "commercial-exceptions.routes.ts",
+          "path": "src/modules/commercial-exceptions/commercial-exceptions.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:company-os-routes-ts:e81f3be58a",
+          "type": "feature",
+          "name": "company-os.routes.ts",
+          "path": "src/modules/company-os/company-os.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:workflow-definition-drafts-routes-ts:88debdc871",
+          "type": "feature",
+          "name": "workflow-definition-drafts.routes.ts",
+          "path": "src/modules/company-os/workflow-definition-drafts.routes.ts",
+          "status": "deprecated",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:connection-routes-ts:889d2c0f84",
+          "type": "feature",
+          "name": "connection.routes.ts",
+          "path": "src/modules/connection/connection.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:dashboard-routes-ts:cb24115ec5",
+          "type": "feature",
+          "name": "dashboard.routes.ts",
+          "path": "src/modules/dashboard/dashboard.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:deals-routes-ts:b4d6b1f392",
+          "type": "feature",
+          "name": "deals.routes.ts",
+          "path": "src/modules/deals/deals.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:decisions-routes-ts:bdcded1491",
+          "type": "feature",
+          "name": "decisions.routes.ts",
+          "path": "src/modules/decisions/decisions.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:departments-routes-ts:1655b724d7",
+          "type": "feature",
+          "name": "departments.routes.ts",
+          "path": "src/modules/departments/departments.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:event-service-ts:99dfd5c248",
+          "type": "feature",
+          "name": "event.service.ts",
+          "path": "src/modules/events/event.service.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:events-routes-ts:2a36233b4e",
+          "type": "feature",
+          "name": "events.routes.ts",
+          "path": "src/modules/events/events.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:finance-routes-ts:63aa31648e",
+          "type": "feature",
+          "name": "finance.routes.ts",
+          "path": "src/modules/finance/finance.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:goals-routes-ts:feebefb863",
+          "type": "feature",
+          "name": "goals.routes.ts",
+          "path": "src/modules/goals/goals.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:google-drive-routes-ts:a2179e9c5d",
+          "type": "feature",
+          "name": "google-drive.routes.ts",
+          "path": "src/modules/google-drive/google-drive.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:intake-routes-ts:b8449a4adf",
+          "type": "feature",
+          "name": "intake.routes.ts",
+          "path": "src/modules/intake/intake.routes.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        }
+      ]
+    },
+    "classified_inferred_link_noise": {
+      "count": 5776,
+      "by_reason": {
+        "config_only_file": 2,
+        "generated_vendor_docs_vault_plugin": 5774
+      },
+      "items": [
+        {
+          "id": "feature:main-js:7bf5b3cd9e",
+          "type": "feature",
+          "name": "main.js",
+          "path": "docs/.obsidian/plugins/dataview/main.js",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "feature:main-js:effdfd8c8b",
+          "type": "feature",
+          "name": "main.js",
+          "path": "docs/.obsidian/plugins/note-toolbar/main.js",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "feature:main-js:56dd376bb4",
+          "type": "feature",
+          "name": "main.js",
+          "path": "docs/.obsidian/plugins/obsidian-excalidraw-plugin/main.js",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "feature:main-js:5231e70225",
+          "type": "feature",
+          "name": "main.js",
+          "path": "docs/.obsidian/plugins/obsidian-git/main.js",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "feature:main-js:cf17d4c27d",
+          "type": "feature",
+          "name": "main.js",
+          "path": "docs/.obsidian/plugins/obsidian-tasks-plugin/main.js",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "feature:main-js:53c443fa39",
+          "type": "feature",
+          "name": "main.js",
+          "path": "docs/.obsidian/plugins/omnisearch/main.js",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "feature:main-js:438260539e",
+          "type": "feature",
+          "name": "main.js",
+          "path": "docs/.obsidian/plugins/table-editor-obsidian/main.js",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "feature:main-js:7b583aafa2",
+          "type": "feature",
+          "name": "main.js",
+          "path": "docs/.obsidian/plugins/templater-obsidian/main.js",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "feature:tailwind-config-mjs:0ec64530f0",
+          "type": "feature",
+          "name": "tailwind.config.mjs",
+          "path": "tailwind.config.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead",
+          "reason": "config_only_file"
+        },
+        {
+          "id": "feature:vite-config-mjs:14c4de6c9a",
+          "type": "feature",
+          "name": "vite.config.mjs",
+          "path": "vite.config.mjs",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead",
+          "reason": "config_only_file"
+        },
+        {
+          "id": "function:item:6c2623cf60",
+          "type": "function",
+          "name": "_",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:1:7d4be7549f",
+          "type": "function",
+          "name": "_$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:advancereadiness:2f6f0926a2",
+          "type": "function",
+          "name": "_advanceReadiness",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_advanceReadiness",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:binstringtoarraybuffer:57bf42fe5e",
+          "type": "function",
+          "name": "_binStringToArrayBuffer",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_binStringToArrayBuffer",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:checkblobsupport:0dbe264e77",
+          "type": "function",
+          "name": "_checkBlobSupport",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_checkBlobSupport",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:checkblobsupportwithoutcaching:bca4785e6d",
+          "type": "function",
+          "name": "_checkBlobSupportWithoutCaching",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_checkBlobSupportWithoutCaching",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:classcallcheck:d6b86a2912",
+          "type": "function",
+          "name": "_classCallCheck",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_classCallCheck",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:decodeblob:3883deeb4e",
+          "type": "function",
+          "name": "_decodeBlob",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_decodeBlob",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:deferreadiness:41f1a09442",
+          "type": "function",
+          "name": "_deferReadiness",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_deferReadiness",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:encodeblob:5ea722f020",
+          "type": "function",
+          "name": "_encodeBlob",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_encodeBlob",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:extend:b75f51566d",
+          "type": "function",
+          "name": "_extend",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_extend",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:fullyready:d5f535c05f",
+          "type": "function",
+          "name": "_fullyReady",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_fullyReady",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:getconnection:442f78416a",
+          "type": "function",
+          "name": "_getConnection",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_getConnection",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:getkeyprefix:0a7a88bc74",
+          "type": "function",
+          "name": "_getKeyPrefix",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_getKeyPrefix",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:getoriginalconnection:7580ed33e1",
+          "type": "function",
+          "name": "_getOriginalConnection",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_getOriginalConnection",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:getsupporteddrivers:7e3f39aa5c",
+          "type": "function",
+          "name": "_getSupportedDrivers",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_getSupportedDrivers",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:getupgradedconnection:e3ea5d16d1",
+          "type": "function",
+          "name": "_getUpgradedConnection",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_getUpgradedConnection",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:initstorage:5aa9420fac",
+          "type": "function",
+          "name": "_initStorage",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_initStorage",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:initstorage-1:cc1b1e9e89",
+          "type": "function",
+          "name": "_initStorage$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_initStorage$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:initstorage-2:dff3b76400",
+          "type": "function",
+          "name": "_initStorage$2",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_initStorage$2",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:isencodedblob:eb72289f34",
+          "type": "function",
+          "name": "_isEncodedBlob",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_isEncodedBlob",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:islocalstorageusable:ae69c7ae01",
+          "type": "function",
+          "name": "_isLocalStorageUsable",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_isLocalStorageUsable",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:isupgradeneeded:4ed221d76d",
+          "type": "function",
+          "name": "_isUpgradeNeeded",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_isUpgradeNeeded",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:n:64c0dff7e5",
+          "type": "function",
+          "name": "_n",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_n",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:rejectreadiness:b2069e9c30",
+          "type": "function",
+          "name": "_rejectReadiness",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_rejectReadiness",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:setitem:33ebf11c20",
+          "type": "function",
+          "name": "_setItem",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_setItem",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:tryreconnect:e566f93540",
+          "type": "function",
+          "name": "_tryReconnect",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_tryReconnect",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:wraplibrarymethodswithready:54579a0c2a",
+          "type": "function",
+          "name": "_wrapLibraryMethodsWithReady",
+          "path": "docs/.obsidian/plugins/dataview/main.js#_wrapLibraryMethodsWithReady",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:item:13a6702c63",
+          "type": "function",
+          "name": "$",
+          "path": "docs/.obsidian/plugins/dataview/main.js#$",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:1:3a1c042aad",
+          "type": "function",
+          "name": "$$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#$$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:a:b3e487724d",
+          "type": "function",
+          "name": "a",
+          "path": "docs/.obsidian/plugins/dataview/main.js#a",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:a:a77bbc9266",
+          "type": "function",
+          "name": "A",
+          "path": "docs/.obsidian/plugins/dataview/main.js#A",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:a-1:cf580bf9b0",
+          "type": "function",
+          "name": "A$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#A$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:a-2:9efe7e45df",
+          "type": "function",
+          "name": "A$2",
+          "path": "docs/.obsidian/plugins/dataview/main.js#A$2",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:add-css:9191820fdd",
+          "type": "function",
+          "name": "add_css",
+          "path": "docs/.obsidian/plugins/dataview/main.js#add_css",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:add-css-1:dd36a86944",
+          "type": "function",
+          "name": "add_css$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#add_css$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:add-css-2:1671f31bf8",
+          "type": "function",
+          "name": "add_css$2",
+          "path": "docs/.obsidian/plugins/dataview/main.js#add_css$2",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:add-css-3:6bf02fd163",
+          "type": "function",
+          "name": "add_css$3",
+          "path": "docs/.obsidian/plugins/dataview/main.js#add_css$3",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:add-css-4:588734cad6",
+          "type": "function",
+          "name": "add_css$4",
+          "path": "docs/.obsidian/plugins/dataview/main.js#add_css$4",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:add-css-5:b36ca3a2ef",
+          "type": "function",
+          "name": "add_css$5",
+          "path": "docs/.obsidian/plugins/dataview/main.js#add_css$5",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:add-render-callback:3c63fb1a0c",
+          "type": "function",
+          "name": "add_render_callback",
+          "path": "docs/.obsidian/plugins/dataview/main.js#add_render_callback",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:addfields:222c151604",
+          "type": "function",
+          "name": "addFields",
+          "path": "docs/.obsidian/plugins/dataview/main.js#addFields",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:adjusttime:cd69504da6",
+          "type": "function",
+          "name": "adjustTime",
+          "path": "docs/.obsidian/plugins/dataview/main.js#adjustTime",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:all:3e66d12637",
+          "type": "function",
+          "name": "all",
+          "path": "docs/.obsidian/plugins/dataview/main.js#all",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:allresolver:14c7160140",
+          "type": "function",
+          "name": "allResolver",
+          "path": "docs/.obsidian/plugins/dataview/main.js#allResolver",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:an:51c6bcc4be",
+          "type": "function",
+          "name": "an",
+          "path": "docs/.obsidian/plugins/dataview/main.js#an",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:and:690978992b",
+          "type": "function",
+          "name": "and",
+          "path": "docs/.obsidian/plugins/dataview/main.js#and",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:append:ccd488bf10",
+          "type": "function",
+          "name": "append",
+          "path": "docs/.obsidian/plugins/dataview/main.js#append",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:appythen:b0718a702b",
+          "type": "function",
+          "name": "appyThen",
+          "path": "docs/.obsidian/plugins/dataview/main.js#appyThen",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:asnumber:44483ab7a6",
+          "type": "function",
+          "name": "asNumber",
+          "path": "docs/.obsidian/plugins/dataview/main.js#asNumber",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:assertvalidoperator:7b8a11e32d",
+          "type": "function",
+          "name": "assertValidOperator",
+          "path": "docs/.obsidian/plugins/dataview/main.js#assertValidOperator",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:assign:d7ffa7456c",
+          "type": "function",
+          "name": "assign",
+          "path": "docs/.obsidian/plugins/dataview/main.js#assign",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:asyncevalincontext:6b83d2d4a6",
+          "type": "function",
+          "name": "asyncEvalInContext",
+          "path": "docs/.obsidian/plugins/dataview/main.js#asyncEvalInContext",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:asynctryorpropagate:54cf48455f",
+          "type": "function",
+          "name": "asyncTryOrPropagate",
+          "path": "docs/.obsidian/plugins/dataview/main.js#asyncTryOrPropagate",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:attr:d6307e2863",
+          "type": "function",
+          "name": "attr",
+          "path": "docs/.obsidian/plugins/dataview/main.js#attr",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:b:642dfed627",
+          "type": "function",
+          "name": "b",
+          "path": "docs/.obsidian/plugins/dataview/main.js#b",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:b:1881da13bc",
+          "type": "function",
+          "name": "B",
+          "path": "docs/.obsidian/plugins/dataview/main.js#B",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:b-1:bb6fd06246",
+          "type": "function",
+          "name": "b$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#b$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:b-1:fda15f2040",
+          "type": "function",
+          "name": "B$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#B$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:b-2:7a7ce6d84f",
+          "type": "function",
+          "name": "B$2",
+          "path": "docs/.obsidian/plugins/dataview/main.js#B$2",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:bestby:3e6f106409",
+          "type": "function",
+          "name": "bestBy",
+          "path": "docs/.obsidian/plugins/dataview/main.js#bestBy",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:binaryop:80069c7535",
+          "type": "function",
+          "name": "binaryOp",
+          "path": "docs/.obsidian/plugins/dataview/main.js#binaryOp",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:bind:e04387681f",
+          "type": "function",
+          "name": "bind",
+          "path": "docs/.obsidian/plugins/dataview/main.js#bind",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:bindall:6cecfda274",
+          "type": "function",
+          "name": "bindAll",
+          "path": "docs/.obsidian/plugins/dataview/main.js#bindAll",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:blank-object:04eeeb1bd2",
+          "type": "function",
+          "name": "blank_object",
+          "path": "docs/.obsidian/plugins/dataview/main.js#blank_object",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:bn:a58bd3ad3e",
+          "type": "function",
+          "name": "bn",
+          "path": "docs/.obsidian/plugins/dataview/main.js#bn",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:buffertostring:ad4fd68e22",
+          "type": "function",
+          "name": "bufferToString",
+          "path": "docs/.obsidian/plugins/dataview/main.js#bufferToString",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:buildinlinefields:ae338ce6fa",
+          "type": "function",
+          "name": "buildInlineFields",
+          "path": "docs/.obsidian/plugins/dataview/main.js#buildInlineFields",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:buildregex:588ad5edbf",
+          "type": "function",
+          "name": "buildRegex",
+          "path": "docs/.obsidian/plugins/dataview/main.js#buildRegex",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:by:525bd3a6fa",
+          "type": "function",
+          "name": "by",
+          "path": "docs/.obsidian/plugins/dataview/main.js#by",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:c:cd79da396e",
+          "type": "function",
+          "name": "c",
+          "path": "docs/.obsidian/plugins/dataview/main.js#c",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:c:df2e2c5133",
+          "type": "function",
+          "name": "C",
+          "path": "docs/.obsidian/plugins/dataview/main.js#C",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:c-1:031a2606b1",
+          "type": "function",
+          "name": "C$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#C$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:callwhenready:7e435e2b1d",
+          "type": "function",
+          "name": "callWhenReady",
+          "path": "docs/.obsidian/plugins/dataview/main.js#callWhenReady",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:canonicalizevarname:841a91f088",
+          "type": "function",
+          "name": "canonicalizeVarName",
+          "path": "docs/.obsidian/plugins/dataview/main.js#canonicalizeVarName",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:captureraw:251fa39600",
+          "type": "function",
+          "name": "captureRaw",
+          "path": "docs/.obsidian/plugins/dataview/main.js#captureRaw",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:chainopt:e3af83020c",
+          "type": "function",
+          "name": "chainOpt",
+          "path": "docs/.obsidian/plugins/dataview/main.js#chainOpt",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:check-outros:ce8c075360",
+          "type": "function",
+          "name": "check_outros",
+          "path": "docs/.obsidian/plugins/dataview/main.js#check_outros",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:checkiflocalstoragethrows:3670ac2711",
+          "type": "function",
+          "name": "checkIfLocalStorageThrows",
+          "path": "docs/.obsidian/plugins/dataview/main.js#checkIfLocalStorageThrows",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:children:6215c86286",
+          "type": "function",
+          "name": "children",
+          "path": "docs/.obsidian/plugins/dataview/main.js#children",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:clear:85b2f122c5",
+          "type": "function",
+          "name": "clear",
+          "path": "docs/.obsidian/plugins/dataview/main.js#clear",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:clear-1:1d0e51404f",
+          "type": "function",
+          "name": "clear$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#clear$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:clear-2:5069685ba1",
+          "type": "function",
+          "name": "clear$2",
+          "path": "docs/.obsidian/plugins/dataview/main.js#clear$2",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:clone:2a7dd949e7",
+          "type": "function",
+          "name": "clone",
+          "path": "docs/.obsidian/plugins/dataview/main.js#clone",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:clone-1:56c778c719",
+          "type": "function",
+          "name": "clone$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#clone$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:combineextractors:473f8e8901",
+          "type": "function",
+          "name": "combineExtractors",
+          "path": "docs/.obsidian/plugins/dataview/main.js#combineExtractors",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:combineregexes:e23db10e01",
+          "type": "function",
+          "name": "combineRegexes",
+          "path": "docs/.obsidian/plugins/dataview/main.js#combineRegexes",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:commonjsrequire:7d575e5c5e",
+          "type": "function",
+          "name": "commonjsRequire",
+          "path": "docs/.obsidian/plugins/dataview/main.js#commonjsRequire",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:compare:0284dda878",
+          "type": "function",
+          "name": "compare",
+          "path": "docs/.obsidian/plugins/dataview/main.js#compare",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:comparesegments:8c20669bb6",
+          "type": "function",
+          "name": "compareSegments",
+          "path": "docs/.obsidian/plugins/dataview/main.js#compareSegments",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:comparestrings:c72ff85afc",
+          "type": "function",
+          "name": "compareStrings",
+          "path": "docs/.obsidian/plugins/dataview/main.js#compareStrings",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:comparevalue:4a77d4fe8f",
+          "type": "function",
+          "name": "compareValue",
+          "path": "docs/.obsidian/plugins/dataview/main.js#compareValue",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:compareversions:a6433d1ea3",
+          "type": "function",
+          "name": "compareVersions",
+          "path": "docs/.obsidian/plugins/dataview/main.js#compareVersions",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:computeordinal:fe4a799d40",
+          "type": "function",
+          "name": "computeOrdinal",
+          "path": "docs/.obsidian/plugins/dataview/main.js#computeOrdinal",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:config:519929e9ac",
+          "type": "function",
+          "name": "config",
+          "path": "docs/.obsidian/plugins/dataview/main.js#config",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:configuremissingmethods:274631a6fc",
+          "type": "function",
+          "name": "configureMissingMethods",
+          "path": "docs/.obsidian/plugins/dataview/main.js#configureMissingMethods",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:count:209f7be468",
+          "type": "function",
+          "name": "count",
+          "path": "docs/.obsidian/plugins/dataview/main.js#count",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-catch-block:316011877a",
+          "type": "function",
+          "name": "create_catch_block",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_catch_block",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-component:ced0ee080b",
+          "type": "function",
+          "name": "create_component",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_component",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-default-slot:0ce6b049af",
+          "type": "function",
+          "name": "create_default_slot",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_default_slot",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-default-slot-1:86d0bf0275",
+          "type": "function",
+          "name": "create_default_slot$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_default_slot$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-each-block:7d9a94c3cd",
+          "type": "function",
+          "name": "create_each_block",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_each_block",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-each-block-1:42c7637d86",
+          "type": "function",
+          "name": "create_each_block_1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_each_block_1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-each-block-2:91ee023f12",
+          "type": "function",
+          "name": "create_each_block_2",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_each_block_2",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-each-block-3:43610362ae",
+          "type": "function",
+          "name": "create_each_block_3",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_each_block_3",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-each-block-1:245aa667f8",
+          "type": "function",
+          "name": "create_each_block$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_each_block$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-each-block-2:12491006c5",
+          "type": "function",
+          "name": "create_each_block$2",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_each_block$2",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-else-block:acf098c940",
+          "type": "function",
+          "name": "create_else_block",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_else_block",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-else-block-1:19c9a72146",
+          "type": "function",
+          "name": "create_else_block$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_else_block$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-fragment:b418863da7",
+          "type": "function",
+          "name": "create_fragment",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_fragment",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-fragment-1:cafeac49c5",
+          "type": "function",
+          "name": "create_fragment$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_fragment$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-fragment-2:263b97bc05",
+          "type": "function",
+          "name": "create_fragment$2",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_fragment$2",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-fragment-3:1beb0bc6c1",
+          "type": "function",
+          "name": "create_fragment$3",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_fragment$3",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-fragment-4:cc789fa751",
+          "type": "function",
+          "name": "create_fragment$4",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_fragment$4",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-fragment-5:ab58a21ccd",
+          "type": "function",
+          "name": "create_fragment$5",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_fragment$5",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-fragment-6:e3ac203181",
+          "type": "function",
+          "name": "create_fragment$6",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_fragment$6",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-if-block:a1f59a5667",
+          "type": "function",
+          "name": "create_if_block",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_if_block",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-if-block-1:940e76f2af",
+          "type": "function",
+          "name": "create_if_block_1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_if_block_1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-if-block-2:e6a68b449e",
+          "type": "function",
+          "name": "create_if_block_2",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_if_block_2",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-if-block-1:fe00d804cc",
+          "type": "function",
+          "name": "create_if_block$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_if_block$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-if-block-2:0fd4f1dfc0",
+          "type": "function",
+          "name": "create_if_block$2",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_if_block$2",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-pending-block:97cb3dfb7d",
+          "type": "function",
+          "name": "create_pending_block",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_pending_block",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-slot:0c191dbd46",
+          "type": "function",
+          "name": "create_slot",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_slot",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:create-then-block:1cd7d96a04",
+          "type": "function",
+          "name": "create_then_block",
+          "path": "docs/.obsidian/plugins/dataview/main.js#create_then_block",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:createbase64workerfactory:6fb8f68054",
+          "type": "function",
+          "name": "createBase64WorkerFactory",
+          "path": "docs/.obsidian/plugins/dataview/main.js#createBase64WorkerFactory",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:createbinaryops:f503ce0bda",
+          "type": "function",
+          "name": "createBinaryOps",
+          "path": "docs/.obsidian/plugins/dataview/main.js#createBinaryOps",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:createbinaryparser:c828ac9510",
+          "type": "function",
+          "name": "createBinaryParser",
+          "path": "docs/.obsidian/plugins/dataview/main.js#createBinaryParser",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:createblob:6d2d9154d8",
+          "type": "function",
+          "name": "createBlob",
+          "path": "docs/.obsidian/plugins/dataview/main.js#createBlob",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:createdbcontext:205d98c1f8",
+          "type": "function",
+          "name": "createDbContext",
+          "path": "docs/.obsidian/plugins/dataview/main.js#createDbContext",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:createdbtable:6e1b5701e0",
+          "type": "function",
+          "name": "createDbTable",
+          "path": "docs/.obsidian/plugins/dataview/main.js#createDbTable",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:createfixedlistview:0f3af21501",
+          "type": "function",
+          "name": "createFixedListView",
+          "path": "docs/.obsidian/plugins/dataview/main.js#createFixedListView",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:createfixedtableview:4201ce0367",
+          "type": "function",
+          "name": "createFixedTableView",
+          "path": "docs/.obsidian/plugins/dataview/main.js#createFixedTableView",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:createfixedtaskview:2d1b089db9",
+          "type": "function",
+          "name": "createFixedTaskView",
+          "path": "docs/.obsidian/plugins/dataview/main.js#createFixedTaskView",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:createinstance:62640dd542",
+          "type": "function",
+          "name": "createInstance",
+          "path": "docs/.obsidian/plugins/dataview/main.js#createInstance",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:createlistview:a776ccb271",
+          "type": "function",
+          "name": "createListView",
+          "path": "docs/.obsidian/plugins/dataview/main.js#createListView",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:createtableview:a0e69144a8",
+          "type": "function",
+          "name": "createTableView",
+          "path": "docs/.obsidian/plugins/dataview/main.js#createTableView",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:createtaskview:1baeb4ef90",
+          "type": "function",
+          "name": "createTaskView",
+          "path": "docs/.obsidian/plugins/dataview/main.js#createTaskView",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:createtransaction:fb612f7cf4",
+          "type": "function",
+          "name": "createTransaction",
+          "path": "docs/.obsidian/plugins/dataview/main.js#createTransaction",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:createurl:b897f363b1",
+          "type": "function",
+          "name": "createURL",
+          "path": "docs/.obsidian/plugins/dataview/main.js#createURL",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:csv:51e9085df2",
+          "type": "function",
+          "name": "csv",
+          "path": "docs/.obsidian/plugins/dataview/main.js#csv",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:currentlocale:9be29e0083",
+          "type": "function",
+          "name": "currentLocale",
+          "path": "docs/.obsidian/plugins/dataview/main.js#currentLocale",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:cyrb53:3b68fbf8d5",
+          "type": "function",
+          "name": "cyrb53",
+          "path": "docs/.obsidian/plugins/dataview/main.js#cyrb53",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:d:74ec635460",
+          "type": "function",
+          "name": "d",
+          "path": "docs/.obsidian/plugins/dataview/main.js#d",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:d:6a1bb85d7e",
+          "type": "function",
+          "name": "D",
+          "path": "docs/.obsidian/plugins/dataview/main.js#D",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:d-1:1da3179ee2",
+          "type": "function",
+          "name": "d$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#d$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:d-1:90de3faefb",
+          "type": "function",
+          "name": "D$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#D$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:datetimefrommatches:9f514e1610",
+          "type": "function",
+          "name": "dateTimeFromMatches",
+          "path": "docs/.obsidian/plugins/dataview/main.js#dateTimeFromMatches",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:daydiff:17b8790bcf",
+          "type": "function",
+          "name": "dayDiff",
+          "path": "docs/.obsidian/plugins/dataview/main.js#dayDiff",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:dayofweek:552760a41d",
+          "type": "function",
+          "name": "dayOfWeek",
+          "path": "docs/.obsidian/plugins/dataview/main.js#dayOfWeek",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:daysinmonth:089b180c6d",
+          "type": "function",
+          "name": "daysInMonth",
+          "path": "docs/.obsidian/plugins/dataview/main.js#daysInMonth",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:daysinyear:aad66934d4",
+          "type": "function",
+          "name": "daysInYear",
+          "path": "docs/.obsidian/plugins/dataview/main.js#daysInYear",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:decodebase64:a8e3b4c5f5",
+          "type": "function",
+          "name": "decodeBase64",
+          "path": "docs/.obsidian/plugins/dataview/main.js#decodeBase64",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:decrementdisplayedmonth:a72054b32a",
+          "type": "function",
+          "name": "decrementDisplayedMonth",
+          "path": "docs/.obsidian/plugins/dataview/main.js#decrementDisplayedMonth",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:deepcopy:cdd22fa068",
+          "type": "function",
+          "name": "deepCopy",
+          "path": "docs/.obsidian/plugins/dataview/main.js#deepCopy",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:defaultlinkhandler:eb9f604fb2",
+          "type": "function",
+          "name": "defaultLinkHandler",
+          "path": "docs/.obsidian/plugins/dataview/main.js#defaultLinkHandler",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:definedriver:8dee6a50c5",
+          "type": "function",
+          "name": "defineDriver",
+          "path": "docs/.obsidian/plugins/dataview/main.js#defineDriver",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:deserialize:4945b6bea9",
+          "type": "function",
+          "name": "deserialize",
+          "path": "docs/.obsidian/plugins/dataview/main.js#deserialize",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:destroy-component:9d42a45dd1",
+          "type": "function",
+          "name": "destroy_component",
+          "path": "docs/.obsidian/plugins/dataview/main.js#destroy_component",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:destroy-each:25e926d8e9",
+          "type": "function",
+          "name": "destroy_each",
+          "path": "docs/.obsidian/plugins/dataview/main.js#destroy_each",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:detach:fa5cf8cf49",
+          "type": "function",
+          "name": "detach",
+          "path": "docs/.obsidian/plugins/dataview/main.js#detach",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:diff:f764709c24",
+          "type": "function",
+          "name": "diff",
+          "path": "docs/.obsidian/plugins/dataview/main.js#diff",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:diffrelative:b1f4661467",
+          "type": "function",
+          "name": "diffRelative",
+          "path": "docs/.obsidian/plugins/dataview/main.js#diffRelative",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:digitregex:a45e5e3c07",
+          "type": "function",
+          "name": "digitRegex",
+          "path": "docs/.obsidian/plugins/dataview/main.js#digitRegex",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:dn:33c9069935",
+          "type": "function",
+          "name": "dn",
+          "path": "docs/.obsidian/plugins/dataview/main.js#dn",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:driver:66c6cf31a8",
+          "type": "function",
+          "name": "driver",
+          "path": "docs/.obsidian/plugins/dataview/main.js#driver",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:driverpromiseloop:c6d5190f7d",
+          "type": "function",
+          "name": "driverPromiseLoop",
+          "path": "docs/.obsidian/plugins/dataview/main.js#driverPromiseLoop",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:dropinstance:3f1b965fb3",
+          "type": "function",
+          "name": "dropInstance",
+          "path": "docs/.obsidian/plugins/dataview/main.js#dropInstance",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:dropinstance-1:e5f1c7a0c4",
+          "type": "function",
+          "name": "dropInstance$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#dropInstance$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:dropinstance-2:ca438857fb",
+          "type": "function",
+          "name": "dropInstance$2",
+          "path": "docs/.obsidian/plugins/dataview/main.js#dropInstance$2",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:droptable:d06b46f6b6",
+          "type": "function",
+          "name": "dropTable",
+          "path": "docs/.obsidian/plugins/dataview/main.js#dropTable",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:durationtomillis:e75c84f6c1",
+          "type": "function",
+          "name": "durationToMillis",
+          "path": "docs/.obsidian/plugins/dataview/main.js#durationToMillis",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:e:046ea71d4a",
+          "type": "function",
+          "name": "e",
+          "path": "docs/.obsidian/plugins/dataview/main.js#e",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:e:7928efcd22",
+          "type": "function",
+          "name": "E",
+          "path": "docs/.obsidian/plugins/dataview/main.js#E",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:e-1:b680755840",
+          "type": "function",
+          "name": "E$1",
+          "path": "docs/.obsidian/plugins/dataview/main.js#E$1",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:effectfn:0ecc7efa58",
+          "type": "function",
+          "name": "effectFn",
+          "path": "docs/.obsidian/plugins/dataview/main.js#effectFn",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:element:a82def5fce",
+          "type": "function",
+          "name": "element",
+          "path": "docs/.obsidian/plugins/dataview/main.js#element",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:empty:944f480302",
+          "type": "function",
+          "name": "empty",
+          "path": "docs/.obsidian/plugins/dataview/main.js#empty",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:en:814a74f66c",
+          "type": "function",
+          "name": "En",
+          "path": "docs/.obsidian/plugins/dataview/main.js#En",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:enumeratechildren:cae8d83c2f",
+          "type": "function",
+          "name": "enumerateChildren",
+          "path": "docs/.obsidian/plugins/dataview/main.js#enumerateChildren",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:eq:5908cf85b2",
+          "type": "function",
+          "name": "eq",
+          "path": "docs/.obsidian/plugins/dataview/main.js#eq",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:erafordatetime:51dc0ea83f",
+          "type": "function",
+          "name": "eraForDateTime",
+          "path": "docs/.obsidian/plugins/dataview/main.js#eraForDateTime",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:eras:1569b2fef9",
+          "type": "function",
+          "name": "eras",
+          "path": "docs/.obsidian/plugins/dataview/main.js#eras",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:errormessage:67a1a12085",
+          "type": "function",
+          "name": "ErrorMessage",
+          "path": "docs/.obsidian/plugins/dataview/main.js#ErrorMessage",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:errorpre:5b87fda95f",
+          "type": "function",
+          "name": "ErrorPre",
+          "path": "docs/.obsidian/plugins/dataview/main.js#ErrorPre",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:escaperegex:9d003f98e7",
+          "type": "function",
+          "name": "escapeRegex",
+          "path": "docs/.obsidian/plugins/dataview/main.js#escapeRegex",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:escapetable:1398364129",
+          "type": "function",
+          "name": "escapeTable",
+          "path": "docs/.obsidian/plugins/dataview/main.js#escapeTable",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:escapetoken:1e13528d52",
+          "type": "function",
+          "name": "escapeToken",
+          "path": "docs/.obsidian/plugins/dataview/main.js#escapeToken",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:evalincontext:fb51efa8de",
+          "type": "function",
+          "name": "evalInContext",
+          "path": "docs/.obsidian/plugins/dataview/main.js#evalInContext",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:executecalendar:2ad2ad9ea2",
+          "type": "function",
+          "name": "executeCalendar",
+          "path": "docs/.obsidian/plugins/dataview/main.js#executeCalendar",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
+        },
+        {
+          "id": "function:executecallback:37246bd691",
+          "type": "function",
+          "name": "executeCallback",
+          "path": "docs/.obsidian/plugins/dataview/main.js#executeCallback",
+          "status": "implemented",
+          "owner": "Docs Memory Lead",
+          "reason": "generated_vendor_docs_vault_plugin"
         }
       ]
     },
