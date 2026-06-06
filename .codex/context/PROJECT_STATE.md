@@ -1,6 +1,188 @@
 # PROJECT_STATE
 
 Last updated: 2026-06-05
+- 2026-06-06: `LUC-261` seventy-third protected deploy-smoke recheck executed
+  exactly once after gate freshness approval from comment
+  `9e7bf0d6-ae55-495f-829d-1234941e38fe`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=191f1a88-464a-4373-bbad-05df0c8be957`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+  `2026-06-06T00:21:50.6973239Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-06: `LUC-261` seventy-second protected deploy-smoke recheck executed
+  exactly once after gate freshness approval from comment
+  `d4aad838-1b27-45ba-be73-e052b725ab9c`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=4db0b4c6-3a9a-40d3-ac8a-d2735fc4a5f4`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+  `2026-06-06T00:06:38.9724859Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` seventy-first protected deploy-smoke recheck executed
+  exactly once after gate freshness approval from comment
+  `e4748c0e-909b-4a49-a450-c23b803c1c08`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=8136ef70-6a6b-4c78-9bbf-a79faf65de94`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+  `2026-06-05T23:53:11.0926671Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` seventieth protected deploy-smoke recheck executed
+  exactly once after gate freshness approval from comment
+  `f958e15c-ee05-4be3-9aef-5185fc7bd6f0`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=652c23aa-eec0-4d7e-8284-4ad77439e18d`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+  `2026-06-05T23:32:18.9754140Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` sixty-ninth protected deploy-smoke recheck executed
+  exactly once after gate freshness approval from comment
+  `a1e451f9-7c86-40c5-97a2-988a32f9072e`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=fb0b5187-5b5f-4745-9f7e-005a4e32156b`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+  `2026-06-05T23:22:43.2778497Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` sixty-eighth protected deploy-smoke recheck executed
+  exactly once after gate freshness approval from comment
+  `f2007d6e-a4fa-41ed-8a74-1b867f1ed2a6`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=95145f9f-6383-40f8-a14e-28c084de4bed`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+  `2026-06-05T23:05:25.0874803Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` sixty-seventh protected deploy-smoke recheck executed
+  exactly once after gate freshness approval from comment
+  `1d24828a-8df3-4a7a-b610-b28cddb2b997`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=376c255c-73e7-445a-a663-f49848cd1f28`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+  `2026-06-05T22:34:59.5557531Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` sixty-sixth protected deploy-smoke recheck executed
+  exactly once after gate freshness approval from comment
+  `5d0b6fc4-8c78-4a9f-86f2-0b71522f0546`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=276e2eef-eba8-466e-8c8d-514b3a6528b1`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+  `2026-06-05T22:22:41.9864157Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` sixty-fifth protected deploy-smoke recheck executed
+  exactly once after gate freshness approval from comment
+  `48716ae9-a846-4bf8-99a2-bddf3da620f7`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=66d3051b-877c-4d07-8932-922ecb71c8fa`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+  `2026-06-05T22:02:02.7668520Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` sixty-fourth protected deploy-smoke recheck executed
+  exactly once after gate freshness approval from comment
+  `133974e1-432c-41c4-80cd-babbe880908d`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=4e7d1cd4-7a29-4f7c-9a54-21213ab775d1`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+  `2026-06-05T21:39:20.9209098Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` sixty-third protected deploy-smoke recheck executed
+  exactly once after gate freshness approval from comment
+  `3af76cdc-82fc-4de3-81ac-13e78a5268dd`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=b8540899-c603-4548-bdd6-ef87aca12749`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+  `2026-06-05T21:33:26.2444493Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` sixty-second protected deploy-smoke recheck executed
+  exactly once after gate freshness approval from comment
+  `02d76e95-d6f9-4f8e-a885-eb219696fca6`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=61db4ed9-7552-4fb1-b4fa-5b0d7eb2b187`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+  `2026-06-05T21:04:17.9950080Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` sixty-first protected deploy-smoke recheck executed
+  exactly once after gate freshness approval from comment
+  `32a9f4cb-1f9a-477d-8571-9354061013cc`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=98cafb6b-c148-4052-a19b-0e7fca9a74a1`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+  `2026-06-05T20:33:30.7650439Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-05: `LUC-261` second blocker-resolution wake reviewed without
+  protected smoke. Wake reason was `issue_blockers_resolved`, but the payload
+  had no pending comments and no fresh gate approval comment. Runtime presence
+  proof showed `COMPANYCORE_API_KEY_PRESENT=True`,
+  `COMPANYCORE_BASE_URL_PRESENT=True`, and registration disabled at UTC
+  `2026-06-05T20:08:19.4524652Z`. Continuity remains green:
+  `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass
+  `yes`), `HEAD=6bc7745`, clean worktree before this docs/state update. Scope
+  remained non-protected and docs/state-only: no protected smoke, code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
 - 2026-06-05: `LUC-261` sixtieth protected deploy-smoke recheck executed
   exactly once after gate freshness approval from comment
   `1e477ff8-c09c-4e8c-9932-79e5df9c75d9`. Runtime presence proof showed

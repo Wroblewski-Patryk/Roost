@@ -5,6 +5,230 @@ Last updated: 2026-06-05
 ## NOW
 
 1. `LUC-261` protected runtime start-policy proof remains blocked after the
+   seventy-third approved recheck.
+   - Trigger: gate freshness approval comment
+     `9e7bf0d6-ae55-495f-829d-1234941e38fe`.
+   - Action: ran exactly one protected `npm run aog:deploy-smoke` using the
+     approved `COMPANYCORE_API_KEY` path.
+   - Result: FAIL at MCP manifest preflight with `status=403`,
+     `error=invalid_api_key`,
+     `requestId=191f1a88-464a-4373-bbad-05df0c8be957`.
+   - Continuity proof: `npm run architecture:status` PASS (`GREEN`,
+     `452/761/34`, queues `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+     `2026-06-06T00:21:50.6973239Z`.
+   - Next unblock: runtime secret owner repairs/provisions a CompanyCore key
+     accepted by the target MCP manifest policy, then board/operator grants a
+     fresh one-run protected deploy-smoke approval.
+
+1. `LUC-261` protected runtime start-policy proof remains blocked after the
+   seventy-second approved recheck.
+   - Trigger: gate freshness approval comment
+     `d4aad838-1b27-45ba-be73-e052b725ab9c`.
+   - Action: ran exactly one protected `npm run aog:deploy-smoke` using the
+     approved `COMPANYCORE_API_KEY` path.
+   - Result: FAIL at MCP manifest preflight with `status=403`,
+     `error=invalid_api_key`,
+     `requestId=4db0b4c6-3a9a-40d3-ac8a-d2735fc4a5f4`.
+   - Continuity proof: `npm run architecture:status` PASS (`GREEN`,
+     `452/761/34`, queues `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+     `2026-06-06T00:06:38.9724859Z`.
+   - Next unblock: runtime secret owner repairs/provisions a CompanyCore key
+     accepted by the target MCP manifest policy, then board/operator grants a
+     fresh one-run protected deploy-smoke approval.
+
+1. `LUC-261` protected runtime start-policy proof remains blocked after the
+   seventy-first approved recheck.
+   - Trigger: gate freshness approval comment
+     `e4748c0e-909b-4a49-a450-c23b803c1c08`.
+   - Action: ran exactly one protected `npm run aog:deploy-smoke` using the
+     approved `COMPANYCORE_API_KEY` path.
+   - Result: FAIL at MCP manifest preflight with `status=403`,
+     `error=invalid_api_key`,
+     `requestId=8136ef70-6a6b-4c78-9bbf-a79faf65de94`.
+   - Continuity proof: `npm run architecture:status` PASS (`GREEN`,
+     `452/761/34`, queues `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+     `2026-06-05T23:53:11.0926671Z`.
+   - Next unblock: runtime secret owner repairs/provisions a CompanyCore key
+     accepted by the target MCP manifest policy, then board/operator grants a
+     fresh one-run protected deploy-smoke approval.
+
+1. `LUC-261` protected runtime start-policy proof remains blocked after the
+   seventieth approved recheck.
+   - Trigger: gate freshness approval comment
+     `f958e15c-ee05-4be3-9aef-5185fc7bd6f0`.
+   - Action: ran exactly one protected `npm run aog:deploy-smoke` using the
+     approved `COMPANYCORE_API_KEY` path.
+   - Result: FAIL at MCP manifest preflight with `status=403`,
+     `error=invalid_api_key`,
+     `requestId=652c23aa-eec0-4d7e-8284-4ad77439e18d`.
+   - Continuity proof: `npm run architecture:status` PASS (`GREEN`,
+     `452/761/34`, queues `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+     `2026-06-05T23:32:18.9754140Z`.
+   - Next unblock: runtime secret owner repairs/provisions a CompanyCore key
+     accepted by the target MCP manifest policy, then board/operator grants a
+     fresh one-run protected deploy-smoke approval.
+
+1. `LUC-261` protected runtime start-policy proof remains blocked after the
+   sixty-ninth approved recheck.
+   - Trigger: gate freshness approval comment
+     `a1e451f9-7c86-40c5-97a2-988a32f9072e`.
+   - Action: ran exactly one protected `npm run aog:deploy-smoke` using the
+     approved `COMPANYCORE_API_KEY` path.
+   - Result: FAIL at MCP manifest preflight with `status=403`,
+     `error=invalid_api_key`,
+     `requestId=fb0b5187-5b5f-4745-9f7e-005a4e32156b`.
+   - Continuity proof: `npm run architecture:status` PASS (`GREEN`,
+     `452/761/34`, queues `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+     `2026-06-05T23:22:43.2778497Z`.
+   - Next unblock: runtime secret owner repairs/provisions a CompanyCore key
+     accepted by the target MCP manifest policy, then board/operator grants a
+     fresh one-run protected deploy-smoke approval.
+
+1. `LUC-261` protected runtime start-policy proof remains blocked after the
+   sixty-eighth approved recheck.
+   - Trigger: gate freshness approval comment
+     `f2007d6e-a4fa-41ed-8a74-1b867f1ed2a6`.
+   - Action: ran exactly one protected `npm run aog:deploy-smoke` using the
+     approved `COMPANYCORE_API_KEY` path.
+   - Result: FAIL at MCP manifest preflight with `status=403`,
+     `error=invalid_api_key`,
+     `requestId=95145f9f-6383-40f8-a14e-28c084de4bed`.
+   - Continuity proof: `npm run architecture:status` PASS (`GREEN`,
+     `452/761/34`, queues `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+     `2026-06-05T23:05:25.0874803Z`.
+   - Next unblock: runtime secret owner repairs/provisions a CompanyCore key
+     accepted by the target MCP manifest policy, then board/operator grants a
+     fresh one-run protected deploy-smoke approval.
+
+1. `LUC-261` protected runtime start-policy proof remains blocked after the
+   sixty-seventh approved recheck.
+   - Trigger: gate freshness approval comment
+     `1d24828a-8df3-4a7a-b610-b28cddb2b997`.
+   - Action: ran exactly one protected `npm run aog:deploy-smoke` using the
+     approved `COMPANYCORE_API_KEY` path.
+   - Result: FAIL at MCP manifest preflight with `status=403`,
+     `error=invalid_api_key`,
+     `requestId=376c255c-73e7-445a-a663-f49848cd1f28`.
+   - Continuity proof: `npm run architecture:status` PASS (`GREEN`,
+     `452/761/34`, queues `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+     `2026-06-05T22:34:59.5557531Z`.
+   - Next unblock: runtime secret owner repairs/provisions a CompanyCore key
+     accepted by the target MCP manifest policy, then board/operator grants a
+     fresh one-run protected deploy-smoke approval.
+
+1. `LUC-261` protected runtime start-policy proof remains blocked after the
+   sixty-sixth approved recheck.
+   - Trigger: gate freshness approval comment
+     `5d0b6fc4-8c78-4a9f-86f2-0b71522f0546`.
+   - Action: ran exactly one protected `npm run aog:deploy-smoke` using the
+     approved `COMPANYCORE_API_KEY` path.
+   - Result: FAIL at MCP manifest preflight with `status=403`,
+     `error=invalid_api_key`,
+     `requestId=276e2eef-eba8-466e-8c8d-514b3a6528b1`.
+   - Continuity proof: `npm run architecture:status` PASS (`GREEN`,
+     `452/761/34`, queues `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+     `2026-06-05T22:22:41.9864157Z`.
+   - Next unblock: runtime secret owner repairs/provisions a CompanyCore key
+     accepted by the target MCP manifest policy, then board/operator grants a
+     fresh one-run protected deploy-smoke approval.
+
+1. `LUC-261` protected runtime start-policy proof remains blocked after the
+   sixty-fifth approved recheck.
+   - Trigger: gate freshness approval comment
+     `48716ae9-a846-4bf8-99a2-bddf3da620f7`.
+   - Action: ran exactly one protected `npm run aog:deploy-smoke` using the
+     approved `COMPANYCORE_API_KEY` path.
+   - Result: FAIL at MCP manifest preflight with `status=403`,
+     `error=invalid_api_key`,
+     `requestId=66d3051b-877c-4d07-8932-922ecb71c8fa`.
+   - Continuity proof: `npm run architecture:status` PASS (`GREEN`,
+     `452/761/34`, queues `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+     `2026-06-05T22:02:02.7668520Z`.
+   - Next unblock: runtime secret owner repairs/provisions a CompanyCore key
+     accepted by the target MCP manifest policy, then board/operator grants a
+     fresh one-run protected deploy-smoke approval.
+
+1. `LUC-261` protected runtime start-policy proof remains blocked after the
+   sixty-fourth approved recheck.
+   - Trigger: gate freshness approval comment
+     `133974e1-432c-41c4-80cd-babbe880908d`.
+   - Action: ran exactly one protected `npm run aog:deploy-smoke` using the
+     approved `COMPANYCORE_API_KEY` path.
+   - Result: FAIL at MCP manifest preflight with `status=403`,
+     `error=invalid_api_key`,
+     `requestId=4e7d1cd4-7a29-4f7c-9a54-21213ab775d1`.
+   - Continuity proof: `npm run architecture:status` PASS (`GREEN`,
+     `452/761/34`, queues `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+     `2026-06-05T21:39:20.9209098Z`.
+   - Next unblock: runtime secret owner repairs/provisions a CompanyCore key
+     accepted by the target MCP manifest policy, then board/operator grants a
+     fresh one-run protected deploy-smoke approval.
+
+1. `LUC-261` protected runtime start-policy proof remains blocked after the
+   sixty-third approved recheck.
+   - Trigger: gate freshness approval comment
+     `3af76cdc-82fc-4de3-81ac-13e78a5268dd`.
+   - Action: ran exactly one protected `npm run aog:deploy-smoke` using the
+     approved `COMPANYCORE_API_KEY` path.
+   - Result: FAIL at MCP manifest preflight with `status=403`,
+     `error=invalid_api_key`,
+     `requestId=b8540899-c603-4548-bdd6-ef87aca12749`.
+   - Continuity proof: `npm run architecture:status` PASS (`GREEN`,
+     `452/761/34`, queues `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+     `2026-06-05T21:33:26.2444493Z`.
+   - Next unblock: runtime secret owner repairs/provisions a CompanyCore key
+     accepted by the target MCP manifest policy, then board/operator grants a
+     fresh one-run protected deploy-smoke approval.
+
+1. `LUC-261` protected runtime start-policy proof remains blocked after the
+   sixty-second approved recheck.
+   - Trigger: gate freshness approval comment
+     `02d76e95-d6f9-4f8e-a885-eb219696fca6`.
+   - Action: ran exactly one protected `npm run aog:deploy-smoke` using the
+     approved `COMPANYCORE_API_KEY` path.
+   - Result: FAIL at MCP manifest preflight with `status=403`,
+     `error=invalid_api_key`,
+     `requestId=61db4ed9-7552-4fb1-b4fa-5b0d7eb2b187`.
+   - Continuity proof: `npm run architecture:status` PASS (`GREEN`,
+     `452/761/34`, queues `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+     `2026-06-05T21:04:17.9950080Z`.
+   - Next unblock: runtime secret owner repairs/provisions a CompanyCore key
+     accepted by the target MCP manifest policy, then board/operator grants a
+     fresh one-run protected deploy-smoke approval.
+
+1. `LUC-261` protected runtime start-policy proof remains blocked after the
+   sixty-first approved recheck.
+   - Trigger: gate freshness approval comment
+     `32a9f4cb-1f9a-477d-8571-9354061013cc`.
+   - Action: ran exactly one protected `npm run aog:deploy-smoke` using the
+     approved `COMPANYCORE_API_KEY` path.
+   - Result: FAIL at MCP manifest preflight with `status=403`,
+     `error=invalid_api_key`,
+     `requestId=98cafb6b-c148-4052-a19b-0e7fca9a74a1`.
+   - Continuity proof: `npm run architecture:status` PASS (`GREEN`,
+     `452/761/34`, queues `0`, all gates pass `yes`), `HEAD=6bc7745`, UTC
+     `2026-06-05T20:33:30.7650439Z`.
+   - Next unblock: runtime secret owner repairs/provisions a CompanyCore key
+     accepted by the target MCP manifest policy, then board/operator grants a
+     fresh one-run protected deploy-smoke approval.
+
+1. `LUC-261` remains blocked after the second blocker-resolution wake review.
+   - Trigger: `issue_blockers_resolved` wake with no pending comments and no
+     latest comment id.
+   - Protected smoke: not run, because this wake did not include a fresh
+     one-run gate approval comment.
+   - Runtime presence proof: `COMPANYCORE_API_KEY_PRESENT=True`,
+     `COMPANYCORE_BASE_URL_PRESENT=True`,
+     `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`, UTC
+     `2026-06-05T20:08:19.4524652Z`.
+   - Continuity proof: `npm run architecture:status` PASS (`GREEN`,
+     `452/761/34`, queues `0`, all gates pass `yes`), `HEAD=6bc7745`,
+     clean worktree before this docs/state update.
+   - Next unblock: runtime secret owner repairs/provisions a CompanyCore key
+     accepted by the target MCP manifest policy, then board/operator grants a
+     fresh one-run protected deploy-smoke approval.
+
+1. `LUC-261` protected runtime start-policy proof remains blocked after the
    sixtieth approved recheck.
    - Trigger: gate freshness approval comment
      `1e477ff8-c09c-4e8c-9932-79e5df9c75d9`.

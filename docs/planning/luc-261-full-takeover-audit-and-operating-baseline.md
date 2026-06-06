@@ -1945,6 +1945,36 @@ Verified takeover operating baseline with synchronized source-of-truth updates.
   board/operator must provide a fresh one-run protected deploy-smoke approval
   before another recheck.
 
+## Continuation Addendum (2026-06-05, second blocker-resolution review without gate comment)
+
+- Wake reason: `issue_blockers_resolved`.
+- Heartbeat objective: verify whether the blocker-resolution wake carried a
+  fresh protected-smoke approval or enough durable evidence to start the
+  protected runtime lane.
+- Finding: no new gate approval comment was present in the wake payload
+  (`pending comments: 0/0`, latest comment unknown), so no protected
+  `npm run aog:deploy-smoke` recheck was run.
+- Runtime presence proof:
+  - `UTC=2026-06-05T20:08:19.4524652Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `6bc7745`.
+  - `git status --short --branch` -> clean worktree,
+    `## main...origin/main [ahead 8]`.
+- Scope remained non-protected and docs/state-only: no protected smoke,
+  product-code mutation, push, deploy expansion, unrelated runtime change,
+  restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another protected recheck.
+
 ## Continuation Addendum (2026-05-27)
 
 - Heartbeat objective: execute the first protected proof lane after baseline publication.
@@ -2945,3 +2975,471 @@ Verified takeover operating baseline with synchronized source-of-truth updates.
   3. If failure persists, backend auth owner triages production key-profile
      validation using request ID
      `88024139-2756-4d84-a8d8-23d2eb1e8d9a`.
+
+## Continuation Addendum (2026-06-05, sixty-first protected deploy-smoke recheck `32a9f4cb-1f9a-477d-8571-9354061013cc`)
+
+- Trigger: gate freshness watcher comment
+  `32a9f4cb-1f9a-477d-8571-9354061013cc` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=98cafb6b-c148-4052-a19b-0e7fca9a74a1`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `6bc7745`.
+  - UTC checkpoint -> `2026-06-05T20:33:30.7650439Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `98cafb6b-c148-4052-a19b-0e7fca9a74a1`.
+
+## Continuation Addendum (2026-06-05, sixty-second protected deploy-smoke recheck `02d76e95-d6f9-4f8e-a885-eb219696fca6`)
+
+- Trigger: gate freshness watcher comment
+  `02d76e95-d6f9-4f8e-a885-eb219696fca6` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=61db4ed9-7552-4fb1-b4fa-5b0d7eb2b187`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `6bc7745`.
+  - UTC checkpoint -> `2026-06-05T21:04:17.9950080Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `61db4ed9-7552-4fb1-b4fa-5b0d7eb2b187`.
+
+## Continuation Addendum (2026-06-05, sixty-third protected deploy-smoke recheck `3af76cdc-82fc-4de3-81ac-13e78a5268dd`)
+
+- Trigger: gate freshness watcher comment
+  `3af76cdc-82fc-4de3-81ac-13e78a5268dd` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=b8540899-c603-4548-bdd6-ef87aca12749`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `6bc7745`.
+  - UTC checkpoint -> `2026-06-05T21:33:26.2444493Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `b8540899-c603-4548-bdd6-ef87aca12749`.
+
+## Continuation Addendum (2026-06-05, sixty-fourth protected deploy-smoke recheck `133974e1-432c-41c4-80cd-babbe880908d`)
+
+- Trigger: gate freshness watcher comment
+  `133974e1-432c-41c4-80cd-babbe880908d` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=4e7d1cd4-7a29-4f7c-9a54-21213ab775d1`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `6bc7745`.
+  - UTC checkpoint -> `2026-06-05T21:39:20.9209098Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `4e7d1cd4-7a29-4f7c-9a54-21213ab775d1`.
+
+## Continuation Addendum (2026-06-05, sixty-fifth protected deploy-smoke recheck `48716ae9-a846-4bf8-99a2-bddf3da620f7`)
+
+- Trigger: gate freshness watcher comment
+  `48716ae9-a846-4bf8-99a2-bddf3da620f7` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=66d3051b-877c-4d07-8932-922ecb71c8fa`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `6bc7745`.
+  - UTC checkpoint -> `2026-06-05T22:02:02.7668520Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `66d3051b-877c-4d07-8932-922ecb71c8fa`.
+
+## Continuation Addendum (2026-06-05, sixty-sixth protected deploy-smoke recheck `5d0b6fc4-8c78-4a9f-86f2-0b71522f0546`)
+
+- Trigger: gate freshness watcher comment
+  `5d0b6fc4-8c78-4a9f-86f2-0b71522f0546` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=276e2eef-eba8-466e-8c8d-514b3a6528b1`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `6bc7745`.
+  - UTC checkpoint -> `2026-06-05T22:22:41.9864157Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `276e2eef-eba8-466e-8c8d-514b3a6528b1`.
+
+## Continuation Addendum (2026-06-05, sixty-seventh protected deploy-smoke recheck `1d24828a-8df3-4a7a-b610-b28cddb2b997`)
+
+- Trigger: gate freshness watcher comment
+  `1d24828a-8df3-4a7a-b610-b28cddb2b997` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=376c255c-73e7-445a-a663-f49848cd1f28`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `6bc7745`.
+  - UTC checkpoint -> `2026-06-05T22:34:59.5557531Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `376c255c-73e7-445a-a663-f49848cd1f28`.
+
+## Continuation Addendum (2026-06-05, sixty-eighth protected deploy-smoke recheck `f2007d6e-a4fa-41ed-8a74-1b867f1ed2a6`)
+
+- Trigger: gate freshness watcher comment
+  `f2007d6e-a4fa-41ed-8a74-1b867f1ed2a6` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=95145f9f-6383-40f8-a14e-28c084de4bed`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `6bc7745`.
+  - UTC checkpoint -> `2026-06-05T23:05:25.0874803Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `95145f9f-6383-40f8-a14e-28c084de4bed`.
+
+## Continuation Addendum (2026-06-05, sixty-ninth protected deploy-smoke recheck `a1e451f9-7c86-40c5-97a2-988a32f9072e`)
+
+- Trigger: gate freshness watcher comment
+  `a1e451f9-7c86-40c5-97a2-988a32f9072e` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=fb0b5187-5b5f-4745-9f7e-005a4e32156b`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `6bc7745`.
+  - UTC checkpoint -> `2026-06-05T23:22:43.2778497Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `fb0b5187-5b5f-4745-9f7e-005a4e32156b`.
+
+## Continuation Addendum (2026-06-05, seventieth protected deploy-smoke recheck `f958e15c-ee05-4be3-9aef-5185fc7bd6f0`)
+
+- Trigger: gate freshness watcher comment
+  `f958e15c-ee05-4be3-9aef-5185fc7bd6f0` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=652c23aa-eec0-4d7e-8284-4ad77439e18d`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `6bc7745`.
+  - UTC checkpoint -> `2026-06-05T23:32:18.9754140Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `652c23aa-eec0-4d7e-8284-4ad77439e18d`.
+
+## Continuation Addendum (2026-06-05, seventy-first protected deploy-smoke recheck `e4748c0e-909b-4a49-a450-c23b803c1c08`)
+
+- Trigger: gate freshness watcher comment
+  `e4748c0e-909b-4a49-a450-c23b803c1c08` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=8136ef70-6a6b-4c78-9bbf-a79faf65de94`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `6bc7745`.
+  - UTC checkpoint -> `2026-06-05T23:53:11.0926671Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `8136ef70-6a6b-4c78-9bbf-a79faf65de94`.
+
+## Continuation Addendum (2026-06-06, seventy-second protected deploy-smoke recheck `d4aad838-1b27-45ba-be73-e052b725ab9c`)
+
+- Trigger: gate freshness watcher comment
+  `d4aad838-1b27-45ba-be73-e052b725ab9c` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=4db0b4c6-3a9a-40d3-ac8a-d2735fc4a5f4`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `6bc7745`.
+  - UTC checkpoint -> `2026-06-06T00:06:38.9724859Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `4db0b4c6-3a9a-40d3-ac8a-d2735fc4a5f4`.
+
+## Continuation Addendum (2026-06-06, seventy-third protected deploy-smoke recheck `9e7bf0d6-ae55-495f-829d-1234941e38fe`)
+
+- Trigger: gate freshness watcher comment
+  `9e7bf0d6-ae55-495f-829d-1234941e38fe` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=191f1a88-464a-4373-bbad-05df0c8be957`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `6bc7745`.
+  - UTC checkpoint -> `2026-06-06T00:21:50.6973239Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `191f1a88-464a-4373-bbad-05df0c8be957`.
