@@ -32,6 +32,7 @@ export const capabilities = [
   "operating-model:read",
   "operating-model:write",
   "operating-model:mappings:write",
+  "process-core:read",
   "projects:read",
   "projects:write",
   "goals:read",
@@ -214,6 +215,9 @@ export const adapterManifest = {
       { method: "POST", path: "/v1/operating-model/automation-definitions", capability: "operating-model:write" },
       { method: "PATCH", path: "/v1/operating-model/automation-definitions/:id", capability: "operating-model:write" },
       { method: "DELETE", path: "/v1/operating-model/automation-definitions/:id", capability: "operating-model:write" }
+    ],
+    processCore: [
+      { method: "GET", path: "/v1/process-core/coverage", capability: "process-core:read" }
     ],
     projects: [
       { method: "GET", path: "/v1/projects", capability: "projects:read" },

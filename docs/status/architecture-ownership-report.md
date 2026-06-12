@@ -1,9 +1,9 @@
 # Ownership Report
 
-Generated: 2026-06-06T14:38:37.948Z
+Generated: 2026-06-11T17:46:24.686Z
 
 | Owner | Entities | Planned | In Progress | Implemented | Tested | Verified | Blocked | Deprecated |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Docs Memory Lead | 6643 | 0 | 0 | 6639 | 0 | 0 | 3 | 1 |
-| Engineering Delivery Lead | 2085 | 0 | 0 | 2073 | 8 | 0 | 1 | 3 |
+| Docs Memory Lead | 887 | 0 | 0 | 883 | 0 | 0 | 3 | 1 |
+| Engineering Delivery Lead | 1334 | 0 | 0 | 1319 | 8 | 3 | 1 | 3 |
 | Roost Project Manager | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |

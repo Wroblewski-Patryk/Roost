@@ -1,6 +1,596 @@
 # PROJECT_STATE
 
-Last updated: 2026-06-06
+Last updated: 2026-06-13
+- 2026-06-13: `LUC-3678` Roost PM source-control dirty-group closure
+  completed for the Paperclip control tick. Output:
+  `docs/planning/luc-3678-source-control-dirty-groups-from-control-tick.md`.
+  Classification: preserve and commit the coherent packet containing Process
+  Core read-only coverage source, scanner hygiene and generated architecture
+  reports, planning/evidence packets, and source-of-truth state pointers.
+  Excluded from commit: `.paperclip/worktrees/*` execution workspace metadata.
+  Verification boundary: issue worktree was clean; primary Roost workspace held
+  the dirty packet; prior packet evidence records `npm run
+  check:route-capabilities` PASS, `npm run build` PASS, and
+  `npm run test:api:local` blocked by unavailable Docker Desktop Linux engine.
+  No revert, reset, push, deploy, restart, protected smoke, production
+  mutation, credential access, or secret disclosure occurred.
+- 2026-06-11: `LUC-3544` Documentation Steward task-link classification
+  completed for the remaining unlinked implementation rows from LUC-3533.
+  Output:
+  `docs/planning/luc-3544-task-link-classification-for-unlinked-implementation-rows.md`.
+  Evidence: `docs/status/task-synchronization-report.md` reports
+  `implementation entities without task links=173`, and
+  `docs/graphs/architecture-health.json` contains the complete row list under
+  `signals.implementation_without_task.items`. Classification: no residual
+  generated-artifact rows after LUC-3543; rows are real source/script or
+  scanner-granularity candidates bucketed as route mounts `43`, shared web
+  components `4`, scripts/checks `17`, seed/bootstrap `1`, backend
+  platform/auth/runtime `16`, backend integrations `16`, backend module
+  route/service files `41`, operating-model helpers `3`, web API/types `5`,
+  web route/layout/i18n/hooks `25`, and build config `2`. Recommended next
+  action is architecture/task-link backfill by bucket, not new runtime
+  implementation. No runtime code, schema, migration, scanner code, protected
+  smoke, deploy, push, restart, production mutation, local process startup, or
+  secret access occurred.
+- 2026-06-11: `LUC-3545` QA first proof ladder completed from the known-state
+  `implementation_without_tests=2138` signal. Output:
+  `docs/planning/luc-3545-first-proof-ladder-from-implementation-without-tests.md`.
+  Selected slice: Process Core read-only coverage packet
+  `GET /v1/process-core/coverage`, because `[LUC-2713](/LUC/issues/LUC-2713)`
+  is P1, protected, MCP/profile-exposed, implemented, and still missing its
+  integration rung. Evidence reviewed:
+  `docs/graphs/architecture-health.json`,
+  `docs/status/task-synchronization-report.md`,
+  `docs/planning/luc-3533-known-state-repair-lanes.md`,
+  `docs/planning/luc-2713-process-core-read-only-coverage-packet.md`, and
+  `src/tests/api.test.ts`. Verification: `npm run check:route-capabilities`
+  PASS (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  `npm run build` PASS; `npm run test:api:local` BLOCKED because Docker
+  Desktop Linux engine is unavailable (`open //./pipe/dockerDesktopLinuxEngine:
+  The system cannot find the file specified.`). No validation DB container was
+  started. Classification: Process Core selected slice is `partially verified`;
+  integration proof remains blocked by local validation database provisioning.
+  No protected smoke, deploy, push, restart, production mutation, secret
+  access, or code edit occurred.
+- 2026-06-11: `LUC-3543` scanner artifact hygiene completed for known-state
+  architecture reports. Added `excludePathPrefixes` support to the Paperclip
+  architecture-awareness scanner and created
+  `docs/architecture/scanner-overrides.json` for generated `.tmp/web-qa-001`,
+  `.tmp/web-qa-audit`, and `public/react/assets` artifacts. Scanner rerun
+  passed with `entities=2222`, `relations=4143`, `files=13548`, and `34`
+  files excluded by prefix. `npm run architecture:status` passed (`GREEN`,
+  graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass `yes`). Task-sync implementation entities without task links
+  dropped from the LUC-3533 baseline `215` to `173`; generated artifact rows
+  no longer appear in the known-state status reports. Output:
+  `docs/planning/luc-3543-scanner-artifact-hygiene-known-state-reports.md`.
+  Scope remained scanner/reporting only: no runtime code, schema, migration,
+  deploy, push, restart, protected smoke, production mutation, generated
+  artifact deletion, server/browser process, or secret access.
+- 2026-06-11: `LUC-2700` blocker-resolution wake reviewed after
+  `[LUC-2971](/LUC/issues/LUC-2971)` reached `done` with accepted
+  key-bearing MCP manifest evidence. Accepted prerequisite evidence:
+  key-bearing `GET https://api.roost.luckysparrow.ch/v1/mcp/manifest`
+  returned `200` with request id
+  `38b406b0-71f4-4a76-a907-450ccbd44004`, and production
+  `npm run mcp:smoke` passed with manifest preflight `200`, request id
+  `0790b8f5-cef5-480b-9b43-8ec53db32d48`. Protected
+  `npm run aog:deploy-smoke` was not run in this heartbeat because the
+  canonical state still requires fresh one-run approval after key evidence.
+  Created pending request-confirmation interaction
+  `64818fc8-7f84-4ae3-9627-7f6deeb51d93` to approve exactly one protected
+  deploy-smoke recheck. Scope remained approval-only: no protected smoke,
+  product-code mutation, push, deploy expansion, restart, production
+  mutation, unrelated runtime change, key rotation, or secret disclosure.
+  Disposition: `in_review` pending approval; on acceptance, run exactly one
+  protected `npm run aog:deploy-smoke` and record pass/fail evidence.
+
+- 2026-06-11: `LUC-2971` Security accepted completed child
+  `[LUC-3521](/LUC/issues/LUC-3521)` as key-bearing MCP manifest acceptance
+  evidence and closed the parent evidence lane as `implemented and verified`.
+  Output updated:
+  `docs/planning/luc-2971-key-bearing-mcp-manifest-acceptance-evidence.md`.
+  Accepted proof: Coolify Roost `SERVICE_PASSWORD_API_KEY` was consumed in
+  memory only by DRE; key-bearing
+  `GET https://api.roost.luckysparrow.ch/v1/mcp/manifest` returned `200`,
+  request id `38b406b0-71f4-4a76-a907-450ccbd44004`, service `companycore`,
+  schema `2026-05-09`, API-key auth, workspace-scoped `true`,
+  capability-scoped `true`, `179` tools, and `79` unique capabilities.
+  Production `npm run mcp:smoke` passed with manifest preflight `200`, request
+  id `0790b8f5-cef5-480b-9b43-8ec53db32d48`, and safe read tool status `200`.
+  No protected deploy smoke, deploy, push, restart, production mutation, key
+  rotation, secret disclosure, or unrelated runtime change occurred in this
+  Security integration heartbeat. Residual caveat: key source is documented as
+  Coolify `SERVICE_PASSWORD_API_KEY`, not a product-level MCP profile id.
+  `[LUC-2700](/LUC/issues/LUC-2700)` may consume this evidence only with a
+  fresh protected deploy-smoke approval.
+- 2026-06-11: `LUC-3521` DRE key-bearing MCP manifest runtime evidence
+  completed for `[LUC-2971](/LUC/issues/LUC-2971)`. Output:
+  `docs/planning/luc-3521-key-bearing-mcp-manifest-runtime-evidence-for-luc-2971.md`.
+  Coolify Roost app `rnqqkhl3o3dut4qv56mlxly2` env endpoint exposed
+  `SERVICE_PASSWORD_API_KEY`; the key was consumed in memory only and was not
+  printed, persisted, committed, or written to evidence. Key-bearing
+  `GET https://api.roost.luckysparrow.ch/v1/mcp/manifest` returned `200`,
+  request id `38b406b0-71f4-4a76-a907-450ccbd44004`, service `companycore`,
+  schema `2026-05-09`, API-key auth, workspace scoped `true`, capability
+  scoped `true`, `179` tools, and `79` unique capabilities. Production
+  `npm run mcp:smoke` passed with manifest preflight `200`, request id
+  `0790b8f5-cef5-480b-9b43-8ec53db32d48`, `179` tools, and
+  `companycore_get_company_os` status `200`. No protected `aog:deploy-smoke`,
+  deploy, push, restart, production mutation, key rotation, database mutation,
+  or secret disclosure occurred. This resolves the missing key-bearing
+  manifest `200` evidence for `[LUC-2971](/LUC/issues/LUC-2971)`; protected
+  deploy-smoke remains a separate approval-gated lane for
+  `[LUC-2700](/LUC/issues/LUC-2700)`.
+- 2026-06-11: `LUC-2971` integrated completed child
+  `[LUC-3497](/LUC/issues/LUC-3497)` runtime binding facts after the
+  `issue_children_completed` wake. Output updated:
+  `docs/planning/luc-2971-key-bearing-mcp-manifest-acceptance-evidence.md`.
+  Child evidence verifies target config and liveness, including Coolify
+  `LuckySparrow` production Roost app `rnqqkhl3o3dut4qv56mlxly2`, public
+  health `200`, service `companycore`, build commit
+  `5c6fff326d47b442763c0d78b52bf9306ce3bd9a`, and unauthenticated
+  `/v1/mcp/manifest` -> `401 Unauthorized`, request id
+  `1cd3357c-6b4b-4e91-b657-3865636b73cb`. Current Security heartbeat still
+  has `COMPANYCORE_BASE_URL=unset`, `COMPANYCORE_API_KEY=unset`, and MCP
+  profile/binding metadata names unset at `2026-06-11T15:25:41.8355438Z`.
+  No key-bearing manifest request was sent and no status `200` acceptance fact
+  exists. Disposition remains blocked until runtime secret owner or Security
+  records MCP profile id/label, effective `mcp:read`, binding timestamp, and
+  key-bearing target `/v1/mcp/manifest` status `200` evidence without exposing
+  the raw key.
+- 2026-06-11: `LUC-3497` DRE CompanyCore runtime binding fact discovery
+  completed for `[LUC-2971](/LUC/issues/LUC-2971)`. Output:
+  `docs/planning/luc-3497-companycore-runtime-binding-facts-for-luc-2971.md`.
+  Paperclip context confirmed `[LUC-3497](/LUC/issues/LUC-3497)` is the DRE
+  child under `[LUC-2971](/LUC/issues/LUC-2971)`, with no comments or
+  blockers. Coolify read-only metadata confirms `LuckySparrow` production
+  contains Roost app `rnqqkhl3o3dut4qv56mlxly2`, repo
+  `Wroblewski-Patryk/Roost`, branch `main`, compose
+  `/docker-compose.coolify.yml`, status `running:unknown`, server status
+  `true`, last online `2026-06-11 15:20:31`. Public health returned `200`
+  with `status: ok`, service `companycore`, build commit
+  `5c6fff326d47b442763c0d78b52bf9306ce3bd9a`; unauthenticated
+  `/v1/mcp/manifest` returned `401 Unauthorized`, request id
+  `1cd3357c-6b4b-4e91-b657-3865636b73cb`. Roost app env-name metadata has
+  `32` variables but no `COMPANYCORE_API_KEY`, `COMPANYCORE_BASE_URL`,
+  `COMPANYCORE_MCP_*`, or MCP profile id/label binding names; local DRE env
+  also has those names unset. Validation passed: `node --check
+  scripts/companycore-mcp-server.mjs`, `node --check
+  scripts/companycore-mcp-smoke.mjs`, and `npm run architecture:status`
+  (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass `yes`). Classification: `present in config,
+  behavior unknown`; protected smoke was not run and no deploy, push, restart,
+  production mutation, key rotation, secret print, or secret persistence
+  occurred. Next owner/action remains runtime secret owner/Security recording
+  MCP profile id/label, effective `mcp:read`, binding timestamp, and
+  key-bearing `/v1/mcp/manifest` status `200` evidence without exposing the
+  raw key.
+- 2026-06-11: `LUC-3453` Roost CompanyCore readiness and milestone review
+  completed. Output:
+  `docs/planning/luc-3453-roost-companycore-readiness-and-milestone-review.md`.
+  Paperclip context had no comments, blockers, or child issues; the previous
+  run failed before repo work because the adapter call to OpenAI lacked
+  authentication. Local continuity proof passed: `npm run architecture:status`
+  (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass `yes`), `HEAD=a48a8ee`. Worktree remains a
+  pre-existing mixed dirty state on `main...origin/main [ahead 12]`; no commit
+  or staging was performed. Protected runtime acceptance remains blocked by
+  `[LUC-2971](/LUC/issues/LUC-2971)` / `[LUC-2700](/LUC/issues/LUC-2700)`.
+  No protected smoke, deploy, push, restart, production mutation, schema
+  migration, database mutation, secret read, secret print, or secret
+  persistence occurred.
+- 2026-06-08: `LUC-2971` Security/Privacy key-bearing MCP manifest
+  acceptance proof attempted and blocked by missing target key binding. Output:
+  `docs/planning/luc-2971-key-bearing-mcp-manifest-acceptance-evidence.md`.
+  Non-secret presence proof at `2026-06-07T22:59:34.9705771Z` showed
+  `COMPANYCORE_BASE_URL=unset`, `COMPANYCORE_API_KEY=unset`,
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`, and MCP profile/binding
+  metadata names unset. The key-bearing `/v1/mcp/manifest` request was not
+  sent because no key was available, so no status `200` acceptance evidence
+  exists. Validation: `node --check scripts/companycore-mcp-server.mjs` PASS,
+  `node --check scripts/companycore-mcp-smoke.mjs` PASS, `HEAD=a48a8ee`.
+  Scope remained non-mutating: no protected deploy smoke, deploy, push,
+  restart, production mutation, key rotation, secret disclosure, or unrelated
+  runtime change. Disposition: blocked; runtime secret owner or Security must
+  bind/provide a Roost MCP-capable CompanyCore key and record MCP profile
+  id/label, effective `mcp:read`, binding timestamp, and key-bearing target
+  `/v1/mcp/manifest` status `200` evidence.
+
+- 2026-06-08: `LUC-2700` blocker-resolution wake reviewed after first-class
+  blockers `LUC-2814` and `LUC-2968` reached `done`. Concrete action:
+  reconciled their accepted evidence with the protected gate before any
+  protected smoke. Result: protected `npm run aog:deploy-smoke` was not run
+  because `LUC-2814` closed as `present in config, behavior unknown` and still
+  lacks MCP profile id, effective `mcp:read`, binding timestamp, and
+  key-bearing target `/v1/mcp/manifest` status `200` acceptance evidence.
+  Non-secret runtime presence proof at `2026-06-07T22:56:06.3648659Z` showed
+  `COMPANYCORE_API_KEY_PRESENT=True`, `COMPANYCORE_BASE_URL_PRESENT=True`,
+  and `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`. Continuity proof:
+  `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates
+  pass `yes`), `HEAD=a48a8ee`. Scope remained fail-closed and
+  non-protected: no protected smoke, product-code mutation, push, deploy
+  expansion, unrelated runtime change, restart, production mutation, or secret
+  disclosure. Created blocker `[LUC-2971](/LUC/issues/LUC-2971)` for
+  Security/runtime-secret-owner evidence. Disposition remains `blocked`;
+  next unblock is `LUC-2971` key-bearing manifest `200` acceptance evidence
+  plus fresh one-run protected deploy-smoke approval.
+
+- 2026-06-08: `LUC-2814` Security/Privacy integrated the resolved
+  `[LUC-2815](/LUC/issues/LUC-2815)` blocker and closed with accepted
+  classification `present in config, behavior unknown`. Output:
+  `docs/planning/luc-2814-non-secret-companycore-mcp-key-repair-evidence.md`.
+  Integrated evidence: target deployment config exists in Coolify
+  `LuckySparrow` production for Roost app `rnqqkhl3o3dut4qv56mlxly2` / id
+  `20`; public health is live with service `companycore`, build commit
+  `5c6fff326d47b442763c0d78b52bf9306ce3bd9a`; unauthenticated
+  `/v1/mcp/manifest` returns `401 Unauthorized`, request id
+  `6a12e225-c5c4-41a0-991a-7028b4b2e943`. No key-bearing manifest `200`
+  acceptance fact exists yet, so this is not MCP-capable key repair evidence
+  and must not authorize protected deploy-smoke. Residual owner/action:
+  runtime secret owner/Security records MCP profile id, effective `mcp:read`,
+  binding timestamp, and non-secret target `/v1/mcp/manifest` status `200`
+  acceptance evidence before `[LUC-261](/LUC/issues/LUC-261)` or
+  `[LUC-2700](/LUC/issues/LUC-2700)` consumes any fresh protected smoke
+  approval.
+- 2026-06-07: `LUC-2815` DRE target binding evidence integrated completed
+  child source facts from `[LUC-2969](/LUC/issues/LUC-2969)` and is now
+  classified as `present in config, behavior unknown` for its accepted closure
+  state. Output:
+  `docs/planning/luc-2815-non-secret-companycore-mcp-target-binding-evidence.md`.
+  Source facts: Coolify project `LuckySparrow`, production environment, Roost
+  app `rnqqkhl3o3dut4qv56mlxly2` / id `20`, repo
+  `Wroblewski-Patryk/Roost`, branch `main`; public health returned
+  `status: ok`, service `companycore`, build commit
+  `5c6fff326d47b442763c0d78b52bf9306ce3bd9a`; unauthenticated
+  `/v1/mcp/manifest` returned `401 Unauthorized`, request id
+  `6a12e225-c5c4-41a0-991a-7028b4b2e943`. Current runtime still lacks
+  `COMPANYCORE_API_KEY` and `COMPANYCORE_BASE_URL`, so no key-bearing manifest
+  `200` acceptance preflight ran and protected `npm run aog:deploy-smoke` was
+  not run. Syntax checks passed for `scripts/companycore-mcp-server.mjs` and
+  `scripts/companycore-mcp-smoke.mjs`; `HEAD=a48a8ee`. Next unblock remains
+  runtime secret owner/Security recording MCP profile id, effective `mcp:read`,
+  binding timestamp, and non-secret `/v1/mcp/manifest` status `200`
+  acceptance evidence before any fresh protected deploy-smoke approval.
+- 2026-06-07: `LUC-2923` Roost known-state evidence and architecture
+  baseline completed. Output:
+  `docs/planning/luc-2923-known-state-evidence-and-architecture-baseline.md`.
+  Fresh Paperclip architecture-awareness refresh from
+  `C:\Personal\Projekty\Aplikacje\Paperclip_Softwarehouse` produced
+  `entities=8970`, `relations=10884`, `files=13580`, with scanner overrides
+  present but no exclusions or overrides applied. Local architecture continuity
+  remains verified: `npm run architecture:status` PASS (`GREEN`, graph
+  `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass `yes`). Generated health signals: `58` API endpoints, `68`
+  modules, `177` models, `31` migrations, `1` test entity, `7743`
+  implementation-without-tests, `0` verified-without-proof, `437` dependency
+  relations, `95` entities with dependencies, and task-sync `0` tasks without
+  architecture links / `392` implementation entities without task links / `0`
+  verified entities without proof evidence. Scope was evidence-only: no
+  runtime code, schema, migration, deploy, push, restart, protected smoke,
+  production mutation, server/browser/database process, or secret access.
+  Source-control closure was not committed in this heartbeat because the
+  worktree already contains unrelated Process Core runtime implementation and
+  previous planning/state packets; source-control closure sidecar
+  `[LUC-2927](/LUC/issues/LUC-2927)` was created for the generated graph/
+  status/state changes.
+- 2026-06-07: `LUC-2833` source-control closure for the
+  `LUC-2830` known-state baseline completed. Output:
+  `docs/planning/luc-2833-source-control-closure-for-luc-2830-known-state-baseline.md`.
+  Evidence commands completed: `git status --short --branch`, `git status
+  --porcelain=v1 -uall`, `git diff --name-status`, `git diff --stat`, and
+  `git diff --check` (PASS with line-ending normalization warnings only).
+  Decision: not committed because the worktree is a mixed multi-lane packet
+  containing LUC-2830 generated evidence/state updates, prior child-lane
+  planning packets, and unrelated active Process Core runtime implementation
+  files. Push status: not needed; deploy impact: none. No runtime code,
+  schema, migration, protected smoke, production mutation, deploy, push,
+  restart, server/browser/database process, or secret access occurred.
+- 2026-06-07: `LUC-2830` Roost known-state evidence and architecture
+  baseline completed. Output:
+  `docs/planning/luc-2830-known-state-evidence-and-architecture-baseline.md`.
+  Fresh Paperclip architecture-awareness refresh from
+  `C:\Personal\Projekty\Aplikacje\Paperclip_Softwarehouse` produced
+  `entities=8965`, `relations=10404`, `files=13578`, with no scanner
+  overrides applied. Local architecture continuity remains verified:
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass `yes`).
+  Generated health signals: `58` API endpoints, `68` modules, `177` models,
+  `31` migrations, `1` test entity, `7743` implementation-without-tests,
+  `0` verified-without-proof, `437` dependency relations, `95` entities with
+  dependencies, and task-sync `0` tasks without architecture links / `444`
+  implementation entities without task links / `0` verified entities without
+  proof evidence. Scope was evidence-only: no runtime code, schema, migration,
+  deploy, push, restart, protected smoke, production mutation, server/browser/
+  database process, or secret access. Source-control closure was not committed
+  in this heartbeat because the worktree already contained unrelated active
+  implementation/docs changes; sidecar `[LUC-2833](/LUC/issues/LUC-2833)` was
+  created to classify and close generated graph/status artifact changes.
+- 2026-06-07: `LUC-2815` DRE non-secret CompanyCore MCP target binding
+  evidence completed as `blocked by error`. Output:
+  `docs/planning/luc-2815-non-secret-companycore-mcp-target-binding-evidence.md`.
+  This heartbeat had no target CompanyCore binding available:
+  `COMPANYCORE_API_KEY_PRESENT=false`, `COMPANYCORE_BASE_URL_PRESENT=false`,
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`,
+  `COMPANYCORE_MCP_MANIFEST_PATH=unset`, and
+  `COMPANYCORE_MCP_COMMAND_MODE=unset` at UTC
+  `2026-06-07T13:12:04.6446214Z`. Visible environment-name inspection found no
+  `COMPANYCORE_*`, no `ROOST_*`, and no Roost-specific Coolify
+  project/resource binding metadata; only generic Coolify credentials and
+  Soar-scoped Coolify resource ids were visible, so no Roost target binding
+  metadata or narrow `/v1/mcp/manifest` acceptance preflight could be produced.
+  Syntax checks passed for `scripts/companycore-mcp-server.mjs` and
+  `scripts/companycore-mcp-smoke.mjs`; `HEAD=a48a8ee`. No protected smoke,
+  deploy, restart, push, production mutation, key rotation, secret read, secret
+  print, or secret persistence occurred. Next unblock: runtime secret
+  owner/Security binds a Roost target CompanyCore service key from an
+  MCP-capable profile, confirms effective `mcp:read` without exposing the key,
+  and records non-secret `/v1/mcp/manifest` status `200` acceptance evidence.
+- 2026-06-07: `LUC-2814` Security/Privacy non-secret CompanyCore MCP key
+  repair evidence completed as `blocked by error`. Output:
+  `docs/planning/luc-2814-non-secret-companycore-mcp-key-repair-evidence.md`.
+  This heartbeat had no target CompanyCore credential binding available:
+  `COMPANYCORE_API_KEY_PRESENT=false`, `COMPANYCORE_BASE_URL_PRESENT=false`,
+  and `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset` at UTC
+  `2026-06-07T13:07:32.2472166Z`. Environment-name inspection exposed no
+  `COMPANYCORE_*`, `ROOST_*`, or target MCP credential metadata, so no narrow
+  `/v1/mcp/manifest` acceptance preflight could run. Source review confirmed
+  MCP-capable profiles include `mcp:read` and `GET /v1/mcp/manifest` requires
+  `mcp:read`; syntax checks passed for
+  `scripts/companycore-mcp-server.mjs` and
+  `scripts/companycore-mcp-smoke.mjs`; `HEAD=a48a8ee`. No protected smoke,
+  deploy, push, restart, production mutation, key rotation, secret read, secret
+  print, or secret persistence occurred. Next unblock: runtime secret
+  owner/Security provisions or repairs an MCP-profile key, records non-secret
+  acceptance evidence for `/v1/mcp/manifest`, then board/operator may grant one
+  fresh protected deploy-smoke approval. Delegated blocker:
+  `[LUC-2815](/LUC/issues/LUC-2815)` assigned to DRE for target binding
+  metadata and narrow manifest acceptance evidence.
+- 2026-06-07: `LUC-261` second status-change wake reviewed without protected
+  deploy-smoke. Wake reason was `issue_status_changed`, issue status was
+  `in_progress`, but the payload again had `pending comments: 0/0` and latest
+  comment id unknown. No non-secret key repair evidence or fresh one-run
+  protected rerun approval was present, so no protected smoke was run. Runtime
+  presence proof showed `COMPANYCORE_API_KEY_PRESENT=True`,
+  `COMPANYCORE_BASE_URL_PRESENT=True`, and
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset` at UTC
+  `2026-06-07T10:33:32.6364331Z`. Continuity remains green:
+  `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass
+  `yes`), `HEAD=a48a8ee`, UTC `2026-06-07T10:33:32.6525886Z`. Scope remained
+  non-protected and state/docs-only: no protected smoke, product-code
+  mutation, push, deploy expansion, restart, production mutation, key read, or
+  secret disclosure. Disposition: `blocked`; next unblock is non-secret
+  MCP-capable key repair evidence plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-07: `LUC-261` status-change wake reviewed without protected
+  deploy-smoke. Wake reason was `issue_status_changed`, issue status was
+  `in_progress`, but the payload had `pending comments: 0/0` and latest
+  comment id unknown. No non-secret key repair evidence or fresh one-run
+  protected rerun approval was present, so no protected smoke was run. Runtime
+  presence proof showed `COMPANYCORE_API_KEY_PRESENT=True`,
+  `COMPANYCORE_BASE_URL_PRESENT=True`, and
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset` at UTC
+  `2026-06-07T10:03:16.5580309Z`. Continuity remains green:
+  `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass
+  `yes`), `HEAD=a48a8ee`, UTC `2026-06-07T10:03:16.5892646Z`. Scope remained
+  non-protected and state/docs-only: no protected smoke, product-code
+  mutation, push, deploy expansion, restart, production mutation, key read, or
+  secret disclosure. Disposition: `blocked`; next unblock is non-secret
+  MCP-capable key repair evidence plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-07: `LUC-261` blocker-resolution wake reviewed without protected
+  deploy-smoke. Wake reason was `issue_blockers_resolved`, but the payload had
+  `pending comments: 0/0` and latest comment id unknown, so no fresh one-run
+  protected rerun approval existed. Runtime presence proof showed
+  `COMPANYCORE_API_KEY_PRESENT=True`, `COMPANYCORE_BASE_URL_PRESENT=True`, and
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset` at UTC
+  `2026-06-07T09:33:17.9947203Z`. Continuity remains green:
+  `npm run architecture:status` PASS (`452/761/34`, queues `0`, all gates pass
+  `yes`), `HEAD=a48a8ee`, UTC `2026-06-07T09:33:17.9982617Z`. Scope remained
+  non-protected and state/docs-only: no protected smoke, product-code
+  mutation, push, deploy expansion, restart, production mutation, key read, or
+  secret disclosure. Disposition: `blocked`; next unblock is non-secret
+  MCP-capable key repair evidence plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-07: `LUC-2584` CompanyCore MCP `invalid_api_key` blocker
+  classification completed in the Runtime & Adapter Engineer lane. Output:
+  `docs/planning/luc-2584-companycore-mcp-invalid-api-key-classification.md`.
+  Classification: local MCP bridge and smoke contract are implemented and
+  verified by source/syntax inspection; current heartbeat
+  `COMPANYCORE_API_KEY`, `COMPANYCORE_BASE_URL`, and
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION` were unset; target runtime key
+  path remains `blocked by error` because approved protected smoke evidence
+  reaches MCP manifest preflight and returns `403 invalid_api_key`. The local
+  contract maps manifest `HTTP 403` to a key lacking `mcp:read` or a manifest
+  policy denial. Validation: `node --check scripts/companycore-mcp-server.mjs`
+  PASS, `node --check scripts/companycore-mcp-smoke.mjs` PASS, and
+  `git diff --check` PASS with line-ending warnings only. No protected smoke,
+  deploy, push, restart, production mutation, key rotation, secret read, or
+  secret disclosure occurred. Disposition: `done` for classification scope;
+  `[LUC-261](/LUC/issues/LUC-261)` must remain blocked until runtime secret
+  owner/Security records non-secret MCP key-scope repair evidence and a fresh
+  one-run protected rerun approval exists.
+
+- 2026-06-07: `LUC-2713` Process Core read-only coverage packet implemented in
+  the Core Backend Engineer lane. Output:
+  `docs/planning/luc-2713-process-core-read-only-coverage-packet.md`.
+  Runtime changes: added `GET /v1/process-core/coverage`, mounted it under
+  `/v1/process-core`, added `process-core:read`, exposed the route through the
+  adapter/MCP manifest, added it to MCP reader profiles, and added API
+  assertions for auth, workspace isolation, no mutation, scoped denial, and
+  MCP/profile visibility. Validation: `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  `npm run build` PASS; `git diff --check` PASS with line-ending warnings
+  only. Full local API integration proof is blocked because
+  `npm run test:api:local` cannot provision disposable PostgreSQL while Docker
+  Desktop Linux engine is unavailable (`open //./pipe/dockerDesktopLinuxEngine:
+  The system cannot find the file specified.`). No migration, write route,
+  seed data, UI, provider mutation, deploy, protected smoke, push, restart,
+  production mutation, or secret disclosure was performed. Disposition:
+  `blocked` until Docker or an authorized validation `DATABASE_URL` is
+  available for the API test rerun.
+
+- 2026-06-07: `LUC-2710` QA local readiness ladder completed in the QA and
+  Verification Engineer lane. Output:
+  `docs/planning/luc-2710-qa-local-readiness-ladder.md`. Local readiness is
+  verified through architecture/static/build gates: `npm run
+  architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass `yes`), `npm run
+  check:public-js` PASS, `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=179`, `checkedRouteFiles=34`, `status=ok`), and
+  `npm run build` PASS. `npm run test:api:local` is blocked by local
+  environment readiness because Docker Desktop Linux engine is unavailable
+  (`open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file
+  specified.`), so disposable PostgreSQL could not be provisioned. No protected
+  smoke, deploy, push, restart, production mutation, schema/migration change,
+  runtime code change, or secret disclosure was performed. Disposition: `done`
+  for the QA ladder; API integration confidence remains blocked until Docker or
+  a validation `DATABASE_URL` is available.
+
+- 2026-06-07: `LUC-2709` Process Core workflow gap audit completed in the
+  Technical Solution Architect lane. Output:
+  `docs/planning/luc-2709-process-core-workflow-gap-audit.md`. Current
+  Company OS foundations partially cover the accepted Process Core target:
+  `Pipeline`, `PipelineStage`, `Procedure`, `ProcedureStep`, checklists,
+  approvals, evidence-like audit/event records, resources/assets, workforce,
+  route capabilities, and MCP manifest exposure exist, but no universal
+  `WorkflowItem`, explicit `PipelineTransition`, dedicated `EvidenceLog`,
+  split `ApprovalPolicy/ApprovalRequest/ApprovalDecision`,
+  `Blueprint/EntitySchema`, universal `LinkedAsset`, or object-level
+  `PaperclipSyncContext` exists yet. Architecture alignment: current writes
+  stay command-shaped, capability-scoped, approval-aware, event-emitting, and
+  auditable; next work must remain read-only before migrations or write tools.
+  Exact next lane: Backend Builder implements a protected read-only Process
+  Core coverage packet such as `GET /v1/process-core/coverage` with
+  `process-core:read` and API/MCP visibility tests via child issue
+  `[LUC-2713](/LUC/issues/LUC-2713)`. Deployment impact: none.
+
+- 2026-06-07: `LUC-2711` runtime protected gate handoff packet completed in
+  the DRE lane. Output:
+  `docs/planning/luc-2711-runtime-protected-gate-handoff-packet.md`. The packet
+  preserves the latest `LUC-2700` protected deploy-smoke failure at MCP
+  manifest preflight: `status=403`, `error=invalid_api_key`,
+  `requestId=2a70da8f-f231-410b-88cf-8896bbaf3da9`. Environment expectations
+  are recorded without values: `COMPANYCORE_BASE_URL=present`,
+  `COMPANYCORE_API_KEY=present`, and
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset/false` unless explicitly
+  approved. This heartbeat observed those variables as unset locally and did
+  not run protected smoke. Disposition: `done` for handoff scope; protected
+  runtime proof remains blocked until runtime secret owner key-scope repair
+  evidence plus fresh one-run board/operator approval exist.
+
+- 2026-06-07: `LUC-2708` Roost CompanyCore readiness and milestone review
+  completed in the Roost Project Manager lane. Output:
+  `docs/planning/luc-2708-roost-companycore-readiness-and-milestone-review.md`.
+  Local readiness remains verified for architecture/source-of-truth continuity:
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass `yes`),
+  `HEAD=a48a8ee`, UTC `2026-06-07T07:16:26.0592787Z`. Environment presence
+  check recorded `COMPANYCORE_API_KEY=present`, `COMPANYCORE_BASE_URL=present`,
+  and `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset` without exposing
+  values. Protected deploy-smoke was not rerun because no fresh key repair
+  evidence or one-run approval was present; target runtime proof remains
+  blocked by the latest `LUC-2700` MCP manifest `403 invalid_api_key` result.
+  Follow-up child issues were created: `[LUC-2709](/LUC/issues/LUC-2709)`
+  Process Core workflow gap audit, `[LUC-2710](/LUC/issues/LUC-2710)` QA local
+  readiness ladder, and `[LUC-2711](/LUC/issues/LUC-2711)` runtime protected
+  gate handoff. Disposition: `done` for review scope.
+
+- 2026-06-07: `LUC-2700` consumed the fresh protected gate fact from
+  `LUC-2697` and executed exactly one Roost protected deploy-smoke recheck for
+  parent blocker `LUC-261`. Runtime presence proof at
+  `2026-06-07T06:40:42.7196862Z`: `COMPANYCORE_API_KEY_PRESENT=True`,
+  `COMPANYCORE_BASE_URL_PRESENT=True`, and
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=2a70da8f-f231-410b-88cf-8896bbaf3da9`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=a48a8ee`, UTC
+  `2026-06-07T06:40:56.4951593Z`. Scope remained smoke-only: no product-code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+
+- 2026-06-07: `LUC-1214` continuation wake reconciled
+  (`issue_continuation_needed`, pending comments `0/0`). Action: rechecked
+  the parent coordination packet after wake metadata reported live state
+  (`in_progress` in the wake header and `blocked` in the continuation
+  summary). Canonical Roost evidence remains closed: `Status: DONE`,
+  `Mission Status: DONE`, parent gates `INT-01..INT-06` complete, and child
+  planning lanes `LUC-1215`, `LUC-1216`, `LUC-1217`, and `LUC-1218`
+  integrated. Added a 2026-06-07 continuation checkpoint to
+  `docs/planning/luc-1214-roost-delivery-lanes-coordination-plan.md`. Scope
+  remained coordination/planning only: no implementation, deploy/push/restart,
+  protected smoke, schema migration, API/MCP write implementation, or runtime
+  mutation. Commit/no-commit decision: `not committed` (docs/state
+  reconciliation lane). Push status: `not needed`; deploy impact: `none`.
+  Disposition: `done`.
+
+- 2026-06-06: `LUC-261` seventy-eighth protected deploy-smoke recheck
+  executed exactly once after gate freshness approval from comment
+  `7e746619-93ff-4856-9b99-e074950099f6`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=ad41ee0d-8d06-406b-9983-750c6ab1f547`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=a48a8ee`, UTC
+  `2026-06-06T17:24:00.8296875Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-06: `LUC-261` seventy-seventh protected deploy-smoke recheck
+  executed exactly once after gate freshness approval from comment
+  `8624f5a5-4a57-4305-b5dd-7c93dfbdce46`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=7b22fc3f-8aef-4552-b907-4443c49e5704`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=a87d3fe`, UTC
+  `2026-06-06T05:51:39.2972216Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-06: `LUC-261` seventy-sixth protected deploy-smoke recheck executed
+  exactly once after gate freshness approval from comment
+  `2481552a-90aa-4ed6-a839-b240def56cc8`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=c1413e7e-1418-4b78-bb47-4d881a1a4dff`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=a87d3fe`, UTC
+  `2026-06-06T03:35:12.9965735Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-06: `LUC-261` seventy-fifth protected deploy-smoke recheck executed
+  exactly once after gate freshness approval from comment
+  `bb757664-95e6-4be7-be7e-75faa6e259f9`. Result:
+  `npm run aog:deploy-smoke` failed at MCP manifest preflight with
+  `status=403`, `error=invalid_api_key`,
+  `requestId=b55668b2-809b-497e-93e5-b35d4df996e2`. Architecture continuity
+  remains green: `npm run architecture:status` PASS (`452/761/34`, queues
+  `0`, all gates pass `yes`), `HEAD=a87d3fe`, UTC
+  `2026-06-06T03:21:20.8057537Z`. Scope remained smoke-only: no code
+  mutation, push, deploy expansion, unrelated runtime change, restart,
+  production mutation, or secret disclosure. Disposition: `blocked`; next
+  unblock is runtime key repair plus fresh one-run protected deploy-smoke
+  approval.
+- 2026-06-06: `LUC-261` child source-control/docs-state lanes reported
+  complete (`LUC-1401`, `LUC-1975`, `LUC-2050`, `LUC-2249`, `LUC-2275`,
+  `LUC-2362`, `LUC-2387`, `LUC-2401`). This closes dirty-state
+  classification/incorporation hygiene but does not repair the protected MCP
+  manifest key rejection. No protected smoke was run because the wake was
+  `issue_children_completed`, not a fresh gate approval. Continuity remains
+  green: `npm run architecture:status` PASS (`452/761/34`, queues `0`, all
+  gates pass `yes`), `HEAD=a87d3fe`, UTC
+  `2026-06-06T03:11:12.5989257Z`, clean worktree before this docs/state
+  update. Disposition: `blocked`; next unblock is runtime key repair plus fresh
+  one-run protected deploy-smoke approval.
 - 2026-06-06: `LUC-2401` source-control classification completed for the
   current `LUC-261` dirty docs/state packet. Classification artifact:
   `docs/planning/luc-2401-source-control-classification-for-luc-261-dirty-docs-state-packet.md`.
@@ -6113,3 +6703,4 @@ Last updated: 2026-06-06
 
 - 2026-06-01: `LUC-261` `issue_continuation_needed` heartbeat completed (`pending comments: 0/0`). Action: confirmed cancellation reason before any protected rerun and executed continuity proof only because no fresh approval/comment delta was present in this wake. Continuity proof executed: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC checkpoint `2026-06-01T16:06:13.9141726Z`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state continuity only). Push status: `not needed`; deploy impact: `none`; no product-code mutation/push/deploy expansion/unrelated runtime mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key rotation/scope repair + one fresh board-approved same-session rerun).
 - 2026-06-01: `LUC-261` `issue_continuation_needed` heartbeat completed (`pending comments: 0/0`). Action: confirmed cancellation reason before any protected rerun and executed continuity proof only because no fresh approval/comment delta was present in this wake. Continuity proof executed: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC checkpoint `2026-06-01T16:07:10.0972456Z`. Durable evidence synced in `docs/planning/luc-261-full-takeover-audit-and-operating-baseline.md` and `.codex/context/TASK_BOARD.md`. Commit/no-commit decision: `not committed` (docs/state continuity only). Push status: `not needed`; deploy impact: `none`; no product-code mutation/push/deploy expansion/unrelated runtime mutation executed. Disposition: `blocked`; unblock owner/action unchanged (runtime secret owner key rotation/scope repair + one fresh board-approved same-session rerun).
+- 2026-06-11: `LUC-3533` resumed from comment `e211923e-ed0e-440a-97f7-6a80da34985a` to convert the completed known-state baseline into concrete repair lanes. Evidence rechecked: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, delta `0/0/0`, gates `yes`); generated reports fresh at `2026-06-11T17:34:58.050Z`; task-sync reports `implementation entities without task links=215`; architecture-health reports `implementation_without_tests=2138`; `git rev-parse --short HEAD` -> `a48a8ee`. Added `docs/planning/luc-3533-known-state-repair-lanes.md` and created child lanes `[LUC-3543](/LUC/issues/LUC-3543)` scanner hygiene, `[LUC-3544](/LUC/issues/LUC-3544)` task-link classification, and `[LUC-3545](/LUC/issues/LUC-3545)` QA proof ladder. Existing SCM sidecar remains `[LUC-3537](/LUC/issues/LUC-3537)`. No push/deploy/restart/protected-smoke/production mutation/secret access executed. Disposition: `done`.

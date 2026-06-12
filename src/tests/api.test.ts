@@ -4060,6 +4060,79 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(companyOsSnapshotBody.data.collections.includes("pipelines"));
   assert.ok(companyOsSnapshotBody.data.collections.includes("automation-rules"));
 
+  const unauthenticatedProcessCoreCoverage = await request("/v1/process-core/coverage");
+  assert.equal(unauthenticatedProcessCoreCoverage.status, 401);
+  const processCoreAuditLogCountBefore = await prisma.auditLog.count({ where: { workspaceId: ownerA.workspace.id } });
+  const processCoreEventCountBefore = await prisma.event.count({ where: { workspaceId: ownerA.workspace.id } });
+  const processCoreCoverage = await request("/v1/process-core/coverage", { headers: authA });
+  assert.equal(processCoreCoverage.status, 200);
+  const processCoreCoverageBody = processCoreCoverage.body as {
+    data: {
+      service: string;
+      packet: string;
+      mode: string;
+      counts: {
+        workflowDefinitions: { processes: number; pipelines: number; pipelineStages: number; procedures: number; procedureSteps: number };
+        workflowRuntime: { pipelineRuns: number; pipelineRunTaskLinks: number; stageRuns: number };
+        governanceAndEvidence: { approvals: number; auditLogs: number; events: number; checklistTemplates: number; acceptanceCriteria: number };
+        assetsAndKnowledge: { resources: number; artifacts: number; dependencies: number; knowledgeItems: number; knowledgeLinks: number; googleDriveFiles: number };
+        workforce: { workforceEntities: number };
+      };
+      targetCoverage: Array<{ concept: string; status: string; unsupportedTargetFields: string[] }>;
+      unsupportedConcepts: string[];
+      apiExposure: { route: string; capability: string; methods: string[]; writableCapabilities: string[] };
+      mcpExposure: { expectedToolName: string; riskLevel: string; requiresApproval: boolean };
+    };
+  };
+  assert.equal(processCoreCoverageBody.data.service, "process-core");
+  assert.equal(processCoreCoverageBody.data.packet, "coverage");
+  assert.equal(processCoreCoverageBody.data.mode, "read_only");
+  assert.equal(processCoreCoverageBody.data.counts.workflowDefinitions.processes, 1);
+  assert.equal(processCoreCoverageBody.data.counts.workflowDefinitions.pipelines, 1);
+  assert.equal(processCoreCoverageBody.data.counts.workflowDefinitions.pipelineStages, 1);
+  assert.equal(processCoreCoverageBody.data.counts.workflowDefinitions.procedures, 1);
+  assert.equal(processCoreCoverageBody.data.counts.workflowDefinitions.procedureSteps, 1);
+  assert.equal(processCoreCoverageBody.data.counts.workflowRuntime.pipelineRuns, 1);
+  assert.equal(processCoreCoverageBody.data.counts.workflowRuntime.pipelineRunTaskLinks, 0);
+  assert.equal(processCoreCoverageBody.data.counts.workflowRuntime.stageRuns, 1);
+  assert.equal(processCoreCoverageBody.data.counts.governanceAndEvidence.approvals, 1);
+  assert.equal(processCoreCoverageBody.data.counts.governanceAndEvidence.checklistTemplates, 1);
+  assert.equal(processCoreCoverageBody.data.counts.governanceAndEvidence.acceptanceCriteria, 1);
+  assert.equal(processCoreCoverageBody.data.counts.assetsAndKnowledge.resources, 1);
+  assert.equal(processCoreCoverageBody.data.counts.assetsAndKnowledge.artifacts, 1);
+  assert.equal(processCoreCoverageBody.data.counts.assetsAndKnowledge.dependencies, 1);
+  assert.equal(processCoreCoverageBody.data.counts.assetsAndKnowledge.knowledgeItems, 1);
+  assert.ok(processCoreCoverageBody.data.counts.assetsAndKnowledge.knowledgeLinks >= 1);
+  assert.ok(processCoreCoverageBody.data.counts.assetsAndKnowledge.googleDriveFiles >= 0);
+  assert.equal(processCoreCoverageBody.data.apiExposure.route, "/v1/process-core/coverage");
+  assert.equal(processCoreCoverageBody.data.apiExposure.capability, "process-core:read");
+  assert.deepEqual(processCoreCoverageBody.data.apiExposure.methods, ["GET"]);
+  assert.deepEqual(processCoreCoverageBody.data.apiExposure.writableCapabilities, []);
+  assert.equal(processCoreCoverageBody.data.mcpExposure.expectedToolName, "companycore_get_process_core_coverage");
+  assert.equal(processCoreCoverageBody.data.mcpExposure.requiresApproval, false);
+  assert.ok(processCoreCoverageBody.data.targetCoverage.some((row) => (
+    row.concept === "PipelineTransition"
+    && row.status === "missing"
+    && row.unsupportedTargetFields.includes("transitionApprovalPolicy")
+  )));
+  assert.ok(processCoreCoverageBody.data.targetCoverage.some((row) => (
+    row.concept === "WorkflowItem"
+    && row.status === "partial"
+    && row.unsupportedTargetFields.includes("entityType")
+  )));
+  assert.ok(processCoreCoverageBody.data.unsupportedConcepts.includes("PipelineTransition"));
+  assert.ok(processCoreCoverageBody.data.unsupportedConcepts.includes("Blueprint"));
+  assert.equal(await prisma.auditLog.count({ where: { workspaceId: ownerA.workspace.id } }), processCoreAuditLogCountBefore);
+  assert.equal(await prisma.event.count({ where: { workspaceId: ownerA.workspace.id } }), processCoreEventCountBefore);
+  const foreignProcessCoreCoverage = await request("/v1/process-core/coverage", { headers: authB });
+  assert.equal(foreignProcessCoreCoverage.status, 200);
+  const foreignProcessCoreCoverageBody = foreignProcessCoreCoverage.body as {
+    data: { counts: { workflowDefinitions: { processes: number; pipelines: number }; assetsAndKnowledge: { resources: number } } };
+  };
+  assert.equal(foreignProcessCoreCoverageBody.data.counts.workflowDefinitions.processes, 0);
+  assert.equal(foreignProcessCoreCoverageBody.data.counts.workflowDefinitions.pipelines, 0);
+  assert.equal(foreignProcessCoreCoverageBody.data.counts.assetsAndKnowledge.resources, 0);
+
   const listedCompanyOsPipelines = await request("/v1/company-os/pipelines?limit=1", { headers: authA });
   assert.equal(listedCompanyOsPipelines.status, 200);
   const listedCompanyOsPipelinesBody = listedCompanyOsPipelines.body as {
@@ -5557,6 +5630,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(companyOsReaderProfile.scopes.includes("sales:read"));
   assert.ok(companyOsReaderProfile.scopes.includes("operations:read"));
   assert.ok(companyOsReaderProfile.scopes.includes("strategy:read"));
+  assert.ok(companyOsReaderProfile.scopes.includes("process-core:read"));
   assert.ok(!companyOsReaderProfile.scopes.includes("company-os:definition:write"));
   assert.ok(!companyOsReaderProfile.scopes.includes("company-os:workflow-definition:write"));
   assert.ok(!companyOsReaderProfile.scopes.includes("company-os:workflow-definition:activate"));
@@ -5589,6 +5663,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(createdProfileKeyBody.data.scopes.includes("operations:read"));
   assert.ok(createdProfileKeyBody.data.scopes.includes("strategy:read"));
   assert.ok(createdProfileKeyBody.data.scopes.includes("operating-graph:read"));
+  assert.ok(createdProfileKeyBody.data.scopes.includes("process-core:read"));
   assert.ok(!createdProfileKeyBody.data.scopes.includes("company-os:definition:write"));
   assert.ok(!createdProfileKeyBody.data.scopes.includes("company-os:workflow-definition:write"));
   assert.ok(!createdProfileKeyBody.data.scopes.includes("company-os:workflow-definition:activate"));
@@ -5633,6 +5708,12 @@ test("CompanyCore v1 protected API flow", async () => {
     tool.path === "/v1/operating-graph/areas/:areaKey"
     && tool.capability === "operating-graph:read"
   )));
+  assert.ok(profileMcpManifestBody.data.tools.some((tool) => (
+    tool.path === "/v1/process-core/coverage"
+    && tool.capability === "process-core:read"
+  )));
+  const profileProcessCoreCoverage = await request("/v1/process-core/coverage", { headers: profileKeyAuth });
+  assert.equal(profileProcessCoreCoverage.status, 200);
   assert.ok(!profileMcpManifestBody.data.tools.some((tool) => tool.capability === "company-os:definition:write"));
   assert.ok(!profileMcpManifestBody.data.tools.some((tool) => tool.capability === "company-os:workflow-definition:write"));
   assert.ok(!profileMcpManifestBody.data.tools.some((tool) => tool.capability === "company-os:workflow-definition:activate"));
@@ -5809,6 +5890,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(!scopedConnectionBody.data.capabilities.includes("sales:read"));
   assert.ok(!scopedConnectionBody.data.capabilities.includes("operations:read"));
   assert.ok(!scopedConnectionBody.data.capabilities.includes("strategy:read"));
+  assert.ok(!scopedConnectionBody.data.capabilities.includes("process-core:read"));
   assert.ok(!scopedConnectionBody.data.capabilities.includes("notes:write"));
   assert.ok(scopedConnectionBody.data.mcpManifest.tools.some((tool) => (
     tool.path === "/v1/company-os"
@@ -5824,6 +5906,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(!scopedConnectionBody.data.mcpManifest.tools.some((tool) => tool.capability === "sales:read"));
   assert.ok(!scopedConnectionBody.data.mcpManifest.tools.some((tool) => tool.capability === "operations:read"));
   assert.ok(!scopedConnectionBody.data.mcpManifest.tools.some((tool) => tool.capability === "strategy:read"));
+  assert.ok(!scopedConnectionBody.data.mcpManifest.tools.some((tool) => tool.capability === "process-core:read"));
 
   const scopedMcpManifest = await request("/v1/mcp/manifest", {
     headers: scopedAuth
@@ -5848,6 +5931,12 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(!scopedMcpManifestBody.data.tools.some((tool) => tool.capability === "sales:read"));
   assert.ok(!scopedMcpManifestBody.data.tools.some((tool) => tool.capability === "operations:read"));
   assert.ok(!scopedMcpManifestBody.data.tools.some((tool) => tool.capability === "strategy:read"));
+  assert.ok(!scopedMcpManifestBody.data.tools.some((tool) => tool.capability === "process-core:read"));
+  const deniedScopedProcessCoreCoverage = await request("/v1/process-core/coverage", {
+    headers: scopedAuth
+  });
+  assert.equal(deniedScopedProcessCoreCoverage.status, 403);
+  assert.equal((deniedScopedProcessCoreCoverage.body as { error: string }).error, "forbidden");
 
   const deniedScopedCommercialExceptions = await request("/v1/commercial-exceptions", {
     headers: scopedAuth
@@ -6037,6 +6126,7 @@ test("CompanyCore v1 protected API flow", async () => {
           decisions: Array<{ method: string; path: string; capability: string }>;
           integrationSettings: Array<{ method: string; path: string; capability: string }>;
           googleDrive: Array<{ method: string; path: string; capability: string }>;
+          processCore: Array<{ method: string; path: string; capability: string }>;
         };
         schemas: {
           note: { create: { required: string[]; optional: string[] } };
@@ -6124,6 +6214,11 @@ test("CompanyCore v1 protected API flow", async () => {
     && route.path === "/v1/company-os/:collection/:id"
     && route.capability === "company-os:read"
   )));
+  assert.ok(connectionBody.data.adapterManifest.routes.processCore.some((route) => (
+    route.method === "GET"
+    && route.path === "/v1/process-core/coverage"
+    && route.capability === "process-core:read"
+  )));
   assert.ok(connectionBody.data.adapterManifest.routes.companyOs.some((route) => (
     route.method === "POST"
     && route.path === "/v1/company-os/standards"
@@ -6205,6 +6300,13 @@ test("CompanyCore v1 protected API flow", async () => {
     && tool.path === "/v1/mcp/manifest"
     && tool.capability === "mcp:read"
     && tool.riskLevel === "read"
+  )));
+  assert.ok(connectionBody.data.mcpManifest.tools.some((tool) => (
+    tool.name === "companycore_get_process_core_coverage"
+    && tool.path === "/v1/process-core/coverage"
+    && tool.capability === "process-core:read"
+    && tool.riskLevel === "read"
+    && tool.requiresApproval === false
   )));
   assert.ok(connectionBody.data.mcpManifest.tools.some((tool) => (
     tool.name === "companycore_post_company_os_standards"

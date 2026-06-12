@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-06T14:38:37.948Z
+Generated: 2026-06-11T17:46:24.686Z
 
 ## Canonical Exports
 
@@ -60,21 +60,6 @@ Generated: 2026-06-06T14:38:37.948Z
 | agent | implemented | User Collaboration Workflow | .agents/workflows/user-collaboration.md | Engineering Delivery Lead |
 | agent | implemented | World-Class Delivery Workflow | .agents/workflows/world-class-delivery.md | Engineering Delivery Lead |
 | agent | implemented | Agents Module | src/modules/agents/README.md | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /react | .tmp/web-qa-001/mock-server.cjs#/react | Engineering Delivery Lead |
-| api_endpoint | implemented | GET /v1/assets/context | .tmp/web-qa-001/mock-server.cjs#/v1/assets/context | Engineering Delivery Lead |
-| api_endpoint | implemented | POST /v1/auth/login | .tmp/web-qa-001/mock-server.cjs#/v1/auth/login | Engineering Delivery Lead |
-| api_endpoint | implemented | POST /v1/auth/register | .tmp/web-qa-001/mock-server.cjs#/v1/auth/register | Engineering Delivery Lead |
-| api_endpoint | implemented | GET /v1/intake/route-proposals | .tmp/web-qa-001/mock-server.cjs#/v1/intake/route-proposals | Engineering Delivery Lead |
-| api_endpoint | implemented | GET /v1/operations/work-items | .tmp/web-qa-001/mock-server.cjs#/v1/operations/work-items | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /vendor | .tmp/web-qa-001/mock-server.cjs#/vendor | Engineering Delivery Lead |
-| api_endpoint | implemented | GET * | .tmp/web-qa-audit/mock-server.cjs#* | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /react | .tmp/web-qa-audit/mock-server.cjs#/react | Engineering Delivery Lead |
-| api_endpoint | implemented | GET /v1/assets/context | .tmp/web-qa-audit/mock-server.cjs#/v1/assets/context | Engineering Delivery Lead |
-| api_endpoint | implemented | POST /v1/auth/login | .tmp/web-qa-audit/mock-server.cjs#/v1/auth/login | Engineering Delivery Lead |
-| api_endpoint | implemented | POST /v1/auth/register | .tmp/web-qa-audit/mock-server.cjs#/v1/auth/register | Engineering Delivery Lead |
-| api_endpoint | implemented | GET /v1/intake/route-proposals | .tmp/web-qa-audit/mock-server.cjs#/v1/intake/route-proposals | Engineering Delivery Lead |
-| api_endpoint | implemented | GET /v1/operations/work-items | .tmp/web-qa-audit/mock-server.cjs#/v1/operations/work-items | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /vendor | .tmp/web-qa-audit/mock-server.cjs#/vendor | Engineering Delivery Lead |
 | api_endpoint | implemented | GET / | src/app.ts#/ | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /agent-events | src/app.ts#/agent-events | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /agent-logs | src/app.ts#/agent-logs | Engineering Delivery Lead |
@@ -104,6 +89,7 @@ Generated: 2026-06-06T14:38:37.948Z
 | api_endpoint | implemented | USE /operating-model | src/app.ts#/operating-model | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /operations | src/app.ts#/operations | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /pipeline-stages | src/app.ts#/pipeline-stages | Engineering Delivery Lead |
+| api_endpoint | implemented | USE /process-core | src/app.ts#/process-core | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /projects | src/app.ts#/projects | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /relationships | src/app.ts#/relationships | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /sales | src/app.ts#/sales | Engineering Delivery Lead |
@@ -513,23 +499,26 @@ Generated: 2026-06-06T14:38:37.948Z
 | document | implemented | Migration | docs/architecture/nodes/generated/MIG-AUTO-0029.md | Docs Memory Lead |
 | document | implemented | Migration | docs/architecture/nodes/generated/MIG-AUTO-0030.md | Docs Memory Lead |
 | document | implemented | Migration | docs/architecture/nodes/generated/MIG-AUTO-0031.md | Docs Memory Lead |
+| document | implemented | Api Key.Middleware | docs/architecture/nodes/generated/MW-AUTO-0001.md | Docs Memory Lead |
+| document | implemented | Api Error | docs/architecture/nodes/generated/MW-AUTO-0002.md | Docs Memory Lead |
+| document | implemented | Async Handler | docs/architecture/nodes/generated/MW-AUTO-0003.md | Docs Memory Lead |
+| document | implemented | Error Handler | docs/architecture/nodes/generated/MW-AUTO-0004.md | Docs Memory Lead |
+| document | implemented | Security | docs/architecture/nodes/generated/MW-AUTO-0005.md | Docs Memory Lead |
+| document | implemented | /areas?area=00-ogolny&view=overview | docs/architecture/nodes/generated/PAGE-00-GENERAL.md | Docs Memory Lead |
+| document | implemented | /areas?area=04-operacje&view=tasks | docs/architecture/nodes/generated/PAGE-04-OPERATIONS-TASKS.md | Docs Memory Lead |
+| document | implemented | /areas?area=06-kadry&view=directory | docs/architecture/nodes/generated/PAGE-06-PEOPLE-AGENTS.md | Docs Memory Lead |
+| document | implemented | /areas?area=08-zasoby&view=files | docs/architecture/nodes/generated/PAGE-08-ASSETS-FILES.md | Docs Memory Lead |
+| document | implemented | /areas?area=12-zarzadzanie&view=departments | docs/architecture/nodes/generated/PAGE-12-MANAGEMENT-DEPARTMENTS.md | Docs Memory Lead |
+| document | implemented | /account/settings | docs/architecture/nodes/generated/PAGE-AUTO-0001.md | Docs Memory Lead |
+| document | implemented | /areas | docs/architecture/nodes/generated/PAGE-AUTO-0002.md | Docs Memory Lead |
+| document | implemented | /auth/login | docs/architecture/nodes/generated/PAGE-AUTO-0003.md | Docs Memory Lead |
+| document | implemented | /auth/register | docs/architecture/nodes/generated/PAGE-AUTO-0004.md | Docs Memory Lead |
 
 ## Relation Index
 
 | Type | From | To | Evidence |
 | --- | --- | --- | --- |
-| connected_to | api_endpoint:get-v1-assets-context:19f2e7b147 | module:tmp:8b20b5b6eb | .tmp/web-qa-001/mock-server.cjs |
-| connected_to | api_endpoint:get-v1-assets-context:b9c8ae1f0e | module:tmp:8b20b5b6eb | .tmp/web-qa-audit/mock-server.cjs |
-| connected_to | api_endpoint:get-v1-intake-route-proposals:0701737457 | module:tmp:8b20b5b6eb | .tmp/web-qa-audit/mock-server.cjs |
-| connected_to | api_endpoint:get-v1-intake-route-proposals:dc04b3537f | module:tmp:8b20b5b6eb | .tmp/web-qa-001/mock-server.cjs |
-| connected_to | api_endpoint:get-v1-operations-work-items:0dbb0056b9 | module:tmp:8b20b5b6eb | .tmp/web-qa-audit/mock-server.cjs |
-| connected_to | api_endpoint:get-v1-operations-work-items:a9a4855d33 | module:tmp:8b20b5b6eb | .tmp/web-qa-001/mock-server.cjs |
 | connected_to | api_endpoint:get:1998daec82 | module:src:13b5974e74 | src/app.ts |
-| connected_to | api_endpoint:get:2fca106599 | module:tmp:8b20b5b6eb | .tmp/web-qa-audit/mock-server.cjs |
-| connected_to | api_endpoint:post-v1-auth-login:4e16f8d385 | module:tmp:8b20b5b6eb | .tmp/web-qa-001/mock-server.cjs |
-| connected_to | api_endpoint:post-v1-auth-login:bab7225625 | module:tmp:8b20b5b6eb | .tmp/web-qa-audit/mock-server.cjs |
-| connected_to | api_endpoint:post-v1-auth-register:973f9054a3 | module:tmp:8b20b5b6eb | .tmp/web-qa-001/mock-server.cjs |
-| connected_to | api_endpoint:post-v1-auth-register:e22696693b | module:tmp:8b20b5b6eb | .tmp/web-qa-audit/mock-server.cjs |
 | connected_to | api_endpoint:use-agent-events:1b4c65ace9 | module:src:13b5974e74 | src/app.ts |
 | connected_to | api_endpoint:use-agent-logs:fe1d6cbaa9 | module:src:13b5974e74 | src/app.ts |
 | connected_to | api_endpoint:use-agents:1c136317c6 | module:src:13b5974e74 | src/app.ts |
@@ -558,9 +547,8 @@ Generated: 2026-06-06T14:38:37.948Z
 | connected_to | api_endpoint:use-operating-model:dcc5e71b5f | module:src:13b5974e74 | src/app.ts |
 | connected_to | api_endpoint:use-operations:f4ce71f687 | module:src:13b5974e74 | src/app.ts |
 | connected_to | api_endpoint:use-pipeline-stages:d21ba6038b | module:src:13b5974e74 | src/app.ts |
+| connected_to | api_endpoint:use-process-core:ccf2131793 | module:src:13b5974e74 | src/app.ts |
 | connected_to | api_endpoint:use-projects:2ab7f26357 | module:src:13b5974e74 | src/app.ts |
-| connected_to | api_endpoint:use-react:1a47f6396c | module:tmp:8b20b5b6eb | .tmp/web-qa-001/mock-server.cjs |
-| connected_to | api_endpoint:use-react:d61fd4e50b | module:tmp:8b20b5b6eb | .tmp/web-qa-audit/mock-server.cjs |
 | connected_to | api_endpoint:use-relationships:acd9b6327c | module:src:13b5974e74 | src/app.ts |
 | connected_to | api_endpoint:use-sales:0c7ec2cf8b | module:src:13b5974e74 | src/app.ts |
 | connected_to | api_endpoint:use-strategy:0ead398998 | module:src:13b5974e74 | src/app.ts |
@@ -571,10 +559,11 @@ Generated: 2026-06-06T14:38:37.948Z
 | connected_to | api_endpoint:use-v1-health:145d12bca3 | module:src:13b5974e74 | src/app.ts |
 | connected_to | api_endpoint:use-v1-webhooks-clickup:61d965c5ad | module:src:13b5974e74 | src/app.ts |
 | connected_to | api_endpoint:use-v1:347b48829e | module:src:13b5974e74 | src/app.ts |
-| connected_to | api_endpoint:use-vendor:2796cb47d4 | module:tmp:8b20b5b6eb | .tmp/web-qa-001/mock-server.cjs |
-| connected_to | api_endpoint:use-vendor:e48525ffb0 | module:tmp:8b20b5b6eb | .tmp/web-qa-audit/mock-server.cjs |
 | connected_to | api_endpoint:use-workforce:a03aa869cd | module:src:13b5974e74 | src/app.ts |
 | connected_to | api_endpoint:use-workspaces:8d243549bd | module:src:13b5974e74 | src/app.ts |
+| connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
+| connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
+| connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -1012,6 +1001,13 @@ Generated: 2026-06-06T14:38:37.948Z
 | documents | document:luc-2362-dirty-state-context-docs-classification:45e28d0a3a | module:docs:6784d83cb0 | docs/planning/luc-2362-dirty-state-context-docs-classification.md |
 | documents | document:luc-2401-source-control-classification-for-luc-261-dirty-docs-state-packet:6d04a28fc2 | module:docs:6784d83cb0 | docs/planning/luc-2401-source-control-classification-for-luc-261-dirty-docs-state-packet.md |
 | documents | document:luc-271-deployment-mode-acceptance-criteria-clarification:f101ba18a7 | module:docs:6784d83cb0 | docs/planning/luc-271-deployment-mode-acceptance-criteria.md |
+| documents | document:luc-2830-known-state-evidence-and-architecture-baseline:5a89e4d6b7 | module:docs:6784d83cb0 | docs/planning/luc-2830-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-2833-source-control-closure-for-luc-2830-known-state-baseline:d20ac0467d | module:docs:6784d83cb0 | docs/planning/luc-2833-source-control-closure-for-luc-2830-known-state-baseline.md |
+| documents | document:luc-2923-known-state-evidence-and-architecture-baseline:33609075fb | module:docs:6784d83cb0 | docs/planning/luc-2923-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-2927-source-control-closure-for-luc-2923-known-state-baseline:99398b9fe6 | module:docs:6784d83cb0 | docs/planning/luc-2927-source-control-closure-for-luc-2923-known-state-baseline.md |
+| documents | document:luc-3371-roost-companycore-readiness-and-milestone-review:2665af4576 | module:docs:6784d83cb0 | docs/planning/luc-3371-roost-companycore-readiness-and-milestone-review.md |
+| documents | document:luc-3453-roost-companycore-readiness-and-milestone-review:2eb71399b5 | module:docs:6784d83cb0 | docs/planning/luc-3453-roost-companycore-readiness-and-milestone-review.md |
+| documents | document:luc-3533-known-state-repair-lanes:89e5281b2a | module:docs:6784d83cb0 | docs/planning/luc-3533-known-state-repair-lanes.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1218,3 +1214,7 @@ Generated: 2026-06-06T14:38:37.948Z
 | documents | document:process-core-workflow-core-architecture:f96383f7d0 | module:docs:6784d83cb0 | docs/architecture/process-core-workflow-core-architecture.md |
 | documents | document:processes-model:8823cf557b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0043.md |
 | documents | document:product-definition:d21d8473bb | module:docs:6784d83cb0 | docs/product/product.md |
+| documents | document:product-map:dc083bb565 | module:docs:6784d83cb0 | docs/maps/product-map.md |
+| documents | document:product-overview:7aa6455942 | module:docs:6784d83cb0 | docs/product/overview.md |
+| documents | document:production-drive-import-and-freshness-smoke:ef45388c71 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-PROD-DRIVE-IMPORT-SMOKE.md |
+| documents | document:production-google-drive-changes-baseline-task-contract:0986db6a59 | module:docs:6784d83cb0 | docs/planning/prod-google-drive-changes-baseline-task-contract.md |

@@ -177,6 +177,10 @@ function routeDescription(route: ManifestRoute) {
     return "Read one selected department operating graph with goals, targets, metrics, workflows, tasks, knowledge, sources, evidence, and readiness gaps.";
   }
 
+  if (route.capability === "process-core:read") {
+    return "Read the Process Core coverage packet for current workflow, approval, evidence, asset, workforce, capability, and MCP model coverage without mutating definitions or runtime state.";
+  }
+
   if (route.capability.startsWith("integration-settings:")) {
     return "Inspect or operate workspace integration settings through controlled lifecycle actions.";
   }

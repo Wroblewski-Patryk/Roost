@@ -31,6 +31,7 @@ import { operatingGraphRouter } from "./modules/operating-graph/operating-graph.
 import { operatingModelRouter } from "./modules/operating-model/operating-model.routes";
 import { operationsRouter } from "./modules/operations/operations.routes";
 import { pipelineStagesRouter } from "./modules/pipeline-stages/pipeline-stages.routes";
+import { processCoreRouter } from "./modules/process-core/process-core.routes";
 import { projectsRouter } from "./modules/projects/projects.routes";
 import { relationshipsRouter } from "./modules/relationships/relationships.routes";
 import { salesRouter } from "./modules/sales/sales.routes";
@@ -69,6 +70,7 @@ function mountProtectedRoutes(router: Router) {
   router.use("/tasks", tasksRouter);
   router.use("/clients", clientsRouter);
   router.use("/pipeline-stages", pipelineStagesRouter);
+  router.use("/process-core", processCoreRouter);
   router.use("/deals", dealsRouter);
   router.use("/interactions", interactionsRouter);
   router.use("/notes", notesRouter);

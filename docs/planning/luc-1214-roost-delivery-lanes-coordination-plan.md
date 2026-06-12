@@ -154,3 +154,12 @@ Final disposition (2026-06-01): `done` for coordinator scope.
   - `.agents/state/next-steps.md` shows `LUC-1214` parent lane closed (`done`)
 - Concrete action in this heartbeat: performed drift reconciliation and recorded this checkpoint; no scope expansion and no implementation/runtime/deploy mutation.
 - Final disposition for `LUC-1214` parent coordination scope remains `done`.
+
+## Continuation Checkpoint (2026-06-07, issue_continuation_needed)
+- Wake metadata reported `LUC-1214` as live (`in_progress` in the wake header and `blocked` in the continuation summary), but the Roost source-of-truth still proves parent closure:
+  - `Status: DONE` and `Mission Status: DONE` in this packet.
+  - Parent integration gates `INT-01..INT-06` are complete.
+  - Child planning lanes `LUC-1215`, `LUC-1216`, `LUC-1217`, and `LUC-1218` are integrated.
+- Concrete action in this heartbeat: rechecked canonical closure evidence and recorded this idempotent reconciliation checkpoint.
+- Scope remained coordination/planning only: no implementation, deploy, push, restart, production mutation, protected smoke, schema migration, or API/MCP write implementation.
+- Final disposition for `LUC-1214` parent coordination scope remains `done`; downstream execution belongs to separate scoped lanes such as `PROCESS-CORE-002`.

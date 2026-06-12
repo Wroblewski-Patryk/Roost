@@ -96,6 +96,97 @@ Verified takeover operating baseline with synchronized source-of-truth updates.
   - `LUC-261` disposition is `blocked` until the protected deploy-smoke proof is executed with approved secure credentials.
   - Broader implementation remains activation-gated pending approved protected-proof execution.
 
+## Continuation Addendum (2026-06-07, LUC-2700 protected gate recheck)
+
+- Trigger: `[LUC-2700](/LUC/issues/LUC-2700)` was created from fresh protected
+  gate fact detection by `[LUC-2697](/LUC/issues/LUC-2697)`.
+- Heartbeat objective: consume the fresh gate fact and execute exactly one
+  protected deploy-smoke recheck using the approved `COMPANYCORE_API_KEY` path.
+- Runtime presence proof:
+  - `UTC=2026-06-07T06:40:42.7196862Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`,
+    `requestId=2a70da8f-f231-410b-88cf-8896bbaf3da9`.
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `a48a8ee`.
+  - UTC evidence timestamp: `2026-06-07T06:40:56.4951593Z`.
+- Scope remained smoke-only: no product-code mutation, push, deploy expansion,
+  unrelated runtime change, restart, production mutation, or secret disclosure.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret owner must rotate/provision a
+  CompanyCore key accepted by the target runtime MCP manifest policy, then
+  board/operator must provide a fresh one-run protected deploy-smoke approval
+  before another recheck.
+
+## Continuation Addendum (2026-06-08, LUC-2700 blocker-resolution wake without smoke authorization)
+
+- Wake reason: `issue_blockers_resolved`.
+- First-class blockers now `done`:
+  - `[LUC-2814](/LUC/issues/LUC-2814)` Security non-secret key repair
+    evidence.
+  - `[LUC-2968](/LUC/issues/LUC-2968)` target runtime binding facts.
+- Gate reconciliation:
+  - Accepted blocker outcome is still `present in config, behavior unknown`.
+  - No MCP profile id, effective `mcp:read`, binding timestamp, or
+    key-bearing target `/v1/mcp/manifest` status `200` acceptance evidence
+    exists in the current source-of-truth state.
+- Protected smoke: not run.
+  - Reason: blocker closure did not provide the accepted key-bearing manifest
+    acceptance fact required before another protected deploy-smoke approval.
+- Runtime presence proof:
+  - `UTC=2026-06-07T22:56:06.3648659Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `a48a8ee`.
+- Scope honored:
+  - No protected smoke, product-code mutation, push, deploy expansion,
+    unrelated runtime change, restart, production mutation, or secret
+    disclosure.
+- Current disposition: `BLOCKED`.
+- Follow-up blocker created: `[LUC-2971](/LUC/issues/LUC-2971)` for
+  Security/runtime-secret-owner evidence.
+- Unblock owner/action: `LUC-2971` must record MCP profile id, effective
+  `mcp:read`, binding timestamp, and key-bearing target `/v1/mcp/manifest`
+  status `200` acceptance evidence, then board/operator must provide a fresh
+  one-run protected deploy-smoke approval before another recheck.
+
+## Continuation Addendum (2026-06-11, LUC-2700 blocker resolved and approval requested)
+
+- Wake reason: `issue_blockers_resolved`.
+- Resolved blocker:
+  - `[LUC-2971](/LUC/issues/LUC-2971)` is `done` with accepted
+    key-bearing MCP manifest evidence.
+- Accepted prerequisite evidence:
+  - Key-bearing
+    `GET https://api.roost.luckysparrow.ch/v1/mcp/manifest` returned `200`,
+    request id `38b406b0-71f4-4a76-a907-450ccbd44004`.
+  - Production `npm run mcp:smoke` passed with manifest preflight `200`,
+    request id `0790b8f5-cef5-480b-9b43-8ec53db32d48`.
+- Protected smoke: not run.
+  - Reason: canonical state still requires fresh one-run approval before
+    `npm run aog:deploy-smoke`.
+- Approval path:
+  - Created pending request-confirmation interaction
+    `64818fc8-7f84-4ae3-9627-7f6deeb51d93`.
+  - Requested approval: exactly one protected `npm run aog:deploy-smoke`
+    recheck, then record presence proof, smoke result, UTC timestamp, and
+    final blocker/pass outcome.
+- Scope honored:
+  - No protected smoke, product-code mutation, push, deploy expansion,
+    restart, production mutation, unrelated runtime change, key rotation, or
+    secret disclosure.
+- Current disposition: `IN_REVIEW` pending confirmation acceptance.
+
 ## Continuation Addendum (2026-06-04, fail-closed gate correction)
 
 - Triggering comment:
@@ -3009,6 +3100,270 @@ Verified takeover operating baseline with synchronized source-of-truth updates.
   2. Board/operator grants a fresh one-run protected deploy-smoke approval
      after repair evidence exists.
 
+## Continuation Addendum (2026-06-06, seventy-fifth protected deploy-smoke recheck `bb757664-95e6-4be7-be7e-75faa6e259f9`)
+
+- Trigger: gate freshness watcher comment
+  `bb757664-95e6-4be7-be7e-75faa6e259f9` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=b55668b2-809b-497e-93e5-b35d4df996e2`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `a87d3fe`.
+  - UTC checkpoint -> `2026-06-06T03:21:20.8057537Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `b55668b2-809b-497e-93e5-b35d4df996e2`.
+
+## Continuation Addendum (2026-06-06, seventy-sixth protected deploy-smoke recheck `2481552a-90aa-4ed6-a839-b240def56cc8`)
+
+- Trigger: gate freshness watcher comment
+  `2481552a-90aa-4ed6-a839-b240def56cc8` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=c1413e7e-1418-4b78-bb47-4d881a1a4dff`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `a87d3fe`.
+  - UTC checkpoint -> `2026-06-06T03:35:12.9965735Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `c1413e7e-1418-4b78-bb47-4d881a1a4dff`.
+
+## Continuation Addendum (2026-06-06, seventy-seventh protected deploy-smoke recheck `8624f5a5-4a57-4305-b5dd-7c93dfbdce46`)
+
+- Trigger: gate freshness watcher comment
+  `8624f5a5-4a57-4305-b5dd-7c93dfbdce46` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=7b22fc3f-8aef-4552-b907-4443c49e5704`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `a87d3fe`.
+  - UTC checkpoint -> `2026-06-06T05:51:39.2972216Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `7b22fc3f-8aef-4552-b907-4443c49e5704`.
+
+## Continuation Addendum (2026-06-06, seventy-eighth protected deploy-smoke recheck `7e746619-93ff-4856-9b99-e074950099f6`)
+
+- Trigger: gate freshness watcher comment
+  `7e746619-93ff-4856-9b99-e074950099f6` reported newer
+  Roost/CompanyCore credential metadata, standing autonomous approval, or
+  explicit operator approval after the latest blocker.
+- Scope honored:
+  - Executed exactly one protected deploy-smoke command:
+    `npm run aog:deploy-smoke`.
+  - No product-code mutation, push, deploy expansion, restart, unrelated
+    runtime change, production mutation, secret disclosure, or second protected
+    rerun was performed.
+- Protected smoke result:
+  - `npm run aog:deploy-smoke` -> `FAIL`.
+  - MCP manifest preflight returned `status=403`,
+    `error=invalid_api_key`,
+    `requestId=ad41ee0d-8d06-406b-9983-750c6ab1f547`.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `a48a8ee`.
+  - UTC checkpoint -> `2026-06-06T17:24:00.8296875Z`.
+- Outcome:
+  - Protected runtime start-policy proof remains blocked because the approved
+    `COMPANYCORE_API_KEY` path is still rejected by the target runtime MCP
+    manifest policy as `invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+  3. If failure persists, backend auth owner triages production key-profile
+     validation using request ID
+     `ad41ee0d-8d06-406b-9983-750c6ab1f547`.
+
+## Continuation Addendum (2026-06-07, blocker-resolution wake without gate comment)
+
+- Wake reason: `issue_blockers_resolved`.
+- Pending comments: `0/0`.
+- Latest comment id: unknown.
+- Protected smoke: not run.
+  - Reason: this wake had no fresh one-run gate approval comment authorizing a
+    protected deploy-smoke recheck.
+- Runtime presence proof:
+  - `UTC=2026-06-07T09:33:17.9947203Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `a48a8ee`.
+  - UTC checkpoint -> `2026-06-07T09:33:17.9982617Z`.
+- Worktree scope note:
+  - Broad active worktree changes were already present in product and planning
+    paths outside this heartbeat scope and were left untouched.
+- Outcome:
+  - `[LUC-2584](/LUC/issues/LUC-2584)` completed the local
+    `invalid_api_key` classification lane, but it did not provide non-secret
+    runtime key repair evidence or authorize a protected rerun.
+  - Protected runtime start-policy proof remains blocked because the most
+    recent approved protected smoke still failed at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`.
+- Scope honored:
+  - No protected smoke, product-code mutation, push, deploy expansion,
+    unrelated runtime change, restart, production mutation, key read, or secret
+    disclosure.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner/Security records non-secret evidence that the target
+     CompanyCore key is MCP-capable and accepted by the MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+
+## Continuation Addendum (2026-06-07, status-change wake without gate comment)
+
+- Wake reason: `issue_status_changed`.
+- Issue status in wake: `in_progress`.
+- Pending comments: `0/0`.
+- Latest comment id: unknown.
+- Protected smoke: not run.
+  - Reason: this wake had no non-secret key repair evidence and no fresh
+    one-run gate approval comment authorizing a protected deploy-smoke
+    recheck.
+- Runtime presence proof:
+  - `UTC=2026-06-07T10:03:16.5580309Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `a48a8ee`.
+  - UTC checkpoint -> `2026-06-07T10:03:16.5892646Z`.
+- Worktree scope note:
+  - Broad active worktree changes were already present in product and planning
+    paths outside this heartbeat scope and were left untouched.
+- Outcome:
+  - The status change did not alter the protected runtime gate condition.
+  - Protected runtime start-policy proof remains blocked because the most
+    recent approved protected smoke still failed at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`, and no repair evidence plus fresh
+    approval was included in this wake.
+- Scope honored:
+  - No protected smoke, product-code mutation, push, deploy expansion,
+    unrelated runtime change, restart, production mutation, key read, or secret
+    disclosure.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner/Security records non-secret evidence that the target
+     CompanyCore key is MCP-capable and accepted by the MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+
+## Continuation Addendum (2026-06-07, second status-change wake without gate comment)
+
+- Wake reason: `issue_status_changed`.
+- Issue status in wake: `in_progress`.
+- Pending comments: `0/0`.
+- Latest comment id: unknown.
+- Protected smoke: not run.
+  - Reason: this wake again had no non-secret key repair evidence and no fresh
+    one-run gate approval comment authorizing a protected deploy-smoke
+    recheck.
+- Runtime presence proof:
+  - `UTC=2026-06-07T10:33:32.6364331Z`
+  - `COMPANYCORE_API_KEY_PRESENT=True`
+  - `COMPANYCORE_BASE_URL_PRESENT=True`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `a48a8ee`.
+  - UTC checkpoint -> `2026-06-07T10:33:32.6525886Z`.
+- Worktree scope note:
+  - Broad active worktree changes were already present in product and planning
+    paths outside this heartbeat scope and were left untouched.
+- Outcome:
+  - The repeated status change did not alter the protected runtime gate
+    condition.
+  - Protected runtime start-policy proof remains blocked because the most
+    recent approved protected smoke still failed at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`, and no repair evidence plus fresh
+    approval was included in this wake.
+- Scope honored:
+  - No protected smoke, product-code mutation, push, deploy expansion,
+    unrelated runtime change, restart, production mutation, key read, or secret
+    disclosure.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner/Security records non-secret evidence that the target
+     CompanyCore key is MCP-capable and accepted by the MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
+
 ## Continuation Addendum (2026-06-06, seventy-fourth protected deploy-smoke recheck `18e11960-68fc-4084-b2b3-d558fb0ca80a`)
 
 - Trigger: gate freshness watcher comment
@@ -3044,6 +3399,39 @@ Verified takeover operating baseline with synchronized source-of-truth updates.
   3. If failure persists, backend auth owner triages production key-profile
      validation using request ID
      `1c824a04-7b3c-4bcc-877f-b18ff6033b7a`.
+
+## Continuation Addendum (2026-06-06, child source-control/docs-state closures completed)
+
+- Wake reason: `issue_children_completed`.
+- Pending comments: `0/0`.
+- Latest comment id: unknown.
+- Direct child lanes reported complete:
+  - `LUC-1401` incorporated `LUC-1392` source-control closure evidence into
+    the `LUC-261` baseline packet and state pointers.
+  - `LUC-1975`, `LUC-2050`, `LUC-2249`, `LUC-2275`, `LUC-2362`,
+    `LUC-2387`, and `LUC-2401` classified or closed subsequent
+    `LUC-261` dirty docs/state packets.
+- Protected smoke: not run.
+  - Reason: this wake completed child source-control/docs-state lanes and did
+    not include a fresh one-run gate approval comment.
+- Continuity proof:
+  - `npm run architecture:status` -> PASS (`GREEN`, `452/761/34`, evidence
+    queue `0`, chain worklist `0`, delta `0/0/0`, gates `yes`).
+  - `git rev-parse --short HEAD` -> `a87d3fe`.
+  - `git status --short --branch` -> clean worktree before this docs/state
+    evidence update, `main...origin/main [ahead 11]`.
+  - UTC checkpoint -> `2026-06-06T03:11:12.5989257Z`.
+- Outcome:
+  - Child completion closes docs/state source-control hygiene, but the
+    protected runtime start-policy proof remains blocked because the latest
+    approved protected smoke still failed at MCP manifest preflight with
+    `status=403`, `error=invalid_api_key`.
+- Final disposition for this heartbeat: `blocked`.
+- Unblock owner/action:
+  1. Runtime secret owner rotates/provisions a CompanyCore key accepted by the
+     target runtime MCP manifest policy.
+  2. Board/operator grants a fresh one-run protected deploy-smoke approval
+     after repair evidence exists.
 
 ## Continuation Addendum (2026-06-06, follow-up blocker-resolution wake without gate comment)
 

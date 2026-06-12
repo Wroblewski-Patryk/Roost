@@ -1,6 +1,6 @@
 # Task Synchronization Report
 
-Generated: 2026-06-06T14:38:37.948Z
+Generated: 2026-06-11T17:46:24.686Z
 
 ## Contract
 
@@ -9,7 +9,7 @@ Every task should identify the feature/module it changes, dependency expectation
 ## Signals
 
 - Tasks without architecture links: 0
-- Implementation entities without task links: 440
+- Implementation entities without task links: 173
 - Verified entities without proof evidence: 0
 
 ## Tasks Without Architecture Links
@@ -17,21 +17,6 @@ Every task should identify the feature/module it changes, dependency expectation
 
 ## Implementation Without Task Links
 
-- api_endpoint: USE /react (.tmp/web-qa-001/mock-server.cjs#/react)
-- api_endpoint: GET /v1/assets/context (.tmp/web-qa-001/mock-server.cjs#/v1/assets/context)
-- api_endpoint: POST /v1/auth/login (.tmp/web-qa-001/mock-server.cjs#/v1/auth/login)
-- api_endpoint: POST /v1/auth/register (.tmp/web-qa-001/mock-server.cjs#/v1/auth/register)
-- api_endpoint: GET /v1/intake/route-proposals (.tmp/web-qa-001/mock-server.cjs#/v1/intake/route-proposals)
-- api_endpoint: GET /v1/operations/work-items (.tmp/web-qa-001/mock-server.cjs#/v1/operations/work-items)
-- api_endpoint: USE /vendor (.tmp/web-qa-001/mock-server.cjs#/vendor)
-- api_endpoint: GET * (.tmp/web-qa-audit/mock-server.cjs#*)
-- api_endpoint: USE /react (.tmp/web-qa-audit/mock-server.cjs#/react)
-- api_endpoint: GET /v1/assets/context (.tmp/web-qa-audit/mock-server.cjs#/v1/assets/context)
-- api_endpoint: POST /v1/auth/login (.tmp/web-qa-audit/mock-server.cjs#/v1/auth/login)
-- api_endpoint: POST /v1/auth/register (.tmp/web-qa-audit/mock-server.cjs#/v1/auth/register)
-- api_endpoint: GET /v1/intake/route-proposals (.tmp/web-qa-audit/mock-server.cjs#/v1/intake/route-proposals)
-- api_endpoint: GET /v1/operations/work-items (.tmp/web-qa-audit/mock-server.cjs#/v1/operations/work-items)
-- api_endpoint: USE /vendor (.tmp/web-qa-audit/mock-server.cjs#/vendor)
 - api_endpoint: GET / (src/app.ts#/)
 - api_endpoint: USE /agent-events (src/app.ts#/agent-events)
 - api_endpoint: USE /agent-logs (src/app.ts#/agent-logs)
@@ -61,6 +46,7 @@ Every task should identify the feature/module it changes, dependency expectation
 - api_endpoint: USE /operating-model (src/app.ts#/operating-model)
 - api_endpoint: USE /operations (src/app.ts#/operations)
 - api_endpoint: USE /pipeline-stages (src/app.ts#/pipeline-stages)
+- api_endpoint: USE /process-core (src/app.ts#/process-core)
 - api_endpoint: USE /projects (src/app.ts#/projects)
 - api_endpoint: USE /relationships (src/app.ts#/relationships)
 - api_endpoint: USE /sales (src/app.ts#/sales)
@@ -74,26 +60,40 @@ Every task should identify the feature/module it changes, dependency expectation
 - api_endpoint: USE /v1/webhooks/clickup (src/app.ts#/v1/webhooks/clickup)
 - api_endpoint: USE /workforce (src/app.ts#/workforce)
 - api_endpoint: USE /workspaces (src/app.ts#/workspaces)
-- component: cc-button.tsx (web/src/components/cc-button.tsx)
-- component: cc-data-table.tsx (web/src/components/cc-data-table.tsx)
 - component: cc-field.tsx (web/src/components/cc-field.tsx)
 - component: cc-notice.tsx (web/src/components/cc-notice.tsx)
 - component: cc-resource-selector.tsx (web/src/components/cc-resource-selector.tsx)
-- component: cc-route-loading.tsx (web/src/components/cc-route-loading.tsx)
 - component: cc-text-input.tsx (web/src/components/cc-text-input.tsx)
-- feature: mock-server.cjs (.tmp/web-qa-001/mock-server.cjs)
-- feature: validate.cjs (.tmp/web-qa-001/validate.cjs)
-- feature: audit.cjs (.tmp/web-qa-audit/audit.cjs)
-- feature: mock-server.cjs (.tmp/web-qa-audit/mock-server.cjs)
-- feature: main.js (docs/.obsidian/plugins/dataview/main.js)
-- feature: main.js (docs/.obsidian/plugins/note-toolbar/main.js)
-- feature: main.js (docs/.obsidian/plugins/obsidian-excalidraw-plugin/main.js)
-- feature: main.js (docs/.obsidian/plugins/obsidian-git/main.js)
-- feature: main.js (docs/.obsidian/plugins/obsidian-tasks-plugin/main.js)
-- feature: main.js (docs/.obsidian/plugins/omnisearch/main.js)
-- feature: main.js (docs/.obsidian/plugins/table-editor-obsidian/main.js)
-- feature: main.js (docs/.obsidian/plugins/templater-obsidian/main.js)
 - feature: seed.ts (prisma/seed.ts)
-- feature: assets-route-CMLeJhyZ.js (public/react/assets/assets-route-CMLeJhyZ.js)
-- feature: cc-data-table-BnsGuHlR.js (public/react/assets/cc-data-table-BnsGuHlR.js)
-- feature: department-labels-CPPlGh9W.js (public/react/assets/department-labels-CPPlGh9W.js)
+- feature: adapter-smoke.mjs (scripts/adapter-smoke.mjs)
+- feature: aog-deploy-smoke.mjs (scripts/aog-deploy-smoke.mjs)
+- feature: backfill-architecture-nodes.mjs (scripts/backfill-architecture-nodes.mjs)
+- feature: build-architecture-chain-hardening-worklist.mjs (scripts/build-architecture-chain-hardening-worklist.mjs)
+- feature: build-architecture-proof-bundle.mjs (scripts/build-architecture-proof-bundle.mjs)
+- feature: build-architecture-registry-catalog.mjs (scripts/build-architecture-registry-catalog.mjs)
+- feature: check-architecture-command-contract.mjs (scripts/check-architecture-command-contract.mjs)
+- feature: check-architecture-evidence-cardinality.mjs (scripts/check-architecture-evidence-cardinality.mjs)
+- feature: check-architecture-graph-artifact-consistency.mjs (scripts/check-architecture-graph-artifact-consistency.mjs)
+- feature: check-architecture-pipeline-nodes.mjs (scripts/check-architecture-pipeline-nodes.mjs)
+- feature: check-architecture-proof-bundle-gate.mjs (scripts/check-architecture-proof-bundle-gate.mjs)
+- feature: check-route-capabilities.mjs (scripts/check-route-capabilities.mjs)
+- feature: clickup-production-bootstrap.mjs (scripts/clickup-production-bootstrap.mjs)
+- feature: google-drive-production-smoke.mjs (scripts/google-drive-production-smoke.mjs)
+- feature: print-architecture-status.mjs (scripts/print-architecture-status.mjs)
+- feature: sync-architecture-chains.mjs (scripts/sync-architecture-chains.mjs)
+- feature: sync-architecture-doc-baseline.mjs (scripts/sync-architecture-doc-baseline.mjs)
+- feature: app.ts (src/app.ts)
+- feature: agent-key-profiles.ts (src/auth/agent-key-profiles.ts)
+- feature: api-key.middleware.ts (src/auth/api-key.middleware.ts)
+- feature: api-key.ts (src/auth/api-key.ts)
+- feature: capabilities.ts (src/auth/capabilities.ts)
+- feature: password.ts (src/auth/password.ts)
+- feature: token.ts (src/auth/token.ts)
+- feature: env.ts (src/config/env.ts)
+- feature: prisma.ts (src/db/prisma.ts)
+- feature: health.routes.ts (src/health/health.routes.ts)
+- feature: clickup.client.ts (src/integrations/clickup/clickup.client.ts)
+- feature: clickup.maintenance-scheduler.ts (src/integrations/clickup/clickup.maintenance-scheduler.ts)
+- feature: clickup.mapper.ts (src/integrations/clickup/clickup.mapper.ts)
+- feature: clickup.sync.ts (src/integrations/clickup/clickup.sync.ts)
+- feature: clickup.webhooks.ts (src/integrations/clickup/clickup.webhooks.ts)

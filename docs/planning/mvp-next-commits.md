@@ -7,6 +7,180 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-3544 task-link classification for unlinked implementation rows:
+      published
+      `docs/planning/luc-3544-task-link-classification-for-unlinked-implementation-rows.md`.
+      Evidence: `docs/status/task-synchronization-report.md` reports
+      `implementation entities without task links=173`; complete row data came
+      from `docs/graphs/architecture-health.json`
+      `signals.implementation_without_task.items` because the markdown report
+      renders only the first `80` rows. Classification found no residual
+      generated artifacts after `[LUC-3543](/LUC/issues/LUC-3543)`. Remaining
+      rows are task-link/documentation hygiene grouped as route mounts `43`,
+      shared web components `4`, scripts/checks `17`, seed/bootstrap `1`,
+      backend platform/auth/runtime `16`, integrations `16`, backend module
+      route/service files `41`, operating-model helpers `3`, web API/types
+      `5`, web route/layout/i18n/hooks `25`, and build config `2`. Next
+      action is architecture/task-link backfill by bucket, not runtime
+      implementation.
+
+- [x] LUC-3545 QA first proof ladder from implementation-without-tests:
+      published
+      `docs/planning/luc-3545-first-proof-ladder-from-implementation-without-tests.md`.
+      Selected Process Core `GET /v1/process-core/coverage` as the first
+      proof target. `npm run check:route-capabilities` passed,
+      `npm run build` passed, and `npm run test:api:local` is blocked by the
+      unavailable Docker Desktop Linux engine. Next owner/action: local
+      environment owner enables Docker or provides an authorized disposable
+      `companycore_test` `DATABASE_URL`, then QA/Core Backend reruns the local
+      API integration proof.
+
+- [x] LUC-3543 scanner artifact hygiene for known-state reports:
+      published
+      `docs/planning/luc-3543-scanner-artifact-hygiene-known-state-reports.md`.
+      Added scanner `excludePathPrefixes` support and
+      `docs/architecture/scanner-overrides.json` for generated
+      `.tmp/web-qa-001`, `.tmp/web-qa-audit`, and `public/react/assets`
+      artifacts. Scanner rerun passed with `entities=2222`,
+      `relations=4143`, `files=13548`, and `34` files excluded by prefix.
+      `npm run architecture:status` passed (`GREEN`, graph `452/761/34`,
+      evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass).
+      Task-sync implementation entities without task links are now `173`,
+      down from the LUC-3533 baseline `215`; remaining rows belong to
+      `[LUC-3544](/LUC/issues/LUC-3544)` task-link classification and
+      `[LUC-3545](/LUC/issues/LUC-3545)` QA proof ladder selection.
+
+- [x] LUC-3453 Roost CompanyCore readiness and milestone review:
+      published
+      `docs/planning/luc-3453-roost-companycore-readiness-and-milestone-review.md`
+      after reviewing the issue heartbeat context, source-of-truth state,
+      existing readiness packets, blocker chain, environment assumptions, and
+      local architecture continuity. Proof: `npm run architecture:status`
+      PASS (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist
+      `0`, delta `0/0/0`, all gates pass `yes`), `HEAD=a48a8ee`. Protected
+      smoke was not run. Runtime acceptance remains blocked by
+      `[LUC-2971](/LUC/issues/LUC-2971)` / `[LUC-2700](/LUC/issues/LUC-2700)`
+      until key-bearing manifest `200` evidence and fresh one-run protected
+      smoke approval exist.
+
+- [x] LUC-2814 non-secret CompanyCore MCP key repair evidence:
+      published
+      `docs/planning/luc-2814-non-secret-companycore-mcp-key-repair-evidence.md`
+      and integrated the resolved `[LUC-2815](/LUC/issues/LUC-2815)` blocker.
+      Final accepted classification is `present in config, behavior unknown`:
+      target Coolify deployment config and endpoint liveness exist, but no
+      key-bearing `/v1/mcp/manifest` status `200` acceptance fact exists yet.
+      This is not MCP-capable key repair evidence and must not authorize
+      protected deploy-smoke. Residual blocker for
+      `[LUC-261](/LUC/issues/LUC-261)` / `[LUC-2700](/LUC/issues/LUC-2700)`:
+      runtime secret owner/Security records MCP profile id, effective
+      `mcp:read`, binding timestamp, and target manifest status `200` evidence
+      before any fresh protected smoke approval.
+
+- [x] LUC-2833 source-control closure for the LUC-2830 known-state baseline:
+      published
+      `docs/planning/luc-2833-source-control-closure-for-luc-2830-known-state-baseline.md`.
+      Evidence commands completed: `git status --short --branch`,
+      `git status --porcelain=v1 -uall`, `git diff --name-status`,
+      `git diff --stat`, and `git diff --check` (PASS with line-ending
+      normalization warnings only). Commit decision: not committed because the
+      dirty worktree is mixed across LUC-2830 generated evidence/state updates,
+      prior child-lane planning packets, and unrelated Process Core runtime
+      implementation. Push status: not needed; deploy impact: none.
+
+- [x] LUC-2830 known-state evidence and architecture baseline:
+      published
+      `docs/planning/luc-2830-known-state-evidence-and-architecture-baseline.md`.
+      Fresh Paperclip architecture-awareness refresh passed with
+      `entities=8965`, `relations=10404`, `files=13578`, no overrides.
+      `npm run architecture:status` passed with `GREEN`, graph `452/761/34`,
+      evidence queue `0`, chain worklist `0`, delta `0/0/0`, and all gates
+      pass `yes`. Generated health reports `58` API endpoints, `68` modules,
+      `177` models, `31` migrations, `1` test entity, `7743`
+      implementation-without-tests, and `0` verified-without-proof. No
+      protected smoke, deploy, push, restart, production mutation, runtime
+      code, schema, migration, server/browser/database process, or secret
+      access occurred. Source-control closure continues in
+      `[LUC-2833](/LUC/issues/LUC-2833)` because the worktree already contains
+      unrelated active implementation/docs changes.
+
+- [x] LUC-2815 non-secret CompanyCore MCP target binding evidence:
+      published
+      `docs/planning/luc-2815-non-secret-companycore-mcp-target-binding-evidence.md`.
+      Result is `present in config, behavior unknown` after integrating child
+      source facts from `[LUC-2969](/LUC/issues/LUC-2969)`: Coolify
+      `LuckySparrow` production contains Roost app
+      `rnqqkhl3o3dut4qv56mlxly2` / id `20`, repo
+      `Wroblewski-Patryk/Roost`, branch `main`; public health returned
+      `status: ok`, service `companycore`, build commit
+      `5c6fff326d47b442763c0d78b52bf9306ce3bd9a`; unauthenticated
+      `/v1/mcp/manifest` returned `401 Unauthorized`, request id
+      `6a12e225-c5c4-41a0-991a-7028b4b2e943`. Current runtime still has
+      `COMPANYCORE_API_KEY_PRESENT=false` and
+      `COMPANYCORE_BASE_URL_PRESENT=false`, so no key-bearing manifest `200`
+      acceptance preflight ran. Protected deploy-smoke was not run. Residual
+      unblock remains runtime secret owner/Security recording MCP profile id,
+      effective `mcp:read`, binding timestamp, and non-secret target manifest
+      status `200` evidence before any fresh protected deploy-smoke approval.
+
+- [ ] LUC-2814 non-secret CompanyCore MCP key repair evidence:
+      published
+      `docs/planning/luc-2814-non-secret-companycore-mcp-key-repair-evidence.md`.
+      Result is `BLOCKED_BY_ERROR`, not repaired: this heartbeat had
+      `COMPANYCORE_API_KEY_PRESENT=false`,
+      `COMPANYCORE_BASE_URL_PRESENT=false`, and
+      `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION=unset`; no exposed
+      `COMPANYCORE_*`, `ROOST_*`, or target MCP credential metadata was
+      available, so no narrow `/v1/mcp/manifest` acceptance preflight could
+      run. MCP profiles and route policy were source-reviewed, and MCP
+      bridge/smoke syntax checks passed. Next action: runtime secret
+      owner/Security provisions or repairs an MCP-profile key and records
+      non-secret target manifest acceptance evidence before any fresh protected
+      deploy-smoke approval is consumed. Delegated blocker:
+      `[LUC-2815](/LUC/issues/LUC-2815)` assigned to DRE for target binding
+      metadata and narrow manifest acceptance evidence.
+
+- [ ] LUC-2713 Process Core read-only coverage packet:
+      implemented `GET /v1/process-core/coverage` with `process-core:read`,
+      adapter/MCP manifest exposure, MCP reader profile access, route
+      capability guardrail coverage, and API assertions for auth, workspace
+      isolation, no mutation, scoped denial, and MCP/profile visibility.
+      Static/build proof passed: `npm run check:route-capabilities` (`180`
+      manifest routes, `35` route files, `status=ok`), `npm run build`, and
+      `git diff --check` with line-ending warnings only. Full API integration
+      proof is blocked because `npm run test:api:local` cannot provision
+      disposable PostgreSQL while Docker Desktop Linux engine is unavailable
+      (`open //./pipe/dockerDesktopLinuxEngine: The system cannot find the
+      file specified.`). Next action: rerun `npm run test:api:local` after
+      Docker or an authorized validation `DATABASE_URL` is available, then
+      close `[LUC-2713](/LUC/issues/LUC-2713)`.
+
+- [x] LUC-2710 QA local readiness ladder:
+      published
+      `docs/planning/luc-2710-qa-local-readiness-ladder.md` after running the
+      smallest local proof set while protected target smoke remains blocked.
+      Passed: `npm run architecture:status` (`GREEN`, graph `452/761/34`,
+      queues `0`, delta `0/0/0`, all gates pass `yes`), `npm run
+      check:public-js`, `npm run check:route-capabilities` (`179` manifest
+      routes, `34` route files, `status=ok`), and `npm run build`. Blocked:
+      `npm run test:api:local` because Docker Desktop Linux engine is
+      unavailable, so disposable PostgreSQL could not be provisioned. No
+      protected smoke, deploy, push, restart, production mutation, schema,
+      migration, runtime code, or secret disclosure was performed.
+
+- [x] LUC-2708 Roost CompanyCore readiness and milestone review:
+      published
+      `docs/planning/luc-2708-roost-companycore-readiness-and-milestone-review.md`
+      after reviewing source-of-truth state, blocker chain, environment
+      assumptions, and next thin milestones. Local continuity proof passed:
+      `npm run architecture:status` (`GREEN`, graph `452/761/34`, queues `0`,
+      delta `0/0/0`, all gates pass `yes`), `HEAD=a48a8ee`, UTC
+      `2026-06-07T07:16:26.0592787Z`. Protected deploy-smoke was not rerun
+      because no fresh key repair evidence or one-run approval was present;
+      target protected proof remains blocked by the latest `LUC-2700`
+      `403 invalid_api_key` MCP manifest result. Follow-up child issues:
+      `[LUC-2709](/LUC/issues/LUC-2709)`, `[LUC-2710](/LUC/issues/LUC-2710)`,
+      and `[LUC-2711](/LUC/issues/LUC-2711)`.
 - [x] LUC-1815 known-state evidence and architecture baseline:
       published
       `docs/planning/luc-1815-known-state-evidence-and-architecture-baseline.md`
@@ -57,6 +231,31 @@ synchronized with `.codex/context/TASK_BOARD.md`.
       new feature delivery.
 
 ### NEXT
+
+- [ ] LUC-2708-A Process Core workflow gap audit:
+      convert the `PROCESS-CORE-002` planning packet into a current-state
+      coverage matrix over workflows, approvals, evidence, resources,
+      workforce, capabilities, and MCP exposure. No migrations, API/MCP write
+      tools, UI implementation, deploy, or protected smoke. Acceptance proof:
+      `covered/partial/missing/deferred` table, recommended read-packet
+      sequence, and architecture alignment note.
+
+- [x] LUC-2708-B QA local readiness ladder:
+      define and run the smallest local proof set that keeps Roost ready while
+      protected target smoke remains blocked. Include architecture status,
+      static checks, and high-risk API/web commands only when local
+      prerequisites are healthy. Acceptance proof is recorded in
+      `docs/planning/luc-2710-qa-local-readiness-ladder.md`: architecture,
+      public JS, route-capability, and build gates passed; `test:api:local` is
+      blocked by unavailable Docker/PostgreSQL provisioning; no protected
+      target mutation occurred.
+
+- [ ] LUC-2708-C Runtime protected gate handoff:
+      keep the latest invalid-key evidence packaged for the next authorized
+      target-runtime repair. Do not rerun protected smoke without fresh
+      key-scope evidence and one-run approval. Acceptance proof: blocker packet
+      with latest `403 invalid_api_key` request id, env presence without
+      values, and rerun command template.
 
 - [ ] PROCESS-CORE-002 Current Company OS workflow gap audit:
       use `docs/architecture/process-core-workflow-core-architecture.md` to

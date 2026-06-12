@@ -1,11 +1,11 @@
 # Dependency Report
 
-Generated: 2026-06-06T14:38:37.948Z
+Generated: 2026-06-11T17:46:24.686Z
 
 ## Summary
 
-- Dependency relations: 433
-- Entities with dependencies: 94
+- Dependency relations: 437
+- Entities with dependencies: 95
 
 ## Dependency Edges
 
@@ -65,6 +65,7 @@ Generated: 2026-06-06T14:38:37.948Z
 | app.ts | uses | operating-model.routes.ts | src/modules/operating-model/operating-model.routes |
 | app.ts | uses | operations.routes.ts | src/modules/operations/operations.routes |
 | app.ts | uses | pipeline-stages.routes.ts | src/modules/pipeline-stages/pipeline-stages.routes |
+| app.ts | uses | process-core.routes.ts | src/modules/process-core/process-core.routes |
 | app.ts | uses | projects.routes.ts | src/modules/projects/projects.routes |
 | app.ts | uses | relationships.routes.ts | src/modules/relationships/relationships.routes |
 | app.ts | uses | sales.routes.ts | src/modules/sales/sales.routes |
@@ -325,6 +326,9 @@ Generated: 2026-06-06T14:38:37.948Z
 | pipeline-stages.routes.ts | uses | prisma.ts | src/db/prisma |
 | pipeline-stages.routes.ts | uses | async-handler.ts | src/middleware/async-handler |
 | pipeline-stages.routes.ts | uses | event.service.ts | src/modules/events/event.service |
+| process-core.routes.ts | uses | capabilities.ts | src/auth/capabilities |
+| process-core.routes.ts | uses | prisma.ts | src/db/prisma |
+| process-core.routes.ts | uses | async-handler.ts | src/middleware/async-handler |
 | product-delivery-route.tsx | uses | cc-data-table.tsx | web/src/components/cc-data-table |
 | product-delivery-route.tsx | uses | cc-notice.tsx | web/src/components/cc-notice |
 | product-delivery-route.tsx | uses | use-owner-packet.ts | web/src/hooks/use-owner-packet |

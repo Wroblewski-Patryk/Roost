@@ -1,0 +1,10 @@
+{
+  "excludePathPrefixes": [
+    ".tmp/web-qa-001",
+    ".tmp/web-qa-audit",
+    "public/react/assets"
+  ],
+  "excludePaths": [],
+  "entityOverrides": [],
+  "relationOverrides": []
+}
