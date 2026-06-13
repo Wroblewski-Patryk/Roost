@@ -4,6 +4,59 @@ Last updated: 2026-06-13
 
 ## Current Mission
 
+- Mission ID: LUC-3716-LOCAL-API-TEST-FIXTURE-REPAIR
+- Status: VERIFIED_DONE
+- Selected objective: Repair the local API test `OperatingArea` fixture failure
+  surfaced by LUC-3713 and prove the Process Core integration rung.
+- Why this mission now: Paperclip assigned
+  [LUC-3716](/LUC/issues/LUC-3716) directly to Core Backend after Docker-backed
+  `npm run test:api:local` reached test execution and failed in
+  `CompanyCore v1 protected API flow`.
+- Scope: `src/modules/relationships/relationships.routes.ts`,
+  `src/tests/api.test.ts`, and local disposable API validation only.
+- Exclusions: no protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, production database access, schema
+  migration authoring, or broad feature work.
+- Output:
+  `docs/planning/luc-3716-local-api-test-operating-area-fixture-repair.md`.
+- Evidence: `npm run test:api:local` PASS; the command built server/web,
+  applied all `31` migrations, seeded, and ran `7/7` API subtests successfully
+  against disposable PostgreSQL `companycore_test`. Cleanup proof:
+  `docker ps -a --filter "name=^/companycore-test-postgres$"` returned no
+  rows after the passing run.
+- Final disposition: done for Core Backend repair scope. Source-control closure
+  remains separate because the shared workspace already contains unrelated
+  LUC-3712/LUC-3713 generated/state changes.
+
+## Previous Mission
+
+- Mission ID: LUC-3712-ARCHITECTURE-TASK-LINK-BACKFILL
+- Status: VERIFIED_DONE
+- Selected objective: Backfill architecture task links for the `173`
+  implementation rows left by LUC-3703.
+- Why this mission now: Paperclip assigned `[LUC-3712](/LUC/issues/LUC-3712)`
+  directly to Documentation Steward with high priority after LUC-3703.
+- Scope: reuse LUC-3544 classification, create one `.codex/tasks` task
+  artifact with explicit `Architecture Links` for all current unlinked
+  implementation entity IDs, regenerate architecture-awareness reports, and
+  sync source-of-truth state.
+- Exclusions: no runtime code, schema, migration, scanner code, protected
+  smoke, deploy, push, restart, production mutation, credential access, secret
+  disclosure, server, browser, or database process.
+- Output: `.codex/tasks/luc-3712-architecture-task-link-backfill.md`.
+- Evidence: Paperclip scanner PASS (`entities=2229`, `relations=4343`,
+  `files=13554`, `34` generated files excluded by prefix);
+  `docs/status/task-synchronization-report.md` generated at
+  `2026-06-13T02:24:41.371Z` reports `0` tasks without architecture links,
+  `0` implementation entities without task links, and `0` verified entities
+  without proof evidence; `npm run architecture:status` PASS (`GREEN`, graph
+  `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass).
+- Final disposition: done for Documentation Steward backfill scope. Remaining
+  source-control closure, if required, belongs to the existing LUC-3714 lane.
+
+## Previous Mission
+
 - Mission ID: LUC-3703-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
 - Status: DONE
 - Selected objective: Refresh Roost known-state evidence and architecture

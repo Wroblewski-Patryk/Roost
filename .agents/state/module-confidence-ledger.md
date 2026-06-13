@@ -2,6 +2,50 @@
 
 Last updated: 2026-06-13
 
+Process Core / local API test fixture note: LUC-3716 is VERIFIED_DONE for the
+Core Backend repair scope. The packet is recorded in
+`docs/planning/luc-3716-local-api-test-operating-area-fixture-repair.md`.
+Changes: Relationships context fallback now uses canonical backend area
+`sales-crm` for `05-relacje`; API fixtures now use live canonical
+`OperatingArea`, task, process, pipeline, and knowledge-link setup without
+leaking records into later exact-count assertions. Evidence:
+`npm run test:api:local` PASS after building server/web, applying all `31`
+migrations, seeding, and running `7/7` API subtests against disposable
+PostgreSQL `companycore_test`. Cleanup proof: `docker ps -a --filter
+"name=^/companycore-test-postgres$"` returned no rows. No protected smoke,
+deploy, push, restart, production mutation, credential access, or production DB
+access occurred.
+
+Architecture task-link backfill note: LUC-3712 is VERIFIED_DONE for the
+Documentation Steward backfill scope. The durable task artifact is
+`.codex/tasks/luc-3712-architecture-task-link-backfill.md`. It names all 173
+LUC-3703 implementation entity IDs in `Architecture Links`, grouped by the
+LUC-3544 buckets. Evidence: Paperclip architecture-awareness scanner passed
+with `entities=2229`, `relations=4343`, `files=13554`, and `34` generated
+files excluded by prefix; `docs/status/task-synchronization-report.md` now
+reports `0` tasks without architecture links, `0` implementation entities
+without task links, and `0` verified entities without proof evidence;
+`npm run architecture:status` passed with `GREEN`, graph `452/761/34`,
+evidence queue `0`, chain worklist `0`, delta `0/0/0`, and all gates passing.
+No runtime module behavior changed.
+
+Process Core integration rung note: LUC-3713 is VERIFIED_DONE for the local API
+integration proof. The packet is recorded in
+`docs/planning/luc-3713-process-core-integration-rung-local-api-test-database.md`.
+Evidence: QA launched Docker Desktop and Docker engine `28.3.2` became
+available; `npm run test:api:local` created disposable PostgreSQL
+`companycore_test`, built server/web, applied all `31` migrations, seeded, and
+ran API tests. Result: FAIL, `6` subtests passed and `CompanyCore v1
+protected API flow` failed with `No OperatingArea found`
+(`dist/tests/api.test.js:459:25`, stack reached
+`dist/tests/api.test.js:2530:38`). Classification: product/test fixture
+failure, not local database provisioning. After [LUC-3716](/LUC/issues/LUC-3716)
+resolved, QA reran `npm run test:api:local`; final result passed with build,
+all `31` migrations, seed, and `7/7` API subtests passing. No validation DB
+container, protected smoke, deploy, push, restart, production mutation,
+credential access, or secret disclosure remained after the run. Next proof/fix:
+none for this integration rung.
+
 Known-state architecture baseline note: LUC-3703 is VERIFIED for Roost PM
 evidence scope. The packet is recorded in
 `docs/planning/luc-3703-known-state-evidence-and-architecture-baseline.md`.

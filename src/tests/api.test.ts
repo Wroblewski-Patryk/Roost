@@ -3182,7 +3182,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(relationshipGraphBody.data.summary.confidence.unsupported > 0);
 
   const relationshipsContextArea = await prisma.operatingArea.findFirstOrThrow({
-    where: { workspaceId: ownerA.workspace.id, key: "relationships-client-success" }
+    where: { workspaceId: ownerA.workspace.id, key: "sales-crm" }
   });
   const relationshipsClient = await prisma.client.create({
     data: {
@@ -3273,7 +3273,7 @@ test("CompanyCore v1 protected API flow", async () => {
     };
   };
   assert.equal(relationshipsContextBody.data.department.canonicalKey, "05-relacje");
-  assert.equal(relationshipsContextBody.data.department.backendAreaKey, "relationships-client-success");
+  assert.equal(relationshipsContextBody.data.department.backendAreaKey, "sales-crm");
   assert.ok(relationshipsContextBody.data.summary.clients >= 1);
   assert.ok(relationshipsContextBody.data.summary.activeClients >= 1);
   assert.ok(relationshipsContextBody.data.summary.relationshipTasks >= 1);
@@ -3303,11 +3303,19 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(relationshipsContextBody.data.tasks.some((task) => task.id === relationshipsTask.id));
   assert.ok(relationshipsContextBody.data.driveFiles.some((file) => (
     file.id === relationshipsDriveFile.id
-    && file.operatingAreaKey === "relationships-client-success"
+    && file.operatingAreaKey === "sales-crm"
   )));
   assert.equal(relationshipsContextBody.data.agentPacket.mode, "read_only");
   assert.ok(relationshipsContextBody.data.agentPacket.allowedActions.includes("read_relationships_context"));
   assert.ok(relationshipsContextBody.data.agentPacket.blockedActions.some((action) => action.action === "send_outreach_or_commitment"));
+  await prisma.googleDriveFile.delete({ where: { id: relationshipsDriveFile.id } });
+  await prisma.task.delete({ where: { id: relationshipsTask.id } });
+  await prisma.decision.delete({ where: { id: relationshipsDecision.id } });
+  await prisma.note.delete({ where: { id: relationshipsNote.id } });
+  await prisma.deal.delete({ where: { id: relationshipsDeal.id } });
+  await prisma.stakeholder.delete({ where: { id: relationshipsStakeholder.id } });
+  await prisma.interaction.delete({ where: { id: relationshipsInteraction.id } });
+  await prisma.client.delete({ where: { id: relationshipsClient.id } });
 
   const graphStrategyArea = await prisma.operatingArea.findFirstOrThrow({
     where: { workspaceId: ownerA.workspace.id, key: "strategy-governance" },
@@ -4060,6 +4068,20 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(companyOsSnapshotBody.data.collections.includes("pipelines"));
   assert.ok(companyOsSnapshotBody.data.collections.includes("automation-rules"));
 
+  const processCoreKnowledgeItem = await prisma.knowledgeItem.findFirstOrThrow({
+    where: { workspaceId: ownerA.workspace.id }
+  });
+  const processCoreKnowledgeLink = await prisma.knowledgeLink.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      knowledgeItemId: processCoreKnowledgeItem.id,
+      targetType: "stage_run",
+      targetId: stageRun.id,
+      linkType: "evidence",
+      confidence: "owner_assigned"
+    }
+  });
+
   const unauthenticatedProcessCoreCoverage = await request("/v1/process-core/coverage");
   assert.equal(unauthenticatedProcessCoreCoverage.status, 401);
   const processCoreAuditLogCountBefore = await prisma.auditLog.count({ where: { workspaceId: ownerA.workspace.id } });
@@ -4124,6 +4146,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(processCoreCoverageBody.data.unsupportedConcepts.includes("Blueprint"));
   assert.equal(await prisma.auditLog.count({ where: { workspaceId: ownerA.workspace.id } }), processCoreAuditLogCountBefore);
   assert.equal(await prisma.event.count({ where: { workspaceId: ownerA.workspace.id } }), processCoreEventCountBefore);
+  await prisma.knowledgeLink.delete({ where: { id: processCoreKnowledgeLink.id } });
   const foreignProcessCoreCoverage = await request("/v1/process-core/coverage", { headers: authB });
   assert.equal(foreignProcessCoreCoverage.status, 200);
   const foreignProcessCoreCoverageBody = foreignProcessCoreCoverage.body as {
@@ -4244,11 +4267,21 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(crossWorkspaceApprovalDecision.status, 404);
 
+  const companyOsCommandTask = await prisma.task.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      title: "Company OS command fixture task",
+      description: "Live task target for command-route link assertions.",
+      status: "todo",
+      priority: "medium"
+    }
+  });
+
   const pipelineRunTaskLink = await request(`/v1/company-os/pipeline-runs/${pipelineRun.id}/task-links`, {
     method: "POST",
     headers: authA,
     body: JSON.stringify({
-      taskId: operationsTask.id,
+      taskId: companyOsCommandTask.id,
       linkType: "execution_evidence",
       source: "companycore"
     })
@@ -4257,7 +4290,7 @@ test("CompanyCore v1 protected API flow", async () => {
   const pipelineRunTaskLinkBody = pipelineRunTaskLink.body as {
     data: { id: string; taskId: string; pipelineRunId: string; linkType: string; correlationId: string; auditLogId: string };
   };
-  assert.equal(pipelineRunTaskLinkBody.data.taskId, operationsTask.id);
+  assert.equal(pipelineRunTaskLinkBody.data.taskId, companyOsCommandTask.id);
   assert.equal(pipelineRunTaskLinkBody.data.pipelineRunId, pipelineRun.id);
   assert.equal(pipelineRunTaskLinkBody.data.linkType, "execution_evidence");
   const pipelineRunTaskLinkAudit = await prisma.auditLog.findUniqueOrThrow({
@@ -4277,7 +4310,7 @@ test("CompanyCore v1 protected API flow", async () => {
     method: "POST",
     headers: authB,
     body: JSON.stringify({
-      taskId: operationsTask.id,
+      taskId: companyOsCommandTask.id,
       linkType: "execution_evidence",
       source: "companycore"
     })
@@ -4297,7 +4330,7 @@ test("CompanyCore v1 protected API flow", async () => {
     body: JSON.stringify({
       knowledgeItemId: linkedKnowledgeItem.id,
       targetType: "task",
-      targetId: operationsTask.id,
+      targetId: companyOsCommandTask.id,
       linkType: "evidence",
       confidence: "owner_assigned"
     })
@@ -4307,7 +4340,7 @@ test("CompanyCore v1 protected API flow", async () => {
     data: { id: string; targetType: string; targetId: string; correlationId: string; auditLogId: string };
   };
   assert.equal(knowledgeLinkCreateBody.data.targetType, "task");
-  assert.equal(knowledgeLinkCreateBody.data.targetId, operationsTask.id);
+  assert.equal(knowledgeLinkCreateBody.data.targetId, companyOsCommandTask.id);
   const knowledgeLinkAudit = await prisma.auditLog.findUniqueOrThrow({
     where: { id: knowledgeLinkCreateBody.data.auditLogId }
   });
@@ -4327,11 +4360,12 @@ test("CompanyCore v1 protected API flow", async () => {
     body: JSON.stringify({
       knowledgeItemId: linkedKnowledgeItem.id,
       targetType: "task",
-      targetId: operationsTask.id,
+      targetId: companyOsCommandTask.id,
       linkType: "evidence"
     })
   });
   assert.equal(deniedKnowledgeLinkCreate.status, 404);
+  await prisma.task.delete({ where: { id: companyOsCommandTask.id } });
 
   const startedStageRun = await request(`/v1/company-os/pipeline-runs/${pipelineRun.id}/actions/start-stage`, {
     method: "POST",
@@ -6662,31 +6696,27 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal((projectListB.body as { data: unknown[] }).data.length, 0);
 
   const projectAId = (serviceProject.body as { data: { id: string } }).data.id;
-  const workflowProcess = await request("/v1/company-os/processes", {
-    method: "POST",
-    headers: authA,
-    body: JSON.stringify({
+  const workflowProcess = await prisma.process.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
       name: "Agent-readable execution process",
       description: "Process for goal/workflow bridge assertions.",
       department: "Strategy",
       category: "execution",
       status: "active"
-    })
+    }
   });
-  assert.equal(workflowProcess.status, 201);
-  const processIdA = (workflowProcess.body as { data: { id: string } }).data.id;
-  const workflowPipeline = await request("/v1/company-os/pipelines", {
-    method: "POST",
-    headers: authA,
-    body: JSON.stringify({
+  const processIdA = workflowProcess.id;
+  const workflowPipeline = await prisma.pipeline.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
       name: "Agent-readable execution pipeline",
       purpose: "Pipeline for target/workflow bridge assertions.",
       processId: processIdA,
       status: "active"
-    })
+    }
   });
-  assert.equal(workflowPipeline.status, 201);
-  const pipelineAId = (workflowPipeline.body as { data: { id: string } }).data.id;
+  const pipelineAId = workflowPipeline.id;
 
   const readProject = await request(`/v1/projects/${projectAId}`, { headers: authA });
   assert.equal(readProject.status, 200);

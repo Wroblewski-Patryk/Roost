@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-13T02:14:00.850Z
+Generated: 2026-06-13T02:27:25.030Z
 
 ## Canonical Exports
 
@@ -561,6 +561,7 @@ Generated: 2026-06-13T02:14:00.850Z
 | connected_to | api_endpoint:use-v1:347b48829e | module:src:13b5974e74 | src/app.ts |
 | connected_to | api_endpoint:use-workforce:a03aa869cd | module:src:13b5974e74 | src/app.ts |
 | connected_to | api_endpoint:use-workspaces:8d243549bd | module:src:13b5974e74 | src/app.ts |
+| connected_to | project:roost:122c92a083 | task:luc-3712-architecture-task-link-backfill-for-173-implementation-rows:7fd1216070 | .codex/tasks/luc-3712-architecture-task-link-backfill.md |
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
@@ -1012,6 +1013,8 @@ Generated: 2026-06-13T02:14:00.850Z
 | documents | document:luc-3544-task-link-classification-for-unlinked-implementation-rows:6a8b26047d | module:docs:6784d83cb0 | docs/planning/luc-3544-task-link-classification-for-unlinked-implementation-rows.md |
 | documents | document:luc-3545-first-proof-ladder-from-implementation-without-tests:a06e87395b | module:docs:6784d83cb0 | docs/planning/luc-3545-first-proof-ladder-from-implementation-without-tests.md |
 | documents | document:luc-3678-source-control-dirty-groups-from-control-tick:ed1d79788f | module:docs:6784d83cb0 | docs/planning/luc-3678-source-control-dirty-groups-from-control-tick.md |
+| documents | document:luc-3703-known-state-evidence-and-architecture-baseline:2828cd8225 | module:docs:6784d83cb0 | docs/planning/luc-3703-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-3713-process-core-integration-rung-with-local-api-test-database:14c655edb5 | module:docs:6784d83cb0 | docs/planning/luc-3713-process-core-integration-rung-local-api-test-database.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-06-13T02:14:00.850Z
 | documents | document:problem-statement:cf26f163de | module:docs:6784d83cb0 | docs/product/problem-statement.md |
 | documents | document:procedure-steps-model:1ab0e8bea3 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0041.md |
 | documents | document:procedures-model:a5acad74e8 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0042.md |
-| documents | document:process-core-workflow-core-architecture:f96383f7d0 | module:docs:6784d83cb0 | docs/architecture/process-core-workflow-core-architecture.md |
-| documents | document:processes-model:8823cf557b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0043.md |
-| documents | document:product-definition:d21d8473bb | module:docs:6784d83cb0 | docs/product/product.md |

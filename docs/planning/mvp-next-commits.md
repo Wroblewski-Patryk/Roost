@@ -7,6 +7,20 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-3716 local API test fixture repair:
+      completed; the LUC-3713 Process Core local API integration proof is no
+      longer blocked by the OperatingArea fixture failure.
+      Output:
+      `docs/planning/luc-3716-local-api-test-operating-area-fixture-repair.md`.
+      Evidence: `npm run test:api:local` passed after build, all `31`
+      migrations, seed, and the full API suite against disposable
+      `companycore_test` (`7/7` subtests passed). The cleanup probe for
+      `companycore-test-postgres` returned no rows. `npm run
+      architecture:status` passed (`GREEN`, graph `452/761/34`, evidence
+      queue `0`, chain worklist `0`, all gates pass). Source-control closure
+      remains separate because the workspace contains unrelated shared
+      LUC-3712/LUC-3713 generated/state changes.
+
 - [x] LUC-3544 task-link classification for unlinked implementation rows:
       published
       `docs/planning/luc-3544-task-link-classification-for-unlinked-implementation-rows.md`.

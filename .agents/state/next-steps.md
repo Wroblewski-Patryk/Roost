@@ -4,6 +4,50 @@ Last updated: 2026-06-13
 
 ## NOW
 
+1. `LUC-3716` local API test fixture repair is complete.
+   - Output:
+     `docs/planning/luc-3716-local-api-test-operating-area-fixture-repair.md`.
+   - Fixed:
+     Relationships `05-relacje` now uses canonical backend area `sales-crm`;
+     API fixtures no longer depend on a missing `relationships-client-success`
+     `OperatingArea` or deleted task targets.
+   - Proof:
+     `npm run test:api:local` PASS after build, all `31` migrations, seed, and
+     `7/7` API subtests against disposable PostgreSQL `companycore_test`.
+     Cleanup probe for `companycore-test-postgres` returned no rows.
+   - Next owner/action:
+     source-control closure remains separate because the shared workspace
+     contains unrelated LUC-3712/LUC-3713 generated/state changes.
+
+1. `LUC-3712` architecture task-link backfill is complete.
+   - Output:
+     `.codex/tasks/luc-3712-architecture-task-link-backfill.md`.
+   - Proof:
+     Paperclip scanner PASS (`entities=2229`, `relations=4343`,
+     `files=13554`, `34` generated files excluded by prefix);
+     `docs/status/task-synchronization-report.md` now reports `0` tasks
+     without architecture links, `0` implementation entities without task
+     links, and `0` verified entities without proof evidence; `npm run
+     architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence queue
+     `0`, chain worklist `0`, delta `0/0/0`, all gates pass).
+   - Next owner/action:
+     source-control closure remains separate if the board requires committing
+     the generated docs/state packet.
+
+1. `LUC-3713` Process Core local API integration proof is verified.
+   - Output:
+     `docs/planning/luc-3713-process-core-integration-rung-local-api-test-database.md`.
+   - Proof:
+     after [LUC-3716](/LUC/issues/LUC-3716), target command
+     `npm run test:api:local` created disposable PostgreSQL
+     `companycore_test`, built server/web, applied all `31` migrations,
+     seeded, and ran API tests.
+   - Classification:
+     PASS, `7` subtests passed and `0` failed.
+   - Next owner/action:
+     no remaining action for this integration rung; source-control closure
+     remains in the broader LUC-3703/LUC-3714 packet.
+
 1. `LUC-3703` known-state evidence and architecture baseline is complete.
    - Output:
      `docs/planning/luc-3703-known-state-evidence-and-architecture-baseline.md`.

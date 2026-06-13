@@ -1,6 +1,6 @@
 # Architecture Awareness Report
 
-Generated: 2026-06-13T02:14:00.850Z
+Generated: 2026-06-13T02:27:25.030Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 
@@ -11,7 +11,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | agent | 47 |
 | api_endpoint | 43 |
 | component | 7 |
-| document | 908 |
+| document | 910 |
 | feature | 167 |
 | function | 944 |
 | migration | 31 |
@@ -19,26 +19,26 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | module | 66 |
 | project | 1 |
 | route | 3 |
-| task | 3 |
+| task | 4 |
 | test | 1 |
 
 ## Counts By Status
 
 | Status | Count |
 | --- | ---: |
-| blocked | 4 |
+| blocked | 5 |
 | deprecated | 4 |
-| implemented | 2206 |
+| implemented | 2207 |
 | in_progress | 1 |
 | tested | 8 |
-| verified | 3 |
+| verified | 4 |
 
 ## Health Signals
 
 - Raw implementation entities without inferred tests: 1161
 - Actionable implementation entities without inferred tests: 1152
-- Raw implementation entities without inferred docs: 173
-- Actionable implementation entities without inferred docs: 171
+- Raw implementation entities without inferred docs: 0
+- Actionable implementation entities without inferred docs: 0
 - Classified inferred-link noise: 9
 - Entities without owner attribution: 0
 - Disconnected entities: 0
@@ -88,46 +88,6 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 
 ## Top Actionable Missing Doc Links
 
-- api_endpoint: GET / (src/app.ts#/)
-- api_endpoint: USE /agent-events (src/app.ts#/agent-events)
-- api_endpoint: USE /agent-logs (src/app.ts#/agent-logs)
-- api_endpoint: USE /agents (src/app.ts#/agents)
-- api_endpoint: USE /api-keys (src/app.ts#/api-keys)
-- api_endpoint: USE /assets (src/app.ts#/assets)
-- api_endpoint: USE /auth (src/app.ts#/auth)
-- api_endpoint: USE /clients (src/app.ts#/clients)
-- api_endpoint: USE /commercial-exceptions (src/app.ts#/commercial-exceptions)
-- api_endpoint: USE /company-os (src/app.ts#/company-os)
-- api_endpoint: USE /connection (src/app.ts#/connection)
-- api_endpoint: USE /dashboard (src/app.ts#/dashboard)
-- api_endpoint: USE /deals (src/app.ts#/deals)
-- api_endpoint: USE /decisions (src/app.ts#/decisions)
-- api_endpoint: USE /departments (src/app.ts#/departments)
-- api_endpoint: USE /events (src/app.ts#/events)
-- api_endpoint: USE /finance (src/app.ts#/finance)
-- api_endpoint: USE /goals (src/app.ts#/goals)
-- api_endpoint: USE /google-drive (src/app.ts#/google-drive)
-- api_endpoint: USE /health (src/app.ts#/health)
-- api_endpoint: USE /intake (src/app.ts#/intake)
-- api_endpoint: USE /integration-settings (src/app.ts#/integration-settings)
-- api_endpoint: USE /interactions (src/app.ts#/interactions)
-- api_endpoint: USE /mcp (src/app.ts#/mcp)
-- api_endpoint: USE /notes (src/app.ts#/notes)
-- api_endpoint: USE /operating-graph (src/app.ts#/operating-graph)
-- api_endpoint: USE /operating-model (src/app.ts#/operating-model)
-- api_endpoint: USE /operations (src/app.ts#/operations)
-- api_endpoint: USE /pipeline-stages (src/app.ts#/pipeline-stages)
-- api_endpoint: USE /process-core (src/app.ts#/process-core)
-- api_endpoint: USE /projects (src/app.ts#/projects)
-- api_endpoint: USE /relationships (src/app.ts#/relationships)
-- api_endpoint: USE /sales (src/app.ts#/sales)
-- api_endpoint: USE /strategy (src/app.ts#/strategy)
-- api_endpoint: USE /targets (src/app.ts#/targets)
-- api_endpoint: USE /task-lists (src/app.ts#/task-lists)
-- api_endpoint: USE /tasks (src/app.ts#/tasks)
-- api_endpoint: USE /v1 (src/app.ts#/v1)
-- api_endpoint: USE /v1/auth (src/app.ts#/v1/auth)
-- api_endpoint: USE /v1/health (src/app.ts#/v1/health)
 
 ## Classified Inferred-Link Noise
 

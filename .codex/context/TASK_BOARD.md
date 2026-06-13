@@ -1,6 +1,49 @@
 # TASK_BOARD
 
 ## Ready
+- 2026-06-13: `LUC-3716` local API test fixture repair completed for the
+  OperatingArea failure from `[LUC-3713](/LUC/issues/LUC-3713)`. Output:
+  `docs/planning/luc-3716-local-api-test-operating-area-fixture-repair.md`.
+  Concrete action: aligned Relationships `05-relacje` to canonical backend
+  area `sales-crm`, fixed stale API fixtures for Process Core coverage and
+  Company OS command-route assertions, and kept exact-count isolation checks
+  meaningful by cleaning temporary records. Verification: `npm run
+  test:api:local` PASS after build, all `31` migrations, seed, and `7/7` API
+  subtests against disposable PostgreSQL `companycore_test`; cleanup probe for
+  `companycore-test-postgres` returned no rows. Scope: no protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, or production DB access. Disposition: `DONE`; source-control
+  closure remains separate because the shared workspace has unrelated
+  LUC-3712/LUC-3713 generated/state changes.
+- 2026-06-13: `LUC-3712` architecture task-link backfill completed for the
+  `173` implementation entities left by LUC-3703. Output:
+  `.codex/tasks/luc-3712-architecture-task-link-backfill.md`. Concrete action:
+  created a first-class `.codex/tasks` task artifact with `Architecture Links`
+  naming every current entity ID from
+  `docs/graphs/architecture-health.json`
+  `signals.implementation_without_task.items`, grouped by LUC-3544 buckets.
+  Verification: Paperclip scanner PASS (`entities=2229`, `relations=4343`,
+  `files=13554`, `34` generated files excluded by prefix);
+  `docs/status/task-synchronization-report.md` generated at
+  `2026-06-13T02:24:41.371Z` reports `0` tasks without architecture links,
+  `0` implementation entities without task links, and `0` verified entities
+  without proof evidence; `npm run architecture:status` PASS (`GREEN`, graph
+  `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass). Scope: no runtime code, schema, migration, scanner code,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, secret disclosure, server, browser, or database process. Disposition:
+  `DONE`; source-control closure remains separate under LUC-3714 if required.
+- 2026-06-13: `LUC-3713` Process Core local API integration proof is verified
+  after the blocker-resolution rerun.
+  Output:
+  `docs/planning/luc-3713-process-core-integration-rung-local-api-test-database.md`.
+  Evidence: Docker Desktop engine `28.3.2`; after
+  [LUC-3716](/LUC/issues/LUC-3716), `npm run test:api:local` created
+  disposable PostgreSQL `companycore_test`, built server/web, applied all `31`
+  migrations, seeded, and ran API tests. Result: PASS, `7` subtests passed and
+  `0` failed. No validation DB container, protected smoke, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  remained after the run. Disposition: `DONE`.
 - 2026-06-13: `LUC-3703` known-state evidence and architecture baseline
   completed for Roost. Output:
   `docs/planning/luc-3703-known-state-evidence-and-architecture-baseline.md`.

@@ -1,6 +1,53 @@
 # PROJECT_STATE
 
 Last updated: 2026-06-13
+- 2026-06-13: `LUC-3716` local API test fixture repair completed for the
+  OperatingArea failure surfaced by `LUC-3713`. Output:
+  `docs/planning/luc-3716-local-api-test-operating-area-fixture-repair.md`.
+  Concrete action: aligned Relationships `05-relacje` fallback and test
+  fixture with canonical backend area `sales-crm`, cleaned temporary
+  Relationships records before later exact-count assertions, added a temporary
+  Process Core `KnowledgeLink` fixture against an existing knowledge item, used
+  a live Company OS command task fixture instead of a deleted Operations task,
+  and replaced non-existent raw Company OS process/pipeline POST setup with
+  direct disposable-DB fixture creation. Verification: `npm run
+  test:api:local` PASS after build, all `31` migrations, seed, and `7/7` API
+  subtests against disposable PostgreSQL `companycore_test`; cleanup probe for
+  `companycore-test-postgres` returned no rows. Scope: no protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, or production DB access.
+- 2026-06-13: `LUC-3712` Documentation Steward architecture task-link
+  backfill completed for the 173 LUC-3703 implementation rows. Output:
+  `.codex/tasks/luc-3712-architecture-task-link-backfill.md`. Concrete action:
+  created a first-class `.codex/tasks` task contract with `Architecture Links`
+  naming every current entity ID from
+  `docs/graphs/architecture-health.json`
+  `signals.implementation_without_task.items`, grouped by the LUC-3544
+  buckets. Verification: Paperclip architecture-awareness scanner PASS
+  (`entities=2229`, `relations=4343`, `files=13554`, `34` generated files
+  excluded by prefix); `docs/status/task-synchronization-report.md` generated
+  at `2026-06-13T02:24:41.371Z` now reports `0` tasks without architecture
+  links, `0` implementation entities without task links, and `0` verified
+  entities without proof evidence; `npm run architecture:status` PASS
+  (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass). Scope remained documentation and generated
+  architecture evidence only: no runtime code, schema, migration, scanner code,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, secret disclosure, server, browser, or database process.
+- 2026-06-13: `LUC-3713` Process Core integration rung is verified after the
+  blocker-resolution rerun. Output:
+  `docs/planning/luc-3713-process-core-integration-rung-local-api-test-database.md`.
+  Initial prerequisite check found `DATABASE_URL_PRESENT=false` and Docker
+  Desktop Linux engine unavailable; QA launched Docker Desktop from
+  `C:\Program Files\Docker\Docker\Docker Desktop.exe`, after which Docker
+  engine `28.3.2` was available. The first target command surfaced the
+  `No OperatingArea found` API fixture failure, which Core Backend resolved in
+  [LUC-3716](/LUC/issues/LUC-3716). QA then reran `npm run test:api:local`:
+  disposable PostgreSQL `companycore_test` was created, server/web build
+  passed, all `31` migrations applied, seed completed, and API tests passed
+  with `7` subtests passed and `0` failed. No validation DB container, server,
+  browser, protected smoke, deploy, push, restart, production mutation,
+  credential access, or secret disclosure remained after the run.
 - 2026-06-13: `LUC-3703` Roost known-state evidence and architecture baseline
   completed. Output:
   `docs/planning/luc-3703-known-state-evidence-and-architecture-baseline.md`.

@@ -9,6 +9,7 @@ const graphQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(500).optional()
 }).strict();
 const RELATIONSHIPS_DEPARTMENT_KEY = "05-relacje";
+const RELATIONSHIPS_BACKEND_AREA_KEY = "sales-crm";
 const RELATIONSHIPS_LIMIT = 12;
 
 type RelationshipConfidence = "direct" | "provider_hierarchy" | "route_inferred" | "needs_review" | "unsupported";
@@ -188,7 +189,7 @@ relationshipsRouter.get("/context", asyncHandler(async (req, res) => {
   )).slice(0, RELATIONSHIPS_LIMIT);
   const relationshipNotes = notes.filter((note) => textMatchesRelationships(note.content)).slice(0, RELATIONSHIPS_LIMIT);
   const relationshipDriveFiles = driveFiles.filter((file) => (
-    file.operatingArea?.key === (department?.backendAreaKey ?? "relationships-client-success")
+    file.operatingArea?.key === (department?.backendAreaKey ?? RELATIONSHIPS_BACKEND_AREA_KEY)
     || textMatchesRelationships(file.name, file.description, file.mimeType)
   )).slice(0, RELATIONSHIPS_LIMIT);
   const supportInteractions = interactions.filter((interaction) => (
@@ -215,7 +216,7 @@ relationshipsRouter.get("/context", asyncHandler(async (req, res) => {
     data: {
       department: {
         canonicalKey: department?.canonicalKey ?? RELATIONSHIPS_DEPARTMENT_KEY,
-        backendAreaKey: department?.backendAreaKey ?? "relationships-client-success",
+        backendAreaKey: department?.backendAreaKey ?? RELATIONSHIPS_BACKEND_AREA_KEY,
         name: "Relationships Management System",
         purpose: "Protect client trust, relationship continuity, and delivery confidence through evidence-backed client context, interaction history, and follow-up obligations."
       },
