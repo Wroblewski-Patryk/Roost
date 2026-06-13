@@ -1,6 +1,22 @@
 # Module Confidence Ledger
 
-Last updated: 2026-06-11
+Last updated: 2026-06-13
+
+Known-state architecture baseline note: LUC-3703 is VERIFIED for Roost PM
+evidence scope. The packet is recorded in
+`docs/planning/luc-3703-known-state-evidence-and-architecture-baseline.md`.
+Fresh proof: `npm run architecture:status` passed with `GREEN`, graph
+`452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, and all
+gates passing. Paperclip architecture-awareness scanner passed with
+`entities=2226`, `relations=4159`, `files=13552`, and `34` generated files
+excluded by prefix through `docs/architecture/scanner-overrides.json`. Current
+task-sync is `0` tasks without architecture links, `173` implementation
+entities without task links, and `0` verified entities without proof evidence.
+Current raw implementation-without-tests signal is `1161`. Next proof/fix:
+Documentation/Architecture backfills task links by the LUC-3544 buckets, while
+QA/Core Backend reruns `npm run test:api:local` for Process Core after Docker
+Desktop Linux engine or an authorized disposable validation database is
+available.
 
 Task-link classification note: LUC-3544 is VERIFIED_DONE for Documentation
 Steward classification of the remaining `173` implementation-without-task-link

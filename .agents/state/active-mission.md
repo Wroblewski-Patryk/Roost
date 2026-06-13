@@ -4,6 +4,40 @@ Last updated: 2026-06-13
 
 ## Current Mission
 
+- Mission ID: LUC-3703-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: DONE
+- Selected objective: Refresh Roost known-state evidence and architecture
+  baseline after the recent source-control closure packet.
+- Why this mission now: Paperclip assigned `[LUC-3703](/LUC/issues/LUC-3703)`
+  directly to the Roost Project Manager with high priority and scope
+  `[Roost] [Known State] Evidence collection and architecture baseline`.
+- Scope: review current Roost state, run local architecture status, refresh the
+  Paperclip architecture-awareness exports, read generated health/task-sync/
+  ownership/dependency reports, publish a known-state baseline packet, and sync
+  source-of-truth pointers.
+- Exclusions: no runtime code, schema, migration, seed data, protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, local server/browser/database startup, or broad test sweep.
+- Output:
+  `docs/planning/luc-3703-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: `npm run architecture:status` PASS (`GREEN`, graph
+  `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass); Paperclip scanner PASS (`entities=2226`, `relations=4159`,
+  `files=13552`, `34` generated files excluded by prefix);
+  task-sync `0` tasks without architecture links, `173` implementation
+  entities without task links, `0` verified entities without proof evidence;
+  architecture health `1161` raw implementation entities without inferred
+  tests; dependency report `437` relations across `95` entities.
+- Final disposition: done for evidence and baseline scope. Remaining work is
+  owner-lane follow-up: [LUC-3712](/LUC/issues/LUC-3712) for
+  Documentation/Architecture task-link backfill of the `173` rows,
+  [LUC-3713](/LUC/issues/LUC-3713) for QA/Core Backend Process Core
+  integration proof after local validation database provisioning is available,
+  and [LUC-3714](/LUC/issues/LUC-3714) for source-control closure of the
+  generated baseline packet.
+
+## Previous Mission
+
 - Mission ID: LUC-3678-SOURCE-CONTROL-DIRTY-GROUP-CLOSURE
 - Status: DONE
 - Selected objective: Classify and close the Roost source-control dirty groups

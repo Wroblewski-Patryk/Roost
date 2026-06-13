@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-11T17:46:24.686Z
+Generated: 2026-06-13T02:14:00.850Z
 
 ## Canonical Exports
 
@@ -1008,6 +1008,10 @@ Generated: 2026-06-11T17:46:24.686Z
 | documents | document:luc-3371-roost-companycore-readiness-and-milestone-review:2665af4576 | module:docs:6784d83cb0 | docs/planning/luc-3371-roost-companycore-readiness-and-milestone-review.md |
 | documents | document:luc-3453-roost-companycore-readiness-and-milestone-review:2eb71399b5 | module:docs:6784d83cb0 | docs/planning/luc-3453-roost-companycore-readiness-and-milestone-review.md |
 | documents | document:luc-3533-known-state-repair-lanes:89e5281b2a | module:docs:6784d83cb0 | docs/planning/luc-3533-known-state-repair-lanes.md |
+| documents | document:luc-3543-scanner-artifact-hygiene-for-known-state-reports:fb93e14461 | module:docs:6784d83cb0 | docs/planning/luc-3543-scanner-artifact-hygiene-known-state-reports.md |
+| documents | document:luc-3544-task-link-classification-for-unlinked-implementation-rows:6a8b26047d | module:docs:6784d83cb0 | docs/planning/luc-3544-task-link-classification-for-unlinked-implementation-rows.md |
+| documents | document:luc-3545-first-proof-ladder-from-implementation-without-tests:a06e87395b | module:docs:6784d83cb0 | docs/planning/luc-3545-first-proof-ladder-from-implementation-without-tests.md |
+| documents | document:luc-3678-source-control-dirty-groups-from-control-tick:ed1d79788f | module:docs:6784d83cb0 | docs/planning/luc-3678-source-control-dirty-groups-from-control-tick.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1214,7 +1218,3 @@ Generated: 2026-06-11T17:46:24.686Z
 | documents | document:process-core-workflow-core-architecture:f96383f7d0 | module:docs:6784d83cb0 | docs/architecture/process-core-workflow-core-architecture.md |
 | documents | document:processes-model:8823cf557b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0043.md |
 | documents | document:product-definition:d21d8473bb | module:docs:6784d83cb0 | docs/product/product.md |
-| documents | document:product-map:dc083bb565 | module:docs:6784d83cb0 | docs/maps/product-map.md |
-| documents | document:product-overview:7aa6455942 | module:docs:6784d83cb0 | docs/product/overview.md |
-| documents | document:production-drive-import-and-freshness-smoke:ef45388c71 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-PROD-DRIVE-IMPORT-SMOKE.md |
-| documents | document:production-google-drive-changes-baseline-task-contract:0986db6a59 | module:docs:6784d83cb0 | docs/planning/prod-google-drive-changes-baseline-task-contract.md |

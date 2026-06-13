@@ -4,6 +4,27 @@ Last updated: 2026-06-13
 
 ## NOW
 
+1. `LUC-3703` known-state evidence and architecture baseline is complete.
+   - Output:
+     `docs/planning/luc-3703-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+     evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass).
+     Paperclip scanner PASS (`entities=2226`, `relations=4159`,
+     `files=13552`, `34` generated files excluded by prefix).
+   - Current generated state:
+     task-sync reports `0` tasks without architecture links, `173`
+     implementation entities without task links, and `0` verified entities
+     without proof evidence; architecture health reports `1161` raw
+     implementation entities without inferred tests.
+   - Follow-up lanes created:
+     [LUC-3712](/LUC/issues/LUC-3712) for Documentation/Architecture
+     task-link backfill, [LUC-3713](/LUC/issues/LUC-3713) for QA/Core Backend
+     Process Core integration proof after Docker Desktop Linux engine or an
+     authorized disposable validation database is available, and
+     [LUC-3714](/LUC/issues/LUC-3714) for source-control closure of the
+     generated baseline packet.
+
 1. `LUC-3678` source-control dirty-group closure is complete.
    - Output:
      `docs/planning/luc-3678-source-control-dirty-groups-from-control-tick.md`.

@@ -1,6 +1,26 @@
 # TASK_BOARD
 
 ## Ready
+- 2026-06-13: `LUC-3703` known-state evidence and architecture baseline
+  completed for Roost. Output:
+  `docs/planning/luc-3703-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  Paperclip scanner PASS (`entities=2226`, `relations=4159`, `files=13552`,
+  `34` generated files excluded by prefix through
+  `docs/architecture/scanner-overrides.json`). Current generated reports are
+  fresh at `2026-06-13T02:14:00.850Z`; task-sync reports `0` tasks without
+  architecture links, `173` implementation entities without task links, and
+  `0` verified entities without proof evidence; architecture health reports
+  `1161` raw implementation entities without inferred tests. Scope stayed
+  evidence-only: no runtime code, schema, migration, deploy, push, restart,
+  protected smoke, production mutation, local server/browser/database process,
+  credential access, or secret disclosure. Disposition: `DONE`; remaining
+  work is owner-lane follow-up: [LUC-3712](/LUC/issues/LUC-3712) for
+  task-link backfill, [LUC-3713](/LUC/issues/LUC-3713) for Process Core API
+  integration proof when local validation database provisioning is available,
+  and [LUC-3714](/LUC/issues/LUC-3714) for source-control closure of the
+  generated baseline packet.
 - 2026-06-13: `LUC-3678` source-control dirty-group closure completed for the
   Paperclip control tick. Durable packet:
   `docs/planning/luc-3678-source-control-dirty-groups-from-control-tick.md`.
