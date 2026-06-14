@@ -4,6 +4,31 @@ Last updated: 2026-06-13
 
 ## Current Mission
 
+- Mission ID: LUC-3754-ROOST-COMPANYCORE-READINESS-REVIEW
+- Status: VERIFIED_DONE
+- Selected objective: Review Roost CompanyCore readiness and milestone state
+  after the latest local API, task-link, and known-state closure lanes.
+- Why this mission now: Paperclip assigned
+  [LUC-3754](/LUC/issues/LUC-3754) directly to the Roost Project Manager with
+  no pending comments and no fallback fetch required.
+- Scope: source-of-truth review, non-protected architecture continuity proof,
+  source-control readback, readiness packet, and issue disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, or database process.
+- Output:
+  `docs/planning/luc-3754-roost-companycore-readiness-and-milestone-review.md`.
+- Evidence: `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  `git rev-parse --short HEAD` returned `b2c4dd3`; `git status --short
+  --branch` returned `main...origin/main [ahead 15]`; `git status
+  --porcelain=v1 -uall` returned no output before the packet edits.
+- Final disposition: done for PM review scope. Remaining protected runtime
+  proof belongs to the existing [LUC-2700](/LUC/issues/LUC-2700) gate and
+  still requires fresh one-run protected deploy-smoke approval.
+
+## Previous Mission
+
 - Mission ID: LUC-3716-LOCAL-API-TEST-FIXTURE-REPAIR
 - Status: VERIFIED_DONE
 - Selected objective: Repair the local API test `OperatingArea` fixture failure

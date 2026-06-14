@@ -1,6 +1,20 @@
 # TASK_BOARD
 
 ## Ready
+- 2026-06-13: `LUC-3754` Roost CompanyCore readiness and milestone review
+  completed. Output:
+  `docs/planning/luc-3754-roost-companycore-readiness-and-milestone-review.md`.
+  Evidence: `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  `HEAD=b2c4dd3`; `git status --short --branch` showed
+  `main...origin/main [ahead 15]`; `git status --porcelain=v1 -uall` returned
+  no output before the packet edits. Decision: local readiness is green for PM
+  milestone tracking and the previous Process Core/task-link confidence gaps
+  are closed; protected deploy-smoke remains outside this issue and still
+  requires a fresh one-run approval under [LUC-2700](/LUC/issues/LUC-2700).
+  Scope: no runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, server,
+  browser, or database process. Disposition: `DONE`.
 - 2026-06-13: `LUC-3716` local API test fixture repair completed for the
   OperatingArea failure from `[LUC-3713](/LUC/issues/LUC-3713)`. Output:
   `docs/planning/luc-3716-local-api-test-operating-area-fixture-repair.md`.

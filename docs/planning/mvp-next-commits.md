@@ -7,6 +7,18 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-3754 Roost CompanyCore readiness and milestone review:
+      completed; Roost is locally green and source-control clean for this PM
+      checkpoint. Output:
+      `docs/planning/luc-3754-roost-companycore-readiness-and-milestone-review.md`.
+      Evidence: `npm run architecture:status` passed (`GREEN`, graph
+      `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+      all gates pass); `HEAD=b2c4dd3`; `git status --short --branch` showed
+      `main...origin/main [ahead 15]`; `git status --porcelain=v1 -uall`
+      returned no output before the packet edits. Protected deploy-smoke was
+      not run and remains gated under `[LUC-2700](/LUC/issues/LUC-2700)` until
+      a fresh one-run approval exists.
+
 - [x] LUC-3716 local API test fixture repair:
       completed; the LUC-3713 Process Core local API integration proof is no
       longer blocked by the OperatingArea fixture failure.

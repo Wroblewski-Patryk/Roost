@@ -4,6 +4,24 @@ Last updated: 2026-06-13
 
 ## NOW
 
+1. `LUC-3754` Roost CompanyCore readiness and milestone review is complete.
+   - Output:
+     `docs/planning/luc-3754-roost-companycore-readiness-and-milestone-review.md`.
+   - PM decision:
+     local readiness is green for this checkpoint; the Process Core local API
+     proof is verified, the task-link backfill is closed, and the worktree had
+     no porcelain changes before this packet.
+   - Proof:
+     `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+     evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+     `HEAD=b2c4dd3`; `git status --short --branch` showed
+     `main...origin/main [ahead 15]`; `git status --porcelain=v1 -uall`
+     returned no output before the packet edits.
+   - Next owner/action:
+     protected runtime proof remains under `[LUC-2700](/LUC/issues/LUC-2700)`
+     and requires fresh one-run protected deploy-smoke approval; no new PM
+     child issue is needed.
+
 1. `LUC-3716` local API test fixture repair is complete.
    - Output:
      `docs/planning/luc-3716-local-api-test-operating-area-fixture-repair.md`.
