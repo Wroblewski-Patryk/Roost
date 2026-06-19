@@ -1,8 +1,262 @@
 # Active Mission Packet
 
-Last updated: 2026-06-13
+Last updated: 2026-06-19
 
 ## Current Mission
+
+- Mission ID: LUC-4528-SOURCE-CONTROL-CLOSURE-LUC-4524
+- Status: VERIFIED_DONE
+- Selected objective: Close the source-control sidecar for the
+  [LUC-4524](/LUC/issues/LUC-4524) Roost known-state evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4528](/LUC/issues/LUC-4528), a source-control closure sidecar for
+  [LUC-4524](/LUC/issues/LUC-4524), with no pending comments and no fallback
+  fetch required.
+- Scope: inspect git status and diff hygiene, classify docs/state/generated
+  evidence changes, preserve the coherent local packet in a commit, and update
+  issue disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4528-source-control-closure-for-luc-4524-known-state-packet.md`.
+- Evidence: `git status --short --branch` showed
+  `main...origin/main [ahead 16]` with docs/state/generated evidence changes;
+  `git diff --stat` showed `17 files changed, 7760 insertions(+), 6557
+  deletions(-)` before this closure packet plus untracked planning packets;
+  `git diff --check` passed with line-ending conversion warnings only.
+- Final disposition: done for source-control closure. The coherent Roost
+  evidence packet through [LUC-4524](/LUC/issues/LUC-4524) was committed
+  locally; push is held for a future release batch or explicit source-ref need.
+
+## Previous Mission
+
+- Mission ID: LUC-4524-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE
+- Selected objective: Refresh Roost known-state evidence and architecture
+  continuity from safe local evidence, then convert findings into concrete
+  repair lanes.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4524](/LUC/issues/LUC-4524) after a local-board comment explicitly
+  requested local evidence collection and repair-lane conversion.
+- Scope: source-of-truth review, Paperclip architecture-awareness refresh,
+  non-protected architecture status proof, generated report readback,
+  source-control readback, source-control sidecar creation, and issue
+  disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4524-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip architecture-awareness scanner PASS (`entities=2237`,
+  `relations=4375`, `files=13562`, `34` generated files excluded by prefix);
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task-sync
+  readback showed `0` actionable task-link/proof gaps and `0` raw task-link
+  gaps; architecture health showed `actionable_implementation_without_tests=1152`;
+  dependency report showed `437` relations / `95` entities; ownership split
+  was `Docs Memory Lead=901`, `Engineering Delivery Lead=1335`,
+  `Roost Project Manager=1`; `HEAD=f8b9d50`; source-control closure sidecar
+  [LUC-4528](/LUC/issues/LUC-4528) was created.
+- Final disposition: done for PM baseline scope. Remaining protected runtime
+  proof stays under [LUC-2700](/LUC/issues/LUC-2700) / LUC-4438-style fresh
+  recheck. Source-control closure for this evidence packet is delegated to
+  [LUC-4528](/LUC/issues/LUC-4528).
+
+## Previous Mission
+
+- Mission ID: LUC-4490-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE
+- Selected objective: Refresh Roost known-state evidence and architecture
+  continuity for a Product Manager baseline heartbeat.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4490](/LUC/issues/LUC-4490) with no pending comments and no fallback
+  fetch required.
+- Scope: source-of-truth review, non-protected architecture status proof,
+  generated report readback, source-control readback, readiness packet, and
+  issue disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4490-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip architecture-awareness scanner PASS (`entities=2237`,
+  `relations=4375`, `files=13562`, `34` generated files excluded by prefix);
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task-sync
+  readback `0` task-link/proof gaps; dependency report `437` relations / `95`
+  entities; ownership split `Docs Memory Lead=901`,
+  `Engineering Delivery Lead=1335`, `Roost Project Manager=1`; `HEAD=f8b9d50`;
+  `git status --short --branch` returned `main...origin/main [ahead 16]` with
+  existing docs/state/generated report packet changes from prior lanes.
+- Final disposition: done for PM baseline scope. Remaining protected runtime
+  proof belongs to the existing [LUC-2700](/LUC/issues/LUC-2700) /
+  LUC-4438-style gate and requires approved environment secret injection plus
+  fresh one-run protected deploy-smoke approval.
+
+## Previous Mission
+
+- Mission ID: LUC-4459-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE
+- Selected objective: Refresh Roost known-state evidence and architecture
+  continuity for a Product Manager baseline heartbeat.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4459](/LUC/issues/LUC-4459) with no pending comments and no fallback
+  fetch required.
+- Scope: source-of-truth review, non-protected architecture status proof,
+  source-control readback, protected-gate blocker carry-forward, readiness
+  packet, and issue disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4459-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  `git rev-parse --short HEAD` returned `f8b9d50`; `git status --short
+  --branch` returned `main...origin/main [ahead 16]` with existing
+  docs/state/generated report packet changes from prior lanes.
+- Final disposition: done for PM baseline scope. Remaining protected runtime
+  proof belongs to the existing [LUC-2700](/LUC/issues/LUC-2700) /
+  LUC-4438-style gate and requires approved environment secret injection plus
+  fresh one-run protected deploy-smoke approval.
+
+## Previous Mission
+
+- Mission ID: LUC-4438-ROOST-PROTECTED-GATE-RECHECK
+- Status: BLOCKED
+- Selected objective: Execute the single protected Roost deploy-smoke recheck
+  authorized by [LUC-4438](/LUC/issues/LUC-4438) for the root
+  [LUC-261](/LUC/issues/LUC-261) protected gate.
+- Why this mission now: Paperclip assigned
+  [LUC-4438](/LUC/issues/LUC-4438) as a high-priority gate recheck after a
+  fresh protected gate fact was detected by [LUC-2697](/LUC/issues/LUC-2697).
+- Scope: non-secret environment presence proof, exactly one
+  `npm run aog:deploy-smoke` attempt, architecture continuity proof, source
+  state update, and issue disposition.
+- Exclusions: no product-code mutation, schema, migration, push, deploy
+  expansion, restart, production mutation, unrelated runtime change, secret
+  disclosure, or second protected rerun.
+- Output:
+  `docs/planning/luc-4438-roost-protected-gate-recheck.md`.
+- Evidence: `COMPANYCORE_BASE_URL present=False length=0`;
+  `COMPANYCORE_API_KEY present=False length=0`;
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION present=False length=0`;
+  `npm run aog:deploy-smoke` failed at local harness preflight with
+  `[aog-deploy-smoke] COMPANYCORE_BASE_URL is required.`; `npm run
+  architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass); `HEAD=f8b9d50`;
+  `git status --short --branch` returned `main...origin/main [ahead 16]`
+  with existing docs/state readiness packet files dirty before this heartbeat.
+- Final disposition: blocked. The one permitted recheck was consumed but could
+  not reach the target because approved `COMPANYCORE_BASE_URL` and
+  `COMPANYCORE_API_KEY` were not injected into this heartbeat process. Next
+  owner/action: runtime secret/environment owner injects approved base URL and
+  key into the protected recheck environment, then board/operator or gate
+  watcher creates a fresh one-run recheck before another smoke attempt.
+
+## Previous Mission
+
+- Mission ID: LUC-4389-ROOST-COMPANYCORE-READINESS-REVIEW
+- Status: VERIFIED_DONE
+- Selected objective: Review Roost CompanyCore readiness and milestone state
+  for the current Paperclip routine checkpoint without assuming VPS access.
+- Why this mission now: Paperclip assigned
+  [LUC-4389](/LUC/issues/LUC-4389) directly to the Roost Project Manager with
+  no pending comments, blockers, child issues, or fallback fetch requirement.
+- Scope: source-of-truth review, non-protected architecture continuity proof,
+  source-control readback, readiness packet, and issue disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4389-roost-companycore-readiness-and-milestone-review.md`.
+- Evidence: `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  `git rev-parse --short HEAD` returned `f8b9d50`; `git status --short
+  --branch` returned `main...origin/main [ahead 16]` with existing docs/state
+  readiness packet files dirty before this packet.
+- Final disposition: done for PM milestone scope. Remaining protected runtime
+  proof belongs to the existing [LUC-2700](/LUC/issues/LUC-2700) gate and
+  still requires fresh one-run protected deploy-smoke approval.
+
+## Previous Mission
+
+- Mission ID: LUC-4239-ROOST-COMPANYCORE-READINESS-REVIEW
+- Status: VERIFIED_DONE
+- Selected objective: Refresh Roost CompanyCore readiness and milestone state
+  after the previous transport-failed issue run left no captured work product.
+- Why this mission now: Paperclip recovered
+  [LUC-4239](/LUC/issues/LUC-4239) from a stranded assigned issue and the
+  issue was dependency-ready with no unresolved blockers.
+- Scope: source-of-truth review, non-protected architecture continuity proof,
+  source-control readback, readiness packet, and issue disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4239-roost-companycore-readiness-and-milestone-review.md`.
+- Evidence: `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  `git rev-parse --short HEAD` returned `f8b9d50`; `git status --short
+  --branch` returned `main...origin/main [ahead 16]` with existing dirty
+  docs/state files before this packet.
+- Final disposition: done for CINO readiness scope. Remaining protected
+  runtime proof belongs to the existing [LUC-2700](/LUC/issues/LUC-2700) gate
+  and still requires fresh one-run protected deploy-smoke approval.
+
+## Previous Mission
+
+- Mission ID: LUC-2713-PROCESS-CORE-READ-ONLY-COVERAGE
+- Status: VERIFIED_DONE
+- Selected objective: Close the missing local API integration proof for the
+  read-only Process Core coverage packet.
+- Why this mission now: Paperclip woke
+  [LUC-2713](/LUC/issues/LUC-2713) after the previous run left it blocked only
+  by unavailable Docker Desktop Linux engine.
+- Scope: rerun the missing disposable PostgreSQL API proof, update the
+  LUC-2713 packet and source-of-truth state, and set the Paperclip issue to a
+  durable final disposition.
+- Exclusions: no schema migration authoring, write command, UI implementation,
+  provider mutation, protected smoke, deploy, push, restart, production
+  mutation, credential access, secret disclosure, or production database
+  access.
+- Output:
+  `docs/planning/luc-2713-process-core-read-only-coverage-packet.md`.
+- Evidence: Docker Desktop Linux engine available (`28.3.2`);
+  `npm run test:api:local` PASS after server/web build, all `31` migrations,
+  seed, and `7/7` API subtests against disposable PostgreSQL
+  `companycore_test`; cleanup probe for `companycore-test-postgres` returned
+  no rows.
+- Final disposition: done for Core Backend read-only coverage scope. Future
+  Process Core schema or write-tool decisions remain separate lanes.
+
+## Previous Mission
+
+- Mission ID: LUC-3968-ROOST-COMPANYCORE-READINESS-REVIEW
+- Status: VERIFIED_DONE
+- Selected objective: Review Roost CompanyCore readiness and milestone state
+  after the June 13 local API, task-link, and readiness closure packets.
+- Why this mission now: Paperclip assigned
+  [LUC-3968](/LUC/issues/LUC-3968) directly to the Roost Project Manager with
+  no pending comments and no fallback fetch required.
+- Scope: source-of-truth review, non-protected architecture continuity proof,
+  source-control readback, readiness packet, and issue disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-3968-roost-companycore-readiness-and-milestone-review.md`.
+- Evidence: `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  `git rev-parse --short HEAD` returned `f8b9d50`; `git status --short
+  --branch` returned `main...origin/main [ahead 16]`; `git status
+  --porcelain=v1 -uall` returned no output before the packet edits.
+- Final disposition: done for PM review scope. Remaining protected runtime
+  proof belongs to the existing [LUC-2700](/LUC/issues/LUC-2700) gate and
+  still requires fresh one-run protected deploy-smoke approval.
+
+## Previous Mission
 
 - Mission ID: LUC-3754-ROOST-COMPANYCORE-READINESS-REVIEW
 - Status: VERIFIED_DONE

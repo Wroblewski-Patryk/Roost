@@ -1,6 +1,6 @@
 # Architecture Awareness Report
 
-Generated: 2026-06-13T02:27:25.030Z
+Generated: 2026-06-19T02:10:40.286Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 
@@ -11,7 +11,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | agent | 47 |
 | api_endpoint | 43 |
 | component | 7 |
-| document | 910 |
+| document | 918 |
 | feature | 167 |
 | function | 944 |
 | migration | 31 |
@@ -26,9 +26,9 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 
 | Status | Count |
 | --- | ---: |
-| blocked | 5 |
+| blocked | 4 |
 | deprecated | 4 |
-| implemented | 2207 |
+| implemented | 2216 |
 | in_progress | 1 |
 | tested | 8 |
 | verified | 4 |
@@ -40,6 +40,11 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - Raw implementation entities without inferred docs: 0
 - Actionable implementation entities without inferred docs: 0
 - Classified inferred-link noise: 9
+- Raw tasks without architecture links: 0
+- Actionable tasks without architecture links: 0
+- Raw implementation entities without task links: 0
+- Actionable implementation entities without task links: 0
+- Classified task-linkage noise: 0
 - Entities without owner attribution: 0
 - Disconnected entities: 0
 
@@ -105,6 +110,12 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - test_fixture_function: function: resetDatabase (src/tests/api.test.ts#resetDatabase)
 - test_fixture_function: function: runMcpBridgeSmoke (src/tests/api.test.ts#runMcpBridgeSmoke)
 - test_fixture_function: function: runNodeScript (src/tests/api.test.ts#runNodeScript)
+
+## Classified Task-Linkage Noise
+
+
+## Top Classified Task-Linkage Noise Samples
+
 
 ## Notes
 

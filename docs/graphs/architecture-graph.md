@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-13T02:27:25.030Z
+Generated: 2026-06-19T02:10:40.286Z
 
 ## Canonical Exports
 
@@ -1015,6 +1015,14 @@ Generated: 2026-06-13T02:27:25.030Z
 | documents | document:luc-3678-source-control-dirty-groups-from-control-tick:ed1d79788f | module:docs:6784d83cb0 | docs/planning/luc-3678-source-control-dirty-groups-from-control-tick.md |
 | documents | document:luc-3703-known-state-evidence-and-architecture-baseline:2828cd8225 | module:docs:6784d83cb0 | docs/planning/luc-3703-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-3713-process-core-integration-rung-with-local-api-test-database:14c655edb5 | module:docs:6784d83cb0 | docs/planning/luc-3713-process-core-integration-rung-local-api-test-database.md |
+| documents | document:luc-3716-local-api-test-operatingarea-fixture-repair:431f776563 | module:docs:6784d83cb0 | docs/planning/luc-3716-local-api-test-operating-area-fixture-repair.md |
+| documents | document:luc-3754-roost-companycore-readiness-and-milestone-review:351e85281f | module:docs:6784d83cb0 | docs/planning/luc-3754-roost-companycore-readiness-and-milestone-review.md |
+| documents | document:luc-3968-roost-companycore-readiness-and-milestone-review:6a5ddc4148 | module:docs:6784d83cb0 | docs/planning/luc-3968-roost-companycore-readiness-and-milestone-review.md |
+| documents | document:luc-4239-roost-companycore-readiness-and-milestone-review:5f6665c479 | module:docs:6784d83cb0 | docs/planning/luc-4239-roost-companycore-readiness-and-milestone-review.md |
+| documents | document:luc-4389-roost-companycore-readiness-and-milestone-review:85dcd2b341 | module:docs:6784d83cb0 | docs/planning/luc-4389-roost-companycore-readiness-and-milestone-review.md |
+| documents | document:luc-4438-roost-protected-gate-recheck:75e28b5fe0 | module:docs:6784d83cb0 | docs/planning/luc-4438-roost-protected-gate-recheck.md |
+| documents | document:luc-4459-known-state-evidence-and-architecture-baseline:5d6b5f1bc1 | module:docs:6784d83cb0 | docs/planning/luc-4459-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4490-known-state-evidence-and-architecture-baseline:591dee1e55 | module:docs:6784d83cb0 | docs/planning/luc-4490-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1210,11 +1218,3 @@ Generated: 2026-06-13T02:27:25.030Z
 | documents | document:post-v1-task-lists:509f7a4708 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0156.md |
 | documents | document:post-v1-tasks-id-clickup-custom-fields-fieldid:3b964400dc | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0158.md |
 | documents | document:post-v1-tasks-sync-clickup-native:ba5c6f706d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0160.md |
-| documents | document:post-v1-tasks-sync-clickup:003a822d9b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0159.md |
-| documents | document:post-v1-tasks:bfc1c1bf27 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0157.md |
-| documents | document:post-v1-workforce-id-actions-delete:0afe125130 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0162.md |
-| documents | document:post-v1-workforce-id-actions-sync:b80e90bff0 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0163.md |
-| documents | document:post-v1-workforce:7e2ff746f9 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0161.md |
-| documents | document:problem-statement:cf26f163de | module:docs:6784d83cb0 | docs/product/problem-statement.md |
-| documents | document:procedure-steps-model:1ab0e8bea3 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0041.md |
-| documents | document:procedures-model:a5acad74e8 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0042.md |

@@ -7,6 +7,93 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-4524 Roost known-state evidence and architecture baseline:
+      completed after local-board requested local evidence collection and
+      repair-lane conversion. Output:
+      `docs/planning/luc-4524-known-state-evidence-and-architecture-baseline.md`.
+      Evidence: Paperclip architecture-awareness scanner passed
+      (`entities=2237`, `relations=4375`, `files=13562`, `34` generated
+      files excluded by prefix); `npm run architecture:status` passed
+      (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+      delta `0/0/0`, all gates pass); task-sync readback showed `0`
+      actionable and raw task-link/proof gaps; architecture health showed
+      `actionable_implementation_without_tests=1152`; `HEAD=f8b9d50`.
+      Source-control closure is delegated to
+      [LUC-4528](/LUC/issues/LUC-4528). Protected deploy-smoke was not run and
+      remains gated under [LUC-2700](/LUC/issues/LUC-2700) /
+      [LUC-4438](/LUC/issues/LUC-4438)-style fresh recheck.
+
+- [x] LUC-4459 Roost known-state evidence and architecture baseline:
+      completed; Roost remains locally green for this PM baseline checkpoint.
+      Output:
+      `docs/planning/luc-4459-known-state-evidence-and-architecture-baseline.md`.
+      Evidence: `npm run architecture:status` passed (`GREEN`, graph
+      `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+      all gates pass); `HEAD=f8b9d50`; `git status --short --branch` showed
+      `main...origin/main [ahead 16]` with existing docs/state/generated
+      report packet changes from prior lanes. Protected deploy-smoke was not
+      run and remains gated under [LUC-2700](/LUC/issues/LUC-2700) /
+      LUC-4438-style recheck until approved environment secrets and a fresh
+      one-run approval exist.
+
+- [x] LUC-4438 Roost protected gate recheck:
+      consumed the fresh gate fact from `[LUC-2697](/LUC/issues/LUC-2697)` for
+      the root `[LUC-261](/LUC/issues/LUC-261)` blocker. Output:
+      `docs/planning/luc-4438-roost-protected-gate-recheck.md`. Evidence:
+      `COMPANYCORE_BASE_URL present=False`,
+      `COMPANYCORE_API_KEY present=False`,
+      `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION present=False`; exactly one
+      `npm run aog:deploy-smoke` attempt failed at local harness preflight
+      with `[aog-deploy-smoke] COMPANYCORE_BASE_URL is required.` Continuity
+      proof: `npm run architecture:status` passed (`GREEN`, graph
+      `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+      all gates pass); `HEAD=f8b9d50`. Disposition: blocked until the runtime
+      secret/environment owner injects approved base URL and API key into a
+      fresh protected recheck heartbeat.
+
+- [x] LUC-4389 Roost CompanyCore readiness and milestone review:
+      completed; Roost remains locally green for this PM checkpoint. Output:
+      `docs/planning/luc-4389-roost-companycore-readiness-and-milestone-review.md`.
+      Evidence: `npm run architecture:status` passed (`GREEN`, graph
+      `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+      all gates pass); `HEAD=f8b9d50`; `git status --short --branch` showed
+      `main...origin/main [ahead 16]` with existing docs/state readiness
+      packet files dirty. Protected deploy-smoke was not run and remains gated
+      under [LUC-2700](/LUC/issues/LUC-2700) until a fresh one-run approval
+      exists.
+
+- [x] LUC-4239 Roost CompanyCore readiness and milestone review:
+      completed; Roost remains locally green for this CINO checkpoint. Output:
+      `docs/planning/luc-4239-roost-companycore-readiness-and-milestone-review.md`.
+      Evidence: `npm run architecture:status` passed (`GREEN`, graph
+      `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+      all gates pass); `HEAD=f8b9d50`; `git status --short --branch` showed
+      `main...origin/main [ahead 16]` with existing docs/state dirty files.
+      Protected deploy-smoke was not run and remains gated under
+      [LUC-2700](/LUC/issues/LUC-2700) until a fresh one-run approval exists.
+
+- [x] LUC-2713 Process Core read-only coverage packet:
+      fully verified. Output:
+      `docs/planning/luc-2713-process-core-read-only-coverage-packet.md`.
+      Evidence: Docker Desktop Linux engine `28.3.2`; `npm run
+      test:api:local` passed after server/web build, all `31` migrations,
+      seed, and `7/7` API subtests against disposable PostgreSQL
+      `companycore_test`. Cleanup probe for `companycore-test-postgres`
+      returned no rows. Future Process Core schema or write-tool decisions
+      must use this packet and the `[LUC-2709](/LUC/issues/LUC-2709)` audit as
+      input.
+
+- [x] LUC-3968 Roost CompanyCore readiness and milestone review:
+      completed; Roost remains locally green for this PM checkpoint. Output:
+      `docs/planning/luc-3968-roost-companycore-readiness-and-milestone-review.md`.
+      Evidence: `npm run architecture:status` passed (`GREEN`, graph
+      `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+      all gates pass); `HEAD=f8b9d50`; `git status --short --branch` showed
+      `main...origin/main [ahead 16]`; `git status --porcelain=v1 -uall`
+      returned no output before the packet edits. Protected deploy-smoke was
+      not run and remains gated under `[LUC-2700](/LUC/issues/LUC-2700)` until
+      a fresh one-run approval exists.
+
 - [x] LUC-3754 Roost CompanyCore readiness and milestone review:
       completed; Roost is locally green and source-control clean for this PM
       checkpoint. Output:

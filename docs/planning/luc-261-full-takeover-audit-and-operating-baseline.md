@@ -96,6 +96,37 @@ Verified takeover operating baseline with synchronized source-of-truth updates.
   - `LUC-261` disposition is `blocked` until the protected deploy-smoke proof is executed with approved secure credentials.
   - Broader implementation remains activation-gated pending approved protected-proof execution.
 
+## Continuation Addendum (2026-06-18, LUC-4438 protected gate recheck without injected smoke environment)
+
+- Trigger: [LUC-4438](/LUC/issues/LUC-4438) was assigned as a high-priority
+  protected gate recheck after [LUC-2697](/LUC/issues/LUC-2697) reported a
+  fresh protected gate fact.
+- Heartbeat objective: consume the fresh gate fact and execute exactly one
+  protected `npm run aog:deploy-smoke` recheck without product-code mutation,
+  push, deploy expansion, unrelated runtime change, or secret disclosure.
+- Runtime presence proof:
+  - UTC: `2026-06-18T18:04:22.3338783Z`
+  - `COMPANYCORE_BASE_URL present=False length=0`
+  - `COMPANYCORE_API_KEY present=False length=0`
+  - `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION present=False length=0`
+- Commands run:
+  - `npm run aog:deploy-smoke` -> FAIL at local harness preflight with
+    `[aog-deploy-smoke] COMPANYCORE_BASE_URL is required.`
+  - `npm run architecture:status` -> PASS (`GREEN`, graph `452/761/34`,
+    evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass
+    `yes`).
+  - `git rev-parse --short HEAD` -> `f8b9d50`.
+- Scope honored:
+  - No target request was sent because the required base URL was absent.
+  - No product-code mutation, schema change, migration, push, deploy
+    expansion, restart, production mutation, unrelated runtime change, second
+    protected rerun, or secret disclosure occurred.
+- Current disposition: `BLOCKED`.
+- Unblock owner/action: runtime secret/environment owner injects approved
+  `COMPANYCORE_BASE_URL` and `COMPANYCORE_API_KEY` into the protected recheck
+  heartbeat environment, then board/operator or gate watcher creates a fresh
+  one-run protected recheck before another `npm run aog:deploy-smoke` attempt.
+
 ## Continuation Addendum (2026-06-07, LUC-2700 protected gate recheck)
 
 - Trigger: `[LUC-2700](/LUC/issues/LUC-2700)` was created from fresh protected

@@ -5,12 +5,12 @@
 - Title: Roost Process Core read-only coverage packet
 - Task Type: backend feature
 - Current Stage: verification
-- Status: BLOCKED
+- Status: DONE
 - Owner: Core Backend Engineer
 - Priority: P1
 - Parent: [LUC-2709](/LUC/issues/LUC-2709)
 - Mission ID: LUC-2713-PROCESS-CORE-READ-ONLY-COVERAGE
-- Mission Status: PARTIALLY_VERIFIED
+- Mission Status: VERIFIED_DONE
 
 ## Goal
 Implement the first read-only Process Core backend packet from the
@@ -50,7 +50,7 @@ workspace isolation, and no runtime mutation.
       manifest.
 - [x] API assertions were added for auth, workspace isolation, no mutation, and
       MCP/profile visibility.
-- [ ] API assertions were executed against disposable local PostgreSQL.
+- [x] API assertions were executed against disposable local PostgreSQL.
 
 ## Definition Of Done
 - [x] No schema migration, seed data, UI, write route, provider mutation,
@@ -59,7 +59,7 @@ workspace isolation, and no runtime mutation.
 - [x] `npm run build` passes.
 - [x] `npm run check:route-capabilities` passes.
 - [x] `git diff --check` passes with line-ending warnings only.
-- [ ] `npm run test:api:local` passes, or an authorized validation
+- [x] `npm run test:api:local` passes, or an authorized validation
       `DATABASE_URL` proof replaces Docker-backed local API execution.
 
 ## Validation Evidence
@@ -72,6 +72,12 @@ workspace isolation, and no runtime mutation.
   unavailable:
   `open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file
   specified.`
+- 2026-06-15 rerun: Docker Desktop Linux engine available (`28.3.2`);
+  `npm run test:api:local` -> PASS. The command built server/web, applied all
+  `31` migrations to disposable PostgreSQL `companycore_test`, seeded data,
+  and ran `7/7` API subtests successfully. Cleanup probe
+  `docker ps -a --filter "name=^/companycore-test-postgres$"` returned no
+  rows after the run.
 
 ## Result Report
 - Task summary: implemented the read-only Process Core coverage packet and
@@ -86,9 +92,7 @@ workspace isolation, and no runtime mutation.
   - `scripts/check-route-capabilities.mjs`
   - `docs/planning/luc-2713-process-core-read-only-coverage-packet.md`
 - Deployment impact: none; no deploy or protected target smoke.
-- What is incomplete: API integration assertions are implemented but not
-  executed because local disposable PostgreSQL provisioning is blocked by the
-  unavailable Docker Desktop Linux engine.
-- Next owner/action: local environment owner enables Docker Desktop Linux
-  engine or provides an authorized validation `DATABASE_URL`; then Core Backend
-  Engineer or QA reruns `npm run test:api:local`.
+- What is incomplete: nothing remains for the read-only coverage packet.
+- Next owner/action: no follow-up on [LUC-2713](/LUC/issues/LUC-2713);
+  future Process Core schema or write-tool decisions must use this packet and
+  the [LUC-2709](/LUC/issues/LUC-2709) audit as input.

@@ -1,6 +1,137 @@
 # TASK_BOARD
 
 ## Ready
+- 2026-06-19: `LUC-4528` source-control closure completed for the
+  `LUC-4524` Roost known-state evidence packet. Output:
+  `docs/planning/luc-4528-source-control-closure-for-luc-4524-known-state-packet.md`.
+  Decision: preserve the coherent evidence-only batch through LUC-4524 rather
+  than hand-splitting cumulative generated/state files. Evidence:
+  `git status --short --branch` showed `main...origin/main [ahead 16]` before
+  closure; `git diff --stat` showed `17 files changed, 7760 insertions(+),
+  6557 deletions(-)` before adding the closure packet; `git diff --check`
+  passed with line-ending conversion warnings only. Commit created locally;
+  push held. Scope: no runtime code, schema, migration, protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, server, browser, database, Docker, or watcher process.
+  Disposition: `DONE`.
+- 2026-06-19: `LUC-4524` Roost known-state evidence and architecture
+  baseline completed. Output:
+  `docs/planning/luc-4524-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2237`,
+  `relations=4375`, `files=13562`, `34` generated files excluded by prefix);
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task-sync
+  readback showed `0` actionable and raw task-link/proof gaps; architecture
+  health showed `actionable_implementation_without_tests=1152`; dependency
+  report showed `437` relations / `95` entities; ownership split was
+  `Docs Memory Lead=901`, `Engineering Delivery Lead=1335`,
+  `Roost Project Manager=1`; `HEAD=f8b9d50`. Follow-up:
+  [LUC-4528](/LUC/issues/LUC-4528) owns source-control closure for this
+  evidence packet; protected runtime proof remains under
+  [LUC-2700](/LUC/issues/LUC-2700) /
+  [LUC-4438](/LUC/issues/LUC-4438)-style fresh recheck. Scope: no runtime
+  code, schema, migration, protected smoke, deploy, push, restart, production
+  mutation, credential access, secret disclosure, server, browser, database,
+  Docker, or watcher process. Disposition: `DONE`.
+- 2026-06-19: `LUC-4490` Roost known-state evidence and architecture
+  baseline completed. Output:
+  `docs/planning/luc-4490-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2237`,
+  `relations=4375`, `files=13562`, `34` generated files excluded by prefix);
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task-sync
+  readback showed `0` task-link/proof gaps; dependency report showed `437`
+  dependency relations / `95` entities with dependencies; ownership report
+  showed `Docs Memory Lead=901`,
+  `Engineering Delivery Lead=1335`, and `Roost Project Manager=1`;
+  `HEAD=f8b9d50`; `git status --short --branch` showed
+  `main...origin/main [ahead 16]` with existing docs/state/generated report
+  packet changes from prior lanes. Protected deploy-smoke was not run because
+  this PM baseline carried no fresh one-run approval and the protected proof
+  remains under the [LUC-2700](/LUC/issues/LUC-2700) / LUC-4438-style gate.
+  Scope: no runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, server,
+  browser, database, Docker, or watcher process. Disposition: `DONE`.
+- 2026-06-18: `LUC-4459` Roost known-state evidence and architecture baseline
+  completed. Output:
+  `docs/planning/luc-4459-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: `npm run architecture:status` PASS (`GREEN`, graph
+  `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); `HEAD=f8b9d50`; `git status --short --branch` showed
+  `main...origin/main [ahead 16]` with existing docs/state/generated report
+  packet changes from prior lanes. Protected deploy-smoke was not run because
+  LUC-4438 remains blocked by missing approved `COMPANYCORE_BASE_URL` and
+  `COMPANYCORE_API_KEY` in the heartbeat environment. Scope: no runtime code,
+  schema, migration, protected smoke, deploy, push, restart, production
+  mutation, credential access, secret disclosure, server, browser, database,
+  Docker, or watcher process. Disposition: `DONE`.
+- 2026-06-18: `LUC-4438` Roost protected gate recheck consumed the fresh
+  protected gate fact from `[LUC-2697](/LUC/issues/LUC-2697)` for the root
+  `[LUC-261](/LUC/issues/LUC-261)` blocker. Output:
+  `docs/planning/luc-4438-roost-protected-gate-recheck.md`. Evidence:
+  non-secret process env presence showed `COMPANYCORE_BASE_URL present=False`,
+  `COMPANYCORE_API_KEY present=False`, and
+  `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION present=False`; exactly one
+  `npm run aog:deploy-smoke` attempt was executed and failed at local harness
+  preflight with `[aog-deploy-smoke] COMPANYCORE_BASE_URL is required.`;
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); `HEAD=f8b9d50`.
+  Scope: no product-code mutation, schema, migration, push, deploy expansion,
+  restart, production mutation, unrelated runtime change, second protected
+  rerun, or secret disclosure. Disposition: `BLOCKED`; unblock owner/action is
+  runtime secret/environment owner injecting approved `COMPANYCORE_BASE_URL`
+  and `COMPANYCORE_API_KEY` into the protected recheck environment, followed by
+  a fresh one-run recheck issue/approval before another smoke attempt.
+- 2026-06-18: `LUC-4389` Roost CompanyCore readiness and milestone review
+  completed. Output:
+  `docs/planning/luc-4389-roost-companycore-readiness-and-milestone-review.md`.
+  Evidence: `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  `HEAD=f8b9d50`; `git status --short --branch` showed
+  `main...origin/main [ahead 16]` with existing docs/state readiness packet
+  files dirty. Decision: local readiness remains green for PM milestone
+  tracking; protected deploy-smoke remains outside this issue and still
+  requires a fresh one-run approval under [LUC-2700](/LUC/issues/LUC-2700).
+  Scope: no runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, server,
+  browser, database, Docker, or watcher process. Disposition: `DONE`.
+- 2026-06-15: `LUC-4239` Roost CompanyCore readiness and milestone review
+  completed. Output:
+  `docs/planning/luc-4239-roost-companycore-readiness-and-milestone-review.md`.
+  Evidence: `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  `HEAD=f8b9d50`; `git status --short --branch` showed
+  `main...origin/main [ahead 16]` with existing docs/state dirty files.
+  Decision: local readiness remains green for CINO milestone tracking;
+  protected deploy-smoke remains outside this issue and still requires a fresh
+  one-run approval under [LUC-2700](/LUC/issues/LUC-2700). Scope: no runtime
+  code, schema, migration, protected smoke, deploy, push, restart, production
+  mutation, credential access, secret disclosure, server, browser, database,
+  Docker, or watcher process. Disposition: `DONE`.
+- 2026-06-15: `LUC-2713` Process Core read-only coverage packet is fully
+  verified. Output:
+  `docs/planning/luc-2713-process-core-read-only-coverage-packet.md`.
+  Evidence: Docker Desktop Linux engine `28.3.2`; `npm run test:api:local`
+  PASS after server/web build, all `31` migrations, seed, and `7/7` API
+  subtests against disposable PostgreSQL `companycore_test`; cleanup probe for
+  `companycore-test-postgres` returned no rows. Scope: no schema migration
+  authoring, write route, UI implementation, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, or
+  production database access. Disposition: `DONE`.
+- 2026-06-14: `LUC-3968` Roost CompanyCore readiness and milestone review
+  completed. Output:
+  `docs/planning/luc-3968-roost-companycore-readiness-and-milestone-review.md`.
+  Evidence: `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  `HEAD=f8b9d50`; `git status --short --branch` showed
+  `main...origin/main [ahead 16]`; `git status --porcelain=v1 -uall` returned
+  no output before the packet edits. Decision: local readiness remains green
+  for PM milestone tracking; protected deploy-smoke remains outside this issue
+  and still requires a fresh one-run approval under
+  [LUC-2700](/LUC/issues/LUC-2700). Scope: no runtime code, schema, migration,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, secret disclosure, server, browser, database, Docker, or watcher
+  process. Disposition: `DONE`.
 - 2026-06-13: `LUC-3754` Roost CompanyCore readiness and milestone review
   completed. Output:
   `docs/planning/luc-3754-roost-companycore-readiness-and-milestone-review.md`.
