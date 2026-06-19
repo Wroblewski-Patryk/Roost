@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-19T16:00:34.260Z
+Generated: 2026-06-19T18:09:53.859Z
 
 ## Canonical Exports
 
@@ -1027,6 +1027,8 @@ Generated: 2026-06-19T16:00:34.260Z
 | documents | document:luc-4528-source-control-closure-for-luc-4524-known-state-packet:024665bd8b | module:docs:6784d83cb0 | docs/planning/luc-4528-source-control-closure-for-luc-4524-known-state-packet.md |
 | documents | document:luc-4558-known-state-evidence-and-architecture-baseline:878e3521e1 | module:docs:6784d83cb0 | docs/planning/luc-4558-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4562-source-control-closure-for-luc-4558-known-state-packet:99619f89aa | module:docs:6784d83cb0 | docs/planning/luc-4562-source-control-closure-for-luc-4558-known-state-packet.md |
+| documents | document:luc-4601-known-state-evidence-and-architecture-baseline:28a0517f61 | module:docs:6784d83cb0 | docs/planning/luc-4601-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4605-source-control-closure-for-luc-4601-known-state-packet:359cf1b086 | module:docs:6784d83cb0 | docs/planning/luc-4605-source-control-closure-for-luc-4601-known-state-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-06-19T16:00:34.260Z
 | documents | document:post-v1-operating-model-knowledge-roots:cc1194b7b2 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0151.md |
 | documents | document:post-v1-operating-model-storage-locations:daada86684 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0152.md |
 | documents | document:post-v1-operations-work-items:1aa12e0733 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-OPERATIONS-CREATE-WORK-ITEM.md |
-| documents | document:post-v1-pipeline-stages:f3847bd055 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0153.md |
-| documents | document:post-v1-projects:14831b7e0b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0154.md |

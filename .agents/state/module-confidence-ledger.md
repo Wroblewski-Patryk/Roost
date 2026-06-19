@@ -2,6 +2,32 @@
 
 Last updated: 2026-06-19
 
+Roost known-state baseline note: LUC-4623 is VERIFIED_DONE as a Roost Project
+Manager evidence lane. The packet is recorded in
+`docs/planning/luc-4623-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2243`,
+`relations=4399`, `files=13568`, `34` generated files excluded by prefix);
+`npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task-sync
+readback showed `0` actionable task-link/proof gaps and `0` raw task-link
+gaps; architecture health showed `actionable_implementation_without_tests=1152`;
+dependency report showed `437` dependency relations / `95` entities with
+dependencies; ownership report showed `Docs Memory Lead=907`,
+`Engineering Delivery Lead=1335`, and `Roost Project Manager=1`;
+`HEAD=24e9541`. Readiness delta: local architecture remains green, no new
+PM-owned readiness gap was found, and no implementation child issue was
+created. [LUC-4627](/LUC/issues/LUC-4627) owns source-control closure for this
+generated evidence packet. Protected deploy-smoke was not rerun because this
+baseline carried no fresh one-run approval or credential fact. No runtime code,
+schema, migration, protected smoke, deploy, push, restart, production
+mutation, credential access, secret disclosure, server, browser, database,
+Docker, or watcher process occurred. Next proof/fix: protected runtime proof
+remains under [LUC-2700](/LUC/issues/LUC-2700) / LUC-4438-style fresh recheck
+and requires approved environment secret injection plus a fresh one-run
+approval; future QA proof ladder should select one high-priority workflow from
+the `1152` actionable implemented-without-test-link signal after
+source-control closure is stable.
+
 Roost source-control closure note: LUC-4605 is VERIFIED_DONE for the
 LUC-4601 known-state evidence packet. The closure packet is recorded in
 `docs/planning/luc-4605-source-control-closure-for-luc-4601-known-state-packet.md`.

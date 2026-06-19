@@ -7,6 +7,23 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-4623 Roost known-state evidence and architecture baseline:
+      completed after local-board requested local evidence collection and
+      repair-lane conversion. Output:
+      `docs/planning/luc-4623-known-state-evidence-and-architecture-baseline.md`.
+      Evidence: Paperclip architecture-awareness scanner passed
+      (`entities=2243`, `relations=4399`, `files=13568`, `34` generated
+      files excluded by prefix); `npm run architecture:status` passed
+      (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+      delta `0/0/0`, all gates pass); task-sync readback showed `0`
+      actionable and raw task-link/proof gaps; architecture health showed
+      `actionable_implementation_without_tests=1152`; `HEAD=24e9541`.
+      Source-control closure is delegated to [LUC-4627](/LUC/issues/LUC-4627)
+      because the scanner modified generated architecture/status files.
+      Protected deploy-smoke was not run and remains gated under
+      [LUC-2700](/LUC/issues/LUC-2700) / [LUC-4438](/LUC/issues/LUC-4438)-style
+      fresh recheck.
+
 - [x] LUC-4605 source-control closure for the LUC-4601 Roost known-state
       evidence packet: completed as a local evidence-only source-control
       packet. Output:
