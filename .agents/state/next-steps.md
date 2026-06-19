@@ -4,6 +4,48 @@ Last updated: 2026-06-19
 
 ## NOW
 
+1. `LUC-4562` source-control closure for the `LUC-4558` Roost known-state
+   evidence packet is complete.
+   - Output:
+     `docs/planning/luc-4562-source-control-closure-for-luc-4558-known-state-packet.md`.
+   - Decision:
+     preserve the coherent evidence-only batch through LUC-4558 because
+     generated architecture reports and source-of-truth state pointers are
+     cumulative.
+   - Proof:
+     `git status --short --branch -uall` showed `main...origin/main [ahead 18]`
+     before closure with the LUC-4558 planning packet untracked; `git diff
+     --stat` showed `14 files changed, 6737 insertions(+), 6526 deletions(-)`
+     before adding the closure packet plus the untracked LUC-4558 packet;
+     `git diff --check` passed with line-ending conversion warnings only.
+   - Commit/push:
+     local commit `PENDING_SHA` created; push held for a future release batch
+     or explicit source-ref/deploy need.
+
+1. `LUC-4558` Roost known-state evidence and architecture baseline is
+   complete.
+   - Output:
+     `docs/planning/luc-4558-known-state-evidence-and-architecture-baseline.md`.
+   - PM decision:
+     local architecture readiness remains green; no new implementation repair
+     child is needed from this pass.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2239`,
+     `relations=4383`, `files=13564`, `34` generated files excluded by
+     prefix); `npm run architecture:status` PASS (`GREEN`, graph
+     `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+     all gates pass); task-sync readback showed `0` actionable and raw
+     task-link/proof gaps; architecture health showed
+     `actionable_implementation_without_tests=1152`; dependency report showed
+     `437` relations / `95` entities; ownership split was
+     `Docs Memory Lead=903`, `Engineering Delivery Lead=1335`,
+     `Roost Project Manager=1`.
+   - Next owner/action:
+     [LUC-4562](/LUC/issues/LUC-4562) owns source-control closure for the
+     evidence packet. Protected runtime proof remains under
+     [LUC-2700](/LUC/issues/LUC-2700) / LUC-4438-style fresh recheck and
+     requires approved environment secret injection plus one-run approval.
+
 1. `LUC-4528` source-control closure for the `LUC-4524` Roost known-state
    evidence packet is complete.
    - Output:

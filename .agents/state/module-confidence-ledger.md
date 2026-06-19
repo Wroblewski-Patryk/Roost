@@ -2,6 +2,21 @@
 
 Last updated: 2026-06-19
 
+Roost source-control closure note: LUC-4562 is VERIFIED_DONE for the
+LUC-4558 known-state evidence packet. The closure packet is recorded in
+`docs/planning/luc-4562-source-control-closure-for-luc-4558-known-state-packet.md`.
+Evidence: `git status --short --branch -uall` showed
+`main...origin/main [ahead 18]` before closure with the LUC-4558 planning
+packet untracked; `git diff --stat` showed `14 files changed, 6737
+insertions(+), 6526 deletions(-)` before the closure packet plus the untracked
+LUC-4558 packet; `git diff --check` passed with line-ending conversion
+warnings only. Classification: evidence-only docs, source-of-truth state, and
+generated architecture-awareness exports through LUC-4558. Commit
+`PENDING_SHA` created locally; push held. No runtime code, schema, migration,
+protected smoke, deploy, push, restart, production mutation, credential access,
+secret disclosure, server, browser, database, Docker, or watcher process
+occurred.
+
 Roost source-control closure note: LUC-4528 is VERIFIED_DONE for the
 LUC-4524 known-state evidence packet. The closure packet is recorded in
 `docs/planning/luc-4528-source-control-closure-for-luc-4524-known-state-packet.md`.
