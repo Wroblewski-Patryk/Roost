@@ -7,6 +7,34 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-4605 source-control closure for the LUC-4601 Roost known-state
+      evidence packet: completed as a local evidence-only source-control
+      packet. Output:
+      `docs/planning/luc-4605-source-control-closure-for-luc-4601-known-state-packet.md`.
+      Evidence: `git status --short --branch -uall` showed
+      `main...origin/main [ahead 21]` before closure with the LUC-4601
+      planning packet untracked; `git diff --stat` showed `15 files changed,
+      6790 insertions(+), 6532 deletions(-)` before adding the closure packet
+      plus the untracked LUC-4601 packet. Push held for a future release batch
+      or explicit source-ref/deploy need; deploy impact none.
+
+- [x] LUC-4601 Roost known-state evidence and architecture baseline:
+      completed after Paperclip assigned the high-priority known-state lane.
+      Output:
+      `docs/planning/luc-4601-known-state-evidence-and-architecture-baseline.md`.
+      Evidence: Paperclip architecture-awareness scanner passed
+      (`entities=2241`, `relations=4391`, `files=13566`, `34` generated
+      files excluded by prefix); `npm run architecture:status` passed
+      (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+      delta `0/0/0`, all gates pass); task-sync readback showed `0`
+      actionable and raw task-link/proof gaps; architecture health showed
+      `actionable_implementation_without_tests=1152`; `HEAD=a037f76`.
+      Source-control closure is delegated to [LUC-4605](/LUC/issues/LUC-4605)
+      because the scanner modified generated architecture/status files. Protected
+      deploy-smoke was not run and remains gated under
+      [LUC-2700](/LUC/issues/LUC-2700) / [LUC-4438](/LUC/issues/LUC-4438)-style
+      fresh recheck.
+
 - [x] LUC-4524 Roost known-state evidence and architecture baseline:
       completed after local-board requested local evidence collection and
       repair-lane conversion. Output:
