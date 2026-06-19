@@ -11,7 +11,7 @@ Last updated: 2026-06-19
   before closure with the LUC-4558 planning packet untracked; `git diff --stat`
   showed `14 files changed, 6737 insertions(+), 6526 deletions(-)` before the
   closure packet plus the untracked LUC-4558 packet; `git diff --check` passed
-  with line-ending conversion warnings only. Commit `PENDING_SHA` created
+  with line-ending conversion warnings only. Commit `859bd29` created
   locally; push held for a future release batch or explicit source-ref need.
   No runtime code, schema, migration, protected smoke, deploy, push, restart,
   production mutation, credential access, secret disclosure, server, browser,

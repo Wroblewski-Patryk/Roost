@@ -56,7 +56,7 @@ Out of scope: runtime code, schema, migration, protected smoke, production smoke
 - `git diff --name-only`: generated architecture exports/status reports plus `.agents/state/*` and `.codex/context/*` source-of-truth pointers.
 - `docs/planning/luc-4558-known-state-evidence-and-architecture-baseline.md`: records scanner PASS (`entities=2239`, `relations=4383`, `files=13564`), `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, queues `0`, all gates pass), task-sync `0` actionable/raw task-link and proof gaps, and `actionable_implementation_without_tests=1152`.
 - `git diff --check`: PASS with line-ending conversion warnings only.
-- Local commit: `PENDING_SHA` before final amend.
+- Local commit: `859bd29` before final amend.
 
 ## Classification
 
@@ -89,7 +89,7 @@ How tested:
 - `git diff --check`: PASS with line-ending conversion warnings only.
 
 Commit/push/deploy:
-- Commit: `PENDING_SHA` before final amend.
+- Commit: `859bd29` before final amend.
 - Push status: held for future release batch or explicit source-ref/deploy need.
 - Deploy impact: none.
 

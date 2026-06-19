@@ -28,7 +28,7 @@ Last updated: 2026-06-19
   packet; `git diff --check` passed with line-ending conversion warnings only.
 - Final disposition: done for source-control closure. The coherent Roost
   evidence packet through [LUC-4558](/LUC/issues/LUC-4558) was committed
-  locally as `PENDING_SHA`; push is held for a future release batch or
+  locally as `859bd29`; push is held for a future release batch or
   explicit source-ref need.
 
 ## Previous Mission

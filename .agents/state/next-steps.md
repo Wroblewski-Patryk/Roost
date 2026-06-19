@@ -19,7 +19,7 @@ Last updated: 2026-06-19
      before adding the closure packet plus the untracked LUC-4558 packet;
      `git diff --check` passed with line-ending conversion warnings only.
    - Commit/push:
-     local commit `PENDING_SHA` created; push held for a future release batch
+     local commit `859bd29` created; push held for a future release batch
      or explicit source-ref/deploy need.
 
 1. `LUC-4558` Roost known-state evidence and architecture baseline is
