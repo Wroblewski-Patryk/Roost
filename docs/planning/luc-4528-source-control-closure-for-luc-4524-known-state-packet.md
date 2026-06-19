@@ -105,6 +105,8 @@ files.
 Commit the coherent Roost evidence packet through [LUC-4524](/LUC/issues/LUC-4524)
 and this [LUC-4528](/LUC/issues/LUC-4528) closure packet.
 
+Commit SHA: `44cff2f`.
+
 Rationale:
 
 - The batch is evidence-only and contains no runtime behavior change.
@@ -126,7 +128,7 @@ Rationale:
 
 [LUC-4528](/LUC/issues/LUC-4528) is complete for source-control closure. The
 local Roost evidence packet through [LUC-4524](/LUC/issues/LUC-4524) is
-preserved in a local commit. Push remains held because this is a docs/state/
+preserved in local commit `44cff2f`. Push remains held because this is a docs/state/
 generated evidence batch with no explicit release-source-ref or deploy need.
 
 No runtime code, schema, migration, protected smoke, deploy, push, restart,

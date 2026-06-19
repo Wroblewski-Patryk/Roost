@@ -27,7 +27,8 @@ Last updated: 2026-06-19
   `git diff --check` passed with line-ending conversion warnings only.
 - Final disposition: done for source-control closure. The coherent Roost
   evidence packet through [LUC-4524](/LUC/issues/LUC-4524) was committed
-  locally; push is held for a future release batch or explicit source-ref need.
+  locally as `44cff2f`; push is held for a future release batch or explicit
+  source-ref need.
 
 ## Previous Mission
 

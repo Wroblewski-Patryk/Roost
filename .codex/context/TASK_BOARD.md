@@ -9,7 +9,7 @@
   `git status --short --branch` showed `main...origin/main [ahead 16]` before
   closure; `git diff --stat` showed `17 files changed, 7760 insertions(+),
   6557 deletions(-)` before adding the closure packet; `git diff --check`
-  passed with line-ending conversion warnings only. Commit created locally;
+  passed with line-ending conversion warnings only. Commit `44cff2f` created locally;
   push held. Scope: no runtime code, schema, migration, protected smoke,
   deploy, push, restart, production mutation, credential access, secret
   disclosure, server, browser, database, Docker, or watcher process.

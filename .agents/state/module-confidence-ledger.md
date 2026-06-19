@@ -11,7 +11,7 @@ Evidence: `git status --short --branch` showed
 packet plus untracked planning packets; `git diff --check` passed with
 line-ending conversion warnings only. Classification: evidence-only docs,
 source-of-truth state, and generated architecture-awareness exports through
-LUC-4524. Commit created locally; push held. No runtime code, schema,
+LUC-4524. Commit `44cff2f` created locally; push held. No runtime code, schema,
 migration, protected smoke, deploy, push, restart, production mutation,
 credential access, secret disclosure, server, browser, database, Docker, or
 watcher process occurred.
