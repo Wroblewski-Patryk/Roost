@@ -1,6 +1,39 @@
 # TASK_BOARD
 
 ## Ready
+- 2026-06-19: `LUC-4651` source-control closure completed for the
+  `LUC-4646` Roost known-state evidence packet. Output:
+  `docs/planning/luc-4651-source-control-closure-for-luc-4646-evidence-packet.md`.
+  Decision: preserve the coherent evidence-only batch through LUC-4646 rather
+  than hand-splitting cumulative generated/state files. Evidence:
+  `git status --short --branch -uall` showed `main...origin/main [ahead 23]`
+  before closure with the LUC-4646 planning packet untracked; `git diff
+  --stat` showed `13 files changed, 6760 insertions(+), 6546 deletions(-)`
+  before adding the closure packet plus the untracked LUC-4646 packet. Commit
+  proof and `git diff --check` result are recorded in the closure packet and
+  Paperclip issue update; push held. Scope: no runtime code, schema,
+  migration, protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, server, browser, database, Docker, or
+  watcher process. Disposition: `DONE`.
+- 2026-06-19: `LUC-4646` Roost known-state evidence and architecture
+  baseline completed. Output:
+  `docs/planning/luc-4646-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2245`,
+  `relations=4407`, `files=13570`, `34` generated files excluded by prefix);
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task-sync
+  readback showed `0` actionable and raw task-link/proof gaps; architecture
+  health showed `actionable_implementation_without_tests=1152`; dependency
+  report showed `437` relations / `95` entities; ownership split was
+  `Docs Memory Lead=909`, `Engineering Delivery Lead=1335`,
+  `Roost Project Manager=1`; `HEAD=4e797c8`. Follow-up:
+  [LUC-4651](/LUC/issues/LUC-4651) owns the generated/status evidence packet
+  source-control closure; protected runtime proof remains under
+  [LUC-2700](/LUC/issues/LUC-2700) / [LUC-4438](/LUC/issues/LUC-4438)-style
+  fresh recheck. Scope: no runtime code, schema, migration, protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, server, browser, database, Docker, or watcher process.
+  Disposition: `DONE`.
 - 2026-06-19: `LUC-4627` source-control closure completed for the
   `LUC-4623` Roost known-state evidence packet. Output:
   `docs/planning/luc-4627-source-control-closure-for-luc-4623-known-state-packet.md`.
