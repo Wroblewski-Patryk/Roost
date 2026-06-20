@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T02:07:57.298Z
+Generated: 2026-06-20T02:16:08.600Z
 
 ## Canonical Exports
 
@@ -1039,6 +1039,9 @@ Generated: 2026-06-20T02:07:57.298Z
 | documents | document:luc-4737-source-control-closure-for-luc-4731-evidence-packet:41356c8a86 | module:docs:6784d83cb0 | docs/planning/luc-4737-source-control-closure-for-luc-4731-evidence-packet.md |
 | documents | document:luc-4739-known-state-evidence-and-architecture-baseline:5151d770be | module:docs:6784d83cb0 | docs/planning/luc-4739-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4742-source-control-closure-for-luc-4739-evidence-packet:ec0821deae | module:docs:6784d83cb0 | docs/planning/luc-4742-source-control-closure-for-luc-4739-evidence-packet.md |
+| documents | document:luc-4748-known-state-evidence-and-architecture-baseline:e30d6fc7a6 | module:docs:6784d83cb0 | docs/planning/luc-4748-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4751-source-control-closure-for-luc-4748-known-state-packet:eaccad52d2 | module:docs:6784d83cb0 | docs/planning/luc-4751-source-control-closure-for-luc-4748-evidence-packet.md |
+| documents | document:luc-4754-residual-generated-drift-after-luc-4739:b15bdd8dab | module:docs:6784d83cb0 | docs/planning/luc-4754-residual-generated-drift-after-luc-4739.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-06-20T02:07:57.298Z
 | documents | document:post-v1-integration-settings-clickup-discover:3ce4929efd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0138.md |
 | documents | document:post-v1-integration-settings-clickup-events-retry-failed:94917e0f1b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0139.md |
 | documents | document:post-v1-integration-settings-clickup-maintenance-run:918d2ad974 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0140.md |
-| documents | document:post-v1-integration-settings-clickup-webhooks-reconcile:b78c351ea7 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0141.md |
-| documents | document:post-v1-integration-settings-google-drive-changes-reconcile:39578d6643 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0142.md |
-| documents | document:post-v1-integration-settings-google-drive-import:07b0cd53d7 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0143.md |
