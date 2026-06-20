@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T19:16:07.070Z
+Generated: 2026-06-20T19:43:44.970Z
 
 ## Canonical Exports
 
@@ -1183,6 +1183,11 @@ Generated: 2026-06-20T19:16:07.070Z
 | documents | document:luc-5273-agent-observability-api-proof-ladder:082bed26f7 | module:docs:6784d83cb0 | docs/planning/luc-5273-agent-observability-api-proof-ladder.md |
 | documents | document:luc-5278-known-state-evidence-and-architecture-baseline:ff847c3ba8 | module:docs:6784d83cb0 | docs/planning/luc-5278-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5280-source-control-closure-for-luc-5278-evidence-packet:fa438cc576 | module:docs:6784d83cb0 | docs/planning/luc-5280-source-control-closure-for-luc-5278-evidence-packet.md |
+| documents | document:luc-5281-google-drive-api-proof-ladder:921f49233c | module:docs:6784d83cb0 | docs/planning/luc-5281-google-drive-api-proof-ladder.md |
+| documents | document:luc-5283-known-state-evidence-and-architecture-baseline:b5e3f45ae0 | module:docs:6784d83cb0 | docs/planning/luc-5283-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5284-known-state-evidence-and-architecture-baseline:623bde1d48 | module:docs:6784d83cb0 | docs/planning/luc-5284-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5286-source-control-closure-for-luc-5283-evidence-packet:559f022668 | module:docs:6784d83cb0 | docs/planning/luc-5286-source-control-closure-for-luc-5283-evidence-packet.md |
+| documents | document:luc-5287-qa-proof-ladder-duplicate-disposition:56ed5e8993 | module:docs:6784d83cb0 | docs/planning/luc-5287-qa-proof-ladder-duplicate-disposition.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1213,8 +1218,3 @@ Generated: 2026-06-20T19:16:07.070Z
 | documents | document:migration:977573f012 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0003.md |
 | documents | document:migration:ba683087fa | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0010.md |
 | documents | document:migration:bb5b49b4ec | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0007.md |
-| documents | document:migration:bff7afe717 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0030.md |
-| documents | document:migration:cc140c8c1e | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0005.md |
-| documents | document:migration:cd5de9a79d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0019.md |
-| documents | document:migration:db79f8e30a | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0009.md |
-| documents | document:migration:e063e80e43 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0001.md |

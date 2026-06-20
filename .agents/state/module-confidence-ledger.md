@@ -1,5 +1,51 @@
 # Module Confidence Ledger
 
+Source-control confidence note: [LUC-5292](/LUC/issues/LUC-5292) is
+VERIFIED_DONE_PENDING_PUSH_BATCH for the [LUC-5291](/LUC/issues/LUC-5291)
+evidence refresh. Evidence packet:
+`docs/planning/luc-5292-source-control-closure-for-luc-5291-evidence-refresh.md`.
+Starting HEAD was `7d0dd2b6` on `main...origin/main [ahead 86]`; generated
+architecture JSON parsed at `2026-06-20T19:43:44.970Z` with `2404` entities
+and `5028` relations; `git diff --check` passed with LF-to-CRLF warnings only;
+scoped high-confidence secret/private-key scan found no matches; `npm run
+architecture:status` passed (`GREEN`, graph `454/765/35`, evidence queue `0`,
+chain worklist `0`, delta `0/0/0`, all gates pass). Push is held for a future
+release batch or explicit source-ref/deploy need; deploy impact is none.
+
+QA proof note: [LUC-5287](/LUC/issues/LUC-5287) is
+VERIFIED_DONE_DUPLICATE_HANDLED for the QA proof-ladder child created from
+[LUC-5283](/LUC/issues/LUC-5283). Evidence packet:
+`docs/planning/luc-5287-qa-proof-ladder-duplicate-disposition.md`. The parent
+known-state packet identifies [LUC-5281](/LUC/issues/LUC-5281) as the live QA
+path and [LUC-5287](/LUC/issues/LUC-5287) as duplicate; [LUC-5281](/LUC/issues/LUC-5281)
+already verifies the Google Drive local API journey through local API proof,
+route-capability check, architecture status, and cleanup evidence. Confidence
+classification: no additional module proof or repair issue is warranted from
+this duplicate lane; future Tasks or Agents coverage should start only from a
+new scoped QA issue.
+
+QA proof note: [LUC-5281](/LUC/issues/LUC-5281) is VERIFIED_DONE for the
+Google Drive local API journey selected from the [LUC-5278](/LUC/issues/LUC-5278)
+`implementation_without_tests=1162` confidence signal. Evidence packet:
+`docs/planning/luc-5281-google-drive-api-proof-ladder.md`. Selected journey:
+Google Drive file metadata/content/scope/write-gating coverage mapped to
+`FEAT-AUTO-0013`, `CHAIN-AUTO-0013`, `API-AUTO-0044`, `API-AUTO-0045`,
+`API-AUTO-0096`, `API-AUTO-0097`, `API-AUTO-0098`, `API-AUTO-0099`,
+`API-AUTO-0135`, `API-AUTO-0136`, `API-AUTO-0164`, and
+`src/modules/google-drive/google-drive.routes.ts`. Local proof ran
+`COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5281-postgres`
+`COMPANYCORE_TEST_DB_PORT=55481` `npm run test:api:local`: server/web build
+PASS, all `31` migrations applied, seed PASS, and `7/7` API subtests PASS
+including `CompanyCore v1 protected API flow` (`76297.5544ms`, total
+`81838.0748ms`). `npm run check:route-capabilities` and `npm run
+architecture:status` also passed. Cleanup found no validation DB container and
+no `chrome-headless-shell` process. Confidence classification: Google Drive
+local API behavior is verified for workspace-scoped file readback, content
+read/update boundaries, folder scope propagation, description write gating,
+cross-workspace denial, Docs/Sheets mocked provider commands, and
+route/capability exposure; no repair issue is warranted. Protected live Google
+provider proof remains a separate approval/credential-gated lane.
+
 Source-control confidence note: [LUC-5280](/LUC/issues/LUC-5280) is
 VERIFIED_DONE_PENDING_PUSH_BATCH for the [LUC-5278](/LUC/issues/LUC-5278)
 known-state evidence packet. Evidence packet:

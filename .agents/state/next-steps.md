@@ -1,5 +1,29 @@
 # Next Steps
 
+- `LUC-5287` QA proof-ladder selection after
+  [LUC-5283](/LUC/issues/LUC-5283) is complete as duplicate-handled. Evidence
+  packet:
+  `docs/planning/luc-5287-qa-proof-ladder-duplicate-disposition.md`.
+  Parent [LUC-5283](/LUC/issues/LUC-5283) explicitly named
+  [LUC-5281](/LUC/issues/LUC-5281) as the active QA path and
+  [LUC-5287](/LUC/issues/LUC-5287) as duplicate; [LUC-5281](/LUC/issues/LUC-5281)
+  is now verified done. Next owner/action: no work remains on
+  [LUC-5287](/LUC/issues/LUC-5287); future Tasks or Agents proof ladders need a
+  new scoped QA issue.
+
+- `LUC-5281` Google Drive API proof ladder is complete for the next local QA
+  proof-ladder slice from [LUC-5278](/LUC/issues/LUC-5278). Evidence packet:
+  `docs/planning/luc-5281-google-drive-api-proof-ladder.md`. Local proof
+  passed: `npm run test:api:local` with disposable PostgreSQL
+  `companycore-luc-5281-postgres` on port `55481` after server/web build,
+  `31` migrations, seed, and `7/7` API subtests; `npm run
+  check:route-capabilities`; `npm run architecture:status`; cleanup checks for
+  validation DB and headless browser processes. Next owner/action: no Google
+  Drive repair issue is warranted; future proof ladders should continue from a
+  new scoped QA lane, with Tasks coverage or Agents coverage as likely local
+  candidates. Protected live Google/provider proof remains approval/credential
+  gated.
+
 - `LUC-5280` source-control closure for the
   [LUC-5278](/LUC/issues/LUC-5278) known-state evidence packet is complete.
   Evidence packet:

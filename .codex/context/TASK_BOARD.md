@@ -2,6 +2,49 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5292` source-control closure for
+  [LUC-5291](/LUC/issues/LUC-5291) is complete locally. Output:
+  `docs/planning/luc-5292-source-control-closure-for-luc-5291-evidence-refresh.md`.
+  Evidence: starting HEAD `7d0dd2b6` on `main...origin/main [ahead 86]`;
+  generated architecture JSON `2026-06-20T19:43:44.970Z` parsed with `2404`
+  entities / `5028` relations; `git diff --check` PASS with LF-to-CRLF
+  warnings only; scoped high-confidence secret/private-key scan PASS with no
+  matches; `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queue `0`, worklist `0`, delta `0/0/0`, all gates pass). Disposition:
+  `DONE`; push held for future release batch or explicit source-ref/deploy
+  need; deploy impact none.
+
+- 2026-06-20: `LUC-5287` QA proof-ladder selection after
+  [LUC-5283](/LUC/issues/LUC-5283) is closed as duplicate-handled. Output:
+  `docs/planning/luc-5287-qa-proof-ladder-duplicate-disposition.md`.
+  Evidence: parent packet
+  `docs/planning/luc-5283-known-state-evidence-and-architecture-baseline.md`
+  explicitly records [LUC-5287](/LUC/issues/LUC-5287) as duplicate of active
+  [LUC-5281](/LUC/issues/LUC-5281); completed packet
+  `docs/planning/luc-5281-google-drive-api-proof-ladder.md` verifies the live
+  QA path with local API proof, route/capability check, architecture status,
+  and cleanup evidence. No new runtime, database, browser, Docker, provider,
+  protected smoke, deploy, push, credential, secret, schema, migration, or
+  production action occurred. Disposition: `DONE`; no repair issue warranted.
+
+- 2026-06-20: `LUC-5281` Google Drive API proof ladder is complete for the
+  next local QA proof-ladder slice from [LUC-5278](/LUC/issues/LUC-5278).
+  Output: `docs/planning/luc-5281-google-drive-api-proof-ladder.md`. Selected
+  journey: Google Drive metadata/content/scope/write-gating API coverage
+  mapped to `FEAT-AUTO-0013`, `CHAIN-AUTO-0013`,
+  `src/modules/google-drive/google-drive.routes.ts`, and existing assertions
+  in `src/tests/api.test.ts`. Evidence: disposable PostgreSQL
+  `companycore-luc-5281-postgres` on port `55481`; `npm run test:api:local`
+  PASS after server/web build, all `31` migrations, seed, and `7/7` API
+  subtests (`CompanyCore v1 protected API flow` duration `76297.5544ms`,
+  total `81838.0748ms`); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass). Cleanup found no validation DB
+  container and no `chrome-headless-shell` process. Disposition: `DONE`; no
+  repair issue warranted; protected live Google/provider proof remains
+  approval/credential gated.
+
 - 2026-06-20: `LUC-5284` known-state evidence and architecture baseline is
   complete for TSA evidence scope. Output:
   `docs/planning/luc-5284-known-state-evidence-and-architecture-baseline.md`.

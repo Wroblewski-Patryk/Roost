@@ -4,6 +4,100 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5292-SOURCE-CONTROL-CLOSURE-FOR-LUC-5291-EVIDENCE-REFRESH
+- Status: VERIFIED_DONE_PENDING_PUSH_BATCH
+- Selected objective: Close local source-control bookkeeping for the
+  [LUC-5291](/LUC/issues/LUC-5291) architecture-awareness evidence refresh.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5292](/LUC/issues/LUC-5292), assigned to Roost Project Manager, as the
+  source-control sidecar for [LUC-5291](/LUC/issues/LUC-5291).
+- Scope: classify generated/status/planning/state dirty files, verify
+  generated architecture JSON, run `git diff --check`, run scoped
+  high-confidence secret/private-key scan, run `npm run architecture:status`,
+  and preserve the coherent packet in a local commit.
+- Exclusions: no product runtime changes, schema, migration, push, deploy,
+  restart, protected smoke, production mutation, credential access, or secret
+  disclosure.
+- Output:
+  `docs/planning/luc-5292-source-control-closure-for-luc-5291-evidence-refresh.md`.
+- Evidence: starting HEAD `7d0dd2b6` on `main...origin/main [ahead 86]`;
+  generated `docs/graphs/architecture-awareness.json` parsed at
+  `2026-06-20T19:43:44.970Z` with `2404` entities and `5028` relations;
+  `git diff --check` passed with LF-to-CRLF warnings only; scoped
+  high-confidence secret/private-key scan found no matches; `npm run
+  architecture:status` passed (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: verified done pending future push batch. Push held because
+  this is docs/generated-evidence-only closure with no explicit source-ref or
+  deploy need.
+
+## Previous Mission
+
+- Mission ID: LUC-5287-QA-PROOF-LADDER-DUPLICATE-DISPOSITION
+- Status: VERIFIED_DONE_DUPLICATE_HANDLED
+- Selected objective: Resolve [LUC-5287](/LUC/issues/LUC-5287) after the
+  [LUC-5283](/LUC/issues/LUC-5283) known-state scan without duplicating the
+  already completed QA proof-ladder lane.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5287](/LUC/issues/LUC-5287), assigned to QA Verification Engineer.
+- Scope: verify parent [LUC-5283](/LUC/issues/LUC-5283) disposition, verify
+  completed [LUC-5281](/LUC/issues/LUC-5281) Google Drive proof evidence,
+  record durable duplicate disposition, and close the issue.
+- Exclusions: no feature code, schema, migration, push, deploy, restart,
+  protected smoke, production mutation, credential access, secret disclosure,
+  browser proof, live provider action, Docker/database/server/watcher, or
+  duplicate second QA proof run.
+- Output:
+  `docs/planning/luc-5287-qa-proof-ladder-duplicate-disposition.md`.
+- Evidence: parent packet
+  `docs/planning/luc-5283-known-state-evidence-and-architecture-baseline.md`
+  explicitly records [LUC-5287](/LUC/issues/LUC-5287) as duplicate of active
+  [LUC-5281](/LUC/issues/LUC-5281); completed packet
+  `docs/planning/luc-5281-google-drive-api-proof-ladder.md` verifies the live
+  QA path with local API proof, route-capability check, architecture status,
+  and cleanup evidence; [LUC-5287](/LUC/issues/LUC-5287) heartbeat context had
+  no pending comments or blockers.
+- Final disposition: done as duplicate-handled. No repair child issue is
+  warranted; future Tasks or Agents proof ladders require a new scoped QA
+  issue.
+
+## Previous Mission
+
+- Mission ID: LUC-5281-GOOGLE-DRIVE-API-PROOF-LADDER
+- Status: VERIFIED_DONE
+- Selected objective: Select and prove the next local QA proof-ladder journey
+  from the [LUC-5278](/LUC/issues/LUC-5278) known-state confidence signal.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5281](/LUC/issues/LUC-5281), assigned to QA Verification Engineer, as
+  the QA-owned follow-up lane from [LUC-5278](/LUC/issues/LUC-5278).
+- Scope: select one locally safe implemented journey, map architecture and
+  route files, run project-native local behavior proof, run route/capability
+  and architecture status checks, verify cleanup, and record durable evidence.
+- Exclusions: no runtime code, schema, migration authoring, protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, browser proof, live Google provider calls, server, watcher, or
+  feature implementation.
+- Output: `docs/planning/luc-5281-google-drive-api-proof-ladder.md`.
+- Evidence: selected Google Drive metadata/content/scope/write-gating API
+  journey mapped to `FEAT-AUTO-0013`, `CHAIN-AUTO-0013`,
+  `src/modules/google-drive/google-drive.routes.ts`, and existing assertions in
+  `src/tests/api.test.ts`; local proof ran
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5281-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55481` `npm run test:api:local` and passed after
+  server/web build, all `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `76297.5544ms`, total
+  `81838.0748ms`); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass); cleanup found no
+  `companycore-luc-5281-postgres` container and no `chrome-headless-shell`
+  process.
+- Final disposition: verified done for this QA proof slice. No defect or
+  repair child issue was found. Protected live Google/provider proof remains a
+  separate gated lane.
+
+## Previous Mission
+
 - Mission ID: LUC-5280-SOURCE-CONTROL-CLOSURE-FOR-LUC-5278-EVIDENCE
 - Status: VERIFIED_DONE_PENDING_PUSH_BATCH
 - Selected objective: Close local source-control bookkeeping for the

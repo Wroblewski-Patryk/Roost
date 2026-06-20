@@ -2,6 +2,37 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5292` source-control closure completed locally for the
+  [LUC-5291](/LUC/issues/LUC-5291) evidence refresh. Output:
+  `docs/planning/luc-5292-source-control-closure-for-luc-5291-evidence-refresh.md`.
+  Evidence: starting HEAD `7d0dd2b6` on `main...origin/main [ahead 86]`;
+  generated architecture JSON parsed at `2026-06-20T19:43:44.970Z` with
+  `2404` entities and `5028` relations; `git diff --check` PASS with
+  LF-to-CRLF warnings only; scoped high-confidence secret/private-key scan
+  PASS with no matches; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass). Local closure commit created; push held for future release batch
+  or explicit source-ref/deploy need. Deploy impact: none.
+
+- 2026-06-20: `LUC-5281` Google Drive API proof ladder completed for the next
+  local QA proof-ladder slice from [LUC-5278](/LUC/issues/LUC-5278). Output:
+  `docs/planning/luc-5281-google-drive-api-proof-ladder.md`. Selected journey:
+  Google Drive metadata/content/scope/write-gating API coverage mapped to
+  `FEAT-AUTO-0013`, `CHAIN-AUTO-0013`, `src/modules/google-drive/google-drive.routes.ts`,
+  and existing assertions in `src/tests/api.test.ts`. Evidence: disposable
+  PostgreSQL `companycore-luc-5281-postgres` on port `55481`; `npm run
+  test:api:local` PASS after server/web build, all `31` migrations, seed, and
+  `7/7` API subtests (`CompanyCore v1 protected API flow` duration
+  `76297.5544ms`, total `81838.0748ms`); `npm run check:route-capabilities`
+  PASS (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass). Cleanup found
+  no validation DB container and no `chrome-headless-shell` process. No
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, secret disclosure, browser proof, runtime feature change, schema
+  change, migration authoring, live provider action, server, or watcher
+  occurred. Disposition: `DONE`; no repair issue warranted.
+
 - 2026-06-20: `LUC-5284` Roost known-state evidence and architecture
   baseline completed for TSA scope after the local-board wake requested local
   evidence collection and concrete repair lanes. Output:

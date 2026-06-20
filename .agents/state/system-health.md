@@ -1,5 +1,21 @@
 # System Health
 
+- 2026-06-20: `LUC-5281` Google Drive API proof ladder verified locally for
+  the next QA proof-ladder slice from [LUC-5278](/LUC/issues/LUC-5278).
+  Output: `docs/planning/luc-5281-google-drive-api-proof-ladder.md`.
+  Selected journey: Google Drive metadata/content/scope/write-gating API
+  coverage mapped to `FEAT-AUTO-0013`, `CHAIN-AUTO-0013`, and
+  `src/modules/google-drive/google-drive.routes.ts`. Proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5281-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55481` `npm run test:api:local` PASS after
+  server/web build, `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `76297.5544ms`, total
+  `81838.0748ms`). Drift checks: `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`,
+  delta `0/0/0`, all gates pass). Cleanup found no validation DB container and
+  no `chrome-headless-shell` process. Deploy impact: none.
+
 - 2026-06-20: `LUC-5280` source-control closure verified locally for the
   [LUC-5278](/LUC/issues/LUC-5278) known-state evidence packet. Output:
   `docs/planning/luc-5280-source-control-closure-for-luc-5278-evidence-packet.md`.

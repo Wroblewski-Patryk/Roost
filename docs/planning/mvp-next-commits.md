@@ -1,5 +1,16 @@
 # MVP Next Commits
 
+- 2026-06-20: `LUC-5281` Google Drive API proof ladder is complete. Evidence
+  packet: `docs/planning/luc-5281-google-drive-api-proof-ladder.md`. Proof:
+  selected Google Drive metadata/content/scope/write-gating API coverage
+  mapped to `FEAT-AUTO-0013` and `CHAIN-AUTO-0013`; `npm run test:api:local`
+  PASS against disposable PostgreSQL `companycore-luc-5281-postgres` on port
+  `55481` after server/web build, `31` migrations, seed, and `7/7` API
+  subtests; `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`). No repair issue is warranted;
+  protected live Google/provider proof remains separate and gated.
+
 - 2026-06-20: `LUC-5280` source-control closure is complete locally for the
   [LUC-5278](/LUC/issues/LUC-5278) known-state evidence packet. Evidence
   packet:
