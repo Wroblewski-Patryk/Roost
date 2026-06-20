@@ -2,6 +2,20 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5317` known-state evidence and architecture baseline is
+  complete for the local-board wake comment. Output:
+  `docs/planning/luc-5317-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness status-only PASS in `30ms` against exports
+  generated `2026-06-20T20:43:43.765Z` (`2408` entities / `5045` relations);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); latest local source-control closure
+  commit `c50510c4 docs: close LUC-5313 evidence packet`. Disposition:
+  `DONE`; no new feature-code repair issue warranted; [LUC-5315](/LUC/issues/LUC-5315)
+  remains the concrete Auth/Workspace/API-key QA proof lane; deploy impact
+  none.
+
 - 2026-06-20: `LUC-5314` source-control closure for
   [LUC-5313](/LUC/issues/LUC-5313) is complete locally. Output:
   `docs/planning/luc-5314-source-control-closure-for-luc-5313-evidence-packet.md`.

@@ -1,5 +1,18 @@
 # Next Steps
 
+- `LUC-5317` Roost PM known-state evidence baseline is complete. Evidence
+  packet:
+  `docs/planning/luc-5317-known-state-evidence-and-architecture-baseline.md`.
+  Current evidence: architecture-awareness status-only PASS (`2408` entities,
+  `5045` relations, generated `2026-06-20T20:43:43.765Z`); `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`); `npm run check:route-capabilities` PASS
+  (`180` manifest routes, `35` route files); latest local source-control
+  closure commit `c50510c4`. Next owner/action: QA and Verification Engineer
+  continues [LUC-5315](/LUC/issues/LUC-5315) for the Auth/Workspace/API-key
+  authority proof ladder. Protected target proof remains approval/credential
+  gated.
+
 - `LUC-5313` Roost PM known-state evidence baseline is complete. Evidence
   packet:
   `docs/planning/luc-5313-known-state-evidence-and-architecture-baseline.md`.

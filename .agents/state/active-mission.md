@@ -4,6 +4,40 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5317-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE
+- Selected objective: Handle the local-board known-state wake by collecting
+  fresh local evidence and converting findings into concrete next repair/proof
+  lanes.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5317](/LUC/issues/LUC-5317), assigned to Roost Project Manager, with a
+  local-board comment requiring local evidence collection while forbidding
+  push, deploy, restart, protected smoke, production mutation, credential
+  access, and secret disclosure.
+- Scope: acknowledge the wake comment, run status-only architecture-awareness
+  readback, run `npm run architecture:status`, run
+  `npm run check:route-capabilities`, classify the current top gap, and record
+  the existing concrete repair/proof lane.
+- Exclusions: no feature code, schema, migration, push, deploy, restart,
+  protected smoke, production mutation, credential access, secret disclosure,
+  browser proof, runtime server, Docker database, provider action, or live
+  account mutation.
+- Output:
+  `docs/planning/luc-5317-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: status-only architecture-awareness PASS in `30ms` against exports
+  generated `2026-06-20T20:43:43.765Z` with `2408` entities and `5045`
+  relations; `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); latest local source-control closure
+  commit is `c50510c4 docs: close LUC-5313 evidence packet`.
+- Final disposition: PM known-state scope complete. No new feature repair
+  issue is warranted; the concrete next proof lane remains
+  [LUC-5315](/LUC/issues/LUC-5315) for Auth/Workspace/API-key authority QA
+  proof. Protected target proof remains approval/credential gated.
+
+## Previous Mission
+
 - Mission ID: LUC-5314-SOURCE-CONTROL-CLOSURE-FOR-LUC-5313-EVIDENCE
 - Status: VERIFIED_DONE_PENDING_PUSH_BATCH
 - Selected objective: Close local source-control bookkeeping for the

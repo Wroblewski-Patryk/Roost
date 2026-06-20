@@ -4,6 +4,15 @@ Last updated: 2026-05-30
 
 ## Active Focus
 
+Current Roost PM checkpoint: [LUC-5317](/LUC/issues/LUC-5317) completed the
+latest local-board known-state evidence wake. Status-only
+architecture-awareness readback passed against the
+`2026-06-20T20:43:43.765Z` exports (`2408` entities / `5045` relations);
+`npm run architecture:status` and `npm run check:route-capabilities` passed.
+The concrete next proof lane remains [LUC-5315](/LUC/issues/LUC-5315)
+Auth/Workspace/API-key authority QA proof. Protected runtime proof remains
+approval/credential gated.
+
 Current Roost PM checkpoint: [LUC-5313](/LUC/issues/LUC-5313) completed the
 latest known-state evidence baseline. The fresh architecture-awareness refresh
 generated `2026-06-20T20:43:43.765Z` with `2408` entities / `5045` relations /

@@ -2,6 +2,22 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5317` Roost known-state evidence and architecture baseline
+  completed for the local-board wake comment. Output:
+  `docs/planning/luc-5317-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness status-only PASS in `30ms` against exports
+  generated `2026-06-20T20:43:43.765Z` with `2408` entities / `5045`
+  relations; `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); latest local source-control closure
+  commit is `c50510c4 docs: close LUC-5313 evidence packet`. Classification:
+  no new broad implementation repair issue is warranted; the concrete next
+  proof lane remains [LUC-5315](/LUC/issues/LUC-5315) Auth/Workspace/API-key
+  authority QA proof. No feature code, schema, migration, push, deploy,
+  restart, protected smoke, production mutation, credential access, secret
+  disclosure, browser, database, Docker, server, or watcher process occurred.
+
 - 2026-06-20: `LUC-5314` source-control closure completed locally for the
   [LUC-5313](/LUC/issues/LUC-5313) known-state evidence packet. Output:
   `docs/planning/luc-5314-source-control-closure-for-luc-5313-evidence-packet.md`.

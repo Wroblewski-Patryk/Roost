@@ -1,5 +1,18 @@
 # MVP Next Commits
 
+- 2026-06-20: `LUC-5317` Roost PM known-state evidence baseline is complete
+  for the latest local-board wake comment. Evidence packet:
+  `docs/planning/luc-5317-known-state-evidence-and-architecture-baseline.md`.
+  Proof: architecture-awareness status-only PASS in `30ms` against existing
+  exports (`2408` entities / `5045` relations, generated
+  `2026-06-20T20:43:43.765Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  latest local closure commit `c50510c4 docs: close LUC-5313 evidence packet`.
+  Next lane remains [LUC-5315](/LUC/issues/LUC-5315) Auth/Workspace/API-key
+  authority QA proof; protected runtime proof remains approval/credential
+  gated.
+
 - 2026-06-20: `LUC-5313` Roost PM known-state evidence baseline is complete.
   Evidence packet:
   `docs/planning/luc-5313-known-state-evidence-and-architecture-baseline.md`.
