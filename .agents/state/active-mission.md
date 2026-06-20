@@ -4,6 +4,101 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-4900-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE_PENDING_SCM_AND_QA_CHILDREN
+- Selected objective: Refresh local Roost known-state architecture evidence
+  and convert findings into concrete repair/proof lanes after the
+  `softwarehouse-known-state-wakeup:v1` comment.
+- Why this mission now: Paperclip scoped the heartbeat to
+  [LUC-4900](/LUC/issues/LUC-4900), assigned to Roost Project Manager, and the
+  latest local-board comment explicitly requested local evidence collection and
+  concrete next repair lanes.
+- Scope: non-protected architecture-awareness scanner refresh, architecture
+  status proof, generated report readback, source-control readback, local
+  planning packet, and child lane creation.
+- Exclusions: no implementation, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4900-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip architecture-awareness scanner PASS (`entities=2298`,
+  `relations=4618`, `files=13616`, generated at
+  `2026-06-20T06:43:51.716Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task sync gaps `0`; owner gaps `0`; dependency report
+  `437` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`, actionable `1153`;
+  `HEAD=fc45964308140ed2ef7b0d2cd08d1d7b5ef19371`.
+- Final disposition: done for PM evidence scope after creating
+  [LUC-4905](/LUC/issues/LUC-4905) for source-control closure and
+  [LUC-4906](/LUC/issues/LUC-4906) for the `10 Legal -> Operating Graph
+  Overview` QA proof ladder. Protected production proof remains
+  release/credential gated.
+
+## Previous Mission
+
+- Mission ID: LUC-4568-ROOST-COMPANYCORE-READINESS-REVIEW
+- Status: VERIFIED_DONE
+- Selected objective: Review Roost CompanyCore readiness and milestone state
+  for the current Product Manager heartbeat after adapter transport failures
+  left the issue needing recovery.
+- Why this mission now: Paperclip scoped the heartbeat to
+  [LUC-4568](/LUC/issues/LUC-4568), then resumed it after failed adapter runs
+  and a completed child review [LUC-4593](/LUC/issues/LUC-4593). The source
+  issue needed durable PM closure, not another generic planning pass.
+- Scope: source-of-truth review, non-protected architecture continuity proof,
+  source-control readback, readiness packet, recovery classification, and
+  issue disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4568-roost-companycore-readiness-and-milestone-review.md`.
+- Evidence: `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  `HEAD=fc459643`; `git status --short --branch -uall` showed
+  `main...origin/main [ahead 42]` with existing docs/state edits and an
+  unrelated untracked [LUC-4888](/LUC/issues/LUC-4888) packet; script diffs
+  named by failed adapter summaries were empty.
+- Final disposition: done for PM readiness scope. The temporary blocked
+  posture was an adapter-transport recovery artifact, not a Roost readiness
+  blocker. Protected runtime proof remains approval/credential gated.
+
+## Previous Mission
+
+- Mission ID: LUC-4888-TECHNOLOGY-AI-PROOF-LADDER-CLOSURE
+- Status: VERIFIED_DONE_BY_EXISTING_EVIDENCE
+- Selected objective: Close [LUC-4888](/LUC/issues/LUC-4888) by reconciling
+  its `09 Technology And AI Infrastructure` QA proof-ladder contract with the
+  already completed local proof packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4888](/LUC/issues/LUC-4888), created by
+  [LUC-4885](/LUC/issues/LUC-4885). The same target was already proved and
+  source-control closed through [LUC-4880](/LUC/issues/LUC-4880) and
+  [LUC-4889](/LUC/issues/LUC-4889).
+- Scope: issue-context readback, existing proof artifact readback, no-rerun
+  classification, closure packet, source-of-truth synchronization, and
+  Paperclip final disposition.
+- Exclusions: no implementation, schema, migration, local server, browser,
+  database, Docker, protected smoke, push, deploy, restart, production
+  mutation, credential access, secret disclosure, or production data access.
+- Output:
+  `docs/planning/luc-4888-technology-ai-proof-ladder-closure.md`.
+- Evidence:
+  [LUC-4888](/LUC/issues/LUC-4888) heartbeat context has no comments and asks
+  for the Technology/AI local proof ladder; the existing
+  [LUC-4880](/LUC/issues/LUC-4880) packet matches the route/API/capability.
+  `result.json` readback reports `ok: true`, route
+  `/areas?area=09-technologia&view=overview`, API
+  `/v1/operating-graph/areas/09-technologia?limit=80`, capability
+  `operating-graph:read`, desktop/mobile `5` graph rows, safe synthetic error
+  state, no console issues, no failed requests, and no horizontal overflow.
+- Final disposition: done for [LUC-4888](/LUC/issues/LUC-4888) by current
+  evidence reuse/readback. Protected production proof remains release and
+  credential gated.
+
+## Previous Mission
+
 - Mission ID: LUC-4880-TECHNOLOGY-AI-PROOF-LADDER
 - Status: VERIFIED_DONE
 - Selected objective: Execute the local proof ladder for `09 Technology ->

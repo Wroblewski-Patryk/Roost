@@ -7,6 +7,53 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-4905 source-control closure for the LUC-4900 known-state evidence
+      packet: completed. Output:
+      `docs/planning/luc-4905-source-control-closure-for-luc-4900-known-state-evidence-packet.md`.
+      Evidence: `git status --short --branch -uall`, `git diff --stat`,
+      `git diff --check`, and `git rev-parse HEAD` ran; diff-check passed
+      with line-ending conversion warnings only; local commit created. Push
+      held for a future release batch or explicit source-ref/deploy need.
+
+- [x] LUC-4900 Roost known-state evidence and architecture baseline:
+      completed for Roost PM scope after local-board requested
+      `softwarehouse-known-state-wakeup:v1`. Output:
+      `docs/planning/luc-4900-known-state-evidence-and-architecture-baseline.md`.
+      Evidence: Paperclip architecture-awareness scanner PASS
+      (`entities=2298`, `relations=4618`, `files=13616`, generated at
+      `2026-06-20T06:43:51.716Z`); `npm run architecture:status` PASS
+      (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+      delta `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`;
+      architecture health `implementation_without_tests=1162`, actionable
+      `1153`. Follow-ups: [LUC-4905](/LUC/issues/LUC-4905) source-control
+      closure and [LUC-4906](/LUC/issues/LUC-4906) QA proof ladder for
+      `10 Legal -> Operating Graph Overview`.
+
+- [x] LUC-4568 Roost CompanyCore readiness and milestone review:
+      completed after adapter transport failures left the issue needing source
+      recovery. Output:
+      `docs/planning/luc-4568-roost-companycore-readiness-and-milestone-review.md`.
+      Evidence: `npm run architecture:status` PASS (`GREEN`, graph
+      `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+      all gates pass); `HEAD=fc459643`; source-control readback showed
+      `main...origin/main [ahead 42]` with existing docs/state edits and an
+      unrelated [LUC-4888](/LUC/issues/LUC-4888) packet preserved. The failed
+      adapter summaries named `scripts/check-route-capabilities.mjs` and
+      `scripts/test-api-local.mjs`, but current diffs for those files were
+      empty. Protected runtime proof remains approval/credential gated.
+
+- [x] LUC-4888 Technology and AI Infrastructure proof-ladder closure:
+      completed by current evidence readback. Output:
+      `docs/planning/luc-4888-technology-ai-proof-ladder-closure.md`.
+      Evidence: [LUC-4888](/LUC/issues/LUC-4888) matched the completed
+      [LUC-4880](/LUC/issues/LUC-4880) Technology/AI local proof ladder;
+      `result.json` reports `ok: true`, route
+      `/areas?area=09-technologia&view=overview`, API
+      `/v1/operating-graph/areas/09-technologia?limit=80`, capability
+      `operating-graph:read`, desktop/mobile `5` graph rows, safe synthetic
+      error state, no console issues, no failed requests, and no horizontal
+      overflow. No repair issue is needed.
+
 - [x] LUC-4880 Technology and AI Infrastructure proof ladder:
       completed for `09 Technology -> Operating Graph Overview`. Output:
       `docs/planning/luc-4880-technology-ai-proof-ladder.md`. Evidence:
@@ -32,8 +79,8 @@ synchronized with `.codex/context/TASK_BOARD.md`.
       delta `0/0/0`, all gates pass); task sync reports `0` actionable/raw
       task-link gaps and `0` verified-without-proof gaps; architecture health
       reports `implementation_without_tests=1162`. Follow-ups: source-control
-      closure sidecar for generated/status artifacts, and QA proof ladder for
-      `09 Technology And AI Infrastructure`.
+      closure sidecar for generated/status artifacts; Technology/AI QA proof
+      ladder is closed by [LUC-4888](/LUC/issues/LUC-4888).
 
 - [x] LUC-4868 source-control closure for the
       [LUC-4864](/LUC/issues/LUC-4864) known-state evidence packet:

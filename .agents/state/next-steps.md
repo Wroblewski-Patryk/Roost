@@ -4,6 +4,71 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4905` source-control closure for the
+   [LUC-4900](/LUC/issues/LUC-4900) known-state evidence packet is complete.
+   - Output:
+     `docs/planning/luc-4905-source-control-closure-for-luc-4900-known-state-evidence-packet.md`.
+   - Proof:
+     `git status --short --branch -uall`, `git diff --stat`,
+     `git diff --check`, and `git rev-parse HEAD` ran; diff-check passed with
+     line-ending conversion warnings only; local commit created.
+   - Next owner/action:
+     push remains held for a future release batch or explicit source-ref/deploy
+     need. [LUC-4906](/LUC/issues/LUC-4906) owns the next QA proof ladder for
+     `10 Legal -> Operating Graph Overview`.
+
+1. `LUC-4900` Roost known-state evidence and architecture baseline is
+   complete for Roost PM scope.
+   - Output:
+     `docs/planning/luc-4900-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2298`,
+     `relations=4618`, `files=13616`, generated at
+     `2026-06-20T06:43:51.716Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`;
+     dependency report `437` relations / `95` entities; architecture health
+     `implementation_without_tests=1162`, actionable `1153`.
+   - Next owner/action:
+     [LUC-4905](/LUC/issues/LUC-4905) owns source-control closure for this
+     generated/status packet; [LUC-4906](/LUC/issues/LUC-4906) owns the next
+     QA proof ladder for `10 Legal -> Operating Graph Overview`.
+
+1. `LUC-4568` Roost CompanyCore readiness and milestone review is complete.
+   - Output:
+     `docs/planning/luc-4568-roost-companycore-readiness-and-milestone-review.md`.
+   - PM decision:
+     local architecture readiness remains green; the temporary blocked
+     posture came from adapter transport failures before durable closure, not
+     from a Roost readiness blocker.
+   - Proof:
+     `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+     evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+     `HEAD=fc459643`; `git status --short --branch -uall` showed
+     `main...origin/main [ahead 42]` with existing docs/state edits and an
+     unrelated untracked [LUC-4888](/LUC/issues/LUC-4888) packet preserved.
+   - Next owner/action:
+     protected runtime proof remains approval/credential gated before any
+     `npm run aog:deploy-smoke` rerun.
+
+1. `LUC-4888` Technology and AI Infrastructure proof-ladder closure is
+   complete by current evidence readback.
+   - Output:
+     `docs/planning/luc-4888-technology-ai-proof-ladder-closure.md`.
+   - Proof:
+     [LUC-4888](/LUC/issues/LUC-4888) heartbeat context matched the already
+     completed Technology/AI proof ladder. `result.json` readback from
+     `docs/ux/evidence/luc-4880-technology-ai-proof-ladder-2026-06-20/`
+     reports `ok: true`, route
+     `/areas?area=09-technologia&view=overview`, API
+     `/v1/operating-graph/areas/09-technologia?limit=80`, capability
+     `operating-graph:read`, desktop/mobile `5` graph rows, safe synthetic
+     error state, no console issues, no failed requests, and no horizontal
+     overflow.
+   - Next owner/action:
+     no repair issue is needed. Protected production proof remains
+     release/credential gated.
+
 1. `LUC-4889` source-control closure for the combined Roost evidence batch is
    complete.
    - Output:
@@ -46,9 +111,9 @@ Last updated: 2026-06-20
      gaps; architecture health reports `implementation_without_tests=1162`.
    - Next owner/action:
      [LUC-4887](/LUC/issues/LUC-4887) owns source-control closure for this
-     evidence packet. [LUC-4888](/LUC/issues/LUC-4888) owns the next QA proof
-     ladder for `09 Technology And AI Infrastructure`. Protected production
-     proof remains release/credential gated.
+     evidence packet. [LUC-4888](/LUC/issues/LUC-4888) is closed by current
+     Technology/AI proof-ladder evidence. Protected production proof remains
+     release/credential gated.
 
 1. `LUC-4883` architecture-awareness baseline gap curation from
    [LUC-4881](/LUC/issues/LUC-4881) is complete.

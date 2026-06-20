@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T06:12:36.581Z
+Generated: 2026-06-20T06:43:51.716Z
 
 ## Canonical Exports
 
@@ -1027,6 +1027,7 @@ Generated: 2026-06-20T06:12:36.581Z
 | documents | document:luc-4528-source-control-closure-for-luc-4524-known-state-packet:024665bd8b | module:docs:6784d83cb0 | docs/planning/luc-4528-source-control-closure-for-luc-4524-known-state-packet.md |
 | documents | document:luc-4558-known-state-evidence-and-architecture-baseline:878e3521e1 | module:docs:6784d83cb0 | docs/planning/luc-4558-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4562-source-control-closure-for-luc-4558-known-state-packet:99619f89aa | module:docs:6784d83cb0 | docs/planning/luc-4562-source-control-closure-for-luc-4558-known-state-packet.md |
+| documents | document:luc-4568-roost-companycore-readiness-and-milestone-review:d22b3ea81d | module:docs:6784d83cb0 | docs/planning/luc-4568-roost-companycore-readiness-and-milestone-review.md |
 | documents | document:luc-4601-known-state-evidence-and-architecture-baseline:28a0517f61 | module:docs:6784d83cb0 | docs/planning/luc-4601-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4605-source-control-closure-for-luc-4601-known-state-packet:359cf1b086 | module:docs:6784d83cb0 | docs/planning/luc-4605-source-control-closure-for-luc-4601-known-state-packet.md |
 | documents | document:luc-4623-known-state-evidence-and-architecture-baseline:1569981831 | module:docs:6784d83cb0 | docs/planning/luc-4623-known-state-evidence-and-architecture-baseline.md |
@@ -1075,8 +1076,13 @@ Generated: 2026-06-20T06:12:36.581Z
 | documents | document:luc-4868-source-control-closure-for-luc-4864-known-state-evidence-packet:073d37062e | module:docs:6784d83cb0 | docs/planning/luc-4868-source-control-closure-for-luc-4864-known-state-evidence-packet.md |
 | documents | document:luc-4872-known-state-evidence-and-architecture-baseline:7a0e9fcda5 | module:docs:6784d83cb0 | docs/planning/luc-4872-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4879-source-control-closure-for-luc-4872-known-state-evidence-packet:2f9230dc8c | module:docs:6784d83cb0 | docs/planning/luc-4879-source-control-closure-for-luc-4872-known-state-evidence-packet.md |
+| documents | document:luc-4880-technology-and-ai-infrastructure-proof-ladder:e65ffc6f8e | module:docs:6784d83cb0 | docs/planning/luc-4880-technology-ai-proof-ladder.md |
 | documents | document:luc-4881-known-state-evidence-and-architecture-baseline:64e14a2af9 | module:docs:6784d83cb0 | docs/planning/luc-4881-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4882-source-control-closure-for-luc-4881-evidence-packet:167039583d | module:docs:6784d83cb0 | docs/planning/luc-4882-source-control-closure-for-luc-4881-evidence-packet.md |
 | documents | document:luc-4883-architecture-awareness-baseline-gap-curation:7e2af4a16d | module:docs:6784d83cb0 | docs/planning/luc-4883-architecture-awareness-baseline-gap-curation.md |
+| documents | document:luc-4885-known-state-evidence-and-architecture-baseline:b5af1a18fc | module:docs:6784d83cb0 | docs/planning/luc-4885-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4888-technology-and-ai-infrastructure-proof-ladder-closure:4a8292a256 | module:docs:6784d83cb0 | docs/planning/luc-4888-technology-ai-proof-ladder-closure.md |
+| documents | document:luc-4889-source-control-closure-for-luc-4880-luc-4881-luc-4883-evidence-batch:9bc74a847f | module:docs:6784d83cb0 | docs/planning/luc-4889-source-control-closure-for-luc-4880-4881-4883-evidence-batch.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1212,9 +1218,3 @@ Generated: 2026-06-20T06:12:36.581Z
 | documents | document:pipeline-registry:89fa84bdb1 | module:docs:6784d83cb0 | docs/pipelines/pipeline-registry.md |
 | documents | document:pipeline-run-task-links-model:1a2d963bb2 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0059.md |
 | documents | document:pipeline-runs-model:91d21c7966 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0037.md |
-| documents | document:pipeline-stages-coverage-expansion:fe8aa7175b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-AUTO-0021.md |
-| documents | document:pipeline-stages-model:bfa0c0367a | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0038.md |
-| documents | document:pipeline-stages-module:f43b558577 | module:src-modules-pipeline-stages:a220441bbc | src/modules/pipeline-stages/README.md |
-| documents | document:pipeline-template:273baaa1e0 | module:docs:6784d83cb0 | docs/pipelines/pipeline-template.md |
-| documents | document:pipelines-model:ca10369ea9 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0039.md |
-| documents | document:planning-catalog-index:60f22905c5 | module:docs:6784d83cb0 | docs/planning/planning-catalog-index.md |

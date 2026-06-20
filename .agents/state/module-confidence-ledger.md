@@ -2,6 +2,53 @@
 
 Last updated: 2026-06-20
 
+Roost known-state baseline note: LUC-4900 is VERIFIED_DONE for the Roost
+Project Manager evidence lane. The packet is recorded in
+`docs/planning/luc-4900-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2298`,
+`relations=4618`, `files=13616`, generated at
+`2026-06-20T06:43:51.716Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task synchronization reports `0` task-link/proof gaps;
+ownership gaps `0`; dependency report shows `437` relations / `95` entities;
+architecture health reports `implementation_without_tests=1162` and actionable
+`1153`. Confidence classification: local architecture and task/proof
+synchronization are verified; remaining confidence debt is route/journey proof
+debt, not a PM-owned implementation defect. Follow-up owners:
+[LUC-4905](/LUC/issues/LUC-4905) for source-control closure and
+[LUC-4906](/LUC/issues/LUC-4906) for `10 Legal -> Operating Graph Overview`
+local QA proof ladder. Protected production proof remains release/credential
+gated.
+
+Roost readiness note: LUC-4568 is VERIFIED_DONE as a Product Manager
+CompanyCore readiness and milestone review. The packet is recorded in
+`docs/planning/luc-4568-roost-companycore-readiness-and-milestone-review.md`.
+Evidence: `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+`HEAD=fc459643`; source-control readback showed
+`main...origin/main [ahead 42]` with existing docs/state edits and an
+unrelated untracked [LUC-4888](/LUC/issues/LUC-4888) packet preserved. Failed
+adapter summaries named `scripts/check-route-capabilities.mjs` and
+`scripts/test-api-local.mjs`, but current diffs for those files were empty.
+No runtime code, schema, migration, protected smoke, deploy, push, restart,
+production mutation, credential access, secret disclosure, server, browser,
+database, Docker, or watcher process occurred. Next proof/fix: protected
+runtime proof remains approval/credential gated.
+
+QA closure note: LUC-4888 is VERIFIED_DONE_BY_EXISTING_EVIDENCE for
+`09 Technology And AI Infrastructure`. The closure packet is recorded in
+`docs/planning/luc-4888-technology-ai-proof-ladder-closure.md`. Evidence:
+[LUC-4888](/LUC/issues/LUC-4888) heartbeat context matched the existing
+[LUC-4880](/LUC/issues/LUC-4880) local proof ladder, and
+`docs/ux/evidence/luc-4880-technology-ai-proof-ladder-2026-06-20/result.json`
+readback reports `ok: true`, route
+`/areas?area=09-technologia&view=overview`, API
+`/v1/operating-graph/areas/09-technologia?limit=80`, capability
+`operating-graph:read`, desktop/mobile `5` graph rows, safe synthetic error
+state, no console issues, no failed requests, and no horizontal overflow. No
+repair issue is needed; protected production proof remains release/credential
+gated.
+
 QA proof-ladder completion note: LUC-4880 is VERIFIED_DONE for local
 `09 Technology -> Operating Graph Overview`. The packet is recorded in
 `docs/planning/luc-4880-technology-ai-proof-ladder.md`. Evidence:
