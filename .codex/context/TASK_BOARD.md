@@ -2,6 +2,24 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5183` source-control closure is complete locally for the
+  [LUC-5178](/LUC/issues/LUC-5178) generated architecture evidence refresh.
+  Output:
+  `docs/planning/luc-5183-source-control-closure-for-luc-5178-evidence-packet.md`.
+  Evidence: dirty set classified as coherent generated/status architecture
+  evidence outputs; `git diff --check` PASS with LF-to-CRLF warnings only;
+  generated architecture-awareness and architecture-health JSON parsed with
+  `2366` entities / `4885` relations at `2026-06-20T15:54:55.655Z`;
+  generated reports show `implementation_without_tests=1162`, actionable
+  implementation-without-tests `1153`, docs gaps `0`, task gaps `0`,
+  implementation-without-task gaps `0`, verified-without-proof gaps `0`,
+  owner gaps `0`, and disconnected entities `0`; scoped high-confidence
+  secret/private-key scan found no matching files; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass). Push held for future release
+  batch or explicit source-ref/deploy need; deploy impact none. Disposition:
+  `DONE`.
+
 - 2026-06-20: `LUC-5176` source-control closure is complete locally for the
   [LUC-5172](/LUC/issues/LUC-5172) known-state evidence packet.
   Output:

@@ -4,6 +4,43 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5183-SOURCE-CONTROL-CLOSURE-FOR-LUC-5178-EVIDENCE
+- Status: VERIFIED_DONE_PENDING_LOCAL_COMMIT
+- Selected objective: Close local source-control bookkeeping for the
+  [LUC-5178](/LUC/issues/LUC-5178) architecture evidence refresh.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5183](/LUC/issues/LUC-5183), already claimed by the harness, as the
+  source-control closure sidecar for [LUC-5178](/LUC/issues/LUC-5178).
+- Scope: classify dirty state, preserve the [LUC-5178](/LUC/issues/LUC-5178)
+  generated/status architecture evidence outputs, run SCM hygiene, parse
+  generated JSON, run scoped high-confidence secret scan, run architecture
+  status, publish a closure packet, and create one local closure commit if
+  coherent.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  browser, database, Docker, server, watcher, or long-running process.
+- Output:
+  `docs/planning/luc-5183-source-control-closure-for-luc-5178-evidence-packet.md`.
+- Evidence: pre-closure
+  `HEAD=6fd442613f58394827fcc03c39a557c3b2e9c273`; branch
+  `main...origin/main [ahead 71]`; dirty set classified as coherent
+  generated/status architecture evidence outputs; generated
+  architecture-awareness and architecture-health JSON parsed with `2366`
+  entities / `4885` relations at `2026-06-20T15:54:55.655Z`; generated
+  reports show `implementation_without_tests=1162`, actionable
+  implementation-without-tests `1153`, docs gaps `0`, task gaps `0`,
+  implementation-without-task gaps `0`, verified-without-proof gaps `0`,
+  owner gaps `0`, and disconnected entities `0`; `git diff --check` PASS
+  with LF-to-CRLF warnings only; scoped high-confidence secret/private-key scan
+  found no matching files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass).
+- Final disposition: local source-control closure ready for commit. Push held
+  for future release batch or explicit source-ref/deploy need; deploy impact
+  none.
+
+## Previous Mission
+
 - Mission ID: LUC-5176-SOURCE-CONTROL-CLOSURE-FOR-LUC-5172-EVIDENCE
 - Status: VERIFIED_DONE_PENDING_LOCAL_COMMIT
 - Selected objective: Close local source-control bookkeeping for the
