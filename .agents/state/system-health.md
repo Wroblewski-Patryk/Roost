@@ -1,5 +1,50 @@
 # System Health
 
+- 2026-06-20: `LUC-5280` source-control closure verified locally for the
+  [LUC-5278](/LUC/issues/LUC-5278) known-state evidence packet. Output:
+  `docs/planning/luc-5280-source-control-closure-for-luc-5278-evidence-packet.md`.
+  Checks: dirty set classified as coherent generated/status/planning/state
+  evidence; generated architecture JSON parse PASS
+  (`2026-06-20T19:04:06.656Z`, `2396` entities / `5000` relations); `git diff
+  --check` PASS with LF-to-CRLF warnings only; scoped high-confidence
+  secret/private-key scan PASS; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`, all gates pass). Deploy
+  impact: none; push held for a future release batch.
+
+- 2026-06-20: `LUC-5273` Agent Observability API proof ladder verified locally
+  for the next QA proof-ladder slice from
+  [LUC-5264](/LUC/issues/LUC-5264). Output:
+  `docs/planning/luc-5273-agent-observability-api-proof-ladder.md`. Selected
+  journey: Agent Events read/ack chain mapped to `FEAT-AUTO-0001`,
+  `API-AUTO-0021`, `API-AUTO-0115`, `CHAIN-AUTO-0001`, and
+  `src/modules/agent-events/agent-events.routes.ts`. Proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5273-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55473` `npm run test:api:local` PASS after
+  server/web build, `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `51585.1904ms`, total
+  `56154.3004ms`). Drift checks: `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`,
+  delta `0/0/0`, all gates pass). Cleanup found no validation DB container and
+  no `chrome-headless-shell` process. Deploy impact: none.
+
+- 2026-06-20: `LUC-5263` Integration Settings API journey proof verified
+  locally for the next QA proof-ladder slice from
+  [LUC-5257](/LUC/issues/LUC-5257). Output:
+  `docs/planning/luc-5263-integration-settings-api-journey-proof.md`.
+  Selected journey: Integration Settings provider configuration and provider
+  operation API coverage mapped to `FEAT-AUTO-0015` and
+  `src/modules/integration-settings/integration-settings.routes.ts`. Proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5263-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55463` `npm run test:api:local` PASS after
+  server/web build, `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `34689.0022ms`, total
+  `37201.1135ms`). Drift checks: `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`,
+  delta `0/0/0`, all gates pass). Cleanup found no validation DB container and
+  no `chrome-headless-shell` process. Deploy impact: none.
+
 - 2026-06-20: `LUC-5262` source-control closure verified locally for the
   [LUC-5257](/LUC/issues/LUC-5257) known-state evidence packet. Output:
   `docs/planning/luc-5262-source-control-closure-for-luc-5257-evidence-packet.md`.
@@ -913,6 +958,17 @@ Last updated: 2026-06-20
 
 ## Quality Gate Notes
 
+- 2026-06-20 LUC-5278 known-state proof: Paperclip architecture-awareness
+  scanner passed (`entities=2396`, `relations=5000`, `files=13726`, generated
+  `2026-06-20T19:04:06.656Z`), `npm run architecture:status` passed
+  (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass), and `npm run check:route-capabilities` passed
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`).
+  Task-sync gaps, owner gaps, disconnected entities, implementation-without-
+  task gaps, and verified-without-proof gaps remain `0`. Confidence debt
+  remains non-failing follow-up work: `implementation_without_tests=1162`,
+  source-control closure [LUC-5280](/LUC/issues/LUC-5280), and QA proof-ladder
+  selection [LUC-5281](/LUC/issues/LUC-5281).
 - Latest v1 handoff: `docs/operations/v1-operator-handoff.md`.
 - Latest release readiness: `docs/operations/v1-release-readiness.md`.
 - 2026-06-20 LUC-4718 known-state proof: Paperclip architecture-awareness

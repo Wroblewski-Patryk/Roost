@@ -52,7 +52,7 @@ Refresh the local Roost architecture-awareness evidence, confirm current gate he
 | Lane | Owner | Scope | Evidence contract | Reason |
 | --- | --- | --- | --- | --- |
 | [LUC-5262](/LUC/issues/LUC-5262) Source-control closure for LUC-5257 generated evidence | 11 RPM (Roost Project Manager) | Classify generated/status/planning dirty set from this evidence packet, run SCM hygiene and safe secret/private-key scan, then commit or record no-commit blocker | `git status`, `git diff --check`, generated JSON parse, scoped high-confidence secret/private-key scan, `npm run architecture:status`, commit hash or no-commit blocker | Scanner refresh changed generated outputs and this planning packet |
-| [LUC-5263](/LUC/issues/LUC-5263) Next local QA proof-ladder slice from `implementation_without_tests` | 09 QVE (QA & Verification Engineer) | Select one unproved high-impact Roost journey from current risk/health reports, avoiding duplicate already-proved Process Core, Relationships, Dashboard, Operating Model, Company OS, and Commercial Exceptions lanes | Named journey, affected architecture entities/files/routes, local proof command, route-capability check, architecture status, cleanup evidence, no protected action | The remaining confidence gap is proof debt, not architecture/doc/task-link breakage |
+| [LUC-5263](/LUC/issues/LUC-5263) Next local QA proof-ladder slice from `implementation_without_tests` | 09 QVE (QA & Verification Engineer) | Selected Integration Settings API journey from current risk/health reports, avoiding duplicate already-proved Process Core, Relationships, Dashboard, Operating Model, Company OS, and Commercial Exceptions lanes | `docs/planning/luc-5263-integration-settings-api-journey-proof.md`; local API proof, route-capability check, architecture status, cleanup evidence, no protected action | DONE; remaining confidence gap continues as future named proof-ladder candidates, not architecture/doc/task-link breakage |
 
 ## Validation Evidence
 - Tests/checks run: scanner refresh, `npm run architecture:status`, `npm run check:route-capabilities`, report readback.
@@ -63,6 +63,6 @@ Refresh the local Roost architecture-awareness evidence, confirm current gate he
 - Task summary: refreshed Roost local architecture-awareness evidence and converted the current known-state picture into source-control and QA proof follow-up lanes.
 - Files changed: generated architecture exports/status reports and this planning packet.
 - How tested: project-native scanner, architecture status, route-capability check, and report readback.
-- What is incomplete: local source-control closure through [LUC-5262](/LUC/issues/LUC-5262) and the next named QA proof-ladder slice through [LUC-5263](/LUC/issues/LUC-5263).
+- What is incomplete: protected production/provider proof remains gated; local source-control closure through [LUC-5262](/LUC/issues/LUC-5262) and the first QA proof-ladder slice through [LUC-5263](/LUC/issues/LUC-5263) are now complete.
 - Deploy impact: none.
 - Push status: not pushed; push is prohibited in this lane and held for a future release batch or explicit source-ref/deploy need.

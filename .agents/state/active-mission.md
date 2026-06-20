@@ -4,6 +4,142 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5280-SOURCE-CONTROL-CLOSURE-FOR-LUC-5278-EVIDENCE
+- Status: VERIFIED_DONE_PENDING_PUSH_BATCH
+- Selected objective: Close local source-control bookkeeping for the
+  [LUC-5278](/LUC/issues/LUC-5278) known-state evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5280](/LUC/issues/LUC-5280), assigned to Roost Project Manager, as the
+  source-control closure sidecar for [LUC-5278](/LUC/issues/LUC-5278).
+- Scope: classify the dirty workspace after [LUC-5278](/LUC/issues/LUC-5278),
+  preserve generated architecture-awareness exports, state/context updates,
+  carried QA evidence packets, and the parent planning packet, run source-
+  control hygiene checks, then create one local closure commit if coherent.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  browser, database, Docker, server, watcher, or feature implementation.
+- Output:
+  `docs/planning/luc-5280-source-control-closure-for-luc-5278-evidence-packet.md`.
+- Evidence: starting HEAD `7a920dac` on `main...origin/main [ahead 83]`;
+  dirty set classified as coherent generated/status/planning/state evidence;
+  `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  architecture JSON parse PASS at `2026-06-20T19:04:06.656Z` with `2396`
+  entities / `5000` relations; scoped high-confidence secret/private-key scan
+  PASS; `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: local source-control closure verified; push held for a
+  future release batch or explicit source-ref/deploy need; deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5278-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_PENDING_SCM_CLOSURE_AND_QA_FOLLOWUP
+- Selected objective: Refresh local Roost known-state architecture evidence
+  after the Roost PM wake comment requested local evidence collection and
+  concrete next repair lanes.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5278](/LUC/issues/LUC-5278), assigned to Roost Project Manager, and the
+  latest local-board comment explicitly requested local evidence collection
+  while forbidding push, deploy, restart, protected smoke, production mutation,
+  and secret disclosure.
+- Scope: acknowledge the wake comment, run local architecture-awareness
+  status and bounded full refresh, read generated health/ownership/dependency/
+  task-sync reports, run project-native architecture and route-capability
+  checks, publish a planning evidence packet, and create owner-scoped
+  follow-up lanes.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  browser, database, Docker, server, watcher, or feature implementation.
+- Output:
+  `docs/planning/luc-5278-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: architecture-awareness status-only PASS in `20ms`; bounded full
+  refresh PASS in `6134ms`, generated `2026-06-20T19:04:06.656Z` with `2396`
+  entities / `5000` relations / `13726` files; `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  task-sync gaps `0`; ownership gaps `0`; dependency report `438` relations /
+  `95` entities; architecture health reports `implementation_without_tests=1162`,
+  actionable `1153`, classified inferred noise `9`, docs gaps `0`,
+  disconnected entities `0`.
+- Final disposition: known-state evidence scope complete after creating
+  [LUC-5280](/LUC/issues/LUC-5280) source-control closure and
+  [LUC-5281](/LUC/issues/LUC-5281) QA proof-ladder follow-up lanes. Protected
+  target proof remains approval/credential gated.
+
+## Previous Mission
+
+- Mission ID: LUC-5273-AGENT-OBSERVABILITY-API-PROOF-LADDER
+- Status: VERIFIED_DONE
+- Selected objective: Prove the next local QA proof-ladder slice from the
+  [LUC-5264](/LUC/issues/LUC-5264) known-state confidence signal.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5273](/LUC/issues/LUC-5273), assigned to QA Verification Engineer, as
+  the QA-owned follow-up lane for the agent observability API surface.
+- Scope: select one agent observability API journey, identify affected
+  architecture entities/files/routes, run local behavior proof, run route/
+  capability and architecture status checks, clean validation resources, and
+  record durable evidence.
+- Exclusions: no runtime code, schema, migration authoring, protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, browser proof, server, watcher, or feature implementation.
+- Output:
+  `docs/planning/luc-5273-agent-observability-api-proof-ladder.md`.
+- Evidence: selected Agent Events read/ack chain mapped to
+  `FEAT-AUTO-0001`, `API-AUTO-0021`, `API-AUTO-0115`, `CHAIN-AUTO-0001`, and
+  `src/modules/agent-events/agent-events.routes.ts`; local proof ran
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5273-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55473` `npm run test:api:local` and passed after
+  server/web build, all `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `51585.1904ms`, total
+  `56154.3004ms`); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass); cleanup found no
+  `companycore-luc-5273-postgres` container and no `chrome-headless-shell`
+  process.
+- Final disposition: verified done for this QA proof slice. No defect or
+  repair child issue was found. Browser proof and protected production proof
+  remain separate gated lanes.
+
+## Previous Mission
+
+- Mission ID: LUC-5263-INTEGRATION-SETTINGS-API-JOURNEY-PROOF
+- Status: VERIFIED_DONE
+- Selected objective: Prove the next local QA proof-ladder slice from the
+  [LUC-5257](/LUC/issues/LUC-5257) known-state confidence debt.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5263](/LUC/issues/LUC-5263), assigned to QA Verification Engineer, as
+  the QA-owned follow-up lane from [LUC-5257](/LUC/issues/LUC-5257).
+- Scope: select one unproved high-impact Roost journey, identify affected
+  architecture entities/files/routes, run local behavior proof, run route/
+  capability and architecture status checks, clean validation resources, and
+  record durable evidence.
+- Exclusions: no runtime code, schema, migration authoring, protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, browser proof, server, watcher, or feature implementation.
+- Output:
+  `docs/planning/luc-5263-integration-settings-api-journey-proof.md`.
+- Evidence: selected Integration Settings API journey mapped to
+  `FEAT-AUTO-0015`, `src/modules/integration-settings/integration-settings.routes.ts`,
+  and existing assertions in `src/tests/api.test.ts`; local proof ran
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5263-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55463` `npm run test:api:local` and passed after
+  server/web build, all `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `34689.0022ms`, total
+  `37201.1135ms`); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass); cleanup found no
+  `companycore-luc-5263-postgres` container and no `chrome-headless-shell`
+  process.
+- Final disposition: verified done for this QA proof slice. No defect or
+  repair child issue was found. Protected production/provider proof remains a
+  separate approval/credential-gated lane; future local proof-ladder
+  candidates include Google Drive, Tasks, and Agents coverage.
+
+## Previous Mission
+
 - Mission ID: LUC-5262-SOURCE-CONTROL-CLOSURE-FOR-LUC-5257-EVIDENCE
 - Status: VERIFIED_DONE_PENDING_PUSH_BATCH
 - Selected objective: Close local source-control bookkeeping for the

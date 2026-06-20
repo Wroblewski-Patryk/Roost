@@ -1,5 +1,44 @@
 # MVP Next Commits
 
+- 2026-06-20: `LUC-5280` source-control closure is complete locally for the
+  [LUC-5278](/LUC/issues/LUC-5278) known-state evidence packet. Evidence
+  packet:
+  `docs/planning/luc-5280-source-control-closure-for-luc-5278-evidence-packet.md`.
+  Proof: coherent dirty-state classification, `git diff --check` PASS with
+  LF-to-CRLF warnings only, generated architecture JSON parse PASS at
+  `2026-06-20T19:04:06.656Z`, scoped high-confidence secret/private-key scan
+  PASS, and `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queues `0`, delta `0/0/0`). Local commit created; push held for future
+  release batch or explicit source-ref/deploy need. Next lane:
+  [LUC-5281](/LUC/issues/LUC-5281) owns the next focused QA proof-ladder
+  selection.
+
+- 2026-06-20: `LUC-5273` Agent Observability API proof ladder is complete.
+  Evidence packet:
+  `docs/planning/luc-5273-agent-observability-api-proof-ladder.md`. Proof:
+  selected Agent Events read/ack API coverage mapped to `FEAT-AUTO-0001`,
+  `API-AUTO-0021`, `API-AUTO-0115`, and `CHAIN-AUTO-0001`; `npm run
+  test:api:local` PASS against disposable PostgreSQL
+  `companycore-luc-5273-postgres` on port `55473` after server/web build,
+  `31` migrations, seed, and `7/7` API subtests; `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues
+  `0`, delta `0/0/0`). No repair issue is warranted; browser and protected
+  production proof remain separate gates.
+
+- 2026-06-20: `LUC-5263` Integration Settings API journey proof is complete.
+  Evidence packet:
+  `docs/planning/luc-5263-integration-settings-api-journey-proof.md`. Proof:
+  selected Integration Settings provider configuration and provider operation
+  API coverage mapped to `FEAT-AUTO-0015`; `npm run test:api:local` PASS
+  against disposable PostgreSQL `companycore-luc-5263-postgres` on port
+  `55463` after server/web build, `31` migrations, seed, and `7/7` API
+  subtests; `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`). No repair issue is warranted;
+  future proof-ladder candidates include Google Drive, Tasks, and Agents
+  coverage. Protected production/provider proof remains separately gated.
+
 - 2026-06-20: `LUC-5262` source-control closure is complete locally for the
   [LUC-5257](/LUC/issues/LUC-5257) known-state evidence packet. Evidence
   packet:
@@ -8,9 +47,9 @@
   parse PASS at `2026-06-20T18:43:20.725Z`; scoped high-confidence
   secret/private-key scan PASS; `npm run architecture:status` PASS (`GREEN`,
   graph `454/765/35`, queues `0`, delta `0/0/0`). Local commit created; push
-  held for future release batch or explicit source-ref/deploy need. Next lane:
-  [LUC-5263](/LUC/issues/LUC-5263) remains the QA proof-ladder selection from
-  `implementation_without_tests=1162`.
+  held for future release batch or explicit source-ref/deploy need. The
+  [LUC-5263](/LUC/issues/LUC-5263) QA follow-up is now complete through the
+  Integration Settings API journey proof.
 
 - 2026-06-20: `LUC-5257` known-state evidence and architecture baseline is
   complete for IPM evidence scope. Evidence packet:
@@ -22,8 +61,8 @@
   check:route-capabilities` PASS (`180` manifest routes / `35` route files);
   task-sync, owner, proof, docs, and disconnected gaps remain `0`. Next
   commits/lanes: [LUC-5262](/LUC/issues/LUC-5262) local source-control closure
-  for this packet and [LUC-5263](/LUC/issues/LUC-5263) one focused QA
-  proof-ladder selection from `implementation_without_tests=1162`.
+  for this packet and [LUC-5263](/LUC/issues/LUC-5263), now complete as one
+  focused QA proof-ladder selection from `implementation_without_tests=1162`.
 
 - 2026-06-20: `LUC-5248` source-control closure is complete locally for the
   [LUC-5243](/LUC/issues/LUC-5243) known-state evidence packet. Evidence
@@ -3470,3 +3509,22 @@ in `NOW`, `NEXT`, `PIPELINE`, and `.codex/context/TASK_BOARD.md`.
   [LUC-4831](/LUC/issues/LUC-4831) owns source-control closure for the
   generated/status evidence packet; [LUC-4821](/LUC/issues/LUC-4821) remains
   the Assets proof-ladder execution lane.
+
+# 2026-06-20 LUC-5278 Known-State Evidence Checkpoint
+
+- Status: DONE for PM known-state scope.
+- Output:
+  `docs/planning/luc-5278-known-state-evidence-and-architecture-baseline.md`.
+- Evidence:
+  Paperclip architecture-awareness scanner PASS (`entities=2396`,
+  `relations=5000`, `files=13726`, generated at
+  `2026-06-20T19:04:06.656Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  task sync reports `0` task-link/proof gaps; architecture health reports
+  `implementation_without_tests=1162`.
+- Next:
+  [LUC-5280](/LUC/issues/LUC-5280) owns source-control closure for the
+  generated/status/planning evidence packet; [LUC-5281](/LUC/issues/LUC-5281)
+  owns the next QA proof-ladder selection.

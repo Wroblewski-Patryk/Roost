@@ -2,6 +2,76 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5280` source-control closure is complete locally for the
+  [LUC-5278](/LUC/issues/LUC-5278) known-state evidence packet. Output:
+  `docs/planning/luc-5280-source-control-closure-for-luc-5278-evidence-packet.md`.
+  Evidence: dirty set classified as coherent generated/status/planning/state
+  evidence, including carried [LUC-5263](/LUC/issues/LUC-5263) and
+  [LUC-5273](/LUC/issues/LUC-5273) packets; `git diff --check` PASS with
+  LF-to-CRLF warnings only; generated JSON parse PASS at
+  `2026-06-20T19:04:06.656Z` (`2396` entities / `5000` relations); scoped
+  high-confidence secret/private-key scan PASS; `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`,
+  all gates pass). Local closure commit created; push held for a future
+  release batch or explicit source-ref/deploy need; deploy impact none.
+  Disposition: `DONE`.
+
+- 2026-06-20: `LUC-5278` known-state evidence and architecture baseline is
+  complete for Roost PM evidence scope. Output:
+  `docs/planning/luc-5278-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness full refresh PASS in `6134ms`, generated
+  `2026-06-20T19:04:06.656Z` with `2396` entities / `5000` relations /
+  `13726` files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass);
+  `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); task-sync gaps `0`; ownership gaps
+  `0`; dependency report `438` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`, actionable `1153`, classified inferred
+  noise `9`, docs gaps `0`, disconnected entities `0`. No code, runtime,
+  database, browser, deploy, push, protected smoke, production, credential,
+  secret, server, Docker, or watcher action occurred. Disposition: PM evidence
+  scope complete; follow-ups are [LUC-5280](/LUC/issues/LUC-5280)
+  source-control closure and [LUC-5281](/LUC/issues/LUC-5281) next focused QA
+  proof-ladder selection.
+
+- 2026-06-20: `LUC-5273` Agent Observability API proof ladder is complete for
+  the next local QA proof-ladder slice from
+  [LUC-5264](/LUC/issues/LUC-5264). Output:
+  `docs/planning/luc-5273-agent-observability-api-proof-ladder.md`. Selected
+  journey: Agent Events read/ack chain, `GET /v1/agent-events` and
+  `POST /v1/agent-events/:id/ack`, mapped to `FEAT-AUTO-0001`,
+  `API-AUTO-0021`, `API-AUTO-0115`, `CHAIN-AUTO-0001`, and
+  `src/modules/agent-events/agent-events.routes.ts`. Evidence: disposable
+  PostgreSQL `companycore-luc-5273-postgres` on port `55473`; `npm run
+  test:api:local` PASS after server/web build, `31` migrations, seed, and
+  `7/7` API subtests (`CompanyCore v1 protected API flow` duration
+  `51585.1904ms`, total `56154.3004ms`); `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all
+  gates pass). Cleanup found no validation DB container and no
+  `chrome-headless-shell` process. Disposition: `DONE`; no repair issue
+  warranted; protected production proof remains separate and gated.
+
+- 2026-06-20: `LUC-5263` Integration Settings API journey proof is complete
+  for the next local QA proof-ladder slice from
+  [LUC-5257](/LUC/issues/LUC-5257). Output:
+  `docs/planning/luc-5263-integration-settings-api-journey-proof.md`.
+  Selected journey: Integration Settings provider configuration and provider
+  operation API coverage mapped to `FEAT-AUTO-0015`,
+  `src/modules/integration-settings/integration-settings.routes.ts`, and
+  existing assertions in `src/tests/api.test.ts`. Evidence: disposable
+  PostgreSQL `companycore-luc-5263-postgres` on port `55463`; `npm run
+  test:api:local` PASS after server/web build, `31` migrations, seed, and
+  `7/7` API subtests (`CompanyCore v1 protected API flow` duration
+  `34689.0022ms`, total `37201.1135ms`); `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all
+  gates pass). Cleanup found no validation DB container and no
+  `chrome-headless-shell` process. Disposition: `DONE`; no repair issue
+  warranted; protected production/provider proof remains separate and gated.
+
 - 2026-06-20: `LUC-5262` source-control closure is complete locally for the
   [LUC-5257](/LUC/issues/LUC-5257) known-state evidence packet. Output:
   `docs/planning/luc-5262-source-control-closure-for-luc-5257-evidence-packet.md`.
@@ -30,8 +100,9 @@
   database, browser, deploy, push, protected smoke, production, credential,
   secret, server, Docker, or watcher action occurred. Disposition: evidence
   scope complete; follow-ups are [LUC-5262](/LUC/issues/LUC-5262)
-  source-control closure for this packet and [LUC-5263](/LUC/issues/LUC-5263)
-  one named QA proof-ladder selection from the remaining confidence signal.
+  source-control closure for this packet and [LUC-5263](/LUC/issues/LUC-5263),
+  now complete as one named QA proof-ladder selection from the remaining
+  confidence signal.
 
 - 2026-06-20: `LUC-5251` source-control closure is complete locally for the
   [LUC-5244](/LUC/issues/LUC-5244) known-state evidence packet. Output:

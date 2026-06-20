@@ -1,5 +1,79 @@
 # Module Confidence Ledger
 
+Source-control confidence note: [LUC-5280](/LUC/issues/LUC-5280) is
+VERIFIED_DONE_PENDING_PUSH_BATCH for the [LUC-5278](/LUC/issues/LUC-5278)
+known-state evidence packet. Evidence packet:
+`docs/planning/luc-5280-source-control-closure-for-luc-5278-evidence-packet.md`.
+Proof: coherent dirty-state classification preserving carried
+[LUC-5263](/LUC/issues/LUC-5263) and [LUC-5273](/LUC/issues/LUC-5273)
+evidence packets, `git diff --check` PASS with LF-to-CRLF warnings only,
+generated architecture JSON parse PASS at `2026-06-20T19:04:06.656Z` with
+`2396` entities / `5000` relations, scoped high-confidence secret/private-key
+scan PASS, and `npm run architecture:status` PASS (`GREEN`, graph
+`454/765/35`, queues `0`). Confidence classification: local source-control
+closure is verified; push is intentionally held for a future release batch.
+
+Roost known-state baseline note: [LUC-5278](/LUC/issues/LUC-5278) is
+VERIFIED_PENDING_SCM_CLOSURE_AND_QA_FOLLOWUP for the Roost PM evidence lane.
+The packet is recorded in
+`docs/planning/luc-5278-known-state-evidence-and-architecture-baseline.md`.
+Evidence: architecture-awareness full refresh PASS in `6134ms`, generated
+`2026-06-20T19:04:06.656Z` with `2396` entities, `5000` relations, and
+`13726` files; `npm run architecture:status` PASS (`GREEN`, graph
+`454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+gates pass); `npm run check:route-capabilities` PASS
+(`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+task-sync gaps `0`; ownership gaps `0`; dependency report `438` relations /
+`95` entities. Architecture health reports `implementation_without_tests=1162`,
+actionable `1153`, classified inferred noise `9`, docs gaps `0`,
+disconnected entities `0`; confidence classification: local architecture,
+task/proof synchronization, ownership, and route-capability registration are
+verified, while local source-control closure and the next focused QA
+proof-ladder selection are delegated to
+[LUC-5280](/LUC/issues/LUC-5280) and [LUC-5281](/LUC/issues/LUC-5281).
+Protected target proof remains approval/credential gated.
+
+QA proof note: [LUC-5273](/LUC/issues/LUC-5273) is VERIFIED_DONE for the Agent
+Events read/ack observability API journey selected from the
+[LUC-5264](/LUC/issues/LUC-5264) known-state signal. Evidence packet:
+`docs/planning/luc-5273-agent-observability-api-proof-ladder.md`. Selected
+journey: `GET /v1/agent-events` plus `POST /v1/agent-events/:id/ack`, mapped
+to `FEAT-AUTO-0001`, `API-AUTO-0021`, `API-AUTO-0115`, `CHAIN-AUTO-0001`, and
+`src/modules/agent-events/agent-events.routes.ts`. Local proof ran
+`COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5273-postgres`
+`COMPANYCORE_TEST_DB_PORT=55473` `npm run test:api:local`: server/web build
+PASS, all `31` migrations applied, seed PASS, and `7/7` API subtests PASS
+including `CompanyCore v1 protected API flow` (`51585.1904ms`, total
+`56154.3004ms`). `npm run check:route-capabilities` and `npm run
+architecture:status` also passed. Cleanup found no validation DB container and
+no `chrome-headless-shell` process. Confidence classification: Agent Events
+local API behavior is verified for pending event read, target-agent filtering,
+ack persistence to `delivered`, scoped-key fail-closed ack denial, and adapter
+manifest exposure of `agent-events:ack`; no repair issue is warranted.
+Protected production proof remains a separate gated lane.
+
+QA proof note: [LUC-5263](/LUC/issues/LUC-5263) is VERIFIED_DONE for the
+Integration Settings API journey selected from the fresh
+[LUC-5257](/LUC/issues/LUC-5257) `implementation_without_tests=1162` signal.
+Evidence packet:
+`docs/planning/luc-5263-integration-settings-api-journey-proof.md`. Selected
+journey: Integration Settings provider configuration and provider operation
+API coverage mapped to `FEAT-AUTO-0015`,
+`src/modules/integration-settings/integration-settings.routes.ts`, and
+existing assertions in `src/tests/api.test.ts`. Local proof ran
+`COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5263-postgres`
+`COMPANYCORE_TEST_DB_PORT=55463` `npm run test:api:local`: server/web build
+PASS, all `31` migrations applied, seed PASS, and `7/7` API subtests PASS
+including `CompanyCore v1 protected API flow` (`34689.0022ms`, total
+`37201.1135ms`). `npm run check:route-capabilities` and `npm run
+architecture:status` also passed. Cleanup found no validation DB container and
+no `chrome-headless-shell` process. Confidence classification: Integration
+Settings local API behavior is verified for provider settings, secret
+redaction, Google Drive OAuth/import/reconcile paths, ClickUp discovery/
+webhook/provider event paths, adapter manifest exposure, user-only provider
+actions, and fail-closed scoped-service behavior; no repair issue is
+warranted. Protected production/provider proof remains a separate gated lane.
+
 Source-control confidence note: [LUC-5262](/LUC/issues/LUC-5262) is
 VERIFIED_DONE_PENDING_PUSH_BATCH for the [LUC-5257](/LUC/issues/LUC-5257)
 known-state evidence packet. Evidence packet:
@@ -28,7 +102,7 @@ actionable `1153`, classified inferred noise `9`, docs gaps `0`,
 disconnected entities `0`; confidence classification: local architecture,
 task/proof synchronization, ownership, and route-capability registration are
 verified, while source-control closure and the next focused QA proof-ladder
-selection remain delegated follow-up lanes through
+selection are now covered through
 [LUC-5262](/LUC/issues/LUC-5262) and [LUC-5263](/LUC/issues/LUC-5263).
 Protected target proof remains approval/credential gated.
 

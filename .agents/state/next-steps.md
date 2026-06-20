@@ -1,5 +1,43 @@
 # Next Steps
 
+- `LUC-5280` source-control closure for the
+  [LUC-5278](/LUC/issues/LUC-5278) known-state evidence packet is complete.
+  Evidence packet:
+  `docs/planning/luc-5280-source-control-closure-for-luc-5278-evidence-packet.md`.
+  Local checks passed: coherent generated/status/planning/state dirty-set
+  classification, `git diff --check`, generated JSON parse, scoped
+  high-confidence secret/private-key scan, and `npm run architecture:status`.
+  Next owner/action: no further source-control work remains on
+  [LUC-5280](/LUC/issues/LUC-5280); push remains held for a future release
+  batch or explicit source-ref/deploy need. [LUC-5281](/LUC/issues/LUC-5281)
+  remains the next focused QA proof-ladder lane.
+
+- `LUC-5273` Agent Observability API proof ladder is complete for the next
+  local QA proof-ladder slice from
+  [LUC-5264](/LUC/issues/LUC-5264). Evidence packet:
+  `docs/planning/luc-5273-agent-observability-api-proof-ladder.md`. Local
+  proof passed: `npm run test:api:local` with disposable PostgreSQL
+  `companycore-luc-5273-postgres` on port `55473` after server/web build,
+  `31` migrations, seed, and `7/7` API subtests; `npm run
+  check:route-capabilities`; `npm run architecture:status`; cleanup checks for
+  validation DB and headless browser processes. Next owner/action: no Agent
+  Events repair issue is warranted; future proof ladders should continue from
+  named journey risk. Protected production proof remains approval/credential
+  gated.
+
+- `LUC-5263` Integration Settings API journey proof is complete for the next
+  local QA proof-ladder slice from
+  [LUC-5257](/LUC/issues/LUC-5257). Evidence packet:
+  `docs/planning/luc-5263-integration-settings-api-journey-proof.md`. Local
+  proof passed: `npm run test:api:local` with disposable PostgreSQL
+  `companycore-luc-5263-postgres` on port `55463` after server/web build, `31`
+  migrations, seed, and `7/7` API subtests; `npm run
+  check:route-capabilities`; `npm run architecture:status`; cleanup checks for
+  validation DB and headless browser processes. Next owner/action: no
+  Integration Settings repair issue is warranted; future local proof-ladder
+  candidates are Google Drive coverage, Tasks coverage, and Agents coverage.
+  Protected production/provider proof remains approval/credential gated.
+
 - `LUC-5262` source-control closure for the
   [LUC-5257](/LUC/issues/LUC-5257) known-state evidence packet is complete.
   Evidence packet:
@@ -9,8 +47,8 @@
   high-confidence secret/private-key scan, and `npm run architecture:status`.
   Next owner/action: no further source-control work remains on
   [LUC-5262](/LUC/issues/LUC-5262); push remains held for a future release batch
-  or explicit source-ref/deploy need. [LUC-5263](/LUC/issues/LUC-5263) remains
-  the QA-owned next proof-ladder lane.
+  or explicit source-ref/deploy need. [LUC-5263](/LUC/issues/LUC-5263) is now
+  complete through the Integration Settings API journey proof.
 
 - `LUC-5257` known-state architecture baseline is complete for IPM evidence
   scope.
@@ -21,10 +59,9 @@
   `2026-06-20T18:43:20.725Z`), `npm run architecture:status`, and `npm run
   check:route-capabilities`. Next owner/action:
   [LUC-5262](/LUC/issues/LUC-5262) Roost PM closes source-control for the
-  generated/status/planning packet; [LUC-5263](/LUC/issues/LUC-5263) QA selects
-  one named unproved high-impact local proof-ladder slice from
-  `implementation_without_tests=1162`. Protected runtime proof remains
-  approval/credential gated.
+  generated/status/planning packet; [LUC-5263](/LUC/issues/LUC-5263) completed
+  one named local proof-ladder slice from `implementation_without_tests=1162`.
+  Protected runtime proof remains approval/credential gated.
 
 - `LUC-5251` source-control closure for the
   [LUC-5244](/LUC/issues/LUC-5244) known-state evidence packet is complete.
@@ -4950,6 +4987,19 @@ Last updated: 2026-06-20
 - Keep this file synchronized with `.codex/context/TASK_BOARD.md` and
   `docs/planning/mvp-next-commits.md`.
 
+
+- 2026-06-20: `LUC-5278` known-state baseline completed.
+  - Current evidence: architecture-awareness scanner PASS (`entities=2396`,
+    `relations=5000`, `files=13726`, generated
+    `2026-06-20T19:04:06.656Z`); `npm run architecture:status` PASS
+    (`GREEN`, `454/765/35`, queue `0`, worklist `0`, gates `yes`);
+    `npm run check:route-capabilities` PASS (`180` manifest routes, `35`
+    route files).
+  - Next owners: Roost PM for [LUC-5280](/LUC/issues/LUC-5280)
+    source-control closure; QA & Verification Engineer for
+    [LUC-5281](/LUC/issues/LUC-5281) next focused proof ladder from
+    `implementation_without_tests=1162`; runtime secret owner + board/operator
+    remain owners for protected target proof.
 
 - 2026-06-20: `LUC-4718` known-state architecture baseline completed.
   - Proof rerun remained green: scanner PASS (`entities=2247`,

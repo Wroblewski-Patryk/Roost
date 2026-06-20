@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T18:43:20.725Z
+Generated: 2026-06-20T19:04:06.656Z
 
 ## Canonical Exports
 
@@ -1177,6 +1177,9 @@ Generated: 2026-06-20T18:43:20.725Z
 | documents | document:luc-5247-architecture-scanner-budget-and-refresh-policy-repair:940b3d967b | module:docs:6784d83cb0 | docs/planning/luc-5247-architecture-scanner-budget-refresh-policy-repair.md |
 | documents | document:luc-5248-source-control-closure-for-luc-5243-evidence-packet:aa5ffefd28 | module:docs:6784d83cb0 | docs/planning/luc-5248-source-control-closure-for-luc-5243-evidence-packet.md |
 | documents | document:luc-5251-source-control-closure-for-luc-5244-evidence-packet:3df23752ad | module:docs:6784d83cb0 | docs/planning/luc-5251-source-control-closure-for-luc-5244-evidence-packet.md |
+| documents | document:luc-5257-known-state-evidence-and-architecture-baseline:02482b8cd3 | module:docs:6784d83cb0 | docs/planning/luc-5257-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5262-source-control-closure-for-luc-5257-evidence-packet:c9fb11b183 | module:docs:6784d83cb0 | docs/planning/luc-5262-source-control-closure-for-luc-5257-evidence-packet.md |
+| documents | document:luc-5263-integration-settings-api-journey-proof:0708711682 | module:docs:6784d83cb0 | docs/planning/luc-5263-integration-settings-api-journey-proof.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-06-20T18:43:20.725Z
 | documents | document:migration:ebc4384929 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0027.md |
 | documents | document:migration:efe217da84 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0008.md |
 | documents | document:migration:f1d037308a | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0011.md |
-| documents | document:migration:f677269dfc | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0002.md |
-| documents | document:migration:fe025e2165 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0013.md |
-| documents | document:module-deep-dive-template:ce5d4bec1c | module:docs:6784d83cb0 | docs/modules/module-deep-dive-template.md |
