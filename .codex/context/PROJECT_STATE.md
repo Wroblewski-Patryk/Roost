@@ -2,6 +2,109 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5212` source-control closure completed locally for the
+  [LUC-5211](/LUC/issues/LUC-5211) generated/status evidence packet and
+  carried completed Roost evidence lanes. Output:
+  `docs/planning/luc-5212-source-control-closure-for-luc-5211-evidence-packet.md`.
+  Evidence: dirty set classified as a coherent completed Roost
+  verification/evidence batch from [LUC-5184](/LUC/issues/LUC-5184),
+  [LUC-5201](/LUC/issues/LUC-5201), [LUC-5202](/LUC/issues/LUC-5202), and
+  [LUC-5211](/LUC/issues/LUC-5211); `git diff --check` PASS with LF-to-CRLF
+  warnings only; generated architecture-awareness and architecture-health JSON
+  parsed at `2026-06-20T16:50:01.697Z` with `2370` entities / `4901`
+  relations; generated health signals show `implementation_without_tests=1162`,
+  docs gaps `0`, task gaps `0`, implementation-without-task gaps `0`,
+  verified-without-proof gaps `0`, owner gaps `0`, and disconnected entities
+  `0`; scoped high-confidence secret/private-key scan found no matches; `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass). Commit: local
+  closure commit; final SHA is recorded in the Paperclip issue comment. Push
+  held for future release batch or explicit source-ref/deploy need. Deploy
+  impact: none.
+
+- 2026-06-20: `LUC-5211` Roost known-state evidence and architecture baseline
+  completed for Roost PM scope after the local-board wake comment requested
+  local evidence collection and concrete repair lanes. Output:
+  `docs/planning/luc-5211-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness `--status-only` PASS in `31ms`
+  with prior exports fresh and no missing files; bounded full refresh PASS in
+  `73564ms`, generated `2026-06-20T16:50:01.697Z` with `2370` entities,
+  `4901` relations, and `13700` files; `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass); task-sync gaps `0`; ownership gaps `0`;
+  dependency report `438` relations / `95` entities; architecture health
+  reports `implementation_without_tests=1162`, actionable `1153`, classified
+  inferred noise `9`, docs gaps `0`, disconnected entities `0`. Follow-up:
+  [LUC-5212](/LUC/issues/LUC-5212) owns source-control closure for the
+  generated/status packet.
+  No runtime code, schema, migration, protected smoke, deploy, push, restart,
+  production mutation, credential access, secret disclosure, browser,
+  database, Docker, server, or watcher process occurred.
+
+- 2026-06-20: `LUC-5201` Assets preview API journey proof completed for the
+  next Roost `implementation_without_tests` API hotspot after
+  [LUC-5197](/LUC/issues/LUC-5197). Output:
+  `docs/planning/luc-5201-assets-preview-api-journey-proof.md`. Selected
+  journey: `08 Assets` image preview route,
+  `GET /v1/assets/files/:id/preview`, used by
+  `/areas?area=08-zasoby&view=files`. Evidence: source checkpoint
+  `ec242e8b076c3babd6bb10bcd322d3fba16836dd`; `src/tests/api.test.ts`
+  gained explicit assertions for unauthenticated denial, unsupported non-image
+  denial, foreign workspace denial, mocked local media success, `image/png`,
+  `nosniff`, private cache header, and exact PNG bytes; disposable local
+  PostgreSQL container `companycore-luc-5201-postgres` on port `55401`;
+  `npm run build:server` PASS; `npm run prisma:migrate:deploy` PASS; `npm run
+  seed` PASS; `node --test --test-name-pattern "CompanyCore v1 protected API
+  flow" dist/tests/api.test.js` PASS (`1` test, duration `89622.8414ms`);
+  `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass). Cleanup removed the validation DB container
+  and found no `chrome-headless-shell` process. No protected smoke, deploy,
+  push, restart, production mutation, real Google Drive access, credential
+  access, or secret disclosure occurred. Disposition: `DONE`; no repair issue
+  warranted.
+
+- 2026-06-20: `LUC-5202` architecture-awareness heartbeat-safety repair
+  completed after [LUC-5197](/LUC/issues/LUC-5197) timed out on the Paperclip
+  exporter. Output:
+  `docs/planning/luc-5202-architecture-awareness-heartbeat-safety.md`.
+  Central exporter change:
+  `C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse/scripts/build-architecture-awareness-index.mjs`
+  now supports `--status-only` for fast generated-artifact freshness/count
+  inspection and `--max-elapsed-ms` to fail before export writes when a scan
+  exceeds the heartbeat budget. Evidence: `node --check` PASS;
+  `--status-only` PASS in `0.37s` (`2368` entities / `4893` relations, no
+  missing exports); forced `--max-elapsed-ms 1` expected FAIL with unchanged
+  `docs/graphs/architecture-awareness.json` timestamp; budgeted full refresh
+  PASS in `47.19s`, generated `2026-06-20T16:38:49.366Z`; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass). PM heartbeat recommendation:
+  preflight with `--status-only`, then run full refresh only when needed with
+  `--max-elapsed-ms 90000 --progress-every 5000`. No product/runtime code,
+  schema, migration, protected smoke, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred.
+
+- 2026-06-20: `LUC-5184` Finance API journey proof completed for the next
+  Roost `implementation_without_tests` hotspot. Output:
+  `docs/planning/luc-5184-finance-api-journey-proof.md`. Selected journey:
+  `07 Finance` read-only context packet, `GET /v1/finance/context`, used by
+  `/areas?area=07-finanse&view=overview`. Evidence: source checkpoint
+  `6fd442616e597fec0891c0ae8e586a5c2a7a588f`; disposable local PostgreSQL
+  container `companycore-luc-5184-postgres` on port `55484`; `npm run
+  build:server` PASS; `npm run prisma:migrate:deploy` PASS with `31`
+  migrations; `npm run seed` PASS; `node --test --test-name-pattern
+  "CompanyCore v1 protected API flow" dist/tests/api.test.js` PASS (`1`
+  test); `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass). Cleanup checks found no matching validation
+  DB container and no `chrome-headless-shell` process. No product code, schema
+  authoring, browser proof, protected smoke, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Disposition:
+  `DONE`; no repair issue warranted. Browser proof for the Finance route and
+  protected production proof remain separate future gates.
+
 - 2026-06-20: `LUC-5176` source-control closure completed locally for the
   [LUC-5172](/LUC/issues/LUC-5172) known-state evidence packet. Output:
   `docs/planning/luc-5176-source-control-closure-for-luc-5172-evidence-packet.md`.

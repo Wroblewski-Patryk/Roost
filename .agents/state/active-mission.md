@@ -4,6 +4,186 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5212-SOURCE-CONTROL-CLOSURE-FOR-LUC-5211-EVIDENCE
+- Status: VERIFIED_DONE_PENDING_PUSH_BATCH
+- Selected objective: Close local source-control bookkeeping for the
+  [LUC-5211](/LUC/issues/LUC-5211) generated/status evidence packet and
+  carried completed Roost evidence lanes.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5212](/LUC/issues/LUC-5212), already claimed by the harness, as the
+  source-control closure sidecar for [LUC-5211](/LUC/issues/LUC-5211).
+- Scope: classify dirty state, preserve coherent completed Roost evidence
+  outputs, parse generated JSON, run SCM hygiene, run scoped high-confidence
+  secret/private-key scan, run architecture status, publish a closure packet,
+  and create one local closure commit.
+- Exclusions: no push, deploy, restart, protected smoke, production mutation,
+  credential access, secret disclosure, browser, database, Docker, server,
+  watcher, feature expansion, schema change, or migration authoring.
+- Output:
+  `docs/planning/luc-5212-source-control-closure-for-luc-5211-evidence-packet.md`.
+- Evidence: dirty set classified as a coherent completed Roost
+  verification/evidence batch from [LUC-5184](/LUC/issues/LUC-5184),
+  [LUC-5201](/LUC/issues/LUC-5201), [LUC-5202](/LUC/issues/LUC-5202), and
+  [LUC-5211](/LUC/issues/LUC-5211); `git diff --check` PASS with LF-to-CRLF
+  warnings only; generated architecture-awareness and architecture-health JSON
+  parsed at `2026-06-20T16:50:01.697Z` with `2370` entities / `4901`
+  relations; health signals remain `implementation_without_tests=1162`, docs
+  gaps `0`, task gaps `0`, implementation-without-task gaps `0`,
+  verified-without-proof gaps `0`, owner gaps `0`, disconnected entities `0`;
+  scoped high-confidence secret/private-key scan found no matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: local source-control closure verified; push held for
+  future release batch or explicit source-ref/deploy need; deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5211-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE
+- Selected objective: Refresh local Roost known-state architecture evidence
+  after the latest local-board wake comment and convert findings into concrete
+  repair lanes.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5211](/LUC/issues/LUC-5211); the latest comment requested local
+  evidence collection and next repair lanes without protected actions.
+- Scope: run the heartbeat-safe Paperclip architecture-awareness preflight and
+  bounded full refresh, read generated health/ownership/dependency/task-sync
+  reports, run project-native architecture status, record the evidence packet,
+  update source-of-truth state, and create the needed source-control closure
+  sidecar.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  browser, database, Docker, server, watcher, or long-running process.
+- Output:
+  `docs/planning/luc-5211-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: `--status-only` PASS in `31ms` with prior generated timestamp
+  `2026-06-20T16:38:49.366Z`, `2368` entities, `4893` relations, and no
+  missing exports; bounded full refresh PASS in `73564ms`, generated
+  `2026-06-20T16:50:01.697Z` with `2370` entities, `4901` relations, and
+  `13700` files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass); task-sync gaps `0`; ownership gaps `0`; dependency report
+  `438` relations / `95` entities; architecture health reports
+  `implementation_without_tests=1162`, actionable `1153`, classified inferred
+  noise `9`, docs gaps `0`, disconnected entities `0`.
+- Final disposition: PM evidence scope complete after creating
+  [LUC-5212](/LUC/issues/LUC-5212) as the source-control sidecar for the
+  fresh generated/status packet. No broad QA child is warranted from this
+  heartbeat because recent narrow Strategy, Finance, and Assets route/API
+  proofs already reduced the current proof-ladder risk. Protected target proof
+  remains approval/credential gated.
+
+## Previous Mission
+
+- Mission ID: LUC-5201-ASSETS-PREVIEW-API-JOURNEY-PROOF
+- Status: VERIFIED_DONE
+- Selected objective: Prove the next Roost `implementation_without_tests`
+  API journey after [LUC-5197](/LUC/issues/LUC-5197) with a narrow local
+  Assets preview route proof.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5201](/LUC/issues/LUC-5201), assigned to Test Automation Engineer, as
+  the next QA proof lane from the recurring implementation-without-tests
+  signal.
+- Scope: select one release-relevant owner-console/API route, add focused
+  regression coverage if the route lacked explicit proof, run local API proof,
+  run route/capability and architecture status checks, clean validation
+  resources, and record durable evidence.
+- Exclusions: no protected smoke, deploy, push, restart, production mutation,
+  real Google Drive access, credential access, secret disclosure, or
+  production data access.
+- Output:
+  `docs/planning/luc-5201-assets-preview-api-journey-proof.md`.
+- Evidence: selected `08 Assets` image preview route,
+  `GET /v1/assets/files/:id/preview`, used by
+  `/areas?area=08-zasoby&view=files`; source checkpoint
+  `ec242e8b076c3babd6bb10bcd322d3fba16836dd`; `src/tests/api.test.ts` now
+  asserts unauthenticated denial, unsupported non-image denial, foreign
+  workspace denial, mocked local media success, `image/png`, `nosniff`,
+  private cache header, and exact PNG bytes; validation-owned PostgreSQL
+  container `companycore-luc-5201-postgres` on port `55401`; `npm run
+  build:server` PASS; `npm run prisma:migrate:deploy` PASS; `npm run seed`
+  PASS; `node --test --test-name-pattern "CompanyCore v1 protected API flow"
+  dist/tests/api.test.js` PASS (`1` test, duration `89622.8414ms`); `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass); cleanup removed the validation DB
+  container and found no `chrome-headless-shell` process.
+- Final disposition: done for this QA proof slice. No defect or repair child
+  issue was found. Browser proof for the Assets files route and protected
+  production proof against real Google Drive media remain separate future
+  gates.
+
+## Previous Mission
+
+- Mission ID: LUC-5202-ARCHITECTURE-AWARENESS-HEARTBEAT-SAFETY
+- Status: VERIFIED_DONE
+- Selected objective: Make the Roost architecture-awareness refresh
+  heartbeat-safe after the [LUC-5197](/LUC/issues/LUC-5197) exporter timeout.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5202](/LUC/issues/LUC-5202), assigned to Technical Solution Architect,
+  after [LUC-5197](/LUC/issues/LUC-5197) timed out at 124 seconds while
+  running the Paperclip architecture-awareness exporter.
+- Scope: inspect exporter behavior, add a fast generated-artifact status mode,
+  add optional elapsed-time budget guards before export writes, rerun Roost
+  awareness generation with a budget, and record PM heartbeat usage.
+- Exclusions: no product/runtime code, schema, migration, protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, browser, database, Docker, server, watcher, or long-running
+  process.
+- Output:
+  `docs/planning/luc-5202-architecture-awareness-heartbeat-safety.md`.
+- Evidence: `node --check
+  C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse/scripts/build-architecture-awareness-index.mjs`
+  PASS; `--status-only` PASS in `0.37s` with `2368` entities / `4893`
+  relations and no missing exports; forced `--max-elapsed-ms 1` FAIL proved
+  `ARCHITECTURE_AWARENESS_TIME_BUDGET_EXCEEDED` before generated-file writes
+  with `architecture-awareness.json` timestamp unchanged; budgeted full
+  refresh with `--max-elapsed-ms 90000 --progress-every 5000` PASS in
+  `47.19s` and generated `2026-06-20T16:38:49.366Z`; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: done for architecture tooling safety. Future PM
+  heartbeats should preflight with `--status-only` and run full refreshes with
+  `--max-elapsed-ms 90000 --progress-every 5000`.
+
+## Previous Mission
+
+- Mission ID: LUC-5184-FINANCE-API-JOURNEY-PROOF
+- Status: VERIFIED_DONE
+- Selected objective: Prove the next Roost `implementation_without_tests`
+  hotspot with one narrow local API journey proof.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5184](/LUC/issues/LUC-5184), assigned to Test Automation Engineer, as
+  the next QA proof lane after the prior [LUC-5156](/LUC/issues/LUC-5156)
+  Strategy API proof.
+- Scope: select one release-relevant unclosed hotspot from the current
+  generated architecture-health signal, run focused local API proof, run
+  route/capability and architecture status checks, clean validation resources,
+  and record durable evidence.
+- Exclusions: no product/runtime code, schema, migration authoring, browser
+  proof, protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, or production data access.
+- Output: `docs/planning/luc-5184-finance-api-journey-proof.md`.
+- Evidence: selected `07 Finance` read-only context packet,
+  `GET /v1/finance/context`, used by
+  `/areas?area=07-finanse&view=overview`; source checkpoint
+  `6fd442616e597fec0891c0ae8e586a5c2a7a588f`; validation-owned PostgreSQL
+  container `companycore-luc-5184-postgres` on port `55484`; `npm run
+  build:server` PASS; `npm run prisma:migrate:deploy` PASS (`31`
+  migrations); `npm run seed` PASS; `node --test --test-name-pattern
+  "CompanyCore v1 protected API flow" dist/tests/api.test.js` PASS (`1`
+  test); `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass); cleanup checks found no matching validation
+  DB container and no `chrome-headless-shell` process.
+- Final disposition: done for this QA proof slice. No defect or repair child
+  issue was found. Browser proof for the Finance route and protected
+  production proof remain separate future gates.
+
+## Previous Mission
+
 - Mission ID: LUC-5183-SOURCE-CONTROL-CLOSURE-FOR-LUC-5178-EVIDENCE
 - Status: VERIFIED_DONE_PENDING_LOCAL_COMMIT
 - Selected objective: Close local source-control bookkeeping for the

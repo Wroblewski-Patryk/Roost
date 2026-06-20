@@ -7,6 +7,78 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-5212 source-control closure:
+      completed locally for the [LUC-5211](/LUC/issues/LUC-5211)
+      generated/status evidence packet and carried completed Roost evidence
+      lanes. Output:
+      `docs/planning/luc-5212-source-control-closure-for-luc-5211-evidence-packet.md`.
+      Evidence: dirty set classified as coherent completed Roost
+      verification/evidence batch from [LUC-5184](/LUC/issues/LUC-5184),
+      [LUC-5201](/LUC/issues/LUC-5201), [LUC-5202](/LUC/issues/LUC-5202), and
+      [LUC-5211](/LUC/issues/LUC-5211); `git diff --check` PASS with
+      LF-to-CRLF warnings only; generated architecture-awareness and
+      architecture-health JSON parsed at `2026-06-20T16:50:01.697Z` with
+      `2370` entities / `4901` relations; health signals show
+      `implementation_without_tests=1162`, docs gaps `0`, task gaps `0`,
+      implementation-without-task gaps `0`, verified-without-proof gaps `0`,
+      owner gaps `0`, disconnected entities `0`; scoped high-confidence
+      secret/private-key scan found no matches; `npm run architecture:status`
+      PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta
+      `0/0/0`, all gates pass). Push held for future release batch or explicit
+      source-ref/deploy need; deploy impact none.
+
+- [x] LUC-5211 known-state evidence and architecture baseline:
+      completed for Roost PM scope after the local-board wake comment
+      requested local evidence collection and concrete repair lanes. Output:
+      `docs/planning/luc-5211-known-state-evidence-and-architecture-baseline.md`.
+      Evidence: architecture-awareness `--status-only` PASS in `31ms` with no
+      missing exports; bounded full refresh PASS in `73564ms`, generated
+      `2026-06-20T16:50:01.697Z` with `2370` entities / `4901` relations /
+      `13700` files; `npm run architecture:status` PASS (`GREEN`, graph
+      `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass);
+      task-sync gaps `0`; ownership gaps `0`; dependency report `438`
+      relations / `95` entities; architecture health
+      `implementation_without_tests=1162`, actionable `1153`, classified
+      inferred noise `9`, docs gaps `0`, disconnected entities `0`.
+      Source-control closure is complete through [LUC-5212](/LUC/issues/LUC-5212).
+      Protected target proof remains approval/credential gated.
+
+- [x] LUC-5201 Assets preview API journey proof:
+      completed for the next Roost `implementation_without_tests` API hotspot
+      after [LUC-5197](/LUC/issues/LUC-5197). Output:
+      `docs/planning/luc-5201-assets-preview-api-journey-proof.md`.
+      Evidence: selected `08 Assets` image preview route,
+      `GET /v1/assets/files/:id/preview`, used by
+      `/areas?area=08-zasoby&view=files`; `src/tests/api.test.ts` gained
+      explicit assertions for unauthenticated denial, unsupported non-image
+      denial, foreign workspace denial, mocked local media success, `image/png`,
+      `nosniff`, private cache header, and exact PNG bytes; disposable
+      PostgreSQL `companycore-luc-5201-postgres` on port `55401`; `npm run
+      build:server` PASS; `npm run prisma:migrate:deploy` PASS; `npm run
+      seed` PASS; `node --test --test-name-pattern "CompanyCore v1 protected
+      API flow" dist/tests/api.test.js` PASS (`1` test, duration
+      `89622.8414ms`); `npm run check:route-capabilities` PASS
+      (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+      `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+      `0`, worklist `0`, delta `0/0/0`, all gates pass). Cleanup removed the
+      validation DB container and found no `chrome-headless-shell` process.
+      No repair issue is warranted; browser and protected production proof
+      remain separate gates.
+
+- [x] LUC-5202 architecture-awareness heartbeat-safety repair:
+      completed after [LUC-5197](/LUC/issues/LUC-5197) timed out on the
+      Paperclip exporter. Output:
+      `docs/planning/luc-5202-architecture-awareness-heartbeat-safety.md`.
+      Evidence: central exporter syntax check PASS; `--status-only` PASS in
+      `0.37s` with `2368` entities / `4893` relations and no missing exports;
+      forced `--max-elapsed-ms 1` FAIL preserved generated-file timestamp;
+      budgeted full refresh PASS in `47.19s`, generated
+      `2026-06-20T16:38:49.366Z`; `npm run architecture:status` PASS
+      (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`,
+      all gates pass). PM usage: preflight with `--status-only`, then full
+      refresh only when needed with `--max-elapsed-ms 90000 --progress-every
+      5000`.
+
 - [x] LUC-5144 source-control closure:
       completed locally for the [LUC-5135](/LUC/issues/LUC-5135) known-state
       evidence packet. Output:

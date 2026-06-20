@@ -9,6 +9,7 @@ import { signClickUpWebhookBody, verifyClickUpWebhookSignature } from "../integr
 import { getGoogleDriveSettingsForWorkspace } from "../integrations/integration-settings.service";
 import { createEvent } from "../modules/events/event.service";
 import { classifyOperatingAreaKey } from "../operating-model/catalog";
+import { encryptSecret } from "../integrations/secrets";
 
 const realFetch = globalThis.fetch.bind(globalThis);
 let baseUrl = "";
@@ -2475,6 +2476,19 @@ test("CompanyCore v1 protected API flow", async () => {
       scanStatus: "scanned"
     }
   });
+  const assetsImageFile = await prisma.googleDriveFile.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      operatingAreaId: assetsContextArea.id,
+      provider: "google_drive",
+      externalId: "assets-context-preview-image",
+      parentExternalId: "assets-context-child-folder",
+      name: "Preview image.png",
+      mimeType: "image/png",
+      syncStatus: "synced",
+      scanStatus: "scanned"
+    }
+  });
   const assetsDriveSnapshot = await prisma.googleDriveContentSnapshot.create({
     data: {
       workspaceId: ownerA.workspace.id,
@@ -2696,6 +2710,82 @@ test("CompanyCore v1 protected API flow", async () => {
   };
   assert.ok(foreignAssetsContextBody.data.resources.some((item) => item.sourceId === foreignAssetsDriveFile.id));
   assert.ok(!foreignAssetsContextBody.data.resources.some((item) => item.sourceId === assetsDriveFile.id));
+  const unauthenticatedAssetPreview = await request(`/v1/assets/files/${assetsImageFile.id}/preview`);
+  assert.equal(unauthenticatedAssetPreview.status, 401);
+  const unsupportedAssetPreview = await request(`/v1/assets/files/${assetsDriveFile.id}/preview`, { headers: authA });
+  assert.equal(unsupportedAssetPreview.status, 415);
+  assert.equal((unsupportedAssetPreview.body as { error: string }).error, "unsupported_media_type");
+  const foreignAssetPreview = await request(`/v1/assets/files/${assetsImageFile.id}/preview`, { headers: authB });
+  assert.equal(foreignAssetPreview.status, 404);
+  assert.equal((foreignAssetPreview.body as { error: string }).error, "not_found");
+  const previousGoogleDriveSetting = await prisma.integrationSetting.findUnique({
+    where: {
+      workspaceId_provider: {
+        workspaceId: ownerA.workspace.id,
+        provider: "google_drive"
+      }
+    }
+  });
+  const previewSetting = await prisma.integrationSetting.upsert({
+    where: {
+      workspaceId_provider: {
+        workspaceId: ownerA.workspace.id,
+        provider: "google_drive"
+      }
+    },
+    create: {
+      workspaceId: ownerA.workspace.id,
+      provider: "google_drive",
+      secretCiphertext: encryptSecret(JSON.stringify({
+        accessToken: "assets-preview-access-token",
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString()
+      }))
+    },
+    update: {
+      secretCiphertext: encryptSecret(JSON.stringify({
+        accessToken: "assets-preview-access-token",
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString()
+      }))
+    }
+  });
+  const originalFetchBeforeAssetsPreview = globalThis.fetch;
+  const previewMediaBytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+  try {
+    globalThis.fetch = (async (input: string | URL | Request) => {
+      const url = new URL(String(input));
+      if (url.pathname === "/drive/v3/files/assets-context-preview-image" && url.searchParams.get("alt") === "media") {
+        return new Response(previewMediaBytes, {
+          status: 200,
+          headers: { "Content-Type": "image/png" }
+        });
+      }
+      return new Response(JSON.stringify({ error: "not mocked", path: url.pathname }), { status: 404 });
+    }) as typeof fetch;
+
+    const assetPreview = await realFetch(`${baseUrl}/v1/assets/files/${assetsImageFile.id}/preview`, {
+      headers: authA
+    });
+    assert.equal(assetPreview.status, 200);
+    assert.equal(assetPreview.headers.get("content-type"), "image/png");
+    assert.equal(assetPreview.headers.get("x-content-type-options"), "nosniff");
+    assert.match(assetPreview.headers.get("cache-control") ?? "", /private/);
+    assert.deepEqual(new Uint8Array(await assetPreview.arrayBuffer()), previewMediaBytes);
+  } finally {
+    globalThis.fetch = originalFetchBeforeAssetsPreview;
+    if (previousGoogleDriveSetting) {
+      await prisma.integrationSetting.update({
+        where: { id: previewSetting.id },
+        data: {
+          secretCiphertext: previousGoogleDriveSetting.secretCiphertext,
+          config: previousGoogleDriveSetting.config as Prisma.InputJsonValue,
+          active: previousGoogleDriveSetting.active,
+          lastValidatedAt: previousGoogleDriveSetting.lastValidatedAt
+        }
+      });
+    } else {
+      await prisma.integrationSetting.delete({ where: { id: previewSetting.id } });
+    }
+  }
   const assetsMcpManifest = await request("/v1/mcp/manifest", { headers: authA });
   assert.equal(assetsMcpManifest.status, 200);
   const assetsMcpManifestBody = assetsMcpManifest.body as {
@@ -2845,6 +2935,7 @@ test("CompanyCore v1 protected API flow", async () => {
   await prisma.resource.delete({ where: { id: assetsResource.id } });
   await prisma.project.delete({ where: { id: assetsProject.id } });
   await prisma.googleDriveContentSnapshot.delete({ where: { id: assetsDriveSnapshot.id } });
+  await prisma.googleDriveFile.delete({ where: { id: assetsImageFile.id } });
   await prisma.googleDriveFile.delete({ where: { id: assetsNestedFile.id } });
   await prisma.googleDriveFile.delete({ where: { id: assetsChildFolder.id } });
   await prisma.googleDriveFile.delete({ where: { id: assetsRootFolder.id } });
