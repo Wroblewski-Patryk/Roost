@@ -2,6 +2,55 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5131` approved public target proof is complete, while the
+  credentialed protected service-key checks are blocked on missing key
+  injection. Output:
+  `docs/planning/luc-5131-protected-target-proof-checklist.md`. Approval
+  `58e52ef3-6664-446a-9a7b-0dd46207ee6e` was accepted for one read-only
+  target run. Public target evidence: API health `200 OK` with `status=ok`
+  and build commit `5c6fff326d47b442763c0d78b52bf9306ce3bd9a`; web root
+  `200 OK`; API root `200 OK`; CORS preflight `204 No Content`;
+  unauthenticated `/v1/connection` `401 missing_api_key`. `npm run
+  architecture:status` remained PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`, all gates pass). No push, deploy,
+  restart, production mutation, registration, credential readback, or secret
+  disclosure occurred. Disposition: `BLOCKED`; next owner/action is runtime
+  secret owner or board operator injecting the approved `COMPANYCORE_API_KEY`
+  for one same-scope read-only continuation of target `mcp:smoke` and
+  `aog:deploy-smoke` with registration disabled.
+
+- 2026-06-20: `LUC-5158` known-state evidence and architecture baseline is
+  complete for Roost PM scope after the local-board wake comment requested
+  local evidence collection and concrete next repair lanes. Output:
+  `docs/planning/luc-5158-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip scanner PASS (`2360` entities / `4863` relations /
+  `13690` files, generated `2026-06-20T15:02:47.436Z`); `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass); task-sync gaps `0`;
+  ownership gaps `0`; dependency report `437` relations / `95` entities;
+  architecture health `implementation_without_tests=1162`, classified
+  inferred noise `9`, docs gaps `0`, disconnected entities `0`. No code,
+  runtime, database, browser, deploy, push, protected smoke, production,
+  credential, secret, server, Docker, or watcher action occurred. Disposition:
+  PM evidence scope `DONE`; source-control closure is delegated to
+  [LUC-5161](/LUC/issues/LUC-5161).
+
+- 2026-06-20: `LUC-5156` narrow QA route/API journey proof is complete for the
+  [LUC-5150](/LUC/issues/LUC-5150) implementation-without-tests confidence
+  signal. Output: `docs/planning/luc-5156-strategy-api-journey-proof.md`.
+  Selected journey: `01 Strategy` read-only context packet,
+  `GET /v1/strategy/context`, used by
+  `/areas?area=01-strategia&view=overview`. Evidence: disposable local
+  PostgreSQL `companycore-luc-5156-postgres` on port `55461`;
+  `npm run build:server` PASS; `npm run prisma:migrate:deploy` PASS (`31`
+  migrations); `npm run seed` PASS; `node --test --test-name-pattern
+  "CompanyCore v1 protected API flow" dist/tests/api.test.js` PASS (`1`
+  test); `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`). Cleanup checks found no matching
+  validation DB container and no `chrome-headless-shell` process. Disposition:
+  `DONE`; no defect or repair lane found. Browser and protected production
+  proof remain separate future gates.
+
 - 2026-06-20: `LUC-5155` source-control closure is complete locally for the
   [LUC-5150](/LUC/issues/LUC-5150) known-state evidence packet.
   Output:
@@ -84,7 +133,7 @@
   approved pending future scoped design, AI red-team proof, target runtime
   configuration proof, and production smoke.
 
-- 2026-06-20: `LUC-5131` protected target proof checklist is in review after
+- 2026-06-20: `LUC-5131` protected target proof checklist was published after
   the [LUC-5123](/LUC/issues/LUC-5123) local known-state baseline. Output:
   `docs/planning/luc-5131-protected-target-proof-checklist.md`. Evidence:
   `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
@@ -95,10 +144,9 @@
   read-only: public health/API/CORS/unauthenticated denial, target
   `mcp:smoke`, target `aog:deploy-smoke` with registration disabled, and
   approved owner UI read-only proof if owner session access is available.
-  Disposition: `IN_REVIEW` pending board/operator approval and credential
-  injection. No protected smoke, push, deploy, restart, production mutation,
-  credential access, secret disclosure, browser, database, Docker, or watcher
-  process occurred.
+  Later approval and public target proof are recorded in the current top board
+  item. Remaining blocker is credential injection for protected service-key
+  target `mcp:smoke` and `aog:deploy-smoke`.
 
 - 2026-06-20: `LUC-5129` QA proof triage is complete for implemented entities
   without inferred tests.

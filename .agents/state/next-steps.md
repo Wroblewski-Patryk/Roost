@@ -4,6 +4,63 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-5131` approved public target proof is complete; protected
+   service-key proof is blocked on missing key injection.
+   - Output:
+     `docs/planning/luc-5131-protected-target-proof-checklist.md`.
+   - Approval:
+     board approval `58e52ef3-6664-446a-9a7b-0dd46207ee6e` was accepted for
+     one read-only target run.
+   - Public target proof:
+     `GET https://api.roost.luckysparrow.ch/health` returned `200 OK` with
+     `status=ok` and build commit
+     `5c6fff326d47b442763c0d78b52bf9306ce3bd9a`; web root returned `200 OK`;
+     API root returned `200 OK`; CORS preflight returned `204 No Content`;
+     unauthenticated `/v1/connection` returned `401 missing_api_key`.
+   - Continuity proof:
+     `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+     `0`, worklist `0`, delta `0/0/0`, all gates pass).
+   - Next owner/action:
+     runtime secret owner or board operator injects the approved
+     `COMPANYCORE_API_KEY` for one same-scope read-only continuation; then run
+     target `mcp:smoke` and `aog:deploy-smoke` with registration disabled.
+
+1. `LUC-5158` known-state evidence and architecture baseline is complete for
+   Roost PM scope.
+   - Output:
+     `docs/planning/luc-5158-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip scanner PASS (`2360` entities / `4863` relations / `13690`
+     files, generated `2026-06-20T15:02:47.436Z`); `npm run
+     architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+     worklist `0`, delta `0/0/0`, all gates pass); task-sync gaps `0`;
+     ownership gaps `0`; dependency report `437` relations / `95` entities;
+     architecture health `implementation_without_tests=1162`, classified
+     inferred noise `9`, docs gaps `0`, disconnected entities `0`.
+   - Next owner/action:
+     [LUC-5161](/LUC/issues/LUC-5161) owns source-control closure for this
+     generated/status packet. Do not create another broad QA child from the
+     aggregate test-inference signal; [LUC-5156](/LUC/issues/LUC-5156) already
+     completed the current narrow local route/API journey proof. Protected
+     target proof remains approval/credential gated.
+
+1. `LUC-5156` narrow QA route/API journey proof is complete.
+   - Evidence packet:
+     `docs/planning/luc-5156-strategy-api-journey-proof.md`.
+   - Selected journey: `01 Strategy` read-only context packet,
+     `GET /v1/strategy/context`, used by
+     `/areas?area=01-strategia&view=overview`.
+   - Verification: `npm run build:server` PASS;
+     `npm run prisma:migrate:deploy` PASS against disposable local PostgreSQL
+     `companycore-luc-5156-postgres` on port `55461`; `npm run seed` PASS;
+     `node --test --test-name-pattern "CompanyCore v1 protected API flow"
+     dist/tests/api.test.js` PASS; `npm run check:route-capabilities` PASS.
+   - Cleanup: validation DB container removed and no matching container
+     remained; no `chrome-headless-shell` process remained.
+   - Next owner/action: no repair lane is needed from this proof. Continue
+     source-control closure via [LUC-5155](/LUC/issues/LUC-5155) and keep
+     protected production proof under the existing approval/credential gate.
+
 1. `LUC-5155` source-control closure is complete locally for the
    [LUC-5150](/LUC/issues/LUC-5150) generated/status evidence packet.
    - Output:
@@ -60,8 +117,9 @@ Last updated: 2026-06-20
      source-ref/deploy need. Protected target proof remains gated by
      [LUC-5131](/LUC/issues/LUC-5131) approval and credentials.
 
-1. `LUC-5131` protected target proof checklist is in review pending
-   board/operator approval and credential injection.
+1. `LUC-5131` protected target proof checklist was published and the approval
+   was later accepted; public target checks now pass, while protected
+   service-key checks remain blocked on key injection.
    - Output:
      `docs/planning/luc-5131-protected-target-proof-checklist.md`.
    - Proof:
@@ -70,10 +128,10 @@ Last updated: 2026-06-20
      --short --branch` reported `main...origin/main [ahead 66]`;
      `git rev-parse --short HEAD` reported `04a2e7c3`.
    - Next action:
-     resolve the approval path, then run the read-only target package exactly
-     once: public health/API/CORS/unauthenticated denial, target `mcp:smoke`,
-     target `aog:deploy-smoke` with registration disabled, and approved owner
-     UI read-only proof if owner session access is available.
+     inject the approved `COMPANYCORE_API_KEY` and run the remaining
+     credentialed read-only checks exactly once: target `mcp:smoke` and target
+     `aog:deploy-smoke` with registration disabled. Owner UI read-only proof
+     remains conditional on approved owner session access.
    - Guardrail:
      do not run protected smoke, push, deploy, restart, production mutation, or
      access secrets before approval/credential facts exist.

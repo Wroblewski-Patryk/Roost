@@ -2,6 +2,24 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5158` local architecture baseline verified for Roost PM
+  evidence scope. Output:
+  `docs/planning/luc-5158-known-state-evidence-and-architecture-baseline.md`.
+  Scanner PASS generated `2026-06-20T15:02:47.436Z` with `2360` entities,
+  `4863` relations, and `13690` files. Architecture gate:
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass).
+  Synchronization gaps: task-link `0`, implementation-without-task `0`,
+  verified-without-proof `0`, ownership `0`. Remaining confidence debt:
+  `implementation_without_tests=1162`, classified inferred noise `9`; treat as
+  narrow journey-proof debt already advanced by [LUC-5156](/LUC/issues/LUC-5156),
+  not a broad test-generation lane. Protected target health was not tested in
+  this lane and remains approval/credential gated. Follow-up owner/action:
+  [LUC-5161](/LUC/issues/LUC-5161) for generated/status source-control
+  closure. No runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, browser,
+  database, Docker, server, watcher, or long-running process occurred.
+
 - 2026-06-20: `LUC-5144` source-control closure completed locally for the
   [LUC-5135](/LUC/issues/LUC-5135) generated/status evidence packet. Output:
   `docs/planning/luc-5144-source-control-closure-for-luc-5135-evidence-packet.md`.

@@ -2,6 +2,63 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5131` resumed after board approval
+  `58e52ef3-6664-446a-9a7b-0dd46207ee6e` was accepted for one read-only
+  protected target proof run. Output:
+  `docs/planning/luc-5131-protected-target-proof-checklist.md`. Public target
+  checks passed at `2026-06-20T15:03:52Z`: API health `200 OK` with
+  `status=ok` and build commit
+  `5c6fff326d47b442763c0d78b52bf9306ce3bd9a`; web root `200 OK`; API root
+  `200 OK`; CORS preflight `204 No Content`; unauthenticated
+  `/v1/connection` `401 missing_api_key` with no private data. Continuity
+  proof: `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queue `0`, worklist `0`, delta `0/0/0`, all gates pass). The approved
+  protected service-key checks did not run because `COMPANYCORE_API_KEY` was
+  not injected into the heartbeat environment. No push, deploy, restart,
+  production mutation, registration, credential readback, or secret disclosure
+  occurred. Disposition: `BLOCKED` on runtime secret owner or board operator
+  injecting the approved key for one same-scope read-only continuation.
+
+- 2026-06-20: `LUC-5158` Roost known-state evidence and architecture baseline
+  completed for Roost PM scope after the local-board wake comment requested
+  local evidence collection and concrete repair lanes. Output:
+  `docs/planning/luc-5158-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2360`,
+  `relations=4863`, `files=13690`, generated at
+  `2026-06-20T15:02:47.436Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); task-sync reports `0` task-link gaps, `0`
+  implementation-without-task gaps, and `0` verified-without-proof gaps;
+  owner gaps `0`; dependency report `437` relations / `95` entities;
+  architecture health reports `implementation_without_tests=1162`, classified
+  inferred noise `9`, docs gaps `0`, disconnected entities `0`; source
+  checkpoint `HEAD=6a35f9737f0faff6c496b1d6d0a6be1bc3c03cc2`, branch
+  `main...origin/main [ahead 68]`. Follow-up:
+  [LUC-5161](/LUC/issues/LUC-5161) owns source-control closure for this
+  generated/status packet. No new broad QA child was created because
+  [LUC-5156](/LUC/issues/LUC-5156) already completed the current narrow
+  local route/API journey proof from the recurring implementation-without-tests
+  signal. No runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, browser,
+  database, Docker, server, or watcher process occurred.
+
+- 2026-06-20: `LUC-5156` narrow QA route/API journey proof completed for the
+  [LUC-5150](/LUC/issues/LUC-5150) implementation-without-tests confidence
+  signal. Output: `docs/planning/luc-5156-strategy-api-journey-proof.md`.
+  Selected journey: `01 Strategy` read-only context packet,
+  `GET /v1/strategy/context`, used by
+  `/areas?area=01-strategia&view=overview`. Evidence: disposable local
+  PostgreSQL `companycore-luc-5156-postgres` on port `55461`;
+  `npm run build:server` PASS; `npm run prisma:migrate:deploy` PASS (`31`
+  migrations); `npm run seed` PASS; `node --test --test-name-pattern
+  "CompanyCore v1 protected API flow" dist/tests/api.test.js` PASS (`1`
+  test); `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`). Cleanup checks found no matching
+  validation DB container and no `chrome-headless-shell` process. Disposition:
+  `DONE`; no repair lane created. No product code, schema authoring, browser
+  proof, deploy, push, protected smoke, production mutation, credential access,
+  or secret disclosure occurred.
+
 - 2026-06-20: `LUC-5155` source-control closure completed locally for the
   [LUC-5150](/LUC/issues/LUC-5150) known-state evidence packet. Output:
   `docs/planning/luc-5155-source-control-closure-for-luc-5150-evidence-packet.md`.

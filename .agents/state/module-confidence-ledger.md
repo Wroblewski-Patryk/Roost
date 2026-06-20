@@ -2,6 +2,60 @@
 
 Last updated: 2026-06-20
 
+Roost known-state baseline note: [LUC-5158](/LUC/issues/LUC-5158) is
+VERIFIED_PENDING_SCM_CLOSURE for the Roost PM evidence lane. The packet is
+recorded in
+`docs/planning/luc-5158-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`2360` entities,
+`4863` relations, `13690` files, generated `2026-06-20T15:02:47.436Z`);
+`npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task
+synchronization reports `0` task-link gaps, `0` implementation-without-task
+gaps, and `0` verified-without-proof gaps; ownership gaps `0`; dependency
+report shows `437` relations / `95` entities. Architecture health reports
+`implementation_without_tests=1162`, classified inferred noise `9`, docs gaps
+`0`, disconnected entities `0`; confidence classification: local architecture
+and task/proof synchronization are verified, while remaining confidence debt is
+source-control closure plus protected target proof. [LUC-5161](/LUC/issues/LUC-5161)
+owns source-control closure for this packet. [LUC-5156](/LUC/issues/LUC-5156)
+already completed the current narrow QA proof slice; no broad test-generation
+lane is warranted from this heartbeat.
+
+Protected target proof note: [LUC-5131](/LUC/issues/LUC-5131) is
+PARTIALLY_VERIFIED_BLOCKED_ON_KEY_INJECTION after approval
+`58e52ef3-6664-446a-9a7b-0dd46207ee6e` was accepted for one read-only
+protected target proof run. Evidence packet:
+`docs/planning/luc-5131-protected-target-proof-checklist.md`. Public target
+checks passed on 2026-06-20T15:03:52Z: API health `200 OK` with
+`status=ok` and build commit `5c6fff326d47b442763c0d78b52bf9306ce3bd9a`,
+web root `200 OK`, API root `200 OK`, CORS preflight `204 No Content`, and
+unauthenticated `/v1/connection` denied with `401 missing_api_key`.
+Continuity proof: `npm run architecture:status` PASS (`GREEN`, graph
+`454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass).
+Credentialed target `mcp:smoke`, `aog:deploy-smoke`, and owner UI proof were
+not run because `COMPANYCORE_API_KEY` was not injected into the approved
+heartbeat environment. Confidence classification: public target readiness is
+verified for this slice; protected service-key readiness remains blocked by
+runtime secret injection only. No push, deploy, restart, production mutation,
+registration, credential readback, or secret disclosure occurred.
+
+QA proof note: [LUC-5156](/LUC/issues/LUC-5156) is VERIFIED_DONE for one
+narrow route/API journey selected from the recurring
+`implementation_without_tests=1162` signal. Evidence packet:
+`docs/planning/luc-5156-strategy-api-journey-proof.md`. Selected journey:
+`01 Strategy` read-only context packet, `GET /v1/strategy/context`, used by
+`/areas?area=01-strategia&view=overview`. Proof ran against disposable local
+PostgreSQL `companycore-luc-5156-postgres` on port `55461`: `npm run
+build:server` PASS; `npm run prisma:migrate:deploy` PASS with `31`
+migrations; `npm run seed` PASS; `node --test --test-name-pattern
+"CompanyCore v1 protected API flow" dist/tests/api.test.js` PASS (`1` test);
+`npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+`checkedRouteFiles=35`, `status=ok`). Cleanup found no matching validation DB
+container and no `chrome-headless-shell` process. Confidence classification:
+the Strategy API journey is locally verified for this proof slice; no repair
+issue is warranted. Browser proof and protected production proof remain
+separate future gates.
+
 Roost known-state baseline note: [LUC-5150](/LUC/issues/LUC-5150) is
 VERIFIED_PENDING_SCM_CLOSURE for the Roost PM evidence lane. The packet is
 recorded in
@@ -18,7 +72,8 @@ report shows `437` relations / `95` entities. Architecture health reports
 and task/proof synchronization are verified, while remaining confidence debt is
 narrow route/journey proof debt plus source-control closure.
 [LUC-5155](/LUC/issues/LUC-5155) completed local source-control closure for
-this packet; [LUC-5156](/LUC/issues/LUC-5156) owns the next QA proof slice.
+this packet; [LUC-5156](/LUC/issues/LUC-5156) completed the next QA proof
+slice.
 Protected target proof remains release/credential gated through the existing
 approval path.
 
@@ -89,22 +144,17 @@ Source-of-truth wording is now explicit in
 production, credential, secret, deploy, browser, database, Docker, or watcher
 process occurred.
 
-Protected target proof note: [LUC-5131](/LUC/issues/LUC-5131) is
-PARTIALLY_VERIFIED and in review pending approval for protected target
-execution. The checklist is recorded in
+Protected target proof note: [LUC-5131](/LUC/issues/LUC-5131) produced the
+initial protected target checklist. The checklist is recorded in
 `docs/planning/luc-5131-protected-target-proof-checklist.md`. Evidence:
 `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
 queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
 `git status --short --branch` reported `main...origin/main [ahead 66]`;
 `git rev-parse --short HEAD` reported `04a2e7c3`. Confidence classification:
-local architecture readiness is verified, but protected target readiness is
-not verified in this issue until board/operator approval and credential
-injection allow the read-only target package. Recommended first run: public
-health/API/CORS/unauthenticated denial, target `mcp:smoke`, target
-`aog:deploy-smoke` with registration disabled, and approved owner UI read-only
-proof if owner session access is available. No protected smoke, push, deploy,
-restart, production mutation, credential access, secret disclosure, browser,
-database, Docker, or watcher process occurred.
+local architecture readiness is verified, with later public target evidence
+recorded in the current top ledger note. Protected service-key readiness still
+requires approved key injection before `mcp:smoke` and `aog:deploy-smoke` can
+run.
 
 Security/AI authority note: [LUC-5132](/LUC/issues/LUC-5132) is
 VERIFIED_DONE for the Security and Privacy Auditor recheck before

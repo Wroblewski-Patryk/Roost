@@ -5,8 +5,8 @@
 - ID: LUC-5131
 - Title: Protected target proof lane after local known-state baseline
 - Task Type: release
-- Current Stage: planning
-- Status: REVIEW
+- Current Stage: verification
+- Status: PARTIALLY_VERIFIED_BLOCKED_ON_KEY_INJECTION
 - Owner: Ops/Release
 - Depends on: LUC-5123 local known-state baseline
 - Priority: P1
@@ -60,6 +60,26 @@ Coverage ledger caveat:
   Company OS, approval/stage/automation, event/audit, selected operating-model
   CRUD, owner UI, Drive content/write/freshness, agent registry/logs, business
   CRUD, rollback inventory, auto-deploy, and security/adversarial checks.
+
+## Approved Run Checkpoint
+
+On 2026-06-20, approval `58e52ef3-6664-446a-9a7b-0dd46207ee6e` was accepted
+for one read-only protected target proof run:
+
+- public health/API/CORS/unauthenticated denial;
+- target `mcp:smoke`;
+- target `aog:deploy-smoke` with registration disabled;
+- owner UI read-only proof only if an approved owner session path is available.
+
+Runtime credential facts during the approved heartbeat:
+
+- `COMPANYCORE_API_KEY` was not injected.
+- `COMPANYCORE_BASE_URL` was not injected.
+- `COMPANYCORE_DEPLOY_SMOKE_ALLOW_REGISTRATION` was not set.
+
+Result: public read-only target checks were executed and passed. Credentialed
+protected service-key checks were not executed because the required approved
+key was not available in the heartbeat environment.
 
 ## Target Proof Package
 
@@ -196,6 +216,40 @@ Recommended first approval is read-only only:
 
 ## Validation Evidence
 
+### Approved Public Target Evidence
+
+- UTC timestamp: `2026-06-20T15:03:52Z`.
+- Source checkpoint: `HEAD=6a35f973`; branch
+  `main...origin/main [ahead 68]`.
+- `GET https://api.roost.luckysparrow.ch/health` returned `200 OK` with
+  `status=ok`, `service=companycore`, build commit
+  `5c6fff326d47b442763c0d78b52bf9306ce3bd9a`, and image `unknown`.
+  Request ID: `76cebdd2-0407-4d19-8730-c84a3b904e5e`.
+- `GET https://roost.luckysparrow.ch/` returned `200 OK` and served the
+  Roost owner web shell HTML titled `Roost | LuckySparrow Operating Center`.
+  Request ID: `1114a140-2009-4202-a9f3-c0dfad35a02d`.
+- `GET https://api.roost.luckysparrow.ch/` returned `200 OK` with API
+  metadata for web `https://roost.luckysparrow.ch`, API
+  `https://api.roost.luckysparrow.ch`, health `/health`, and version `v1`.
+  Request ID: `90b42a7e-33c7-4748-aad6-a01ab35277a2`.
+- CORS preflight `OPTIONS https://api.roost.luckysparrow.ch/v1/connection`
+  from origin `https://roost.luckysparrow.ch` returned `204 No Content` with
+  `Access-Control-Allow-Origin: https://roost.luckysparrow.ch`,
+  `Access-Control-Allow-Headers: X-API-Key`, and standard API methods.
+  Request ID: `b6783e4c-7071-4aa7-ab85-5b1f6ff6f0f1`.
+- Unauthenticated `GET https://api.roost.luckysparrow.ch/v1/connection`
+  returned `401 Unauthorized` with `error=missing_api_key` and no private
+  data. Request ID: `3bfb5640-462b-4611-8139-bc6db3bf33c2`.
+- `npm run architecture:status` PASS:
+  - `GREEN`
+  - `454 nodes / 765 relations / 35 chains`
+  - evidence queue `0`
+  - chain worklist `0`
+  - delta `0/0/0`
+  - all gates pass `yes`
+
+### Planning Evidence
+
 - `npm run architecture:status` PASS:
   - `GREEN`
   - `454 nodes / 765 relations / 35 chains`
@@ -214,9 +268,13 @@ Recommended first approval is read-only only:
   service-key MCP/AOG smoke, with target mutations kept out of the first run.
 - Files changed: this planning packet plus source-of-truth state updates in
   this same heartbeat.
-- How tested: local architecture status proof only; protected target proof was
-  intentionally not run.
-- What is incomplete: protected target execution is pending board/operator
-  approval and credential injection.
-- Next steps: wait for approval; then run the read-only target package exactly
-  once and record pass/fail evidence.
+- How tested: approved public target checks passed and local architecture
+  status remained green.
+- What is incomplete: credentialed protected target checks remain blocked
+  because the approved `COMPANYCORE_API_KEY` was not injected into the
+  heartbeat environment. `mcp:smoke`, `aog:deploy-smoke`, and owner UI
+  read-only proof were not executed.
+- Next steps: runtime secret owner or board operator injects the approved
+  `COMPANYCORE_API_KEY` for one same-scope read-only continuation; rerun only
+  target `mcp:smoke` and `aog:deploy-smoke` with registration disabled, then
+  record pass/fail evidence.
