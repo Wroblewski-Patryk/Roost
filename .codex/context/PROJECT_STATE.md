@@ -2,6 +2,89 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5233` Roost known-state evidence and architecture baseline
+  completed for IPM evidence scope. Output:
+  `docs/planning/luc-5233-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness `--status-only` PASS in `32ms`
+  with prior exports present and no missing files; bounded full refresh PASS
+  in `62153ms`, generated `2026-06-20T18:09:42.771Z` with `2380` entities,
+  `4938` relations, and `13710` files; `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  task-sync gaps `0`; ownership gaps `0`; dependency report `438` relations /
+  `95` entities; architecture health reports `implementation_without_tests=1162`,
+  actionable `1153`, classified inferred noise `9`, docs gaps `0`,
+  disconnected entities `0`. Follow-ups: [LUC-5239](/LUC/issues/LUC-5239)
+  source-control closure for this generated/status/planning packet and
+  [LUC-5240](/LUC/issues/LUC-5240) next focused QA proof-ladder selection. No
+  runtime code, schema, migration, protected smoke, deploy, push, restart,
+  production mutation, credential access, secret disclosure, browser,
+  database, Docker, server, or watcher process occurred.
+
+- 2026-06-20: `LUC-5234` source-control closure completed locally for the
+  [LUC-5230](/LUC/issues/LUC-5230) known-state evidence packet and carried
+  Roost QA proof/state evidence. Output:
+  `docs/planning/luc-5234-source-control-closure-for-luc-5230-evidence-packet.md`.
+  Evidence: dirty set classified as coherent generated/status/planning/state
+  evidence from [LUC-5220](/LUC/issues/LUC-5220),
+  [LUC-5226](/LUC/issues/LUC-5226),
+  [LUC-5230](/LUC/issues/LUC-5230), and the pre-existing same-shape
+  [LUC-5233](/LUC/issues/LUC-5233) packet; `git diff --check` PASS with
+  LF-to-CRLF warnings only; final architecture-awareness refresh PASS in
+  `63599ms`, generated `2026-06-20T18:12:42.112Z` with `2381` entities /
+  `4942` relations / `13711` files; generated health signals show
+  `implementation_without_tests=1162`,
+  docs gaps `0`, task gaps `0`, implementation-without-task gaps `0`,
+  verified-without-proof gaps `0`, owner gaps `0`, disconnected entities `0`;
+  scoped high-confidence secret/private-key scan found no matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass). Local closure commit
+  created; final SHA is recorded in the Paperclip issue comment. Push held for
+  future release batch or explicit source-ref/deploy need. Deploy impact:
+  none.
+
+- 2026-06-20: `LUC-5230` Roost known-state evidence and architecture baseline
+  completed for Roost PM scope after the local-board wake comment requested
+  local evidence collection and concrete repair lanes. Output:
+  `docs/planning/luc-5230-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness `--status-only` PASS in `20ms`
+  with prior exports present and no missing files; bounded full refresh PASS
+  in `7467ms`, generated `2026-06-20T18:03:57.331Z` with `2379` entities,
+  `4934` relations, and `13709` files; `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  task-sync gaps `0`; ownership gaps `0`; dependency report `438` relations /
+  `95` entities; architecture health reports `implementation_without_tests=1162`,
+  actionable `1153`, classified inferred noise `9`, docs gaps `0`,
+  disconnected entities `0`. Follow-ups: source-control closure for this
+  generated/status/planning packet and next focused QA proof-ladder selection.
+  No runtime code, schema, migration, protected smoke, deploy, push, restart,
+  production mutation, credential access, secret disclosure, browser,
+  database, Docker, server, or watcher process occurred.
+
+- 2026-06-20: `LUC-5226` Operating Model API journey proof completed for the
+  next Roost `implementation_without_tests` local QA rung after
+  [LUC-5224](/LUC/issues/LUC-5224). Output:
+  `docs/planning/luc-5226-operating-model-api-journey-proof.md`. Selected
+  journey: Operating Model aggregate and lifecycle API coverage centered on
+  `GET /v1/operating-model`, mapped to `FEAT-AUTO-0020` and
+  `src/modules/operating-model/operating-model.routes.ts`. Evidence: Process
+  Core was skipped because [LUC-5220](/LUC/issues/LUC-5220) already proved it;
+  disposable PostgreSQL `companycore-luc-5226-postgres` on port `55426`; `npm
+  run test:api:local` PASS after server/web build, all `31` migrations, seed,
+  and `7/7` API subtests (`CompanyCore v1 protected API flow` duration
+  `18163.3809ms`, total `22034.0482ms`); `npm run check:route-capabilities`
+  PASS (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass). Cleanup found
+  no validation DB container and no `chrome-headless-shell` process. No
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, secret disclosure, browser proof, runtime feature change, schema
+  change, or migration authoring occurred. Disposition: `DONE`; no repair
+  issue warranted.
+
 - 2026-06-20: `LUC-5219` source-control closure completed locally for the
   [LUC-5218](/LUC/issues/LUC-5218) Paperclip known-state evidence document and
   generated/status architecture refresh. Output:

@@ -4,6 +4,73 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-5234` source-control closure is complete locally for the
+   [LUC-5230](/LUC/issues/LUC-5230) known-state evidence packet and carried
+   Roost QA proof/state evidence.
+   - Output:
+     `docs/planning/luc-5234-source-control-closure-for-luc-5230-evidence-packet.md`.
+   - Proof:
+     dirty set classified as coherent generated/status/planning/state evidence,
+     including the pre-existing same-shape [LUC-5233](/LUC/issues/LUC-5233)
+     packet; `git diff --check` PASS with LF-to-CRLF warnings only; final
+     architecture-awareness refresh PASS in `63599ms`, generated
+     `2026-06-20T18:12:42.112Z` with `2381` entities / `4942` relations /
+     `13711` files; architecture-health signals remain
+     `implementation_without_tests=1162`, docs/task/proof/owner/disconnected
+     gaps `0`; scoped high-confidence secret/private-key scan found no
+     matches; `npm run architecture:status` PASS (`GREEN`, graph
+     `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass).
+   - Next owner/action:
+     no source-control follow-up is needed for this packet after the local
+     closure commit. Push remains held for a future release batch or explicit
+     source-ref/deploy need; protected target proof remains
+     approval/credential gated.
+
+1. `LUC-5230` known-state evidence and architecture baseline is complete for
+   Roost PM scope.
+   - Output:
+     `docs/planning/luc-5230-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     architecture-awareness `--status-only` PASS in `20ms`; bounded full
+     refresh PASS in `7467ms`, generated `2026-06-20T18:03:57.331Z` with
+     `2379` entities / `4934` relations / `13709` files; `npm run
+     architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+     worklist `0`, delta `0/0/0`, all gates pass); `npm run
+     check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+     `checkedRouteFiles=35`, `status=ok`); task-sync gaps `0`; ownership gaps
+     `0`; dependency report `438` relations / `95` entities; architecture
+     health `implementation_without_tests=1162`, actionable `1153`,
+     classified inferred noise `9`, docs gaps `0`, disconnected entities `0`.
+   - Next owner/action:
+     source-control closure must classify and preserve the generated/status/
+     planning packet. QA should continue with one selected journey proof from
+     the remaining confidence signal, not broad test generation. Protected
+     target proof remains approval/credential gated.
+
+1. `LUC-5226` Operating Model API journey proof is complete for the next Roost
+   `implementation_without_tests` local QA rung after
+   [LUC-5224](/LUC/issues/LUC-5224).
+   - Output:
+     `docs/planning/luc-5226-operating-model-api-journey-proof.md`.
+   - Proof:
+     selected Operating Model aggregate and lifecycle API coverage centered on
+     `GET /v1/operating-model`, mapped to `FEAT-AUTO-0020` and
+     `src/modules/operating-model/operating-model.routes.ts`; skipped Process
+     Core because [LUC-5220](/LUC/issues/LUC-5220) already proved it; `npm run
+     test:api:local` PASS with disposable PostgreSQL
+     `companycore-luc-5226-postgres` on port `55426` after server/web build,
+     `31` migrations, seed, and `7/7` API subtests (`CompanyCore v1 protected
+     API flow` duration `18163.3809ms`, total `22034.0482ms`); `npm run
+     check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+     `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+     (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`,
+     all gates pass). Cleanup found no validation DB container and no
+     `chrome-headless-shell` process.
+   - Next owner/action:
+     no Operating Model repair issue is warranted from this proof. Continue
+     future QA proof ladders only from a named journey risk; browser proof and
+     protected production proof remain separate gates.
+
 1. `LUC-5219` source-control closure is complete locally for the
    [LUC-5218](/LUC/issues/LUC-5218) Paperclip known-state evidence document
    and generated/status architecture refresh.

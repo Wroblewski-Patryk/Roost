@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T17:44:21.858Z
+Generated: 2026-06-20T18:12:42.112Z
 
 ## Canonical Exports
 
@@ -1161,6 +1161,10 @@ Generated: 2026-06-20T17:44:21.858Z
 | documents | document:luc-5217-source-control-closure-for-luc-5215-evidence-packet:b025c32481 | module:docs:6784d83cb0 | docs/planning/luc-5217-source-control-closure-for-luc-5215-evidence-packet.md |
 | documents | document:luc-5219-source-control-closure-for-luc-5218-evidence-packet:2cd5972171 | module:docs:6784d83cb0 | docs/planning/luc-5219-source-control-closure-for-luc-5218-evidence-packet.md |
 | documents | document:luc-5220-process-core-api-journey-proof:fbb338f2c1 | module:docs:6784d83cb0 | docs/planning/luc-5220-process-core-api-journey-proof.md |
+| documents | document:luc-5225-source-control-closure-for-luc-5224-evidence-packet:1beeb967fe | module:docs:6784d83cb0 | docs/planning/luc-5225-source-control-closure-for-luc-5224-evidence-packet.md |
+| documents | document:luc-5226-operating-model-api-journey-proof:3b4478a713 | module:docs:6784d83cb0 | docs/planning/luc-5226-operating-model-api-journey-proof.md |
+| documents | document:luc-5230-known-state-evidence-and-architecture-baseline:98faf29644 | module:docs:6784d83cb0 | docs/planning/luc-5230-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5234-source-control-closure-for-luc-5230-evidence-packet:31d7d01b98 | module:docs:6784d83cb0 | docs/planning/luc-5234-source-control-closure-for-luc-5230-evidence-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1214,7 +1218,3 @@ Generated: 2026-06-20T17:44:21.858Z
 | documents | document:no-temporary-solutions:f4aac3d420 | module:item:884f3f28db | NO_TEMPORARY_SOLUTIONS.md |
 | documents | document:node-registry-csv:ba76f3981d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/CSV-NODES.md |
 | documents | document:non-goals:bb596193e7 | module:docs:6784d83cb0 | docs/product/non-goals.md |
-| documents | document:notes-coverage-expansion:1e3b74e20f | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-AUTO-0018.md |
-| documents | document:notes-model:f1f8171dd1 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0033.md |
-| documents | document:npm-run-architecture-graph:c1552d0f6e | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-ARCH-GRAPH.md |
-| documents | document:npm-run-check-public-js:581c7dfb4d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-AUTO-0001.md |

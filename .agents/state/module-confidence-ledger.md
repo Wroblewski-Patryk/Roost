@@ -2,6 +2,73 @@
 
 Last updated: 2026-06-20
 
+Source-control note: [LUC-5234](/LUC/issues/LUC-5234) is VERIFIED_DONE for the
+[LUC-5230](/LUC/issues/LUC-5230) known-state evidence packet and carried
+Roost QA proof/state evidence. Evidence packet:
+`docs/planning/luc-5234-source-control-closure-for-luc-5230-evidence-packet.md`.
+Proof: dirty state classified as coherent generated/status/planning/state
+evidence from [LUC-5220](/LUC/issues/LUC-5220),
+[LUC-5226](/LUC/issues/LUC-5226), [LUC-5230](/LUC/issues/LUC-5230), and the
+pre-existing same-shape [LUC-5233](/LUC/issues/LUC-5233) packet; `git diff
+--check` PASS with LF-to-CRLF warnings only; final architecture-awareness
+refresh PASS in `63599ms`, generated `2026-06-20T18:12:42.112Z` with `2381`
+entities / `4942` relations / `13711` files;
+health signals show `implementation_without_tests=1162`, docs gaps `0`, task
+gaps `0`, implementation-without-task gaps `0`, verified-without-proof gaps
+`0`, owner gaps `0`, disconnected entities `0`; scoped high-confidence
+token/private-key scan found no matches; `npm run architecture:status` PASS
+(`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`, all gates pass).
+Confidence classification: local source-control preservation is verified; push
+remains held for a future release batch or explicit source-ref/deploy need.
+
+Roost known-state baseline note: [LUC-5230](/LUC/issues/LUC-5230) is
+VERIFIED_PENDING_SCM_CLOSURE for the Roost PM evidence lane. The packet is
+recorded in
+`docs/planning/luc-5230-known-state-evidence-and-architecture-baseline.md`.
+Evidence: architecture-awareness `--status-only` PASS in `20ms` with no
+missing exports; bounded full refresh PASS in `7467ms`, generated
+`2026-06-20T18:03:57.331Z` with `2379` entities, `4934` relations, and
+`13709` files; `npm run architecture:status` PASS (`GREEN`, graph
+`454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+gates pass); `npm run check:route-capabilities` PASS
+(`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+task-sync gaps `0`; ownership gaps `0`; dependency report `438` relations /
+`95` entities. Architecture health reports `implementation_without_tests=1162`,
+actionable `1153`, classified inferred noise `9`, docs gaps `0`,
+disconnected entities `0`; confidence classification: local architecture,
+task/proof synchronization, ownership, and route-capability registration are
+verified, while local source-control closure and the next focused QA
+proof-ladder selection are delegated follow-up lanes. Protected target proof
+remains approval/credential gated.
+
+QA proof note: [LUC-5226](/LUC/issues/LUC-5226) is VERIFIED_DONE for one
+narrow route/API journey selected from the fresh
+[LUC-5224](/LUC/issues/LUC-5224) `implementation_without_tests=1162` signal.
+Evidence packet:
+`docs/planning/luc-5226-operating-model-api-journey-proof.md`. Selected
+journey: Operating Model aggregate and lifecycle API coverage centered on
+`GET /v1/operating-model`, mapped to `FEAT-AUTO-0020` and
+`src/modules/operating-model/operating-model.routes.ts`. Process Core was not
+selected because [LUC-5220](/LUC/issues/LUC-5220) already verified
+`FEAT-AUTO-0029`. Proof used existing assertions in `src/tests/api.test.ts`
+for canonical operating-area restoration, protected system-area deletion,
+custom area lifecycle, folder lifecycle, knowledge root lifecycle, storage
+location lifecycle, automation definition lifecycle, cross-workspace denial,
+and route/capability registration. Local proof ran through project-native
+`npm run test:api:local` against disposable PostgreSQL
+`companycore-luc-5226-postgres` on port `55426`: server/web build PASS; all
+`31` migrations applied; seed PASS; `node --test dist/tests/api.test.js` PASS
+with `7/7` subtests (`CompanyCore v1 protected API flow` duration
+`18163.3809ms`, total `22034.0482ms`). `npm run check:route-capabilities`
+PASS (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+`npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`,
+delta `0/0/0`). Cleanup found no validation DB container and no
+`chrome-headless-shell` process. Confidence classification: the Operating
+Model API journey is locally verified for protected workspace-scoped read
+behavior, guarded lifecycle behavior, cross-workspace denial, and
+route/capability consistency; no repair issue is warranted. Browser proof and
+protected production proof remain separate future gates.
+
 Source-control note: [LUC-5219](/LUC/issues/LUC-5219) is VERIFIED_DONE for the
 [LUC-5218](/LUC/issues/LUC-5218) Paperclip known-state evidence document and
 generated/status architecture refresh. Evidence packet:

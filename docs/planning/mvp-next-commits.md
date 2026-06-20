@@ -1,11 +1,54 @@
 # MVP Next Commits
 
+- 2026-06-20: `LUC-5234` source-control closure is complete locally for the
+  [LUC-5230](/LUC/issues/LUC-5230) known-state evidence packet and carried QA
+  proof/state evidence. Evidence packet:
+  `docs/planning/luc-5234-source-control-closure-for-luc-5230-evidence-packet.md`.
+  Proof: `git diff --check` PASS with LF-to-CRLF warnings only; final
+  architecture-awareness refresh PASS in `63599ms`, generated
+  `2026-06-20T18:12:42.112Z` with `2381` entities / `4942` relations / `13711`
+  files; scoped high-confidence secret/private-key scan found no
+  matches; `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queues `0`, delta `0/0/0`). Push remains held for future release batch or
+  explicit source-ref/deploy need; deploy impact none.
+
+- 2026-06-20: `LUC-5230` known-state evidence and architecture baseline is
+  complete for Roost PM scope. Evidence packet:
+  `docs/planning/luc-5230-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness full refresh PASS in `7467ms`
+  (`2379` entities / `4934` relations / `13709` files, generated
+  `2026-06-20T18:03:57.331Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  task-sync, owner, proof, docs, and disconnected gaps remain `0`. Next
+  commits/lanes: local source-control closure for this packet and one focused
+  QA proof-ladder selection from `implementation_without_tests=1162`.
+
 Keep this file short and execution-focused. The active queue must stay
 synchronized with `.codex/context/TASK_BOARD.md`.
 
 ## Active Queue
 
 ### NOW
+
+- [x] LUC-5226 Operating Model API journey proof:
+      completed for the next Roost `implementation_without_tests` local QA
+      rung after [LUC-5224](/LUC/issues/LUC-5224). Output:
+      `docs/planning/luc-5226-operating-model-api-journey-proof.md`.
+      Evidence: selected Operating Model aggregate and lifecycle API coverage
+      centered on `GET /v1/operating-model`, mapped to `FEAT-AUTO-0020` and
+      `src/modules/operating-model/operating-model.routes.ts`; skipped Process
+      Core because [LUC-5220](/LUC/issues/LUC-5220) already proved it;
+      disposable PostgreSQL `companycore-luc-5226-postgres` on port `55426`;
+      `npm run test:api:local` PASS after server/web build, all `31`
+      migrations, seed, and `7/7` API subtests (`CompanyCore v1 protected API
+      flow` duration `18163.3809ms`, total `22034.0482ms`); `npm run
+      check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+      `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+      (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`,
+      all gates pass). Cleanup found no validation DB container and no
+      `chrome-headless-shell` process. No repair issue is warranted; browser
+      and protected production proof remain separate gates.
 
 - [x] LUC-5219 source-control closure:
       completed locally for the [LUC-5218](/LUC/issues/LUC-5218) Paperclip

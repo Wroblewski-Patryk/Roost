@@ -2,6 +2,84 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5233` known-state evidence and architecture baseline is
+  complete for IPM evidence scope. Output:
+  `docs/planning/luc-5233-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness `--status-only` PASS in `32ms`; bounded
+  full refresh PASS in `62153ms`, generated `2026-06-20T18:09:42.771Z` with
+  `2380` entities / `4938` relations / `13710` files; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); task-sync gaps `0`; ownership gaps
+  `0`; dependency report `438` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`, actionable `1153`, classified inferred
+  noise `9`, docs gaps `0`, disconnected entities `0`. No code, runtime,
+  database, browser, deploy, push, protected smoke, production, credential,
+  secret, server, Docker, or watcher action occurred. Disposition: IPM
+  evidence scope complete; follow-ups are [LUC-5239](/LUC/issues/LUC-5239)
+  source-control closure and [LUC-5240](/LUC/issues/LUC-5240) next focused QA
+  proof-ladder selection.
+
+- 2026-06-20: `LUC-5234` source-control closure is complete locally for the
+  [LUC-5230](/LUC/issues/LUC-5230) known-state evidence packet and carried
+  Roost QA proof/state evidence. Output:
+  `docs/planning/luc-5234-source-control-closure-for-luc-5230-evidence-packet.md`.
+  Evidence: dirty set classified as coherent generated/status/planning/state
+  evidence from [LUC-5220](/LUC/issues/LUC-5220),
+  [LUC-5226](/LUC/issues/LUC-5226),
+  [LUC-5230](/LUC/issues/LUC-5230), and the pre-existing same-shape
+  [LUC-5233](/LUC/issues/LUC-5233) packet; `git diff --check` PASS with
+  LF-to-CRLF warnings only; final architecture-awareness refresh PASS in
+  `63599ms`, generated `2026-06-20T18:12:42.112Z` with `2381` entities /
+  `4942` relations / `13711` files; health signals show
+  `implementation_without_tests=1162`, docs gaps `0`, task gaps
+  `0`, implementation-without-task gaps `0`, verified-without-proof gaps `0`,
+  owner gaps `0`, disconnected entities `0`; scoped high-confidence
+  secret/private-key scan found no matches; `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`,
+  all gates pass). Local closure commit created; push held for future release
+  batch or explicit source-ref/deploy need; deploy impact none. Disposition:
+  `DONE`.
+
+- 2026-06-20: `LUC-5230` known-state evidence and architecture baseline is
+  complete for Roost PM scope after the local-board wake comment requested
+  local evidence collection and concrete next repair lanes. Output:
+  `docs/planning/luc-5230-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness `--status-only` PASS in `20ms`; bounded
+  full refresh PASS in `7467ms`, generated `2026-06-20T18:03:57.331Z` with
+  `2379` entities / `4934` relations / `13709` files; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); task-sync gaps `0`; ownership gaps
+  `0`; dependency report `438` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`, actionable `1153`, classified inferred
+  noise `9`, docs gaps `0`, disconnected entities `0`. No code, runtime,
+  database, browser, deploy, push, protected smoke, production, credential,
+  secret, server, Docker, or watcher action occurred. Disposition: PM evidence
+  scope complete; follow-ups are source-control closure and next focused QA
+  proof-ladder selection.
+
+- 2026-06-20: `LUC-5226` Operating Model API journey proof is complete for the
+  next Roost `implementation_without_tests` local QA rung after
+  [LUC-5224](/LUC/issues/LUC-5224). Output:
+  `docs/planning/luc-5226-operating-model-api-journey-proof.md`. Selected
+  journey: Operating Model aggregate and lifecycle API coverage centered on
+  `GET /v1/operating-model`, mapped to `FEAT-AUTO-0020` and
+  `src/modules/operating-model/operating-model.routes.ts`. Evidence:
+  Process Core was skipped because [LUC-5220](/LUC/issues/LUC-5220) already
+  proved it; disposable PostgreSQL `companycore-luc-5226-postgres` on port
+  `55426`; `npm run test:api:local` PASS after server/web build, all `31`
+  migrations, seed, and `7/7` API subtests (`CompanyCore v1 protected API
+  flow` duration `18163.3809ms`, total `22034.0482ms`); `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all
+  gates pass). Cleanup found no validation DB container and no
+  `chrome-headless-shell` process. Disposition: `DONE`; no repair issue
+  warranted; browser and protected production proof remain separate gates.
+
 - 2026-06-20: `LUC-5219` source-control closure is complete locally for the
   [LUC-5218](/LUC/issues/LUC-5218) Paperclip known-state evidence document and
   generated/status architecture refresh. Output:

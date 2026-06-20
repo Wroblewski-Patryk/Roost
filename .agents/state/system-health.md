@@ -2,6 +2,78 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5234` source-control closure completed locally for the
+  [LUC-5230](/LUC/issues/LUC-5230) known-state evidence packet and carried QA
+  proof/state evidence. Output:
+  `docs/planning/luc-5234-source-control-closure-for-luc-5230-evidence-packet.md`.
+  SCM hygiene PASS: `git diff --check` reported no whitespace errors, only
+  LF-to-CRLF working-copy warnings; generated JSON parsed at
+  final architecture-awareness refresh PASS in `63599ms`, generated
+  `2026-06-20T18:12:42.112Z` with `2381` entities / `4942` relations /
+  `13711` files; generated architecture-health signals remain
+  `implementation_without_tests=1162`, docs
+  gaps `0`, task gaps `0`, implementation-without-task gaps `0`,
+  verified-without-proof gaps `0`, owner gaps `0`, disconnected entities `0`;
+  scoped high-confidence token/private-key scan found no matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`, all gates pass). Push held for future release batch or explicit
+  source-ref/deploy need. Deploy impact: none.
+
+- 2026-06-20: `LUC-5230` local architecture baseline verified for Roost PM
+  evidence scope after the local-board wake requested evidence collection and
+  concrete repair lanes. Output:
+  `docs/planning/luc-5230-known-state-evidence-and-architecture-baseline.md`.
+  Scanner preflight PASS in `20ms`; bounded full scanner refresh PASS in
+  `7467ms`, generated `2026-06-20T18:03:57.331Z` with `2379` entities,
+  `4934` relations, and `13709` files. Drift checks: `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`, all gates pass); `npm run check:route-capabilities` PASS (`180`
+  manifest routes / `35` route files, `status=ok`). Synchronization gaps:
+  task-link `0`, implementation-without-task `0`, verified-without-proof `0`,
+  ownership `0`, disconnected entities `0`; dependency report `438`
+  relations / `95` entities. Remaining confidence debt:
+  `implementation_without_tests=1162`, actionable `1153`, classified inferred
+  noise `9`; treat as narrow journey-proof debt, not a broad repair mandate.
+  Follow-up owner/action: source-control closure for the generated/status/
+  planning packet and next focused QA proof-ladder selection. Deploy impact:
+  none. Protected production proof remains approval/credential gated.
+
+- 2026-06-20: `LUC-5226` Operating Model API journey proof completed for the
+  next Roost `implementation_without_tests` local QA rung after
+  [LUC-5224](/LUC/issues/LUC-5224). Output:
+  `docs/planning/luc-5226-operating-model-api-journey-proof.md`. Selected
+  journey: Operating Model aggregate and lifecycle API coverage centered on
+  `GET /v1/operating-model`, mapped to `FEAT-AUTO-0020` and
+  `src/modules/operating-model/operating-model.routes.ts`. Local API proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5226-postgres
+  COMPANYCORE_TEST_DB_PORT=55426 COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0
+  npm run test:api:local` PASS after server/web build, `31` migrations, seed,
+  and `7/7` API subtests (`CompanyCore v1 protected API flow` duration
+  `18163.3809ms`, total `22034.0482ms`). Drift checks: `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files,
+  `status=ok`); `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`, all gates pass). Cleanup found no
+  `companycore-luc-5226-postgres` container and no `chrome-headless-shell`
+  process. Deploy impact: none. Protected production proof remains
+  approval/credential gated.
+
+- 2026-06-20: `LUC-5220` Process Core API journey proof completed for the next
+  Roost `implementation_without_tests` local QA rung. Output:
+  `docs/planning/luc-5220-process-core-api-journey-proof.md`. Selected
+  journey: `GET /v1/process-core/coverage`, mapped to `FEAT-AUTO-0029` and
+  `src/modules/process-core/process-core.routes.ts`. Local API proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5220-postgres
+  COMPANYCORE_TEST_DB_PORT=55420 COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0
+  npm run test:api:local` PASS after server/web build, `31` migrations, seed,
+  and `7/7` API subtests (`CompanyCore v1 protected API flow` duration
+  `25793.4685ms`, total `29057.5133ms`). Drift checks: `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files,
+  `status=ok`); `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`, all gates pass). Cleanup found no
+  `companycore-luc-5220-postgres` container and no `chrome-headless-shell`
+  process. Deploy impact: none. Protected production proof remains
+  approval/credential gated.
+
 - 2026-06-20: `LUC-5168` source-control closure completed locally for the
   [LUC-5165](/LUC/issues/LUC-5165) generated/status evidence packet. Output:
   `docs/planning/luc-5168-source-control-closure-for-luc-5165-evidence-packet.md`.
