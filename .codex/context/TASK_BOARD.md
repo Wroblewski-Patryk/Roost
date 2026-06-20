@@ -2,6 +2,89 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5144` source-control closure is complete locally for the
+  [LUC-5135](/LUC/issues/LUC-5135) known-state evidence packet.
+  Output:
+  `docs/planning/luc-5144-source-control-closure-for-luc-5135-evidence-packet.md`.
+  Evidence: dirty set classified as coherent carried evidence/status outputs;
+  `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  architecture-awareness JSON parsed with `2355` entities / `4843` relations
+  at `2026-06-20T14:15:30.045Z`; generated architecture-health JSON parsed
+  with `implementation_without_tests=1162` and docs gaps `0`; scoped
+  high-confidence secret/private-key scan found no matching files; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass). Push held for future release
+  batch or explicit source-ref/deploy need; deploy impact none. Disposition:
+  `DONE`.
+
+- 2026-06-20: `LUC-5135` known-state evidence and architecture baseline is
+  complete for Roost PM scope after the local-board wake comment requested
+  local evidence collection and concrete next repair lanes. Output:
+  `docs/planning/luc-5135-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip scanner PASS (`2355` entities / `4843` relations /
+  `13685` files, generated `2026-06-20T14:15:30.045Z`); `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass); task-sync gaps `0`;
+  ownership gaps `0`; dependency report `437` relations / `95` entities;
+  architecture health `implementation_without_tests=1162`, actionable `1153`,
+  classified inferred noise `9`. No code, runtime, database, browser, deploy,
+  push, protected smoke, production, credential, secret, server, Docker, or
+  watcher action occurred. Disposition: PM evidence scope `DONE`; source
+  control closure is required for the generated/status packet before local
+  source-control closure can be considered complete.
+
+- 2026-06-20: `LUC-5132` security and AI authority evidence recheck is
+  complete for the Security and Privacy Auditor scope.
+  Output:
+  `docs/planning/luc-5132-security-ai-authority-evidence-recheck.md`.
+  Evidence: read-only MCP profile inspection, risky MCP `requiresApproval`
+  manifest inspection, bridge fail-closed proof, and architecture continuity
+  proof all passed. Commands: `node --check scripts/companycore-mcp-server.mjs`
+  PASS; `node --check scripts/companycore-ai-ready-smoke.mjs` PASS; `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  mock MCP bridge proof PASS (`mcp_tool_requires_supervision`,
+  `isError=true`, `riskyForwarded=false`); `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all
+  gates pass). Disposition: `DONE` for recheck. Current evidence supports
+  read-only/supervised MCP authority only; broad unsupervised writes remain not
+  approved pending future scoped design, AI red-team proof, target runtime
+  configuration proof, and production smoke.
+
+- 2026-06-20: `LUC-5131` protected target proof checklist is in review after
+  the [LUC-5123](/LUC/issues/LUC-5123) local known-state baseline. Output:
+  `docs/planning/luc-5131-protected-target-proof-checklist.md`. Evidence:
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  `git status --short --branch` reported `main...origin/main [ahead 66]`;
+  `git rev-parse --short HEAD` reported `04a2e7c3`. Protected gates are
+  separated from safe local/public checks. First recommended target run is
+  read-only: public health/API/CORS/unauthenticated denial, target
+  `mcp:smoke`, target `aog:deploy-smoke` with registration disabled, and
+  approved owner UI read-only proof if owner session access is available.
+  Disposition: `IN_REVIEW` pending board/operator approval and credential
+  injection. No protected smoke, push, deploy, restart, production mutation,
+  credential access, secret disclosure, browser, database, Docker, or watcher
+  process occurred.
+
+- 2026-06-20: `LUC-5129` QA proof triage is complete for implemented entities
+  without inferred tests.
+  Output:
+  `docs/planning/luc-5129-qa-proof-triage-for-implemented-entities-without-tests.md`.
+  Evidence: current architecture health generated
+  `2026-06-20T14:04:17.597Z` reports `implementation_without_tests=1162`,
+  awareness report reports actionable inferred rows `1153`, docs/task/proof
+  gaps `0`, and classified inferred-link noise `9`. Current 200-row sample is
+  dominated by `43` API mount/proxy rows, `7` shared UI component rows, and
+  `150` feature/script/module rows; path roots are `src=116`, `scripts=62`,
+  `web=19`, plus one each for `prisma`, `tailwind.config.mjs`, and
+  `vite.config.mjs`. `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`, all gates pass). No code, runtime,
+  database, browser, deploy, push, protected smoke, production, credential, or
+  secret action occurred. Disposition: `DONE`; no broad missing-test child
+  issue is warranted from this heartbeat.
+
 - 2026-06-20: `LUC-5121` source-control closure is complete locally for the
   [LUC-5116](/LUC/issues/LUC-5116) known-state evidence packet.
   Output:

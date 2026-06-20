@@ -2,6 +2,63 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5144` source-control closure completed locally for the
+  [LUC-5135](/LUC/issues/LUC-5135) generated/status evidence packet. Output:
+  `docs/planning/luc-5144-source-control-closure-for-luc-5135-evidence-packet.md`.
+  SCM hygiene PASS: `git diff --check` reported no whitespace errors, only
+  LF-to-CRLF working-copy warnings; generated architecture-awareness JSON
+  parsed with `2355` entities / `4843` relations at
+  `2026-06-20T14:15:30.045Z`; generated architecture-health JSON parsed with
+  `implementation_without_tests=1162` and docs gaps `0`; scoped
+  high-confidence token/private-key scan found no matching files; `npm run
+  architecture:status` remained GREEN (`454/765/35`, queues `0`, delta
+  `0/0/0`, all gates pass). Push held for future release batch or explicit
+  source-ref/deploy need. Deploy impact: none.
+
+- 2026-06-20: `LUC-5135` local architecture baseline verified for Roost PM
+  evidence scope. Output:
+  `docs/planning/luc-5135-known-state-evidence-and-architecture-baseline.md`.
+  Scanner PASS generated `2026-06-20T14:15:30.045Z` with `2355` entities,
+  `4843` relations, and `13685` files. Architecture gate:
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass).
+  Synchronization gaps: task-link `0`, implementation-without-task `0`,
+  verified-without-proof `0`, ownership `0`. Remaining confidence debt:
+  `implementation_without_tests=1162`, actionable `1153`, classified inferred
+  noise `9`; treat as narrow journey-proof debt. Protected target health was
+  not tested and remains gated by LUC-5131 approval and credentials. No
+  runtime code, schema, migration, protected smoke, deploy, push, restart,
+  production mutation, credential access, secret disclosure, browser,
+  database, Docker, server, watcher, or long-running process occurred.
+
+- 2026-06-20: `LUC-5131` protected target proof checklist is in review, not
+  executed. Output:
+  `docs/planning/luc-5131-protected-target-proof-checklist.md`. Local
+  continuity proof: `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass);
+  `git status --short --branch` reported `main...origin/main [ahead 66]`;
+  `git rev-parse --short HEAD` reported `04a2e7c3`. Runtime health impact:
+  no target smoke, push, deploy, restart, production mutation, credential
+  access, browser, database, Docker, or watcher process was started. Protected
+  target health remains unverified pending board/operator approval and
+  credential injection.
+
+- 2026-06-20: `LUC-5132` security and AI authority evidence recheck completed
+  for unsupervised agent write readiness. Output:
+  `docs/planning/luc-5132-security-ai-authority-evidence-recheck.md`.
+  Evidence: `mcp_company_os_reader` source inspection confirms read-only MCP
+  scopes only; risky MCP commands remain `requiresApproval`; bridge syntax and
+  AI-ready smoke syntax passed; `npm run check:route-capabilities` passed
+  (`180` manifest routes / `35` route files); mock MCP bridge proof returned
+  `mcp_tool_requires_supervision`, `isError=true`, and
+  `riskyForwarded=false`; `npm run architecture:status` remained GREEN
+  (`454/765/35`, queues `0`, delta `0/0/0`, all gates pass). Security
+  disposition: default unsupervised MCP usage remains read-only/fail-closed
+  for risky commands; broad unsupervised write rollout remains not approved
+  without a future scoped design and AI red-team/target proof. No runtime code,
+  protected smoke, deploy, push, production mutation, credential access, or
+  secret access occurred.
+
 - 2026-06-20: `LUC-5121` source-control closure completed locally for the
   [LUC-5116](/LUC/issues/LUC-5116) evidence packet. Output:
   `docs/planning/luc-5121-source-control-closure-for-luc-5116-evidence-packet.md`.

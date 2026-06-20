@@ -170,6 +170,15 @@ continue from repository files alone:
   clients, service projects, internal projects, innovation projects, products,
   subscription products, applications, tasks, procedures, departments, humans,
   agents, assets, repositories, and files.
+- `docs/architecture/architecture-evidence-system.md`: project-native
+  architecture evidence graph source-of-truth. As of 2026-06-20, LUC-5130
+  reconciled the expected graph scale difference: `docs/graphs/project-graph.json`
+  and `npm run architecture:status` use the curated registry/evidence/chain
+  graph, while `docs/graphs/architecture-awareness.json` is the broader
+  Paperclip scanner export for inferred inventory, ownership, task-linking,
+  and missing inferred proof signals. Do not treat unequal aggregate counts
+  between those layers as drift without a concrete missing or contradictory
+  entity.
 - `docs/architecture/autonomous-company-operating-system.md`: accepted
   explicit architecture boundary from 2026-05-16. CompanyCore is the company
   operating system, not an embedded AI system. Humans use responsive web UI;

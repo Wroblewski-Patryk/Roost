@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T14:04:17.597Z
+Generated: 2026-06-20T14:15:30.045Z
 
 ## Canonical Exports
 
@@ -1135,6 +1135,10 @@ Generated: 2026-06-20T14:04:17.597Z
 | documents | document:luc-5112-source-control-closure-for-luc-5107-evidence-packet:b302ccbef4 | module:docs:6784d83cb0 | docs/planning/luc-5112-source-control-closure-for-luc-5107-evidence-packet.md |
 | documents | document:luc-5116-known-state-evidence-and-architecture-baseline:b7d5660a25 | module:docs:6784d83cb0 | docs/planning/luc-5116-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5121-source-control-closure-for-luc-5116-evidence-packet:f42fc91fd2 | module:docs:6784d83cb0 | docs/planning/luc-5121-source-control-closure-for-luc-5116-evidence-packet.md |
+| documents | document:luc-5129-qa-proof-triage-for-implemented-entities-without-tests:c600b89c77 | module:docs:6784d83cb0 | docs/planning/luc-5129-qa-proof-triage-for-implemented-entities-without-tests.md |
+| documents | document:luc-5130-architecture-scope-reconciliation:852ffa7019 | module:docs:6784d83cb0 | docs/planning/luc-5130-architecture-scope-reconciliation.md |
+| documents | document:luc-5131-protected-target-proof-checklist:935701e5f5 | module:docs:6784d83cb0 | docs/planning/luc-5131-protected-target-proof-checklist.md |
+| documents | document:luc-5132-security-and-ai-authority-evidence-recheck:1317ba6163 | module:docs:6784d83cb0 | docs/planning/luc-5132-security-ai-authority-evidence-recheck.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1214,7 +1218,3 @@ Generated: 2026-06-20T14:04:17.597Z
 | documents | document:operations-task-card-and-modal:aa0a937dc4 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/UI-OPERATIONS-TASK-CARD.md |
 | documents | document:operations-work-item-created:e2303f14c1 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/EVENT-OPERATIONS-WORK-ITEM-CREATED.md |
 | documents | document:operations-work-items:e544859b4b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-OPERATIONS-WORK-ITEMS.md |
-| documents | document:operations:c57899a445 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PAGE-AUTO-0006.md |
-| documents | document:operationsroute-component:a7bf53476c | module:docs:6784d83cb0 | docs/architecture/nodes/generated/COMP-OPERATIONS-ROUTE.md |
-| documents | document:ops-dnd-001-operations-drag-and-drop-drop-target-feedback-task-contract:75aa99b4b5 | module:docs:6784d83cb0 | docs/planning/operations-dnd-drop-target-feedback-task-contract.md |
-| documents | document:ops-list-filter-001-operations-list-select-all-sticky-task-contract:d43019bff6 | module:docs:6784d83cb0 | docs/planning/operations-list-select-all-sticky-task-contract.md |

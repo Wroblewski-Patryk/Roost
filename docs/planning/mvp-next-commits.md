@@ -7,6 +7,69 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-5144 source-control closure:
+      completed locally for the [LUC-5135](/LUC/issues/LUC-5135) known-state
+      evidence packet. Output:
+      `docs/planning/luc-5144-source-control-closure-for-luc-5135-evidence-packet.md`.
+      Evidence: dirty set classified as coherent carried evidence/status
+      outputs; `git diff --check` PASS with LF-to-CRLF warnings only;
+      generated architecture-awareness JSON parsed with `2355` entities /
+      `4843` relations at `2026-06-20T14:15:30.045Z`; generated
+      architecture-health JSON parsed with `implementation_without_tests=1162`
+      and docs gaps `0`; scoped high-confidence secret/private-key scan found
+      no matching files; `npm run architecture:status` PASS (`GREEN`, graph
+      `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass).
+      Push held for future release batch or explicit source-ref/deploy need;
+      deploy impact none.
+
+- [x] LUC-5135 known-state evidence and architecture baseline:
+      completed for Roost PM scope. Output:
+      `docs/planning/luc-5135-known-state-evidence-and-architecture-baseline.md`.
+      Evidence: Paperclip architecture-awareness scanner PASS (`2355`
+      entities, `4843` relations, `13685` files, generated
+      `2026-06-20T14:15:30.045Z`); `npm run architecture:status` PASS
+      (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`,
+      all gates pass); task-sync gaps `0`; ownership gaps `0`; dependency
+      report `437` relations / `95` entities; architecture health
+      `implementation_without_tests=1162`, actionable `1153`, classified
+      inferred noise `9`. No production/deploy/protected action occurred.
+      Follow-up: source-control closure for this generated/status packet, then
+      one narrow QA route/journey proof; protected target proof stays behind
+      LUC-5131 approval and credentials.
+
+- [ ] LUC-5131 protected target proof checklist:
+      in review pending board/operator approval and credential injection.
+      Output:
+      `docs/planning/luc-5131-protected-target-proof-checklist.md`. Evidence:
+      `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+      `0`, worklist `0`, delta `0/0/0`, all gates pass); `git status
+      --short --branch` reported `main...origin/main [ahead 66]`;
+      `git rev-parse --short HEAD` reported `04a2e7c3`. First recommended
+      approved run is read-only: public health/API/CORS/unauthenticated
+      denial, target `mcp:smoke`, target `aog:deploy-smoke` with registration
+      disabled, and approved owner UI read-only proof if available. No
+      protected smoke, push, deploy, restart, production mutation, credential
+      access, secret disclosure, browser, database, Docker, or watcher process
+      occurred in this planning heartbeat.
+
+- [x] LUC-5129 QA proof triage for implemented entities without inferred
+      tests:
+      completed. Output:
+      `docs/planning/luc-5129-qa-proof-triage-for-implemented-entities-without-tests.md`.
+      Evidence: current architecture health generated
+      `2026-06-20T14:04:17.597Z` reports `implementation_without_tests=1162`;
+      awareness report reports actionable inferred rows `1153`, classified
+      inferred-link noise `9`, and docs/task/proof gaps `0`. Current 200-row
+      sample distribution is `43` API mount/proxy rows, `7` shared UI
+      component rows, and `150` feature/script/module rows. `npm run
+      check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+      `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status`
+      PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta
+      `0/0/0`, all gates pass). No code, runtime, database, browser, deploy,
+      push, protected smoke, production, credential, or secret action
+      occurred. No broad missing-test child issue is warranted from this
+      heartbeat.
+
 - [x] LUC-5112 source-control closure:
       completed locally for the [LUC-5107](/LUC/issues/LUC-5107) known-state
       evidence packet. Output:

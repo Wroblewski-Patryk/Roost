@@ -4,6 +4,173 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5144-SOURCE-CONTROL-CLOSURE-FOR-LUC-5135-EVIDENCE
+- Status: VERIFIED_DONE_PENDING_LOCAL_COMMIT
+- Selected objective: Close local source-control bookkeeping for the
+  [LUC-5135](/LUC/issues/LUC-5135) generated/status evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5144](/LUC/issues/LUC-5144), already claimed by the harness, as the
+  source-control closure sidecar for completed parent
+  [LUC-5135](/LUC/issues/LUC-5135).
+- Scope: classify dirty state, preserve carried [LUC-5129](/LUC/issues/LUC-5129),
+  LUC-5130, [LUC-5131](/LUC/issues/LUC-5131),
+  [LUC-5132](/LUC/issues/LUC-5132), and
+  [LUC-5135](/LUC/issues/LUC-5135) evidence outputs, run SCM hygiene, parse
+  generated JSON, run scoped high-confidence secret scan, run architecture
+  status, publish a closure packet, and create one local closure commit if
+  coherent.
+- Exclusions: no push, deploy, restart, protected smoke, production mutation,
+  credential access, secret disclosure, browser, database, Docker, server,
+  watcher, or long-running process.
+- Output:
+  `docs/planning/luc-5144-source-control-closure-for-luc-5135-evidence-packet.md`.
+- Evidence: pre-closure
+  `HEAD=04a2e7c3345b5bd05b16f587262f0a4ec4faf2c5`; branch
+  `main...origin/main [ahead 66]`; dirty set classified as coherent local
+  evidence/status outputs; `git diff --check` PASS with LF-to-CRLF warnings
+  only; architecture-awareness JSON parsed with `2355` entities / `4843`
+  relations at `2026-06-20T14:15:30.045Z`; architecture-health JSON parsed
+  with `implementation_without_tests=1162` and docs gaps `0`; scoped
+  high-confidence secret/private-key scan found no matching files; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: local source-control closure ready for commit. Push held
+  for future release batch or explicit source-ref/deploy need; deploy impact
+  none.
+
+## Previous Mission
+
+- Mission ID: LUC-5135-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_PENDING_SCM_CLOSURE
+- Selected objective: Refresh local Roost known-state architecture evidence
+  and convert the latest wake comment into concrete repair lanes.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5135](/LUC/issues/LUC-5135) and the latest comment requested local
+  evidence collection plus next repair lanes without protected actions.
+- Scope: run the local Paperclip architecture-awareness scanner, read generated
+  health/ownership/dependency/task-sync reports, run architecture status, record
+  the evidence packet, and update source-of-truth state.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  browser, database, Docker, server, watcher, or long-running process.
+- Output:
+  `docs/planning/luc-5135-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: scanner PASS generated `2026-06-20T14:15:30.045Z` with `2355`
+  entities, `4843` relations, and `13685` files; task-sync reports `0`
+  task-link gaps, `0` implementation-without-task gaps, and `0`
+  verified-without-proof gaps; ownership gaps `0`; dependency report `437`
+  relations / `95` entities; architecture health reports
+  `implementation_without_tests=1162`, actionable `1153`, classified inferred
+  noise `9`; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass).
+- Final disposition: done for PM evidence scope after creating or linking a
+  source-control closure sidecar for this generated/status packet. Next repair
+  lanes are source-control closure, one narrow QA route/journey proof,
+  protected target proof after LUC-5131 approval/credentials, and future
+  security/AI authority expansion only after scoped design and red-team proof.
+
+## Previous Mission
+
+- Mission ID: LUC-5132-SECURITY-AI-AUTHORITY-RECHECK
+- Status: VERIFIED_DONE
+- Selected objective: Recheck Roost security and AI authority evidence before
+  any unsupervised agent writes are treated as allowed.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5132](/LUC/issues/LUC-5132), assigned to Security and Privacy Auditor.
+- Scope: inspect existing MCP profile, manifest, bridge, operations docs, and
+  state evidence; run the smallest focused guardrail checks; preserve a
+  durable audit packet and state updates.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  browser, database, Docker, server, watcher, or long-running process.
+- Output:
+  `docs/planning/luc-5132-security-ai-authority-evidence-recheck.md`.
+- Evidence: source inspection confirmed `mcp_company_os_reader` remains
+  read-only and risky MCP commands are marked `requiresApproval`; `node
+  --check scripts/companycore-mcp-server.mjs` PASS; `node --check
+  scripts/companycore-ai-ready-smoke.mjs` PASS; `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  mock MCP bridge proof PASS with `mcp_tool_requires_supervision`,
+  `isError=true`, and `riskyForwarded=false`; `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`,
+  all gates pass).
+- Final disposition: done for the security evidence recheck. Default
+  unsupervised MCP usage remains read-only/fail-closed for risky commands.
+  Broad unsupervised write rollout remains not approved until a future scoped
+  design and AI red-team proof covers autonomous write policy, approval-token
+  semantics, target runtime configuration, and production smoke.
+
+## Previous Mission
+
+- Mission ID: LUC-5131-PROTECTED-TARGET-PROOF-CHECKLIST
+- Status: PARTIALLY_VERIFIED_PENDING_APPROVAL
+- Selected objective: Define the smallest protected target proof package after
+  the [LUC-5123](/LUC/issues/LUC-5123) local known-state baseline without
+  running protected smoke or touching secrets.
+- Why this mission now: Paperclip scoped this heartbeat to
+  [LUC-5131](/LUC/issues/LUC-5131), assigned to DRE, with explicit acceptance
+  to output a target-proof checklist and request the appropriate approval path
+  instead of executing protected proof.
+- Scope: inspect the function coverage ledger and operations smoke/deploy/
+  rollback contracts; separate safe local/public checks from protected
+  credentialed checks; publish the proof checklist; request approval for a
+  one-run protected read-only package.
+- Exclusions: no protected smoke execution, push, deploy, restart, production
+  mutation, credential access, secret disclosure, browser, database, Docker, or
+  watcher process.
+- Output:
+  `docs/planning/luc-5131-protected-target-proof-checklist.md`.
+- Evidence: `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass);
+  `git status --short --branch` reported `main...origin/main [ahead 66]`;
+  `git rev-parse --short HEAD` reported `04a2e7c3`; UTC checkpoint
+  `2026-06-20T14:08:08.7621294Z`. Ledger raw-line review identified target
+  evidence gaps across MCP, Company OS, approval/stage/automation,
+  event/audit, operating model lifecycle, owner UI, Drive freshness/write
+  samples, agent/business CRUD, rollback inventory, auto-deploy, and security.
+- Final disposition: in review pending board/operator approval and credential
+  injection for one read-only target proof run. Recommended first package:
+  public health/API/CORS/unauthenticated denial, target `mcp:smoke`, target
+  `aog:deploy-smoke` with registration disabled, and approved owner UI
+  read-only proof if owner session access is available.
+
+## Previous Mission
+
+- Mission ID: LUC-5129-QA-PROOF-TRIAGE-IMPLEMENTED-ENTITIES-WITHOUT-TESTS
+- Status: VERIFIED_DONE
+- Selected objective: Triage the current Roost
+  `implementation_without_tests` signal into actionable QA guidance for
+  [LUC-5129](/LUC/issues/LUC-5129).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5129](/LUC/issues/LUC-5129), assigned to QA & Verification Engineer,
+  with no pending comment delta and an explicit request for concrete action.
+- Scope: classify the generated architecture-health missing-test sample,
+  compare against prior QA curation/proof packets, run scoped non-protected
+  gates, update source-of-truth state, and close the issue with an evidence
+  disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-5129-qa-proof-triage-for-implemented-entities-without-tests.md`.
+- Evidence: current architecture health generated
+  `2026-06-20T14:04:17.597Z` reports `2351` entities / `4828` relations and
+  `implementation_without_tests=1162` with `1153` actionable inferred rows;
+  current sample distribution is `43` API mount/proxy rows, `7` shared UI
+  component rows, and `150` feature/script/module rows; task-sync remains
+  clean (`0` task-link gaps, `0` implementation-without-task gaps, `0`
+  verified-without-proof gaps); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: done for QA triage. No broad test-generation issue is
+  warranted; future QA should continue one narrow route/journey proof at a
+  time from release risk. Protected production proof remains
+  release/credential gated.
+
+## Previous Mission
+
 - Mission ID: LUC-5121-SOURCE-CONTROL-CLOSURE-FOR-LUC-5116-EVIDENCE
 - Status: VERIFIED_DONE
 - Selected objective: Close source-control bookkeeping for the

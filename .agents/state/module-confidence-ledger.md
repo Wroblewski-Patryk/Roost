@@ -2,6 +2,114 @@
 
 Last updated: 2026-06-20
 
+Source-control note: [LUC-5144](/LUC/issues/LUC-5144) is VERIFIED_DONE for
+the [LUC-5135](/LUC/issues/LUC-5135) generated/status evidence batch and
+carried adjacent evidence outputs from [LUC-5129](/LUC/issues/LUC-5129),
+LUC-5130, [LUC-5131](/LUC/issues/LUC-5131), and
+[LUC-5132](/LUC/issues/LUC-5132). Closure packet:
+`docs/planning/luc-5144-source-control-closure-for-luc-5135-evidence-packet.md`.
+Evidence: pre-closure
+`HEAD=04a2e7c3345b5bd05b16f587262f0a4ec4faf2c5`; branch
+`main...origin/main [ahead 66]`; `git diff --check` passed with LF-to-CRLF
+warnings only; generated architecture-awareness JSON parsed at `2355`
+entities / `4843` relations, generated `2026-06-20T14:15:30.045Z`; generated
+architecture-health JSON parsed with `implementation_without_tests=1162` and
+docs gaps `0`; scoped high-confidence token/private-key scan found no
+matching files; `npm run architecture:status` remained GREEN. Push remains
+held for a future release batch or explicit source-ref/deploy need. Deploy
+impact: none.
+
+Roost known-state baseline note: [LUC-5135](/LUC/issues/LUC-5135) is
+VERIFIED_PENDING_SCM_CLOSURE for the Roost PM evidence lane. The packet is
+recorded in
+`docs/planning/luc-5135-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`2355` entities,
+`4843` relations, `13685` files, generated `2026-06-20T14:15:30.045Z`);
+`npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task
+synchronization reports `0` task-link gaps, `0` implementation-without-task
+gaps, and `0` verified-without-proof gaps; ownership gaps `0`; dependency
+report shows `437` relations / `95` entities. Architecture health reports
+`implementation_without_tests=1162`, actionable `1153`, classified inferred
+noise `9`; confidence classification: local architecture and task/proof
+synchronization are verified, while remaining confidence debt is narrow
+route/journey proof debt plus source-control closure. Protected production
+proof remains release/credential gated by [LUC-5131](/LUC/issues/LUC-5131).
+
+Architecture evidence graph note: [LUC-5130](/LUC/issues/LUC-5130) is
+VERIFIED_DONE for architecture scope reconciliation between the Paperclip
+architecture-awareness scanner export and the project-native evidence graph.
+The packet is recorded in
+`docs/planning/luc-5130-architecture-scope-reconciliation.md`. Evidence:
+`docs/graphs/architecture-awareness.json` generated
+`2026-06-20T14:04:17.597Z` parses as `2351` entities / `4828` relations;
+`docs/graphs/project-graph.json` parses as `454` nodes / `765` relations /
+`35` chains; `docs/status/architecture-health-dashboard.md` reports the same
+project-native graph and all gates PASS; `npm run architecture:status` PASS
+(`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`).
+Confidence classification: expected scanner-scope layering, not graph drift.
+Source-of-truth wording is now explicit in
+`docs/architecture/architecture-evidence-system.md`. No runtime code, schema,
+production, credential, secret, deploy, browser, database, Docker, or watcher
+process occurred.
+
+Protected target proof note: [LUC-5131](/LUC/issues/LUC-5131) is
+PARTIALLY_VERIFIED and in review pending approval for protected target
+execution. The checklist is recorded in
+`docs/planning/luc-5131-protected-target-proof-checklist.md`. Evidence:
+`npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+`git status --short --branch` reported `main...origin/main [ahead 66]`;
+`git rev-parse --short HEAD` reported `04a2e7c3`. Confidence classification:
+local architecture readiness is verified, but protected target readiness is
+not verified in this issue until board/operator approval and credential
+injection allow the read-only target package. Recommended first run: public
+health/API/CORS/unauthenticated denial, target `mcp:smoke`, target
+`aog:deploy-smoke` with registration disabled, and approved owner UI read-only
+proof if owner session access is available. No protected smoke, push, deploy,
+restart, production mutation, credential access, secret disclosure, browser,
+database, Docker, or watcher process occurred.
+
+Security/AI authority note: [LUC-5132](/LUC/issues/LUC-5132) is
+VERIFIED_DONE for the Security and Privacy Auditor recheck before
+unsupervised agent writes. The packet is recorded in
+`docs/planning/luc-5132-security-ai-authority-evidence-recheck.md`. Evidence:
+`mcp_company_os_reader` remains a read-only profile without approval-write or
+lifecycle-write scopes; `src/mcp/manifest.ts` marks destructive routes,
+approval decisions, automation execution, workflow activation, stage-run, and
+pipeline-run commands as `requiresApproval`; `scripts/companycore-mcp-server.mjs`
+defaults `COMPANYCORE_MCP_COMMAND_MODE` to `read_only` and blocks
+`requiresApproval` tools unless `supervised_operator` is explicit.
+Verification: `node --check scripts/companycore-mcp-server.mjs` PASS; `node
+--check scripts/companycore-ai-ready-smoke.mjs` PASS; `npm run
+check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+mock MCP bridge proof PASS with `mcp_tool_requires_supervision`,
+`isError=true`, and `riskyForwarded=false`; `npm run architecture:status`
+PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`,
+all gates pass). Confidence classification: read-only/supervised MCP
+authority is verified locally; broad unsupervised write rollout remains not
+approved until a future scoped design and AI red-team proof covers autonomous
+write policy, approval-token semantics, target runtime configuration, and
+production smoke.
+
+QA triage note: LUC-5129 is VERIFIED_DONE for implemented-entities-without
+inferred-tests triage. The packet is recorded in
+`docs/planning/luc-5129-qa-proof-triage-for-implemented-entities-without-tests.md`.
+Evidence: `docs/graphs/architecture-health.json` generated
+`2026-06-20T14:04:17.597Z` reports `2351` entities / `4828` relations and
+`implementation_without_tests=1162`; the current 200-row sample is `43`
+API mount/proxy rows, `7` shared UI component rows, and `150`
+feature/script/module rows. Task synchronization remains clean with `0`
+task-link gaps, `0` implementation-without-task gaps, and `0`
+verified-without-proof gaps. `npm run check:route-capabilities` passed
+(`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`) and
+`npm run architecture:status` passed (`GREEN`, graph `454/765/35`, queues
+`0`, delta `0/0/0`). Confidence classification: the aggregate signal is
+journey-proof/scanner-granularity debt, not a direct release blocker or broad
+test-generation queue. Future QA should select one route/journey proof at a
+time from module risk; protected production proof remains release/credential
+gated.
+
 Source-control note: [LUC-5112](/LUC/issues/LUC-5112) is VERIFIED_DONE for
 the [LUC-5107](/LUC/issues/LUC-5107) generated/status evidence batch. The
 actual parent evidence files were already preserved in

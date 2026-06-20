@@ -4,6 +4,61 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-5144` source-control closure is complete locally for the
+   [LUC-5135](/LUC/issues/LUC-5135) generated/status evidence packet.
+   - Output:
+     `docs/planning/luc-5144-source-control-closure-for-luc-5135-evidence-packet.md`.
+   - Proof:
+     dirty set classified as coherent carried evidence/status outputs; `git
+     diff --check` PASS with LF-to-CRLF warnings only; generated
+     architecture-awareness JSON parsed with `2355` entities / `4843`
+     relations at `2026-06-20T14:15:30.045Z`; generated architecture-health
+     JSON parsed with `implementation_without_tests=1162` and docs gaps `0`;
+     scoped high-confidence secret/private-key scan found no matching files;
+     `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+     `0`, worklist `0`, delta `0/0/0`, all gates pass).
+   - Next owner/action:
+     push remains held for a future release batch or explicit
+     source-ref/deploy need. Protected target proof remains gated by
+     [LUC-5131](/LUC/issues/LUC-5131) approval and credentials.
+
+1. `LUC-5131` protected target proof checklist is in review pending
+   board/operator approval and credential injection.
+   - Output:
+     `docs/planning/luc-5131-protected-target-proof-checklist.md`.
+   - Proof:
+     `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+     `0`, worklist `0`, delta `0/0/0`, all gates pass); `git status
+     --short --branch` reported `main...origin/main [ahead 66]`;
+     `git rev-parse --short HEAD` reported `04a2e7c3`.
+   - Next action:
+     resolve the approval path, then run the read-only target package exactly
+     once: public health/API/CORS/unauthenticated denial, target `mcp:smoke`,
+     target `aog:deploy-smoke` with registration disabled, and approved owner
+     UI read-only proof if owner session access is available.
+   - Guardrail:
+     do not run protected smoke, push, deploy, restart, production mutation, or
+     access secrets before approval/credential facts exist.
+
+1. `LUC-5129` QA proof triage is complete for implemented entities without
+   inferred tests.
+   - Output:
+     `docs/planning/luc-5129-qa-proof-triage-for-implemented-entities-without-tests.md`.
+   - Proof:
+     current architecture health generated `2026-06-20T14:04:17.597Z`
+     reports `implementation_without_tests=1162`; awareness report reports
+     actionable inferred rows `1153`, classified inferred-link noise `9`, and
+     docs/task/proof gaps `0`. Current 200-row sample distribution is `43`
+     API mount/proxy rows, `7` shared UI component rows, and `150`
+     feature/script/module rows. `npm run check:route-capabilities` PASS
+     (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+     `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+     `0`, worklist `0`, delta `0/0/0`, all gates pass).
+   - Next owner/action:
+     no broad missing-test child issue is warranted. Future QA should select
+     one narrow route/journey proof from release risk when it adds confidence;
+     protected production proof remains release/credential gated.
+
 1. `LUC-5121` source-control closure is complete locally for the
    [LUC-5116](/LUC/issues/LUC-5116) known-state evidence packet.
    - Output:
