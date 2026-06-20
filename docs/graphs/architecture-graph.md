@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T15:13:24.117Z
+Generated: 2026-06-20T15:43:05.676Z
 
 ## Canonical Exports
 
@@ -1146,6 +1146,8 @@ Generated: 2026-06-20T15:13:24.117Z
 | documents | document:luc-5156-strategy-api-journey-proof:d7be2278f7 | module:docs:6784d83cb0 | docs/planning/luc-5156-strategy-api-journey-proof.md |
 | documents | document:luc-5158-known-state-evidence-and-architecture-baseline:3a8d016baf | module:docs:6784d83cb0 | docs/planning/luc-5158-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5161-source-control-closure-for-luc-5158-evidence-packet:b84b344666 | module:docs:6784d83cb0 | docs/planning/luc-5161-source-control-closure-for-luc-5158-evidence-packet.md |
+| documents | document:luc-5165-known-state-evidence-and-architecture-baseline:4c645160dc | module:docs:6784d83cb0 | docs/planning/luc-5165-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5168-source-control-closure-for-luc-5165-evidence-packet:75bf6a274b | module:docs:6784d83cb0 | docs/planning/luc-5168-source-control-closure-for-luc-5165-evidence-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-06-20T15:13:24.117Z
 | documents | document:operating-model-coverage-expansion:552fc3aa78 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-AUTO-0020.md |
 | documents | document:operating-model-registry-lifecycle-smoke:e3b69aa3dc | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PIPE-AUTO-0017.md |
 | documents | document:operating-tables-model:6d36c672dd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0036.md |
-| documents | document:operations-agent-runtime-coverage-ledger:3913973e92 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-OPS-AGENT-RUNTIME-LEDGER.md |
-| documents | document:operations-canonical-department-filtering-task-contract:4b546d449a | module:docs:6784d83cb0 | docs/planning/operations-canonical-department-filtering-task-contract.md |

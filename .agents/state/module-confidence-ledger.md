@@ -2,6 +2,43 @@
 
 Last updated: 2026-06-20
 
+Source-control note: [LUC-5176](/LUC/issues/LUC-5176) is VERIFIED_DONE for
+the [LUC-5172](/LUC/issues/LUC-5172) generated/status evidence packet.
+Evidence packet:
+`docs/planning/luc-5176-source-control-closure-for-luc-5172-evidence-packet.md`.
+Proof: `git diff --check` PASS with LF-to-CRLF warnings only; generated
+architecture-awareness and architecture-health JSON parsed with `2364`
+entities / `4877` relations at `2026-06-20T15:43:05.676Z`; generated
+architecture-health JSON parsed with `implementation_without_tests=1162`,
+docs gaps `0`, task gaps `0`, implementation-without-task gaps `0`,
+verified-without-proof gaps `0`, owner gaps `0`, and disconnected entities
+`0`; scoped high-confidence token/private-key scan found no matching files;
+`npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass). Confidence
+classification: local source-control closure for the [LUC-5172](/LUC/issues/LUC-5172)
+packet is verified locally; push remains held for a future release batch or
+explicit source-ref/deploy need.
+
+Roost known-state baseline note: [LUC-5172](/LUC/issues/LUC-5172) is
+VERIFIED_DONE after source-control closure through [LUC-5176](/LUC/issues/LUC-5176)
+for the Roost PM evidence lane. The packet is
+recorded in
+`docs/planning/luc-5172-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`2364` entities,
+`4877` relations, `13694` files, generated `2026-06-20T15:43:05.676Z`);
+`npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task
+synchronization reports `0` task-link gaps, `0` implementation-without-task
+gaps, and `0` verified-without-proof gaps; ownership gaps `0`; dependency
+report shows `437` relations / `95` entities. Architecture health reports
+`implementation_without_tests=1162`, actionable `1153`, classified inferred
+noise `9`, docs gaps `0`, disconnected entities `0`; confidence
+classification: local architecture, task/proof synchronization, and local
+source-control preservation are verified, while protected target proof remains
+credential gated. [LUC-5156](/LUC/issues/LUC-5156) already completed the
+current narrow QA proof slice; no broad test-generation lane is warranted from
+this heartbeat.
+
 Source-control note: [LUC-5168](/LUC/issues/LUC-5168) is VERIFIED_DONE for
 the [LUC-5165](/LUC/issues/LUC-5165) generated/status evidence packet.
 Evidence packet:

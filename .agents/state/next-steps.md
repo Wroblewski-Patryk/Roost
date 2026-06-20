@@ -4,6 +4,46 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-5176` source-control closure is complete locally for the
+   [LUC-5172](/LUC/issues/LUC-5172) generated/status evidence packet.
+   - Output:
+     `docs/planning/luc-5176-source-control-closure-for-luc-5172-evidence-packet.md`.
+   - Proof:
+     `git diff --check` PASS with LF-to-CRLF warnings only; generated
+     architecture-awareness and architecture-health JSON parsed with `2364`
+     entities / `4877` relations at `2026-06-20T15:43:05.676Z`; generated
+     architecture-health JSON parsed with `implementation_without_tests=1162`,
+     docs gaps `0`, task gaps `0`, implementation-without-task gaps `0`,
+     verified-without-proof gaps `0`, owner gaps `0`, and disconnected
+     entities `0`; scoped high-confidence secret/private-key scan found no
+     matching files; `npm run architecture:status` PASS (`GREEN`, graph
+     `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass).
+   - Next owner/action:
+     no source-control follow-up is needed for this packet after the local
+     closure commit. Push remains held for a future release batch or explicit
+     source-ref/deploy need. Protected target proof remains in the existing
+     approval/credential lane.
+
+1. `LUC-5172` known-state evidence and architecture baseline is complete for
+   Roost PM scope.
+   - Output:
+     `docs/planning/luc-5172-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip scanner PASS (`2364` entities / `4877` relations / `13694`
+     files, generated `2026-06-20T15:43:05.676Z`); `npm run
+     architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+     worklist `0`, delta `0/0/0`, all gates pass); task-sync gaps `0`;
+     ownership gaps `0`; dependency report `437` relations / `95` entities;
+     architecture health `implementation_without_tests=1162`, actionable
+     `1153`, classified inferred noise `9`, docs gaps `0`, disconnected
+     entities `0`.
+   - Next owner/action:
+     source-control closure is complete through [LUC-5176](/LUC/issues/LUC-5176).
+     Do not create another broad QA child from the aggregate test-inference
+     signal; [LUC-5156](/LUC/issues/LUC-5156) already completed the current
+     narrow local route/API journey proof. Protected target proof remains
+     approval/credential gated.
+
 1. `LUC-5168` source-control closure is complete locally for the
    [LUC-5165](/LUC/issues/LUC-5165) generated/status evidence packet.
    - Output:

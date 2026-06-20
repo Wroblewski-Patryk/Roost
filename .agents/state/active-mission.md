@@ -4,6 +4,79 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5176-SOURCE-CONTROL-CLOSURE-FOR-LUC-5172-EVIDENCE
+- Status: VERIFIED_DONE_PENDING_LOCAL_COMMIT
+- Selected objective: Close local source-control bookkeeping for the
+  [LUC-5172](/LUC/issues/LUC-5172) known-state evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5176](/LUC/issues/LUC-5176), already claimed by the harness, as the
+  source-control closure sidecar for completed parent
+  [LUC-5172](/LUC/issues/LUC-5172).
+- Scope: classify dirty state, preserve the [LUC-5172](/LUC/issues/LUC-5172)
+  generated/status evidence packet, run SCM hygiene, parse generated JSON, run
+  scoped high-confidence secret scan, run architecture status, publish a
+  closure packet, and create one local closure commit if coherent.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  browser, database, Docker, server, watcher, or long-running process.
+- Output:
+  `docs/planning/luc-5176-source-control-closure-for-luc-5172-evidence-packet.md`.
+- Evidence: pre-closure
+  `HEAD=8dd2d8f15a09c09b19fb117845f73290bae1c0b5`; branch
+  `main...origin/main [ahead 70]`; dirty set classified as coherent
+  generated/status evidence outputs; generated architecture-awareness and
+  architecture-health JSON parsed with `2364` entities / `4877` relations at
+  `2026-06-20T15:43:05.676Z`; generated architecture-health JSON parsed with
+  `implementation_without_tests=1162`, docs gaps `0`, task gaps `0`,
+  implementation-without-task gaps `0`, verified-without-proof gaps `0`, owner
+  gaps `0`, and disconnected entities `0`; `git diff --check` PASS with
+  LF-to-CRLF warnings only; scoped high-confidence secret/private-key scan
+  found no matching files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass).
+- Final disposition: local source-control closure ready for commit. Push held
+  for future release batch or explicit source-ref/deploy need; deploy impact
+  none.
+
+## Previous Mission
+
+- Mission ID: LUC-5172-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_PENDING_SCM_CLOSURE
+- Selected objective: Refresh local Roost known-state architecture evidence
+  after the latest local-board wake comment and convert findings into concrete
+  repair lanes.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5172](/LUC/issues/LUC-5172); the latest comment requested local
+  evidence collection and concrete next repair lanes without protected
+  actions.
+- Scope: run the local Paperclip architecture-awareness scanner, read
+  generated health/ownership/dependency/task-sync reports, run architecture
+  status, record the evidence packet, update source-of-truth state, and create
+  one necessary owner-scoped follow-up.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  browser, database, Docker, server, watcher, or long-running process.
+- Output:
+  `docs/planning/luc-5172-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: scanner PASS generated `2026-06-20T15:43:05.676Z` with `2364`
+  entities, `4877` relations, and `13694` files; task-sync reports `0`
+  task-link gaps, `0` implementation-without-task gaps, and `0`
+  verified-without-proof gaps; ownership gaps `0`; dependency report `437`
+  relations / `95` entities; architecture health reports
+  `implementation_without_tests=1162`, actionable `1153`, classified inferred
+  noise `9`, docs gaps `0`, disconnected entities `0`; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: done for PM evidence scope after creating
+  [LUC-5176](/LUC/issues/LUC-5176) as the source-control closure sidecar for
+  this generated/status packet. No broad QA child was created because
+  [LUC-5156](/LUC/issues/LUC-5156) already
+  completed the current narrow journey-proof slice from the recurring
+  `implementation_without_tests=1162` signal. Protected target proof remains
+  approval/credential gated.
+
+## Previous Mission
+
 - Mission ID: LUC-5168-SOURCE-CONTROL-CLOSURE-FOR-LUC-5165-EVIDENCE
 - Status: VERIFIED_DONE_PENDING_LOCAL_COMMIT
 - Selected objective: Close local source-control bookkeeping for the
