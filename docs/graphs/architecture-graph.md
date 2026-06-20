@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T06:43:51.716Z
+Generated: 2026-06-20T07:12:46.333Z
 
 ## Canonical Exports
 
@@ -1083,6 +1083,9 @@ Generated: 2026-06-20T06:43:51.716Z
 | documents | document:luc-4885-known-state-evidence-and-architecture-baseline:b5af1a18fc | module:docs:6784d83cb0 | docs/planning/luc-4885-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4888-technology-and-ai-infrastructure-proof-ladder-closure:4a8292a256 | module:docs:6784d83cb0 | docs/planning/luc-4888-technology-ai-proof-ladder-closure.md |
 | documents | document:luc-4889-source-control-closure-for-luc-4880-luc-4881-luc-4883-evidence-batch:9bc74a847f | module:docs:6784d83cb0 | docs/planning/luc-4889-source-control-closure-for-luc-4880-4881-4883-evidence-batch.md |
+| documents | document:luc-4900-known-state-evidence-and-architecture-baseline:68de691a71 | module:docs:6784d83cb0 | docs/planning/luc-4900-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4905-source-control-closure-for-luc-4900-known-state-evidence-packet:88ff2c9a1c | module:docs:6784d83cb0 | docs/planning/luc-4905-source-control-closure-for-luc-4900-known-state-evidence-packet.md |
+| documents | document:luc-4906-legal-operating-graph-overview-proof-ladder:a775f4a8cf | module:docs:6784d83cb0 | docs/planning/luc-4906-legal-proof-ladder.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-06-20T06:43:51.716Z
 | documents | document:people-and-agents-directory:36e6c24dff | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-PEOPLE-AGENTS-DIRECTORY.md |
 | documents | document:peopleagentsroute-component:d61ff4b124 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/COMP-PEOPLE-AGENTS-ROUTE.md |
 | documents | document:persistent-agent-runtime-playbook:2bd27bd187 | module:docs:6784d83cb0 | docs/operations/persistent-agent-runtime-playbook.md |
-| documents | document:pipeline-registry:89fa84bdb1 | module:docs:6784d83cb0 | docs/pipelines/pipeline-registry.md |
-| documents | document:pipeline-run-task-links-model:1a2d963bb2 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0059.md |
-| documents | document:pipeline-runs-model:91d21c7966 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0037.md |

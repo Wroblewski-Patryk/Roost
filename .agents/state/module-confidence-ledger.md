@@ -2,6 +2,42 @@
 
 Last updated: 2026-06-20
 
+Roost known-state baseline note: LUC-4916 is VERIFIED_DONE for the Roost
+Project Manager evidence lane. The packet is recorded in
+`docs/planning/luc-4916-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2301`,
+`relations=4630`, `files=13624`, generated at
+`2026-06-20T07:12:46.333Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task synchronization reports `0` task-link/proof gaps;
+ownership gaps `0`; dependency report shows `437` relations / `95` entities;
+architecture health reports `implementation_without_tests=1162`. Confidence
+classification: local architecture and task/proof synchronization are
+verified; remaining confidence debt is route/journey proof debt, not a
+PM-owned implementation defect. Follow-up owners: [LUC-4919](/LUC/issues/LUC-4919)
+for source-control closure and [LUC-4920](/LUC/issues/LUC-4920) for
+`11 Innovation -> Operating Graph Overview` local QA proof ladder. Protected
+production proof remains release/credential gated.
+
+QA proof-ladder completion note: LUC-4906 is VERIFIED_DONE for local
+`10 Legal -> Operating Graph Overview`. The packet is recorded in
+`docs/planning/luc-4906-legal-proof-ladder.md`. Evidence:
+`npm run check:route-capabilities` passed with `checkedManifestRoutes=180`,
+`checkedRouteFiles=35`, `status=ok`; `COMPANYCORE_TEST_DB_KEEP=1 npm run
+test:api:local` passed after server/web build, all `31` migrations, seed, and
+`7/7` API subtests. Authenticated Playwright proof on local backend port
+`3239` passed desktop `1366x900` and mobile `390x844` checks for route
+identity, Legal area signal, graph evidence, safe synthetic backend error
+language, no raw backend error leakage, no relevant failed requests, no
+console issues, and no horizontal overflow. Evidence artifacts:
+`docs/ux/evidence/luc-4906-legal-proof-ladder-2026-06-20/`. Alias contract
+verified: route/request/canonical key `10-prawo` resolves to backend operating
+area key `strategy-governance` with `8` nodes, `7` edges, and `3` gaps.
+Cleanup proof: temporary backend stopped, `companycore-test-postgres` removed,
+and no `chrome-headless-shell` process rows remained. Confidence
+classification: Legal operating graph overview is locally verified for this
+proof ladder; protected production proof remains release/credential gated.
+
 Roost known-state baseline note: LUC-4900 is VERIFIED_DONE for the Roost
 Project Manager evidence lane. The packet is recorded in
 `docs/planning/luc-4900-known-state-evidence-and-architecture-baseline.md`.

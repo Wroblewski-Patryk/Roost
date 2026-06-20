@@ -4,6 +4,73 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-4916-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE_PENDING_SCM_AND_QA_CHILDREN
+- Selected objective: Refresh local Roost known-state architecture evidence
+  and convert findings into concrete repair/proof lanes after the
+  `softwarehouse-known-state-wakeup:v1` comment.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4916](/LUC/issues/LUC-4916), assigned to Roost Project Manager, and
+  the latest local-board comment explicitly requested local evidence
+  collection and concrete next repair lanes.
+- Scope: non-protected architecture-awareness scanner refresh, architecture
+  status proof, generated report readback, source-control readback, local
+  planning packet, and child lane creation.
+- Exclusions: no implementation, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4916-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip architecture-awareness scanner PASS (`entities=2301`,
+  `relations=4630`, `files=13624`, generated at
+  `2026-06-20T07:12:46.333Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task sync gaps `0`; owner gaps `0`; dependency report
+  `437` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`; `HEAD=f26080e4346e468d3d36de817a8affb5613ef2c0`.
+- Final disposition: done for PM evidence scope after creating
+  [LUC-4919](/LUC/issues/LUC-4919) for source-control closure and
+  [LUC-4920](/LUC/issues/LUC-4920) for the `11 Innovation -> Operating Graph
+  Overview` QA proof ladder. Protected production proof remains
+  release/credential gated.
+
+## Previous Mission
+
+- Mission ID: LUC-4906-LEGAL-PROOF-LADDER
+- Status: VERIFIED_DONE
+- Selected objective: Execute the local proof ladder for `10 Legal ->
+  Operating Graph Overview`.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4906](/LUC/issues/LUC-4906), created by the
+  [LUC-4900](/LUC/issues/LUC-4900) known-state baseline as the next QA proof
+  ladder after Technology/AI.
+- Scope: route/API/capability inspection, `check:route-capabilities`, local
+  API proof, authenticated local desktop/mobile browser proof, synthetic
+  backend error proof, cleanup proof, planning packet, and source-of-truth
+  synchronization.
+- Exclusions: no implementation, schema, migration authoring, protected smoke,
+  push, deploy, restart, production mutation, credential access, secret
+  disclosure, or production data access.
+- Output: `docs/planning/luc-4906-legal-proof-ladder.md`.
+- Evidence: `npm run check:route-capabilities` PASS (`180` manifest routes,
+  `35` route files); `COMPANYCORE_TEST_DB_KEEP=1 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` API subtests.
+  API preflight verified `/v1/operating-graph/areas/10-prawo?limit=80`:
+  canonical key `10-prawo`, resolved backend key `strategy-governance`, `8`
+  nodes, `7` edges, and `3` gaps. Authenticated Playwright Chromium proof on
+  local backend port `3239` passed desktop `1366x900` and mobile `390x844`
+  checks for route identity, Legal area signal, graph evidence, safe synthetic
+  backend error language, no raw backend error leakage, no relevant failed
+  requests, no console issues, and no horizontal overflow. Evidence artifacts:
+  `docs/ux/evidence/luc-4906-legal-proof-ladder-2026-06-20/`.
+- Cleanup: temporary backend stopped by the proof harness,
+  `companycore-test-postgres` removed, and no `chrome-headless-shell` rows
+  remained.
+- Final disposition: done for local QA proof ladder. Protected production
+  proof remains gated by release/credential approval.
+
+## Previous Mission
+
 - Mission ID: LUC-4900-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
 - Status: VERIFIED_DONE_PENDING_SCM_AND_QA_CHILDREN
 - Selected objective: Refresh local Roost known-state architecture evidence

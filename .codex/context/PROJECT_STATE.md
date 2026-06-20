@@ -2,6 +2,58 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-4919` source-control closure completed for the
+  [LUC-4916](/LUC/issues/LUC-4916) known-state evidence packet and adjacent
+  [LUC-4906](/LUC/issues/LUC-4906) Legal proof-ladder packet. Output:
+  `docs/planning/luc-4919-source-control-closure-for-luc-4916-known-state-evidence-packet.md`.
+  Evidence: `git status --short --branch -uall` showed
+  `main...origin/main [ahead 43]` with tracked generated/status/state files
+  and untracked planning/proof artifacts; `git diff --stat` showed
+  `16 files changed, 7179 insertions(+), 6772 deletions(-)` before this
+  closure packet and final state notes; `git diff --check` passed with
+  LF-to-CRLF conversion warnings only; pre-closure
+  `HEAD=f26080e4346e468d3d36de817a8affb5613ef2c0`. Local commit created.
+  Push held for a future release batch or explicit source-ref/deploy need.
+  No runtime code, schema, migration, protected smoke, deploy, push, restart,
+  production mutation, credential access, secret disclosure, server, browser,
+  database, Docker, or watcher process occurred.
+- 2026-06-20: `LUC-4916` Roost known-state evidence and architecture
+  baseline completed for the Roost PM heartbeat after local-board requested
+  `softwarehouse-known-state-wakeup:v1`. Output:
+  `docs/planning/luc-4916-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2301`,
+  `relations=4630`, `files=13624`, generated at
+  `2026-06-20T07:12:46.333Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task-sync gaps `0`; owner gaps `0`; dependency report
+  `437` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`; `HEAD=f26080e4346e468d3d36de817a8affb5613ef2c0`.
+  Follow-ups: [LUC-4919](/LUC/issues/LUC-4919) source-control closure for this
+  evidence packet and [LUC-4920](/LUC/issues/LUC-4920) QA proof ladder for
+  `11 Innovation -> Operating Graph Overview`. No implementation, schema,
+  migration, protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, server, browser, database, Docker, or
+  watcher process occurred.
+- 2026-06-20: `LUC-4906` Legal operating graph proof ladder completed for
+  `10 Legal -> Operating Graph Overview`. Output:
+  `docs/planning/luc-4906-legal-proof-ladder.md`. Evidence:
+  `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`);
+  `COMPANYCORE_TEST_DB_KEEP=1 npm run test:api:local` PASS after server/web
+  build, all `31` migrations, seed, and `7/7` API subtests. API preflight
+  verified `/v1/operating-graph/areas/10-prawo?limit=80`: canonical key
+  `10-prawo`, resolved backend key `strategy-governance`, `8` nodes, `7`
+  edges, and `3` gaps. Authenticated Playwright Chromium proof on local
+  backend port `3239` passed desktop `1366x900` and mobile `390x844` checks
+  for route identity, Legal area signal, graph evidence, safe synthetic
+  backend error language, no raw backend error leakage, no relevant failed
+  requests, no console issues, and no horizontal overflow. Evidence:
+  `docs/ux/evidence/luc-4906-legal-proof-ladder-2026-06-20/`. Cleanup:
+  backend stopped by the proof harness, `companycore-test-postgres` removed,
+  and no `chrome-headless-shell` rows remained. No implementation, schema,
+  migration authoring, protected smoke, deploy, push, restart, production
+  mutation, credential access, secret disclosure, or production data access
+  occurred. Protected production proof remains release/credential gated.
 - 2026-06-20: `LUC-4905` source-control closure completed for the
   [LUC-4900](/LUC/issues/LUC-4900) known-state evidence packet and adjacent
   Roost PM documentation/state updates. Output:

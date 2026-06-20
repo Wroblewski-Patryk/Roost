@@ -7,6 +7,45 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-4919 source-control closure for the LUC-4916 known-state evidence
+      packet and adjacent LUC-4906 Legal proof-ladder packet: completed.
+      Output:
+      `docs/planning/luc-4919-source-control-closure-for-luc-4916-known-state-evidence-packet.md`.
+      Evidence: `git status --short --branch -uall`, `git diff --stat`,
+      `git diff --check`, and `git rev-parse HEAD` ran; diff-check passed
+      with line-ending conversion warnings only; local commit created. Push
+      held for a future release batch or explicit source-ref/deploy need.
+
+- [x] LUC-4916 Roost known-state evidence and architecture baseline:
+      completed for Roost PM scope after local-board requested
+      `softwarehouse-known-state-wakeup:v1`. Output:
+      `docs/planning/luc-4916-known-state-evidence-and-architecture-baseline.md`.
+      Evidence: Paperclip architecture-awareness scanner PASS
+      (`entities=2301`, `relations=4630`, `files=13624`, generated at
+      `2026-06-20T07:12:46.333Z`); `npm run architecture:status` PASS
+      (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+      delta `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`;
+      architecture health `implementation_without_tests=1162`. Follow-ups:
+      [LUC-4919](/LUC/issues/LUC-4919) source-control closure and
+      [LUC-4920](/LUC/issues/LUC-4920) QA proof ladder for
+      `11 Innovation -> Operating Graph Overview`.
+
+- [x] LUC-4906 Legal operating graph proof ladder:
+      completed for `10 Legal -> Operating Graph Overview`. Output:
+      `docs/planning/luc-4906-legal-proof-ladder.md`. Evidence:
+      `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+      `checkedRouteFiles=35`, `status=ok`);
+      `COMPANYCORE_TEST_DB_KEEP=1 npm run test:api:local` PASS with all `31`
+      migrations and `7/7` API subtests; authenticated Playwright proof on
+      local backend port `3239` passed desktop `1366x900` and mobile
+      `390x844` checks for route identity, Legal signal, graph evidence, safe
+      synthetic backend error language, no raw backend error leakage, no
+      relevant failed requests, no console issues, and no horizontal overflow.
+      API alias contract: request/canonical key `10-prawo`, resolved backend
+      key `strategy-governance`, `8` nodes, `7` edges, `3` gaps. Evidence
+      artifacts:
+      `docs/ux/evidence/luc-4906-legal-proof-ladder-2026-06-20/`.
+
 - [x] LUC-4905 source-control closure for the LUC-4900 known-state evidence
       packet: completed. Output:
       `docs/planning/luc-4905-source-control-closure-for-luc-4900-known-state-evidence-packet.md`.

@@ -1,0 +1,54 @@
+{
+  "ok": true,
+  "route": "/areas?area=10-prawo&view=overview",
+  "api": "/v1/operating-graph/areas/10-prawo?limit=80",
+  "capability": "operating-graph:read",
+  "aliasContract": {
+    "requested": "10-prawo",
+    "canonicalKey": "10-prawo",
+    "resolvedKey": "strategy-governance"
+  },
+  "area": {
+    "id": "4ea24136-aec6-404e-bc8c-0f71cc6edf0c",
+    "key": "strategy-governance",
+    "canonicalKey": "10-prawo",
+    "resolvedKey": "strategy-governance",
+    "name": "Strategy and governance",
+    "description": null,
+    "position": 1
+  },
+  "summary": {
+    "goals": 0,
+    "targets": 0,
+    "metrics": 0,
+    "workflows": 0,
+    "tasks": 0,
+    "knowledge": 0,
+    "sources": 7,
+    "gaps": 3,
+    "nodes": 8,
+    "edges": 7,
+    "limit": 80
+  },
+  "desktop": {
+    "name": "desktop-1366x900",
+    "graphRows": 22,
+    "emptyVisible": false,
+    "consoleIssues": [],
+    "failedRequests": [],
+    "overflow": false
+  },
+  "mobile": {
+    "name": "mobile-390x844",
+    "graphRows": 22,
+    "emptyVisible": false,
+    "consoleIssues": [],
+    "failedRequests": [],
+    "overflow": false
+  },
+  "errorState": {
+    "name": "desktop-error-state",
+    "safeError": true
+  },
+  "evidenceDir": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-4906-legal-proof-ladder-2026-06-20"
+}

@@ -4,6 +4,38 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4916` Roost known-state evidence and architecture baseline is
+   complete for Roost PM scope.
+   - Output:
+     `docs/planning/luc-4916-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2301`,
+     `relations=4630`, `files=13624`, generated
+     `2026-06-20T07:12:46.333Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task/proof/owner gaps remain `0`.
+   - Next owner/action:
+     [LUC-4919](/LUC/issues/LUC-4919) owns source-control closure for this
+     packet; [LUC-4920](/LUC/issues/LUC-4920) owns the next QA proof ladder
+     for `11 Innovation -> Operating Graph Overview`. Protected production
+     proof remains release/credential gated.
+
+1. `LUC-4906` Legal operating graph proof ladder is complete.
+   - Output:
+     `docs/planning/luc-4906-legal-proof-ladder.md`.
+   - Proof:
+     `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+     `checkedRouteFiles=35`, `status=ok`);
+     `COMPANYCORE_TEST_DB_KEEP=1 npm run test:api:local` PASS with all `31`
+     migrations and `7/7` API subtests; authenticated Playwright proof on
+     local backend port `3239` passed desktop `1366x900` and mobile
+     `390x844` checks for route identity, Legal signal, graph evidence, safe
+     synthetic backend error language, no raw backend error leakage, no
+     relevant failed requests, no console issues, and no horizontal overflow.
+   - Next owner/action:
+     no repair issue is needed. Protected production proof remains
+     release/credential gated.
+
 1. `LUC-4905` source-control closure for the
    [LUC-4900](/LUC/issues/LUC-4900) known-state evidence packet is complete.
    - Output:
