@@ -158,8 +158,9 @@ Files intentionally included:
 - `docs/planning/luc-4739-known-state-evidence-and-architecture-baseline.md`
 - `docs/planning/luc-4742-source-control-closure-for-luc-4739-evidence-packet.md`
 
-Local commit: pending at packet creation time; final SHA is recorded in the
-Paperclip closure comment after commit creation.
+Local commit: `5572302` (`docs: close LUC-4739 evidence packet`). This commit
+preserves the generated/status evidence packet and the LUC-4739/LUC-4742
+source-of-truth closure notes.
 
 Push status: not pushed. Push is held for a future release batch or explicit
 source-ref/deploy need.

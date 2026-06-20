@@ -4,6 +4,38 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-4754-RESIDUAL-GENERATED-DRIFT-LUC-4739
+- Status: VERIFIED_DONE
+- Selected objective: Close residual architecture/status generated drift after
+  the [LUC-4739](/LUC/issues/LUC-4739) known-state evidence packet and
+  [LUC-4742](/LUC/issues/LUC-4742) source-control closure sequence.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4754](/LUC/issues/LUC-4754), with no pending comments and no fallback
+  fetch required. The issue described an intermediate residual generated drift
+  after LUC-4739 that needed classification and source-control disposition.
+- Scope: inspect current source state, classify the generated/status drift,
+  correct stale closure-status documentation, record hygiene proof, and update
+  issue disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4754-residual-generated-drift-after-luc-4739.md`.
+- Evidence: `git status --short --branch -uall` initially showed
+  `main...origin/main [ahead 27]`; after source-of-truth context loading, only
+  unrelated `docs/planning/luc-4748-known-state-evidence-and-architecture-baseline.md`
+  was untracked. The generated/status paths named by [LUC-4754](/LUC/issues/LUC-4754)
+  are clean and preserved in `5572302` (`docs: close LUC-4739 evidence packet`).
+  `git diff --check` returned no whitespace errors and only line-ending
+  conversion warnings for source-of-truth markdown files touched by this
+  reconciliation.
+- Final disposition: done for residual drift reconciliation. No generated/status
+  revert or regeneration was needed; stale LUC-4742 closure packet status now
+  records commit `5572302`; push is held for a future release batch or explicit
+  source-ref need.
+
+## Previous Mission
+
 - Mission ID: LUC-4751-SOURCE-CONTROL-CLOSURE-LUC-4748
 - Status: VERIFIED_DONE
 - Selected objective: Close the source-control sidecar for the
