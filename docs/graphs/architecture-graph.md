@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T13:15:34.313Z
+Generated: 2026-06-20T13:42:51.256Z
 
 ## Canonical Exports
 
@@ -1129,6 +1129,10 @@ Generated: 2026-06-20T13:15:34.313Z
 | documents | document:luc-5090-known-state-evidence-and-architecture-baseline:250bba9d59 | module:docs:6784d83cb0 | docs/planning/luc-5090-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5095-source-control-closure-for-luc-5090-evidence-packet:169a48f375 | module:docs:6784d83cb0 | docs/planning/luc-5095-source-control-closure-for-luc-5090-evidence-packet.md |
 | documents | document:luc-5096-tmp-proof-harness-scanner-hygiene:54810f2b8a | module:docs:6784d83cb0 | docs/planning/luc-5096-tmp-proof-harness-scanner-hygiene.md |
+| documents | document:luc-5104-known-state-evidence-and-architecture-baseline:0a5c82f9de | module:docs:6784d83cb0 | docs/planning/luc-5104-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5107-known-state-evidence-and-architecture-baseline:0c58e100da | module:docs:6784d83cb0 | docs/planning/luc-5107-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5111-source-control-closure-for-luc-5104-evidence-packet:237380c8bb | module:docs:6784d83cb0 | docs/planning/luc-5111-source-control-closure-for-luc-5104-evidence-packet.md |
+| documents | document:luc-5112-source-control-closure-for-luc-5107-evidence-packet:b302ccbef4 | module:docs:6784d83cb0 | docs/planning/luc-5112-source-control-closure-for-luc-5107-evidence-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1214,7 +1218,3 @@ Generated: 2026-06-20T13:15:34.313Z
 | documents | document:ops-list-filter-001-operations-list-select-all-sticky-task-contract:d43019bff6 | module:docs:6784d83cb0 | docs/planning/operations-list-select-all-sticky-task-contract.md |
 | documents | document:ops-task-create-001-operations-new-task-creation-task-contract:cacb486aed | module:docs:6784d83cb0 | docs/planning/operations-new-task-creation-task-contract.md |
 | documents | document:organizational-architecture-bridge:c88be3eb97 | module:docs:6784d83cb0 | docs/architecture/organizational-architecture-bridge.md |
-| documents | document:owner-console-ux-smoke:704065c955 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PIPE-AUTO-0018.md |
-| documents | document:package-json-scripts:db131fbecc | module:docs:6784d83cb0 | docs/architecture/nodes/generated/CONFIG-PACKAGE-JSON.md |
-| documents | document:paperclip-agent-config-sync-requested:71d452a382 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/EVENT-PAPERCLIP-SYNC-REQUESTED.md |
-| documents | document:paperclip-company-building-architecture-direction:6da45b3166 | module:docs:6784d83cb0 | docs/planning/paperclip-company-building-architecture-task-contract.md |

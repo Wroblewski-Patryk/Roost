@@ -4,6 +4,37 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5121-SOURCE-CONTROL-CLOSURE-FOR-LUC-5116-EVIDENCE
+- Status: VERIFIED_DONE
+- Selected objective: Close source-control bookkeeping for the
+  [LUC-5116](/LUC/issues/LUC-5116) known-state evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5121](/LUC/issues/LUC-5121), already claimed by the harness, as the
+  source-control closure sidecar for completed parent
+  [LUC-5116](/LUC/issues/LUC-5116).
+- Scope: classify dirty set, preserve generated scanner/status outputs and
+  parent packet, update source-of-truth state, run scoped SCM hygiene, and
+  create one local bookkeeping commit if coherent.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-5121-source-control-closure-for-luc-5116-evidence-packet.md`.
+- Evidence: dirty set matched the [LUC-5116](/LUC/issues/LUC-5116) generated
+  architecture/status evidence batch plus state/context updates and the parent
+  planning packet. `git diff --check` PASS; generated
+  architecture-awareness JSON parsed at `2349` entities / `4820` relations,
+  generated `2026-06-20T13:42:51.256Z`; generated health JSON reports the
+  same entity/relation counts; scoped high-confidence token/private-key scan
+  found no matching files; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates
+  pass).
+- Final disposition: local source-control closure commit created. Final SHA is
+  recorded in the Paperclip closure comment. Push held for future release batch
+  or explicit source-ref/deploy need; deploy impact none.
+
+## Previous Mission
+
 - Mission ID: LUC-5112-SOURCE-CONTROL-CLOSURE-FOR-LUC-5107-EVIDENCE
 - Status: VERIFIED_DONE_PENDING_LOCAL_COMMIT
 - Selected objective: Close source-control bookkeeping for the

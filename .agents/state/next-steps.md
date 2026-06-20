@@ -4,6 +4,40 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-5121` source-control closure is complete locally for the
+   [LUC-5116](/LUC/issues/LUC-5116) known-state evidence packet.
+   - Output:
+     `docs/planning/luc-5121-source-control-closure-for-luc-5116-evidence-packet.md`.
+   - Proof:
+     dirty set classified as the [LUC-5116](/LUC/issues/LUC-5116)
+     generated/status evidence packet plus state/context updates; `git diff
+     --check` PASS; generated architecture-awareness JSON parsed with `2349`
+     entities / `4820` relations at `2026-06-20T13:42:51.256Z`; generated
+     health JSON reports matching entity/relation counts; scoped
+     high-confidence token/private-key scan found no matching files; `npm run
+     architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+     worklist `0`, delta `0/0/0`, all gates pass).
+   - Next owner/action:
+     push remains held for a future release batch or explicit source-ref/deploy
+     need. Protected production proof remains release/credential gated.
+
+1. `LUC-5116` known-state evidence and architecture baseline is complete for
+   Roost PM scope.
+   - Output:
+     `docs/planning/luc-5116-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2349`,
+     `relations=4820`, `files=13679`, generated
+     `2026-06-20T13:42:51.256Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task-sync reports `0` task-link gaps,
+     `0` implementation-without-task gaps, and `0` verified-without-proof
+     gaps.
+   - Next owner/action:
+     [LUC-5121](/LUC/issues/LUC-5121) owns preservation of the
+     generated/status evidence packet. Protected production proof remains
+     release/credential gated.
+
 1. `LUC-5112` source-control closure is complete locally for the
    [LUC-5107](/LUC/issues/LUC-5107) known-state evidence packet.
    - Output:

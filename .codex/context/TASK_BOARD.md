@@ -2,6 +2,39 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5121` source-control closure is complete locally for the
+  [LUC-5116](/LUC/issues/LUC-5116) known-state evidence packet.
+  Output:
+  `docs/planning/luc-5121-source-control-closure-for-luc-5116-evidence-packet.md`.
+  Evidence: dirty set classified as the [LUC-5116](/LUC/issues/LUC-5116)
+  generated/status evidence packet plus state/context updates; `git diff
+  --check` PASS; generated architecture-awareness JSON parsed with `2349`
+  entities / `4820` relations at `2026-06-20T13:42:51.256Z`; generated
+  architecture-health JSON reports matching entity/relation counts; scoped
+  high-confidence token/private-key scan found no matching files; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass). Push held for future release
+  batch or explicit source-ref/deploy need; deploy impact none. Disposition:
+  `DONE`.
+
+- 2026-06-20: `LUC-5116` known-state evidence and architecture baseline is
+  complete for Roost PM scope.
+  Output:
+  `docs/planning/luc-5116-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2349`,
+  `relations=4820`, `files=13679`, generated at
+  `2026-06-20T13:42:51.256Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task-sync reports `0` task-link gaps, `0`
+  implementation-without-task gaps, and `0` verified-without-proof gaps;
+  owner gaps `0`; dependency report `437` relations / `95` entities;
+  architecture health reports `implementation_without_tests=1162`.
+  Scope: no runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, server,
+  browser, database, Docker, or watcher process. Disposition: `DONE` for PM
+  evidence scope after creating [LUC-5121](/LUC/issues/LUC-5121) as the
+  source-control closure sidecar for the generated/status packet.
+
 - 2026-06-20: `LUC-5112` source-control closure is complete locally for the
   [LUC-5107](/LUC/issues/LUC-5107) known-state evidence packet.
   Output:

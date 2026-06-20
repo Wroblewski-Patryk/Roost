@@ -2,6 +2,32 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5121` source-control closure completed locally for the
+  [LUC-5116](/LUC/issues/LUC-5116) evidence packet. Output:
+  `docs/planning/luc-5121-source-control-closure-for-luc-5116-evidence-packet.md`.
+  SCM hygiene PASS: `git diff --check` reported no whitespace errors;
+  generated architecture-awareness JSON parsed with `2349` entities / `4820`
+  relations at `2026-06-20T13:42:51.256Z`; generated architecture-health JSON
+  reports matching entity/relation counts; scoped high-confidence
+  token/private-key scan found no matching files; `npm run
+  architecture:status` remained GREEN (`454/765/35`, queues `0`, delta
+  `0/0/0`, all gates pass). Push held for future release batch or explicit
+  source-ref/deploy need. Deploy impact: none.
+
+- 2026-06-20: `LUC-5116` known-state architecture baseline completed for PM
+  evidence scope. Output:
+  `docs/planning/luc-5116-known-state-evidence-and-architecture-baseline.md`.
+  Scanner proof PASS (`entities=2349`, `relations=4820`, `files=13679`,
+  generated `2026-06-20T13:42:51.256Z`); architecture status PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass). Task/proof/owner gaps are `0`; dependency report remains
+  `437` relations / `95` entities; top health signal is
+  `implementation_without_tests=1162`, still treated as narrow journey-proof
+  debt rather than broad product repair. Follow-up owner/action:
+  [LUC-5121](/LUC/issues/LUC-5121) for generated/status source-control
+  closure. No deploy, push, protected smoke, production mutation, credential
+  access, or secret access occurred.
+
 - 2026-06-20: `LUC-5112` source-control closure completed locally for the
   [LUC-5107](/LUC/issues/LUC-5107) evidence packet. Output:
   `docs/planning/luc-5112-source-control-closure-for-luc-5107-evidence-packet.md`.
