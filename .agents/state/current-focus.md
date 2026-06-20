@@ -1,8 +1,28 @@
 # Current Focus
 
-Last updated: 2026-05-30
+Last updated: 2026-06-21
 
 ## Active Focus
+
+Current Roost PM checkpoint: [LUC-5368](/LUC/issues/LUC-5368) completed local
+source-control closure for the [LUC-5366](/LUC/issues/LUC-5366) known-state
+evidence packet. The closure preserved generated architecture/status exports,
+state/context/planning pointers, and the LUC-5366 evidence packet after diff
+hygiene, generated JSON parse, scoped high-confidence secret/private-key scan,
+and `npm run architecture:status` passed. Push remains held for future
+release/source-ref batching; deploy impact none. Protected runtime proof
+remains approval/credential gated.
+
+Current Roost IPM checkpoint: [LUC-5366](/LUC/issues/LUC-5366) completed the
+latest known-state evidence and architecture baseline. The fresh
+architecture-awareness refresh generated `2026-06-20T22:44:03.023Z` with
+`2427` entities / `5117` relations / `13758` files; `npm run
+architecture:status` and `npm run check:route-capabilities` passed. No broad
+feature repair is warranted from this pass because task-sync, ownership,
+implementation-task, verified-proof, and disconnected gaps remain `0`.
+Immediate next owner/action is [LUC-5368](/LUC/issues/LUC-5368)
+source-control closure for the dirty generated/status/state evidence set.
+Protected runtime proof remains approval/credential gated.
 
 Current Roost PM checkpoint: [LUC-5317](/LUC/issues/LUC-5317) completed the
 latest local-board known-state evidence wake. Status-only

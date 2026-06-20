@@ -4,6 +4,72 @@ Last updated: 2026-06-21
 
 ## Current Mission
 
+<!-- 2026-06-21 current mission inserted above prior closed mission. -->
+
+- Mission ID: LUC-5368-SOURCE-CONTROL-CLOSURE-FOR-LUC-5366-EVIDENCE-PACKET
+- Status: VERIFIED_DONE_PENDING_PUSH_BATCH
+- Selected objective: Close local source control for the
+  [LUC-5366](/LUC/issues/LUC-5366) generated/status/state evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5368](/LUC/issues/LUC-5368), the explicit source-control closure
+  sidecar for [LUC-5366](/LUC/issues/LUC-5366), with instructions to classify
+  the current dirty set, run scoped verification, and create a local no-push
+  commit if safe.
+- Scope: classify generated/status/planning/state dirty files, add the closure
+  packet, run source-control closure checks, and create a local no-push commit.
+- Exclusions: no feature code, schema, migration, push, deploy, restart,
+  protected smoke, production mutation, credential access, secret disclosure,
+  browser proof, runtime server, Docker database, provider action, live account
+  mutation, or watcher process.
+- Output:
+  `docs/planning/luc-5368-source-control-closure-for-luc-5366-evidence-packet.md`.
+- Evidence: `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  `docs/graphs/architecture-awareness.json` and
+  `docs/graphs/architecture-health.json` parse PASS at
+  `2026-06-20T22:44:03.023Z` with `2427` entities / `5117` relations; scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: source-control closure verified in a local commit. Push
+  remains held for future release/source-ref batching; deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5366-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_PENDING_SCM_CLOSURE
+- Selected objective: Refresh Roost known-state architecture evidence and
+  convert findings into owner-scoped next work without implementation.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5366](/LUC/issues/LUC-5366), assigned to IPM, requiring a fresh
+  architectural-awareness refresh, generated report readback, known-state
+  summary, top gaps/risks, and explicit source-control closure disposition.
+- Scope: run the Paperclip architecture-awareness refresh for Roost, read
+  generated health/proof/dependency/ownership/task-sync reports, run
+  `npm run architecture:status`, run `npm run check:route-capabilities`,
+  publish the evidence packet, and route dirty generated/status/state files to
+  source-control closure.
+- Exclusions: no feature code, schema, migration, push, deploy, restart,
+  protected smoke, production mutation, credential access, secret disclosure,
+  browser proof, runtime server, Docker database, provider action, live account
+  mutation, or watcher process.
+- Output:
+  `docs/planning/luc-5366-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: architecture-awareness refresh PASS in `112632ms`, generated
+  `2026-06-20T22:44:03.023Z` with `2427` entities / `5117` relations /
+  `13758` files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  task-sync gaps `0`; owner gaps `0`; disconnected entities `0`;
+  implementation-without-task gaps `0`; verified-without-proof gaps `0`;
+  architecture health reports `implementation_without_tests=1162`.
+- Final disposition: IPM known-state evidence scope complete with local
+  source-control closure delegated to [LUC-5368](/LUC/issues/LUC-5368) for
+  generated/status/state evidence. No broad feature repair is warranted from
+  this pass. Protected target proof remains approval/credential gated.
+
+## Previous Mission
+
 - Mission ID: LUC-5364-SOURCE-CONTROL-CLOSURE-FOR-LUC-5359-EVIDENCE-PACKET
 - Status: VERIFIED_DONE_PENDING_PUSH_BATCH
 - Selected objective: Close local source control for the

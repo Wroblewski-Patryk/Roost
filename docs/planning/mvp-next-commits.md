@@ -1,5 +1,31 @@
 # MVP Next Commits
 
+- 2026-06-21: `LUC-5368` source-control closure is complete locally for the
+  [LUC-5366](/LUC/issues/LUC-5366) evidence packet. Closure packet:
+  `docs/planning/luc-5368-source-control-closure-for-luc-5366-evidence-packet.md`.
+  Proof: dirty set classified as generated architecture/status exports,
+  state/context/planning evidence, and the [LUC-5366](/LUC/issues/LUC-5366)
+  evidence packet; `git diff --check` PASS with LF-to-CRLF warnings only;
+  generated architecture-awareness and health JSON parse PASS at
+  `2026-06-20T22:44:03.023Z` with `2427` entities / `5117` relations; scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`). Push held for future release/source-ref batching; deploy impact
+  none.
+
+- 2026-06-21: `LUC-5366` known-state evidence and architecture baseline is
+  complete for IPM evidence scope, with source-control closure still required
+  for the dirty generated/status/state evidence set. Evidence packet:
+  `docs/planning/luc-5366-known-state-evidence-and-architecture-baseline.md`.
+  Proof: architecture-awareness refresh PASS in `112632ms`, generated
+  `2026-06-20T22:44:03.023Z` with `2427` entities / `5117` relations /
+  `13758` files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  task-sync, ownership, implementation-task, verified-proof, and disconnected
+  gaps remain `0`. Next: [LUC-5368](/LUC/issues/LUC-5368) source-control
+  closure sidecar; push/deploy held.
+
 - 2026-06-21: `LUC-5364` source-control closure is complete locally for the
   [LUC-5359](/LUC/issues/LUC-5359) evidence packet. Closure packet:
   `docs/planning/luc-5364-source-control-closure-for-luc-5359-evidence-packet.md`.

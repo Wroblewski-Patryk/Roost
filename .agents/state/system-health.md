@@ -1,5 +1,24 @@
 # System Health
 
+- 2026-06-21: `LUC-5368` source-control closure is verified for the
+  [LUC-5366](/LUC/issues/LUC-5366) Roost known-state evidence packet. Current
+  interpretation: generated architecture/status exports plus
+  state/context/planning evidence are preserved as a local evidence packet
+  only. Diff hygiene, generated architecture-awareness and health JSON parse,
+  scoped high-confidence secret/private-key scan, and `npm run
+  architecture:status` passed. Deploy impact: none; no runtime, protected
+  smoke, production, credential, schema, migration, database, Docker, browser,
+  server, provider, or watcher action occurred.
+
+- 2026-06-21: `LUC-5366` refreshed Roost local architecture evidence for IPM
+  known-state scope. Scanner PASS generated `2026-06-20T22:44:03.023Z` with
+  `2427` entities / `5117` relations / `13758` files; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, queues `0`, delta
+  `0/0/0`); `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files). No protected actions or long-running local processes were
+  started. Source-control closure is delegated to
+  [LUC-5368](/LUC/issues/LUC-5368) for generated/status/state evidence.
+
 - 2026-06-21: `LUC-5364` source-control closure is verified for the
   [LUC-5359](/LUC/issues/LUC-5359) Roost known-state evidence packet. Current
   interpretation: generated architecture/status exports, state/context/planning

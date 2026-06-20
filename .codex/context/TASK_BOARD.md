@@ -2,6 +2,34 @@
 
 ## Now
 
+- 2026-06-21: `LUC-5368` source-control closure for
+  [LUC-5366](/LUC/issues/LUC-5366) is complete locally. Output:
+  `docs/planning/luc-5368-source-control-closure-for-luc-5366-evidence-packet.md`.
+  Evidence: dirty set classified as generated architecture/status exports,
+  state/context/planning evidence, and the [LUC-5366](/LUC/issues/LUC-5366)
+  evidence packet; `git diff --check` PASS with LF-to-CRLF warnings only;
+  generated architecture-awareness and health JSON parse PASS at
+  `2026-06-20T22:44:03.023Z` (`2427` entities / `5117` relations); scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist
+  `0`, delta `0/0/0`, all gates pass). Disposition: `DONE`; push held for
+  future release/source-ref batching; deploy impact none.
+
+- 2026-06-21: `LUC-5366` known-state evidence and architecture baseline is
+  complete for IPM evidence scope, with source-control closure still required
+  for generated/status/state files. Output:
+  `docs/planning/luc-5366-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS in `112632ms`, generated
+  `2026-06-20T22:44:03.023Z` (`2427` entities / `5117` relations / `13758`
+  files); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queue `0`, worklist `0`, delta `0/0/0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); task-sync, ownership,
+  implementation-task, verified-proof, and disconnected gaps remain `0`.
+  Disposition: evidence scope complete; source-control closure delegated to
+  [LUC-5368](/LUC/issues/LUC-5368) before considering the dirty evidence packet
+  source-control closed; deploy impact none.
+
 - 2026-06-21: `LUC-5364` source-control closure for
   [LUC-5359](/LUC/issues/LUC-5359) is complete locally. Output:
   `docs/planning/luc-5364-source-control-closure-for-luc-5359-evidence-packet.md`.

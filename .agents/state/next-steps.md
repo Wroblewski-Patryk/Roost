@@ -1,5 +1,29 @@
 # Next Steps
 
+- `LUC-5368` source-control closure for
+  [LUC-5366](/LUC/issues/LUC-5366) is complete locally. Closure packet:
+  `docs/planning/luc-5368-source-control-closure-for-luc-5366-evidence-packet.md`.
+  Verification: `git diff --check` PASS with LF-to-CRLF warnings only;
+  generated architecture-awareness and health JSON parse PASS (`2427`
+  entities / `5117` relations, generated `2026-06-20T22:44:03.023Z`); scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist
+  `0`, delta `0/0/0`). Push remains held for future release/source-ref
+  batching; deploy impact none. Remaining owner/action: runtime secret
+  owner/board for protected target proof when explicitly approved.
+
+- `LUC-5366` PM/IPM known-state evidence pass is complete locally with
+  source-control closure still required. Evidence packet:
+  `docs/planning/luc-5366-known-state-evidence-and-architecture-baseline.md`.
+  Verification: architecture-awareness refresh PASS (`2427` entities / `5117`
+  relations / `13758` files, generated `2026-06-20T22:44:03.023Z`);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`); `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files). Remaining owner/action:
+  [LUC-5368](/LUC/issues/LUC-5368) must classify generated/status/state dirty
+  files, run diff hygiene, generated JSON parse, scoped secret/private-key
+  scan, and architecture status before local no-push commit or blocker.
+
 - `LUC-5364` source-control closure for
   [LUC-5359](/LUC/issues/LUC-5359) is complete locally. Closure packet:
   `docs/planning/luc-5364-source-control-closure-for-luc-5359-evidence-packet.md`.
