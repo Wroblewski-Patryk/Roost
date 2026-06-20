@@ -1,6 +1,6 @@
 # Task Synchronization Report
 
-Generated: 2026-06-20T05:14:43.078Z
+Generated: 2026-06-20T05:42:11.549Z
 
 ## Contract
 
@@ -10,8 +10,8 @@ Every task should identify the feature/module it changes, dependency expectation
 
 - Actionable tasks without architecture links: 0
 - Raw tasks without architecture links: 0
-- Actionable implementation entities without task links: 1
-- Raw implementation entities without task links: 1
+- Actionable implementation entities without task links: 0
+- Raw implementation entities without task links: 0
 - Classified task-linkage noise: 0
 - Verified entities without proof evidence: 0
 
@@ -23,7 +23,6 @@ Every task should identify the feature/module it changes, dependency expectation
 
 ## Actionable Implementation Without Task Links
 
-- feature: luc-4844-rerun-relationships-browser-proof.mjs (.tmp/luc-4844-rerun-relationships-browser-proof.mjs)
 
 ## Raw Task-Linkage Samples
 
@@ -31,5 +30,3 @@ Every task should identify the feature/module it changes, dependency expectation
 
 
 ### Raw Implementation Without Task Links
-
-- feature: luc-4844-rerun-relationships-browser-proof.mjs (.tmp/luc-4844-rerun-relationships-browser-proof.mjs)

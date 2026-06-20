@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-06-20T05:14:43.078Z",
+  "generated_at": "2026-06-20T05:42:11.549Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 2287,
-    "relations": 4552,
+    "entities": 2285,
+    "relations": 4567,
     "by_type": {
       "agent": 47,
       "api_endpoint": 43,
       "component": 7,
-      "document": 960,
-      "feature": 168,
-      "function": 950,
+      "document": 965,
+      "feature": 167,
+      "function": 945,
       "migration": 31,
       "model": 5,
-      "module": 67,
+      "module": 66,
       "project": 1,
       "route": 3,
       "task": 4,
@@ -25,7 +25,7 @@
     "by_status": {
       "blocked": 4,
       "deprecated": 4,
-      "implemented": 2266,
+      "implemented": 2264,
       "in_progress": 1,
       "tested": 8,
       "verified": 4
@@ -33,7 +33,7 @@
   },
   "signals": {
     "implementation_without_tests": {
-      "count": 1168,
+      "count": 1162,
       "items": [
         {
           "id": "api_endpoint:get:1998daec82",
@@ -432,14 +432,6 @@
           "type": "component",
           "name": "cc-text-input.tsx",
           "path": "web/src/components/cc-text-input.tsx",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "feature:luc-4844-rerun-relationships-browser-proof-mjs:40af566380",
-          "type": "feature",
-          "name": "luc-4844-rerun-relationships-browser-proof.mjs",
-          "path": ".tmp/luc-4844-rerun-relationships-browser-proof.mjs",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
@@ -1634,24 +1626,23 @@
           "path": "web/src/features/departments/management-route.tsx",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
-        }
-      ]
-    },
-    "implementation_without_docs": {
-      "count": 1,
-      "items": [
+        },
         {
-          "id": "feature:luc-4844-rerun-relationships-browser-proof-mjs:40af566380",
+          "id": "feature:operations-route-tsx:046117caa5",
           "type": "feature",
-          "name": "luc-4844-rerun-relationships-browser-proof.mjs",
-          "path": ".tmp/luc-4844-rerun-relationships-browser-proof.mjs",
+          "name": "operations-route.tsx",
+          "path": "web/src/features/departments/operations-route.tsx",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         }
       ]
     },
+    "implementation_without_docs": {
+      "count": 0,
+      "items": []
+    },
     "actionable_implementation_without_tests": {
-      "count": 1159,
+      "count": 1153,
       "items": [
         {
           "id": "api_endpoint:get:1998daec82",
@@ -2050,14 +2041,6 @@
           "type": "component",
           "name": "cc-text-input.tsx",
           "path": "web/src/components/cc-text-input.tsx",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "feature:luc-4844-rerun-relationships-browser-proof-mjs:40af566380",
-          "type": "feature",
-          "name": "luc-4844-rerun-relationships-browser-proof.mjs",
-          "path": ".tmp/luc-4844-rerun-relationships-browser-proof.mjs",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
@@ -3252,21 +3235,20 @@
           "path": "web/src/features/departments/people-agents-route.tsx",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
-        }
-      ]
-    },
-    "actionable_implementation_without_docs": {
-      "count": 1,
-      "items": [
+        },
         {
-          "id": "feature:luc-4844-rerun-relationships-browser-proof-mjs:40af566380",
+          "id": "feature:product-delivery-route-tsx:7a46360823",
           "type": "feature",
-          "name": "luc-4844-rerun-relationships-browser-proof.mjs",
-          "path": ".tmp/luc-4844-rerun-relationships-browser-proof.mjs",
+          "name": "product-delivery-route.tsx",
+          "path": "web/src/features/departments/product-delivery-route.tsx",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         }
       ]
+    },
+    "actionable_implementation_without_docs": {
+      "count": 0,
+      "items": []
     },
     "classified_inferred_link_noise": {
       "count": 9,
@@ -3375,30 +3357,12 @@
       "items": []
     },
     "implementation_without_task": {
-      "count": 1,
-      "items": [
-        {
-          "id": "feature:luc-4844-rerun-relationships-browser-proof-mjs:40af566380",
-          "type": "feature",
-          "name": "luc-4844-rerun-relationships-browser-proof.mjs",
-          "path": ".tmp/luc-4844-rerun-relationships-browser-proof.mjs",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        }
-      ]
+      "count": 0,
+      "items": []
     },
     "raw_implementation_without_task": {
-      "count": 1,
-      "items": [
-        {
-          "id": "feature:luc-4844-rerun-relationships-browser-proof-mjs:40af566380",
-          "type": "feature",
-          "name": "luc-4844-rerun-relationships-browser-proof.mjs",
-          "path": ".tmp/luc-4844-rerun-relationships-browser-proof.mjs",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        }
-      ]
+      "count": 0,
+      "items": []
     },
     "classified_task_linkage_noise": {
       "count": 0,

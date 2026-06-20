@@ -2,6 +2,74 @@
 
 Last updated: 2026-06-20
 
+Source-control closure note: LUC-4863 is VERIFIED_DONE for the Product &
+Delivery proof-ladder evidence batch covering [LUC-4861](/LUC/issues/LUC-4861)
+plus adjacent [LUC-4856](/LUC/issues/LUC-4856) and
+[LUC-4857](/LUC/issues/LUC-4857) state. The closure packet is recorded in
+`docs/planning/luc-4863-source-control-closure-for-luc-4861-proof-ladder-evidence-batch.md`.
+Evidence: `git status --short --branch` showed `main...origin/main [ahead
+38]` before closure; `git status --porcelain=v1 -uall` confirmed the
+untracked planning packets and Product & Delivery UX evidence artifacts;
+`git diff --stat` showed `16 files changed, 7221 insertions(+), 6988
+deletions(-)` before the closure packet and source-of-truth entries; `git
+diff --check` passed with line-ending conversion warnings only. The batch is
+coherent and preserved in a local commit. Push is held for a future release
+batch or explicit source-ref/deploy need.
+
+QA proof-ladder completion note: LUC-4861 is VERIFIED_DONE for local
+`02 Product & Delivery -> Operating Graph Overview`. The packet is recorded in
+`docs/planning/luc-4861-product-delivery-proof-ladder.md`. Evidence:
+`npm run test:api:local` passed after server/web build, all `31` migrations,
+seed, and `7/7` API subtests; kept-db rerun also passed for browser setup.
+Authenticated Playwright proof on local backend port `3237` passed desktop
+`1366x900` and mobile `390x844` checks for route identity, Product & Delivery
+area name, operating-graph summary signals, unsupported-family evidence, graph
+table rows, sparse-state honesty, safe synthetic backend error language, no raw
+backend error leakage, no normal-route console issues, no failed requests, and
+no horizontal overflow. Evidence artifacts:
+`docs/ux/evidence/luc-4861-product-delivery-proof-ladder-2026-06-20/`.
+Cleanup proof: temporary backend stopped, `companycore-test-postgres` removed,
+and no `chrome-headless-shell` process rows remained. Confidence
+classification: Product & Delivery operating graph overview is locally
+verified for this proof ladder; protected production proof remains
+release/credential gated. Source-control closure is delegated to
+[LUC-4863](/LUC/issues/LUC-4863).
+
+Architecture hygiene note: LUC-4856 is VERIFIED_DONE for the tmp proof harness
+scanner signal from [LUC-4850](/LUC/issues/LUC-4850). The packet is recorded in
+`docs/planning/luc-4856-tmp-proof-harness-scanner-hygiene.md`.
+Classification: `.tmp/luc-4844-rerun-relationships-browser-proof.mjs` was a
+stale generated-report signal for a temp proof harness that is no longer
+present in the workspace. No broad `.tmp` scanner ignore was added; unrelated
+`.tmp` evidence artifacts were left untouched. Evidence: Paperclip
+architecture-awareness scanner passed with `entities=2283`, `relations=4555`,
+`files=13589`, generated at `2026-06-20T05:26:28.553Z`; `npm run
+architecture:status` passed (`GREEN`, graph `452/761/34`, evidence queue `0`,
+chain worklist `0`, delta `0/0/0`, all gates pass); task sync reports `0`
+actionable and `0` raw implementation entities without task links. Confidence
+classification: architecture task-link hygiene verified; remaining
+architecture-health debt is test-evidence debt
+(`actionable_implementation_without_tests=1153`), not a task-link issue.
+
+QA proof-ladder target note: LUC-4857 is VERIFIED_DONE for next-target
+selection after Relationships. The packet is recorded in
+`docs/planning/luc-4857-product-delivery-proof-ladder-target-after-relationships.md`.
+Selected target: `02 Product & Delivery -> Operating Graph Overview`, covering
+`/areas?area=02-produkt&view=overview`,
+`web/src/features/departments/product-delivery-route.tsx`,
+`web/src/app-route-registry.ts`, `web/src/main.tsx`, and the existing
+read-only packet `GET /v1/operating-graph/areas/02-produkt?limit=80`.
+Evidence: Operations, Assets, and Relationships have current local
+proof-ladder evidence; Sales is already locally verified; the current broader
+DMS sequence after Relationships selects Product/Delivery before
+Technology/AI and Legal/Standards; `npm run check:route-capabilities` passed
+with `checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`.
+Confidence classification: target selection verified; Product & Delivery route
+is implemented but not yet locally proof-ladder verified at this granularity.
+Next proof/fix: [LUC-4861](/LUC/issues/LUC-4861) owns `npm run
+test:api:local`, then authenticated desktop/mobile proof for
+`/areas?area=02-produkt&view=overview` if API remains green.
+
 Source-control closure note: LUC-4855 is VERIFIED_DONE for the current
 Relationships/evidence batch covering [LUC-4844](/LUC/issues/LUC-4844),
 [LUC-4847](/LUC/issues/LUC-4847), and

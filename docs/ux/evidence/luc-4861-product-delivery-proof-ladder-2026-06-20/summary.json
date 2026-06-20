@@ -1,0 +1,124 @@
+{
+  "generatedAt": "2026-06-20T05:36:12.383Z",
+  "baseUrl": "http://127.0.0.1:3237",
+  "route": "/areas?area=02-produkt&view=overview",
+  "api": "/v1/operating-graph/areas/02-produkt?limit=80",
+  "apiStatus": 200,
+  "apiSummary": {
+    "goals": 0,
+    "targets": 0,
+    "metrics": 0,
+    "workflows": 0,
+    "tasks": 0,
+    "knowledge": 0,
+    "sources": 1,
+    "gaps": 1,
+    "nodes": 2,
+    "edges": 1,
+    "limit": 80
+  },
+  "apiCounts": {
+    "nodes": 2,
+    "edges": 1,
+    "reviewItems": 0,
+    "unsupportedFamilies": 1,
+    "gaps": 1
+  },
+  "results": [
+    {
+      "type": "normal",
+      "viewport": {
+        "name": "desktop",
+        "width": 1366,
+        "height": 900
+      },
+      "status": 200,
+      "consoleIssues": [],
+      "failedRequests": [],
+      "checks": {
+        "routePath": "/areas?area=02-produkt&view=overview",
+        "routeIdentity": true,
+        "areaName": true,
+        "graphIntro": true,
+        "summarySignals": true,
+        "reviewQueue": true,
+        "unsupportedFamilies": true,
+        "tableOrEmpty": true,
+        "honestSparseState": true,
+        "rawErrorLeak": false,
+        "horizontalOverflow": false,
+        "bodyTextSample": "R\nRoost\nOperating center\nCOMPANY / WORKSPACE\nLUC 4861 Product Delivery Workspace\nWorkspace settings\n\nDEPARTMENTS\n\nGeneral\nCompany orchestration, routing, and cross-department command.\nStrategy\nStrategic goals, decisions, priorities, and roadmap governance.\nProduct\nProduct and service definition, delivery scope, and improvement loops.\nSales\nLead, offer, deal, and commercial follow-up management.\nOperations\nProcedures, task boards, calendars, routines, and operational controls.\nRelationships\nClients, partners, support, feedback, and relationship evidence.\nPeople / Agents\nPeople, AI agents, roles, responsibilities, and workload context.\nFinance\nRevenue, costs, budgets, invoices, and commercial exceptions.\nAssets\nFiles, folders, resources, repositories, prompts, and knowledge roots.\nTechnology\nCode, infrastructure, deployments, integrations, and technical health.\nLegal\nContracts, compliance, approvals, and legal risk control.\nInnovation\nResearch, experiments, discovery, and improvement portfolio.\nManagement\nExecutive control, department administration, approvals, and portfolio steering.\n\n02 PRODUCT & DELIVERY\n\nProjects and delivery\n\nRead-only operating graph for goals, workflows, task execution, knowledge evidence, and source mappings in Product & Delivery.\n\nGOALS\n\n0\n\nTARGETS\n\n0\n\nMETRICS\n\n0\n\nWORKFLOWS\n\n0\n\nTASKS\n\n0\n\nKNOWLEDGE\n\n0\nReview queue\nKnown unsupported families\ngeneric_editab"
+      }
+    },
+    {
+      "type": "synthetic-error",
+      "viewport": {
+        "name": "desktop",
+        "width": 1366,
+        "height": 900
+      },
+      "status": 200,
+      "consoleIssues": [
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "failedRequests": [],
+      "checks": {
+        "routeIdentityStillVisible": true,
+        "safeErrorMessage": true,
+        "rawSyntheticLeak": false,
+        "horizontalOverflow": false,
+        "bodyTextSample": "R\nRoost\nOperating center\nCOMPANY / WORKSPACE\nLUC 4861 Product Delivery Workspace\nWorkspace settings\n\nDEPARTMENTS\n\nGeneral\nCompany orchestration, routing, and cross-department command.\nStrategy\nStrategic goals, decisions, priorities, and roadmap governance.\nProduct\nProduct and service definition, delivery scope, and improvement loops.\nSales\nLead, offer, deal, and commercial follow-up management.\nOperations\nProcedures, task boards, calendars, routines, and operational controls.\nRelationships\nClients, partners, support, feedback, and relationship evidence.\nPeople / Agents\nPeople, AI agents, roles, responsibilities, and workload context.\nFinance\nRevenue, costs, budgets, invoices, and commercial exceptions.\nAssets\nFiles, folders, resources, repositories, prompts, and knowledge roots.\nTechnology\nCode, infrastructure, deployments, integrations, and technical health.\nLegal\nContracts, compliance, approvals, and legal risk control.\nInnovation\nResearch, experiments, discovery, and improvement por"
+      },
+      "consolePolicy": "500 resource console entries expected from synthetic intercepted failure; normal route console gate remains empty"
+    },
+    {
+      "type": "normal",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "consoleIssues": [],
+      "failedRequests": [],
+      "checks": {
+        "routePath": "/areas?area=02-produkt&view=overview",
+        "routeIdentity": true,
+        "areaName": true,
+        "graphIntro": true,
+        "summarySignals": true,
+        "reviewQueue": true,
+        "unsupportedFamilies": true,
+        "tableOrEmpty": true,
+        "honestSparseState": true,
+        "rawErrorLeak": false,
+        "horizontalOverflow": false,
+        "bodyTextSample": "R\nRoost\nProduct\nDashboard\n\n02 PRODUCT & DELIVERY\n\nProjects and delivery\n\nRead-only operating graph for goals, workflows, task execution, knowledge evidence, and source mappings in Product & Delivery.\n\nGOALS\n\n0\n\nTARGETS\n\n0\n\nMETRICS\n\n0\n\nWORKFLOWS\n\n0\n\nTASKS\n\n0\n\nKNOWLEDGE\n\n0\nReview queue\nKnown unsupported families\ngeneric_editable_edges\n\nThe project has no approved broad edge editor for arbitrary business entities.\n\nNext: Use explicit model relations or command-shaped link contracts after AOG-BE-001 is proven.\n\nSEARCH\nColumns\nClear\nProjects and delivery\nNODE\nProjects and delivery\noperating_area\nSUMMARY\nNo summary\nProjects\nNODE\nProjects\noperating_table\nSUMMARY\nCompany projects and delivery containers\n1-2 of 2\nRows\n10\n25\n50\n100\n250\n500\nPrevious\nPage\n/ 1\nNext\n(c) Roost. Made with LuckySparrow.ch\nLANGUAGE\nEnglish\nPolish"
+      }
+    },
+    {
+      "type": "synthetic-error",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "consoleIssues": [
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+        "error: Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ],
+      "failedRequests": [],
+      "checks": {
+        "routeIdentityStillVisible": true,
+        "safeErrorMessage": true,
+        "rawSyntheticLeak": false,
+        "horizontalOverflow": false,
+        "bodyTextSample": "R\nRoost\nProduct\nDashboard\n\n02 PRODUCT & DELIVERY\n\nProduct and Delivery Management\n\nRead-only operating graph for goals, workflows, task execution, knowledge evidence, and source mappings in Product & Delivery.\n\nSomething went wrong. Try again.\nReview queue\nKnown unsupported families\nSEARCH\nColumns\nClear\nTable could not load\n\nSomething went wrong. Try again.\n\n(c) Roost. Made with LuckySparrow.ch\nLANGUAGE\nEnglish\nPolish"
+      },
+      "consolePolicy": "500 resource console entries expected from synthetic intercepted failure; normal route console gate remains empty"
+    }
+  ],
+  "failures": []
+}

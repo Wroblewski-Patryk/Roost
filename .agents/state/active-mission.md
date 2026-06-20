@@ -4,6 +4,134 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-4863-SOURCE-CONTROL-CLOSURE-LUC-4861
+- Status: VERIFIED_DONE
+- Selected objective: Close source control for the Product & Delivery
+  proof-ladder evidence batch produced by [LUC-4861](/LUC/issues/LUC-4861),
+  with adjacent [LUC-4856](/LUC/issues/LUC-4856) scanner hygiene and
+  [LUC-4857](/LUC/issues/LUC-4857) target-selection state preserved.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4863](/LUC/issues/LUC-4863), assigned to Roost Project Manager, after
+  [LUC-4861](/LUC/issues/LUC-4861) delegated source-control closure for its
+  proof-ladder evidence batch.
+- Scope: dirty-path classification, source-control hygiene proof,
+  source-of-truth synchronization, local commit, and push/deploy disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4863-source-control-closure-for-luc-4861-proof-ladder-evidence-batch.md`.
+- Evidence: pre-closure `HEAD=9a106034c785119119f89e675cde2b220b0542fa`;
+  branch `main...origin/main [ahead 38]`; dirty tree classified as one
+  coherent batch containing planning packets, Product & Delivery browser
+  evidence artifacts, generated architecture/status exports, and
+  source-of-truth state. `git diff --stat` showed `16 files changed, 7221
+  insertions(+), 6988 deletions(-)` before this closure packet and state
+  entries; `git diff --check` passed with line-ending conversion warnings
+  only.
+- Final disposition: done for source-control closure. Push is held for a
+  future release batch or explicit source-ref/deploy need.
+
+## Previous Mission
+
+- Mission ID: LUC-4861-PRODUCT-DELIVERY-PROOF-LADDER
+- Status: VERIFIED_DONE
+- Selected objective: Execute the local proof ladder for `02 Product &
+  Delivery -> Operating Graph Overview`.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4861](/LUC/issues/LUC-4861), created by the
+  [LUC-4857](/LUC/issues/LUC-4857) QA target-selection lane.
+- Scope: local API proof, kept validation database setup, authenticated local
+  `/areas?area=02-produkt&view=overview` desktop/mobile browser proof,
+  synthetic backend error proof, cleanup proof, planning packet, and
+  source-of-truth synchronization.
+- Exclusions: runtime code, schema changes, migration authoring, protected
+  smoke, deploy, push, restart, production mutation, credential access, secret
+  disclosure, or production data access.
+- Output: `docs/planning/luc-4861-product-delivery-proof-ladder.md`.
+- Evidence: `npm run test:api:local` PASS; kept-db rerun PASS; local backend
+  on port `3237` returned health `200`; authenticated Playwright Chromium
+  proof passed desktop `1366x900` and mobile `390x844` checks for route
+  identity, Product & Delivery area name, operating-graph summary signals,
+  unsupported-family evidence, graph table rows, sparse-state honesty, safe
+  synthetic backend error language, no raw backend error leakage, no normal
+  route console issues, no failed requests, and no horizontal overflow.
+  Evidence artifacts:
+  `docs/ux/evidence/luc-4861-product-delivery-proof-ladder-2026-06-20/`.
+- Cleanup: temporary backend PID `45404` stopped,
+  `companycore-test-postgres` removed, and no `chrome-headless-shell` process
+  rows remained.
+- Final disposition: done for local QA proof ladder. Protected production proof
+  remains gated by the established release/credential approval path.
+  Source-control closure is delegated to [LUC-4863](/LUC/issues/LUC-4863).
+
+## Previous Mission
+
+- Mission ID: LUC-4856-TMP-PROOF-HARNESS-SCANNER-HYGIENE
+- Status: VERIFIED_DONE
+- Selected objective: Classify and clear the stale `.tmp` proof harness
+  architecture scanner/task-sync signal found by
+  [LUC-4850](/LUC/issues/LUC-4850).
+- Why this mission now: Paperclip scoped the heartbeat to
+  [LUC-4856](/LUC/issues/LUC-4856), assigned to Technical Solution Architect,
+  as the only actionable task-sync hygiene signal after the Roost known-state
+  baseline.
+- Scope: inspect the named tmp harness state, inspect scanner override
+  behavior, choose the smallest safe classification path, regenerate
+  architecture-awareness exports, run architecture status, and sync canonical
+  state.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4856-tmp-proof-harness-scanner-hygiene.md`.
+- Evidence: the named `.tmp/luc-4844-rerun-relationships-browser-proof.mjs`
+  file is absent from the workspace, so the previous report entry was stale
+  generated evidence. Existing scanner override support is targeted and already
+  excludes known generated artifact prefixes; no broad `.tmp` ignore was added.
+  Paperclip architecture-awareness scanner passed with `entities=2283`,
+  `relations=4555`, `files=13589`, generated at
+  `2026-06-20T05:26:28.553Z`; `npm run architecture:status` passed (`GREEN`,
+  graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task sync reports `0` actionable and `0` raw implementation
+  entities without task links.
+- Final disposition: done for scanner hygiene. [LUC-4861](/LUC/issues/LUC-4861)
+  remains the next executable Product & Delivery proof-ladder lane.
+
+## Previous Mission
+
+- Mission ID: LUC-4857-PRODUCT-DELIVERY-PROOF-LADDER-TARGET
+- Status: VERIFIED_DONE
+- Selected objective: Select the next QA proof-ladder target after Operations,
+  Assets, and Relationships have current local evidence.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4857](/LUC/issues/LUC-4857), created by the
+  [LUC-4850](/LUC/issues/LUC-4850) known-state baseline follow-up.
+- Scope: source-of-truth review, DMS sequence review, architecture-health
+  signal review, static route/API readiness inspection, route-capability
+  check, planning packet, source-of-truth synchronization, and executable child
+  issue creation.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4857-product-delivery-proof-ladder-target-after-relationships.md`.
+- Evidence: selected `02 Product & Delivery -> Operating Graph Overview`
+  because Operations, Assets, and Relationships are locally proof-ladder
+  verified, Sales is already locally verified, and the current broader DMS
+  sequence after Relationships is Product/Delivery, Technology/AI, then
+  Legal/Standards. Static readiness proof passed:
+  `npm run check:route-capabilities` (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`). Static inspection confirmed
+  `/areas?area=02-produkt&view=overview` routes to
+  `ProductDeliveryRoute`, which consumes
+  `/v1/operating-graph/areas/02-produkt?limit=80`.
+- Final disposition: done for QA target-selection scope. Executable proof is
+  delegated to [LUC-4861](/LUC/issues/LUC-4861). Protected production proof
+  remains gated by the established release/credential approval path.
+
+## Previous Mission
+
 - Mission ID: LUC-4855-SOURCE-CONTROL-CLOSURE-LUC-4844-4847-4850
 - Status: VERIFIED_DONE
 - Selected objective: Close source control for the coherent Relationships and

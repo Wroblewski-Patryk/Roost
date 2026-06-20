@@ -7,6 +7,38 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-4863 source-control closure for the
+      [LUC-4861](/LUC/issues/LUC-4861) Product & Delivery proof-ladder
+      evidence batch: completed. Output:
+      `docs/planning/luc-4863-source-control-closure-for-luc-4861-proof-ladder-evidence-batch.md`.
+      Evidence: pre-closure `HEAD=9a106034c785119119f89e675cde2b220b0542fa`;
+      branch `main...origin/main [ahead 38]`; dirty tree classified as one
+      coherent batch containing [LUC-4856](/LUC/issues/LUC-4856),
+      [LUC-4857](/LUC/issues/LUC-4857), and
+      [LUC-4861](/LUC/issues/LUC-4861) planning/state, Product & Delivery UX
+      evidence artifacts, generated architecture/status exports, and
+      source-of-truth state; `git diff --stat` showed `16 files changed, 7221
+      insertions(+), 6988 deletions(-)` before this closure packet; `git diff
+      --check` passed with line-ending conversion warnings only. Local commit
+      created; push held for a future release batch or explicit
+      source-ref/deploy need.
+
+- [x] LUC-4857 next QA proof-ladder target selection after Relationships:
+      completed. Output:
+      `docs/planning/luc-4857-product-delivery-proof-ladder-target-after-relationships.md`.
+      Selected target: `02 Product & Delivery -> Operating Graph Overview`
+      (`/areas?area=02-produkt&view=overview`,
+      `web/src/features/departments/product-delivery-route.tsx`,
+      `web/src/app-route-registry.ts`, `web/src/main.tsx`, and
+      `GET /v1/operating-graph/areas/02-produkt?limit=80`). Evidence:
+      Operations, Assets, and Relationships have current local proof-ladder
+      evidence; Sales is already locally verified; the DMS sequence after
+      Relationships selects Product/Delivery before Technology/AI and
+      Legal/Standards; `npm run check:route-capabilities` passed
+      (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`).
+      Follow-up: [LUC-4861](/LUC/issues/LUC-4861) owns the executable local
+      API and desktop/mobile browser proof ladder.
+
 - [x] LUC-4855 source-control closure for the
       [LUC-4844](/LUC/issues/LUC-4844), [LUC-4847](/LUC/issues/LUC-4847), and
       [LUC-4850](/LUC/issues/LUC-4850) Relationships/evidence batch:

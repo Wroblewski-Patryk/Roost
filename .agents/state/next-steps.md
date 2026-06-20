@@ -4,6 +4,69 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4863` source-control closure for the
+   [LUC-4861](/LUC/issues/LUC-4861) Product & Delivery proof-ladder evidence
+   batch is complete.
+   - Output:
+     `docs/planning/luc-4863-source-control-closure-for-luc-4861-proof-ladder-evidence-batch.md`.
+   - Proof:
+     pre-closure `HEAD=9a106034c785119119f89e675cde2b220b0542fa`; branch
+     `main...origin/main [ahead 38]`; dirty tree classified as one coherent
+     batch containing [LUC-4856](/LUC/issues/LUC-4856),
+     [LUC-4857](/LUC/issues/LUC-4857), and
+     [LUC-4861](/LUC/issues/LUC-4861) planning/state, Product & Delivery UX
+     evidence artifacts, generated architecture/status exports, and
+     source-of-truth state; `git diff --stat` showed `16 files changed, 7221
+     insertions(+), 6988 deletions(-)` before this closure packet; `git diff
+     --check` passed with line-ending conversion warnings only. Local commit
+     created; push held.
+   - Next owner/action:
+     no follow-up remains for [LUC-4863](/LUC/issues/LUC-4863). Protected
+     runtime proof remains externally gated by key-scope evidence plus
+     one-run approval.
+
+1. `LUC-4856` tmp proof harness scanner hygiene is complete.
+   - Output:
+     `docs/planning/luc-4856-tmp-proof-harness-scanner-hygiene.md`.
+   - Classification:
+     `.tmp/luc-4844-rerun-relationships-browser-proof.mjs` was a stale
+     generated-report signal for a temp proof harness that is no longer present
+     in the workspace. No broad `.tmp` scanner ignore was added.
+   - Proof:
+     Paperclip architecture-awareness scanner passed (`entities=2283`,
+     `relations=4555`, `files=13589`, generated at
+     `2026-06-20T05:26:28.553Z`); `npm run architecture:status` passed
+     (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task sync reports `0` actionable and `0`
+     raw implementation entities without task links.
+   - Next owner/action:
+     no follow-up remains for [LUC-4856](/LUC/issues/LUC-4856).
+     [LUC-4861](/LUC/issues/LUC-4861) remains the next executable Product &
+     Delivery proof-ladder lane.
+
+1. `LUC-4857` next QA proof-ladder target selection is complete.
+   - Output:
+     `docs/planning/luc-4857-product-delivery-proof-ladder-target-after-relationships.md`.
+   - Selected target:
+     `02 Product & Delivery -> Operating Graph Overview`, including
+     `/areas?area=02-produkt&view=overview`,
+     `web/src/features/departments/product-delivery-route.tsx`,
+     `web/src/app-route-registry.ts`, `web/src/main.tsx`, and
+     `GET /v1/operating-graph/areas/02-produkt?limit=80`.
+   - Proof:
+     current source-of-truth shows Operations, Assets, and Relationships have
+     local proof-ladder evidence; Sales is already locally verified; the DMS
+     sequence after Relationships selects Product/Delivery before
+     Technology/AI and Legal/Standards; `npm run check:route-capabilities`
+     passed (`checkedManifestRoutes=180`, `checkedRouteFiles=35`,
+     `status=ok`).
+   - Next owner/action:
+     [LUC-4861](/LUC/issues/LUC-4861) owns the executable proof ladder:
+     `npm run test:api:local`, then authenticated desktop/mobile proof for
+     `/areas?area=02-produkt&view=overview` if API remains green. Protected
+     runtime proof remains externally gated by key-scope evidence plus
+     one-run approval.
+
 1. `LUC-4855` source-control closure is complete for the
    [LUC-4844](/LUC/issues/LUC-4844), [LUC-4847](/LUC/issues/LUC-4847), and
    [LUC-4850](/LUC/issues/LUC-4850) Relationships/evidence batch.

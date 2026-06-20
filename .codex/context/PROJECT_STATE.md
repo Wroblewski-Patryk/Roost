@@ -1,6 +1,79 @@
 # PROJECT_STATE
 
 Last updated: 2026-06-20
+- 2026-06-20: `LUC-4863` source-control closure completed for the
+  [LUC-4861](/LUC/issues/LUC-4861) Product & Delivery proof-ladder evidence
+  batch, including adjacent [LUC-4856](/LUC/issues/LUC-4856) scanner hygiene
+  and [LUC-4857](/LUC/issues/LUC-4857) target-selection state. Output:
+  `docs/planning/luc-4863-source-control-closure-for-luc-4861-proof-ladder-evidence-batch.md`.
+  Decision: preserve one coherent local batch containing planning packets,
+  Product & Delivery browser evidence artifacts, generated architecture/status
+  exports, and source-of-truth state. Evidence: pre-closure
+  `HEAD=9a106034c785119119f89e675cde2b220b0542fa`; branch
+  `main...origin/main [ahead 38]`; `git diff --stat` showed `16 files
+  changed, 7221 insertions(+), 6988 deletions(-)` before this closure packet;
+  `git diff --check` passed with line-ending conversion warnings only. Local
+  commit created. Push held for a future release batch or explicit
+  source-ref/deploy need. No
+  runtime code, schema, migration, push, deploy, restart, protected smoke,
+  production mutation, credential access, secret disclosure, server, browser,
+  database, Docker, or watcher process occurred in this closure lane.
+- 2026-06-20: `LUC-4861` Product & Delivery proof ladder completed for
+  `02 Product & Delivery -> Operating Graph Overview`. Output:
+  `docs/planning/luc-4861-product-delivery-proof-ladder.md`. Evidence:
+  `npm run test:api:local` PASS after server/web build, all `31` migrations,
+  seed, and `7/7` API subtests; kept-db rerun PASS for browser setup; local
+  backend on port `3237` returned health `200`. Authenticated Playwright proof
+  passed desktop `1366x900` and mobile `390x844` checks for
+  `/areas?area=02-produkt&view=overview`: route identity, Product & Delivery
+  area name, operating-graph summary signals, unsupported-family evidence,
+  graph table rows, sparse-state honesty, safe synthetic backend error
+  language, no raw backend error leakage, no normal-route console issues, no
+  failed requests, and no horizontal overflow. Evidence artifacts:
+  `docs/ux/evidence/luc-4861-product-delivery-proof-ladder-2026-06-20/`.
+  Cleanup: local backend PID `45404` stopped, `companycore-test-postgres`
+  removed, and no `chrome-headless-shell` process rows remained. No runtime
+  code, schema, migration authoring, protected smoke, deploy, push, restart,
+  production mutation, credential access, secret disclosure, or production
+  data access occurred. Follow-up:
+  [LUC-4863](/LUC/issues/LUC-4863) owns source-control closure for this proof
+  packet and adjacent shared evidence state.
+- 2026-06-20: `LUC-4856` tmp proof harness scanner hygiene completed. Output:
+  `docs/planning/luc-4856-tmp-proof-harness-scanner-hygiene.md`.
+  Classification: `.tmp/luc-4844-rerun-relationships-browser-proof.mjs` was a
+  stale generated-report signal for a temp proof harness that is no longer
+  present in the workspace. No broad `.tmp` scanner ignore was added and
+  unrelated `.tmp` evidence artifacts were left untouched. Evidence: Paperclip
+  architecture-awareness scanner PASS (`entities=2283`, `relations=4555`,
+  `files=13589`, generated at `2026-06-20T05:26:28.553Z`);
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task sync
+  reports `0` actionable and `0` raw implementation entities without task
+  links; architecture health reports `implementation_without_tests=1162` and
+  `actionable_implementation_without_tests=1153`; dependency report remains
+  `437` relations / `95` entities; ownership split is
+  `Docs Memory Lead=946`, `Engineering Delivery Lead=1336`,
+  `Roost Project Manager=1`. No runtime code, schema, migration, protected
+  smoke, deploy, push, restart, production mutation, credential access, secret
+  disclosure, server, browser, database, Docker, or watcher process occurred.
+- 2026-06-20: `LUC-4857` QA proof-ladder target selection completed after
+  Relationships. Output:
+  `docs/planning/luc-4857-product-delivery-proof-ladder-target-after-relationships.md`.
+  Selected target: `02 Product & Delivery -> Operating Graph Overview`,
+  covering `/areas?area=02-produkt&view=overview`,
+  `web/src/features/departments/product-delivery-route.tsx`,
+  `web/src/app-route-registry.ts`, `web/src/main.tsx`, and
+  `GET /v1/operating-graph/areas/02-produkt?limit=80`. Evidence: Operations,
+  Assets, and Relationships have current local proof-ladder evidence; Sales is
+  already locally verified; the DMS sequence after Relationships selects
+  Product/Delivery before Technology/AI and Legal/Standards; `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`). Follow-up:
+  [LUC-4861](/LUC/issues/LUC-4861) owns the executable local API and
+  desktop/mobile browser proof ladder. No runtime code, schema, migration,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, secret disclosure, server, browser, database, Docker, or watcher
+  process occurred in this selection lane.
 - 2026-06-20: `LUC-4855` source-control closure completed for the
   [LUC-4844](/LUC/issues/LUC-4844), [LUC-4847](/LUC/issues/LUC-4847), and
   [LUC-4850](/LUC/issues/LUC-4850) Relationships/evidence batch. Output:
