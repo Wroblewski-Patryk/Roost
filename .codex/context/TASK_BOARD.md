@@ -2,6 +2,63 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5055` source-control closure is complete locally for the
+  [LUC-5052](/LUC/issues/LUC-5052) known-state evidence packet.
+  Output:
+  `docs/planning/luc-5055-source-control-closure-for-luc-5052-known-state-evidence-packet.md`.
+  Evidence: wake payload scoped this run to [LUC-5055](/LUC/issues/LUC-5055)
+  with no pending comments; parent [LUC-5052](/LUC/issues/LUC-5052) is
+  `done`; pre-closure `HEAD=d7b6f933df0f845aa04527b31bc75954c41c6dcb`;
+  branch `main...origin/main [ahead 57]`; dirty set matched the
+  [LUC-5052](/LUC/issues/LUC-5052) generated architecture/status evidence
+  batch plus state/context updates, predecessor [LUC-5050](/LUC/issues/LUC-5050)
+  protected-recheck note, and the parent planning packet.
+  `git diff --check` passed with LF-to-CRLF warnings only; generated
+  graph/health JSON parsed successfully; scoped high-confidence secret/data
+  hygiene found no key values. Local commit created and final SHA is recorded
+  in the Paperclip closure comment. Push held for a future release batch or
+  explicit source-ref/deploy need. Deploy impact: none. Disposition: `DONE`.
+
+- 2026-06-20: `LUC-5052` known-state evidence and architecture baseline is
+  complete for Roost PM scope.
+  Output:
+  `docs/planning/luc-5052-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2333`,
+  `relations=4756`, `files=13660`, generated at
+  `2026-06-20T11:15:30.009Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`;
+  disconnected entities `0`; dependency report `437` relations / `95`
+  entities; architecture health reports `implementation_without_tests=1162`.
+  Closure:
+  [LUC-5055](/LUC/issues/LUC-5055) completed source-control closure for this
+  generated/status evidence packet. Scope: no runtime code, schema,
+  migration, protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, server, browser, database, Docker, or
+  watcher process. Disposition: `DONE` for PM evidence scope after
+  source-control sidecar creation.
+
+- 2026-06-20: `LUC-5050` Roost protected recheck is blocked by missing
+  approved runtime target facts. Output:
+  `docs/planning/luc-5050-roost-protected-recheck.md`.
+  Evidence: [LUC-5050](/LUC/issues/LUC-5050) carried the fresh protected
+  gate fact for parent [LUC-261](/LUC/issues/LUC-261) and authorized one
+  scoped recheck. Redacted env presence proof found `COMPANYCORE_API_KEY`,
+  `COMPANYCORE_BASE_URL`, `COMPANYCORE_API_URL`, `ROOST_API_BASE_URL`, and
+  `API_BASE_URL` all absent in this runtime. The single protected command
+  `npm run aog:deploy-smoke` failed before any target request with
+  `[aog-deploy-smoke] COMPANYCORE_BASE_URL is required.` Continuity proof:
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  `HEAD=d7b6f933`; branch `main...origin/main [ahead 57]`; UTC
+  `2026-06-20T11:10:03.6413309Z`. No product-code mutation, push, deploy,
+  restart, production mutation, credential value disclosure, browser,
+  database, Docker, or watcher process occurred. Disposition: `BLOCKED`;
+  unblock owner/action is runtime secret owner or environment owner injects
+  approved `COMPANYCORE_BASE_URL` and valid `COMPANYCORE_API_KEY`, then
+  board/authorized gate provides one fresh same-session protected rerun
+  authorization.
+
 - 2026-06-20: `LUC-5046` source-control closure is complete locally for the
   [LUC-5039](/LUC/issues/LUC-5039) known-state evidence packet. Output:
   `docs/planning/luc-5046-source-control-closure-for-luc-5039-known-state-evidence-packet.md`.

@@ -4,6 +4,102 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5055-SOURCE-CONTROL-CLOSURE
+- Status: VERIFIED_DONE
+- Selected objective: Close local source control for the
+  [LUC-5052](/LUC/issues/LUC-5052) Roost known-state evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5055](/LUC/issues/LUC-5055), already checked out by the harness, as
+  the source-control closure sidecar for completed parent
+  [LUC-5052](/LUC/issues/LUC-5052).
+- Scope: heartbeat context readback, generated/status dirty-state
+  classification, SCM hygiene, closure packet, source-of-truth
+  synchronization, and one local commit if the batch remains coherent.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-5055-source-control-closure-for-luc-5052-known-state-evidence-packet.md`.
+- Evidence: parent [LUC-5052](/LUC/issues/LUC-5052) is `done`;
+  pre-closure `HEAD=d7b6f933df0f845aa04527b31bc75954c41c6dcb`;
+  branch `main...origin/main [ahead 57]`; dirty set matched the
+  [LUC-5052](/LUC/issues/LUC-5052) generated architecture/status evidence
+  batch plus state/context updates, predecessor [LUC-5050](/LUC/issues/LUC-5050)
+  protected-recheck note, and the parent planning packet. `git diff --check`
+  passed with LF-to-CRLF warnings only; generated awareness/health JSON parsed
+  successfully; scoped high-confidence secret hygiene found no key values.
+- Final disposition: source-control closure done locally. Push remains held
+  for a future release batch or explicit source-ref/deploy need. Deploy impact
+  none.
+
+## Previous Mission
+
+- Mission ID: LUC-5052-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE_PENDING_SCM_CHILD
+- Selected objective: Refresh local Roost known-state architecture evidence and
+  convert remaining work into owner-scoped repair lanes for
+  [LUC-5052](/LUC/issues/LUC-5052).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5052](/LUC/issues/LUC-5052), assigned to Roost Project Manager, and
+  the latest local-board comment requested local evidence collection plus
+  concrete next repair lanes.
+- Scope: non-protected architecture-awareness scanner refresh, architecture
+  status proof, generated report readback, source-control readback, planning
+  packet, and source-control sidecar creation.
+- Exclusions: no implementation, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-5052-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip architecture-awareness scanner PASS (`entities=2333`,
+  `relations=4756`, `files=13660`, generated at
+  `2026-06-20T11:15:30.009Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`;
+  disconnected entities `0`; dependency report `437` relations / `95`
+  entities; architecture health `implementation_without_tests=1162`;
+  `HEAD=d7b6f933df0f845aa04527b31bc75954c41c6dcb`.
+- Final disposition: done for PM evidence scope after creating
+  [LUC-5055](/LUC/issues/LUC-5055) for source-control closure of the
+  generated/status evidence packet. Protected production proof remains
+  release/credential gated.
+
+## Previous Mission
+
+- Mission ID: LUC-5050-PROTECTED-RECHECK
+- Status: BLOCKED
+- Selected objective: Execute the one scoped protected Roost deploy-smoke
+  recheck for [LUC-5050](/LUC/issues/LUC-5050), the protected gate child of
+  [LUC-261](/LUC/issues/LUC-261).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5050](/LUC/issues/LUC-5050), already checked out by the harness, with
+  a fresh protected gate fact and expected key/base-url presence proof without
+  values.
+- Scope: heartbeat context readback, redacted env presence proof, one
+  `npm run aog:deploy-smoke` attempt, non-protected continuity proof, and
+  state/context synchronization.
+- Exclusions: no product-code mutation, push, deploy expansion, restart,
+  unrelated runtime change, credential value disclosure, browser, database,
+  Docker, or watcher process.
+- Output: `docs/planning/luc-5050-roost-protected-recheck.md`.
+- Evidence: redacted env presence check found `COMPANYCORE_API_KEY`,
+  `COMPANYCORE_BASE_URL`, `COMPANYCORE_API_URL`, `ROOST_API_BASE_URL`, and
+  `API_BASE_URL` all absent in this runtime. `npm run aog:deploy-smoke`
+  failed before a target request with
+  `[aog-deploy-smoke] COMPANYCORE_BASE_URL is required.` Continuity proof
+  passed: `npm run architecture:status` returned `GREEN`, graph `454/765/35`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass.
+  Source checkpoint `HEAD=d7b6f933`, branch `main...origin/main [ahead 57]`,
+  UTC `2026-06-20T11:10:03.6413309Z`.
+- Final disposition: blocked by missing approved runtime CompanyCore base URL
+  and API key injection. Unblock owner/action: runtime secret owner or
+  environment owner injects `COMPANYCORE_BASE_URL` and a valid
+  `COMPANYCORE_API_KEY` into the approved run environment, then the
+  board/authorized gate provides one fresh same-session rerun authorization.
+  Deploy impact none.
+
+## Previous Mission
+
 - Mission ID: LUC-5046-SOURCE-CONTROL-CLOSURE
 - Status: VERIFIED_DONE
 - Selected objective: Close local source control for the

@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T10:46:34.957Z
+Generated: 2026-06-20T11:15:30.009Z
 
 ## Canonical Exports
 
@@ -1114,6 +1114,9 @@ Generated: 2026-06-20T10:46:34.957Z
 | documents | document:luc-5010-source-control-closure-for-luc-5003-known-state-evidence-packet:14599a663c | module:docs:6784d83cb0 | docs/planning/luc-5010-source-control-closure-for-luc-5003-known-state-evidence-packet.md |
 | documents | document:luc-5015-known-state-evidence-and-architecture-baseline:45a81a083b | module:docs:6784d83cb0 | docs/planning/luc-5015-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5020-source-control-closure-for-luc-5015-known-state-evidence-packet:653a60688f | module:docs:6784d83cb0 | docs/planning/luc-5020-source-control-closure-for-luc-5015-known-state-evidence-packet.md |
+| documents | document:luc-5039-known-state-evidence-and-architecture-baseline:452327cf48 | module:docs:6784d83cb0 | docs/planning/luc-5039-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5046-source-control-closure-for-luc-5039-known-state-evidence-packet:5a1c8e8434 | module:docs:6784d83cb0 | docs/planning/luc-5046-source-control-closure-for-luc-5039-known-state-evidence-packet.md |
+| documents | document:luc-5050-roost-protected-recheck:48640a3f1c | module:docs:6784d83cb0 | docs/planning/luc-5050-roost-protected-recheck.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-06-20T10:46:34.957Z
 | documents | document:patch-v1-goals-id:95360ea0eb | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0095.md |
 | documents | document:patch-v1-google-drive-docs-id:6a9f26dc51 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0096.md |
 | documents | document:patch-v1-google-drive-files-id-description:42d605e50d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0097.md |
-| documents | document:patch-v1-google-drive-files-id-scope:aa4ca4228e | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0098.md |
-| documents | document:patch-v1-google-drive-files-id-text-content:4f11c54f2f | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0099.md |
-| documents | document:patch-v1-interactions-id:8815df2d18 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0100.md |
