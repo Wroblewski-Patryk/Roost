@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T09:00:03.099Z
+Generated: 2026-06-20T09:13:05.296Z
 
 ## Canonical Exports
 
@@ -1102,6 +1102,8 @@ Generated: 2026-06-20T09:00:03.099Z
 | documents | document:luc-4957-implementation-without-tests-architecture-health-signal-curation:2440a0035b | module:docs:6784d83cb0 | docs/planning/luc-4957-implementation-without-tests-architecture-health-signal-curation.md |
 | documents | document:luc-4962-known-state-evidence-and-architecture-baseline:571679d4c7 | module:docs:6784d83cb0 | docs/planning/luc-4962-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4965-source-control-closure-for-luc-4962-known-state-evidence-packet:c89b703bfa | module:docs:6784d83cb0 | docs/planning/luc-4965-source-control-closure-for-luc-4962-known-state-evidence-packet.md |
+| documents | document:luc-4968-known-state-evidence-and-architecture-baseline:b0ce55d5e4 | module:docs:6784d83cb0 | docs/planning/luc-4968-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4975-source-control-closure-for-luc-4968-known-state-evidence-packet:94e148a9f7 | module:docs:6784d83cb0 | docs/planning/luc-4975-source-control-closure-for-luc-4968-known-state-evidence-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-06-20T09:00:03.099Z
 | documents | document:patch-v1-operations-task-lists-id:e48aa333ce | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0108.md |
 | documents | document:patch-v1-operations-work-items-id:83e2fd83a6 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-OPERATIONS-UPDATE-WORK-ITEM.md |
 | documents | document:patch-v1-pipeline-stages-id:6a11a0ee7b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0109.md |
-| documents | document:patch-v1-projects-id:73edad0e32 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0110.md |
-| documents | document:patch-v1-targets-id:717f643550 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0111.md |

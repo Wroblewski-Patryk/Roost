@@ -4,6 +4,39 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4982` source-control closure is complete locally for the
+   [LUC-4978](/LUC/issues/LUC-4978) known-state evidence packet.
+   - Output:
+     `docs/planning/luc-4982-source-control-closure-for-luc-4978-known-state-evidence-packet.md`.
+   - Proof:
+     pre-closure `HEAD=e4295d62cb9d720619d806158ff28ac83700b362`; branch
+     `main...origin/main [ahead 51]`; dirty set matched the generated
+     architecture/status artifacts, Roost state/context updates, and the
+     [LUC-4978](/LUC/issues/LUC-4978) planning packet. `git diff --check`
+     passed with LF-to-CRLF warnings only; generated graph/health JSON parsed.
+   - Next owner/action:
+     no source-control follow-up remains for this packet. Push remains held
+     for a future release batch or explicit source-ref/deploy need. Protected
+     production proof remains release/credential gated.
+
+1. `LUC-4978` known-state evidence and architecture baseline is complete for
+   Roost PM scope.
+   - Output:
+     `docs/planning/luc-4978-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2320`,
+     `relations=4704`, `files=13647`, generated
+     `2026-06-20T09:13:05.296Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task/proof/owner gaps remain `0`;
+     architecture health reports `implementation_without_tests=1162`.
+   - Next owner/action:
+     [LUC-4982](/LUC/issues/LUC-4982) owns source control for the
+     generated/status dirty set. No duplicate broad QA issue was opened
+     because [LUC-4957](/LUC/issues/LUC-4957) already curated the recurring
+     missing-test signal as product-journey proof debt/scanner granularity.
+     Protected production proof remains release/credential gated.
+
 1. `LUC-4975` source-control closure is complete locally for the
    [LUC-4968](/LUC/issues/LUC-4968) known-state evidence packet.
    - Output:
