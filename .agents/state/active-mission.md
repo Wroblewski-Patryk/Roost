@@ -4,6 +4,69 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5354-SOURCE-CONTROL-CLOSURE-FOR-LUC-5350-EVIDENCE-PACKET
+- Status: VERIFIED_DONE_PENDING_PUSH_BATCH
+- Selected objective: Close local source control for the
+  [LUC-5350](/LUC/issues/LUC-5350) generated/status/state evidence packet.
+- Why this mission now: Paperclip assigned high-priority
+  [LUC-5354](/LUC/issues/LUC-5354) as the source-control closure sidecar after
+  [LUC-5350](/LUC/issues/LUC-5350) completed the Roost known-state evidence
+  baseline.
+- Scope: classify dirty state/planning/evidence files, add the closure packet,
+  run source-control closure checks, and create a local no-push commit.
+- Exclusions: no feature code, schema, migration, push, deploy, restart,
+  protected smoke, production mutation, credential access, secret disclosure,
+  browser proof, live provider action, server, Docker database, or watcher.
+- Output:
+  `docs/planning/luc-5354-source-control-closure-for-luc-5350-evidence-packet.md`.
+- Evidence: `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  architecture-awareness JSON parse PASS at `2026-06-20T22:13:24.166Z` with
+  `2420` entities and `5089` relations; scoped high-confidence
+  secret/private-key scan PASS with `0` matches; `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass).
+- Final disposition: source-control closure verified in a local commit. Push
+  remains held for future release/source-ref batching; deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5350-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE_WITH_SCM_CLOSURE_AND_QA_FOLLOWUP
+- Selected objective: Handle the local-board known-state wake by collecting
+  fresh local Roost architecture evidence and converting findings into
+  owner-scoped repair/proof lanes without implementation.
+- Why this mission now: Paperclip assigned high-priority
+  [LUC-5350](/LUC/issues/LUC-5350) to IPM with a wake comment requiring local
+  evidence collection and concrete next repair lanes while forbidding push,
+  deploy, restart, protected smoke, production mutation, credential access,
+  and secret disclosure.
+- Scope: run the Paperclip architecture-awareness refresh for Roost, read
+  generated health/proof/dependency/ownership/task-sync reports, run
+  `npm run architecture:status`, run `npm run check:route-capabilities`, and
+  publish the evidence packet.
+- Exclusions: no feature code, schema, migration, push, deploy, restart,
+  protected smoke, production mutation, credential access, secret disclosure,
+  browser proof, runtime server, Docker database, provider action, or live
+  account mutation.
+- Output:
+  `docs/planning/luc-5350-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: architecture-awareness refresh PASS in `61575ms`, generated
+  `2026-06-20T22:13:24.166Z` with `2420` entities / `5089` relations /
+  `13751` files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  task-sync gaps `0`; ownership gaps `0`; docs gaps `0`; disconnected
+  entities `0`; implementation-without-task gaps `0`; verified-without-proof
+  gaps `0`; architecture health reports `implementation_without_tests=1162`.
+- Final disposition: IPM known-state scope complete, with local source-control
+  closure completed by [LUC-5354](/LUC/issues/LUC-5354). Follow-up QA proof
+  lanes remain [LUC-5347](/LUC/issues/LUC-5347) Relationship/Operating Graph
+  depth proof and [LUC-5348](/LUC/issues/LUC-5348) Intake routing proof.
+  Protected target proof remains approval/credential gated.
+
+## Previous Mission
+
 - Mission ID: LUC-5346-SOURCE-CONTROL-CLOSURE
 - Status: VERIFIED_DONE_PENDING_COMMIT
 - Selected objective: Close local source control for the

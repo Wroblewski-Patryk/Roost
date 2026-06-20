@@ -1,5 +1,35 @@
 # Next Steps
 
+- `LUC-5354` source-control closure for the
+  [LUC-5350](/LUC/issues/LUC-5350) Roost IPM known-state evidence packet is
+  complete locally. Closure packet:
+  `docs/planning/luc-5354-source-control-closure-for-luc-5350-evidence-packet.md`.
+  Verification: `git diff --check` PASS with LF-to-CRLF warnings only;
+  generated architecture JSON parse PASS (`2420` entities / `5089` relations,
+  generated `2026-06-20T22:13:24.166Z`); scoped high-confidence
+  secret/private-key scan PASS with `0` matches; `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`).
+  Push remains held for future release/source-ref batching; deploy impact
+  none. Next QA owners/actions remain [LUC-5347](/LUC/issues/LUC-5347)
+  Relationship/Operating Graph depth proof and [LUC-5348](/LUC/issues/LUC-5348)
+  Intake routing proof.
+
+- `LUC-5350` Roost IPM known-state evidence baseline is complete locally,
+  with source-control closure completed by [LUC-5354](/LUC/issues/LUC-5354).
+  Evidence packet:
+  `docs/planning/luc-5350-known-state-evidence-and-architecture-baseline.md`.
+  Current evidence: architecture-awareness refresh PASS (`2420` entities,
+  `5089` relations, `13751` files, generated
+  `2026-06-20T22:13:24.166Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes, `35` route files).
+  Task-sync, owner, docs, proof, implementation-task, and disconnected gaps
+  remain `0`; `implementation_without_tests=1162` remains scanner-level
+  confidence debt. Next owners/actions: QA and Verification Engineer
+  [LUC-5347](/LUC/issues/LUC-5347) Relationship/Operating Graph depth proof
+  and [LUC-5348](/LUC/issues/LUC-5348) Intake routing proof. Protected target
+  proof remains approval/credential gated.
+
 - `LUC-5346` source-control closure for the
   [LUC-5344](/LUC/issues/LUC-5344) Roost PM known-state evidence packet is
   complete locally. Closure packet:

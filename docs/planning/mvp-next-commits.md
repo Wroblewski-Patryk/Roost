@@ -1,5 +1,32 @@
 # MVP Next Commits
 
+- 2026-06-20: `LUC-5354` source-control closure is complete locally for the
+  [LUC-5350](/LUC/issues/LUC-5350) evidence packet. Closure packet:
+  `docs/planning/luc-5354-source-control-closure-for-luc-5350-evidence-packet.md`.
+  Proof: dirty set classified as state/context/planning evidence plus the
+  [LUC-5350](/LUC/issues/LUC-5350) evidence packet; `git diff --check` PASS
+  with LF-to-CRLF warnings only; generated architecture JSON parse PASS at
+  `2026-06-20T22:13:24.166Z` with `2420` entities / `5089` relations; scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`). Push held for future release/source-ref batching; deploy impact
+  none.
+
+- 2026-06-20: `LUC-5350` Roost IPM known-state evidence baseline is complete
+  locally, with source-control closure completed by
+  [LUC-5354](/LUC/issues/LUC-5354). Evidence packet:
+  `docs/planning/luc-5350-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness refresh PASS in `61575ms`,
+  generated `2026-06-20T22:13:24.166Z` with `2420` entities / `5089`
+  relations / `13751` files; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+  Task-sync, ownership, docs, proof, implementation-task, and disconnected
+  gaps remain `0`. Next lanes: [LUC-5347](/LUC/issues/LUC-5347)
+  Relationship/Operating Graph QA proof and [LUC-5348](/LUC/issues/LUC-5348)
+  Intake routing QA proof.
+  Protected runtime proof remains approval/credential gated.
+
 - 2026-06-20: `LUC-5346` source-control closure is complete locally for the
   [LUC-5344](/LUC/issues/LUC-5344) evidence packet and carried same-wave
   [LUC-5338](/LUC/issues/LUC-5338) proof packet. Closure packet:

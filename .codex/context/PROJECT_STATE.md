@@ -2,6 +2,42 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5354` source-control closure completed locally for the
+  [LUC-5350](/LUC/issues/LUC-5350) Roost known-state evidence packet. Output:
+  `docs/planning/luc-5354-source-control-closure-for-luc-5350-evidence-packet.md`.
+  Starting state: `main...origin/main [ahead 93]`, HEAD `f0a685c1`. Dirty set
+  classified as coherent state/context/planning updates and the
+  [LUC-5350](/LUC/issues/LUC-5350) evidence packet. Verification: `git diff
+  --check` PASS with LF-to-CRLF warnings only; generated
+  `docs/graphs/architecture-awareness.json` parse PASS at
+  `2026-06-20T22:13:24.166Z` with `2420` entities / `5089` relations; scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass). Push held for future
+  release/source-ref batching; deploy impact none. No feature code, schema,
+  migration, protected smoke, production mutation, credential access, secret
+  disclosure, browser, database, Docker, server, or watcher process occurred.
+
+- 2026-06-20: `LUC-5350` Roost known-state evidence and architecture
+  baseline completed for the local-board wake comment, with local
+  source-control closure completed by [LUC-5354](/LUC/issues/LUC-5354). Output:
+  `docs/planning/luc-5350-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS in `61575ms`, generated
+  `2026-06-20T22:13:24.166Z` with `2420` entities / `5089` relations /
+  `13751` files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  task-sync gaps `0`; ownership gaps `0`; docs gaps `0`; disconnected
+  entities `0`; implementation-without-task gaps `0`; verified-without-proof
+  gaps `0`; architecture health reports `implementation_without_tests=1162`.
+  Classification: no broad feature repair issue is warranted; concrete next
+  lanes are [LUC-5347](/LUC/issues/LUC-5347) Relationship/Operating Graph depth
+  proof and [LUC-5348](/LUC/issues/LUC-5348) Intake routing proof. No feature
+  code, schema, migration, push, deploy, restart, protected smoke, production
+  mutation, credential access, secret disclosure, browser, database, Docker,
+  server, or watcher process occurred.
+
 - 2026-06-20: `LUC-5346` source-control closure completed locally for the
   [LUC-5344](/LUC/issues/LUC-5344) Roost known-state evidence packet and
   carried same-wave [LUC-5338](/LUC/issues/LUC-5338) QA proof packet. Output:

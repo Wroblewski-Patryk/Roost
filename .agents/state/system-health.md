@@ -1,5 +1,28 @@
 # System Health
 
+- 2026-06-20: `LUC-5354` source-control closure is verified for the
+  [LUC-5350](/LUC/issues/LUC-5350) Roost known-state evidence packet. Current
+  interpretation: state, context, planning, and evidence packet changes are
+  preserved as a local evidence packet only. Diff hygiene, generated JSON
+  parse, scoped high-confidence secret/private-key scan, and `npm run
+  architecture:status` passed. Deploy impact: none; no runtime, protected
+  smoke, production, credential, schema, migration, database, Docker, browser,
+  server, or watcher action occurred.
+
+- 2026-06-20: `LUC-5350` Roost known-state evidence baseline refreshed for
+  IPM evidence scope. Output:
+  `docs/planning/luc-5350-known-state-evidence-and-architecture-baseline.md`.
+  Current health interpretation: architecture-awareness exports are fresh at
+  `2026-06-20T22:13:24.166Z` with `2420` entities / `5089` relations /
+  `13751` files; curated architecture status remains GREEN (`454/765/35`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  route-capability exposure remains consistent (`180` manifest routes / `35`
+  route files); task-sync, ownership, docs, proof, implementation-task, and
+  disconnected gaps remain `0`. The persistent
+  `implementation_without_tests=1162` signal remains scanner-level confidence
+  debt for named proof-ladder selection. Deploy impact: none; protected
+  runtime proof remains separately gated.
+
 - 2026-06-20: `LUC-5338` read-only department intelligence proof ladder
   verified locally for the QA slice from [LUC-5336](/LUC/issues/LUC-5336).
   Output:
