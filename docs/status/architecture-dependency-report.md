@@ -1,10 +1,10 @@
 # Dependency Report
 
-Generated: 2026-06-20T15:54:55.655Z
+Generated: 2026-06-20T16:38:49.366Z
 
 ## Summary
 
-- Dependency relations: 437
+- Dependency relations: 438
 - Entities with dependencies: 95
 
 ## Dependency Edges
@@ -448,3 +448,4 @@ Generated: 2026-06-20T15:54:55.655Z
 | api.test.ts | uses | integration-settings.service.ts | src/integrations/integration-settings.service |
 | api.test.ts | uses | event.service.ts | src/modules/events/event.service |
 | api.test.ts | uses | catalog.ts | src/operating-model/catalog |
+| api.test.ts | uses | secrets.ts | src/integrations/secrets |

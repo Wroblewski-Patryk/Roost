@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T15:54:55.655Z
+Generated: 2026-06-20T16:38:49.366Z
 
 ## Canonical Exports
 
@@ -1150,6 +1150,8 @@ Generated: 2026-06-20T15:54:55.655Z
 | documents | document:luc-5168-source-control-closure-for-luc-5165-evidence-packet:75bf6a274b | module:docs:6784d83cb0 | docs/planning/luc-5168-source-control-closure-for-luc-5165-evidence-packet.md |
 | documents | document:luc-5172-known-state-evidence-and-architecture-baseline:e78849f78a | module:docs:6784d83cb0 | docs/planning/luc-5172-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5176-source-control-closure-for-luc-5172-evidence-packet:1f23364388 | module:docs:6784d83cb0 | docs/planning/luc-5176-source-control-closure-for-luc-5172-evidence-packet.md |
+| documents | document:luc-5183-source-control-closure-for-luc-5178-evidence-packet:b9a43147a1 | module:docs:6784d83cb0 | docs/planning/luc-5183-source-control-closure-for-luc-5178-evidence-packet.md |
+| documents | document:luc-5184-finance-api-journey-proof:05a5c7eedc | module:docs:6784d83cb0 | docs/planning/luc-5184-finance-api-journey-proof.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-06-20T15:54:55.655Z
 | documents | document:open-decisions:e7df56e741 | module:docs:6784d83cb0 | docs/planning/open-decisions.md |
 | documents | document:operating-areas-model:f5133304a3 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0034.md |
 | documents | document:operating-folders-model:c2ef9b70f3 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0035.md |
-| documents | document:operating-graph-coverage-expansion:785af71148 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-AUTO-0019.md |
-| documents | document:operating-model-coverage-expansion:552fc3aa78 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-AUTO-0020.md |
