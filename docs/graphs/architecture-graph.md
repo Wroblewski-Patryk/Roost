@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T01:46:13.976Z
+Generated: 2026-06-20T02:07:57.298Z
 
 ## Canonical Exports
 
@@ -1035,6 +1035,10 @@ Generated: 2026-06-20T01:46:13.976Z
 | documents | document:luc-4651-source-control-closure-for-luc-4646-evidence-packet:02c7bca19d | module:docs:6784d83cb0 | docs/planning/luc-4651-source-control-closure-for-luc-4646-evidence-packet.md |
 | documents | document:luc-4718-known-state-evidence-and-architecture-baseline:cc18fc7ddd | module:docs:6784d83cb0 | docs/planning/luc-4718-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4721-source-control-closure-for-luc-4718-evidence-packet:c3388565b6 | module:docs:6784d83cb0 | docs/planning/luc-4721-source-control-closure-for-luc-4718-evidence-packet.md |
+| documents | document:luc-4731-known-state-evidence-and-architecture-baseline:10ac92db06 | module:docs:6784d83cb0 | docs/planning/luc-4731-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4737-source-control-closure-for-luc-4731-evidence-packet:41356c8a86 | module:docs:6784d83cb0 | docs/planning/luc-4737-source-control-closure-for-luc-4731-evidence-packet.md |
+| documents | document:luc-4739-known-state-evidence-and-architecture-baseline:5151d770be | module:docs:6784d83cb0 | docs/planning/luc-4739-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4742-source-control-closure-for-luc-4739-evidence-packet:ec0821deae | module:docs:6784d83cb0 | docs/planning/luc-4742-source-control-closure-for-luc-4739-evidence-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1214,7 +1218,3 @@ Generated: 2026-06-20T01:46:13.976Z
 | documents | document:post-v1-integration-settings-clickup-webhooks-reconcile:b78c351ea7 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0141.md |
 | documents | document:post-v1-integration-settings-google-drive-changes-reconcile:39578d6643 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0142.md |
 | documents | document:post-v1-integration-settings-google-drive-import:07b0cd53d7 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0143.md |
-| documents | document:post-v1-integration-settings-google-drive-oauth-authorize-url:e665f05114 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0144.md |
-| documents | document:post-v1-integration-settings-google-drive-oauth-exchange:d8f885c433 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0145.md |
-| documents | document:post-v1-interactions:fddddc0323 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0146.md |
-| documents | document:post-v1-notes:d7c16710ea | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0147.md |

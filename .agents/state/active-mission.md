@@ -4,6 +4,71 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-4742-SOURCE-CONTROL-CLOSURE-LUC-4739
+- Status: VERIFIED_DONE
+- Selected objective: Close the source-control sidecar for the
+  [LUC-4739](/LUC/issues/LUC-4739) Roost known-state evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4742](/LUC/issues/LUC-4742), a source-control closure sidecar for
+  [LUC-4739](/LUC/issues/LUC-4739), with no pending comments and no fallback
+  fetch required.
+- Scope: inspect git status and diff hygiene, classify generated
+  architecture/status evidence plus source-of-truth state changes, preserve
+  the coherent local packet in a commit, and update issue disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4742-source-control-closure-for-luc-4739-evidence-packet.md`.
+- Evidence: `git status --short --branch -uall` showed
+  `main...origin/main [ahead 26]` with generated architecture/status evidence
+  files, source-of-truth pointers, and the LUC-4739 planning packet dirty or
+  untracked; `git diff --stat` showed `15 files changed, 6814 insertions(+),
+  6572 deletions(-)` before this closure packet and closure state updates;
+  `git diff --check` returned no whitespace errors and only line-ending
+  conversion warnings for generated/state files.
+- Final disposition: done for source-control closure. The coherent Roost
+  evidence packet through [LUC-4739](/LUC/issues/LUC-4739) is preserved
+  locally; final SHA is recorded in the Paperclip closure comment, and push is
+  held for a future release batch or explicit source-ref need.
+
+## Previous Mission
+
+- Mission ID: LUC-4739-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE
+- Selected objective: Refresh Roost known-state evidence and architecture
+  continuity from safe local evidence, then name the remaining owner lanes.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4739](/LUC/issues/LUC-4739), a known-state evidence and architecture
+  baseline lane, with no pending comments and no fallback fetch required.
+- Scope: source-of-truth review, Paperclip architecture-awareness refresh,
+  non-protected architecture status proof, generated report readback,
+  source-control readback, source-control closure child creation, and issue
+  disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4739-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip architecture-awareness scanner PASS (`entities=2251`,
+  `relations=4431`, `files=13539`, `0` generated files excluded by prefix);
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task-sync
+  readback showed `0` actionable/raw task-link gaps and `0`
+  verified-without-proof gaps; architecture health showed
+  `implementation_without_tests=1161` and
+  `actionable_implementation_without_tests=1152`; dependency report showed
+  `437` relations / `95` entities; ownership split was
+  `Docs Memory Lead=915`, `Engineering Delivery Lead=1335`,
+  `Roost Project Manager=1`; `HEAD=2509fa5`; source-control closure child
+  [LUC-4742](/LUC/issues/LUC-4742) created for scanner-generated file changes.
+- Final disposition: done for PM baseline scope. Remaining protected runtime
+  proof stays under [LUC-2700](/LUC/issues/LUC-2700) / LUC-4438-style fresh
+  recheck. Source-control closure for this evidence packet is delegated to
+  [LUC-4742](/LUC/issues/LUC-4742).
+
+## Previous Mission
+
 - Mission ID: LUC-4737-SOURCE-CONTROL-CLOSURE-LUC-4731
 - Status: VERIFIED_DONE
 - Selected objective: Close the source-control sidecar for the

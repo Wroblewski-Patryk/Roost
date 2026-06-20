@@ -1,6 +1,42 @@
 # PROJECT_STATE
 
 Last updated: 2026-06-20
+- 2026-06-20: `LUC-4739` Roost known-state evidence and architecture
+  baseline completed. Output:
+  `docs/planning/luc-4739-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2251`,
+  `relations=4431`, `files=13539`, `0` generated files excluded by prefix);
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task-sync
+  readback showed `0` actionable/raw task-link gaps and `0`
+  verified-without-proof gaps; architecture health showed
+  `implementation_without_tests=1161` and
+  `actionable_implementation_without_tests=1152`; dependency report showed
+  `437` relations / `95` entities; ownership split was
+  `Docs Memory Lead=915`, `Engineering Delivery Lead=1335`,
+  `Roost Project Manager=1`; `HEAD=2509fa5`. Source-control closure for this
+  evidence packet is delegated to [LUC-4742](/LUC/issues/LUC-4742).
+  Protected runtime proof remains under [LUC-2700](/LUC/issues/LUC-2700) /
+  LUC-4438-style fresh recheck; QA proof debt remains a future verification
+  lane. No runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, server,
+  browser, database, Docker, or watcher process occurred.
+- 2026-06-20: `LUC-4742` source-control closure completed for the
+  `LUC-4739` Roost known-state evidence packet. Output:
+  `docs/planning/luc-4742-source-control-closure-for-luc-4739-evidence-packet.md`.
+  Classification: preserve one coherent evidence-only batch through LUC-4739,
+  including the LUC-4739 planning packet, source-of-truth state pointers,
+  generated architecture-awareness exports, and status reports. Evidence:
+  `git status --short --branch -uall` showed `main...origin/main [ahead 26]`
+  before closure with generated architecture/status files, state pointers, and
+  the LUC-4739 planning packet dirty or untracked; `git diff --stat` showed
+  `15 files changed, 6814 insertions(+), 6572 deletions(-)` before adding the
+  closure packet and closure state notes. Commit proof and `git diff --check`
+  result are recorded in the closure packet and Paperclip issue update. Push
+  held for a future release batch or explicit source-ref need. No runtime code,
+  schema, migration, protected smoke, deploy, push, restart, production
+  mutation, credential access, secret disclosure, server, browser, database,
+  Docker, or watcher process occurred.
 - 2026-06-20: `LUC-4737` source-control closure completed for the
   `LUC-4731` Roost known-state evidence packet. Output:
   `docs/planning/luc-4737-source-control-closure-for-luc-4731-evidence-packet.md`.
