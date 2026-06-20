@@ -2,6 +2,66 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5095` source-control closure completed locally for the
+  [LUC-5090](/LUC/issues/LUC-5090) evidence packet and carried
+  [LUC-5084](/LUC/issues/LUC-5084) / [LUC-5096](/LUC/issues/LUC-5096)
+  proof and scanner-hygiene artifacts. Output:
+  `docs/planning/luc-5095-source-control-closure-for-luc-5090-evidence-packet.md`.
+  SCM hygiene PASS: `git diff --check` reported only LF-to-CRLF warnings;
+  generated architecture-awareness JSON parsed with `2344` entities / `4800`
+  relations; scoped high-confidence token/private-key scan found no matching
+  files; `npm run architecture:status` remained GREEN (`454/765/35`, queues
+  `0`, delta `0/0/0`, all gates pass). Push held for future release batch or
+  explicit source-ref/deploy need. Deploy impact: none.
+
+- 2026-06-20: `LUC-5096` temporary proof harness scanner hygiene completed.
+  Output: `docs/planning/luc-5096-tmp-proof-harness-scanner-hygiene.md`.
+  Deleted only `.tmp/luc-5084-auth-route-proof.mjs` after confirming
+  [LUC-5084](/LUC/issues/LUC-5084) durable evidence was already promoted.
+  Scanner rerun PASS (`entities=2344`, `relations=4800`, `files=13674`,
+  generated `2026-06-20T12:54:59.158Z`); task-sync now reports `0` task-link
+  gaps, `0` implementation-without-task gaps, and `0` verified-without-proof
+  gaps; `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queue `0`, worklist `0`, delta `0/0/0`, all gates pass). No broad `.tmp`
+  ignore was added. Policy: delete temporary proof harnesses after promoted
+  evidence exists unless a targeted generated-artifact override is justified.
+
+- 2026-06-20: `LUC-5090` known-state architecture baseline completed for PM
+  evidence scope. Output:
+  `docs/planning/luc-5090-known-state-evidence-and-architecture-baseline.md`.
+  Scanner proof PASS (`entities=2349`, `relations=4799`, `files=13673`,
+  generated `2026-06-20T12:44:00.198Z`); architecture status PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass). Task sync reports `0` task-link gaps and one actionable
+  implementation-without-task gap from ignored validation artifact
+  `.tmp/luc-5084-auth-route-proof.mjs`; owner gaps are `0`; dependency report
+  remains `437` relations / `95` entities; top health signal is
+  `implementation_without_tests=1168`, already treated as narrow journey-proof
+  debt rather than broad product repair. Follow-up owners:
+  [LUC-5095](/LUC/issues/LUC-5095) for source-control closure and
+  [LUC-5096](/LUC/issues/LUC-5096) for temporary validation artifact scanner
+  hygiene. No deploy, push, protected smoke, production mutation, credential
+  access, or secret access occurred.
+
+- 2026-06-20: `LUC-5084` authenticated browser route proof completed for the
+  release-critical ladder. Output:
+  `docs/planning/luc-5084-authenticated-browser-route-proof.md`. Evidence:
+  `node .tmp\luc-5084-auth-route-proof.mjs` built the server/web app, migrated
+  and seeded disposable PostgreSQL `companycore-luc-5084-postgres`, started a
+  validation-owned local app on `http://127.0.0.1:3284`, registered owner
+  sessions in Playwright Chromium, and verified
+  `/areas?area=00-ogolny&view=overview` at desktop `1366x900` and mobile
+  `390x844`. Both checks reached the canonical route, rendered `Command
+  packet` and `Next actions`, and recorded no console/page errors, failed
+  requests, bad `/v1` responses, or horizontal overflow. Evidence artifacts:
+  `docs/ux/evidence/luc-5084-authenticated-00-dashboard-proof.json`,
+  `docs/ux/evidence/luc-5084-authenticated-00-dashboard-desktop.png`, and
+  `docs/ux/evidence/luc-5084-authenticated-00-dashboard-mobile.png`. Cleanup
+  checks found no validation DB container, no port `3284` listener, and no
+  `chrome-headless-shell` rows after stopping the validation-owned server PID
+  left by the outer command timeout. No deploy, push, protected smoke,
+  production mutation, credential access, or secret access occurred.
+
 - 2026-06-20: `LUC-5068` known-state architecture baseline completed for PM
   evidence scope. Scanner proof PASS (`entities=2337`, `relations=4772`,
   `files=13664`, generated `2026-06-20T12:03:02.409Z`); architecture status

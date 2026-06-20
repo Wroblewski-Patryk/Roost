@@ -2,6 +2,77 @@
 
 Last updated: 2026-06-20
 
+Source-control note: [LUC-5095](/LUC/issues/LUC-5095) is VERIFIED_DONE for
+the [LUC-5090](/LUC/issues/LUC-5090) generated/status evidence batch and
+carried [LUC-5084](/LUC/issues/LUC-5084) / [LUC-5096](/LUC/issues/LUC-5096)
+proof artifacts. Closure packet:
+`docs/planning/luc-5095-source-control-closure-for-luc-5090-evidence-packet.md`.
+Evidence: pre-closure
+`HEAD=fc4d4241bc0c80df79c350d5900c8c751a4e5e03`; branch
+`main...origin/main [ahead 61]`; dirty set matched the carried planning/proof
+artifacts, generated architecture/status outputs, and state/context updates.
+`git diff --check` passed with LF-to-CRLF warnings only; generated
+architecture-awareness JSON parsed at `2344` entities / `4800` relations;
+scoped high-confidence token/private-key scan found no matching files; `npm
+run architecture:status` remained GREEN. Push remains held for a future
+release batch or explicit source-ref/deploy need. Deploy impact: none.
+
+Architecture hygiene note: LUC-5096 is VERIFIED_DONE for the temporary
+proof-harness scanner gap. The packet is recorded in
+`docs/planning/luc-5096-tmp-proof-harness-scanner-hygiene.md`. Classification:
+`.tmp/luc-5084-auth-route-proof.mjs` was a validation-owned one-off harness
+for [LUC-5084](/LUC/issues/LUC-5084) after durable proof was already promoted
+to planning and `docs/ux/evidence`. Deleted only that harness; no broad `.tmp`
+scanner ignore was added. Evidence: Paperclip architecture-awareness scanner
+PASS (`entities=2344`, `relations=4800`, `files=13674`, generated at
+`2026-06-20T12:54:59.158Z`); task synchronization reports `0` task-link gaps,
+`0` implementation-without-task gaps, and `0` verified-without-proof gaps;
+`npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass). Policy:
+temporary proof harnesses should be removed after promoted evidence exists;
+use targeted scanner overrides only for generated artifacts that must remain.
+
+Roost known-state baseline note: LUC-5090 is VERIFIED_DONE for the Roost
+Project Manager evidence lane. The packet is recorded in
+`docs/planning/luc-5090-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2349`,
+`relations=4799`, `files=13673`, generated at
+`2026-06-20T12:44:00.198Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task synchronization reports `0` task-link gaps, `1`
+implementation-without-task gap from `.tmp/luc-5084-auth-route-proof.mjs`,
+and `0` verified-without-proof gaps; ownership gaps `0`; dependency report
+shows `437` relations / `95` entities; architecture health reports
+`implementation_without_tests=1168`, actionable `1159`, classified inferred
+noise `9`. Confidence classification: local architecture and task/proof
+synchronization remain verified except for a temporary validation artifact
+hygiene gap; remaining confidence debt is narrow journey-proof debt plus
+source-control closure, not a PM-owned implementation defect. Follow-up
+owners: [LUC-5095](/LUC/issues/LUC-5095) for source-control closure and
+[LUC-5096](/LUC/issues/LUC-5096) for scanner hygiene. Protected production
+proof remains release/credential gated.
+
+QA browser proof note: LUC-5084 is VERIFIED_DONE for one authenticated browser
+route from the [LUC-5065](/LUC/issues/LUC-5065) release-critical ladder. The
+packet is recorded in
+`docs/planning/luc-5084-authenticated-browser-route-proof.md`. Evidence:
+`node .tmp\luc-5084-auth-route-proof.mjs` built server/web, applied migrations
+and seed to disposable PostgreSQL `companycore-luc-5084-postgres`, started a
+validation-owned local server on `http://127.0.0.1:3284`, registered owner
+sessions in Playwright Chromium, and verified
+`/areas?area=00-ogolny&view=overview` at desktop `1366x900` and mobile
+`390x844` with visible `Command packet` and `Next actions`, no console/page
+errors, no failed requests or bad `/v1` responses, and no horizontal overflow.
+Artifacts:
+`docs/ux/evidence/luc-5084-authenticated-00-dashboard-proof.json`,
+`docs/ux/evidence/luc-5084-authenticated-00-dashboard-desktop.png`, and
+`docs/ux/evidence/luc-5084-authenticated-00-dashboard-mobile.png`. Cleanup:
+validation-owned DB container, port `3284`, and `chrome-headless-shell` checks
+returned no rows after manual cleanup of the timed-out validation-owned server
+PID. Confidence classification: canonical authenticated owner dashboard route
+is locally browser verified; protected production proof remains
+release/credential gated.
+
 Source-control note: [LUC-5083](/LUC/issues/LUC-5083) is VERIFIED_DONE for
 the [LUC-5078](/LUC/issues/LUC-5078) generated/status evidence batch. Closure
 packet:

@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T12:14:18.170Z
+Generated: 2026-06-20T12:58:07.550Z
 
 ## Canonical Exports
 
@@ -1123,6 +1123,11 @@ Generated: 2026-06-20T12:14:18.170Z
 | documents | document:luc-5065-release-critical-journey-proof-ladder:33f71c283e | module:docs:6784d83cb0 | docs/planning/luc-5065-release-critical-journey-proof-ladder.md |
 | documents | document:luc-5068-known-state-evidence-and-architecture-baseline:173172471b | module:docs:6784d83cb0 | docs/planning/luc-5068-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5072-source-control-closure-for-luc-5068-known-state-evidence-packet:55db98f382 | module:docs:6784d83cb0 | docs/planning/luc-5072-source-control-closure-for-luc-5068-known-state-evidence-packet.md |
+| documents | document:luc-5078-known-state-evidence-and-architecture-baseline:de560009eb | module:docs:6784d83cb0 | docs/planning/luc-5078-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5083-source-control-closure-for-luc-5078-known-state-evidence-packet:538bb46e5e | module:docs:6784d83cb0 | docs/planning/luc-5083-source-control-closure-for-luc-5078-known-state-evidence-packet.md |
+| documents | document:luc-5084-authenticated-browser-route-proof:229bf9170f | module:docs:6784d83cb0 | docs/planning/luc-5084-authenticated-browser-route-proof.md |
+| documents | document:luc-5090-known-state-evidence-and-architecture-baseline:250bba9d59 | module:docs:6784d83cb0 | docs/planning/luc-5090-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5096-tmp-proof-harness-scanner-hygiene:54810f2b8a | module:docs:6784d83cb0 | docs/planning/luc-5096-tmp-proof-harness-scanner-hygiene.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1213,8 +1218,3 @@ Generated: 2026-06-20T12:14:18.170Z
 | documents | document:paperclip-agent-config-sync-requested:71d452a382 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/EVENT-PAPERCLIP-SYNC-REQUESTED.md |
 | documents | document:paperclip-company-building-architecture-direction:6da45b3166 | module:docs:6784d83cb0 | docs/planning/paperclip-company-building-architecture-task-contract.md |
 | documents | document:paperclip-companycore-adapter-runbook:198fe022d1 | module:docs:6784d83cb0 | docs/operations/paperclip-companycore-adapter-runbook.md |
-| documents | document:patch-v1-agents-id:4ab8073e0d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0088.md |
-| documents | document:patch-v1-assets-folders-id:6d8789ca84 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0089.md |
-| documents | document:patch-v1-clients-id:afdc502d5e | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0090.md |
-| documents | document:patch-v1-company-os-standards-id:ae10c28de8 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0091.md |
-| documents | document:patch-v1-company-os-workflow-definitions-drafts-id:75187ea37d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0092.md |

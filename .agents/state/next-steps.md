@@ -4,6 +4,77 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-5095` source-control closure is complete locally for the
+   [LUC-5090](/LUC/issues/LUC-5090) evidence packet.
+   - Output:
+     `docs/planning/luc-5095-source-control-closure-for-luc-5090-evidence-packet.md`.
+   - Proof:
+     dirty set classified as carried [LUC-5084](/LUC/issues/LUC-5084)
+     browser-proof artifacts, [LUC-5090](/LUC/issues/LUC-5090) evidence,
+     [LUC-5096](/LUC/issues/LUC-5096) scanner cleanup, generated/status
+     outputs, and state/context updates. `git diff --check` PASS with
+     LF-to-CRLF warnings only; generated architecture-awareness JSON parsed
+     with `2344` entities / `4800` relations; scoped high-confidence
+     token/private-key scan found no matching files; `npm run
+     architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+     worklist `0`, delta `0/0/0`, all gates pass).
+   - Next owner/action:
+     push remains held for a future release batch or explicit source-ref/deploy
+     need. Protected production proof remains release/credential gated.
+
+1. `LUC-5096` temporary proof harness scanner hygiene is complete.
+   - Output:
+     `docs/planning/luc-5096-tmp-proof-harness-scanner-hygiene.md`.
+   - Proof:
+     deleted only `.tmp/luc-5084-auth-route-proof.mjs`; Paperclip scanner
+     rerun PASS (`entities=2344`, `relations=4800`, `files=13674`, generated
+     `2026-06-20T12:54:59.158Z`); task-sync now reports `0`
+     implementation-without-task gaps and `0` verified-without-proof gaps;
+     `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+     `0`, worklist `0`, delta `0/0/0`, all gates pass).
+   - Next owner/action:
+     no follow-up remains for [LUC-5096](/LUC/issues/LUC-5096). Policy:
+     remove temporary proof harnesses after promoted evidence exists; use
+     targeted scanner overrides only when a generated artifact must remain.
+     [LUC-5095](/LUC/issues/LUC-5095) still owns source-control closure.
+
+1. `LUC-5090` known-state evidence and architecture baseline is complete for
+   Roost PM scope.
+   - Output:
+     `docs/planning/luc-5090-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2349`,
+     `relations=4799`, `files=13673`, generated
+     `2026-06-20T12:44:00.198Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task-sync reports one
+     implementation-without-task gap from `.tmp/luc-5084-auth-route-proof.mjs`
+     and no task-link or verified-without-proof gaps.
+   - Next owner/action:
+     [LUC-5095](/LUC/issues/LUC-5095) owns source-control closure for this
+     generated/status packet plus carried [LUC-5084](/LUC/issues/LUC-5084)
+     evidence; [LUC-5096](/LUC/issues/LUC-5096) owns scanner hygiene for the
+     temporary validation artifact.
+
+1. `LUC-5084` authenticated browser route proof is complete for one
+   release-critical route from the [LUC-5065](/LUC/issues/LUC-5065) ladder.
+   - Output:
+     `docs/planning/luc-5084-authenticated-browser-route-proof.md`.
+   - Proof:
+     built server/web, migrated and seeded disposable local PostgreSQL
+     `companycore-luc-5084-postgres`, started a validation-owned local app on
+     `http://127.0.0.1:3284`, registered owner sessions in Playwright
+     Chromium, and verified `/areas?area=00-ogolny&view=overview` at desktop
+     `1366x900` and mobile `390x844` with visible `Command packet` and `Next
+     actions`, no console/page errors, no failed requests or bad `/v1`
+     responses, and no horizontal overflow. Artifacts are in
+     `docs/ux/evidence/luc-5084-authenticated-00-dashboard-proof.json` and
+     matching desktop/mobile screenshots.
+   - Next owner/action:
+     no follow-up remains on [LUC-5084](/LUC/issues/LUC-5084). Future QA
+     should choose another single ladder route only when it adds release
+     confidence. Protected production proof remains release/credential gated.
+
 1. `LUC-5083` source-control closure is complete locally for the
    [LUC-5078](/LUC/issues/LUC-5078) known-state evidence packet.
    - Output:
@@ -18,8 +89,9 @@ Last updated: 2026-06-20
      pass).
    - Next owner/action:
      push is held for future release batching or explicit source-ref/deploy
-     need. [LUC-5084](/LUC/issues/LUC-5084) remains the next narrow QA route
-     proof. Protected production proof remains release/credential gated.
+     need. [LUC-5084](/LUC/issues/LUC-5084) is now complete for the first
+     narrow QA authenticated browser route proof. Protected production proof
+     remains release/credential gated.
 
 1. `LUC-5078` known-state evidence and architecture baseline is complete for
    IPM coordination scope.
@@ -34,9 +106,9 @@ Last updated: 2026-06-20
      dependency report `437` relations / `95` entities; architecture health
      reports `implementation_without_tests=1162`, actionable `1153`.
    - Next owner/action:
-     [LUC-5083](/LUC/issues/LUC-5083) owns source-control closure for the
-     generated/status evidence packet; [LUC-5084](/LUC/issues/LUC-5084) owns
-     one narrow authenticated browser route proof from the existing
+     [LUC-5083](/LUC/issues/LUC-5083) completed source-control closure for
+     the generated/status evidence packet; [LUC-5084](/LUC/issues/LUC-5084)
+     completed one narrow authenticated browser route proof from the existing
      release-critical ladder. Protected production proof remains
      release/credential gated.
 

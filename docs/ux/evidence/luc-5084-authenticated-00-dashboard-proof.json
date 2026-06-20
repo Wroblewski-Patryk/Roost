@@ -1,0 +1,52 @@
+{
+  "issueId": "LUC-5084",
+  "status": "passed",
+  "startedAt": "2026-06-20T12:20:04.876Z",
+  "finishedAt": "2026-06-20T12:20:58.118Z",
+  "baseUrl": "http://127.0.0.1:3284",
+  "route": "/areas?area=00-ogolny&view=overview",
+  "databaseContainer": "companycore-luc-5084-postgres",
+  "databasePort": "55484",
+  "appPort": "3284",
+  "checks": [
+    {
+      "viewport": {
+        "width": 1366,
+        "height": 900
+      },
+      "email": "luc-5084-1366x900-1781958044283@example.test",
+      "url": "http://127.0.0.1:3284/areas?area=00-ogolny&view=overview",
+      "screenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-5084-authenticated-00-dashboard-desktop.png",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "badResponses": [],
+      "horizontalOverflow": false,
+      "matchedText": {
+        "hasGeneral": true,
+        "hasCommandPacket": true,
+        "hasNextActions": true
+      }
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "email": "luc-5084-390x844-1781958056043@example.test",
+      "url": "http://127.0.0.1:3284/areas?area=00-ogolny&view=overview",
+      "screenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-5084-authenticated-00-dashboard-mobile.png",
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "badResponses": [],
+      "horizontalOverflow": false,
+      "matchedText": {
+        "hasGeneral": true,
+        "hasCommandPacket": true,
+        "hasNextActions": true
+      }
+    }
+  ],
+  "failures": []
+}

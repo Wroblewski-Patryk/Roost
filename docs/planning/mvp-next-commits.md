@@ -7,6 +7,50 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-5095 source-control closure:
+      completed locally for the [LUC-5090](/LUC/issues/LUC-5090) known-state
+      evidence packet, carried [LUC-5084](/LUC/issues/LUC-5084) browser-proof
+      artifacts, and [LUC-5096](/LUC/issues/LUC-5096) scanner-hygiene cleanup.
+      Output:
+      `docs/planning/luc-5095-source-control-closure-for-luc-5090-evidence-packet.md`.
+      Evidence: dirty set classified as coherent; `git diff --check` PASS with
+      LF-to-CRLF warnings only; generated architecture-awareness JSON parsed
+      with `2344` entities / `4800` relations; scoped high-confidence
+      token/private-key scan found no matching files; `npm run
+      architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+      worklist `0`, delta `0/0/0`, all gates pass). Push held for future
+      release batch or explicit source-ref/deploy need; deploy impact none.
+
+- [x] LUC-5096 temporary proof harness scanner hygiene:
+      completed. Output:
+      `docs/planning/luc-5096-tmp-proof-harness-scanner-hygiene.md`.
+      Evidence: deleted only `.tmp/luc-5084-auth-route-proof.mjs` after
+      [LUC-5084](/LUC/issues/LUC-5084) evidence had been promoted; Paperclip
+      scanner rerun PASS (`entities=2344`, `relations=4800`, `files=13674`,
+      generated `2026-06-20T12:54:59.158Z`); task-sync now reports `0`
+      implementation-without-task gaps; `npm run architecture:status` PASS
+      (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`,
+      all gates pass). No broad `.tmp` ignore or runtime/deploy/protected
+      action occurred. Remaining sibling lane:
+      [LUC-5095](/LUC/issues/LUC-5095) source-control closure.
+
+- [x] LUC-5090 known-state evidence and architecture baseline:
+      completed for Roost PM scope. Output:
+      `docs/planning/luc-5090-known-state-evidence-and-architecture-baseline.md`.
+      Evidence: Paperclip architecture-awareness scanner PASS
+      (`entities=2349`, `relations=4799`, `files=13673`, generated at
+      `2026-06-20T12:44:00.198Z`); `npm run architecture:status` PASS
+      (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+      delta `0/0/0`, all gates pass); task-sync reports `0` task-link gaps,
+      one implementation-without-task gap from
+      `.tmp/luc-5084-auth-route-proof.mjs`, and `0`
+      verified-without-proof gaps. Follow-up:
+      [LUC-5095](/LUC/issues/LUC-5095) owns source-control closure for this
+      generated/status packet plus carried [LUC-5084](/LUC/issues/LUC-5084)
+      evidence, and [LUC-5096](/LUC/issues/LUC-5096) owns scanner hygiene for
+      the temporary validation artifact. No production/deploy/protected action
+      occurred.
+
 - [x] LUC-5072 source-control closure:
       completed locally for the [LUC-5068](/LUC/issues/LUC-5068) known-state
       evidence packet and carried [LUC-5065](/LUC/issues/LUC-5065) QA/state

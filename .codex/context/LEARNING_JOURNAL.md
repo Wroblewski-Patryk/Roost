@@ -26,6 +26,29 @@ fixes for this repository.
 
 ## Entries
 
+### 2026-06-20 - Verify Validation Servers After Shell Timeouts
+- Context: LUC-5084 ran a local Playwright authenticated browser proof through
+  a validation-owned Node server and disposable PostgreSQL container.
+- Symptom: The proof passed and wrote its JSON/screenshots, but the outer
+  shell command timed out and left `node dist/server.js` listening on port
+  `3284`.
+- Root cause: Parent shell timeout interrupted the validation harness after
+  artifact write but before its final server cleanup completed.
+- Guardrail: After any long-running local browser proof command times out,
+  inspect the validation-owned port and command line before reporting cleanup;
+  stop only the confirmed task-owned server PID, then rerun container, port,
+  and browser process checks.
+- Preferred pattern: Record the app port/container in the proof packet, verify
+  `Get-CimInstance Win32_Process` for the owning PID, stop only that PID, then
+  prove no DB container, port listener, or `chrome-headless-shell` rows remain.
+- Avoid: Treating a timed-out command as either failed or fully cleaned without
+  artifact readback and process ownership checks.
+- Evidence: LUC-5084 result JSON showed PASS at
+  `2026-06-20T12:20:58.118Z`; cleanup found PID `13740`
+  `node dist/server.js` on port `3284`, stopped it, and follow-up checks
+  returned no validation DB container, no port listener, and no headless
+  browser process rows.
+
 ### 2026-05-24 - Recover Windows Build EPERM by Resetting Build Artifacts
 - Context: ARCH-EVID-002 continuation ran repeated full validation
   (`npm run validate`) after architecture gate hardening.

@@ -2,6 +2,83 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5095` source-control closure completed locally for the
+  [LUC-5090](/LUC/issues/LUC-5090) known-state evidence packet, carried
+  [LUC-5084](/LUC/issues/LUC-5084) authenticated browser proof, and
+  [LUC-5096](/LUC/issues/LUC-5096) scanner-hygiene cleanup. Output:
+  `docs/planning/luc-5095-source-control-closure-for-luc-5090-evidence-packet.md`.
+  Evidence: dirty set matched the carried planning/proof artifacts,
+  generated architecture/status outputs, and state/context updates;
+  `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  architecture-awareness JSON parsed successfully with `2344` entities /
+  `4800` relations; scoped high-confidence token/private-key scan found no
+  matches; `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass).
+  Commit: local source-control closure commit for this packet; final SHA is
+  recorded in the Paperclip closure comment. Push held for a future release
+  batch or explicit source-ref/deploy need. Deploy impact: none.
+
+- 2026-06-20: `LUC-5096` temporary proof harness scanner hygiene completed.
+  Output: `docs/planning/luc-5096-tmp-proof-harness-scanner-hygiene.md`.
+  Classification: `.tmp/luc-5084-auth-route-proof.mjs` was a validation-owned
+  one-off harness for [LUC-5084](/LUC/issues/LUC-5084) after its durable
+  evidence had already been promoted to planning and `docs/ux/evidence`.
+  Deleted only that harness; no broad `.tmp` scanner ignore was added and
+  `docs/architecture/scanner-overrides.json` remains limited to targeted
+  existing generated-artifact prefixes. Scanner rerun PASS (`entities=2344`,
+  `relations=4800`, `files=13674`, generated
+  `2026-06-20T12:54:59.158Z`); task-sync now reports `0` task-link gaps,
+  `0` implementation-without-task gaps, and `0` verified-without-proof gaps;
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass). Policy:
+  temporary `.tmp` proof harnesses should be deleted after promoted evidence
+  exists; add targeted scanner overrides only for generated artifacts that must
+  remain. Deploy impact: none.
+
+- 2026-06-20: `LUC-5090` Roost known-state evidence and architecture
+  baseline completed for Roost PM scope. Output:
+  `docs/planning/luc-5090-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2349`,
+  `relations=4799`, `files=13673`, generated at
+  `2026-06-20T12:44:00.198Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); task-sync reports `0` task-link gaps and `1`
+  implementation-without-task gap from ignored validation artifact
+  `.tmp/luc-5084-auth-route-proof.mjs`; owner gaps `0`; dependency report
+  `437` relations / `95` entities; architecture health reports
+  `implementation_without_tests=1168`, actionable `1159`, classified inferred
+  noise `9`; source checkpoint
+  `HEAD=fc4d4241bc0c80df79c350d5900c8c751a4e5e03`, branch
+  `main...origin/main [ahead 61]`. Follow-up lanes:
+  [LUC-5095](/LUC/issues/LUC-5095) owns source-control closure for the
+  generated/status packet and carried [LUC-5084](/LUC/issues/LUC-5084)
+  evidence; [LUC-5096](/LUC/issues/LUC-5096) owns scanner hygiene for
+  `.tmp/luc-5084-auth-route-proof.mjs`. No runtime code, schema,
+  migration, protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, server, browser, database, Docker, or
+  watcher process occurred.
+
+- 2026-06-20: `LUC-5084` authenticated browser route proof completed for one
+  release-critical route from the [LUC-5065](/LUC/issues/LUC-5065) ladder.
+  Output:
+  `docs/planning/luc-5084-authenticated-browser-route-proof.md`.
+  Evidence: the validation harness built server/web, migrated and seeded
+  disposable local PostgreSQL `companycore-luc-5084-postgres`, started a
+  validation-owned local app on `http://127.0.0.1:3284`, registered new owner
+  sessions in Playwright Chromium, and verified
+  `/areas?area=00-ogolny&view=overview` at desktop `1366x900` and mobile
+  `390x844`. Both checks reached the canonical route, rendered `Command
+  packet` and `Next actions`, and recorded no console/page errors, failed
+  requests, bad `/v1` responses, or horizontal overflow. Artifacts:
+  `docs/ux/evidence/luc-5084-authenticated-00-dashboard-proof.json`,
+  `docs/ux/evidence/luc-5084-authenticated-00-dashboard-desktop.png`, and
+  `docs/ux/evidence/luc-5084-authenticated-00-dashboard-mobile.png`.
+  Cleanup checks found no validation DB container, no port `3284` listener,
+  and no `chrome-headless-shell` rows after stopping the validation-owned
+  server PID left by the outer command timeout. No product code, schema,
+  migration authoring, deploy, push, protected smoke, production mutation,
+  credential access, or secret access occurred. Deploy impact: none.
+
 - 2026-06-20: `LUC-5083` source-control closure completed locally for the
   [LUC-5078](/LUC/issues/LUC-5078) known-state evidence packet. Output:
   `docs/planning/luc-5083-source-control-closure-for-luc-5078-known-state-evidence-packet.md`.

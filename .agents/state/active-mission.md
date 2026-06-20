@@ -4,6 +4,137 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5095-SOURCE-CONTROL-CLOSURE-FOR-LUC-5090-EVIDENCE
+- Status: VERIFIED_DONE_PENDING_LOCAL_COMMIT
+- Selected objective: Preserve the [LUC-5090](/LUC/issues/LUC-5090)
+  known-state evidence packet, carried [LUC-5084](/LUC/issues/LUC-5084)
+  browser-proof artifacts, and [LUC-5096](/LUC/issues/LUC-5096)
+  scanner-hygiene cleanup in local source control.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5095](/LUC/issues/LUC-5095), already claimed by the harness, as the
+  source-control closure sidecar for the completed [LUC-5090](/LUC/issues/LUC-5090)
+  evidence packet.
+- Scope: dirty-set classification, SCM hygiene, generated JSON parse,
+  high-confidence token/private-key scan, architecture-status proof, closure
+  packet, source-of-truth synchronization, and one local commit if coherent.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-5095-source-control-closure-for-luc-5090-evidence-packet.md`.
+- Evidence: dirty set matched carried [LUC-5084](/LUC/issues/LUC-5084)
+  planning/proof artifacts, [LUC-5090](/LUC/issues/LUC-5090) PM evidence,
+  [LUC-5096](/LUC/issues/LUC-5096) scanner hygiene, generated/status outputs,
+  and state/context updates. `git diff --check` PASS with LF-to-CRLF warnings
+  only; `docs/graphs/architecture-awareness.json` parsed at `2344` entities /
+  `4800` relations; scoped high-confidence token/private-key scan found no
+  matching files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: source-control closure ready for local commit. Push held
+  for future release batch or explicit source-ref/deploy need; deploy impact
+  none.
+
+## Previous Mission
+
+- Mission ID: LUC-5096-TMP-PROOF-HARNESS-SCANNER-HYGIENE
+- Status: VERIFIED_DONE
+- Selected objective: Classify and resolve the temporary [LUC-5084](/LUC/issues/LUC-5084)
+  proof harness scanner gap for [LUC-5096](/LUC/issues/LUC-5096).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5096](/LUC/issues/LUC-5096), assigned to TSA, after
+  [LUC-5090](/LUC/issues/LUC-5090) found one task-sync implementation gap from
+  `.tmp/luc-5084-auth-route-proof.mjs`.
+- Scope: inspect the parent packet and task-sync report, inspect the tmp
+  harness and scanner overrides, delete or classify only the validation-owned
+  artifact, rerun scanner/status proof, and update source-of-truth state.
+- Exclusions: no product feature work, schema, migration, protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, server, browser, database, Docker, or watcher process.
+- Output: `docs/planning/luc-5096-tmp-proof-harness-scanner-hygiene.md`.
+- Evidence: deleted only `.tmp/luc-5084-auth-route-proof.mjs` after durable
+  [LUC-5084](/LUC/issues/LUC-5084) proof existed in planning and
+  `docs/ux/evidence`; Paperclip scanner PASS (`entities=2344`,
+  `relations=4800`, `files=13674`, generated
+  `2026-06-20T12:54:59.158Z`); task-sync reports `0` task-link gaps, `0`
+  implementation-without-task gaps, and `0` verified-without-proof gaps;
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: done. No broad `.tmp` scanner ignore was added; future
+  temporary proof harnesses should be deleted after promoted evidence exists
+  unless a targeted generated-artifact override is justified. Remaining sibling
+  lane: [LUC-5095](/LUC/issues/LUC-5095) source-control closure.
+
+## Previous Mission
+
+- Mission ID: LUC-5090-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE_PENDING_FOLLOW_UPS
+- Selected objective: Refresh local Roost known-state architecture evidence
+  and convert findings into owner-scoped follow-up lanes for
+  [LUC-5090](/LUC/issues/LUC-5090).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5090](/LUC/issues/LUC-5090), assigned to Roost Project Manager, with a
+  `softwarehouse-known-state-harvester:v1` evidence contract and no pending
+  comment delta requiring thread refetch.
+- Scope: non-protected architecture-awareness scanner refresh, architecture
+  status proof, generated report readback, source-control readback, planning
+  packet, and follow-up lane creation.
+- Exclusions: no implementation, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-5090-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip architecture-awareness scanner PASS (`entities=2349`,
+  `relations=4799`, `files=13673`, generated at
+  `2026-06-20T12:44:00.198Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); task-sync gaps `0` for task links and
+  verified-without-proof, with one implementation-without-task gap from
+  `.tmp/luc-5084-auth-route-proof.mjs`; owner gaps `0`; dependency report
+  `437` relations / `95` entities; architecture health
+  `implementation_without_tests=1168`, actionable `1159`, classified inferred
+  noise `9`; `HEAD=fc4d4241bc0c80df79c350d5900c8c751a4e5e03`.
+- Final disposition: done for PM evidence scope after creating
+  [LUC-5095](/LUC/issues/LUC-5095) for source-control closure and
+  [LUC-5096](/LUC/issues/LUC-5096) for temporary validation artifact scanner
+  hygiene. Protected production proof remains release/credential gated.
+
+## Previous Mission
+
+- Mission ID: LUC-5084-AUTHENTICATED-BROWSER-ROUTE-PROOF
+- Status: VERIFIED_DONE
+- Selected objective: Prove one authenticated browser route from the
+  [LUC-5065](/LUC/issues/LUC-5065) release-critical ladder for
+  [LUC-5084](/LUC/issues/LUC-5084).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5084](/LUC/issues/LUC-5084), assigned to Test Automation Engineer,
+  after [LUC-5065](/LUC/issues/LUC-5065) explicitly identified browser route
+  proof as the next narrow QA slice.
+- Scope: local build, disposable database migration/seed, validation-owned
+  local app server, browser owner registration, authenticated route proof for
+  `/areas?area=00-ogolny&view=overview`, desktop/mobile screenshots, cleanup
+  proof, source-of-truth updates, and Paperclip disposition.
+- Exclusions: product code changes, schema changes, migration authoring,
+  deploy, push, protected smoke, production mutation, restart of existing
+  services, credential access, secret disclosure, or production data access.
+- Output:
+  `docs/planning/luc-5084-authenticated-browser-route-proof.md`.
+- Evidence: Playwright Chromium registered owner sessions and verified
+  `http://127.0.0.1:3284/areas?area=00-ogolny&view=overview` at desktop
+  `1366x900` and mobile `390x844` with visible `Command packet` and `Next
+  actions`, no console/page errors, no failed requests or bad `/v1` responses,
+  and no horizontal overflow. Artifacts:
+  `docs/ux/evidence/luc-5084-authenticated-00-dashboard-proof.json`,
+  `docs/ux/evidence/luc-5084-authenticated-00-dashboard-desktop.png`, and
+  `docs/ux/evidence/luc-5084-authenticated-00-dashboard-mobile.png`. Cleanup
+  found no validation DB container, no port `3284` listener, and no
+  `chrome-headless-shell` rows after stopping the validation-owned server PID
+  left by the outer command timeout.
+- Final disposition: done for local authenticated browser route proof. Future
+  QA should select another single ladder route only when it adds release
+  confidence; protected production proof remains release/credential gated.
+
+## Previous Mission
+
 - Mission ID: LUC-5083-SOURCE-CONTROL-CLOSURE-FOR-LUC-5078-EVIDENCE
 - Status: VERIFIED_DONE_PENDING_LOCAL_COMMIT
 - Selected objective: Preserve the [LUC-5078](/LUC/issues/LUC-5078)
