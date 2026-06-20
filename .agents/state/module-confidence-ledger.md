@@ -2,6 +2,25 @@
 
 Last updated: 2026-06-20
 
+Source-control note: [LUC-5219](/LUC/issues/LUC-5219) is VERIFIED_DONE for the
+[LUC-5218](/LUC/issues/LUC-5218) Paperclip known-state evidence document and
+generated/status architecture refresh. Evidence packet:
+`docs/planning/luc-5219-source-control-closure-for-luc-5218-evidence-packet.md`.
+Proof: worktree was clean at heartbeat start on `main...origin/main [ahead
+75]`; tracked generated architecture outputs already contained the
+[LUC-5218](/LUC/issues/LUC-5218) refresh timestamp
+`2026-06-20T17:15:38.378Z` with `2375` entities / `4921` relations; `git diff
+--check` PASS with LF-to-CRLF warnings only; generated architecture-awareness
+and architecture-health JSON parsed; generated health signals show
+`implementation_without_tests=1162`, actionable `1153`, docs gaps `0`, task
+gaps `0`, implementation-without-task gaps `0`, verified-without-proof gaps
+`0`, owner gaps `0`, disconnected entities `0`; scoped high-confidence
+token/private-key scan found no matches; `npm run architecture:status` PASS
+(`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+`0/0/0`, all gates pass). Confidence classification: local source-control
+preservation is verified; push remains held for a future release batch or
+explicit source-ref/deploy need.
+
 Source-control note: [LUC-5217](/LUC/issues/LUC-5217) is VERIFIED_DONE for the
 [LUC-5215](/LUC/issues/LUC-5215) generated/status/planning evidence packet and
 the carried [LUC-5208](/LUC/issues/LUC-5208) Relationships API journey proof.
@@ -18,6 +37,30 @@ architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
 chain worklist `0`, delta `0/0/0`, all gates pass). Confidence
 classification: local source-control preservation is verified; push remains
 held for a future release batch or explicit source-ref/deploy need.
+
+QA proof note: [LUC-5220](/LUC/issues/LUC-5220) is VERIFIED_DONE for one
+narrow route/API journey selected from the recurring
+`implementation_without_tests=1162` signal. Evidence packet:
+`docs/planning/luc-5220-process-core-api-journey-proof.md`. Selected journey:
+Process Core read-only coverage packet, `GET /v1/process-core/coverage`,
+mapped to `FEAT-AUTO-0029` and
+`src/modules/process-core/process-core.routes.ts`. Proof used existing focused
+assertions in `src/tests/api.test.ts` for unauthenticated denial,
+workspace-scoped counts, read-only/no-mutation behavior, route/capability/MCP
+exposure, and scoped credential denial. Local proof ran through project-native
+`npm run test:api:local` against disposable PostgreSQL
+`companycore-luc-5220-postgres` on port `55420`: server/web build PASS; all
+`31` migrations applied; seed PASS; `node --test dist/tests/api.test.js` PASS
+with `7/7` subtests (`CompanyCore v1 protected API flow` duration
+`25793.4685ms`, total `29057.5133ms`). `npm run check:route-capabilities`
+PASS (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+`npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`,
+delta `0/0/0`). Cleanup found no validation DB container and no
+`chrome-headless-shell` process. Confidence classification: the Process Core
+API journey is locally verified for protected read-only behavior,
+workspace-scoped counts, capability registration, MCP exposure, and scoped
+credential denial; no repair issue is warranted. Browser proof and protected
+production proof remain separate future gates.
 
 Roost known-state baseline note: [LUC-5215](/LUC/issues/LUC-5215) is
 VERIFIED_DONE after source-control closure through

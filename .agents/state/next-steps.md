@@ -4,6 +4,53 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-5219` source-control closure is complete locally for the
+   [LUC-5218](/LUC/issues/LUC-5218) Paperclip known-state evidence document
+   and generated/status architecture refresh.
+   - Output:
+     `docs/planning/luc-5219-source-control-closure-for-luc-5218-evidence-packet.md`.
+   - Proof:
+     worktree was clean at heartbeat start on `main...origin/main [ahead 75]`;
+     tracked generated architecture outputs already contained the
+     [LUC-5218](/LUC/issues/LUC-5218) refresh timestamp
+     `2026-06-20T17:15:38.378Z` with `2375` entities / `4921` relations; `git
+     diff --check` PASS with LF-to-CRLF warnings only; generated architecture
+     JSON parsed; health signals show `implementation_without_tests=1162`,
+     actionable `1153`, docs gaps `0`, task gaps `0`,
+     implementation-without-task gaps `0`, verified-without-proof gaps `0`,
+     owner gaps `0`, disconnected entities `0`; scoped high-confidence
+     secret/private-key scan found no matches; `npm run architecture:status`
+     PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta
+     `0/0/0`, all gates pass).
+   - Next owner/action:
+     no source-control follow-up is needed for this packet after the local
+     closure commit. Push remains held for a future release batch or explicit
+     source-ref/deploy need. [LUC-5220](/LUC/issues/LUC-5220) owns the next QA
+     proof rung; protected target proof remains externally approval/credential
+     gated.
+
+1. `LUC-5220` Process Core API journey proof is complete for the next Roost
+   `implementation_without_tests` local QA rung.
+   - Output:
+     `docs/planning/luc-5220-process-core-api-journey-proof.md`.
+   - Proof:
+     selected Process Core read-only coverage packet,
+     `GET /v1/process-core/coverage`, mapped to `FEAT-AUTO-0029` and
+     `src/modules/process-core/process-core.routes.ts`; `npm run
+     test:api:local` PASS with disposable PostgreSQL
+     `companycore-luc-5220-postgres` on port `55420` after server/web build,
+     `31` migrations, seed, and `7/7` API subtests (`CompanyCore v1 protected
+     API flow` duration `25793.4685ms`, total `29057.5133ms`); `npm run
+     check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+     `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+     (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`,
+     all gates pass). Cleanup found no validation DB container and no
+     `chrome-headless-shell` process.
+   - Next owner/action:
+     no Process Core repair issue is warranted from this proof. Continue
+     future QA proof ladders only from a named journey risk; browser proof and
+     protected production proof remain separate gates.
+
 1. `LUC-5217` source-control closure is complete locally for the
    [LUC-5215](/LUC/issues/LUC-5215) generated/status/planning evidence packet
    and the carried [LUC-5208](/LUC/issues/LUC-5208) Relationships API journey

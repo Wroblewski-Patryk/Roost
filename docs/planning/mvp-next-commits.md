@@ -7,6 +7,25 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-5219 source-control closure:
+      completed locally for the [LUC-5218](/LUC/issues/LUC-5218) Paperclip
+      known-state evidence document and generated/status architecture refresh.
+      Output:
+      `docs/planning/luc-5219-source-control-closure-for-luc-5218-evidence-packet.md`.
+      Evidence: worktree was clean at heartbeat start on `main...origin/main
+      [ahead 75]`; tracked generated architecture outputs already contained
+      the [LUC-5218](/LUC/issues/LUC-5218) refresh timestamp
+      `2026-06-20T17:15:38.378Z` with `2375` entities / `4921` relations;
+      `git diff --check` PASS with LF-to-CRLF warnings only; generated
+      architecture JSON parsed; health signals show
+      `implementation_without_tests=1162`, actionable `1153`, docs gaps `0`,
+      task gaps `0`, implementation-without-task gaps `0`,
+      verified-without-proof gaps `0`, owner gaps `0`, disconnected entities
+      `0`; scoped high-confidence secret/private-key scan found no matches;
+      `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+      `0`, worklist `0`, delta `0/0/0`, all gates pass). Push held for future
+      release batch or explicit source-ref/deploy need; deploy impact none.
+
 - [x] LUC-5217 source-control closure:
       completed locally for the [LUC-5215](/LUC/issues/LUC-5215)
       generated/status/planning evidence packet and the carried
