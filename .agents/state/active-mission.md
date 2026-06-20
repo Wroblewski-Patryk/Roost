@@ -4,6 +4,36 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-4751-SOURCE-CONTROL-CLOSURE-LUC-4748
+- Status: VERIFIED_DONE
+- Selected objective: Close the source-control sidecar for the
+  [LUC-4748](/LUC/issues/LUC-4748) Roost known-state evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4751](/LUC/issues/LUC-4751), a source-control closure sidecar for
+  [LUC-4748](/LUC/issues/LUC-4748), with no pending comments and no fallback
+  fetch required.
+- Scope: inspect git status and diff hygiene, preserve the local LUC-4748
+  parent packet that appeared during closure readback, record the
+  source-control disposition, and update issue disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4751-source-control-closure-for-luc-4748-evidence-packet.md`.
+- Evidence: initial `git status --short --branch -uall` showed
+  `main...origin/main [ahead 27]` with no dirty or untracked paths;
+  `git diff --stat` returned no output; `git diff --check` returned no output;
+  `git rev-parse --short HEAD` was `5572302` before this closure packet.
+  During post-commit readback,
+  `docs/planning/luc-4748-known-state-evidence-and-architecture-baseline.md`
+  appeared as an untracked parent packet and was included in the corrected
+  closure commit.
+- Final disposition: done for source-control closure. The parent LUC-4748
+  planning packet plus LUC-4751 closure packet/state notes are preserved
+  locally. Push is held for a future release batch or explicit source-ref need.
+
+## Previous Mission
+
 - Mission ID: LUC-4742-SOURCE-CONTROL-CLOSURE-LUC-4739
 - Status: VERIFIED_DONE
 - Selected objective: Close the source-control sidecar for the

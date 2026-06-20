@@ -1,6 +1,23 @@
 # PROJECT_STATE
 
 Last updated: 2026-06-20
+- 2026-06-20: `LUC-4751` source-control closure completed for the
+  `LUC-4748` Roost known-state evidence packet sidecar. Output:
+  `docs/planning/luc-4751-source-control-closure-for-luc-4748-evidence-packet.md`.
+  Evidence: `git status --short --branch -uall` showed
+  `main...origin/main [ahead 27]` with no dirty or untracked paths;
+  `git diff --stat` produced no output; `git diff --check` produced no
+  output; `git rev-parse --short HEAD` was `5572302` before this closure
+  packet. During post-commit readback,
+  `docs/planning/luc-4748-known-state-evidence-and-architecture-baseline.md`
+  appeared as an untracked parent packet and was included in the corrected
+  closure commit. Classification: preserve the parent LUC-4748 planning packet
+  plus LUC-4751 closure packet/state notes; no generated/status architecture
+  files remained dirty by closure readback. Push held for a future release
+  batch or explicit source-ref need. No runtime code, schema, migration,
+  protected
+  smoke, deploy, push, restart, production mutation, credential access, secret
+  disclosure, server, browser, database, Docker, or watcher process occurred.
 - 2026-06-20: `LUC-4739` Roost known-state evidence and architecture
   baseline completed. Output:
   `docs/planning/luc-4739-known-state-evidence-and-architecture-baseline.md`.
