@@ -1,6 +1,105 @@
 # PROJECT_STATE
 
 Last updated: 2026-06-20
+- 2026-06-20: `LUC-4855` source-control closure completed for the
+  [LUC-4844](/LUC/issues/LUC-4844), [LUC-4847](/LUC/issues/LUC-4847), and
+  [LUC-4850](/LUC/issues/LUC-4850) Relationships/evidence batch. Output:
+  `docs/planning/luc-4855-source-control-closure-for-luc-4844-4847-4850-evidence-batch.md`.
+  Decision: preserve one coherent local batch containing the Relationships
+  route evidence-visibility repair, proof-ladder planning packets, browser
+  evidence artifacts, generated architecture/status exports, and
+  source-of-truth state. Evidence: pre-closure
+  `HEAD=4e606fe0bc162e1bfc7e2ccc58ae4cc5d5352be4`; branch
+  `main...origin/main [ahead 37]`; `git diff --stat` showed `17 files
+  changed, 7863 insertions(+), 6716 deletions(-)` before this closure packet;
+  `git diff --check` passed with line-ending conversion warnings only. Push
+  held for a future release batch or explicit source-ref/deploy need. No
+  push, deploy, restart, protected smoke, production mutation, credential
+  access, secret disclosure, server, browser, database, Docker, or watcher
+  process occurred in this closure lane.
+- 2026-06-20: `LUC-4844` Relationships context proof ladder completed after
+  the [LUC-4847](/LUC/issues/LUC-4847) repair. Output:
+  `docs/planning/luc-4844-relationships-context-proof-ladder.md`. Evidence:
+  post-repair `npm run test:api:local` PASS after server/web build, all `31`
+  migrations, seed, and `7/7` API subtests; kept-db rerun PASS for browser
+  setup. Authenticated Playwright rerun on local backend port `3236` passed
+  desktop `1366x900` and mobile `390x844` checks for route load, client,
+  stakeholder, interaction, task, relationship note, Relationship Drive file,
+  graph/provenance evidence, safe synthetic backend error language, no console
+  issues, no relevant failed requests, and no horizontal overflow. Evidence
+  artifacts:
+  `docs/ux/evidence/luc-4844-relationships-proof-ladder-rerun-2026-06-20/`.
+  Cleanup: local backend on port `3236` stopped,
+  `companycore-test-postgres` removed, and no `chrome-headless-shell` process
+  remained. No protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, or production data access occurred.
+- 2026-06-20: `LUC-4850` Roost known-state evidence and architecture
+  baseline completed after local-board requested
+  `softwarehouse-known-state-wakeup:v1`. Output:
+  `docs/planning/luc-4850-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2287`,
+  `relations=4552`, `files=13590`, generated at
+  `2026-06-20T05:14:43.078Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task sync reports `0` actionable tasks without architecture
+  links, `0` raw tasks without architecture links, `0` verified entities
+  without proof, and `1` actionable implementation entity without task link
+  (`.tmp/luc-4844-rerun-relationships-browser-proof.mjs`); architecture
+  health reports `implementation_without_tests=1168`; dependency report shows
+  `437` relations / `95` entities; ownership split is
+  `Docs Memory Lead=943`, `Engineering Delivery Lead=1343`,
+  `Roost Project Manager=1`; pre-refresh `HEAD=4e606fe0`, branch
+  `main...origin/main [ahead 37]`. Follow-ups:
+  [LUC-4855](/LUC/issues/LUC-4855) source-control closure for the current
+  Relationships/evidence batch, [LUC-4856](/LUC/issues/LUC-4856) scanner
+  hygiene for the `.tmp` proof harness, and [LUC-4857](/LUC/issues/LUC-4857)
+  QA selection of the next proof ladder from remaining
+  implementation-without-test debt. No runtime code, schema, migration,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, secret disclosure, server, browser, database, Docker, or watcher
+  process occurred in this PM lane.
+- 2026-06-20: `LUC-4847` Relationships evidence visibility repair completed
+  for the [LUC-4844](/LUC/issues/LUC-4844) browser-rung blocker. Output:
+  `docs/planning/luc-4847-relationships-evidence-visibility-repair.md`.
+  Change: `web/src/features/departments/relationships-route.tsx` now renders
+  relationship notes, Relationship Drive files, and a `Graph / provenance`
+  evidence strip from the existing `/v1/relationships/context` packet while
+  preserving clients, interactions, tasks, and blocked write actions. Evidence:
+  `npm run build:web` PASS; `COMPANYCORE_TEST_DB_KEEP=1 npm run test:api:local`
+  PASS after server/web build, all `31` migrations, seed, and `7/7` API
+  subtests. Focused authenticated Playwright proof on local backend port
+  `3236` passed on desktop `1366x900` and mobile `390x844` for route load,
+  client, stakeholder, interaction, task, note, Drive file, graph/provenance
+  visibility, safe synthetic backend error language, no console issues, and no
+  relevant failed requests after filtering known local font abort noise.
+  Evidence artifacts:
+  `docs/ux/evidence/luc-4847-relationships-evidence-visibility-2026-06-20/`.
+  Cleanup: local backend on port `3236` stopped,
+  `companycore-test-postgres` removed, and no `chrome-headless-shell` process
+  remained. No backend API contract, schema, migration, new write action,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, secret disclosure, or production data access occurred.
+- 2026-06-20: `LUC-4844` Relationships context proof ladder reached a
+  browser-rung blocker after a green API rung. Output:
+  `docs/planning/luc-4844-relationships-context-proof-ladder.md`. Evidence:
+  `npm run test:api:local` PASS after server/web build, all `31` migrations,
+  seed, and `7/7` API subtests; kept-db rerun also PASS for browser setup.
+  Authenticated Playwright proof on local backend port `3236` showed the
+  Relationships route, client row, stakeholder signal, recent interaction,
+  relationship task, blocked write actions, and safe synthetic backend error
+  language on desktop `1366x900` and mobile `390x844`. The same proof failed
+  the issue acceptance criteria because `/v1/relationships/context` returned
+  `notes.length=1`, `driveFiles.length=1`, and
+  `summary.relationshipDriveFiles=1`, but the overview route did not render
+  the seeded note, Drive file, or graph/provenance evidence. Evidence
+  artifacts:
+  `docs/ux/evidence/luc-4844-relationships-proof-ladder-2026-06-20/`.
+  Cleanup: local backend on port `3236` stopped,
+  `companycore-test-postgres` removed, and no `chrome-headless-shell` process
+  remained. Follow-up: implementation repair is required before rerunning this
+  proof ladder. No runtime code, schema, migration authoring, protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, or production data access occurred.
 - 2026-06-20: `LUC-4841` source-control closure completed for the
   [LUC-4837](/LUC/issues/LUC-4837) Roost architecture evidence packet.
   Output:

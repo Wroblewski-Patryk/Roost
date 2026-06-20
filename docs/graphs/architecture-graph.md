@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T04:42:46.848Z
+Generated: 2026-06-20T05:14:43.078Z
 
 ## Canonical Exports
 
@@ -1060,6 +1060,11 @@ Generated: 2026-06-20T04:42:46.848Z
 | documents | document:luc-4824-known-state-evidence-and-architecture-baseline:b81849e6ea | module:docs:6784d83cb0 | docs/planning/luc-4824-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4831-source-control-closure-for-luc-4824-evidence-packet:174e9c8a7a | module:docs:6784d83cb0 | docs/planning/luc-4831-source-control-closure-for-luc-4824-evidence-packet.md |
 | documents | document:luc-4834-source-control-closure-for-combined-evidence-batch:7cd2ed1149 | module:docs:6784d83cb0 | docs/planning/luc-4834-source-control-closure-for-combined-evidence-batch.md |
+| documents | document:luc-4837-known-state-evidence-and-architecture-baseline:6704c4c8c8 | module:docs:6784d83cb0 | docs/planning/luc-4837-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4841-source-control-closure-for-luc-4837-evidence-packet:ef8566fce8 | module:docs:6784d83cb0 | docs/planning/luc-4841-source-control-closure-for-luc-4837-evidence-packet.md |
+| documents | document:luc-4842-relationships-proof-ladder-target-from-test-evidence-debt:49722e1e69 | module:docs:6784d83cb0 | docs/planning/luc-4842-relationships-proof-ladder-target-from-test-evidence-debt.md |
+| documents | document:luc-4844-relationships-context-proof-ladder:ff746b9615 | module:docs:6784d83cb0 | docs/planning/luc-4844-relationships-context-proof-ladder.md |
+| documents | document:luc-4847-relationships-evidence-visibility-repair:1705fd2253 | module:docs:6784d83cb0 | docs/planning/luc-4847-relationships-evidence-visibility-repair.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1213,8 +1218,3 @@ Generated: 2026-06-20T04:42:46.848Z
 | documents | document:post-v1-clients:a492c47b7b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0118.md |
 | documents | document:post-v1-company-os-approvals-id-decision:e40e2dbc7b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0119.md |
 | documents | document:post-v1-company-os-approvals-request:890a9f3ed0 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0120.md |
-| documents | document:post-v1-company-os-events-id-actions-evaluate-automation-rules:31d82f187b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0121.md |
-| documents | document:post-v1-company-os-knowledge-links:30471012a1 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0169.md |
-| documents | document:post-v1-company-os-pipeline-runs-id-actions-start-stage:226b9d95dc | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0122.md |
-| documents | document:post-v1-company-os-pipeline-runs-id-task-links:494f7ddf48 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0168.md |
-| documents | document:post-v1-company-os-stage-runs-id-actions-block:ffa79c528d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0123.md |

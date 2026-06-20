@@ -1,0 +1,89 @@
+{
+  "baseUrl": "http://127.0.0.1:3236",
+  "contextProof": {
+    "summary": {
+      "clients": 1,
+      "activeClients": 1,
+      "archivedClients": 0,
+      "interactions": 1,
+      "activeInteractions": 1,
+      "stakeholders": 1,
+      "activeStakeholders": 1,
+      "openDeals": 0,
+      "relationshipNotes": 1,
+      "openTasks": 1,
+      "blockedTasks": 0,
+      "activeDecisions": 1,
+      "supportInteractions": 1,
+      "relationshipTasks": 1,
+      "relationshipDriveFiles": 1
+    },
+    "clients": 1,
+    "stakeholders": 1,
+    "interactions": 1,
+    "notes": 1,
+    "decisions": 1,
+    "driveFiles": 1,
+    "blockedActions": 4
+  },
+  "desktop": {
+    "name": "desktop",
+    "viewport": {
+      "width": 1366,
+      "height": 900
+    },
+    "textStart": "R\nRoost\nOperating center\nCOMPANY / WORKSPACE\nLUC 4847 Relationships QA\nWorkspace settings\n\nDEPARTMENTS\n\nGeneral\nCompany orchestration, routing, and cross-department command.\nStrategy\nStrategic goals, decisions, priorities, and roadmap governance.\nProduct\nProduct and service definition, delivery scope, and improvement loops.\nSales\nLead, offer, deal, and commercial follow-up management.\nOperations\nProcedures, task boards, calendars, routines, and operational controls.\nRelationships\nClients, partners, support, feedback, and relationship evidence.\nPeople / Agents\nPeople, AI agents, roles, responsibilities, and workload context.\nFinance\nRevenue, costs, budgets, invoices, and commercial exceptions.\nAssets\nFiles, folders, resources, repositories, prompts, and knowledge roots.\nTechnology\nCode, infrastructure, deployments, integrations, and technical health.\nLegal\nContracts, compliance, approvals, and legal risk control.\nInnovation\nResearch, experiments, discovery, and improvement portfolio.\nManagement\nExecutive control, department administration, approvals, and portfolio steering.\n\n05 RELATIONSHIPS\n\nRelationships Management System\n\nProtect client trust, relationship continuity, and delivery confidence through evidence-backed client context, interaction history, and follow-up obligations.\n\nCLIENTS\n\n1\n\nACTIVE CLIENTS\n\n1\n\nARCHIVED CLIENTS\n\n0\n\nINTERACTIONS\n\n1\n\nACTIVE INTERACTIONS\n\n1\n\nSTAKE",
+    "consoleMessages": [],
+    "failedRequests": [
+      "GET https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2 net::ERR_ABORTED",
+      "GET http://127.0.0.1:3236/vendor/phosphor/bold/Phosphor-Bold.woff2 net::ERR_ABORTED"
+    ],
+    "relevantFailures": [],
+    "checks": {
+      "routeLoaded": true,
+      "clientVisible": true,
+      "stakeholderVisible": true,
+      "interactionVisible": true,
+      "taskVisible": true,
+      "noteVisible": true,
+      "driveVisible": true,
+      "graphVisible": true,
+      "noRawBackendError": true,
+      "noConsoleIssues": true,
+      "noRelevantFailedRequests": true
+    }
+  },
+  "mobile": {
+    "name": "mobile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "textStart": "R\nRoost\nRelationships\nDashboard\n\n05 RELATIONSHIPS\n\nRelationships Management System\n\nProtect client trust, relationship continuity, and delivery confidence through evidence-backed client context, interaction history, and follow-up obligations.\n\nCLIENTS\n\n1\n\nACTIVE CLIENTS\n\n1\n\nARCHIVED CLIENTS\n\n0\n\nINTERACTIONS\n\n1\n\nACTIVE INTERACTIONS\n\n1\n\nSTAKEHOLDERS\n\n1\nRecent interactions\nrelationship support review\nactive\n\nRelationship follow-up with support and feedback evidence.\n\nLUC 4847 Client Trust • 20 cze\n\nRelationship tasks\nRelationship follow-up proof task\ntodo\n\nhigh • due 21 cze\n\nEVIDENCE VISIBILITY\n\nRelationship notes\n1 notes\nLUC 4847 Client Trust\nactive\n\nRelationship note with customer success context for proof.\n\nSource luc-4847-proof - updated 20 cze\n\nPROVIDER EVIDENCE\n\nRelationship Drive files\n1 files\nRelationship Drive proof note.md\nsales-crm\n\nRelationship Drive evidence for client success.\n\ntext/markdown - modified 20 cze\n\nGRAPH / PROVENANCE\n\nRelationship provenance evidence\nread_only\n\nCLIENT RECORDS\n\n1\n\nDirect workspace data\n\nRELATIONSHIP NOTES\n\n1\n\nClient-linked note evidence\n\nDRIVE EVIDENCE\n\n1\n\nScoped provider file evidence\n\nDECISION CONTEXT\n\n1\n\nRelationship decision provenance\n\nRelationship provenance proof decision\nactive\n\nRender notes, Drive files, and provenance evidence in the overview.\n\nSEARCH\nSTATUS\nAll status\nactive\nColumns\nClear\nLUC 4847 Client Trust\nCLIENT\nLUC 4847 Cl",
+    "consoleMessages": [],
+    "failedRequests": [
+      "GET https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2 net::ERR_ABORTED",
+      "GET http://127.0.0.1:3236/vendor/phosphor/bold/Phosphor-Bold.woff2 net::ERR_ABORTED"
+    ],
+    "relevantFailures": [],
+    "checks": {
+      "routeLoaded": true,
+      "clientVisible": true,
+      "stakeholderVisible": true,
+      "interactionVisible": true,
+      "taskVisible": true,
+      "noteVisible": true,
+      "driveVisible": true,
+      "graphVisible": true,
+      "noRawBackendError": true,
+      "noConsoleIssues": true,
+      "noRelevantFailedRequests": true
+    }
+  },
+  "errorState": {
+    "errorNoticeVisible": true,
+    "noRawBackendError": true,
+    "textStart": "R\nRoost\nOperating center\nCOMPANY / WORKSPACE\nLUC 4847 Relationships QA\nWorkspace settings\n\nDEPARTMENTS\n\nGeneral\nCompany orchestration, routing, and cross-department command.\nStrategy\nStrategic goals, decisions, priorities, and roadmap governance.\nProduct\nProduct and service definition, delivery scope, and improvement loops.\nSales\nLead, offer, deal, and commercial follow-up management.\nOperations\nProcedures, task boards, calendars, routines, and operational controls.\nRelationships\nClients, partners, support, feedback, and relationship evidence.\nPeople / Agents\nPeople, AI agents, roles, responsibilities, and workload context.\nFinance\nRevenue, costs, budgets, invoices, and commercial exceptions.\nAssets\nFiles, folders, resources, repositories, prompts, and knowledge roots.\nTechnology\nCode, inf"
+  },
+  "passed": true
+}

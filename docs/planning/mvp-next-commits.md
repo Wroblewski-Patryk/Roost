@@ -7,6 +7,62 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-4855 source-control closure for the
+      [LUC-4844](/LUC/issues/LUC-4844), [LUC-4847](/LUC/issues/LUC-4847), and
+      [LUC-4850](/LUC/issues/LUC-4850) Relationships/evidence batch:
+      completed. Output:
+      `docs/planning/luc-4855-source-control-closure-for-luc-4844-4847-4850-evidence-batch.md`.
+      Evidence: pre-closure `HEAD=4e606fe0bc162e1bfc7e2ccc58ae4cc5d5352be4`;
+      branch `main...origin/main [ahead 37]`; dirty tree classified as one
+      coherent batch containing the Relationships route repair, planning
+      packets, UX evidence artifacts, generated architecture/status exports,
+      and source-of-truth state; `git diff --stat` showed `17 files changed,
+      7863 insertions(+), 6716 deletions(-)` before this closure packet;
+      `git diff --check` passed with line-ending conversion warnings only.
+      Local commit created; push held for a future release batch or explicit
+      source-ref/deploy need.
+
+- [x] LUC-4844 Relationships context proof ladder: completed after
+      [LUC-4847](/LUC/issues/LUC-4847). Output:
+      `docs/planning/luc-4844-relationships-context-proof-ladder.md`.
+      Evidence: post-repair `npm run test:api:local` PASS; kept-db rerun PASS
+      with all `31` migrations and `7/7` API subtests; authenticated
+      Playwright rerun passed desktop `1366x900` and mobile `390x844` checks
+      for route, client, stakeholder, interaction, task, relationship note,
+      Relationship Drive file, graph/provenance, safe synthetic backend error
+      language, no console issues, no relevant failed requests, and no
+      horizontal overflow. Evidence artifacts:
+      `docs/ux/evidence/luc-4844-relationships-proof-ladder-rerun-2026-06-20/`.
+
+- [x] LUC-4850 Roost known-state evidence and architecture baseline:
+      completed. Output:
+      `docs/planning/luc-4850-known-state-evidence-and-architecture-baseline.md`.
+      Evidence: Paperclip architecture-awareness scanner PASS
+      (`entities=2287`, `relations=4552`, `files=13590`, generated at
+      `2026-06-20T05:14:43.078Z`); `npm run architecture:status` PASS
+      (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+      delta `0/0/0`, all gates pass); task sync reports one actionable
+      implementation entity without task link,
+      `.tmp/luc-4844-rerun-relationships-browser-proof.mjs`; architecture
+      health reports `implementation_without_tests=1168`. Follow-ups:
+      [LUC-4855](/LUC/issues/LUC-4855) source-control closure for the dirty
+      Relationships/evidence batch, [LUC-4856](/LUC/issues/LUC-4856) scanner
+      hygiene for the `.tmp` proof harness, and
+      [LUC-4857](/LUC/issues/LUC-4857) QA selection of the next proof-ladder
+      target.
+
+- [x] LUC-4847 Relationships context browser proof repair: completed. Output:
+      `docs/planning/luc-4847-relationships-evidence-visibility-repair.md`.
+      The Relationships overview now renders relationship notes, Relationship
+      Drive files, and graph/provenance evidence returned by
+      `/v1/relationships/context`. Evidence: `npm run build:web` PASS;
+      `COMPANYCORE_TEST_DB_KEEP=1 npm run test:api:local` PASS with all `31`
+      migrations and `7/7` API subtests; focused Playwright proof passed
+      desktop `1366x900` and mobile `390x844` checks for note, Drive file,
+      graph/provenance, existing relationship evidence, and safe synthetic
+      backend error language. Evidence artifacts:
+      `docs/ux/evidence/luc-4847-relationships-evidence-visibility-2026-06-20/`.
+
 - [x] LUC-4842 QA proof-ladder target selection from
       architecture test-evidence debt: completed. Output:
       `docs/planning/luc-4842-relationships-proof-ladder-target-from-test-evidence-debt.md`.

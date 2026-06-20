@@ -11,11 +11,29 @@ function formatDate(value?: string | null) {
   return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(new Date(value));
 }
 
+function EmptyEvidence({ title, detail }: { title: string; detail: string }) {
+  return (
+    <div className="rounded-company border border-dashed border-base-300 bg-base-200/30 p-4 text-sm">
+      <strong className="block text-company-ink">{title}</strong>
+      <span className="mt-1 block text-company-muted">{detail}</span>
+    </div>
+  );
+}
+
 export function RelationshipsRoute() {
   const { t } = useLanguage();
   const packet = useOwnerPacket<RelationshipsPacket>("/v1/relationships/context", true, t);
   const rows = packet.data?.clients || [];
+  const notes = packet.data?.notes || [];
+  const driveFiles = packet.data?.driveFiles || [];
+  const decisions = packet.data?.decisions || [];
   const tableLabels = useTranslatedTableLabels();
+  const provenanceSignals = [
+    { label: "Client records", value: rows.length, detail: "Direct workspace data" },
+    { label: "Relationship notes", value: notes.length, detail: "Client-linked note evidence" },
+    { label: "Drive evidence", value: driveFiles.length, detail: "Scoped provider file evidence" },
+    { label: "Decision context", value: decisions.length, detail: "Relationship decision provenance" }
+  ];
   const columns: Array<CcTableColumn<(typeof rows)[number]>> = [
     {
       key: "client",
@@ -102,6 +120,100 @@ export function RelationshipsRoute() {
             ))}
           </div>
         </article>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.65fr)]">
+        <article className="rounded-company border border-base-300 bg-base-100 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-black uppercase text-primary">Evidence visibility</p>
+              <h2 className="mt-1 text-lg font-black text-company-ink">Relationship notes</h2>
+            </div>
+            <span className="badge badge-outline">{notes.length} notes</span>
+          </div>
+          <div className="mt-3 grid gap-2">
+            {notes.length ? notes.slice(0, 6).map((note) => (
+              <div className="rounded-company border border-base-300 bg-base-200/40 p-3" key={note.id}>
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <strong className="text-sm text-company-ink">{note.client?.name || "Unassigned client note"}</strong>
+                  <span className="badge badge-ghost badge-sm">{note.status || "active"}</span>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-company-muted">{note.content}</p>
+                <p className="mt-2 text-xs text-company-muted">Source {note.source || "CompanyCore"} - updated {formatDate(note.updatedAt)}</p>
+              </div>
+            )) : (
+              <EmptyEvidence title="No relationship notes visible" detail="Client-linked notes will appear here when the context packet includes them." />
+            )}
+          </div>
+        </article>
+
+        <article className="rounded-company border border-base-300 bg-base-100 p-4">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-black uppercase text-primary">Provider evidence</p>
+              <h2 className="mt-1 text-lg font-black text-company-ink">Relationship Drive files</h2>
+            </div>
+            <span className="badge badge-outline">{driveFiles.length} files</span>
+          </div>
+          <div className="mt-3 grid gap-2">
+            {driveFiles.length ? driveFiles.slice(0, 6).map((file) => (
+              <div className="rounded-company border border-base-300 bg-base-200/40 p-3" key={file.id}>
+                <div className="flex items-start gap-3">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-company border border-base-300 bg-base-100">
+                    <i className="ph-bold ph-file-text text-primary" aria-hidden="true"></i>
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      {file.webViewLink ? (
+                        <a className="break-words font-black text-company-ink underline-offset-4 hover:underline" href={file.webViewLink} rel="noreferrer" target="_blank">{file.name}</a>
+                      ) : (
+                        <strong className="break-words text-company-ink">{file.name}</strong>
+                      )}
+                      <span className="badge badge-ghost badge-sm">{file.operatingAreaKey || "unscoped"}</span>
+                    </div>
+                    {file.description ? <p className="mt-1 text-sm leading-6 text-company-muted">{file.description}</p> : null}
+                    <p className="mt-2 text-xs text-company-muted">{file.mimeType || "file"} - modified {formatDate(file.modifiedTime)}</p>
+                  </div>
+                </div>
+              </div>
+            )) : (
+              <EmptyEvidence title="No Relationship Drive evidence visible" detail="Drive files assigned to Relationships or matching relationship terms will appear here." />
+            )}
+          </div>
+        </article>
+      </section>
+
+      <section className="rounded-company border border-base-300 bg-base-100 p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-xs font-black uppercase text-primary">Graph / provenance</p>
+            <h2 className="mt-1 text-lg font-black text-company-ink">Relationship provenance evidence</h2>
+          </div>
+          <span className="badge badge-outline">{packet.data?.agentPacket?.mode || "read_only"}</span>
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {provenanceSignals.map((signal) => (
+            <article className="rounded-company border border-base-300 bg-base-200/40 p-3" key={signal.label}>
+              <p className="text-xs font-black uppercase text-company-muted">{signal.label}</p>
+              <strong className="mt-2 block text-2xl font-black text-company-ink">{signal.value}</strong>
+              <p className="mt-1 text-xs text-company-muted">{signal.detail}</p>
+            </article>
+          ))}
+        </div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          {decisions.slice(0, 4).map((decision) => (
+            <article className="rounded-company border border-base-300 bg-base-200/40 p-3" key={decision.id}>
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <strong className="text-company-ink">{decision.title}</strong>
+                <span className="badge badge-ghost badge-sm">{decision.status || "active"}</span>
+              </div>
+              <p className="mt-1 text-sm text-company-muted">{decision.outcome || decision.rationale || "Decision evidence without outcome text."}</p>
+            </article>
+          ))}
+          {!decisions.length ? (
+            <EmptyEvidence title="No relationship decisions visible" detail="Relationship-specific decisions will appear here as provenance evidence." />
+          ) : null}
+        </div>
       </section>
 
       <CcDataTable

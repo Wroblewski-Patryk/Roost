@@ -1,6 +1,6 @@
 # Architecture Awareness Report
 
-Generated: 2026-06-20T04:42:46.848Z
+Generated: 2026-06-20T05:14:43.078Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 
@@ -11,12 +11,12 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | agent | 47 |
 | api_endpoint | 43 |
 | component | 7 |
-| document | 955 |
-| feature | 167 |
-| function | 944 |
+| document | 960 |
+| feature | 168 |
+| function | 950 |
 | migration | 31 |
 | model | 5 |
-| module | 66 |
+| module | 67 |
 | project | 1 |
 | route | 3 |
 | task | 4 |
@@ -28,22 +28,22 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | --- | ---: |
 | blocked | 4 |
 | deprecated | 4 |
-| implemented | 2253 |
+| implemented | 2266 |
 | in_progress | 1 |
 | tested | 8 |
 | verified | 4 |
 
 ## Health Signals
 
-- Raw implementation entities without inferred tests: 1161
-- Actionable implementation entities without inferred tests: 1152
-- Raw implementation entities without inferred docs: 0
-- Actionable implementation entities without inferred docs: 0
+- Raw implementation entities without inferred tests: 1168
+- Actionable implementation entities without inferred tests: 1159
+- Raw implementation entities without inferred docs: 1
+- Actionable implementation entities without inferred docs: 1
 - Classified inferred-link noise: 9
 - Raw tasks without architecture links: 0
 - Actionable tasks without architecture links: 0
-- Raw implementation entities without task links: 0
-- Actionable implementation entities without task links: 0
+- Raw implementation entities without task links: 1
+- Actionable implementation entities without task links: 1
 - Classified task-linkage noise: 0
 - Entities without owner attribution: 0
 - Disconnected entities: 0
@@ -93,6 +93,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 
 ## Top Actionable Missing Doc Links
 
+- feature: luc-4844-rerun-relationships-browser-proof.mjs (.tmp/luc-4844-rerun-relationships-browser-proof.mjs)
 
 ## Classified Inferred-Link Noise
 

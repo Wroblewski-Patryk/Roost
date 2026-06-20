@@ -4,6 +4,172 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-4855-SOURCE-CONTROL-CLOSURE-LUC-4844-4847-4850
+- Status: VERIFIED_DONE
+- Selected objective: Close source control for the coherent Relationships and
+  known-state evidence batch produced by [LUC-4844](/LUC/issues/LUC-4844),
+  [LUC-4847](/LUC/issues/LUC-4847), and
+  [LUC-4850](/LUC/issues/LUC-4850).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4855](/LUC/issues/LUC-4855), assigned to Roost Project Manager, after
+  [LUC-4850](/LUC/issues/LUC-4850) delegated source-control closure for the
+  dirty evidence/runtime batch.
+- Scope: dirty-path classification, source-control hygiene proof,
+  source-of-truth synchronization, local commit, and push/deploy disposition.
+- Exclusions: no push, deploy, restart, protected smoke, production mutation,
+  credential access, secret disclosure, server, browser, database, Docker, or
+  watcher process.
+- Output:
+  `docs/planning/luc-4855-source-control-closure-for-luc-4844-4847-4850-evidence-batch.md`.
+- Evidence: pre-closure `HEAD=4e606fe0bc162e1bfc7e2ccc58ae4cc5d5352be4`;
+  branch `main...origin/main [ahead 37]`; dirty state classified as one
+  coherent batch containing the Relationships route repair, planning packets,
+  UX evidence artifacts, generated architecture/status exports, and
+  source-of-truth state. `git diff --stat` showed `17 files changed, 7863
+  insertions(+), 6716 deletions(-)` before the closure packet; `git diff
+  --check` passed with line-ending conversion warnings only.
+- Final disposition: done for source-control closure. Push is held for a
+  future release batch or explicit source-ref/deploy need.
+
+## Previous Mission
+
+- Mission ID: LUC-4844-RELATIONSHIPS-CONTEXT-PROOF-LADDER-RERUN
+- Status: VERIFIED_DONE
+- Selected objective: Rerun the `05 Relationships -> Context/Overview` proof
+  ladder after [LUC-4847](/LUC/issues/LUC-4847) repaired missing evidence
+  visibility.
+- Why this mission now: Paperclip resumed [LUC-4844](/LUC/issues/LUC-4844)
+  after its blocking child issue completed.
+- Scope: local API proof, kept validation database setup, authenticated local
+  `/areas?area=05-relacje&view=overview` desktop/mobile browser proof,
+  synthetic error-state check, cleanup proof, planning packet, and
+  source-of-truth synchronization.
+- Exclusions: protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, or production data access.
+- Output:
+  `docs/planning/luc-4844-relationships-context-proof-ladder.md`.
+- Evidence: post-repair `npm run test:api:local` PASS; kept-db rerun PASS;
+  authenticated Playwright Chromium rerun on local backend port `3236` passed
+  route load, client row, stakeholder signal, recent interaction,
+  relationship task, relationship note, Relationship Drive file,
+  graph/provenance evidence, safe synthetic backend error language, no console
+  issues, no relevant failed requests, and no horizontal overflow on desktop
+  `1366x900` and mobile `390x844`.
+- Cleanup: temporary backend on port `3236` stopped,
+  `companycore-test-postgres` removed, and no `chrome-headless-shell` process
+  rows remained. Docker Desktop remains running because unrelated
+  `soar-postgres-1` and `soar-redis-1` containers were active.
+- Final disposition: done for local QA proof ladder. Protected production
+  proof remains gated by the established release/credential approval path.
+
+## Previous Mission
+
+- Mission ID: LUC-4850-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE
+- Selected objective: Refresh Roost local known-state evidence after the
+  [LUC-4850](/LUC/issues/LUC-4850) `softwarehouse-known-state-wakeup:v1`
+  comment and convert findings into concrete repair lanes.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4850](/LUC/issues/LUC-4850), assigned to Roost Project Manager. The
+  latest local-board comment requested local evidence collection and repair
+  lane conversion with no push, deploy, restart, protected smoke, production
+  mutation, or secret disclosure.
+- Scope: source-of-truth review, Paperclip architecture-awareness refresh,
+  non-protected architecture status proof, generated report readback, child
+  lane creation, planning packet, and source-of-truth synchronization.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4850-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: scanner PASS (`entities=2287`, `relations=4552`, `files=13590`,
+  generated at `2026-06-20T05:14:43.078Z`); `npm run architecture:status`
+  PASS (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass); task sync reports one actionable
+  implementation entity without task link
+  (`.tmp/luc-4844-rerun-relationships-browser-proof.mjs`); architecture
+  health reports `implementation_without_tests=1168`; dependency report shows
+  `437` relations / `95` entities; ownership split is `Docs Memory Lead=943`,
+  `Engineering Delivery Lead=1343`, `Roost Project Manager=1`; pre-refresh
+  `HEAD=4e606fe0`, branch `main...origin/main [ahead 37]`.
+- Final disposition: done for PM baseline scope after creating
+  [LUC-4855](/LUC/issues/LUC-4855) for source-control closure,
+  [LUC-4856](/LUC/issues/LUC-4856) for scanner hygiene, and
+  [LUC-4857](/LUC/issues/LUC-4857) for next QA proof-ladder selection.
+
+## Previous Mission
+
+- Mission ID: LUC-4847-RELATIONSHIPS-EVIDENCE-VISIBILITY-REPAIR
+- Status: VERIFIED_DONE
+- Selected objective: Repair `/areas?area=05-relacje&view=overview` after the
+  [LUC-4844](/LUC/issues/LUC-4844) browser proof showed that note, Drive file,
+  and graph/provenance evidence from `/v1/relationships/context` was not
+  visible.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4847](/LUC/issues/LUC-4847), assigned to CTO, as the narrow
+  implementation repair for the [LUC-4844](/LUC/issues/LUC-4844) proof-ladder
+  blocker.
+- Scope: Relationships overview frontend repair, local API proof, authenticated
+  desktop/mobile proof, synthetic error-state check, cleanup proof, planning
+  packet, and source-of-truth synchronization.
+- Exclusions: backend API contract changes, schema, migration, new write
+  actions, protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, or production data access.
+- Output:
+  `docs/planning/luc-4847-relationships-evidence-visibility-repair.md`.
+- Evidence: `npm run build:web` PASS; `COMPANYCORE_TEST_DB_KEEP=1 npm run
+  test:api:local` PASS after server/web build, `31` migrations, seed, and
+  `7/7` API subtests. Focused Playwright proof on local server port `3236`
+  passed route load, client row, stakeholder signal, recent interaction,
+  relationship task, relationship note, Relationship Drive file,
+  graph/provenance evidence, safe synthetic backend error language, no console
+  issues, and no relevant failed requests on desktop `1366x900` and mobile
+  `390x844`.
+- Cleanup: temporary backend on port `3236` stopped,
+  `companycore-test-postgres` removed, and no `chrome-headless-shell` process
+  rows remained.
+- Final disposition: done for local implementation repair. Protected production
+  proof remains gated by the established release/credential approval path.
+
+## Previous Mission
+
+- Mission ID: LUC-4844-RELATIONSHIPS-CONTEXT-PROOF-LADDER
+- Status: BLOCKED
+- Selected objective: Run the `05 Relationships -> Context/Overview` proof
+  ladder selected by [LUC-4842](/LUC/issues/LUC-4842).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4844](/LUC/issues/LUC-4844), assigned to QA & Verification Engineer.
+  The parent [LUC-4842](/LUC/issues/LUC-4842) delegated executable proof:
+  `npm run test:api:local`, then authenticated desktop/mobile route proof if
+  API remained green.
+- Scope: local API proof, kept validation database setup, authenticated local
+  `/areas?area=05-relacje&view=overview` browser proof, local-only fixture
+  packet, synthetic error-state check, cleanup proof, planning packet, and
+  source-of-truth synchronization.
+- Exclusions: no runtime code, schema, migration authoring, protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, or production data access.
+- Output:
+  `docs/planning/luc-4844-relationships-context-proof-ladder.md`.
+- Evidence: `npm run test:api:local` PASS after server/web build, `31`
+  migrations, seed, and `7/7` API subtests; kept-db rerun also PASS.
+  Playwright Chromium proof on local server port `3236` passed route load,
+  client row, stakeholder signal, recent interaction, relationship task,
+  blocked write actions, and safe synthetic backend error language on desktop
+  `1366x900` and mobile `390x844`.
+- Blocker: browser acceptance failed because the context API returned a
+  relationship note and Drive file, but the route did not render note, Drive
+  file, or graph/provenance evidence. Evidence artifacts:
+  `docs/ux/evidence/luc-4844-relationships-proof-ladder-2026-06-20/`.
+- Cleanup: temporary backend on port `3236` stopped,
+  `companycore-test-postgres` removed, and no `chrome-headless-shell` process
+  rows remained. Docker Desktop remains running because unrelated
+  `soar-postgres-1` and `soar-redis-1` containers were active.
+- Final disposition: blocked pending implementation repair and rerun. No
+  production or protected action occurred.
+
+## Previous Mission
+
 - Mission ID: LUC-4841-SOURCE-CONTROL-CLOSURE-LUC-4837
 - Status: VERIFIED_DONE
 - Selected objective: Close source control for the

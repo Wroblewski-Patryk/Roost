@@ -4,6 +4,82 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4855` source-control closure is complete for the
+   [LUC-4844](/LUC/issues/LUC-4844), [LUC-4847](/LUC/issues/LUC-4847), and
+   [LUC-4850](/LUC/issues/LUC-4850) Relationships/evidence batch.
+   - Output:
+     `docs/planning/luc-4855-source-control-closure-for-luc-4844-4847-4850-evidence-batch.md`.
+   - Proof:
+     pre-closure `HEAD=4e606fe0bc162e1bfc7e2ccc58ae4cc5d5352be4`; branch
+     `main...origin/main [ahead 37]`; dirty tree classified as one coherent
+     batch; `git diff --stat` showed `17 files changed, 7863 insertions(+),
+     6716 deletions(-)` before this closure packet; `git diff --check` passed
+     with line-ending conversion warnings only. Local commit created; push
+     held.
+   - Next owner/action:
+     [LUC-4856](/LUC/issues/LUC-4856) owns scanner hygiene for the `.tmp`
+     proof harness signal, and [LUC-4857](/LUC/issues/LUC-4857) owns the next
+     QA proof-ladder target selection. Production proof remains
+     release/credential gated.
+
+1. `LUC-4844` Relationships context proof ladder is complete after
+   [LUC-4847](/LUC/issues/LUC-4847).
+   - Output:
+     `docs/planning/luc-4844-relationships-context-proof-ladder.md`.
+   - Proof:
+     post-repair `npm run test:api:local` PASS; kept-db rerun PASS with all
+     `31` migrations and `7/7` API subtests; authenticated Playwright rerun
+     passed desktop `1366x900` and mobile `390x844` checks for route, client,
+     stakeholder, interaction, task, relationship note, Relationship Drive
+     file, graph/provenance, safe synthetic backend error language, no console
+     issues, no relevant failed requests, and no horizontal overflow.
+   - Evidence:
+     `docs/ux/evidence/luc-4844-relationships-proof-ladder-rerun-2026-06-20/`.
+   - Next owner/action:
+     Protected production proof remains release/credential gated. Source-control
+     closure can include this proof packet with the current related evidence
+     batch.
+
+1. `LUC-4850` Roost known-state evidence and architecture baseline is
+   complete.
+   - Output:
+     `docs/planning/luc-4850-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2287`,
+     `relations=4552`, `files=13590`, generated at
+     `2026-06-20T05:14:43.078Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task sync reports only one actionable
+     implementation entity without task link,
+     `.tmp/luc-4844-rerun-relationships-browser-proof.mjs`; architecture
+     health reports `implementation_without_tests=1168`.
+   - Next owner/action:
+     [LUC-4855](/LUC/issues/LUC-4855) must preserve or classify this dirty
+     evidence batch. [LUC-4856](/LUC/issues/LUC-4856) must resolve or classify
+     the `.tmp` proof harness scanner signal. [LUC-4857](/LUC/issues/LUC-4857)
+     must select the next high-value proof ladder from remaining test-evidence
+     debt. Protected runtime proof remains externally gated by key-scope
+     evidence plus one-run approval.
+
+1. `LUC-4847` Relationships evidence visibility repair is complete.
+   - Output:
+     `docs/planning/luc-4847-relationships-evidence-visibility-repair.md`.
+   - Change:
+     `/areas?area=05-relacje&view=overview` now renders relationship notes,
+     Relationship Drive files, and graph/provenance evidence from the existing
+     `/v1/relationships/context` packet.
+   - Proof:
+     `npm run build:web` PASS; `COMPANYCORE_TEST_DB_KEEP=1 npm run
+     test:api:local` PASS with all `31` migrations and `7/7` API subtests;
+     focused Playwright proof passed desktop `1366x900` and mobile `390x844`
+     checks for note, Drive file, graph/provenance, existing relationship
+     evidence, and safe synthetic backend error language.
+   - Evidence:
+     `docs/ux/evidence/luc-4847-relationships-evidence-visibility-2026-06-20/`.
+   - Next owner/action:
+     Protected production proof remains release/credential gated. Source-control
+     closure can include this repair with the current related evidence batch.
+
 1. `LUC-4841` source-control closure for the
    [LUC-4837](/LUC/issues/LUC-4837) architecture evidence packet is complete.
    - Output:
