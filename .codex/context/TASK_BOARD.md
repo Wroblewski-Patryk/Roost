@@ -1,6 +1,37 @@
 # TASK_BOARD
 
 ## Ready
+- 2026-06-20: `LUC-4812` source-control closure completed for the
+  `LUC-4808` Roost known-state evidence packet. Output:
+  `docs/planning/luc-4812-source-control-closure-for-luc-4808-evidence-packet.md`.
+  Decision: preserve the coherent generated/status evidence packet from the
+  LUC-4808 scanner pass. Evidence: pre-closure `HEAD=398a0413`; branch
+  `main...origin/main [ahead 34]`; dirty set classified as coherent with
+  [LUC-4808](/LUC/issues/LUC-4808); `git diff --stat` showed `14 files
+  changed, 6858 insertions(+), 6637 deletions(-)` before this closure packet;
+  `git diff --check` passed with line-ending conversion warnings only. Push
+  held. Scope: no new runtime code, schema, migration, protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, server, browser, database, Docker, or watcher process.
+  Disposition: `DONE`.
+- 2026-06-20: `LUC-4808` Roost known-state evidence and architecture
+  baseline completed. Output:
+  `docs/planning/luc-4808-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2267`,
+  `relations=4494`, `files=13555`, generated at
+  `2026-06-20T04:12:51.911Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task sync reports `0` task-link/proof gaps; architecture
+  health reports `implementation_without_tests=1161` and
+  `actionable_implementation_without_tests=1152`; dependency report shows
+  `437` relations / `95` entities; ownership split is
+  `Docs Memory Lead=931`, `Engineering Delivery Lead=1335`,
+  `Roost Project Manager=1`; `HEAD=398a0413`. Follow-ups:
+  [LUC-4812](/LUC/issues/LUC-4812) owns generated/status source-control
+  closure and [LUC-4813](/LUC/issues/LUC-4813) owns the next QA proof-ladder
+  target. Scope: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process. Disposition: `DONE`.
 - 2026-06-20: `LUC-4798` source-control closure completed for the
   `LUC-4795` Roost known-state evidence packet. Output:
   `docs/planning/luc-4798-source-control-closure-for-luc-4795-evidence-packet.md`.

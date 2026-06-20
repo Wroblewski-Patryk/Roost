@@ -1,6 +1,6 @@
 # Architecture Awareness Report
 
-Generated: 2026-06-20T03:44:00.320Z
+Generated: 2026-06-20T04:12:51.911Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 
@@ -11,7 +11,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | agent | 47 |
 | api_endpoint | 43 |
 | component | 7 |
-| document | 946 |
+| document | 948 |
 | feature | 167 |
 | function | 944 |
 | migration | 31 |
@@ -28,7 +28,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | --- | ---: |
 | blocked | 4 |
 | deprecated | 4 |
-| implemented | 2244 |
+| implemented | 2246 |
 | in_progress | 1 |
 | tested | 8 |
 | verified | 4 |
