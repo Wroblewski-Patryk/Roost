@@ -2,6 +2,40 @@
 
 Last updated: 2026-06-20
 
+Source-control confidence note: LUC-4798 is VERIFIED_DONE for the
+source-control closure sidecar of the LUC-4795 baseline. The packet is
+recorded in
+`docs/planning/luc-4798-source-control-closure-for-luc-4795-evidence-packet.md`.
+Evidence: pre-closure `HEAD=f4cc9d9d`; branch `main...origin/main [ahead 33]`;
+dirty set classified as coherent with [LUC-4795](/LUC/issues/LUC-4795);
+`git diff --stat` showed `16 files changed, 6867 insertions(+), 6629
+deletions(-)` before the closure packet; `git diff --check` passed with
+line-ending conversion warnings only. Confidence classification:
+source-control packet preserved locally; push held for future release batch or
+explicit source-ref/deploy need. Next proof/fix: no SCM follow-up remains from
+this closure; protected runtime proof remains blocked until fresh key-scope
+evidence plus one-run approval exist.
+
+Roost known-state baseline note: LUC-4795 is VERIFIED_DONE as a Roost Project
+Manager evidence lane. The packet is recorded in
+`docs/planning/luc-4795-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2265`,
+`relations=4486`, `files=13553`, generated at
+`2026-06-20T03:44:00.320Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task sync readback showed `0` task-link/proof-link gaps;
+architecture health showed `implementation_without_tests=1161` and
+`actionable_implementation_without_tests=1152`; dependency report showed
+`437` relations / `95` entities; ownership report showed
+`Docs Memory Lead=929`, `Engineering Delivery Lead=1335`, and
+`Roost Project Manager=1`; `HEAD=f4cc9d9d`. Readiness delta: local
+architecture remains green, [LUC-4777](/LUC/issues/LUC-4777) has locally
+verified the selected Operations work-items proof ladder, and no new PM-owned
+implementation defect was found. Next proof/fix: source-control closure for
+this generated/status evidence packet is delegated to
+[LUC-4798](/LUC/issues/LUC-4798); protected runtime proof remains blocked
+until fresh key-scope evidence plus one-run approval exist.
+
 Roost known-state baseline note: LUC-4784 is VERIFIED_DONE as a Roost Project
 Manager evidence lane. The packet is recorded in
 `docs/planning/luc-4784-known-state-evidence-and-architecture-baseline.md`.

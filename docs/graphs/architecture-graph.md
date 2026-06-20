@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T03:13:29.296Z
+Generated: 2026-06-20T03:44:00.320Z
 
 ## Canonical Exports
 
@@ -1049,6 +1049,8 @@ Generated: 2026-06-20T03:13:29.296Z
 | documents | document:luc-4777-operations-work-items-proof-ladder:fe8b8063d3 | module:docs:6784d83cb0 | docs/planning/luc-4777-operations-work-items-proof-ladder.md |
 | documents | document:luc-4778-source-control-closure-for-luc-4774-known-state-packet:65e2b792d6 | module:docs:6784d83cb0 | docs/planning/luc-4778-source-control-closure-for-luc-4774-evidence-packet.md |
 | documents | document:luc-4779-restore-local-api-test-database-path:3a6dada2e7 | module:docs:6784d83cb0 | docs/planning/luc-4779-restore-local-api-test-database-path.md |
+| documents | document:luc-4784-known-state-evidence-and-architecture-baseline:728369bd52 | module:docs:6784d83cb0 | docs/planning/luc-4784-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4787-source-control-closure-for-luc-4784-evidence-packet:2bc68483ba | module:docs:6784d83cb0 | docs/planning/luc-4787-source-control-closure-for-luc-4784-evidence-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-06-20T03:13:29.296Z
 | documents | document:post-v1-company-os-workflow-definitions-rootobjecttype-rootobjectid-actions-archive:a9c9e6812f | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0127.md |
 | documents | document:post-v1-company-os-workflow-definitions-rootobjecttype-rootobjectid-actions-create-rollbac:ccc349e407 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0128.md |
 | documents | document:post-v1-deals:e5a61bd103 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0132.md |
-| documents | document:post-v1-decisions:1bd638a695 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0133.md |
-| documents | document:post-v1-departments:f057e948ca | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-DEPARTMENTS-CREATE.md |
