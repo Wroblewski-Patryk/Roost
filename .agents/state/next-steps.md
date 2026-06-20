@@ -4,6 +4,83 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4834` source-control closure for the combined
+   [LUC-4813](/LUC/issues/LUC-4813), [LUC-4821](/LUC/issues/LUC-4821), and
+   [LUC-4824](/LUC/issues/LUC-4824) evidence batch is complete.
+   - Output:
+     `docs/planning/luc-4834-source-control-closure-for-combined-evidence-batch.md`.
+   - Proof:
+     pre-closure `HEAD=ece89cf2`; branch `main...origin/main [ahead 35]`;
+     dirty tree classified as one coherent evidence/docs/state batch; `git
+     diff --stat` before this closure packet showed `16 files changed, 7201
+     insertions(+), 6649 deletions(-)`; `git diff --check` passed with
+     line-ending conversion warnings only.
+   - Next owner/action:
+     Push is held for a future release batch or explicit source-ref/deploy
+     need. Protected production Drive proof remains under the existing
+     release/credential approval path.
+
+1. `LUC-4821` Assets files/folders proof ladder is complete.
+   - Output:
+     `docs/planning/luc-4821-assets-files-folders-proof-ladder.md`.
+   - Proof:
+     `npm run test:api:local` PASS after server/web build, all `31`
+     migrations, seed, and `7/7` API subtests; kept-db rerun also PASS for
+     browser setup. Authenticated Playwright proof against
+     `/areas?area=08-zasoby&view=files` passed on desktop `1366x900` and
+     mobile `390x844` with folder tree, root/child folders, file cards, Files
+     kind filter, Markdown type filter, Markdown preview, no-match empty
+     recovery, synthetic packet error state without raw provider message
+     leakage, no console/page errors, no failed requests, and no horizontal
+     overflow. Evidence artifacts:
+     `docs/ux/evidence/luc-4821-assets-proof-ladder-2026-06-20/`.
+   - Next owner/action:
+     No local repair issue was opened because no reproducible failing rung was
+     found. Production real Drive proof remains under the existing
+     release/credential approval path.
+
+1. `LUC-4824` Roost known-state evidence and architecture baseline is
+   complete.
+   - Output:
+     `docs/planning/luc-4824-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2270`,
+     `relations=4508`, `files=13560`, generated at
+     `2026-06-20T04:28:13.215Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task sync reports `0`
+     task-link/proof gaps; architecture health reports
+     `implementation_without_tests=1161`; dependency report shows `437`
+     relations / `95` entities; ownership split is `Docs Memory Lead=934`,
+     `Engineering Delivery Lead=1335`, `Roost Project Manager=1`;
+     `HEAD=ece89cf2`.
+   - Next owner/action:
+     [LUC-4831](/LUC/issues/LUC-4831) owns source-control closure for the
+     generated/status evidence packet. [LUC-4821](/LUC/issues/LUC-4821)
+     remains the next QA proof-ladder execution lane for `08 Assets ->
+     Files/Folders`. Protected runtime proof remains externally gated by
+     key-scope evidence plus one-run approval.
+
+1. `LUC-4813` QA proof-ladder target selection is complete.
+   - Output:
+     `docs/planning/luc-4813-assets-proof-ladder-target-from-implementation-without-tests.md`.
+   - Selected target:
+     `08 Assets -> Files/Folders`, including `GET /v1/assets/context`,
+     folder edit command boundaries, Google Drive text-file content command
+     boundaries, and `web/src/features/departments/assets-route.tsx`.
+   - Proof:
+     `docs/graphs/architecture-health.json` reports
+     `implementation_without_tests=1161`; Assets remains in the debt signal;
+     `ASSETS-GDRIVE-006`, `ASSETS-FOLDERS-002`, and `ASSETS-FILES-001`
+     remain `PARTIAL`; [LUC-4779](/LUC/issues/LUC-4779) restored
+     `npm run test:api:local`; `npm run check:route-capabilities` passed
+     (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`).
+   - Next owner/action:
+     Completed by [LUC-4821](/LUC/issues/LUC-4821). No local repair issue was
+     opened because the API and authenticated UI rungs passed. Protected
+     production Drive proof remains under the existing release/credential
+     approval path.
+
 1. `LUC-4812` source-control closure for the `LUC-4808` Roost known-state
    evidence packet is complete.
    - Output:

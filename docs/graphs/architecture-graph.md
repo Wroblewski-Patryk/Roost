@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T04:12:51.911Z
+Generated: 2026-06-20T04:28:13.215Z
 
 ## Canonical Exports
 
@@ -1053,6 +1053,9 @@ Generated: 2026-06-20T04:12:51.911Z
 | documents | document:luc-4787-source-control-closure-for-luc-4784-evidence-packet:2bc68483ba | module:docs:6784d83cb0 | docs/planning/luc-4787-source-control-closure-for-luc-4784-evidence-packet.md |
 | documents | document:luc-4795-known-state-evidence-and-architecture-baseline:4f8327b872 | module:docs:6784d83cb0 | docs/planning/luc-4795-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4798-source-control-closure-for-luc-4795-evidence-packet:031f1129f3 | module:docs:6784d83cb0 | docs/planning/luc-4798-source-control-closure-for-luc-4795-evidence-packet.md |
+| documents | document:luc-4808-known-state-evidence-and-architecture-baseline:1fa2874211 | module:docs:6784d83cb0 | docs/planning/luc-4808-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4812-source-control-closure-for-luc-4808-evidence-packet:876c60ce05 | module:docs:6784d83cb0 | docs/planning/luc-4812-source-control-closure-for-luc-4808-evidence-packet.md |
+| documents | document:luc-4813-assets-proof-ladder-target-from-implementation-without-tests:bee7b8946b | module:docs:6784d83cb0 | docs/planning/luc-4813-assets-proof-ladder-target-from-implementation-without-tests.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-06-20T04:12:51.911Z
 | documents | document:post-v1-company-os-stage-runs-id-actions-validate:73b9579c60 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0125.md |
 | documents | document:post-v1-company-os-standards:685592e5e3 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0126.md |
 | documents | document:post-v1-company-os-workflow-definitions-drafts-id-actions-activate:4cc09ddd48 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0130.md |
-| documents | document:post-v1-company-os-workflow-definitions-drafts-id-actions-preview-impact:e495304842 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0131.md |
-| documents | document:post-v1-company-os-workflow-definitions-drafts:a9b97b539f | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0129.md |
-| documents | document:post-v1-company-os-workflow-definitions-rootobjecttype-rootobjectid-actions-archive:a9c9e6812f | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0127.md |

@@ -4,6 +4,142 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-4834-SOURCE-CONTROL-CLOSURE-COMBINED-EVIDENCE
+- Status: VERIFIED_DONE
+- Selected objective: Close source control for the combined
+  [LUC-4813](/LUC/issues/LUC-4813), [LUC-4821](/LUC/issues/LUC-4821), and
+  [LUC-4824](/LUC/issues/LUC-4824) evidence batch.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4834](/LUC/issues/LUC-4834), assigned to Roost Project Manager. The
+  prior [LUC-4831](/LUC/issues/LUC-4831) sidecar found that the
+  [LUC-4824](/LUC/issues/LUC-4824) packet could not be safely committed alone
+  because the worktree already contained later [LUC-4813](/LUC/issues/LUC-4813)
+  and [LUC-4821](/LUC/issues/LUC-4821) evidence.
+- Scope: dirty-tree classification, combined evidence closure packet,
+  source-of-truth synchronization, `git diff --check`, local commit, and
+  push/deploy disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4834-source-control-closure-for-combined-evidence-batch.md`.
+- Evidence: pre-closure `HEAD=ece89cf2`; branch
+  `main...origin/main [ahead 35]`; dirty tree classified as one coherent
+  evidence/docs/state batch including [LUC-4813](/LUC/issues/LUC-4813),
+  [LUC-4821](/LUC/issues/LUC-4821), [LUC-4824](/LUC/issues/LUC-4824), and
+  [LUC-4831](/LUC/issues/LUC-4831); `git diff --stat` before this closure
+  packet showed `16 files changed, 7201 insertions(+), 6649 deletions(-)`;
+  `git diff --check` passed with line-ending conversion warnings only.
+- Final disposition: done for source-control closure. The coherent local
+  packet is preserved in a local commit; push is held for a future release
+  batch or explicit source-ref/deploy need.
+
+## Previous Mission
+
+- Mission ID: LUC-4821-ASSETS-FILES-FOLDERS-PROOF-LADDER
+- Status: VERIFIED_DONE
+- Selected objective: Run the `08 Assets -> Files/Folders` proof ladder
+  selected by [LUC-4813](/LUC/issues/LUC-4813).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4821](/LUC/issues/LUC-4821), assigned to QA & Verification Engineer.
+  The issue required `npm run test:api:local` first and authenticated
+  desktop/mobile UI proof only if the API rung passed.
+- Scope: local API proof, kept validation database setup, authenticated local
+  `/areas?area=08-zasoby&view=files` browser proof, local-only fixture packet,
+  empty/error recovery checks, cleanup proof, planning packet, and
+  source-of-truth synchronization.
+- Exclusions: no runtime code, schema, migration authoring, protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, or production data access.
+- Output:
+  `docs/planning/luc-4821-assets-files-folders-proof-ladder.md`.
+- Evidence: `npm run test:api:local` PASS after server/web build, `31`
+  migrations, seed, and `7/7` API subtests; kept-db rerun also PASS.
+  Playwright Chromium proof on local server port `3235` passed for desktop
+  `1366x900` and mobile `390x844`: folder tree, root/child folders, file
+  cards, Files kind filter, Markdown type filter, Markdown preview, no-match
+  empty recovery, synthetic packet error state without raw provider message
+  leakage, no console/page errors, no failed requests, and no horizontal
+  overflow. Evidence artifacts:
+  `docs/ux/evidence/luc-4821-assets-proof-ladder-2026-06-20/`.
+- Cleanup: temporary backend on port `3235` stopped,
+  `companycore-test-postgres` removed, and no `chrome-headless-shell` process
+  rows remained. Docker Desktop remains running because unrelated
+  `soar-postgres-1` and `soar-redis-1` containers were active.
+- Final disposition: done for local QA proof-ladder scope. No repair issue was
+  opened because no reproducible failing rung was found. Production proof with
+  the real imported Drive dataset remains gated by the established
+  release/credential approval path.
+
+## Previous Mission
+
+- Mission ID: LUC-4824-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE
+- Selected objective: Refresh Roost known-state evidence from safe local
+  architecture signals and convert findings into owner-scoped repair lanes.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4824](/LUC/issues/LUC-4824), and the latest local-board comment
+  explicitly requested `softwarehouse-known-state-wakeup:v1`: local evidence
+  collection plus concrete repair lanes, with no push, deploy, restart,
+  protected smoke, production mutation, or secret disclosure.
+- Scope: source-of-truth review, Paperclip architecture-awareness refresh,
+  non-protected architecture status proof, generated report readback,
+  planning packet, source-control closure sidecar creation, and state
+  synchronization.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4824-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: scanner PASS (`entities=2270`, `relations=4508`, `files=13560`,
+  generated at `2026-06-20T04:28:13.215Z`); `npm run architecture:status`
+  PASS (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass); task sync reports `0` task-link/proof
+  gaps; architecture health reports `implementation_without_tests=1161`;
+  dependency report shows `437` relations / `95` entities; ownership split is
+  `Docs Memory Lead=934`, `Engineering Delivery Lead=1335`,
+  `Roost Project Manager=1`; `HEAD=ece89cf2`.
+- Final disposition: done for PM baseline scope. Source-control closure for
+  this evidence packet is delegated to [LUC-4831](/LUC/issues/LUC-4831);
+  existing
+  [LUC-4821](/LUC/issues/LUC-4821) remains the next QA proof-ladder execution
+  lane for `08 Assets -> Files/Folders`.
+
+## Previous Mission
+
+- Mission ID: LUC-4813-ASSETS-PROOF-LADDER-TARGET
+- Status: VERIFIED_DONE
+- Selected objective: Select the next QA proof-ladder target from Roost's
+  implementation-without-tests debt after the completed Operations ladder.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4813](/LUC/issues/LUC-4813), and the wake payload identifies the
+  remaining `implementation_without_tests` debt as the target. The prior
+  [LUC-4777](/LUC/issues/LUC-4777) Operations ladder is complete, so the next
+  selection should move to a different high-value workflow.
+- Scope: source-of-truth review, architecture-health debt grouping, module
+  confidence review, next proof target selection, static route/capability
+  readiness proof, planning packet, and state synchronization.
+- Exclusions: no runtime code, schema, migration, full API/database test,
+  browser proof, protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, server, database, Docker, or watcher
+  process.
+- Output:
+  `docs/planning/luc-4813-assets-proof-ladder-target-from-implementation-without-tests.md`.
+- Evidence: selected `08 Assets -> Files/Folders` because
+  `ASSETS-GDRIVE-006`, `ASSETS-FOLDERS-002`, and `ASSETS-FILES-001` remain
+  `PARTIAL` from earlier missing API/database proof while
+  [LUC-4779](/LUC/issues/LUC-4779) has restored the local
+  `npm run test:api:local` path; `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`).
+- Final disposition: done for QA selection scope. The next proof owner should
+  run the Assets ladder in [LUC-4821](/LUC/issues/LUC-4821):
+  `npm run test:api:local`, then authenticated desktop/mobile
+  `/areas?area=08-zasoby&view=files` proof if API remains green. Protected
+  production Drive proof remains gated by the established release/credential
+  approval path.
+
+## Previous Mission
+
 - Mission ID: LUC-4812-SOURCE-CONTROL-CLOSURE-LUC-4808
 - Status: VERIFIED_DONE
 - Selected objective: Close the source-control sidecar for the

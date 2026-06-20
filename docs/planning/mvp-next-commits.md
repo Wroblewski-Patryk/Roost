@@ -7,6 +7,34 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-4834 source-control closure for the combined
+      [LUC-4813](/LUC/issues/LUC-4813), [LUC-4821](/LUC/issues/LUC-4821), and
+      [LUC-4824](/LUC/issues/LUC-4824) evidence batch: completed. Output:
+      `docs/planning/luc-4834-source-control-closure-for-combined-evidence-batch.md`.
+      Evidence: pre-closure `HEAD=ece89cf2`; branch
+      `main...origin/main [ahead 35]`; dirty tree classified as a coherent
+      evidence/docs/state batch including [LUC-4831](/LUC/issues/LUC-4831);
+      `git diff --stat` before this closure packet showed `16 files changed,
+      7201 insertions(+), 6649 deletions(-)`; `git diff --check` passed with
+      line-ending conversion warnings only. Local commit created; push held
+      for a future release batch or explicit source-ref/deploy need.
+
+- [x] LUC-4813 QA proof-ladder target selection from
+      implementation-without-test-link debt: completed. Output:
+      `docs/planning/luc-4813-assets-proof-ladder-target-from-implementation-without-tests.md`.
+      Selected target: `08 Assets -> Files/Folders` (`GET /v1/assets/context`,
+      folder edit command boundaries, Google Drive text-file content command
+      boundaries, and `web/src/features/departments/assets-route.tsx`).
+      Evidence: `docs/graphs/architecture-health.json` reports
+      `implementation_without_tests=1161`; Assets remains in the signal;
+      `ASSETS-GDRIVE-006`, `ASSETS-FOLDERS-002`, and `ASSETS-FILES-001`
+      remain `PARTIAL`; [LUC-4779](/LUC/issues/LUC-4779) restored the local
+      API test database path; `npm run check:route-capabilities` passed
+      (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`).
+      Follow-up: [LUC-4821](/LUC/issues/LUC-4821) owns the executable QA proof
+      rungs: `npm run test:api:local`, then authenticated desktop/mobile proof
+      for `/areas?area=08-zasoby&view=files` if API remains green.
+
 - [x] LUC-4812 source-control closure for the LUC-4808 Roost known-state
       evidence packet: completed. Output:
       `docs/planning/luc-4812-source-control-closure-for-luc-4808-evidence-packet.md`.
@@ -2439,3 +2467,19 @@ in `NOW`, `NEXT`, `PIPELINE`, and `.codex/context/TASK_BOARD.md`.
   - active canonical queue sections
   - background or historical unchecked checklists outside the canonical queue,
     clearly labeled as non-active if found.
+# 2026-06-20 LUC-4824 Known-State Evidence Checkpoint
+
+- Status: DONE for PM known-state scope.
+- Output:
+  `docs/planning/luc-4824-known-state-evidence-and-architecture-baseline.md`.
+- Evidence:
+  Paperclip architecture-awareness scanner PASS (`entities=2270`,
+  `relations=4508`, `files=13560`, generated at
+  `2026-06-20T04:28:13.215Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task sync reports `0` task-link/proof gaps; architecture
+  health reports `implementation_without_tests=1161`.
+- Next:
+  [LUC-4831](/LUC/issues/LUC-4831) owns source-control closure for the
+  generated/status evidence packet; [LUC-4821](/LUC/issues/LUC-4821) remains
+  the Assets proof-ladder execution lane.

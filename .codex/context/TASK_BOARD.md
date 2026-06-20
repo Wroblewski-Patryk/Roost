@@ -1,6 +1,76 @@
 # TASK_BOARD
 
 ## Ready
+- 2026-06-20: `LUC-4834` source-control closure completed for the combined
+  [LUC-4813](/LUC/issues/LUC-4813), [LUC-4821](/LUC/issues/LUC-4821), and
+  [LUC-4824](/LUC/issues/LUC-4824) evidence batch. Output:
+  `docs/planning/luc-4834-source-control-closure-for-combined-evidence-batch.md`.
+  Decision: commit one coherent local evidence/docs/state packet covering QA
+  target selection, Assets local proof-ladder evidence, PM known-state
+  architecture evidence, generated/status exports, source-of-truth state, and
+  the [LUC-4831](/LUC/issues/LUC-4831) no-commit sidecar. Evidence:
+  pre-closure `HEAD=ece89cf2`; branch `main...origin/main [ahead 35]`; `git
+  diff --stat` before this closure packet showed `16 files changed, 7201
+  insertions(+), 6649 deletions(-)`; `git diff --check` passed with
+  line-ending conversion warnings only. Push held. Scope: no runtime code,
+  schema, migration, protected smoke, deploy, push, restart, production
+  mutation, credential access, secret disclosure, server, browser, database,
+  Docker, or watcher process. Disposition: `DONE`.
+- 2026-06-20: `LUC-4821` Assets files/folders proof ladder completed for
+  `08 Assets -> Files/Folders`. Output:
+  `docs/planning/luc-4821-assets-files-folders-proof-ladder.md`. Evidence:
+  `npm run test:api:local` passed after server/web build, all `31` migrations
+  applied to disposable `companycore_test`, seed, and `7/7` API subtests.
+  Kept-db rerun also passed for browser proof setup. Authenticated Playwright
+  proof against `/areas?area=08-zasoby&view=files` passed on desktop
+  `1366x900` and mobile `390x844`: folder tree, root/child folder rows, file
+  cards, Files kind filter, Markdown type filter, Markdown preview panel,
+  no-match empty recovery, synthetic packet error state without raw provider
+  message leakage, no console/page errors, no failed requests, and no
+  horizontal overflow. Evidence artifacts:
+  `docs/ux/evidence/luc-4821-assets-proof-ladder-2026-06-20/`. Cleanup:
+  temporary backend on port `3235` stopped, `companycore-test-postgres`
+  removed, and no `chrome-headless-shell` rows remained. Scope: no runtime
+  code, schema, migration authoring, protected smoke, deploy, push, restart,
+  production mutation, credential access, secret disclosure, or production data
+  access. Disposition: `DONE`.
+- 2026-06-20: `LUC-4824` Roost known-state evidence and architecture
+  baseline completed. Output:
+  `docs/planning/luc-4824-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2270`,
+  `relations=4508`, `files=13560`, generated at
+  `2026-06-20T04:28:13.215Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task sync reports `0` task-link/proof gaps; architecture
+  health reports `implementation_without_tests=1161`; dependency report shows
+  `437` relations / `95` entities; ownership split is
+  `Docs Memory Lead=934`, `Engineering Delivery Lead=1335`,
+  `Roost Project Manager=1`; `HEAD=ece89cf2`. Follow-ups:
+  [LUC-4831](/LUC/issues/LUC-4831) for source-control closure of this
+  generated/status evidence packet, and existing [LUC-4821](/LUC/issues/LUC-4821)
+  for the Assets proof ladder. Scope: no
+  runtime code, schema, migration, protected smoke, deploy, push, restart,
+  production mutation, credential access, secret disclosure, server, browser,
+  database, Docker, or watcher process. Disposition: `DONE`.
+- 2026-06-20: `LUC-4813` QA proof-ladder target selection completed from
+  implementation-without-test-link debt. Output:
+  `docs/planning/luc-4813-assets-proof-ladder-target-from-implementation-without-tests.md`.
+  Selected target: `08 Assets -> Files/Folders` (`GET /v1/assets/context`,
+  folder edit command boundaries, Google Drive text-file content command
+  boundaries, and `web/src/features/departments/assets-route.tsx`). Evidence:
+  `docs/graphs/architecture-health.json` reports
+  `implementation_without_tests=1161`; Assets route/file entities remain in
+  the signal; `ASSETS-GDRIVE-006`, `ASSETS-FOLDERS-002`, and
+  `ASSETS-FILES-001` remain `PARTIAL`; [LUC-4779](/LUC/issues/LUC-4779)
+  restored the local API database path; `npm run check:route-capabilities`
+  passed (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`).
+  Follow-up: [LUC-4821](/LUC/issues/LUC-4821) owns the executable proof rungs:
+  `npm run test:api:local`, then authenticated desktop/mobile proof for
+  `/areas?area=08-zasoby&view=files` if API remains green. Scope: no runtime
+  code, schema, migration, full API/database test, browser proof, protected
+  smoke, deploy, push, restart, production mutation, credential access, secret
+  disclosure, server, database, Docker, or watcher process. Disposition:
+  `DONE`.
 - 2026-06-20: `LUC-4812` source-control closure completed for the
   `LUC-4808` Roost known-state evidence packet. Output:
   `docs/planning/luc-4812-source-control-closure-for-luc-4808-evidence-packet.md`.
