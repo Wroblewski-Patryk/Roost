@@ -4,6 +4,32 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4748` Roost known-state evidence and architecture baseline is
+   complete.
+   - Output:
+     `docs/planning/luc-4748-known-state-evidence-and-architecture-baseline.md`.
+   - PM decision:
+     local architecture readiness remains green; no new PM-owned
+     implementation repair child is needed from this pass.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2253`,
+     `relations=4439`, `files=13541`, `0` generated files excluded by
+     prefix); `npm run architecture:status` PASS (`GREEN`, graph
+     `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+     all gates pass); task-sync readback showed `0` actionable/raw task-link
+     gaps and `0` verified-without-proof gaps; architecture health showed
+     `implementation_without_tests=1161` and
+     `actionable_implementation_without_tests=1152`; dependency report showed
+     `437` relations / `95` entities; ownership split was
+     `Docs Memory Lead=917`, `Engineering Delivery Lead=1335`,
+     `Roost Project Manager=1`; `HEAD=7b7f767`.
+   - Next owner/action:
+     [LUC-4751](/LUC/issues/LUC-4751) owns generated/status file changes plus
+     [LUC-4748](/LUC/issues/LUC-4748) planning/state sync. Protected runtime
+     proof remains under [LUC-2700](/LUC/issues/LUC-2700) / LUC-4438-style
+     fresh recheck and requires approved environment secret injection plus
+     one-run approval.
+
 1. `LUC-4742` source-control closure for the `LUC-4739` Roost known-state
    evidence packet is complete.
    - Output:

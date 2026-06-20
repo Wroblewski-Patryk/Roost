@@ -1,6 +1,26 @@
 # PROJECT_STATE
 
 Last updated: 2026-06-20
+- 2026-06-20: `LUC-4748` Roost known-state evidence and architecture
+  baseline completed. Output:
+  `docs/planning/luc-4748-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2253`,
+  `relations=4439`, `files=13541`, `0` generated files excluded by prefix);
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task-sync
+  readback showed `0` actionable/raw task-link gaps and `0`
+  verified-without-proof gaps; architecture health showed
+  `implementation_without_tests=1161` and
+  `actionable_implementation_without_tests=1152`; dependency report showed
+  `437` relations / `95` entities; ownership split was
+  `Docs Memory Lead=917`, `Engineering Delivery Lead=1335`,
+  `Roost Project Manager=1`; `HEAD=7b7f767`. Source-control closure for this
+  evidence packet is delegated to [LUC-4751](/LUC/issues/LUC-4751).
+  Protected runtime proof remains under [LUC-2700](/LUC/issues/LUC-2700) /
+  LUC-4438-style fresh recheck; QA proof debt remains a future verification
+  lane. No runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, server,
+  browser, database, Docker, or watcher process occurred.
 - 2026-06-20: `LUC-4751` source-control closure completed for the
   `LUC-4748` Roost known-state evidence packet sidecar. Output:
   `docs/planning/luc-4751-source-control-closure-for-luc-4748-evidence-packet.md`.

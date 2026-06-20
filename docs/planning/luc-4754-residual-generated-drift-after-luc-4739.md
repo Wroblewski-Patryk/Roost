@@ -154,7 +154,8 @@ Files changed by this issue:
 - `.codex/context/PROJECT_STATE.md`
 - `.codex/context/TASK_BOARD.md`
 
-Commit status: to be committed after final hygiene check.
+Commit status: committed in the final local LUC-4754 reconciliation commit; the
+final SHA is recorded in the Paperclip closure comment.
 
 Push status: held for a future release batch or explicit source-ref need.
 

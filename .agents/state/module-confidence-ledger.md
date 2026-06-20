@@ -2,6 +2,33 @@
 
 Last updated: 2026-06-20
 
+Roost known-state baseline note: LUC-4748 is VERIFIED_DONE as a Roost Project
+Manager evidence lane. The packet is recorded in
+`docs/planning/luc-4748-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2253`,
+`relations=4439`, `files=13541`, `0` generated files excluded by prefix);
+`npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task-sync
+readback showed `0` actionable/raw task-link gaps and `0` verified entities
+without proof evidence; architecture health showed
+`implementation_without_tests=1161` and
+`actionable_implementation_without_tests=1152`; dependency report showed `437`
+dependency relations / `95` entities with dependencies; ownership report
+showed `Docs Memory Lead=917`, `Engineering Delivery Lead=1335`, and
+`Roost Project Manager=1`; `HEAD=7b7f767`. Readiness delta: local architecture
+remains green, no new PM-owned readiness gap was found, and no implementation
+child issue was created. [LUC-4751](/LUC/issues/LUC-4751) owns the
+generated/status evidence packet plus [LUC-4748](/LUC/issues/LUC-4748)
+planning/state sync. Protected deploy-smoke was not rerun because this baseline
+carried no fresh one-run approval or credential fact. No runtime code, schema,
+migration, protected smoke, deploy, push, restart, production mutation,
+credential access, secret disclosure, server, browser, database, Docker, or
+watcher process occurred. Next proof/fix: protected runtime proof remains
+under [LUC-2700](/LUC/issues/LUC-2700) / LUC-4438-style fresh recheck and
+requires approved environment secret injection plus a fresh one-run approval;
+future QA proof ladder should select one high-priority workflow from the `1161`
+implementation-without-test-link signal after source-control closure is stable.
+
 Roost known-state baseline note: LUC-4739 is VERIFIED_DONE as a Roost Project
 Manager evidence lane. The packet is recorded in
 `docs/planning/luc-4739-known-state-evidence-and-architecture-baseline.md`.
