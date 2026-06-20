@@ -4,6 +4,40 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4868` source-control closure for the
+   [LUC-4864](/LUC/issues/LUC-4864) known-state evidence packet is complete.
+   - Output:
+     `docs/planning/luc-4868-source-control-closure-for-luc-4864-known-state-evidence-packet.md`.
+   - Proof:
+     pre-closure `HEAD=b282bcda226b2bed7c89eba5f11776f4c9dd7bd5`; branch
+     `main...origin/main [ahead 39]`; dirty tree classified as one coherent
+     batch containing the [LUC-4864](/LUC/issues/LUC-4864) planning packet and
+     source-of-truth state updates; `git diff --stat` showed `7 files changed,
+     117 insertions(+)` before this closure packet and state entries; `git
+     diff --check` passed with line-ending conversion warnings only. Local
+     commit created; push held.
+   - Next owner/action:
+     no follow-up remains for [LUC-4868](/LUC/issues/LUC-4868). Protected
+     runtime proof remains externally gated by key-scope evidence plus
+     one-run approval.
+
+1. `LUC-4864` Roost known-state evidence and architecture baseline is
+   complete.
+   - Output:
+     `docs/planning/luc-4864-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2285`,
+     `relations=4567`, `files=13599`, generated at
+     `2026-06-20T05:42:11.549Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task sync reports `0` actionable/raw
+     task-link gaps and `0` verified-without-proof gaps; architecture health
+     reports `implementation_without_tests=1162`.
+   - Next owner/action:
+     [LUC-4868](/LUC/issues/LUC-4868) owns source-control closure for this
+     workspace evidence packet. Protected production proof remains
+     release/credential gated.
+
 1. `LUC-4863` source-control closure for the
    [LUC-4861](/LUC/issues/LUC-4861) Product & Delivery proof-ladder evidence
    batch is complete.

@@ -2,6 +2,38 @@
 
 Last updated: 2026-06-20
 
+Source-control closure note: LUC-4868 is VERIFIED_DONE for the
+[LUC-4864](/LUC/issues/LUC-4864) known-state evidence packet. The closure
+packet is recorded in
+`docs/planning/luc-4868-source-control-closure-for-luc-4864-known-state-evidence-packet.md`.
+Evidence: `git status --short --branch` showed `main...origin/main [ahead
+39]` before closure; `git status --porcelain=v1 -uall` confirmed the
+[LUC-4864](/LUC/issues/LUC-4864) planning packet and source-of-truth state
+updates; `git diff --stat` showed `7 files changed, 117 insertions(+)` before
+the closure packet and source-of-truth entries; `git diff --check` passed with
+line-ending conversion warnings only. The batch is coherent and preserved in a
+local commit. Push is held for a future release batch or explicit
+source-ref/deploy need.
+
+Roost known-state baseline note: LUC-4864 is VERIFIED_DONE as an Innovation
+Portfolio Manager evidence lane. The packet is recorded in
+`docs/planning/luc-4864-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2285`,
+`relations=4567`, `files=13599`, generated at
+`2026-06-20T05:42:11.549Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task sync reports `0` actionable/raw task-link gaps and `0`
+verified-without-proof gaps; architecture health reports
+`implementation_without_tests=1162`; dependency report shows `437` relations /
+`95` entities; ownership split is `Docs Memory Lead=948`,
+`Engineering Delivery Lead=1336`, `Roost Project Manager=1`;
+`HEAD=9a106034c785119119f89e675cde2b220b0542fa`. Confidence classification:
+local architecture and task/proof synchronization are verified; remaining
+confidence debt is broad test-evidence debt, not a PM-owned implementation
+defect. Source-control closure for this packet is delegated to
+[LUC-4868](/LUC/issues/LUC-4868). Protected production proof remains
+release/credential gated.
+
 Source-control closure note: LUC-4863 is VERIFIED_DONE for the Product &
 Delivery proof-ladder evidence batch covering [LUC-4861](/LUC/issues/LUC-4861)
 plus adjacent [LUC-4856](/LUC/issues/LUC-4856) and
