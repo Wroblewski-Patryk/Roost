@@ -4,6 +4,65 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-4956-SOURCE-CONTROL-CLOSURE
+- Status: VERIFIED_DONE
+- Selected objective: Close local source control for the
+  [LUC-4952](/LUC/issues/LUC-4952) known-state evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4956](/LUC/issues/LUC-4956), already checked out by the harness, as
+  the source-control closure sidecar for the completed
+  [LUC-4952](/LUC/issues/LUC-4952) Roost known-state evidence baseline.
+- Scope: issue wake readback, generated/status dirty-state classification,
+  SCM hygiene, closure packet, source-of-truth synchronization, and one local
+  commit if the batch remains coherent.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4956-source-control-closure-for-luc-4952-known-state-evidence-packet.md`.
+- Evidence: pre-closure `HEAD=f2f7a8f4bb2ef762c13bd591a6f471cb1e9aecc2`;
+  branch `main...origin/main [ahead 47]`; dirty set matched the
+  [LUC-4952](/LUC/issues/LUC-4952) generated/status/state evidence batch;
+  `git diff --stat` before this closure packet reported `14 files changed,
+  6965 insertions(+), 6823 deletions(-)`; `git diff --check` passed with
+  LF-to-CRLF warnings only; generated graph/health JSON parsed successfully;
+  scoped secret/data hygiene found source identifiers/docs text only.
+- Final disposition: done for local SCM closure. Push remains held for a
+  future release batch or explicit source-ref/deploy need. Deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-4952-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE_PENDING_CHILD_CLOSURE
+- Selected objective: Refresh local Roost known-state architecture evidence
+  and convert remaining work into owner-scoped follow-up for
+  [LUC-4952](/LUC/issues/LUC-4952).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4952](/LUC/issues/LUC-4952), assigned to Roost Project Manager, and the
+  latest local-board comment requested local evidence collection plus concrete
+  next repair lanes.
+- Scope: non-protected architecture-awareness scanner refresh, architecture
+  status proof, generated report readback, source-control readback, planning
+  packet, and child repair-lane creation.
+- Exclusions: no implementation, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4952-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip architecture-awareness scanner PASS (`entities=2313`,
+  `relations=4677`, `files=13640`, generated at
+  `2026-06-20T08:13:36.644Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task-sync gaps `0`; owner gaps `0`; dependency report
+  `437` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`; `HEAD=f2f7a8f4bb2ef762c13bd591a6f471cb1e9aecc2`.
+- Final disposition: done for PM evidence scope after creating
+  [LUC-4956](/LUC/issues/LUC-4956) for source-control closure and
+  [LUC-4957](/LUC/issues/LUC-4957) for architecture health signal curation.
+  Protected production proof remains release/credential gated.
+
+## Previous Mission
+
 - Mission ID: LUC-4941-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
 - Status: VERIFIED_DONE_PENDING_SCM_CHILD
 - Selected objective: Refresh local Roost known-state architecture evidence

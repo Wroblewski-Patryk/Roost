@@ -4,6 +4,40 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4956` source-control closure is complete locally for the
+   [LUC-4952](/LUC/issues/LUC-4952) known-state evidence packet.
+   - Output:
+     `docs/planning/luc-4956-source-control-closure-for-luc-4952-known-state-evidence-packet.md`.
+   - Proof:
+     pre-closure `HEAD=f2f7a8f4bb2ef762c13bd591a6f471cb1e9aecc2`; branch
+     `main...origin/main [ahead 47]`; dirty set matched the generated
+     architecture/status artifacts, Roost state/context updates, and the
+     [LUC-4952](/LUC/issues/LUC-4952) planning packet. `git diff --check`
+     passed with LF-to-CRLF warnings only; generated graph/health JSON parsed.
+   - Next owner/action:
+     no source-control follow-up remains for this packet after the local
+     commit. [LUC-4957](/LUC/issues/LUC-4957) remains the architecture
+     curation lane for the recurring `implementation_without_tests` signal.
+
+1. `LUC-4952` known-state evidence and architecture baseline is complete for
+   Roost PM scope.
+   - Output:
+     `docs/planning/luc-4952-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2313`,
+     `relations=4677`, `files=13640`, generated
+     `2026-06-20T08:13:36.644Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task/proof/owner gaps remain `0`;
+     architecture health reports `implementation_without_tests=1162`.
+   - Next owner/action:
+     [LUC-4956](/LUC/issues/LUC-4956) has closed source control for the
+     generated/status dirty batch from this heartbeat;
+     [LUC-4957](/LUC/issues/LUC-4957) owns curation of the recurring
+     missing-test health signal into real proof lanes or scanner-noise
+     classification. Protected production proof remains release/credential
+     gated.
+
 1. `LUC-4941` known-state evidence and architecture baseline is complete for
    Roost PM scope.
    - Output:

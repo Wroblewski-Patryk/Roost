@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T08:02:46.310Z
+Generated: 2026-06-20T08:13:36.644Z
 
 ## Canonical Exports
 
@@ -1096,6 +1096,7 @@ Generated: 2026-06-20T08:02:46.310Z
 | documents | document:luc-4935-source-control-closure-for-luc-4931-architecture-awareness-refresh-artifacts:967de21d31 | module:docs:6784d83cb0 | docs/planning/luc-4935-source-control-closure-for-luc-4931-architecture-awareness-refresh-artifacts.md |
 | documents | document:luc-4936-management-departments-api-regression-coverage:20e658142c | module:docs:6784d83cb0 | docs/planning/luc-4936-management-departments-api-regression-coverage.md |
 | documents | document:luc-4937-roost-product-capability-map:63773d3d1f | module:docs:6784d83cb0 | docs/planning/luc-4937-roost-product-capability-map.md |
+| documents | document:luc-4941-known-state-evidence-and-architecture-baseline:eda2b6a8c2 | module:docs:6784d83cb0 | docs/planning/luc-4941-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1217,4 +1218,3 @@ Generated: 2026-06-20T08:02:46.310Z
 | documents | document:patch-v1-workforce-id:4f96ab8331 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0114.md |
 | documents | document:pattern-gallery:4c275d1641 | module:docs:6784d83cb0 | docs/ux/pattern-gallery.md |
 | documents | document:people-agents-directory-final-ux-audit:575253df7b | module:docs:6784d83cb0 | docs/ux/people-agents-directory-final-ux-audit-2026-05-19.md |
-| documents | document:people-agents-directory-no-paperclip-tooling-task-contract:938da1ff61 | module:docs:6784d83cb0 | docs/planning/people-agents-directory-no-paperclip-tooling-task-contract.md |

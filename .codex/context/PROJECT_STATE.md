@@ -2,6 +2,39 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-4956` source-control closure completed locally for the
+  [LUC-4952](/LUC/issues/LUC-4952) known-state evidence packet. Output:
+  `docs/planning/luc-4956-source-control-closure-for-luc-4952-known-state-evidence-packet.md`.
+  Evidence: wake payload scoped this run to [LUC-4956](/LUC/issues/LUC-4956)
+  with no pending comments; pre-closure
+  `HEAD=f2f7a8f4bb2ef762c13bd591a6f471cb1e9aecc2`; branch
+  `main...origin/main [ahead 47]`; dirty set matched the
+  [LUC-4952](/LUC/issues/LUC-4952) generated architecture/status evidence
+  batch plus state/context updates and the parent planning packet.
+  `git diff --stat` before this closure packet reported `14 files changed,
+  6965 insertions(+), 6823 deletions(-)`; `git diff --check` passed with
+  LF-to-CRLF warnings only; generated graph/health JSON parsed successfully;
+  scoped secret/data hygiene found source identifiers/docs text only. Local
+  commit created; final immutable SHA is recorded in the Paperclip closure
+  comment. Push held for a future release batch or explicit source-ref/deploy
+  need. Deploy impact: none.
+- 2026-06-20: `LUC-4952` Roost known-state evidence and architecture
+  baseline completed for Roost PM scope after local-board requested
+  `softwarehouse-known-state-wakeup:v1`. Output:
+  `docs/planning/luc-4952-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2313`,
+  `relations=4677`, `files=13640`, generated at
+  `2026-06-20T08:13:36.644Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task-sync gaps `0`; owner gaps `0`; dependency report
+  `437` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`; `HEAD=f2f7a8f4bb2ef762c13bd591a6f471cb1e9aecc2`.
+  Follow-ups: [LUC-4956](/LUC/issues/LUC-4956) source-control closure for this
+  generated/status evidence batch and [LUC-4957](/LUC/issues/LUC-4957)
+  architecture health signal curation for the recurring missing-test metric.
+  No runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, server,
+  browser, database, Docker, or watcher process occurred.
 - 2026-06-20: `LUC-4941` Roost known-state evidence and architecture
   baseline completed for Roost PM scope. Output:
   `docs/planning/luc-4941-known-state-evidence-and-architecture-baseline.md`.
