@@ -2,6 +2,39 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5168` source-control closure completed locally for the
+  [LUC-5165](/LUC/issues/LUC-5165) generated/status evidence packet. Output:
+  `docs/planning/luc-5168-source-control-closure-for-luc-5165-evidence-packet.md`.
+  SCM hygiene PASS: `git diff --check` reported no whitespace errors, only
+  LF-to-CRLF working-copy warnings; generated architecture-awareness JSON
+  parsed with `2362` entities / `4869` relations at
+  `2026-06-20T15:13:24.117Z`; generated architecture-health JSON parsed with
+  `implementation_without_tests=1162`, docs gaps `0`, owner gaps `0`, and
+  disconnected entities `0`; scoped high-confidence token/private-key scan
+  found no matching files; `npm run architecture:status` remained GREEN
+  (`454/765/35`, queues `0`, delta `0/0/0`, all gates pass). Push held for
+  future release batch or explicit source-ref/deploy need. Deploy impact:
+  none.
+
+- 2026-06-20: `LUC-5165` local architecture baseline verified for IPM
+  evidence scope. Output:
+  `docs/planning/luc-5165-known-state-evidence-and-architecture-baseline.md`.
+  Scanner PASS generated `2026-06-20T15:13:24.117Z` with `2362` entities,
+  `4869` relations, and `13692` files. Architecture gate:
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass).
+  Synchronization gaps: task-link `0`, implementation-without-task `0`,
+  verified-without-proof `0`, ownership `0`. Remaining confidence debt:
+  `implementation_without_tests=1162`, actionable `1153`, classified inferred
+  noise `9`; treat as narrow journey-proof debt already advanced by
+  [LUC-5156](/LUC/issues/LUC-5156), not a broad test-generation lane.
+  Protected target health was not tested in this lane and remains
+  approval/credential gated. Follow-up owner/action:
+  [LUC-5168](/LUC/issues/LUC-5168) for generated/status source-control
+  closure. No runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, browser,
+  database, Docker, server, watcher, or long-running process occurred.
+
 - 2026-06-20: `LUC-5158` local architecture baseline verified for Roost PM
   evidence scope. Output:
   `docs/planning/luc-5158-known-state-evidence-and-architecture-baseline.md`.

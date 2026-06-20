@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T15:02:47.436Z
+Generated: 2026-06-20T15:13:24.117Z
 
 ## Canonical Exports
 
@@ -1144,6 +1144,8 @@ Generated: 2026-06-20T15:02:47.436Z
 | documents | document:luc-5150-known-state-evidence-and-architecture-baseline:756cbf6000 | module:docs:6784d83cb0 | docs/planning/luc-5150-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5155-source-control-closure-for-luc-5150-evidence-packet:ec805bb109 | module:docs:6784d83cb0 | docs/planning/luc-5155-source-control-closure-for-luc-5150-evidence-packet.md |
 | documents | document:luc-5156-strategy-api-journey-proof:d7be2278f7 | module:docs:6784d83cb0 | docs/planning/luc-5156-strategy-api-journey-proof.md |
+| documents | document:luc-5158-known-state-evidence-and-architecture-baseline:3a8d016baf | module:docs:6784d83cb0 | docs/planning/luc-5158-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5161-source-control-closure-for-luc-5158-evidence-packet:b84b344666 | module:docs:6784d83cb0 | docs/planning/luc-5161-source-control-closure-for-luc-5158-evidence-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-06-20T15:02:47.436Z
 | documents | document:operating-tables-model:6d36c672dd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0036.md |
 | documents | document:operations-agent-runtime-coverage-ledger:3913973e92 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-OPS-AGENT-RUNTIME-LEDGER.md |
 | documents | document:operations-canonical-department-filtering-task-contract:4b546d449a | module:docs:6784d83cb0 | docs/planning/operations-canonical-department-filtering-task-contract.md |
-| documents | document:operations-foundation-task-contract:bfeec82a4a | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-OPS-WORK-ITEM-CONTRACT.md |
-| documents | document:operations-management-board-ux-polish-task-contract:44843bb033 | module:docs:6784d83cb0 | docs/planning/operations-management-board-ux-polish-task-contract.md |

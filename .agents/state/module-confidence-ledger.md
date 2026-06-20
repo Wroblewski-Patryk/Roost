@@ -2,6 +2,41 @@
 
 Last updated: 2026-06-20
 
+Source-control note: [LUC-5168](/LUC/issues/LUC-5168) is VERIFIED_DONE for
+the [LUC-5165](/LUC/issues/LUC-5165) generated/status evidence packet.
+Evidence packet:
+`docs/planning/luc-5168-source-control-closure-for-luc-5165-evidence-packet.md`.
+Proof: `git diff --check` PASS with LF-to-CRLF warnings only; generated
+architecture-awareness JSON parsed with `2362` entities / `4869` relations at
+`2026-06-20T15:13:24.117Z`; generated architecture-health JSON parsed with
+`implementation_without_tests=1162`, docs gaps `0`, owner gaps `0`, and
+disconnected entities `0`; scoped high-confidence token/private-key scan found
+no matching files; `npm run architecture:status` PASS (`GREEN`, graph
+`454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates
+pass). Confidence classification: local source-control closure for the
+[LUC-5165](/LUC/issues/LUC-5165) packet is verified locally; push remains held
+for a future release batch or explicit source-ref/deploy need.
+
+Roost known-state baseline note: [LUC-5165](/LUC/issues/LUC-5165) is
+VERIFIED_PENDING_SCM_CLOSURE for the IPM evidence lane. The packet is recorded
+in
+`docs/planning/luc-5165-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`2362` entities,
+`4869` relations, `13692` files, generated `2026-06-20T15:13:24.117Z`);
+`npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task
+synchronization reports `0` task-link gaps, `0` implementation-without-task
+gaps, and `0` verified-without-proof gaps; ownership gaps `0`; dependency
+report shows `437` relations / `95` entities. Architecture health reports
+`implementation_without_tests=1162`, actionable `1153`, classified inferred
+noise `9`, docs gaps `0`, disconnected entities `0`; confidence
+classification: local architecture and task/proof synchronization are
+verified, while remaining confidence debt is source-control closure plus
+protected target proof. [LUC-5168](/LUC/issues/LUC-5168) owns source-control
+closure for this packet. [LUC-5156](/LUC/issues/LUC-5156) already completed
+the current narrow QA proof slice; no broad test-generation lane is warranted
+from this heartbeat.
+
 Roost known-state baseline note: [LUC-5158](/LUC/issues/LUC-5158) is
 VERIFIED_PENDING_SCM_CLOSURE for the Roost PM evidence lane. The packet is
 recorded in
