@@ -2,6 +2,22 @@
 
 Last updated: 2026-06-20
 
+Roost known-state baseline note: LUC-4994 is VERIFIED_DONE for the Roost
+Project Manager evidence lane. The packet is recorded in
+`docs/planning/luc-4994-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2324`,
+`relations=4720`, `files=13651`, generated at
+`2026-06-20T10:00:13.723Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task synchronization reports `0` task-link/proof gaps;
+ownership gaps `0`; dependency report shows `437` relations / `95` entities;
+architecture health reports `implementation_without_tests=1162`. Confidence
+classification: local architecture and task/proof synchronization are
+verified; remaining confidence debt is route/journey proof debt, not a
+PM-owned implementation defect. Source-control closure is delegated to
+[LUC-4998](/LUC/issues/LUC-4998). Protected production proof remains
+release/credential gated.
+
 Roost known-state baseline note: LUC-4988 is VERIFIED_DONE for the Roost
 Project Manager evidence lane. The packet is recorded in
 `docs/planning/luc-4988-known-state-evidence-and-architecture-baseline.md`.

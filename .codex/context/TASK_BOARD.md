@@ -2,6 +2,40 @@
 
 ## Now
 
+- 2026-06-20: `LUC-4998` source-control closure is complete locally for the
+  [LUC-4994](/LUC/issues/LUC-4994) known-state evidence packet.
+  Output:
+  `docs/planning/luc-4998-source-control-closure-for-luc-4994-known-state-evidence-packet.md`.
+  Evidence: dirty set classified as generated architecture/status artifacts,
+  state/context updates, and the [LUC-4994](/LUC/issues/LUC-4994) parent
+  packet; `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  JSON parse PASS with `2324` entities / `4720` relations and timestamp
+  `2026-06-20T10:00:13.723Z`; high-confidence key-pattern scan found no
+  private key headers, AWS access key IDs, OpenAI-style `sk-` keys, or Slack
+  token values. Push held for future release batch or explicit
+  source-ref/deploy need; deploy impact none. Scope: no runtime code, schema,
+  migration, protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, server, browser, database, Docker, or
+  watcher process. Disposition: `DONE` after local commit.
+
+- 2026-06-20: `LUC-4994` known-state evidence and architecture baseline is
+  complete for Roost PM scope.
+  Output:
+  `docs/planning/luc-4994-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2324`,
+  `relations=4720`, `files=13651`, generated at
+  `2026-06-20T10:00:13.723Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`; dependency
+  report `437` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`. Follow-up:
+  [LUC-4998](/LUC/issues/LUC-4998) owns source-control closure for the
+  generated/status/state evidence packet. Scope: no runtime code, schema,
+  migration, protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, server, browser, database, Docker, or
+  watcher process. Disposition: `DONE` for PM evidence scope after child issue
+  creation.
+
 - 2026-06-20: `LUC-4992` source-control closure is complete locally for the
   [LUC-4988](/LUC/issues/LUC-4988) known-state evidence packet. Output:
   `docs/planning/luc-4992-source-control-closure-for-luc-4988-known-state-evidence-packet.md`.

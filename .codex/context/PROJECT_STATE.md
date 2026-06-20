@@ -2,6 +2,40 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-4998` source-control closure completed locally for the
+  [LUC-4994](/LUC/issues/LUC-4994) known-state evidence packet. Output:
+  `docs/planning/luc-4998-source-control-closure-for-luc-4994-known-state-evidence-packet.md`.
+  Evidence: dirty set classified as the [LUC-4994](/LUC/issues/LUC-4994)
+  generated/status/state packet; pre-closure
+  `HEAD=02a8691676b0f52a7e8e281dabde96051532be25`; branch
+  `main...origin/main [ahead 53]`; tracked diff stat before this closure
+  packet `15 files changed, 7076 insertions(+), 6863 deletions(-)`;
+  `git diff --check` PASS with LF-to-CRLF warnings only; generated JSON parse
+  PASS with `2324` entities / `4720` relations and timestamp
+  `2026-06-20T10:00:13.723Z`; scoped high-confidence key-pattern scan found
+  no private key headers, AWS access key IDs, OpenAI-style `sk-` keys, or
+  Slack token values. Push held; deploy impact none. No runtime code, schema,
+  migration, protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, server, browser, database, Docker, or
+  watcher process occurred.
+
+- 2026-06-20: `LUC-4994` Roost known-state evidence and architecture
+  baseline completed for Roost PM scope after local-board requested
+  `softwarehouse-known-state-wakeup:v1`. Output:
+  `docs/planning/luc-4994-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2324`,
+  `relations=4720`, `files=13651`, generated at
+  `2026-06-20T10:00:13.723Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`; dependency
+  report `437` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`; `HEAD=02a8691676b0f52a7e8e281dabde96051532be25`.
+  Follow-up: [LUC-4998](/LUC/issues/LUC-4998) owns source-control closure for
+  this generated/status evidence packet. No runtime code, schema, migration,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, secret disclosure, server, browser, database, Docker, or watcher
+  process occurred.
+
 - 2026-06-20: `LUC-4992` source-control closure completed locally for the
   [LUC-4988](/LUC/issues/LUC-4988) known-state evidence packet. Output:
   `docs/planning/luc-4992-source-control-closure-for-luc-4988-known-state-evidence-packet.md`.
