@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T12:03:02.409Z
+Generated: 2026-06-20T12:14:18.170Z
 
 ## Canonical Exports
 
@@ -1121,6 +1121,8 @@ Generated: 2026-06-20T12:03:02.409Z
 | documents | document:luc-5055-source-control-closure-for-luc-5052-known-state-evidence-packet:4415829966 | module:docs:6784d83cb0 | docs/planning/luc-5055-source-control-closure-for-luc-5052-known-state-evidence-packet.md |
 | documents | document:luc-5060-known-state-evidence-and-architecture-baseline:ebc54c925c | module:docs:6784d83cb0 | docs/planning/luc-5060-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5065-release-critical-journey-proof-ladder:33f71c283e | module:docs:6784d83cb0 | docs/planning/luc-5065-release-critical-journey-proof-ladder.md |
+| documents | document:luc-5068-known-state-evidence-and-architecture-baseline:173172471b | module:docs:6784d83cb0 | docs/planning/luc-5068-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5072-source-control-closure-for-luc-5068-known-state-evidence-packet:55db98f382 | module:docs:6784d83cb0 | docs/planning/luc-5072-source-control-closure-for-luc-5068-known-state-evidence-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-06-20T12:03:02.409Z
 | documents | document:patch-v1-clients-id:afdc502d5e | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0090.md |
 | documents | document:patch-v1-company-os-standards-id:ae10c28de8 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0091.md |
 | documents | document:patch-v1-company-os-workflow-definitions-drafts-id:75187ea37d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0092.md |
-| documents | document:patch-v1-deals-id:7358a89bab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0093.md |
-| documents | document:patch-v1-decisions-id:bbe283faa7 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0094.md |

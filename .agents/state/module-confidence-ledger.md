@@ -2,6 +2,38 @@
 
 Last updated: 2026-06-20
 
+Source-control note: [LUC-5083](/LUC/issues/LUC-5083) is VERIFIED_DONE for
+the [LUC-5078](/LUC/issues/LUC-5078) generated/status evidence batch. Closure
+packet:
+`docs/planning/luc-5083-source-control-closure-for-luc-5078-known-state-evidence-packet.md`.
+Evidence: pre-closure
+`HEAD=1b7c8d5450c793c049ac4fdef6b97bccbac7c6c3`; branch
+`main...origin/main [ahead 60]`; dirty set matched the generated
+architecture/status outputs, Roost state/context updates, and parent packet.
+`git diff --check` passed with LF-to-CRLF warnings only; generated
+architecture-awareness JSON parsed at `2339` entities / `4780` relations;
+scoped high-confidence secret scan found no matching files; `npm run
+architecture:status` remained GREEN. Push remains held for a future release
+batch or explicit source-ref/deploy need. Deploy impact: none.
+
+Roost known-state baseline note: LUC-5078 is VERIFIED_DONE for the IPM
+coordination evidence lane. The packet is recorded in
+`docs/planning/luc-5078-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2339`,
+`relations=4780`, `files=13666`, generated at
+`2026-06-20T12:14:18.170Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task synchronization reports `0` task-link/proof gaps;
+ownership gaps `0`; dependency report shows `437` relations / `95` entities;
+architecture health reports `implementation_without_tests=1162`, actionable
+`1153`, classified inferred noise `9`. Confidence classification: local
+architecture and task/proof synchronization are verified; remaining confidence
+debt is route/journey proof debt plus source-control closure, not an IPM-owned
+implementation defect. Follow-up owners: [LUC-5083](/LUC/issues/LUC-5083)
+for source-control closure and [LUC-5084](/LUC/issues/LUC-5084) for one local
+authenticated browser route proof. Protected production proof remains
+release/credential gated.
+
 Roost known-state baseline note: LUC-5068 is VERIFIED_DONE for the Roost
 Project Manager evidence lane. The packet is recorded in
 `docs/planning/luc-5068-known-state-evidence-and-architecture-baseline.md`.

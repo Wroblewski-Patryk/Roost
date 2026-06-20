@@ -2,6 +2,38 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5083` source-control closure is complete locally for the
+  [LUC-5078](/LUC/issues/LUC-5078) known-state evidence packet.
+  Output:
+  `docs/planning/luc-5083-source-control-closure-for-luc-5078-known-state-evidence-packet.md`.
+  Evidence: dirty set classified as the [LUC-5078](/LUC/issues/LUC-5078)
+  generated/status/state packet; `git diff --check` PASS with LF-to-CRLF
+  warnings only; generated architecture-awareness JSON parsed with `2339`
+  entities / `4780` relations; scoped high-confidence key-pattern scan found
+  no matching files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass).
+  Push held for future release batch or explicit source-ref/deploy need;
+  deploy impact none. Disposition: `DONE`.
+
+- 2026-06-20: `LUC-5078` known-state evidence and architecture baseline is
+  complete for IPM coordination scope.
+  Output:
+  `docs/planning/luc-5078-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2339`,
+  `relations=4780`, `files=13666`, generated at
+  `2026-06-20T12:14:18.170Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`; dependency
+  report `437` relations / `95` entities; architecture health reports
+  `implementation_without_tests=1162` and actionable `1153`.
+  Follow-up: [LUC-5083](/LUC/issues/LUC-5083) for source-control closure of
+  this generated/status packet and [LUC-5084](/LUC/issues/LUC-5084) for one
+  narrow QA authenticated browser proof from the existing release-critical
+  ladder. Scope: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process. Disposition: `DONE`
+  for IPM evidence scope after follow-up lane creation.
+
 - 2026-06-20: `LUC-5072` source-control closure completed locally for the
   [LUC-5068](/LUC/issues/LUC-5068) known-state evidence packet and carried
   [LUC-5065](/LUC/issues/LUC-5065) QA/state packet.

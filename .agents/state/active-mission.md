@@ -4,6 +4,64 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5083-SOURCE-CONTROL-CLOSURE-FOR-LUC-5078-EVIDENCE
+- Status: VERIFIED_DONE_PENDING_LOCAL_COMMIT
+- Selected objective: Preserve the [LUC-5078](/LUC/issues/LUC-5078)
+  known-state evidence packet in local source control.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5083](/LUC/issues/LUC-5083), the source-control sidecar for the
+  completed [LUC-5078](/LUC/issues/LUC-5078) local evidence refresh.
+- Scope: dirty-set classification, SCM hygiene, generated JSON parse,
+  scoped high-confidence secret scan, architecture-status proof, closure
+  packet, source-of-truth synchronization, and one local commit if coherent.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-5083-source-control-closure-for-luc-5078-known-state-evidence-packet.md`.
+- Evidence: dirty set matched the [LUC-5078](/LUC/issues/LUC-5078)
+  generated architecture/status packet plus state/context updates and parent
+  planning packet; `git diff --check` PASS with LF-to-CRLF warnings only;
+  architecture-awareness JSON parsed at `2339` entities / `4780` relations;
+  scoped high-confidence secret scan found no matching files; `npm run
+  architecture:status` remained GREEN (`454/765/35`, queues `0`, delta
+  `0/0/0`, all gates pass).
+- Final disposition: source-control closure ready for local commit; push held
+  for future release batch or explicit source-ref/deploy need; deploy impact
+  none.
+
+## Previous Mission
+
+- Mission ID: LUC-5078-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE_PENDING_SCM_CHILD
+- Selected objective: Refresh local Roost known-state architecture evidence
+  and convert findings into owner-scoped repair lanes for
+  [LUC-5078](/LUC/issues/LUC-5078).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5078](/LUC/issues/LUC-5078) after a local-board comment requested
+  local evidence collection and concrete next repair lanes.
+- Scope: non-protected architecture-awareness scanner refresh, architecture
+  status proof, generated report readback, source-control readback, planning
+  packet, and follow-up lane creation.
+- Exclusions: no implementation, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-5078-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip architecture-awareness scanner PASS (`entities=2339`,
+  `relations=4780`, `files=13666`, generated at
+  `2026-06-20T12:14:18.170Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`;
+  dependency report `437` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`; `HEAD=1b7c8d5450c793c049ac4fdef6b97bccbac7c6c3`.
+- Final disposition: done for IPM evidence scope after creating
+  [LUC-5083](/LUC/issues/LUC-5083) for source-control closure and
+  [LUC-5084](/LUC/issues/LUC-5084) for QA route proof. Protected production
+  proof remains release/credential gated.
+
+## Previous Mission
+
 - Mission ID: LUC-5072-SOURCE-CONTROL-CLOSURE-FOR-LUC-5068-EVIDENCE
 - Status: VERIFIED_DONE_PENDING_LOCAL_COMMIT
 - Selected objective: Preserve the [LUC-5068](/LUC/issues/LUC-5068)
