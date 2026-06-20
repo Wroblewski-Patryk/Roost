@@ -1,5 +1,55 @@
 # System Health
 
+- 2026-06-21: `LUC-5364` source-control closure is verified for the
+  [LUC-5359](/LUC/issues/LUC-5359) Roost known-state evidence packet. Current
+  interpretation: generated architecture/status exports, state/context/planning
+  evidence, and carried same-wave [LUC-5347](/LUC/issues/LUC-5347) /
+  [LUC-5348](/LUC/issues/LUC-5348) proof packets are preserved as a local
+  evidence packet only. Diff hygiene, generated JSON parse, scoped
+  high-confidence secret/private-key scan, and `npm run architecture:status`
+  passed. Deploy impact: none; no runtime, protected smoke, production,
+  credential, schema, migration, database, Docker, browser, server, provider,
+  or watcher action occurred.
+
+- 2026-06-21: Roost local architecture evidence refreshed for
+  [LUC-5359](/LUC/issues/LUC-5359). Scanner PASS generated
+  `2026-06-20T22:29:18.903Z` with `2424` entities / `5105` relations /
+  `13755` files; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+  No protected actions or long-running local processes were started.
+
+- 2026-06-21: `LUC-5348` Intake routing proof ladder verified locally for the
+  QA slice from [LUC-5344](/LUC/issues/LUC-5344). Output:
+  `docs/planning/luc-5348-intake-routing-local-proof-ladder.md`.
+  Current health interpretation: global intake read aggregation, proposal-only
+  route creation, and route proposal lifecycle readback are protected by the
+  existing auth/capability path, exposed through MCP where intended, and
+  covered by local API assertions for source/provider non-mutation,
+  idempotent replay, workspace isolation, canonical route validation, and
+  read-only agent packet behavior. Proof: `npm run test:api:local` PASS with
+  disposable PostgreSQL `companycore-luc-5348-postgres` on port `55548`;
+  `npm run check:route-capabilities` PASS (`180` manifest routes / `35` route
+  files); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queues `0`, delta `0/0/0`). Cleanup found no validation DB container and no
+  `chrome-headless-shell` process. Deploy impact: none.
+
+- 2026-06-21: `LUC-5347` Relationship and Operating Graph proof ladder
+  verified locally for the QA slice from [LUC-5344](/LUC/issues/LUC-5344).
+  Output:
+  `docs/planning/luc-5347-relationship-operating-graph-proof-ladder.md`.
+  Current health interpretation: Relationship context, relationship graph,
+  and selected operating-area graph read behavior are protected by the existing
+  auth/capability path, exposed through the MCP reader manifest where intended,
+  and covered by local API assertions for read packet semantics, selected
+  workspace isolation, fail-closed missing area behavior, and read/no-approval
+  MCP exposure. Proof: `npm run test:api:local` PASS with disposable
+  PostgreSQL `companycore-luc-5347-postgres` on port `55547`;
+  `npm run check:route-capabilities` PASS (`180` manifest routes / `35` route
+  files); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queues `0`, delta `0/0/0`). Cleanup found no validation DB container and no
+  `chrome-headless-shell` process. Deploy impact: none.
+
 - 2026-06-20: `LUC-5354` source-control closure is verified for the
   [LUC-5350](/LUC/issues/LUC-5350) Roost known-state evidence packet. Current
   interpretation: state, context, planning, and evidence packet changes are

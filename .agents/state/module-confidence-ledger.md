@@ -1,5 +1,78 @@
 # Module Confidence Ledger
 
+Source-control confidence note: [LUC-5364](/LUC/issues/LUC-5364) is
+VERIFIED_DONE for local source-control closure of the
+[LUC-5359](/LUC/issues/LUC-5359) known-state evidence packet. Closure packet:
+`docs/planning/luc-5364-source-control-closure-for-luc-5359-evidence-packet.md`.
+Verification: `git diff --check` PASS with LF-to-CRLF warnings only; generated
+architecture JSON parse PASS at `2026-06-20T22:29:18.903Z` with `2424`
+entities / `5105` relations; scoped high-confidence secret/private-key scan
+PASS with `0` matches; `npm run architecture:status` PASS (`GREEN`, graph
+`454/765/35`, queues `0`, delta `0/0/0`). Confidence classification:
+documentation/state/generated evidence is locally source-controlled; no runtime
+module behavior changed.
+
+PM evidence note: [LUC-5359](/LUC/issues/LUC-5359) refreshed the Roost
+known-state architecture baseline. Evidence packet:
+`docs/planning/luc-5359-known-state-evidence-and-architecture-baseline.md`.
+Scanner PASS generated `2026-06-20T22:29:18.903Z` with `2424` entities,
+`5105` relations, and `13755` files. `npm run architecture:status` PASS
+(`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`) and `npm run
+check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+Task-sync, ownership, docs, implementation-task, verified-without-proof, and
+disconnected gaps remain `0`. Confidence classification: local architecture
+and route exposure are verified; no broad repair issue is warranted from this
+pass. Product proof through Intake routing is already recorded as
+[LUC-5348](/LUC/issues/LUC-5348) VERIFIED_DONE. Source-control closure for the
+refreshed generated/status/planning evidence batch is delegated to
+[LUC-5364](/LUC/issues/LUC-5364).
+
+QA proof note: [LUC-5348](/LUC/issues/LUC-5348) is VERIFIED_DONE for the
+Intake routing local behavior slice selected from the
+[LUC-5344](/LUC/issues/LUC-5344) known-state signal. Evidence packet:
+`docs/planning/luc-5348-intake-routing-local-proof-ladder.md`. Selected
+journey: `/v1/intake`, `/v1/intake/actions/propose-route`, and
+`/v1/intake/route-proposals` mapped to
+`src/modules/intake/intake.routes.ts`, `src/app.ts`,
+`src/auth/capabilities.ts`, `src/auth/agent-key-profiles.ts`,
+`src/mcp/manifest.ts`, and `src/tests/api.test.ts`. Local proof ran
+`COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5348-postgres`
+`COMPANYCORE_TEST_DB_PORT=55548` `npm run test:api:local`: server/web build
+PASS, all `31` migrations applied, seed PASS, and `7/7` API subtests PASS
+including `CompanyCore v1 protected API flow` (`64046.4203ms`, total
+`72171.8119ms`). `npm run check:route-capabilities` and `npm run
+architecture:status` also passed. Cleanup found no validation DB container and
+no `chrome-headless-shell` process. Confidence classification: local API
+contracts for intake routing are verified, including protected intake read,
+proposal-only route command effects, route proposal readback, idempotent
+replay, workspace isolation, canonical route validation, route and MCP
+manifest alignment, and source/provider non-mutation; no repair issue is
+warranted. Protected production/provider/browser proof remains a separate
+approval/credential-gated or future UI lane.
+
+QA proof note: [LUC-5347](/LUC/issues/LUC-5347) is VERIFIED_DONE for the
+Relationship and Operating Graph local read behavior slice selected from the
+[LUC-5344](/LUC/issues/LUC-5344) known-state signal. Evidence packet:
+`docs/planning/luc-5347-relationship-operating-graph-proof-ladder.md`.
+Selected journey: `/v1/relationships/context`,
+`/v1/relationships/graph`, and `/v1/operating-graph/areas/:areaKey` mapped to
+`src/modules/relationships/relationships.routes.ts`,
+`src/modules/operating-graph/operating-graph.routes.ts`, `src/app.ts`,
+`src/auth/capabilities.ts`, `src/auth/agent-key-profiles.ts`,
+`src/mcp/manifest.ts`, and `src/tests/api.test.ts`. Local proof ran
+`COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5347-postgres`
+`COMPANYCORE_TEST_DB_PORT=55547` `npm run test:api:local`: server/web build
+PASS, all `31` migrations applied, seed PASS, and `7/7` API subtests PASS
+including `CompanyCore v1 protected API flow` (`73316.9445ms`, total
+`93471.0197ms`). `npm run check:route-capabilities` and `npm run
+architecture:status` also passed. Cleanup found no validation DB container and
+no `chrome-headless-shell` process. Confidence classification: local API
+contracts for Relationship and Operating Graph read behavior are verified,
+including protected read semantics, selected workspace isolation, route and
+MCP manifest alignment, and read-only agent packet behavior; no repair issue
+is warranted. Protected production/provider/browser proof remains a separate
+approval/credential-gated or future UI lane.
+
 Roost known-state baseline note: [LUC-5344](/LUC/issues/LUC-5344) is
 VERIFIED_DONE_PENDING_SOURCE_CONTROL_CLOSURE_AND_QA_FOLLOWUP for the Roost PM
 evidence lane. The packet is recorded in

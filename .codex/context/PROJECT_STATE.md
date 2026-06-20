@@ -1,6 +1,86 @@
 # PROJECT_STATE
 
-Last updated: 2026-06-20
+Last updated: 2026-06-21
+
+- 2026-06-21: `LUC-5364` source-control closure completed locally for the
+  [LUC-5359](/LUC/issues/LUC-5359) Roost known-state evidence packet. Output:
+  `docs/planning/luc-5364-source-control-closure-for-luc-5359-evidence-packet.md`.
+  Starting state: `main...origin/main [ahead 94]`, HEAD `a1e63b45`. Dirty set
+  classified as coherent generated architecture/status exports,
+  state/context/planning evidence, the [LUC-5359](/LUC/issues/LUC-5359)
+  evidence packet, and carried same-wave proof packets from
+  [LUC-5347](/LUC/issues/LUC-5347) and [LUC-5348](/LUC/issues/LUC-5348)
+  because current state files reference them as verified local evidence.
+  Verification: `git diff --check` PASS with LF-to-CRLF warnings only;
+  generated `docs/graphs/architecture-awareness.json` parse PASS at
+  `2026-06-20T22:29:18.903Z` with `2424` entities / `5105` relations; scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass). Push held for future
+  release/source-ref batching; deploy impact none. No feature code, schema,
+  migration, protected smoke, production mutation, credential access, secret
+  disclosure, browser, database, Docker, server, or watcher process occurred.
+
+- 2026-06-21: `LUC-5359` Roost known-state evidence and architecture
+  baseline completed for the local-board wake comment, with source-control
+  closure delegated to [LUC-5364](/LUC/issues/LUC-5364). Output:
+  `docs/planning/luc-5359-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS in `52058ms`, generated
+  `2026-06-20T22:29:18.903Z` with `2424` entities / `5105` relations /
+  `13755` files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  task-sync, ownership, docs, proof, implementation-task, and disconnected
+  gaps remain `0`; architecture health reports
+  `implementation_without_tests=1162`. Classification: no broad feature repair
+  issue is warranted; [LUC-5348](/LUC/issues/LUC-5348) is already recorded
+  locally as verified done for Intake routing proof. No feature code, schema,
+  migration, push, deploy, restart, protected smoke, production mutation,
+  credential access, secret disclosure, browser, database, Docker, server, or
+  watcher process occurred.
+
+- 2026-06-21: `LUC-5348` Intake routing local proof ladder completed for the
+  QA slice from [LUC-5344](/LUC/issues/LUC-5344). Output:
+  `docs/planning/luc-5348-intake-routing-local-proof-ladder.md`.
+  Selected journey: `/v1/intake`, `/v1/intake/actions/propose-route`, and
+  `/v1/intake/route-proposals` mapped to `src/modules/intake/intake.routes.ts`,
+  `src/auth/capabilities.ts`, MCP manifest exposure, agent key profiles, and
+  `src/tests/api.test.ts` assertions. Evidence:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5348-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55548` `npm run test:api:local` PASS after
+  server/web build, all `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `64046.4203ms`, total
+  `72171.8119ms`); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass). Cleanup found no
+  validation DB container and no `chrome-headless-shell` process. No protected
+  smoke, deploy, push, restart, production mutation, credential access, secret
+  disclosure, browser proof, runtime feature change, schema change, migration
+  authoring, live provider action, server, or watcher occurred. Disposition:
+  `DONE`; no repair issue warranted.
+
+- 2026-06-21: `LUC-5347` Relationship and Operating Graph local proof ladder
+  completed for the QA slice from [LUC-5344](/LUC/issues/LUC-5344). Output:
+  `docs/planning/luc-5347-relationship-operating-graph-proof-ladder.md`.
+  Selected journey: `/v1/relationships/context`,
+  `/v1/relationships/graph`, and `/v1/operating-graph/areas/:areaKey` mapped
+  to route modules, `src/auth/capabilities.ts`, MCP manifest exposure,
+  `mcp_company_os_reader` scopes, and `src/tests/api.test.ts` assertions.
+  Evidence: `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5347-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55547` `npm run test:api:local` PASS after
+  server/web build, all `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `73316.9445ms`, total
+  `93471.0197ms`); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass). Cleanup found no
+  validation DB container and no `chrome-headless-shell` process. No protected
+  smoke, deploy, push, restart, production mutation, credential access, secret
+  disclosure, browser proof, runtime feature change, schema change, migration
+  authoring, live provider action, server, or watcher occurred. Disposition:
+  `DONE`; no repair issue warranted.
 
 - 2026-06-20: `LUC-5354` source-control closure completed locally for the
   [LUC-5350](/LUC/issues/LUC-5350) Roost known-state evidence packet. Output:

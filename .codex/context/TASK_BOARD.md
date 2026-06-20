@@ -2,6 +2,69 @@
 
 ## Now
 
+- 2026-06-21: `LUC-5364` source-control closure for
+  [LUC-5359](/LUC/issues/LUC-5359) is complete locally. Output:
+  `docs/planning/luc-5364-source-control-closure-for-luc-5359-evidence-packet.md`.
+  Evidence: dirty set classified as coherent generated/status/planning/state
+  evidence plus carried same-wave [LUC-5347](/LUC/issues/LUC-5347) and
+  [LUC-5348](/LUC/issues/LUC-5348) proof packets referenced by current state;
+  `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  architecture JSON parse PASS at `2026-06-20T22:29:18.903Z` (`2424`
+  entities / `5105` relations); scoped high-confidence secret/private-key scan
+  PASS with `0` matches; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass).
+  Disposition: `DONE`; push held for future release/source-ref batching;
+  deploy impact none.
+
+- 2026-06-21: `LUC-5359` known-state evidence and architecture baseline is
+  complete for the local-board wake comment, with source-control closure
+  delegated to [LUC-5364](/LUC/issues/LUC-5364). Output:
+  `docs/planning/luc-5359-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS in `52058ms`, generated
+  `2026-06-20T22:29:18.903Z` (`2424` entities / `5105` relations / `13755`
+  files); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queue `0`, worklist `0`, delta `0/0/0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); task-sync, ownership, docs, proof,
+  implementation-task, and disconnected gaps remain `0`. Disposition: PM
+  evidence scope complete; [LUC-5348](/LUC/issues/LUC-5348) is already locally
+  verified for Intake routing proof; deploy impact none.
+
+- 2026-06-21: `LUC-5348` Intake routing local proof ladder is complete for
+  the local QA slice from [LUC-5344](/LUC/issues/LUC-5344). Output:
+  `docs/planning/luc-5348-intake-routing-local-proof-ladder.md`.
+  Selected journey: global intake read, proposal-only route command, route
+  proposal lifecycle readback, workspace isolation, canonical route validation,
+  capability manifest, MCP exposure, and existing API assertions. Evidence:
+  `npm run test:api:local` with disposable PostgreSQL
+  `companycore-luc-5348-postgres` on port `55548` passed after server/web
+  build, `31` migrations, seed, and `7/7` API subtests (`CompanyCore v1
+  protected API flow` duration `64046.4203ms`, total `72171.8119ms`); `npm
+  run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all
+  gates pass). Cleanup found no validation DB container and no
+  `chrome-headless-shell` process. Disposition: `DONE`; no repair issue
+  warranted; deploy impact none.
+
+- 2026-06-21: `LUC-5347` Relationship and Operating Graph local proof ladder
+  is complete for the local QA slice from [LUC-5344](/LUC/issues/LUC-5344).
+  Output:
+  `docs/planning/luc-5347-relationship-operating-graph-proof-ladder.md`.
+  Selected journey: Relationship context, relationship graph, and selected
+  operating-area graph read behavior mapped to route modules, capability
+  manifest, MCP reader exposure, and existing API assertions. Evidence:
+  `npm run test:api:local` with disposable PostgreSQL
+  `companycore-luc-5347-postgres` on port `55547` passed after server/web
+  build, `31` migrations, seed, and `7/7` API subtests (`CompanyCore v1
+  protected API flow` duration `73316.9445ms`, total `93471.0197ms`); `npm
+  run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all
+  gates pass). Cleanup found no validation DB container and no
+  `chrome-headless-shell` process. Disposition: `DONE`; no repair issue
+  warranted; deploy impact none.
+
 - 2026-06-20: `LUC-5354` source-control closure for
   [LUC-5350](/LUC/issues/LUC-5350) is complete locally. Output:
   `docs/planning/luc-5354-source-control-closure-for-luc-5350-evidence-packet.md`.

@@ -1,5 +1,47 @@
 # MVP Next Commits
 
+- 2026-06-21: `LUC-5364` source-control closure is complete locally for the
+  [LUC-5359](/LUC/issues/LUC-5359) evidence packet. Closure packet:
+  `docs/planning/luc-5364-source-control-closure-for-luc-5359-evidence-packet.md`.
+  Proof: dirty set classified as generated architecture/status exports,
+  state/context/planning evidence, the [LUC-5359](/LUC/issues/LUC-5359)
+  evidence packet, and carried same-wave [LUC-5347](/LUC/issues/LUC-5347) /
+  [LUC-5348](/LUC/issues/LUC-5348) proof packets; `git diff --check` PASS
+  with LF-to-CRLF warnings only; generated architecture JSON parse PASS at
+  `2026-06-20T22:29:18.903Z` with `2424` entities / `5105` relations; scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`). Push held for future release/source-ref batching; deploy impact
+  none.
+
+- 2026-06-21: `LUC-5348` Intake routing local proof ladder is complete.
+  Evidence packet:
+  `docs/planning/luc-5348-intake-routing-local-proof-ladder.md`. Proof:
+  selected `/v1/intake`, `/v1/intake/actions/propose-route`, and
+  `/v1/intake/route-proposals` behavior mapped to route module, capability
+  manifest, MCP exposure, agent key profiles, and existing
+  `src/tests/api.test.ts` assertions; `npm run test:api:local` PASS against
+  disposable PostgreSQL `companycore-luc-5348-postgres` on port `55548` after
+  server/web build, `31` migrations, seed, and `7/7` API subtests; `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues
+  `0`, delta `0/0/0`). No repair issue is warranted; protected live provider,
+  production, and browser proof remain separate gates.
+
+- 2026-06-21: `LUC-5347` Relationship and Operating Graph local proof ladder
+  is complete. Evidence packet:
+  `docs/planning/luc-5347-relationship-operating-graph-proof-ladder.md`.
+  Proof: selected `/v1/relationships/context`, `/v1/relationships/graph`, and
+  `/v1/operating-graph/areas/:areaKey` read behavior mapped to route modules,
+  capability manifest, MCP reader exposure, and existing `src/tests/api.test.ts`
+  assertions; `npm run test:api:local` PASS against disposable PostgreSQL
+  `companycore-luc-5347-postgres` on port `55547` after server/web build,
+  `31` migrations, seed, and `7/7` API subtests; `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues
+  `0`, delta `0/0/0`). No repair issue is warranted; protected live provider,
+  production, and browser proof remain separate gates.
+
 - 2026-06-20: `LUC-5354` source-control closure is complete locally for the
   [LUC-5350](/LUC/issues/LUC-5350) evidence packet. Closure packet:
   `docs/planning/luc-5354-source-control-closure-for-luc-5350-evidence-packet.md`.

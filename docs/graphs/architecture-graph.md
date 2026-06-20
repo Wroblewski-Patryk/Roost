@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T22:13:24.166Z
+Generated: 2026-06-20T22:29:18.903Z
 
 ## Canonical Exports
 
@@ -1204,6 +1204,9 @@ Generated: 2026-06-20T22:13:24.166Z
 | documents | document:luc-5337-source-control-closure-for-luc-5336-evidence-packet:6ee2d938bd | module:docs:6784d83cb0 | docs/planning/luc-5337-source-control-closure-for-luc-5336-evidence-packet.md |
 | documents | document:luc-5338-read-only-department-intelligence-proof-ladder:00f2b9df8f | module:docs:6784d83cb0 | docs/planning/luc-5338-read-only-department-intelligence-proof-ladder.md |
 | documents | document:luc-5344-known-state-evidence-and-architecture-baseline:25307e25ff | module:docs:6784d83cb0 | docs/planning/luc-5344-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5346-source-control-closure-for-luc-5344-evidence-packet:6842e6e539 | module:docs:6784d83cb0 | docs/planning/luc-5346-source-control-closure-for-luc-5344-evidence-packet.md |
+| documents | document:luc-5350-known-state-evidence-and-architecture-baseline:4520f8e744 | module:docs:6784d83cb0 | docs/planning/luc-5350-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5354-source-control-closure-for-luc-5350-evidence-packet:1d5c52a69f | module:docs:6784d83cb0 | docs/planning/luc-5354-source-control-closure-for-luc-5350-evidence-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-06-20T22:13:24.166Z
 | documents | document:mgmt-dept-001-management-department-catalog:4af410d0ef | module:docs:6784d83cb0 | docs/planning/management-department-catalog-task-contract.md |
 | documents | document:migration:054325cce6 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0031.md |
 | documents | document:migration:070f417602 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0016.md |
-| documents | document:migration:08a69198ac | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0026.md |
-| documents | document:migration:168f899a1c | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0006.md |
-| documents | document:migration:19382cb8b4 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0025.md |

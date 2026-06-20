@@ -1,5 +1,51 @@
 # Next Steps
 
+- `LUC-5364` source-control closure for
+  [LUC-5359](/LUC/issues/LUC-5359) is complete locally. Closure packet:
+  `docs/planning/luc-5364-source-control-closure-for-luc-5359-evidence-packet.md`.
+  Verification: `git diff --check` PASS with LF-to-CRLF warnings only;
+  generated architecture JSON parse PASS (`2424` entities / `5105` relations,
+  generated `2026-06-20T22:29:18.903Z`); scoped high-confidence
+  secret/private-key scan PASS with `0` matches; `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta
+  `0/0/0`). Push remains held for future release/source-ref batching; deploy
+  impact none. Remaining owner/action: runtime secret owner/board for
+  protected target proof when explicitly approved.
+
+- `LUC-5359` PM known-state evidence pass is complete locally with
+  source-control closure delegated to [LUC-5364](/LUC/issues/LUC-5364).
+  Evidence packet:
+  `docs/planning/luc-5359-known-state-evidence-and-architecture-baseline.md`.
+  Remaining product proof owner/action: none from this pass; [LUC-5348](/LUC/issues/LUC-5348)
+  is already recorded locally as verified done. Do not duplicate it.
+
+- `LUC-5348` Intake routing local proof ladder is complete. Evidence packet:
+  `docs/planning/luc-5348-intake-routing-local-proof-ladder.md`.
+  Verification: `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5348-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55548` `npm run test:api:local` PASS after
+  server/web build, `31` migrations, seed, and `7/7` API subtests; `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`). Cleanup found no validation DB
+  container and no `chrome-headless-shell` process. No repair issue is
+  warranted. Remaining owner/action: source-control closure for the
+  documentation/state evidence packet if the board requires a local commit
+  bundle; protected production/provider/browser proof remains separately
+  gated.
+
+- `LUC-5347` Relationship and Operating Graph local proof ladder is complete.
+  Evidence packet:
+  `docs/planning/luc-5347-relationship-operating-graph-proof-ladder.md`.
+  Verification: `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5347-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55547` `npm run test:api:local` PASS after
+  server/web build, `31` migrations, seed, and `7/7` API subtests; `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`). Cleanup found no validation DB
+  container and no `chrome-headless-shell` process. No repair issue is
+  warranted. Remaining QA owner/action: [LUC-5348](/LUC/issues/LUC-5348)
+  Intake routing proof.
+
 - `LUC-5354` source-control closure for the
   [LUC-5350](/LUC/issues/LUC-5350) Roost IPM known-state evidence packet is
   complete locally. Closure packet:
@@ -10,9 +56,8 @@
   secret/private-key scan PASS with `0` matches; `npm run architecture:status`
   PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`).
   Push remains held for future release/source-ref batching; deploy impact
-  none. Next QA owners/actions remain [LUC-5347](/LUC/issues/LUC-5347)
-  Relationship/Operating Graph depth proof and [LUC-5348](/LUC/issues/LUC-5348)
-  Intake routing proof.
+  none. Next QA owner/action remains [LUC-5348](/LUC/issues/LUC-5348)
+  Intake routing proof after [LUC-5347](/LUC/issues/LUC-5347) completed.
 
 - `LUC-5350` Roost IPM known-state evidence baseline is complete locally,
   with source-control closure completed by [LUC-5354](/LUC/issues/LUC-5354).
@@ -25,10 +70,10 @@
   check:route-capabilities` PASS (`180` manifest routes, `35` route files).
   Task-sync, owner, docs, proof, implementation-task, and disconnected gaps
   remain `0`; `implementation_without_tests=1162` remains scanner-level
-  confidence debt. Next owners/actions: QA and Verification Engineer
-  [LUC-5347](/LUC/issues/LUC-5347) Relationship/Operating Graph depth proof
-  and [LUC-5348](/LUC/issues/LUC-5348) Intake routing proof. Protected target
-  proof remains approval/credential gated.
+  confidence debt. Next owner/action: QA and Verification Engineer
+  [LUC-5348](/LUC/issues/LUC-5348) Intake routing proof after
+  [LUC-5347](/LUC/issues/LUC-5347) completed. Protected target proof remains
+  approval/credential gated.
 
 - `LUC-5346` source-control closure for the
   [LUC-5344](/LUC/issues/LUC-5344) Roost PM known-state evidence packet is
