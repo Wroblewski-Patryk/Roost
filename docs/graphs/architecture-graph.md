@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T02:16:08.600Z
+Generated: 2026-06-20T02:45:22.785Z
 
 ## Canonical Exports
 
@@ -1042,6 +1042,9 @@ Generated: 2026-06-20T02:16:08.600Z
 | documents | document:luc-4748-known-state-evidence-and-architecture-baseline:e30d6fc7a6 | module:docs:6784d83cb0 | docs/planning/luc-4748-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4751-source-control-closure-for-luc-4748-known-state-packet:eaccad52d2 | module:docs:6784d83cb0 | docs/planning/luc-4751-source-control-closure-for-luc-4748-evidence-packet.md |
 | documents | document:luc-4754-residual-generated-drift-after-luc-4739:b15bdd8dab | module:docs:6784d83cb0 | docs/planning/luc-4754-residual-generated-drift-after-luc-4739.md |
+| documents | document:luc-4757-known-state-evidence-and-architecture-baseline:7f5d77caf7 | module:docs:6784d83cb0 | docs/planning/luc-4757-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4762-source-control-closure-for-luc-4757-known-state-packet:c1691eed7b | module:docs:6784d83cb0 | docs/planning/luc-4762-source-control-closure-for-luc-4757-evidence-packet.md |
+| documents | document:luc-4763-first-proof-ladder-target-from-implementation-without-tests:b8667470a3 | module:docs:6784d83cb0 | docs/planning/luc-4763-first-proof-ladder-target-from-implementation-without-tests.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-06-20T02:16:08.600Z
 | documents | document:post-v1-google-drive-docs:db7d89087c | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0135.md |
 | documents | document:post-v1-google-drive-sheets:95e9e34eb1 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0136.md |
 | documents | document:post-v1-intake-actions-propose-route:9694559ca0 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0137.md |
-| documents | document:post-v1-integration-settings-clickup-discover:3ce4929efd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0138.md |
-| documents | document:post-v1-integration-settings-clickup-events-retry-failed:94917e0f1b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0139.md |
-| documents | document:post-v1-integration-settings-clickup-maintenance-run:918d2ad974 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0140.md |
