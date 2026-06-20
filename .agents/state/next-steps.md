@@ -4,6 +4,49 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4737` source-control closure for the `LUC-4731` Roost known-state
+   evidence packet is complete.
+   - Output:
+     `docs/planning/luc-4737-source-control-closure-for-luc-4731-evidence-packet.md`.
+   - Decision:
+     preserve the coherent evidence-only batch through LUC-4731 because
+     generated architecture reports and source-of-truth state pointers are
+     cumulative.
+   - Proof:
+     `git status --short --branch -uall` showed `main...origin/main [ahead 25]`
+     before closure with generated architecture/status files, state pointers,
+     and the LUC-4731 planning packet dirty or untracked; `git diff --stat`
+     showed `15 files changed, 6803 insertions(+), 6568 deletions(-)` before
+     adding the closure packet and closure state notes; `git diff --check`
+     result is recorded in the closure packet and issue update.
+   - Commit/push:
+     local commit created for the coherent packet; push held for a future
+     release batch or explicit source-ref/deploy need.
+
+1. `LUC-4731` Roost known-state evidence and architecture baseline is
+   complete.
+   - Output:
+     `docs/planning/luc-4731-known-state-evidence-and-architecture-baseline.md`.
+   - PM decision:
+     local architecture readiness remains green; no new PM-owned
+     implementation repair child is needed from this pass.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2249`,
+     `relations=4423`, `files=13537`, `0` generated files excluded by
+     prefix); `npm run architecture:status` PASS (`GREEN`, graph
+     `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+     all gates pass); task-sync readback showed `0` actionable/raw task-link
+     gaps and `0` verified-without-proof gaps; architecture health showed
+     `implementation_without_tests=1161`; dependency report showed `437`
+     relations / `95` entities; ownership split was `Docs Memory Lead=913`,
+     `Engineering Delivery Lead=1335`, `Roost Project Manager=1`;
+     `HEAD=b8f4398`.
+   - Next owner/action:
+     [LUC-4737](/LUC/issues/LUC-4737) owns generated/status file changes plus
+     [LUC-4731](/LUC/issues/LUC-4731) planning/state sync. Protected runtime proof remains under
+     [LUC-2700](/LUC/issues/LUC-2700) / LUC-4438-style fresh recheck and
+     requires approved environment secret injection plus one-run approval.
+
 1. `LUC-4721` source-control closure for the `LUC-4718` Roost known-state
    evidence packet is complete.
    - Output:

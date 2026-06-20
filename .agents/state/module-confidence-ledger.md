@@ -1,6 +1,48 @@
 # Module Confidence Ledger
 
-Last updated: 2026-06-19
+Last updated: 2026-06-20
+
+Roost source-control closure note: LUC-4737 is VERIFIED_DONE for the
+LUC-4731 known-state evidence packet. The closure packet is recorded in
+`docs/planning/luc-4737-source-control-closure-for-luc-4731-evidence-packet.md`.
+Evidence: `git status --short --branch -uall` showed
+`main...origin/main [ahead 25]` before closure with generated
+architecture/status files, state pointers, and the LUC-4731 planning packet
+dirty or untracked; `git diff --stat` showed `15 files changed, 6803
+insertions(+), 6568 deletions(-)` before the closure packet and closure state
+notes. Classification: evidence-only docs, source-of-truth state, and generated
+architecture-awareness exports through LUC-4731. Commit proof and
+`git diff --check` result are recorded in the closure packet and Paperclip
+issue update; push held. No runtime code, schema, migration, protected smoke,
+deploy, push, restart, production mutation, credential access, secret
+disclosure, server, browser, database, Docker, or watcher process occurred.
+
+Roost known-state baseline note: LUC-4731 is VERIFIED_DONE as a Roost Project
+Manager evidence lane. The packet is recorded in
+`docs/planning/luc-4731-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2249`,
+`relations=4423`, `files=13537`, `0` generated files excluded by prefix);
+`npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task-sync
+readback showed `0` actionable/raw task-link gaps and `0` verified entities
+without proof evidence; architecture health showed
+`implementation_without_tests=1161`; dependency report showed `437`
+dependency relations / `95` entities with dependencies; ownership report
+showed `Docs Memory Lead=913`, `Engineering Delivery Lead=1335`, and
+`Roost Project Manager=1`; `HEAD=b8f4398`. Readiness delta: local architecture
+remains green, no new PM-owned readiness gap was found, and no implementation
+child issue was created. [LUC-4737](/LUC/issues/LUC-4737) owns the
+generated/status evidence packet plus [LUC-4731](/LUC/issues/LUC-4731)
+planning/state sync. Protected
+deploy-smoke was not rerun because this baseline carried no fresh one-run
+approval or credential fact. No runtime code, schema, migration, protected
+smoke, deploy, push, restart, production mutation, credential access, secret
+disclosure, server, browser, database, Docker, or watcher process occurred.
+Next proof/fix: protected runtime proof remains under
+[LUC-2700](/LUC/issues/LUC-2700) / LUC-4438-style fresh recheck and requires
+approved environment secret injection plus a fresh one-run approval; future QA
+proof ladder should select one high-priority workflow from the `1161`
+implementation-without-test-link signal after source-control closure is stable.
 
 Roost source-control closure note: LUC-4651 is VERIFIED_DONE for the
 LUC-4646 known-state evidence packet. The closure packet is recorded in
