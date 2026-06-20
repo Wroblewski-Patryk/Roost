@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T19:43:44.970Z
+Generated: 2026-06-20T20:13:23.962Z
 
 ## Canonical Exports
 
@@ -1188,6 +1188,8 @@ Generated: 2026-06-20T19:43:44.970Z
 | documents | document:luc-5284-known-state-evidence-and-architecture-baseline:623bde1d48 | module:docs:6784d83cb0 | docs/planning/luc-5284-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5286-source-control-closure-for-luc-5283-evidence-packet:559f022668 | module:docs:6784d83cb0 | docs/planning/luc-5286-source-control-closure-for-luc-5283-evidence-packet.md |
 | documents | document:luc-5287-qa-proof-ladder-duplicate-disposition:56ed5e8993 | module:docs:6784d83cb0 | docs/planning/luc-5287-qa-proof-ladder-duplicate-disposition.md |
+| documents | document:luc-5292-source-control-closure-for-luc-5291-evidence-refresh:cc70dce114 | module:docs:6784d83cb0 | docs/planning/luc-5292-source-control-closure-for-luc-5291-evidence-refresh.md |
+| documents | document:luc-5293-tasks-and-clickup-task-lifecycle-proof-ladder:75b74f1be7 | module:docs:6784d83cb0 | docs/planning/luc-5293-tasks-clickup-task-lifecycle-proof-ladder.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-06-20T19:43:44.970Z
 | documents | document:migration:7e5b143870 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0015.md |
 | documents | document:migration:8b41e0264e | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0021.md |
 | documents | document:migration:977573f012 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0003.md |
-| documents | document:migration:ba683087fa | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0010.md |
-| documents | document:migration:bb5b49b4ec | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0007.md |
