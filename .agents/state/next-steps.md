@@ -4,6 +4,40 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4992` source-control closure is complete locally for the
+   [LUC-4988](/LUC/issues/LUC-4988) known-state evidence packet.
+   - Output:
+     `docs/planning/luc-4992-source-control-closure-for-luc-4988-known-state-evidence-packet.md`.
+   - Proof:
+     pre-closure `HEAD=b61d82676cd971bceb6cbc6a0ce71d320cf2e1a4`; branch
+     `main...origin/main [ahead 52]`; dirty set matched the generated
+     architecture/status artifacts, Roost state/context updates, and the
+     [LUC-4988](/LUC/issues/LUC-4988) planning packet. `git diff --check`
+     passed with LF-to-CRLF warnings only; generated graph/health JSON parsed.
+   - Next owner/action:
+     no source-control follow-up remains for this packet. Push remains held
+     for a future release batch or explicit source-ref/deploy need. Protected
+     production proof remains release/credential gated.
+
+1. `LUC-4988` known-state evidence and architecture baseline is complete for
+   Roost PM scope.
+   - Output:
+     `docs/planning/luc-4988-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2322`,
+     `relations=4712`, `files=13649`, generated
+     `2026-06-20T09:42:47.367Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task/proof/owner gaps remain `0`;
+     architecture health reports `implementation_without_tests=1162`.
+   - Next owner/action:
+     [LUC-4992](/LUC/issues/LUC-4992) owns source-control closure for the
+     generated/status/state dirty set.
+     No duplicate broad QA issue was opened because [LUC-4957](/LUC/issues/LUC-4957)
+     already curated the recurring missing-test signal as product-journey
+     proof debt/scanner granularity. Protected production proof remains
+     release/credential gated.
+
 1. `LUC-4982` source-control closure is complete locally for the
    [LUC-4978](/LUC/issues/LUC-4978) known-state evidence packet.
    - Output:

@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T09:13:05.296Z
+Generated: 2026-06-20T09:42:47.367Z
 
 ## Canonical Exports
 
@@ -1104,6 +1104,8 @@ Generated: 2026-06-20T09:13:05.296Z
 | documents | document:luc-4965-source-control-closure-for-luc-4962-known-state-evidence-packet:c89b703bfa | module:docs:6784d83cb0 | docs/planning/luc-4965-source-control-closure-for-luc-4962-known-state-evidence-packet.md |
 | documents | document:luc-4968-known-state-evidence-and-architecture-baseline:b0ce55d5e4 | module:docs:6784d83cb0 | docs/planning/luc-4968-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4975-source-control-closure-for-luc-4968-known-state-evidence-packet:94e148a9f7 | module:docs:6784d83cb0 | docs/planning/luc-4975-source-control-closure-for-luc-4968-known-state-evidence-packet.md |
+| documents | document:luc-4978-known-state-evidence-and-architecture-baseline:d285d06c59 | module:docs:6784d83cb0 | docs/planning/luc-4978-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4982-source-control-closure-for-luc-4978-known-state-evidence-packet:4b5170aa3a | module:docs:6784d83cb0 | docs/planning/luc-4982-source-control-closure-for-luc-4978-known-state-evidence-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-06-20T09:13:05.296Z
 | documents | document:patch-v1-operating-model-knowledge-roots-id:9afa7215b0 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0106.md |
 | documents | document:patch-v1-operating-model-storage-locations-id:7d1da3eb94 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0107.md |
 | documents | document:patch-v1-operations-task-lists-id:e48aa333ce | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0108.md |
-| documents | document:patch-v1-operations-work-items-id:83e2fd83a6 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-OPERATIONS-UPDATE-WORK-ITEM.md |
-| documents | document:patch-v1-pipeline-stages-id:6a11a0ee7b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0109.md |
