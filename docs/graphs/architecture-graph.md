@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T07:12:46.333Z
+Generated: 2026-06-20T07:44:35.962Z
 
 ## Canonical Exports
 
@@ -1086,6 +1086,12 @@ Generated: 2026-06-20T07:12:46.333Z
 | documents | document:luc-4900-known-state-evidence-and-architecture-baseline:68de691a71 | module:docs:6784d83cb0 | docs/planning/luc-4900-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4905-source-control-closure-for-luc-4900-known-state-evidence-packet:88ff2c9a1c | module:docs:6784d83cb0 | docs/planning/luc-4905-source-control-closure-for-luc-4900-known-state-evidence-packet.md |
 | documents | document:luc-4906-legal-operating-graph-overview-proof-ladder:a775f4a8cf | module:docs:6784d83cb0 | docs/planning/luc-4906-legal-proof-ladder.md |
+| documents | document:luc-4916-known-state-evidence-and-architecture-baseline:1c3bd384d9 | module:docs:6784d83cb0 | docs/planning/luc-4916-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4919-source-control-closure-for-luc-4916-known-state-evidence-packet:d447d1be6d | module:docs:6784d83cb0 | docs/planning/luc-4919-source-control-closure-for-luc-4916-known-state-evidence-packet.md |
+| documents | document:luc-4920-innovation-operating-graph-overview-proof-ladder:c9342f2078 | module:docs:6784d83cb0 | docs/planning/luc-4920-innovation-proof-ladder.md |
+| documents | document:luc-4921-roost-companycore-readiness-and-milestone-review:03f14d51de | module:docs:6784d83cb0 | docs/planning/luc-4921-roost-companycore-readiness-and-milestone-review.md |
+| documents | document:luc-4926-source-control-closure-for-luc-4920-innovation-proof-packet:e88b81be92 | module:docs:6784d83cb0 | docs/planning/luc-4926-source-control-closure-for-luc-4920-innovation-proof-packet.md |
+| documents | document:luc-4927-12-management-proof-selection:8eb8567370 | module:docs:6784d83cb0 | docs/planning/luc-4927-management-proof-selection.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1212,9 +1218,3 @@ Generated: 2026-06-20T07:12:46.333Z
 | documents | document:people-agents-directory-usability-audit:746a2eb7e0 | module:docs:6784d83cb0 | docs/ux/people-agents-directory-usability-audit-2026-05-18.md |
 | documents | document:people-agents-directory-ux-and-backend-data-audit:a46a6ee0da | module:docs:6784d83cb0 | docs/ux/people-agents-directory-ux-backend-audit-2026-05-18.md |
 | documents | document:people-agents-managed-table:b7b238717d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/UI-PEOPLE-AGENTS-TABLE.md |
-| documents | document:people-agents-premium-ux-contract:b60f05b75e | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-PEOPLE-AGENTS-CONTRACT.md |
-| documents | document:people-agents-workforce-v1-task-contract:842838a1d1 | module:docs:6784d83cb0 | docs/planning/people-agents-workforce-v1-task-contract.md |
-| documents | document:people-agents:008ddd8eeb | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PAGE-AUTO-0007.md |
-| documents | document:people-and-agents-directory:36e6c24dff | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-PEOPLE-AGENTS-DIRECTORY.md |
-| documents | document:peopleagentsroute-component:d61ff4b124 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/COMP-PEOPLE-AGENTS-ROUTE.md |
-| documents | document:persistent-agent-runtime-playbook:2bd27bd187 | module:docs:6784d83cb0 | docs/operations/persistent-agent-runtime-playbook.md |

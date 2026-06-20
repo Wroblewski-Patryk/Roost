@@ -4,6 +4,38 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-4935-SOURCE-CONTROL-CLOSURE
+- Status: VERIFIED_DONE
+- Selected objective: Close local source control for the generated
+  architecture-awareness refresh artifacts produced by
+  [LUC-4931](/LUC/issues/LUC-4931).
+- Why this mission now: Paperclip scoped the heartbeat to
+  [LUC-4935](/LUC/issues/LUC-4935), the source-control sidecar created by
+  [LUC-4931](/LUC/issues/LUC-4931) after the Roost known-state architecture
+  refresh.
+- Scope: issue-context readback, generated artifact dirty-state
+  classification, SCM hygiene, closure packet, source-of-truth synchronization,
+  and one local commit if the batch is coherent.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4935-source-control-closure-for-luc-4931-architecture-awareness-refresh-artifacts.md`.
+- Evidence: [LUC-4935](/LUC/issues/LUC-4935) had no comments and no blockers;
+  parent [LUC-4931](/LUC/issues/LUC-4931) was already `done`; pre-closure
+  `HEAD=63d4afdbcd1dd68d29a9950d77c6503d4d811e6c`; branch
+  `main...origin/main [ahead 45]`; dirty set matched the nine expected
+  generated architecture/status outputs; `git diff --stat` reported
+  `9 files changed, 7142 insertions(+), 6796 deletions(-)`; `git diff --check`
+  passed with LF-to-CRLF warnings only; JSON parse check passed for generated
+  graph/health JSON; secret-word scan found source identifiers and paths only,
+  not secret values or runtime logs.
+- Final disposition: done after local commit; final immutable SHA is recorded
+  in the Paperclip closure comment. Push remains held for a future release
+  batch or explicit source-ref/deploy need. Deploy impact none.
+
+## Previous Mission
+
 - Mission ID: LUC-4926-SOURCE-CONTROL-CLOSURE
 - Status: VERIFIED_DONE
 - Selected objective: Close local source control for the

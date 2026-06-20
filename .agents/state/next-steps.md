@@ -4,6 +4,23 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4935` source-control closure is complete locally for the
+   [LUC-4931](/LUC/issues/LUC-4931) generated architecture-awareness refresh
+   artifacts.
+   - Output:
+     `docs/planning/luc-4935-source-control-closure-for-luc-4931-architecture-awareness-refresh-artifacts.md`.
+   - Proof:
+     issue context had no comments or blockers; parent
+     [LUC-4931](/LUC/issues/LUC-4931) was already `done`; pre-closure
+     `HEAD=63d4afdbcd1dd68d29a9950d77c6503d4d811e6c`; branch
+     `main...origin/main [ahead 45]`; SCM readback classified exactly the
+     expected nine generated architecture/status outputs as the dirty set;
+     `git diff --check` passed with LF-to-CRLF warnings only; generated
+     graph/health JSON parsed successfully.
+   - Next owner/action:
+     push remains held for a future release batch or explicit source-ref/deploy
+     need. Protected production proof remains release/credential gated.
+
 1. `LUC-4926` source-control closure is complete for the current
    Roost evidence/state batch.
    - Output:

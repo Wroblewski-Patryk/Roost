@@ -2,6 +2,23 @@
 
 ## Now
 
+- 2026-06-20: `LUC-4935` source-control closure is complete locally for the
+  generated architecture-awareness refresh artifacts from
+  [LUC-4931](/LUC/issues/LUC-4931). Output:
+  `docs/planning/luc-4935-source-control-closure-for-luc-4931-architecture-awareness-refresh-artifacts.md`.
+  Evidence: issue context had no comments or blockers; parent
+  [LUC-4931](/LUC/issues/LUC-4931) was already `done`; pre-closure
+  `HEAD=63d4afdbcd1dd68d29a9950d77c6503d4d811e6c`; branch
+  `main...origin/main [ahead 45]`; SCM readback classified exactly the nine
+  expected generated architecture/status outputs as the dirty set. `git diff
+  --stat` reported `9 files changed, 7142 insertions(+), 6796 deletions(-)`;
+  `git diff --check` passed with LF-to-CRLF warnings only; generated
+  graph/health JSON parsed successfully; secret-word scan found source
+  identifiers and paths only, not secret values or runtime logs. Local commit
+  created; final immutable SHA is recorded in the Paperclip closure comment.
+  Push held for a future release batch or explicit source-ref/deploy need.
+  Deploy impact: none. Disposition: `DONE`.
+
 - 2026-06-20: `LUC-4926` source-control closure is complete for the
   [LUC-4920](/LUC/issues/LUC-4920) Innovation proof packet, the
   [LUC-4921](/LUC/issues/LUC-4921) PM readiness state, and adjacent completed
