@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T21:16:05.629Z
+Generated: 2026-06-20T21:48:57.245Z
 
 ## Canonical Exports
 
@@ -1197,6 +1197,9 @@ Generated: 2026-06-20T21:16:05.629Z
 | documents | document:luc-5314-source-control-closure-for-luc-5313-evidence-packet:0607170919 | module:docs:6784d83cb0 | docs/planning/luc-5314-source-control-closure-for-luc-5313-evidence-packet.md |
 | documents | document:luc-5315-auth-workspace-api-key-authority-proof-ladder:78ba167753 | module:docs:6784d83cb0 | docs/planning/luc-5315-auth-workspace-api-key-authority-proof-ladder.md |
 | documents | document:luc-5317-known-state-evidence-and-architecture-baseline:a87738fe6b | module:docs:6784d83cb0 | docs/planning/luc-5317-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5331-known-state-evidence-and-architecture-baseline:cf6159f6f7 | module:docs:6784d83cb0 | docs/planning/luc-5331-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5332-source-control-closure-for-luc-5331-evidence-packet:549a3f161b | module:docs:6784d83cb0 | docs/planning/luc-5332-source-control-closure-for-luc-5331-evidence-packet.md |
+| documents | document:luc-5333-department-and-workforce-authority-proof-ladder:696c242c89 | module:docs:6784d83cb0 | docs/planning/luc-5333-department-workforce-authority-proof-ladder.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-06-20T21:16:05.629Z
 | documents | document:migration:2be89b1f80 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0024.md |
 | documents | document:migration:35ae1796c5 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0020.md |
 | documents | document:migration:3c251f84e1 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0014.md |
-| documents | document:migration:3f14a960a7 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0029.md |
-| documents | document:migration:46c4e27ade | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0028.md |
-| documents | document:migration:5133b665ba | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0012.md |
