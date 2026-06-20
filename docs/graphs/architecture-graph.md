@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T12:58:07.550Z
+Generated: 2026-06-20T13:15:34.313Z
 
 ## Canonical Exports
 
@@ -1127,6 +1127,7 @@ Generated: 2026-06-20T12:58:07.550Z
 | documents | document:luc-5083-source-control-closure-for-luc-5078-known-state-evidence-packet:538bb46e5e | module:docs:6784d83cb0 | docs/planning/luc-5083-source-control-closure-for-luc-5078-known-state-evidence-packet.md |
 | documents | document:luc-5084-authenticated-browser-route-proof:229bf9170f | module:docs:6784d83cb0 | docs/planning/luc-5084-authenticated-browser-route-proof.md |
 | documents | document:luc-5090-known-state-evidence-and-architecture-baseline:250bba9d59 | module:docs:6784d83cb0 | docs/planning/luc-5090-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5095-source-control-closure-for-luc-5090-evidence-packet:169a48f375 | module:docs:6784d83cb0 | docs/planning/luc-5095-source-control-closure-for-luc-5090-evidence-packet.md |
 | documents | document:luc-5096-tmp-proof-harness-scanner-hygiene:54810f2b8a | module:docs:6784d83cb0 | docs/planning/luc-5096-tmp-proof-harness-scanner-hygiene.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
@@ -1217,4 +1218,3 @@ Generated: 2026-06-20T12:58:07.550Z
 | documents | document:package-json-scripts:db131fbecc | module:docs:6784d83cb0 | docs/architecture/nodes/generated/CONFIG-PACKAGE-JSON.md |
 | documents | document:paperclip-agent-config-sync-requested:71d452a382 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/EVENT-PAPERCLIP-SYNC-REQUESTED.md |
 | documents | document:paperclip-company-building-architecture-direction:6da45b3166 | module:docs:6784d83cb0 | docs/planning/paperclip-company-building-architecture-task-contract.md |
-| documents | document:paperclip-companycore-adapter-runbook:198fe022d1 | module:docs:6784d83cb0 | docs/operations/paperclip-companycore-adapter-runbook.md |

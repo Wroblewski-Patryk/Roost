@@ -2,6 +2,46 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5111` source-control closure completed locally for the
+  [LUC-5104](/LUC/issues/LUC-5104) evidence packet and adjacent
+  [LUC-5107](/LUC/issues/LUC-5107) shared generated/status refresh. Output:
+  `docs/planning/luc-5111-source-control-closure-for-luc-5104-evidence-packet.md`.
+  SCM hygiene PASS: `git diff --check` reported only LF-to-CRLF warnings;
+  generated architecture-awareness JSON parsed with `2345` entities / `4804`
+  relations at `2026-06-20T13:15:34.313Z`; scoped high-confidence
+  token/private-key scan found no matching files; `npm run
+  architecture:status` remained GREEN (`454/765/35`, queues `0`, delta
+  `0/0/0`, all gates pass). Push held for future release batch or explicit
+  source-ref/deploy need. Deploy impact: none.
+
+- 2026-06-20: `LUC-5107` known-state architecture baseline completed for
+  Documentation Steward evidence scope. Output:
+  `docs/planning/luc-5107-known-state-evidence-and-architecture-baseline.md`.
+  Scanner proof PASS (`entities=2345`, `relations=4804`, `files=13675`,
+  generated `2026-06-20T13:15:34.313Z`); architecture status PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass). Task/proof/owner gaps are `0`; dependency report remains
+  `437` relations / `95` entities; top health signal is
+  `implementation_without_tests=1162`, already treated as narrow
+  journey-proof debt rather than broad product repair. Follow-up owner/action:
+  [LUC-5112](/LUC/issues/LUC-5112) source-control closure for
+  generated/status outputs. No deploy, push, protected smoke, production
+  mutation, credential access, or secret access occurred.
+
+- 2026-06-20: `LUC-5104` known-state architecture baseline completed for PM
+  evidence scope. Output:
+  `docs/planning/luc-5104-known-state-evidence-and-architecture-baseline.md`.
+  Scanner proof PASS (`entities=2345`, `relations=4804`, `files=13675`,
+  generated `2026-06-20T13:13:34.623Z`); architecture status PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass). Task/proof/owner gaps are `0`; dependency report remains
+  `437` relations / `95` entities; top health signal is
+  `implementation_without_tests=1162`, already treated as narrow
+  journey-proof debt rather than broad product repair. Follow-up owner:
+  [LUC-5111](/LUC/issues/LUC-5111) for source-control closure. No deploy,
+  push, protected smoke, production mutation, credential access, or secret
+  access occurred.
+
 - 2026-06-20: `LUC-5095` source-control closure completed locally for the
   [LUC-5090](/LUC/issues/LUC-5090) evidence packet and carried
   [LUC-5084](/LUC/issues/LUC-5084) / [LUC-5096](/LUC/issues/LUC-5096)

@@ -2,6 +2,56 @@
 
 Last updated: 2026-06-20
 
+Source-control note: [LUC-5111](/LUC/issues/LUC-5111) is VERIFIED_DONE for
+the [LUC-5104](/LUC/issues/LUC-5104) generated/status evidence batch, with the
+adjacent [LUC-5107](/LUC/issues/LUC-5107) evidence refresh preserved in the
+same shared generated/state commit because the later scanner pass overwrote
+the same architecture-awareness outputs. Closure packet:
+`docs/planning/luc-5111-source-control-closure-for-luc-5104-evidence-packet.md`.
+Evidence: pre-closure
+`HEAD=79fe1670640e7ad474739174a10729d797606bc0`; branch
+`main...origin/main [ahead 62]`; `git diff --check` passed with LF-to-CRLF
+warnings only; generated architecture-awareness JSON parsed at `2345`
+entities / `4804` relations, generated `2026-06-20T13:15:34.313Z`; scoped
+high-confidence token/private-key scan found no matching files; `npm run
+architecture:status` remained GREEN. Push remains held for a future release
+batch or explicit source-ref/deploy need. Deploy impact: none.
+
+Roost known-state baseline note: LUC-5107 is VERIFIED_DONE for the
+Documentation Steward evidence lane. The packet is recorded in
+`docs/planning/luc-5107-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2345`,
+`relations=4804`, `files=13675`, generated at
+`2026-06-20T13:15:34.313Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task synchronization reports `0` task-link gaps, `0`
+implementation-without-task gaps, and `0` verified-without-proof gaps;
+ownership gaps `0`; dependency report shows `437` relations / `95` entities;
+architecture health reports `implementation_without_tests=1162`, actionable
+`1153`, classified inferred noise `9`. Confidence classification: local
+architecture and task/proof synchronization are verified; remaining confidence
+debt is narrow journey-proof debt plus [LUC-5112](/LUC/issues/LUC-5112)
+source-control closure, not a Documentation Steward-owned implementation
+defect. Protected production proof remains release/credential gated.
+
+Roost known-state baseline note: LUC-5104 is VERIFIED_DONE for the Roost
+Project Manager evidence lane. The packet is recorded in
+`docs/planning/luc-5104-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2345`,
+`relations=4804`, `files=13675`, generated at
+`2026-06-20T13:13:34.623Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task synchronization reports `0` task-link gaps, `0`
+implementation-without-task gaps, and `0` verified-without-proof gaps;
+ownership gaps `0`; dependency report shows `437` relations / `95` entities;
+architecture health reports `implementation_without_tests=1162`, actionable
+`1153`, classified inferred noise `9`. Confidence classification: local
+architecture and task/proof synchronization remain verified; remaining
+confidence debt is narrow journey-proof debt plus source-control closure, not
+a PM-owned implementation defect. Follow-up owner:
+[LUC-5111](/LUC/issues/LUC-5111) for source-control closure. Protected
+production proof remains release/credential gated.
+
 Source-control note: [LUC-5095](/LUC/issues/LUC-5095) is VERIFIED_DONE for
 the [LUC-5090](/LUC/issues/LUC-5090) generated/status evidence batch and
 carried [LUC-5084](/LUC/issues/LUC-5084) / [LUC-5096](/LUC/issues/LUC-5096)

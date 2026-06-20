@@ -2,6 +2,59 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5111` source-control closure is complete locally for the
+  [LUC-5104](/LUC/issues/LUC-5104) known-state evidence packet and adjacent
+  [LUC-5107](/LUC/issues/LUC-5107) shared generated/status refresh.
+  Output:
+  `docs/planning/luc-5111-source-control-closure-for-luc-5104-evidence-packet.md`.
+  Evidence: dirty set classified as coherent evidence-only generated/status
+  outputs, planning packets, and state/context updates; `git diff --check`
+  PASS with LF-to-CRLF warnings only; generated architecture-awareness JSON
+  parsed with `2345` entities / `4804` relations at
+  `2026-06-20T13:15:34.313Z`; scoped high-confidence token/private-key scan
+  found no matching files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass). Push held for future release batch or explicit source-ref/deploy
+  need; deploy impact none. Disposition: `DONE`.
+
+- 2026-06-20: `LUC-5107` known-state evidence and architecture baseline is
+  complete for Documentation Steward scope.
+  Output:
+  `docs/planning/luc-5107-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2345`,
+  `relations=4804`, `files=13675`, generated at
+  `2026-06-20T13:15:34.313Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task-sync reports `0` task-link gaps, `0`
+  implementation-without-task gaps, and `0` verified-without-proof gaps; owner
+  gaps `0`; dependency report `437` relations / `95` entities; architecture
+  health reports `implementation_without_tests=1162`, actionable `1153`.
+  Scope: no runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, server,
+  browser, database, Docker, or watcher process. Disposition: `DONE` for
+  evidence scope after creating [LUC-5112](/LUC/issues/LUC-5112) as the
+  source-control closure lane for generated/status outputs.
+
+- 2026-06-20: `LUC-5104` known-state evidence and architecture baseline is
+  complete for Roost PM scope.
+  Output:
+  `docs/planning/luc-5104-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2345`,
+  `relations=4804`, `files=13675`, generated at
+  `2026-06-20T13:13:34.623Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task-sync reports `0` task-link gaps, `0`
+  implementation-without-task gaps, and `0` verified-without-proof gaps;
+  owner gaps `0`; dependency report `437` relations / `95` entities;
+  architecture health reports `implementation_without_tests=1162` and
+  actionable `1153`. Follow-up:
+  [LUC-5111](/LUC/issues/LUC-5111) for source-control closure of this
+  generated/status packet. Scope: no runtime code, schema, migration,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, secret disclosure, server, browser, database, Docker, or watcher
+  process. Disposition: `DONE` for PM evidence scope after follow-up lane
+  creation.
+
 - 2026-06-20: `LUC-5095` source-control closure is complete locally for the
   [LUC-5090](/LUC/issues/LUC-5090) evidence packet, carried
   [LUC-5084](/LUC/issues/LUC-5084) browser-proof artifacts, and
