@@ -2,6 +2,22 @@
 
 Last updated: 2026-06-20
 
+Architecture health signal note: LUC-4957 is VERIFIED_DONE for curation of
+the recurring `implementation_without_tests=1162` metric. The packet is
+recorded in
+`docs/planning/luc-4957-implementation-without-tests-architecture-health-signal-curation.md`.
+Evidence: the current `docs/graphs/architecture-health.json` export generated
+`2026-06-20T08:13:36.644Z` reports `implementation_without_tests=1162`; the
+exposed 200-item sample contains `43` `src/app.ts` API mount/proxy rows, `7`
+shared UI component singleton rows, and `150` feature/script/API module
+singleton rows. `docs/status/task-synchronization-report.md` remains clean:
+`0` actionable/raw task-link gaps, `0` implementation-without-task gaps, and
+`0` verified-without-proof gaps. Confidence classification: the aggregate
+signal is backlog confidence debt and scanner-inference granularity, not a
+single release blocker or direct implementation queue. Next proof/fix: keep
+future QA work on product journey proof ladders; open scanner classification
+only if mount proxy rows repeatedly displace unproved product journeys.
+
 Roost known-state baseline note: LUC-4941 is VERIFIED_DONE for the Roost
 Project Manager evidence lane. The packet is recorded in
 `docs/planning/luc-4941-known-state-evidence-and-architecture-baseline.md`.

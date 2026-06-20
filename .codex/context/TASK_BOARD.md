@@ -2,6 +2,23 @@
 
 ## Now
 
+- 2026-06-20: `LUC-4957` recurring `implementation_without_tests`
+  architecture-health signal curation is complete.
+  Output:
+  `docs/planning/luc-4957-implementation-without-tests-architecture-health-signal-curation.md`.
+  Evidence: current health export reports `implementation_without_tests=1162`;
+  the exposed 200-item sample includes `43` `src/app.ts` API mount/proxy rows,
+  `7` shared UI component singleton rows, and `150` feature/script/API module
+  singleton rows. Task synchronization remains clean at `0` task-link gaps,
+  `0` implementation-without-task gaps, and `0` verified-without-proof gaps.
+  Decision: no immediate product implementation, broad regression wave, or
+  scanner override is needed from this signal. Keep QA work on module-risk
+  proof ladders; open one scanner-classification task later only if mount
+  proxy rows repeatedly displace unproved product journeys. Scope: no runtime
+  code, schema, migration, protected smoke, deploy, push, restart, production
+  mutation, credential access, secret disclosure, server, browser, database,
+  Docker, or watcher process. Disposition: `DONE`.
+
 - 2026-06-20: `LUC-4956` source-control closure is complete locally for the
   [LUC-4952](/LUC/issues/LUC-4952) known-state evidence packet. Output:
   `docs/planning/luc-4956-source-control-closure-for-luc-4952-known-state-evidence-packet.md`.

@@ -4,6 +4,24 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4957` recurring `implementation_without_tests` architecture-health
+   signal curation is complete.
+   - Output:
+     `docs/planning/luc-4957-implementation-without-tests-architecture-health-signal-curation.md`.
+   - Proof:
+     current health export reports `implementation_without_tests=1162`; the
+     exposed 200-item sample groups into `43` `src/app.ts` API mount/proxy
+     rows, `7` shared UI component singleton rows, and `150`
+     feature/script/API module singleton rows. Task synchronization remains
+     clean at `0` task-link gaps, `0` implementation-without-task gaps, and
+     `0` verified-without-proof gaps.
+   - Next owner/action:
+     no child implementation or QA issue is needed from this raw aggregate.
+     Keep future confidence work on product journey proof ladders. Create a
+     one-owner scanner-classification task only if repeated baselines keep
+     prioritizing already-proved mount proxies ahead of unproved product
+     journeys.
+
 1. `LUC-4956` source-control closure is complete locally for the
    [LUC-4952](/LUC/issues/LUC-4952) known-state evidence packet.
    - Output:

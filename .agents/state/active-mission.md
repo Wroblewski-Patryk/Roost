@@ -4,6 +4,35 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-4957-IMPLEMENTATION-WITHOUT-TESTS-CURATION
+- Status: VERIFIED_DONE
+- Selected objective: Curate the recurring
+  `implementation_without_tests=1162` architecture-health signal from
+  [LUC-4952](/LUC/issues/LUC-4952).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4957](/LUC/issues/LUC-4957), assigned to TSA, as the architecture
+  curation lane for the repeated missing-test health signal.
+- Scope: read current architecture-health/task-sync reports, sample the top
+  signal items, classify scanner granularity noise versus true proof gaps, and
+  publish a curation packet.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4957-implementation-without-tests-architecture-health-signal-curation.md`.
+- Evidence: current health export generated `2026-06-20T08:13:36.644Z`
+  reports `implementation_without_tests=1162`; the exposed 200-item sample
+  contains `43` API mount/proxy rows, `7` shared UI component singleton rows,
+  and `150` feature/script/API module singleton rows. Task synchronization
+  remains clean at `0` task-link gaps, `0` implementation-without-task gaps,
+  and `0` verified-without-proof gaps.
+- Final disposition: done for TSA curation. The signal remains backlog
+  confidence debt, not a direct release-blocking queue. No child
+  implementation/QA issue is needed; future scanner-classification work is
+  warranted only if mount proxy rows keep displacing unproved product journeys.
+
+## Previous Mission
+
 - Mission ID: LUC-4956-SOURCE-CONTROL-CLOSURE
 - Status: VERIFIED_DONE
 - Selected objective: Close local source control for the
