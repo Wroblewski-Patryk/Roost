@@ -2,6 +2,42 @@
 
 Last updated: 2026-06-21
 
+- 2026-06-21: `LUC-5374` source-control closure completed locally for the
+  [LUC-5373](/LUC/issues/LUC-5373) Roost known-state evidence packet. Output:
+  `docs/planning/luc-5374-source-control-closure-for-luc-5373-evidence-packet.md`.
+  Starting state: `main...origin/main [ahead 96]`, HEAD `9917b69e`. Dirty set
+  classified as coherent generated architecture/status exports plus
+  state/context/planning evidence and the [LUC-5373](/LUC/issues/LUC-5373)
+  evidence packet. Verification: `git diff --check` PASS with LF-to-CRLF
+  warnings only; generated architecture-awareness and health JSON parse PASS at
+  `2026-06-20T23:43:26.766Z` with `2429` entities / `5125` relations; scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass). Push held for future
+  release/source-ref batching; deploy impact none. No feature code, schema,
+  migration, protected smoke, production mutation, credential access, secret
+  disclosure, browser, database, Docker, server, provider, or watcher process
+  occurred.
+
+- 2026-06-21: `LUC-5373` Roost known-state evidence and architecture baseline
+  completed for the local-board wake comment, with source-control closure still
+  required for the generated/status/state evidence set. Output:
+  `docs/planning/luc-5373-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness refresh PASS in `18450ms`,
+  generated `2026-06-20T23:43:26.766Z` with `2429` entities / `5125`
+  relations / `13760` files; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  task-sync, ownership, implementation-task, verified-proof, and disconnected
+  gaps remain `0`; architecture health reports
+  `implementation_without_tests=1162`. No feature code, schema, migration,
+  runtime, protected smoke, production mutation, credential access, secret
+  disclosure, browser, database, Docker, server, provider, or watcher action
+  occurred. Source-control closure is delegated to
+  [LUC-5374](/LUC/issues/LUC-5374). Deploy impact none; protected target proof
+  remains separately gated.
+
 - 2026-06-21: `LUC-5368` source-control closure completed locally for the
   [LUC-5366](/LUC/issues/LUC-5366) Roost known-state evidence packet. Output:
   `docs/planning/luc-5368-source-control-closure-for-luc-5366-evidence-packet.md`.

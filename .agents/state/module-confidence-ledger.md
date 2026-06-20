@@ -1,5 +1,19 @@
 # Module Confidence Ledger
 
+PM evidence note: [LUC-5373](/LUC/issues/LUC-5373) refreshed the Roost
+known-state architecture baseline. Evidence packet:
+`docs/planning/luc-5373-known-state-evidence-and-architecture-baseline.md`.
+Scanner PASS generated `2026-06-20T23:43:26.766Z` with `2429` entities,
+`5125` relations, and `13760` files. `npm run architecture:status` PASS
+(`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`) and `npm run
+check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+Task-sync, ownership, implementation-task, verified-without-proof, and
+disconnected gaps remain `0`. Confidence classification: local architecture
+and route exposure are verified; no broad repair issue is warranted from this
+pass. Source-control closure for the refreshed generated/status/planning
+evidence batch is delegated to [LUC-5374](/LUC/issues/LUC-5374). Protected
+target proof remains approval/credential gated.
+
 Source-control confidence note: [LUC-5364](/LUC/issues/LUC-5364) is
 VERIFIED_DONE for local source-control closure of the
 [LUC-5359](/LUC/issues/LUC-5359) known-state evidence packet. Closure packet:

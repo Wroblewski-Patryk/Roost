@@ -1,5 +1,15 @@
 # System Health
 
+- 2026-06-21: `LUC-5373` refreshed Roost local architecture evidence for the
+  local-board known-state scope. Scanner PASS generated
+  `2026-06-20T23:43:26.766Z` with `2429` entities / `5125` relations /
+  `13760` files; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+  No protected actions or long-running local processes were started.
+  Source-control closure is delegated to
+  [LUC-5374](/LUC/issues/LUC-5374) for generated/status/state evidence.
+
 - 2026-06-21: `LUC-5368` source-control closure is verified for the
   [LUC-5366](/LUC/issues/LUC-5366) Roost known-state evidence packet. Current
   interpretation: generated architecture/status exports plus
