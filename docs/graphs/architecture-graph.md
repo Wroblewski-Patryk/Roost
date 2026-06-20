@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T19:04:06.656Z
+Generated: 2026-06-20T19:16:07.070Z
 
 ## Canonical Exports
 
@@ -1180,6 +1180,9 @@ Generated: 2026-06-20T19:04:06.656Z
 | documents | document:luc-5257-known-state-evidence-and-architecture-baseline:02482b8cd3 | module:docs:6784d83cb0 | docs/planning/luc-5257-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5262-source-control-closure-for-luc-5257-evidence-packet:c9fb11b183 | module:docs:6784d83cb0 | docs/planning/luc-5262-source-control-closure-for-luc-5257-evidence-packet.md |
 | documents | document:luc-5263-integration-settings-api-journey-proof:0708711682 | module:docs:6784d83cb0 | docs/planning/luc-5263-integration-settings-api-journey-proof.md |
+| documents | document:luc-5273-agent-observability-api-proof-ladder:082bed26f7 | module:docs:6784d83cb0 | docs/planning/luc-5273-agent-observability-api-proof-ladder.md |
+| documents | document:luc-5278-known-state-evidence-and-architecture-baseline:ff847c3ba8 | module:docs:6784d83cb0 | docs/planning/luc-5278-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5280-source-control-closure-for-luc-5278-evidence-packet:fa438cc576 | module:docs:6784d83cb0 | docs/planning/luc-5280-source-control-closure-for-luc-5278-evidence-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-06-20T19:04:06.656Z
 | documents | document:migration:cd5de9a79d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0019.md |
 | documents | document:migration:db79f8e30a | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0009.md |
 | documents | document:migration:e063e80e43 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0001.md |
-| documents | document:migration:ebc4384929 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0027.md |
-| documents | document:migration:efe217da84 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0008.md |
-| documents | document:migration:f1d037308a | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0011.md |

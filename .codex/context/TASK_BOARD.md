@@ -2,6 +2,23 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5284` known-state evidence and architecture baseline is
+  complete for TSA evidence scope. Output:
+  `docs/planning/luc-5284-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS in `13659ms`, generated
+  `2026-06-20T19:16:07.070Z` with `2399` entities / `5012` relations /
+  `13729` files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass);
+  `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); task-sync gaps `0`; ownership gaps
+  `0`; dependency report `438` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`, actionable `1153`, classified inferred
+  noise `9`, docs gaps `0`, disconnected entities `0`. No protected action,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, runtime server, database, Docker, browser, schema, migration, or
+  feature-code change occurred. Next owner path is active
+  [LUC-5281](/LUC/issues/LUC-5281) for focused QA proof-ladder selection.
+
 - 2026-06-20: `LUC-5280` source-control closure is complete locally for the
   [LUC-5278](/LUC/issues/LUC-5278) known-state evidence packet. Output:
   `docs/planning/luc-5280-source-control-closure-for-luc-5278-evidence-packet.md`.

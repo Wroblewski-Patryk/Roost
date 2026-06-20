@@ -2,6 +2,25 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5284` Roost known-state evidence and architecture
+  baseline completed for TSA scope after the local-board wake requested local
+  evidence collection and concrete repair lanes. Output:
+  `docs/planning/luc-5284-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS from Paperclip_Softwarehouse
+  in `13659ms`, generated `2026-06-20T19:16:07.070Z` with `2399` entities,
+  `5012` relations, and `13729` files; `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  task-sync gaps `0`; ownership gaps `0`; dependency report `438` relations /
+  `95` entities; architecture health reports `implementation_without_tests=1162`,
+  actionable `1153`, classified inferred noise `9`, docs gaps `0`,
+  disconnected entities `0`. Existing active [LUC-5281](/LUC/issues/LUC-5281)
+  owns the next QA proof-ladder selection, so no duplicate follow-up was
+  created. No runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, browser,
+  database, Docker, server, or watcher process occurred.
+
 - 2026-06-20: `LUC-5280` source-control closure completed locally for the
   [LUC-5278](/LUC/issues/LUC-5278) known-state evidence packet. Output:
   `docs/planning/luc-5280-source-control-closure-for-luc-5278-evidence-packet.md`.
