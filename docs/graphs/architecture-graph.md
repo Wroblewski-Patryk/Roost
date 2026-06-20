@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T20:13:23.962Z
+Generated: 2026-06-20T20:43:43.765Z
 
 ## Canonical Exports
 
@@ -1190,6 +1190,8 @@ Generated: 2026-06-20T20:13:23.962Z
 | documents | document:luc-5287-qa-proof-ladder-duplicate-disposition:56ed5e8993 | module:docs:6784d83cb0 | docs/planning/luc-5287-qa-proof-ladder-duplicate-disposition.md |
 | documents | document:luc-5292-source-control-closure-for-luc-5291-evidence-refresh:cc70dce114 | module:docs:6784d83cb0 | docs/planning/luc-5292-source-control-closure-for-luc-5291-evidence-refresh.md |
 | documents | document:luc-5293-tasks-and-clickup-task-lifecycle-proof-ladder:75b74f1be7 | module:docs:6784d83cb0 | docs/planning/luc-5293-tasks-clickup-task-lifecycle-proof-ladder.md |
+| documents | document:luc-5301-api-endpoint-test-evidence-gap-qa-triage:cdbb7ed7ff | module:docs:6784d83cb0 | docs/planning/luc-5301-api-endpoint-test-evidence-gap-qa-triage.md |
+| documents | document:luc-5302-architecture-evidence-roadmap-awareness-reconciliation:be8d4d03a4 | module:docs:6784d83cb0 | docs/planning/luc-5302-architecture-evidence-roadmap-awareness-reconciliation.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-06-20T20:13:23.962Z
 | documents | document:migration:61687c1d99 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0022.md |
 | documents | document:migration:7375812ebb | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0018.md |
 | documents | document:migration:7e5b143870 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0015.md |
-| documents | document:migration:8b41e0264e | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0021.md |
-| documents | document:migration:977573f012 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0003.md |

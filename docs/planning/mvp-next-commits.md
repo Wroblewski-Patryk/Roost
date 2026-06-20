@@ -1,5 +1,53 @@
 # MVP Next Commits
 
+- 2026-06-20: `LUC-5313` Roost PM known-state evidence baseline is complete.
+  Evidence packet:
+  `docs/planning/luc-5313-known-state-evidence-and-architecture-baseline.md`.
+  Proof: architecture-awareness scanner PASS (`2408` entities / `5045`
+  relations / `13738` files, generated `2026-06-20T20:43:43.765Z`); `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`); `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); task-sync, ownership, docs, proof, and disconnected gaps
+  remain `0`. Next commits/lanes: [LUC-5314](/LUC/issues/LUC-5314) source-
+  control closure for this packet and [LUC-5315](/LUC/issues/LUC-5315)
+  Auth/Workspace/API-key authority QA proof ladder. Protected runtime proof
+  remains approval/credential gated.
+
+- 2026-06-20: `LUC-5301` QA endpoint test-evidence gap triage is complete.
+  Evidence packet:
+  `docs/planning/luc-5301-api-endpoint-test-evidence-gap-qa-triage.md`.
+  Proof: `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files, `status=ok`) and `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`). Decision: the API
+  endpoint missing-test list is mostly route-mount scanner inference, not
+  blanket release-blocking test absence. Next QA proof order:
+  Auth/Workspace/API-key, Department/Workforce, read-only department
+  intelligence packets, Relationship/Operating Graph, Intake routing.
+
+- 2026-06-20: `LUC-5302` CTO/docs reconciliation is complete. Evidence
+  packet:
+  `docs/planning/luc-5302-architecture-evidence-roadmap-awareness-reconciliation.md`.
+  Decision: curated `npm run architecture:status` GREEN gates remain valid,
+  and the broad awareness `implementation_without_tests=1162` / actionable
+  `1153` signal is scanner-level confidence debt. It is not a docs-model
+  mismatch and not a generic release/QA planning blocker while docs,
+  task-link, implementation-task, verified-proof, owner, and disconnected gaps
+  remain `0`. Next PM/QA work should continue as named proof-ladder slices
+  from module risk, with repair issues only after focused proof finds a real
+  defect or canonical evidence-row/chain gap.
+
+- 2026-06-20: `LUC-5293` Tasks and ClickUp task lifecycle proof ladder is
+  complete. Evidence packet:
+  `docs/planning/luc-5293-tasks-clickup-task-lifecycle-proof-ladder.md`.
+  Proof: selected Tasks API and ClickUp-backed lifecycle coverage mapped to
+  `FEAT-AUTO-0028`; `npm run test:api:local` PASS against disposable
+  PostgreSQL `companycore-luc-5293-postgres` on port `55493` after server/web
+  build, `31` migrations, seed, and `7/7` API subtests; `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues
+  `0`, delta `0/0/0`). No repair issue is warranted; protected live
+  ClickUp/provider proof remains separate and gated.
+
 - 2026-06-20: `LUC-5281` Google Drive API proof ladder is complete. Evidence
   packet: `docs/planning/luc-5281-google-drive-api-proof-ladder.md`. Proof:
   selected Google Drive metadata/content/scope/write-gating API coverage

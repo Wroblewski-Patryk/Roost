@@ -4,6 +4,15 @@ Last updated: 2026-05-30
 
 ## Active Focus
 
+Current Roost PM checkpoint: [LUC-5313](/LUC/issues/LUC-5313) completed the
+latest known-state evidence baseline. The fresh architecture-awareness refresh
+generated `2026-06-20T20:43:43.765Z` with `2408` entities / `5045` relations /
+`13738` files; `npm run architecture:status` and
+`npm run check:route-capabilities` passed. Follow-up focus is
+[LUC-5314](/LUC/issues/LUC-5314) source-control closure and
+[LUC-5315](/LUC/issues/LUC-5315) Auth/Workspace/API-key authority QA proof.
+Protected runtime proof remains approval/credential gated.
+
 Current planning addendum: ONTOLOGY-001 records owner-provided APQC PCF,
 SIPOC, org-chart CSV, role/ACL mapping, and SOP template material as a future
 business-ontology import lane for CompanyCore/Paperclip. This is architecture

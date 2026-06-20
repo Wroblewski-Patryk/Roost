@@ -2,6 +2,99 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5314` source-control closure completed locally for the
+  [LUC-5313](/LUC/issues/LUC-5313) known-state evidence packet. Output:
+  `docs/planning/luc-5314-source-control-closure-for-luc-5313-evidence-packet.md`.
+  Evidence: starting state `main...origin/main [ahead 88]`; dirty set
+  classified as coherent generated architecture-awareness exports, status
+  reports, state/context updates, planning queue updates, and completed
+  planning packets from the same Roost known-state/evidence wave; `git diff
+  --check` PASS with LF-to-CRLF warnings only; generated
+  `docs/graphs/architecture-awareness.json` parse PASS at
+  `2026-06-20T20:43:43.765Z` with `2408` entities and `5045` relations;
+  scoped high-confidence secret/private-key scan PASS with `0` matches; `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass). Local closure
+  commit created; push held for future release batch or explicit
+  source-ref/deploy need. Deploy impact: none.
+
+- 2026-06-20: `LUC-5313` Roost known-state evidence and architecture
+  baseline completed for Roost PM scope after the local-board wake requested
+  local evidence collection and concrete repair lanes. Output:
+  `docs/planning/luc-5313-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness status-only PASS in `20ms`; bounded full
+  refresh PASS in `4476ms`, generated `2026-06-20T20:43:43.765Z` with `2408`
+  entities, `5045` relations, and `13738` files; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); task-sync gaps `0`; ownership gaps
+  `0`; dependency report `438` relations / `95` entities; architecture health
+  reports `implementation_without_tests=1162`, actionable `1153`, classified
+  inferred noise `9`, docs gaps `0`, disconnected entities `0`. Follow-ups:
+  [LUC-5314](/LUC/issues/LUC-5314) source-control closure for this generated/
+  status/planning packet and [LUC-5315](/LUC/issues/LUC-5315)
+  Auth/Workspace/API-key authority QA proof ladder. No feature code, schema,
+  migration, protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, browser, database, Docker, server, or
+  watcher process occurred.
+
+- 2026-06-20: `LUC-5301` QA endpoint test-evidence gap triage completed for
+  the [LUC-5299](/LUC/issues/LUC-5299) awareness refresh. Output:
+  `docs/planning/luc-5301-api-endpoint-test-evidence-gap-qa-triage.md`.
+  Classification: the top actionable API endpoint missing-test list is mostly
+  mount-level scanner inference from `src/app.ts`, while `src/tests/api.test.ts`
+  already contains broad integration assertions for many protected route
+  groups. Safe local checks passed: `npm run check:route-capabilities`
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`) and `npm
+  run architecture:status` (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass). Recommended next QA
+  proof ladder: Auth/Workspace/API-key; Department/Workforce; read-only
+  department intelligence packets; Relationship/Operating Graph; Intake
+  routing. No runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, browser
+  proof, or live provider action occurred.
+
+- 2026-06-20: `LUC-5302` CTO/docs reconciliation completed for the
+  architecture evidence GREEN roadmap versus architecture-awareness
+  test-gap signal. Output:
+  `docs/planning/luc-5302-architecture-evidence-roadmap-awareness-reconciliation.md`.
+  Decision recorded in `docs/architecture/architecture-evidence-system.md`:
+  the `2026-06-20T20:13:23.962Z` awareness
+  `implementation_without_tests=1162` / actionable `1153` signal is
+  acceptable scanner-level confidence debt, not a docs-model mismatch and not
+  a release or QA planning blocker by itself. Evidence: awareness health has
+  docs/task/owner/proof/disconnected gaps at `0`; curated proof bundle remains
+  GREEN (`454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass). Future PM/QA agents should select named proof-ladder slices
+  from module risk and create repair issues only when focused proof finds a
+  concrete defect or canonical evidence-row/chain gap. No runtime code,
+  schema, migration, protected smoke, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred.
+
+- 2026-06-20: `LUC-5293` Tasks and ClickUp task lifecycle proof ladder
+  completed for the local QA slice from [LUC-5291](/LUC/issues/LUC-5291).
+  Output:
+  `docs/planning/luc-5293-tasks-clickup-task-lifecycle-proof-ladder.md`.
+  Selected journey: Tasks API and ClickUp-backed lifecycle coverage mapped to
+  `FEAT-AUTO-0028`, `API-AUTO-0019`, `API-AUTO-0085`, `API-AUTO-0086`,
+  `API-AUTO-0113`, `API-AUTO-0157`, `API-AUTO-0158`, `API-AUTO-0159`,
+  `API-AUTO-0160`, `src/modules/tasks/tasks.routes.ts`,
+  `src/modules/task-lists/task-lists.routes.ts`, and existing assertions in
+  `src/tests/api.test.ts`. Evidence: disposable PostgreSQL
+  `companycore-luc-5293-postgres` on port `55493`; `npm run test:api:local`
+  PASS after server/web build, all `31` migrations, seed, and `7/7` API
+  subtests (`CompanyCore v1 protected API flow` duration `36867.6222ms`,
+  total `40401.2761ms`); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass). Cleanup found no
+  validation DB container and no `chrome-headless-shell` process. No protected
+  smoke, deploy, push, restart, production mutation, credential access, secret
+  disclosure, browser proof, runtime feature change, schema change, migration
+  authoring, live ClickUp provider action, server, or watcher occurred.
+  Disposition: `DONE`; no repair issue warranted.
+
 - 2026-06-20: `LUC-5292` source-control closure completed locally for the
   [LUC-5291](/LUC/issues/LUC-5291) evidence refresh. Output:
   `docs/planning/luc-5292-source-control-closure-for-luc-5291-evidence-refresh.md`.

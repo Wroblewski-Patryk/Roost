@@ -1,5 +1,55 @@
 # Next Steps
 
+- `LUC-5313` Roost PM known-state evidence baseline is complete. Evidence
+  packet:
+  `docs/planning/luc-5313-known-state-evidence-and-architecture-baseline.md`.
+  Current evidence: architecture-awareness scanner PASS (`2408` entities,
+  `5045` relations, `13738` files, generated
+  `2026-06-20T20:43:43.765Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes, `35` route files);
+  task-sync, owner, docs, proof, and disconnected gaps remain `0`.
+  Next owners/actions: Roost PM handles [LUC-5314](/LUC/issues/LUC-5314)
+  source-control closure for the generated/status/planning packet; QA and
+  Verification Engineer handles [LUC-5315](/LUC/issues/LUC-5315) for the
+  Auth/Workspace/API-key authority proof ladder. Protected target proof remains
+  approval/credential gated.
+
+- `LUC-5301` QA triage for actionable API endpoint test-evidence gaps is
+  complete. Evidence packet:
+  `docs/planning/luc-5301-api-endpoint-test-evidence-gap-qa-triage.md`.
+  Classification: the API endpoint list from the awareness refresh is mostly
+  `src/app.ts` router-mount scanner inference, not a broad release blocker.
+  Next owner/action: QA should select a scoped proof issue for the first ladder
+  slice, Auth/Workspace/API-key authority boundary, then run
+  `npm run test:api:local` plus `npm run check:route-capabilities` and
+  `npm run architecture:status`. Following slices are Department/Workforce,
+  read-only department intelligence packets, Relationship/Operating Graph, and
+  Intake routing. No repair issue is warranted until a selected proof slice
+  finds a concrete defect.
+
+- `LUC-5302` CTO/docs reconciliation is complete. Evidence packet:
+  `docs/planning/luc-5302-architecture-evidence-roadmap-awareness-reconciliation.md`.
+  Canonical next-action rule: the broad architecture-awareness
+  `implementation_without_tests=1162` / actionable `1153` signal is
+  scanner-level confidence debt, not a docs-model mismatch and not a release
+  or QA planning blocker by itself while docs/task/owner/proof/disconnected
+  gaps remain `0` and curated architecture status remains GREEN. Next
+  owner/action: PM/QA should continue selecting named proof-ladder slices by
+  module risk; create repair issues only after focused proof finds a concrete
+  defect or canonical evidence-row/chain gap.
+
+- `LUC-5293` Tasks and ClickUp task lifecycle proof ladder is complete for the
+  local QA slice from [LUC-5291](/LUC/issues/LUC-5291). Evidence packet:
+  `docs/planning/luc-5293-tasks-clickup-task-lifecycle-proof-ladder.md`.
+  Local proof passed: `npm run test:api:local` with disposable PostgreSQL
+  `companycore-luc-5293-postgres` on port `55493` after server/web build,
+  `31` migrations, seed, and `7/7` API subtests; `npm run
+  check:route-capabilities`; `npm run architecture:status`; cleanup checks for
+  validation DB and headless browser processes. Next owner/action: no Tasks or
+  ClickUp lifecycle repair issue is warranted; protected live ClickUp/provider
+  proof remains approval/credential gated.
+
 - `LUC-5287` QA proof-ladder selection after
   [LUC-5283](/LUC/issues/LUC-5283) is complete as duplicate-handled. Evidence
   packet:

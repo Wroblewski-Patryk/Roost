@@ -2,6 +2,85 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5314` source-control closure for
+  [LUC-5313](/LUC/issues/LUC-5313) is complete locally. Output:
+  `docs/planning/luc-5314-source-control-closure-for-luc-5313-evidence-packet.md`.
+  Evidence: dirty set classified as coherent generated/status/planning/state
+  evidence from the Roost known-state wave; `git diff --check` PASS with
+  LF-to-CRLF warnings only; generated architecture JSON parse PASS at
+  `2026-06-20T20:43:43.765Z` (`2408` entities / `5045` relations); scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass). Disposition: `DONE`; push
+  held for a future release batch or explicit source-ref/deploy need; local
+  closure commit created; deploy impact none.
+
+- 2026-06-20: `LUC-5313` known-state evidence and architecture baseline is
+  complete for Roost PM evidence scope. Output:
+  `docs/planning/luc-5313-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness full refresh PASS in `4476ms`,
+  generated `2026-06-20T20:43:43.765Z` with `2408` entities / `5045`
+  relations / `13738` files; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates
+  pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  task-sync gaps `0`; ownership gaps `0`; dependency report `438` relations /
+  `95` entities; architecture health `implementation_without_tests=1162`,
+  actionable `1153`, classified inferred noise `9`, docs gaps `0`,
+  disconnected entities `0`. Follow-ups: [LUC-5314](/LUC/issues/LUC-5314)
+  owns source-control closure and [LUC-5315](/LUC/issues/LUC-5315) owns the
+  Auth/Workspace/API-key authority QA proof ladder. Disposition: PM evidence
+  scope complete; deploy impact none.
+
+- 2026-06-20: `LUC-5301` QA endpoint test-evidence gap triage is complete for
+  the [LUC-5299](/LUC/issues/LUC-5299) awareness refresh. Output:
+  `docs/planning/luc-5301-api-endpoint-test-evidence-gap-qa-triage.md`.
+  Decision: the API endpoint missing-test list is mostly `src/app.ts`
+  router-mount scanner inference, not broad release-blocking absence. Future
+  QA should select named proof packets from high-risk route groups. Safe local
+  checks passed: `npm run check:route-capabilities` (`180` manifest routes /
+  `35` route files, `status=ok`) and `npm run architecture:status` (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`). Ordered proof ladder:
+  Auth/Workspace/API-key; Department/Workforce; read-only department
+  intelligence packets; Relationship/Operating Graph; Intake routing.
+  Disposition: `DONE`; deploy impact none; no repair issue warranted.
+
+- 2026-06-20: `LUC-5302` CTO/docs reconciliation is complete for the
+  architecture evidence GREEN roadmap versus architecture-awareness
+  test-gap signal. Output:
+  `docs/planning/luc-5302-architecture-evidence-roadmap-awareness-reconciliation.md`.
+  Decision: the `2026-06-20T20:13:23.962Z` awareness
+  `implementation_without_tests=1162` / actionable `1153` signal is
+  acceptable scanner-level confidence debt, not a docs-model mismatch and not
+  a release or QA planning blocker by itself. Evidence: awareness
+  docs/task/owner/proof/disconnected gaps remain `0`; curated proof bundle
+  remains GREEN (`454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass). Future PM/QA path: select named proof-ladder
+  slices from module risk; create repair issues only after focused proof finds
+  a concrete defect or canonical evidence-row/chain gap. Disposition: `DONE`;
+  deploy impact none.
+
+- 2026-06-20: `LUC-5293` Tasks and ClickUp task lifecycle proof ladder is
+  complete for the local QA slice from [LUC-5291](/LUC/issues/LUC-5291).
+  Output:
+  `docs/planning/luc-5293-tasks-clickup-task-lifecycle-proof-ladder.md`.
+  Selected journey: Tasks API and ClickUp-backed lifecycle coverage mapped to
+  `FEAT-AUTO-0028`, `API-AUTO-0019`, `API-AUTO-0085`, `API-AUTO-0086`,
+  `API-AUTO-0113`, `API-AUTO-0157`, `API-AUTO-0158`, `API-AUTO-0159`,
+  `API-AUTO-0160`, `src/modules/tasks/tasks.routes.ts`,
+  `src/modules/task-lists/task-lists.routes.ts`, and existing assertions in
+  `src/tests/api.test.ts`. Evidence: disposable PostgreSQL
+  `companycore-luc-5293-postgres` on port `55493`; `npm run test:api:local`
+  PASS after server/web build, all `31` migrations, seed, and `7/7` API
+  subtests (`CompanyCore v1 protected API flow` duration `36867.6222ms`,
+  total `40401.2761ms`); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass). Cleanup found no validation DB
+  container and no `chrome-headless-shell` process. Disposition: `DONE`; no
+  repair issue warranted; protected live ClickUp/provider proof remains
+  approval/credential gated.
+
 - 2026-06-20: `LUC-5292` source-control closure for
   [LUC-5291](/LUC/issues/LUC-5291) is complete locally. Output:
   `docs/planning/luc-5292-source-control-closure-for-luc-5291-evidence-refresh.md`.

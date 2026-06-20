@@ -1,5 +1,62 @@
 # System Health
 
+- 2026-06-20: `LUC-5313` Roost PM known-state evidence baseline completed.
+  Output:
+  `docs/planning/luc-5313-known-state-evidence-and-architecture-baseline.md`.
+  Current health interpretation: architecture-awareness exports are fresh at
+  `2026-06-20T20:43:43.765Z` with `2408` entities / `5045` relations /
+  `13738` files; curated architecture status remains GREEN (`454/765/35`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  route-capability exposure remains consistent (`180` manifest routes / `35`
+  route files); task-sync, ownership, docs, proof, and disconnected gaps remain
+  `0`. The persistent `implementation_without_tests=1162` signal remains
+  scanner-level confidence debt for named proof-ladder selection. Deploy
+  impact: none; protected runtime proof remains separately gated.
+
+- 2026-06-20: `LUC-5301` QA endpoint test-evidence gap triage completed for
+  the [LUC-5299](/LUC/issues/LUC-5299) awareness refresh. Output:
+  `docs/planning/luc-5301-api-endpoint-test-evidence-gap-qa-triage.md`.
+  Current interpretation: the API endpoint missing-test list is mostly
+  mount-level scanner inference from `src/app.ts`, while
+  `src/tests/api.test.ts` already contains broad integration assertions for
+  many protected route groups. Real QA follow-up should be named proof packets,
+  not broad blanket test generation. Safe local checks passed: `npm run
+  check:route-capabilities` (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`) and `npm run architecture:status`
+  (`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`, all gates pass).
+  Deploy impact: none.
+
+- 2026-06-20: `LUC-5302` CTO/docs reconciliation verified the architecture
+  evidence system interpretation. Output:
+  `docs/planning/luc-5302-architecture-evidence-roadmap-awareness-reconciliation.md`.
+  Current health interpretation: curated project-native architecture status
+  remains GREEN (`454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass). The separate awareness scanner refresh at
+  `2026-06-20T20:13:23.962Z` reports `implementation_without_tests=1162` /
+  actionable `1153`, with docs/task/owner/proof/disconnected gaps at `0`.
+  This is scanner-level confidence debt for focused proof-ladder selection,
+  not a docs-model mismatch and not a generic release or QA planning blocker.
+  Deploy impact: none.
+
+- 2026-06-20: `LUC-5293` Tasks and ClickUp task lifecycle proof ladder
+  verified locally for the QA proof-ladder slice from
+  [LUC-5291](/LUC/issues/LUC-5291). Output:
+  `docs/planning/luc-5293-tasks-clickup-task-lifecycle-proof-ladder.md`.
+  Selected journey: Tasks API and ClickUp-backed lifecycle coverage mapped to
+  `FEAT-AUTO-0028`, `API-AUTO-0019`, `API-AUTO-0085`, `API-AUTO-0086`,
+  `API-AUTO-0113`, `API-AUTO-0157`, `API-AUTO-0158`, `API-AUTO-0159`,
+  `API-AUTO-0160`, `src/modules/tasks/tasks.routes.ts`, and
+  `src/modules/task-lists/task-lists.routes.ts`. Proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5293-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55493` `npm run test:api:local` PASS after
+  server/web build, `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `36867.6222ms`, total
+  `40401.2761ms`). Drift checks: `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`,
+  delta `0/0/0`, all gates pass). Cleanup found no validation DB container and
+  no `chrome-headless-shell` process. Deploy impact: none.
+
 - 2026-06-20: `LUC-5281` Google Drive API proof ladder verified locally for
   the next QA proof-ladder slice from [LUC-5278](/LUC/issues/LUC-5278).
   Output: `docs/planning/luc-5281-google-drive-api-proof-ladder.md`.

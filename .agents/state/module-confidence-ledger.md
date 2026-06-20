@@ -1,5 +1,83 @@
 # Module Confidence Ledger
 
+Roost known-state baseline note: [LUC-5313](/LUC/issues/LUC-5313) is
+VERIFIED_PENDING_SCM_CLOSURE_AND_QA_FOLLOWUP for the Roost PM evidence lane.
+The packet is recorded in
+`docs/planning/luc-5313-known-state-evidence-and-architecture-baseline.md`.
+Evidence: architecture-awareness status-only PASS in `20ms`; bounded full
+refresh PASS in `4476ms`, generated `2026-06-20T20:43:43.765Z` with `2408`
+entities, `5045` relations, and `13738` files; `npm run architecture:status`
+PASS (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+delta `0/0/0`, all gates pass); `npm run check:route-capabilities` PASS
+(`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+task-sync gaps `0`; ownership gaps `0`; dependency report `438` relations /
+`95` entities. Architecture health reports `implementation_without_tests=1162`,
+actionable `1153`, classified inferred noise `9`, docs gaps `0`,
+disconnected entities `0`. Confidence classification: local architecture,
+task/proof synchronization, ownership, and route-capability registration are
+verified, while generated/status/planning source-control closure and the next
+focused Auth/Workspace/API-key proof ladder are delegated to
+[LUC-5314](/LUC/issues/LUC-5314) and [LUC-5315](/LUC/issues/LUC-5315).
+Protected target proof remains approval/credential gated.
+
+QA triage note: [LUC-5301](/LUC/issues/LUC-5301) is VERIFIED_DONE for the API
+endpoint test-evidence gap classification from the
+[LUC-5299](/LUC/issues/LUC-5299) awareness refresh. Evidence packet:
+`docs/planning/luc-5301-api-endpoint-test-evidence-gap-qa-triage.md`.
+Classification: the top actionable API endpoint list is mostly mount-level
+scanner inference from `src/app.ts`; it is not a blanket mandate to add tests
+for every mount. Existing assertions in `src/tests/api.test.ts` already cover
+many route groups through the broad CompanyCore v1 protected API flow. Real
+release-confidence follow-up should be named proof packets for high-risk
+auth/workspace/integration/money/AI authority boundaries. Safe local checks
+passed: `npm run check:route-capabilities` (`180` manifest routes / `35` route
+files, `status=ok`) and `npm run architecture:status` (`GREEN`, graph
+`454/765/35`, queues `0`, delta `0/0/0`). Recommended next QA proof order:
+Auth/Workspace/API-key, Department/Workforce, read-only department intelligence
+packets, Relationship/Operating Graph, Intake routing. No repair issue is
+warranted from this triage lane.
+
+Architecture confidence note: [LUC-5302](/LUC/issues/LUC-5302) is
+VERIFIED_DONE for the architecture evidence roadmap versus awareness
+test-gap reconciliation. Evidence packet:
+`docs/planning/luc-5302-architecture-evidence-roadmap-awareness-reconciliation.md`.
+Canonical interpretation: the `2026-06-20T20:13:23.962Z`
+architecture-awareness refresh reports `2406` entities / `5036` relations and
+`implementation_without_tests=1162` / actionable `1153`, but docs gaps,
+task-link gaps, implementation-without-task gaps, verified-without-proof gaps,
+owner gaps, and disconnected entities are all `0`. The curated
+project-native architecture proof bundle remains GREEN with graph
+`454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, and all
+gates passed. Confidence classification: this is acceptable scanner-level
+confidence debt, not a docs-model mismatch and not a release or QA planning
+blocker by itself. PM/QA agents should use it for named proof-ladder
+selection by module risk and create repair issues only after focused proof
+finds a concrete defect or canonical graph/evidence gap.
+
+QA proof note: [LUC-5293](/LUC/issues/LUC-5293) is VERIFIED_DONE for the
+Tasks and ClickUp task lifecycle slice selected from the
+[LUC-5291](/LUC/issues/LUC-5291) `implementation_without_tests=1162`
+confidence signal. Evidence packet:
+`docs/planning/luc-5293-tasks-clickup-task-lifecycle-proof-ladder.md`.
+Selected journey: Tasks API and ClickUp-backed lifecycle coverage mapped to
+`FEAT-AUTO-0028`, `API-AUTO-0019`, `API-AUTO-0085`, `API-AUTO-0086`,
+`API-AUTO-0113`, `API-AUTO-0157`, `API-AUTO-0158`, `API-AUTO-0159`,
+`API-AUTO-0160`, `src/modules/tasks/tasks.routes.ts`,
+`src/modules/task-lists/task-lists.routes.ts`, and existing assertions in
+`src/tests/api.test.ts`. Local proof ran
+`COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5293-postgres`
+`COMPANYCORE_TEST_DB_PORT=55493` `npm run test:api:local`: server/web build
+PASS, all `31` migrations applied, seed PASS, and `7/7` API subtests PASS
+including `CompanyCore v1 protected API flow` (`36867.6222ms`, total
+`40401.2761ms`). `npm run check:route-capabilities` and `npm run
+architecture:status` also passed. Cleanup found no validation DB container and
+no `chrome-headless-shell` process. Confidence classification: Tasks and
+ClickUp local API behavior is verified for workspace-scoped task lifecycle,
+ClickUp sync modes, ClickUp-backed create/custom-field/archive provider
+payloads, event emission, route/capability exposure, and cross-workspace
+isolation covered by the API flow; no repair issue is warranted. Protected
+live ClickUp/provider proof remains a separate approval/credential-gated lane.
+
 Source-control confidence note: [LUC-5292](/LUC/issues/LUC-5292) is
 VERIFIED_DONE_PENDING_PUSH_BATCH for the [LUC-5291](/LUC/issues/LUC-5291)
 evidence refresh. Evidence packet:
