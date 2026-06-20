@@ -4,6 +4,41 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-5068` known-state evidence and architecture baseline is complete for
+   Roost PM scope.
+   - Output:
+     `docs/planning/luc-5068-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2337`,
+     `relations=4772`, `files=13664`, generated
+     `2026-06-20T12:03:02.409Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task/proof/owner gaps remain `0`;
+     dependency report `437` relations / `95` entities; architecture health
+     reports `implementation_without_tests=1162`.
+   - Next owner/action:
+     [LUC-5072](/LUC/issues/LUC-5072) owns source-control closure for the
+     generated/status evidence packet plus the existing [LUC-5065](/LUC/issues/LUC-5065)
+     QA/state packet. Protected production proof remains release/credential
+     gated.
+
+1. `LUC-5065` release-critical local QA proof ladder is complete for the
+   [LUC-5060](/LUC/issues/LUC-5060) evidence packet.
+   - Output:
+     `docs/planning/luc-5065-release-critical-journey-proof-ladder.md`.
+   - Proof:
+     `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+     `checkedRouteFiles=35`, `status=ok`); `npm run test:api:local` PASS
+     after server/web build, all `31` migrations, seed, and `7/7` API
+     subtests. Cleanup checks found no `companycore-test-postgres` container
+     rows and no `chrome-headless-shell` process rows.
+   - Next owner/action:
+     QA should pick exactly one authenticated browser route proof from the
+     ladder, preferably `04 Operations -> Tasks` when no Drive fixture is
+     available or `08 Assets -> Files and folders` when local Drive fixture
+     state exists. Do not create broad missing-test work from
+     `implementation_without_tests=1162`.
+
 1. `LUC-5060` known-state evidence and architecture baseline is complete for
    Roost PM scope.
    - Output:

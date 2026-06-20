@@ -4,6 +4,94 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5072-SOURCE-CONTROL-CLOSURE-FOR-LUC-5068-EVIDENCE
+- Status: VERIFIED_DONE_PENDING_LOCAL_COMMIT
+- Selected objective: Preserve the [LUC-5068](/LUC/issues/LUC-5068)
+  known-state evidence packet and carried [LUC-5065](/LUC/issues/LUC-5065)
+  QA/state packet in local source control.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5072](/LUC/issues/LUC-5072), assigned to Roost Project Manager, with no
+  pending comments and no fallback fetch requirement.
+- Scope: source-control readback, dirty-set classification, SCM hygiene
+  checks, closure packet, canonical queue/state updates, and one local commit.
+- Exclusions: no implementation, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-5072-source-control-closure-for-luc-5068-known-state-evidence-packet.md`.
+- Evidence: dirty set classified; `git diff --check` PASS with only
+  LF-to-CRLF warnings; generated JSON parsed at `2337` entities /
+  `4772` relations and `2026-06-20T12:03:02.409Z`; scoped secret scan PASS;
+  `npm run architecture:status` retained GREEN after closure.
+- Final disposition: done after local commit; push held for future release
+  batch or explicit source-ref/deploy need; deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5068-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE_PENDING_SCM_CHILD
+- Selected objective: Refresh local Roost known-state architecture evidence
+  and convert remaining work into owner-scoped follow-up for
+  [LUC-5068](/LUC/issues/LUC-5068).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5068](/LUC/issues/LUC-5068), assigned to Roost Project Manager, with a
+  `softwarehouse-known-state-harvester:v1` evidence contract.
+- Scope: non-protected architecture-awareness scanner refresh, architecture
+  status proof, generated report readback, source-control readback, planning
+  packet, and source-control sidecar creation.
+- Exclusions: no implementation, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-5068-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip architecture-awareness scanner PASS (`entities=2337`,
+  `relations=4772`, `files=13664`, generated at
+  `2026-06-20T12:03:02.409Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`;
+  disconnected entities `0`; dependency report `437` relations / `95`
+  entities; architecture health `implementation_without_tests=1162`;
+  `HEAD=7416526d4600faf66e42d2cd2060e70b9caa4d5d`.
+- Final disposition: done for PM evidence scope after creating
+  [LUC-5072](/LUC/issues/LUC-5072) for source-control closure of the
+  generated/status evidence packet plus existing [LUC-5065](/LUC/issues/LUC-5065)
+  QA/state dirty packet. Protected production proof remains release/credential
+  gated.
+
+## Previous Mission
+
+- Mission ID: LUC-5065-RELEASE-CRITICAL-JOURNEY-PROOF-LADDER
+- Status: VERIFIED_DONE
+- Selected objective: Build the first local release-critical QA proof ladder
+  from [LUC-5060](/LUC/issues/LUC-5060) evidence without broad missing-test
+  work.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5065](/LUC/issues/LUC-5065), assigned to QA, after the
+  [LUC-5060](/LUC/issues/LUC-5060) baseline confirmed green architecture
+  state but remaining journey-confidence debt.
+- Scope: classify 3 to 5 release-critical local journeys, name affected
+  routes/APIs/files/entities, run safe local proof, record residual risks,
+  and sync source-of-truth QA evidence.
+- Exclusions: no runtime code, schema, migration authoring, deploy, push,
+  protected smoke, production mutation, restart, credential access, secret
+  disclosure, or production data access.
+- Output:
+  `docs/planning/luc-5065-release-critical-journey-proof-ladder.md`.
+- Evidence: `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  `npm run test:api:local` PASS after server/web build, all `31`
+  migrations, seed, and `7/7` API subtests. Cleanup checks found no
+  `companycore-test-postgres` container rows and no `chrome-headless-shell`
+  process rows. Selected ladder rungs: owner auth/workspace boundary,
+  API-key/capability/MCP boundary, owner shell/dashboard/department catalog,
+  operating graph/department operating rooms, and assets/workforce/operations
+  read packets.
+- Final disposition: QA ladder and first local proof backbone done. Next QA
+  work should pick exactly one authenticated browser route proof; protected
+  production proof remains release/credential gated.
+
+## Previous Mission
+
 - Mission ID: LUC-5055-SOURCE-CONTROL-CLOSURE
 - Status: VERIFIED_DONE
 - Selected objective: Close local source control for the

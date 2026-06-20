@@ -2,6 +2,37 @@
 
 Last updated: 2026-06-20
 
+Roost known-state baseline note: LUC-5068 is VERIFIED_DONE for the Roost
+Project Manager evidence lane. The packet is recorded in
+`docs/planning/luc-5068-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2337`,
+`relations=4772`, `files=13664`, generated at
+`2026-06-20T12:03:02.409Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task synchronization reports `0` task-link/proof gaps;
+ownership gaps `0`; disconnected entities `0`; dependency report shows `437`
+relations / `95` entities; architecture health reports
+`implementation_without_tests=1162`. Confidence classification: local
+architecture and task/proof synchronization are verified; remaining confidence
+debt is route/journey proof debt, not a PM-owned implementation defect.
+Source-control closure is delegated to [LUC-5072](/LUC/issues/LUC-5072).
+Protected production proof remains release/credential gated.
+
+QA proof-ladder note: LUC-5065 is VERIFIED_DONE for the first local
+release-critical journey proof ladder from the [LUC-5060](/LUC/issues/LUC-5060)
+known-state evidence packet. The packet is recorded in
+`docs/planning/luc-5065-release-critical-journey-proof-ladder.md`.
+Evidence: `npm run check:route-capabilities` passed with
+`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`;
+`npm run test:api:local` passed after server/web build, all `31` migrations,
+seed, and `7/7` API subtests. The selected ladder covers owner
+auth/workspace, API-key/capability/MCP, owner shell/dashboard/department
+catalog, operating graph/department operating rooms, and
+assets/workforce/operations packets. Confidence classification: the local
+API/static backbone is verified; browser route proof remains the next narrow
+QA slice, not a broad missing-test task. Protected production proof remains
+release/credential gated.
+
 Source-control note: [LUC-5046](/LUC/issues/LUC-5046) is VERIFIED_DONE for the
 [LUC-5039](/LUC/issues/LUC-5039) generated/status evidence batch. Closure
 packet:

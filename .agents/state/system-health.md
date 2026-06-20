@@ -2,6 +2,31 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5068` known-state architecture baseline completed for PM
+  evidence scope. Scanner proof PASS (`entities=2337`, `relations=4772`,
+  `files=13664`, generated `2026-06-20T12:03:02.409Z`); architecture status
+  PASS (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass). Task/proof/owner gaps are `0`; dependency
+  report remains `437` relations / `95` entities; top health signal remains
+  `implementation_without_tests=1162`, already narrowed into a bounded QA
+  proof ladder by [LUC-5065](/LUC/issues/LUC-5065). Source-control closure
+  delegated to [LUC-5072](/LUC/issues/LUC-5072). No deploy, push, protected
+  smoke, production mutation, or secret access occurred.
+
+- 2026-06-20: `LUC-5065` release-critical QA proof ladder completed for the
+  [LUC-5060](/LUC/issues/LUC-5060) evidence packet. Output:
+  `docs/planning/luc-5065-release-critical-journey-proof-ladder.md`.
+  Evidence: `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  `npm run test:api:local` PASS after server/web build, all `31` migrations,
+  seed, and `7/7` API subtests. Selected local ladder rungs: owner
+  auth/workspace, API-key/capability/MCP, owner shell/dashboard/department
+  catalog, operating graph/department operating rooms, and
+  assets/workforce/operations packets. Cleanup checks found no
+  `companycore-test-postgres` container rows and no `chrome-headless-shell`
+  process rows. No production, deploy, protected smoke, push, restart,
+  credential, secret, or code mutation occurred.
+
 - 2026-06-20: `LUC-5055` source-control closure completed locally for the
   [LUC-5052](/LUC/issues/LUC-5052) known-state evidence packet. Scoped SCM
   hygiene PASS: `git diff --check` reported only LF-to-CRLF warnings;
@@ -24,6 +49,8 @@ Last updated: 2026-06-20
 
 | Check | Command or method | Result | Evidence | Notes |
 | --- | --- | --- | --- | --- |
+| LUC-5068 known-state evidence and architecture baseline | Paperclip wake payload; Paperclip `build-architecture-awareness-index.mjs`; generated report readback; `npm run architecture:status`; source-control readback; child source-control sidecar creation | PASS | 2026-06-20 LUC-5068 | Published `docs/planning/luc-5068-known-state-evidence-and-architecture-baseline.md`. Scanner refresh passed with `entities=2337`, `relations=4772`, `files=13664`, generated at `2026-06-20T12:03:02.409Z`. `npm run architecture:status` passed with `GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass. Task sync reports `0` task-link/proof gaps; owner gaps `0`; disconnected entities `0`; dependency report has `437` relations / `95` entities; architecture health reports `implementation_without_tests=1162`. Follow-up: [LUC-5072](/LUC/issues/LUC-5072) owns source-control closure for this generated/status evidence packet plus the existing [LUC-5065](/LUC/issues/LUC-5065) QA/state packet. No implementation, schema, migration, protected smoke, deploy, push, restart, production mutation, credential access, secret disclosure, server, browser, database, Docker, or watcher process occurred. |
+| LUC-5065 release-critical QA proof ladder | Paperclip issue context; [LUC-5060](/LUC/issues/LUC-5060) evidence readback; `npm run check:route-capabilities`; `npm run test:api:local`; cleanup probes | PASS / VERIFIED BACKBONE | 2026-06-20 LUC-5065 | Published `docs/planning/luc-5065-release-critical-journey-proof-ladder.md`. Route/capability drift passed (`180` manifest routes, `35` route files). Local API harness passed after server/web build, all `31` migrations, seed, and `7/7` API subtests. Cleanup probes found no `companycore-test-postgres` container rows and no `chrome-headless-shell` process rows. Browser proof remains the next one-route QA slice; production proof remains credential/approval gated. |
 | LUC-5055 source-control closure | Paperclip heartbeat context; `git status --short --branch -uall`; `git diff --stat`; `git diff --check`; `git rev-parse HEAD`; generated JSON parse check; scoped secret/data hygiene; local commit | PASS | 2026-06-20 LUC-5055 | Published `docs/planning/luc-5055-source-control-closure-for-luc-5052-known-state-evidence-packet.md`. Classified the [LUC-5052](/LUC/issues/LUC-5052) generated architecture/status evidence packet, predecessor [LUC-5050](/LUC/issues/LUC-5050) protected-recheck note, and state/context updates as one coherent local SCM batch. Pre-closure `HEAD=d7b6f933df0f845aa04527b31bc75954c41c6dcb`; branch `main...origin/main [ahead 57]`; `git diff --stat` before this closure packet reported `15 files changed, 7274 insertions(+), 6898 deletions(-)`. `git diff --check` passed with LF-to-CRLF warnings only; generated graph/health JSON parsed; scoped high-confidence secret/data hygiene found no key values. Push held; deploy impact none. |
 | LUC-5050 Roost protected recheck | Redacted env presence check; `npm run aog:deploy-smoke`; `npm run architecture:status`; `git rev-parse --short HEAD`; branch readback | BLOCKED / CONTINUITY PASS | 2026-06-20 LUC-5050 | Published `docs/planning/luc-5050-roost-protected-recheck.md`. The protected smoke was attempted once and failed before any target request because `[aog-deploy-smoke] COMPANYCORE_BASE_URL is required.` Redacted presence proof found `COMPANYCORE_API_KEY`, `COMPANYCORE_BASE_URL`, `COMPANYCORE_API_URL`, `ROOST_API_BASE_URL`, and `API_BASE_URL` absent. Continuity proof passed with architecture status `GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass. `HEAD=d7b6f933`, branch `main...origin/main [ahead 57]`, UTC `2026-06-20T11:10:03.6413309Z`. Unblock owner/action: runtime secret owner or environment owner injects approved `COMPANYCORE_BASE_URL` and valid `COMPANYCORE_API_KEY`, then board/authorized gate provides one fresh same-session protected rerun authorization. No product-code mutation, push, deploy, restart, production mutation, browser, database, Docker, or watcher process occurred. |
 | LUC-5046 source-control closure | Paperclip heartbeat context; `git status --short --branch -uall`; `git diff --stat`; `git diff --check`; `git rev-parse HEAD`; generated JSON parse check; scoped secret/data hygiene; local commit | PASS | 2026-06-20 LUC-5046 | Published `docs/planning/luc-5046-source-control-closure-for-luc-5039-known-state-evidence-packet.md`. Classified the [LUC-5039](/LUC/issues/LUC-5039) generated architecture/status evidence packet and state/context updates as one coherent local SCM batch. Pre-closure `HEAD=7e228aedfc8a8d4c139fc0a9c6a663201c8a290a`; branch `main...origin/main [ahead 56]`; `git diff --stat` before this closure packet reported `16 files changed, 7119 insertions(+), 6887 deletions(-)`. `git diff --check` passed with LF-to-CRLF warnings only; generated graph/health JSON parsed; scoped high-confidence secret/data hygiene found no key values. Push held; deploy impact none. |

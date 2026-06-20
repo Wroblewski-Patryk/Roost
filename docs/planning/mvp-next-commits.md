@@ -7,6 +7,45 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-5072 source-control closure:
+      completed locally for the [LUC-5068](/LUC/issues/LUC-5068) known-state
+      evidence packet and carried [LUC-5065](/LUC/issues/LUC-5065) QA/state
+      packet. Output:
+      `docs/planning/luc-5072-source-control-closure-for-luc-5068-known-state-evidence-packet.md`.
+      Evidence: dirty set classified, `git diff --check` PASS with only
+      LF-to-CRLF warnings, generated JSON parsed at `2337` entities /
+      `4772` relations, scoped secret scan PASS, and `npm run
+      architecture:status` retained GREEN after closure. Push held for future
+      release batch or explicit source-ref/deploy need; deploy impact none.
+
+- [x] LUC-5068 known-state evidence and architecture baseline:
+      completed for Roost PM scope. Output:
+      `docs/planning/luc-5068-known-state-evidence-and-architecture-baseline.md`.
+      Evidence: Paperclip architecture-awareness scanner PASS
+      (`entities=2337`, `relations=4772`, `files=13664`, generated at
+      `2026-06-20T12:03:02.409Z`); `npm run architecture:status` PASS
+      (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+      delta `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`;
+      architecture health `implementation_without_tests=1162`. Source-control
+      closure: [LUC-5072](/LUC/issues/LUC-5072) completed locally for this
+      generated/status evidence packet and the existing [LUC-5065](/LUC/issues/LUC-5065)
+      QA/state packet. No production/deploy/protected action occurred.
+
+- [x] LUC-5065 release-critical QA proof ladder:
+      completed for the [LUC-5060](/LUC/issues/LUC-5060) evidence packet.
+      Output:
+      `docs/planning/luc-5065-release-critical-journey-proof-ladder.md`.
+      Evidence: `npm run check:route-capabilities` PASS
+      (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+      `npm run test:api:local` PASS after server/web build, all `31`
+      migrations, seed, and `7/7` API subtests. Selected local ladder rungs
+      are owner auth/workspace, API-key/capability/MCP, owner
+      shell/dashboard/department catalog, operating graph/department operating
+      rooms, and assets/workforce/operations packets. Cleanup checks found no
+      validation DB container rows and no `chrome-headless-shell` process rows.
+      Next QA work is one authenticated browser route proof, not broad
+      missing-test work from `implementation_without_tests=1162`.
+
 - [x] LUC-5055 source-control closure:
       completed locally for the [LUC-5052](/LUC/issues/LUC-5052) known-state
       evidence packet. Output:

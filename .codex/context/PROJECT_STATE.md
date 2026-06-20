@@ -2,6 +2,54 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5072` source-control closure completed locally for the
+  [LUC-5068](/LUC/issues/LUC-5068) known-state evidence packet and carried
+  [LUC-5065](/LUC/issues/LUC-5065) QA/state packet. Output:
+  `docs/planning/luc-5072-source-control-closure-for-luc-5068-known-state-evidence-packet.md`.
+  Evidence: dirty set classified, `git diff --check` PASS with only
+  LF-to-CRLF warnings, generated JSON parsed at `2337` entities /
+  `4772` relations, scoped secret scan PASS, and `npm run
+  architecture:status` retained GREEN after closure. Commit:
+  local source-control closure commit for this packet. Push status: held for
+  future release batch or explicit source-ref/deploy need. Deploy impact:
+  none.
+
+- 2026-06-20: `LUC-5068` Roost known-state evidence and architecture
+  baseline completed for Roost PM scope. Output:
+  `docs/planning/luc-5068-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2337`,
+  `relations=4772`, `files=13664`, generated at
+  `2026-06-20T12:03:02.409Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`;
+  disconnected entities `0`; dependency report `437` relations / `95`
+  entities; architecture health `implementation_without_tests=1162`,
+  classified inferred noise `9`, docs gaps `0`; pre-run
+  `HEAD=7416526d4600faf66e42d2cd2060e70b9caa4d5d`, branch
+  `main...origin/main [ahead 59]`. Closure:
+  [LUC-5072](/LUC/issues/LUC-5072) completed local source-control closure for
+  this generated/status evidence packet and the existing [LUC-5065](/LUC/issues/LUC-5065)
+  QA/state packet. No runtime code, schema, migration, protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, server, browser, database, Docker, or watcher process occurred.
+
+- 2026-06-20: `LUC-5065` release-critical QA proof ladder completed from the
+  [LUC-5060](/LUC/issues/LUC-5060) known-state evidence packet. Output:
+  `docs/planning/luc-5065-release-critical-journey-proof-ladder.md`.
+  Evidence: `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  `npm run test:api:local` PASS after server/web build, all `31` migrations,
+  seed, and `7/7` API subtests. Selected local ladder rungs: owner
+  auth/workspace, API-key/capability/MCP, owner shell/dashboard/department
+  catalog, operating graph/department operating rooms, and
+  assets/workforce/operations packets. Cleanup checks found no
+  `companycore-test-postgres` validation container rows and no
+  `chrome-headless-shell` process rows. No code, schema, migration authoring,
+  deploy, push, restart, protected smoke, production mutation, credential
+  access, or secret disclosure occurred. Next QA work should choose exactly
+  one authenticated browser route proof rather than broad work from the
+  `implementation_without_tests=1162` aggregate.
+
 - 2026-06-20: `LUC-5060` Roost known-state evidence and architecture
   baseline completed for Roost PM scope after local-board requested
   `softwarehouse-known-state-wakeup:v1`. Output:
