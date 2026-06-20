@@ -2,6 +2,61 @@
 
 Last updated: 2026-06-20
 
+Source-control closure note: LUC-4841 is VERIFIED_DONE for the Roost PM source
+control lane closing the [LUC-4837](/LUC/issues/LUC-4837) known-state evidence
+packet. The closure packet is recorded in
+`docs/planning/luc-4841-source-control-closure-for-luc-4837-evidence-packet.md`.
+Evidence: `git status --short --branch -uall` showed
+`main...origin/main [ahead 36]` before closure with the [LUC-4837](/LUC/issues/LUC-4837)
+and [LUC-4842](/LUC/issues/LUC-4842) planning packets plus generated/source-of-truth
+files dirty; `git diff --stat` showed `15 files changed, 7119 insertions(+),
+6661 deletions(-)` before the closure packet; `git diff --check` passed with
+line-ending conversion warnings only. Push is held for a future release batch
+or explicit source-ref/deploy need. No runtime code, schema, migration,
+protected smoke, deploy, push, restart, production mutation, credential
+access, secret disclosure, server, browser, database, Docker, or watcher
+process occurred.
+
+QA proof-ladder target note: LUC-4842 is DONE for the next target selection
+from current architecture test-evidence debt after Operations and Assets were
+locally verified. The packet is recorded in
+`docs/planning/luc-4842-relationships-proof-ladder-target-from-test-evidence-debt.md`.
+Selected target: `05 Relationships -> Context/Overview`, including
+`GET /v1/relationships/context`, `relationships:read`,
+`src/modules/relationships/relationships.routes.ts`, and
+`web/src/features/departments/relationships-route.tsx`. Evidence:
+`docs/graphs/architecture-health.json` reports
+`implementation_without_tests=1161`; static inspection confirmed
+`relationships:read`, `GET /v1/relationships/context`, and
+`/areas?area=05-relacje&view=overview` align; `npm run
+check:route-capabilities` passed (`checkedManifestRoutes=180`,
+`checkedRouteFiles=35`, `status=ok`). Confidence classification:
+implemented, not yet locally proof-ladder verified at current granularity.
+Next proof/fix: [LUC-4844](/LUC/issues/LUC-4844) owns `npm run
+test:api:local`, then authenticated desktop/mobile Relationships proof if API
+remains green; protected production proof remains gated by the release and
+credential approval path.
+
+Roost known-state baseline note: LUC-4837 is VERIFIED_DONE as a Roost Project
+Manager evidence lane. The packet is recorded in
+`docs/planning/luc-4837-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2274`,
+`relations=4522`, `files=13566`, generated at
+`2026-06-20T04:42:46.848Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task sync readback showed `0` task-link/proof-link gaps;
+architecture health showed `implementation_without_tests=1161`; dependency
+report showed `437` relations / `95` entities; ownership report showed
+`Docs Memory Lead=938`, `Engineering Delivery Lead=1335`, and
+`Roost Project Manager=1`; pre-refresh `HEAD=8c1fca46`. Readiness delta:
+local architecture remains green, recent Operations and Assets proof ladders
+are locally verified, and no new PM-owned implementation defect was found.
+Next proof/fix: source-control closure for this generated/status evidence
+packet is delegated to [LUC-4841](/LUC/issues/LUC-4841); QA proof-target
+selection from remaining test-evidence debt is delegated to
+[LUC-4842](/LUC/issues/LUC-4842); protected runtime proof remains blocked
+until fresh key-scope evidence plus one-run approval exist.
+
 Source-control confidence note: LUC-4834 is VERIFIED_DONE for the combined
 source-control closure of [LUC-4813](/LUC/issues/LUC-4813),
 [LUC-4821](/LUC/issues/LUC-4821), and [LUC-4824](/LUC/issues/LUC-4824). The

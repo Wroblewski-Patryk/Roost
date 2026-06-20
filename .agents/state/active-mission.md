@@ -4,6 +4,109 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-4841-SOURCE-CONTROL-CLOSURE-LUC-4837
+- Status: VERIFIED_DONE
+- Selected objective: Close source control for the
+  [LUC-4837](/LUC/issues/LUC-4837) local architecture evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4841](/LUC/issues/LUC-4841), assigned to Roost Project Manager. The
+  parent [LUC-4837](/LUC/issues/LUC-4837) packet explicitly delegated
+  generated/status evidence source-control closure here. During closure,
+  interleaved [LUC-4842](/LUC/issues/LUC-4842) QA target-selection state was
+  already present in shared files, so it was preserved as part of the coherent
+  evidence/docs/state batch.
+- Scope: dirty-tree classification, generated/status evidence preservation,
+  interleaved QA target-selection state preservation, source-of-truth
+  synchronization, `git diff --check`, local commit, and push/deploy
+  disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4841-source-control-closure-for-luc-4837-evidence-packet.md`.
+- Evidence: pre-closure `HEAD=8c1fca46`; branch
+  `main...origin/main [ahead 36]`; dirty tree classified as one coherent
+  evidence/docs/state batch including [LUC-4837](/LUC/issues/LUC-4837) and
+  interleaved [LUC-4842](/LUC/issues/LUC-4842); `git diff --stat` before this
+  closure packet showed `15 files changed, 7119 insertions(+), 6661
+  deletions(-)`; `git diff --check` passed with line-ending conversion
+  warnings only.
+- Final disposition: done for source-control closure. The coherent local
+  packet is preserved in a local commit; push is held for a future release
+  batch or explicit source-ref/deploy need.
+
+## Previous Mission
+
+- Mission ID: LUC-4842-RELATIONSHIPS-PROOF-LADDER-TARGET
+- Status: VERIFIED_DONE
+- Selected objective: Select the next QA proof-ladder target from Roost's
+  remaining architecture test-evidence debt after Operations and Assets local
+  proof completed.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4842](/LUC/issues/LUC-4842), assigned to QA & Verification Engineer.
+  Parent [LUC-4837](/LUC/issues/LUC-4837) delegated QA target selection from
+  `implementation_without_tests=1161`.
+- Scope: source-of-truth review, architecture-health debt grouping, module
+  confidence review, next proof target selection, static route/capability
+  readiness proof, child execution issue creation, planning packet, and state
+  synchronization.
+- Exclusions: no runtime code, schema, migration, full API/database test,
+  browser proof, protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, server, database, Docker, browser, or
+  watcher process.
+- Output:
+  `docs/planning/luc-4842-relationships-proof-ladder-target-from-test-evidence-debt.md`.
+- Evidence: selected `05 Relationships -> Context/Overview` because
+  Operations and Assets are already locally verified, Relationships remains in
+  the `implementation_without_tests=1161` signal, and the audit identifies it
+  as the next valuable department-system target. Static proof:
+  `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`), with static inspection confirming
+  `relationships:read`, `GET /v1/relationships/context`, and
+  `/areas?area=05-relacje&view=overview` align.
+- Final disposition: done for QA selection scope. The executable proof ladder
+  is delegated to [LUC-4844](/LUC/issues/LUC-4844): run `npm run
+  test:api:local`, then authenticated desktop/mobile Relationships proof if
+  API remains green. Protected production proof remains gated by the existing
+  release/credential approval path.
+
+## Previous Mission
+
+- Mission ID: LUC-4837-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE
+- Selected objective: Refresh Roost local known-state evidence after the
+  [LUC-4837](/LUC/issues/LUC-4837) `softwarehouse-known-state-wakeup:v1`
+  comment and convert findings into concrete repair lanes.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4837](/LUC/issues/LUC-4837), assigned to Roost Project Manager. The
+  latest local-board comment explicitly requested local evidence collection
+  and repair-lane conversion with no push, deploy, restart, protected smoke,
+  production mutation, or secret disclosure.
+- Scope: source-of-truth review, Paperclip architecture-awareness refresh,
+  non-protected architecture status proof, generated report readback, child
+  lane creation, planning packet, and source-of-truth synchronization.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4837-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: scanner PASS (`entities=2274`, `relations=4522`, `files=13566`,
+  generated at `2026-06-20T04:42:46.848Z`); `npm run architecture:status`
+  PASS (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass); task sync reports `0`
+  task-link/proof gaps; architecture health reports
+  `implementation_without_tests=1161`; dependency report shows `437`
+  relations / `95` entities; ownership split is `Docs Memory Lead=938`,
+  `Engineering Delivery Lead=1335`, `Roost Project Manager=1`; pre-refresh
+  `HEAD=8c1fca46`, branch `main...origin/main [ahead 36]`.
+- Final disposition: done for PM baseline scope. Source-control closure for
+  this generated/status evidence packet is delegated to
+  [LUC-4841](/LUC/issues/LUC-4841), and next QA proof-target selection from
+  remaining implementation-without-test debt is delegated to
+  [LUC-4842](/LUC/issues/LUC-4842).
+
+## Previous Mission
+
 - Mission ID: LUC-4834-SOURCE-CONTROL-CLOSURE-COMBINED-EVIDENCE
 - Status: VERIFIED_DONE
 - Selected objective: Close source control for the combined

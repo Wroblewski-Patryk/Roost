@@ -4,6 +4,68 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4841` source-control closure for the
+   [LUC-4837](/LUC/issues/LUC-4837) architecture evidence packet is complete.
+   - Output:
+     `docs/planning/luc-4841-source-control-closure-for-luc-4837-evidence-packet.md`.
+   - Proof:
+     pre-closure `HEAD=8c1fca46`; branch `main...origin/main [ahead 36]`;
+     dirty tree classified as one coherent evidence/docs/state batch
+     including interleaved [LUC-4842](/LUC/issues/LUC-4842) state; `git diff
+     --stat` before this closure packet showed `15 files changed, 7119
+     insertions(+), 6661 deletions(-)`; `git diff --check` passed with
+     line-ending conversion warnings only.
+   - Next owner/action:
+     Push is held for a future release batch or explicit source-ref/deploy
+     need. [LUC-4844](/LUC/issues/LUC-4844) owns the next executable
+     Relationships proof ladder.
+
+1. `LUC-4842` QA proof-ladder target selection is complete.
+   - Output:
+     `docs/planning/luc-4842-relationships-proof-ladder-target-from-test-evidence-debt.md`.
+   - Selected target:
+     `05 Relationships -> Context/Overview`, including
+     `GET /v1/relationships/context`, `relationships:read`,
+     `src/modules/relationships/relationships.routes.ts`, and
+     `/areas?area=05-relacje&view=overview` through
+     `web/src/features/departments/relationships-route.tsx`.
+   - Proof:
+     `docs/graphs/architecture-health.json` reports
+     `implementation_without_tests=1161`; Operations and Assets are already
+     locally verified by [LUC-4777](/LUC/issues/LUC-4777) and
+     [LUC-4821](/LUC/issues/LUC-4821); static route/capability inspection
+     confirmed `relationships:read`, `GET /v1/relationships/context`, and the
+     web route align; `npm run check:route-capabilities` passed
+     (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`).
+   - Next owner/action:
+     [LUC-4844](/LUC/issues/LUC-4844) owns the executable proof ladder:
+     `npm run test:api:local`, then authenticated desktop/mobile proof for
+     `/areas?area=05-relacje&view=overview` if API remains green. Protected
+     runtime proof remains externally gated by key-scope evidence plus
+     one-run approval.
+
+1. `LUC-4837` Roost known-state evidence and architecture baseline is
+   complete.
+   - Output:
+     `docs/planning/luc-4837-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2274`,
+     `relations=4522`, `files=13566`, generated at
+     `2026-06-20T04:42:46.848Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task sync reports `0`
+     task-link/proof gaps; architecture health reports
+     `implementation_without_tests=1161`; dependency report shows `437`
+     relations / `95` entities; ownership split is `Docs Memory Lead=938`,
+     `Engineering Delivery Lead=1335`, `Roost Project Manager=1`;
+     pre-refresh `HEAD=8c1fca46`.
+   - Next owner/action:
+     [LUC-4841](/LUC/issues/LUC-4841) owns source-control closure for the
+     generated/status evidence packet. [LUC-4842](/LUC/issues/LUC-4842) owns
+     QA selection of the next proof-ladder target from remaining
+     test-evidence debt. Protected runtime proof remains externally gated by
+     key-scope evidence plus one-run approval.
+
 1. `LUC-4834` source-control closure for the combined
    [LUC-4813](/LUC/issues/LUC-4813), [LUC-4821](/LUC/issues/LUC-4821), and
    [LUC-4824](/LUC/issues/LUC-4824) evidence batch is complete.

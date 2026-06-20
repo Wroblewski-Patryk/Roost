@@ -7,6 +7,24 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-4842 QA proof-ladder target selection from
+      architecture test-evidence debt: completed. Output:
+      `docs/planning/luc-4842-relationships-proof-ladder-target-from-test-evidence-debt.md`.
+      Selected target: `05 Relationships -> Context/Overview`
+      (`GET /v1/relationships/context`, `relationships:read`,
+      `src/modules/relationships/relationships.routes.ts`, and
+      `/areas?area=05-relacje&view=overview`). Evidence:
+      `docs/graphs/architecture-health.json` reports
+      `implementation_without_tests=1161`; Operations and Assets are already
+      locally verified by [LUC-4777](/LUC/issues/LUC-4777) and
+      [LUC-4821](/LUC/issues/LUC-4821); route/capability inspection confirmed
+      the Relationships API and web route align; `npm run
+      check:route-capabilities` passed (`checkedManifestRoutes=180`,
+      `checkedRouteFiles=35`, `status=ok`). Follow-up:
+      [LUC-4844](/LUC/issues/LUC-4844) owns `npm run test:api:local`, then
+      authenticated desktop/mobile proof for
+      `/areas?area=05-relacje&view=overview` if API remains green.
+
 - [x] LUC-4834 source-control closure for the combined
       [LUC-4813](/LUC/issues/LUC-4813), [LUC-4821](/LUC/issues/LUC-4821), and
       [LUC-4824](/LUC/issues/LUC-4824) evidence batch: completed. Output:

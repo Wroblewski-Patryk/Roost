@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T04:28:13.215Z
+Generated: 2026-06-20T04:42:46.848Z
 
 ## Canonical Exports
 
@@ -1056,6 +1056,10 @@ Generated: 2026-06-20T04:28:13.215Z
 | documents | document:luc-4808-known-state-evidence-and-architecture-baseline:1fa2874211 | module:docs:6784d83cb0 | docs/planning/luc-4808-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4812-source-control-closure-for-luc-4808-evidence-packet:876c60ce05 | module:docs:6784d83cb0 | docs/planning/luc-4812-source-control-closure-for-luc-4808-evidence-packet.md |
 | documents | document:luc-4813-assets-proof-ladder-target-from-implementation-without-tests:bee7b8946b | module:docs:6784d83cb0 | docs/planning/luc-4813-assets-proof-ladder-target-from-implementation-without-tests.md |
+| documents | document:luc-4821-assets-files-folders-proof-ladder:ebad0c5bf4 | module:docs:6784d83cb0 | docs/planning/luc-4821-assets-files-folders-proof-ladder.md |
+| documents | document:luc-4824-known-state-evidence-and-architecture-baseline:b81849e6ea | module:docs:6784d83cb0 | docs/planning/luc-4824-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4831-source-control-closure-for-luc-4824-evidence-packet:174e9c8a7a | module:docs:6784d83cb0 | docs/planning/luc-4831-source-control-closure-for-luc-4824-evidence-packet.md |
+| documents | document:luc-4834-source-control-closure-for-combined-evidence-batch:7cd2ed1149 | module:docs:6784d83cb0 | docs/planning/luc-4834-source-control-closure-for-combined-evidence-batch.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1214,7 +1218,3 @@ Generated: 2026-06-20T04:28:13.215Z
 | documents | document:post-v1-company-os-pipeline-runs-id-actions-start-stage:226b9d95dc | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0122.md |
 | documents | document:post-v1-company-os-pipeline-runs-id-task-links:494f7ddf48 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0168.md |
 | documents | document:post-v1-company-os-stage-runs-id-actions-block:ffa79c528d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0123.md |
-| documents | document:post-v1-company-os-stage-runs-id-actions-complete:9340018d2c | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0124.md |
-| documents | document:post-v1-company-os-stage-runs-id-actions-validate:73b9579c60 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0125.md |
-| documents | document:post-v1-company-os-standards:685592e5e3 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0126.md |
-| documents | document:post-v1-company-os-workflow-definitions-drafts-id-actions-activate:4cc09ddd48 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0130.md |

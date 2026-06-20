@@ -1,6 +1,62 @@
 # TASK_BOARD
 
 ## Ready
+- 2026-06-20: `LUC-4841` source-control closure completed for the
+  [LUC-4837](/LUC/issues/LUC-4837) Roost architecture evidence packet.
+  Output:
+  `docs/planning/luc-4841-source-control-closure-for-luc-4837-evidence-packet.md`.
+  Decision: preserve the coherent local evidence/docs/state packet from the
+  [LUC-4837](/LUC/issues/LUC-4837) scanner pass, including interleaved
+  [LUC-4842](/LUC/issues/LUC-4842) QA target-selection state that had already
+  landed in shared files before closure. Evidence: pre-closure
+  `HEAD=8c1fca46`; branch `main...origin/main [ahead 36]`; dirty set
+  classified as coherent with [LUC-4837](/LUC/issues/LUC-4837) and
+  [LUC-4842](/LUC/issues/LUC-4842); `git diff --stat` showed `15 files
+  changed, 7119 insertions(+), 6661 deletions(-)` before this closure packet;
+  `git diff --check` passed with line-ending conversion warnings only. Push
+  held. Scope: no new runtime code, schema, migration, protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, server, browser, database, Docker, or watcher process.
+  Disposition: `DONE`.
+- 2026-06-20: `LUC-4842` QA proof-ladder target selection completed from
+  current architecture test-evidence debt. Output:
+  `docs/planning/luc-4842-relationships-proof-ladder-target-from-test-evidence-debt.md`.
+  Selected target: `05 Relationships -> Context/Overview`, covering
+  `GET /v1/relationships/context`, `relationships:read`,
+  `src/modules/relationships/relationships.routes.ts`, and
+  `/areas?area=05-relacje&view=overview` through
+  `web/src/features/departments/relationships-route.tsx`. Evidence:
+  `docs/graphs/architecture-health.json` reports
+  `implementation_without_tests=1161`; Operations and Assets are already
+  locally verified by [LUC-4777](/LUC/issues/LUC-4777) and
+  [LUC-4821](/LUC/issues/LUC-4821); route/capability inspection confirmed the
+  Relationships API and web route align; `npm run check:route-capabilities`
+  passed (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`).
+  Follow-up: [LUC-4844](/LUC/issues/LUC-4844) owns the executable proof
+  ladder: `npm run test:api:local`, then authenticated desktop/mobile proof
+  for `/areas?area=05-relacje&view=overview` if API remains green. Scope: no
+  runtime code, schema, migration, full API/database test, browser proof,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, secret disclosure, server, database, Docker, browser, or watcher
+  process. Disposition: `DONE`.
+- 2026-06-20: `LUC-4837` Roost known-state evidence and architecture
+  baseline completed. Output:
+  `docs/planning/luc-4837-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2274`,
+  `relations=4522`, `files=13566`, generated at
+  `2026-06-20T04:42:46.848Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task sync reports `0` task-link/proof gaps; architecture
+  health reports `implementation_without_tests=1161`; dependency report shows
+  `437` relations / `95` entities; ownership split is
+  `Docs Memory Lead=938`, `Engineering Delivery Lead=1335`,
+  `Roost Project Manager=1`; pre-refresh `HEAD=8c1fca46`. Follow-ups:
+  [LUC-4841](/LUC/issues/LUC-4841) owns generated/status source-control
+  closure and [LUC-4842](/LUC/issues/LUC-4842) owns QA proof-target
+  selection. Scope: no runtime code, schema, migration, protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, server, browser, database, Docker, or watcher process.
+  Disposition: `DONE`.
 - 2026-06-20: `LUC-4834` source-control closure completed for the combined
   [LUC-4813](/LUC/issues/LUC-4813), [LUC-4821](/LUC/issues/LUC-4821), and
   [LUC-4824](/LUC/issues/LUC-4824) evidence batch. Output:
