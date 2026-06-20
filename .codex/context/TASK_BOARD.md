@@ -2,6 +2,88 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5346` source-control closure for
+  [LUC-5344](/LUC/issues/LUC-5344) is complete locally. Output:
+  `docs/planning/luc-5346-source-control-closure-for-luc-5344-evidence-packet.md`.
+  Evidence: dirty set classified as coherent generated/status/planning/state
+  evidence plus carried [LUC-5338](/LUC/issues/LUC-5338) proof packet;
+  `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  architecture JSON parse PASS at `2026-06-20T22:13:24.166Z` (`2420`
+  entities / `5089` relations); scoped high-confidence secret/private-key scan
+  PASS with `0` matches; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass).
+  Disposition: `DONE`; push held for future release/source-ref batching;
+  deploy impact none.
+
+- 2026-06-20: `LUC-5344` known-state evidence and architecture baseline is
+  complete for the local-board wake comment, with local source-control closure
+  completed by [LUC-5346](/LUC/issues/LUC-5346).
+  Output:
+  `docs/planning/luc-5344-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS in `5581ms`, generated
+  `2026-06-20T22:07:36.484Z` (`2419` entities / `5085` relations / `13750`
+  files); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queue `0`, worklist `0`, delta `0/0/0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); task-sync, ownership, docs, proof,
+  implementation-task, and disconnected gaps remain `0`. Disposition: PM
+  evidence scope complete; follow-up lanes are
+  [LUC-5347](/LUC/issues/LUC-5347) Relationship/Operating Graph QA proof and
+  [LUC-5348](/LUC/issues/LUC-5348) Intake routing QA proof; deploy impact
+  none.
+
+- 2026-06-20: `LUC-5338` read-only department intelligence proof ladder is
+  complete for the local QA slice from [LUC-5336](/LUC/issues/LUC-5336).
+  Output:
+  `docs/planning/luc-5338-read-only-department-intelligence-proof-ladder.md`.
+  Selected journey: Strategy, Sales, Operations, Finance, Assets,
+  Relationships, and Operating Graph protected read packets, including
+  capability exposure, MCP manifest exposure, read-only agent packet semantics,
+  scoped-key denial, and workspace isolation assertions in `src/tests/api.test.ts`.
+  Evidence: `npm run test:api:local` with disposable PostgreSQL
+  `companycore-luc-5338-postgres` on port `55538` passed after server/web
+  build, `31` migrations, seed, and `7/7` API subtests (`CompanyCore v1
+  protected API flow` duration `11538.5699ms`, total `14273.6392ms`); `npm
+  run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all
+  gates pass). Cleanup found no validation DB container and no
+  `chrome-headless-shell` process. Disposition: `DONE`; no repair issue
+  warranted; deploy impact none.
+
+- 2026-06-20: `LUC-5336` known-state evidence and architecture baseline is
+  complete for PM evidence scope, with local source-control closure completed
+  by [LUC-5337](/LUC/issues/LUC-5337). Output:
+  `docs/planning/luc-5336-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS in `8668ms`, generated
+  `2026-06-20T21:48:57.245Z` (`2416` entities / `5075` relations / `13747`
+  files); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queue `0`, worklist `0`, delta `0/0/0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); task-sync, ownership, docs, proof,
+  implementation-task, and disconnected gaps remain `0`. Disposition: PM
+  evidence scope complete; [LUC-5337](/LUC/issues/LUC-5337) source-control
+  closure is local/no-push and [LUC-5338](/LUC/issues/LUC-5338) read-only
+  department intelligence QA proof is complete; deploy impact none.
+
+- 2026-06-20: `LUC-5333` Department/Workforce authority proof ladder is
+  complete for the local QA slice from [LUC-5331](/LUC/issues/LUC-5331).
+  Output:
+  `docs/planning/luc-5333-department-workforce-authority-proof-ladder.md`.
+  Selected journey: department catalog defaults/customization/isolation and
+  workforce entity authority, generated materials, sync queueing,
+  user-backed delete denial, hard delete, route/capability exposure, and
+  workspace isolation. Evidence: `npm run test:api:local` with disposable
+  PostgreSQL `companycore-luc-5333-postgres` on port `55533` passed after
+  server/web build, `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `93192.6202ms`, total
+  `99170.5941ms`); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass). Cleanup found no validation DB
+  container and no `chrome-headless-shell` process. Disposition: `DONE`; no
+  repair issue warranted; deploy impact none.
+
 - 2026-06-20: `LUC-5332` source-control closure for
   [LUC-5331](/LUC/issues/LUC-5331) is complete locally. Output:
   `docs/planning/luc-5332-source-control-closure-for-luc-5331-evidence-packet.md`.

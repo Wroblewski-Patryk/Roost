@@ -4,6 +4,133 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5346-SOURCE-CONTROL-CLOSURE
+- Status: VERIFIED_DONE_PENDING_COMMIT
+- Selected objective: Close local source control for the
+  [LUC-5344](/LUC/issues/LUC-5344) generated/status/state evidence packet.
+- Why this mission now: Paperclip assigned high-priority
+  [LUC-5346](/LUC/issues/LUC-5346) as the source-control closure lane after
+  [LUC-5344](/LUC/issues/LUC-5344) completed the Roost known-state baseline.
+- Scope: classify dirty generated/status/state files, include carried
+  same-wave [LUC-5338](/LUC/issues/LUC-5338) evidence, run source-control
+  closure checks, publish a closure packet, and create a local no-push commit.
+- Exclusions: no feature code, schema, migration, push, deploy, restart,
+  protected smoke, production mutation, credential access, secret disclosure,
+  browser proof, live provider action, server, Docker database, or watcher.
+- Output:
+  `docs/planning/luc-5346-source-control-closure-for-luc-5344-evidence-packet.md`.
+- Evidence: `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  architecture-awareness JSON parse PASS at `2026-06-20T22:13:24.166Z` with
+  `2420` entities and `5089` relations; scoped high-confidence
+  secret/private-key scan PASS with `0` matches; `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass).
+- Final disposition: source-control closure verified and ready for a local
+  commit. Push remains held for future release/source-ref batching; deploy
+  impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5338-READ-ONLY-DEPARTMENT-INTELLIGENCE-PROOF
+- Status: VERIFIED_DONE
+- Selected objective: Verify the read-only department intelligence packet API
+  slice selected by the [LUC-5336](/LUC/issues/LUC-5336) known-state evidence
+  packet.
+- Why this mission now: Paperclip assigned high-priority
+  [LUC-5338](/LUC/issues/LUC-5338) to QA after Auth/Workspace/API-key and
+  Department/Workforce proof ladders were already verified.
+- Scope: inspect strategy, sales, operations, finance, assets, relationships,
+  operating-graph routes, capability manifest, and existing API assertions; run
+  `npm run test:api:local` with a unique disposable database; run
+  route-capability and architecture status gates; and verify cleanup.
+- Exclusions: no feature code, schema, migration authoring, push, deploy,
+  restart, protected smoke, production mutation, credential access, secret
+  disclosure, browser proof, live provider action, server, or watcher.
+- Output:
+  `docs/planning/luc-5338-read-only-department-intelligence-proof-ladder.md`.
+- Evidence: `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5338-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55538` `npm run test:api:local` PASS after
+  server/web build, all `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `11538.5699ms`, total
+  `14273.6392ms`); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass). Cleanup found no
+  validation DB container and no `chrome-headless-shell` process.
+- Final disposition: QA proof scope complete. No defect was found and no repair
+  issue is warranted. Protected production/provider/browser proof remains
+  separately gated.
+
+## Previous Mission
+
+- Mission ID: LUC-5336-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE_PENDING_SCM_CLOSURE_AND_QA_FOLLOWUP
+- Selected objective: Refresh local Roost known-state architecture evidence
+  and classify the next owner-scoped work without feature implementation.
+- Why this mission now: Paperclip assigned high-priority
+  [LUC-5336](/LUC/issues/LUC-5336) to Roost PM as a fresh known-state evidence
+  collection lane.
+- Scope: run the Paperclip architecture-awareness refresh for Roost, read
+  generated health/proof/dependency/ownership/task-sync reports, run
+  `npm run architecture:status`, run `npm run check:route-capabilities`, and
+  publish the evidence packet.
+- Exclusions: no feature code, schema, migration, push, deploy, restart,
+  protected smoke, production mutation, credential access, secret disclosure,
+  browser proof, runtime server, Docker database, provider action, or live
+  account mutation.
+- Output:
+  `docs/planning/luc-5336-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: architecture-awareness refresh PASS in `8668ms`, generated
+  `2026-06-20T21:48:57.245Z` with `2416` entities, `5075` relations, and
+  `13747` files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  task-sync gaps `0`; ownership gaps `0`; docs gaps `0`; disconnected
+  entities `0`; implementation-without-task gaps `0`;
+  verified-without-proof gaps `0`; architecture health
+  `implementation_without_tests=1162`.
+- Final disposition: PM known-state scope complete. Follow-up lanes created:
+  [LUC-5337](/LUC/issues/LUC-5337) source-control closure for generated/status
+  state changes and [LUC-5338](/LUC/issues/LUC-5338) read-only department
+  intelligence QA proof ladder. Protected target proof remains
+  approval/credential gated.
+
+## Previous Mission
+
+- Mission ID: LUC-5333-DEPARTMENT-WORKFORCE-AUTHORITY-PROOF
+- Status: VERIFIED_DONE
+- Selected objective: Verify the Department/Workforce authority and read-packet
+  slice selected by the [LUC-5331](/LUC/issues/LUC-5331) known-state evidence
+  packet.
+- Why this mission now: Paperclip assigned high-priority
+  [LUC-5333](/LUC/issues/LUC-5333) to QA after [LUC-5331](/LUC/issues/LUC-5331)
+  created the focused follow-up lane and [LUC-5315](/LUC/issues/LUC-5315)
+  already verified Auth/Workspace/API-key authority.
+- Scope: inspect department/workforce routes, services, capability manifest,
+  app mounts, and API assertions; run `npm run test:api:local` with a unique
+  disposable database; run route-capability and architecture status gates; and
+  verify cleanup.
+- Exclusions: no feature code, schema, migration authoring, push, deploy,
+  restart, protected smoke, production mutation, credential access, secret
+  disclosure, browser proof, runtime server, live provider action, or watcher.
+- Output:
+  `docs/planning/luc-5333-department-workforce-authority-proof-ladder.md`.
+- Evidence: `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5333-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55533` `npm run test:api:local` PASS after
+  server/web build, all `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `93192.6202ms`, total
+  `99170.5941ms`); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass). Cleanup found no
+  validation DB container and no `chrome-headless-shell` process.
+- Final disposition: QA proof scope complete. No defect was found and no repair
+  issue is warranted. Protected production/provider/browser proof remains
+  separately gated.
+
+## Previous Mission
+
 - Mission ID: LUC-5331-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
 - Status: VERIFIED_DONE_PENDING_QA_FOLLOWUP
 - Selected objective: Handle the local-board known-state wake by collecting

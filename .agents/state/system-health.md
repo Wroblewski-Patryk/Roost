@@ -1,5 +1,57 @@
 # System Health
 
+- 2026-06-20: `LUC-5338` read-only department intelligence proof ladder
+  verified locally for the QA slice from [LUC-5336](/LUC/issues/LUC-5336).
+  Output:
+  `docs/planning/luc-5338-read-only-department-intelligence-proof-ladder.md`.
+  Selected journey: protected Strategy, Sales, Operations, Finance, Assets,
+  Relationships, and Operating Graph read packets mapped to route files,
+  `src/auth/capabilities.ts`, MCP manifest exposure, and `src/tests/api.test.ts`.
+  Proof: `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5338-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55538` `npm run test:api:local` PASS after
+  server/web build, `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `11538.5699ms`, total
+  `14273.6392ms`). Drift checks: `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`,
+  delta `0/0/0`, all gates pass). Cleanup found no validation DB container and
+  no `chrome-headless-shell` process. Deploy impact: none.
+
+- 2026-06-20: `LUC-5336` Roost known-state evidence baseline refreshed for
+  PM evidence scope. Output:
+  `docs/planning/luc-5336-known-state-evidence-and-architecture-baseline.md`.
+  Current health interpretation: architecture-awareness exports are fresh at
+  `2026-06-20T21:48:57.245Z` with `2416` entities / `5075` relations /
+  `13747` files; curated architecture status remains GREEN (`454/765/35`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  route-capability exposure remains consistent (`180` manifest routes / `35`
+  route files); task-sync, ownership, docs, proof, implementation-task, and
+  disconnected gaps remain `0`. The persistent
+  `implementation_without_tests=1162` signal remains scanner-level confidence
+  debt for named proof-ladder selection. Deploy impact: none; protected
+  runtime proof remains separately gated. Source-control closure:
+  [LUC-5337](/LUC/issues/LUC-5337) local/no-push packet
+  `docs/planning/luc-5337-source-control-closure-for-luc-5336-evidence-packet.md`.
+  [LUC-5338](/LUC/issues/LUC-5338) read-only department intelligence QA proof
+  is complete.
+
+- 2026-06-20: `LUC-5333` Department/Workforce authority proof ladder verified
+  locally for the QA slice from [LUC-5331](/LUC/issues/LUC-5331). Output:
+  `docs/planning/luc-5333-department-workforce-authority-proof-ladder.md`.
+  Selected journey: department catalog defaults/customization/isolation and
+  workforce entity authority, generated materials, sync queueing,
+  user-backed delete denial, hard delete, route/capability exposure, and
+  workspace isolation. Proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5333-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55533` `npm run test:api:local` PASS after
+  server/web build, `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `93192.6202ms`, total
+  `99170.5941ms`). Drift checks: `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`,
+  delta `0/0/0`, all gates pass). Cleanup found no validation DB container and
+  no `chrome-headless-shell` process. Deploy impact: none.
+
 - 2026-06-20: `LUC-5332` source-control closure is verified for the
   [LUC-5331](/LUC/issues/LUC-5331) evidence refresh. Current interpretation:
   generated architecture/status outputs and state/planning notes are preserved

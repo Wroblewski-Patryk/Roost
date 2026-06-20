@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T21:48:57.245Z
+Generated: 2026-06-20T22:13:24.166Z
 
 ## Canonical Exports
 
@@ -1200,6 +1200,10 @@ Generated: 2026-06-20T21:48:57.245Z
 | documents | document:luc-5331-known-state-evidence-and-architecture-baseline:cf6159f6f7 | module:docs:6784d83cb0 | docs/planning/luc-5331-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5332-source-control-closure-for-luc-5331-evidence-packet:549a3f161b | module:docs:6784d83cb0 | docs/planning/luc-5332-source-control-closure-for-luc-5331-evidence-packet.md |
 | documents | document:luc-5333-department-and-workforce-authority-proof-ladder:696c242c89 | module:docs:6784d83cb0 | docs/planning/luc-5333-department-workforce-authority-proof-ladder.md |
+| documents | document:luc-5336-known-state-evidence-and-architecture-baseline:f3c61097d5 | module:docs:6784d83cb0 | docs/planning/luc-5336-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5337-source-control-closure-for-luc-5336-evidence-packet:6ee2d938bd | module:docs:6784d83cb0 | docs/planning/luc-5337-source-control-closure-for-luc-5336-evidence-packet.md |
+| documents | document:luc-5338-read-only-department-intelligence-proof-ladder:00f2b9df8f | module:docs:6784d83cb0 | docs/planning/luc-5338-read-only-department-intelligence-proof-ladder.md |
+| documents | document:luc-5344-known-state-evidence-and-architecture-baseline:25307e25ff | module:docs:6784d83cb0 | docs/planning/luc-5344-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1214,7 +1218,3 @@ Generated: 2026-06-20T21:48:57.245Z
 | documents | document:migration:08a69198ac | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0026.md |
 | documents | document:migration:168f899a1c | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0006.md |
 | documents | document:migration:19382cb8b4 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0025.md |
-| documents | document:migration:2ac2a255e4 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0017.md |
-| documents | document:migration:2be89b1f80 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0024.md |
-| documents | document:migration:35ae1796c5 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0020.md |
-| documents | document:migration:3c251f84e1 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0014.md |

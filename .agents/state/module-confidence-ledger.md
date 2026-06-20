@@ -1,5 +1,86 @@
 # Module Confidence Ledger
 
+Roost known-state baseline note: [LUC-5344](/LUC/issues/LUC-5344) is
+VERIFIED_DONE_PENDING_SOURCE_CONTROL_CLOSURE_AND_QA_FOLLOWUP for the Roost PM
+evidence lane. The packet is recorded in
+`docs/planning/luc-5344-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness refresh PASS in `5581ms`, generated
+`2026-06-20T22:07:36.484Z` with `2419` entities, `5085` relations, and
+`13750` files; `npm run architecture:status` PASS (`GREEN`, graph
+`454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+gates pass); `npm run check:route-capabilities` PASS
+(`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`).
+Task-sync gaps, ownership gaps, docs gaps, disconnected entities,
+implementation-without-task gaps, and verified-without-proof gaps remain `0`.
+Architecture health remains `implementation_without_tests=1162`, classified as
+scanner-level confidence debt for named proof ladders rather than broad repair.
+Next confidence work is Relationship/Operating Graph depth proof and Intake
+routing proof from scoped QA issues. Source-control closure remains a PM
+follow-up. Protected target proof remains approval/credential gated.
+
+QA proof note: [LUC-5338](/LUC/issues/LUC-5338) is VERIFIED_DONE for the
+read-only department intelligence packet slice selected from the
+[LUC-5336](/LUC/issues/LUC-5336) known-state signal. Evidence packet:
+`docs/planning/luc-5338-read-only-department-intelligence-proof-ladder.md`.
+Selected journey: Strategy, Sales, Operations, Finance, Assets, Relationships,
+and Operating Graph protected read packets mapped to
+`src/modules/strategy/strategy.routes.ts`, `src/modules/sales/sales.routes.ts`,
+`src/modules/operations/operations.routes.ts`,
+`src/modules/finance/finance.routes.ts`, `src/modules/assets/assets.routes.ts`,
+`src/modules/relationships/relationships.routes.ts`,
+`src/modules/operating-graph/operating-graph.routes.ts`,
+`src/auth/capabilities.ts`, `src/mcp/manifest.ts`, and
+`src/tests/api.test.ts`. Local proof ran
+`COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5338-postgres`
+`COMPANYCORE_TEST_DB_PORT=55538` `npm run test:api:local`: server/web build
+PASS, all `31` migrations applied, seed PASS, and `7/7` API subtests PASS
+including `CompanyCore v1 protected API flow` (`11538.5699ms`, total
+`14273.6392ms`). `npm run check:route-capabilities` and `npm run
+architecture:status` also passed. Cleanup found no validation DB container and
+no `chrome-headless-shell` process. Confidence classification: local API
+contracts for read-only department intelligence packets are verified; no repair
+issue is warranted. Protected production/provider/browser proof remains a
+separate approval/credential-gated or future UI lane.
+
+Roost known-state baseline note: [LUC-5336](/LUC/issues/LUC-5336) is
+VERIFIED_DONE_PENDING_SOURCE_CONTROL_CLOSURE_AND_QA_FOLLOWUP for the Roost PM
+evidence lane. The packet is recorded in
+`docs/planning/luc-5336-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness refresh PASS in `8668ms`, generated
+`2026-06-20T21:48:57.245Z` with `2416` entities, `5075` relations, and
+`13747` files; `npm run architecture:status` PASS (`GREEN`, graph
+`454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+gates pass); `npm run check:route-capabilities` PASS
+(`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`).
+Task-sync gaps, ownership gaps, docs gaps, disconnected entities,
+implementation-without-task gaps, and verified-without-proof gaps remain `0`.
+Architecture health remains `implementation_without_tests=1162`, classified as
+scanner-level confidence debt for named proof ladders rather than broad repair.
+Next confidence work after [LUC-5338](/LUC/issues/LUC-5338) is future
+Relationship/Operating Graph depth or Intake routing proof from a new scoped
+issue. Source-control closure is [LUC-5337](/LUC/issues/LUC-5337).
+Protected target proof remains approval/credential gated.
+
+QA proof note: [LUC-5333](/LUC/issues/LUC-5333) is VERIFIED_DONE for the
+Department/Workforce authority slice selected from the
+[LUC-5331](/LUC/issues/LUC-5331) known-state signal. Evidence packet:
+`docs/planning/luc-5333-department-workforce-authority-proof-ladder.md`.
+Selected journey: department catalog authority and workforce authority mapped
+to `src/modules/departments/departments.routes.ts`,
+`src/modules/workforce/workforce.routes.ts`,
+`src/modules/workforce/workforce.service.ts`, `src/auth/capabilities.ts`,
+`src/app.ts`, and `src/tests/api.test.ts`. Local proof ran
+`COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5333-postgres`
+`COMPANYCORE_TEST_DB_PORT=55533` `npm run test:api:local`: server/web build
+PASS, all `31` migrations applied, seed PASS, and `7/7` API subtests PASS
+including `CompanyCore v1 protected API flow` (`93192.6202ms`, total
+`99170.5941ms`). `npm run check:route-capabilities` and `npm run
+architecture:status` also passed. Cleanup found no validation DB container and
+no `chrome-headless-shell` process. Confidence classification:
+Department/Workforce local API authority behavior is verified; no repair issue
+is warranted. Protected production/provider/browser proof remains a separate
+approval/credential-gated or future UI lane.
+
 Roost known-state baseline note: [LUC-5331](/LUC/issues/LUC-5331) is
 VERIFIED_DONE_PENDING_SOURCE_CONTROL_CLOSURE_AND_QA_FOLLOWUP for the Roost PM
 evidence lane. The packet is recorded in

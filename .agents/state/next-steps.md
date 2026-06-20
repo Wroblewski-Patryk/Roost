@@ -1,5 +1,77 @@
 # Next Steps
 
+- `LUC-5346` source-control closure for the
+  [LUC-5344](/LUC/issues/LUC-5344) Roost PM known-state evidence packet is
+  complete locally. Closure packet:
+  `docs/planning/luc-5346-source-control-closure-for-luc-5344-evidence-packet.md`.
+  Verification: `git diff --check` PASS with LF-to-CRLF warnings only;
+  generated architecture JSON parse PASS (`2420` entities / `5089` relations,
+  generated `2026-06-20T22:13:24.166Z`); scoped high-confidence
+  secret/private-key scan PASS with `0` matches; `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`).
+  Push remains held for future release/source-ref batching; deploy impact
+  none. Next QA owners/actions remain [LUC-5347](/LUC/issues/LUC-5347)
+  Relationship/Operating Graph depth proof and [LUC-5348](/LUC/issues/LUC-5348)
+  Intake routing proof.
+
+- `LUC-5344` Roost PM known-state evidence baseline is complete locally, with
+  source-control closure completed by [LUC-5346](/LUC/issues/LUC-5346).
+  Evidence packet:
+  `docs/planning/luc-5344-known-state-evidence-and-architecture-baseline.md`.
+  Current evidence: architecture-awareness refresh PASS (`2419` entities,
+  `5085` relations, `13750` files, generated
+  `2026-06-20T22:07:36.484Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes, `35` route files).
+  Task-sync, owner, docs, proof, implementation-task, and disconnected gaps
+  remain `0`; `implementation_without_tests=1162` remains scanner-level
+  confidence debt. Next owners/actions: QA and Verification Engineer
+  [LUC-5347](/LUC/issues/LUC-5347) Relationship/Operating Graph depth proof
+  and [LUC-5348](/LUC/issues/LUC-5348) Intake routing proof.
+  Protected target proof remains approval/credential gated.
+
+- `LUC-5338` read-only department intelligence proof ladder is complete.
+  Evidence packet:
+  `docs/planning/luc-5338-read-only-department-intelligence-proof-ladder.md`.
+  Local proof passed: `npm run test:api:local` with disposable PostgreSQL
+  `companycore-luc-5338-postgres` on port `55538` after server/web build,
+  `31` migrations, seed, and `7/7` API subtests; `npm run
+  check:route-capabilities`; `npm run architecture:status`; cleanup checks for
+  validation DB and headless browser processes. Next owner/action: no
+  read-only department intelligence repair issue is warranted; future QA proof
+  ladders should use new scoped issues for Relationship/Operating Graph depth
+  or Intake routing. Protected production, provider, and browser proof remain
+  separately gated.
+
+- `LUC-5336` Roost PM known-state evidence baseline is complete locally, with
+  source-control closure completed by [LUC-5337](/LUC/issues/LUC-5337) as a
+  local/no-push evidence packet. Evidence packet:
+  `docs/planning/luc-5336-known-state-evidence-and-architecture-baseline.md`.
+  Current evidence: architecture-awareness refresh PASS (`2416` entities,
+  `5075` relations, `13747` files, generated
+  `2026-06-20T21:48:57.245Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes, `35` route files).
+  Task-sync, owner, docs, proof, implementation-task, and disconnected gaps
+  remain `0`; `implementation_without_tests=1162` remains scanner-level
+  confidence debt. Closure packet:
+  `docs/planning/luc-5337-source-control-closure-for-luc-5336-evidence-packet.md`.
+  [LUC-5338](/LUC/issues/LUC-5338) read-only department intelligence QA proof
+  ladder is complete. Protected target proof remains approval/credential gated.
+
+- `LUC-5333` Department/Workforce authority proof ladder is complete.
+  Evidence packet:
+  `docs/planning/luc-5333-department-workforce-authority-proof-ladder.md`.
+  Local proof passed: `npm run test:api:local` with disposable PostgreSQL
+  `companycore-luc-5333-postgres` on port `55533` after server/web build,
+  `31` migrations, seed, and `7/7` API subtests; `npm run
+  check:route-capabilities`; `npm run architecture:status`; cleanup checks for
+  validation DB and headless browser processes. Next owner/action: no
+  Department/Workforce repair issue is warranted; future QA proof ladders
+  should use a new scoped issue for read-only department intelligence packets,
+  Relationship/Operating Graph, or Intake routing. Protected production,
+  provider, and browser proof remain separately gated.
+
 - `LUC-5332` Roost PM source-control closure is complete for the
   [LUC-5331](/LUC/issues/LUC-5331) known-state evidence packet. Evidence
   packet:
