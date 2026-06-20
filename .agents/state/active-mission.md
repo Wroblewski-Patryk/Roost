@@ -4,6 +4,36 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5251-SOURCE-CONTROL-CLOSURE-FOR-LUC-5244-EVIDENCE
+- Status: VERIFIED_DONE_PENDING_PUSH_BATCH
+- Selected objective: Close local source-control bookkeeping for the
+  [LUC-5244](/LUC/issues/LUC-5244) known-state evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5251](/LUC/issues/LUC-5251), assigned to Roost Project Manager, as the
+  source-control closure sidecar for [LUC-5244](/LUC/issues/LUC-5244).
+- Scope: classify source-control state, confirm the parent evidence packet and
+  generated/status exports were preserved, run SCM hygiene, parse generated
+  JSON, run scoped high-confidence secret/private-key scan, run architecture
+  status, publish a closure packet, and create one local closure commit for
+  the closure bookkeeping if coherent.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  browser, database, Docker, server, watcher, or feature implementation.
+- Output:
+  `docs/planning/luc-5251-source-control-closure-for-luc-5244-evidence-packet.md`.
+- Evidence: initial workspace was clean on `main...origin/main [ahead 81]`;
+  parent [LUC-5244](/LUC/issues/LUC-5244) packet and generated/status exports
+  were already preserved in local commit `1b714d3f`; generated architecture
+  JSON parse PASS at `2026-06-20T18:21:32.416Z` with `2386` entities / `4962`
+  relations; task-sync gaps remain `0`; `git diff --check` PASS; scoped
+  high-confidence secret/private-key scan found no matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: local source-control closure verified; push held for a
+  future release batch or explicit source-ref/deploy need; deploy impact none.
+
+## Previous Mission
+
 - Mission ID: LUC-5248-SOURCE-CONTROL-CLOSURE-FOR-LUC-5243-EVIDENCE
 - Status: VERIFIED_DONE_PENDING_PUSH_BATCH
 - Selected objective: Close local source-control bookkeeping for the

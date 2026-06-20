@@ -1,5 +1,15 @@
 # Next Steps
 
+- `LUC-5251` source-control closure for the
+  [LUC-5244](/LUC/issues/LUC-5244) known-state evidence packet is complete.
+  Evidence packet:
+  `docs/planning/luc-5251-source-control-closure-for-luc-5244-evidence-packet.md`.
+  Local checks passed: clean initial source-control state, generated JSON parse,
+  `git diff --check`, scoped high-confidence secret/private-key scan, and `npm
+  run architecture:status`. Next owner/action: no further work remains on
+  [LUC-5251](/LUC/issues/LUC-5251); push remains held for a future release
+  batch or explicit source-ref/deploy need.
+
 - `LUC-5248` source-control closure for the
   [LUC-5243](/LUC/issues/LUC-5243) known-state evidence packet is complete.
   Evidence packet:

@@ -1,5 +1,16 @@
 # System Health
 
+- 2026-06-20: `LUC-5251` source-control closure verified locally for the
+  [LUC-5244](/LUC/issues/LUC-5244) known-state evidence packet. Output:
+  `docs/planning/luc-5251-source-control-closure-for-luc-5244-evidence-packet.md`.
+  Checks: clean initial workspace on `main...origin/main [ahead 81]`; parent
+  packet already preserved in local commit `1b714d3f`; generated architecture
+  JSON parse PASS (`2026-06-20T18:21:32.416Z`, `2386` entities / `4962`
+  relations); `git diff --check` PASS; scoped high-confidence
+  secret/private-key scan PASS; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`, all gates pass). Deploy
+  impact: none; push held for a future release batch.
+
 - 2026-06-20: `LUC-5248` source-control closure verified locally for the
   [LUC-5243](/LUC/issues/LUC-5243) known-state evidence packet. Output:
   `docs/planning/luc-5248-source-control-closure-for-luc-5243-evidence-packet.md`.

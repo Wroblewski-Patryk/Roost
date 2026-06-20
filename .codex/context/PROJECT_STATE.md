@@ -2,6 +2,20 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5251` source-control closure completed locally for the
+  [LUC-5244](/LUC/issues/LUC-5244) known-state evidence packet. Output:
+  `docs/planning/luc-5251-source-control-closure-for-luc-5244-evidence-packet.md`.
+  Evidence: initial workspace was clean (`main...origin/main [ahead 81]`);
+  local commit `1b714d3f` already preserved the parent
+  `docs/planning/luc-5244-known-state-evidence-and-architecture-baseline.md`
+  packet and generated graph/status outputs; generated JSON parse PASS at
+  `2026-06-20T18:21:32.416Z` (`2386` entities / `4962` relations); task-sync
+  gaps remain `0`; `git diff --check` PASS for closure bookkeeping; scoped
+  high-confidence secret/private-key scan PASS; `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass). Local closure commit created; push held for
+  future release batch or explicit source-ref/deploy need. Deploy impact: none.
+
 - 2026-06-20: `LUC-5248` source-control closure completed locally for the
   [LUC-5243](/LUC/issues/LUC-5243) known-state evidence packet and carried
   same-day generated/status evidence already represented in the latest
