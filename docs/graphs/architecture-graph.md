@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T18:12:42.112Z
+Generated: 2026-06-20T18:21:32.416Z
 
 ## Canonical Exports
 
@@ -1164,7 +1164,12 @@ Generated: 2026-06-20T18:12:42.112Z
 | documents | document:luc-5225-source-control-closure-for-luc-5224-evidence-packet:1beeb967fe | module:docs:6784d83cb0 | docs/planning/luc-5225-source-control-closure-for-luc-5224-evidence-packet.md |
 | documents | document:luc-5226-operating-model-api-journey-proof:3b4478a713 | module:docs:6784d83cb0 | docs/planning/luc-5226-operating-model-api-journey-proof.md |
 | documents | document:luc-5230-known-state-evidence-and-architecture-baseline:98faf29644 | module:docs:6784d83cb0 | docs/planning/luc-5230-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5233-known-state-evidence-and-architecture-baseline:275ab35d8a | module:docs:6784d83cb0 | docs/planning/luc-5233-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5234-source-control-closure-for-luc-5230-evidence-packet:31d7d01b98 | module:docs:6784d83cb0 | docs/planning/luc-5234-source-control-closure-for-luc-5230-evidence-packet.md |
+| documents | document:luc-5235-dashboard-command-api-journey-proof:f9db9f5716 | module:docs:6784d83cb0 | docs/planning/luc-5235-dashboard-command-api-journey-proof.md |
+| documents | document:luc-5238-known-state-evidence-and-architecture-baseline:312fc26547 | module:docs:6784d83cb0 | docs/planning/luc-5238-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5239-source-control-closure-for-luc-5233-evidence-packet:093c63cb06 | module:docs:6784d83cb0 | docs/planning/luc-5239-source-control-closure-for-luc-5233-evidence-packet.md |
+| documents | document:luc-5243-known-state-evidence-and-architecture-baseline:5b8b666924 | module:docs:6784d83cb0 | docs/planning/luc-5243-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1213,8 +1218,3 @@ Generated: 2026-06-20T18:12:42.112Z
 | documents | document:mvp-scope:341e63028f | module:docs:6784d83cb0 | docs/product/mvp_scope.md |
 | documents | document:new-feature-registry-gate:1cbd1348cd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/WORKFLOW-NEW-FEATURE-REGISTRY-GATE.md |
 | documents | document:new-project-bootstrap:1ca3490da3 | module:docs:6784d83cb0 | docs/governance/new-project-bootstrap.md |
-| documents | document:new-project-bootstrap:2066835c1f | module:item:884f3f28db | NEW_PROJECT_BOOTSTRAP.md |
-| documents | document:next-steps:891e8f2c27 | module:docs:6784d83cb0 | docs/NEXT_STEPS.md |
-| documents | document:no-temporary-solutions:f4aac3d420 | module:item:884f3f28db | NO_TEMPORARY_SOLUTIONS.md |
-| documents | document:node-registry-csv:ba76f3981d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/CSV-NODES.md |
-| documents | document:non-goals:bb596193e7 | module:docs:6784d83cb0 | docs/product/non-goals.md |

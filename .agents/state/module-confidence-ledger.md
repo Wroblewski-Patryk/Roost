@@ -1,6 +1,114 @@
 # Module Confidence Ledger
 
+QA proof note: [LUC-5240](/LUC/issues/LUC-5240) is VERIFIED_DONE for the
+Company OS API journey selected from the fresh [LUC-5233](/LUC/issues/LUC-5233)
+`implementation_without_tests=1162` signal. Evidence packet:
+`docs/planning/luc-5240-company-os-api-journey-proof.md`. Local proof ran
+`npm run test:api:local` against disposable PostgreSQL
+`companycore-luc-5240-postgres` on port `55440`: server/web build PASS, `31`
+migrations applied, seed PASS, and `7/7` API subtests PASS including
+`CompanyCore v1 protected API flow` (`142091.5877ms`, total `150606.5177ms`).
+`npm run check:route-capabilities` and `npm run architecture:status` also
+passed. Confidence classification: Company OS protected read/command,
+workflow, approval/audit/event, MCP, capability, and scoped-key fail-closed
+behavior is locally verified; no repair issue is warranted.
+
 Last updated: 2026-06-20
+
+Source-control confidence note: [LUC-5248](/LUC/issues/LUC-5248) is
+VERIFIED_DONE_PENDING_PUSH_BATCH for the [LUC-5243](/LUC/issues/LUC-5243)
+known-state evidence packet. Evidence packet:
+`docs/planning/luc-5248-source-control-closure-for-luc-5243-evidence-packet.md`.
+Proof: `git diff --check` PASS with LF-to-CRLF warnings only; generated
+architecture JSON parse PASS at `2026-06-20T18:21:32.416Z` with `2386`
+entities / `4962` relations; scoped high-confidence secret/private-key scan
+PASS; `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+queues `0`). Confidence classification: local source-control closure is
+verified; push is intentionally held for a future release batch.
+
+Architecture scanner confidence note: [LUC-5247](/LUC/issues/LUC-5247) is
+VERIFIED_DONE for the known-state scanner budget and refresh policy. Evidence
+packet:
+`docs/planning/luc-5247-architecture-scanner-budget-refresh-policy-repair.md`.
+The old `90000ms` full-refresh budget proved insufficient in
+[LUC-5238](/LUC/issues/LUC-5238), failing before writes during `scan_files`.
+The repaired policy is `--status-only` preflight plus `--max-elapsed-ms
+180000 --progress-every 5000` when fresh exports are needed. Proof: status-only
+PASS in `21ms`, full refresh PASS in `158683ms` with `2386` entities / `4962`
+relations / `13716` files, final status-only PASS in `25ms`, and `npm run
+architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`). Future
+budget failure should be treated as stale-but-preserved exports and a focused
+scanner optimization/cache follow-up, not an unbounded heartbeat.
+
+Roost known-state baseline note: [LUC-5244](/LUC/issues/LUC-5244) is
+VERIFIED_DONE_PENDING_SCM_CLOSURE for the Documentation Steward evidence lane.
+The packet is recorded in
+`docs/planning/luc-5244-known-state-evidence-and-architecture-baseline.md`.
+Evidence: architecture-awareness `--status-only` PASS in `22ms` with no
+missing exports; bounded full refresh PASS in `86586ms`, generated
+`2026-06-20T18:19:59.577Z` with `2385` entities, `4956` relations, and
+`13715` files; `npm run architecture:status` PASS (`GREEN`, graph
+`454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+gates pass); `npm run check:route-capabilities` PASS
+(`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+task-sync gaps `0`; ownership gaps `0`; dependency report `438` relations /
+`95` entities. Architecture health reports `implementation_without_tests=1162`,
+actionable `1153`, classified inferred noise `9`, docs gaps `0`,
+disconnected entities `0`; confidence classification: local architecture,
+task/proof synchronization, ownership, and route-capability registration are
+verified, while local source-control closure is delegated to
+[LUC-5251](/LUC/issues/LUC-5251). Active [LUC-5240](/LUC/issues/LUC-5240)
+already owns the next QA proof ladder, so no duplicate QA lane was created.
+Protected target proof remains approval/credential gated.
+
+Roost known-state baseline note: [LUC-5243](/LUC/issues/LUC-5243) is
+VERIFIED_DONE with local source-control closure complete for the COO evidence lane. The packet is
+recorded in
+`docs/planning/luc-5243-known-state-evidence-and-architecture-baseline.md`.
+Evidence: architecture-awareness `--status-only` PASS in `23ms` with no
+missing exports; bounded full refresh PASS in `75434ms`, generated
+`2026-06-20T18:16:50.652Z` with `2383` entities, `4948` relations, and
+`13713` files; `npm run architecture:status` PASS (`GREEN`, graph
+`454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+gates pass); `npm run check:route-capabilities` PASS
+(`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+task-sync gaps `0`; ownership gaps `0`; dependency report `438` relations /
+`95` entities. Architecture health reports `implementation_without_tests=1162`,
+actionable `1153`, classified inferred noise `9`, docs gaps `0`,
+disconnected entities `0`; confidence classification: local architecture,
+task/proof synchronization, ownership, and route-capability registration are
+verified, and local source-control closure is verified through
+`docs/planning/luc-5248-source-control-closure-for-luc-5243-evidence-packet.md`.
+Protected target proof remains
+approval/credential gated.
+
+QA proof note: [LUC-5246](/LUC/issues/LUC-5246) is VERIFIED_DONE for one
+narrow route/API journey selected from the
+[LUC-5238](/LUC/issues/LUC-5238) `implementation_without_tests=1162` signal.
+Evidence packet:
+`docs/planning/luc-5246-commercial-exceptions-api-journey-proof.md`. Selected
+journey: Commercial Exceptions read-only risk packet,
+`GET /v1/commercial-exceptions`, mapped to `API-AUTO-0029`,
+`FEAT-AUTO-0005`, `src/modules/commercial-exceptions/commercial-exceptions.routes.ts`,
+and downstream Finance/Sales consumers. Proof used existing assertions in
+`src/tests/api.test.ts` for unauthenticated denial, exception totals and
+client filtering, note/approval/task/agent-event evidence, 100% discount
+values, missing-source and owner-decision risk flags, invoice-readiness
+blockers, no source mutation, foreign-workspace isolation, MCP manifest
+exposure, and blocked `apply_discount`. Local proof first hit a shell timeout
+on `companycore-luc-5246-postgres` port `55446`; the fresh validation rerun on
+`companycore-luc-5246b-postgres` port `55447` PASS after server/web build, all
+`31` migrations, seed, and `7/7` API subtests (`CompanyCore v1 protected API
+flow` duration `54690.5319ms`, total `60690.0263ms`). `npm run
+check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+`checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+(`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`). Cleanup found no
+validation DB container and no `chrome-headless-shell` process. Confidence
+classification: the Commercial Exceptions API journey is locally verified for
+protected workspace-scoped read behavior, money-impacting risk classification,
+non-mutating read-only behavior, foreign-workspace isolation, MCP/capability
+exposure, and blocked discount-action posture; no repair issue is warranted.
+Browser proof and protected production proof remain separate future gates.
 
 Source-control note: [LUC-5239](/LUC/issues/LUC-5239) is VERIFIED_DONE for the
 [LUC-5233](/LUC/issues/LUC-5233) known-state evidence packet. Evidence packet:
@@ -11,6 +119,57 @@ generated JSON parsing, a scoped high-confidence secret/private-key scan, and
 explicit source-ref/deploy need; deploy impact none. The separate
 [LUC-5235](/LUC/issues/LUC-5235) QA proof packet remains outside this issue's
 commit scope.
+
+QA proof note: [LUC-5235](/LUC/issues/LUC-5235) is VERIFIED_DONE for one
+narrow route/API journey selected from the fresh
+[LUC-5230](/LUC/issues/LUC-5230) `implementation_without_tests=1162` signal.
+Evidence packet:
+`docs/planning/luc-5235-dashboard-command-api-journey-proof.md`. Selected
+journey: General Dashboard command-center read model,
+`GET /v1/dashboard/command`, mapped to `FEAT-DASHBOARD-COMMAND`,
+`API-DASHBOARD-COMMAND`, `COMP-GENERAL-DASHBOARD`,
+`src/modules/dashboard/dashboard.routes.ts`, and
+`web/src/features/departments/general-dashboard.tsx`. Recent Strategy,
+Finance, Assets preview, Relationships, Process Core, and Operating Model
+proof rungs were already covered, so this lane selected the owner-facing
+command-center API. Proof used existing assertions in `src/tests/api.test.ts`
+for authenticated status, summary fields, Operations department signal,
+approval-review next action, blocked actions, and
+`agentPacket.mode = read_only_command_center`. Local proof ran through
+project-native `npm run test:api:local` against disposable PostgreSQL
+`companycore-luc-5235-postgres` on port `55435`: server/web build PASS; all
+`31` migrations applied; seed PASS; `node --test dist/tests/api.test.js` PASS
+with `7/7` subtests (`CompanyCore v1 protected API flow` duration
+`48773.019ms`, total `54318.5218ms`). `npm run check:route-capabilities`
+PASS (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+`npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`,
+delta `0/0/0`). Cleanup found no validation DB container and no
+`chrome-headless-shell` process. Confidence classification: the Dashboard
+command API journey is locally verified for protected workspace-scoped
+summary behavior, department signal exposure, actionable approval review
+guidance, read-only blocked-action posture, agent packet mode, and
+route/capability consistency; no repair issue is warranted. Browser proof and
+protected production proof remain separate future gates.
+
+Roost known-state baseline note: [LUC-5233](/LUC/issues/LUC-5233) is
+VERIFIED_PENDING_SCM_CLOSURE for the IPM evidence lane. The packet is recorded
+in `docs/planning/luc-5233-known-state-evidence-and-architecture-baseline.md`.
+Evidence: architecture-awareness `--status-only` PASS in `32ms` with no
+missing exports; bounded full refresh PASS in `62153ms`, generated
+`2026-06-20T18:09:42.771Z` with `2380` entities, `4938` relations, and
+`13710` files; `npm run architecture:status` PASS (`GREEN`, graph
+`454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+gates pass); `npm run check:route-capabilities` PASS
+(`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+task-sync gaps `0`; ownership gaps `0`; dependency report `438` relations /
+`95` entities. Architecture health reports `implementation_without_tests=1162`,
+actionable `1153`, classified inferred noise `9`, docs gaps `0`,
+disconnected entities `0`; confidence classification: local architecture,
+task/proof synchronization, ownership, and route-capability registration are
+verified, while local source-control closure and the next focused QA
+proof-ladder selection are delegated to [LUC-5239](/LUC/issues/LUC-5239) and
+[LUC-5240](/LUC/issues/LUC-5240). Protected target proof remains
+approval/credential gated.
 
 Source-control note: [LUC-5234](/LUC/issues/LUC-5234) is VERIFIED_DONE for the
 [LUC-5230](/LUC/issues/LUC-5230) known-state evidence packet and carried

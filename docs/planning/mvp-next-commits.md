@@ -1,5 +1,76 @@
 # MVP Next Commits
 
+- 2026-06-20: `LUC-5248` source-control closure is complete locally for the
+  [LUC-5243](/LUC/issues/LUC-5243) known-state evidence packet. Evidence
+  packet:
+  `docs/planning/luc-5248-source-control-closure-for-luc-5243-evidence-packet.md`.
+  Proof: `git diff --check` PASS with LF-to-CRLF warnings only; generated JSON
+  parse PASS at `2026-06-20T18:21:32.416Z`; scoped high-confidence
+  secret/private-key scan PASS; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`). Local commit created; push
+  held for future release batch or explicit source-ref/deploy need.
+
+- 2026-06-20: `LUC-5246` Commercial Exceptions API journey proof is complete.
+  Evidence packet:
+  `docs/planning/luc-5246-commercial-exceptions-api-journey-proof.md`.
+  Proof: fresh `npm run test:api:local` PASS against disposable PostgreSQL
+  `companycore-luc-5246b-postgres` on port `55447` after server/web build,
+  `31` migrations, seed, and `7/7` API subtests; `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues
+  `0`, delta `0/0/0`). No repair issue is warranted; browser and protected
+  production proof remain separate gates.
+
+- 2026-06-20: `LUC-5240` Company OS API journey proof is complete. Evidence
+  packet:
+  `docs/planning/luc-5240-company-os-api-journey-proof.md`. Proof: `npm run
+  test:api:local` PASS against disposable PostgreSQL
+  `companycore-luc-5240-postgres` on port `55440` after server/web build,
+  `31` migrations, seed, and `7/7` API subtests; `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues
+  `0`, delta `0/0/0`). No repair issue is warranted; browser and protected
+  production proof remain separate gates.
+
+- 2026-06-20: `LUC-5247` architecture scanner budget and refresh policy
+  repair is complete. Evidence packet:
+  `docs/planning/luc-5247-architecture-scanner-budget-refresh-policy-repair.md`.
+  Proof: status-only preflight PASS in `21ms`; full scanner refresh with
+  `--max-elapsed-ms 180000 --progress-every 5000` PASS in `158683ms`,
+  generated `2026-06-20T18:21:32.416Z` with `2386` entities / `4962`
+  relations / `13716` files; final status-only PASS in `25ms`; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`). Next commit/lane: source-control closure should preserve this
+  policy packet and generated scanner outputs with adjacent known-state
+  evidence. No runtime/deploy impact.
+
+- 2026-06-20: `LUC-5244` known-state evidence and architecture baseline is
+  complete for Documentation Steward evidence scope. Evidence packet:
+  `docs/planning/luc-5244-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness full refresh PASS in `86586ms`
+  (`2385` entities / `4956` relations / `13715` files, generated
+  `2026-06-20T18:19:59.577Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  task-sync, owner, proof, docs, and disconnected gaps remain `0`. Next
+  commit/lane: [LUC-5251](/LUC/issues/LUC-5251) local source-control closure
+  for this generated/status/planning packet. Active
+  [LUC-5240](/LUC/issues/LUC-5240) remains the QA proof-ladder lane; protected
+  target proof remains approval/credential gated.
+
+- 2026-06-20: `LUC-5243` known-state evidence and architecture baseline is
+  complete for COO evidence scope. Evidence packet:
+  `docs/planning/luc-5243-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness full refresh PASS in `75434ms`
+  (`2383` entities / `4948` relations / `13713` files, generated
+  `2026-06-20T18:16:50.652Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  task-sync, owner, proof, docs, and disconnected gaps remain `0`. Next
+  commit/lane: [LUC-5248](/LUC/issues/LUC-5248) local source-control closure
+  for this generated/status/planning packet. Protected target proof remains
+  approval/credential gated.
+
 - 2026-06-20: `LUC-5239` source-control closure is complete locally for the
   [LUC-5233](/LUC/issues/LUC-5233) known-state evidence packet. Evidence
   packet:
@@ -11,6 +82,29 @@
   future release batch or explicit source-ref/deploy need. Deploy impact none.
   The [LUC-5235](/LUC/issues/LUC-5235) QA proof packet was intentionally kept
   out of this commit scope.
+
+- 2026-06-20: `LUC-5235` Dashboard command API journey proof is complete.
+  Evidence packet:
+  `docs/planning/luc-5235-dashboard-command-api-journey-proof.md`. Proof:
+  `npm run test:api:local` PASS against disposable PostgreSQL
+  `companycore-luc-5235-postgres` on port `55435` with `7/7` API subtests;
+  `npm run check:route-capabilities` PASS (`180` manifest routes / `35` route
+  files); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queues `0`, delta `0/0/0`). No repair issue is warranted; browser and
+  protected production proof remain separate gates.
+
+- 2026-06-20: `LUC-5233` known-state evidence and architecture baseline is
+  complete for IPM evidence scope. Evidence packet:
+  `docs/planning/luc-5233-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness full refresh PASS in `62153ms`
+  (`2380` entities / `4938` relations / `13710` files, generated
+  `2026-06-20T18:09:42.771Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  task-sync, owner, proof, docs, and disconnected gaps remain `0`. Next
+  commits/lanes: [LUC-5239](/LUC/issues/LUC-5239) local source-control
+  closure for this packet and [LUC-5240](/LUC/issues/LUC-5240) one focused QA
+  proof-ladder selection from `implementation_without_tests=1162`.
 
 - 2026-06-20: `LUC-5234` source-control closure is complete locally for the
   [LUC-5230](/LUC/issues/LUC-5230) known-state evidence packet and carried QA
@@ -42,6 +136,26 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 ## Active Queue
 
 ### NOW
+
+- [x] LUC-5235 Dashboard command API journey proof:
+      completed for the next focused Roost QA proof-ladder selection after
+      [LUC-5230](/LUC/issues/LUC-5230). Output:
+      `docs/planning/luc-5235-dashboard-command-api-journey-proof.md`.
+      Evidence: selected General Dashboard command-center read model,
+      `GET /v1/dashboard/command`, mapped to `FEAT-DASHBOARD-COMMAND`,
+      `API-DASHBOARD-COMMAND`, `COMP-GENERAL-DASHBOARD`,
+      `src/modules/dashboard/dashboard.routes.ts`, and
+      `web/src/features/departments/general-dashboard.tsx`; disposable
+      PostgreSQL `companycore-luc-5235-postgres` on port `55435`; `npm run
+      test:api:local` PASS after server/web build, all `31` migrations, seed,
+      and `7/7` API subtests (`CompanyCore v1 protected API flow` duration
+      `48773.019ms`, total `54318.5218ms`); `npm run
+      check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+      `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+      (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`,
+      all gates pass). Cleanup found no validation DB container and no
+      `chrome-headless-shell` process. No repair issue is warranted; browser
+      and protected production proof remain separate gates.
 
 - [x] LUC-5226 Operating Model API journey proof:
       completed for the next Roost `implementation_without_tests` local QA
