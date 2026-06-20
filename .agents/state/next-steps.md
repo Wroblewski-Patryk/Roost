@@ -4,6 +4,77 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-5217` source-control closure is complete locally for the
+   [LUC-5215](/LUC/issues/LUC-5215) generated/status/planning evidence packet
+   and the carried [LUC-5208](/LUC/issues/LUC-5208) Relationships API journey
+   proof.
+   - Output:
+     `docs/planning/luc-5217-source-control-closure-for-luc-5215-evidence-packet.md`.
+   - Proof:
+     dirty set classified as coherent completed Roost evidence/status changes;
+     `git diff --check` PASS with LF-to-CRLF warnings only; generated
+     architecture-awareness and architecture-health JSON parsed at
+     `2026-06-20T17:06:39.251Z` with `2373` entities / `4913` relations;
+     health signals show `implementation_without_tests=1162`, actionable
+     `1153`, docs gaps `0`, task gaps `0`, implementation-without-task gaps
+     `0`, verified-without-proof gaps `0`, owner gaps `0`, disconnected
+     entities `0`; scoped high-confidence secret/private-key scan found no
+     matches; `npm run architecture:status` PASS (`GREEN`, graph
+     `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass).
+   - Next owner/action:
+     no source-control follow-up is needed for this packet after the local
+     closure commit. Push remains held for a future release batch or explicit
+     source-ref/deploy need. Protected target proof remains externally
+     approval/credential gated.
+
+1. `LUC-5215` known-state evidence and architecture baseline is complete for
+   Roost PM scope; source-control closure is complete through
+   [LUC-5217](/LUC/issues/LUC-5217).
+   - Output:
+     `docs/planning/luc-5215-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     architecture-awareness `--status-only` PASS in `21ms`; bounded full
+     refresh PASS in `19738ms`, generated `2026-06-20T17:06:39.251Z` with
+     `2373` entities / `4913` relations / `13703` files; `npm run
+     architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+     worklist `0`, delta `0/0/0`, all gates pass); `npm run
+     check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+     `checkedRouteFiles=35`, `status=ok`); task-sync gaps `0`; ownership gaps
+     `0`; dependency report `438` relations / `95` entities; architecture
+     health `implementation_without_tests=1162`, actionable `1153`,
+     classified inferred noise `9`, docs gaps `0`, disconnected entities `0`.
+   - Next owner/action:
+     no broad QA/backend/frontend repair work should be created from the
+     aggregate scanner signal without a named journey risk. Protected target
+     proof remains approval/credential gated.
+
+1. `LUC-5208` Relationships API journey proof is complete for the next Roost
+   `implementation_without_tests` local QA rung.
+   - Output:
+     `docs/planning/luc-5208-relationships-api-journey-proof.md`.
+   - Proof:
+     selected `05 Relationships` read-only context packet,
+     `GET /v1/relationships/context`, used by
+     `/areas?area=05-relacje&view=overview`; source checkpoint
+     `ec242e8b076c3babd6bb10bcd322d3fba16836dd`; existing
+     `src/tests/api.test.ts` assertions cover unauthenticated denial,
+     authenticated packet shape, department mapping, related relationship
+     entities, Drive-area evidence, read-only agent mode, allowed read action,
+     and blocked outreach/commitment action; disposable PostgreSQL
+     `companycore-luc-5208-postgres` on port `55408`; `npm run build:server`
+     PASS; `npm run prisma:migrate:deploy` PASS; `npm run seed` PASS; `node
+     --test --test-name-pattern "CompanyCore v1 protected API flow"
+     dist/tests/api.test.js` PASS (`1` test, duration `54516.3518ms`); `npm
+     run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+     `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+     (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`,
+     all gates pass). Cleanup removed the validation DB container and found no
+     `chrome-headless-shell` process.
+   - Next owner/action:
+     no repair issue is warranted from this proof. Browser proof for
+     `/areas?area=05-relacje&view=overview` and protected production proof
+     remain separate future gates.
+
 1. `LUC-5212` source-control closure is complete locally for the
    [LUC-5211](/LUC/issues/LUC-5211) generated/status evidence packet and
    carried completed Roost evidence lanes.

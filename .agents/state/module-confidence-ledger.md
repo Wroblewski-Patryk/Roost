@@ -2,6 +2,67 @@
 
 Last updated: 2026-06-20
 
+Source-control note: [LUC-5217](/LUC/issues/LUC-5217) is VERIFIED_DONE for the
+[LUC-5215](/LUC/issues/LUC-5215) generated/status/planning evidence packet and
+the carried [LUC-5208](/LUC/issues/LUC-5208) Relationships API journey proof.
+Evidence packet:
+`docs/planning/luc-5217-source-control-closure-for-luc-5215-evidence-packet.md`.
+Proof: `git diff --check` PASS with LF-to-CRLF warnings only; generated
+architecture-awareness and architecture-health JSON parsed at
+`2026-06-20T17:06:39.251Z` with `2373` entities / `4913` relations; generated
+health signals show `implementation_without_tests=1162`, actionable `1153`,
+docs gaps `0`, task gaps `0`, implementation-without-task gaps `0`,
+verified-without-proof gaps `0`, owner gaps `0`, and disconnected entities
+`0`; scoped high-confidence token/private-key scan found no matches; `npm run
+architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+chain worklist `0`, delta `0/0/0`, all gates pass). Confidence
+classification: local source-control preservation is verified; push remains
+held for a future release batch or explicit source-ref/deploy need.
+
+Roost known-state baseline note: [LUC-5215](/LUC/issues/LUC-5215) is
+VERIFIED_DONE after source-control closure through
+[LUC-5217](/LUC/issues/LUC-5217) for the Roost PM evidence lane. The packet is
+recorded in
+`docs/planning/luc-5215-known-state-evidence-and-architecture-baseline.md`.
+Evidence: architecture-awareness `--status-only` PASS in `21ms` with no
+missing exports; bounded full refresh PASS in `19738ms`, generated
+`2026-06-20T17:06:39.251Z` with `2373` entities, `4913` relations, and
+`13703` files; `npm run architecture:status` PASS (`GREEN`, graph
+`454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+gates pass); `npm run check:route-capabilities` PASS
+(`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+task-sync gaps `0`; ownership gaps `0`; dependency report `438` relations /
+`95` entities. Architecture health reports `implementation_without_tests=1162`,
+actionable `1153`, classified inferred noise `9`, docs gaps `0`,
+disconnected entities `0`; confidence classification: local architecture,
+task/proof synchronization, ownership, and route-capability registration are
+verified, and local source-control preservation is complete through
+[LUC-5217](/LUC/issues/LUC-5217). Protected target proof remains
+approval/credential gated.
+
+QA proof note: [LUC-5208](/LUC/issues/LUC-5208) is VERIFIED_DONE for one
+narrow route/API journey selected from the recurring
+`implementation_without_tests=1162` signal. Evidence packet:
+`docs/planning/luc-5208-relationships-api-journey-proof.md`. Selected journey:
+`05 Relationships` read-only context packet, `GET /v1/relationships/context`,
+used by `/areas?area=05-relacje&view=overview`. Proof used existing focused
+assertions in `src/tests/api.test.ts` for unauthenticated denial,
+authenticated packet shape, department key mapping, related client evidence,
+Drive-area evidence, read-only agent packet posture, allowed read action, and
+blocked outreach/commitment action. Local proof ran against disposable
+PostgreSQL `companycore-luc-5208-postgres` on port `55408`: `npm run
+build:server` PASS; `npm run prisma:migrate:deploy` PASS; `npm run seed` PASS;
+`node --test --test-name-pattern "CompanyCore v1 protected API flow"
+dist/tests/api.test.js` PASS (`1` test, duration `54516.3518ms`); `npm run
+check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+`checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+(`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`). Cleanup removed the
+validation DB container and found no `chrome-headless-shell` process.
+Confidence classification: the Relationships API journey is locally verified
+for protected read-only behavior, packet shape, workspace evidence, capability
+registration, and blocked agent write posture; no repair issue is warranted.
+Browser proof and protected production proof remain separate future gates.
+
 Source-control note: [LUC-5212](/LUC/issues/LUC-5212) is VERIFIED_DONE for the
 [LUC-5211](/LUC/issues/LUC-5211) generated/status evidence packet and carried
 completed Roost evidence lanes. Evidence packet:

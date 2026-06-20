@@ -4,6 +4,83 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5217-SOURCE-CONTROL-CLOSURE-FOR-LUC-5215-EVIDENCE
+- Status: VERIFIED_DONE_PENDING_PUSH_BATCH
+- Selected objective: Close local source-control bookkeeping for the
+  [LUC-5215](/LUC/issues/LUC-5215) generated/status/planning evidence packet
+  and the carried [LUC-5208](/LUC/issues/LUC-5208) Relationships API journey
+  proof.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5217](/LUC/issues/LUC-5217), already claimed by the harness, as the
+  source-control closure sidecar for [LUC-5215](/LUC/issues/LUC-5215).
+- Scope: classify dirty state, preserve the generated/status/planning evidence
+  packet, parse generated JSON, run SCM hygiene, run scoped high-confidence
+  secret/private-key scan, run architecture status, publish a closure packet,
+  and create one local closure commit if coherent.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  browser, database, Docker, server, watcher, or long-running process.
+- Output:
+  `docs/planning/luc-5217-source-control-closure-for-luc-5215-evidence-packet.md`.
+- Evidence: dirty set classified as coherent completed Roost evidence/status
+  changes from [LUC-5208](/LUC/issues/LUC-5208) and
+  [LUC-5215](/LUC/issues/LUC-5215); `git diff --check` PASS with LF-to-CRLF
+  warnings only; generated architecture-awareness and architecture-health JSON
+  parsed at `2026-06-20T17:06:39.251Z` with `2373` entities / `4913`
+  relations; generated health signals show `implementation_without_tests=1162`,
+  actionable `1153`, docs gaps `0`, task gaps `0`,
+  implementation-without-task gaps `0`, verified-without-proof gaps `0`, owner
+  gaps `0`, and disconnected entities `0`; scoped high-confidence
+  secret/private-key scan found no matches; `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass).
+- Final disposition: local source-control closure verified; final commit SHA is
+  recorded in the Paperclip issue comment; push held for future release batch
+  or explicit source-ref/deploy need; deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5208-RELATIONSHIPS-API-JOURNEY-PROOF
+- Status: VERIFIED_DONE
+- Selected objective: Prove the next local Roost QA rung from the
+  `implementation_without_tests` signal with one narrow Relationships route/API
+  journey.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5208](/LUC/issues/LUC-5208), assigned to QA Verification Engineer, as a
+  follow-up proof ladder from [LUC-5204](/LUC/issues/LUC-5204).
+- Scope: select one release-relevant local route/API journey, use existing
+  focused regression coverage when sufficient, run the smallest local proof,
+  run route-capability and architecture status checks, clean validation
+  resources, and record durable evidence.
+- Exclusions: no protected production smoke, push, deploy, restart,
+  production mutation, credential access, secret disclosure, runtime feature
+  change, schema change, or migration authoring.
+- Output:
+  `docs/planning/luc-5208-relationships-api-journey-proof.md`.
+- Evidence: selected `05 Relationships` read-only context packet,
+  `GET /v1/relationships/context`, used by
+  `/areas?area=05-relacje&view=overview`; source checkpoint
+  `ec242e8b076c3babd6bb10bcd322d3fba16836dd`; existing
+  `src/tests/api.test.ts` assertions cover unauthenticated denial,
+  authenticated packet shape, canonical/backend department mapping, related
+  clients/interactions/stakeholders/deals/notes/decisions/tasks/Drive files,
+  read-only agent packet mode, allowed read action, and blocked outreach or
+  commitment action; disposable PostgreSQL `companycore-luc-5208-postgres` on
+  port `55408`; `npm run build:server` PASS; `npm run
+  prisma:migrate:deploy` PASS; `npm run seed` PASS; `node --test
+  --test-name-pattern "CompanyCore v1 protected API flow"
+  dist/tests/api.test.js` PASS (`1` test, duration `54516.3518ms`); `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass); cleanup removed the validation DB container
+  and found no `chrome-headless-shell` process.
+- Final disposition: done for this QA proof slice. No defect or repair child
+  issue was found. Browser proof for the Relationships route and protected
+  production proof remain separate future gates.
+
+## Previous Mission
+
 - Mission ID: LUC-5212-SOURCE-CONTROL-CLOSURE-FOR-LUC-5211-EVIDENCE
 - Status: VERIFIED_DONE_PENDING_PUSH_BATCH
 - Selected objective: Close local source-control bookkeeping for the

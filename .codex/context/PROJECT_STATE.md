@@ -2,6 +2,69 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5217` source-control closure completed locally for the
+  [LUC-5215](/LUC/issues/LUC-5215) generated/status/planning evidence packet
+  and the carried [LUC-5208](/LUC/issues/LUC-5208) Relationships API journey
+  proof. Output:
+  `docs/planning/luc-5217-source-control-closure-for-luc-5215-evidence-packet.md`.
+  Evidence: dirty set classified as coherent completed Roost evidence/status
+  changes; `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  architecture-awareness and architecture-health JSON parsed at
+  `2026-06-20T17:06:39.251Z` with `2373` entities / `4913` relations; health
+  signals show `implementation_without_tests=1162`, actionable `1153`, docs
+  gaps `0`, task gaps `0`, implementation-without-task gaps `0`,
+  verified-without-proof gaps `0`, owner gaps `0`, disconnected entities `0`;
+  scoped high-confidence secret/private-key scan found no matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass). Commit: local closure
+  commit; final SHA is recorded in the Paperclip issue comment. Push held for
+  future release batch or explicit source-ref/deploy need. Deploy impact:
+  none.
+
+- 2026-06-20: `LUC-5215` Roost known-state evidence and architecture baseline
+  completed for Roost PM scope after the local-board wake comment requested
+  local evidence collection and concrete repair lanes. Output:
+  `docs/planning/luc-5215-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness `--status-only` PASS in `21ms`
+  with prior exports fresh and no missing files; bounded full refresh PASS in
+  `19738ms`, generated `2026-06-20T17:06:39.251Z` with `2373` entities,
+  `4913` relations, and `13703` files; `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  task-sync gaps `0`; ownership gaps `0`; dependency report `438` relations /
+  `95` entities; architecture health reports `implementation_without_tests=1162`,
+  actionable `1153`, classified inferred noise `9`, docs gaps `0`,
+  disconnected entities `0`. Source-control closure is complete through
+  [LUC-5217](/LUC/issues/LUC-5217). No
+  runtime code, schema, migration, protected smoke, deploy, push, restart,
+  production mutation, credential access, secret disclosure, browser, database,
+  Docker, server, or watcher process occurred.
+
+- 2026-06-20: `LUC-5208` Relationships API journey proof completed for the
+  next Roost `implementation_without_tests` local QA rung. Output:
+  `docs/planning/luc-5208-relationships-api-journey-proof.md`. Selected
+  journey: `05 Relationships` read-only context packet,
+  `GET /v1/relationships/context`, used by
+  `/areas?area=05-relacje&view=overview`. Evidence: source checkpoint
+  `ec242e8b076c3babd6bb10bcd322d3fba16836dd`; existing `src/tests/api.test.ts`
+  assertions cover unauthenticated denial, authenticated packet shape,
+  department mapping, related clients/interactions/stakeholders/deals/notes/
+  decisions/tasks/Drive files, read-only agent packet mode, allowed read
+  action, and blocked outreach/commitment action; disposable PostgreSQL
+  `companycore-luc-5208-postgres` on port `55408`; `npm run build:server`
+  PASS; `npm run prisma:migrate:deploy` PASS; `npm run seed` PASS; `node
+  --test --test-name-pattern "CompanyCore v1 protected API flow"
+  dist/tests/api.test.js` PASS (`1` test, duration `54516.3518ms`); `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass). Cleanup removed the validation DB container
+  and found no `chrome-headless-shell` process. No protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  browser proof, runtime feature change, schema change, or migration authoring
+  occurred. Disposition: `DONE`; no repair issue warranted.
+
 - 2026-06-20: `LUC-5212` source-control closure completed locally for the
   [LUC-5211](/LUC/issues/LUC-5211) generated/status evidence packet and
   carried completed Roost evidence lanes. Output:

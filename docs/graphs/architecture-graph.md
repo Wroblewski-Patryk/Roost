@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T16:50:01.697Z
+Generated: 2026-06-20T17:15:38.378Z
 
 ## Canonical Exports
 
@@ -1154,6 +1154,11 @@ Generated: 2026-06-20T16:50:01.697Z
 | documents | document:luc-5184-finance-api-journey-proof:05a5c7eedc | module:docs:6784d83cb0 | docs/planning/luc-5184-finance-api-journey-proof.md |
 | documents | document:luc-5201-assets-preview-api-journey-proof:ea1d43e282 | module:docs:6784d83cb0 | docs/planning/luc-5201-assets-preview-api-journey-proof.md |
 | documents | document:luc-5202-architecture-awareness-heartbeat-safety:2a6480060f | module:docs:6784d83cb0 | docs/planning/luc-5202-architecture-awareness-heartbeat-safety.md |
+| documents | document:luc-5208-relationships-api-journey-proof:002b1cab4c | module:docs:6784d83cb0 | docs/planning/luc-5208-relationships-api-journey-proof.md |
+| documents | document:luc-5211-known-state-evidence-and-architecture-baseline:6951a2e643 | module:docs:6784d83cb0 | docs/planning/luc-5211-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5212-source-control-closure-for-luc-5211-evidence-packet:2a37e9f8d7 | module:docs:6784d83cb0 | docs/planning/luc-5212-source-control-closure-for-luc-5211-evidence-packet.md |
+| documents | document:luc-5215-known-state-evidence-and-architecture-baseline:8385363348 | module:docs:6784d83cb0 | docs/planning/luc-5215-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5217-source-control-closure-for-luc-5215-evidence-packet:b025c32481 | module:docs:6784d83cb0 | docs/planning/luc-5217-source-control-closure-for-luc-5215-evidence-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1213,8 +1218,3 @@ Generated: 2026-06-20T16:50:01.697Z
 | documents | document:npm-run-check-public-js:581c7dfb4d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-AUTO-0001.md |
 | documents | document:npm-run-check-route-capabilities:10002b00c3 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-ROUTE-CAPABILITY.md |
 | documents | document:npm-run-test-api-local:f0bcdc3e35 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-API-LOCAL.md |
-| documents | document:npm-run-test-api:870a5537cc | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-AUTO-0003.md |
-| documents | document:npm-run-test:d4fbf3d702 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-AUTO-0002.md |
-| documents | document:npm-run-validate:26e103561d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-AUTO-0004.md |
-| documents | document:ontology-001-business-ontology-import-foundation:4be03736f4 | module:docs:6784d83cb0 | docs/planning/ontology-001-business-ontology-import-foundation-task-contract.md |
-| documents | document:open-decisions:e7df56e741 | module:docs:6784d83cb0 | docs/planning/open-decisions.md |
