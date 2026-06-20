@@ -4,6 +4,35 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5239-SOURCE-CONTROL-CLOSURE-FOR-LUC-5233-EVIDENCE
+- Status: VERIFIED_DONE_PENDING_PUSH_BATCH
+- Selected objective: Close local source-control bookkeeping for the
+  [LUC-5233](/LUC/issues/LUC-5233) known-state evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5239](/LUC/issues/LUC-5239), already checked out by the harness, as the
+  source-control closure sidecar for [LUC-5233](/LUC/issues/LUC-5233).
+- Scope: classify dirty state, preserve state/planning closure evidence, run
+  SCM hygiene, parse generated JSON, run scoped high-confidence
+  secret/private-key scan, run architecture status, publish a closure packet,
+  and create one local closure commit if coherent.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  browser, database, Docker, server, watcher, or feature implementation.
+- Output:
+  `docs/planning/luc-5239-source-control-closure-for-luc-5233-evidence-packet.md`.
+- Evidence: scoped dirty-state classification identified the
+  [LUC-5233](/LUC/issues/LUC-5233) state/planning notes and this closure
+  packet as in scope, while the separate [LUC-5235](/LUC/issues/LUC-5235) QA
+  proof packet remained out of this issue's commit scope; `git diff --check`
+  PASS with Windows LF-to-CRLF warnings only; generated architecture JSON parse
+  PASS; scoped high-confidence secret/private-key scan PASS; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: local source-control closure verified; push held for a
+  future release batch or explicit source-ref/deploy need; deploy impact none.
+
+## Previous Mission
+
 - Mission ID: LUC-5235-DASHBOARD-COMMAND-API-JOURNEY-PROOF
 - Status: VERIFIED_DONE
 - Selected objective: Select and prove one named release-relevant Roost

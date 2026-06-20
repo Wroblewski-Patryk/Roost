@@ -2,6 +2,16 @@
 
 Last updated: 2026-06-20
 
+Source-control note: [LUC-5239](/LUC/issues/LUC-5239) is VERIFIED_DONE for the
+[LUC-5233](/LUC/issues/LUC-5233) known-state evidence packet. Evidence packet:
+`docs/planning/luc-5239-source-control-closure-for-luc-5233-evidence-packet.md`.
+Verification covered scoped dirty-state classification, `git diff --check`,
+generated JSON parsing, a scoped high-confidence secret/private-key scan, and
+`npm run architecture:status` PASS. Push is held for a future release batch or
+explicit source-ref/deploy need; deploy impact none. The separate
+[LUC-5235](/LUC/issues/LUC-5235) QA proof packet remains outside this issue's
+commit scope.
+
 Source-control note: [LUC-5234](/LUC/issues/LUC-5234) is VERIFIED_DONE for the
 [LUC-5230](/LUC/issues/LUC-5230) known-state evidence packet and carried
 Roost QA proof/state evidence. Evidence packet:

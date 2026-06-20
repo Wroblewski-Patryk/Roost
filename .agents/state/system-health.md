@@ -2,6 +2,17 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5239` source-control closure completed locally for the
+  [LUC-5233](/LUC/issues/LUC-5233) known-state evidence packet. Output:
+  `docs/planning/luc-5239-source-control-closure-for-luc-5233-evidence-packet.md`.
+  Verification: scoped dirty-state classification, `git diff --check` PASS,
+  generated JSON parse PASS, scoped high-confidence secret/private-key scan
+  PASS, and `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queues `0`, delta `0/0/0`, all gates pass). Push held for future release
+  batch or explicit source-ref/deploy need. Deploy impact: none. The separate
+  [LUC-5235](/LUC/issues/LUC-5235) QA proof packet remains outside this
+  closure scope.
+
 - 2026-06-20: `LUC-5234` source-control closure completed locally for the
   [LUC-5230](/LUC/issues/LUC-5230) known-state evidence packet and carried QA
   proof/state evidence. Output:

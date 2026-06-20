@@ -2,6 +2,18 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5239` source-control closure is complete locally for the
+  [LUC-5233](/LUC/issues/LUC-5233) known-state evidence packet. Output:
+  `docs/planning/luc-5239-source-control-closure-for-luc-5233-evidence-packet.md`.
+  Evidence: scoped dirty-state classification, `git diff --check` PASS with
+  Windows LF-to-CRLF warnings only, generated architecture JSON parse PASS,
+  scoped high-confidence secret/private-key scan PASS, and `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass). Local closure commit created;
+  push held for future release batch or explicit source-ref/deploy need;
+  deploy impact none. The separate [LUC-5235](/LUC/issues/LUC-5235) QA proof
+  packet remains outside this closure commit scope. Disposition: `DONE`.
+
 - 2026-06-20: `LUC-5233` known-state evidence and architecture baseline is
   complete for IPM evidence scope. Output:
   `docs/planning/luc-5233-known-state-evidence-and-architecture-baseline.md`.

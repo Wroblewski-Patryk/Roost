@@ -1,5 +1,17 @@
 # MVP Next Commits
 
+- 2026-06-20: `LUC-5239` source-control closure is complete locally for the
+  [LUC-5233](/LUC/issues/LUC-5233) known-state evidence packet. Evidence
+  packet:
+  `docs/planning/luc-5239-source-control-closure-for-luc-5233-evidence-packet.md`.
+  Proof: scoped dirty-state classification, `git diff --check` PASS,
+  generated JSON parse PASS, scoped high-confidence secret/private-key scan
+  PASS, and `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queues `0`, delta `0/0/0`). Local closure commit created; push held for a
+  future release batch or explicit source-ref/deploy need. Deploy impact none.
+  The [LUC-5235](/LUC/issues/LUC-5235) QA proof packet was intentionally kept
+  out of this commit scope.
+
 - 2026-06-20: `LUC-5234` source-control closure is complete locally for the
   [LUC-5230](/LUC/issues/LUC-5230) known-state evidence packet and carried QA
   proof/state evidence. Evidence packet:
