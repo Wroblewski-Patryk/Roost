@@ -7,6 +7,19 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-4872 Roost known-state evidence and architecture baseline:
+      completed for PM scope. Output:
+      `docs/planning/luc-4872-known-state-evidence-and-architecture-baseline.md`.
+      Evidence: Paperclip architecture-awareness scanner PASS
+      (`entities=2288`, `relations=4579`, `files=13602`, generated at
+      `2026-06-20T06:03:19.153Z`); `npm run architecture:status` PASS
+      (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+      delta `0/0/0`, all gates pass); task sync reports `0` actionable/raw
+      task-link gaps and `0` verified-without-proof gaps; architecture health
+      reports `implementation_without_tests=1162`. Follow-ups: source-control
+      closure sidecar for generated/status artifacts, and QA proof ladder for
+      `09 Technology And AI Infrastructure`.
+
 - [x] LUC-4868 source-control closure for the
       [LUC-4864](/LUC/issues/LUC-4864) known-state evidence packet:
       completed. Output:

@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T05:42:11.549Z
+Generated: 2026-06-20T06:07:29.075Z
 
 ## Canonical Exports
 
@@ -1070,6 +1070,10 @@ Generated: 2026-06-20T05:42:11.549Z
 | documents | document:luc-4856-tmp-proof-harness-scanner-hygiene:7d127cfdd7 | module:docs:6784d83cb0 | docs/planning/luc-4856-tmp-proof-harness-scanner-hygiene.md |
 | documents | document:luc-4857-product-delivery-proof-ladder-target-after-relationships:934be35156 | module:docs:6784d83cb0 | docs/planning/luc-4857-product-delivery-proof-ladder-target-after-relationships.md |
 | documents | document:luc-4861-product-delivery-proof-ladder:680ee89f97 | module:docs:6784d83cb0 | docs/planning/luc-4861-product-delivery-proof-ladder.md |
+| documents | document:luc-4863-source-control-closure-for-luc-4861-proof-ladder-evidence-batch:1ae5d9d342 | module:docs:6784d83cb0 | docs/planning/luc-4863-source-control-closure-for-luc-4861-proof-ladder-evidence-batch.md |
+| documents | document:luc-4864-known-state-evidence-and-architecture-baseline:641a23b3a2 | module:docs:6784d83cb0 | docs/planning/luc-4864-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4868-source-control-closure-for-luc-4864-known-state-evidence-packet:073d37062e | module:docs:6784d83cb0 | docs/planning/luc-4868-source-control-closure-for-luc-4864-known-state-evidence-packet.md |
+| documents | document:luc-4872-known-state-evidence-and-architecture-baseline:7a0e9fcda5 | module:docs:6784d83cb0 | docs/planning/luc-4872-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1214,7 +1218,3 @@ Generated: 2026-06-20T05:42:11.549Z
 | documents | document:playwright-assets-proof:82d901185f | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-PLAYWRIGHT-ASSETS.md |
 | documents | document:playwright-dashboard-render-proof:ae54215ed1 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-PLAYWRIGHT-DASHBOARD.md |
 | documents | document:playwright-operations-render-proof:a2cdcd4665 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-PLAYWRIGHT-OPS.md |
-| documents | document:playwright-people-agents-proof:a0455b09d8 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-PLAYWRIGHT-PEOPLE.md |
-| documents | document:policies-model:690753b144 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0040.md |
-| documents | document:post-deploy-smoke:486216125c | module:docs:6784d83cb0 | docs/operations/post-deploy-smoke.md |
-| documents | document:post-v1-agent-events-id-ack:3bbcd4094b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0115.md |

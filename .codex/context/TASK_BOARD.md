@@ -1,6 +1,34 @@
 # TASK_BOARD
 
 ## Now
+- 2026-06-20: `LUC-4879` source-control closure is complete for the
+  [LUC-4872](/LUC/issues/LUC-4872) generated known-state evidence packet.
+  Output:
+  `docs/planning/luc-4879-source-control-closure-for-luc-4872-known-state-evidence-packet.md`.
+  Evidence: pre-closure
+  `HEAD=3c2f18c5dbbedfcebae6f3b6876248a2f2a12119`; branch
+  `main...origin/main [ahead 40]`; `git status --short --branch`,
+  `git status --porcelain=v1 -uall`, `git diff --stat`, and
+  `git diff --check` ran; diff-check passed with line-ending conversion
+  warnings only; local commit created. Push held for a future release batch or
+  explicit source-ref/deploy need. Disposition: `DONE`.
+
+- 2026-06-20: `LUC-4872` Roost known-state evidence and architecture baseline
+  is complete for PM scope. Output:
+  `docs/planning/luc-4872-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2288`,
+  `relations=4579`, `files=13602`, generated at
+  `2026-06-20T06:03:19.153Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task sync reports `0` task-link/proof gaps; architecture
+  health reports `implementation_without_tests=1162`; dependency report shows
+  `437` relations / `95` entities; ownership split is
+  `Docs Memory Lead=951`, `Engineering Delivery Lead=1336`,
+  `Roost Project Manager=1`. Follow-ups: source-control closure sidecar for
+  this generated/status packet, and QA proof ladder for `09 Technology And AI
+  Infrastructure`. Protected production proof remains release/credential
+  gated. Disposition: `DONE` for PM evidence scope.
+
 - 2026-06-20: `LUC-4868` source-control closure is complete for the
   [LUC-4864](/LUC/issues/LUC-4864) known-state evidence packet. Output:
   `docs/planning/luc-4868-source-control-closure-for-luc-4864-known-state-evidence-packet.md`.
