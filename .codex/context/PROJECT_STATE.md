@@ -2,6 +2,22 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-4965` source-control closure completed locally for the
+  [LUC-4962](/LUC/issues/LUC-4962) known-state evidence packet. Output:
+  `docs/planning/luc-4965-source-control-closure-for-luc-4962-known-state-evidence-packet.md`.
+  Evidence: wake payload scoped this run to [LUC-4965](/LUC/issues/LUC-4965)
+  with no pending comments; parent [LUC-4962](/LUC/issues/LUC-4962) is
+  `done`; pre-closure `HEAD=003e73af222ea4156c24ef9b4c476d80550fbcae`;
+  branch `main...origin/main [ahead 49]`; dirty set matched the
+  [LUC-4962](/LUC/issues/LUC-4962) generated architecture/status evidence
+  batch plus state/context updates and the parent planning packet.
+  `git diff --stat` before this closure packet reported `14 files changed,
+  7090 insertions(+), 6829 deletions(-)`; `git diff --check` passed with
+  LF-to-CRLF warnings only; generated graph/health JSON parsed successfully;
+  scoped secret/data hygiene found source identifiers/docs text only. Local
+  commit created; final immutable SHA is recorded in the Paperclip closure
+  comment. Push held for a future release batch or explicit source-ref/deploy
+  need. Deploy impact: none.
 - 2026-06-20: `LUC-4957` recurring `implementation_without_tests`
   architecture-health signal curation completed. Output:
   `docs/planning/luc-4957-implementation-without-tests-architecture-health-signal-curation.md`.

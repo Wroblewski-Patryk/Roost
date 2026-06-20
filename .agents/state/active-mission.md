@@ -4,6 +4,41 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-4962-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE
+- Selected objective: Refresh local Roost known-state architecture evidence
+  and convert remaining work into owner-scoped repair lanes for
+  [LUC-4962](/LUC/issues/LUC-4962).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4962](/LUC/issues/LUC-4962), assigned to Roost Project Manager, and
+  the latest local-board comment requested local evidence collection plus
+  concrete next repair lanes.
+- Scope: non-protected architecture-awareness scanner refresh, architecture
+  status proof, generated report readback, source-control readback, planning
+  packet, and child repair-lane creation.
+- Exclusions: no implementation, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4962-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip architecture-awareness scanner PASS (`entities=2316`,
+  `relations=4689`, `files=13643`, generated at
+  `2026-06-20T08:43:06.826Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task-sync gaps `0`; owner gaps `0`; dependency report
+  `437` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`.
+- Final disposition: done for PM evidence scope; source-control closure is
+  also complete in [LUC-4965](/LUC/issues/LUC-4965). Local closure evidence:
+  pre-closure `HEAD=003e73af222ea4156c24ef9b4c476d80550fbcae`; branch
+  `main...origin/main [ahead 49]`; dirty set matched the
+  [LUC-4962](/LUC/issues/LUC-4962) generated/status/state evidence batch;
+  `git diff --check` passed with LF-to-CRLF warnings only; generated
+  graph/health JSON parsed successfully. Protected production proof remains
+  release/credential gated.
+
+## Previous Mission
+
 - Mission ID: LUC-4957-IMPLEMENTATION-WITHOUT-TESTS-CURATION
 - Status: VERIFIED_DONE
 - Selected objective: Curate the recurring

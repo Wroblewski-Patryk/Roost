@@ -2,6 +2,30 @@
 
 Last updated: 2026-06-20
 
+Roost known-state baseline note: LUC-4962 is VERIFIED_DONE for the Roost
+Project Manager evidence lane. The packet is recorded in
+`docs/planning/luc-4962-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2316`,
+`relations=4689`, `files=13643`, generated at
+`2026-06-20T08:43:06.826Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task synchronization reports `0` task-link/proof gaps;
+ownership gaps `0`; dependency report shows `437` relations / `95` entities;
+architecture health reports `implementation_without_tests=1162`, actionable
+`1153`. Confidence classification: local architecture and task/proof
+synchronization are verified; remaining confidence debt is route/journey proof
+debt, not a PM-owned implementation defect. Source-control closure is
+complete in [LUC-4965](/LUC/issues/LUC-4965).
+Protected production proof remains release/credential gated.
+
+Source-control note: [LUC-4965](/LUC/issues/LUC-4965) is VERIFIED_DONE for the
+[LUC-4962](/LUC/issues/LUC-4962) generated/status evidence batch. Closure
+packet:
+`docs/planning/luc-4965-source-control-closure-for-luc-4962-known-state-evidence-packet.md`.
+Evidence: pre-closure `HEAD=003e73af222ea4156c24ef9b4c476d80550fbcae`;
+`git diff --check` passed with LF-to-CRLF warnings only; generated
+architecture-awareness and architecture-health JSON parsed successfully.
+
 Architecture health signal note: LUC-4957 is VERIFIED_DONE for curation of
 the recurring `implementation_without_tests=1162` metric. The packet is
 recorded in

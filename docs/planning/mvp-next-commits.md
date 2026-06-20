@@ -7,6 +7,31 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-4965 source-control closure:
+      completed locally for the [LUC-4962](/LUC/issues/LUC-4962) known-state
+      evidence packet. Output:
+      `docs/planning/luc-4965-source-control-closure-for-luc-4962-known-state-evidence-packet.md`.
+      Evidence: pre-closure `HEAD=003e73af222ea4156c24ef9b4c476d80550fbcae`;
+      branch `main...origin/main [ahead 49]`; dirty set matched the generated
+      architecture/status artifacts, Roost state/context updates, and the
+      [LUC-4962](/LUC/issues/LUC-4962) planning packet. `git diff --check`
+      passed with LF-to-CRLF warnings only; generated graph/health JSON parsed
+      successfully. Push held for a future release batch or explicit
+      source-ref/deploy need.
+
+- [x] LUC-4962 known-state evidence and architecture baseline:
+      completed for Roost PM scope. Output:
+      `docs/planning/luc-4962-known-state-evidence-and-architecture-baseline.md`.
+      Evidence: Paperclip architecture-awareness scanner PASS
+      (`entities=2316`, `relations=4689`, `files=13643`, generated at
+      `2026-06-20T08:43:06.826Z`); `npm run architecture:status` PASS
+      (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+      delta `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`;
+      architecture health `implementation_without_tests=1162`. Follow-up:
+      [LUC-4965](/LUC/issues/LUC-4965) closed source control for this
+      generated/status evidence packet. No production/deploy/protected action
+      occurred.
+
 - [x] LUC-4941 known-state evidence and architecture baseline:
       completed for Roost PM scope. Output:
       `docs/planning/luc-4941-known-state-evidence-and-architecture-baseline.md`.
