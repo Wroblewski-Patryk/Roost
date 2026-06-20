@@ -2,6 +2,22 @@
 
 Last updated: 2026-06-20
 
+Source-control note: [LUC-5112](/LUC/issues/LUC-5112) is VERIFIED_DONE for
+the [LUC-5107](/LUC/issues/LUC-5107) generated/status evidence batch. The
+actual parent evidence files were already preserved in
+`4f7d9335d32137aeab4fe7cc17d3f5d836673334` by the interleaved
+[LUC-5111](/LUC/issues/LUC-5111) closure because the scanner refresh shared
+the same generated architecture-awareness/status paths. Closure packet:
+`docs/planning/luc-5112-source-control-closure-for-luc-5107-evidence-packet.md`.
+Evidence: branch started clean at `main...origin/main [ahead 63]`; `git show`
+confirmed `docs/planning/luc-5107-known-state-evidence-and-architecture-baseline.md`
+and generated/status outputs in `HEAD`; `git diff --check` passed; generated
+architecture-awareness JSON parsed at `2345` entities / `4804` relations,
+generated `2026-06-20T13:15:34.313Z`; scoped high-confidence
+token/private-key scan found no matching files; `npm run architecture:status`
+remained GREEN. Push remains held for a future release batch or explicit
+source-ref/deploy need. Deploy impact: none.
+
 Source-control note: [LUC-5111](/LUC/issues/LUC-5111) is VERIFIED_DONE for
 the [LUC-5104](/LUC/issues/LUC-5104) generated/status evidence batch, with the
 adjacent [LUC-5107](/LUC/issues/LUC-5107) evidence refresh preserved in the

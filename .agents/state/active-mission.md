@@ -4,6 +4,38 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5112-SOURCE-CONTROL-CLOSURE-FOR-LUC-5107-EVIDENCE
+- Status: VERIFIED_DONE_PENDING_LOCAL_COMMIT
+- Selected objective: Close source-control bookkeeping for the
+  [LUC-5107](/LUC/issues/LUC-5107) known-state evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5112](/LUC/issues/LUC-5112), already claimed by the harness, as the
+  source-control closure sidecar for completed parent
+  [LUC-5107](/LUC/issues/LUC-5107).
+- Scope: verify parent evidence files are already preserved in local source
+  control, add the explicit closure packet, update source-of-truth state, run
+  scoped SCM hygiene, and create one local bookkeeping commit if coherent.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-5112-source-control-closure-for-luc-5107-evidence-packet.md`.
+- Evidence: [LUC-5107](/LUC/issues/LUC-5107)'s parent packet and shared
+  generated/status outputs are already tracked in
+  `4f7d9335d32137aeab4fe7cc17d3f5d836673334`, created by
+  [LUC-5111](/LUC/issues/LUC-5111)'s interleaved evidence closure. This issue
+  adds explicit closure bookkeeping only. `git diff --check` PASS; generated
+  architecture-awareness JSON parsed at `2345` entities / `4804` relations,
+  generated `2026-06-20T13:15:34.313Z`; scoped high-confidence
+  token/private-key scan found no matching files; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: source-control closure ready for local bookkeeping
+  commit. Push held for future release batch or explicit source-ref/deploy
+  need; deploy impact none.
+
+## Previous Mission
+
 - Mission ID: LUC-5111-SOURCE-CONTROL-CLOSURE-FOR-LUC-5104-EVIDENCE
 - Status: VERIFIED_DONE_PENDING_LOCAL_COMMIT
 - Selected objective: Preserve the [LUC-5104](/LUC/issues/LUC-5104)

@@ -2,6 +2,22 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5112` source-control closure completed locally for the
+  [LUC-5107](/LUC/issues/LUC-5107) known-state evidence packet. Output:
+  `docs/planning/luc-5112-source-control-closure-for-luc-5107-evidence-packet.md`.
+  Evidence: the parent packet and generated/status outputs were already
+  preserved in `4f7d9335d32137aeab4fe7cc17d3f5d836673334` by the interleaved
+  [LUC-5111](/LUC/issues/LUC-5111) source-control closure. This issue added
+  explicit closure bookkeeping only; `git diff --check` PASS; generated
+  architecture-awareness JSON parsed with `2345` entities / `4804` relations
+  at `2026-06-20T13:15:34.313Z`; scoped high-confidence token/private-key
+  scan found no matching files; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass). Commit: local source-control bookkeeping commit for this
+  closure; final SHA is recorded in the Paperclip closure comment. Push held
+  for a future release batch or explicit source-ref/deploy need. Deploy
+  impact: none.
+
 - 2026-06-20: `LUC-5111` source-control closure completed locally for the
   [LUC-5104](/LUC/issues/LUC-5104) known-state evidence packet and adjacent
   [LUC-5107](/LUC/issues/LUC-5107) shared generated/status refresh. Output:
