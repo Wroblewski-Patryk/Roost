@@ -2,6 +2,41 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5010` source-control closure is complete locally for the
+  [LUC-5003](/LUC/issues/LUC-5003) known-state evidence packet.
+  Output:
+  `docs/planning/luc-5010-source-control-closure-for-luc-5003-known-state-evidence-packet.md`.
+  Evidence: wake payload scoped this run to [LUC-5010](/LUC/issues/LUC-5010)
+  with no pending comments; parent [LUC-5003](/LUC/issues/LUC-5003) is
+  complete for evidence scope; pre-closure
+  `HEAD=93f61135810748dcebb02099314adff5beeec797`; branch
+  `main...origin/main [ahead 54]`; dirty set matched the generated
+  architecture/status artifacts, state/context updates, and
+  [LUC-5003](/LUC/issues/LUC-5003) planning packet. `git diff --check`
+  passed with LF-to-CRLF warnings only; generated graph/health JSON parsed
+  successfully; scoped high-confidence secret/data hygiene found no key
+  values. Local commit created and final SHA is recorded in the Paperclip
+  closure comment. Push held for a future release batch or explicit
+  source-ref/deploy need. Deploy impact: none. Disposition: `DONE`.
+
+- 2026-06-20: `LUC-5003` known-state evidence and architecture baseline is
+  complete for IPM coordination scope.
+  Output:
+  `docs/planning/luc-5003-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2326`,
+  `relations=4728`, `files=13653`, generated at
+  `2026-06-20T10:09:16.572Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`; dependency
+  report `437` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`. Follow-up:
+  [LUC-5010](/LUC/issues/LUC-5010) owns source-control closure for the
+  generated/status/state evidence packet.
+  Scope: no runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, server,
+  browser, database, Docker, or watcher process. Disposition: `DONE` for IPM
+  evidence scope after source-control sidecar delegation.
+
 - 2026-06-20: `LUC-4998` source-control closure is complete locally for the
   [LUC-4994](/LUC/issues/LUC-4994) known-state evidence packet.
   Output:

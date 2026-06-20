@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T10:00:13.723Z
+Generated: 2026-06-20T10:09:16.572Z
 
 ## Canonical Exports
 
@@ -1108,6 +1108,8 @@ Generated: 2026-06-20T10:00:13.723Z
 | documents | document:luc-4982-source-control-closure-for-luc-4978-known-state-evidence-packet:4b5170aa3a | module:docs:6784d83cb0 | docs/planning/luc-4982-source-control-closure-for-luc-4978-known-state-evidence-packet.md |
 | documents | document:luc-4988-known-state-evidence-and-architecture-baseline:ee87dc0242 | module:docs:6784d83cb0 | docs/planning/luc-4988-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4992-source-control-closure-for-luc-4988-known-state-evidence-packet:22eacd1c65 | module:docs:6784d83cb0 | docs/planning/luc-4992-source-control-closure-for-luc-4988-known-state-evidence-packet.md |
+| documents | document:luc-4994-known-state-evidence-and-architecture-baseline:3608e0af32 | module:docs:6784d83cb0 | docs/planning/luc-4994-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4998-source-control-closure-for-luc-4994-known-state-evidence-packet:60c92cf6b9 | module:docs:6784d83cb0 | docs/planning/luc-4998-source-control-closure-for-luc-4994-known-state-evidence-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-06-20T10:00:13.723Z
 | documents | document:patch-v1-operating-model-areas-id:50dec7bb54 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0102.md |
 | documents | document:patch-v1-operating-model-automation-definitions-id:39e5833d02 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0103.md |
 | documents | document:patch-v1-operating-model-external-mappings-id-scope:5d315fa461 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0104.md |
-| documents | document:patch-v1-operating-model-folders-id:c49602f1d0 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0105.md |
-| documents | document:patch-v1-operating-model-knowledge-roots-id:9afa7215b0 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0106.md |
