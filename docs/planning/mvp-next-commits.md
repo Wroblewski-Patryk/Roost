@@ -7,6 +7,21 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-4880 Technology and AI Infrastructure proof ladder:
+      completed for `09 Technology -> Operating Graph Overview`. Output:
+      `docs/planning/luc-4880-technology-ai-proof-ladder.md`. Evidence:
+      `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+      `checkedRouteFiles=35`, `status=ok`);
+      `COMPANYCORE_TEST_DB_KEEP=1 npm run test:api:local` PASS with all `31`
+      migrations and `7/7` API subtests; authenticated Playwright proof on
+      local backend port `3238` passed desktop `1366x900` and mobile
+      `390x844` checks for route identity, graph rows, safe synthetic backend
+      error language, no raw backend error leakage, no console issues, no
+      failed requests, and no horizontal overflow. API alias contract:
+      request/canonical key `09-technologia`, resolved backend key
+      `automations-integrations`, `5` nodes, `4` edges. Evidence artifacts:
+      `docs/ux/evidence/luc-4880-technology-ai-proof-ladder-2026-06-20/`.
+
 - [x] LUC-4872 Roost known-state evidence and architecture baseline:
       completed for PM scope. Output:
       `docs/planning/luc-4872-known-state-evidence-and-architecture-baseline.md`.

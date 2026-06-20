@@ -1,6 +1,69 @@
 # TASK_BOARD
 
 ## Now
+
+- 2026-06-20: `LUC-4889` source-control closure is complete for the combined
+  Roost evidence batch covering [LUC-4880](/LUC/issues/LUC-4880),
+  [LUC-4881](/LUC/issues/LUC-4881), [LUC-4882](/LUC/issues/LUC-4882),
+  [LUC-4883](/LUC/issues/LUC-4883), and adjacent
+  [LUC-4885](/LUC/issues/LUC-4885). Output:
+  `docs/planning/luc-4889-source-control-closure-for-luc-4880-4881-4883-evidence-batch.md`.
+  Evidence: `git status --short --branch`, `git status --porcelain=v1 -uall`,
+  `git diff --stat`, and `git diff --check` ran; diff-check passed with
+  line-ending conversion warnings only; [LUC-4880](/LUC/issues/LUC-4880)
+  `result.json` readback reports desktop/mobile proof clean. Local commit
+  created. Push held for a future release batch or explicit source-ref/deploy
+  need. Deploy impact: none. Disposition: `DONE`.
+
+- 2026-06-20: `LUC-4880` Technology and AI Infrastructure proof ladder is
+  complete for `09 Technology -> Operating Graph Overview`. Output:
+  `docs/planning/luc-4880-technology-ai-proof-ladder.md`. Evidence:
+  `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`);
+  `COMPANYCORE_TEST_DB_KEEP=1 npm run test:api:local` PASS with all `31`
+  migrations and `7/7` API subtests; authenticated Playwright proof on local
+  backend port `3238` passed desktop `1366x900` and mobile `390x844` checks
+  for route identity, graph rows, safe synthetic backend error language, no raw
+  backend error leakage, no console issues, no failed requests, and no
+  horizontal overflow. API alias contract: request/canonical key
+  `09-technologia`, resolved backend key `automations-integrations`, `5`
+  nodes, `4` edges. Evidence artifacts:
+  `docs/ux/evidence/luc-4880-technology-ai-proof-ladder-2026-06-20/`.
+  Cleanup passed: backend stopped, validation container removed, no
+  `chrome-headless-shell` rows. Disposition: `DONE` for local QA proof ladder.
+  Protected production proof remains release/credential gated.
+- 2026-06-20: `LUC-4885` Roost known-state evidence and architecture
+  baseline is complete for COO evidence scope. Output:
+  `docs/planning/luc-4885-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2291`,
+  `relations=4589`, `files=13607`, generated at
+  `2026-06-20T06:11:30.887Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task sync reports `0` task-link/proof gaps; architecture
+  health reports `implementation_without_tests=1162`; dependency report shows
+  `437` relations / `95` entities; ownership split is
+  `Docs Memory Lead=954`, `Engineering Delivery Lead=1336`,
+  `Roost Project Manager=1`. Follow-ups:
+  [LUC-4887](/LUC/issues/LUC-4887) source-control closure and
+  [LUC-4888](/LUC/issues/LUC-4888) QA proof ladder for `09 Technology And AI
+  Infrastructure`. Protected production proof remains release/credential
+  gated. Disposition: `DONE` for COO evidence scope.
+
+- 2026-06-20: `LUC-4883` architecture-awareness baseline gap curation from
+  [LUC-4881](/LUC/issues/LUC-4881) is complete. Output:
+  `docs/planning/luc-4883-architecture-awareness-baseline-gap-curation.md`.
+  Evidence: `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+  evidence queue `0`, chain worklist `0`, delta `0`, all gates pass);
+  generated report readback confirmed task/doc/owner linkage is clean and the
+  top missing-test signal is dominated by `src/app.ts` root and `USE /...`
+  mount entities. Decision: no immediate scanner override or product
+  implementation is warranted; future QA selection should remain
+  journey/proof-ladder driven, with scanner-inference tuning only if repeated
+  baselines keep mis-prioritizing already-proved mount proxies. Scope: no
+  runtime code, schema, migration, protected smoke, push, deploy, restart,
+  production mutation, credential access, secret disclosure, server, browser,
+  database, Docker, or watcher process. Disposition: `DONE`.
+
 - 2026-06-20: `LUC-4879` source-control closure is complete for the
   [LUC-4872](/LUC/issues/LUC-4872) generated known-state evidence packet.
   Output:
@@ -6923,3 +6986,4 @@
 - 2026-06-01: `LUC-261` `issue_continuation_needed` governance checkpoint completed (`pending comments: 0/0`). No fresh protected-rerun approval payload was present in this wake, so protected smoke was intentionally not rerun. Cancellation reason is confirmed as "no new authorization delta after the one-time rerun was already consumed." Continuity proof: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC `2026-06-01T01:50:52.0722347Z`. Disposition: `BLOCKED`; unblock owner/action unchanged (runtime secret owner key repair + one fresh approved same-session rerun of `npm run aog:deploy-smoke`).
 - 2026-06-01: `LUC-261` `issue_continuation_needed` governance checkpoint-2 completed (`pending comments: 0/0`). No fresh protected-rerun approval payload was present in this wake, so protected smoke was intentionally not rerun. Cancellation reason remains unchanged: no new one-run authorization delta after the consumed rerun. Continuity proof: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, gates `yes`), `git rev-parse --short HEAD` -> `8f887de`, UTC `2026-06-01T01:52:17.4181746Z`. Disposition: `BLOCKED`; unblock owner/action unchanged (runtime secret owner key repair + one fresh approved same-session rerun of `npm run aog:deploy-smoke`).
 - 2026-06-11: `LUC-3533` comment-resume checkpoint completed. Added `docs/planning/luc-3533-known-state-repair-lanes.md`; proof `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`, gates `yes`); generated known-state reports fresh at `2026-06-11T17:34:58.050Z`; open confidence debts converted into owner-scoped repair lanes: `[LUC-3543](/LUC/issues/LUC-3543)` scanner artifact hygiene, `[LUC-3544](/LUC/issues/LUC-3544)` task-link classification, `[LUC-3545](/LUC/issues/LUC-3545)` QA proof ladder, and existing `[LUC-3537](/LUC/issues/LUC-3537)` source-control closure. No protected smoke, deploy, push, restart, production mutation, or secret access. Disposition: `DONE`.
+- 2026-06-20: `LUC-4881` known-state evidence collection completed and delegated. Proof: architecture-awareness scanner PASS (`entities=2292`, `relations=4594`, `files=13612`, generated `2026-06-20T06:12:36.581Z`); task-sync stable (`0` task-link gaps, `0` implementation-without-task gaps, `0` verified-without-proof gaps); top open signal remains `implementation_without_tests=1162`. Evidence packet: `docs/planning/luc-4881-known-state-evidence-and-architecture-baseline.md`. Created child lanes [LUC-4882](/LUC/issues/LUC-4882) source-control closure and [LUC-4883](/LUC/issues/LUC-4883) architecture curation. No feature code, push, deploy, restart, protected smoke, production mutation, credential access, or secret disclosure.

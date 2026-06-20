@@ -2,6 +2,46 @@
 
 Last updated: 2026-06-20
 
+QA proof-ladder completion note: LUC-4880 is VERIFIED_DONE for local
+`09 Technology -> Operating Graph Overview`. The packet is recorded in
+`docs/planning/luc-4880-technology-ai-proof-ladder.md`. Evidence:
+`npm run check:route-capabilities` passed with `checkedManifestRoutes=180`,
+`checkedRouteFiles=35`, `status=ok`; `COMPANYCORE_TEST_DB_KEEP=1 npm run
+test:api:local` passed after server/web build, all `31` migrations, seed, and
+`7/7` API subtests. Authenticated Playwright proof on local backend port
+`3238` passed desktop `1366x900` and mobile `390x844` checks for route
+identity, Technology area signal, operating-graph rows, safe synthetic backend
+error language, no raw backend error leakage, no console issues, no failed
+requests, and no horizontal overflow. Evidence artifacts:
+`docs/ux/evidence/luc-4880-technology-ai-proof-ladder-2026-06-20/`. Alias
+contract verified: route/request/canonical key `09-technologia` resolves to
+backend operating area key `automations-integrations` with `5` nodes and `4`
+edges. Cleanup proof: temporary backend stopped, `companycore-test-postgres`
+removed, and no `chrome-headless-shell` rows remained. Confidence
+classification: Technology operating graph overview is locally verified for
+this proof ladder; protected production proof remains release/credential
+gated.
+
+Roost known-state baseline note: LUC-4885 is VERIFIED_DONE for COO evidence
+scope. The packet is recorded in
+`docs/planning/luc-4885-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2291`,
+`relations=4589`, `files=13607`, generated at
+`2026-06-20T06:11:30.887Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task sync reports `0` actionable/raw task-link gaps and `0`
+verified-without-proof gaps; architecture health reports
+`implementation_without_tests=1162`; dependency report shows `437` relations /
+`95` entities; ownership split is `Docs Memory Lead=954`,
+`Engineering Delivery Lead=1336`, `Roost Project Manager=1`;
+`HEAD=78637e6875d11ecdccfaf005aaada3092a7a1188`. Confidence classification:
+local architecture and task/proof synchronization are verified; remaining
+confidence debt is broad test-evidence debt, not a COO-owned implementation
+defect. Follow-up owners: [LUC-4887](/LUC/issues/LUC-4887) for source-control
+closure and [LUC-4888](/LUC/issues/LUC-4888) for the `09 Technology And AI
+Infrastructure` QA proof ladder. Protected production proof remains
+release/credential gated.
+
 Roost known-state baseline note: LUC-4872 is VERIFIED_DONE for the Roost
 Project Manager evidence lane. The packet is recorded in
 `docs/planning/luc-4872-known-state-evidence-and-architecture-baseline.md`.
@@ -1773,6 +1813,7 @@ it honest. Do not turn uncertainty into optimism.
 | DMS-03-006 | Sales Management System | Protected Sales context packet and selected-area Sales board for clients, deals, stages, interactions, commercial exceptions, follow-up work, Finance handoff, and blocked actions | P1 | VERIFIED | High | `src/modules/sales/sales.routes.ts` implements `GET /v1/sales/context`; `sales:read` is exposed through capabilities, MCP manifest, and read-oriented key profiles; `/areas?area=03-sprzedaz&view=overview` renders `SalesManagementBoard`. `npm run build:server`, `npm run build:web`, `npm run test:api` on validation-owned PostgreSQL `127.0.0.1:55497`, and Playwright desktop/mobile proof on `http://127.0.0.1:3220` passed. Screenshots: `docs/ux/evidence/dms-03-sales-board-desktop.png`, `docs/ux/evidence/dms-03-sales-board-mobile.png`. | Production smoke remains pending after deployment. Sales write actions remain intentionally blocked. | Implement `05 Relationships` read packet and board, or run production smoke after deploy. | Backend Builder + Frontend Builder + QA/Test | 2026-05-16 |
 | PROD-HOTFIX-001 | Runtime configuration | Coolify restart-loop API key hash fallback | P0 | VERIFIED | High | Public health returned `503`; local production config import reproduced failure when `API_KEY_HASH_SECRET` was omitted. `src/config/env.ts` now falls back to required non-placeholder `AUTH_TOKEN_SECRET` for API key hashing. `git diff --check`, `npm run build`, and `npm test` passed against disposable PostgreSQL on `localhost:55466`, including a new production fallback regression test. Coolify runtime inspection found empty `AUTH_TOKEN_SECRET`, `API_KEY_HASH_SECRET`, and `INTEGRATION_SECRET_KEY`; all were populated with non-placeholder values. Redeploy `l1i1ylihrss3d7xoxk4psu2n` finished, backend logs showed `companycore listening on port 3000`, and public web/API `/health` returned `200`. | Coolify realtime/log streaming warning remains an operator-tooling limitation but did not block recovery. | Keep future required-secret changes paired with explicit Coolify env migration steps before deploy. | Ops/Release + Backend | 2026-05-14 |
 | LUC-3533-KNOWN-STATE | Architecture known-state baseline | Fresh generated reports and follow-up repair lanes | P1 | PARTIAL | Medium | 2026-06-11 comment-resume proof: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`); generated reports fresh at `2026-06-11T17:34:58.050Z`; `docs/planning/luc-3533-known-state-repair-lanes.md` records scanner, task-link, QA, and SCM follow-up lanes. | Green architecture gate does not close confidence debt: `implementation_without_tests=2138`, task-sync `implementation entities without task links=215`, scanner includes `.tmp/web-qa-*` and generated `public/react/assets`, and source-control closure remains in `[LUC-3537](/LUC/issues/LUC-3537)`. | Complete child repair lanes before treating known-state baseline as fully closed for release readiness. | Roost PM + Backend + Docs + QA | 2026-06-11 |
+| LUC-4881-KNOWN-STATE | Architecture known-state baseline | Fresh architecture-awareness evidence and owner-scoped child lanes | P1 | VERIFIED | Medium | 2026-06-20 IPM proof: `node scripts/build-architecture-awareness-index.mjs --project Roost --root C:\Personal\Projekty\Aplikacje\Roost` PASS (`entities=2292`, `relations=4594`, `files=13612`, generated `2026-06-20T06:12:36.581Z`); packet `docs/planning/luc-4881-known-state-evidence-and-architecture-baseline.md`; task-sync gaps `0`; owner/disconnected gaps `0`; [LUC-4883](/LUC/issues/LUC-4883) curation completed; [LUC-4889](/LUC/issues/LUC-4889) local source-control closure completed. | Aggregate implementation-without-tests signal remains `1162`, classified as scanner-inference/backlog confidence debt rather than a direct release blocker. Protected production/runtime proof remains separately gated. | Continue journey/proof-ladder selection from module risk; push remains held until a future release batch or explicit source-ref/deploy need. | Roost PM + TSA | 2026-06-20 |
 
 ## Maintenance Rules
 

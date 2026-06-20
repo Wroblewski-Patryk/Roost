@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T06:07:29.075Z
+Generated: 2026-06-20T06:12:36.581Z
 
 ## Canonical Exports
 
@@ -1074,6 +1074,9 @@ Generated: 2026-06-20T06:07:29.075Z
 | documents | document:luc-4864-known-state-evidence-and-architecture-baseline:641a23b3a2 | module:docs:6784d83cb0 | docs/planning/luc-4864-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4868-source-control-closure-for-luc-4864-known-state-evidence-packet:073d37062e | module:docs:6784d83cb0 | docs/planning/luc-4868-source-control-closure-for-luc-4864-known-state-evidence-packet.md |
 | documents | document:luc-4872-known-state-evidence-and-architecture-baseline:7a0e9fcda5 | module:docs:6784d83cb0 | docs/planning/luc-4872-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4879-source-control-closure-for-luc-4872-known-state-evidence-packet:2f9230dc8c | module:docs:6784d83cb0 | docs/planning/luc-4879-source-control-closure-for-luc-4872-known-state-evidence-packet.md |
+| documents | document:luc-4881-known-state-evidence-and-architecture-baseline:64e14a2af9 | module:docs:6784d83cb0 | docs/planning/luc-4881-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4883-architecture-awareness-baseline-gap-curation:7e2af4a16d | module:docs:6784d83cb0 | docs/planning/luc-4883-architecture-awareness-baseline-gap-curation.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-06-20T06:07:29.075Z
 | documents | document:pipeline-template:273baaa1e0 | module:docs:6784d83cb0 | docs/pipelines/pipeline-template.md |
 | documents | document:pipelines-model:ca10369ea9 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0039.md |
 | documents | document:planning-catalog-index:60f22905c5 | module:docs:6784d83cb0 | docs/planning/planning-catalog-index.md |
-| documents | document:playwright-assets-proof:82d901185f | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-PLAYWRIGHT-ASSETS.md |
-| documents | document:playwright-dashboard-render-proof:ae54215ed1 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-PLAYWRIGHT-DASHBOARD.md |
-| documents | document:playwright-operations-render-proof:a2cdcd4665 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-PLAYWRIGHT-OPS.md |
