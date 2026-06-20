@@ -2,6 +2,42 @@
 
 Last updated: 2026-06-20
 
+Roost known-state baseline note: [LUC-5150](/LUC/issues/LUC-5150) is
+VERIFIED_PENDING_SCM_CLOSURE for the Roost PM evidence lane. The packet is
+recorded in
+`docs/planning/luc-5150-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`2357` entities,
+`4851` relations, `13687` files, generated `2026-06-20T14:43:03.272Z`);
+`npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task
+synchronization reports `0` task-link gaps, `0` implementation-without-task
+gaps, and `0` verified-without-proof gaps; ownership gaps `0`; dependency
+report shows `437` relations / `95` entities. Architecture health reports
+`implementation_without_tests=1162`, classified inferred noise `9`, docs gaps
+`0`, disconnected entities `0`; confidence classification: local architecture
+and task/proof synchronization are verified, while remaining confidence debt is
+narrow route/journey proof debt plus source-control closure.
+[LUC-5155](/LUC/issues/LUC-5155) completed local source-control closure for
+this packet; [LUC-5156](/LUC/issues/LUC-5156) owns the next QA proof slice.
+Protected target proof remains release/credential gated through the existing
+approval path.
+
+Source-control note: [LUC-5155](/LUC/issues/LUC-5155) is VERIFIED_DONE for
+the [LUC-5150](/LUC/issues/LUC-5150) generated/status evidence batch. Closure
+packet:
+`docs/planning/luc-5155-source-control-closure-for-luc-5150-evidence-packet.md`.
+Evidence: pre-closure
+`HEAD=7da0f0862367af9c1234cbcf3cce9b5cd1a9ab64`; branch
+`main...origin/main [ahead 67]`; dirty set matched the parent evidence packet,
+generated architecture/status outputs, and state/context updates. `git diff
+--check` passed with LF-to-CRLF warnings only; generated
+architecture-awareness JSON parsed at `2357` entities / `4851` relations,
+generated `2026-06-20T14:43:03.272Z`; generated architecture-health JSON
+parsed with `implementation_without_tests=1162` and docs gaps `0`; scoped
+high-confidence token/private-key scan found no matching files; `npm run
+architecture:status` remained GREEN. Push remains held for a future release
+batch or explicit source-ref/deploy need. Deploy impact: none.
+
 Source-control note: [LUC-5144](/LUC/issues/LUC-5144) is VERIFIED_DONE for
 the [LUC-5135](/LUC/issues/LUC-5135) generated/status evidence batch and
 carried adjacent evidence outputs from [LUC-5129](/LUC/issues/LUC-5129),

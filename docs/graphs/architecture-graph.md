@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T14:15:30.045Z
+Generated: 2026-06-20T14:43:03.272Z
 
 ## Canonical Exports
 
@@ -1139,6 +1139,8 @@ Generated: 2026-06-20T14:15:30.045Z
 | documents | document:luc-5130-architecture-scope-reconciliation:852ffa7019 | module:docs:6784d83cb0 | docs/planning/luc-5130-architecture-scope-reconciliation.md |
 | documents | document:luc-5131-protected-target-proof-checklist:935701e5f5 | module:docs:6784d83cb0 | docs/planning/luc-5131-protected-target-proof-checklist.md |
 | documents | document:luc-5132-security-and-ai-authority-evidence-recheck:1317ba6163 | module:docs:6784d83cb0 | docs/planning/luc-5132-security-ai-authority-evidence-recheck.md |
+| documents | document:luc-5135-known-state-evidence-and-architecture-baseline:8b0a832ad2 | module:docs:6784d83cb0 | docs/planning/luc-5135-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5144-source-control-closure-for-luc-5135-evidence-packet:7ed17f42e0 | module:docs:6784d83cb0 | docs/planning/luc-5144-source-control-closure-for-luc-5135-evidence-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-06-20T14:15:30.045Z
 | documents | document:operations-management-center-deepening-task-contract:e3efe3e73b | module:docs:6784d83cb0 | docs/planning/operations-management-center-deepening-task-contract.md |
 | documents | document:operations-shared-selector-and-form-refactor-task-contract:f2a91facfe | module:docs:6784d83cb0 | docs/planning/operations-shared-selector-and-form-refactor-task-contract.md |
 | documents | document:operations-task-card-and-modal:aa0a937dc4 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/UI-OPERATIONS-TASK-CARD.md |
-| documents | document:operations-work-item-created:e2303f14c1 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/EVENT-OPERATIONS-WORK-ITEM-CREATED.md |
-| documents | document:operations-work-items:e544859b4b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-OPERATIONS-WORK-ITEMS.md |

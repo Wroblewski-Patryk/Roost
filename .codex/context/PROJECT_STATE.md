@@ -2,6 +2,45 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5155` source-control closure completed locally for the
+  [LUC-5150](/LUC/issues/LUC-5150) known-state evidence packet. Output:
+  `docs/planning/luc-5155-source-control-closure-for-luc-5150-evidence-packet.md`.
+  Evidence: dirty set classified as coherent [LUC-5150](/LUC/issues/LUC-5150)
+  generated/status evidence outputs; `git diff --check` PASS with
+  LF-to-CRLF warnings only; generated architecture-awareness JSON parsed with
+  `2357` entities / `4851` relations at `2026-06-20T14:43:03.272Z`;
+  generated architecture-health JSON parsed with
+  `implementation_without_tests=1162` and docs gaps `0`; scoped
+  high-confidence secret/private-key scan found no matching files; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass). Commit: local
+  source-control closure commit for this packet; final SHA is recorded in the
+  Paperclip closure comment. Push held for future release batch or explicit
+  source-ref/deploy need. Deploy impact: none.
+
+- 2026-06-20: `LUC-5150` Roost known-state evidence and architecture baseline
+  completed for Roost PM scope after the local-board wake comment requested
+  local evidence collection and concrete repair lanes. Output:
+  `docs/planning/luc-5150-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2357`,
+  `relations=4851`, `files=13687`, generated at
+  `2026-06-20T14:43:03.272Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); task-sync reports `0` task-link gaps, `0`
+  implementation-without-task gaps, and `0` verified-without-proof gaps;
+  owner gaps `0`; dependency report `437` relations / `95` entities;
+  architecture health reports `implementation_without_tests=1162`, classified
+  inferred noise `9`, docs gaps `0`, disconnected entities `0`; source
+  checkpoint `HEAD=7da0f0862367af9c1234cbcf3cce9b5cd1a9ab64`, branch
+  `main...origin/main [ahead 67]`. Follow-up lanes:
+  [LUC-5155](/LUC/issues/LUC-5155) source-control closure for the
+  generated/status packet is now complete; [LUC-5156](/LUC/issues/LUC-5156)
+  owns one narrow QA route/journey proof.
+  Protected target proof remains gated through the existing approval/credential
+  lane. No runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, browser,
+  database, Docker, server, or watcher process occurred.
+
 - 2026-06-20: `LUC-5144` source-control closure completed locally for the
   [LUC-5135](/LUC/issues/LUC-5135) known-state evidence packet and carried
   adjacent evidence outputs from [LUC-5129](/LUC/issues/LUC-5129), LUC-5130,

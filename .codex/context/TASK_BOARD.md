@@ -2,6 +2,41 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5155` source-control closure is complete locally for the
+  [LUC-5150](/LUC/issues/LUC-5150) known-state evidence packet.
+  Output:
+  `docs/planning/luc-5155-source-control-closure-for-luc-5150-evidence-packet.md`.
+  Evidence: dirty set classified as coherent [LUC-5150](/LUC/issues/LUC-5150)
+  generated/status evidence outputs; `git diff --check` PASS with
+  LF-to-CRLF warnings only; generated architecture-awareness JSON parsed with
+  `2357` entities / `4851` relations at `2026-06-20T14:43:03.272Z`;
+  generated architecture-health JSON parsed with
+  `implementation_without_tests=1162` and docs gaps `0`; scoped
+  high-confidence secret/private-key scan found no matching files; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass). Push held for future release
+  batch or explicit source-ref/deploy need; deploy impact none. Disposition:
+  `DONE`.
+
+- 2026-06-20: `LUC-5150` known-state evidence and architecture baseline is
+  complete for Roost PM scope after the local-board wake comment requested
+  local evidence collection and concrete next repair lanes. Output:
+  `docs/planning/luc-5150-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip scanner PASS (`2357` entities / `4851` relations /
+  `13687` files, generated `2026-06-20T14:43:03.272Z`); `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass); task-sync gaps `0`;
+  ownership gaps `0`; dependency report `437` relations / `95` entities;
+  architecture health `implementation_without_tests=1162`, classified inferred
+  noise `9`, docs gaps `0`, disconnected entities `0`. No code, runtime,
+  database, browser, deploy, push, protected smoke, production, credential,
+  secret, server, Docker, or watcher action occurred. Disposition: PM evidence
+  scope `DONE`; source-control closure is now complete through
+  [LUC-5155](/LUC/issues/LUC-5155).
+  Follow-up lanes: [LUC-5155](/LUC/issues/LUC-5155) source-control closure is
+  now complete; [LUC-5156](/LUC/issues/LUC-5156) owns narrow QA route/journey
+  proof.
+
 - 2026-06-20: `LUC-5144` source-control closure is complete locally for the
   [LUC-5135](/LUC/issues/LUC-5135) known-state evidence packet.
   Output:
@@ -30,8 +65,7 @@
   classified inferred noise `9`. No code, runtime, database, browser, deploy,
   push, protected smoke, production, credential, secret, server, Docker, or
   watcher action occurred. Disposition: PM evidence scope `DONE`; source
-  control closure is required for the generated/status packet before local
-  source-control closure can be considered complete.
+  control closure is complete through [LUC-5144](/LUC/issues/LUC-5144).
 
 - 2026-06-20: `LUC-5132` security and AI authority evidence recheck is
   complete for the Security and Privacy Auditor scope.
