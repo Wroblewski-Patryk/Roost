@@ -1,5 +1,37 @@
 # Module Confidence Ledger
 
+Source-control confidence note: [LUC-5262](/LUC/issues/LUC-5262) is
+VERIFIED_DONE_PENDING_PUSH_BATCH for the [LUC-5257](/LUC/issues/LUC-5257)
+known-state evidence packet. Evidence packet:
+`docs/planning/luc-5262-source-control-closure-for-luc-5257-evidence-packet.md`.
+Proof: coherent dirty-state classification, `git diff --check` PASS with
+LF-to-CRLF warnings only, generated architecture JSON parse PASS at
+`2026-06-20T18:43:20.725Z` with `2393` entities / `4988` relations, scoped
+high-confidence secret/private-key scan PASS, and `npm run architecture:status`
+PASS (`GREEN`, graph `454/765/35`, queues `0`). Confidence classification:
+local source-control closure is verified; push is intentionally held for a
+future release batch.
+
+Roost known-state baseline note: [LUC-5257](/LUC/issues/LUC-5257) is
+VERIFIED_PENDING_SCM_CLOSURE_AND_QA_FOLLOWUP for the IPM evidence lane. The
+packet is recorded in
+`docs/planning/luc-5257-known-state-evidence-and-architecture-baseline.md`.
+Evidence: architecture-awareness refresh PASS in `10271ms`, generated
+`2026-06-20T18:43:20.725Z` with `2393` entities, `4988` relations, and
+`13723` files; `npm run architecture:status` PASS (`GREEN`, graph
+`454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+gates pass); `npm run check:route-capabilities` PASS
+(`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+task-sync gaps `0`; ownership gaps `0`; dependency report `438` relations /
+`95` entities. Architecture health reports `implementation_without_tests=1162`,
+actionable `1153`, classified inferred noise `9`, docs gaps `0`,
+disconnected entities `0`; confidence classification: local architecture,
+task/proof synchronization, ownership, and route-capability registration are
+verified, while source-control closure and the next focused QA proof-ladder
+selection remain delegated follow-up lanes through
+[LUC-5262](/LUC/issues/LUC-5262) and [LUC-5263](/LUC/issues/LUC-5263).
+Protected target proof remains approval/credential gated.
+
 QA proof note: [LUC-5240](/LUC/issues/LUC-5240) is VERIFIED_DONE for the
 Company OS API journey selected from the fresh [LUC-5233](/LUC/issues/LUC-5233)
 `implementation_without_tests=1162` signal. Evidence packet:

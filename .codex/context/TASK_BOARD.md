@@ -2,6 +2,37 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5262` source-control closure is complete locally for the
+  [LUC-5257](/LUC/issues/LUC-5257) known-state evidence packet. Output:
+  `docs/planning/luc-5262-source-control-closure-for-luc-5257-evidence-packet.md`.
+  Evidence: starting HEAD `5fa15582` on `main`; dirty set classified as a
+  coherent generated/status/planning/state packet; `git diff --check` PASS with
+  LF-to-CRLF warnings only; generated JSON parse PASS at
+  `2026-06-20T18:43:20.725Z` (`2393` entities / `4988` relations); scoped
+  high-confidence secret/private-key scan PASS; `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`,
+  all gates pass). Local closure commit created; push held for a future release
+  batch or explicit source-ref/deploy need; deploy impact none. Disposition:
+  `DONE`.
+
+- 2026-06-20: `LUC-5257` known-state evidence and architecture baseline is
+  complete for IPM evidence scope. Output:
+  `docs/planning/luc-5257-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS in `10271ms`, generated
+  `2026-06-20T18:43:20.725Z` with `2393` entities / `4988` relations /
+  `13723` files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass);
+  `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); task-sync gaps `0`; ownership gaps
+  `0`; dependency report `438` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`, actionable `1153`, classified inferred
+  noise `9`, docs gaps `0`, disconnected entities `0`. No code, runtime,
+  database, browser, deploy, push, protected smoke, production, credential,
+  secret, server, Docker, or watcher action occurred. Disposition: evidence
+  scope complete; follow-ups are [LUC-5262](/LUC/issues/LUC-5262)
+  source-control closure for this packet and [LUC-5263](/LUC/issues/LUC-5263)
+  one named QA proof-ladder selection from the remaining confidence signal.
+
 - 2026-06-20: `LUC-5251` source-control closure is complete locally for the
   [LUC-5244](/LUC/issues/LUC-5244) known-state evidence packet. Output:
   `docs/planning/luc-5251-source-control-closure-for-luc-5244-evidence-packet.md`.

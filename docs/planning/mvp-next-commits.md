@@ -1,5 +1,30 @@
 # MVP Next Commits
 
+- 2026-06-20: `LUC-5262` source-control closure is complete locally for the
+  [LUC-5257](/LUC/issues/LUC-5257) known-state evidence packet. Evidence
+  packet:
+  `docs/planning/luc-5262-source-control-closure-for-luc-5257-evidence-packet.md`.
+  Proof: `git diff --check` PASS with LF-to-CRLF warnings only; generated JSON
+  parse PASS at `2026-06-20T18:43:20.725Z`; scoped high-confidence
+  secret/private-key scan PASS; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`). Local commit created; push
+  held for future release batch or explicit source-ref/deploy need. Next lane:
+  [LUC-5263](/LUC/issues/LUC-5263) remains the QA proof-ladder selection from
+  `implementation_without_tests=1162`.
+
+- 2026-06-20: `LUC-5257` known-state evidence and architecture baseline is
+  complete for IPM evidence scope. Evidence packet:
+  `docs/planning/luc-5257-known-state-evidence-and-architecture-baseline.md`.
+  Proof: architecture-awareness refresh PASS in `10271ms`, generated
+  `2026-06-20T18:43:20.725Z` with `2393` entities / `4988` relations /
+  `13723` files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  task-sync, owner, proof, docs, and disconnected gaps remain `0`. Next
+  commits/lanes: [LUC-5262](/LUC/issues/LUC-5262) local source-control closure
+  for this packet and [LUC-5263](/LUC/issues/LUC-5263) one focused QA
+  proof-ladder selection from `implementation_without_tests=1162`.
+
 - 2026-06-20: `LUC-5248` source-control closure is complete locally for the
   [LUC-5243](/LUC/issues/LUC-5243) known-state evidence packet. Evidence
   packet:

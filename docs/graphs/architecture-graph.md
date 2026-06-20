@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T18:21:32.416Z
+Generated: 2026-06-20T18:43:20.725Z
 
 ## Canonical Exports
 
@@ -1169,7 +1169,14 @@ Generated: 2026-06-20T18:21:32.416Z
 | documents | document:luc-5235-dashboard-command-api-journey-proof:f9db9f5716 | module:docs:6784d83cb0 | docs/planning/luc-5235-dashboard-command-api-journey-proof.md |
 | documents | document:luc-5238-known-state-evidence-and-architecture-baseline:312fc26547 | module:docs:6784d83cb0 | docs/planning/luc-5238-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5239-source-control-closure-for-luc-5233-evidence-packet:093c63cb06 | module:docs:6784d83cb0 | docs/planning/luc-5239-source-control-closure-for-luc-5233-evidence-packet.md |
+| documents | document:luc-5240-company-os-api-journey-proof:ea3a0dde11 | module:docs:6784d83cb0 | docs/planning/luc-5240-company-os-api-journey-proof.md |
 | documents | document:luc-5243-known-state-evidence-and-architecture-baseline:5b8b666924 | module:docs:6784d83cb0 | docs/planning/luc-5243-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5244-known-state-evidence-and-architecture-baseline:254effbae0 | module:docs:6784d83cb0 | docs/planning/luc-5244-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5245-source-control-closure-for-luc-5238-evidence-packet:5ff536a57a | module:docs:6784d83cb0 | docs/planning/luc-5245-source-control-closure-for-luc-5238-evidence-packet.md |
+| documents | document:luc-5246-commercial-exceptions-api-journey-proof:dd92f5fd30 | module:docs:6784d83cb0 | docs/planning/luc-5246-commercial-exceptions-api-journey-proof.md |
+| documents | document:luc-5247-architecture-scanner-budget-and-refresh-policy-repair:940b3d967b | module:docs:6784d83cb0 | docs/planning/luc-5247-architecture-scanner-budget-refresh-policy-repair.md |
+| documents | document:luc-5248-source-control-closure-for-luc-5243-evidence-packet:aa5ffefd28 | module:docs:6784d83cb0 | docs/planning/luc-5248-source-control-closure-for-luc-5243-evidence-packet.md |
+| documents | document:luc-5251-source-control-closure-for-luc-5244-evidence-packet:3df23752ad | module:docs:6784d83cb0 | docs/planning/luc-5251-source-control-closure-for-luc-5244-evidence-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1211,10 +1218,3 @@ Generated: 2026-06-20T18:21:32.416Z
 | documents | document:migration:f677269dfc | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0002.md |
 | documents | document:migration:fe025e2165 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0013.md |
 | documents | document:module-deep-dive-template:ce5d4bec1c | module:docs:6784d83cb0 | docs/modules/module-deep-dive-template.md |
-| documents | document:module-documentation-status-index:ed7fdcaae1 | module:docs:6784d83cb0 | docs/modules/module-doc-status-index.md |
-| documents | document:modules-documentation:d9b7ae60ae | module:docs:6784d83cb0 | docs/modules/README.md |
-| documents | document:mvp-execution-plan:68161a54de | module:docs:6784d83cb0 | docs/planning/mvp-execution-plan.md |
-| documents | document:mvp-next-commits:ccc83152eb | module:docs:6784d83cb0 | docs/planning/mvp-next-commits.md |
-| documents | document:mvp-scope:341e63028f | module:docs:6784d83cb0 | docs/product/mvp_scope.md |
-| documents | document:new-feature-registry-gate:1cbd1348cd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/WORKFLOW-NEW-FEATURE-REGISTRY-GATE.md |
-| documents | document:new-project-bootstrap:1ca3490da3 | module:docs:6784d83cb0 | docs/governance/new-project-bootstrap.md |

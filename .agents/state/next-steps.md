@@ -1,5 +1,31 @@
 # Next Steps
 
+- `LUC-5262` source-control closure for the
+  [LUC-5257](/LUC/issues/LUC-5257) known-state evidence packet is complete.
+  Evidence packet:
+  `docs/planning/luc-5262-source-control-closure-for-luc-5257-evidence-packet.md`.
+  Local checks passed: coherent generated/status/planning/state dirty-set
+  classification, `git diff --check`, generated JSON parse, scoped
+  high-confidence secret/private-key scan, and `npm run architecture:status`.
+  Next owner/action: no further source-control work remains on
+  [LUC-5262](/LUC/issues/LUC-5262); push remains held for a future release batch
+  or explicit source-ref/deploy need. [LUC-5263](/LUC/issues/LUC-5263) remains
+  the QA-owned next proof-ladder lane.
+
+- `LUC-5257` known-state architecture baseline is complete for IPM evidence
+  scope.
+  Evidence packet:
+  `docs/planning/luc-5257-known-state-evidence-and-architecture-baseline.md`.
+  Local proof passed: architecture-awareness refresh (`2393` entities /
+  `4988` relations / `13723` files, generated
+  `2026-06-20T18:43:20.725Z`), `npm run architecture:status`, and `npm run
+  check:route-capabilities`. Next owner/action:
+  [LUC-5262](/LUC/issues/LUC-5262) Roost PM closes source-control for the
+  generated/status/planning packet; [LUC-5263](/LUC/issues/LUC-5263) QA selects
+  one named unproved high-impact local proof-ladder slice from
+  `implementation_without_tests=1162`. Protected runtime proof remains
+  approval/credential gated.
+
 - `LUC-5251` source-control closure for the
   [LUC-5244](/LUC/issues/LUC-5244) known-state evidence packet is complete.
   Evidence packet:
