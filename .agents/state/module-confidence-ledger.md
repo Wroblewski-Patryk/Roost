@@ -2,6 +2,22 @@
 
 Last updated: 2026-06-20
 
+Roost known-state baseline note: LUC-4941 is VERIFIED_DONE for the Roost
+Project Manager evidence lane. The packet is recorded in
+`docs/planning/luc-4941-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2312`,
+`relations=4673`, `files=13639`, generated at
+`2026-06-20T08:02:46.310Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task synchronization reports `0` task-link/proof gaps;
+ownership gaps `0`; dependency report shows `437` relations / `95` entities;
+architecture health reports `implementation_without_tests=1162`.
+Confidence classification: local architecture and task/proof synchronization
+are verified; remaining confidence debt is route/journey proof debt and
+source-control closure, not a PM-owned implementation defect. Follow-up owner:
+[LUC-4944](/LUC/issues/LUC-4944) for source-control closure. Protected
+production proof remains release/credential gated.
+
 Source-control closure note: LUC-4926 is VERIFIED_DONE for the current Roost
 evidence/state batch covering [LUC-4920](/LUC/issues/LUC-4920),
 [LUC-4921](/LUC/issues/LUC-4921), and adjacent completed
@@ -15,6 +31,21 @@ planning packets as one coherent batch. Local commit created after SCM
 hygiene. Push is held for a future release batch or explicit source-ref/deploy
 need. Deploy impact: none. Protected production proof remains
 release/credential gated.
+
+QA regression note: LUC-4936 is VERIFIED_DONE for dedicated
+`/v1/departments` API regression coverage. The packet is recorded in
+`docs/planning/luc-4936-management-departments-api-regression-coverage.md`.
+Evidence: `src/tests/api.test.ts` now directly covers `GET /v1/departments`
+default bootstrap and `12-zarzadzanie` Management linked view,
+`POST /v1/departments` custom department creation with approved linked views,
+`PATCH /v1/departments/:id` metadata/status/position/linked-view updates,
+invalid linked-view rejection, and workspace isolation. `npm run
+check:route-capabilities` passed with `checkedManifestRoutes=180`,
+`checkedRouteFiles=35`, `status=ok`. `npm run test:api:local` passed after
+server/web build, all `31` migrations, seed, and `7/7` API subtests. Cleanup
+confirmed no remaining `companycore-test-postgres` container and no
+`chrome-headless-shell` process. Production proof remains release/credential
+gated.
 
 QA selection note: LUC-4927 is VERIFIED_DONE_BY_READBACK for
 `12 Management -> Department management`. The packet is recorded in
@@ -33,9 +64,9 @@ Architecture nodes and chain entries for `PAGE-12-MANAGEMENT-DEPARTMENTS`,
 `npm run check:route-capabilities` passed with `checkedManifestRoutes=180`,
 `checkedRouteFiles=35`, `status=ok`. Confidence classification: Management
 department catalog is locally verified by current source-of-truth readback for
-thin milestone tracking; dedicated `/v1/departments` API regression assertions
-remain a future hardening item, not a milestone blocker. Protected production
-proof remains release/credential gated.
+thin milestone tracking; the dedicated `/v1/departments` API regression
+assertions are now covered by [LUC-4936](/LUC/issues/LUC-4936). Protected
+production proof remains release/credential gated.
 
 Roost readiness note: LUC-4921 is VERIFIED_DONE for the Product Manager
 CompanyCore readiness and milestone review. The packet is recorded in

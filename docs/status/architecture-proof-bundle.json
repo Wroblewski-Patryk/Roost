@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-25T01:45:55.048Z",
+  "generatedAt": "2026-06-20T07:53:44.065Z",
   "graph": {
-    "nodes": 452,
-    "relations": 761,
-    "chains": 34
+    "nodes": 454,
+    "relations": 765,
+    "chains": 35
   },
   "evidenceQueue": 0,
   "chainWorklist": 0,

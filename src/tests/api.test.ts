@@ -557,6 +557,127 @@ test("CompanyCore v1 protected API flow", async () => {
   const authA = { Authorization: `Bearer ${ownerA.token}` };
   const authB = { Authorization: `Bearer ${ownerB.token}` };
 
+  const initialDepartments = await request("/v1/departments", { headers: authA });
+  assert.equal(initialDepartments.status, 200);
+  const initialDepartmentsBody = initialDepartments.body as {
+    data: {
+      departments: Array<{
+        id: string;
+        key: string;
+        name: string;
+        description: string | null;
+        icon: string;
+        position: number;
+        isSystem: boolean;
+        status: string;
+        linkedViews: string[];
+        href: string | null;
+      }>;
+      availableViews: Array<{ id: string; href: string | null; enabled: boolean }>;
+    };
+  };
+  assert.equal(initialDepartmentsBody.data.departments.length, 13);
+  assert.ok(initialDepartmentsBody.data.availableViews.some((view) => (
+    view.id === "management.departments"
+    && view.href === "/areas?area=12-zarzadzanie&view=departments"
+    && view.enabled === true
+  )));
+  const managementDepartment = initialDepartmentsBody.data.departments.find((department) => department.key === "12-zarzadzanie");
+  assert.ok(managementDepartment);
+  assert.equal(managementDepartment.name, "12 Management");
+  assert.equal(managementDepartment.isSystem, true);
+  assert.ok(managementDepartment.linkedViews.includes("management.departments"));
+  assert.equal(managementDepartment.href, "/areas?area=12-zarzadzanie&view=departments");
+
+  const createdDepartment = await request("/v1/departments", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({
+      name: "13 Marketing Lab",
+      description: "Cross-functional launch workspace.",
+      icon: "ph-megaphone",
+      linkedViews: ["operations.tasks", "assets.files"]
+    })
+  });
+  assert.equal(createdDepartment.status, 201);
+  const createdDepartmentBody = createdDepartment.body as {
+    data: {
+      id: string;
+      key: string;
+      name: string;
+      description: string | null;
+      icon: string;
+      position: number;
+      isSystem: boolean;
+      status: string;
+      linkedViews: string[];
+      views: Array<{ id: string; href: string | null; enabled: boolean }>;
+      href: string | null;
+    };
+  };
+  assert.equal(createdDepartmentBody.data.key, "13-marketing-lab");
+  assert.equal(createdDepartmentBody.data.name, "13 Marketing Lab");
+  assert.equal(createdDepartmentBody.data.description, "Cross-functional launch workspace.");
+  assert.equal(createdDepartmentBody.data.icon, "ph-megaphone");
+  assert.equal(createdDepartmentBody.data.isSystem, false);
+  assert.deepEqual(createdDepartmentBody.data.linkedViews, ["operations.tasks", "assets.files"]);
+  assert.equal(createdDepartmentBody.data.href, "/areas?area=04-operacje&view=tasks");
+
+  const updatedDepartment = await request(`/v1/departments/${createdDepartmentBody.data.id}`, {
+    method: "PATCH",
+    headers: authA,
+    body: JSON.stringify({
+      name: "13 Growth Lab",
+      description: "Launch and growth operating room.",
+      icon: "ph-rocket-launch",
+      position: 14,
+      status: "archived",
+      linkedViews: ["assets.files"]
+    })
+  });
+  assert.equal(updatedDepartment.status, 200);
+  const updatedDepartmentBody = updatedDepartment.body as {
+    data: {
+      id: string;
+      key: string;
+      name: string;
+      description: string | null;
+      icon: string;
+      position: number;
+      status: string;
+      linkedViews: string[];
+      href: string | null;
+    };
+  };
+  assert.equal(updatedDepartmentBody.data.id, createdDepartmentBody.data.id);
+  assert.equal(updatedDepartmentBody.data.key, "13-marketing-lab");
+  assert.equal(updatedDepartmentBody.data.name, "13 Growth Lab");
+  assert.equal(updatedDepartmentBody.data.description, "Launch and growth operating room.");
+  assert.equal(updatedDepartmentBody.data.icon, "ph-rocket-launch");
+  assert.equal(updatedDepartmentBody.data.position, 14);
+  assert.equal(updatedDepartmentBody.data.status, "archived");
+  assert.deepEqual(updatedDepartmentBody.data.linkedViews, ["assets.files"]);
+  assert.equal(updatedDepartmentBody.data.href, "/areas?area=08-zasoby&view=files");
+
+  const invalidDepartmentView = await request("/v1/departments", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({
+      name: "Invalid linked view",
+      linkedViews: ["not.approved"]
+    })
+  });
+  assert.equal(invalidDepartmentView.status, 400);
+  assert.equal((invalidDepartmentView.body as { error: string }).error, "invalid_department_view");
+
+  const workspaceBDepartments = await request("/v1/departments", { headers: authB });
+  assert.equal(workspaceBDepartments.status, 200);
+  const workspaceBDepartmentsBody = workspaceBDepartments.body as {
+    data: { departments: Array<{ key: string; name: string }> };
+  };
+  assert.equal(workspaceBDepartmentsBody.data.departments.length, 13);
+  assert.ok(!workspaceBDepartmentsBody.data.departments.some((department) => department.key === "13-marketing-lab"));
+
   const initialWorkforce = await request("/v1/workforce", { headers: authA });
   assert.equal(initialWorkforce.status, 200);
   const initialWorkforceBody = initialWorkforce.body as { data: { summary: { humans: number }; entities: Array<{ id: string; source?: string }> } };

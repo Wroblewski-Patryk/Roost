@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-25T01:45:51.038Z",
+  "generatedAt": "2026-06-20T07:53:40.336Z",
   "status": "GREEN",
   "previousHealthStatus": "GREEN",
   "metrics": {
@@ -19,9 +19,9 @@
     {
       "node_id": "AGENT-COORDINATOR",
       "node_name": "Coordinator agent role",
-      "impact_score": 470,
-      "direct_out_count": 63,
-      "transitive_out_count": 344
+      "impact_score": 474,
+      "direct_out_count": 64,
+      "transitive_out_count": 346
     },
     {
       "node_id": "FEAT-AUTO-0020",
@@ -33,7 +33,7 @@
     {
       "node_id": "TEST-API-LOCAL",
       "node_name": "npm run test:api:local",
-      "impact_score": 197,
+      "impact_score": 198,
       "direct_out_count": 7,
       "transitive_out_count": 111
     },

@@ -90,6 +90,7 @@ graph TD
   FEAT-AUTO-0026["Targets Coverage Expansion<br/>feature / tested"]
   FEAT-AUTO-0027["Task Lists Coverage Expansion<br/>feature / tested"]
   FEAT-AUTO-0028["Tasks Coverage Expansion<br/>feature / tested"]
+  FEAT-AUTO-0029["Process Core Coverage Expansion<br/>feature / tested"]
   FUNC-ENSURE-DEFAULT-DEPARTMENTS["ensureDefaultDepartments<br/>function / verified"]
   FUNC-SERIALIZE-DEPARTMENT["serializeDepartment<br/>function / verified"]
   FUNC-VISIBLE-WORK-ITEM-RELATIONS["visibleWorkItemRelations<br/>function / verified"]
@@ -271,6 +272,7 @@ graph TD
   API-AUTO-0167["GET /v1/relationships/context<br/>api_route / tested"]
   API-AUTO-0168["POST /v1/company-os/pipeline-runs/:id/task-links<br/>api_route / tested"]
   API-AUTO-0169["POST /v1/company-os/knowledge-links<br/>api_route / tested"]
+  API-AUTO-0170["GET /v1/process-core/coverage<br/>api_route / implemented_not_verified"]
   PAGE-00-GENERAL["/areas?area=00-ogolny&amp;view=overview<br/>page / verified"]
   PAGE-04-OPERATIONS-TASKS["/areas?area=04-operacje&amp;view=tasks<br/>page / verified"]
   PAGE-06-PEOPLE-AGENTS["/areas?area=06-kadry&amp;view=directory<br/>page / verified"]
@@ -1212,3 +1214,7 @@ graph TD
   FEAT-AUTO-0006 -->|owns| API-AUTO-0169
   FEAT-AUTO-0006 -->|contains| API-AUTO-0169
   FEAT-ARCH-EVIDENCE-SYSTEM -->|contains| PIPE-AUTO-0040
+  FEAT-AUTO-0029 -->|owns| API-AUTO-0170
+  FEAT-AUTO-0029 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
+  AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0029
+  FEAT-AUTO-0029 -->|contains| API-AUTO-0170

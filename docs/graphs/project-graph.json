@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-25T01:45:43.965Z",
+  "generatedAt": "2026-06-20T07:53:32.712Z",
   "nodes": [
     {
       "id": "FEAT-ARCH-EVIDENCE-SYSTEM",
@@ -1359,6 +1359,21 @@
       "layer": "full-stack",
       "module": "tasks",
       "feature": "tasks-coverage",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "docs/architecture/architecture-evidence-system.md",
+      "tags": [
+        "#feature #auto-scaffold #coverage-expansion"
+      ]
+    },
+    {
+      "id": "FEAT-AUTO-0029",
+      "name": "Process Core Coverage Expansion",
+      "type": "feature",
+      "status": "implemented",
+      "layer": "full-stack",
+      "module": "process-core",
+      "feature": "process-core-coverage",
       "verificationStatus": "tested",
       "riskLevel": "medium",
       "filePath": "docs/architecture/architecture-evidence-system.md",
@@ -4077,6 +4092,21 @@
       "verificationStatus": "tested",
       "riskLevel": "medium",
       "filePath": "src/modules/company-os/company-os.routes.ts",
+      "tags": [
+        "#api #auto-scaffold #missing"
+      ]
+    },
+    {
+      "id": "API-AUTO-0170",
+      "name": "GET /v1/process-core/coverage",
+      "type": "api_route",
+      "status": "implemented",
+      "layer": "backend",
+      "module": "process-core",
+      "feature": "process-core-coverage",
+      "verificationStatus": "implemented_not_verified",
+      "riskLevel": "medium",
+      "filePath": "src/modules/process-core/process-core.routes.ts",
       "tags": [
         "#api #auto-scaffold #missing"
       ]
@@ -12109,6 +12139,34 @@
       "target": "PIPE-AUTO-0040",
       "type": "contains",
       "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0729",
+      "source": "FEAT-AUTO-0029",
+      "target": "API-AUTO-0170",
+      "type": "owns",
+      "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0730",
+      "source": "FEAT-AUTO-0029",
+      "target": "DOC-ARCH-EVIDENCE-SYSTEM",
+      "type": "depends_on",
+      "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0731",
+      "source": "AGENT-COORDINATOR",
+      "target": "FEAT-AUTO-0029",
+      "type": "depends_on",
+      "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0732",
+      "source": "FEAT-AUTO-0029",
+      "target": "API-AUTO-0170",
+      "type": "contains",
+      "status": "partial"
     }
   ],
   "chains": [
@@ -12679,6 +12737,17 @@
         "API-AUTO-0158",
         "API-AUTO-0159",
         "API-AUTO-0160"
+      ],
+      "missingNodes": [],
+      "verificationStatus": "tested"
+    },
+    {
+      "id": "CHAIN-AUTO-0029",
+      "name": "Process Core Coverage Expansion auto chain",
+      "featureId": "FEAT-AUTO-0029",
+      "status": "implemented",
+      "nodeSequence": [
+        "API-AUTO-0170"
       ],
       "missingNodes": [],
       "verificationStatus": "tested"

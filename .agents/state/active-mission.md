@@ -4,6 +4,93 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-4941-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE_PENDING_SCM_CHILD
+- Selected objective: Refresh local Roost known-state architecture evidence
+  and convert remaining work into owner-scoped follow-up for
+  [LUC-4941](/LUC/issues/LUC-4941).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4941](/LUC/issues/LUC-4941), assigned to Roost Project Manager, with a
+  `softwarehouse-known-state-harvester:v1` evidence contract.
+- Scope: non-protected architecture-awareness scanner refresh, architecture
+  status proof, generated report readback, source-control readback, planning
+  packet, and child source-control lane creation.
+- Exclusions: no implementation, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4941-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip architecture-awareness scanner PASS (`entities=2312`,
+  `relations=4673`, `files=13639`, generated at
+  `2026-06-20T08:02:46.310Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task-sync gaps `0`; owner gaps `0`; dependency report
+  `437` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`; `HEAD=1b690222622d2165818816067592ad610bfb6aa5`.
+- Final disposition: done for PM evidence scope after creating
+  [LUC-4944](/LUC/issues/LUC-4944) for source-control closure. Protected
+  production proof remains release/credential gated.
+
+## Previous Mission
+
+- Mission ID: LUC-4937-ROOST-PRODUCT-CAPABILITY-MAP
+- Status: VERIFIED_DONE
+- Selected objective: Replace the sample product capability map with
+  Roost-specific capability rows for [LUC-4937](/LUC/issues/LUC-4937).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4937](/LUC/issues/LUC-4937), assigned to Roost Project Manager, and the
+  issue is actionable as a docs/memory cleanup.
+- Scope: inspect product and architecture capability maps, replace sample
+  `CAP-000` rows with Roost capability rows grounded in existing feature/chain
+  evidence, publish a task packet, and sync source-of-truth state notes.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output: `docs/planning/luc-4937-roost-product-capability-map.md`.
+- Evidence: `docs/product/capability-map.md` now contains `CAP-001` through
+  `CAP-008`; `docs/architecture/capability-to-implementation-map.csv` now maps
+  those capabilities to existing Roost feature IDs, chain IDs, code paths,
+  tests, and evidence. Targeted placeholder search and scoped diff hygiene
+  passed for the touched files.
+- Final disposition: done for docs/memory scope. Push held for a future release
+  batch or explicit source-ref/deploy need. Deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-4936-MGMT-DEPARTMENTS-API-REGRESSION
+- Status: VERIFIED_DONE
+- Selected objective: Add or prove dedicated `/v1/departments` API regression
+  coverage for `12 Management -> Departments`.
+- Why this mission now: Paperclip scoped the heartbeat to
+  [LUC-4936](/LUC/issues/LUC-4936), created from the
+  [LUC-4927](/LUC/issues/LUC-4927) future-hardening note that dedicated API
+  assertions were still missing after browser/source-of-truth proof.
+- Scope: inspect existing `src/tests/api.test.ts` coverage, add focused API
+  assertions if direct `/v1/departments` coverage is missing, run the smallest
+  relevant route/API gates, and update source-of-truth evidence.
+- Exclusions: no runtime feature behavior change, schema, migration, browser
+  proof, protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, or production data access.
+- Output:
+  `docs/planning/luc-4936-management-departments-api-regression-coverage.md`.
+- Evidence: existing test search showed no direct `/v1/departments` calls in
+  `src/tests/api.test.ts`. Added focused assertions for default catalog
+  bootstrap, `12-zarzadzanie` Management linked view, custom department create,
+  metadata/status/position/linked-view update, invalid linked-view rejection,
+  and workspace isolation. `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`).
+  `npm run test:api:local` PASS after server/web build, all `31` migrations,
+  seed, and `7/7` API subtests.
+- Cleanup: `companycore-test-postgres` removed by the local API harness; no
+  `chrome-headless-shell` process was present.
+- Final disposition: done for local QA regression coverage. No backend/test
+  implementation child issue is needed. Production proof remains
+  release/credential gated. Commit not created in this QA lane because the
+  shared workspace already contained staged/generated architecture/status
+  changes from adjacent Roost source-control work.
+
+## Previous Mission
+
 - Mission ID: LUC-4935-SOURCE-CONTROL-CLOSURE
 - Status: VERIFIED_DONE
 - Selected objective: Close local source control for the generated

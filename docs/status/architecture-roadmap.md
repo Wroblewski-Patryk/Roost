@@ -1,6 +1,6 @@
 # Architecture Roadmap
 
-Generated at: 2026-05-25T01:45:51.037Z
+Generated at: 2026-06-20T07:53:40.336Z
 
 ## Program Status
 
@@ -23,9 +23,9 @@ Generated at: 2026-05-25T01:45:51.037Z
 
 ## Highest Impact Nodes
 
-1. AGENT-COORDINATOR (Coordinator agent role) - score 470, direct_out 63, transitive_out 344
+1. AGENT-COORDINATOR (Coordinator agent role) - score 474, direct_out 64, transitive_out 346
 2. FEAT-AUTO-0020 (Operating Model Coverage Expansion) - score 207, direct_out 32, transitive_out 142
-3. TEST-API-LOCAL (npm run test:api:local) - score 197, direct_out 7, transitive_out 111
+3. TEST-API-LOCAL (npm run test:api:local) - score 198, direct_out 7, transitive_out 111
 4. FEAT-AUTO-0006 (Company Os Coverage Expansion) - score 186, direct_out 25, transitive_out 135
 5. FEAT-ASSETS-CONTEXT (Assets Context Workbench) - score 176, direct_out 32, transitive_out 111
 6. FEAT-AUTO-0015 (Integration Settings Coverage Expansion) - score 165, direct_out 18, transitive_out 128

@@ -7,6 +7,33 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-4941 known-state evidence and architecture baseline:
+      completed for Roost PM scope. Output:
+      `docs/planning/luc-4941-known-state-evidence-and-architecture-baseline.md`.
+      Evidence: Paperclip architecture-awareness scanner PASS
+      (`entities=2312`, `relations=4673`, `files=13639`, generated at
+      `2026-06-20T08:02:46.310Z`); `npm run architecture:status` PASS
+      (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+      delta `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`;
+      architecture health `implementation_without_tests=1162`. Follow-up:
+      [LUC-4944](/LUC/issues/LUC-4944) owns source-control closure for this
+      packet and the current generated/status dirty batch. No
+      production/deploy/protected action occurred.
+
+- [x] LUC-4936 Management departments API regression coverage:
+      completed. Output:
+      `docs/planning/luc-4936-management-departments-api-regression-coverage.md`.
+      Evidence: `src/tests/api.test.ts` now directly covers
+      `GET /v1/departments` default catalog bootstrap and `12-zarzadzanie`
+      Management linked view, `POST /v1/departments` custom department
+      creation with approved linked views, `PATCH /v1/departments/:id`
+      metadata/status/position/linked-view updates, invalid linked-view
+      rejection, and workspace isolation. `npm run check:route-capabilities`
+      PASS (`checkedManifestRoutes=180`, `checkedRouteFiles=35`,
+      `status=ok`). `npm run test:api:local` PASS after server/web build, all
+      `31` migrations, seed, and `7/7` API subtests. No production/deploy
+      action occurred.
+
 - [x] LUC-4926 source-control closure for the LUC-4920 Innovation proof packet:
       completed. Output:
       `docs/planning/luc-4926-source-control-closure-for-luc-4920-innovation-proof-packet.md`.
@@ -27,7 +54,8 @@ synchronized with `.codex/context/TASK_BOARD.md`.
       check:route-capabilities` PASS (`checkedManifestRoutes=180`,
       `checkedRouteFiles=35`, `status=ok`). Decision: no fresh full local
       API/browser proof ladder is required for this selection issue; dedicated
-      `/v1/departments` API regression assertions remain future hardening.
+      `/v1/departments` API regression assertions are now covered by
+      [LUC-4936](/LUC/issues/LUC-4936).
 
 - [x] LUC-4921 Roost CompanyCore readiness and milestone review:
       completed for PM scope. Output:

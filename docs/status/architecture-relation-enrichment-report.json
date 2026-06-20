@@ -1,7 +1,10 @@
 {
-  "enrichedAt": "2026-05-25T01:45:42.344Z",
-  "added": 1,
+  "enrichedAt": "2026-06-20T07:53:30.846Z",
+  "added": 4,
   "relationIds": [
-    "REL-AUTO-0728"
+    "REL-AUTO-0729",
+    "REL-AUTO-0730",
+    "REL-AUTO-0731",
+    "REL-AUTO-0732"
   ]
 }

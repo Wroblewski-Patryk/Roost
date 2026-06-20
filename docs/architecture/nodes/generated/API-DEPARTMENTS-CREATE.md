@@ -7,7 +7,7 @@ layer: "backend"
 module: "departments"
 feature: "management-department-catalog"
 risk_level: "medium"
-completion_percent: "85"
+completion_percent: "95"
 verification_status: "verified"
 last_verified_at: "2026-05-24"
 tags: "#api #departments #write"
@@ -67,4 +67,4 @@ Workspace-scoped custom department create endpoint.
 
 ## Notes
 
-Browser proof created 13 Marketing Lab through UI.
+LUC-4936 direct API assertions cover custom department creation with approved linked views and invalid linked-view rejection.

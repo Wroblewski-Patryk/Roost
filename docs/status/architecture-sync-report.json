@@ -1,4 +1,10 @@
 {
-  "synchronizedAt": "2026-05-25T01:45:34.140Z",
-  "results": []
+  "synchronizedAt": "2026-06-20T07:53:22.958Z",
+  "results": [
+    {
+      "targetPath": "docs/architecture/nodes/api_routes.csv",
+      "added": 1,
+      "total": 179
+    }
+  ]
 }

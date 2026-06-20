@@ -1,5 +1,23 @@
 {
-  "generatedAt": "2026-05-25T01:45:43.965Z",
-  "count": 0,
-  "items": []
+  "generatedAt": "2026-06-20T07:53:32.712Z",
+  "count": 1,
+  "items": [
+    {
+      "__source": "docs/status/evidence-status.csv",
+      "__line": 455,
+      "__columnCount": 11,
+      "__headerCount": 11,
+      "id": "EVID-AUTO-00448",
+      "node_id": "API-AUTO-0170",
+      "implementation_proof": "src/modules/process-core/process-core.routes.ts",
+      "test_proof": "npm run test:api:local",
+      "runtime_proof": "docs/status/architecture-evidence-summary.md",
+      "connection_proof": "FEAT-AUTO-0029",
+      "documentation_proof": "",
+      "overall_status": "implemented_not_verified",
+      "last_verified_at": "",
+      "missing_evidence": "docs",
+      "next_action": "Add missing proof fields then upgrade to tested/verified with dated evidence."
+    }
+  ]
 }

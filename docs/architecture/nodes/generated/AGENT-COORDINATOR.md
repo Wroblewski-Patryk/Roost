@@ -108,6 +108,7 @@ Default coordinator role that owns mission framing, lanes, integration, validati
 - depends_on -> [[PROMPT-ARCH-GRAPH-CHECK|Architecture graph check prompt]] (partial)
 - depends_on -> [[WORKFLOW-AGENT-FUNCTION-CHECK|Systemic function verification workflow]] (partial)
 - depends_on -> [[WORKFLOW-NEW-FEATURE-REGISTRY-GATE|New feature registry gate]] (partial)
+- depends_on -> [[FEAT-AUTO-0029|Process Core Coverage Expansion]] (partial)
 - [[AGENT-COORDINATOR|Coordinator agent role]] -> depends_on (partial)
 
 ## Chains

@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-25T01:45:49.575Z",
+  "generatedAt": "2026-06-20T07:53:39.064Z",
   "status": "passed",
   "summary": {
     "hotspotCount": 25,
-    "highestRiskScore": 475
+    "highestRiskScore": 720
   },
   "globalRiskSignals": {
     "evidenceQueue": 0,
@@ -15,17 +15,30 @@
   },
   "topHotspots": [
     {
+      "node_id": "FEAT-AUTO-0029",
+      "node_name": "Process Core Coverage Expansion",
+      "type": "feature",
+      "module": "process-core",
+      "feature": "process-core-coverage",
+      "status": "implemented",
+      "risk_score": 720,
+      "impact_score": 120,
+      "impact_delta": 120,
+      "transitive_out_count": 113,
+      "reasons": "impact_delta:120;high_transitive_impact;wide_change_surface"
+    },
+    {
       "node_id": "AGENT-COORDINATOR",
       "node_name": "Coordinator agent role",
       "type": "agent",
       "module": "agents",
       "feature": "agent-workflow",
       "status": "verified",
-      "risk_score": 475,
-      "impact_score": 470,
-      "impact_delta": 1,
-      "transitive_out_count": 344,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
+      "risk_score": 494,
+      "impact_score": 474,
+      "impact_delta": 4,
+      "transitive_out_count": 346,
+      "reasons": "impact_delta:4;high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "FEAT-AUTO-0020",
@@ -47,11 +60,11 @@
       "module": "cross-app",
       "feature": "cross-app",
       "status": "verified",
-      "risk_score": 197,
-      "impact_score": 197,
-      "impact_delta": 0,
+      "risk_score": 203,
+      "impact_score": 198,
+      "impact_delta": 1,
       "transitive_out_count": 111,
-      "reasons": "high_transitive_impact;wide_change_surface"
+      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "FEAT-AUTO-0006",
@@ -65,19 +78,6 @@
       "impact_delta": 0,
       "transitive_out_count": 135,
       "reasons": "high_transitive_impact;wide_change_surface"
-    },
-    {
-      "node_id": "FEAT-ARCH-EVIDENCE-SYSTEM",
-      "node_name": "Architecture Evidence System",
-      "type": "feature",
-      "module": "architecture",
-      "feature": "architecture-evidence",
-      "status": "implemented",
-      "risk_score": 178,
-      "impact_score": 163,
-      "impact_delta": 3,
-      "transitive_out_count": 58,
-      "reasons": "impact_delta:3;high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "FEAT-ASSETS-CONTEXT",
@@ -103,6 +103,19 @@
       "impact_score": 165,
       "impact_delta": 0,
       "transitive_out_count": 128,
+      "reasons": "high_transitive_impact;wide_change_surface"
+    },
+    {
+      "node_id": "FEAT-ARCH-EVIDENCE-SYSTEM",
+      "node_name": "Architecture Evidence System",
+      "type": "feature",
+      "module": "architecture",
+      "feature": "architecture-evidence",
+      "status": "implemented",
+      "risk_score": 163,
+      "impact_score": 163,
+      "impact_delta": 0,
+      "transitive_out_count": 58,
       "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
@@ -319,19 +332,6 @@
       "type": "feature",
       "module": "agents",
       "feature": "agents-coverage",
-      "status": "implemented",
-      "risk_score": 132,
-      "impact_score": 132,
-      "impact_delta": 0,
-      "transitive_out_count": 117,
-      "reasons": "high_transitive_impact;wide_change_surface"
-    },
-    {
-      "node_id": "FEAT-AUTO-0004",
-      "node_name": "Clients Coverage Expansion",
-      "type": "feature",
-      "module": "clients",
-      "feature": "clients-coverage",
       "status": "implemented",
       "risk_score": 132,
       "impact_score": 132,

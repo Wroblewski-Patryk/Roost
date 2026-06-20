@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-05-25T01:45:49.210Z",
+  "generatedAt": "2026-06-20T07:53:38.061Z",
   "status": "passed",
   "firstRun": false,
-  "changedNodes": 3,
+  "changedNodes": 5,
   "enteredTopCount": 0,
   "leftTopCount": 0,
-  "topImpactDeltaCount": 3
+  "topImpactDeltaCount": 5
 }

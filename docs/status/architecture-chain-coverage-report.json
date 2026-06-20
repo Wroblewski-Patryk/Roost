@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-05-25T01:45:41.187Z",
-  "totalRequiredFeatures": 33,
-  "coveredFeatures": 33,
+  "checkedAt": "2026-06-20T07:53:29.356Z",
+  "totalRequiredFeatures": 34,
+  "coveredFeatures": 34,
   "missingFeatures": 0,
   "coveragePercent": 100,
   "covered": [
@@ -234,6 +234,13 @@
       "feature_name": "Tasks Coverage Expansion",
       "module": "tasks",
       "chain_id": "CHAIN-AUTO-0028",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0029",
+      "feature_name": "Process Core Coverage Expansion",
+      "module": "process-core",
+      "chain_id": "CHAIN-AUTO-0029",
       "chain_status": "tested"
     }
   ],

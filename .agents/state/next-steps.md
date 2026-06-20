@@ -4,6 +4,41 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4941` known-state evidence and architecture baseline is complete for
+   Roost PM scope.
+   - Output:
+     `docs/planning/luc-4941-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2312`,
+     `relations=4673`, `files=13639`, generated
+     `2026-06-20T08:02:46.310Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task/proof/owner gaps remain `0`;
+     architecture health reports `implementation_without_tests=1162`.
+   - Next owner/action:
+     [LUC-4944](/LUC/issues/LUC-4944) owns source-control closure for this
+     packet and the current generated/status dirty batch. Protected production
+     proof remains release/credential gated.
+
+1. `LUC-4936` Management departments API regression coverage is complete.
+   - Output:
+     `docs/planning/luc-4936-management-departments-api-regression-coverage.md`.
+   - Proof:
+     `src/tests/api.test.ts` now directly covers `GET /v1/departments`
+     default catalog bootstrap and `12-zarzadzanie` Management linked view,
+     `POST /v1/departments` custom department creation with approved linked
+     views, `PATCH /v1/departments/:id` metadata/status/position/linked-view
+     updates, invalid linked-view rejection, and workspace isolation.
+     `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+     `checkedRouteFiles=35`, `status=ok`). `npm run test:api:local` PASS
+     after server/web build, all `31` migrations, seed, and `7/7` API
+     subtests.
+   - Next owner/action:
+     no backend/test implementation follow-up is needed for this issue.
+     Production proof remains release/credential gated. Source-control closure
+     should batch this QA change with the existing shared Roost dirty state
+     rather than mixing it into an unrelated commit.
+
 1. `LUC-4935` source-control closure is complete locally for the
    [LUC-4931](/LUC/issues/LUC-4931) generated architecture-awareness refresh
    artifacts.
@@ -48,8 +83,8 @@ Last updated: 2026-06-20
      `checkedRouteFiles=35`, `status=ok`).
    - Decision:
      no fresh full local API/browser proof ladder is needed for this selection
-     issue. Dedicated `/v1/departments` API regression assertions remain a
-     future hardening item, not a milestone blocker.
+     issue. Dedicated `/v1/departments` API regression assertions are now
+     covered by [LUC-4936](/LUC/issues/LUC-4936).
    - Next owner/action:
      [LUC-4926](/LUC/issues/LUC-4926) owns source-control closure for the
      current evidence/state batch. Protected production proof remains

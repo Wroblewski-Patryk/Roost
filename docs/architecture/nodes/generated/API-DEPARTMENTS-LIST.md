@@ -7,7 +7,7 @@ layer: "backend"
 module: "departments"
 feature: "management-department-catalog"
 risk_level: "medium"
-completion_percent: "90"
+completion_percent: "95"
 verification_status: "verified"
 last_verified_at: "2026-05-24"
 tags: "#api #departments #management"
@@ -73,4 +73,4 @@ Workspace-scoped department catalog read endpoint.
 
 ## Notes
 
-Fresh evidence from MGMT-DEPT-001; dedicated API subtests remain follow-up.
+LUC-4936 direct API assertions cover default catalog bootstrap Management linked view and workspace isolation.

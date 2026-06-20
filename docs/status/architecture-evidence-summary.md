@@ -1,28 +1,30 @@
 # Architecture Evidence Summary
 
-Generated at: 2026-05-25T01:45:43.965Z
+Generated at: 2026-06-20T07:53:32.712Z
 
 ## Counts
 
-- Nodes: 452
-- Relations: 761
-- Chains: 34
+- Nodes: 454
+- Relations: 765
+- Chains: 35
 - Test mappings: 8
-- Evidence rows: 452
+- Evidence rows: 454
 
 ## Verification Status
 
-- tested: 386
+- implemented_not_verified: 1
+- tested: 387
 - verified: 66
 
 ## Evidence Status
 
-- tested: 386
+- implemented_not_verified: 1
+- tested: 387
 - verified: 66
 
 ## Missing Evidence Queue
 
-- No missing evidence recorded.
+- `API-AUTO-0170`: docs -> Add missing proof fields then upgrade to tested/verified with dated evidence.
 
 ## Drift Detection
 

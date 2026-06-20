@@ -7,7 +7,7 @@ layer: "backend"
 module: "departments"
 feature: "management-department-catalog"
 risk_level: "medium"
-completion_percent: "80"
+completion_percent: "95"
 verification_status: "verified"
 last_verified_at: "2026-05-24"
 tags: "#api #departments #write"
@@ -65,4 +65,4 @@ Workspace-scoped department update endpoint for names, descriptions, position, s
 
 ## Notes
 
-Covered by route/capability validation and browser proof scope; deeper API assertions later.
+LUC-4936 direct API assertions cover metadata status position and linked-view updates.

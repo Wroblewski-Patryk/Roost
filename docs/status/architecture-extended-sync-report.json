@@ -1,5 +1,5 @@
 {
-  "synchronizedAt": "2026-05-25T01:45:34.689Z",
+  "synchronizedAt": "2026-06-20T07:53:23.554Z",
   "results": [
     {
       "file": "docs/architecture/nodes/services.csv",
@@ -68,7 +68,7 @@
       "file": "docs/architecture/nodes/pipelines.csv",
       "type": "pipeline",
       "candidates": 12,
-      "added": 1,
+      "added": 0,
       "total": 40
     },
     {

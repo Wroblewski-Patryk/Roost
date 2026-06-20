@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T07:44:35.962Z
+Generated: 2026-06-20T08:02:46.310Z
 
 ## Canonical Exports
 
@@ -306,6 +306,7 @@ Generated: 2026-06-20T07:44:35.962Z
 | document | implemented | GET /v1/relationships/context | docs/architecture/nodes/generated/API-AUTO-0167.md | Docs Memory Lead |
 | document | implemented | POST /v1/company-os/pipeline-runs/:id/task-links | docs/architecture/nodes/generated/API-AUTO-0168.md | Docs Memory Lead |
 | document | implemented | POST /v1/company-os/knowledge-links | docs/architecture/nodes/generated/API-AUTO-0169.md | Docs Memory Lead |
+| document | implemented | GET /v1/process-core/coverage | docs/architecture/nodes/generated/API-AUTO-0170.md | Docs Memory Lead |
 | document | implemented | GET /v1/dashboard/command | docs/architecture/nodes/generated/API-DASHBOARD-COMMAND.md | Docs Memory Lead |
 | document | implemented | POST /v1/departments | docs/architecture/nodes/generated/API-DEPARTMENTS-CREATE.md | Docs Memory Lead |
 | document | implemented | GET /v1/departments | docs/architecture/nodes/generated/API-DEPARTMENTS-LIST.md | Docs Memory Lead |
@@ -442,6 +443,7 @@ Generated: 2026-06-20T07:44:35.962Z
 | document | implemented | Targets Coverage Expansion | docs/architecture/nodes/generated/FEAT-AUTO-0026.md | Docs Memory Lead |
 | document | implemented | Task Lists Coverage Expansion | docs/architecture/nodes/generated/FEAT-AUTO-0027.md | Docs Memory Lead |
 | document | implemented | Tasks Coverage Expansion | docs/architecture/nodes/generated/FEAT-AUTO-0028.md | Docs Memory Lead |
+| document | implemented | Process Core Coverage Expansion | docs/architecture/nodes/generated/FEAT-AUTO-0029.md | Docs Memory Lead |
 | document | implemented | Dashboard Command Packet | docs/architecture/nodes/generated/FEAT-DASHBOARD-COMMAND.md | Docs Memory Lead |
 | document | implemented | Shared Managed Table | docs/architecture/nodes/generated/FEAT-MANAGED-TABLE.md | Docs Memory Lead |
 | document | implemented | Management Department Catalog | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md | Docs Memory Lead |
@@ -511,8 +513,6 @@ Generated: 2026-06-20T07:44:35.962Z
 | document | implemented | /areas?area=12-zarzadzanie&view=departments | docs/architecture/nodes/generated/PAGE-12-MANAGEMENT-DEPARTMENTS.md | Docs Memory Lead |
 | document | implemented | /account/settings | docs/architecture/nodes/generated/PAGE-AUTO-0001.md | Docs Memory Lead |
 | document | implemented | /areas | docs/architecture/nodes/generated/PAGE-AUTO-0002.md | Docs Memory Lead |
-| document | implemented | /auth/login | docs/architecture/nodes/generated/PAGE-AUTO-0003.md | Docs Memory Lead |
-| document | implemented | /auth/register | docs/architecture/nodes/generated/PAGE-AUTO-0004.md | Docs Memory Lead |
 
 ## Relation Index
 
@@ -935,6 +935,7 @@ Generated: 2026-06-20T07:44:35.962Z
 | documents | document:get-v1-operations-work-items:5562fb788b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-OPERATIONS-WORK-ITEMS.md |
 | documents | document:get-v1-pipeline-stages-id:071f3379bf | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0075.md |
 | documents | document:get-v1-pipeline-stages:87f66eb935 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0074.md |
+| documents | document:get-v1-process-core-coverage:5d68bdcf0d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0170.md |
 | documents | document:get-v1-projects-id:b1527bf6fe | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0077.md |
 | documents | document:get-v1-projects:2db380359a | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0076.md |
 | documents | document:get-v1-relationships-context:4d668e8337 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0167.md |
@@ -1092,6 +1093,9 @@ Generated: 2026-06-20T07:44:35.962Z
 | documents | document:luc-4921-roost-companycore-readiness-and-milestone-review:03f14d51de | module:docs:6784d83cb0 | docs/planning/luc-4921-roost-companycore-readiness-and-milestone-review.md |
 | documents | document:luc-4926-source-control-closure-for-luc-4920-innovation-proof-packet:e88b81be92 | module:docs:6784d83cb0 | docs/planning/luc-4926-source-control-closure-for-luc-4920-innovation-proof-packet.md |
 | documents | document:luc-4927-12-management-proof-selection:8eb8567370 | module:docs:6784d83cb0 | docs/planning/luc-4927-management-proof-selection.md |
+| documents | document:luc-4935-source-control-closure-for-luc-4931-architecture-awareness-refresh-artifacts:967de21d31 | module:docs:6784d83cb0 | docs/planning/luc-4935-source-control-closure-for-luc-4931-architecture-awareness-refresh-artifacts.md |
+| documents | document:luc-4936-management-departments-api-regression-coverage:20e658142c | module:docs:6784d83cb0 | docs/planning/luc-4936-management-departments-api-regression-coverage.md |
+| documents | document:luc-4937-roost-product-capability-map:63773d3d1f | module:docs:6784d83cb0 | docs/planning/luc-4937-roost-product-capability-map.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1214,7 +1218,3 @@ Generated: 2026-06-20T07:44:35.962Z
 | documents | document:pattern-gallery:4c275d1641 | module:docs:6784d83cb0 | docs/ux/pattern-gallery.md |
 | documents | document:people-agents-directory-final-ux-audit:575253df7b | module:docs:6784d83cb0 | docs/ux/people-agents-directory-final-ux-audit-2026-05-19.md |
 | documents | document:people-agents-directory-no-paperclip-tooling-task-contract:938da1ff61 | module:docs:6784d83cb0 | docs/planning/people-agents-directory-no-paperclip-tooling-task-contract.md |
-| documents | document:people-agents-directory-table-refinement-task-contract:dbab62c7aa | module:docs:6784d83cb0 | docs/planning/people-agents-directory-table-refinement-task-contract.md |
-| documents | document:people-agents-directory-usability-audit:746a2eb7e0 | module:docs:6784d83cb0 | docs/ux/people-agents-directory-usability-audit-2026-05-18.md |
-| documents | document:people-agents-directory-ux-and-backend-data-audit:a46a6ee0da | module:docs:6784d83cb0 | docs/ux/people-agents-directory-ux-backend-audit-2026-05-18.md |
-| documents | document:people-agents-managed-table:b7b238717d | module:docs:6784d83cb0 | docs/architecture/nodes/generated/UI-PEOPLE-AGENTS-TABLE.md |

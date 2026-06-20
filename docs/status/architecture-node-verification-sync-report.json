@@ -1,16 +1,16 @@
 {
-  "synchronizedAt": "2026-05-25T01:45:38.422Z",
-  "updated": 1,
+  "synchronizedAt": "2026-06-20T07:53:26.783Z",
+  "updated": 8,
   "files": [
     {
       "file": "docs/architecture/nodes/nodes.csv",
-      "updated": 0,
+      "updated": 3,
       "total": 63
     },
     {
       "file": "docs/architecture/nodes/features.csv",
-      "updated": 0,
-      "total": 34
+      "updated": 1,
+      "total": 35
     },
     {
       "file": "docs/architecture/nodes/functions.csv",
@@ -34,8 +34,8 @@
     },
     {
       "file": "docs/architecture/nodes/api_routes.csv",
-      "updated": 0,
-      "total": 178
+      "updated": 4,
+      "total": 179
     },
     {
       "file": "docs/architecture/nodes/pages.csv",
@@ -89,7 +89,7 @@
     },
     {
       "file": "docs/architecture/nodes/pipelines.csv",
-      "updated": 1,
+      "updated": 0,
       "total": 40
     },
     {

@@ -2,6 +2,51 @@
 
 ## Now
 
+- 2026-06-20: `LUC-4941` known-state evidence and architecture baseline is
+  complete for Roost PM scope. Output:
+  `docs/planning/luc-4941-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2312`,
+  `relations=4673`, `files=13639`, generated at
+  `2026-06-20T08:02:46.310Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task-sync gaps `0`; owner gaps `0`; dependency report
+  `437` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`. Follow-up:
+  [LUC-4944](/LUC/issues/LUC-4944) owns source-control closure for this
+  evidence packet and current generated/status dirty batch. Scope: no runtime
+  code, schema, migration, protected smoke, deploy, push, restart, production
+  mutation, credential access, secret disclosure, server, browser, database,
+  Docker, or watcher process. Disposition: `DONE` for PM evidence scope.
+
+- 2026-06-20: `LUC-4937` product capability map cleanup is complete for
+  Roost. Output: `docs/planning/luc-4937-roost-product-capability-map.md`.
+  Evidence: `docs/product/capability-map.md` replaced the sample `CAP-000`
+  row with Roost capability rows `CAP-001` through `CAP-008`;
+  `docs/architecture/capability-to-implementation-map.csv` now maps those
+  capabilities to existing feature IDs, chain IDs, code paths, tests, and
+  evidence. Targeted placeholder search and scoped diff hygiene passed.
+  Scope: no runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, server,
+  browser, database, Docker, or watcher process. Disposition: `DONE`.
+
+- 2026-06-20: `LUC-4936` Management departments API regression coverage is
+  complete. Output:
+  `docs/planning/luc-4936-management-departments-api-regression-coverage.md`.
+  Evidence: `src/tests/api.test.ts` now directly covers
+  `GET /v1/departments` default catalog bootstrap and the
+  `12-zarzadzanie` Management linked view, `POST /v1/departments` custom
+  department creation with approved linked views,
+  `PATCH /v1/departments/:id` metadata/status/position/linked-view updates,
+  invalid linked-view rejection, and workspace isolation. Validation:
+  `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); `npm run test:api:local` PASS after
+  server/web build, all `31` migrations, seed, and `7/7` API subtests.
+  Cleanup: no `companycore-test-postgres` container remained and no
+  `chrome-headless-shell` process was present. Scope: no runtime feature
+  behavior change, schema, migration, protected smoke, deploy, push, restart,
+  production mutation, credential access, or secret disclosure. Disposition:
+  `DONE`.
+
 - 2026-06-20: `LUC-4935` source-control closure is complete locally for the
   generated architecture-awareness refresh artifacts from
   [LUC-4931](/LUC/issues/LUC-4931). Output:
@@ -46,7 +91,8 @@
   check:route-capabilities` PASS (`checkedManifestRoutes=180`,
   `checkedRouteFiles=35`, `status=ok`). Decision: no fresh full local
   API/browser proof ladder is needed for this selection issue; dedicated
-  `/v1/departments` API regression assertions remain future hardening. Scope:
+  `/v1/departments` API regression assertions are now covered by
+  [LUC-4936](/LUC/issues/LUC-4936). Scope:
   no implementation, schema, migration, protected smoke, deploy, push,
   restart, production mutation, credential access, secret disclosure, server,
   browser, database, Docker, or watcher process. Disposition: `DONE`.

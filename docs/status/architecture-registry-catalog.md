@@ -1,20 +1,20 @@
 # Architecture Registry Catalog
 
-Generated at: 2026-05-25T01:45:54.173Z
+Generated at: 2026-06-20T07:53:43.036Z
 
 - Total CSV files: 30
 - Missing files: 0
-- Total rows: 1758
+- Total rows: 1767
 
 | File | Exists | Rows | Headers |
 | --- | --- | ---: | ---: |
 | `docs/architecture/nodes/nodes.csv` | yes | 63 | 26 |
-| `docs/architecture/nodes/features.csv` | yes | 34 | 26 |
+| `docs/architecture/nodes/features.csv` | yes | 35 | 26 |
 | `docs/architecture/nodes/functions.csv` | yes | 5 | 26 |
 | `docs/architecture/nodes/components.csv` | yes | 7 | 26 |
 | `docs/architecture/nodes/services.csv` | yes | 3 | 26 |
 | `docs/architecture/nodes/classes.csv` | yes | 4 | 26 |
-| `docs/architecture/nodes/api_routes.csv` | yes | 178 | 26 |
+| `docs/architecture/nodes/api_routes.csv` | yes | 179 | 26 |
 | `docs/architecture/nodes/pages.csv` | yes | 15 | 26 |
 | `docs/architecture/nodes/layouts.csv` | yes | 2 | 26 |
 | `docs/architecture/nodes/hooks.csv` | yes | 1 | 26 |
@@ -34,7 +34,7 @@ Generated at: 2026-05-25T01:45:54.173Z
 | `docs/architecture/nodes/prompts.csv` | yes | 1 | 26 |
 | `docs/architecture/nodes/events.csv` | yes | 2 | 26 |
 | `docs/architecture/nodes/workflows.csv` | yes | 2 | 26 |
-| `docs/architecture/relations/dependencies.csv` | yes | 761 | 10 |
-| `docs/architecture/chains/chains.csv` | yes | 34 | 15 |
+| `docs/architecture/relations/dependencies.csv` | yes | 765 | 10 |
+| `docs/architecture/chains/chains.csv` | yes | 35 | 15 |
 | `docs/testing/test-map.csv` | yes | 8 | 13 |
-| `docs/status/evidence-status.csv` | yes | 452 | 11 |
+| `docs/status/evidence-status.csv` | yes | 454 | 11 |
