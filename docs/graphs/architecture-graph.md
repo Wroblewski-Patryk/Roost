@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-19T20:53:22.007Z
+Generated: 2026-06-20T01:13:31.620Z
 
 ## Canonical Exports
 
@@ -1031,6 +1031,8 @@ Generated: 2026-06-19T20:53:22.007Z
 | documents | document:luc-4605-source-control-closure-for-luc-4601-known-state-packet:359cf1b086 | module:docs:6784d83cb0 | docs/planning/luc-4605-source-control-closure-for-luc-4601-known-state-packet.md |
 | documents | document:luc-4623-known-state-evidence-and-architecture-baseline:1569981831 | module:docs:6784d83cb0 | docs/planning/luc-4623-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4627-source-control-closure-for-luc-4623-known-state-packet:2abd3d94cb | module:docs:6784d83cb0 | docs/planning/luc-4627-source-control-closure-for-luc-4623-known-state-packet.md |
+| documents | document:luc-4646-known-state-evidence-and-architecture-baseline:aa9afe0703 | module:docs:6784d83cb0 | docs/planning/luc-4646-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-4651-source-control-closure-for-luc-4646-evidence-packet:02c7bca19d | module:docs:6784d83cb0 | docs/planning/luc-4651-source-control-closure-for-luc-4646-evidence-packet.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-06-19T20:53:22.007Z
 | documents | document:post-v1-notes:d7c16710ea | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0147.md |
 | documents | document:post-v1-operating-model-areas:55b27e241f | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0148.md |
 | documents | document:post-v1-operating-model-automation-definitions:7b7421b61b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0149.md |
-| documents | document:post-v1-operating-model-folders:8ee2343ff7 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0150.md |
-| documents | document:post-v1-operating-model-knowledge-roots:cc1194b7b2 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/API-AUTO-0151.md |

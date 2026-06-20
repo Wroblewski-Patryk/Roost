@@ -1,8 +1,71 @@
 # Active Mission Packet
 
-Last updated: 2026-06-19
+Last updated: 2026-06-20
 
 ## Current Mission
+
+- Mission ID: LUC-4721-SOURCE-CONTROL-CLOSURE-LUC-4718
+- Status: VERIFIED_DONE
+- Selected objective: Close the source-control sidecar for the
+  [LUC-4718](/LUC/issues/LUC-4718) Roost known-state evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4721](/LUC/issues/LUC-4721), a source-control closure sidecar for
+  [LUC-4718](/LUC/issues/LUC-4718), with no pending comments and no fallback
+  fetch required.
+- Scope: inspect git status and diff hygiene, classify generated
+  architecture/status evidence plus source-of-truth state changes, preserve
+  the coherent local packet in a commit, and update issue disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4721-source-control-closure-for-luc-4718-evidence-packet.md`.
+- Evidence: `git status --short --branch -uall` showed
+  `main...origin/main [ahead 24]` with generated architecture/status evidence
+  files, source-of-truth pointers, and the LUC-4718 planning packet dirty or
+  untracked; `git diff --stat` showed `9 files changed, 6667 insertions(+),
+  6555 deletions(-)` for generated reports before this closure packet and
+  state updates; `git diff --check` verification is recorded in the closure
+  packet and issue disposition.
+- Final disposition: done for source-control closure. The coherent Roost
+  evidence packet through [LUC-4718](/LUC/issues/LUC-4718) is preserved
+  locally; push is held for a future release batch or explicit source-ref need.
+
+## Previous Mission
+
+- Mission ID: LUC-4718-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE
+- Selected objective: Refresh Roost known-state evidence and architecture
+  continuity from safe local evidence, then name the remaining owner lanes.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4718](/LUC/issues/LUC-4718), a known-state evidence and architecture
+  baseline lane, with no pending comments and no fallback fetch required.
+- Scope: source-of-truth review, Paperclip architecture-awareness refresh,
+  non-protected architecture status proof, generated report readback,
+  source-control readback, source-control closure child creation, and issue
+  disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4718-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip architecture-awareness scanner PASS (`entities=2247`,
+  `relations=4415`, `files=13535`, `0` generated files excluded by prefix);
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task-sync
+  readback showed `0` actionable task-link/proof gaps and `0` raw task-link
+  gaps; architecture health showed
+  `actionable_implementation_without_tests=1152`; dependency report showed
+  `437` relations / `95` entities; ownership split was
+  `Docs Memory Lead=911`, `Engineering Delivery Lead=1335`,
+  `Roost Project Manager=1`; `HEAD=81b6c81`; source-control closure child
+  [LUC-4721](/LUC/issues/LUC-4721) created for scanner-generated file changes.
+- Final disposition: done for PM baseline scope. Remaining protected runtime
+  proof stays under [LUC-2700](/LUC/issues/LUC-2700) / LUC-4438-style fresh
+  recheck. Source-control closure for this evidence packet is delegated to
+  [LUC-4721](/LUC/issues/LUC-4721).
+
+## Previous Mission
 
 - Mission ID: LUC-4651-SOURCE-CONTROL-CLOSURE-LUC-4646
 - Status: VERIFIED_DONE

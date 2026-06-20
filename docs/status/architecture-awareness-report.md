@@ -1,6 +1,6 @@
 # Architecture Awareness Report
 
-Generated: 2026-06-19T20:53:22.007Z
+Generated: 2026-06-20T01:13:31.620Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 
@@ -11,7 +11,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | agent | 47 |
 | api_endpoint | 43 |
 | component | 7 |
-| document | 926 |
+| document | 928 |
 | feature | 167 |
 | function | 944 |
 | migration | 31 |
@@ -28,7 +28,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | --- | ---: |
 | blocked | 4 |
 | deprecated | 4 |
-| implemented | 2224 |
+| implemented | 2226 |
 | in_progress | 1 |
 | tested | 8 |
 | verified | 4 |
@@ -122,5 +122,5 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - This is an inferred baseline. CTO/Docs Memory must promote or correct important relations.
 - Curated graph coverage input: `C:/Personal/Projekty/Aplikacje/Roost/docs/graphs/architecture-graph.json` (covered paths: 0).
 - Override input: `C:/Personal/Projekty/Aplikacje/Roost/docs/architecture/scanner-overrides.json` (entity entries: 0, relation entries: 0).
-- Override summary: excluded files 34, entity overrides 0, relation overrides 0, critical entities tagged 0.
+- Override summary: excluded files 0, entity overrides 0, relation overrides 0, critical entities tagged 0.
 - `verified` still requires fresh command/browser/deploy evidence, not only file presence.

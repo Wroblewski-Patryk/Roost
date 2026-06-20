@@ -1,6 +1,44 @@
 # PROJECT_STATE
 
-Last updated: 2026-06-19
+Last updated: 2026-06-20
+- 2026-06-20: `LUC-4721` source-control closure completed for the
+  `LUC-4718` Roost known-state evidence packet. Output:
+  `docs/planning/luc-4721-source-control-closure-for-luc-4718-evidence-packet.md`.
+  Classification: preserve one coherent evidence-only batch through LUC-4718,
+  including the LUC-4718 planning packet, source-of-truth state pointers,
+  generated architecture-awareness exports, and status reports. Evidence:
+  `git status --short --branch -uall` showed `main...origin/main [ahead 24]`
+  before closure with generated architecture/status files, state pointers, and
+  the LUC-4718 planning packet dirty or untracked; `git diff --stat` showed
+  `9 files changed, 6667 insertions(+), 6555 deletions(-)` for generated
+  reports before this closure packet and state updates. Commit proof and
+  `git diff --check` result are recorded in the closure packet and Paperclip
+  issue update. Push held for a future release batch or explicit source-ref
+  need. No runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, server,
+  browser, database, Docker, or watcher process occurred.
+- 2026-06-20: `LUC-4718` Roost known-state evidence and architecture
+  baseline completed. Output:
+  `docs/planning/luc-4718-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2247`,
+  `relations=4415`, `files=13535`, `0` generated files excluded by prefix);
+  `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass); task-sync
+  readback showed `0` actionable and raw task-link/proof gaps; architecture
+  health showed `actionable_implementation_without_tests=1152`; dependency
+  report showed `437` relations / `95` entities; ownership split was
+  `Docs Memory Lead=911`, `Engineering Delivery Lead=1335`,
+  `Roost Project Manager=1`; `HEAD=81b6c81`; `git status --short --branch
+  -uall` showed `main...origin/main [ahead 24]` with generated
+  architecture/status files modified by the scanner. Repair lanes:
+  [LUC-4721](/LUC/issues/LUC-4721) owns source-control closure for this
+  evidence packet; protected runtime proof remains under
+  [LUC-2700](/LUC/issues/LUC-2700) / LUC-4438-style fresh recheck; future QA
+  proof ladder should select one P0/P1 target from the `1152` actionable
+  implemented-without-test-link signal. No runtime code, schema, migration,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, secret disclosure, server, browser, database, Docker, or watcher
+  process occurred.
 - 2026-06-19: `LUC-4651` source-control closure completed for the
   `LUC-4646` Roost known-state evidence packet. Output:
   `docs/planning/luc-4651-source-control-closure-for-luc-4646-evidence-packet.md`.

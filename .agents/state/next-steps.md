@@ -1,8 +1,28 @@
 # Next Steps
 
-Last updated: 2026-06-19
+Last updated: 2026-06-20
 
 ## NOW
+
+1. `LUC-4721` source-control closure for the `LUC-4718` Roost known-state
+   evidence packet is complete.
+   - Output:
+     `docs/planning/luc-4721-source-control-closure-for-luc-4718-evidence-packet.md`.
+   - Decision:
+     preserve the coherent evidence-only batch through LUC-4718 because
+     generated architecture reports and source-of-truth state pointers are
+     cumulative.
+   - Proof:
+     `git status --short --branch -uall` showed `main...origin/main [ahead 24]`
+     before closure with generated architecture/status files, state pointers,
+     and the LUC-4718 planning packet dirty or untracked; `git diff --stat`
+     showed `9 files changed, 6667 insertions(+), 6555 deletions(-)` for
+     generated reports before this closure packet and state updates;
+     `git diff --check` result is recorded in the closure packet and issue
+     update.
+   - Commit/push:
+     local commit created for the coherent packet; push held for a future
+     release batch or explicit source-ref/deploy need.
 
 1. `LUC-4605` source-control closure for the `LUC-4601` Roost known-state
    evidence packet is complete.
@@ -2639,6 +2659,17 @@ Last updated: 2026-06-19
   unresolved.
 - Keep this file synchronized with `.codex/context/TASK_BOARD.md` and
   `docs/planning/mvp-next-commits.md`.
+
+
+- 2026-06-20: `LUC-4718` known-state architecture baseline completed.
+  - Proof rerun remained green: scanner PASS (`entities=2247`,
+    `relations=4415`, `files=13535`), `npm run architecture:status` PASS
+    (`GREEN`, `452/761/34`, queue `0`, worklist `0`, gates `yes`).
+  - Task synchronization remains stable at `0` task-link/proof gaps.
+  - Next owners: Roost PM for [LUC-4721](/LUC/issues/LUC-4721)
+    source-control closure; QA/Test + Engineering Delivery for the next
+    focused proof ladder from `actionable_implementation_without_tests=1152`;
+    runtime secret owner + board/operator for protected deploy-smoke gate.
 
 
 
