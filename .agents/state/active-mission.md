@@ -4,6 +4,36 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5015-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE_SOURCE_CONTROL_CLOSED
+- Selected objective: Refresh local Roost known-state architecture evidence
+  and convert remaining work into owner-scoped follow-up for
+  [LUC-5015](/LUC/issues/LUC-5015).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5015](/LUC/issues/LUC-5015), assigned to Roost Project Manager, with a
+  `softwarehouse-known-state-harvester:v1` evidence contract.
+- Scope: non-protected architecture-awareness scanner refresh, architecture
+  status proof, generated report readback, source-control readback, planning
+  packet, and source-control sidecar creation.
+- Exclusions: no implementation, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-5015-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip architecture-awareness scanner PASS (`entities=2328`,
+  `relations=4736`, `files=13655`, generated at
+  `2026-06-20T10:17:32.593Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`; dependency
+  report `437` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`; `HEAD=0a1a4bacf8b35b5f65d95e55dc9582abba9e23be`.
+- Final disposition: done for PM evidence scope; source-control closure
+  completed locally in [LUC-5020](/LUC/issues/LUC-5020) for the
+  generated/status/state dirty packet.
+  Protected production proof remains release/credential gated.
+
+## Previous Mission
+
 - Mission ID: LUC-5010-SOURCE-CONTROL-CLOSURE
 - Status: VERIFIED_DONE
 - Selected objective: Close local source control for the

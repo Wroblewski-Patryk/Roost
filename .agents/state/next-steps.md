@@ -4,6 +4,26 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-5015` known-state evidence and architecture baseline is complete for
+   Roost PM scope.
+   - Output:
+     `docs/planning/luc-5015-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2328`,
+     `relations=4736`, `files=13655`, generated
+     `2026-06-20T10:17:32.593Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task/proof/owner gaps remain `0`;
+     architecture health reports `implementation_without_tests=1162`.
+   - Next owner/action:
+     [LUC-5020](/LUC/issues/LUC-5020) completed local source-control closure
+     for the generated/status dirty set; push remains held for a future release
+     batch or explicit source-ref/deploy need.
+     No duplicate broad QA issue was opened because [LUC-4957](/LUC/issues/LUC-4957)
+     already curated the recurring missing-test signal as product-journey
+     proof debt/scanner granularity. Protected production proof remains
+     release/credential gated.
+
 1. `LUC-5010` source-control closure is complete locally for the
    [LUC-5003](/LUC/issues/LUC-5003) known-state evidence packet.
    - Output:

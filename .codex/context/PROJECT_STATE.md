@@ -2,6 +2,39 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5020` source-control closure completed locally for the
+  [LUC-5015](/LUC/issues/LUC-5015) known-state evidence packet. Output:
+  `docs/planning/luc-5020-source-control-closure-for-luc-5015-known-state-evidence-packet.md`.
+  Evidence: wake payload scoped this run to [LUC-5020](/LUC/issues/LUC-5020)
+  with no pending comments; parent [LUC-5015](/LUC/issues/LUC-5015) is
+  `done`; pre-closure `HEAD=0a1a4bacf8b35b5f65d95e55dc9582abba9e23be`;
+  branch `main...origin/main [ahead 55]`; dirty set matched the
+  [LUC-5015](/LUC/issues/LUC-5015) generated architecture/status evidence
+  batch plus state/context updates and the parent planning packet.
+  `git diff --stat` before this closure packet reported `15 files changed,
+  7091 insertions(+), 6879 deletions(-)`; `git diff --check` passed with
+  LF-to-CRLF warnings only; generated graph/health JSON parsed successfully;
+  scoped high-confidence secret/data hygiene found no key values. Local
+  commit created; final immutable SHA is recorded in the Paperclip closure
+  comment. Push held for a future release batch or explicit source-ref/deploy
+  need. Deploy impact: none.
+
+- 2026-06-20: `LUC-5015` Roost known-state evidence and architecture
+  baseline completed for Roost PM scope. Output:
+  `docs/planning/luc-5015-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2328`,
+  `relations=4736`, `files=13655`, generated at
+  `2026-06-20T10:17:32.593Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`; dependency
+  report `437` relations / `95` entities; architecture health
+  `implementation_without_tests=1162`; `HEAD=0a1a4bacf8b35b5f65d95e55dc9582abba9e23be`.
+  Closure: [LUC-5020](/LUC/issues/LUC-5020) completed local source-control
+  closure for this generated/status/state evidence packet. No runtime code, schema,
+  migration, protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, server, browser, database, Docker, or
+  watcher process occurred.
+
 - 2026-06-20: `LUC-5010` source-control closure completed locally for the
   [LUC-5003](/LUC/issues/LUC-5003) known-state evidence packet. Output:
   `docs/planning/luc-5010-source-control-closure-for-luc-5003-known-state-evidence-packet.md`.

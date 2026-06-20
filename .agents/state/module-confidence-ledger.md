@@ -2,6 +2,22 @@
 
 Last updated: 2026-06-20
 
+Roost known-state baseline note: LUC-5015 is VERIFIED_DONE for the Roost
+Project Manager evidence lane. The packet is recorded in
+`docs/planning/luc-5015-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2328`,
+`relations=4736`, `files=13655`, generated at
+`2026-06-20T10:17:32.593Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task synchronization reports `0` task-link/proof gaps;
+ownership gaps `0`; dependency report shows `437` relations / `95` entities;
+architecture health reports `implementation_without_tests=1162`. Confidence
+classification: local architecture and task/proof synchronization are
+verified; remaining confidence debt is route/journey proof debt, not a
+PM-owned implementation defect. Source-control closure is complete locally in
+[LUC-5020](/LUC/issues/LUC-5020). Protected production proof remains
+release/credential gated.
+
 Source-control note: [LUC-5010](/LUC/issues/LUC-5010) is VERIFIED_DONE for the
 [LUC-5003](/LUC/issues/LUC-5003) generated/status evidence batch. Closure
 packet:
