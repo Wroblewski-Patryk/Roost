@@ -1,0 +1,81 @@
+{
+  "ok": true,
+  "route": "/areas?area=11-innowacje&view=overview",
+  "api": "/v1/operating-graph/areas/11-innowacje?limit=80",
+  "capability": "operating-graph:read",
+  "checks": [
+    {
+      "ok": true,
+      "name": "desktop-1366x900: route identity"
+    },
+    {
+      "ok": true,
+      "name": "desktop-1366x900: backend area signal"
+    },
+    {
+      "ok": true,
+      "name": "desktop-1366x900: graph evidence or honest empty state",
+      "nodeRows": 5
+    },
+    {
+      "ok": true,
+      "name": "desktop-1366x900: no horizontal overflow",
+      "bodyWidth": 1366,
+      "viewportWidth": 1366
+    },
+    {
+      "ok": true,
+      "name": "mobile-390x844: route identity"
+    },
+    {
+      "ok": true,
+      "name": "mobile-390x844: backend area signal"
+    },
+    {
+      "ok": true,
+      "name": "mobile-390x844: graph evidence or honest empty state",
+      "nodeRows": 5
+    },
+    {
+      "ok": true,
+      "name": "mobile-390x844: no horizontal overflow",
+      "bodyWidth": 390,
+      "viewportWidth": 390
+    },
+    {
+      "ok": true,
+      "name": "synthetic backend error does not leak raw backend/provider details",
+      "leaked": []
+    },
+    {
+      "ok": true,
+      "name": "no browser console warnings/errors",
+      "consoleIssues": []
+    },
+    {
+      "ok": true,
+      "name": "no browser request failures",
+      "failedRequests": []
+    }
+  ],
+  "viewports": [
+    {
+      "name": "desktop-1366x900",
+      "nodeRows": 5,
+      "bodyWidth": 1366,
+      "viewportWidth": 1366
+    },
+    {
+      "name": "mobile-390x844",
+      "nodeRows": 5,
+      "bodyWidth": 390,
+      "viewportWidth": 390
+    }
+  ],
+  "errorState": {
+    "safeCopy": "CompanyCore hit a server problem. Try again in a moment.",
+    "leaked": []
+  },
+  "consoleIssues": [],
+  "failedRequests": []
+}

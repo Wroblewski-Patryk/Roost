@@ -2,6 +2,81 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-4926` source-control closure completed for the
+  [LUC-4920](/LUC/issues/LUC-4920) Innovation proof packet, the
+  [LUC-4921](/LUC/issues/LUC-4921) PM readiness state, and adjacent completed
+  [LUC-4927](/LUC/issues/LUC-4927) Management proof-selection state. Output:
+  `docs/planning/luc-4926-source-control-closure-for-luc-4920-innovation-proof-packet.md`.
+  Evidence: issue context had no comments and no blockers; pre-closure
+  `HEAD=8135ad6a613b5a85cd28e9d9e7176d1aee4b08be`; branch
+  `main...origin/main [ahead 44]`; `git status --short --branch -uall` and
+  `git diff --stat` classified seven tracked state/planning files plus
+  untracked planning/proof artifacts as one coherent batch; LUC-4920
+  `result.json` readback reports `ok: true`, desktop/mobile `5` graph rows,
+  safe synthetic error copy, no console issues, no failed requests, and no
+  horizontal overflow. Local commit created after SCM hygiene. Push held for a
+  future release batch or explicit source-ref/deploy need. No runtime code,
+  schema, migration, protected smoke, deploy, push, restart, production
+  mutation, credential access, secret disclosure, server, browser, database,
+  Docker, or watcher process occurred. Deploy impact: none.
+- 2026-06-20: `LUC-4927` Management proof selection completed by current
+  evidence readback. Output:
+  `docs/planning/luc-4927-management-proof-selection.md`. Evidence:
+  `docs/planning/management-department-catalog-task-contract.md` is
+  `DONE` / `VERIFIED` for `MGMT-DEPT-001` and records validation, local API
+  smoke with all `27` migrations and `6/6` API subtests, and browser proof on
+  `/areas?area=12-zarzadzanie&view=departments` that created
+  `13 Marketing Lab`, linked approved views, reloaded, and verified sidebar
+  and table readback with no console warnings or errors. Architecture source
+  entries for the Management page, feature, departments API routes, database
+  model, and execution chain are verified. Fresh `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`). Decision: no fresh full local
+  API/browser proof ladder is required for this milestone selection; a
+  dedicated `/v1/departments` API regression subtest remains future hardening.
+  No implementation, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, server,
+  browser, database, Docker, or watcher process occurred.
+- 2026-06-20: `LUC-4921` Roost CompanyCore readiness and milestone review
+  completed for PM scope. Output:
+  `docs/planning/luc-4921-roost-companycore-readiness-and-milestone-review.md`.
+  Evidence: [LUC-4921](/LUC/issues/LUC-4921) issue context had no comments
+  and no blockers; `npm run architecture:status` PASS (`GREEN`, graph
+  `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass); [LUC-4920](/LUC/issues/LUC-4920) result readback reports
+  `ok: true` for `/areas?area=11-innowacje&view=overview` with API
+  `/v1/operating-graph/areas/11-innowacje?limit=80`, desktop/mobile `5`
+  graph rows, safe synthetic error copy, no console issues, no failed
+  requests, and no horizontal overflow; `HEAD=8135ad6a613b5a85cd28e9d9e7176d1aee4b08be`.
+  Follow-ups: [LUC-4926](/LUC/issues/LUC-4926) source-control closure for
+  the [LUC-4920](/LUC/issues/LUC-4920) evidence packet and this review state;
+  [LUC-4927](/LUC/issues/LUC-4927) QA readback/selection for `12 Management
+  -> Department management`. No implementation, schema, migration, protected
+  smoke, deploy, push, restart, production mutation, credential access, secret
+  disclosure, server, browser, database, Docker, or watcher process occurred.
+  Protected production proof remains release/credential gated.
+- 2026-06-20: `LUC-4920` Innovation operating graph proof ladder completed
+  for `11 Innovation -> Operating Graph Overview`. Output:
+  `docs/planning/luc-4920-innovation-proof-ladder.md`. Evidence:
+  `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`);
+  `COMPANYCORE_TEST_DB_KEEP=1 npm run test:api:local` PASS after server/web
+  build, all `31` migrations, seed, and `7/7` API subtests. API preflight
+  verified `/v1/operating-graph/areas/11-innowacje?limit=80`: canonical key
+  `11-innowacje`, resolved backend key `ai-agents-observability`, `5` nodes,
+  `4` edges, and `1` gap; MCP manifest exposes `operating-graph:read`.
+  Authenticated Playwright Chromium proof on local backend port `3240` passed
+  desktop `1366x900` and mobile `390x844` checks for route identity,
+  Innovation area signal, graph evidence, safe synthetic backend error
+  language, no raw backend error leakage, no relevant failed requests, no
+  console issues, and no horizontal overflow. Evidence:
+  `docs/ux/evidence/luc-4920-innovation-proof-ladder-2026-06-20/`.
+  Cleanup: backend PID `42796` stopped, `companycore-test-postgres` removed,
+  disposable token/temp harness removed, and no `chrome-headless-shell` rows
+  remained. No implementation, schema, migration authoring, protected smoke,
+  deploy, push, restart, production mutation, credential access, secret
+  disclosure, or production data access occurred. Protected production proof
+  remains release/credential gated.
 - 2026-06-20: `LUC-4919` source-control closure completed for the
   [LUC-4916](/LUC/issues/LUC-4916) known-state evidence packet and adjacent
   [LUC-4906](/LUC/issues/LUC-4906) Legal proof-ladder packet. Output:

@@ -4,6 +4,150 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-4926-SOURCE-CONTROL-CLOSURE
+- Status: VERIFIED_DONE
+- Selected objective: Close local source control for the
+  [LUC-4920](/LUC/issues/LUC-4920) Innovation proof packet, the
+  [LUC-4921](/LUC/issues/LUC-4921) PM readiness state, and adjacent completed
+  [LUC-4927](/LUC/issues/LUC-4927) Management selection state.
+- Why this mission now: Paperclip scoped the heartbeat to
+  [LUC-4926](/LUC/issues/LUC-4926), which was created by
+  [LUC-4921](/LUC/issues/LUC-4921) as the source-control closure lane for the
+  Roost evidence/state batch after [LUC-4920](/LUC/issues/LUC-4920).
+- Scope: issue-context readback, source-control dirty-state classification,
+  closure packet, source-of-truth synchronization, SCM hygiene, and one local
+  commit if the batch is coherent.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4926-source-control-closure-for-luc-4920-innovation-proof-packet.md`.
+- Evidence: issue context had no comments and no blockers; pre-closure
+  `HEAD=8135ad6a613b5a85cd28e9d9e7176d1aee4b08be`; branch
+  `main...origin/main [ahead 44]`; dirty set included seven tracked
+  state/planning files plus untracked LUC-4920/LUC-4921/LUC-4927 planning and
+  proof artifacts; LUC-4920 `result.json` reports `ok: true`, route
+  `/areas?area=11-innowacje&view=overview`, API
+  `/v1/operating-graph/areas/11-innowacje?limit=80`, desktop/mobile `5`
+  graph rows, safe synthetic error copy, no console issues, no failed
+  requests, and no horizontal overflow. SCM hygiene passed and local commit
+  was created.
+- Final disposition: done for local SCM closure. Push remains held for a
+  future release batch or explicit source-ref/deploy need. Deploy impact none;
+  protected production proof remains release/credential gated.
+
+## Previous Mission
+
+- Mission ID: LUC-4927-MANAGEMENT-PROOF-SELECTION
+- Status: VERIFIED_DONE_BY_READBACK
+- Selected objective: Reconcile `12 Management -> Department management` as
+  the next thin Roost milestone after the [LUC-4920](/LUC/issues/LUC-4920)
+  Innovation proof ladder.
+- Why this mission now: Paperclip scoped the heartbeat to
+  [LUC-4927](/LUC/issues/LUC-4927), which was created by
+  [LUC-4921](/LUC/issues/LUC-4921) as the QA-owned readback/selection lane for
+  Management.
+- Scope: issue-context readback, source-of-truth inspection for
+  `12-zarzadzanie`, route/API/architecture-chain verification readback,
+  lightweight current route/capability drift check, planning packet, and
+  source-of-truth synchronization.
+- Exclusions: no implementation, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output: `docs/planning/luc-4927-management-proof-selection.md`.
+- Evidence: `docs/planning/management-department-catalog-task-contract.md` is
+  `DONE` / `VERIFIED` for `MGMT-DEPT-001`; it records server/web builds,
+  validation, local API smoke with all `27` migrations and `6/6` API subtests,
+  and browser proof on
+  `/areas?area=12-zarzadzanie&view=departments` that logged in, rendered the
+  Management table, created `13 Marketing Lab`, linked approved views, reloaded,
+  and verified sidebar/table readback with no console warnings or errors.
+  Architecture nodes `PAGE-12-MANAGEMENT-DEPARTMENTS`,
+  `FEAT-MGMT-DEPT-CATALOG`, `API-DEPARTMENTS-LIST`,
+  `API-DEPARTMENTS-CREATE`, `API-DEPARTMENTS-UPDATE`, and
+  `CHAIN-MGMT-DEPT-CATALOG` are verified. Fresh drift check
+  `npm run check:route-capabilities` passed with `checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`; `HEAD=8135ad6a613b5a85cd28e9d9e7176d1aee4b08be`;
+  workspace remains `main...origin/main [ahead 44]` with existing evidence/state
+  artifacts awaiting [LUC-4926](/LUC/issues/LUC-4926) source-control closure.
+- Final disposition: done for QA milestone selection. No fresh full proof
+  ladder is needed for this issue; the narrow future confidence task is
+  dedicated `/v1/departments` API regression assertions, not a milestone
+  blocker.
+
+## Previous Mission
+
+- Mission ID: LUC-4921-ROOST-COMPANYCORE-READINESS-MILESTONE-REVIEW
+- Status: DELEGATED_DONE
+- Selected objective: Review Roost CompanyCore readiness after the
+  [LUC-4920](/LUC/issues/LUC-4920) Innovation proof ladder and convert the
+  next thin milestone gaps into owner-scoped issues.
+- Why this mission now: Paperclip scoped the heartbeat to
+  [LUC-4921](/LUC/issues/LUC-4921), a routine Roost PM readiness review with
+  no comments and no blockers.
+- Scope: issue-context readback, source-of-truth review, architecture
+  continuity proof, [LUC-4920](/LUC/issues/LUC-4920) evidence readback,
+  source-control state readback, readiness packet, and child lane creation.
+- Exclusions: no implementation, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4921-roost-companycore-readiness-and-milestone-review.md`.
+- Evidence: `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  [LUC-4920](/LUC/issues/LUC-4920) `result.json` reports `ok: true`, route
+  `/areas?area=11-innowacje&view=overview`, API
+  `/v1/operating-graph/areas/11-innowacje?limit=80`, capability
+  `operating-graph:read`, desktop/mobile `5` graph rows, safe synthetic error
+  copy, no console issues, no failed requests, and no horizontal overflow;
+  `HEAD=8135ad6a613b5a85cd28e9d9e7176d1aee4b08be`; current workspace is
+  `main...origin/main [ahead 44]` with [LUC-4920](/LUC/issues/LUC-4920)
+  evidence/state artifacts needing source-control closure.
+- Final disposition: done for PM readiness review after creating
+  [LUC-4926](/LUC/issues/LUC-4926) for source-control closure and
+  [LUC-4927](/LUC/issues/LUC-4927) for `12 Management -> Department
+  management` evidence readback/proof selection. Protected production proof
+  remains release/credential gated.
+
+## Previous Mission
+
+- Mission ID: LUC-4920-INNOVATION-PROOF-LADDER
+- Status: VERIFIED_DONE
+- Selected objective: Execute the local proof ladder for `11 Innovation ->
+  Operating Graph Overview`.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4920](/LUC/issues/LUC-4920), created by the
+  [LUC-4916](/LUC/issues/LUC-4916) known-state baseline as the next QA proof
+  ladder after the verified Legal route.
+- Scope: route/API/capability inspection, `check:route-capabilities`, local
+  API proof, authenticated local desktop/mobile browser proof, synthetic
+  backend error proof, cleanup proof, planning packet, and source-of-truth
+  synchronization.
+- Exclusions: no implementation, schema, migration authoring, protected smoke,
+  push, deploy, restart, production mutation, credential access, secret
+  disclosure, or production data access.
+- Output: `docs/planning/luc-4920-innovation-proof-ladder.md`.
+- Evidence: `npm run check:route-capabilities` PASS (`180` manifest routes,
+  `35` route files); `COMPANYCORE_TEST_DB_KEEP=1 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` API subtests.
+  API preflight verified `/v1/operating-graph/areas/11-innowacje?limit=80`:
+  canonical key `11-innowacje`, resolved backend key
+  `ai-agents-observability`, `5` nodes, `4` edges, and `1` gap. MCP manifest
+  exposes `GET /v1/operating-graph/areas/:areaKey` with
+  `operating-graph:read`. Authenticated Playwright Chromium proof on local
+  backend port `3240` passed desktop `1366x900` and mobile `390x844` checks
+  for route identity, Innovation area signal, graph evidence, safe synthetic
+  backend error language, no raw backend error leakage, no relevant failed
+  requests, no console issues, and no horizontal overflow. Evidence artifacts:
+  `docs/ux/evidence/luc-4920-innovation-proof-ladder-2026-06-20/`.
+- Cleanup: temporary backend PID `42796` stopped,
+  `companycore-test-postgres` removed, no `chrome-headless-shell` rows
+  remained, and disposable local token/temp harness files were removed.
+- Final disposition: done for local QA proof ladder. Protected production
+  proof remains gated by release/credential approval.
+
+## Previous Mission
+
 - Mission ID: LUC-4916-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
 - Status: VERIFIED_DONE_PENDING_SCM_AND_QA_CHILDREN
 - Selected objective: Refresh local Roost known-state architecture evidence

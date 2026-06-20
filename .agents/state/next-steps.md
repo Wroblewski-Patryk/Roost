@@ -4,6 +4,75 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4926` source-control closure is complete for the current
+   Roost evidence/state batch.
+   - Output:
+     `docs/planning/luc-4926-source-control-closure-for-luc-4920-innovation-proof-packet.md`.
+   - Proof:
+     issue context had no comments or blockers; pre-closure
+     `HEAD=8135ad6a613b5a85cd28e9d9e7176d1aee4b08be`; branch
+     `main...origin/main [ahead 44]`; SCM readback classified the tracked
+     state/planning files, LUC-4920 proof artifacts, and adjacent completed
+     LUC-4921/LUC-4927 planning packets as one coherent evidence/state batch.
+     Local commit created after SCM hygiene.
+   - Next owner/action:
+     push remains held for a future release batch or explicit source-ref/deploy
+     need. Protected production proof remains release/credential gated.
+
+1. `LUC-4927` Management proof selection is complete by current evidence
+   readback.
+   - Output:
+     `docs/planning/luc-4927-management-proof-selection.md`.
+   - Proof:
+     `docs/planning/management-department-catalog-task-contract.md` is
+     `DONE` / `VERIFIED` for `MGMT-DEPT-001`; architecture page, feature, API
+     route, database, and chain entries are verified; `npm run
+     check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+     `checkedRouteFiles=35`, `status=ok`).
+   - Decision:
+     no fresh full local API/browser proof ladder is needed for this selection
+     issue. Dedicated `/v1/departments` API regression assertions remain a
+     future hardening item, not a milestone blocker.
+   - Next owner/action:
+     [LUC-4926](/LUC/issues/LUC-4926) owns source-control closure for the
+     current evidence/state batch. Protected production proof remains
+     release/credential gated.
+
+1. `LUC-4921` Roost CompanyCore readiness and milestone review is complete
+   for PM scope.
+   - Output:
+     `docs/planning/luc-4921-roost-companycore-readiness-and-milestone-review.md`.
+   - Proof:
+     `npm run architecture:status` PASS (`GREEN`, graph `452/761/34`,
+     evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+     [LUC-4920](/LUC/issues/LUC-4920) result readback reports `ok: true`,
+     route `/areas?area=11-innowacje&view=overview`, API
+     `/v1/operating-graph/areas/11-innowacje?limit=80`, desktop/mobile `5`
+     graph rows, safe synthetic error copy, no console issues, no failed
+     requests, and no horizontal overflow.
+   - Next owner/action:
+     [LUC-4926](/LUC/issues/LUC-4926) owns source-control closure for the
+     [LUC-4920](/LUC/issues/LUC-4920) evidence packet and this readiness
+     state. [LUC-4927](/LUC/issues/LUC-4927) owns `12 Management -> Department
+     management` evidence readback/proof selection. Protected production proof
+     remains release/credential gated.
+
+1. `LUC-4920` Innovation operating graph proof ladder is complete.
+   - Output:
+     `docs/planning/luc-4920-innovation-proof-ladder.md`.
+   - Proof:
+     `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+     `checkedRouteFiles=35`, `status=ok`);
+     `COMPANYCORE_TEST_DB_KEEP=1 npm run test:api:local` PASS with all `31`
+     migrations and `7/7` API subtests; authenticated Playwright proof on
+     local backend port `3240` passed desktop `1366x900` and mobile
+     `390x844` checks for route identity, Innovation signal, graph evidence,
+     safe synthetic backend error language, no raw backend error leakage, no
+     relevant failed requests, no console issues, and no horizontal overflow.
+   - Next owner/action:
+     no repair issue is needed. Protected production proof remains
+     release/credential gated.
+
 1. `LUC-4916` Roost known-state evidence and architecture baseline is
    complete for Roost PM scope.
    - Output:

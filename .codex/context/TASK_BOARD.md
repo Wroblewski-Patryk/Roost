@@ -2,6 +2,74 @@
 
 ## Now
 
+- 2026-06-20: `LUC-4926` source-control closure is complete for the
+  [LUC-4920](/LUC/issues/LUC-4920) Innovation proof packet, the
+  [LUC-4921](/LUC/issues/LUC-4921) PM readiness state, and adjacent completed
+  [LUC-4927](/LUC/issues/LUC-4927) Management proof-selection state. Output:
+  `docs/planning/luc-4926-source-control-closure-for-luc-4920-innovation-proof-packet.md`.
+  Evidence: issue context had no comments or blockers; pre-closure
+  `HEAD=8135ad6a613b5a85cd28e9d9e7176d1aee4b08be`; branch
+  `main...origin/main [ahead 44]`; SCM readback classified the tracked
+  state/planning files plus LUC-4920 proof artifacts and planning packets as
+  one coherent evidence/state batch. Local commit created after SCM hygiene.
+  Push held for a future release batch or explicit source-ref/deploy need.
+  Deploy impact: none. Disposition: `DONE`.
+
+- 2026-06-20: `LUC-4927` Management proof selection is complete by current
+  evidence readback. Output:
+  `docs/planning/luc-4927-management-proof-selection.md`. Evidence:
+  `docs/planning/management-department-catalog-task-contract.md` is
+  `DONE` / `VERIFIED` for `MGMT-DEPT-001`; it records validation, local API
+  smoke with all `27` migrations and `6/6` API subtests, and browser proof on
+  `/areas?area=12-zarzadzanie&view=departments` that created
+  `13 Marketing Lab`, linked approved views, reloaded, and verified sidebar
+  and table readback. Architecture entries for `PAGE-12-MANAGEMENT-DEPARTMENTS`,
+  `FEAT-MGMT-DEPT-CATALOG`, departments API routes, and
+  `CHAIN-MGMT-DEPT-CATALOG` are verified. Fresh `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`). Decision: no fresh full local
+  API/browser proof ladder is needed for this selection issue; dedicated
+  `/v1/departments` API regression assertions remain future hardening. Scope:
+  no implementation, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, server,
+  browser, database, Docker, or watcher process. Disposition: `DONE`.
+
+- 2026-06-20: `LUC-4921` Roost CompanyCore readiness and milestone review is
+  complete for PM scope. Output:
+  `docs/planning/luc-4921-roost-companycore-readiness-and-milestone-review.md`.
+  Evidence: issue context had no comments and no blockers; `npm run
+  architecture:status` PASS (`GREEN`, graph `452/761/34`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  [LUC-4920](/LUC/issues/LUC-4920) `result.json` readback reports `ok: true`
+  for `/areas?area=11-innowacje&view=overview`, desktop/mobile `5` graph
+  rows, safe synthetic error copy, no console issues, no failed requests, and
+  no horizontal overflow. Follow-ups: [LUC-4926](/LUC/issues/LUC-4926)
+  source-control closure and [LUC-4927](/LUC/issues/LUC-4927) `12 Management`
+  evidence readback/proof selection. Scope: no runtime code, schema,
+  migration, protected smoke, deploy, push, restart, production mutation,
+  credential access, secret disclosure, server, browser, database, Docker, or
+  watcher process. Disposition: `DONE` for PM review scope.
+
+- 2026-06-20: `LUC-4920` Innovation operating graph proof ladder is complete
+  for `11 Innovation -> Operating Graph Overview`. Output:
+  `docs/planning/luc-4920-innovation-proof-ladder.md`. Evidence:
+  `npm run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`);
+  `COMPANYCORE_TEST_DB_KEEP=1 npm run test:api:local` PASS with all `31`
+  migrations and `7/7` API subtests; authenticated Playwright proof on local
+  backend port `3240` passed desktop `1366x900` and mobile `390x844` checks
+  for route identity, Innovation signal, graph evidence, safe synthetic
+  backend error language, no raw backend error leakage, no relevant failed
+  requests, no console issues, and no horizontal overflow. API alias contract:
+  request/canonical key `11-innowacje`, resolved backend key
+  `ai-agents-observability`, `5` nodes, `4` edges, `1` gap. MCP manifest
+  exposes `operating-graph:read`. Evidence artifacts:
+  `docs/ux/evidence/luc-4920-innovation-proof-ladder-2026-06-20/`. Cleanup
+  passed: backend PID `42796` stopped, validation container removed,
+  disposable token/temp harness removed, no `chrome-headless-shell` rows.
+  Disposition: `DONE` for local QA proof ladder. Protected production proof
+  remains release/credential gated.
+
 - 2026-06-20: `LUC-4919` source-control closure is complete for the
   [LUC-4916](/LUC/issues/LUC-4916) known-state evidence packet and adjacent
   [LUC-4906](/LUC/issues/LUC-4906) Legal proof-ladder packet. Output:
