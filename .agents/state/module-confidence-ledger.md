@@ -2,6 +2,32 @@
 
 Last updated: 2026-06-20
 
+Source-control note: [LUC-5046](/LUC/issues/LUC-5046) is VERIFIED_DONE for the
+[LUC-5039](/LUC/issues/LUC-5039) generated/status evidence batch. Closure
+packet:
+`docs/planning/luc-5046-source-control-closure-for-luc-5039-known-state-evidence-packet.md`.
+Evidence: pre-closure `HEAD=7e228aedfc8a8d4c139fc0a9c6a663201c8a290a`;
+`git diff --check` passed with LF-to-CRLF warnings only; generated
+architecture-awareness and architecture-health JSON parsed successfully.
+Push remains held for a future release batch or explicit source-ref/deploy
+need. Deploy impact: none.
+
+Roost known-state baseline note: LUC-5039 is VERIFIED_DONE for the Roost
+Project Manager evidence lane. The packet is recorded in
+`docs/planning/luc-5039-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2330`,
+`relations=4744`, `files=13657`, generated at
+`2026-06-20T10:46:34.957Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task synchronization reports `0` task-link/proof gaps;
+ownership gaps `0`; disconnected entities `0`; dependency report shows `437`
+relations / `95` entities; architecture health reports
+`implementation_without_tests=1162`. Confidence classification: local
+architecture and task/proof synchronization are verified; remaining confidence
+debt is route/journey proof debt, not a PM-owned implementation defect.
+Source-control closure is complete locally in [LUC-5046](/LUC/issues/LUC-5046).
+Protected production proof remains release/credential gated.
+
 Roost known-state baseline note: LUC-5015 is VERIFIED_DONE for the Roost
 Project Manager evidence lane. The packet is recorded in
 `docs/planning/luc-5015-known-state-evidence-and-architecture-baseline.md`.

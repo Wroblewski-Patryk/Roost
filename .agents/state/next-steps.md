@@ -4,6 +4,42 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-5046` source-control closure is complete locally for the
+   [LUC-5039](/LUC/issues/LUC-5039) known-state evidence packet.
+   - Output:
+     `docs/planning/luc-5046-source-control-closure-for-luc-5039-known-state-evidence-packet.md`.
+   - Proof:
+     dirty set classified as the [LUC-5039](/LUC/issues/LUC-5039)
+     generated/status/state packet; `git diff --check` PASS with LF-to-CRLF
+     warnings only; generated JSON parsed with `2330` entities / `4744`
+     relations and timestamp `2026-06-20T10:46:34.957Z`; high-confidence
+     key-pattern scan found no private key headers, AWS access key IDs,
+     OpenAI-style `sk-` keys, or Slack token values.
+   - Next owner/action:
+     push is held for future release batching or explicit source-ref/deploy
+     need. Protected production proof remains release/credential gated.
+
+1. `LUC-5039` known-state evidence and architecture baseline is complete for
+   Roost PM scope.
+   - Output:
+     `docs/planning/luc-5039-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2330`,
+     `relations=4744`, `files=13657`, generated
+     `2026-06-20T10:46:34.957Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task/proof/owner gaps remain `0`;
+     dependency report `437` relations / `95` entities; architecture health
+     reports `implementation_without_tests=1162`.
+   - Next owner/action:
+     [LUC-5046](/LUC/issues/LUC-5046) completed local source-control closure
+     for the generated/status dirty set; push remains held for a future
+     release batch or explicit source-ref/deploy need.
+     No duplicate broad QA issue was opened
+     because [LUC-4957](/LUC/issues/LUC-4957) already curated the recurring
+     missing-test signal as product-journey proof debt/scanner granularity.
+     Protected production proof remains release/credential gated.
+
 1. `LUC-5015` known-state evidence and architecture baseline is complete for
    Roost PM scope.
    - Output:

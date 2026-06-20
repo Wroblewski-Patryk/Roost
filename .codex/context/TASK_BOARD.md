@@ -2,6 +2,40 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5046` source-control closure is complete locally for the
+  [LUC-5039](/LUC/issues/LUC-5039) known-state evidence packet. Output:
+  `docs/planning/luc-5046-source-control-closure-for-luc-5039-known-state-evidence-packet.md`.
+  Evidence: wake payload scoped this run to [LUC-5046](/LUC/issues/LUC-5046)
+  with no pending comments; parent [LUC-5039](/LUC/issues/LUC-5039) is
+  `done`; pre-closure `HEAD=7e228aedfc8a8d4c139fc0a9c6a663201c8a290a`;
+  branch `main...origin/main [ahead 56]`; dirty set matched the
+  [LUC-5039](/LUC/issues/LUC-5039) generated architecture/status evidence
+  batch plus state/context updates and the parent planning packet.
+  `git diff --check` passed with LF-to-CRLF warnings only; generated
+  graph/health JSON parsed successfully; scoped high-confidence secret/data
+  hygiene found no key values. Local commit created and final SHA is recorded
+  in the Paperclip closure comment. Push held for a future release batch or
+  explicit source-ref/deploy need. Deploy impact: none. Disposition: `DONE`.
+
+- 2026-06-20: `LUC-5039` known-state evidence and architecture baseline is
+  complete for Roost PM scope.
+  Output:
+  `docs/planning/luc-5039-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness scanner PASS (`entities=2330`,
+  `relations=4744`, `files=13657`, generated at
+  `2026-06-20T10:46:34.957Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); task-sync gaps `0`; owner gaps `0`;
+  disconnected entities `0`; dependency report `437` relations / `95`
+  entities; architecture health reports `implementation_without_tests=1162`.
+  Closure:
+  [LUC-5046](/LUC/issues/LUC-5046) completed source-control closure for this
+  generated/status evidence packet.
+  Scope: no runtime code, schema, migration, protected smoke, deploy, push,
+  restart, production mutation, credential access, secret disclosure, server,
+  browser, database, Docker, or watcher process. Disposition: `DONE` for PM
+  evidence scope after source-control sidecar delegation.
+
 - 2026-06-20: `LUC-5020` source-control closure is complete locally for the
   [LUC-5015](/LUC/issues/LUC-5015) known-state evidence packet. Output:
   `docs/planning/luc-5020-source-control-closure-for-luc-5015-known-state-evidence-packet.md`.
