@@ -1,5 +1,45 @@
 # System Health
 
+- 2026-06-20: `LUC-5332` source-control closure is verified for the
+  [LUC-5331](/LUC/issues/LUC-5331) evidence refresh. Current interpretation:
+  generated architecture/status outputs and state/planning notes are preserved
+  as a local evidence packet only. Diff hygiene, generated JSON parse, scoped
+  high-confidence secret/private-key scan, and `npm run architecture:status`
+  passed. Deploy impact: none; no runtime, protected smoke, production,
+  credential, schema, migration, database, Docker, browser, server, or watcher
+  action occurred.
+
+- 2026-06-20: `LUC-5331` Roost known-state evidence baseline completed for
+  PM evidence scope. Output:
+  `docs/planning/luc-5331-known-state-evidence-and-architecture-baseline.md`.
+  Current health interpretation: architecture-awareness exports are fresh at
+  `2026-06-20T21:16:05.629Z` with `2413` entities / `5063` relations /
+  `13744` files; curated architecture status remains GREEN (`454/765/35`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  route-capability exposure remains consistent (`180` manifest routes / `35`
+  route files); task-sync, ownership, docs, proof, implementation-task, and
+  disconnected gaps remain `0`. The persistent
+  `implementation_without_tests=1162` signal remains scanner-level confidence
+  debt for named proof-ladder selection. Deploy impact: none; protected
+  runtime proof remains separately gated.
+
+- 2026-06-20: `LUC-5315` Auth/Workspace/API-key authority proof ladder
+  verified locally for the QA slice from [LUC-5313](/LUC/issues/LUC-5313).
+  Output:
+  `docs/planning/luc-5315-auth-workspace-api-key-authority-proof-ladder.md`.
+  Selected journey: owner auth, workspace scoping, service API-key capability
+  boundaries, scoped-key denial, service-key management denial,
+  route/capability exposure, and cross-workspace isolation. Proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5315-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55515` `npm run test:api:local` PASS after
+  server/web build, `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `14731.1928ms`, total
+  `24818.2781ms`). Drift checks: `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`,
+  delta `0/0/0`, all gates pass). Cleanup found no validation DB container and
+  no `chrome-headless-shell` process. Deploy impact: none.
+
 - 2026-06-20: `LUC-5313` Roost PM known-state evidence baseline completed.
   Output:
   `docs/planning/luc-5313-known-state-evidence-and-architecture-baseline.md`.

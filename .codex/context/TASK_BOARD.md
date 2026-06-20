@@ -2,6 +2,51 @@
 
 ## Now
 
+- 2026-06-20: `LUC-5332` source-control closure for
+  [LUC-5331](/LUC/issues/LUC-5331) is complete locally. Output:
+  `docs/planning/luc-5332-source-control-closure-for-luc-5331-evidence-packet.md`.
+  Evidence: dirty set classified as coherent generated/status/planning/state
+  evidence; `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  architecture JSON parse PASS at `2026-06-20T21:16:05.629Z` (`2413`
+  entities / `5063` relations); scoped high-confidence secret/private-key scan
+  PASS with `0` matches; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass).
+  Disposition: `DONE`; push held for future release/source-ref batching;
+  deploy impact none.
+
+- 2026-06-20: `LUC-5331` known-state evidence and architecture baseline is
+  complete for the local-board wake comment, pending child follow-up lanes.
+  Output:
+  `docs/planning/luc-5331-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS in `9600ms`, generated
+  `2026-06-20T21:16:05.629Z` (`2413` entities / `5063` relations / `13744`
+  files); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queue `0`, worklist `0`, delta `0/0/0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); task-sync, ownership, docs, proof,
+  implementation-task, and disconnected gaps remain `0`. Disposition: PM
+  evidence scope complete; [LUC-5332](/LUC/issues/LUC-5332) source-control
+  closure and [LUC-5333](/LUC/issues/LUC-5333) Department/Workforce QA proof
+  are the concrete follow-up lanes; deploy impact none.
+
+- 2026-06-20: `LUC-5315` Auth/Workspace/API-key authority proof ladder is
+  complete for the local QA slice from [LUC-5313](/LUC/issues/LUC-5313).
+  Output:
+  `docs/planning/luc-5315-auth-workspace-api-key-authority-proof-ladder.md`.
+  Selected journey: owner auth, workspace scoping, service API-key capability
+  boundaries, scoped-key denial, service-key management denial,
+  route/capability exposure, and cross-workspace isolation. Evidence:
+  `npm run test:api:local` with disposable PostgreSQL
+  `companycore-luc-5315-postgres` on port `55515` passed after server/web
+  build, `31` migrations, seed, and `7/7` API subtests (`CompanyCore v1
+  protected API flow` duration `14731.1928ms`, total `24818.2781ms`); `npm
+  run check:route-capabilities` PASS (`checkedManifestRoutes=180`,
+  `checkedRouteFiles=35`, `status=ok`); `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all
+  gates pass). Cleanup found no validation DB container and no
+  `chrome-headless-shell` process. Disposition: `DONE`; no repair issue
+  warranted; deploy impact none.
+
 - 2026-06-20: `LUC-5317` known-state evidence and architecture baseline is
   complete for the local-board wake comment. Output:
   `docs/planning/luc-5317-known-state-evidence-and-architecture-baseline.md`.

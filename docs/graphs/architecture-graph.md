@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-20T20:43:43.765Z
+Generated: 2026-06-20T21:16:05.629Z
 
 ## Canonical Exports
 
@@ -646,6 +646,7 @@ Generated: 2026-06-20T20:43:43.765Z
 | documents | document:api-key-middleware:071d632449 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MW-AUTO-0001.md |
 | documents | document:api-keys-model:02bff86e2b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0005.md |
 | documents | document:api:a617d1cb61 | module:docs:6784d83cb0 | docs/API.md |
+| documents | document:app-completion-index:2db9905a4e | module:docs:6784d83cb0 | docs/status/app-completion-index.md |
 | documents | document:app-creation-playbook:4c3d8fc278 | module:docs:6784d83cb0 | docs/governance/app-creation-playbook.md |
 | documents | document:application-completion-audit-task-contract-template:6956f095d1 | module:docs:6784d83cb0 | docs/planning/application-completion-audit-task-contract-template.md |
 | documents | document:application-completion-audit-task-contract:202895e688 | module:docs:6784d83cb0 | docs/planning/application-completion-audit-task-contract.md |
@@ -1192,6 +1193,10 @@ Generated: 2026-06-20T20:43:43.765Z
 | documents | document:luc-5293-tasks-and-clickup-task-lifecycle-proof-ladder:75b74f1be7 | module:docs:6784d83cb0 | docs/planning/luc-5293-tasks-clickup-task-lifecycle-proof-ladder.md |
 | documents | document:luc-5301-api-endpoint-test-evidence-gap-qa-triage:cdbb7ed7ff | module:docs:6784d83cb0 | docs/planning/luc-5301-api-endpoint-test-evidence-gap-qa-triage.md |
 | documents | document:luc-5302-architecture-evidence-roadmap-awareness-reconciliation:be8d4d03a4 | module:docs:6784d83cb0 | docs/planning/luc-5302-architecture-evidence-roadmap-awareness-reconciliation.md |
+| documents | document:luc-5313-known-state-evidence-and-architecture-baseline:ab0c5ded26 | module:docs:6784d83cb0 | docs/planning/luc-5313-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5314-source-control-closure-for-luc-5313-evidence-packet:0607170919 | module:docs:6784d83cb0 | docs/planning/luc-5314-source-control-closure-for-luc-5313-evidence-packet.md |
+| documents | document:luc-5315-auth-workspace-api-key-authority-proof-ladder:78ba167753 | module:docs:6784d83cb0 | docs/planning/luc-5315-auth-workspace-api-key-authority-proof-ladder.md |
+| documents | document:luc-5317-known-state-evidence-and-architecture-baseline:a87738fe6b | module:docs:6784d83cb0 | docs/planning/luc-5317-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
 | documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
@@ -1213,8 +1218,3 @@ Generated: 2026-06-20T20:43:43.765Z
 | documents | document:migration:3f14a960a7 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0029.md |
 | documents | document:migration:46c4e27ade | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0028.md |
 | documents | document:migration:5133b665ba | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0012.md |
-| documents | document:migration:55b8a3539a | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0023.md |
-| documents | document:migration:593d4488bd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0004.md |
-| documents | document:migration:61687c1d99 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0022.md |
-| documents | document:migration:7375812ebb | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0018.md |
-| documents | document:migration:7e5b143870 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MIG-AUTO-0015.md |

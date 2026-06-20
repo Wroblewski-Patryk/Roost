@@ -4,6 +4,107 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-5331-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE_PENDING_QA_FOLLOWUP
+- Selected objective: Handle the local-board known-state wake by collecting
+  fresh local architecture evidence and converting findings into concrete
+  repair/proof lanes.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5331](/LUC/issues/LUC-5331), assigned to Roost Project Manager, with a
+  local-board comment requiring local evidence collection while forbidding
+  push, deploy, restart, protected smoke, production mutation, credential
+  access, and secret disclosure.
+- Scope: run the Paperclip architecture-awareness refresh for Roost, run
+  `npm run architecture:status`, run `npm run check:route-capabilities`, read
+  generated health/task/ownership/dependency reports, and publish follow-up
+  source-control and QA proof lanes.
+- Exclusions: no feature code, schema, migration, push, deploy, restart,
+  protected smoke, production mutation, credential access, secret disclosure,
+  browser proof, runtime server, Docker database, provider action, or live
+  account mutation.
+- Output:
+  `docs/planning/luc-5331-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: architecture-awareness refresh PASS in `9600ms`, generated
+  `2026-06-20T21:16:05.629Z` with `2413` entities, `5063` relations, and
+  `13744` files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  task-sync gaps `0`; ownership gaps `0`; docs gaps `0`; disconnected
+  entities `0`; implementation-without-task gaps `0`; verified-without-proof
+  gaps `0`; architecture health `implementation_without_tests=1162`.
+- Final disposition: PM known-state scope complete with source-control closure
+  handled by [LUC-5332](/LUC/issues/LUC-5332) and the remaining child
+  follow-up [LUC-5333](/LUC/issues/LUC-5333) for the next
+  Department/Workforce QA proof ladder. Protected target proof remains
+  approval/credential gated.
+
+## Current Mission
+
+- Mission ID: LUC-5332-SOURCE-CONTROL-CLOSURE-FOR-LUC-5331-EVIDENCE-PACKET
+- Status: VERIFIED_DONE_PENDING_PUSH_BATCH
+- Selected objective: Close local source-control bookkeeping for the
+  [LUC-5331](/LUC/issues/LUC-5331) known-state evidence packet.
+- Why this mission now: Paperclip assigned high-priority
+  [LUC-5332](/LUC/issues/LUC-5332) as the source-control sidecar for the
+  completed [LUC-5331](/LUC/issues/LUC-5331) known-state evidence refresh.
+- Scope: classify the generated/status/planning dirty set, add the closure
+  packet, run diff hygiene, parse generated architecture JSON, run a scoped
+  high-confidence secret/private-key scan, run `npm run architecture:status`,
+  and preserve the coherent packet in a local commit.
+- Exclusions: no runtime code, schema, migration, push, deploy, restart,
+  protected smoke, production mutation, credential access, secret disclosure,
+  browser proof, server, database, Docker, provider action, or live account
+  mutation.
+- Output:
+  `docs/planning/luc-5332-source-control-closure-for-luc-5331-evidence-packet.md`.
+- Evidence: starting state `main...origin/main [ahead 90]`, HEAD `349f06dd`;
+  dirty set classified as coherent generated/status/planning/state evidence;
+  `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  `docs/graphs/architecture-awareness.json` parse PASS at
+  `2026-06-20T21:16:05.629Z` with `2413` entities and `5063` relations;
+  scoped high-confidence secret/private-key scan PASS with `0` matches; `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: local source-control closure verified; push held for a
+  future release batch or explicit source-ref/deploy need; deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5315-AUTH-WORKSPACE-API-KEY-AUTHORITY-PROOF
+- Status: VERIFIED_DONE
+- Selected objective: Verify the Auth/Workspace/API-key authority boundary
+  selected as the first focused QA proof ladder from the
+  [LUC-5313](/LUC/issues/LUC-5313) known-state signal.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5315](/LUC/issues/LUC-5315), assigned to QA Verification Engineer, with
+  explicit local proof scope and prohibitions against protected production
+  smoke, live credential use, deploy, push, restart, production mutation, and
+  secret disclosure.
+- Scope: inspect the auth/workspace/API-key authority surface, run
+  `npm run test:api:local` with a unique disposable database, run
+  `npm run check:route-capabilities`, run `npm run architecture:status`, and
+  verify cleanup.
+- Exclusions: no feature code, schema, migration authoring, push, deploy,
+  restart, protected smoke, production mutation, credential access, secret
+  disclosure, browser proof, runtime server, live provider action, or watcher.
+- Output:
+  `docs/planning/luc-5315-auth-workspace-api-key-authority-proof-ladder.md`.
+- Evidence: `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5315-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55515` `npm run test:api:local` PASS after
+  server/web build, all `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `14731.1928ms`, total
+  `24818.2781ms`); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass); cleanup checks
+  found no validation DB container and no `chrome-headless-shell` process.
+- Final disposition: QA proof scope complete. No defect was found and no repair
+  issue is warranted. Protected production/key proof remains
+  approval/credential gated.
+
+## Previous Mission
+
 - Mission ID: LUC-5317-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
 - Status: VERIFIED_DONE
 - Selected objective: Handle the local-board known-state wake by collecting

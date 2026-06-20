@@ -1,5 +1,45 @@
 # Module Confidence Ledger
 
+Roost known-state baseline note: [LUC-5331](/LUC/issues/LUC-5331) is
+VERIFIED_DONE_PENDING_SOURCE_CONTROL_CLOSURE_AND_QA_FOLLOWUP for the Roost PM
+evidence lane. The packet is recorded in
+`docs/planning/luc-5331-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness refresh PASS in `9600ms`, generated
+`2026-06-20T21:16:05.629Z` with `2413` entities, `5063` relations, and
+`13744` files; `npm run architecture:status` PASS (`GREEN`, graph
+`454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+gates pass); `npm run check:route-capabilities` PASS
+(`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`).
+Task-sync gaps, ownership gaps, docs gaps, disconnected entities,
+implementation-without-task gaps, and verified-without-proof gaps remain `0`.
+Architecture health remains `implementation_without_tests=1162`, classified as
+scanner-level confidence debt for named proof ladders rather than broad repair.
+Next confidence work is Department/Workforce QA proof after the already
+verified Auth/Workspace/API-key lane. Protected target proof remains
+approval/credential gated.
+
+QA proof note: [LUC-5315](/LUC/issues/LUC-5315) is VERIFIED_DONE for the
+Auth/Workspace/API-key authority slice selected from the
+[LUC-5313](/LUC/issues/LUC-5313) `implementation_without_tests=1162`
+confidence signal. Evidence packet:
+`docs/planning/luc-5315-auth-workspace-api-key-authority-proof-ladder.md`.
+Selected journey: owner auth, workspace scoping, service API-key capability
+boundaries, scoped-key denial, service-key management denial, route/capability
+exposure, and cross-workspace isolation mapped to
+`src/modules/auth/auth.routes.ts`, `src/modules/workspaces/workspaces.routes.ts`,
+`src/modules/api-keys/api-keys.routes.ts`, `src/auth/api-key.middleware.ts`,
+`src/auth/capabilities.ts`, and `src/tests/api.test.ts`. Local proof ran
+`COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5315-postgres`
+`COMPANYCORE_TEST_DB_PORT=55515` `npm run test:api:local`: server/web build
+PASS, all `31` migrations applied, seed PASS, and `7/7` API subtests PASS
+including `CompanyCore v1 protected API flow` (`14731.1928ms`, total
+`24818.2781ms`). `npm run check:route-capabilities` and `npm run
+architecture:status` also passed. Cleanup found no validation DB container and
+no `chrome-headless-shell` process. Confidence classification:
+Auth/Workspace/API-key local API authority behavior is verified; no repair
+issue is warranted. Protected production/key proof remains a separate
+approval/credential-gated lane.
+
 Roost known-state baseline note: [LUC-5317](/LUC/issues/LUC-5317) is
 VERIFIED_DONE for the local-board wake evidence lane. The packet is recorded
 in

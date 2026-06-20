@@ -2,6 +2,62 @@
 
 Last updated: 2026-06-20
 
+- 2026-06-20: `LUC-5332` source-control closure completed locally for the
+  [LUC-5331](/LUC/issues/LUC-5331) Roost known-state evidence packet. Output:
+  `docs/planning/luc-5332-source-control-closure-for-luc-5331-evidence-packet.md`.
+  Starting state: `main...origin/main [ahead 90]`, HEAD `349f06dd`. Dirty set
+  classified as coherent generated architecture-awareness exports, generated
+  status reports, planning/state/context updates, and the carried completed
+  [LUC-5315](/LUC/issues/LUC-5315) QA proof packet referenced by the same
+  known-state wave. Verification: `git diff --check` PASS with LF-to-CRLF
+  warnings only; generated architecture JSON parse PASS at
+  `2026-06-20T21:16:05.629Z` (`2413` entities / `5063` relations); scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass). Push held for future
+  release/source-ref batching; deploy impact none.
+
+- 2026-06-20: `LUC-5331` Roost known-state evidence and architecture
+  baseline completed for the local-board wake comment. Output:
+  `docs/planning/luc-5331-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS in `9600ms`, generated
+  `2026-06-20T21:16:05.629Z` with `2413` entities / `5063` relations /
+  `13744` files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  task-sync gaps `0`; ownership gaps `0`; docs gaps `0`; disconnected
+  entities `0`; implementation-without-task gaps `0`; verified-without-proof
+  gaps `0`; architecture health reports `implementation_without_tests=1162`.
+  Classification: no broad feature repair issue is warranted; the concrete
+  next lanes are [LUC-5332](/LUC/issues/LUC-5332) source-control closure for
+  this generated/status/planning packet and [LUC-5333](/LUC/issues/LUC-5333)
+  Department/Workforce QA proof. No feature code, schema,
+  migration, push, deploy, restart, protected smoke, production mutation,
+  credential access, secret disclosure, browser, database, Docker, server, or
+  watcher process occurred.
+
+- 2026-06-20: `LUC-5315` Auth/Workspace/API-key authority proof ladder
+  completed for the QA slice from [LUC-5313](/LUC/issues/LUC-5313). Output:
+  `docs/planning/luc-5315-auth-workspace-api-key-authority-proof-ladder.md`.
+  Selected journey: owner auth, workspace scoping, service API-key capability
+  boundaries, scoped-key denial, service-key management denial, route/capability
+  exposure, and cross-workspace isolation covered by `src/tests/api.test.ts`
+  and auth/workspace/API-key modules. Evidence:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5315-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55515` `npm run test:api:local` PASS after
+  server/web build, all `31` migrations, seed, and `7/7` API subtests
+  (`CompanyCore v1 protected API flow` duration `14731.1928ms`, total
+  `24818.2781ms`); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`); `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass). Cleanup found no
+  validation DB container and no `chrome-headless-shell` process. No protected
+  smoke, deploy, push, restart, production mutation, credential access, secret
+  disclosure, browser proof, runtime feature change, schema change, migration
+  authoring, live provider action, server, or watcher occurred. Disposition:
+  `DONE`; no repair issue warranted.
+
 - 2026-06-20: `LUC-5317` Roost known-state evidence and architecture baseline
   completed for the local-board wake comment. Output:
   `docs/planning/luc-5317-known-state-evidence-and-architecture-baseline.md`.

@@ -1,5 +1,42 @@
 # Next Steps
 
+- `LUC-5332` Roost PM source-control closure is complete for the
+  [LUC-5331](/LUC/issues/LUC-5331) known-state evidence packet. Evidence
+  packet:
+  `docs/planning/luc-5332-source-control-closure-for-luc-5331-evidence-packet.md`.
+  Evidence: diff hygiene, generated JSON parse, scoped high-confidence
+  secret/private-key scan, and `npm run architecture:status` all passed. Next
+  owner/action: no more work remains on [LUC-5332](/LUC/issues/LUC-5332);
+  push remains held for future release/source-ref batching unless an explicit
+  release need appears. QA continues [LUC-5333](/LUC/issues/LUC-5333).
+
+- `LUC-5331` Roost PM known-state evidence baseline is complete pending
+  follow-up lanes. Evidence packet:
+  `docs/planning/luc-5331-known-state-evidence-and-architecture-baseline.md`.
+  Current evidence: architecture-awareness refresh PASS (`2413` entities,
+  `5063` relations, `13744` files, generated
+  `2026-06-20T21:16:05.629Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes, `35` route files);
+  task-sync, owner, docs, proof, implementation-task, and disconnected gaps
+  remain `0`. Next owners/actions: Roost PM [LUC-5332](/LUC/issues/LUC-5332)
+  source-control closure for the generated/status/planning packet; QA &
+  Verification Engineer [LUC-5333](/LUC/issues/LUC-5333) for the
+  Department/Workforce focused proof ladder. Protected target proof remains
+  approval/credential gated.
+
+- `LUC-5315` Auth/Workspace/API-key authority proof ladder is complete.
+  Evidence packet:
+  `docs/planning/luc-5315-auth-workspace-api-key-authority-proof-ladder.md`.
+  Local proof passed: `npm run test:api:local` with disposable PostgreSQL
+  `companycore-luc-5315-postgres` on port `55515` after server/web build,
+  `31` migrations, seed, and `7/7` API subtests; `npm run
+  check:route-capabilities`; `npm run architecture:status`; cleanup checks for
+  validation DB and headless browser processes. Next owner/action: no
+  Auth/Workspace/API-key repair issue is warranted; continue future QA proof
+  ladders only from named journey risk. Protected production/key proof remains
+  approval/credential gated.
+
 - `LUC-5317` Roost PM known-state evidence baseline is complete. Evidence
   packet:
   `docs/planning/luc-5317-known-state-evidence-and-architecture-baseline.md`.
