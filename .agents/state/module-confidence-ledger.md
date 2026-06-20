@@ -2,6 +2,119 @@
 
 Last updated: 2026-06-20
 
+Roost known-state baseline note: LUC-4784 is VERIFIED_DONE as a Roost Project
+Manager evidence lane. The packet is recorded in
+`docs/planning/luc-4784-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2263`,
+`relations=4478`, `files=13551`, generated at
+`2026-06-20T03:13:29.296Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task sync readback showed `0` task-link/proof-link gaps;
+architecture health showed `implementation_without_tests=1161`; dependency
+report showed `437` relations / `95` entities; ownership report showed
+`Docs Memory Lead=927`, `Engineering Delivery Lead=1335`, and
+`Roost Project Manager=1`; `HEAD=1c5236ea`. Readiness delta: local
+architecture remains green, [LUC-4777](/LUC/issues/LUC-4777) has locally
+verified the selected Operations work-items proof ladder, and no new PM-owned
+implementation defect was found. Next proof/fix: source-control closure for
+this generated/status evidence packet is delegated to
+[LUC-4787](/LUC/issues/LUC-4787); protected runtime proof remains blocked
+until fresh key-scope evidence plus one-run approval exist.
+
+Source-control confidence note: LUC-4787 is VERIFIED_DONE for the source-control
+closure sidecar of the LUC-4784 baseline. The packet is recorded in
+`docs/planning/luc-4787-source-control-closure-for-luc-4784-evidence-packet.md`.
+Evidence: pre-closure `HEAD=1c5236ea`; branch `main...origin/main [ahead 32]`;
+dirty set classified as coherent with [LUC-4777](/LUC/issues/LUC-4777),
+[LUC-4779](/LUC/issues/LUC-4779), and [LUC-4784](/LUC/issues/LUC-4784);
+`git diff --stat` showed `18 files changed, 7735 insertions(+), 6661
+deletions(-)` before the closure packet; `git diff --check` passed with
+line-ending conversion warnings only. Confidence classification: source-control
+packet preserved locally; push held for future release batch or explicit
+source-ref/deploy need. Next proof/fix: no SCM follow-up remains from this
+closure; protected runtime proof remains blocked until fresh key-scope evidence
+plus one-run approval exist.
+
+QA proof-ladder completion note: LUC-4777 is VERIFIED_DONE for the `04
+Operations` work-items vertical slice. The packet is recorded in
+`docs/planning/luc-4777-operations-work-items-proof-ladder.md`. Evidence:
+initial `npm run test:api:local` was blocked by local Docker availability and
+the blocker was resolved by [LUC-4779](/LUC/issues/LUC-4779); QA reran
+`npm run test:api:local` and it passed after building server/web, applying
+`31` migrations, seeding, and passing `7/7` API subtests; authenticated
+Playwright proof against `/areas?area=04-operacje&view=overview` passed on
+desktop `1366x900` and mobile `390x844` with Operations surface, Lists, and
+board columns visible, no packet error, no horizontal overflow, no console
+issues, and no relevant failed requests. Confidence classification: verified
+locally for the selected proof ladder. Next proof/fix: production/protected
+smoke remains outside this QA lane and still requires the established
+protected-gate approval path.
+
+Local API test database note: LUC-4779 is VERIFIED_DONE for the DRE-owned
+database path restoration. The packet is recorded in
+`docs/planning/luc-4779-restore-local-api-test-database-path.md`. Evidence:
+`scripts/test-api-local.mjs` now recovers on Windows when Docker Desktop is
+installed but the Linux engine is offline, launches Docker Desktop without
+shell path-splitting, waits for readiness, and retries disposable PostgreSQL
+container creation during startup. Validation passed: `node --check
+scripts/test-api-local.mjs`, `npm run build:server`, and `npm run
+test:api:local` with all `31` migrations, seed, and `7/7` API subtests.
+Cleanup proof: no `companycore-test-postgres` container and no
+`chrome-headless-shell` rows after the run. Docker Desktop remains running
+only because unrelated `soar-postgres-1` and `soar-redis-1` containers were
+active. Confidence classification for the local API database rung:
+verified. Next proof/fix: QA/Test can rerun the Operations proof ladder from
+[LUC-4777](/LUC/issues/LUC-4777) and then proceed to authenticated UI proof
+for `/areas?area=04-operacje&view=overview` if API proof remains green.
+
+QA proof-ladder execution note: LUC-4777 is BLOCKED after the first local
+validation blocker. The packet is recorded in
+`docs/planning/luc-4777-operations-work-items-proof-ladder.md`. Target:
+`04 Operations` work-items vertical slice. Evidence: `npm run build:server`
+passed; `npm run test:api:local` failed before migrations/tests because Docker
+Desktop Linux engine is unavailable (`open //./pipe/dockerDesktopLinuxEngine:
+The system cannot find the file specified`). Confidence classification remains
+implemented, partially verified; this run did not find an Operations product
+defect because API assertions did not start. Next proof/fix:
+[LUC-4779](/LUC/issues/LUC-4779) owns restoring the local API test database
+path; after that, rerun `npm run test:api:local` and only then consider
+authenticated UI proof for `/areas?area=04-operacje&view=overview`.
+
+Roost known-state baseline note: LUC-4774 is VERIFIED_DONE as a Roost Project
+Manager evidence lane. The packet is recorded in
+`docs/planning/luc-4774-known-state-evidence-and-architecture-baseline.md`.
+Evidence: Paperclip architecture-awareness scanner PASS (`entities=2259`,
+`relations=4463`, `files=13547`, generated at
+`2026-06-20T02:45:22.785Z`); `npm run architecture:status` PASS (`GREEN`,
+graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+all gates pass); task sync readback showed `0` task-link/proof-link gaps;
+architecture health showed `implementation_without_tests=1161`; dependency
+report showed `437` relations / `95` entities; ownership report showed
+`Docs Memory Lead=923`, `Engineering Delivery Lead=1335`, and
+`Roost Project Manager=1`; `HEAD=164a54db`. Readiness delta: local
+architecture remains green, no new PM-owned implementation defect was found,
+and the remaining confidence work is owner-scoped. Next proof/fix:
+[LUC-4777](/LUC/issues/LUC-4777) owns the Operations work-items proof ladder;
+[LUC-4778](/LUC/issues/LUC-4778) owns source-control closure for this evidence
+packet; protected runtime proof remains blocked until fresh key-scope evidence
+plus one-run approval exist.
+
+QA proof-ladder target note: LUC-4763 is DONE for target selection from the
+current implementation-without-test-link debt. The packet is recorded in
+`docs/planning/luc-4763-first-proof-ladder-target-from-implementation-without-tests.md`.
+Selected target: `04 Operations` work-items vertical slice (`GET/POST/PATCH
+/v1/operations/work-items`, task-list edit path, and
+`web/src/features/departments/operations-route.tsx`). Evidence:
+`docs/graphs/architecture-health.json` reports
+`implementation_without_tests=1161`; Operations route/file entities remain in
+the signal; prior LUC-3545 selected Process Core; `npm run
+check:route-capabilities` passed (`checkedManifestRoutes=180`,
+`checkedRouteFiles=35`, `status=ok`). Confidence classification:
+implemented, partially verified at current granularity. Next proof/fix:
+run `npm run build:server`, `npm run test:api:local`, then authenticated UI
+proof for `/areas?area=04-operacje&view=overview` if API proof remains green;
+open a repair issue only after a reproducible rung failure.
+
 Roost known-state baseline note: LUC-4748 is VERIFIED_DONE as a Roost Project
 Manager evidence lane. The packet is recorded in
 `docs/planning/luc-4748-known-state-evidence-and-architecture-baseline.md`.

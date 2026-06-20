@@ -1,9 +1,12 @@
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 
 const containerName = process.env.COMPANYCORE_TEST_DB_CONTAINER || "companycore-test-postgres";
 const port = process.env.COMPANYCORE_TEST_DB_PORT || "55432";
 const databaseUrl = process.env.DATABASE_URL || `postgresql://companycore:companycore@127.0.0.1:${port}/companycore_test?schema=public`;
 const keepDb = process.env.COMPANYCORE_TEST_DB_KEEP === "1";
+const dockerDesktopPath = process.env.COMPANYCORE_DOCKER_DESKTOP_PATH || "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe";
+const allowDockerDesktopLaunch = process.env.COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP !== "0";
 
 function assertSafeTestDatabaseUrl(url) {
   if (process.env.COMPANYCORE_ALLOW_DESTRUCTIVE_TEST_DB === "1") {
@@ -26,9 +29,16 @@ function run(command, args, options = {}) {
     const child = spawn(command, args, {
       cwd: process.cwd(),
       env: { ...process.env, ...options.env },
-      shell: process.platform === "win32",
-      stdio: options.capture ? ["ignore", "pipe", "pipe"] : "inherit"
+      detached: options.detached === true,
+      shell: options.shell ?? process.platform === "win32",
+      stdio: options.waitForExit === false ? "ignore" : options.capture ? ["ignore", "pipe", "pipe"] : "inherit",
+      windowsHide: true
     });
+    if (options.waitForExit === false) {
+      child.unref();
+      resolve({ code: 0, stdout: "", stderr: "" });
+      return;
+    }
     let stdout = "";
     let stderr = "";
     if (options.capture) {
@@ -75,9 +85,27 @@ function run(command, args, options = {}) {
 
 async function ensureDocker() {
   const result = await run("docker", ["info", "--format", "{{.ServerVersion}}"], { capture: true, timeoutMs: 20000 });
-  if (result.code !== 0) {
-    throw new Error(`Docker is not available for local API tests.\n${result.stderr || result.stdout}`.trim());
+  if (result.code === 0) {
+    return;
   }
+
+  const firstError = result.stderr || result.stdout;
+  if (process.platform === "win32" && allowDockerDesktopLaunch && existsSync(dockerDesktopPath)) {
+    const launched = await run(dockerDesktopPath, [], { detached: true, shell: false, waitForExit: false });
+    if (launched.code !== 0 && launched.code !== null) {
+      throw new Error(`Docker is not available for local API tests, and Docker Desktop could not be launched.\n${launched.stderr || launched.stdout || firstError}`.trim());
+    }
+
+    for (let attempt = 0; attempt < 90; attempt += 1) {
+      const ready = await run("docker", ["info", "--format", "{{.ServerVersion}}"], { capture: true, timeoutMs: 10000 });
+      if (ready.code === 0) {
+        return;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+  }
+
+  throw new Error(`Docker is not available for local API tests.\n${firstError}`.trim());
 }
 
 async function containerExists() {
@@ -93,18 +121,29 @@ async function containerRunning() {
 async function startDatabase() {
   await ensureDocker();
   if (!await containerExists()) {
-    const created = await run("docker", [
-      "run",
-      "-d",
-      "--name", containerName,
-      "-e", "POSTGRES_DB=companycore_test",
-      "-e", "POSTGRES_USER=companycore",
-      "-e", "POSTGRES_PASSWORD=companycore",
-      "-p", `${port}:5432`,
-      "postgres:16-alpine"
-    ], { timeoutMs: 60000 });
-    if (created.code !== 0) {
-      throw new Error("Could not create local PostgreSQL test container.");
+    let createdOk = false;
+    let lastCreateError = "";
+    for (let attempt = 0; attempt < 30; attempt += 1) {
+      const created = await run("docker", [
+        "run",
+        "-d",
+        "--name", containerName,
+        "-e", "POSTGRES_DB=companycore_test",
+        "-e", "POSTGRES_USER=companycore",
+        "-e", "POSTGRES_PASSWORD=companycore",
+        "-p", `${port}:5432`,
+        "postgres:16-alpine"
+      ], { capture: true, timeoutMs: 60000 });
+      if (created.code === 0) {
+        createdOk = true;
+        lastCreateError = "";
+        break;
+      }
+      lastCreateError = created.stderr || created.stdout;
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+    if (!createdOk) {
+      throw new Error(`Could not create local PostgreSQL test container.\n${lastCreateError}`.trim());
     }
   } else if (!await containerRunning()) {
     const started = await run("docker", ["start", containerName], { timeoutMs: 30000 });

@@ -4,6 +4,150 @@ Last updated: 2026-06-20
 
 ## NOW
 
+1. `LUC-4787` source-control closure for the `LUC-4784` Roost known-state
+   evidence packet is complete.
+   - Output:
+     `docs/planning/luc-4787-source-control-closure-for-luc-4784-evidence-packet.md`.
+   - Proof:
+     pre-closure `HEAD=1c5236ea`; branch `main...origin/main [ahead 32]`;
+     dirty set classified as coherent with [LUC-4777](/LUC/issues/LUC-4777),
+     [LUC-4779](/LUC/issues/LUC-4779), and
+     [LUC-4784](/LUC/issues/LUC-4784); `git diff --stat` showed `18 files
+     changed, 7735 insertions(+), 6661 deletions(-)` before this closure
+     packet; `git diff --check` passed with line-ending conversion warnings
+     only.
+   - Next owner/action:
+     push is held for a future release batch or explicit source-ref/deploy
+     need. Protected runtime proof remains externally gated by key-scope
+     evidence plus one-run approval.
+
+1. `LUC-4784` Roost known-state evidence and architecture baseline is
+   complete.
+   - Output:
+     `docs/planning/luc-4784-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2263`,
+     `relations=4478`, `files=13551`, generated at
+     `2026-06-20T03:13:29.296Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task sync reports `0` task-link/proof
+     gaps; architecture health reports `implementation_without_tests=1161`;
+     dependency report shows `437` relations / `95` entities; ownership split
+     is `Docs Memory Lead=927`, `Engineering Delivery Lead=1335`,
+     `Roost Project Manager=1`; `HEAD=1c5236ea`.
+   - Next owner/action:
+     [LUC-4787](/LUC/issues/LUC-4787) classifies and preserves this
+     generated/status evidence packet. Protected runtime proof remains
+     externally gated by key-scope evidence plus one-run approval.
+
+1. `LUC-4777` Operations work-items proof ladder is complete.
+   - Output:
+     `docs/planning/luc-4777-operations-work-items-proof-ladder.md`.
+   - Proof:
+     [LUC-4779](/LUC/issues/LUC-4779) restored the local API test database
+     path. QA reran `npm run test:api:local`: PASS after server/web build,
+     `31` migrations, seed, and `7/7` API subtests. Authenticated Playwright
+     proof for `/areas?area=04-operacje&view=overview` passed on desktop
+     `1366x900` and mobile `390x844` with Operations surface, Lists, and board
+     columns visible; no packet error, no horizontal overflow, no console
+     issues, and no relevant failed requests.
+   - Cleanup:
+     local backend stopped, `companycore-test-postgres` removed, no
+     `chrome-headless-shell` rows. Docker Desktop left running because
+     unrelated containers may be active.
+   - Next owner/action:
+     no QA child blocker remains for this lane. Production/protected smoke
+     remains under the existing protected-gate path, not this local QA issue.
+
+1. `LUC-4779` local API test database path restoration is complete.
+   - Output:
+     `docs/planning/luc-4779-restore-local-api-test-database-path.md`.
+   - Proof:
+     `node --check scripts/test-api-local.mjs` PASS;
+     `npm run build:server` PASS; `npm run test:api:local` PASS after
+     Docker Desktop recovery, disposable PostgreSQL creation, all `31`
+     migrations, seed, and `7/7` API subtests. Cleanup confirmed no
+     `companycore-test-postgres` container and no `chrome-headless-shell`
+     rows. Docker Desktop remains running because unrelated `soar-postgres-1`
+     and `soar-redis-1` containers were active.
+   - Next owner/action:
+     QA/Test reruns the Operations proof ladder from
+     [LUC-4777](/LUC/issues/LUC-4777), then proceeds to authenticated UI proof
+     for `/areas?area=04-operacje&view=overview` if the API rung remains
+     green.
+
+1. `LUC-4777` Operations work-items proof ladder had a local API test database
+   availability blocker that is now resolved by LUC-4779.
+   - Output:
+     `docs/planning/luc-4777-operations-work-items-proof-ladder.md`.
+   - Proof:
+     `npm run build:server` PASS. `npm run test:api:local` failed before
+     migrations/tests because Docker Desktop Linux engine is unavailable:
+     `Docker is not available for local API tests` and
+     `open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file
+     specified.`
+   - Next owner/action:
+     QA should rerun `npm run test:api:local` through the restored local path
+     and only continue to authenticated UI proof if API proof is green.
+
+1. `LUC-4774` Roost known-state evidence and architecture baseline is
+   complete.
+   - Output:
+     `docs/planning/luc-4774-known-state-evidence-and-architecture-baseline.md`.
+   - Proof:
+     Paperclip architecture-awareness scanner PASS (`entities=2259`,
+     `relations=4463`, `files=13547`, generated at
+     `2026-06-20T02:45:22.785Z`); `npm run architecture:status` PASS
+     (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+     delta `0/0/0`, all gates pass); task sync reports `0` task-link/proof
+     gaps; architecture health reports `implementation_without_tests=1161`;
+     dependency report shows `437` relations / `95` entities; ownership split
+     is `Docs Memory Lead=923`, `Engineering Delivery Lead=1335`,
+     `Roost Project Manager=1`; `HEAD=164a54db`.
+   - Next owner/action:
+     [LUC-4777](/LUC/issues/LUC-4777) runs the Operations work-items proof
+     ladder. [LUC-4778](/LUC/issues/LUC-4778) closes the source-control
+     sidecar for this evidence packet. Protected runtime proof remains
+     externally gated by key-scope evidence plus one-run approval.
+
+1. `LUC-4763` QA proof-ladder target selection is complete.
+   - Output:
+     `docs/planning/luc-4763-first-proof-ladder-target-from-implementation-without-tests.md`.
+   - Selected target:
+     `04 Operations` work-items vertical slice:
+     `GET/POST/PATCH /v1/operations/work-items`, task-list edit path, and
+     `web/src/features/departments/operations-route.tsx`.
+   - Proof:
+     `docs/graphs/architecture-health.json` reports
+     `implementation_without_tests=1161`; Operations route/file entities
+     remain in the signal; prior [LUC-3545](/LUC/issues/LUC-3545) selected
+     Process Core. `npm run check:route-capabilities` PASS
+     (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`).
+   - Next owner/action:
+     QA/Test or Engineering Delivery runs the Operations proof ladder:
+     `npm run build:server`, `npm run test:api:local`, then authenticated UI
+     proof for `/areas?area=04-operacje&view=overview` if API proof remains
+     green. Open a repair issue only after a reproducible rung failure.
+
+1. `LUC-4762` source-control closure for the `LUC-4757` Roost known-state
+   evidence packet is complete.
+   - Output:
+     `docs/planning/luc-4762-source-control-closure-for-luc-4757-evidence-packet.md`.
+   - Decision:
+     preserve the coherent generated/status evidence packet from the LUC-4757
+     scanner pass because the files are cumulative architecture-awareness and
+     status evidence.
+   - Proof:
+     `git status --short --branch -uall` showed `main...origin/main [ahead 30]`
+     with nine generated architecture/status files modified; `git diff --stat`
+     showed `9 files changed, 6739 insertions(+), 6591 deletions(-)` before
+     this closure packet and state updates; `git diff --check` returned no
+     whitespace errors and only line-ending conversion warnings for
+     generated/status files.
+   - Commit/push:
+     local commit created for the coherent packet; push held for a future
+     release batch or explicit source-ref/deploy need.
+
 1. `LUC-4748` Roost known-state evidence and architecture baseline is
    complete.
    - Output:

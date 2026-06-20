@@ -25,6 +25,16 @@ the API tests, and removes the validation container unless
 TypeScript, applies migrations with `prisma migrate deploy`, and runs Node's
 built-in test runner against the compiled API integration tests.
 
+On Windows, if `docker` is installed but Docker Desktop's Linux engine is not
+running, `npm run test:api:local` attempts to launch Docker Desktop from
+`C:\Program Files\Docker\Docker\Docker Desktop.exe`, waits for `docker info`,
+then creates the disposable PostgreSQL container. Set
+`COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0` to disable this recovery path, or
+set `COMPANYCORE_DOCKER_DESKTOP_PATH` if Docker Desktop is installed in a
+different location. The runner still requires a safe local `companycore_test`
+database URL and removes the validation-owned container unless
+`COMPANYCORE_TEST_DB_KEEP=1` is set.
+
 Example local disposable database:
 
 ```powershell

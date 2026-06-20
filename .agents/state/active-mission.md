@@ -4,6 +4,280 @@ Last updated: 2026-06-20
 
 ## Current Mission
 
+- Mission ID: LUC-4787-SOURCE-CONTROL-CLOSURE-LUC-4784
+- Status: VERIFIED_DONE
+- Selected objective: Close the source-control sidecar for the
+  [LUC-4784](/LUC/issues/LUC-4784) known-state evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4787](/LUC/issues/LUC-4787), assigned to Roost Project Manager, with no
+  pending comments and no fallback fetch required. The parent
+  [LUC-4784](/LUC/issues/LUC-4784) packet explicitly delegated source-control
+  closure here.
+- Scope: dirty-tree classification, generated/status evidence preservation,
+  prior [LUC-4777](/LUC/issues/LUC-4777) / [LUC-4779](/LUC/issues/LUC-4779)
+  packet preservation, `git diff --check`, local commit, and push/deploy
+  disposition.
+- Exclusions: no new runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4787-source-control-closure-for-luc-4784-evidence-packet.md`.
+- Evidence: pre-closure `HEAD=1c5236ea`; branch `main...origin/main [ahead
+  32]`; dirty set contained source-of-truth state, LUC-4777/LUC-4779/LUC-4784
+  planning packets, generated architecture/status exports, and the documented
+  LUC-4779 local test-runner repair; `git diff --stat` before this closure
+  packet showed `18 files changed, 7735 insertions(+), 6661 deletions(-)`;
+  `git diff --check` passed with line-ending conversion warnings only.
+- Final disposition: done for source-control closure. The coherent local packet
+  is preserved in a local commit; push is held for a future release batch or
+  explicit source-ref/deploy need.
+
+## Previous Mission
+
+- Mission ID: LUC-4784-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE
+- Selected objective: Refresh Roost known-state evidence and architecture
+  continuity from safe local signals, then name the remaining owner lane.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4784](/LUC/issues/LUC-4784), a known-state evidence and architecture
+  baseline lane, with no pending comments and no fallback fetch required.
+- Scope: source-of-truth review, Paperclip architecture-awareness refresh,
+  non-protected architecture status proof, generated report readback,
+  source-control readback, and source-control closure delegation.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4784-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip architecture-awareness scanner PASS (`entities=2263`,
+  `relations=4478`, `files=13551`, generated at
+  `2026-06-20T03:13:29.296Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task sync readback showed `0` task-link/proof-link gaps;
+  architecture health showed `implementation_without_tests=1161`; dependency
+  report showed `437` relations / `95` entities; ownership split was
+  `Docs Memory Lead=927`, `Engineering Delivery Lead=1335`,
+  `Roost Project Manager=1`; `HEAD=1c5236ea`.
+- Final disposition: done for PM baseline scope. Source-control closure for
+  this evidence packet is delegated to [LUC-4787](/LUC/issues/LUC-4787).
+  Protected runtime proof remains gated by external key-scope and one-run
+  approval evidence.
+
+## Previous Mission
+
+- Mission ID: LUC-4777-OPERATIONS-WORK-ITEMS-PROOF-LADDER
+- Status: VERIFIED_DONE
+- Selected objective: Resume and complete the Operations work-items QA proof
+  ladder after [LUC-4779](/LUC/issues/LUC-4779) restored the local API test
+  database path.
+- Why this mission now: Paperclip woke this issue because child blockers were
+  completed. The previous local database blocker is resolved and QA can rerun
+  the proof ladder.
+- Scope: rerun `npm run test:api:local`; if green, run authenticated UI proof
+  for `/areas?area=04-operacje&view=overview`; record cleanup evidence and
+  source-of-truth updates.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure, or
+  production data access.
+- Output:
+  `docs/planning/luc-4777-operations-work-items-proof-ladder.md`.
+- Evidence: QA rerun of `npm run test:api:local` PASS: built server/web,
+  applied `31` migrations, seeded, and passed `7/7` API subtests. Kept-db
+  rerun also passed for UI setup. Authenticated Playwright proof on
+  `http://127.0.0.1:3234/areas?area=04-operacje&view=overview` PASS for
+  desktop `1366x900` and mobile `390x844`: Operations surface, Lists, and
+  board columns visible; no packet error; no horizontal overflow; no console
+  issues; no relevant failed requests.
+- Cleanup: temporary backend process stopped; `companycore-test-postgres`
+  container removed; no `chrome-headless-shell` process rows remained. Docker
+  Desktop was left running because unrelated containers may be active.
+- Final disposition: done for QA proof-ladder scope.
+
+## Previous Mission
+
+- Mission ID: LUC-4779-RESTORE-LOCAL-API-TEST-DB-PATH
+- Status: VERIFIED_DONE
+- Selected objective: Restore the local API test database path needed by the
+  Operations work-items proof ladder.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4779](/LUC/issues/LUC-4779), assigned to DRE, after
+  [LUC-4777](/LUC/issues/LUC-4777) blocked at `npm run test:api:local`
+  because Docker Desktop's Linux engine was offline.
+- Scope: local API test runner recovery, Windows Docker Desktop startup path,
+  disposable PostgreSQL container creation retry, documentation, validation,
+  cleanup/process evidence, and source-of-truth state sync.
+- Exclusions: no product route behavior, schema migration authoring,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, secret disclosure, browser proof, or production database access.
+- Output:
+  `docs/planning/luc-4779-restore-local-api-test-database-path.md`.
+- Evidence: initial `docker info` failed on
+  `//./pipe/dockerDesktopLinuxEngine`; `node --check
+  scripts/test-api-local.mjs` PASS; `npm run build:server` PASS; final
+  `npm run test:api:local` PASS after Docker Desktop recovery, disposable
+  PostgreSQL creation, server/web build, all `31` migrations, seed, and `7/7`
+  API subtests. Cleanup probes showed no `companycore-test-postgres` container
+  and no `chrome-headless-shell` process rows. Docker Desktop remains running
+  because unrelated `soar-postgres-1` and `soar-redis-1` containers were
+  active.
+- Final disposition: done for DRE scope. QA/Test can rerun the Operations
+  proof ladder from [LUC-4777](/LUC/issues/LUC-4777) and proceed to
+  authenticated UI proof for `/areas?area=04-operacje&view=overview` if the
+  API rung remains green.
+
+## Previous Mission
+
+- Mission ID: LUC-4777-OPERATIONS-WORK-ITEMS-PROOF-LADDER
+- Status: BLOCKED_BY_LOCAL_VALIDATION_DB
+- Selected objective: Execute the Operations work-items QA proof ladder from
+  the LUC-4774 baseline until the first evidence-backed pass or blocker.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4777](/LUC/issues/LUC-4777), assigned to QA & Verification Engineer,
+  with no pending comments and no fallback fetch required.
+- Scope: `04 Operations` work-items proof rungs from
+  [LUC-4763](/LUC/issues/LUC-4763): `npm run build:server`,
+  `npm run test:api:local`, and UI proof only if API proof remains green.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure, or
+  production data access.
+- Output:
+  `docs/planning/luc-4777-operations-work-items-proof-ladder.md`.
+- Evidence: `npm run build:server` PASS. `npm run test:api:local` BLOCKED
+  before migrations/tests because Docker Desktop Linux engine is unavailable:
+  `Docker is not available for local API tests` and
+  `open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file
+  specified.` No validation container, server, browser, database, or watcher
+  was started by this QA run; `chrome-headless-shell` cleanup probe returned
+  no process rows.
+- Final disposition: blocked by [LUC-4779](/LUC/issues/LUC-4779), assigned to
+  Deployment and Reliability Engineer to restore the local API test database
+  path or provide an approved safe local `DATABASE_URL`.
+
+## Previous Mission
+
+- Mission ID: LUC-4774-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE
+- Selected objective: Refresh Roost known-state evidence and architecture
+  continuity from safe local signals, then name the remaining owner lanes.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4774](/LUC/issues/LUC-4774), a known-state evidence and architecture
+  baseline lane, with no pending comments and no fallback fetch required.
+- Scope: source-of-truth review, Paperclip architecture-awareness refresh,
+  non-protected architecture status proof, generated report readback,
+  source-control readback, and follow-up lane creation.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4774-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: Paperclip architecture-awareness scanner PASS (`entities=2259`,
+  `relations=4463`, `files=13547`, generated at
+  `2026-06-20T02:45:22.785Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `452/761/34`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); task sync readback showed `0` task-link/proof-link gaps;
+  architecture health showed `implementation_without_tests=1161`; dependency
+  report showed `437` relations / `95` entities; ownership split was
+  `Docs Memory Lead=923`, `Engineering Delivery Lead=1335`,
+  `Roost Project Manager=1`; `HEAD=164a54db`.
+- Final disposition: done for PM baseline scope. QA proof execution for
+  Operations work-items is delegated to [LUC-4777](/LUC/issues/LUC-4777), and
+  source-control closure for this evidence packet is delegated to
+  [LUC-4778](/LUC/issues/LUC-4778). Protected runtime proof remains gated by
+  external key-scope and one-run approval evidence.
+
+## Previous Mission
+
+- Mission ID: LUC-4763-FIRST-PROOF-LADDER-TARGET
+- Status: TARGET_SELECTED_DONE
+- Selected objective: Select the first concrete QA proof-ladder target from
+  the current Roost implementation-without-test-link debt.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4763](/LUC/issues/LUC-4763), with no pending comments and no fallback
+  fetch required. The preceding [LUC-4757](/LUC/issues/LUC-4757) baseline
+  delegated QA proof-ladder selection to this issue after confirming
+  `implementation_without_tests=1161`.
+- Scope: read current architecture-health debt, prior proof-ladder output, and
+  Operations task contracts; select one P0/P1 workflow; run the smallest static
+  readiness gate; record a bounded follow-up proof ladder.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4763-first-proof-ladder-target-from-implementation-without-tests.md`.
+- Evidence: `docs/graphs/architecture-health.json` reports
+  `implementation_without_tests.count=1161`; Operations route/file entities
+  remain in the implementation-without-test-link items; prior [LUC-3545](/LUC/issues/LUC-3545)
+  selected Process Core, so this lane selected `04 Operations` work-items as
+  the next target. `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`).
+- Final disposition: done for QA target-selection scope. Follow-up proof
+  should run the Operations work-items ladder: `npm run build:server`,
+  `npm run test:api:local`, then authenticated UI proof for
+  `/areas?area=04-operacje&view=overview` if API proof remains green.
+
+## Previous Mission
+
+- Mission ID: LUC-4762-SOURCE-CONTROL-CLOSURE-LUC-4757
+- Status: VERIFIED_DONE
+- Selected objective: Close the source-control sidecar for the
+  [LUC-4757](/LUC/issues/LUC-4757) Roost known-state evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4762](/LUC/issues/LUC-4762), with no pending comments and no fallback
+  fetch required. The issue required generated/status evidence packet
+  classification, source-control hygiene proof, and a final local disposition.
+- Scope: inspect git status and diff hygiene, classify generated
+  architecture/status evidence produced by the LUC-4757 scanner pass, preserve
+  the coherent local evidence packet, and update issue disposition.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4762-source-control-closure-for-luc-4757-evidence-packet.md`.
+- Evidence: `git status --short --branch -uall` showed
+  `main...origin/main [ahead 30]` with nine generated architecture/status
+  files modified; `git diff --stat` showed `9 files changed, 6739
+  insertions(+), 6591 deletions(-)` before this closure packet and state
+  updates; `git diff --check` returned no whitespace errors and only
+  line-ending conversion warnings for generated/status files.
+- Final disposition: done for source-control closure. The coherent generated
+  evidence packet through [LUC-4757](/LUC/issues/LUC-4757) is preserved
+  locally; push is held for a future release batch or explicit source-ref need.
+
+## Previous Mission
+
+- Mission ID: LUC-4757-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_DONE
+- Selected objective: Refresh Roost known-state evidence from safe local
+  architecture signals and convert current gaps into owner-scoped repair
+  lanes.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-4757](/LUC/issues/LUC-4757), and the latest local-board comment
+  explicitly requested `softwarehouse-known-state-wakeup:v1`: local evidence
+  collection plus concrete next repair lanes, with no push, deploy, restart,
+  protected smoke, production mutation, or secret disclosure.
+- Scope: source-of-truth readback, safe Paperclip architecture-awareness
+  scanner refresh, `npm run architecture:status`, generated report readback,
+  child repair-lane creation, planning packet, and state synchronization.
+- Exclusions: no runtime code, schema, migration, protected smoke, deploy,
+  push, restart, production mutation, credential access, secret disclosure,
+  server, browser, database, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-4757-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: scanner PASS (`entities=2256`, `relations=4449`, `files=13544`,
+  generated at `2026-06-20T02:16:08.600Z`); `npm run architecture:status`
+  PASS (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass); task sync readback showed `0`
+  task-link/proof-link gaps; architecture health showed
+  `implementation_without_tests=1161`; dependency report showed `437`
+  relations / `95` entities; ownership split was `Docs Memory Lead=920`,
+  `Engineering Delivery Lead=1335`, `Roost Project Manager=1`;
+  `HEAD=3c74ae5`.
+- Final disposition: done for IPM baseline scope. Source-control closure for
+  this evidence packet is delegated to [LUC-4762](/LUC/issues/LUC-4762), and
+  QA proof-ladder selection is delegated to [LUC-4763](/LUC/issues/LUC-4763).
+
+## Previous Mission
+
 - Mission ID: LUC-4754-RESIDUAL-GENERATED-DRIFT-LUC-4739
 - Status: VERIFIED_DONE
 - Selected objective: Close residual architecture/status generated drift after

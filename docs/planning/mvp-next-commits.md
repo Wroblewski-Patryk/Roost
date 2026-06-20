@@ -7,6 +7,80 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-4784 Roost known-state evidence and architecture baseline:
+      completed. Output:
+      `docs/planning/luc-4784-known-state-evidence-and-architecture-baseline.md`.
+      Evidence: Paperclip architecture-awareness scanner passed
+      (`entities=2263`, `relations=4478`, `files=13551`, generated at
+      `2026-06-20T03:13:29.296Z`); `npm run architecture:status` passed
+      (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+      delta `0/0/0`, all gates pass); task-sync readback showed `0`
+      task-link/proof-link gaps; architecture health reports
+      `implementation_without_tests=1161`; dependency report shows `437`
+      relations / `95` entities; ownership split is `Docs Memory Lead=927`,
+      `Engineering Delivery Lead=1335`, `Roost Project Manager=1`.
+      Follow-up: [LUC-4787](/LUC/issues/LUC-4787) owns this generated/status
+      evidence packet before source closure.
+
+- [x] LUC-4779 local API test database path restoration: completed. Output:
+      `docs/planning/luc-4779-restore-local-api-test-database-path.md`.
+      Change: `scripts/test-api-local.mjs` now recovers on Windows when Docker
+      Desktop is installed but the Linux engine is offline, launches Docker
+      Desktop without shell path-splitting, waits for Docker readiness, and
+      retries disposable PostgreSQL container creation during Docker Desktop
+      warm-up. Evidence: `node --check scripts/test-api-local.mjs` passed;
+      `npm run build:server` passed; `npm run test:api:local` passed with
+      server/web build, all `31` migrations, seed, and `7/7` API subtests.
+      Cleanup confirmed no `companycore-test-postgres` container and no
+      `chrome-headless-shell` process rows. Next: QA/Test reruns
+      [LUC-4777](/LUC/issues/LUC-4777) Operations proof ladder and proceeds to
+      authenticated UI proof only if the API rung remains green.
+
+- [x] LUC-4774 Roost known-state evidence and architecture baseline:
+      completed. Output:
+      `docs/planning/luc-4774-known-state-evidence-and-architecture-baseline.md`.
+      Evidence: Paperclip architecture-awareness scanner passed
+      (`entities=2259`, `relations=4463`, `files=13547`, generated at
+      `2026-06-20T02:45:22.785Z`); `npm run architecture:status` passed
+      (`GREEN`, graph `452/761/34`, evidence queue `0`, chain worklist `0`,
+      delta `0/0/0`, all gates pass); task-sync readback showed `0`
+      task-link/proof-link gaps; architecture health reports
+      `implementation_without_tests=1161`; dependency report shows `437`
+      relations / `95` entities; ownership split is `Docs Memory Lead=923`,
+      `Engineering Delivery Lead=1335`, `Roost Project Manager=1`.
+      Follow-ups: [LUC-4777](/LUC/issues/LUC-4777) owns the Operations
+      work-items QA proof ladder, and [LUC-4778](/LUC/issues/LUC-4778) owns
+      the LUC-4774 source-control closure sidecar.
+
+- [x] LUC-4763 QA proof-ladder target selection from
+      implementation-without-test-link debt: completed. Output:
+      `docs/planning/luc-4763-first-proof-ladder-target-from-implementation-without-tests.md`.
+      Selected target: `04 Operations` work-items vertical slice
+      (`GET/POST/PATCH /v1/operations/work-items`, task-list edit path, and
+      `web/src/features/departments/operations-route.tsx`). Evidence:
+      `docs/graphs/architecture-health.json` reports
+      `implementation_without_tests=1161`; Operations route/file entities
+      remain in the signal; prior LUC-3545 selected Process Core. Static gate
+      `npm run check:route-capabilities` passed
+      (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`).
+      Next QA proof rungs: `npm run build:server`, `npm run test:api:local`,
+      then authenticated UI proof for `/areas?area=04-operacje&view=overview`
+      if API proof remains green. Open a repair issue only after a
+      reproducible rung failure.
+
+- [x] LUC-4762 source-control closure for the LUC-4757 Roost known-state
+      evidence packet: completed as a local evidence-only source-control
+      packet. Output:
+      `docs/planning/luc-4762-source-control-closure-for-luc-4757-evidence-packet.md`.
+      Evidence: `git status --short --branch -uall` showed
+      `main...origin/main [ahead 30]` with nine generated architecture/status
+      files modified; `git diff --stat` showed `9 files changed, 6739
+      insertions(+), 6591 deletions(-)` before this closure packet and state
+      updates; `git diff --check` returned no whitespace errors and only
+      line-ending conversion warnings for generated/status files. Push held
+      for a future release batch or explicit source-ref/deploy need; deploy
+      impact none.
+
 - [x] LUC-4721 source-control closure for the LUC-4718 Roost known-state
       evidence packet: completed as a local evidence-only source-control
       packet. Output:
