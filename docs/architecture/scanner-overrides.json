@@ -5,6 +5,115 @@
     "public/react/assets"
   ],
   "excludePaths": [],
-  "entityOverrides": [],
-  "relationOverrides": []
+  "entityOverrides": [
+    {
+      "path": "web/src/api/client.ts",
+      "type": "feature",
+      "description": "Web API client utility for authenticated account access and dashboard data journeys; not a standalone browser route.",
+      "evidence": [
+        "docs/architecture/web-layer-react-ownership.md",
+        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+      ]
+    },
+    {
+      "path": "web/src/api/auth-token.ts",
+      "type": "feature",
+      "description": "Web auth token utility for authenticated account access journeys; not a standalone browser route.",
+      "evidence": [
+        "docs/architecture/web-layer-react-ownership.md",
+        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+      ]
+    },
+    {
+      "path": "web/src/api/errors.ts",
+      "type": "feature",
+      "description": "Web API error recovery utility for authenticated account access journeys; not a standalone browser route.",
+      "evidence": [
+        "docs/architecture/web-layer-react-ownership.md",
+        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-button.tsx",
+      "description": "Shared UI primitive used by dashboard and settings journeys; browser evidence belongs to consuming routes.",
+      "evidence": [
+        "docs/ux/pattern-gallery.md",
+        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-data-table.tsx",
+      "description": "Shared UI primitive used by dashboard and settings journeys; browser evidence belongs to consuming routes.",
+      "evidence": [
+        "docs/ux/pattern-gallery.md",
+        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-field.tsx",
+      "description": "Shared UI primitive used by dashboard and settings journeys; browser evidence belongs to consuming routes.",
+      "evidence": [
+        "docs/ux/pattern-gallery.md",
+        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-notice.tsx",
+      "description": "Shared UI primitive used by dashboard and settings journeys; browser evidence belongs to consuming routes.",
+      "evidence": [
+        "docs/ux/pattern-gallery.md",
+        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-resource-selector.tsx",
+      "description": "Shared UI primitive used by dashboard and settings journeys; browser evidence belongs to consuming routes.",
+      "evidence": [
+        "docs/ux/pattern-gallery.md",
+        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-route-loading.tsx",
+      "description": "Shared UI primitive used by dashboard and settings journeys; browser evidence belongs to consuming routes.",
+      "evidence": [
+        "docs/ux/pattern-gallery.md",
+        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-text-input.tsx",
+      "description": "Shared UI primitive used by dashboard and settings journeys; browser evidence belongs to consuming routes.",
+      "evidence": [
+        "docs/ux/pattern-gallery.md",
+        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+      ]
+    }
+  ],
+  "relationOverrides": [
+    {
+      "type": "documents",
+      "fromPath": "src/tests/api.test.ts#registerOwner",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-5410 missing-doc-link curation"
+    },
+    {
+      "type": "documents",
+      "fromPath": "scripts/test-api-local.mjs",
+      "fromType": "feature",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-5410 missing-doc-link curation"
+    },
+    {
+      "type": "documents",
+      "fromPath": "scripts/test-api-local.mjs",
+      "fromType": "feature",
+      "toPath": "docs/architecture/nodes/generated/TEST-API-LOCAL.md",
+      "toType": "document",
+      "evidence": "LUC-5410 missing-doc-link curation"
+    }
+  ]
 }

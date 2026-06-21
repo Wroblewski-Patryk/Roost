@@ -2,6 +2,61 @@
 
 Last updated: 2026-06-21
 
+- 2026-06-21: `LUC-5411` source-control closure completed locally for the
+  [LUC-5410](/LUC/issues/LUC-5410) flow/doc-link curation packet. Output:
+  `docs/planning/luc-5411-source-control-closure-for-luc-5410-flow-doc-link-curation.md`.
+  Starting state: `main...origin/main [ahead 104]`, HEAD
+  `37cc1bca3e1aa7d995ae3c17648c1b0b709b86b0`. Dirty set classified as the
+  `LUC-5410` scanner override curation packet plus shared source-of-truth
+  rows; sibling `docs/planning/luc-5409-exchange-connection-configuration-proof-ladder.md`
+  was preserved unstaged for its owning proof lane. Verification:
+  `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  app-completion/architecture-health/architecture-awareness JSON parse PASS;
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass). Push held
+  for future release/source-ref batching; deploy impact none.
+
+- 2026-06-21: `LUC-5409` Exchange connection and configuration QA proof
+  ladder completed for the focused slice delegated by
+  [LUC-5407](/LUC/issues/LUC-5407). Output:
+  `docs/planning/luc-5409-exchange-connection-configuration-proof-ladder.md`.
+  Evidence: selected `Exchange connection and configuration` from the
+  app-completion confidence debt because Account access,
+  Subscription/Entitlement, Dashboard overview, and User configuration already
+  had fresh local proof; mapped it to the internal adapter connection posture:
+  `GET /v1/connection`, `connection:read`,
+  `src/modules/connection/connection.routes.ts`, `src/auth/capabilities.ts`,
+  `src/mcp/manifest.ts`, and `src/tests/api.test.ts`;
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5409-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55509`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests; `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`). Cleanup found no validation DB
+  container and no `chrome-headless-shell` process. Disposition: verified
+  done; no repair issue warranted. Browser connection/settings proof and
+  protected production proof remain separate future gates; deploy impact none.
+
+- 2026-06-21: `LUC-5410` flow classification and missing-doc-link curation
+  completed for the [LUC-5407](/LUC/issues/LUC-5407) app-completion evidence
+  lane. Output:
+  `docs/planning/luc-5410-flow-classification-doc-link-curation.md`. Updated
+  `docs/architecture/scanner-overrides.json` with `10` targeted entity
+  overrides for `/api` utility/shared component false positives and `3`
+  relation overrides for missing documentation evidence. Verification:
+  Paperclip architecture-awareness scanner PASS generated
+  `2026-06-21T01:50:10.196Z` with `2448` entities / `5205` relations /
+  `13789` files; app-completion refresh PASS with `837` items / `7` flows /
+  `0` browser-review needs / `0` missing doc links / `818` missing test links
+  / `2` blocked items; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass). No feature code, schema, migration, runtime, protected smoke,
+  production mutation, credential access, secret disclosure, browser, database,
+  Docker, server, provider, watcher, push, or deploy action occurred. Deploy
+  impact none; source-control closure for this refreshed evidence batch is
+  delegated to [LUC-5411](/LUC/issues/LUC-5411).
+
 - 2026-06-21: `LUC-5408` source-control closure completed locally for the
   [LUC-5407](/LUC/issues/LUC-5407) generated/status/planning evidence packet.
   Output:

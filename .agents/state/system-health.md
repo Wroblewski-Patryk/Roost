@@ -1,5 +1,48 @@
 # System Health
 
+- 2026-06-21: `LUC-5411` verified source-control closure for the
+  [LUC-5410](/LUC/issues/LUC-5410) curation packet. Verification: `git diff
+  --check` PASS with LF-to-CRLF warnings only; generated
+  app-completion/architecture-health/architecture-awareness JSON parse PASS;
+  `npm run architecture:status` PASS (`GREEN`, `454/765/35`, queues `0`,
+  delta `0/0/0`). Deploy impact none; no runtime, protected smoke,
+  production, credential, schema, migration, database, Docker, browser, server,
+  provider, watcher, push, or deploy action occurred. Push held for future
+  release/source-ref batching.
+
+- 2026-06-21: `LUC-5410` verified app-completion flow/doc-link curation for
+  the [LUC-5407](/LUC/issues/LUC-5407) evidence lane. Evidence packet:
+  `docs/planning/luc-5410-flow-classification-doc-link-curation.md`.
+  Proof: scanner rerun PASS generated `2026-06-21T01:50:10.196Z` with
+  `2448` entities / `5205` relations / `13789` files and applied `10` entity
+  overrides plus `3` relation overrides; app-completion rerun PASS reported
+  `837` items / `7` flows / `0` browser-review needs / `0` missing doc links /
+  `818` missing test links / `2` blocked items; `npm run architecture:status`
+  PASS (`GREEN`, `454/765/35`, queues `0`, delta `0/0/0`). Deploy impact
+  none; no runtime, protected smoke, production, credential, schema, migration,
+  database, Docker, browser, server, provider, watcher, push, or deploy action
+  occurred. Source-control closure for this curation packet is delegated to
+  [LUC-5411](/LUC/issues/LUC-5411).
+
+- 2026-06-21: `LUC-5409` verified the `Exchange connection and
+  configuration` app-completion proof slice from the
+  [LUC-5407](/LUC/issues/LUC-5407) confidence debt. Evidence packet:
+  `docs/planning/luc-5409-exchange-connection-configuration-proof-ladder.md`.
+  Proof: `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5409-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55509`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests; the protected API flow covers `/v1/connection`, workspace-bound
+  auth context, default operating-model readback, adapter capability/manifest
+  exposure, MCP manifest generation, and redacted unconfigured integration
+  readback. `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, queues `0`, delta `0/0/0`). Cleanup confirmed no
+  `companycore-luc-5409-postgres` container and no `chrome-headless-shell`
+  process. No product repair issue is warranted. Deploy impact none; browser
+  connection/settings proof and protected production proof remain separate
+  future gates.
+
 - 2026-06-21: `LUC-5401` is closing source control for the
   [LUC-5399](/LUC/issues/LUC-5399) Roost known-state evidence packet. Current
   interpretation: inherited state/context evidence notes plus the parent

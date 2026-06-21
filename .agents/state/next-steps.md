@@ -1,5 +1,69 @@
 # Next Steps
 
+- `LUC-5411` source-control closure for
+  [LUC-5410](/LUC/issues/LUC-5410) is complete locally. Closure packet:
+  `docs/planning/luc-5411-source-control-closure-for-luc-5410-flow-doc-link-curation.md`.
+  Evidence: dirty state classified as scanner override curation plus shared
+  state/context rows; sibling `docs/planning/luc-5409-exchange-connection-configuration-proof-ladder.md`
+  preserved unstaged. `git diff --check` PASS with LF-to-CRLF warnings only;
+  generated JSON parse PASS; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`). Push held for
+  future release/source-ref batching; deploy impact none.
+
+- `LUC-5410` flow classification/doc-link curation is complete. Evidence
+  packet:
+  `docs/planning/luc-5410-flow-classification-doc-link-curation.md`.
+  Changed `docs/architecture/scanner-overrides.json` to classify defensible
+  `/api` utility and shared component false positives through existing scanner
+  override mappings, and added doc relations for `src/tests/api.test.ts#registerOwner`
+  plus `scripts/test-api-local.mjs`. Verification: Paperclip scanner PASS
+  generated `2026-06-21T01:50:10.196Z` (`2448` entities / `5205` relations /
+  `13789` files, `10` entity overrides and `3` relation overrides applied);
+  app-completion refresh PASS (`837` items / `7` flows / `0` browser-review
+  needs / `0` missing doc links / `818` missing test links / `2` blocked
+  items); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queue `0`, worklist `0`, delta `0/0/0`). Disposition: curation done;
+  remaining app-completion missing-test debt belongs to focused QA proof/source
+  closure lanes, not forced flow invention. Source-control closure for this
+  refreshed curation packet is delegated to [LUC-5411](/LUC/issues/LUC-5411).
+  Deploy impact none.
+
+- `LUC-5409` QA proof-ladder selection from the
+  [LUC-5407](/LUC/issues/LUC-5407) app-completion confidence debt is complete.
+  Evidence packet:
+  `docs/planning/luc-5409-exchange-connection-configuration-proof-ladder.md`.
+  Verification: selected `Exchange connection and configuration` because
+  Account access, Subscription/Entitlement, Dashboard overview, and User
+  configuration already had fresh local proof, mapped it to
+  `GET /v1/connection`, adapter capability/manifest/MCP exposure, and
+  `src/tests/api.test.ts`, then ran
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5409-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55509`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests. `npm run check:route-capabilities` PASS and `npm run
+  architecture:status` PASS. Cleanup found no validation DB container and no
+  `chrome-headless-shell` process. No product repair issue is warranted.
+  Remaining owner/action: browser connection/settings proof and protected
+  production proof remain separate future gates if selected by release
+  ownership.
+
+- `LUC-5410` flow classification/doc-link curation is complete. Evidence
+  packet:
+  `docs/planning/luc-5410-flow-classification-doc-link-curation.md`.
+  Changed `docs/architecture/scanner-overrides.json` to classify defensible
+  `/api` utility and shared component false positives through existing scanner
+  override mappings, and added doc relations for `src/tests/api.test.ts#registerOwner`
+  plus `scripts/test-api-local.mjs`. Verification: Paperclip scanner PASS
+  generated `2026-06-21T01:50:10.196Z` (`2448` entities / `5205` relations /
+  `13789` files, `10` entity overrides and `3` relation overrides applied);
+  app-completion refresh PASS (`837` items / `7` flows / `0` browser-review
+  needs / `0` missing doc links / `818` missing test links / `2` blocked
+  items); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queue `0`, worklist `0`, delta `0/0/0`). Disposition: curation done;
+  remaining app-completion missing-test debt belongs to focused QA proof/source
+  closure lanes, not forced flow invention. Deploy impact none.
+
 - `LUC-5408` source-control closure for
   [LUC-5407](/LUC/issues/LUC-5407) is complete locally. Closure packet:
   `docs/planning/luc-5408-source-control-closure-for-luc-5407-evidence-packet.md`.

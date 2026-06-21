@@ -1,5 +1,46 @@
 # Module Confidence Ledger
 
+QA proof note: [LUC-5409](/LUC/issues/LUC-5409) is VERIFIED_DONE for the
+`Exchange connection and configuration` proof slice selected from the
+[LUC-5407](/LUC/issues/LUC-5407) app-completion confidence debt. Evidence
+packet:
+`docs/planning/luc-5409-exchange-connection-configuration-proof-ladder.md`.
+Selected journey: internal CompanyCore adapter connection/configuration
+posture, mapped to `GET /v1/connection`, `connection:read`,
+`src/modules/connection/connection.routes.ts`, `src/auth/capabilities.ts`,
+`src/mcp/manifest.ts`, and `src/tests/api.test.ts`. Local proof ran
+`COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5409-postgres`
+`COMPANYCORE_TEST_DB_PORT=55509`
+`COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local`: server
+and web build PASS, all `31` migrations applied, seed PASS, and `7/7` node
+test subtests PASS. The selected proof covers workspace-bound connection
+readback, default operating-model ensure/readback, broad/scoped capability
+posture, adapter manifest exposure, MCP manifest generation, auth/error
+guidance, and redacted unconfigured integration readback without live provider
+secrets. `npm run check:route-capabilities` and `npm run architecture:status`
+also passed. Cleanup found no validation DB container and no
+`chrome-headless-shell` process. Confidence classification: the current local
+adapter connection/configuration posture is locally verified; no product repair
+issue is warranted. Residual risk: browser connection/settings proof and
+protected production proof remain separate future gates.
+
+Architecture evidence curation note: [LUC-5410](/LUC/issues/LUC-5410) is
+VERIFIED_DONE for the app-completion flow/doc-link curation slice delegated by
+[LUC-5407](/LUC/issues/LUC-5407). Evidence packet:
+`docs/planning/luc-5410-flow-classification-doc-link-curation.md`. Updated
+`docs/architecture/scanner-overrides.json` with targeted mappings for
+non-standalone `/api` utility files, shared UI primitives, and missing
+documentation relations for `src/tests/api.test.ts#registerOwner` and
+`scripts/test-api-local.mjs`. Verification: Paperclip scanner PASS generated
+`2026-06-21T01:50:10.196Z` with `2448` entities, `5205` relations, `13789`
+files, `10` entity overrides applied, and `3` relation overrides applied;
+app-completion PASS reported `837` items, `7` flows, `0` browser-review needs,
+`0` missing doc links, `818` missing test links, and `2` blocked items;
+`npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`,
+delta `0/0/0`). Confidence classification: architecture/app-completion
+evidence mapping is locally verified for this curation scope. Residual risk:
+broad app-completion missing-test debt remains outside this issue.
+
 QA proof note: [LUC-5402](/LUC/issues/LUC-5402) is VERIFIED_DONE for the
 `User configuration` proof slice selected from the
 [LUC-5399](/LUC/issues/LUC-5399) app-completion confidence debt. Evidence

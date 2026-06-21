@@ -4,6 +4,106 @@ Last updated: 2026-06-21
 
 ## Current Mission
 
+- Mission ID: LUC-5411-SOURCE-CONTROL-CLOSURE-FOR-LUC-5410-CURATION
+- Status: VERIFIED_READY_FOR_LOCAL_COMMIT
+- Selected objective: Close local source control for the
+  [LUC-5410](/LUC/issues/LUC-5410) flow/doc-link curation evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to
+  [LUC-5411](/LUC/issues/LUC-5411), the source-control closure sidecar for
+  [LUC-5410](/LUC/issues/LUC-5410).
+- Scope: classify the dirty state, verify the curation packet, preserve sibling
+  [LUC-5409](/LUC/issues/LUC-5409) files without staging its proof document,
+  and create a local no-push commit if safe.
+- Exclusions: no feature code, schema, migration, push, deploy, restart,
+  protected smoke, production mutation, credential access, secret disclosure,
+  live provider action, database, browser, Docker, server, provider, or watcher
+  process.
+- Output:
+  `docs/planning/luc-5411-source-control-closure-for-luc-5410-flow-doc-link-curation.md`.
+- Evidence: `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  app-completion, architecture-health, and architecture-awareness JSON parse
+  PASS; `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: source-control closure verified for a local no-push
+  commit. Push remains held for future release/source-ref batching; deploy
+  impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5409-EXCHANGE-CONNECTION-CONFIGURATION-PROOF
+- Status: VERIFIED_DONE
+- Selected objective: Select and run one focused QA proof ladder from the
+  [LUC-5407](/LUC/issues/LUC-5407) app-completion confidence debt without
+  repeating recent Account access, Subscription/Entitlement, Dashboard
+  overview, or User configuration proof lanes.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5409](/LUC/issues/LUC-5409), assigned to QA, after
+  [LUC-5407](/LUC/issues/LUC-5407) refreshed app-completion confidence and
+  delegated another focused QA proof ladder.
+- Scope: select a non-repeated app-completion flow, map files and existing
+  proof history, run the smallest safe local proof, record whether a repair
+  issue is warranted, and clean validation-owned resources.
+- Exclusions: no product code, schema, migration authoring, browser proof,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, secret disclosure, live provider action, or long-running local
+  server.
+- Output:
+  `docs/planning/luc-5409-exchange-connection-configuration-proof-ladder.md`.
+- Evidence: selected `Exchange connection and configuration`, interpreted as
+  the internal CompanyCore adapter connection/configuration manifest path;
+  mapped to `GET /v1/connection`, `connection:read`,
+  `src/modules/connection/connection.routes.ts`, `src/auth/capabilities.ts`,
+  `src/mcp/manifest.ts`, and `src/tests/api.test.ts`;
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5409-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55509`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests; `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`). Cleanup found no validation DB
+  container and no `chrome-headless-shell` process.
+- Final disposition: QA proof scope complete. No product repair issue is
+  warranted for the selected local adapter connection/configuration posture.
+  Browser connection/settings proof and protected production proof remain
+  separate future gates.
+
+## Previous Mission
+
+- Mission ID: LUC-5410-FLOW-CLASSIFICATION-DOC-LINK-CURATION
+- Status: VERIFIED_DONE
+- Selected objective: Curate the app-completion unclassified browser-review
+  and missing-doc-link evidence delegated from [LUC-5407](/LUC/issues/LUC-5407)
+  without changing runtime behavior.
+- Why this mission now: Paperclip scoped the heartbeat to
+  [LUC-5410](/LUC/issues/LUC-5410), the Technical Solution Architect lane for
+  classifying unclassified workflow and missing-doc-link evidence from the
+  [LUC-5407](/LUC/issues/LUC-5407) baseline. The previous
+  [LUC-5408](/LUC/issues/LUC-5408) source-control closure explicitly left the
+  scanner override curation content unstaged for this issue.
+- Scope: inspect `docs/status/app-completion-index.json` and
+  `docs/graphs/architecture-health.json`, update architecture/docs evidence
+  mappings through `docs/architecture/scanner-overrides.json`, rerun the
+  awareness/app-completion/status gates, and record the curation result.
+- Exclusions: no feature code, schema, migration, push, deploy, restart,
+  protected smoke, production mutation, credential access, secret disclosure,
+  live provider action, database, server, browser, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-5410-flow-classification-doc-link-curation.md`.
+- Evidence: scanner rerun PASS generated `2026-06-21T01:50:10.196Z` with
+  `2448` entities / `5205` relations / `13789` files; overrides applied:
+  `10` entity overrides and `3` relation overrides. App-completion rerun PASS
+  with `837` items / `7` flows / `0` browser-review needs / `0` missing doc
+  links / `818` missing test links / `2` blocked items. `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: curation lane complete. Remaining app-completion
+  missing-test debt is outside this issue and should be handled by focused QA
+  proof selection/source-control closure lanes, not by forced flow invention.
+  Source-control closure for this curation packet is delegated to
+  [LUC-5411](/LUC/issues/LUC-5411).
+
+## Previous Mission
+
 - Mission ID: LUC-5408-SOURCE-CONTROL-CLOSURE-FOR-LUC-5407-EVIDENCE-PACKET
 - Status: VERIFIED_READY_FOR_LOCAL_COMMIT
 - Selected objective: Close local source control for the

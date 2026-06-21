@@ -1,5 +1,48 @@
 # MVP Next Commits
 
+- 2026-06-21: `LUC-5411` source-control closure is complete locally for the
+  [LUC-5410](/LUC/issues/LUC-5410) curation packet. Closure packet:
+  `docs/planning/luc-5411-source-control-closure-for-luc-5410-flow-doc-link-curation.md`.
+  Proof: `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  app-completion/architecture-health/architecture-awareness JSON parse PASS;
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues
+  `0`, delta `0/0/0`). Push held for future release/source-ref batching;
+  deploy impact none.
+
+- 2026-06-21: `LUC-5410` flow classification/doc-link curation is complete.
+  Evidence packet:
+  `docs/planning/luc-5410-flow-classification-doc-link-curation.md`. Proof:
+  scanner rerun PASS generated `2026-06-21T01:50:10.196Z` with `2448`
+  entities / `5205` relations / `13789` files and applied `10` entity
+  overrides plus `3` relation overrides; app-completion rerun PASS (`837`
+  items / `7` flows / `0` browser-review needs / `0` missing doc links /
+  `818` missing test links / `2` blocked items); `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`). Deploy
+  impact none. Remaining broad app-completion missing-test debt should be
+  addressed through focused QA proof/source-control closure lanes. Source-control
+  closure for this curation packet is delegated to
+  [LUC-5411](/LUC/issues/LUC-5411).
+
+- 2026-06-21: `LUC-5409` Exchange connection and configuration QA proof
+  ladder is complete. Evidence packet:
+  `docs/planning/luc-5409-exchange-connection-configuration-proof-ladder.md`.
+  Proof: selected `Exchange connection and configuration` from the
+  [LUC-5407](/LUC/issues/LUC-5407) app-completion debt because Account access,
+  Subscription/Entitlement, Dashboard overview, and User configuration already
+  had fresh local proof; mapped the slice to `GET /v1/connection`,
+  `connection:read`, `src/modules/connection/connection.routes.ts`,
+  `src/auth/capabilities.ts`, `src/mcp/manifest.ts`, and
+  `src/tests/api.test.ts`; ran
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5409-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55509`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests. `npm run check:route-capabilities` PASS and `npm run
+  architecture:status` PASS. Cleanup confirmed no validation DB container and
+  no `chrome-headless-shell` process. No product repair issue is warranted;
+  browser connection/settings proof and protected production proof remain
+  separate future gates.
+
 - 2026-06-21: `LUC-5401` source-control closure is complete locally for the
   [LUC-5399](/LUC/issues/LUC-5399) evidence packet. Closure packet:
   `docs/planning/luc-5401-source-control-closure-for-luc-5399-evidence-packet.md`.
