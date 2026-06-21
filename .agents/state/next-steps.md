@@ -1,5 +1,33 @@
 # Next Steps
 
+- `LUC-5379` source-control closure for
+  [LUC-5377](/LUC/issues/LUC-5377) is complete locally. Closure packet:
+  `docs/planning/luc-5379-source-control-closure-for-luc-5377-evidence-packet.md`.
+  Verification: `git diff --check` PASS with LF-to-CRLF warnings only;
+  generated architecture-awareness and health JSON parse PASS (`2431`
+  entities / `5133` relations, generated `2026-06-21T00:04:34.799Z`); scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist
+  `0`, delta `0/0/0`). Push remains held for future release/source-ref
+  batching; deploy impact none. Remaining owner/action:
+  [LUC-5380](/LUC/issues/LUC-5380) QA proof-ladder selection; runtime secret
+  owner/board for protected target proof when explicitly approved.
+
+- `LUC-5377` PM known-state evidence pass is complete locally with
+  source-control closure and QA proof selection delegated. Evidence packet:
+  `docs/planning/luc-5377-known-state-evidence-and-architecture-baseline.md`.
+  Verification: architecture-awareness refresh PASS (`2431` entities / `5133`
+  relations / `13762` files, generated `2026-06-21T00:04:34.799Z`);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`); `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files); app-completion refresh PASS
+  (`820` items / `7` flows / `791` missing test links / `10` browser-review
+  needs / `2` blocked items). Remaining owners/actions:
+  [LUC-5379](/LUC/issues/LUC-5379) must close source control for the generated
+  evidence packet, and [LUC-5380](/LUC/issues/LUC-5380) must select and run
+  one focused QA proof ladder from the refreshed confidence debt. Protected
+  target proof remains approval/credential gated.
+
 - `LUC-5373` PM known-state evidence pass is complete locally with
   source-control closure still required. Evidence packet:
   `docs/planning/luc-5373-known-state-evidence-and-architecture-baseline.md`.

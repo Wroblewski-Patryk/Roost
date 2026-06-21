@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-06-20T21:05:53.970Z
+Generated: 2026-06-21T00:05:14.917Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -12,18 +12,18 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 
 ## Counts
 
-- Items: 801
+- Items: 820
 - User flows: 7
 - Needs browser/screenshot review: 10
-- Missing test link: 772
+- Missing test link: 791
 - Missing doc link: 2
 - Blocked: 2
 
 ## Flow Summary
 
-- Subscription and entitlement: 451 entities; risks {"missing_test_link":435,"implemented_needs_proof":14,"blocked":2}; gates {"subscription":451,"configuration":8,"auth":2}
+- Subscription and entitlement: 468 entities; risks {"missing_test_link":452,"implemented_needs_proof":14,"blocked":2}; gates {"subscription":468,"configuration":8,"auth":2}
 - Unclassified user workflow: 204 entities; risks {"missing_test_link":194,"missing_doc_link":1,"needs_browser_review":9}; gates {"auth":5,"configuration":9}
-- Account access: 82 entities; risks {"missing_test_link":80,"missing_doc_link":1,"needs_browser_review":1}; gates {"auth":82,"configuration":9,"subscription":6}
+- Account access: 84 entities; risks {"missing_test_link":82,"missing_doc_link":1,"needs_browser_review":1}; gates {"auth":84,"configuration":9,"subscription":8}
 - User configuration: 54 entities; risks {"missing_test_link":53,"implemented_needs_proof":1}; gates {"configuration":54}
 - Dashboard overview: 6 entities; risks {"missing_test_link":6}; gates {}
 - Trading operation: 3 entities; risks {"missing_test_link":3}; gates {}
@@ -46,6 +46,8 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Account access | missing_test_link | feature_or_capability | Auth, Workspace, And Integration Plan | Docs Memory Lead | docs/planning/auth-workspace-integration-plan.md | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | LUC-5084 Authenticated Browser Route Proof | Docs Memory Lead | docs/planning/luc-5084-authenticated-browser-route-proof.md | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | LUC-5132 Security And AI Authority Evidence Recheck | Docs Memory Lead | docs/planning/luc-5132-security-ai-authority-evidence-recheck.md | auth, subscription |
+| Account access | missing_test_link | feature_or_capability | LUC-5315 Auth Workspace API-Key Authority Proof Ladder | Docs Memory Lead | docs/planning/luc-5315-auth-workspace-api-key-authority-proof-ladder.md | auth, subscription |
+| Account access | missing_test_link | feature_or_capability | LUC-5333 Department And Workforce Authority Proof Ladder | Docs Memory Lead | docs/planning/luc-5333-department-workforce-authority-proof-ladder.md | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | REACT-WEB-LAYOUT-001 Authenticated Layout Foundation | Docs Memory Lead | docs/planning/react-web-layout-foundation-task-contract.md | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | V1 Production Authenticated Parity Task Contract | Docs Memory Lead | docs/planning/v1-production-authenticated-parity-task-contract.md | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | V1AUTH-001 Owner Auth Redirect Flow | Docs Memory Lead | docs/planning/v1auth-001-owner-auth-redirect-task-contract.md | auth, subscription |
@@ -111,8 +113,6 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Account access | missing_test_link | feature_or_capability | AuthRoute | Engineering Delivery Lead | web/src/features/auth/auth-pages.tsx#AuthRoute | auth |
 | Account access | missing_test_link | feature_or_capability | onSubmit | Engineering Delivery Lead | web/src/features/auth/auth-pages.tsx#onSubmit | auth |
 | Account access | missing_test_link | feature_or_capability | auth-validation.ts | Engineering Delivery Lead | web/src/features/auth/auth-validation.ts | auth |
-| Account access | missing_test_link | feature_or_capability | hasAuthErrors | Engineering Delivery Lead | web/src/features/auth/auth-validation.ts#hasAuthErrors | auth |
-| Account access | missing_test_link | feature_or_capability | validateAuthForm | Engineering Delivery Lead | web/src/features/auth/auth-validation.ts#validateAuthForm | auth |
 
 ## Agent Rule
 

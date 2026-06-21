@@ -1,5 +1,24 @@
 # Module Confidence Ledger
 
+PM evidence note: [LUC-5377](/LUC/issues/LUC-5377) refreshed the Roost
+known-state architecture and app-completion baseline. Evidence packet:
+`docs/planning/luc-5377-known-state-evidence-and-architecture-baseline.md`.
+Scanner PASS generated `2026-06-21T00:04:34.799Z` with `2431` entities,
+`5133` relations, and `13762` files. `npm run architecture:status` PASS
+(`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`) and `npm run
+check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+App-completion refresh PASS generated `2026-06-21T00:05:14.917Z` with `820`
+items, `7` flows, `791` missing test links, `10` browser-review needs, and
+`2` blocked items. Task-sync, ownership, implementation-task,
+verified-without-proof, and disconnected gaps remain `0`; architecture health
+reports `implementation_without_tests=1162`. Confidence classification:
+local architecture and route exposure are verified; no broad feature repair is
+warranted from this pass. Source-control closure for the refreshed
+generated/status/planning evidence batch is delegated to
+[LUC-5379](/LUC/issues/LUC-5379). Focused QA proof-ladder selection is
+delegated to [LUC-5380](/LUC/issues/LUC-5380). Protected target proof remains
+approval/credential gated.
+
 PM evidence note: [LUC-5373](/LUC/issues/LUC-5373) refreshed the Roost
 known-state architecture baseline. Evidence packet:
 `docs/planning/luc-5373-known-state-evidence-and-architecture-baseline.md`.
