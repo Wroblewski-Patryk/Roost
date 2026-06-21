@@ -1,5 +1,63 @@
 # Next Steps
 
+- `LUC-5391` source-control closure for
+  [LUC-5390](/LUC/issues/LUC-5390) is complete locally. Closure packet:
+  `docs/planning/luc-5391-source-control-closure-for-luc-5390-evidence-packet.md`.
+  Verification: dirty set classified as [LUC-5390](/LUC/issues/LUC-5390)
+  generated architecture/app-completion/status evidence, source-of-truth
+  state/context updates, the parent evidence packet, and same-wave
+  [LUC-5392](/LUC/issues/LUC-5392) state, planning, and proof-packet
+  references; `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  architecture-awareness and health
+  JSON parse PASS (`2437` entities / `5158` relations, generated
+  `2026-06-21T00:43:29.610Z`); app-completion JSON parse PASS (`826` items /
+  `7` flows, generated `2026-06-21T00:44:00.519Z`); scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`). Push remains held for future
+  release/source-ref batching; deploy impact none. Remaining owner/action:
+  runtime secret owner/board for protected target proof when explicitly
+  approved.
+
+- `LUC-5392` QA proof-ladder selection from the
+  [LUC-5390](/LUC/issues/LUC-5390) app-completion confidence debt is complete.
+  Evidence packet:
+  `docs/planning/luc-5392-subscription-entitlement-finance-proof-ladder.md`.
+  Verification: selected `Subscription and entitlement`, mapped the current
+  implementation to Finance/Billing read-only entitlement posture, and ran
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5392-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55592`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests. `npm run check:route-capabilities` PASS, `npm run
+  architecture:status` PASS, and `git diff --check` PASS with LF-to-CRLF
+  warnings only. Cleanup found no validation DB container and no
+  `chrome-headless-shell` process. No product repair issue is warranted.
+  Remaining owner/action: [LUC-5391](/LUC/issues/LUC-5391) or the active
+  source-control closure lane must classify and preserve the current
+  generated/status/state/evidence dirty set before any push/deploy decision.
+  Browser proof for `/areas?area=07-finanse&view=overview` and protected
+  production proof remain separate future gates.
+
+- `LUC-5390` PM known-state evidence pass is complete locally with
+  source-control closure still required. Evidence packet:
+  `docs/planning/luc-5390-known-state-evidence-and-architecture-baseline.md`.
+  Verification: architecture-awareness refresh PASS (`2437` entities / `5158`
+  relations / `13778` files, generated `2026-06-21T00:43:29.610Z`);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`); `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files); app-completion refresh PASS
+  (`826` items / `7` flows / `797` missing test links / `10` browser-review
+  needs / `2` blocked items / `2` missing doc links); `git diff --check` PASS
+  with LF-to-CRLF warnings only. Remaining owners/actions: source-control
+  closure lane [LUC-5391](/LUC/issues/LUC-5391) must classify
+  generated/status/state dirty files, run diff hygiene, generated JSON parse,
+  scoped secret/private-key scan, and architecture status before local no-push
+  commit or blocker. QA lane [LUC-5392](/LUC/issues/LUC-5392) should select
+  one focused proof ladder from the refreshed app-completion confidence debt;
+  `Subscription and entitlement` is the highest-debt candidate. Protected
+  target proof remains approval/credential gated.
+
 - `LUC-5386` source-control closure for
   [LUC-5384](/LUC/issues/LUC-5384) is complete locally. Closure packet:
   `docs/planning/luc-5386-source-control-closure-for-luc-5384-evidence-refresh.md`.

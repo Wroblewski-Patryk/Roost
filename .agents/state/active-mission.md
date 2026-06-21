@@ -4,6 +4,110 @@ Last updated: 2026-06-21
 
 ## Current Mission
 
+- Mission ID: LUC-5391-SOURCE-CONTROL-CLOSURE-FOR-LUC-5390-EVIDENCE-PACKET
+- Status: VERIFIED_READY_FOR_LOCAL_COMMIT
+- Selected objective: Close local source control for the
+  [LUC-5390](/LUC/issues/LUC-5390) generated/status/state evidence packet.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5391](/LUC/issues/LUC-5391), the explicit source-control closure
+  sidecar for [LUC-5390](/LUC/issues/LUC-5390), with instructions to classify
+  the dirty set, run scoped verification, and create a local no-push commit if
+  safe.
+- Scope: classify generated architecture/app-completion/status outputs,
+  source-of-truth state/context updates, the [LUC-5390](/LUC/issues/LUC-5390)
+  evidence packet, and same-wave [LUC-5392](/LUC/issues/LUC-5392) state,
+  planning, and proof-packet references; add the closure packet; run
+  source-control closure checks; and create a local no-push commit.
+- Exclusions: no feature code, schema, migration, push, deploy, restart,
+  protected smoke, production mutation, credential access, secret disclosure,
+  live provider action, database, server, browser, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-5391-source-control-closure-for-luc-5390-evidence-packet.md`.
+- Evidence: `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  architecture-awareness and health JSON parse PASS with
+  `generated_at=2026-06-21T00:43:29.610Z`, `2437` entities / `5158`
+  relations; app-completion JSON parse PASS with
+  `generatedAt=2026-06-21T00:44:00.519Z`, `826` items / `7` flows; scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass).
+- Final disposition: source-control closure verified for a local no-push
+  commit. Push remains held for future release/source-ref batching; deploy
+  impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5392-SUBSCRIPTION-ENTITLEMENT-FINANCE-PROOF
+- Status: VERIFIED_DONE
+- Selected objective: Select and run one focused QA proof ladder from the
+  [LUC-5390](/LUC/issues/LUC-5390) app-completion confidence debt.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5392](/LUC/issues/LUC-5392), assigned to QA, after
+  [LUC-5390](/LUC/issues/LUC-5390) refreshed app-completion confidence and
+  identified `Subscription and entitlement` as the highest-debt candidate.
+- Scope: map the current `Subscription and entitlement` flow to real Roost
+  runtime surfaces, run the smallest useful local proof, record whether a
+  repair issue is warranted, and clean validation-owned resources.
+- Exclusions: no product code, schema, migration authoring, browser proof,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, secret disclosure, live provider action, or long-running local server.
+- Output:
+  `docs/planning/luc-5392-subscription-entitlement-finance-proof-ladder.md`.
+- Evidence: selected the current Finance/Billing entitlement posture, mapped to
+  `GET /v1/finance/context`, `GET /v1/commercial-exceptions`, capability/MCP
+  exposure, scoped-key denial, and existing `src/tests/api.test.ts`
+  assertions; `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5392-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55592`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests; `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`);
+  `git diff --check` PASS with LF-to-CRLF warnings only. Cleanup found no
+  `companycore-luc-5392-postgres` container and no `chrome-headless-shell`
+  process.
+- Final disposition: QA proof scope complete. No product repair issue is
+  warranted for the selected API entitlement posture. Browser proof for the
+  Finance board and protected production proof remain separate future gates.
+
+## Previous Mission
+
+- Mission ID: LUC-5390-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_PENDING_SCM_CLOSURE
+- Selected objective: Handle the local-board wake by collecting fresh local
+  Roost architecture and app-completion evidence, then convert findings into
+  concrete owner-scoped next lanes without implementation.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5390](/LUC/issues/LUC-5390), assigned to the Roost Project Manager,
+  with a local-board comment requiring local evidence collection and concrete
+  repair-lane conversion while forbidding push, deploy, restart, protected
+  smoke, production mutation, and secret disclosure.
+- Scope: run the Paperclip architecture-awareness refresh for Roost, inspect
+  generated health/proof/dependency/ownership/task-sync reports, run
+  `npm run architecture:status`, run `npm run check:route-capabilities`,
+  refresh the app-completion index, publish the evidence packet, and create or
+  track source-control and QA proof follow-up lanes.
+- Exclusions: no feature code, schema, migration, push, deploy, restart,
+  protected smoke, production mutation, credential access, secret disclosure,
+  live provider action, database, server, browser, Docker, or watcher process.
+- Output:
+  `docs/planning/luc-5390-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: architecture-awareness refresh PASS in `21486ms`, generated
+  `2026-06-21T00:43:29.610Z` with `2437` entities / `5158` relations /
+  `13778` files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass); `npm run check:route-capabilities` PASS (`180` manifest routes
+  / `35` route files); app-completion refresh PASS with `826` items / `7`
+  flows / `797` missing test links / `10` browser-review needs / `2` blocked
+  items / `2` missing doc links; `git diff --check` PASS with LF-to-CRLF
+  warnings only.
+- Final disposition: local evidence scope complete, with source-control
+  closure delegated to [LUC-5391](/LUC/issues/LUC-5391) and focused QA proof
+  selection delegated to [LUC-5392](/LUC/issues/LUC-5392). Protected target
+  proof remains approval/credential gated.
+
+## Previous Mission
+
 - Mission ID: LUC-5386-SOURCE-CONTROL-CLOSURE-FOR-LUC-5384-EVIDENCE-REFRESH
 - Status: VERIFIED_DONE_PENDING_PUSH_BATCH
 - Selected objective: Close local source control for the

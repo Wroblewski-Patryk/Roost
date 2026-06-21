@@ -1,5 +1,69 @@
 # Module Confidence Ledger
 
+Source-control confidence note: [LUC-5391](/LUC/issues/LUC-5391) is
+VERIFIED_DONE for local source-control closure of the
+[LUC-5390](/LUC/issues/LUC-5390) known-state evidence packet, preserving
+same-wave [LUC-5392](/LUC/issues/LUC-5392) state, planning, and proof-packet
+references already present in current source-of-truth files. Closure packet:
+`docs/planning/luc-5391-source-control-closure-for-luc-5390-evidence-packet.md`.
+Verification: `git diff --check` PASS with LF-to-CRLF warnings only; generated
+architecture-awareness and health JSON parse PASS at
+`2026-06-21T00:43:29.610Z` with `2437` entities / `5158` relations;
+app-completion JSON parse PASS at `2026-06-21T00:44:00.519Z` with `826`
+items / `7` flows; scoped high-confidence secret/private-key scan PASS with
+`0` matches; `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+queues `0`, delta `0/0/0`). Confidence classification:
+documentation/state/generated evidence is locally source-controlled; no runtime
+module behavior changed.
+
+QA proof note: [LUC-5392](/LUC/issues/LUC-5392) is VERIFIED_DONE for the
+`Subscription and entitlement` proof slice selected from the
+[LUC-5390](/LUC/issues/LUC-5390) app-completion confidence debt. Evidence
+packet:
+`docs/planning/luc-5392-subscription-entitlement-finance-proof-ladder.md`.
+Selected journey: current Finance/Billing entitlement posture, mapped to
+`GET /v1/finance/context`, `GET /v1/commercial-exceptions`,
+`src/modules/finance/finance.routes.ts`,
+`src/modules/commercial-exceptions/commercial-exceptions.routes.ts`,
+`src/auth/capabilities.ts`, `src/auth/agent-key-profiles.ts`,
+`src/mcp/manifest.ts`, `src/tests/api.test.ts`, and the Finance board
+consumer `web/src/features/departments/finance-route.tsx`. Local proof ran
+`COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5392-postgres`
+`COMPANYCORE_TEST_DB_PORT=55592`
+`COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local`: server
+and web build PASS, all `31` migrations applied, seed PASS, and `7/7` node
+test subtests PASS. The selected proof covers read-only pricing candidates,
+owner-decision-required subscription policy, commercial exception inclusion,
+invoice-readiness blockers, blocked money-impacting actions, no readback
+mutation, workspace isolation, MCP/capability exposure, and scoped-key denial.
+`npm run check:route-capabilities`, `npm run architecture:status`, and `git
+diff --check` also passed. Cleanup found no validation DB container and no
+`chrome-headless-shell` process. Confidence classification: the current API
+entitlement posture is locally verified; no product repair issue is warranted.
+Residual risk: desktop/mobile browser proof for `/areas?area=07-finanse` and
+protected production proof remain separate future gates.
+
+PM evidence note: [LUC-5390](/LUC/issues/LUC-5390) refreshed the Roost
+known-state architecture and app-completion baseline. Evidence packet:
+`docs/planning/luc-5390-known-state-evidence-and-architecture-baseline.md`.
+Scanner PASS generated `2026-06-21T00:43:29.610Z` with `2437` entities,
+`5158` relations, and `13778` files. `npm run architecture:status` PASS
+(`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`) and `npm run
+check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+App-completion refresh PASS generated `2026-06-21T00:44:00.519Z` with `826`
+items, `7` flows, `797` missing test links, `10` browser-review needs, `2`
+blocked items, and `2` missing doc links. Task-sync, ownership,
+implementation-task, verified-without-proof, and architecture status gaps
+remain non-blocking; architecture health reports `implementation_without_tests=1162`.
+Confidence classification: local architecture and route exposure are verified;
+no broad feature repair is warranted from this pass. Source-control closure is
+required for the refreshed generated/status/state evidence batch and is
+delegated to [LUC-5391](/LUC/issues/LUC-5391). Focused QA proof-ladder
+selection is delegated to [LUC-5392](/LUC/issues/LUC-5392) and should target
+one app-completion flow, with `Subscription and entitlement` as the
+highest-debt candidate. Protected target proof remains approval/credential
+gated.
+
 Source-control confidence note: [LUC-5386](/LUC/issues/LUC-5386) is
 VERIFIED_DONE for local source-control closure of the
 [LUC-5384](/LUC/issues/LUC-5384) generated evidence refresh. Closure packet:

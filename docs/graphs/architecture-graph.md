@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-21T00:16:18.523Z
+Generated: 2026-06-21T00:43:29.610Z
 
 ## Canonical Exports
 
@@ -1215,6 +1215,6 @@ Generated: 2026-06-21T00:16:18.523Z
 | documents | document:luc-5374-source-control-closure-for-luc-5373-evidence-packet:e8fa4f8d25 | module:docs:6784d83cb0 | docs/planning/luc-5374-source-control-closure-for-luc-5373-evidence-packet.md |
 | documents | document:luc-5377-known-state-evidence-and-architecture-baseline:7c3cc9783e | module:docs:6784d83cb0 | docs/planning/luc-5377-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5379-source-control-closure-for-luc-5377-evidence-packet:fd346c6c46 | module:docs:6784d83cb0 | docs/planning/luc-5379-source-control-closure-for-luc-5377-evidence-packet.md |
+| documents | document:luc-5380-app-completion-account-access-proof-ladder:4115dc198e | module:docs:6784d83cb0 | docs/planning/luc-5380-app-completion-account-access-proof-ladder.md |
 | documents | document:luc-5383-known-state-evidence-and-architecture-baseline:65232b7024 | module:docs:6784d83cb0 | docs/planning/luc-5383-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
-| documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
+| documents | document:luc-5385-source-control-closure-for-luc-5383-evidence-packet:e8e80a1010 | module:docs:6784d83cb0 | docs/planning/luc-5385-source-control-closure-for-luc-5383-evidence-packet.md |

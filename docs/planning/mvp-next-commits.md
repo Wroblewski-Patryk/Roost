@@ -1,5 +1,22 @@
 # MVP Next Commits
 
+- 2026-06-21: `LUC-5392` Subscription/Entitlement QA proof ladder is complete.
+  Evidence packet:
+  `docs/planning/luc-5392-subscription-entitlement-finance-proof-ladder.md`.
+  Proof: selected the app-completion `Subscription and entitlement` flow from
+  [LUC-5390](/LUC/issues/LUC-5390), mapped it to current Finance/Billing
+  read-only entitlement posture, and ran
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5392-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55592`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests. `npm run check:route-capabilities` PASS, `npm run
+  architecture:status` PASS, and `git diff --check` PASS with LF-to-CRLF
+  warnings only. Cleanup confirmed no validation DB container and no
+  `chrome-headless-shell` process. No product repair issue is warranted;
+  browser Finance board proof and protected production proof remain separate
+  gates.
+
 - 2026-06-21: `LUC-5368` source-control closure is complete locally for the
   [LUC-5366](/LUC/issues/LUC-5366) evidence packet. Closure packet:
   `docs/planning/luc-5368-source-control-closure-for-luc-5366-evidence-packet.md`.

@@ -2,6 +2,63 @@
 
 ## Now
 
+- 2026-06-21: `LUC-5391` source-control closure for
+  [LUC-5390](/LUC/issues/LUC-5390) is complete locally. Output:
+  `docs/planning/luc-5391-source-control-closure-for-luc-5390-evidence-packet.md`.
+  Evidence: dirty set classified as [LUC-5390](/LUC/issues/LUC-5390)
+  generated architecture/app-completion/status evidence, source-of-truth
+  state/context updates, the parent evidence packet, and same-wave
+  [LUC-5392](/LUC/issues/LUC-5392) state, planning, and proof-packet
+  references; `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  architecture-awareness and health
+  JSON parse PASS (`2437` entities / `5158` relations, generated
+  `2026-06-21T00:43:29.610Z`); app-completion JSON parse PASS (`826` items /
+  `7` flows, generated `2026-06-21T00:44:00.519Z`); scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass). Disposition: local no-push
+  closure commit prepared; push held for future release/source-ref batching;
+  deploy impact none.
+
+- 2026-06-21: `LUC-5392` app-completion Subscription/Entitlement QA proof
+  ladder is complete for the focused slice from
+  [LUC-5390](/LUC/issues/LUC-5390). Output:
+  `docs/planning/luc-5392-subscription-entitlement-finance-proof-ladder.md`.
+  Selected flow: `Subscription and entitlement`, mapped to the current
+  Finance/Billing read-only entitlement posture through `GET
+  /v1/finance/context`, `GET /v1/commercial-exceptions`, capability/MCP
+  exposure, and scoped-key denial. Evidence:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5392-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55592`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests; `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`); `git diff --check`
+  PASS with LF-to-CRLF warnings only. Cleanup found no validation DB
+  container and no `chrome-headless-shell` process. Disposition: `DONE`; no
+  product repair issue warranted. Source-control closure remains with the
+  active generated/status evidence closure lane; deploy impact none.
+
+- 2026-06-21: `LUC-5390` known-state evidence and architecture baseline is
+  complete for the local-board wake comment, with source-control closure still
+  required for this generated/status/state evidence batch. Output:
+  `docs/planning/luc-5390-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS in `21486ms`, generated
+  `2026-06-21T00:43:29.610Z` (`2437` entities / `5158` relations / `13778`
+  files); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queue `0`, worklist `0`, delta `0/0/0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  app-completion refresh PASS (`826` items / `7` flows / `797` missing test
+  links / `10` browser-review needs / `2` blocked items / `2` missing doc
+  links); `git diff --check` PASS with LF-to-CRLF warnings only. Disposition:
+  local evidence collection complete; source-control closure delegated to
+  [LUC-5391](/LUC/issues/LUC-5391), and focused QA proof ladder delegated to
+  [LUC-5392](/LUC/issues/LUC-5392). Deploy impact none; protected target proof
+  remains approval/credential gated. Portfolio index refresh completed with
+  `rootPortfolioDriftCount=0`; overall softwarehouse audit still has
+  pre-existing non-Roost control-plane warnings.
+
 - 2026-06-21: `LUC-5386` source-control closure for
   [LUC-5384](/LUC/issues/LUC-5384) is complete locally. Output:
   `docs/planning/luc-5386-source-control-closure-for-luc-5384-evidence-refresh.md`.
