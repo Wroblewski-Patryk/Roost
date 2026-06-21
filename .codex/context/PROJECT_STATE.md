@@ -2,6 +2,73 @@
 
 Last updated: 2026-06-21
 
+- 2026-06-21: `LUC-5395` source-control closure completed locally for the
+  [LUC-5394](/LUC/issues/LUC-5394) Roost known-state evidence packet, also
+  preserving same-wave [LUC-5396](/LUC/issues/LUC-5396) state, planning, and
+  proof-packet references already present in current source-of-truth files.
+  Output:
+  `docs/planning/luc-5395-source-control-closure-for-luc-5394-evidence-packet.md`.
+  Starting state: `main...origin/main [ahead 101]`, HEAD `5ebfbf34`.
+  Dirty set classified as generated architecture-awareness graph/reports,
+  app-completion index outputs, state/context/planning ledgers, the
+  [LUC-5394](/LUC/issues/LUC-5394) evidence packet, and the same-wave
+  [LUC-5396](/LUC/issues/LUC-5396) QA proof packet. No unrelated product-code,
+  schema, migration, runtime, credential, or production files were found.
+  Verification: `git diff --check` PASS with LF-to-CRLF warnings only;
+  generated architecture-awareness and health JSON parse PASS
+  (`generated_at=2026-06-21T01:13:29.523Z`, `2443` entities / `5182`
+  relations); app-completion JSON parse PASS
+  (`generatedAt=2026-06-21T01:13:56.851Z`, `832` items / `7` flows); scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass). Push held for
+  future release/source-ref batching; deploy impact none. No feature code,
+  schema, migration, protected smoke, production mutation, credential access,
+  secret disclosure, database, server, browser, Docker, or watcher process
+  occurred.
+
+- 2026-06-21: `LUC-5396` Dashboard overview QA proof ladder completed for
+  the focused slice delegated by [LUC-5394](/LUC/issues/LUC-5394). Output:
+  `docs/planning/luc-5396-dashboard-overview-proof-ladder.md`. Evidence:
+  selected `Dashboard overview` from the app-completion confidence debt
+  because recent Account access and Subscription/Entitlement proofs already
+  exist; mapped it to `GET /v1/dashboard/command`, `dashboard:read`
+  capability/MCP exposure, web dashboard surfaces, and `src/tests/api.test.ts`;
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5396-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55596`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests; `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`); `git diff --check` PASS with
+  LF-to-CRLF warnings only. Cleanup found no validation DB container and no
+  `chrome-headless-shell` process. Disposition: verified done; no repair
+  issue warranted. Commit not created in this QA heartbeat because the
+  workspace already carries the [LUC-5394](/LUC/issues/LUC-5394)
+  generated/status evidence packet awaiting source-control closure in
+  [LUC-5395](/LUC/issues/LUC-5395). Deploy impact none.
+
+- 2026-06-21: `LUC-5394` Roost known-state evidence and architecture baseline
+  completed for the local-board wake comment. Output:
+  `docs/planning/luc-5394-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness refresh PASS in `19869ms`,
+  generated `2026-06-21T01:02:53.773Z` with `2440` entities / `5170`
+  relations / `13781` files; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); `npm run check:route-capabilities` PASS (`180`
+  manifest routes / `35` route files); app-completion refresh PASS with
+  `829` items / `7` flows / `800` missing test links / `10` browser-review
+  needs / `2` blocked items / `2` missing doc links. Task-sync reports `0`
+  actionable task-link, implementation-task, and verified-proof gaps;
+  ownership gaps remain `0`. No feature code, schema, migration, runtime,
+  protected smoke, production mutation, credential access, secret disclosure,
+  browser, database, Docker, server, provider, or watcher action occurred.
+  Next lanes: source-control closure for this generated/status/planning packet
+  in [LUC-5395](/LUC/issues/LUC-5395) and one focused QA proof ladder from
+  refreshed app-completion confidence debt in [LUC-5396](/LUC/issues/LUC-5396).
+  Deploy impact none; protected target proof remains approval/credential
+  gated.
+
 - 2026-06-21: `LUC-5391` source-control closure completed locally for the
   [LUC-5390](/LUC/issues/LUC-5390) Roost known-state evidence packet, also
   preserving same-wave [LUC-5392](/LUC/issues/LUC-5392) state, planning, and

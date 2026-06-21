@@ -1,5 +1,47 @@
 # System Health
 
+- 2026-06-21: `LUC-5395` source-control closure is verified for the
+  [LUC-5394](/LUC/issues/LUC-5394) Roost known-state evidence packet. Current
+  interpretation: generated architecture/app-completion/status exports plus
+  state/context/planning evidence and same-wave [LUC-5396](/LUC/issues/LUC-5396)
+  QA proof evidence are preserved as a local evidence packet only. Diff
+  hygiene, generated architecture-awareness and health JSON parse,
+  app-completion JSON parse, scoped high-confidence secret/private-key scan,
+  and `npm run architecture:status` passed. Deploy impact: none; no runtime,
+  protected smoke, production, credential, schema, migration, database, Docker,
+  browser, server, provider, or watcher action occurred.
+
+- 2026-06-21: `LUC-5396` verified the `Dashboard overview` app-completion
+  proof slice from the [LUC-5394](/LUC/issues/LUC-5394) confidence debt.
+  Evidence packet:
+  `docs/planning/luc-5396-dashboard-overview-proof-ladder.md`. Proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5396-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55596`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests; the protected API flow covers `GET /v1/dashboard/command`,
+  `dashboard:read` MCP exposure, summary/department-signal shape, read-only
+  blocked actions, and `read_only_command_center` agent packet mode.
+  `npm run check:route-capabilities` PASS (`180` manifest routes / `35` route
+  files); `npm run architecture:status` PASS (`GREEN`, `454/765/35`, queues
+  `0`, delta `0/0/0`); `git diff --check` PASS with LF-to-CRLF warnings only.
+  Cleanup confirmed no `companycore-luc-5396-postgres` container and no
+  `chrome-headless-shell` process. No product repair issue is warranted.
+  Deploy impact none; browser dashboard proof and protected production proof
+  remain separate future gates.
+
+- 2026-06-21: `LUC-5394` refreshed Roost local architecture evidence for the
+  local-board known-state scope. Scanner PASS generated
+  `2026-06-21T01:02:53.773Z` with `2440` entities / `5170` relations /
+  `13781` files; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  app-completion refresh PASS with `829` items / `7` flows / `800` missing
+  test links / `10` browser-review needs / `2` blocked items. No protected
+  actions or long-running local processes were started. Source-control closure
+  is delegated to [LUC-5395](/LUC/issues/LUC-5395), and focused QA proof
+  selection is delegated to [LUC-5396](/LUC/issues/LUC-5396).
+
 - 2026-06-21: `LUC-5391` source-control closure is verified for the
   [LUC-5390](/LUC/issues/LUC-5390) Roost known-state evidence packet. Current
   interpretation: generated architecture/app-completion/status exports plus

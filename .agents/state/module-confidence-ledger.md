@@ -1,5 +1,32 @@
 # Module Confidence Ledger
 
+QA proof note: [LUC-5396](/LUC/issues/LUC-5396) is VERIFIED_DONE for the
+`Dashboard overview` proof slice selected from the
+[LUC-5394](/LUC/issues/LUC-5394) app-completion confidence debt. Evidence
+packet:
+`docs/planning/luc-5396-dashboard-overview-proof-ladder.md`. Selected
+journey: read-only dashboard command center, mapped to
+`GET /v1/dashboard/command`, `src/modules/dashboard/dashboard.routes.ts`,
+`src/app.ts`, `src/auth/capabilities.ts`,
+`src/auth/agent-key-profiles.ts`, `src/mcp/manifest.ts`,
+`src/tests/api.test.ts`, and dashboard web consumers
+`web/src/features/departments/general-dashboard.tsx` /
+`web/src/features/public/public-home.tsx`. Local proof ran
+`COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5396-postgres`
+`COMPANYCORE_TEST_DB_PORT=55596`
+`COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local`: server
+and web build PASS, all `31` migrations applied, seed PASS, and `7/7` node
+test subtests PASS. The selected proof covers dashboard command readback,
+`dashboard:read` MCP/capability exposure, summary and department-signal
+response shape, read-only blocked action semantics, and
+`read_only_command_center` agent packet mode. `npm run
+check:route-capabilities`, `npm run architecture:status`, and `git diff
+--check` also passed. Cleanup found no validation DB container and no
+`chrome-headless-shell` process. Confidence classification: dashboard
+overview API confidence is locally verified; no product repair issue is
+warranted. Residual risk: desktop/mobile browser proof for the dashboard UI
+and protected production proof remain separate future gates.
+
 Source-control confidence note: [LUC-5391](/LUC/issues/LUC-5391) is
 VERIFIED_DONE for local source-control closure of the
 [LUC-5390](/LUC/issues/LUC-5390) known-state evidence packet, preserving

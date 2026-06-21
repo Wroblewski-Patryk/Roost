@@ -2,6 +2,58 @@
 
 ## Now
 
+- 2026-06-21: `LUC-5395` source-control closure for
+  [LUC-5394](/LUC/issues/LUC-5394) is complete locally. Output:
+  `docs/planning/luc-5395-source-control-closure-for-luc-5394-evidence-packet.md`.
+  Evidence: dirty set classified as [LUC-5394](/LUC/issues/LUC-5394)
+  generated architecture/app-completion/status evidence, source-of-truth
+  state/context updates, the parent evidence packet, and same-wave
+  [LUC-5396](/LUC/issues/LUC-5396) QA proof evidence; `git diff --check` PASS
+  with LF-to-CRLF warnings only; generated architecture-awareness and health
+  JSON parse PASS (`2443` entities / `5182` relations, generated
+  `2026-06-21T01:13:29.523Z`); app-completion JSON parse PASS (`832` items /
+  `7` flows, generated `2026-06-21T01:13:56.851Z`); scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass). Disposition: local no-push
+  closure commit prepared; push held for future release/source-ref batching;
+  deploy impact none. Protected target proof remains approval/credential gated.
+
+- 2026-06-21: `LUC-5396` app-completion Dashboard overview QA proof ladder
+  is complete for the focused slice from [LUC-5394](/LUC/issues/LUC-5394).
+  Output: `docs/planning/luc-5396-dashboard-overview-proof-ladder.md`.
+  Selected flow: `Dashboard overview`, mapped to `GET /v1/dashboard/command`,
+  `dashboard:read` capability/MCP exposure, web dashboard surfaces, and
+  `src/tests/api.test.ts`. Evidence:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5396-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55596`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests; `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`); `git diff --check` PASS with
+  LF-to-CRLF warnings only. Cleanup found no validation DB container and no
+  `chrome-headless-shell` process. Disposition: `DONE`; no product repair
+  issue warranted. Source-control closure remains with
+  [LUC-5395](/LUC/issues/LUC-5395); deploy impact none.
+
+- 2026-06-21: `LUC-5394` known-state evidence and architecture baseline is
+  complete for the local-board wake comment, with source-control closure still
+  required for this generated/status/planning evidence batch. Output:
+  `docs/planning/luc-5394-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS in `19869ms`, generated
+  `2026-06-21T01:02:53.773Z` (`2440` entities / `5170` relations / `13781`
+  files); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queue `0`, worklist `0`, delta `0/0/0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  app-completion refresh PASS (`829` items / `7` flows / `800` missing test
+  links / `10` browser-review needs / `2` blocked items / `2` missing doc
+  links). Task-sync and ownership gaps remain `0`. Disposition: PM evidence
+  scope complete; source-control closure delegated to
+  [LUC-5395](/LUC/issues/LUC-5395), and focused QA proof ladder delegated to
+  [LUC-5396](/LUC/issues/LUC-5396). Deploy impact none; protected target proof
+  remains approval/credential gated.
+
 - 2026-06-21: `LUC-5391` source-control closure for
   [LUC-5390](/LUC/issues/LUC-5390) is complete locally. Output:
   `docs/planning/luc-5391-source-control-closure-for-luc-5390-evidence-packet.md`.
