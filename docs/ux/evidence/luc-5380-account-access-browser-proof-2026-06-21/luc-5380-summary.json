@@ -1,0 +1,11 @@
+﻿{
+    "status":  "PASS",
+    "issue":  "LUC-5380",
+    "selectedProof":  "Account access authenticated current-shell browser proof",
+    "baseUrl":  "http://127.0.0.1:3280",
+    "databaseContainer":  "companycore-luc-5380-postgres",
+    "databasePort":  "55580",
+    "appPort":  "3280",
+    "artifactDir":  "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-5380-account-access-browser-proof-2026-06-21",
+    "completedAt":  "2026-06-21T00:16:51.5854907Z"
+}

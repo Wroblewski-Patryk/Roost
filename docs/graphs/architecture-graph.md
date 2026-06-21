@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-21T00:04:34.799Z
+Generated: 2026-06-21T00:16:18.523Z
 
 ## Canonical Exports
 
@@ -1213,8 +1213,8 @@ Generated: 2026-06-21T00:04:34.799Z
 | documents | document:luc-5368-source-control-closure-for-luc-5366-evidence-packet:e9ee7501c3 | module:docs:6784d83cb0 | docs/planning/luc-5368-source-control-closure-for-luc-5366-evidence-packet.md |
 | documents | document:luc-5373-known-state-evidence-and-architecture-baseline:71c65df066 | module:docs:6784d83cb0 | docs/planning/luc-5373-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5374-source-control-closure-for-luc-5373-evidence-packet:e8fa4f8d25 | module:docs:6784d83cb0 | docs/planning/luc-5374-source-control-closure-for-luc-5373-evidence-packet.md |
+| documents | document:luc-5377-known-state-evidence-and-architecture-baseline:7c3cc9783e | module:docs:6784d83cb0 | docs/planning/luc-5377-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-5379-source-control-closure-for-luc-5377-evidence-packet:fd346c6c46 | module:docs:6784d83cb0 | docs/planning/luc-5379-source-control-closure-for-luc-5377-evidence-packet.md |
+| documents | document:luc-5383-known-state-evidence-and-architecture-baseline:65232b7024 | module:docs:6784d83cb0 | docs/planning/luc-5383-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luckysparrow-company-core-v1:a99bcdd8c4 | module:item:884f3f28db | README.md |
 | documents | document:management-department-catalog-task-contract:43090e7eab | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DOC-MGMT-DEPT-CONTRACT.md |
-| documents | document:management-department-catalog:9c41799a97 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-MGMT-DEPT-CATALOG.md |
-| documents | document:managementroute-component:fc4dbcbdd8 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/COMP-MANAGEMENT-ROUTE.md |
-| documents | document:mcp-agent-runtime-setup:31e298ccf0 | module:docs:6784d83cb0 | docs/operations/mcp-agent-runtime-setup.md |

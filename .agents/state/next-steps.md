@@ -1,5 +1,55 @@
 # Next Steps
 
+- `LUC-5385` source-control closure for
+  [LUC-5383](/LUC/issues/LUC-5383) is complete locally. Closure packet:
+  `docs/planning/luc-5385-source-control-closure-for-luc-5383-evidence-packet.md`.
+  Verification: dirty set classified as [LUC-5383](/LUC/issues/LUC-5383)
+  generated/status/planning evidence plus same-wave
+  [LUC-5380](/LUC/issues/LUC-5380) QA browser proof artifacts; `git diff
+  --check` PASS with LF-to-CRLF warnings only; generated architecture-awareness
+  and health JSON parse PASS (`2434` entities / `5145` relations, generated
+  `2026-06-21T00:16:18.523Z`); scoped high-confidence secret/private-key scan
+  PASS with `0` matches; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`). Push remains held
+  for future release/source-ref batching; deploy impact none. Remaining
+  owner/action: runtime secret owner/board for protected target proof when
+  explicitly approved.
+
+- `LUC-5380` QA proof-ladder selection from the
+  [LUC-5377](/LUC/issues/LUC-5377) app-completion confidence debt is complete.
+  Evidence packet:
+  `docs/planning/luc-5380-app-completion-account-access-proof-ladder.md`.
+  Verification: selected Account access authenticated browser proof; `npm run
+  build` PASS; `npm run prisma:migrate:deploy` PASS with all `31` migrations
+  on disposable PostgreSQL `companycore-luc-5380-postgres` port `55580`;
+  `npm run seed` PASS; current-shell Playwright proof PASS on
+  `http://127.0.0.1:3280` with screenshots/report under
+  `docs/ux/evidence/luc-5380-account-access-browser-proof-2026-06-21/`;
+  `npm run check:route-capabilities` PASS (`180` manifest routes / `35` route
+  files); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queues `0`, delta `0/0/0`). Cleanup confirmed no validation DB container,
+  no port `3280` listener, and no `chrome-headless-shell` process. No product
+  repair issue is warranted. Future owner/action: QA-harness maintenance may
+  modernize `scripts/owner-console-ux-smoke.mjs` because it still expects
+  legacy `body.is-signed-in`; protected production proof remains gated.
+
+- `LUC-5383` IPM known-state evidence pass is complete locally with
+  source-control closure still required. Evidence packet:
+  `docs/planning/luc-5383-known-state-evidence-and-architecture-baseline.md`.
+  Verification: architecture-awareness refresh PASS (`2433` entities / `5141`
+  relations / `13766` files, generated `2026-06-21T00:13:23.054Z`);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`); `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files); app-completion refresh PASS
+  (`822` items / `7` flows / `793` missing test links / `10` browser-review
+  needs / `2` blocked items / `2` missing doc links). Remaining owners/actions:
+  [LUC-5385](/LUC/issues/LUC-5385) must classify generated/status/planning
+  dirty files, run diff hygiene, generated JSON parse, scoped
+  secret/private-key scan, and architecture status before local no-push commit
+  or blocker.
+  [LUC-5380](/LUC/issues/LUC-5380) is already active for QA proof-ladder
+  selection. Protected target proof remains approval/credential gated.
+
 - `LUC-5379` source-control closure for
   [LUC-5377](/LUC/issues/LUC-5377) is complete locally. Closure packet:
   `docs/planning/luc-5379-source-control-closure-for-luc-5377-evidence-packet.md`.

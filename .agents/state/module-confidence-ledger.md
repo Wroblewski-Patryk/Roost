@@ -1,5 +1,62 @@
 # Module Confidence Ledger
 
+Source-control confidence note: [LUC-5385](/LUC/issues/LUC-5385) is
+VERIFIED_DONE for local source-control closure of the
+[LUC-5383](/LUC/issues/LUC-5383) generated evidence packet, carrying
+same-wave [LUC-5380](/LUC/issues/LUC-5380) QA browser proof artifacts already
+referenced by current state files. Closure packet:
+`docs/planning/luc-5385-source-control-closure-for-luc-5383-evidence-packet.md`.
+Verification: `git diff --check` PASS with LF-to-CRLF warnings only; generated
+architecture-awareness and health JSON parse PASS at
+`2026-06-21T00:16:18.523Z` with `2434` entities / `5145` relations; scoped
+high-confidence secret/private-key scan PASS with `0` matches; `npm run
+architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+`0/0/0`). Confidence classification: documentation/state/generated evidence is
+locally source-controlled; no runtime module behavior changed.
+
+QA proof note: [LUC-5380](/LUC/issues/LUC-5380) is VERIFIED_DONE for the
+Account access browser proof slice selected from the
+[LUC-5377](/LUC/issues/LUC-5377) app-completion confidence debt. Evidence
+packet:
+`docs/planning/luc-5380-app-completion-account-access-proof-ladder.md`.
+Selected journey: authenticated owner enters the current React shell and
+renders `/areas?area=00-ogolny&view=overview`, `/account/settings`, and
+`/workspace/settings`, mapped to the app-completion `Account access` flow,
+`web/src/api/auth-token.ts`, `web/src/features/auth/auth-pages.tsx`,
+`web/src/app-route-registry.ts`, `src/modules/auth/auth.routes.ts`, and
+`src/app.ts`. Local proof used disposable PostgreSQL
+`companycore-luc-5380-postgres` on port `55580`, applied all `31` migrations,
+seeded real local owner/workspace/API data, ran the built server on
+`http://127.0.0.1:3280`, and passed current-shell Playwright assertions with
+desktop/mobile screenshots and no missing text, horizontal overflow, console
+issues, or failed `/v1` responses. `npm run check:route-capabilities` and
+`npm run architecture:status` also passed. Cleanup found no validation DB
+container, no port `3280` listener, and no `chrome-headless-shell` process.
+Confidence classification: Account access browser confidence is locally
+verified for the current React shell; no product repair issue is warranted.
+Protected production/browser proof remains gated. Reusable legacy
+`scripts/owner-console-ux-smoke.mjs` selector drift is a QA-harness
+maintenance candidate, not a product regression.
+
+IPM evidence note: [LUC-5383](/LUC/issues/LUC-5383) refreshed the Roost
+known-state architecture and app-completion baseline. Evidence packet:
+`docs/planning/luc-5383-known-state-evidence-and-architecture-baseline.md`.
+Scanner PASS generated `2026-06-21T00:13:23.054Z` with `2433` entities,
+`5141` relations, and `13766` files. `npm run architecture:status` PASS
+(`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`) and `npm run
+check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+App-completion refresh PASS generated `2026-06-21T00:14:06.064Z` with `822`
+items, `7` flows, `793` missing test links, `10` browser-review needs, `2`
+blocked items, and `2` missing doc links. Task-sync, ownership,
+implementation-task, verified-without-proof, and disconnected gaps remain `0`;
+architecture health reports `implementation_without_tests=1162`. Confidence
+classification: local architecture and route exposure are verified; no broad
+feature repair is warranted from this pass. Source-control closure for the
+refreshed generated/status/planning evidence batch is delegated to
+[LUC-5385](/LUC/issues/LUC-5385). Focused QA proof-ladder selection is already active in
+[LUC-5380](/LUC/issues/LUC-5380). Protected target proof remains
+approval/credential gated.
+
 PM evidence note: [LUC-5377](/LUC/issues/LUC-5377) refreshed the Roost
 known-state architecture and app-completion baseline. Evidence packet:
 `docs/planning/luc-5377-known-state-evidence-and-architecture-baseline.md`.

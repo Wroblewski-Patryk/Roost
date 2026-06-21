@@ -2,6 +2,71 @@
 
 Last updated: 2026-06-21
 
+- 2026-06-21: `LUC-5385` source-control closure completed locally for the
+  [LUC-5383](/LUC/issues/LUC-5383) generated evidence packet, carrying the
+  same-wave [LUC-5380](/LUC/issues/LUC-5380) QA proof artifacts because current
+  state files already reference them. Output:
+  `docs/planning/luc-5385-source-control-closure-for-luc-5383-evidence-packet.md`.
+  Starting state: `main...origin/main [ahead 98]`, HEAD `def518f9`.
+  Dirty set classified as generated architecture-awareness exports,
+  architecture health/proof/status reports, app-completion index outputs,
+  state/context/planning updates from [LUC-5383](/LUC/issues/LUC-5383), and
+  same-wave [LUC-5380](/LUC/issues/LUC-5380) browser proof evidence. No
+  unrelated active-lane implementation files were found. Verification:
+  `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  architecture-awareness and health JSON parse PASS at
+  `2026-06-21T00:16:18.523Z` with `2434` entities / `5145` relations; scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass). Push held for future
+  release/source-ref batching; deploy impact none. No feature code, schema,
+  migration, protected smoke, production mutation, credential access, secret
+  disclosure, database, server, browser, or watcher process occurred. Final
+  commit SHA is recorded in the Paperclip issue closure.
+
+- 2026-06-21: `LUC-5380` app-completion account-access QA proof ladder
+  completed for the focused slice delegated by [LUC-5377](/LUC/issues/LUC-5377).
+  Output:
+  `docs/planning/luc-5380-app-completion-account-access-proof-ladder.md`.
+  Evidence: selected Account access from the refreshed app-completion
+  confidence debt; `npm run build` PASS; `npm run prisma:migrate:deploy` PASS
+  with all `31` migrations applied to disposable PostgreSQL
+  `companycore-luc-5380-postgres` on port `55580`; `npm run seed` PASS;
+  current-shell Playwright proof PASS on local server
+  `http://127.0.0.1:3280` for `/areas?area=00-ogolny&view=overview`,
+  `/account/settings`, and `/workspace/settings` with desktop/mobile
+  screenshots and JSON report in
+  `docs/ux/evidence/luc-5380-account-access-browser-proof-2026-06-21/`;
+  `npm run check:route-capabilities` PASS (`180` manifest routes / `35` route
+  files); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queues `0`, delta `0/0/0`). Cleanup removed the validation database and
+  left no listener on port `3280` and no `chrome-headless-shell` process.
+  Disposition: verified done; no repair issue warranted. Protected production
+  browser proof remains gated; existing `scripts/owner-console-ux-smoke.mjs`
+  has legacy selector drift and is a future QA-harness maintenance candidate.
+
+- 2026-06-21: `LUC-5383` Roost known-state evidence and architecture baseline
+  completed for the local-board wake comment, with source-control closure still
+  required for this generated/status/planning evidence batch. Output:
+  `docs/planning/luc-5383-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness refresh PASS in `34848ms`,
+  generated `2026-06-21T00:13:23.054Z` with `2433` entities / `5141`
+  relations / `13766` files; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`);
+  app-completion refresh PASS with `822` items / `7` flows / `793` missing
+  test links / `10` browser-review needs / `2` blocked items / `2` missing
+  doc links. Task-sync, ownership, implementation-task, verified-proof, and
+  disconnected gaps remain `0`; architecture health reports
+  `implementation_without_tests=1162`. No feature code, schema, migration,
+  runtime, protected smoke, production mutation, credential access, secret
+  disclosure, browser, database, Docker, server, provider, or watcher action
+  occurred. Source-control closure is delegated to
+  [LUC-5385](/LUC/issues/LUC-5385); focused QA proof selection is already
+  active in [LUC-5380](/LUC/issues/LUC-5380). Deploy impact none; protected
+  target proof remains separately gated.
+
 - 2026-06-21: `LUC-5379` source-control closure completed locally for the
   [LUC-5377](/LUC/issues/LUC-5377) generated evidence packet. Output:
   `docs/planning/luc-5379-source-control-closure-for-luc-5377-evidence-packet.md`.
