@@ -1,5 +1,21 @@
 # Next Steps
 
+- `LUC-5386` source-control closure for
+  [LUC-5384](/LUC/issues/LUC-5384) is complete locally. Closure packet:
+  `docs/planning/luc-5386-source-control-closure-for-luc-5384-evidence-refresh.md`.
+  Verification: issue-start worktree was clean at `main...origin/main [ahead
+  99]` and HEAD `0f2d709b`; expected generated/status evidence refresh was
+  already preserved in the local no-push closure bundle; `git diff --check`
+  PASS; generated architecture-awareness, architecture-health, and
+  app-completion JSON parse PASS (`2434` entities / `5145` relations,
+  generated `2026-06-21T00:16:18.523Z`; app-completion `822` items / `7`
+  flows); scoped high-confidence secret/private-key scan PASS with `0`
+  matches; `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queue `0`, worklist `0`, delta `0/0/0`). Push remains held for future
+  release/source-ref batching; deploy impact none. Remaining owner/action:
+  runtime secret owner/board for protected target proof when explicitly
+  approved.
+
 - `LUC-5385` source-control closure for
   [LUC-5383](/LUC/issues/LUC-5383) is complete locally. Closure packet:
   `docs/planning/luc-5385-source-control-closure-for-luc-5383-evidence-packet.md`.

@@ -2,6 +2,25 @@
 
 Last updated: 2026-06-21
 
+- 2026-06-21: `LUC-5386` source-control closure completed locally for the
+  [LUC-5384](/LUC/issues/LUC-5384) generated evidence refresh. Output:
+  `docs/planning/luc-5386-source-control-closure-for-luc-5384-evidence-refresh.md`.
+  Starting state: `main...origin/main [ahead 99]`, HEAD `0f2d709b`.
+  Dirty set at issue start was clean; the expected generated/status evidence
+  refresh was already preserved in local no-push commit `0f2d709b` and this
+  issue adds the explicit [LUC-5386](/LUC/issues/LUC-5386) closure record.
+  Verification: `git diff --check` PASS; generated architecture-awareness,
+  architecture-health, and app-completion JSON parse PASS
+  (`generatedAt=2026-06-21T00:16:18.523Z`, `2434` entities / `5145`
+  relations; app-completion `822` items / `7` flows); scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass). Push held for
+  future release/source-ref batching; deploy impact none. No feature code,
+  schema, migration, protected smoke, production mutation, credential access,
+  secret disclosure, generated graph refresh, database, server, browser, or
+  watcher process occurred.
+
 - 2026-06-21: `LUC-5385` source-control closure completed locally for the
   [LUC-5383](/LUC/issues/LUC-5383) generated evidence packet, carrying the
   same-wave [LUC-5380](/LUC/issues/LUC-5380) QA proof artifacts because current

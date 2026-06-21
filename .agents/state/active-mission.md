@@ -4,6 +4,38 @@ Last updated: 2026-06-21
 
 ## Current Mission
 
+- Mission ID: LUC-5386-SOURCE-CONTROL-CLOSURE-FOR-LUC-5384-EVIDENCE-REFRESH
+- Status: VERIFIED_DONE_PENDING_PUSH_BATCH
+- Selected objective: Close local source control for the
+  [LUC-5384](/LUC/issues/LUC-5384) generated evidence refresh.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5386](/LUC/issues/LUC-5386), the explicit source-control closure
+  sidecar for [LUC-5384](/LUC/issues/LUC-5384), with instructions to classify
+  the generated/status evidence refresh, run scoped verification, and create a
+  local no-push closure commit if safe.
+- Scope: classify current clean worktree state against the already committed
+  generated/status evidence refresh, add the [LUC-5386](/LUC/issues/LUC-5386)
+  closure packet, run source-control closure checks, and create a local
+  no-push commit.
+- Exclusions: no feature code, schema, migration, push, deploy, restart,
+  protected smoke, production mutation, credential access, secret disclosure,
+  generated graph refresh, live provider action, database, server, browser,
+  Docker, or watcher process.
+- Output:
+  `docs/planning/luc-5386-source-control-closure-for-luc-5384-evidence-refresh.md`.
+- Evidence: `git diff --check` PASS; generated architecture-awareness,
+  architecture-health, and app-completion JSON parse PASS with
+  `generatedAt=2026-06-21T00:16:18.523Z`, `2434` entities / `5145`
+  relations, app-completion `822` items / `7` flows; scoped high-confidence
+  secret/private-key scan PASS with `0` matches; `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass).
+- Final disposition: source-control closure verified for a local no-push
+  commit. Push remains held for future release/source-ref batching; deploy
+  impact none.
+
+## Previous Mission
+
 - Mission ID: LUC-5385-SOURCE-CONTROL-CLOSURE-FOR-LUC-5383-EVIDENCE-PACKET
 - Status: VERIFIED_DONE_PENDING_PUSH_BATCH
 - Selected objective: Close local source control for the

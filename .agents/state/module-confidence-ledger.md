@@ -1,5 +1,21 @@
 # Module Confidence Ledger
 
+Source-control confidence note: [LUC-5386](/LUC/issues/LUC-5386) is
+VERIFIED_DONE for local source-control closure of the
+[LUC-5384](/LUC/issues/LUC-5384) generated evidence refresh. Closure packet:
+`docs/planning/luc-5386-source-control-closure-for-luc-5384-evidence-refresh.md`.
+Verification: issue-start worktree was clean at `main...origin/main [ahead
+99]` and HEAD `0f2d709b`; expected generated/status evidence refresh was
+already preserved in the local no-push closure bundle; `git diff --check`
+PASS; generated architecture-awareness, architecture-health, and
+app-completion JSON parse PASS at `2026-06-21T00:16:18.523Z` with `2434`
+entities / `5145` relations and app-completion `822` items / `7` flows;
+scoped high-confidence secret/private-key scan PASS with `0` matches; `npm
+run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`,
+delta `0/0/0`). Confidence classification:
+documentation/state/generated evidence is locally source-controlled; no
+runtime module behavior changed.
+
 Source-control confidence note: [LUC-5385](/LUC/issues/LUC-5385) is
 VERIFIED_DONE for local source-control closure of the
 [LUC-5383](/LUC/issues/LUC-5383) generated evidence packet, carrying
