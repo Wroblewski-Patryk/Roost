@@ -2,6 +2,54 @@
 
 Last updated: 2026-06-21
 
+- 2026-06-21: `LUC-5408` source-control closure completed locally for the
+  [LUC-5407](/LUC/issues/LUC-5407) generated/status/planning evidence packet.
+  Output:
+  `docs/planning/luc-5408-source-control-closure-for-luc-5407-evidence-packet.md`.
+  Starting state: `main...origin/main [ahead 103]`, HEAD `e4a2febe`.
+  Dirty set classified as generated architecture/app-completion/status
+  evidence, source-of-truth state/context updates, the parent evidence packet,
+  and this closure packet. Concurrent
+  `docs/architecture/scanner-overrides.json` curation content is out of scope
+  for this closure and left unstaged for [LUC-5410](/LUC/issues/LUC-5410);
+  concurrent
+  `docs/planning/luc-5409-exchange-connection-configuration-proof-ladder.md`
+  is also out of scope and left unstaged for [LUC-5409](/LUC/issues/LUC-5409).
+  No unrelated product-code, schema, migration, runtime, credential,
+  production, secret, provider, database, Docker, browser, server, or watcher
+  files were staged. Verification: `git diff --check` PASS
+  with LF-to-CRLF warnings only; generated architecture-awareness and health
+  JSON parse PASS (`2446` entities / `5194` relations, generated
+  `2026-06-21T01:43:02.326Z`); app-completion JSON parse PASS (`835` items /
+  `7` flows / `200` priority review items, generated
+  `2026-06-21T01:43:23.705Z`); scoped high-confidence secret/private-key scan
+  PASS with `0` matches; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass). Push held for future release/source-ref batching; deploy impact
+  none. Protected runtime proof remains approval/credential gated.
+
+- 2026-06-21: `LUC-5407` Roost known-state evidence and architecture
+  baseline completed for the local-board wake comment. Output:
+  `docs/planning/luc-5407-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness refresh PASS in `9774ms`,
+  generated `2026-06-21T01:43:02.326Z` with `2446` entities / `5194`
+  relations / `13787` files; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); `npm run check:route-capabilities` PASS (`180`
+  manifest routes / `35` route files); app-completion refresh PASS with
+  `835` items / `7` flows / `806` missing test links / `10` browser-review
+  needs / `2` blocked items / `2` missing doc links. Task-sync reports `0`
+  actionable task-link, implementation-task, and verified-proof gaps;
+  ownership gaps remain `0`. No feature code, schema, migration, runtime,
+  protected smoke, production mutation, credential access, secret disclosure,
+  browser, database, Docker, server, provider, or watcher action occurred.
+  Next lanes: source-control closure for this generated/status/planning packet
+  in [LUC-5408](/LUC/issues/LUC-5408), one focused QA proof ladder in
+  [LUC-5409](/LUC/issues/LUC-5409), and flow classification/doc-link curation
+  in [LUC-5410](/LUC/issues/LUC-5410).
+  Deploy impact none; protected target proof remains approval/credential
+  gated.
+
 - 2026-06-21: `LUC-5401` source-control closure is in verification for the
   [LUC-5399](/LUC/issues/LUC-5399) Roost known-state evidence packet. Output:
   `docs/planning/luc-5401-source-control-closure-for-luc-5399-evidence-packet.md`.

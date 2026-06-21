@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-06-21T01:13:56.851Z
+Generated: 2026-06-21T01:50:16.744Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -12,18 +12,18 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 
 ## Counts
 
-- Items: 832
+- Items: 837
 - User flows: 7
-- Needs browser/screenshot review: 10
-- Missing test link: 803
-- Missing doc link: 2
+- Needs browser/screenshot review: 0
+- Missing test link: 818
+- Missing doc link: 0
 - Blocked: 2
 
 ## Flow Summary
 
-- Subscription and entitlement: 480 entities; risks {"missing_test_link":464,"implemented_needs_proof":14,"blocked":2}; gates {"subscription":480,"configuration":8,"auth":2}
-- Unclassified user workflow: 204 entities; risks {"missing_test_link":194,"missing_doc_link":1,"needs_browser_review":9}; gates {"auth":5,"configuration":9}
-- Account access: 84 entities; risks {"missing_test_link":82,"missing_doc_link":1,"needs_browser_review":1}; gates {"auth":84,"configuration":9,"subscription":8}
+- Subscription and entitlement: 492 entities; risks {"missing_test_link":476,"implemented_needs_proof":14,"blocked":2}; gates {"subscription":492,"configuration":16,"auth":3}
+- Unclassified user workflow: 195 entities; risks {"missing_test_link":194,"implemented_needs_proof":1}; gates {"auth":5,"configuration":9}
+- Account access: 86 entities; risks {"missing_test_link":85,"ok":1}; gates {"auth":86,"configuration":9,"subscription":11}
 - User configuration: 54 entities; risks {"missing_test_link":53,"implemented_needs_proof":1}; gates {"configuration":54}
 - Dashboard overview: 6 entities; risks {"missing_test_link":6}; gates {}
 - Trading operation: 3 entities; risks {"missing_test_link":3}; gates {}
@@ -103,16 +103,16 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Account access | missing_test_link | feature_or_capability | authActor | Engineering Delivery Lead | src/modules/intake/intake.routes.ts#authActor | auth |
 | Account access | missing_test_link | feature_or_capability | entityAuthority | Engineering Delivery Lead | src/modules/workforce/workforce.service.ts#entityAuthority | auth |
 | Account access | missing_test_link | feature_or_capability | requireUserAuth | Engineering Delivery Lead | src/modules/workspaces/workspaces.routes.ts#requireUserAuth | auth |
-| Account access | missing_doc_link | feature_or_capability | registerOwner | Engineering Delivery Lead | src/tests/api.test.ts#registerOwner | auth |
+| Account access | missing_test_link | feature_or_capability | auth-token.ts | Engineering Delivery Lead | web/src/api/auth-token.ts | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | clearOwnerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#clearOwnerToken | auth |
 | Account access | missing_test_link | feature_or_capability | isSignedIn | Engineering Delivery Lead | web/src/api/auth-token.ts#isSignedIn | auth |
 | Account access | missing_test_link | feature_or_capability | ownerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#ownerToken | auth |
 | Account access | missing_test_link | feature_or_capability | setOwnerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#setOwnerToken | auth |
+| Account access | missing_test_link | feature_or_capability | client.ts | Engineering Delivery Lead | web/src/api/client.ts | auth, subscription |
+| Account access | missing_test_link | feature_or_capability | errors.ts | Engineering Delivery Lead | web/src/api/errors.ts | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | canonicalPostAuthPath | Engineering Delivery Lead | web/src/app-route-registry.ts#canonicalPostAuthPath | auth |
 | Account access | missing_test_link | feature_or_capability | auth-pages.tsx | Engineering Delivery Lead | web/src/features/auth/auth-pages.tsx | auth |
 | Account access | missing_test_link | feature_or_capability | AuthRoute | Engineering Delivery Lead | web/src/features/auth/auth-pages.tsx#AuthRoute | auth |
-| Account access | missing_test_link | feature_or_capability | onSubmit | Engineering Delivery Lead | web/src/features/auth/auth-pages.tsx#onSubmit | auth |
-| Account access | missing_test_link | feature_or_capability | auth-validation.ts | Engineering Delivery Lead | web/src/features/auth/auth-validation.ts | auth |
 
 ## Agent Rule
 

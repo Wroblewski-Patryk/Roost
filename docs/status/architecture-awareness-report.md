@@ -1,6 +1,6 @@
 # Architecture Awareness Report
 
-Generated: 2026-06-21T01:13:29.523Z
+Generated: 2026-06-21T01:50:10.196Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 
@@ -11,14 +11,13 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | agent | 47 |
 | api_endpoint | 43 |
 | component | 7 |
-| document | 1123 |
-| feature | 167 |
+| document | 1128 |
+| feature | 170 |
 | function | 945 |
 | migration | 31 |
 | model | 5 |
 | module | 66 |
 | project | 1 |
-| route | 3 |
 | task | 4 |
 | test | 1 |
 
@@ -28,15 +27,15 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | --- | ---: |
 | blocked | 4 |
 | deprecated | 4 |
-| implemented | 2422 |
+| implemented | 2427 |
 | in_progress | 1 |
 | tested | 8 |
 | verified | 4 |
 
 ## Health Signals
 
-- Raw implementation entities without inferred tests: 1162
-- Actionable implementation entities without inferred tests: 1153
+- Raw implementation entities without inferred tests: 1165
+- Actionable implementation entities without inferred tests: 1156
 - Raw implementation entities without inferred docs: 0
 - Actionable implementation entities without inferred docs: 0
 - Classified inferred-link noise: 9
@@ -121,6 +120,6 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 
 - This is an inferred baseline. CTO/Docs Memory must promote or correct important relations.
 - Curated graph coverage input: `C:/Personal/Projekty/Aplikacje/Roost/docs/graphs/architecture-graph.json` (covered paths: 0).
-- Override input: `C:/Personal/Projekty/Aplikacje/Roost/docs/architecture/scanner-overrides.json` (entity entries: 0, relation entries: 0).
-- Override summary: excluded files 0, entity overrides 0, relation overrides 0, critical entities tagged 0.
+- Override input: `C:/Personal/Projekty/Aplikacje/Roost/docs/architecture/scanner-overrides.json` (entity entries: 10, relation entries: 3).
+- Override summary: excluded files 0, entity overrides 10, relation overrides 3, critical entities tagged 0.
 - `verified` still requires fresh command/browser/deploy evidence, not only file presence.

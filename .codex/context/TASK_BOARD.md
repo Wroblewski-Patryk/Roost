@@ -2,6 +2,45 @@
 
 ## Now
 
+- 2026-06-21: `LUC-5408` source-control closure for
+  [LUC-5407](/LUC/issues/LUC-5407) is complete locally. Output:
+  `docs/planning/luc-5408-source-control-closure-for-luc-5407-evidence-packet.md`.
+  Evidence: dirty set classified as [LUC-5407](/LUC/issues/LUC-5407)
+  generated architecture/app-completion/status evidence, state/context updates,
+  parent evidence packet, and closure packet; out-of-scope
+  `docs/architecture/scanner-overrides.json` curation content is left unstaged
+  for [LUC-5410](/LUC/issues/LUC-5410), and out-of-scope
+  `docs/planning/luc-5409-exchange-connection-configuration-proof-ladder.md`
+  is left unstaged for [LUC-5409](/LUC/issues/LUC-5409); `git diff --check`
+  PASS with LF-to-CRLF warnings only; generated architecture-awareness and
+  health JSON parse PASS
+  (`2446` entities / `5194` relations, generated
+  `2026-06-21T01:43:02.326Z`); app-completion JSON parse PASS (`835` items /
+  `7` flows / `200` priority review items, generated
+  `2026-06-21T01:43:23.705Z`); scoped high-confidence secret/private-key scan
+  PASS with `0` matches; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`). Disposition: local
+  no-push closure commit prepared; push held for future release/source-ref
+  batching; deploy impact none.
+
+- 2026-06-21: `LUC-5407` known-state evidence and architecture baseline is
+  complete for the local-board wake comment, with source-control closure still
+  required for this generated/status/planning evidence batch. Output:
+  `docs/planning/luc-5407-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS in `9774ms`, generated
+  `2026-06-21T01:43:02.326Z` (`2446` entities / `5194` relations / `13787`
+  files); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queue `0`, worklist `0`, delta `0/0/0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  app-completion refresh PASS (`835` items / `7` flows / `806` missing test
+  links / `10` browser-review needs / `2` blocked items / `2` missing doc
+  links). Task-sync and ownership gaps remain `0`. Disposition: PM evidence
+  scope complete; follow-up lanes are source-control closure in
+  [LUC-5408](/LUC/issues/LUC-5408), focused QA proof selection in
+  [LUC-5409](/LUC/issues/LUC-5409), and flow classification/doc-link curation
+  in [LUC-5410](/LUC/issues/LUC-5410). Deploy impact none; protected target
+  proof remains approval/credential gated.
+
 - 2026-06-21: `LUC-5401` source-control closure for
   [LUC-5399](/LUC/issues/LUC-5399) is complete locally. Output:
   `docs/planning/luc-5401-source-control-closure-for-luc-5399-evidence-packet.md`.

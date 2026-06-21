@@ -1,29 +1,28 @@
 {
-  "generatedAt": "2026-06-21T01:13:56.851Z",
+  "generatedAt": "2026-06-21T01:50:16.744Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
   "counts": {
-    "items": 832,
+    "items": 837,
     "flows": 7,
-    "needsBrowserReview": 10,
-    "missingTestLink": 803,
-    "missingDocLink": 2,
+    "needsBrowserReview": 0,
+    "missingTestLink": 818,
+    "missingDocLink": 0,
     "blocked": 2
   },
   "flows": [
     {
       "userFlow": "Account access",
-      "total": 84,
+      "total": 86,
       "risks": {
-        "missing_test_link": 82,
-        "missing_doc_link": 1,
-        "needs_browser_review": 1
+        "missing_test_link": 85,
+        "ok": 1
       },
       "gates": {
-        "auth": 84,
+        "auth": 86,
         "configuration": 9,
-        "subscription": 8
+        "subscription": 11
       }
     },
     {
@@ -46,16 +45,16 @@
     },
     {
       "userFlow": "Subscription and entitlement",
-      "total": 480,
+      "total": 492,
       "risks": {
-        "missing_test_link": 464,
+        "missing_test_link": 476,
         "implemented_needs_proof": 14,
         "blocked": 2
       },
       "gates": {
-        "subscription": 480,
-        "configuration": 8,
-        "auth": 2
+        "subscription": 492,
+        "configuration": 16,
+        "auth": 3
       }
     },
     {
@@ -68,11 +67,10 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "total": 204,
+      "total": 195,
       "risks": {
         "missing_test_link": 194,
-        "missing_doc_link": 1,
-        "needs_browser_review": 9
+        "implemented_needs_proof": 1
       },
       "gates": {
         "auth": 5,
@@ -1580,25 +1578,26 @@
       "risk": "missing_test_link"
     },
     {
-      "id": "function:registerowner:04cb5d87eb",
-      "type": "function",
+      "id": "route:auth-token-ts:f000fc4d3b",
+      "type": "feature",
       "kind": "feature_or_capability",
-      "name": "registerOwner",
-      "path": "src/tests/api.test.ts#registerOwner",
+      "name": "auth-token.ts",
+      "path": "web/src/api/auth-token.ts",
       "owner": "Engineering Delivery Lead",
-      "status": "tested",
+      "status": "implemented_needs_proof",
       "userFlow": "Account access",
       "gates": [
-        "auth"
+        "auth",
+        "subscription"
       ],
       "evidence": {
-        "hasTest": true,
-        "hasDoc": false,
+        "hasTest": false,
+        "hasDoc": true,
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 1,
-      "risk": "missing_doc_link"
+      "relatedEntityCount": 15,
+      "risk": "missing_test_link"
     },
     {
       "id": "function:clearownertoken:2ccc56ad47",
@@ -1682,6 +1681,50 @@
         "needsScreenshotReview": false
       },
       "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "route:client-ts:3849b0a7cf",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "client.ts",
+      "path": "web/src/api/client.ts",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Account access",
+      "gates": [
+        "auth",
+        "subscription"
+      ],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 20,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "route:errors-ts:8936278ba8",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "errors.ts",
+      "path": "web/src/api/errors.ts",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Account access",
+      "gates": [
+        "auth",
+        "subscription"
+      ],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 16,
       "risk": "missing_test_link"
     },
     {
@@ -1851,27 +1894,6 @@
       },
       "relatedEntityCount": 1,
       "risk": "missing_test_link"
-    },
-    {
-      "id": "route:auth-token-ts:f000fc4d3b",
-      "type": "route",
-      "kind": "screen_or_route",
-      "name": "auth-token.ts",
-      "path": "web/src/api/auth-token.ts",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": true,
-        "needsScreenshotReview": true
-      },
-      "relatedEntityCount": 15,
-      "risk": "needs_browser_review"
     },
     {
       "id": "api_endpoint:use-dashboard:a4fbc07380",
@@ -4261,27 +4283,6 @@
       "kind": "feature_or_capability",
       "name": "LUC-1808 Known-State Evidence And Architecture Baseline",
       "path": "docs/planning/luc-1808-known-state-evidence-and-architecture-baseline.md",
-      "owner": "Docs Memory Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Subscription and entitlement",
-      "gates": [
-        "subscription"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "document:luc-1815-known-state-evidence-and-architecture-baseline:12fde20414",
-      "type": "document",
-      "kind": "feature_or_capability",
-      "name": "LUC-1815 Known-State Evidence And Architecture Baseline",
-      "path": "docs/planning/luc-1815-known-state-evidence-and-architecture-baseline.md",
       "owner": "Docs Memory Lead",
       "status": "implemented_needs_proof",
       "userFlow": "Subscription and entitlement",

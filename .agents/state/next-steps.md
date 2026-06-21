@@ -1,5 +1,39 @@
 # Next Steps
 
+- `LUC-5408` source-control closure for
+  [LUC-5407](/LUC/issues/LUC-5407) is complete locally. Closure packet:
+  `docs/planning/luc-5408-source-control-closure-for-luc-5407-evidence-packet.md`.
+  Evidence: dirty set classified as generated/status/planning evidence only;
+  out-of-scope `docs/architecture/scanner-overrides.json` curation content is
+  left unstaged for [LUC-5410](/LUC/issues/LUC-5410), and out-of-scope
+  `docs/planning/luc-5409-exchange-connection-configuration-proof-ladder.md`
+  is left unstaged for [LUC-5409](/LUC/issues/LUC-5409);
+  `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  architecture-awareness and health JSON parse PASS (`2446` entities / `5194`
+  relations, generated `2026-06-21T01:43:02.326Z`); app-completion JSON parse
+  PASS (`835` items / `7` flows, generated `2026-06-21T01:43:23.705Z`);
+  scoped high-confidence secret/private-key scan PASS with `0` matches;
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`). Disposition: local no-push closure
+  commit prepared; push held for future release/source-ref batching; deploy
+  impact none. Remaining owners: [LUC-5409](/LUC/issues/LUC-5409) for focused
+  QA proof and [LUC-5410](/LUC/issues/LUC-5410) for flow/doc-link curation.
+
+- `LUC-5407` known-state evidence pass is complete locally with source-control
+  closure still required. Evidence packet:
+  `docs/planning/luc-5407-known-state-evidence-and-architecture-baseline.md`.
+  Verification: architecture-awareness refresh PASS (`2446` entities / `5194`
+  relations / `13787` files, generated `2026-06-21T01:43:02.326Z`);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`); `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files); app-completion refresh PASS
+  (`835` items / `7` flows / `806` missing test links / `10` browser-review
+  needs / `2` blocked items / `2` missing doc links). Remaining owner/action:
+  [LUC-5408](/LUC/issues/LUC-5408) closes source control for generated/status
+  /planning changes; [LUC-5409](/LUC/issues/LUC-5409) runs one non-duplicated
+  QA proof ladder; [LUC-5410](/LUC/issues/LUC-5410) classifies unclassified
+  workflow/doc-link evidence before broad implementation.
+
 - `LUC-5401` source-control closure for
   [LUC-5399](/LUC/issues/LUC-5399) is complete locally. Closure packet:
   `docs/planning/luc-5401-source-control-closure-for-luc-5399-evidence-packet.md`.

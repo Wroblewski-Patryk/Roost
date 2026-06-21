@@ -1,31 +1,30 @@
 {
-  "generated_at": "2026-06-21T01:13:29.523Z",
+  "generated_at": "2026-06-21T01:50:10.196Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 2443,
-    "relations": 5182,
+    "entities": 2448,
+    "relations": 5205,
     "by_type": {
       "agent": 47,
       "api_endpoint": 43,
       "component": 7,
-      "document": 1123,
-      "feature": 167,
+      "document": 1128,
+      "feature": 170,
       "function": 945,
       "migration": 31,
       "model": 5,
       "module": 66,
       "project": 1,
-      "route": 3,
       "task": 4,
       "test": 1
     },
     "by_status": {
       "blocked": 4,
       "deprecated": 4,
-      "implemented": 2422,
+      "implemented": 2427,
       "in_progress": 1,
       "tested": 8,
       "verified": 4
@@ -33,7 +32,7 @@
   },
   "signals": {
     "implementation_without_tests": {
-      "count": 1162,
+      "count": 1165,
       "items": [
         {
           "id": "api_endpoint:get:1998daec82",
@@ -1540,6 +1539,30 @@
           "owner": "Engineering Delivery Lead"
         },
         {
+          "id": "route:auth-token-ts:f000fc4d3b",
+          "type": "feature",
+          "name": "auth-token.ts",
+          "path": "web/src/api/auth-token.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "route:client-ts:3849b0a7cf",
+          "type": "feature",
+          "name": "client.ts",
+          "path": "web/src/api/client.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "route:errors-ts:8936278ba8",
+          "type": "feature",
+          "name": "errors.ts",
+          "path": "web/src/api/errors.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
           "id": "feature:app-route-registry-ts:ef4852fcf0",
           "type": "feature",
           "name": "app-route-registry.ts",
@@ -1610,30 +1633,6 @@
           "path": "web/src/features/departments/innovation-route.tsx",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "feature:legal-route-tsx:0c74ab50cd",
-          "type": "feature",
-          "name": "legal-route.tsx",
-          "path": "web/src/features/departments/legal-route.tsx",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "feature:management-route-tsx:465001c13c",
-          "type": "feature",
-          "name": "management-route.tsx",
-          "path": "web/src/features/departments/management-route.tsx",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "feature:operations-route-tsx:046117caa5",
-          "type": "feature",
-          "name": "operations-route.tsx",
-          "path": "web/src/features/departments/operations-route.tsx",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
         }
       ]
     },
@@ -1642,7 +1641,7 @@
       "items": []
     },
     "actionable_implementation_without_tests": {
-      "count": 1153,
+      "count": 1156,
       "items": [
         {
           "id": "api_endpoint:get:1998daec82",
@@ -3133,6 +3132,30 @@
           "owner": "Engineering Delivery Lead"
         },
         {
+          "id": "route:auth-token-ts:f000fc4d3b",
+          "type": "feature",
+          "name": "auth-token.ts",
+          "path": "web/src/api/auth-token.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "route:client-ts:3849b0a7cf",
+          "type": "feature",
+          "name": "client.ts",
+          "path": "web/src/api/client.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "route:errors-ts:8936278ba8",
+          "type": "feature",
+          "name": "errors.ts",
+          "path": "web/src/api/errors.ts",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
           "id": "feature:app-route-registry-ts:ef4852fcf0",
           "type": "feature",
           "name": "app-route-registry.ts",
@@ -3217,30 +3240,6 @@
           "type": "feature",
           "name": "management-route.tsx",
           "path": "web/src/features/departments/management-route.tsx",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "feature:operations-route-tsx:046117caa5",
-          "type": "feature",
-          "name": "operations-route.tsx",
-          "path": "web/src/features/departments/operations-route.tsx",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "feature:people-agents-route-tsx:b254839db2",
-          "type": "feature",
-          "name": "people-agents-route.tsx",
-          "path": "web/src/features/departments/people-agents-route.tsx",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "feature:product-delivery-route-tsx:7a46360823",
-          "type": "feature",
-          "name": "product-delivery-route.tsx",
-          "path": "web/src/features/departments/product-delivery-route.tsx",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         }
