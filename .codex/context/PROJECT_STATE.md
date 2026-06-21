@@ -2,6 +2,61 @@
 
 Last updated: 2026-06-21
 
+- 2026-06-21: `LUC-5401` source-control closure is in verification for the
+  [LUC-5399](/LUC/issues/LUC-5399) Roost known-state evidence packet. Output:
+  `docs/planning/luc-5401-source-control-closure-for-luc-5399-evidence-packet.md`.
+  Starting state: `main...origin/main [ahead 102]`, HEAD `52407648`.
+  Dirty set classified as inherited [LUC-5399](/LUC/issues/LUC-5399)
+  source-of-truth state/context updates plus the untracked
+  `docs/planning/luc-5399-known-state-evidence-and-architecture-baseline.md`
+  packet. Generated architecture/app-completion/status exports were clean
+  against `HEAD` at closure start. Verification: `git diff --check` PASS with
+  LF-to-CRLF warnings only; `git diff --cached --check` PASS; generated JSON
+  parse PASS; scoped high-confidence secret/private-key scan PASS with `0`
+  matches; `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  evidence queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass).
+  Local no-push commit created; final immutable SHA is recorded in the
+  Paperclip closure comment. Push/deploy/protected smoke remain out of scope.
+
+- 2026-06-21: `LUC-5402` User configuration QA proof ladder completed for
+  the focused slice delegated by [LUC-5399](/LUC/issues/LUC-5399). Output:
+  `docs/planning/luc-5402-user-configuration-proof-ladder.md`. Evidence:
+  selected `User configuration` from the app-completion confidence debt
+  because recent Account access, Subscription/Entitlement, and Dashboard
+  overview proofs already exist; mapped it to integration settings and Google
+  Drive configuration surfaces plus `src/tests/api.test.ts`;
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5402-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55502`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests; `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`). Cleanup found no validation DB
+  container and no `chrome-headless-shell` process. Disposition: verified
+  done; no repair issue warranted. Browser settings proof and protected
+  production proof remain separate future gates; deploy impact none.
+
+- 2026-06-21: `LUC-5399` Roost known-state evidence and architecture
+  baseline completed for the local-board wake comment. Output:
+  `docs/planning/luc-5399-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness refresh PASS in `14490ms`,
+  generated `2026-06-21T01:13:29.523Z` with `2443` entities / `5182`
+  relations / `13784` files; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`, all gates pass); `npm run check:route-capabilities` PASS (`180`
+  manifest routes / `35` route files); app-completion refresh PASS with
+  `832` items / `7` flows / `803` missing test links / `10` browser-review
+  needs / `2` blocked items / `2` missing doc links. Task-sync reports `0`
+  actionable task-link, implementation-task, and verified-proof gaps;
+  ownership gaps remain `0`. No feature code, schema, migration, runtime,
+  protected smoke, production mutation, credential access, secret disclosure,
+  browser, database, Docker, server, provider, or watcher action occurred.
+  Next lanes: source-control closure for this generated/status/planning packet
+  in [LUC-5401](/LUC/issues/LUC-5401) and one focused QA proof ladder from
+  refreshed app-completion confidence debt in [LUC-5402](/LUC/issues/LUC-5402).
+  Deploy impact none; protected target proof remains approval/credential
+  gated.
+
 - 2026-06-21: `LUC-5395` source-control closure completed locally for the
   [LUC-5394](/LUC/issues/LUC-5394) Roost known-state evidence packet, also
   preserving same-wave [LUC-5396](/LUC/issues/LUC-5396) state, planning, and

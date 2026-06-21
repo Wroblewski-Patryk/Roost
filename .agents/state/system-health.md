@@ -1,5 +1,29 @@
 # System Health
 
+- 2026-06-21: `LUC-5401` is closing source control for the
+  [LUC-5399](/LUC/issues/LUC-5399) Roost known-state evidence packet. Current
+  interpretation: inherited state/context evidence notes plus the parent
+  evidence packet are coherent closure scope; generated
+  architecture/app-completion/status exports were already clean against `HEAD`.
+  Deploy impact: none; no runtime, protected smoke, production, credential,
+  schema, migration, database, Docker, browser, server, provider, or watcher
+  action occurred. Diff hygiene, generated JSON parse, scoped high-confidence
+  secret/private-key scan, and `npm run architecture:status` passed. Local
+  no-push commit is ready to be created in this heartbeat.
+
+- 2026-06-21: `LUC-5399` known-state evidence is GREEN for local
+  architecture/status evidence. Architecture awareness PASS generated
+  `2026-06-21T01:13:29.523Z` with `2443` entities / `5182` relations /
+  `13784` files. `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass). `npm run check:route-capabilities` PASS (`180` manifest routes
+  / `35` route files). App-completion refresh PASS (`832` items / `7` flows /
+  `803` missing test links / `10` browser-review needs / `2` blocked items /
+  `2` missing doc links). Follow-up lanes are [LUC-5401](/LUC/issues/LUC-5401)
+  source-control closure and [LUC-5402](/LUC/issues/LUC-5402) focused QA proof
+  ladder. Protected runtime proof was not run and remains approval/credential
+  gated.
+
 - 2026-06-21: `LUC-5395` source-control closure is verified for the
   [LUC-5394](/LUC/issues/LUC-5394) Roost known-state evidence packet. Current
   interpretation: generated architecture/app-completion/status exports plus

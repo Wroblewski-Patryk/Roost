@@ -1,5 +1,54 @@
 # Next Steps
 
+- `LUC-5401` source-control closure for
+  [LUC-5399](/LUC/issues/LUC-5399) is complete locally. Closure packet:
+  `docs/planning/luc-5401-source-control-closure-for-luc-5399-evidence-packet.md`.
+  Current classification: inherited [LUC-5399](/LUC/issues/LUC-5399)
+  state/context notes plus the untracked parent evidence packet are coherent
+  source-control closure scope; generated architecture/app-completion/status
+  exports were clean against `HEAD` at closure start. Verification:
+  `git diff --check` PASS with LF-to-CRLF warnings only; `git diff --cached
+  --check` PASS; generated JSON parse PASS; scoped high-confidence
+  secret/private-key scan PASS with `0` matches; `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`).
+  Push/deploy remain out of scope.
+
+- `LUC-5402` QA proof-ladder selection from the
+  [LUC-5399](/LUC/issues/LUC-5399) app-completion confidence debt is complete.
+  Evidence packet:
+  `docs/planning/luc-5402-user-configuration-proof-ladder.md`. Verification:
+  selected `User configuration` because Account access,
+  Subscription/Entitlement, and Dashboard overview already had fresh local
+  proof, mapped it to integration-settings / Google Drive configuration
+  surfaces and `src/tests/api.test.ts`, then ran
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5402-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55502`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests. `npm run check:route-capabilities` PASS and `npm run
+  architecture:status` PASS. Cleanup found no validation DB container and no
+  `chrome-headless-shell` process. No product repair issue is warranted.
+  Remaining owner/action: browser settings proof and protected production proof
+  remain separate future gates if selected by release ownership.
+
+- `LUC-5399` IPM known-state evidence pass is complete locally with
+  source-control closure still required. Evidence packet:
+  `docs/planning/luc-5399-known-state-evidence-and-architecture-baseline.md`.
+  Verification: architecture-awareness refresh PASS (`2443` entities / `5182`
+  relations / `13784` files, generated `2026-06-21T01:13:29.523Z`);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`); `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files); app-completion refresh PASS
+  (`832` items / `7` flows / `803` missing test links / `10` browser-review
+  needs / `2` blocked items / `2` missing doc links). Remaining
+  owners/actions: source-control closure lane [LUC-5401](/LUC/issues/LUC-5401)
+  must classify generated/status/planning dirty files, run diff hygiene,
+  generated JSON parse, scoped secret/private-key scan, and architecture status
+  before local no-push commit or blocker. QA lane [LUC-5402](/LUC/issues/LUC-5402)
+  must select one focused proof ladder from refreshed app-completion confidence
+  debt and create a repair issue only if proof finds a real defect. Protected
+  target proof remains approval/credential gated.
+
 - `LUC-5395` source-control closure for
   [LUC-5394](/LUC/issues/LUC-5394) is complete locally. Closure packet:
   `docs/planning/luc-5395-source-control-closure-for-luc-5394-evidence-packet.md`.

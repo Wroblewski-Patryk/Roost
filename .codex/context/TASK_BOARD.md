@@ -2,6 +2,52 @@
 
 ## Now
 
+- 2026-06-21: `LUC-5401` source-control closure for
+  [LUC-5399](/LUC/issues/LUC-5399) is complete locally. Output:
+  `docs/planning/luc-5401-source-control-closure-for-luc-5399-evidence-packet.md`.
+  Current classification: inherited [LUC-5399](/LUC/issues/LUC-5399)
+  state/context notes plus the untracked parent evidence packet are coherent
+  source-control closure scope; generated architecture/app-completion/status
+  exports were clean against `HEAD` at closure start. Evidence: `git diff
+  --check` PASS with LF-to-CRLF warnings only; `git diff --cached --check`
+  PASS; generated JSON parse PASS; scoped high-confidence secret/private-key
+  scan PASS with `0` matches; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`). Deploy impact
+  none; protected target proof remains approval/credential gated.
+
+- 2026-06-21: `LUC-5402` app-completion User configuration QA proof ladder
+  is complete for the focused slice from [LUC-5399](/LUC/issues/LUC-5399).
+  Output: `docs/planning/luc-5402-user-configuration-proof-ladder.md`.
+  Selected flow: `User configuration`, mapped to integration settings and
+  Google Drive configuration surfaces plus `src/tests/api.test.ts`. Evidence:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5402-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55502`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests; `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`). Cleanup found no validation DB
+  container and no `chrome-headless-shell` process. Disposition: `DONE`; no
+  product repair issue warranted. Browser settings proof and protected
+  production proof remain separate future gates; deploy impact none.
+
+- 2026-06-21: `LUC-5399` known-state evidence and architecture baseline is
+  complete for the local-board wake comment, with source-control closure still
+  required for this generated/status/planning evidence batch. Output:
+  `docs/planning/luc-5399-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS in `14490ms`, generated
+  `2026-06-21T01:13:29.523Z` (`2443` entities / `5182` relations / `13784`
+  files); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queue `0`, worklist `0`, delta `0/0/0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  app-completion refresh PASS (`832` items / `7` flows / `803` missing test
+  links / `10` browser-review needs / `2` blocked items / `2` missing doc
+  links). Task-sync and ownership gaps remain `0`. Disposition: IPM evidence
+  scope complete; source-control closure delegated to
+  [LUC-5401](/LUC/issues/LUC-5401), and focused QA proof ladder delegated to
+  [LUC-5402](/LUC/issues/LUC-5402). Deploy impact none; protected target proof
+  remains approval/credential gated.
+
 - 2026-06-21: `LUC-5395` source-control closure for
   [LUC-5394](/LUC/issues/LUC-5394) is complete locally. Output:
   `docs/planning/luc-5395-source-control-closure-for-luc-5394-evidence-packet.md`.

@@ -1,5 +1,52 @@
 # Module Confidence Ledger
 
+QA proof note: [LUC-5402](/LUC/issues/LUC-5402) is VERIFIED_DONE for the
+`User configuration` proof slice selected from the
+[LUC-5399](/LUC/issues/LUC-5399) app-completion confidence debt. Evidence
+packet:
+`docs/planning/luc-5402-user-configuration-proof-ladder.md`. Selected
+journey: owner-authenticated integration settings and Google Drive
+configuration posture, mapped to
+`src/modules/integration-settings/integration-settings.routes.ts`,
+`src/integrations/integration-settings.service.ts`,
+`src/integrations/google-drive/google-drive.auth.ts`,
+`src/modules/google-drive/google-drive.routes.ts`,
+`src/modules/connection/connection.routes.ts`,
+`web/src/features/settings/settings-routes.tsx`, and `src/tests/api.test.ts`.
+Local proof ran `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5402-postgres`
+`COMPANYCORE_TEST_DB_PORT=55502`
+`COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local`: server
+and web build PASS, all `31` migrations applied, seed PASS, and `7/7` node
+test subtests PASS. The selected proof covers redacted integration settings
+readback, Google Drive OAuth URL/exchange behavior, service-key denial for
+owner OAuth actions, stored-token/secret handling, folder discovery/import,
+changes reconciliation, provider event recovery, and workspace isolation
+through the existing protected API flow. `npm run check:route-capabilities`
+and `npm run architecture:status` also passed. Cleanup found no validation DB
+container and no `chrome-headless-shell` process. Confidence classification:
+the current API configuration posture is locally verified; no product repair
+issue is warranted. Residual risk: desktop/mobile browser proof for
+`/workspace/settings` and protected production proof remain separate future
+gates.
+
+IPM evidence note: [LUC-5399](/LUC/issues/LUC-5399) refreshed the Roost
+known-state architecture and app-completion baseline. Evidence packet:
+`docs/planning/luc-5399-known-state-evidence-and-architecture-baseline.md`.
+Scanner PASS generated `2026-06-21T01:13:29.523Z` with `2443` entities,
+`5182` relations, and `13784` files. `npm run architecture:status` PASS
+(`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`) and `npm run
+check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+App-completion refresh PASS generated `2026-06-21T01:13:56.851Z` with `832`
+items, `7` flows, `803` missing test links, `10` browser-review needs, `2`
+blocked items, and `2` missing doc links. Task-sync, ownership,
+implementation-task, and verified-without-proof gaps remain `0`. Confidence
+classification: local architecture and route exposure are verified; no broad
+feature repair is warranted from this pass. Source-control closure for the
+refreshed generated/status/planning evidence batch is delegated to
+[LUC-5401](/LUC/issues/LUC-5401). Focused QA proof-ladder selection is
+delegated to [LUC-5402](/LUC/issues/LUC-5402). Protected target proof remains
+approval/credential gated.
+
 QA proof note: [LUC-5396](/LUC/issues/LUC-5396) is VERIFIED_DONE for the
 `Dashboard overview` proof slice selected from the
 [LUC-5394](/LUC/issues/LUC-5394) app-completion confidence debt. Evidence
