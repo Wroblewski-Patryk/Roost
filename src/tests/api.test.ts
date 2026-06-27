@@ -9742,4 +9742,76 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(eventTypes.includes("workforce_entity_sync_requested"));
   assert.ok(eventTypes.includes("task_synced_from_clickup"));
   assert.ok(eventTypes.includes("sync_succeeded"));
+
+  const v1AliasRegister = await request("/v1/auth/register", {
+    method: "POST",
+    body: JSON.stringify({
+      email: "v1-auth-alias-owner@example.com",
+      password: "very-strong-password",
+      name: "V1 Auth Alias Owner",
+      workspaceName: "V1 Auth Alias Workspace"
+    })
+  });
+  assert.equal(v1AliasRegister.status, 201);
+  const v1AliasRegisterBody = v1AliasRegister.body as {
+    data: {
+      token: string;
+      user: { id: string; email: string; name: string };
+      workspace: { id: string; name: string };
+    };
+  };
+  assert.ok(v1AliasRegisterBody.data.token);
+  assert.equal(v1AliasRegisterBody.data.user.email, "v1-auth-alias-owner@example.com");
+  assert.equal(v1AliasRegisterBody.data.user.name, "V1 Auth Alias Owner");
+  assert.equal(v1AliasRegisterBody.data.workspace.name, "V1 Auth Alias Workspace");
+
+  const v1AliasLogin = await request("/v1/auth/login", {
+    method: "POST",
+    body: JSON.stringify({
+      email: "v1-auth-alias-owner@example.com",
+      password: "very-strong-password"
+    })
+  });
+  assert.equal(v1AliasLogin.status, 200);
+  const v1AliasLoginBody = v1AliasLogin.body as {
+    data: {
+      token: string;
+      user: { id: string; email: string; name: string };
+      workspace: { id: string; name: string };
+    };
+  };
+  assert.ok(v1AliasLoginBody.data.token);
+  assert.equal(v1AliasLoginBody.data.user.id, v1AliasRegisterBody.data.user.id);
+  assert.equal(v1AliasLoginBody.data.user.email, v1AliasRegisterBody.data.user.email);
+  assert.equal(v1AliasLoginBody.data.workspace.id, v1AliasRegisterBody.data.workspace.id);
+
+  const v1AliasMe = await request("/v1/auth/me", {
+    headers: { Authorization: `Bearer ${v1AliasLoginBody.data.token}` }
+  });
+  assert.equal(v1AliasMe.status, 200);
+  const v1AliasMeBody = v1AliasMe.body as {
+    data: { authType: string; userId: string; workspaceId: string; workspaces: Array<{ id: string; active: boolean }> };
+  };
+  assert.equal(v1AliasMeBody.data.authType, "user");
+  assert.equal(v1AliasMeBody.data.userId, v1AliasRegisterBody.data.user.id);
+  assert.equal(v1AliasMeBody.data.workspaceId, v1AliasRegisterBody.data.workspace.id);
+  assert.ok(v1AliasMeBody.data.workspaces.some((workspace) => (
+    workspace.id === v1AliasRegisterBody.data.workspace.id && workspace.active === true
+  )));
+
+  const v1AliasInvalidLogin = await request("/v1/auth/login", {
+    method: "POST",
+    body: JSON.stringify({
+      email: "v1-auth-alias-owner@example.com",
+      password: "wrong-password"
+    })
+  });
+  assert.equal(v1AliasInvalidLogin.status, 401);
+  assert.equal((v1AliasInvalidLogin.body as { error: string }).error, "invalid_credentials");
+
+  const v1AliasInvalidBearerMe = await request("/v1/auth/me", {
+    headers: { Authorization: "Bearer not-a-valid-owner-token" }
+  });
+  assert.equal(v1AliasInvalidBearerMe.status, 401);
+  assert.equal((v1AliasInvalidBearerMe.body as { error: string }).error, "invalid_auth_token");
 });
