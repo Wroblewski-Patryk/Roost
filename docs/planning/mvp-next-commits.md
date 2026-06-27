@@ -1,5 +1,26 @@
 # MVP Next Commits
 
+- 2026-06-27: `LUC-5654` closed local source control for the
+  [LUC-5653](/LUC/issues/LUC-5653) evidence packet. Closure packet:
+  `docs/planning/luc-5654-source-control-closure-for-luc-5653-evidence-packet.md`.
+  Proof: generated JSON parse PASS; `git diff --check` PASS with LF-to-CRLF
+  warnings only; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`). Push/deploy/protected smoke held;
+  no product implementation follows from this source-control closure.
+
+- 2026-06-27: `LUC-5653` completed the latest Roost known-state evidence and
+  architecture baseline. Evidence packet:
+  `docs/planning/luc-5653-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-27T20:43:29.323Z` with `2497` entities / `5388` relations /
+  `16056` files; app-completion refresh PASS generated
+  `2026-06-27T20:43:37.445Z` with `887` items / `7` flows / `860` missing
+  test links / `0` blocked records; `npm run architecture:status` PASS;
+  `npm run check:route-capabilities` PASS; `git diff --check` PASS with
+  LF-to-CRLF warnings only. Source-control closure is delegated to
+  [LUC-5654](/LUC/issues/LUC-5654). Push/deploy/protected smoke held; no
+  product implementation follows from this baseline alone.
+
 - 2026-06-27: `LUC-5649` classified the generated document delta after
   [LUC-5646](/LUC/issues/LUC-5646). Classification packet:
   `docs/planning/luc-5649-generated-document-delta-classification-after-luc-5646.md`.

@@ -2,6 +2,69 @@
 
 ## Now
 
+- 2026-06-27: `LUC-5654` source-control closure for the
+  [LUC-5653](/LUC/issues/LUC-5653) evidence packet is complete locally.
+  Output:
+  `docs/planning/luc-5654-source-control-closure-for-luc-5653-evidence-packet.md`.
+  Evidence: generated JSON parse PASS for architecture-awareness
+  (`2026-06-27T20:43:29.323Z`, `2497` entities / `5388` relations),
+  architecture-health (`2497` entities / `5388` relations), and
+  app-completion (`2026-06-27T20:43:37.445Z`, `887` items / `7` flows /
+  `860` missing test links / `0` missing doc links / `0` blocked records);
+  `git diff --check` PASS with LF-to-CRLF warnings only; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`). Disposition: local no-push docs/generated/state closure done;
+  older sibling planning packets and browser evidence directories remain
+  outside this boundary. Deploy impact none.
+
+- 2026-06-27: `LUC-5653` Roost known-state evidence and architecture baseline
+  is complete locally with source-control sidecar required. Output:
+  `docs/planning/luc-5653-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS (`2497` entities / `5388`
+  relations / `16056` files, generated `2026-06-27T20:43:29.323Z`);
+  app-completion refresh PASS (`887` items / `7` flows / `860` missing test
+  links / `0` missing doc links / `0` blocked records, generated
+  `2026-06-27T20:43:37.445Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `git diff --check` PASS with LF-to-CRLF warnings only. Required reports
+  show no ownerless, disconnected-entity, task-link,
+  implementation-without-task, doc-link, blocked-record, or
+  verified-without-proof gaps. Disposition: no product repair warranted from
+  this baseline alone; [LUC-5654](/LUC/issues/LUC-5654) source-control closure
+  sidecar must classify and close the current generated/status/state packet.
+  Deploy impact none.
+
+- 2026-06-27: `LUC-5647` subscription and entitlement missing-test proof
+  ladder is complete. Output:
+  `docs/planning/luc-5647-subscription-entitlement-missing-test-proof-ladder.md`.
+  Evidence: app-completion generated `2026-06-27T20:14:16.507Z` reports
+  `536` subscription/entitlement entities, `514` missing test links, and
+  `18` implemented-needs-proof items; detailed subscription priority rows are
+  `106` `feature_or_capability` records with no concrete route/API/browser row
+  surfaced. Existing local proof packets cover Finance API/browser, Sales
+  context/browser handoff, Assets context/files/preview, and People/Agents
+  directory. `npm run check:route-capabilities` PASS; `npm run
+  architecture:status` PASS; `git diff --check` PASS with LF-to-CRLF warnings
+  only. Disposition: `DONE` as a QA selection/proof-ladder closure; no new
+  non-duplicated runtime QA proof target is selected. Next owner/action is
+  Docs Memory / scanner curation of docs-only subscription inference. Deploy
+  impact none.
+
+- 2026-06-27: `LUC-5648` top route missing-test-link mapping after
+  [LUC-5646](/LUC/issues/LUC-5646) is complete. Output:
+  `docs/planning/luc-5648-top-route-missing-test-link-map.md`. Evidence:
+  current app-completion snapshot generated `2026-06-27T20:14:16.507Z`
+  reports `883` items / `7` flows / `858` missing test links / `0` missing
+  doc links / `0` blocked records; top-200 priority queue has nine
+  route-shaped missing-test records: `/auth`, `/v1/auth`,
+  `POST /v1/integration-settings/google_drive/oauth/authorize-url`,
+  `POST /v1/integration-settings/google_drive/oauth/exchange`, `/auth/login`,
+  `/auth/register`, `src/modules/auth/auth.routes.ts`, `/dashboard`, and
+  `src/modules/dashboard/dashboard.routes.ts`. Disposition: mostly
+  evidence-link debt; smallest real follow-up is `/v1/auth` alias parity if
+  no existing test covers it. Deploy impact none.
+
 - 2026-06-27: `LUC-5641` Roost known-state evidence and architecture baseline
   is complete locally for PM scope. Output:
   `docs/planning/luc-5641-known-state-evidence-and-architecture-baseline.md`.

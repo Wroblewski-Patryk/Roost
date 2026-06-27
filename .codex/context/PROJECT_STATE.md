@@ -1,5 +1,66 @@
 # PROJECT_STATE
 
+- 2026-06-27: `LUC-5654` source-control closure completed locally for the
+  [LUC-5653](/LUC/issues/LUC-5653) known-state evidence packet. Output:
+  `docs/planning/luc-5654-source-control-closure-for-luc-5653-evidence-packet.md`.
+  Evidence: generated JSON parse PASS for architecture-awareness
+  (`2026-06-27T20:43:29.323Z`, `2497` entities / `5388` relations),
+  architecture-health (`2497` entities / `5388` relations), and
+  app-completion (`2026-06-27T20:43:37.445Z`, `887` items / `7` flows /
+  `860` missing test links / `0` missing doc links / `0` blocked records);
+  `git diff --check` PASS with LF-to-CRLF warnings only; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass). No product code, schema,
+  migration, runtime server, browser, database container, Docker, push,
+  deploy, protected smoke, production mutation, provider action, credential
+  access, or secret disclosure occurred. Deploy impact none; push held for
+  batch.
+
+- 2026-06-27: `LUC-5653` Roost known-state evidence and architecture baseline
+  completed in the Roost PM lane with source-control sidecar required. Output:
+  `docs/planning/luc-5653-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness refresh PASS generated
+  `2026-06-27T20:43:29.323Z` with `2497` entities / `5388` relations /
+  `16056` files and scanner overrides applied (`16` entity / `3` relation);
+  app-completion refresh PASS generated `2026-06-27T20:43:37.445Z` with
+  `887` items / `7` flows / `860` missing test links / `0` missing doc links
+  / `0` blocked records; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass);
+  `npm run check:route-capabilities` PASS (`180` manifest routes / `35`
+  route files); `git diff --check` PASS with LF-to-CRLF warnings only.
+  Required reports read: architecture-health, proof register, dependency,
+  ownership, and task synchronization. No feature code, schema, migration,
+  runtime server, browser, database container, Docker, push, deploy,
+  protected smoke, production mutation, provider action, credential access, or
+  secret disclosure occurred. Next owners: [LUC-5654](/LUC/issues/LUC-5654)
+  source-control sidecar closes the generated/status/state packet; Docs Memory curates docs-only
+  subscription/entitlement inference; QA selects only non-duplicated concrete
+  runtime proof after curation. Deploy impact none.
+
+- 2026-06-27: `LUC-5647` subscription and entitlement missing-test proof
+  ladder completed in the QA lane. Output:
+  `docs/planning/luc-5647-subscription-entitlement-missing-test-proof-ladder.md`.
+  Evidence: current app-completion generated `2026-06-27T20:14:16.507Z`
+  reports `Subscription and entitlement` with `536` entities, `514` missing
+  test links, `18` implemented-needs-proof items, and `4` ok items. Detailed
+  readback found `106` subscription priority-review rows, all
+  `feature_or_capability`, and no concrete route/API/browser row in the
+  current detailed queue. Existing concrete proof packets already cover
+  Finance API/browser ([LUC-5392](/LUC/issues/LUC-5392),
+  [LUC-5433](/LUC/issues/LUC-5433)), Sales context/browser handoff
+  ([LUC-5624](/LUC/issues/LUC-5624), [LUC-5628](/LUC/issues/LUC-5628)),
+  Assets context/files/preview, and People/Agents directory. `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`, all gates pass); `git diff --check` PASS
+  with LF-to-CRLF warnings only. No product code, schema, migration,
+  browser/server/database rerun, protected smoke, production mutation, push,
+  deploy, credential access, or provider action occurred. Next owner/action:
+  Docs Memory / scanner curation separates docs-only feature-capability
+  inference from real missing journey proof; QA should only rerun this flow
+  when a future refresh surfaces a concrete unverified runtime surface. Deploy
+  impact none.
+
 - 2026-06-27: `LUC-5641` Roost known-state evidence and architecture baseline
   completed in the Roost PM lane. Output:
   `docs/planning/luc-5641-known-state-evidence-and-architecture-baseline.md`.

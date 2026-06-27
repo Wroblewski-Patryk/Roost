@@ -1,5 +1,73 @@
 # Next Steps
 
+- `LUC-5654` source-control closure for the
+  [LUC-5653](/LUC/issues/LUC-5653) evidence packet is complete locally.
+  Closure packet:
+  `docs/planning/luc-5654-source-control-closure-for-luc-5653-evidence-packet.md`.
+  Verification: generated JSON parse PASS for architecture-awareness
+  (`2026-06-27T20:43:29.323Z`, `2497` entities / `5388` relations),
+  architecture-health (`2497` entities / `5388` relations), and
+  app-completion (`2026-06-27T20:43:37.445Z`, `887` items / `7` flows /
+  `860` missing test links / `0` missing doc links / `0` blocked records);
+  `git diff --check` PASS with LF-to-CRLF warnings only; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`). Push/deploy/protected smoke held. Next owner/action: Docs Memory
+  curates docs-only subscription/entitlement inference before QA opens another
+  duplicate runtime proof; protected target proof remains approval/credential
+  gated.
+
+- `LUC-5653` known-state evidence collection is complete with source-control
+  sidecar required. Evidence packet:
+  `docs/planning/luc-5653-known-state-evidence-and-architecture-baseline.md`.
+  Verification: Paperclip architecture-awareness refresh PASS generated
+  `2026-06-27T20:43:29.323Z` with `2497` entities / `5388` relations /
+  `16056` files and scanner overrides applied (`16` entity / `3` relation);
+  app-completion refresh PASS generated `2026-06-27T20:43:37.445Z` with
+  `887` items / `7` flows / `860` missing test links / `0` missing doc links
+  / `0` blocked records; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `git diff --check` PASS with LF-to-CRLF warnings only. Next owner/action:
+  close [LUC-5654](/LUC/issues/LUC-5654), the LUC-5653 generated/status/state
+  source-control sidecar, then let Docs Memory curate docs-only
+  subscription/entitlement inference before QA opens another duplicate runtime
+  proof. Protected target proof remains approval/credential gated.
+
+- `LUC-5647` subscription and entitlement missing-test proof ladder is
+  complete. Evidence packet:
+  `docs/planning/luc-5647-subscription-entitlement-missing-test-proof-ladder.md`.
+  Current app-completion generated `2026-06-27T20:14:16.507Z` reports
+  `536` subscription/entitlement entities, `514` missing test links, and
+  `18` implemented-needs-proof items, but detailed readback shows `106`
+  subscription priority-review rows all classified as
+  `feature_or_capability`. Existing concrete runtime evidence already covers
+  Finance API/browser, Sales context/browser handoff, Assets
+  context/files/preview, and People/Agents directory. Verification:
+  `npm run check:route-capabilities` PASS, `npm run architecture:status` PASS,
+  and `git diff --check` PASS with LF-to-CRLF warnings only. Next
+  owner/action: Docs Memory / scanner curation should separate docs-only
+  subscription inference from real missing journey proof; QA should not rerun
+  duplicate Finance/Sales/Assets/People proof unless a fresh regression or
+  concrete unverified runtime route appears. Protected target proof remains
+  approval/credential gated.
+
+- `LUC-5648` top route missing-test-link mapping after
+  [LUC-5646](/LUC/issues/LUC-5646) is complete. Evidence packet:
+  `docs/planning/luc-5648-top-route-missing-test-link-map.md`. Source snapshot:
+  `docs/status/app-completion-index.json` generated
+  `2026-06-27T20:14:16.507Z` with `883` items / `7` flows / `858` missing
+  test links / `0` missing doc links / `0` blocked records. Top route-shaped
+  records mapped: `/auth`, `/v1/auth`,
+  `POST /v1/integration-settings/google_drive/oauth/authorize-url`,
+  `POST /v1/integration-settings/google_drive/oauth/exchange`, `/auth/login`,
+  `/auth/register`, `src/modules/auth/auth.routes.ts`, `/dashboard`, and
+  `src/modules/dashboard/dashboard.routes.ts`. Classification: mostly
+  evidence-link debt; the only likely new narrow proof is `/v1/auth` alias
+  parity if existing tests do not cover it. Next owner/action: Engineering
+  Delivery Lead and Docs Memory Lead map existing auth, Google Drive OAuth,
+  and dashboard tests/proof packets to route records and add only the smallest
+  missing alias assertion if needed. Deploy impact none.
+
 - `LUC-5646` known-state evidence collection is complete with follow-up proof
   selection. Evidence packet:
   `docs/planning/luc-5646-known-state-evidence-and-architecture-baseline.md`.

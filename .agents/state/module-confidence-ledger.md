@@ -1,5 +1,76 @@
 # Module Confidence Ledger
 
+Source-control note: [LUC-5654](/LUC/issues/LUC-5654) is VERIFIED_DONE for
+the [LUC-5653](/LUC/issues/LUC-5653) generated/status/state evidence packet.
+Closure packet:
+`docs/planning/luc-5654-source-control-closure-for-luc-5653-evidence-packet.md`.
+Generated JSON parse/readback passed for architecture-awareness
+(`2026-06-27T20:43:29.323Z`, `2497` entities / `5388` relations),
+architecture-health (`2497` entities / `5388` relations), and app-completion
+(`2026-06-27T20:43:37.445Z`, `887` items / `7` flows / `860` missing test
+links / `0` missing doc links / `0` blocked records). `git diff --check`
+passed with LF-to-CRLF warnings only, and `npm run architecture:status`
+passed (`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`). Confidence
+classification: source-control closure is verified locally for the current
+docs/generated/state packet; product journey confidence remains unchanged and
+partially verified where missing-test-link debt still requires curation and
+focused proof.
+
+Known-state note: [LUC-5653](/LUC/issues/LUC-5653) is
+VERIFIED_WITH_FOLLOWUPS for Roost architecture/app-completion baseline in the
+Roost PM lane. Evidence packet:
+`docs/planning/luc-5653-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-27T20:43:29.323Z` with
+`2497` entities / `5388` relations / `16056` files and scanner overrides
+applied (`16` entity / `3` relation). App-completion refresh generated
+`2026-06-27T20:43:37.445Z` with `887` items / `7` flows / `860` missing
+test links / `0` missing doc links / `0` blocked records. `npm run
+architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+`0/0/0`); `npm run check:route-capabilities` PASS (`180` manifest routes /
+`35` route files); `git diff --check` PASS with LF-to-CRLF warnings only.
+Confidence classification: architecture, route capability, ownership,
+task-link, docs-link, and blocked-record posture are verified locally;
+product journey confidence remains partially verified because broad
+missing-test-link debt requires focused QA proof ladders and Docs Memory
+curation. Protected production proof remains approval/credential gated.
+Source-control closure remains in linked sidecar [LUC-5654](/LUC/issues/LUC-5654)
+because the shared worktree contains mixed older sibling packets.
+
+QA selection note: [LUC-5647](/LUC/issues/LUC-5647) is VERIFIED_DONE for the
+post-[LUC-5646](/LUC/issues/LUC-5646) `Subscription and entitlement`
+missing-test proof ladder. Evidence packet:
+`docs/planning/luc-5647-subscription-entitlement-missing-test-proof-ladder.md`.
+Current app-completion generated `2026-06-27T20:14:16.507Z` reports `536`
+subscription/entitlement entities with `514` missing test links and `18`
+implemented-needs-proof items. QA readback found `106` detailed subscription
+priority rows, all `feature_or_capability`, with no concrete route/API/browser
+row surfaced in the current detailed queue. Concrete runtime confidence is
+already locally verified or partially verified by existing packets for Finance
+API/browser, Sales context/browser handoff, Assets context/files/preview, and
+People/Agents directory. `npm run check:route-capabilities`, `npm run
+architecture:status`, and `git diff --check` passed. Confidence classification:
+no new non-duplicated runtime QA proof target is selected; remaining debt is a
+Docs Memory / scanner-curation issue to separate docs-only subscription
+inference from real missing journey proof. Protected production proof remains
+approval/credential gated.
+
+Architecture mapping note: [LUC-5648](/LUC/issues/LUC-5648) is VERIFIED_DONE
+for the top route-shaped missing-test-link map after [LUC-5646](/LUC/issues/LUC-5646).
+Evidence packet:
+`docs/planning/luc-5648-top-route-missing-test-link-map.md`. Source snapshot
+`docs/status/app-completion-index.json` generated
+`2026-06-27T20:14:16.507Z` reports `883` items / `7` flows / `858` missing
+test links / `0` missing doc links / `0` blocked records. The top-200
+priority queue contains nine route-shaped records: `/auth`, `/v1/auth`,
+`POST /v1/integration-settings/google_drive/oauth/authorize-url`,
+`POST /v1/integration-settings/google_drive/oauth/exchange`, `/auth/login`,
+`/auth/register`, `src/modules/auth/auth.routes.ts`, `/dashboard`, and
+`src/modules/dashboard/dashboard.routes.ts`. Confidence classification:
+mostly evidence-link debt with one likely small alias-parity proof gap for
+`/v1/auth`; Google Drive OAuth, auth pages, and dashboard command already have
+meaningful proof that should be linked before new proof work is requested. No
+architecture or runtime repair follows from this mapping alone.
+
 Known-state note: [LUC-5646](/LUC/issues/LUC-5646) is
 VERIFIED_WITH_FOLLOWUPS for Roost architecture/app-completion baseline in the
 Roost PM lane. Evidence packet:
