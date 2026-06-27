@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-06-27T14:49:44.922Z
+Generated: 2026-06-27T19:04:21.126Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -12,18 +12,18 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 
 ## Counts
 
-- Items: 845
+- Items: 876
 - User flows: 7
 - Needs browser/screenshot review: 0
-- Missing test link: 826
+- Missing test link: 851
 - Missing doc link: 0
-- Blocked: 2
+- Blocked: 0
 
 ## Flow Summary
 
-- Subscription and entitlement: 500 entities; risks {"missing_test_link":484,"implemented_needs_proof":14,"blocked":2}; gates {"subscription":500,"configuration":17,"auth":3}
+- Subscription and entitlement: 529 entities; risks {"missing_test_link":507,"implemented_needs_proof":18,"ok":4}; gates {"subscription":529,"configuration":18,"auth":4}
 - Unclassified user workflow: 195 entities; risks {"missing_test_link":194,"implemented_needs_proof":1}; gates {"auth":5,"configuration":9}
-- Account access: 86 entities; risks {"missing_test_link":85,"ok":1}; gates {"auth":86,"configuration":9,"subscription":11}
+- Account access: 88 entities; risks {"missing_test_link":87,"ok":1}; gates {"auth":88,"configuration":10,"subscription":13}
 - User configuration: 54 entities; risks {"missing_test_link":53,"implemented_needs_proof":1}; gates {"configuration":54}
 - Dashboard overview: 6 entities; risks {"missing_test_link":6}; gates {}
 - Trading operation: 3 entities; risks {"missing_test_link":3}; gates {}
@@ -48,6 +48,8 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Account access | missing_test_link | feature_or_capability | LUC-5132 Security And AI Authority Evidence Recheck | Docs Memory Lead | docs/planning/luc-5132-security-ai-authority-evidence-recheck.md | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | LUC-5315 Auth Workspace API-Key Authority Proof Ladder | Docs Memory Lead | docs/planning/luc-5315-auth-workspace-api-key-authority-proof-ladder.md | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | LUC-5333 Department And Workforce Authority Proof Ladder | Docs Memory Lead | docs/planning/luc-5333-department-workforce-authority-proof-ladder.md | auth, subscription |
+| Account access | missing_test_link | feature_or_capability | LUC-5561 Auth And Account Access Local Smoke Proof | Docs Memory Lead | docs/planning/luc-5561-auth-account-access-local-smoke-proof.md | auth, subscription |
+| Account access | missing_test_link | feature_or_capability | LUC-5570 API Auth/Config Route Coverage | Docs Memory Lead | docs/planning/luc-5570-api-auth-config-route-coverage.md | auth, subscription, configuration |
 | Account access | missing_test_link | feature_or_capability | REACT-WEB-LAYOUT-001 Authenticated Layout Foundation | Docs Memory Lead | docs/planning/react-web-layout-foundation-task-contract.md | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | V1 Production Authenticated Parity Task Contract | Docs Memory Lead | docs/planning/v1-production-authenticated-parity-task-contract.md | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | V1AUTH-001 Owner Auth Redirect Flow | Docs Memory Lead | docs/planning/v1auth-001-owner-auth-redirect-task-contract.md | auth, subscription |
@@ -111,8 +113,6 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Account access | missing_test_link | feature_or_capability | client.ts | Engineering Delivery Lead | web/src/api/client.ts | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | errors.ts | Engineering Delivery Lead | web/src/api/errors.ts | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | canonicalPostAuthPath | Engineering Delivery Lead | web/src/app-route-registry.ts#canonicalPostAuthPath | auth |
-| Account access | missing_test_link | feature_or_capability | auth-pages.tsx | Engineering Delivery Lead | web/src/features/auth/auth-pages.tsx | auth |
-| Account access | missing_test_link | feature_or_capability | AuthRoute | Engineering Delivery Lead | web/src/features/auth/auth-pages.tsx#AuthRoute | auth |
 
 ## Agent Rule
 

@@ -88,6 +88,64 @@
         "docs/ux/pattern-gallery.md",
         "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
       ]
+    },
+    {
+      "path": "docs/NEXT_STEPS.md",
+      "status": "verified",
+      "description": "Historical and canonical queue index. The scanner must not treat its `Blocked Work` queue section as document-level blocked status.",
+      "evidence": [
+        "docs/planning/mvp-next-commits.md",
+        "docs/planning/luc-5627-blocked-status-label-curation.md"
+      ]
+    },
+    {
+      "path": "NO_TEMPORARY_SOLUTIONS.md",
+      "status": "verified",
+      "description": "Governance guardrail for proper architecture decisions. The scanner must not treat its blocked-work guidance section as document-level blocked status.",
+      "evidence": [
+        "DEFINITION_OF_DONE.md",
+        "docs/planning/luc-5627-blocked-status-label-curation.md"
+      ]
+    },
+    {
+      "path": "docs/planning/luc-5610-source-control-closure-for-luc-5609-evidence-packet.md",
+      "status": "verified",
+      "description": "Historical source-control closure packet with a blocked result. The scanner must not project this superseded closure outcome as an active architecture or app-completion blocker after the latest shared packet moved to LUC-5626.",
+      "evidence": [
+        "docs/planning/luc-5610-source-control-closure-for-luc-5609-evidence-packet.md",
+        "docs/planning/luc-5626-source-control-closure-for-luc-5623-evidence-packet.md",
+        "docs/planning/luc-5627-blocked-status-label-curation.md"
+      ]
+    },
+    {
+      "path": "docs/planning/luc-5615-source-control-closure-for-luc-5613-evidence-packet.md",
+      "status": "verified",
+      "description": "Historical source-control closure packet with a blocked result. The scanner must not project this superseded closure outcome as an active architecture or app-completion blocker after the latest shared packet moved to LUC-5626.",
+      "evidence": [
+        "docs/planning/luc-5615-source-control-closure-for-luc-5613-evidence-packet.md",
+        "docs/planning/luc-5626-source-control-closure-for-luc-5623-evidence-packet.md",
+        "docs/planning/luc-5627-blocked-status-label-curation.md"
+      ]
+    },
+    {
+      "path": "docs/planning/cc-08-001-assets-resource-system-spec.md",
+      "status": "verified",
+      "description": "Verified planning spec for the Assets resource system. The scanner must not treat the `Blocked Actions` safety section as an active blocked document status.",
+      "evidence": [
+        "docs/planning/cc-08-001-assets-resource-system-spec-task-contract.md",
+        "docs/planning/cc-08-002-assets-context-read-api-task-contract.md",
+        "docs/planning/luc-5568-assets-finance-blocked-spec-record-classification.md"
+      ]
+    },
+    {
+      "path": "docs/planning/dms-07-finance-system-spec.md",
+      "status": "verified",
+      "description": "Verified planning spec for the Finance system. The scanner must not treat the `Blocked Actions` safety section as an active blocked document status.",
+      "evidence": [
+        "docs/planning/dms-07-finance-system-spec-task-contract.md",
+        "docs/planning/dms-07-finance-context-read-api-task-contract.md",
+        "docs/planning/luc-5568-assets-finance-blocked-spec-record-classification.md"
+      ]
     }
   ],
   "relationOverrides": [

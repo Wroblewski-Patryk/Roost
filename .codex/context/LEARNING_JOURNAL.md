@@ -26,6 +26,27 @@ fixes for this repository.
 
 ## Entries
 
+### 2026-06-27 - Recheck Local Validation Residue Before Browser Reruns
+- Context: LUC-5561 reran auth/account browser proof after earlier local
+  attempts left evidence under `docs/ux/evidence/luc-5561-auth-account-access/`.
+- Symptom: Starting the proof server on `31561` failed with `EADDRINUSE`, and
+  an older failed browser report was still present in the evidence directory.
+- Root cause: A prior validation-owned `node dist/server.js` process was still
+  listening on the old proof port, and stale failure artifacts could have been
+  mistaken for the current verdict.
+- Guardrail: Before rerunning browser proof in an existing evidence directory,
+  inspect the target port, artifact timestamps, and process command line; use a
+  fresh port when ownership is ambiguous, then clean both current and confirmed
+  stale validation-owned processes before closure.
+- Preferred pattern: Record server PID/port/container in the proof packet,
+  write a single final report filename for the current verdict, and verify no
+  validation listeners, containers, or Playwright browser processes remain.
+- Avoid: Reusing stale evidence as the current result or killing unrelated
+  user processes without checking the command line and port.
+- Evidence: LUC-5561 final proof used `31562`, passed browser auth smoke, then
+  cleanup verified no listeners on `31561`/`31562`, no
+  `companycore-luc-5561*` containers, and no Playwright Chrome/headless rows.
+
 ### 2026-06-20 - Verify Validation Servers After Shell Timeouts
 - Context: LUC-5084 ran a local Playwright authenticated browser proof through
   a validation-owned Node server and disposable PostgreSQL container.

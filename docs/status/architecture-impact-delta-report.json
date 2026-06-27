@@ -1,49 +1,13 @@
 {
-  "generatedAt": "2026-06-20T07:53:37.097Z",
+  "generatedAt": "2026-06-27T19:01:37.076Z",
   "status": "passed",
   "firstRun": false,
   "summary": {
-    "changedNodes": 5,
+    "changedNodes": 0,
     "enteredTopCount": 0,
     "leftTopCount": 0
   },
   "enteredTopNodes": [],
   "leftTopNodes": [],
-  "topImpactDelta": [
-    {
-      "node_id": "FEAT-AUTO-0029",
-      "node_name": "Process Core Coverage Expansion",
-      "impact_score_before": 0,
-      "impact_score_after": 120,
-      "impact_score_delta": 120
-    },
-    {
-      "node_id": "AGENT-COORDINATOR",
-      "node_name": "Coordinator agent role",
-      "impact_score_before": 470,
-      "impact_score_after": 474,
-      "impact_score_delta": 4
-    },
-    {
-      "node_id": "TEST-API-LOCAL",
-      "node_name": "npm run test:api:local",
-      "impact_score_before": 197,
-      "impact_score_after": 198,
-      "impact_score_delta": 1
-    },
-    {
-      "node_id": "DOC-ARCH-EVIDENCE-SYSTEM",
-      "node_name": "Architecture evidence source doc",
-      "impact_score_before": 61,
-      "impact_score_after": 62,
-      "impact_score_delta": 1
-    },
-    {
-      "node_id": "API-AUTO-0170",
-      "node_name": "GET /v1/process-core/coverage",
-      "impact_score_before": 0,
-      "impact_score_after": 1,
-      "impact_score_delta": 1
-    }
-  ]
+  "topImpactDelta": []
 }

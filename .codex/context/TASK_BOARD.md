@@ -2,6 +2,149 @@
 
 ## Now
 
+- 2026-06-27: `LUC-5626` source-control closure is complete locally for the
+  latest [LUC-5623](/LUC/issues/LUC-5623) known-state evidence packet. Output:
+  `docs/planning/luc-5626-source-control-closure-for-luc-5623-evidence-packet.md`.
+  Evidence: generated JSON parse PASS; `git diff --check` PASS with
+  LF-to-CRLF warnings only; scoped high-confidence secret/private-key scan PASS
+  with no matches; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`). Disposition: local closure done;
+  push/deploy/protected smoke not needed. Remaining active owners are
+  [LUC-5628](/LUC/issues/LUC-5628) for Sales proof and any separate
+  source-control sidecars for older sibling packets.
+
+- 2026-06-27: `LUC-5623` Roost known-state evidence and architecture baseline
+  is complete locally and delegated. Output:
+  `docs/planning/luc-5623-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS (`2483` entities / `5335`
+  relations / `16036` files, generated `2026-06-27T18:56:55.015Z`);
+  app-completion refresh PASS (`871` items / `7` flows / `0` browser-review
+  needs / `847` missing test links / `0` missing doc links / `1` blocked
+  record, generated `2026-06-27T18:57:02.671Z`); `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`); `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files). Disposition: no product code repair in this lane.
+  Remaining owners/actions: [LUC-5626](/LUC/issues/LUC-5626) source-control
+  closure, [LUC-5627](/LUC/issues/LUC-5627) blocked-status curation, and
+  [LUC-5628](/LUC/issues/LUC-5628) Sales proof. Deploy impact none.
+
+- 2026-06-27: `LUC-5619` next app-completion missing-test proof lane selection
+  is complete. Output:
+  `docs/planning/luc-5619-next-app-completion-missing-test-proof-lane.md`.
+  Evidence: current app-completion snapshot generated
+  `2026-06-27T18:33:36.798Z` reports `866` items / `7` flows / `844`
+  missing test links / `0` blocked records. Recent proof history excludes
+  Account access, User configuration, Dashboard overview, Exchange connection,
+  Finance, and Assets as the first next target. Selected next lane:
+  `Subscription and entitlement -> Sales context and board local proof`,
+  covering `GET /v1/sales/context` plus
+  `/areas?area=03-sprzedaz&view=overview`. Disposition: `DONE` as a selection
+  lane; follow-up [LUC-5624](/LUC/issues/LUC-5624) should execute the Sales
+  API prerequisite and desktop/tablet/mobile browser proof. Deploy impact
+  none.
+
+- 2026-06-27: `LUC-5610` source-control closure is blocked for the
+  [LUC-5609](/LUC/issues/LUC-5609) evidence packet. Output:
+  `docs/planning/luc-5610-source-control-closure-for-luc-5609-evidence-packet.md`.
+  Classification: a strict LUC-5609-only singleton commit was superseded by
+  later same-family [LUC-5612](/LUC/issues/LUC-5612) and
+  [LUC-5613](/LUC/issues/LUC-5613) refreshes, so staging current singleton
+  files under [LUC-5610](/LUC/issues/LUC-5610) would cross ownership.
+  Verification:
+  `git diff --check` PASS with LF-to-CRLF warnings only; generated JSON parse
+  PASS; scoped high-confidence secret/private-key scan PASS with no matches;
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues
+  `0`, delta `0/0/0`). Disposition: no local commit created for LUC-5610.
+  Unblock owner/action: source-control integration owner closes the latest
+  shared generated/status/state packet in [LUC-5615](/LUC/issues/LUC-5615), or
+  the board explicitly approves consolidated closure under this issue. Older
+  sibling planning packets and QA/browser evidence directories remain
+  unstaged. Push held; deploy impact none.
+
+- 2026-06-27: `LUC-5613` Roost known-state evidence and architecture baseline
+  is complete locally. Output:
+  `docs/planning/luc-5613-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness current artifact PASS (`2478` entities /
+  `5317` relations / `16029` files, generated `2026-06-27T18:33:29.115Z`);
+  app-completion refresh PASS (`866` items / `7` flows / `0` browser-review
+  needs / `844` missing test links / `0` missing doc links / `0` blocked
+  records, generated `2026-06-27T18:33:36.798Z`); `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`); `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files). Disposition: no product repair issue warranted from this
+  pass. Remaining owners/actions: [LUC-5615](/LUC/issues/LUC-5615) classifies
+  and closes the current shared generated/status/state packet; QA/Test
+  continues the User configuration settings proof; runtime secret owner/board
+  operator remains owner for protected target proof. Deploy impact none.
+
+- 2026-06-27: `LUC-5569` User configuration settings proof ladder is complete.
+  Output: `docs/planning/luc-5569-user-settings-proof-ladder.md`. Selected
+  non-duplicated lane: current settings routes `/account/settings` and
+  `/workspace/settings`. Evidence: local API prerequisite
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5569-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55569`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after build, `31` migrations, seed, and `7/7` Node API subtests. Browser
+  proof on `http://127.0.0.1:31569` verified signed-in desktop/tablet/mobile
+  rendering, required settings text, `6` screenshots, and `consoleIssues=[]`
+  in `docs/ux/evidence/luc-5569-user-settings-proof/report.json`; report
+  assertion validator PASS. `npm run check:route-capabilities` PASS; `npm run
+  architecture:status` PASS; `git diff --check` PASS with LF-to-CRLF warnings
+  only. Disposition: `DONE`; no product repair issue warranted. Deploy impact
+  none.
+
+- 2026-06-27: `LUC-5612` stale blocked app-completion spec record curation is
+  complete. Output:
+  `docs/planning/luc-5612-stale-blocked-app-completion-spec-record-curation.md`.
+  Evidence: root cause was the architecture-awareness scanner treating
+  `## Blocked Actions` sections in `CC-08-001 Assets Resource System Spec` and
+  `DMS-07-001 Finance System Spec` as document-level `status=blocked`.
+  `docs/architecture/scanner-overrides.json` now marks both completed planning
+  specs as `verified` with evidence links while preserving their unsafe-action
+  guardrails. Architecture-awareness refresh PASS generated
+  `2026-06-27T18:33:29.115Z` (`2478` entities / `5317` relations /
+  `16029` files; overrides `12` entity / `3` relation). App-completion
+  refresh PASS generated `2026-06-27T18:33:36.798Z` (`866` items / `7` flows
+  / `0` browser-review needs / `844` missing test links / `0` missing doc
+  links / `0` blocked records). `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`); `git diff --check` PASS
+  with LF-to-CRLF warnings only. Disposition: `DONE`; no product repair child
+  issue warranted. Deploy impact none.
+
+- 2026-06-27: `LUC-5609` Roost known-state evidence and architecture baseline
+  is complete locally, with follow-up lanes required for closure and proof.
+  Output:
+  `docs/planning/luc-5609-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS (`2476` entities / `5309`
+  relations / `16019` files, generated `2026-06-27T18:25:04.381Z`);
+  app-completion refresh PASS (`864` items / `7` flows / `0` browser-review
+  needs / `843` missing test links / `0` missing doc links / `2` blocked
+  records, generated `2026-06-27T18:25:41.680Z`); `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`); `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files). Disposition: no product repair issue warranted from this
+  pass. Remaining owners/actions: [LUC-5610](/LUC/issues/LUC-5610)
+  source-control closure sidecar for generated and state changes;
+  [LUC-5611](/LUC/issues/LUC-5611) QA settings proof continuation from the
+  User configuration confidence debt; [LUC-5612](/LUC/issues/LUC-5612)
+  TSA/Docs curation for stale blocked app-completion spec records. Deploy
+  impact none; protected target proof remains approval/credential gated.
+
+- 2026-06-27: `LUC-5561` Auth and account access local smoke proof is
+  complete. Output:
+  `docs/planning/luc-5561-auth-account-access-local-smoke-proof.md`.
+  Evidence: `npm run test:api:local` PASS with
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5561-postgres`,
+  `COMPANYCORE_TEST_DB_PORT=55561`, and Docker Desktop launch disabled; the
+  run completed build, `31` migrations, seed, and `7/7` Node API subtests.
+  Browser proof on `http://127.0.0.1:31562` submitted registration and login
+  forms, verified session token persistence, protected route access to
+  `/areas?area=00-ogolny&view=overview`, and authenticated `/v1/auth/me`
+  readback. Artifacts:
+  `docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json`
+  and four screenshots. Disposition: `DONE`; no product repair issue
+  warranted. Deploy impact none.
+
 - 2026-06-27: `LUC-5556` focused QA proof ladder is partially verified with a
   local runtime blocker. Output:
   `docs/planning/luc-5556-focused-qa-proof-ladder-from-app-completion-debt.md`.

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-20T07:53:32.712Z",
+  "generatedAt": "2026-06-27T19:01:29.667Z",
   "nodes": [
     {
       "id": "FEAT-ARCH-EVIDENCE-SYSTEM",
@@ -4104,7 +4104,7 @@
       "layer": "backend",
       "module": "process-core",
       "feature": "process-core-coverage",
-      "verificationStatus": "implemented_not_verified",
+      "verificationStatus": "tested",
       "riskLevel": "medium",
       "filePath": "src/modules/process-core/process-core.routes.ts",
       "tags": [

@@ -8,8 +8,8 @@ module: "process-core"
 feature: "process-core-coverage"
 risk_level: "medium"
 completion_percent: "0"
-verification_status: "implemented_not_verified"
-last_verified_at: ""
+verification_status: "tested"
+last_verified_at: "2026-06-27"
 tags: "#api #auto-scaffold #missing"
 ---
 
@@ -18,7 +18,7 @@ tags: "#api #auto-scaffold #missing"
 - ID: `API-AUTO-0170`
 - Type: `api_route`
 - Status: `implemented`
-- Verification: `implemented_not_verified`
+- Verification: `tested`
 - Layer: `backend`
 - Module: `process-core`
 - Feature: `process-core-coverage`
@@ -57,7 +57,7 @@ Auto-scaffolded from manifest drift report.
 
 ## Evidence
 
-- `EVID-AUTO-00448` implemented_not_verified: missing docs
+- `EVID-AUTO-00448` tested: missing none
 
 ## Notes
 

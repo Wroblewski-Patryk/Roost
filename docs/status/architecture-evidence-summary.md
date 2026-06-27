@@ -1,6 +1,6 @@
 # Architecture Evidence Summary
 
-Generated at: 2026-06-20T07:53:32.712Z
+Generated at: 2026-06-27T19:01:29.667Z
 
 ## Counts
 
@@ -12,19 +12,17 @@ Generated at: 2026-06-20T07:53:32.712Z
 
 ## Verification Status
 
-- implemented_not_verified: 1
-- tested: 387
+- tested: 388
 - verified: 66
 
 ## Evidence Status
 
-- implemented_not_verified: 1
-- tested: 387
+- tested: 388
 - verified: 66
 
 ## Missing Evidence Queue
 
-- `API-AUTO-0170`: docs -> Add missing proof fields then upgrade to tested/verified with dated evidence.
+- No missing evidence recorded.
 
 ## Drift Detection
 

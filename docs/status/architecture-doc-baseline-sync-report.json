@@ -1,7 +1,7 @@
 {
-  "syncedAt": "2026-06-20T07:53:45.166Z",
+  "syncedAt": "2026-06-27T19:01:48.463Z",
   "status": "passed",
-  "changed": true,
+  "changed": false,
   "graph": {
     "nodes": 454,
     "relations": 765,

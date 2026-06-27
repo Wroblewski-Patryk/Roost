@@ -1,5 +1,113 @@
 # System Health
 
+- 2026-06-27: [LUC-5626](/LUC/issues/LUC-5626) completed local
+  source-control closure for the latest [LUC-5623](/LUC/issues/LUC-5623)
+  known-state evidence packet. Closure packet:
+  `docs/planning/luc-5626-source-control-closure-for-luc-5623-evidence-packet.md`.
+  Source-control hygiene passed: generated JSON parse succeeded,
+  `git diff --check` had only LF-to-CRLF warnings, scoped high-confidence
+  secret/private-key scan returned no matches, and `npm run
+  architecture:status` stayed `GREEN` with graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, and delta `0/0/0`. No runtime, browser, Docker,
+  database, deploy, protected smoke, production, provider, credential, or
+  watcher process was started.
+
+- 2026-06-27: [LUC-5623](/LUC/issues/LUC-5623) completed local known-state
+  evidence collection and delegated concrete repair lanes. Architecture
+  refresh PASS generated `2026-06-27T18:56:55.015Z` with `2483` entities /
+  `5335` relations / `16036` files. App-completion refresh PASS generated
+  `2026-06-27T18:57:02.671Z` with `871` items / `7` flows / `847` missing
+  test links / `0` missing doc links / `1` blocked record. `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass). `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+  No runtime, deploy, protected smoke, credential, browser, database, Docker,
+  server, provider, or watcher process was started. Follow-ups:
+  [LUC-5626](/LUC/issues/LUC-5626) source-control closure,
+  [LUC-5627](/LUC/issues/LUC-5627) blocked-status curation, and
+  [LUC-5628](/LUC/issues/LUC-5628) Sales proof.
+
+- 2026-06-27: [LUC-5619](/LUC/issues/LUC-5619) completed QA selection for the
+  next app-completion missing-test proof lane. Current app-completion evidence
+  remains healthy but incomplete: snapshot `2026-06-27T18:33:36.798Z`, `866`
+  items, `7` flows, `844` missing test links, and `0` blocked records. Next
+  selected proof lane is `Subscription and entitlement -> Sales context and
+  board local proof` for `GET /v1/sales/context` and
+  `/areas?area=03-sprzedaz&view=overview`, delegated to
+  [LUC-5624](/LUC/issues/LUC-5624). This heartbeat did not start runtime,
+  browser, database, Docker, provider, production, protected smoke, or watcher
+  resources; deploy impact none.
+
+- 2026-06-27: [LUC-5610](/LUC/issues/LUC-5610) source-control closure for a
+  strict [LUC-5609](/LUC/issues/LUC-5609) evidence packet is blocked by later
+  same-family singleton refreshes. Verification: `git diff
+  --check` PASS with LF-to-CRLF warnings only; generated JSON parse PASS;
+  scoped high-confidence secret/private-key scan PASS with no matches; `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass). Deploy impact none;
+  no runtime, protected target, browser, database, Docker, provider, or watcher
+  process was started. Unblock owner/action: close the latest shared
+  generated/status/state packet in [LUC-5615](/LUC/issues/LUC-5615), or get
+  explicit board approval for consolidated closure under [LUC-5610](/LUC/issues/LUC-5610).
+
+- 2026-06-27: [LUC-5613](/LUC/issues/LUC-5613) refreshed Roost known-state
+  evidence and read back the current curated artifacts. Architecture-awareness
+  artifact generated `2026-06-27T18:33:29.115Z` with `2478` entities / `5317`
+  relations / `16029` files and scanner overrides applied (`12` entity / `3`
+  relation). App-completion PASS generated `2026-06-27T18:33:36.798Z` with
+  `866` items / `7` flows / `0` browser-review needs / `844` missing test
+  links / `0` missing doc links / `0` blocked records. `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue
+  `0`, chain worklist `0`, delta `0/0/0`, all gates pass). `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+  No runtime, deploy, protected smoke, credential, browser, database, Docker,
+  server, provider, or watcher process was started.
+
+- 2026-06-27: [LUC-5569](/LUC/issues/LUC-5569) verified the User
+  configuration settings proof ladder locally. API prerequisite
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5569-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55569`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after build, `31` migrations, seed, and `7/7` Node API subtests. Browser
+  proof on `http://127.0.0.1:31569` generated
+  `docs/ux/evidence/luc-5569-user-settings-proof/report.json` and `6`
+  screenshots for `/account/settings` and `/workspace/settings` at
+  desktop/tablet/mobile. Report assertions passed, required settings text was
+  present, and `consoleIssues=[]`. `npm run check:route-capabilities`, `npm
+  run architecture:status`, and `git diff --check` passed. Cleanup removed
+  validation-owned server/database resources and left no
+  `chrome-headless-shell` process. Deploy impact none.
+
+- 2026-06-27: `LUC-5612` cleared stale app-completion blocked spec records
+  without runtime action. Evidence packet:
+  `docs/planning/luc-5612-stale-blocked-app-completion-spec-record-curation.md`.
+  Scanner root cause was `## Blocked Actions` headings in completed planning
+  specs being inferred as document-level `status=blocked`. Two
+  `docs/architecture/scanner-overrides.json` entries now mark
+  `docs/planning/cc-08-001-assets-resource-system-spec.md` and
+  `docs/planning/dms-07-finance-system-spec.md` as `verified`. Refreshed
+  app-completion now reports `0` blocked records at
+  `2026-06-27T18:33:36.798Z`; architecture status remains `GREEN` with
+  graph `454/765/35`, queues `0`, and delta `0/0/0`. No product code, schema,
+  migration, test authoring, browser, server, database, Docker, provider,
+  protected smoke, push, deploy, production, credential, or secret action
+  occurred.
+
+- 2026-06-27: [LUC-5561](/LUC/issues/LUC-5561) verified Auth and account
+  access locally. API proof
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5561-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55561`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, `31` migrations, seed, and `7/7` Node API subtests.
+  Browser proof on `http://127.0.0.1:31562` submitted real registration and
+  login forms, verified `companycoreOwnerToken` persistence, protected route
+  navigation to `/areas?area=00-ogolny&view=overview`, and `/v1/auth/me`
+  readback with user auth context and active workspace. Artifacts:
+  `docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json`.
+  Cleanup verified no validation listeners on `31561`/`31562`, no
+  `companycore-luc-5561*` containers, and no Playwright Chrome/headless rows.
+  Deploy impact none.
+
 - 2026-06-27: [LUC-5556](/LUC/issues/LUC-5556) QA proof health checkpoint is
   partially verified. Local static gates passed: `npm run
   check:route-capabilities` (`180` manifest routes / `35` route files),

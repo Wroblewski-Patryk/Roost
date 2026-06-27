@@ -1,5 +1,62 @@
 # MVP Next Commits
 
+- 2026-06-27: `LUC-5626` source-control closure is complete locally for the
+  latest [LUC-5623](/LUC/issues/LUC-5623) known-state evidence packet.
+  Closure packet:
+  `docs/planning/luc-5626-source-control-closure-for-luc-5623-evidence-packet.md`.
+  Proof: generated JSON parse PASS; `git diff --check` PASS with LF-to-CRLF
+  warnings only; scoped high-confidence secret/private-key scan PASS with no
+  matches; `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queues `0`, delta `0/0/0`). Push/deploy/protected smoke held.
+
+- 2026-06-27: `LUC-5623` Roost known-state evidence baseline is complete for
+  the IPM coordination lane. Evidence packet:
+  `docs/planning/luc-5623-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-27T18:56:55.015Z` with `2483` entities / `5335` relations /
+  `16036` files; app-completion refresh PASS generated
+  `2026-06-27T18:57:02.671Z` with `871` items / `7` flows / `847` missing
+  test links / `1` blocked record; `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+  Next owners: [LUC-5626](/LUC/issues/LUC-5626) source-control closure,
+  [LUC-5627](/LUC/issues/LUC-5627) blocked-status curation, and
+  [LUC-5628](/LUC/issues/LUC-5628) Sales context/browser QA proof.
+  Push/deploy/protected smoke held.
+
+- 2026-06-27: `LUC-5610` source-control closure is blocked for a strict
+  [LUC-5609](/LUC/issues/LUC-5609) known-state evidence packet. Evidence
+  packet:
+  `docs/planning/luc-5610-source-control-closure-for-luc-5609-evidence-packet.md`.
+  Proof: current generated/status singletons are consolidated latest evidence
+  after [LUC-5612](/LUC/issues/LUC-5612) and
+  [LUC-5613](/LUC/issues/LUC-5613), not a stale LUC-5609-only snapshot; `git
+  diff --check` PASS with LF-to-CRLF warnings only; generated JSON parse PASS;
+  scoped high-confidence secret/private-key scan PASS with no matches; `npm
+  run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`,
+  delta `0/0/0`). No local no-push commit created because staging current
+  singleton files would cross ownership with the later shared-packet closure
+  lane. Unblock owner/action: close the latest shared packet in
+  [LUC-5615](/LUC/issues/LUC-5615), or explicitly approve consolidated
+  closure under [LUC-5610](/LUC/issues/LUC-5610). Push/deploy/protected smoke
+  held.
+
+- 2026-06-27: `LUC-5569` User configuration settings proof ladder is complete.
+  Evidence packet:
+  `docs/planning/luc-5569-user-settings-proof-ladder.md`. Proof:
+  API prerequisite
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5569-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55569`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after build, all `31` migrations, seed, and `7/7` Node API subtests.
+  Browser proof on `http://127.0.0.1:31569` verified signed-in
+  `/account/settings` and `/workspace/settings` rendering at desktop, tablet,
+  and mobile with required settings text present, `6` screenshots, and
+  `consoleIssues=[]`; report assertion validator PASS. `npm run
+  check:route-capabilities`, `npm run architecture:status`, and `git diff
+  --check` passed. No product repair issue warranted; push/deploy/protected
+  smoke held.
+
 - 2026-06-27: `LUC-5551` Roost known-state evidence baseline is complete for
   the IPM coordination lane. Evidence packet:
   `docs/planning/luc-5551-known-state-evidence-and-architecture-baseline.md`.
