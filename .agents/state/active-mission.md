@@ -4,6 +4,40 @@ Last updated: 2026-06-27
 
 ## Current Mission
 
+- Mission ID: LUC-5641-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_WITH_FOLLOWUPS
+- Selected objective: Refresh Roost architecture and app-completion evidence
+  for [LUC-5641](/LUC/issues/LUC-5641), record the current confidence map, and
+  decide the next owner lane without feature implementation or protected work.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5641](/LUC/issues/LUC-5641), assigned to the Roost Project Manager, as
+  a known-state evidence and architecture baseline lane.
+- Scope: rerun architecture-awareness, refresh app-completion, read required
+  generated reports, run lightweight local gates, publish an evidence packet,
+  update source-of-truth state, and close the issue with source-control
+  disposition.
+- Exclusions: no product code, schema, migration, runtime server, browser,
+  database container, Docker, push, deploy, restart, protected smoke,
+  production mutation, provider action, credential access, secret disclosure,
+  or watcher.
+- Output:
+  `docs/planning/luc-5641-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: architecture-awareness refresh PASS generated
+  `2026-06-27T19:43:40.595Z` with `2492` entities / `5373` relations /
+  `16051` files and scanner overrides applied (`16` entity / `3` relation).
+  App-completion refresh PASS generated `2026-06-27T19:43:51.854Z` with
+  `882` items / `7` flows / `857` missing test links / `0` missing doc links
+  / `0` blocked records. `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+- Final disposition: known-state evidence scope is complete with follow-up
+  proof selection. No architecture, ownership, task-link, docs-link, or
+  blocked-record repair is warranted from this pass. Remaining owner/action:
+  QA/Test selects the next non-duplicated missing-test proof ladder; runtime
+  secret owner/board keeps protected target proof gated. Deploy impact none.
+
+## Previous Mission
+
 - Mission ID: LUC-5639-SOURCE-CONTROL-CLOSURE-FOR-LUC-5633-EVIDENCE-PACKET
 - Status: VERIFIED_DONE
 - Selected objective: Close local source control for the

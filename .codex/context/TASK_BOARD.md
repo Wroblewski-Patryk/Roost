@@ -2,6 +2,22 @@
 
 ## Now
 
+- 2026-06-27: `LUC-5641` Roost known-state evidence and architecture baseline
+  is complete locally for PM scope. Output:
+  `docs/planning/luc-5641-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS (`2492` entities / `5373`
+  relations / `16051` files, generated `2026-06-27T19:43:40.595Z`);
+  app-completion refresh PASS (`882` items / `7` flows / `857` missing test
+  links / `0` missing doc links / `0` blocked records, generated
+  `2026-06-27T19:43:51.854Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+  Required reports show no ownerless, disconnected-entity, task-link,
+  implementation-without-task, doc-link, blocked-record, or
+  verified-without-proof gaps. Disposition: no product repair warranted from
+  this baseline alone; next owner is QA/Test for non-duplicated missing-test
+  proof selection. Deploy impact none.
+
 - 2026-06-27: `LUC-5639` source-control closure for
   [LUC-5633](/LUC/issues/LUC-5633) is complete locally. Output:
   `docs/planning/luc-5639-source-control-closure-for-luc-5633-evidence-packet.md`.

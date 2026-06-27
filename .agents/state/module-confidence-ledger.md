@@ -1,5 +1,22 @@
 # Module Confidence Ledger
 
+Known-state note: [LUC-5641](/LUC/issues/LUC-5641) is
+VERIFIED_WITH_FOLLOWUPS for Roost architecture/app-completion baseline in the
+Roost PM lane. Evidence packet:
+`docs/planning/luc-5641-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-27T19:43:40.595Z` with
+`2492` entities / `5373` relations / `16051` files and scanner overrides
+applied (`16` entity / `3` relation). App-completion refresh generated
+`2026-06-27T19:43:51.854Z` with `882` items / `7` flows / `857` missing test
+links / `0` missing doc links / `0` blocked records. `npm run
+architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+`0/0/0`); `npm run check:route-capabilities` PASS (`180` manifest routes /
+`35` route files). Confidence classification: architecture, route capability,
+ownership, task-link, docs-link, and blocked-record posture are verified
+locally; product journey confidence remains partially verified because broad
+missing-test-link debt requires focused QA proof ladders. Protected production
+proof remains approval/credential gated.
+
 Source-control note: [LUC-5639](/LUC/issues/LUC-5639) is VERIFIED_DONE for
 the [LUC-5633](/LUC/issues/LUC-5633) generated/status/docs evidence packet.
 Closure packet:

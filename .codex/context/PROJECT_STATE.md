@@ -1,5 +1,24 @@
 # PROJECT_STATE
 
+- 2026-06-27: `LUC-5641` Roost known-state evidence and architecture baseline
+  completed in the Roost PM lane. Output:
+  `docs/planning/luc-5641-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness refresh PASS generated
+  `2026-06-27T19:43:40.595Z` with `2492` entities / `5373` relations /
+  `16051` files and scanner overrides applied (`16` entity / `3` relation);
+  app-completion refresh PASS generated `2026-06-27T19:43:51.854Z` with
+  `882` items / `7` flows / `857` missing test links / `0` missing doc links
+  / `0` blocked records; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass);
+  `npm run check:route-capabilities` PASS (`180` manifest routes / `35`
+  route files); HEAD `4b94ba2c`. Required reports read: architecture-health,
+  proof register, dependency, ownership, and task synchronization. No feature
+  code, schema, migration, runtime server, browser, database container, Docker,
+  push, deploy, protected smoke, production mutation, provider action,
+  credential access, or secret disclosure occurred. Next lane should be
+  QA/Test proof selection from the remaining missing-test-link debt, excluding
+  recently verified lanes. Deploy impact none.
+
 - 2026-06-27: `LUC-5639` source-control closure completed locally for the
   [LUC-5633](/LUC/issues/LUC-5633) known-state evidence packet. Output:
   `docs/planning/luc-5639-source-control-closure-for-luc-5633-evidence-packet.md`.
