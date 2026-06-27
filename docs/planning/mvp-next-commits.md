@@ -1,5 +1,25 @@
 # MVP Next Commits
 
+- 2026-06-27: `LUC-5639` closed local source control for the
+  [LUC-5633](/LUC/issues/LUC-5633) evidence packet. Closure packet:
+  `docs/planning/luc-5639-source-control-closure-for-luc-5633-evidence-packet.md`.
+  Proof: generated JSON parse PASS; `git diff --check` PASS with LF-to-CRLF
+  warnings only; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`). Push/deploy/protected smoke held;
+  no product implementation follows from this source-control closure.
+
+- 2026-06-27: `LUC-5628` Sales context and board local QA proof after
+  [LUC-5623](/LUC/issues/LUC-5623) is complete. Evidence packet:
+  `docs/planning/luc-5628-sales-context-and-board-local-qa-proof-after-luc-5623.md`.
+  Proof source:
+  `docs/planning/luc-5624-sales-context-and-board-proof.md` and
+  `docs/ux/evidence/luc-5624-sales-board-proof/report.json`. Fresh closure
+  validation PASS: `3` screenshots, `21` assertions, required Sales text
+  present across desktop/tablet/mobile, and `consoleIssues=[]`; `npm run
+  check:route-capabilities` PASS; `npm run architecture:status` PASS. No
+  product repair, push, deploy, protected smoke, production mutation, or
+  credential action warranted.
+
 - 2026-06-27: `LUC-5632` closed local source control for the
   [LUC-5617](/LUC/issues/LUC-5617) evidence packet. Closure packet:
   `docs/planning/luc-5632-source-control-closure-for-luc-5617-evidence-packet.md`.
@@ -4061,3 +4081,22 @@ in `NOW`, `NEXT`, `PIPELINE`, and `.codex/context/TASK_BOARD.md`.
   [LUC-5280](/LUC/issues/LUC-5280) owns source-control closure for the
   generated/status/planning evidence packet; [LUC-5281](/LUC/issues/LUC-5281)
   owns the next QA proof-ladder selection.
+
+# 2026-06-27 LUC-5633 Known-State Evidence Checkpoint
+
+- Status: DONE for PM known-state scope.
+- Output:
+  `docs/planning/luc-5633-known-state-evidence-and-architecture-baseline.md`.
+- Evidence:
+  Paperclip architecture-awareness scanner PASS (`entities=2490`,
+  `relations=5365`, `files=16049`, generated
+  `2026-06-27T19:18:34.557Z`); app-completion refresh PASS (`880` items,
+  `7` flows, `855` missing test links, `0` blocked records, generated
+  `2026-06-27T19:18:42.156Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); `npm run check:route-capabilities` PASS
+  (`checkedManifestRoutes=180`, `checkedRouteFiles=35`, `status=ok`).
+- Next:
+  QA/Test owns the next non-duplicated missing-test-link proof selection from
+  `docs/status/app-completion-index.md`; source-control closure is local/held
+  unless the current evidence packet must be committed before issue closure.

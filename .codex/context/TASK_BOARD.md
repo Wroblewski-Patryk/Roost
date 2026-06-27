@@ -2,6 +2,33 @@
 
 ## Now
 
+- 2026-06-27: `LUC-5639` source-control closure for
+  [LUC-5633](/LUC/issues/LUC-5633) is complete locally. Output:
+  `docs/planning/luc-5639-source-control-closure-for-luc-5633-evidence-packet.md`.
+  Evidence: dirty files classified by owner; generated architecture/app
+  completion JSON parse PASS; `git diff --check` PASS with LF-to-CRLF warnings
+  only; `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queues `0`, delta `0/0/0`). Commit SHA is recorded in the Paperclip closure
+  comment. Disposition: local no-push docs/state closure done; older sibling
+  planning packets and browser evidence directories remain outside this
+  boundary. Deploy impact none.
+
+- 2026-06-27: `LUC-5633` Roost known-state evidence and architecture baseline
+  is complete locally for PM scope. Output:
+  `docs/planning/luc-5633-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS (`2490` entities / `5365`
+  relations / `16049` files, generated `2026-06-27T19:18:34.557Z`);
+  app-completion refresh PASS (`880` items / `7` flows / `855` missing test
+  links / `0` missing doc links / `0` blocked records, generated
+  `2026-06-27T19:18:42.156Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+  Required reports show no owner, disconnected-entity, task-link,
+  implementation-without-task, doc-link, blocked-record, or
+  verified-without-proof gaps. Disposition: no product repair warranted from
+  this baseline alone; next owner is QA/Test for non-duplicated missing-test
+  proof selection. Deploy impact none.
+
 - 2026-06-27: `LUC-5628` Sales context and board local QA proof after
   [LUC-5623](/LUC/issues/LUC-5623) is complete. Output:
   `docs/planning/luc-5628-sales-context-and-board-local-qa-proof-after-luc-5623.md`.

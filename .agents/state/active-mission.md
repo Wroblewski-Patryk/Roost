@@ -4,6 +4,37 @@ Last updated: 2026-06-27
 
 ## Current Mission
 
+- Mission ID: LUC-5639-SOURCE-CONTROL-CLOSURE-FOR-LUC-5633-EVIDENCE-PACKET
+- Status: VERIFIED_DONE
+- Selected objective: Close local source control for the
+  [LUC-5633](/LUC/issues/LUC-5633) known-state evidence packet without
+  claiming unrelated sibling proof packets or triggering protected work.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5639](/LUC/issues/LUC-5639), assigned to the Roost Project Manager, as
+  the source-control closure lane for the completed [LUC-5633](/LUC/issues/LUC-5633)
+  known-state baseline.
+- Scope: classify dirty files, read back generated JSON counts, run
+  source-control hygiene and architecture gates, publish a closure packet,
+  update source-of-truth pointers, and create a local no-push commit.
+- Exclusions: no product code, schema, migration, runtime server, browser,
+  Docker, database, protected smoke, production mutation, credential access,
+  provider call, push, deploy, restart, or watcher action.
+- Output:
+  `docs/planning/luc-5639-source-control-closure-for-luc-5633-evidence-packet.md`.
+- Evidence: generated JSON parse PASS for
+  `docs/graphs/architecture-awareness.json`,
+  `docs/graphs/architecture-health.json`, and
+  `docs/status/app-completion-index.json`; app-completion generated
+  `2026-06-27T19:18:42.156Z` with `880` items / `7` flows. `git diff
+  --check` PASS with LF-to-CRLF warnings only. `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`).
+- Final disposition: local docs/state source-control closure complete. Push is
+  held for batch; deploy impact none. Final commit SHA is recorded in the
+  Paperclip closure comment. Older sibling planning packets and prior UX
+  evidence directories remain unstaged.
+
+## Previous Mission
+
 - Mission ID: LUC-5628-SALES-CONTEXT-AND-BOARD-LOCAL-QA-PROOF-AFTER-LUC-5623
 - Status: VERIFIED_DONE
 - Selected objective: Close the Sales context and board local QA proof child

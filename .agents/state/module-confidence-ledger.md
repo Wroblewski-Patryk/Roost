@@ -1,5 +1,29 @@
 # Module Confidence Ledger
 
+Source-control note: [LUC-5639](/LUC/issues/LUC-5639) is VERIFIED_DONE for
+the [LUC-5633](/LUC/issues/LUC-5633) generated/status/docs evidence packet.
+Closure packet:
+`docs/planning/luc-5639-source-control-closure-for-luc-5633-evidence-packet.md`.
+Verification passed by generated JSON parse, `git diff --check` with only
+LF-to-CRLF warnings, and `npm run architecture:status` (`GREEN`, graph
+`454/765/35`, queues `0`, delta `0/0/0`). Confidence status: current
+source-control closure is verified locally; product behavior confidence remains
+governed by the underlying [LUC-5633](/LUC/issues/LUC-5633) known-state and
+future QA proof lanes.
+
+QA closure note: [LUC-5628](/LUC/issues/LUC-5628) is VERIFIED_DONE for the
+post-[LUC-5623](/LUC/issues/LUC-5623) Sales context and board local QA proof
+child lane. Evidence packet:
+`docs/planning/luc-5628-sales-context-and-board-local-qa-proof-after-luc-5623.md`.
+The issue reuses the full local Sales proof source from
+`docs/planning/luc-5624-sales-context-and-board-proof.md` and
+`docs/ux/evidence/luc-5624-sales-board-proof/report.json`. Fresh closure
+validation confirmed `3` screenshots, `21` assertions, required Sales markers
+present across desktop/tablet/mobile, and `consoleIssues=[]`. `npm run
+check:route-capabilities` and `npm run architecture:status` passed.
+Confidence classification remains `verified` locally for current Sales
+Management context and board; no product repair follows from this child lane.
+
 Known-state note: [LUC-5617](/LUC/issues/LUC-5617) is
 VERIFIED_WITH_FOLLOWUPS for Roost architecture/app-completion baseline in the
 COO coordination lane. Evidence packet:
@@ -4399,6 +4423,7 @@ it honest. Do not turn uncertainty into optimism.
 | PROD-HOTFIX-001 | Runtime configuration | Coolify restart-loop API key hash fallback | P0 | VERIFIED | High | Public health returned `503`; local production config import reproduced failure when `API_KEY_HASH_SECRET` was omitted. `src/config/env.ts` now falls back to required non-placeholder `AUTH_TOKEN_SECRET` for API key hashing. `git diff --check`, `npm run build`, and `npm test` passed against disposable PostgreSQL on `localhost:55466`, including a new production fallback regression test. Coolify runtime inspection found empty `AUTH_TOKEN_SECRET`, `API_KEY_HASH_SECRET`, and `INTEGRATION_SECRET_KEY`; all were populated with non-placeholder values. Redeploy `l1i1ylihrss3d7xoxk4psu2n` finished, backend logs showed `companycore listening on port 3000`, and public web/API `/health` returned `200`. | Coolify realtime/log streaming warning remains an operator-tooling limitation but did not block recovery. | Keep future required-secret changes paired with explicit Coolify env migration steps before deploy. | Ops/Release + Backend | 2026-05-14 |
 | LUC-3533-KNOWN-STATE | Architecture known-state baseline | Fresh generated reports and follow-up repair lanes | P1 | PARTIAL | Medium | 2026-06-11 comment-resume proof: `npm run architecture:status` PASS (`GREEN`, `452/761/34`, queue `0`, worklist `0`); generated reports fresh at `2026-06-11T17:34:58.050Z`; `docs/planning/luc-3533-known-state-repair-lanes.md` records scanner, task-link, QA, and SCM follow-up lanes. | Green architecture gate does not close confidence debt: `implementation_without_tests=2138`, task-sync `implementation entities without task links=215`, scanner includes `.tmp/web-qa-*` and generated `public/react/assets`, and source-control closure remains in `[LUC-3537](/LUC/issues/LUC-3537)`. | Complete child repair lanes before treating known-state baseline as fully closed for release readiness. | Roost PM + Backend + Docs + QA | 2026-06-11 |
 | LUC-4881-KNOWN-STATE | Architecture known-state baseline | Fresh architecture-awareness evidence and owner-scoped child lanes | P1 | VERIFIED | Medium | 2026-06-20 IPM proof: `node scripts/build-architecture-awareness-index.mjs --project Roost --root C:\Personal\Projekty\Aplikacje\Roost` PASS (`entities=2292`, `relations=4594`, `files=13612`, generated `2026-06-20T06:12:36.581Z`); packet `docs/planning/luc-4881-known-state-evidence-and-architecture-baseline.md`; task-sync gaps `0`; owner/disconnected gaps `0`; [LUC-4883](/LUC/issues/LUC-4883) curation completed; [LUC-4889](/LUC/issues/LUC-4889) local source-control closure completed. | Aggregate implementation-without-tests signal remains `1162`, classified as scanner-inference/backlog confidence debt rather than a direct release blocker. Protected production/runtime proof remains separately gated. | Continue journey/proof-ladder selection from module risk; push remains held until a future release batch or explicit source-ref/deploy need. | Roost PM + TSA | 2026-06-20 |
+| LUC-5633-KNOWN-STATE | Architecture known-state baseline | Fresh architecture/app-completion evidence and QA proof-selection handoff | P1 | VERIFIED | Medium | 2026-06-27 Roost PM proof: architecture-awareness refresh PASS (`entities=2490`, `relations=5365`, `files=16049`, generated `2026-06-27T19:18:34.557Z`); app-completion refresh PASS (`880` items, `7` flows, `855` missing test links, `0` blocked records, generated `2026-06-27T19:18:42.156Z`); `npm run architecture:status` PASS (`GREEN`, `454/765/35`, queue `0`, worklist `0`); `npm run check:route-capabilities` PASS (`180` manifest routes / `35` route files); packet `docs/planning/luc-5633-known-state-evidence-and-architecture-baseline.md`. | Missing-test-link debt remains broad confidence debt, not a direct broken-flow signal: `implementation_without_tests=1166`, `actionable_implementation_without_tests=1157`, app-completion `missingTestLink=855`. Protected target proof remains gated. | QA/Test selects the next non-duplicated proof ladder from app-completion debt; Roost PM or SCM owner closes source control for the generated/status packet if needed. | Roost PM + QA/Test | 2026-06-27 |
 
 ## Maintenance Rules
 

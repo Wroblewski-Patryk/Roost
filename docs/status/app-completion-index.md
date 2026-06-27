@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-06-27T19:07:46.702Z
+Generated: 2026-06-27T19:18:42.156Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -12,16 +12,16 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 
 ## Counts
 
-- Items: 876
+- Items: 880
 - User flows: 7
 - Needs browser/screenshot review: 0
-- Missing test link: 851
+- Missing test link: 855
 - Missing doc link: 0
 - Blocked: 0
 
 ## Flow Summary
 
-- Subscription and entitlement: 529 entities; risks {"missing_test_link":507,"implemented_needs_proof":18,"ok":4}; gates {"subscription":529,"configuration":18,"auth":4}
+- Subscription and entitlement: 533 entities; risks {"missing_test_link":511,"implemented_needs_proof":18,"ok":4}; gates {"subscription":533,"configuration":18,"auth":4}
 - Unclassified user workflow: 195 entities; risks {"missing_test_link":194,"implemented_needs_proof":1}; gates {"auth":5,"configuration":9}
 - Account access: 88 entities; risks {"missing_test_link":87,"ok":1}; gates {"auth":88,"configuration":10,"subscription":13}
 - User configuration: 54 entities; risks {"missing_test_link":53,"implemented_needs_proof":1}; gates {"configuration":54}

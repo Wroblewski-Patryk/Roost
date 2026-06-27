@@ -1,5 +1,38 @@
 # PROJECT_STATE
 
+- 2026-06-27: `LUC-5639` source-control closure completed locally for the
+  [LUC-5633](/LUC/issues/LUC-5633) known-state evidence packet. Output:
+  `docs/planning/luc-5639-source-control-closure-for-luc-5633-evidence-packet.md`.
+  Evidence: generated JSON parse PASS for architecture-awareness,
+  architecture-health, and app-completion artifacts; app-completion generated
+  `2026-06-27T19:18:42.156Z` with `880` items / `7` flows; `git diff
+  --check` PASS with LF-to-CRLF warnings only; `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`,
+  all gates pass). No product code, schema, migration, runtime server, browser,
+  database container, Docker, push, deploy, protected smoke, production
+  mutation, provider action, credential access, or secret disclosure occurred.
+  Deploy impact none; push held for batch.
+
+- 2026-06-27: `LUC-5633` Roost known-state evidence and architecture baseline
+  completed in the Roost PM lane. Output:
+  `docs/planning/luc-5633-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: Paperclip architecture-awareness refresh PASS generated
+  `2026-06-27T19:18:34.557Z` with `2490` entities / `5365` relations /
+  `16049` files and scanner overrides applied (`16` entity / `3` relation);
+  app-completion refresh PASS generated `2026-06-27T19:18:42.156Z` with
+  `880` items / `7` flows / `0` browser-review needs / `855` missing test
+  links / `0` missing doc links / `0` blocked records; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+  Required reports read: architecture-health, proof register, dependency,
+  ownership, and task synchronization. No feature code, schema, migration,
+  runtime server, browser, database container, Docker, push, deploy, protected
+  smoke, production mutation, provider action, credential access, or secret
+  disclosure occurred. Next lane should be QA/Test proof selection from the
+  remaining missing-test-link debt, excluding recently verified lanes. Deploy
+  impact none.
+
 - 2026-06-27: `LUC-5628` Sales context and board local QA proof after
   [LUC-5623](/LUC/issues/LUC-5623) completed. Output:
   `docs/planning/luc-5628-sales-context-and-board-local-qa-proof-after-luc-5623.md`.

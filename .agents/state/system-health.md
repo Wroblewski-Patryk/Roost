@@ -1,5 +1,32 @@
 # System Health
 
+- 2026-06-27: [LUC-5639](/LUC/issues/LUC-5639) closed local source control for
+  the [LUC-5633](/LUC/issues/LUC-5633) known-state evidence packet. Closure
+  packet:
+  `docs/planning/luc-5639-source-control-closure-for-luc-5633-evidence-packet.md`.
+  Proof: generated JSON parse PASS for architecture-awareness,
+  architecture-health, and app-completion outputs; app-completion generated
+  `2026-06-27T19:18:42.156Z` with `880` items / `7` flows; `git diff --check`
+  PASS with LF-to-CRLF warnings only; `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass). No runtime, browser, Docker, database,
+  deploy, protected smoke, production, provider, credential, or watcher process
+  was started.
+
+- 2026-06-27: [LUC-5628](/LUC/issues/LUC-5628) completed the post-
+  [LUC-5623](/LUC/issues/LUC-5623) Sales context and board local QA proof
+  closure. The full local proof packet is
+  `docs/planning/luc-5624-sales-context-and-board-proof.md` with browser
+  artifacts under `docs/ux/evidence/luc-5624-sales-board-proof/`. Fresh
+  closure validation confirmed `report.json` has `3` screenshots, `21`
+  assertions, required Sales markers across desktop/tablet/mobile, and
+  `consoleIssues=[]`. `npm run check:route-capabilities` PASS (`180`
+  manifest routes / `35` route files). `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass). No runtime server, browser, Docker,
+  database, deploy, protected smoke, production, provider, credential, or
+  watcher process was started in this closure heartbeat.
+
 - 2026-06-27: [LUC-5632](/LUC/issues/LUC-5632) closed local source control for
   the [LUC-5617](/LUC/issues/LUC-5617) known-state evidence packet. Closure
   proof: generated JSON parse PASS for architecture-awareness,
@@ -1780,6 +1807,19 @@ Last updated: 2026-06-20
   system-owned and must remain visible to operators.
 
 ## Quality Gate Notes
+
+- 2026-06-27 LUC-5633 known-state proof: Paperclip architecture-awareness
+  scanner passed (`entities=2490`, `relations=5365`, `files=16049`, generated
+  `2026-06-27T19:18:34.557Z`), app-completion refresh passed (`880` items,
+  `7` flows, `855` missing test links, `0` missing doc links, `0` blocked
+  records), `npm run architecture:status` passed (`GREEN`, `454/765/35`,
+  queue `0`, worklist `0`, delta `0/0/0`, all gates pass), and `npm run
+  check:route-capabilities` passed (`180` manifest routes, `35` route files,
+  `status=ok`). Task-sync gaps, owner gaps, disconnected entities,
+  implementation-without-task gaps, and verified-without-proof gaps remain
+  `0`. Confidence debt remains non-failing follow-up work:
+  `implementation_without_tests=1166`, `actionable_implementation_without_tests=1157`,
+  and app-completion `missingTestLink=855`.
 
 - 2026-06-20 LUC-5278 known-state proof: Paperclip architecture-awareness
   scanner passed (`entities=2396`, `relations=5000`, `files=13726`, generated
