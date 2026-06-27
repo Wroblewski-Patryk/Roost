@@ -191,3 +191,59 @@ posture remain green. The app-completion aggregate missing-test signal remains
 partially verified confidence debt, not a new broken-journey signal. No product
 repair or duplicate broad QA lane is selected from this snapshot. Deploy
 impact: none.
+
+## Continuation Review - 2026-06-28
+
+The wake comment asked to start with local evidence collection and convert
+findings into concrete repair lanes while avoiding push, deploy, restart,
+protected smoke, production mutation, and secrets. I re-entered the issue,
+confirmed the prior completion comment, and reran the safe local evidence
+refresh.
+
+### Continuation Evidence
+
+- Architecture-awareness refresh:
+  `node scripts/build-architecture-awareness-index.mjs --project Roost --root C:\Personal\Projekty\Aplikacje\Roost`
+  from `C:\Personal\Projekty\Aplikacje\Paperclip_Softwarehouse`: PASS.
+- Generated at: `2026-06-27T22:44:52.759Z`.
+- Counts: `2521` entities / `5479` relations / `16086` files.
+- App-completion refresh:
+  `node scripts/build-app-completion-index.mjs --project Roost --root C:\Personal\Projekty\Aplikacje\Roost`:
+  PASS.
+- App-completion counts: `911` items / `7` flows / `881` missing test links /
+  `0` missing doc links / `0` blocked records / `0` browser-review records.
+- `npm run architecture:status`: PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass).
+- `npm run check:route-capabilities`: PASS (`180` manifest routes / `35`
+  route files).
+- Architecture health readback: owner gaps `0`, disconnected entities `0`,
+  tasks without architecture `0`, implementation without task links `0`,
+  verified without proof `0`, implementation without tests `1166`, actionable
+  implementation without tests `1157`.
+- Priority row readback: top `200` rows split into `74` runtime rows and
+  `126` document/agent rows. Flow split is Account access `88`, Dashboard
+  overview `6`, Exchange connection and configuration `1`, Subscription and
+  entitlement `105`.
+
+### Repair-Lane Conversion Decision
+
+No new product implementation, backend, frontend, security, ops, or broad QA
+repair lane is created from this continuation. The only new delta is one
+additional generated/document evidence row, which moved app-completion from
+`910/880` to `911/881`; it does not identify a new broken user journey,
+blocked record, missing doc link, owner gap, task-link gap, or route-capability
+failure.
+
+The next legal lane remains Docs/Scanner curation only when a future refresh
+produces a concrete unverified runtime row outside the already-classified
+Account access and Dashboard overview set, or when a fresh reproduced
+regression appears. Creating another broad QA or product repair issue from the
+aggregate `missingTestLink` count alone would duplicate recent lanes rather
+than repair a known defect.
+
+### Continuation Source-Control Note
+
+The continuation refresh updates generated architecture/status artifacts after
+commit `4e8c2b33`. This is evidence/index drift only and is safe to commit
+locally with no push. Older untracked planning packets and UX evidence
+directories remain outside the LUC-5701 closure boundary.

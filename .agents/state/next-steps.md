@@ -6562,3 +6562,6 @@ Last updated: 2026-06-20
 - 2026-06-20: `LUC-4881` known-state baseline completed.
   - Current evidence: architecture-awareness scanner PASS (`entities=2292`, `relations=4594`, `files=13612`, generated `2026-06-20T06:12:36.581Z`); `docs/planning/luc-4881-known-state-evidence-and-architecture-baseline.md` records the packet.
   - Next owners: Roost PM for `[LUC-4882](/LUC/issues/LUC-4882)` source-control closure; TSA for `[LUC-4883](/LUC/issues/LUC-4883)` architecture curation of scanner/test-evidence signals.
+- 2026-06-28: `LUC-5701` continuation review completed.
+  - Current evidence: architecture-awareness scanner PASS (`entities=2521`, `relations=5479`, `files=16086`, generated `2026-06-27T22:44:52.759Z`); app-completion PASS (`911` items, `7` flows, `881` missing test links, `0` missing doc links, `0` blocked, `0` browser-review records); `npm run architecture:status` PASS; `npm run check:route-capabilities` PASS.
+  - Next owner decision: no new product repair or broad QA lane from this baseline. Future Docs/Scanner or QA work needs a concrete unverified runtime row outside the already-classified Account access / Dashboard overview set, or a reproduced fresh regression.
