@@ -2,6 +2,39 @@
 
 ## Now
 
+- 2026-06-27: `LUC-5657` source-control closure for the
+  [LUC-5656](/LUC/issues/LUC-5656) evidence packet is complete locally.
+  Output:
+  `docs/planning/luc-5657-source-control-closure-for-luc-5656-evidence-packet.md`.
+  Evidence: generated JSON parse PASS for architecture-awareness (`2499`
+  entities / `5396` relations), architecture-health, and app-completion
+  (`2026-06-27T20:43:37.445Z`); architecture reports generated
+  `2026-06-27T21:04:14.754Z`; task synchronization clean (`0` actionable
+  task-link gaps, `0` implementation-without-task gaps, `0` verified entities
+  without proof evidence); `git diff --check -- <scoped files>` PASS with
+  LF-to-CRLF warnings only; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`). Disposition: local no-push
+  docs/generated/state closure done; older sibling planning packets and UX
+  evidence directories remain outside this boundary. Deploy impact none.
+
+- 2026-06-27: `LUC-5659` next non-duplicated app-completion
+  missing-test proof ladder selection is complete. Output:
+  `docs/planning/luc-5659-next-nonduplicated-missing-test-proof-ladder.md`.
+  Evidence: [LUC-5656](/LUC/issues/LUC-5656) baseline read; current
+  app-completion singleton reports `887` items / `7` flows / `860` missing
+  test links / `0` blocked; [LUC-5648](/LUC/issues/LUC-5648) had already
+  narrowed top route-shaped debt to mostly evidence links with `/v1/auth`
+  alias parity as the smallest real proof candidate. Code inspection confirmed
+  `src/app.ts` mounts `authRouter` at `/auth` and `/v1/auth`, but
+  `src/tests/api.test.ts` currently shows explicit `/auth/register`,
+  `/auth/login`, and `/auth/me` assertions rather than `/v1/auth/register` or
+  `/v1/auth/login`. Disposition: selected follow-up is a narrow Engineering
+  Delivery / QA API alias-parity proof for `/v1/auth`; do not rerun broad Auth,
+  Settings, Sales, Finance, Assets, Relationships, Product/Delivery, Google
+  Drive OAuth, or dashboard proof unless fresh regression evidence appears.
+  Delegated follow-up: [LUC-5661](/LUC/issues/LUC-5661), assigned to Test
+  Automation. Deploy impact none.
+
 - 2026-06-27: `LUC-5654` source-control closure for the
   [LUC-5653](/LUC/issues/LUC-5653) evidence packet is complete locally.
   Output:

@@ -4,6 +4,80 @@ Last updated: 2026-06-27
 
 ## Current Mission
 
+- Mission ID: LUC-5657-SOURCE-CONTROL-CLOSURE-LUC-5656
+- Status: VERIFIED_DONE
+- Selected objective: Close local source control for the
+  [LUC-5656](/LUC/issues/LUC-5656) known-state evidence packet and generated
+  graph/status delta without claiming older sibling planning packets or UX
+  evidence directories.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5657](/LUC/issues/LUC-5657), assigned to the Roost Project Manager, as
+  the source-control closure sidecar for [LUC-5656](/LUC/issues/LUC-5656).
+- Scope: classify dirty worktree ownership, parse/read back generated JSON,
+  run source-control closure gates, add a closure packet, update
+  source-of-truth state, and create a local no-push commit for the isolated
+  docs/generated/state boundary.
+- Exclusions: no product code, schema, migration, runtime server, browser,
+  database container, Docker, push, deploy, restart, protected smoke,
+  production mutation, provider action, credential access, secret disclosure,
+  or watcher.
+- Output:
+  `docs/planning/luc-5657-source-control-closure-for-luc-5656-evidence-packet.md`.
+- Evidence: generated JSON parse PASS for architecture-awareness (`2499`
+  entities / `5396` relations), architecture-health, and app-completion
+  (`2026-06-27T20:43:37.445Z`). Architecture reports generated
+  `2026-06-27T21:04:14.754Z`; task synchronization reports `0` actionable
+  task-link gaps, `0` implementation-without-task gaps, and `0` verified
+  entities without proof evidence. `git diff --check -- <scoped files>` PASS
+  with LF-to-CRLF warnings only. `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`, all gates pass).
+- Final disposition: local source-control closure complete for the
+  [LUC-5656](/LUC/issues/LUC-5656) packet. Push held for batch; deploy impact
+  none. Older sibling planning packets and UX evidence directories remain
+  outside this closure boundary.
+
+## Previous Mission
+
+- Mission ID: LUC-5659-NEXT-NONDUPLICATED-MISSING-TEST-PROOF-LADDER
+- Status: VERIFIED_DONE
+- Selected objective: Select the next non-duplicated app-completion
+  missing-test proof ladder after [LUC-5656](/LUC/issues/LUC-5656), avoiding
+  broad reruns of recently verified Auth/account, Settings, Sales, Finance,
+  Assets, Relationships, Product/Delivery, Google Drive OAuth, and dashboard
+  proof.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5659](/LUC/issues/LUC-5659), assigned to QA, after
+  [LUC-5656](/LUC/issues/LUC-5656) recorded `860` missing test links and asked
+  for one non-duplicated next proof ladder.
+- Scope: read the [LUC-5656](/LUC/issues/LUC-5656) baseline, current
+  app-completion singleton, recent route map, and proof packets; inspect auth
+  route/test evidence; publish a QA selection packet; update source-of-truth
+  state; and run lightweight validation gates.
+- Exclusions: no product code, schema, migration, runtime server, browser,
+  database container, Docker, test authoring, push, deploy, restart,
+  protected smoke,
+  production mutation, provider action, credential access, secret disclosure,
+  or watcher.
+- Output:
+  `docs/planning/luc-5659-next-nonduplicated-missing-test-proof-ladder.md`.
+- Evidence: [LUC-5656](/LUC/issues/LUC-5656) baseline read; current local
+  app-completion singleton generated `2026-06-27T20:43:37.445Z` with `887`
+  items / `7` flows / `860` missing test links / `0` blocked; [LUC-5648](/LUC/issues/LUC-5648)
+  route map identified `/v1/auth` alias parity as the smallest likely real
+  route-shaped proof gap. `rg` inspection found `src/app.ts` mounts auth at
+  `/auth` and `/v1/auth`, while `src/tests/api.test.ts` explicitly covers
+  `/auth/register`, `/auth/login`, and `/auth/me` but not
+  `/v1/auth/register` or `/v1/auth/login`. `npm run check:route-capabilities`
+  PASS (`180` manifest routes / `35` route files); `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`); `git diff --check` PASS with LF-to-CRLF warnings only.
+- Final disposition: QA selection is complete. Next owner/action is
+  Engineering Delivery / QA to add or map the smallest `/v1/auth` alias-parity
+  API proof through [LUC-5661](/LUC/issues/LUC-5661), assigned to Test
+  Automation. Push held; deploy impact none.
+
+## Previous Mission
+
 - Mission ID: LUC-5654-SOURCE-CONTROL-CLOSURE-LUC-5653
 - Status: VERIFIED_DONE
 - Selected objective: Close local source control for the

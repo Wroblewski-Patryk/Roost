@@ -1,5 +1,43 @@
 # PROJECT_STATE
 
+- 2026-06-27: `LUC-5657` source-control closure completed locally for the
+  [LUC-5656](/LUC/issues/LUC-5656) known-state evidence packet. Output:
+  `docs/planning/luc-5657-source-control-closure-for-luc-5656-evidence-packet.md`.
+  Evidence: generated JSON parse PASS for architecture-awareness (`2499`
+  entities / `5396` relations), architecture-health, and app-completion
+  (`2026-06-27T20:43:37.445Z`); architecture report timestamp
+  `2026-06-27T21:04:14.754Z`; task synchronization clean (`0` actionable
+  task-link gaps, `0` implementation-without-task gaps, `0` verified entities
+  without proof evidence); `git diff --check -- <scoped files>` PASS with
+  LF-to-CRLF warnings only; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates
+  pass). No product code, schema, migration, runtime server, browser,
+  database container, Docker, push, deploy, protected smoke, production
+  mutation, provider action, credential access, or secret disclosure occurred.
+  Deploy impact none; push held for batch.
+
+- 2026-06-27: `LUC-5659` next non-duplicated app-completion
+  missing-test proof ladder selection completed in the QA lane. Output:
+  `docs/planning/luc-5659-next-nonduplicated-missing-test-proof-ladder.md`.
+  Evidence: [LUC-5656](/LUC/issues/LUC-5656) known-state packet read;
+  current local app-completion singleton generated `2026-06-27T20:43:37.445Z`
+  reports `887` items / `7` flows / `860` missing test links / `0` blocked;
+  [LUC-5648](/LUC/issues/LUC-5648) route map identified `/v1/auth` alias parity
+  as the smallest likely real route-shaped proof gap; `rg` inspection found
+  `src/app.ts` mounts auth at both `/auth` and `/v1/auth`, while
+  `src/tests/api.test.ts` has `/auth/register`, `/auth/login`, and `/auth/me`
+  assertions but no explicit `/v1/auth/register` or `/v1/auth/login` API
+  alias assertion. Broad Auth/account, Settings, Sales, Finance, Assets,
+  Relationships, Product/Delivery, Google Drive OAuth, and dashboard reruns
+  were rejected as duplicate or evidence-link work. Selected next owner/action:
+  Engineering Delivery / QA adds or maps the smallest `/v1/auth` alias-parity
+  API proof. No product code, schema, migration, test authoring, runtime server,
+  browser, database container, Docker, push, deploy, protected smoke,
+  production mutation, provider action, credential access, or secret disclosure
+  occurred. Deploy impact none.
+  Delegated follow-up: [LUC-5661](/LUC/issues/LUC-5661), assigned to Test
+  Automation, owns the executable `/v1/auth` alias-parity API proof.
+
 - 2026-06-27: `LUC-5654` source-control closure completed locally for the
   [LUC-5653](/LUC/issues/LUC-5653) known-state evidence packet. Output:
   `docs/planning/luc-5654-source-control-closure-for-luc-5653-evidence-packet.md`.
