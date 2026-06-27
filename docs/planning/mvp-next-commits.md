@@ -1,5 +1,13 @@
 # MVP Next Commits
 
+- 2026-06-27: `LUC-5649` classified the generated document delta after
+  [LUC-5646](/LUC/issues/LUC-5646). Classification packet:
+  `docs/planning/luc-5649-generated-document-delta-classification-after-luc-5646.md`.
+  Result: existing commit `129d77d3a4b8bd19da67e7d377376afd4d669c3e` is a
+  coherent docs/state/generated evidence boundary, not product implementation.
+  Push/deploy/protected smoke held; no product repair follows from this
+  classification.
+
 - 2026-06-27: `LUC-5639` closed local source control for the
   [LUC-5633](/LUC/issues/LUC-5633) evidence packet. Closure packet:
   `docs/planning/luc-5639-source-control-closure-for-luc-5633-evidence-packet.md`.
