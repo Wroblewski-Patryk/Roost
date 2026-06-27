@@ -15,8 +15,9 @@ architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
 ownership, task-link, and blocked-record posture are verified locally; product
 journey confidence remains partially verified because broad missing-test-link
 debt requires focused QA proof ladders. Protected production proof remains
-approval/credential gated. Source-control closure should classify the current
-generated/status packet without claiming sibling evidence packets.
+approval/credential gated. [LUC-5632](/LUC/issues/LUC-5632) closed the
+LUC-5617 docs/state source-control packet locally without claiming sibling
+evidence packets.
 
 QA proof note: [LUC-5624](/LUC/issues/LUC-5624) is VERIFIED_DONE for the
 Sales Management app-completion proof lane selected by

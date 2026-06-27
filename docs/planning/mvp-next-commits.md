@@ -1,5 +1,29 @@
 # MVP Next Commits
 
+- 2026-06-27: `LUC-5632` closed local source control for the
+  [LUC-5617](/LUC/issues/LUC-5617) evidence packet. Closure packet:
+  `docs/planning/luc-5632-source-control-closure-for-luc-5617-evidence-packet.md`.
+  Proof: generated JSON parse PASS; `git diff --check` PASS with LF-to-CRLF
+  warnings only; scoped high-confidence secret/private-key scan PASS; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`). Push/deploy/protected smoke held; no product implementation follows
+  from this source-control closure.
+
+- 2026-06-27: `LUC-5617` Roost known-state evidence baseline is complete for
+  the COO coordination lane. Evidence packet:
+  `docs/planning/luc-5617-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-27T19:07:25.807Z` with `2486` entities / `5349` relations /
+  `16045` files and scanner overrides applied (`16` entity / `3` relation);
+  app-completion refresh PASS generated `2026-06-27T19:07:46.702Z` with
+  `876` items / `7` flows / `851` missing test links / `0` missing doc links /
+  `0` blocked records; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+  Next commits should not add product work from this baseline alone; continue
+  focused proof ladders and [LUC-5632](/LUC/issues/LUC-5632) source-control closure. Push/deploy/protected
+  smoke held.
+
 - 2026-06-27: `LUC-5624` Sales context and board proof is complete. Evidence
   packet: `docs/planning/luc-5624-sales-context-and-board-proof.md`. Proof:
   `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5624-postgres`

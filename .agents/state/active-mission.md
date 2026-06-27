@@ -4,6 +4,69 @@ Last updated: 2026-06-27
 
 ## Current Mission
 
+- Mission ID: LUC-5628-SALES-CONTEXT-AND-BOARD-LOCAL-QA-PROOF-AFTER-LUC-5623
+- Status: VERIFIED_DONE
+- Selected objective: Close the Sales context and board local QA proof child
+  lane created after [LUC-5623](/LUC/issues/LUC-5623).
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5628](/LUC/issues/LUC-5628), assigned to QA, with explicit scope to
+  verify `GET /v1/sales/context` and desktop/tablet/mobile browser rendering
+  of `/areas?area=03-sprzedaz&view=overview`.
+- Scope: confirm the child-lane request, validate the existing local Sales
+  proof packet, run lightweight route and architecture gates, update
+  source-of-truth state, and close the issue with evidence.
+- Exclusions: no product code, schema, migration, test authoring, provider
+  call, credential access, secret handling, push, deploy, protected smoke,
+  production mutation, long-running watcher, or rerun of the already-passed
+  database/browser proof.
+- Output:
+  `docs/planning/luc-5628-sales-context-and-board-local-qa-proof-after-luc-5623.md`.
+- Evidence: full local proof source
+  `docs/planning/luc-5624-sales-context-and-board-proof.md` and
+  `docs/ux/evidence/luc-5624-sales-board-proof/report.json`. Fresh report
+  validator PASS (`3` screenshots, `21` assertions, required Sales markers
+  present across desktop/tablet/mobile, `consoleIssues=0`, no misses); `npm
+  run check:route-capabilities` PASS (`180` manifest routes / `35` route
+  files); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queues `0`, delta `0/0/0`).
+- Final disposition: Sales context and board proof is verified done for
+  [LUC-5628](/LUC/issues/LUC-5628). No product repair issue is warranted.
+  Deploy impact none; protected production proof remains separately
+  approval/credential gated.
+
+## Previous Mission
+
+- Mission ID: LUC-5632-SOURCE-CONTROL-CLOSURE-FOR-LUC-5617-EVIDENCE-PACKET
+- Status: VERIFIED_DONE
+- Selected objective: Close local source control for the
+  [LUC-5617](/LUC/issues/LUC-5617) known-state evidence packet without
+  claiming unrelated sibling packets or triggering push/deploy/protected work.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5632](/LUC/issues/LUC-5632), assigned to the Roost Project Manager, as
+  the source-control closure lane for the completed LUC-5617 evidence packet.
+- Scope: classify dirty files, read back generated JSON timestamps/counts, run
+  source-control hygiene and architecture gates, publish a closure packet,
+  update source-of-truth pointers, and create a local no-push commit.
+- Exclusions: no product code, schema, migration, runtime server, browser,
+  Docker, database, protected smoke, production mutation, credential access,
+  provider call, push, deploy, restart, or watcher action.
+- Output:
+  `docs/planning/luc-5632-source-control-closure-for-luc-5617-evidence-packet.md`.
+- Evidence: generated JSON parse PASS for
+  `docs/graphs/architecture-awareness.json`,
+  `docs/graphs/architecture-health.json`, and
+  `docs/status/app-completion-index.json`; artifacts match LUC-5617 timestamps
+  `2026-06-27T19:07:25.807Z` and `2026-06-27T19:07:46.702Z`. `git diff
+  --check` PASS with LF-to-CRLF warnings only. Scoped high-confidence
+  secret/private-key scan PASS. `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`).
+- Final disposition: local docs/state source-control closure complete. Push is
+  held for batch; deploy impact none. Final commit SHA is recorded in the
+  Paperclip closure comment. Older sibling planning packets and prior UX
+  evidence directories remain unstaged.
+
+## Previous Mission
+
 - Mission ID: LUC-5617-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
 - Status: VERIFIED_WITH_FOLLOWUPS
 - Selected objective: Refresh Roost local architecture and app-completion
@@ -34,8 +97,7 @@ Last updated: 2026-06-27
 - Final disposition: known-state evidence scope is complete with follow-up
   lanes. No architecture, ownership, task-link, or blocked-record repair is
   warranted from this pass. Remaining owners/actions: QA/Test continues
-  focused missing-test proof ladders, Roost PM/source-control closure
-  classifies the current generated/status packet, and runtime secret
+  focused missing-test proof ladders, Roost PM [LUC-5632](/LUC/issues/LUC-5632) classifies the current generated/status packet, and runtime secret
   owner/board keeps protected target proof gated. Deploy impact none.
 
 ## Previous Mission

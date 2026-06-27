@@ -2,6 +2,45 @@
 
 ## Now
 
+- 2026-06-27: `LUC-5628` Sales context and board local QA proof after
+  [LUC-5623](/LUC/issues/LUC-5623) is complete. Output:
+  `docs/planning/luc-5628-sales-context-and-board-local-qa-proof-after-luc-5623.md`.
+  Evidence: full local API/browser proof is in
+  `docs/planning/luc-5624-sales-context-and-board-proof.md` and
+  `docs/ux/evidence/luc-5624-sales-board-proof/report.json`; fresh closure
+  validation confirmed `3` screenshots, `21` assertions, all required Sales
+  markers present on desktop/tablet/mobile, and `consoleIssues=[]`. `npm run
+  check:route-capabilities` PASS; `npm run architecture:status` PASS.
+  Disposition: `DONE`; no product repair issue warranted. Deploy impact none.
+
+- 2026-06-27: `LUC-5632` source-control closure for
+  [LUC-5617](/LUC/issues/LUC-5617) is complete locally. Output:
+  `docs/planning/luc-5632-source-control-closure-for-luc-5617-evidence-packet.md`.
+  Evidence: dirty files classified by owner; generated architecture/app
+  completion JSON parse PASS for the LUC-5617 timestamps; `git diff --check`
+  PASS with LF-to-CRLF warnings only; scoped high-confidence secret/private-key
+  scan PASS; `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queues `0`, delta `0/0/0`). Commit SHA is recorded in the Paperclip closure
+  comment. Disposition: local no-push docs/state closure done; older sibling
+  planning packets and prior UX evidence directories remain unstaged. Deploy
+  impact none.
+
+- 2026-06-27: `LUC-5617` Roost known-state evidence and architecture baseline
+  is complete locally with follow-up lanes. Output:
+  `docs/planning/luc-5617-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS (`2486` entities / `5349`
+  relations / `16045` files, generated `2026-06-27T19:07:25.807Z`);
+  app-completion refresh PASS (`876` items / `7` flows / `851` missing test
+  links / `0` missing doc links / `0` blocked records, generated
+  `2026-06-27T19:07:46.702Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+  Required reports show no owner, disconnected-entity, task-link, or
+  verified-without-proof gaps. Disposition: no product repair warranted from
+  this baseline alone; continue focused QA proof, source-control closure, and
+  protected target proof only after approval/credential evidence. Deploy
+  impact none.
+
 - 2026-06-27: `LUC-5624` Sales context and board proof is complete. Output:
   `docs/planning/luc-5624-sales-context-and-board-proof.md`. Evidence:
   `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5624-postgres`

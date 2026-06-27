@@ -1,5 +1,30 @@
 # System Health
 
+- 2026-06-27: [LUC-5632](/LUC/issues/LUC-5632) closed local source control for
+  the [LUC-5617](/LUC/issues/LUC-5617) known-state evidence packet. Closure
+  proof: generated JSON parse PASS for architecture-awareness,
+  architecture-health, and app-completion outputs; `git diff --check` PASS with
+  LF-to-CRLF warnings only; scoped high-confidence secret/private-key scan PASS;
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass). No runtime,
+  browser, Docker, database, deploy, protected smoke, production, provider,
+  credential, or watcher process was started.
+
+- 2026-06-27: [LUC-5617](/LUC/issues/LUC-5617) completed COO known-state
+  evidence collection and converted findings into repair/proof lanes.
+  Architecture-awareness refresh PASS generated `2026-06-27T19:07:25.807Z`
+  with `2486` entities / `5349` relations / `16045` files and scanner
+  overrides applied (`16` entity / `3` relation). App-completion refresh PASS
+  generated `2026-06-27T19:07:46.702Z` with `876` items / `7` flows / `851`
+  missing test links / `0` missing doc links / `0` blocked records.
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass). `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+  Required reports show `0` owner gaps, `0` disconnected entities, `0`
+  task-link gaps, and `0` verified-without-proof gaps. No runtime, browser,
+  Docker, database, deploy, protected smoke, production, provider, credential,
+  or watcher process was started.
+
 - 2026-06-27: [LUC-5624](/LUC/issues/LUC-5624) verified the Sales Management
   app-completion lane locally. API prerequisite
   `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5624-postgres`

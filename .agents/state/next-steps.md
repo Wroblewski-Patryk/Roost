@@ -1,5 +1,31 @@
 # Next Steps
 
+- `LUC-5632` source-control closure for [LUC-5617](/LUC/issues/LUC-5617) is
+  complete locally. Evidence packet:
+  `docs/planning/luc-5632-source-control-closure-for-luc-5617-evidence-packet.md`.
+  Verification: generated JSON parse PASS, `git diff --check` PASS with
+  LF-to-CRLF warnings only, scoped high-confidence secret/private-key scan PASS,
+  and `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues
+  `0`, delta `0/0/0`). Push is held for batch because this is docs/state
+  evidence only; deploy impact none.
+
+- `LUC-5617` known-state evidence collection is complete with follow-up
+  lanes. Evidence packet:
+  `docs/planning/luc-5617-known-state-evidence-and-architecture-baseline.md`.
+  Verification: Paperclip architecture-awareness refresh PASS generated
+  `2026-06-27T19:07:25.807Z` with `2486` entities / `5349` relations /
+  `16045` files and scanner overrides applied (`16` entity / `3` relation);
+  app-completion refresh PASS generated `2026-06-27T19:07:46.702Z` with
+  `876` items / `7` flows / `851` missing test links / `0` missing doc links /
+  `0` blocked records; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+  Next owners/actions: QA/Test continues focused app-completion missing-test
+  proof ladders after the completed [LUC-5624](/LUC/issues/LUC-5624) Sales
+  proof, Roost PM [LUC-5632](/LUC/issues/LUC-5632) classifies the current
+  generated/status packet, and runtime secret owner/board remains owner for
+  protected target proof. No product repair follows from this baseline alone.
+
 - `LUC-5624` Sales context and board proof is complete. Evidence packet:
   `docs/planning/luc-5624-sales-context-and-board-proof.md`; browser artifacts:
   `docs/ux/evidence/luc-5624-sales-board-proof/`. Verification:
