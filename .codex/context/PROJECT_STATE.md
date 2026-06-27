@@ -1,5 +1,21 @@
 # PROJECT_STATE
 
+- 2026-06-28: `LUC-5714` source-control posture for the generated evidence
+  packet completed locally. Output:
+  `docs/planning/luc-5714-source-control-posture-for-generated-evidence-packet.md`.
+  Evidence: generated architecture packet readback PASS at
+  `2026-06-27T23:17:15.345Z` with `2522` entities / `5483` relations; generated
+  app-completion readback PASS at `2026-06-27T23:17:24.780Z` with `912` items /
+  `7` flows / `882` missing test links / `0` missing doc links / `0` blocked
+  records. Delta is one generated document entity/four relations plus one
+  app-completion document evidence-link row after the
+  [LUC-5709](/LUC/issues/LUC-5709) baseline. Older untracked planning packets
+  and UX evidence directories remain outside this closure boundary. No product
+  code, scanner implementation, schema, migration, runtime server, browser,
+  database, Docker, push, deploy, restart, protected smoke, production
+  mutation, provider action, credential access, or secret disclosure occurred.
+  Deploy impact none.
+
 - 2026-06-28: `LUC-5709` Roost known-state evidence and architecture baseline
   completed locally in the Roost PM lane. Output:
   `docs/planning/luc-5709-known-state-evidence-and-architecture-baseline.md`.

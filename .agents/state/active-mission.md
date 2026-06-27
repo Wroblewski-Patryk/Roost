@@ -4,6 +4,35 @@ Last updated: 2026-06-28
 
 ## Current Mission
 
+- Mission ID: LUC-5714-SOURCE-CONTROL-POSTURE-GENERATED-EVIDENCE
+- Status: VERIFIED_DONE
+- Selected objective: Close source-control posture for the generated Roost
+  architecture/app-completion evidence packet after the
+  [LUC-5709](/LUC/issues/LUC-5709) baseline.
+- Why this mission now: Paperclip scoped the heartbeat to
+  [LUC-5714](/LUC/issues/LUC-5714), assigned to Documentation Steward, for
+  source-control closure of a generated evidence packet.
+- Scope: classify dirty generated/status files, exclude older untracked
+  sibling packets, read back generated JSON/status outputs, publish a closure
+  packet, update state, and record commit/no-push/deploy disposition.
+- Exclusions: no product code, scanner implementation, schema, migration,
+  runtime server, browser, database, Docker, push, deploy, restart, protected
+  smoke, production mutation, provider action, credential access, or secret
+  disclosure.
+- Output:
+  `docs/planning/luc-5714-source-control-posture-for-generated-evidence-packet.md`.
+- Evidence: generated architecture packet readback passed with `2522`
+  entities / `5483` relations generated `2026-06-27T23:17:15.345Z`;
+  generated app-completion readback passed with `912` items / `7` flows /
+  `882` missing test links / `0` missing doc links / `0` blocked records
+  generated `2026-06-27T23:17:24.780Z`; `npm run architecture:status`,
+  `npm run check:route-capabilities`, and scoped `git diff --check` passed.
+- Final disposition: generated/docs evidence closure only. The delta is one
+  generated document entity/four relations plus one app-completion
+  document/evidence-link row. Deploy impact none.
+
+## Previous Mission
+
 - Mission ID: LUC-5709-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
 - Status: VERIFIED_BASELINE_SOURCE_CONTROL_CLOSED
 - Selected objective: Refresh Roost known-state architecture/app-completion

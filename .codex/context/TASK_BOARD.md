@@ -2,6 +2,18 @@
 
 ## Now
 
+- 2026-06-28: `LUC-5714` source-control posture for the generated evidence
+  packet is complete locally. Output:
+  `docs/planning/luc-5714-source-control-posture-for-generated-evidence-packet.md`.
+  Evidence: generated architecture packet readback PASS (`2522` entities /
+  `5483` relations, generated `2026-06-27T23:17:15.345Z`);
+  app-completion readback PASS (`912` items / `7` flows / `882` missing test
+  links / `0` missing doc links / `0` blocked records, generated
+  `2026-06-27T23:17:24.780Z`). Disposition: local generated/docs evidence
+  closure for the post-[LUC-5709](/LUC/issues/LUC-5709) packet only; older
+  untracked planning packets and UX evidence directories remain outside this
+  boundary. Deploy impact none.
+
 - 2026-06-28: `LUC-5709` Roost known-state evidence and architecture baseline
   is complete locally. Output:
   `docs/planning/luc-5709-known-state-evidence-and-architecture-baseline.md`.
