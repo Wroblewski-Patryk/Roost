@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-06-27T20:43:37.445Z
+Generated: 2026-06-27T21:34:57.134Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -12,18 +12,18 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 
 ## Counts
 
-- Items: 887
+- Items: 895
 - User flows: 7
 - Needs browser/screenshot review: 0
-- Missing test link: 860
+- Missing test link: 867
 - Missing doc link: 0
 - Blocked: 0
 
 ## Flow Summary
 
-- Subscription and entitlement: 540 entities; risks {"missing_test_link":516,"implemented_needs_proof":20,"ok":4}; gates {"subscription":540,"configuration":18,"auth":4}
+- Subscription and entitlement: 547 entities; risks {"missing_test_link":522,"implemented_needs_proof":21,"ok":4}; gates {"subscription":547,"configuration":18,"auth":4}
 - Unclassified user workflow: 195 entities; risks {"missing_test_link":194,"implemented_needs_proof":1}; gates {"auth":5,"configuration":9}
-- Account access: 88 entities; risks {"missing_test_link":87,"ok":1}; gates {"auth":88,"configuration":10,"subscription":13}
+- Account access: 89 entities; risks {"missing_test_link":88,"ok":1}; gates {"auth":89,"configuration":10,"subscription":14}
 - User configuration: 54 entities; risks {"missing_test_link":53,"implemented_needs_proof":1}; gates {"configuration":54}
 - Dashboard overview: 6 entities; risks {"missing_test_link":6}; gates {}
 - Trading operation: 3 entities; risks {"missing_test_link":3}; gates {}
@@ -50,6 +50,7 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Account access | missing_test_link | feature_or_capability | LUC-5333 Department And Workforce Authority Proof Ladder | Docs Memory Lead | docs/planning/luc-5333-department-workforce-authority-proof-ladder.md | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | LUC-5561 Auth And Account Access Local Smoke Proof | Docs Memory Lead | docs/planning/luc-5561-auth-account-access-local-smoke-proof.md | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | LUC-5570 API Auth/Config Route Coverage | Docs Memory Lead | docs/planning/luc-5570-api-auth-config-route-coverage.md | auth, subscription, configuration |
+| Account access | missing_test_link | feature_or_capability | LUC-5661 /v1 Auth Alias Parity API Proof | Docs Memory Lead | docs/planning/luc-5661-v1-auth-alias-parity-api-proof.md | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | REACT-WEB-LAYOUT-001 Authenticated Layout Foundation | Docs Memory Lead | docs/planning/react-web-layout-foundation-task-contract.md | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | V1 Production Authenticated Parity Task Contract | Docs Memory Lead | docs/planning/v1-production-authenticated-parity-task-contract.md | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | V1AUTH-001 Owner Auth Redirect Flow | Docs Memory Lead | docs/planning/v1auth-001-owner-auth-redirect-task-contract.md | auth, subscription |
@@ -112,7 +113,6 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Account access | missing_test_link | feature_or_capability | setOwnerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#setOwnerToken | auth |
 | Account access | missing_test_link | feature_or_capability | client.ts | Engineering Delivery Lead | web/src/api/client.ts | auth, subscription |
 | Account access | missing_test_link | feature_or_capability | errors.ts | Engineering Delivery Lead | web/src/api/errors.ts | auth, subscription |
-| Account access | missing_test_link | feature_or_capability | canonicalPostAuthPath | Engineering Delivery Lead | web/src/app-route-registry.ts#canonicalPostAuthPath | auth |
 
 ## Agent Rule
 

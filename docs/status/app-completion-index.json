@@ -1,28 +1,28 @@
 {
-  "generatedAt": "2026-06-27T20:43:37.445Z",
+  "generatedAt": "2026-06-27T21:34:57.134Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
   "counts": {
-    "items": 887,
+    "items": 895,
     "flows": 7,
     "needsBrowserReview": 0,
-    "missingTestLink": 860,
+    "missingTestLink": 867,
     "missingDocLink": 0,
     "blocked": 0
   },
   "flows": [
     {
       "userFlow": "Account access",
-      "total": 88,
+      "total": 89,
       "risks": {
-        "missing_test_link": 87,
+        "missing_test_link": 88,
         "ok": 1
       },
       "gates": {
-        "auth": 88,
+        "auth": 89,
         "configuration": 10,
-        "subscription": 13
+        "subscription": 14
       }
     },
     {
@@ -45,14 +45,14 @@
     },
     {
       "userFlow": "Subscription and entitlement",
-      "total": 540,
+      "total": 547,
       "risks": {
-        "missing_test_link": 516,
-        "implemented_needs_proof": 20,
+        "missing_test_link": 522,
+        "implemented_needs_proof": 21,
         "ok": 4
       },
       "gates": {
-        "subscription": 540,
+        "subscription": 547,
         "configuration": 18,
         "auth": 4
       }
@@ -447,6 +447,28 @@
         "auth",
         "subscription",
         "configuration"
+      ],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 4,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "document:luc-5661-v1-auth-alias-parity-api-proof:a89557e7df",
+      "type": "document",
+      "kind": "feature_or_capability",
+      "name": "LUC-5661 /v1 Auth Alias Parity API Proof",
+      "path": "docs/planning/luc-5661-v1-auth-alias-parity-api-proof.md",
+      "owner": "Docs Memory Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Account access",
+      "gates": [
+        "auth",
+        "subscription"
       ],
       "evidence": {
         "hasTest": false,
@@ -4265,27 +4287,6 @@
       "kind": "feature_or_capability",
       "name": "LUC-1682 Docs And Architecture Graph Synchronization Hygiene Review",
       "path": "docs/planning/luc-1682-docs-and-architecture-graph-synchronization-hygiene-review.md",
-      "owner": "Docs Memory Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Subscription and entitlement",
-      "gates": [
-        "subscription"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "document:luc-1719-source-control-closure-for-2026-06-03-dirty-docs-state-context-packet:616515911f",
-      "type": "document",
-      "kind": "feature_or_capability",
-      "name": "LUC-1719 Source Control Closure For 2026-06-03 Dirty Docs/State/Context Packet",
-      "path": "docs/planning/luc-1719-source-control-closure-for-2026-06-03-dirty-docs-state-context-packet.md",
       "owner": "Docs Memory Lead",
       "status": "implemented_needs_proof",
       "userFlow": "Subscription and entitlement",
