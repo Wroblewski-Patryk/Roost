@@ -1,5 +1,21 @@
 # Next Steps
 
+- `LUC-5646` known-state evidence collection is complete with follow-up proof
+  selection. Evidence packet:
+  `docs/planning/luc-5646-known-state-evidence-and-architecture-baseline.md`.
+  Verification: Paperclip architecture-awareness refresh PASS generated
+  `2026-06-27T20:13:27.883Z` with `2493` entities / `5377` relations /
+  `16052` files and scanner overrides applied (`16` entity / `3` relation);
+  app-completion refresh PASS generated `2026-06-27T20:14:16.507Z` with
+  `883` items / `7` flows / `858` missing test links / `0` missing doc links
+  / `0` blocked records; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+  Next owner/action: QA/Test selects the next non-duplicated missing-test-link
+  proof ladder, prioritizing Subscription and entitlement unless a fresher
+  release blocker exists. Protected target proof remains approval/credential
+  gated.
+
 - `LUC-5641` known-state evidence collection is complete with follow-up proof
   selection. Evidence packet:
   `docs/planning/luc-5641-known-state-evidence-and-architecture-baseline.md`.
