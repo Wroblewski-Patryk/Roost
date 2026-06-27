@@ -1,5 +1,17 @@
 # MVP Next Commits
 
+- 2026-06-28: `LUC-5709` completed the latest Roost known-state evidence and
+  architecture baseline. Evidence packet:
+  `docs/planning/luc-5709-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-27T23:12:51.050Z` with `2521` entities / `5479` relations /
+  `16086` files; app-completion refresh PASS generated
+  `2026-06-27T23:12:58.949Z` with `911` items / `7` flows / `881` missing
+  test links / `0` blocked records; `npm run architecture:status` PASS;
+  `npm run check:route-capabilities` PASS; `git diff --check` PASS with
+  LF-to-CRLF warnings only. No product implementation follows from this
+  baseline alone. Push/deploy/protected smoke held.
+
 - 2026-06-27: `LUC-5654` closed local source control for the
   [LUC-5653](/LUC/issues/LUC-5653) evidence packet. Closure packet:
   `docs/planning/luc-5654-source-control-closure-for-luc-5653-evidence-packet.md`.

@@ -1,5 +1,20 @@
 # Next Steps
 
+- `LUC-5709` Roost known-state evidence and architecture baseline is complete
+  locally. Evidence packet:
+  `docs/planning/luc-5709-known-state-evidence-and-architecture-baseline.md`.
+  Architecture-awareness refresh generated `2026-06-27T23:12:51.050Z` with
+  `2521` entities / `5479` relations / `16086` files; app-completion refresh
+  generated `2026-06-27T23:12:58.949Z` with `911` items / `7` flows / `881`
+  missing test links / `0` missing doc links / `0` blocked records.
+  Verification passed: `npm run architecture:status`, `npm run
+  check:route-capabilities`, and `git diff --check` with LF-to-CRLF warnings
+  only. Next owner/action: none for [LUC-5709](/LUC/issues/LUC-5709); QA
+  should not open broad duplicate proof from this snapshot unless a future
+  refresh exposes a concrete unverified runtime row outside the already-covered
+  Account access, Dashboard overview, and Exchange connection/configuration
+  set, or a fresh reproduced regression.
+
 - `LUC-5701` Roost known-state evidence and architecture baseline is complete
   locally. Evidence packet:
   `docs/planning/luc-5701-known-state-evidence-and-architecture-baseline.md`.
