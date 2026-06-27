@@ -4,6 +4,147 @@ Last updated: 2026-06-27
 
 ## Current Mission
 
+- Mission ID: LUC-5556-FOCUSED-QA-PROOF-LADDER
+- Status: PARTIALLY_VERIFIED_BLOCKED
+- Selected objective: Select one non-duplicated focused QA proof ladder from
+  the [LUC-5551](/LUC/issues/LUC-5551) app-completion missing-test-link debt
+  and run the smallest safe local proof.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5556](/LUC/issues/LUC-5556), assigned to the QA & Verification
+  Engineer.
+- Scope: inspect the current app-completion index, avoid duplicating recent
+  proof ladders, select the User configuration settings ladder, map exact
+  affected surfaces, run local static gates, attempt the behavioral API
+  prerequisite, and record the blocker.
+- Exclusions: no product feature code, schema, migration authoring, browser
+  proof without a verified local DB/runtime, push, deploy, protected smoke,
+  production mutation, credential access, secret disclosure, live provider
+  action, or long-running watcher.
+- Output:
+  `docs/planning/luc-5556-focused-qa-proof-ladder-from-app-completion-debt.md`.
+- Evidence: app-completion snapshot `2026-06-27T14:49:44.922Z` reports
+  `845` items / `7` flows / `826` missing test links / `0` missing doc links /
+  `2` blocked items. Selected non-duplicated ladder: User configuration
+  browser/settings (`/account/settings`, `/workspace/settings`, `/settings`,
+  `/settings/drive`, `/settings/api`) after Account access was already covered
+  by [LUC-5560](/LUC/issues/LUC-5560). `npm run check:route-capabilities`
+  PASS (`180` manifest routes / `35` route files); `npm run build` PASS;
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues
+  `0`, delta `0/0/0`). Behavioral API prerequisite
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5556-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55556`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` is
+  blocked because Docker Desktop's Linux engine pipe is unavailable before
+  disposable PostgreSQL creation.
+- Final disposition: proof ladder published and static gates verified. No
+  product repair issue is warranted because no journey failed. Next owner is
+  QA/Test or Engineering Delivery in a Docker-enabled environment or with an
+  approved safe local `DATABASE_URL`; rerun Rank 1 API proof, then run scoped
+  settings browser proof if Rank 1 passes. Deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5568-ASSETS-FINANCE-BLOCKED-SPEC-CLASSIFICATION
+- Status: VERIFIED_DONE
+- Selected objective: Classify the two app-completion blocked spec records
+  from Assets and Finance planning docs and decide whether they require product
+  repair or source-of-truth hygiene.
+- Why this mission now: Paperclip scoped the heartbeat to
+  [LUC-5568](/LUC/issues/LUC-5568), assigned to the Technical Solution
+  Architect.
+- Scope: inspect the current app-completion blocked records, cross-check
+  Assets and Finance planning/spec/task/proof packets, publish an evidence
+  classification, and update project state pointers.
+- Exclusions: no product code, schema, migration, generated scanner mutation,
+  child repair issue, push, deploy, protected smoke, production mutation,
+  credential access, browser, local server, Docker, provider, or watcher.
+- Output:
+  `docs/planning/luc-5568-assets-finance-blocked-spec-record-classification.md`.
+- Evidence: `docs/status/app-completion-index.json` generated
+  `2026-06-27T14:49:44.922Z` contains exactly two blocked records:
+  `CC-08-001 Assets Resource System Spec` and `DMS-07-001 Finance System
+  Spec`. Assets downstream evidence includes verified `CC-08-002`
+  `GET /v1/assets/context`, [LUC-4821](/LUC/issues/LUC-4821) files/folders
+  browser/API proof, and [LUC-5201](/LUC/issues/LUC-5201) preview API proof.
+  Finance downstream evidence includes verified `DMS-07-002`
+  `GET /v1/finance/context`, `DMS-07-003` read-only Finance web board,
+  [LUC-5184](/LUC/issues/LUC-5184), [LUC-5392](/LUC/issues/LUC-5392), and
+  [LUC-5433](/LUC/issues/LUC-5433) QA proofs.
+- Final disposition: both blocked records are stale planning/spec status
+  labels in the app-completion projection, not active product blockers. No
+  repair child issue is warranted; future scanner/doc-curation work may mark
+  these specs as completed planning specs with verified downstream runtime
+  evidence. Deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5570-API-AUTH-CONFIG-ROUTE-COVERAGE
+- Status: PARTIALLY_VERIFIED_BLOCKED
+- Selected objective: Add focused backend coverage for high-risk auth/config
+  route boundaries surfaced by the missing-test signal.
+- Why this mission now: Paperclip scoped the heartbeat to
+  [LUC-5570](/LUC/issues/LUC-5570), assigned to the Core Backend Engineer.
+- Scope: inspect existing API coverage and route implementations, then add
+  only focused assertions for invalid bearer auth, owner-only API key
+  configuration, and user-only workspace selection/listing boundaries.
+- Exclusions: no route implementation change, schema, migration, provider live
+  call, push, deploy, protected smoke, credential access, browser, local server,
+  or long-running watcher.
+- Output:
+  `docs/planning/luc-5570-api-auth-config-route-coverage.md`.
+- Evidence: `src/tests/api.test.ts` now asserts `/auth/me` invalid bearer
+  returns `401 invalid_auth_token`, broad service API keys cannot list
+  `/v1/api-keys` or `/v1/api-keys/profiles`, and broad service API keys cannot
+  list/select `/v1/workspaces`. `npm run build:server` PASS; `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `git diff --check` PASS with LF-to-CRLF warnings only; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`).
+- Blocked proof: `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5570-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55570`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` could
+  not start because Docker Desktop's Linux engine pipe was unavailable before
+  disposable PostgreSQL creation.
+- Final disposition: static/backend coverage gates are verified; execution of
+  the behavioral API suite remains blocked by local Docker availability. Next
+  owner should rerun the same API harness in a Docker-enabled environment or
+  with an approved safe local `DATABASE_URL`. Deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5560-TOP-FLOW-TEST-LINK-PROOF-LADDER
+- Status: PARTIALLY_VERIFIED_BLOCKED
+- Selected objective: Convert the Roost app-completion `826 missing test links`
+  signal into a ranked proof ladder for the highest-risk user flows and run the
+  first safe local proof.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5560](/LUC/issues/LUC-5560), assigned to the Test Automation Engineer.
+- Scope: read app-completion index files, prioritize Subscription and
+  entitlement, Account access, and User configuration, map affected
+  files/routes/commands/evidence, run the smallest safe local proof, and record
+  blocked local/protected actions separately.
+- Exclusions: no product feature code, schema, migration authoring, push,
+  deploy, restart, protected smoke, production mutation, credential access,
+  secret disclosure, live provider action, browser server, database mutation
+  outside a safe disposable test database, or long-running watcher.
+- Output:
+  `docs/planning/luc-5560-top-flow-test-link-proof-ladder.md`.
+- Evidence: `docs/status/app-completion-index.json` generated
+  `2026-06-27T14:49:44.922Z` with `845` items / `7` flows / `826` missing
+  test links / `0` missing doc links / `2` blocked items; `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `npm run build` PASS; attempted Rank 1 API proof
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5560-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55560`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` BLOCKED
+  before DB creation because Docker Desktop's Linux engine pipe was missing.
+- Final disposition: proof ladder published and local static/route gates
+  verified. Behavioral Account access API proof remains blocked by local Docker
+  availability; next owner is QA/Test or Engineering Delivery in an environment
+  with Docker Desktop or approved safe local `DATABASE_URL`.
+
+## Previous Mission
+
 - Mission ID: LUC-5555-SOURCE-CONTROL-CLOSURE-FOR-LUC-5551-EVIDENCE-PACKET
 - Status: VERIFIED_DONE_LOCAL_COMMIT
 - Selected objective: Close local source control for the

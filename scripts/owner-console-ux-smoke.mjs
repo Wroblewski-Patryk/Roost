@@ -9,7 +9,7 @@ const ownerPassword = process.env.COMPANYCORE_OWNER_PASSWORD || process.env.SEED
 const outputRoot = process.env.COMPANYCORE_UX_ARTIFACT_DIR
   || path.join(os.tmpdir(), "companycore-ux-smoke", new Date().toISOString().replace(/[:.]/g, "-"));
 
-const routes = [
+const defaultRoutes = [
   "/dashboard",
   "/data",
   "/data/tasks",
@@ -19,11 +19,35 @@ const routes = [
   "/settings/api"
 ];
 
-const viewports = [
+const routes = (process.env.COMPANYCORE_UX_ROUTES || "")
+  .split(",")
+  .map((route) => route.trim())
+  .filter(Boolean);
+if (routes.length === 0) {
+  routes.push(...defaultRoutes);
+}
+
+const defaultViewports = [
   { name: "desktop", width: 1440, height: 960 },
   { name: "tablet", width: 834, height: 1112 },
   { name: "mobile", width: 390, height: 844 }
 ];
+
+function parseJsonEnv(name, fallback) {
+  const raw = process.env[name];
+  if (!raw) {
+    return fallback;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    throw new Error(`${name} must be valid JSON. ${error.message}`);
+  }
+}
+
+const viewports = parseJsonEnv("COMPANYCORE_UX_VIEWPORTS_JSON", defaultViewports);
+const requiredTextByRoute = parseJsonEnv("COMPANYCORE_UX_REQUIRED_TEXT_JSON", {});
+const fullPageScreenshots = process.env.COMPANYCORE_UX_FULL_PAGE === "1";
 
 async function request(pathname, options = {}) {
   const response = await fetch(`${baseUrl}${pathname}`, {
@@ -51,14 +75,14 @@ function slug(input) {
 }
 
 async function waitForConsoleHydration(page) {
-  await page.waitForSelector("body.is-signed-in", { timeout: 10000 });
+  await page.waitForSelector("body", { timeout: 10000 });
   await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
   await page.waitForTimeout(450);
 }
 
 async function screenshot(page, fileName) {
   const filePath = path.join(outputRoot, fileName);
-  await page.screenshot({ path: filePath, fullPage: false });
+  await page.screenshot({ path: filePath, fullPage: fullPageScreenshots });
   return filePath;
 }
 
@@ -125,13 +149,23 @@ async function main() {
         await waitForConsoleHydration(page);
         const routeTitle = await page.locator("#routeTitle").innerText().catch(() => "");
         const bodyRoute = await page.locator("body").getAttribute("data-route");
+        const signedIn = await page.evaluate(() => Boolean(window.sessionStorage.getItem("companycoreOwnerToken")));
         assertions.push({
           viewport: viewport.name,
           route,
           renderedRoute: bodyRoute,
           routeTitle,
-          signedIn: await page.locator("body.is-signed-in").count() === 1
+          signedIn
         });
+        const requiredTexts = requiredTextByRoute[route] || requiredTextByRoute["*"] || [];
+        for (const text of requiredTexts) {
+          assertions.push({
+            viewport: viewport.name,
+            route,
+            requiredText: text,
+            requiredTextPresent: await page.getByText(text, { exact: false }).count().then((count) => count > 0).catch(() => false)
+          });
+        }
         screenshots.push({
           viewport: viewport.name,
           route,
@@ -139,7 +173,7 @@ async function main() {
         });
       }
 
-      if (viewport.name === "desktop") {
+      if (viewport.name === "desktop" && routes.includes("/dashboard")) {
         await page.goto(`${baseUrl}/dashboard`, { waitUntil: "domcontentloaded" });
         await waitForConsoleHydration(page);
         await page.locator("#moduleSearch").fill("api");
@@ -150,7 +184,9 @@ async function main() {
           interaction: "module switcher search for api",
           file: await screenshot(page, "desktop-dashboard-module-switcher-api.png")
         });
+      }
 
+      if (viewport.name === "desktop" && routes.includes("/data")) {
         await page.goto(`${baseUrl}/data`, { waitUntil: "domcontentloaded" });
         await waitForConsoleHydration(page);
         await page.locator("#dataSearch").fill("tasks");
@@ -161,7 +197,9 @@ async function main() {
           interaction: "data filter search for tasks",
           file: await screenshot(page, "desktop-data-filter-tasks.png")
         });
+      }
 
+      if (viewport.name === "desktop" && routes.includes("/data/tasks")) {
         await page.goto(`${baseUrl}/data/tasks`, { waitUntil: "domcontentloaded" });
         await waitForConsoleHydration(page);
         const newDraft = page.locator('[data-table-action="new-draft"]');
@@ -175,7 +213,9 @@ async function main() {
           interaction: "task typed editor draft state without submit",
           file: await screenshot(page, "desktop-data-tasks-editor-draft.png")
         });
+      }
 
+      if (viewport.name === "desktop" && routes.includes("/settings/drive")) {
         await page.goto(`${baseUrl}/settings/drive`, { waitUntil: "domcontentloaded" });
         await waitForConsoleHydration(page);
         assertions.push({
@@ -212,7 +252,7 @@ async function main() {
   const reportPath = path.join(outputRoot, "report.json");
   await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 
-  const failedAssertions = assertions.filter((assertion) => assertion.signedIn === false || assertion.disabled === false);
+  const failedAssertions = assertions.filter((assertion) => assertion.signedIn === false || assertion.disabled === false || assertion.requiredTextPresent === false);
   if (consoleIssues.length > 0 || failedAssertions.length > 0) {
     console.error(`CompanyCore owner-console UX smoke failed. Artifacts: ${outputRoot}`);
     console.error(JSON.stringify({ consoleIssues, failedAssertions }, null, 2));

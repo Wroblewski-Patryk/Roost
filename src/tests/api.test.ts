@@ -5807,6 +5807,12 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(login.status, 200);
 
+  const invalidBearerMe = await request("/auth/me", {
+    headers: { Authorization: "Bearer not-a-valid-owner-token" }
+  });
+  assert.equal(invalidBearerMe.status, 401);
+  assert.equal((invalidBearerMe.body as { error: string }).error, "invalid_auth_token");
+
   const unscopedKey = await request("/v1/api-keys", {
     method: "POST",
     headers: authA,
@@ -5835,6 +5841,31 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(createdKeyBody.data.keyPrefix);
 
   const serviceKey = createdKeyBody.data.key;
+
+  const serviceCannotListKeys = await request("/v1/api-keys", {
+    headers: { "X-API-Key": serviceKey }
+  });
+  assert.equal(serviceCannotListKeys.status, 403);
+  assert.equal((serviceCannotListKeys.body as { error: string }).error, "forbidden");
+
+  const serviceCannotListKeyProfiles = await request("/v1/api-keys/profiles", {
+    headers: { "X-API-Key": serviceKey }
+  });
+  assert.equal(serviceCannotListKeyProfiles.status, 403);
+  assert.equal((serviceCannotListKeyProfiles.body as { error: string }).error, "forbidden");
+
+  const serviceCannotListWorkspaces = await request("/v1/workspaces", {
+    headers: { "X-API-Key": serviceKey }
+  });
+  assert.equal(serviceCannotListWorkspaces.status, 403);
+  assert.equal((serviceCannotListWorkspaces.body as { error: string }).error, "forbidden");
+
+  const serviceCannotSelectWorkspace = await request(`/v1/workspaces/${secondWorkspaceBody.data.workspace.id}/actions/select`, {
+    method: "POST",
+    headers: { "X-API-Key": serviceKey }
+  });
+  assert.equal(serviceCannotSelectWorkspace.status, 403);
+  assert.equal((serviceCannotSelectWorkspace.body as { error: string }).error, "forbidden");
 
   const deniedBroadAdapterKey = await request("/v1/api-keys", {
     method: "POST",

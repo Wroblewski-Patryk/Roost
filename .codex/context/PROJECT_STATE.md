@@ -1,5 +1,90 @@
 # PROJECT_STATE
 
+- 2026-06-27: `LUC-5556` focused QA proof ladder completed as a partial
+  verification with a local behavioral-proof blocker. Output:
+  `docs/planning/luc-5556-focused-qa-proof-ladder-from-app-completion-debt.md`.
+  Selected non-duplicated ladder: User configuration settings/browser
+  surfaces (`/account/settings`, `/workspace/settings`, `/settings`,
+  `/settings/drive`, `/settings/api`) because Account access was already
+  attempted in [LUC-5560](/LUC/issues/LUC-5560), Finance browser entitlement
+  proof already exists in [LUC-5433](/LUC/issues/LUC-5433), and the other
+  named flows have recent proof packets. Evidence: app-completion snapshot
+  `2026-06-27T14:49:44.922Z` reports `845` items / `7` flows / `826` missing
+  test links / `0` missing doc links / `2` blocked items; `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `npm run build` PASS; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`). Attempted
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5556-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55556`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` is
+  blocked because Docker Desktop's Linux engine pipe is unavailable before
+  disposable PostgreSQL creation. No product repair issue is warranted; no
+  browser, server, database container, push, deploy, protected smoke,
+  production mutation, credential access, secret disclosure, or live provider
+  action occurred. Deploy impact none; next owner should rerun Rank 1 in a
+  Docker-enabled or approved safe local database environment, then run scoped
+  settings browser proof if Rank 1 passes.
+
+- 2026-06-27: `LUC-5568` Assets/Finance blocked spec record classification
+  completed. Output:
+  `docs/planning/luc-5568-assets-finance-blocked-spec-record-classification.md`.
+  Evidence: current app-completion snapshot
+  `2026-06-27T14:49:44.922Z` has exactly two blocked records, both under
+  `Subscription and entitlement`: `CC-08-001 Assets Resource System Spec` and
+  `DMS-07-001 Finance System Spec`. Classification: both are stale
+  planning/spec status labels, not active product blockers. Assets has
+  verified downstream runtime/proof evidence through `CC-08-002`
+  `GET /v1/assets/context`, [LUC-4821](/LUC/issues/LUC-4821), and
+  [LUC-5201](/LUC/issues/LUC-5201). Finance has verified downstream
+  runtime/proof evidence through `DMS-07-002`, `DMS-07-003`,
+  [LUC-5184](/LUC/issues/LUC-5184), [LUC-5392](/LUC/issues/LUC-5392), and
+  [LUC-5433](/LUC/issues/LUC-5433). No product repair child issue, code,
+  schema, migration, generated scanner mutation, protected smoke, push, deploy,
+  credential, browser, server, Docker, provider, or watcher action was
+  warranted. Deploy impact none; remaining risks are broad missing-test debt
+  and protected production proof gates tracked by existing lanes.
+
+- 2026-06-27: `LUC-5570` API auth/config route coverage handoff completed as
+  a partial verification with a local behavioral-test blocker. Output:
+  `docs/planning/luc-5570-api-auth-config-route-coverage.md`. Changed
+  `src/tests/api.test.ts` only. Added focused assertions for invalid bearer
+  `/auth/me` (`401 invalid_auth_token`), service-key denial on
+  `/v1/api-keys` and `/v1/api-keys/profiles`, and service-key denial on
+  `/v1/workspaces` plus workspace selection. Evidence: `npm run build:server`
+  PASS; `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `git diff --check` PASS with LF-to-CRLF warnings only;
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`, all gates pass). Attempted
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5570-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55570`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` is
+  blocked because Docker Desktop's Linux engine pipe is unavailable before
+  disposable PostgreSQL creation. No route implementation, schema, migration,
+  push, deploy, protected smoke, production mutation, credential access,
+  secret disclosure, provider call, browser, server, or long-running process
+  occurred. Deploy impact none; next owner reruns the API harness in a
+  Docker-enabled or approved safe local database environment.
+
+- 2026-06-27: `LUC-5560` top-flow test-link proof ladder completed as a
+  partial local verification with a clear blocker for behavioral API proof.
+  Output: `docs/planning/luc-5560-top-flow-test-link-proof-ladder.md`.
+  Evidence: app-completion snapshot `2026-06-27T14:49:44.922Z` reports `845`
+  items / `7` flows / `826` missing test links / `0` missing doc links / `2`
+  blocked items; ranked ladder prioritizes Account access, then User
+  configuration, then targeted Subscription and entitlement follow-up.
+  `npm run check:route-capabilities` PASS (`180` manifest routes / `35` route
+  files); `npm run build` PASS. Attempted Rank 1 behavioral proof
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5560-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55560`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` is
+  blocked locally because Docker Desktop's Linux engine pipe is unavailable
+  before disposable PostgreSQL container creation. No product code, schema,
+  migration authoring, push, deploy, protected smoke, production mutation,
+  credential access, secret disclosure, live provider action, browser server,
+  or long-running process occurred. Deploy impact none; next owner is QA/Test
+  or Engineering Delivery in a Docker-enabled or approved safe local database
+  environment.
+
 - 2026-06-27: `LUC-5551` Roost known-state evidence and architecture baseline
   completed in the IPM coordination lane. Output:
   `docs/planning/luc-5551-known-state-evidence-and-architecture-baseline.md`.

@@ -1,5 +1,44 @@
 # System Health
 
+- 2026-06-27: [LUC-5556](/LUC/issues/LUC-5556) QA proof health checkpoint is
+  partially verified. Local static gates passed: `npm run
+  check:route-capabilities` (`180` manifest routes / `35` route files),
+  `npm run build`, and `npm run architecture:status` (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`). Behavioral API proof for the User
+  configuration settings ladder is blocked before DB creation because Docker
+  Desktop's Linux engine pipe is unavailable:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5556-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55556`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local`.
+  No validation-owned browser, server, database container, provider, push,
+  deploy, production, credential, or secret action occurred.
+
+- 2026-06-27: `LUC-5568` classified the two app-completion blocked records
+  from Assets/Finance planning docs without runtime action. Evidence packet:
+  `docs/planning/luc-5568-assets-finance-blocked-spec-record-classification.md`.
+  `docs/status/app-completion-index.json` generated
+  `2026-06-27T14:49:44.922Z` reports two blocked records:
+  `CC-08-001 Assets Resource System Spec` and `DMS-07-001 Finance System
+  Spec`. Both are stale planning/spec status labels with verified downstream
+  runtime/proof evidence, not active product blockers. No code, schema,
+  migration, generated scanner, protected smoke, push, deploy, credential,
+  browser, server, Docker, provider, or watcher action occurred.
+
+- 2026-06-27: `LUC-5570` added focused API auth/config coverage assertions in
+  `src/tests/api.test.ts` and recorded evidence in
+  `docs/planning/luc-5570-api-auth-config-route-coverage.md`. Verified:
+  `npm run build:server` PASS; `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files); `git diff --check` PASS with
+  LF-to-CRLF warnings only; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass). Blocked local API proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5570-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55570`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` could
+  not start because Docker Desktop's Linux engine pipe is unavailable before
+  disposable PostgreSQL creation. No runtime server, browser, provider,
+  protected smoke, push, deploy, or long-running process was started.
+
 - 2026-06-27: `LUC-5551` refreshed Roost known-state evidence. Paperclip
   architecture-awareness scanner PASS generated `2026-06-27T14:49:45.082Z`
   with `2467` entities / `5279` relations / `13817` files and scanner

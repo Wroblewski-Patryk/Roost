@@ -1,5 +1,71 @@
 # Next Steps
 
+- `LUC-5556` focused QA proof ladder is partially verified and blocked at the
+  behavioral API prerequisite. Evidence packet:
+  `docs/planning/luc-5556-focused-qa-proof-ladder-from-app-completion-debt.md`.
+  Selected non-duplicated ladder: User configuration settings/browser surfaces
+  (`/account/settings`, `/workspace/settings`, `/settings`,
+  `/settings/drive`, `/settings/api`). Verification completed: `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files),
+  `npm run build` PASS, and `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`). Blocked local
+  proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5556-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55556`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` could
+  not start because Docker Desktop's Linux engine pipe was unavailable before
+  DB container creation. Next owner/action: QA/Test or Engineering Delivery
+  reruns the Rank 1 API prerequisite in a Docker-enabled environment or with an
+  approved safe local `DATABASE_URL`; if it passes, run Rank 2 scoped settings
+  browser proof with desktop/tablet/mobile screenshots and no-console report.
+  No product repair issue is warranted unless that proof finds a real defect.
+
+- `LUC-5568` Assets/Finance blocked spec record classification is complete.
+  Evidence packet:
+  `docs/planning/luc-5568-assets-finance-blocked-spec-record-classification.md`.
+  Current app-completion snapshot `2026-06-27T14:49:44.922Z` has exactly two
+  blocked records: `CC-08-001 Assets Resource System Spec` and `DMS-07-001
+  Finance System Spec`. Classification: both are stale planning/spec status
+  labels, not active product blockers. No product repair child issue is
+  warranted. Next owner/action, if selected later: scanner/doc-curation owner
+  can update app-completion projection rules or doc metadata so completed
+  planning specs with verified downstream runtime/proof evidence do not remain
+  classified as active blocked records.
+
+- `LUC-5570` API auth/config route coverage is partially verified and blocked
+  only at behavioral API-suite execution. Evidence packet:
+  `docs/planning/luc-5570-api-auth-config-route-coverage.md`. Static/backend
+  proof completed: `npm run build:server` PASS, `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files),
+  `git diff --check` PASS with LF-to-CRLF warnings only, and `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`). Blocked proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5570-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55570`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` could
+  not start because Docker Desktop's Linux engine pipe is unavailable. Next
+  owner/action: rerun the same API harness in a Docker-enabled environment or
+  with an approved safe local `DATABASE_URL`; no product repair issue is
+  warranted unless that run fails.
+
+- `LUC-5560` top-flow test-link proof ladder is partially verified and blocked
+  at behavioral API proof. Evidence packet:
+  `docs/planning/luc-5560-top-flow-test-link-proof-ladder.md`. Ranked proof
+  order: Account access API authority first, User configuration browser
+  settings second, Subscription and entitlement targeted follow-up third.
+  Verification completed: `npm run check:route-capabilities` PASS (`180`
+  manifest routes / `35` route files) and `npm run build` PASS. Blocked local
+  proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5560-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55560`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` could
+  not start because Docker Desktop's Linux engine pipe was unavailable. Next
+  owner/action: QA/Test or Engineering Delivery reruns the Rank 1 API command
+  in a Docker-enabled environment or with an approved safe local
+  `DATABASE_URL`, then runs the scoped User configuration browser proof only
+  after API proof passes. Deploy impact none; protected production proof
+  remains approval/credential gated.
+
 - `LUC-5551` known-state evidence pass is complete locally with
   source-control closure still required. Evidence packet:
   `docs/planning/luc-5551-known-state-evidence-and-architecture-baseline.md`.
