@@ -1,5 +1,291 @@
 # Module Confidence Ledger
 
+Known-state note: [LUC-5551](/LUC/issues/LUC-5551) is
+VERIFIED_WITH_FOLLOWUPS for Roost architecture/app-completion baseline.
+Evidence packet:
+`docs/planning/luc-5551-known-state-evidence-and-architecture-baseline.md`.
+Architecture awareness PASS generated `2026-06-27T14:49:45.082Z` with `2467`
+entities / `5279` relations / `13817` files; `npm run architecture:status`
+PASS (`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+app-completion PASS generated `2026-06-27T14:49:44.922Z` with `845` items /
+`7` flows / `0` browser-review needs / `826` missing test links / `0` missing
+doc links / `2` blocked items. Confidence classification: architecture,
+route-capability, task-sync, and ownership posture is verified locally; app
+completion remains partially verified because broad test-link debt requires
+focused QA proof ladders. Residual risk: protected production proof remains
+approval/credential gated; source-control closure is delegated to
+[LUC-5555](/LUC/issues/LUC-5555), and QA proof selection is delegated to
+[LUC-5556](/LUC/issues/LUC-5556).
+
+QA proof note: [LUC-5433](/LUC/issues/LUC-5433) is VERIFIED_DONE for the
+Finance browser sub-flow selected from the [LUC-5423](/LUC/issues/LUC-5423)
+app-completion confidence debt. Evidence packet:
+`docs/planning/luc-5433-finance-browser-proof-ladder.md`. Selected flow:
+`Subscription and entitlement`, narrowed to the non-duplicated browser
+projection of `/areas?area=07-finanse&view=overview` because the Finance API
+posture already had recent proof in [LUC-5392](/LUC/issues/LUC-5392). Mapped
+surfaces: `web/src/features/departments/finance-route.tsx`,
+`web/src/features/departments/shared.tsx`,
+`web/src/hooks/use-owner-packet.ts`, `web/src/api/client.ts`,
+`src/modules/finance/finance.routes.ts`, `src/auth/capabilities.ts`,
+`src/mcp/manifest.ts`, and `scripts/owner-console-ux-smoke.mjs`. Local proof
+ran against disposable PostgreSQL `companycore-luc-5433-postgres` on port
+`55543` and local server `http://127.0.0.1:31543`: `npm run build` PASS,
+`npm run prisma:migrate:deploy` PASS with all `31` migrations, `npm run seed`
+PASS, `/health` PASS, and focused `npm run owner-console:ux-smoke` PASS at
+desktop `1440x960`, tablet `834x1112`, and mobile `390x844`. Report
+`docs/ux/evidence/luc-5433-finance-browser-proof/report.json` generated
+`2026-06-21T02:39:37.409Z` with signed-in assertions true, required Finance
+route text present, and `consoleIssues=[]`; screenshots are stored under
+`docs/ux/evidence/luc-5433-finance-browser-proof/`. Cleanup removed the
+validation DB container and stopped the local server; no product repair issue
+is warranted. Residual risk: protected production proof remains
+approval/credential gated.
+
+QA proof note: [LUC-5431](/LUC/issues/LUC-5431) is VERIFIED_DONE for the
+Company OS approval lifecycle and automation sub-slice selected from the
+[LUC-5421](/LUC/issues/LUC-5421) app-completion confidence debt. Evidence
+packet:
+`docs/planning/luc-5431-company-os-approval-automation-proof-ladder.md`.
+Selected journey: `Unclassified user workflow`, narrowed to
+`src/app.ts#/company-os`, `src/modules/company-os/company-os.routes.ts`,
+`src/modules/company-os/workflow-definition-drafts.routes.ts`,
+`src/modules/events/events.routes.ts`, `src/modules/events/event.service.ts`,
+`src/modules/process-core/process-core.routes.ts`, `src/tests/api.test.ts`,
+and generated architecture docs for `FEAT-AUTO-0006`, `API-AUTO-0119`,
+`API-AUTO-0120`, `API-AUTO-0121`, `API-AUTO-0122`, `API-AUTO-0123`,
+`API-AUTO-0124`, `API-AUTO-0125`, `API-AUTO-0168`, and `API-AUTO-0169`.
+Local proof ran `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5431-postgres`
+`COMPANYCORE_TEST_DB_PORT=55531`
+`COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local`: server
+and web build PASS, all `31` migrations applied, seed PASS, and `7/7` node
+test subtests PASS. The selected proof covers Company OS snapshot readback,
+approval request/decision lifecycle, duplicate/cross-workspace denial,
+pipeline-run task links, knowledge links, stage start/block/validate/complete,
+automation-rule dry-run/execute/idempotency, audit/event evidence, and
+process-core read-only coverage. `npm run check:route-capabilities` and
+`npm run architecture:status` also passed. Cleanup found no validation DB
+container, no port `55531` listener, and no `chrome-headless-shell` process.
+Confidence classification: the current local Company OS approval lifecycle and
+automation posture is locally verified; no product repair issue is warranted.
+Residual risk: browser workbench proof and protected production proof remain
+separate future gates.
+
+Source-control note: [LUC-5430](/LUC/issues/LUC-5430) is
+BLOCKED_BEFORE_COMMIT for the [LUC-5421](/LUC/issues/LUC-5421)
+generated/status/planning evidence packet. Closure packet:
+`docs/planning/luc-5430-source-control-closure-for-luc-5421-evidence-packet.md`.
+Verification passed: `git diff --check`, generated JSON parse, scoped
+high-confidence secret/private-key scan with `matches=0`, and `npm run
+architecture:status`. Commit is blocked because the current singleton
+generated/status files are later shared-workspace outputs (`02:17:12`
+architecture / `02:17:29` app-completion), while the LUC-5421 evidence packet
+records `02:14:40` / `02:14:56`. Push held; deploy impact none. Next owner:
+source-control integration owner to close a newer consolidated
+generated/status packet or provide an approved clean LUC-5421-only
+snapshot/patch boundary.
+
+QA proof note: [LUC-5427](/LUC/issues/LUC-5427) is VERIFIED_DONE for the
+ClickUp/provider event and task-sync sub-slice selected from the
+[LUC-5420](/LUC/issues/LUC-5420) app-completion confidence debt. Evidence
+packet:
+`docs/planning/luc-5427-clickup-provider-task-sync-proof-ladder.md`. Selected
+journey: `Unclassified user workflow`, narrowed to
+`src/integrations/clickup/clickup.client.ts`,
+`src/integrations/clickup/clickup.mapper.ts`,
+`src/integrations/clickup/clickup.sync.ts`,
+`src/integrations/clickup/clickup.webhooks.ts`,
+`src/integrations/clickup/webhook-signature.ts`,
+`src/modules/integration-settings/integration-settings.routes.ts`,
+`src/modules/tasks/tasks.routes.ts`, `src/modules/notes/notes.routes.ts`,
+`src/modules/intake/intake.routes.ts`, and `src/tests/api.test.ts`. Local
+proof ran `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5427-postgres`
+`COMPANYCORE_TEST_DB_PORT=55527`
+`COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local`: server
+and web build PASS, all `31` migrations applied, seed PASS, and `7/7` node
+test subtests PASS. The selected proof covers ClickUp webhook signature
+handling, provider event retry, webhook reconcile/list/delete, discovery
+failure modes, maintenance run, native sync modes, workspace isolation,
+outbound ClickUp-backed task create, custom-field update, archive,
+notes/comments, and event evidence. `npm run check:route-capabilities` and
+`npm run architecture:status` also passed. Cleanup found no validation DB
+container, no port `55527` listener, and no `chrome-headless-shell` process.
+Confidence classification: the current local ClickUp/provider event and
+task-sync posture is locally verified; no product repair issue is warranted.
+Residual risk: browser settings/task workbench proof and protected production
+provider proof remain separate future gates.
+
+Source-control note: [LUC-5426](/LUC/issues/LUC-5426) is
+BLOCKED_BEFORE_COMMIT for the [LUC-5420](/LUC/issues/LUC-5420)
+generated/status/planning evidence packet. Closure packet:
+`docs/planning/luc-5426-source-control-closure-for-luc-5420-evidence-packet.md`.
+Verification passed: `git diff --check`, generated JSON parse, scoped
+high-confidence secret/private-key scan with `matches=0`, and `npm run
+architecture:status`. Commit is blocked because the current singleton
+generated/status files are later shared-workspace outputs (`02:17:12`
+architecture / `02:17:29` app-completion), while the LUC-5420 evidence packet
+records `02:12:58` / `02:13:12`. Push held; deploy impact none. Next owner:
+source-control integration owner to close a newer consolidated
+generated/status packet or provide an approved clean LUC-5420-only
+snapshot/patch boundary.
+
+Documentation Steward evidence note: [LUC-5423](/LUC/issues/LUC-5423)
+refreshed the Roost known-state architecture and app-completion baseline.
+Evidence packet:
+`docs/planning/luc-5423-known-state-evidence-and-architecture-baseline.md`.
+Scanner PASS generated `2026-06-21T02:17:12.189Z` with `2456` entities,
+`5236` relations, and `13797` files, with `10` entity overrides and `3`
+relation overrides applied. `npm run architecture:status` PASS (`GREEN`,
+graph `454/765/35`, queues `0`, delta `0/0/0`) and `npm run
+check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+App-completion refresh PASS generated `2026-06-21T02:17:29.656Z` with `845`
+items, `7` flows, `0` browser-review needs, `826` missing test links, `0`
+missing doc links, and `2` blocked items. Task-sync, ownership,
+implementation-task, and verified-without-proof gaps remain `0`. Confidence
+classification: local architecture and route exposure are verified; no broad
+feature repair is warranted from this pass. Source-control closure for this
+refreshed generated/status/planning evidence batch is delegated to
+[LUC-5432](/LUC/issues/LUC-5432), and one focused app-completion QA proof
+ladder is delegated to [LUC-5433](/LUC/issues/LUC-5433). Protected target
+proof remains approval/credential gated.
+
+COO evidence note: [LUC-5421](/LUC/issues/LUC-5421) refreshed the Roost
+known-state architecture and app-completion baseline after the local-board
+wake comment. Evidence packet:
+`docs/planning/luc-5421-known-state-evidence-and-architecture-baseline.md`.
+Scanner PASS generated `2026-06-21T02:14:40.075Z` with `2455` entities,
+`5232` relations, and `13796` files, with `10` entity overrides and `3`
+relation overrides applied. `npm run architecture:status` PASS (`GREEN`,
+graph `454/765/35`, queues `0`, delta `0/0/0`) and `npm run
+check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+App-completion refresh PASS generated `2026-06-21T02:14:56.770Z` with `844`
+items, `7` flows, `0` browser-review needs, `825` missing test links, `0`
+missing doc links, and `2` blocked items. Task-sync gaps, ownership gaps,
+implementation-without-task gaps, disconnected-entity gaps, and
+verified-without-proof gaps remain `0`; architecture health still reports
+`1165` implementation-without-test confidence signals. Confidence
+classification: local architecture, task linkage, ownership, and route
+exposure are verified; remaining app-completion/test-link debt should be
+handled by focused proof selection before product repair. Protected target
+proof remains approval/credential gated.
+
+QA proof note: [LUC-5425](/LUC/issues/LUC-5425) is VERIFIED_DONE for the
+unclassified workflow proof slice selected from the
+[LUC-5418](/LUC/issues/LUC-5418) app-completion confidence debt. Evidence
+packet: `docs/planning/luc-5425-unclassified-workflow-proof-ladder.md`. The
+selected bucket was `Unclassified user workflow`, currently `195` entities
+with `194` missing test links and `1` implemented-needs-proof signal. The proof
+mapped the bucket to the local CompanyCore API backbone, especially company OS,
+process-core coverage, workflow definition drafts/activation/rollback,
+generic CRUD, auth/workspace isolation, route capability mapping, and MCP
+manifest exposure. Local proof ran
+`COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5425-postgres`
+`COMPANYCORE_TEST_DB_PORT=55525`
+`COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local`: server
+and web build PASS, all `31` migrations applied, seed PASS, and `7/7` node
+test subtests PASS. `npm run check:route-capabilities` and `npm run
+architecture:status` also passed. Cleanup found no validation DB container, no
+port `55525` listener, and no `chrome-headless-shell` process. Confidence
+classification: the selected local API backbone is locally verified; no
+product repair issue is warranted. Residual risk: the unclassified bucket is
+scanner-inferred and still needs future specific browser or production proof
+only if selected by release ownership.
+
+TSA evidence note: [LUC-5420](/LUC/issues/LUC-5420) refreshed the Roost
+known-state architecture and app-completion baseline. Evidence packet:
+`docs/planning/luc-5420-known-state-evidence-and-architecture-baseline.md`.
+Scanner PASS generated `2026-06-21T02:12:58.209Z` with `2453` entities,
+`5226` relations, and `13794` files, with `10` entity overrides and `3`
+relation overrides applied. `npm run architecture:status` PASS (`GREEN`,
+graph `454/765/35`, queues `0`, delta `0/0/0`) and `npm run
+check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+App-completion refresh PASS generated `2026-06-21T02:13:12.693Z` with `842`
+items, `7` flows, `0` browser-review needs, `823` missing test links, `0`
+missing doc links, and `2` blocked items. Task-sync, ownership,
+implementation-task, and verified-without-proof gaps remain `0`. Confidence
+classification: local architecture and route exposure are verified; no broad
+feature repair is warranted from this pass. Source-control closure is delegated
+to [LUC-5426](/LUC/issues/LUC-5426), and focused QA proof-ladder selection is
+delegated to [LUC-5427](/LUC/issues/LUC-5427). Protected target proof remains
+approval/credential gated.
+
+IPM evidence note: [LUC-5418](/LUC/issues/LUC-5418) refreshed the Roost
+known-state architecture and app-completion baseline. Evidence packet:
+`docs/planning/luc-5418-known-state-evidence-and-architecture-baseline.md`.
+Scanner PASS generated `2026-06-21T02:11:05.959Z` with `2452` entities,
+`5221` relations, and `13793` files, with `10` entity overrides and `3`
+relation overrides applied. `npm run architecture:status` PASS (`GREEN`,
+graph `454/765/35`, queues `0`, delta `0/0/0`) and `npm run
+check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+App-completion refresh PASS generated `2026-06-21T02:11:31.081Z` with `841`
+items, `7` flows, `0` browser-review needs, `822` missing test links, `0`
+missing doc links, and `2` blocked items. Task-sync, ownership,
+implementation-task, and verified-without-proof gaps remain `0`. Confidence
+classification: local architecture and route exposure are verified; no broad
+feature repair is warranted from this pass. Source-control closure for this
+refreshed generated/status/planning evidence batch is delegated to
+[LUC-5424](/LUC/issues/LUC-5424), and one focused app-completion QA proof
+ladder is delegated to [LUC-5425](/LUC/issues/LUC-5425). Protected target
+proof remains approval/credential gated.
+
+Source-control note: [LUC-5416](/LUC/issues/LUC-5416) is BLOCKED_BEFORE_COMMIT for the
+[LUC-5413](/LUC/issues/LUC-5413) generated/status/planning evidence packet.
+Closure packet:
+`docs/planning/luc-5416-source-control-closure-for-luc-5413-evidence-packet.md`.
+Verification passed: `git diff --check`, generated JSON parse, scoped
+high-confidence secret/private-key scan, and `npm run architecture:status`.
+Commit is blocked by [LUC-5424](/LUC/issues/LUC-5424), because current
+generated graph/status files include active out-of-scope
+[LUC-5418](/LUC/issues/LUC-5418) and later shared-workspace generated
+evidence. Push held; deploy impact none.
+
+QA proof note: [LUC-5417](/LUC/issues/LUC-5417) is VERIFIED_DONE for the
+Strategy proof slice selected from the [LUC-5413](/LUC/issues/LUC-5413)
+app-completion confidence debt. Evidence packet:
+`docs/planning/luc-5417-strategy-proof-ladder.md`. The app-completion bucket
+was `Trading operation`, but mapped inspection showed this is the Strategy
+department read-only context (`src/app.ts#/strategy`,
+`src/modules/strategy/strategy.routes.ts`, and
+`web/src/features/departments/strategy-route.tsx`), not a live trading
+provider action. Local proof ran
+`COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5417-postgres`
+`COMPANYCORE_TEST_DB_PORT=55517`
+`COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local`: server
+and web build PASS, all `31` migrations applied, seed PASS, and `7/7` node
+test subtests PASS. The protected API flow covers unauthenticated denial,
+authenticated Strategy context readback, workspace isolation, no mutation on
+read, MCP manifest exposure for `strategy:read`, and scoped-key denial.
+`npm run check:route-capabilities` and `npm run architecture:status` also
+passed. Cleanup found no validation DB container, no port `55517` listener,
+and no `chrome-headless-shell` process. Confidence classification: the current
+local Strategy API/MCP posture is locally verified; no product repair issue is
+warranted. Residual risk: the app-completion flow label is scanner-noisy, and
+browser Strategy board proof plus protected production proof remain separate
+future gates.
+
+PM evidence note: [LUC-5413](/LUC/issues/LUC-5413) refreshed the Roost
+known-state architecture and app-completion baseline. Evidence packet:
+`docs/planning/luc-5413-known-state-evidence-and-architecture-baseline.md`.
+Scanner PASS generated `2026-06-21T02:03:14.395Z` with `2451` entities,
+`5217` relations, and `13792` files, with `10` entity overrides and `3`
+relation overrides applied. `npm run architecture:status` PASS (`GREEN`,
+graph `454/765/35`, queues `0`, delta `0/0/0`) and `npm run
+check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+App-completion refresh PASS generated `2026-06-21T02:03:34.018Z` with `840`
+items, `7` flows, `0` browser-review needs, `821` missing test links, `0`
+missing doc links, and `2` blocked items. Task-sync, ownership,
+implementation-task, and verified-without-proof gaps remain `0`. Confidence
+classification: local architecture and route exposure are verified; no broad
+feature repair is warranted from this pass. Source-control closure for the
+refreshed generated/status/planning evidence batch is delegated to
+[LUC-5416](/LUC/issues/LUC-5416). Focused QA proof-ladder selection is
+delegated to [LUC-5417](/LUC/issues/LUC-5417) and should target
+non-duplicated app-completion confidence debt, with already-proven Account,
+Subscription/Entitlement, Dashboard, User Configuration, and Exchange API lanes
+avoided unless new evidence shows a real defect. Protected target proof remains
+approval/credential gated.
+
 QA proof note: [LUC-5409](/LUC/issues/LUC-5409) is VERIFIED_DONE for the
 `Exchange connection and configuration` proof slice selected from the
 [LUC-5407](/LUC/issues/LUC-5407) app-completion confidence debt. Evidence

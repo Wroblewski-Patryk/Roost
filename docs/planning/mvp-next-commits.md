@@ -1,5 +1,33 @@
 # MVP Next Commits
 
+- 2026-06-27: `LUC-5551` Roost known-state evidence baseline is complete for
+  the IPM coordination lane. Evidence packet:
+  `docs/planning/luc-5551-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-27T14:49:45.082Z` with `2467` entities / `5279` relations /
+  `13817` files; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  app-completion refresh PASS (`845` items / `7` flows / `0` browser-review
+  needs / `826` missing test links / `0` missing doc links / `2` blocked
+  items). Next owners: Roost PM source-control closure in
+  [LUC-5555](/LUC/issues/LUC-5555); QA/Test next focused proof ladder in
+  [LUC-5556](/LUC/issues/LUC-5556). Push/deploy/protected smoke held.
+
+- 2026-06-21: `LUC-5433` Finance browser proof ladder is complete for a
+  non-duplicated sub-flow from [LUC-5423](/LUC/issues/LUC-5423). Evidence
+  packet: `docs/planning/luc-5433-finance-browser-proof-ladder.md`. Proof:
+  selected `Subscription and entitlement`, narrowed to browser projection of
+  `/areas?area=07-finanse&view=overview`; `npm run build` PASS; disposable
+  PostgreSQL `companycore-luc-5433-postgres` port `55543`; `npm run
+  prisma:migrate:deploy` PASS with all `31` migrations; `npm run seed` PASS;
+  local `/health` PASS on `http://127.0.0.1:31543`; focused
+  `npm run owner-console:ux-smoke` PASS at desktop/tablet/mobile with
+  required Finance route text present and `consoleIssues=[]`. Artifacts:
+  `docs/ux/evidence/luc-5433-finance-browser-proof/report.json` and
+  desktop/tablet/mobile screenshots. No repair issue warranted; push/deploy
+  held.
+
 - 2026-06-21: `LUC-5411` source-control closure is complete locally for the
   [LUC-5410](/LUC/issues/LUC-5410) curation packet. Closure packet:
   `docs/planning/luc-5411-source-control-closure-for-luc-5410-flow-doc-link-curation.md`.

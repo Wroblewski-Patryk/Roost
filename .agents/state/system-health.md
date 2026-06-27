@@ -1,5 +1,207 @@
 # System Health
 
+- 2026-06-27: `LUC-5551` refreshed Roost known-state evidence. Paperclip
+  architecture-awareness scanner PASS generated `2026-06-27T14:49:45.082Z`
+  with `2467` entities / `5279` relations / `13817` files and scanner
+  overrides applied (`10` entity / `3` relation). `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass). `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files). App-completion PASS generated
+  `2026-06-27T14:49:44.922Z` with `845` items / `7` flows / `0`
+  browser-review needs / `826` missing test links / `0` missing doc links /
+  `2` blocked items. No runtime, deploy, protected smoke, credential,
+  browser, database, Docker, server, provider, or watcher process was started.
+
+- 2026-06-21: `LUC-5433` verified the Finance browser projection selected from
+  the [LUC-5423](/LUC/issues/LUC-5423) app-completion confidence debt.
+  Evidence packet:
+  `docs/planning/luc-5433-finance-browser-proof-ladder.md`. Proof ran against
+  disposable PostgreSQL `companycore-luc-5433-postgres` port `55543` and local
+  server `http://127.0.0.1:31543`: `npm run build` PASS, `npm run
+  prisma:migrate:deploy` PASS with all `31` migrations, `npm run seed` PASS,
+  `/health` PASS, and focused `npm run owner-console:ux-smoke` PASS for
+  `/areas?area=07-finanse&view=overview` at desktop, tablet, and mobile.
+  Browser report `docs/ux/evidence/luc-5433-finance-browser-proof/report.json`
+  shows signed-in assertions true, required Finance text present, and
+  `consoleIssues=[]`. Cleanup removed the DB container and stopped the local
+  server; deploy impact none.
+
+- 2026-06-21: `LUC-5431` verified the selected Company OS approval lifecycle
+  and automation sub-slice from the [LUC-5421](/LUC/issues/LUC-5421)
+  app-completion confidence debt. Evidence packet:
+  `docs/planning/luc-5431-company-os-approval-automation-proof-ladder.md`.
+  Selected flow: `Unclassified user workflow`, narrowed to local approval,
+  stage, audit/event, evidence-link, knowledge-link, and automation-rule
+  behavior so it does not duplicate the broad [LUC-5425](/LUC/issues/LUC-5425)
+  API-backbone proof or the [LUC-5427](/LUC/issues/LUC-5427)
+  ClickUp/provider task-sync proof. Proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5431-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55531`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests. `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files). `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, queues `0`, delta `0/0/0`). Cleanup confirmed no validation
+  DB container, no port `55531` listener, and no `chrome-headless-shell`
+  process. No product repair issue is warranted; deploy impact none.
+
+- 2026-06-21: `LUC-5430` source-control closure checks completed but commit is
+  blocked for the [LUC-5421](/LUC/issues/LUC-5421)
+  generated/status/planning evidence packet. Proof: `git diff --check` PASS
+  with LF-to-CRLF warnings only; generated architecture-awareness,
+  architecture-health, and app-completion JSON parse PASS; scoped
+  high-confidence secret/private-key scan PASS with `matches=0`; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`). Blocker: current singleton generated/status files now reflect
+  later shared-workspace evidence (`02:17:12` architecture / `02:17:29`
+  app-completion), not the LUC-5421 packet (`02:14:40` / `02:14:56`). Push
+  held; deploy impact none; no runtime, protected smoke, production,
+  credential, schema, migration, database, Docker, browser, server, provider,
+  watcher, push, or deploy action occurred.
+
+- 2026-06-21: `LUC-5427` verified the selected ClickUp/provider event and
+  task-sync sub-slice from the [LUC-5420](/LUC/issues/LUC-5420)
+  app-completion confidence debt. Evidence packet:
+  `docs/planning/luc-5427-clickup-provider-task-sync-proof-ladder.md`.
+  Selected flow: `Unclassified user workflow`, narrowed to ClickUp webhook,
+  provider event retry, maintenance, native task sync, outbound
+  task/custom-field/archive, notes/comments, and event evidence so it does not
+  duplicate the broad [LUC-5425](/LUC/issues/LUC-5425) API-backbone proof.
+  Proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5427-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55527`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests. `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files). `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, queues `0`, delta `0/0/0`). Cleanup confirmed no validation
+  DB container, no port `55527` listener, and no `chrome-headless-shell`
+  process. No product repair issue is warranted; deploy impact none.
+
+- 2026-06-21: `LUC-5426` source-control closure checks completed but commit is
+  blocked for the [LUC-5420](/LUC/issues/LUC-5420)
+  generated/status/planning evidence packet. Proof: `git diff --check` PASS
+  with LF-to-CRLF warnings only; generated architecture-awareness,
+  architecture-health, and app-completion JSON parse PASS; scoped
+  high-confidence secret/private-key scan PASS with `matches=0`; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`). Blocker: current singleton generated/status files now reflect
+  later shared-workspace evidence (`02:17:12` architecture / `02:17:29`
+  app-completion), not the LUC-5420 packet (`02:12:58` / `02:13:12`). Push
+  held; deploy impact none; no runtime, protected smoke, production,
+  credential, schema, migration, database, Docker, browser, server, provider,
+  watcher, push, or deploy action occurred.
+
+- 2026-06-21: `LUC-5423` refreshed Roost known-state evidence. Paperclip
+  architecture-awareness scanner PASS generated `2026-06-21T02:17:12.189Z`
+  with `2456` entities / `5236` relations / `13797` files and scanner
+  overrides applied (`10` entity / `3` relation). `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass). `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files). App-completion PASS generated
+  `2026-06-21T02:17:29.656Z` with `845` items / `7` flows / `0`
+  browser-review needs / `826` missing test links / `0` missing doc links /
+  `2` blocked items. No runtime, deploy, protected smoke, credential, browser,
+  database, Docker, server, provider, or watcher process was started.
+
+- 2026-06-21: `LUC-5421` refreshed Roost known-state evidence for the COO
+  heartbeat. Paperclip architecture-awareness scanner PASS generated
+  `2026-06-21T02:14:40.075Z` with `2455` entities / `5232` relations /
+  `13796` files and scanner overrides applied (`10` entity / `3` relation).
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass). `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+  App-completion PASS generated `2026-06-21T02:14:56.770Z` with `844` items /
+  `7` flows / `0` browser-review needs / `825` missing test links / `0`
+  missing doc links / `2` blocked items. No runtime, deploy, protected smoke,
+  credential, production, browser, database, Docker, server, provider, or
+  watcher process was started. Output:
+  `docs/planning/luc-5421-known-state-evidence-and-architecture-baseline.md`.
+
+- 2026-06-21: `LUC-5425` verified the non-duplicated unclassified workflow
+  proof slice selected from the [LUC-5418](/LUC/issues/LUC-5418)
+  app-completion confidence debt. Evidence packet:
+  `docs/planning/luc-5425-unclassified-workflow-proof-ladder.md`. Selected
+  bucket: `Unclassified user workflow`, validated through the local
+  CompanyCore API backbone covering company OS, process-core, workflow
+  definitions, generic CRUD, auth/workspace isolation, route capability
+  mapping, and MCP manifest exposure. Proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5425-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55525`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests. `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files). `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, queues `0`, delta `0/0/0`). Cleanup confirmed no validation
+  DB container, no port `55525` listener, and no `chrome-headless-shell`
+  process. No product repair issue is warranted; deploy impact none.
+
+- 2026-06-21: `LUC-5420` refreshed Roost known-state evidence. Paperclip
+  architecture-awareness scanner PASS generated `2026-06-21T02:12:58.209Z`
+  with `2453` entities / `5226` relations / `13794` files and scanner
+  overrides applied (`10` entity / `3` relation). `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass). `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files). App-completion PASS generated
+  `2026-06-21T02:13:12.693Z` with `842` items / `7` flows / `0`
+  browser-review needs / `823` missing test links / `0` missing doc links /
+  `2` blocked items. No runtime, deploy, protected smoke, credential, browser,
+  database, Docker, server, provider, or watcher process was started.
+
+- 2026-06-21: `LUC-5418` local known-state health refresh passed. Evidence:
+  architecture-awareness scanner PASS generated `2026-06-21T02:11:05.959Z`
+  with `2452` entities / `5221` relations / `13793` files; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  app-completion refresh PASS generated `2026-06-21T02:11:31.081Z` with `841`
+  items / `7` flows / `0` browser-review needs / `822` missing test links /
+  `0` missing doc links / `2` blocked items. No runtime, protected smoke,
+  deploy, push, production mutation, credential access, secret disclosure,
+  browser, database, Docker, server, or watcher action occurred.
+
+- 2026-06-21: `LUC-5416` source-control closure checks completed but commit is
+  blocked for the [LUC-5413](/LUC/issues/LUC-5413) evidence packet. Proof:
+  `git diff --check`
+  PASS with LF-to-CRLF warnings only; generated architecture-awareness,
+  architecture-health, and app-completion JSON parse PASS; scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`). Blocker: [LUC-5424](/LUC/issues/LUC-5424), because current
+  generated graph/status files include active out-of-scope
+  [LUC-5418](/LUC/issues/LUC-5418) and later shared-workspace generated
+  evidence. Push held; deploy impact none.
+
+- 2026-06-21: `LUC-5417` verified the non-duplicated Strategy proof slice
+  selected from the [LUC-5413](/LUC/issues/LUC-5413) app-completion confidence
+  debt. Evidence packet:
+  `docs/planning/luc-5417-strategy-proof-ladder.md`. Selected bucket:
+  `Trading operation`, mapped to Strategy because the scanner heuristic counts
+  `src/app.ts#/strategy`, `src/modules/strategy/strategy.routes.ts`, and
+  `web/src/features/departments/strategy-route.tsx`; no live trade/order
+  provider behavior was exercised. Proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5417-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55517`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests. `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files). `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, queues `0`, delta `0/0/0`). Cleanup confirmed no validation
+  DB container, no port `55517` listener, and no `chrome-headless-shell`
+  process. No product repair issue is warranted; deploy impact none.
+
+- 2026-06-21: `LUC-5413` refreshed Roost known-state evidence. Paperclip
+  architecture-awareness scanner PASS generated `2026-06-21T02:03:14.395Z`
+  with `2451` entities / `5217` relations / `13792` files and scanner
+  overrides applied (`10` entity / `3` relation). `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass). `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files). App-completion PASS generated
+  `2026-06-21T02:03:34.018Z` with `840` items / `7` flows / `0`
+  browser-review needs / `821` missing test links / `0` missing doc links /
+  `2` blocked items. No runtime, deploy, protected smoke, credential, browser,
+  database, Docker, server, provider, or watcher process was started.
+
 - 2026-06-21: `LUC-5411` verified source-control closure for the
   [LUC-5410](/LUC/issues/LUC-5410) curation packet. Verification: `git diff
   --check` PASS with LF-to-CRLF warnings only; generated

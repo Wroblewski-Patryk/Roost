@@ -1,5 +1,239 @@
 # Next Steps
 
+- `LUC-5551` known-state evidence pass is complete locally with
+  source-control closure still required. Evidence packet:
+  `docs/planning/luc-5551-known-state-evidence-and-architecture-baseline.md`.
+  Verification: architecture-awareness refresh PASS (`2467` entities / `5279`
+  relations / `13817` files, generated `2026-06-27T14:49:45.082Z`);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`); `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files); app-completion refresh PASS
+  (`845` items / `7` flows / `0` browser-review needs / `826` missing test
+  links / `0` missing doc links / `2` blocked items). Remaining owners/actions:
+  Roost PM must close source control in [LUC-5555](/LUC/issues/LUC-5555);
+  QA/Test must select one focused non-duplicated proof ladder in
+  [LUC-5556](/LUC/issues/LUC-5556). Protected target proof remains approval/
+  credential gated.
+
+- `LUC-5433` Finance browser proof from the
+  [LUC-5423](/LUC/issues/LUC-5423) app-completion confidence debt is complete.
+  Evidence packet:
+  `docs/planning/luc-5433-finance-browser-proof-ladder.md`. Selected flow:
+  `Subscription and entitlement`, narrowed to the non-duplicated browser
+  projection of `/areas?area=07-finanse&view=overview`. Verification:
+  `npm run build` PASS; disposable PostgreSQL
+  `companycore-luc-5433-postgres` port `55543`; `npm run
+  prisma:migrate:deploy` PASS with all `31` migrations; `npm run seed` PASS;
+  local `/health` PASS; focused `npm run owner-console:ux-smoke` PASS at
+  desktop/tablet/mobile with required Finance route text present and no console
+  issues. Artifacts live under
+  `docs/ux/evidence/luc-5433-finance-browser-proof/`. No product repair issue
+  is warranted. Remaining [LUC-5423](/LUC/issues/LUC-5423) follow-up is
+  source-control/release batching; protected production proof remains
+  approval/credential gated.
+
+- `LUC-5431` QA proof-ladder selection from the
+  [LUC-5421](/LUC/issues/LUC-5421) app-completion confidence debt is complete.
+  Evidence packet:
+  `docs/planning/luc-5431-company-os-approval-automation-proof-ladder.md`.
+  Selected bucket: `Unclassified user workflow`, narrowed to the local Company
+  OS approval lifecycle and automation sub-slice rather than broad API
+  backbone or ClickUp/provider task-sync proof. Verification:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5431-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55531`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests; `npm run check:route-capabilities` PASS; `npm run
+  architecture:status` PASS. Cleanup found no validation DB container, no
+  port `55531` listener, and no `chrome-headless-shell` process. No product
+  repair issue is warranted. Remaining [LUC-5421](/LUC/issues/LUC-5421)
+  follow-up is source-control closure in [LUC-5430](/LUC/issues/LUC-5430);
+  browser workbench proof and protected production proof remain separate
+  future gates if selected by release ownership.
+
+- `LUC-5430` source-control closure for
+  [LUC-5421](/LUC/issues/LUC-5421) is verified but blocked before commit.
+  Closure packet:
+  `docs/planning/luc-5430-source-control-closure-for-luc-5421-evidence-packet.md`.
+  Verification: dirty tree classified by owner; sibling packets preserved
+  unstaged; `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  JSON parse PASS; scoped high-confidence secret/private-key scan PASS with
+  `matches=0`; `npm run architecture:status` PASS. Blocker: current singleton
+  generated/status files are later shared-workspace outputs
+  (`2026-06-21T02:17:12.189Z` architecture and
+  `2026-06-21T02:17:29.656Z` app-completion), not the LUC-5421 snapshot
+  (`2026-06-21T02:14:40.075Z` / `2026-06-21T02:14:56.770Z`). Next owner:
+  source-control integration owner to close a newer consolidated
+  generated/status packet or provide an approved clean LUC-5421-only
+  snapshot/patch boundary. Push held; deploy impact none.
+
+- `LUC-5427` QA proof-ladder selection from the
+  [LUC-5420](/LUC/issues/LUC-5420) app-completion confidence debt is complete.
+  Evidence packet:
+  `docs/planning/luc-5427-clickup-provider-task-sync-proof-ladder.md`.
+  Selected flow: `Unclassified user workflow`, narrowed to the ClickUp/provider
+  event and task-sync sub-slice so it does not duplicate the broad
+  [LUC-5425](/LUC/issues/LUC-5425) API-backbone proof. Verification:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5427-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55527`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests; `npm run check:route-capabilities` PASS; `npm run
+  architecture:status` PASS. Cleanup found no validation DB container, no
+  port `55527` listener, and no `chrome-headless-shell` process. No product
+  repair issue is warranted. Remaining owners/actions: [LUC-5426](/LUC/issues/LUC-5426)
+  still owns source-control closure for the [LUC-5420](/LUC/issues/LUC-5420)
+  generated/status/planning packet; browser settings/task workbench proof and
+  protected production provider proof remain separate future gates if selected.
+
+- `LUC-5426` source-control closure for
+  [LUC-5420](/LUC/issues/LUC-5420) is verified but blocked before commit.
+  Closure packet:
+  `docs/planning/luc-5426-source-control-closure-for-luc-5420-evidence-packet.md`.
+  Verification: dirty tree classified by owner; sibling packets preserved
+  unstaged; `git diff --check` PASS with LF-to-CRLF warnings only; generated
+  JSON parse PASS; scoped high-confidence secret/private-key scan PASS with
+  `matches=0`; `npm run architecture:status` PASS. Blocker: current singleton
+  generated/status files are later shared-workspace outputs
+  (`2026-06-21T02:17:12.189Z` architecture and
+  `2026-06-21T02:17:29.656Z` app-completion), not the LUC-5420 snapshot
+  (`2026-06-21T02:12:58.209Z` / `2026-06-21T02:13:12.693Z`). Next owner:
+  source-control integration owner to close a newer consolidated
+  generated/status packet or provide an approved clean LUC-5420-only
+  snapshot/patch boundary. Push held; deploy impact none.
+
+- `LUC-5423` known-state evidence pass is complete locally with
+  source-control closure still required. Evidence packet:
+  `docs/planning/luc-5423-known-state-evidence-and-architecture-baseline.md`.
+  Verification: architecture-awareness refresh PASS (`2456` entities / `5236`
+  relations / `13797` files, generated `2026-06-21T02:17:12.189Z`);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`); `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files); app-completion refresh PASS
+  (`845` items / `7` flows / `0` browser-review needs / `826` missing test
+  links / `0` missing doc links / `2` blocked items). Remaining
+  owners/actions: [LUC-5432](/LUC/issues/LUC-5432) must close source control
+  for the generated, status, and planning dirty files;
+  [LUC-5433](/LUC/issues/LUC-5433) must run one focused QA proof ladder from
+  refreshed app-completion confidence debt. Protected target proof remains
+  approval/credential gated.
+
+- `LUC-5421` known-state evidence pass is complete locally, with follow-up
+  lanes delegated. Evidence packet:
+  `docs/planning/luc-5421-known-state-evidence-and-architecture-baseline.md`.
+  Verification: architecture-awareness refresh PASS (`2455` entities / `5232`
+  relations / `13796` files, generated `2026-06-21T02:14:40.075Z`);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`); `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files); app-completion refresh PASS
+  (`844` items / `7` flows / `0` browser-review needs / `825` missing test
+  links / `0` missing doc links / `2` blocked items). Remaining
+  owners/actions: [LUC-5430](/LUC/issues/LUC-5430) source-control closure for
+  the refreshed/generated/status and planning packet; [LUC-5431](/LUC/issues/LUC-5431)
+  QA proof-ladder selection from remaining non-duplicated app-completion
+  confidence debt. Protected target proof remains approval/credential gated.
+
+- `LUC-5425` QA proof-ladder selection from the
+  [LUC-5418](/LUC/issues/LUC-5418) app-completion confidence debt is complete.
+  Evidence packet:
+  `docs/planning/luc-5425-unclassified-workflow-proof-ladder.md`. Selected
+  bucket: `Unclassified user workflow`, mapped to the local CompanyCore API
+  backbone rather than a single narrow screen. Verification:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5425-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55525`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests; `npm run check:route-capabilities` PASS; `npm run
+  architecture:status` PASS. Cleanup found no validation DB container, no port
+  `55525` listener, and no `chrome-headless-shell` process. No product repair
+  issue is warranted. Remaining [LUC-5418](/LUC/issues/LUC-5418) follow-up is
+  source-control closure in [LUC-5424](/LUC/issues/LUC-5424); protected
+  production proof remains approval/credential gated.
+
+- `LUC-5420` known-state evidence pass is complete locally with
+  source-control closure still required. Evidence packet:
+  `docs/planning/luc-5420-known-state-evidence-and-architecture-baseline.md`.
+  Verification: architecture-awareness refresh PASS (`2453` entities / `5226`
+  relations / `13794` files, generated `2026-06-21T02:12:58.209Z`);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`); `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files); app-completion refresh PASS
+  (`842` items / `7` flows / `0` browser-review needs / `823` missing test
+  links / `0` missing doc links / `2` blocked items). Remaining
+  owners/actions: [LUC-5426](/LUC/issues/LUC-5426) owns source-control closure
+  for the generated, status, and planning dirty files;
+  [LUC-5427](/LUC/issues/LUC-5427) owns one focused QA proof ladder from
+  refreshed app-completion confidence debt. Protected target proof remains
+  approval/credential gated.
+
+- `LUC-5418` known-state evidence pass is complete locally with
+  source-control closure still required. Evidence packet:
+  `docs/planning/luc-5418-known-state-evidence-and-architecture-baseline.md`.
+  Verification: architecture-awareness refresh PASS (`2452` entities / `5221`
+  relations / `13793` files, generated `2026-06-21T02:11:05.959Z`);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`); `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files); app-completion refresh PASS
+  (`841` items / `7` flows / `0` browser-review needs / `822` missing test
+  links / `0` missing doc links / `2` blocked items). Remaining
+  owners/actions: [LUC-5424](/LUC/issues/LUC-5424) source-control closure
+  child lane must classify
+  generated/status/planning dirty files, run diff hygiene, generated JSON
+  parse, scoped secret/private-key scan, and architecture status before local
+  no-push commit or blocker. [LUC-5425](/LUC/issues/LUC-5425) QA child lane
+  must select one focused
+  non-duplicated proof ladder from refreshed app-completion confidence debt
+  and create a repair issue only if proof finds a real defect. Protected target
+  proof remains approval/credential gated.
+
+- `LUC-5416` source-control closure for the
+  [LUC-5413](/LUC/issues/LUC-5413) generated/status/planning evidence packet
+  is verified but blocked before local commit. Closure packet:
+  `docs/planning/luc-5416-source-control-closure-for-luc-5413-evidence-packet.md`.
+  Verification: dirty state classified; sibling
+  `docs/planning/luc-5409-exchange-connection-configuration-proof-ladder.md`
+  preserved unstaged for [LUC-5409](/LUC/issues/LUC-5409); `git diff --check`
+  PASS with LF-to-CRLF warnings only; generated JSON parse PASS; scoped
+  high-confidence secret/private-key scan PASS with `0` matches; `npm run
+  architecture:status` PASS. Commit is blocked because current generated
+  graph/status files include active out-of-scope
+  [LUC-5418](/LUC/issues/LUC-5418) and later shared-workspace generated
+  evidence. Blocker: [LUC-5424](/LUC/issues/LUC-5424). Push held; deploy
+  impact none.
+
+- `LUC-5417` QA proof-ladder selection from the
+  [LUC-5413](/LUC/issues/LUC-5413) app-completion confidence debt is complete.
+  Evidence packet: `docs/planning/luc-5417-strategy-proof-ladder.md`.
+  Selected bucket: `Trading operation`, mapped to the Strategy department
+  read-only context rather than live trading behavior. Verification:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5417-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55517`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` node test
+  subtests; `npm run check:route-capabilities` PASS; `npm run
+  architecture:status` PASS. Cleanup found no validation DB container, no
+  port `55517` listener, and no `chrome-headless-shell` process. No product
+  repair issue is warranted. Browser Strategy board proof and protected
+  production proof remain future release gates only if selected.
+
+- `LUC-5413` known-state evidence pass is complete locally with
+  [LUC-5416](/LUC/issues/LUC-5416) source-control checks verified but commit
+  blocked by shared generated-artifact scope drift.
+  Evidence packet:
+  `docs/planning/luc-5413-known-state-evidence-and-architecture-baseline.md`.
+  Verification: architecture-awareness refresh PASS (`2451` entities / `5217`
+  relations / `13792` files, generated `2026-06-21T02:03:14.395Z`);
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queue
+  `0`, worklist `0`, delta `0/0/0`); `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files); app-completion refresh PASS
+  (`840` items / `7` flows / `0` browser-review needs / `821` missing test
+  links / `0` missing doc links / `2` blocked items). Follow-up
+  owners/actions: [LUC-5416](/LUC/issues/LUC-5416) completed closure checks
+  and is blocked before commit by [LUC-5424](/LUC/issues/LUC-5424);
+  [LUC-5417](/LUC/issues/LUC-5417) completed one
+  focused non-duplicated proof ladder and found no repair issue. Protected
+  target proof remains approval/credential gated.
+
 - `LUC-5411` source-control closure for
   [LUC-5410](/LUC/issues/LUC-5410) is complete locally. Closure packet:
   `docs/planning/luc-5411-source-control-closure-for-luc-5410-flow-doc-link-curation.md`.

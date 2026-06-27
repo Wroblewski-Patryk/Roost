@@ -1,6 +1,6 @@
 # Architecture Awareness Report
 
-Generated: 2026-06-21T02:17:12.189Z
+Generated: 2026-06-27T14:58:02.858Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 
@@ -11,9 +11,9 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | agent | 47 |
 | api_endpoint | 43 |
 | component | 7 |
-| document | 1136 |
+| document | 1148 |
 | feature | 170 |
-| function | 945 |
+| function | 946 |
 | migration | 31 |
 | model | 5 |
 | module | 66 |
@@ -27,15 +27,15 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | --- | ---: |
 | blocked | 4 |
 | deprecated | 4 |
-| implemented | 2435 |
+| implemented | 2448 |
 | in_progress | 1 |
 | tested | 8 |
 | verified | 4 |
 
 ## Health Signals
 
-- Raw implementation entities without inferred tests: 1165
-- Actionable implementation entities without inferred tests: 1156
+- Raw implementation entities without inferred tests: 1166
+- Actionable implementation entities without inferred tests: 1157
 - Raw implementation entities without inferred docs: 0
 - Actionable implementation entities without inferred docs: 0
 - Classified inferred-link noise: 9
