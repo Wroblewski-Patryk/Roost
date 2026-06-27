@@ -1,8 +1,483 @@
 # Active Mission Packet
 
-Last updated: 2026-06-27
+Last updated: 2026-06-28
 
 ## Current Mission
+
+- Mission ID: LUC-5698-SOURCE-CONTROL-CLOSURE-LUC-5697
+- Status: VERIFIED_DONE
+- Selected objective: Close local source control for the
+  [LUC-5697](/LUC/issues/LUC-5697) known-state evidence packet and generated
+  architecture/status/state delta.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5698](/LUC/issues/LUC-5698), the source-control sidecar created by
+  [LUC-5697](/LUC/issues/LUC-5697).
+- Scope: classify dirty state, parse generated JSON artifacts, run lightweight
+  local gates, publish the closure packet, and record commit/no-push/deploy
+  disposition.
+- Exclusions: no product code, schema, migration, runtime server, browser,
+  database, Docker, push, deploy, restart, protected smoke, production
+  mutation, provider action, credential access, or secret disclosure.
+- Output:
+  `docs/planning/luc-5698-source-control-closure-for-luc-5697-evidence-packet.md`.
+- Evidence: generated JSON parse/readback passed for architecture-awareness
+  (`2026-06-27T22:28:09.318Z`, `2518` entities / `5467` relations),
+  architecture-health (`2518` entities / `5467` relations with owner,
+  disconnected, task-link, implementation-task-link, and verified-without-proof
+  gaps all `0`), and app-completion (`2026-06-27T22:28:09.462Z`, `902` items /
+  `7` flows / `873` missing test links / `0` missing doc links / `0` blocked
+  records). `npm run architecture:status`, `npm run check:route-capabilities`,
+  and scoped `git diff --check` passed.
+- Final disposition: source-control closure complete locally; push held for a
+  future batch because this is docs/generated/state evidence only. Deploy
+  impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5697-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_BASELINE_WITH_SOURCE_CONTROL_SIDECAR_REQUIRED
+- Selected objective: Refresh Roost known-state architecture/app-completion
+  evidence for [LUC-5697](/LUC/issues/LUC-5697) and decide whether new repair
+  lanes are warranted before coding.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5697](/LUC/issues/LUC-5697), assigned to Roost Product Manager, for
+  known-state evidence collection and architecture baseline.
+- Scope: run the required Paperclip architecture-awareness refresh, refresh
+  app-completion, read generated graph/status artifacts, run lightweight local
+  gates, publish a planning evidence packet, update state, and hand off
+  source-control closure.
+- Exclusions: no product code, scanner code repair, schema, migration, runtime
+  server, browser, database, Docker, push, deploy, restart, protected smoke,
+  production mutation, provider action, credential access, or secret
+  disclosure.
+- Output:
+  `docs/planning/luc-5697-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: architecture-awareness refresh generated
+  `2026-06-27T22:28:09.318Z` with `2518` entities / `5467` relations /
+  `16083` files; app-completion refresh generated
+  `2026-06-27T22:28:09.462Z` with `902` items / `7` flows / `873` missing
+  test links / `0` missing doc links / `0` blocked records. `npm run
+  architecture:status`, `npm run check:route-capabilities`, and `git diff
+  --check` passed.
+- Final disposition: verified baseline with no new product repair selected.
+  [LUC-5698](/LUC/issues/LUC-5698) owns source-control closure because this
+  shared worktree is mixed-dirty. Deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5692-NEXT-NONDUPLICATED-QA-PROOF-SELECTION
+- Status: VERIFIED_DONE
+- Selected objective: Select the next non-duplicated QA proof from the
+  post-[LUC-5691](/LUC/issues/LUC-5691) curated app-completion queue, or close
+  the lane if the queue contains no concrete unverified runtime candidate.
+- Why this mission now: Paperclip woke Test Automation on
+  [LUC-5692](/LUC/issues/LUC-5692) after blockers resolved. The latest
+  curation result says the dependent QA lane should record a no-op/duplicate
+  selection rather than rerun broad proof.
+- Scope: read the [LUC-5691](/LUC/issues/LUC-5691) curation packet, perform a
+  fresh machine readback of `docs/status/app-completion-index.json`, publish a
+  QA selection packet, and update source-of-truth state.
+- Exclusions: no product code, schema, migration, scanner implementation, test
+  authoring, runtime server, browser, database, Docker, push, deploy, restart,
+  protected smoke, production mutation, provider action, credential access, or
+  secret disclosure.
+- Output:
+  `docs/planning/luc-5692-next-nonduplicated-qa-proof-selection.md`.
+- Evidence: app-completion generated `2026-06-27T22:11:48.179Z` reports
+  `902` items / `7` flows / `873` missing test links / `0` missing doc links /
+  `0` blocked records. Node readback of `priorityReviewItems` found `200`
+  rows split into `126` docs/agent rows and `74` runtime rows; runtime rows are
+  Account access (`68`) and Dashboard overview (`6`) only. Account access and
+  Dashboard overview are already covered by [LUC-5561](/LUC/issues/LUC-5561),
+  [LUC-5661](/LUC/issues/LUC-5661), and [LUC-5669](/LUC/issues/LUC-5669).
+- Final disposition: QA selection complete. No new non-duplicated runtime proof
+  is selected from this snapshot. Future QA work requires a future refresh with
+  a concrete unverified runtime row or a reproduced fresh regression. Deploy
+  impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5691-APP-COMPLETION-MISSING-TEST-CURATION
+- Status: VERIFIED_DONE
+- Selected objective: Curate the current Roost app-completion missing-test
+  evidence-link debt so dependent QA lane [LUC-5692](/LUC/issues/LUC-5692)
+  does not rerun broad duplicate proof from scanner/doc noise.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5691](/LUC/issues/LUC-5691), assigned to Documentation Steward, and
+  [LUC-5692](/LUC/issues/LUC-5692) is blocked on this curation result.
+- Scope: read the current app-completion index, classify top-200 priority rows
+  into docs/evidence-link versus runtime proof candidates, reuse recent Account
+  access and Dashboard proof packets, publish a planning curation packet, and
+  update source-of-truth state.
+- Exclusions: no product code, schema, migration, scanner implementation, test
+  authoring, runtime server, browser, database, Docker, push, deploy, restart,
+  protected smoke, production mutation, provider action, credential access, or
+  secret disclosure.
+- Output:
+  `docs/planning/luc-5691-current-app-completion-missing-test-evidence-link-debt.md`.
+- Evidence: app-completion index generated `2026-06-27T22:11:48.179Z` reports
+  `902` items / `7` flows / `873` missing test links / `0` missing doc links /
+  `0` blocked. Node readback of `priorityReviewItems` found `200` rows:
+  `126` docs/agent evidence-link rows and `74` runtime rows. Runtime rows are
+  limited to Account access (`68`) and Dashboard overview (`6`), already
+  covered by [LUC-5561](/LUC/issues/LUC-5561),
+  [LUC-5661](/LUC/issues/LUC-5661), and
+  [LUC-5669](/LUC/issues/LUC-5669).
+- Final disposition: documentation curation complete. Selected next proof:
+  none from this snapshot. QA should not run broad duplicate proof from the
+  aggregate missing-test count alone; future QA work needs a concrete
+  unverified runtime row or fresh regression. Deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5679-SOURCE-CONTROL-CLOSURE-LUC-5671
+- Status: VERIFIED_DONE
+- Selected objective: Close local source control for the
+  [LUC-5671](/LUC/issues/LUC-5671) known-state evidence packet without claiming
+  older sibling packets or prior UX evidence directories.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5679](/LUC/issues/LUC-5679), the source-control sidecar created by
+  [LUC-5671](/LUC/issues/LUC-5671).
+- Scope: classify dirty generated/status/state files, parse generated JSON
+  artifacts, run scoped diff hygiene and architecture status, publish the
+  closure packet, and hold push because this is docs/generated/state evidence.
+- Exclusions: no product code, schema, migration, runtime server, browser,
+  database, Docker, push, deploy, restart, protected smoke, production
+  mutation, provider action, credential access, or secret disclosure.
+- Output:
+  `docs/planning/luc-5679-source-control-closure-for-luc-5671-evidence-packet.md`.
+- Evidence: generated JSON parse/readback passed for architecture-awareness
+  (`2026-06-27T22:11:33.008Z`, `2512` entities / `5447` relations),
+  architecture-health (`2512` entities / `5447` relations, owner/task/proof
+  gaps `0`), and app-completion (`2026-06-27T22:11:48.179Z`, `902` items /
+  `7` flows / `873` missing test links / `0` missing doc links / `0` blocked
+  records). Scoped `git diff --check` passed with LF-to-CRLF warnings only;
+  `npm run architecture:status` passed (`GREEN`, graph `454/765/35`, queues
+  `0`, delta `0/0/0`, all gates pass).
+- Final disposition: source-control closure complete locally; push held for a
+  future batch because there is no standalone production release need. Deploy
+  impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5684-EVIDENCE-COLLECTION-ARCHITECTURE-BASELINE
+- Status: VERIFIED_BASELINE_WITH_SOURCE_CONTROL_SIDECAR_REQUIRED
+- Selected objective: Refresh Roost known-state architecture/app-completion
+  evidence for [LUC-5684](/LUC/issues/LUC-5684) and decide whether new repair
+  lanes are warranted before coding.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5684](/LUC/issues/LUC-5684), assigned to the Technical Solution
+  Architect, for known-state evidence collection and architecture baseline.
+- Scope: run the required Paperclip architecture-awareness refresh, refresh
+  app-completion, read graph/status artifacts, run lightweight local gates,
+  publish a planning evidence packet, update state, and hand off
+  source-control closure.
+- Exclusions: no product code, scanner code repair, schema, migration,
+  runtime server, browser, database, Docker, push, deploy, restart, protected
+  smoke, production mutation, provider action, credential access, or secret
+  disclosure.
+- Output:
+  `docs/planning/luc-5684-evidence-collection-and-architecture-baseline.md`.
+- Evidence: architecture-awareness refresh generated
+  `2026-06-27T22:11:33.008Z` with `2512` entities / `5447` relations /
+  `16077` files; app-completion refresh generated
+  `2026-06-27T22:11:48.179Z` with `902` items / `7` flows / `873` missing
+  test links / `0` missing doc links / `0` blocked records. Dependency report
+  shows `438` relations across `95` entities; ownership and task-linkage gaps
+  are `0`. `npm run architecture:status`, `npm run check:route-capabilities`,
+  and `git diff --check` passed.
+- Final disposition: verified baseline with no new product repair selected.
+  [LUC-5686](/LUC/issues/LUC-5686) owns source-control closure because this
+  shared worktree is mixed-dirty. Deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5671-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_BASELINE_SOURCE_CONTROL_CLOSED
+- Selected objective: Refresh Roost known-state architecture/app-completion
+  evidence for [LUC-5671](/LUC/issues/LUC-5671), recover from the prior
+  adapter-level failed heartbeat, and decide whether new repair lanes are
+  warranted before coding.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5671](/LUC/issues/LUC-5671), assigned to the Innovation Portfolio
+  Manager, after the previous run failed before publishing a durable result
+  summary.
+- Scope: run the required Paperclip architecture-awareness refresh, refresh
+  app-completion, read graph/status artifacts, run lightweight local gates,
+  publish a planning evidence packet, update state, and hand off
+  source-control closure.
+- Exclusions: no product code, scanner code repair, schema, migration,
+  runtime server, browser, database, Docker, push, deploy, restart, protected
+  smoke, production mutation, provider action, credential access, or secret
+  disclosure.
+- Output:
+  `docs/planning/luc-5671-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: architecture-awareness refresh generated
+  `2026-06-27T22:06:33.556Z` with `2511` entities / `5443` relations /
+  `16076` files; app-completion refresh generated
+  `2026-06-27T22:06:45.226Z` with `901` items / `7` flows / `872` missing
+  test links / `0` missing doc links / `0` blocked records. Dependency report
+  shows `438` relations across `95` entities; ownership and task-linkage gaps
+  are `0`. `npm run architecture:status`, `npm run check:route-capabilities`,
+  and `git diff --check` passed.
+- Final disposition: verified baseline with no new product repair selected.
+  [LUC-5679](/LUC/issues/LUC-5679) closed local source control for the scoped
+  generated/status/state packet. Deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5673-EVIDENCE-COLLECTION-ARCHITECTURE-BASELINE
+- Status: VERIFIED_BASELINE
+- Selected objective: Refresh Roost known-state architecture/app-completion
+  evidence and classify whether the latest scanner delta creates a new repair
+  lane.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5673](/LUC/issues/LUC-5673), assigned to the Roost Product Manager, for
+  known-state evidence collection and architecture baseline.
+- Scope: refresh architecture-awareness and app-completion outputs, run
+  lightweight architecture/route/diff gates, publish a planning evidence
+  packet, and update state.
+- Exclusions: no product code, schema, migration, runtime server, browser,
+  database, Docker, push, deploy, restart, protected smoke, production
+  mutation, provider action, credential access, or secret disclosure.
+- Output:
+  `docs/planning/luc-5673-evidence-collection-and-architecture-baseline.md`.
+- Evidence: architecture-awareness refresh generated
+  `2026-06-27T22:03:02.476Z` with `2510` entities / `5439` relations /
+  `16075` files; app-completion refresh generated
+  `2026-06-27T22:03:11.809Z` with `900` items / `7` flows / `871` missing
+  test links / `0` missing doc links / `0` blocked records. `npm run
+  architecture:status`, `npm run check:route-capabilities`, and `git diff
+  --check` passed.
+- Final disposition: verified baseline with no new product repair selected.
+  The refreshed top-200 queue still splits into `126` document/agent
+  evidence-link rows and `74` concrete non-document rows; route-shaped rows are
+  the already-classified `/auth`, `/v1/auth`, and `/dashboard` signals. Deploy
+  impact none; [LUC-5677](/LUC/issues/LUC-5677) owns source-control closure
+  for the generated/status/state packet.
+
+## Previous Mission
+
+- Mission ID: LUC-5664-TRADING-OPERATION-MISSING-TEST-MICRO-LANE
+- Status: VERIFIED_DONE
+- Selected objective: Select or prove the post-[LUC-5662](/LUC/issues/LUC-5662)
+  `Trading operation` missing-test micro-lane without duplicating prior
+  Strategy proof.
+- Why this mission now: Paperclip scoped the heartbeat to
+  [LUC-5664](/LUC/issues/LUC-5664), assigned to Test Automation, after
+  [LUC-5662](/LUC/issues/LUC-5662) reported `Trading operation` as `3`
+  entities with `3` missing test links.
+- Scope: inspect current app-completion and architecture graph rows, map them
+  to Strategy route/backend/frontend/test evidence, run the route-capability
+  gate, publish an evidence packet, and update state.
+- Exclusions: no product code, schema, migration, browser, database, Docker,
+  protected smoke, live integration, deploy, push, restart, production
+  mutation, provider action, credential access, secret disclosure, or live
+  trading action.
+- Output:
+  `docs/planning/luc-5664-trading-operation-missing-test-micro-lane.md`.
+- Evidence: current classifier replay maps the three `Trading operation` rows
+  to `src/app.ts#/strategy`, `src/modules/strategy/strategy.routes.ts`, and
+  `web/src/features/departments/strategy-route.tsx`. Existing
+  [LUC-5417](/LUC/issues/LUC-5417) and [LUC-5156](/LUC/issues/LUC-5156)
+  packets plus `src/tests/api.test.ts` already verify
+  `/v1/strategy/context`, `strategy:read` MCP exposure, workspace isolation,
+  no mutation on read, and scoped-key denial. `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+- Final disposition: no new QA proof lane is warranted. The bucket is
+  scanner/evidence-link classification debt because `strategy` is grouped
+  under `Trading operation`; deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5669-FOCUSED-QA-ROUTE-PROOF-SELECTION
+- Status: VERIFIED_DONE
+- Selected objective: Select or close the remaining concrete route-shaped
+  proof signals from [LUC-5666](/LUC/issues/LUC-5666) without duplicate broad
+  reruns.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5669](/LUC/issues/LUC-5669), assigned to Test Automation, as the QA
+  follow-up for remaining `USE /auth`, `USE /v1/auth`, and `USE /dashboard`
+  signals.
+- Scope: read the [LUC-5666](/LUC/issues/LUC-5666) packet, inspect auth and
+  dashboard route/test coverage, run minimal local proof gates, publish a QA
+  selection packet, and update state.
+- Exclusions: no product code, schema, migration authoring, browser,
+  protected production smoke, deploy, restart, production mutation, provider
+  action, credential access, secret disclosure, push, or broad duplicate flow
+  reruns.
+- Output:
+  `docs/planning/luc-5669-focused-qa-selection-for-route-proof-signals.md`.
+- Evidence: `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5669-postgres
+  COMPANYCORE_TEST_DB_PORT=55569 COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0
+  npm run test:api:local` PASS with build, migrations, seed, and `7/7` Node
+  API subtests. `src/tests/api.test.ts` already proves
+  `/v1/dashboard/command`; [LUC-5661](/LUC/issues/LUC-5661) already proves
+  `/v1/auth` alias parity.
+- Final disposition: QA selection complete. No new proof lane is selected;
+  `USE /dashboard` is evidence-link/scanner curation debt. Deploy impact
+  none.
+
+## Previous Mission
+
+- Mission ID: LUC-5668-APP-COMPLETION-EVIDENCE-LINK-CLASSIFICATION-DEBT
+- Status: VERIFIED
+- Selected objective: Curate the post-[LUC-5666](/LUC/issues/LUC-5666)
+  app-completion evidence-link classification debt so docs/scanner rows are
+  separated from concrete runtime proof candidates.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5668](/LUC/issues/LUC-5668), the Documentation Steward follow-up lane
+  from the [LUC-5666](/LUC/issues/LUC-5666) known-state baseline.
+- Scope: inspect the current app-completion index and recent evidence packets,
+  publish a curation packet, update source-of-truth state, and close the issue
+  without protected runtime work.
+- Exclusions: no product code, schema, migration, scanner implementation,
+  test authoring, runtime server, browser, database, Docker, push, deploy,
+  restart, protected smoke, production mutation, provider action, credential
+  access, or secret disclosure.
+- Output:
+  `docs/planning/luc-5668-app-completion-evidence-link-classification-debt.md`.
+- Evidence: current app-completion generated `2026-06-27T21:34:57.134Z`
+  reports `895` items / `7` flows / `867` missing test links / `0` missing
+  doc links / `0` blocked. Top-200 readback found `126` document/agent rows
+  and `74` non-document rows; document buckets include `114`
+  `docs/planning/*` rows and `7` generated architecture node docs. Concrete
+  proof-selection candidates are limited to `68` Account access rows and `6`
+  Dashboard overview rows; API endpoint mounts are `USE /auth`,
+  `USE /v1/auth`, and `USE /dashboard`, with `/v1/auth` already verified by
+  [LUC-5661](/LUC/issues/LUC-5661).
+- Final disposition: documentation curation complete. Docs/Scanner owners
+  should bucket planning/generated evidence separately; QA should continue
+  through [LUC-5669](/LUC/issues/LUC-5669) for the remaining concrete
+  dashboard signal. Deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5666-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_WITH_DELEGATED_FOLLOWUPS
+- Selected objective: Refresh local Roost architecture/app-completion evidence
+  for [LUC-5666](/LUC/issues/LUC-5666) and convert findings into concrete next
+  repair lanes without protected runtime work.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5666](/LUC/issues/LUC-5666), and the latest comment requested local
+  evidence collection first plus concrete repair-lane conversion.
+- Scope: run local architecture-awareness and app-completion refreshes, run
+  lightweight gates, classify confidence debt, publish an evidence packet, and
+  delegate follow-up lanes.
+- Exclusions: no product code, schema, migration, runtime server, browser,
+  database, Docker, push, deploy, restart, protected smoke, production
+  mutation, provider action, credential access, or secret disclosure.
+- Output:
+  `docs/planning/luc-5666-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: architecture-awareness refresh PASS generated
+  `2026-06-27T21:34:49.183Z` with `2505` entities / `5418` relations /
+  `16070` files; app-completion refresh PASS generated
+  `2026-06-27T21:34:57.134Z` with `895` items / `7` flows / `867` missing
+  test links / `0` missing doc links / `0` blocked records. `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`); `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `git diff --check` PASS with LF-to-CRLF warnings only.
+- Final disposition: known-state evidence scope is complete with delegated
+  follow-up lanes for source-control closure, Docs/Architecture curation, and
+  focused QA proof selection. Created child issues
+  [LUC-5667](/LUC/issues/LUC-5667), [LUC-5668](/LUC/issues/LUC-5668), and
+  [LUC-5669](/LUC/issues/LUC-5669). Deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5663-APP-COMPLETION-PROOF-LINK-NOISE-RECONCILIATION
+- Status: VERIFIED
+- Selected objective: Reconcile the post-[LUC-5662](/LUC/issues/LUC-5662)
+  app-completion proof-link signal so concrete route/API/page proof gaps are
+  separated from docs-only or already-proven evidence packets.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5663](/LUC/issues/LUC-5663), assigned to the Technical Solution
+  Architect, as the architecture curation follow-up after
+  [LUC-5662](/LUC/issues/LUC-5662).
+- Scope: inspect current app-completion outputs, task synchronization proof,
+  scanner override context, and recent [LUC-5658](/LUC/issues/LUC-5658) /
+  [LUC-5659](/LUC/issues/LUC-5659) /
+  [LUC-5661](/LUC/issues/LUC-5661) evidence packets; publish a reconciliation
+  packet; update state/context.
+- Exclusions: no product code, schema, migration, test authoring, runtime
+  server, browser, database, Docker, push, deploy, restart, protected smoke,
+  production mutation, provider action, credential access, secret disclosure,
+  or sibling-repository script mutation.
+- Output:
+  `docs/planning/luc-5663-app-completion-proof-link-noise-reconciliation.md`.
+- Evidence: current app-completion generated `2026-06-27T20:43:37.445Z`
+  reports `887` items / `7` flows / `860` missing test links / `0` blocked.
+  Top-200 priority queue readback found `126` document/agent rows and `74`
+  concrete non-document rows; route-shaped concrete rows are `USE /auth`,
+  `USE /v1/auth`, and `USE /dashboard`. [LUC-5661](/LUC/issues/LUC-5661)
+  already verifies the selected `/v1/auth` alias parity proof gap.
+- Final disposition: architecture curation complete. QA should not rerun broad
+  proof from aggregate missing-test pressure alone; future proof selection
+  starts from concrete unverified runtime rows or fresh regressions. Deploy
+  impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5661-V1-AUTH-ALIAS-PARITY-API-PROOF
+- Status: VERIFIED
+- Selected objective: Add executable API proof that `/v1/auth` aliases the
+  existing public auth contract for registration, login, authenticated identity
+  readback, and fail-closed denial.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5661](/LUC/issues/LUC-5661), assigned to Test Automation, as the
+  follow-up from [LUC-5659](/LUC/issues/LUC-5659).
+- Scope: inspect `src/app.ts`, `src/modules/auth/auth.routes.ts`, and
+  `src/tests/api.test.ts`; update only the API proof; run route,
+  architecture, and API validation gates; update evidence state.
+- Exclusions: no product route code, schema, migration authoring, browser,
+  push, deploy, restart, protected smoke, production mutation, provider action,
+  credential access, or secret disclosure.
+- Output:
+  `docs/planning/luc-5661-v1-auth-alias-parity-api-proof.md`.
+- Evidence: `src/tests/api.test.ts` now asserts `/v1/auth/register`,
+  `/v1/auth/login`, authenticated `/v1/auth/me`, wrong-password
+  `invalid_credentials`, and invalid bearer `invalid_auth_token`. Validation
+  passed: `npm run check:route-capabilities`, `npm run architecture:status`,
+  and LUC-5661-scoped `npm run test:api:local` with `7/7` Node API subtests.
+- Final disposition: verified done locally. Deploy impact none. Commit
+  `dd6d5420` contains the scoped test and proof packet only; state/context
+  entries remain uncommitted because the shared worktree already contains
+  unrelated uncommitted LUC-5658/docs/state changes.
+
+## Previous Mission
+
+- Mission ID: LUC-5658-SUBSCRIPTION-ENTITLEMENT-INFERENCE-CURATION
+- Status: VERIFIED
+- Selected objective: Curate the post-[LUC-5656](/LUC/issues/LUC-5656)
+  `Subscription and entitlement` app-completion signal so docs-only
+  feature-capability inference is separated from concrete runtime proof gaps.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5658](/LUC/issues/LUC-5658), assigned to the Documentation Steward, as
+  the Docs/Architecture curation lane after [LUC-5656](/LUC/issues/LUC-5656).
+- Scope: inspect the current app-completion output, prior proof packets, and
+  shared scanner heuristics; publish a curation packet; update state/context
+  files with the next owner path.
+- Exclusions: no product code, schema, migration, test authoring, runtime
+  server, browser, database, Docker, push, deploy, restart, protected smoke,
+  production mutation, provider action, credential access, secret disclosure,
+  or sibling-repository script mutation.
+- Output:
+  `docs/planning/luc-5658-subscription-entitlement-app-completion-inference-curation.md`.
+- Evidence: current app-completion generated `2026-06-27T20:43:37.445Z`
+  reports `Subscription and entitlement` with `540` entities, `516` missing
+  test links, `20` implemented-needs-proof items, and `4` ok items. Node
+  readback of the priority subset found `106` rows: `105` documents and `1`
+  agent prompt, all `feature_or_capability`, with `0` concrete route/API/page
+  rows. Shared app-completion heuristic maps text containing `plan` to the
+  subscription flow, so `docs/planning/...` paths are being inferred as
+  subscription-gated planning documents.
+- Final disposition: curation complete. QA should not rerun duplicate
+  Finance/Sales/Assets/People proof from this docs-only signal. Next owner is
+  shared scanner/TSA for tokenized `plan` matching or a separate docs-evidence
+  bucket; deploy impact none.
+
+## Previous Mission
 
 - Mission ID: LUC-5657-SOURCE-CONTROL-CLOSURE-LUC-5656
 - Status: VERIFIED_DONE

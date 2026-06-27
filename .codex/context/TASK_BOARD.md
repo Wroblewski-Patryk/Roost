@@ -2,6 +2,263 @@
 
 ## Now
 
+- 2026-06-28: `LUC-5698` source-control closure for the
+  [LUC-5697](/LUC/issues/LUC-5697) evidence packet is complete locally.
+  Output:
+  `docs/planning/luc-5698-source-control-closure-for-luc-5697-evidence-packet.md`.
+  Evidence: generated JSON parse/readback PASS for architecture-awareness
+  (`2518` entities / `5467` relations), architecture-health (`0` owner,
+  disconnected, task-link, implementation-task-link, and verified-without-proof
+  gaps), and app-completion (`902` items / `7` flows / `873` missing test
+  links / `0` missing doc links / `0` blocked records). `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`); `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); scoped `git diff --check` PASS with LF-to-CRLF warnings
+  only. Disposition: local source-control closure done for the
+  LUC-5697/LUC-5698 boundary only; older sibling packets and UX evidence
+  directories remain outside this closure boundary. Deploy impact none.
+
+- 2026-06-28: `LUC-5697` Roost known-state evidence and architecture baseline
+  is complete locally in the Roost PM lane with source-control closure
+  required. Output:
+  `docs/planning/luc-5697-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS (`2518` entities / `5467`
+  relations / `16083` files, generated `2026-06-27T22:28:09.318Z`);
+  app-completion refresh PASS (`902` items / `7` flows / `873` missing test
+  links / `0` missing doc links / `0` blocked records, generated
+  `2026-06-27T22:28:09.462Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `git diff --check` PASS with LF-to-CRLF warnings only. Disposition: no new
+  product repair or duplicate QA lane is warranted from this baseline alone.
+  Current runtime priority rows remain Account access and Dashboard overview,
+  already classified by recent proof lanes. Next owner/action:
+  [LUC-5698](/LUC/issues/LUC-5698) source-control closure sidecar for the
+  LUC-5697 generated/status/state packet. Deploy impact none.
+
+- 2026-06-28: `LUC-5692` next non-duplicated QA proof selection is complete
+  locally. Output:
+  `docs/planning/luc-5692-next-nonduplicated-qa-proof-selection.md`.
+  Evidence: [LUC-5691](/LUC/issues/LUC-5691) curation read; fresh Node
+  readback of `docs/status/app-completion-index.json` confirmed
+  `generatedAt=2026-06-27T22:11:48.179Z`, `902` items / `7` flows / `873`
+  missing test links / `0` missing doc links / `0` blocked records, with the
+  current `200` priority rows split into `126` docs/agent rows and `74`
+  runtime rows. Runtime rows are only Account access (`68`) and Dashboard
+  overview (`6`), already covered by [LUC-5561](/LUC/issues/LUC-5561),
+  [LUC-5661](/LUC/issues/LUC-5661), and [LUC-5669](/LUC/issues/LUC-5669).
+  Disposition: no new non-duplicated QA test/proof lane is selected from this
+  snapshot; future QA work requires a future refresh with a concrete
+  unverified runtime row or a reproduced fresh regression. Deploy impact none.
+
+- 2026-06-28: `LUC-5691` current app-completion missing-test evidence-link
+  curation is complete locally. Output:
+  `docs/planning/luc-5691-current-app-completion-missing-test-evidence-link-debt.md`.
+  Evidence: app-completion generated `2026-06-27T22:11:48.179Z` reports
+  `902` items / `7` flows / `873` missing test links / `0` missing doc links /
+  `0` blocked records; Node readback of the current `200` priority rows split
+  into `126` docs/agent evidence-link rows and `74` runtime rows. Runtime rows
+  are only Account access (`68`) and Dashboard overview (`6`), already covered
+  by [LUC-5561](/LUC/issues/LUC-5561),
+  [LUC-5661](/LUC/issues/LUC-5661), and
+  [LUC-5669](/LUC/issues/LUC-5669). Disposition: no new non-duplicated QA
+  proof candidate is selected from this snapshot. [LUC-5692](/LUC/issues/LUC-5692)
+  should proceed only to record the no-op/duplicate QA selection unless a later
+  refresh exposes a concrete unverified runtime row or fresh regression. Deploy
+  impact none.
+
+- 2026-06-28: `LUC-5679` source-control closure for the
+  [LUC-5671](/LUC/issues/LUC-5671) evidence packet is complete locally.
+  Output:
+  `docs/planning/luc-5679-source-control-closure-for-luc-5671-evidence-packet.md`.
+  Evidence: generated JSON parse/readback PASS for architecture-awareness
+  (`2026-06-27T22:11:33.008Z`, `2512` entities / `5447` relations),
+  architecture-health (`2512` entities / `5447` relations; owner,
+  disconnected, task-link, implementation-task-link, and verified-without-proof
+  gaps all `0`), and app-completion (`2026-06-27T22:11:48.179Z`, `902` items /
+  `7` flows / `873` missing test links / `0` missing doc links / `0` blocked
+  records). Scoped `git diff --check` PASS with LF-to-CRLF warnings only;
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues
+  `0`, delta `0/0/0`). Disposition: local source-control closure done for the
+  LUC-5671/LUC-5679 boundary only; older sibling packets and prior UX evidence
+  directories remain outside this closure boundary. Deploy impact none.
+
+- 2026-06-28: `LUC-5684` Roost known-state evidence and architecture baseline
+  is complete locally in the TSA evidence lane with source-control closure
+  required. Output:
+  `docs/planning/luc-5684-evidence-collection-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS (`2512` entities / `5447`
+  relations / `16077` files, generated `2026-06-27T22:11:33.008Z`);
+  app-completion refresh PASS (`902` items / `7` flows / `873` missing test
+  links / `0` missing doc links / `0` blocked records, generated
+  `2026-06-27T22:11:48.179Z`); dependency report `438` relations across `95`
+  entities; ownership/task-link/proof-link gaps `0`; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`); `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `git diff --check` PASS with LF-to-CRLF warnings only.
+  Disposition: no new product repair is warranted from this baseline alone.
+  [LUC-5686](/LUC/issues/LUC-5686) should classify and close the LUC-5684
+  generated/status/state packet because the shared worktree is mixed-dirty.
+  Deploy impact none.
+
+- 2026-06-28: `LUC-5671` Roost known-state evidence and architecture baseline
+  is complete locally in the IPM evidence lane with source-control closure now
+  completed by [LUC-5679](/LUC/issues/LUC-5679). Output:
+  `docs/planning/luc-5671-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS (`2511` entities / `5443`
+  relations / `16076` files, generated `2026-06-27T22:06:33.556Z`);
+  app-completion refresh PASS (`901` items / `7` flows / `872` missing test
+  links / `0` missing doc links / `0` blocked records, generated
+  `2026-06-27T22:06:45.226Z`); dependency report `438` relations across `95`
+  entities; ownership/task-link/proof-link gaps `0`; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`); `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `git diff --check` PASS with LF-to-CRLF warnings only.
+  Disposition: no new product repair is warranted from this baseline alone.
+  Deploy impact none.
+
+- 2026-06-28: `LUC-5673` Roost known-state evidence and architecture baseline
+  is complete locally. Output:
+  `docs/planning/luc-5673-evidence-collection-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS (`2510` entities / `5439`
+  relations / `16075` files, generated `2026-06-27T22:03:02.476Z`);
+  app-completion refresh PASS (`900` items / `7` flows / `871` missing test
+  links / `0` missing doc links / `0` blocked records, generated
+  `2026-06-27T22:03:11.809Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `git diff --check` PASS with LF-to-CRLF warnings only. Disposition: no new
+  product repair or duplicate QA lane is warranted from this baseline alone.
+  Top-200 route-shaped rows remain `USE /auth`, `USE /v1/auth`, and
+  `USE /dashboard`, which recent proof-selection lanes already classified.
+  Next owner/action: [LUC-5677](/LUC/issues/LUC-5677) source-control closure
+  sidecar for the LUC-5673 generated/status/state packet.
+  Deploy impact none.
+
+- 2026-06-27: `LUC-5664` Trading operation missing-test micro-lane is complete
+  as proof mapping. Output:
+  `docs/planning/luc-5664-trading-operation-missing-test-micro-lane.md`.
+  Evidence: current app-completion reports `Trading operation` as `3`
+  missing-test rows; classifier replay maps the rows to Strategy
+  (`USE /strategy`, `src/modules/strategy/strategy.routes.ts`, and
+  `web/src/features/departments/strategy-route.tsx`). Existing
+  [LUC-5417](/LUC/issues/LUC-5417), [LUC-5156](/LUC/issues/LUC-5156), and
+  `src/tests/api.test.ts` already cover the concrete `/v1/strategy/context`
+  API/MCP proof, including workspace isolation, no mutation on read,
+  `strategy:read` MCP exposure, and scoped-key denial. Validation:
+  `npm run check:route-capabilities` PASS (`180` manifest routes / `35`
+  route files); scoped `git diff --check` PASS for the LUC-5664 packet/state
+  files. Disposition: no new QA proof lane is warranted; remaining work is
+  Docs/Architecture or scanner curation so the `strategy` keyword does not
+  resurface as live Trading operation debt. Deploy impact none.
+
+- 2026-06-27: `LUC-5667` source-control closure for the
+  [LUC-5666](/LUC/issues/LUC-5666) evidence packet is complete locally.
+  Output:
+  `docs/planning/luc-5667-source-control-closure-for-luc-5666-evidence-packet.md`.
+  Evidence: generated JSON parse PASS for architecture-awareness,
+  architecture-health, and app-completion; scoped `git diff --check` PASS with
+  LF-to-CRLF warnings only; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`). Disposition: local
+  no-push docs/generated/state closure done for the LUC-5666/LUC-5667 boundary
+  only; older sibling packets, [LUC-5668](/LUC/issues/LUC-5668), and prior UX
+  evidence directories remain outside this commit boundary. Deploy impact
+  none.
+
+- 2026-06-27: `LUC-5669` focused QA selection for remaining concrete route
+  proof signals is complete. Output:
+  `docs/planning/luc-5669-focused-qa-selection-for-route-proof-signals.md`.
+  Evidence: `USE /auth` and `USE /v1/auth` are covered by existing auth proof
+  and [LUC-5661](/LUC/issues/LUC-5661) alias parity; `USE /dashboard` is
+  covered by existing `/v1/dashboard/command` assertions in
+  `src/tests/api.test.ts`. `npm run check:route-capabilities` PASS (`180`
+  manifest routes / `35` route files); LUC-5669-scoped `npm run
+  test:api:local` PASS with build, migrations, seed, and `7/7` Node API
+  subtests. Disposition: no new QA proof lane or runtime repair is warranted;
+  `USE /dashboard` is evidence-link debt for Docs/Architecture/scanner
+  curation. Deploy impact none.
+
+- 2026-06-27: `LUC-5668` app-completion evidence-link classification debt
+  curation is complete. Output:
+  `docs/planning/luc-5668-app-completion-evidence-link-classification-debt.md`.
+  Evidence: current app-completion generated `2026-06-27T21:34:57.134Z`
+  reports `895` items / `7` flows / `867` missing test links / `0` missing
+  doc links / `0` blocked. Top-200 priority review rows split into `126`
+  document/agent evidence-link rows and `74` concrete non-document rows.
+  Evidence-link buckets: `114` `docs/planning/*` rows, `7` generated
+  architecture node docs, `1` UX doc/evidence row, `1` other document row, and
+  `3` agent/state rows. Concrete proof-selection rows are `68` Account access
+  rows and `6` Dashboard overview rows; endpoint mounts are `USE /auth`,
+  `USE /v1/auth`, and `USE /dashboard`, with `/v1/auth` already verified by
+  [LUC-5661](/LUC/issues/LUC-5661). Disposition: `DONE` as documentation
+  curation; Docs/Scanner owners should separate planning/generated evidence
+  buckets from runtime proof rows, and QA should continue through
+  [LUC-5669](/LUC/issues/LUC-5669) for the focused dashboard signal. Deploy
+  impact none.
+
+- 2026-06-27: `LUC-5666` Roost known-state evidence and architecture baseline
+  is complete locally with delegated follow-up lanes. Output:
+  `docs/planning/luc-5666-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS (`2505` entities / `5418`
+  relations / `16070` files, generated `2026-06-27T21:34:49.183Z`);
+  app-completion refresh PASS (`895` items / `7` flows / `867` missing test
+  links / `0` missing doc links / `0` blocked records, generated
+  `2026-06-27T21:34:57.134Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `git diff --check` PASS with LF-to-CRLF warnings only. Disposition: no
+  product repair is warranted from the baseline alone. Follow-up lanes:
+  [LUC-5667](/LUC/issues/LUC-5667) source-control closure for this
+  generated/status/state packet, [LUC-5668](/LUC/issues/LUC-5668)
+  Docs/Architecture evidence-link curation, and [LUC-5669](/LUC/issues/LUC-5669)
+  QA proof selection for the remaining concrete dashboard/auth route-shaped
+  signals. Deploy impact none.
+
+- 2026-06-27: `LUC-5663` app-completion proof-link noise reconciliation is
+  complete. Output:
+  `docs/planning/luc-5663-app-completion-proof-link-noise-reconciliation.md`.
+  Evidence: current app-completion generated `2026-06-27T20:43:37.445Z`
+  reports `887` items / `7` flows / `860` missing test links / `0` blocked;
+  top-200 queue readback splits into `126` document/agent rows and `74`
+  concrete non-document rows. Concrete route-shaped rows are limited to
+  `USE /auth`, `USE /v1/auth`, and `USE /dashboard`; `/v1/auth` was already
+  selected by [LUC-5659](/LUC/issues/LUC-5659) and verified by
+  [LUC-5661](/LUC/issues/LUC-5661). Disposition: `DONE` as architecture
+  curation; no duplicate runtime QA proof, push, deploy, protected smoke,
+  production mutation, or credential action follows from aggregate
+  missing-test pressure alone. Next owner/action: shared scanner/TSA should
+  tokenize standalone `plan` matching or add a docs-evidence bucket; Docs
+  Memory should link generated docs to existing proof before QA reruns flows.
+
+- 2026-06-27: `LUC-5661` `/v1/auth` alias parity API proof is complete.
+  Output:
+  `docs/planning/luc-5661-v1-auth-alias-parity-api-proof.md`. Evidence:
+  `src/tests/api.test.ts` now covers `/v1/auth/register`, `/v1/auth/login`,
+  `/v1/auth/me`, wrong-password denial, and invalid bearer denial on the alias
+  path. `npm run check:route-capabilities` PASS (`180` manifest routes / `35`
+  route files); `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`); `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5661-postgres
+  COMPANYCORE_TEST_DB_PORT=55561 COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0
+  npm run test:api:local` PASS (build, migrations, seed, `7/7` Node API
+  subtests). Disposition: `DONE`; no route implementation repair, push,
+  deploy, protected smoke, production mutation, or credential action needed.
+
+- 2026-06-27: `LUC-5658` subscription-entitlement app-completion inference
+  curation is complete. Output:
+  `docs/planning/luc-5658-subscription-entitlement-app-completion-inference-curation.md`.
+  Evidence: app-completion generated `2026-06-27T20:43:37.445Z` reports
+  `Subscription and entitlement` with `540` entities / `516` missing test
+  links / `20` implemented-needs-proof / `4` ok; detailed readback found
+  `106` subscription priority rows, all `feature_or_capability`, with `105`
+  documents, `1` agent prompt, and `0` concrete route/API/page rows. Root
+  cause: the shared app-completion heuristic maps `plan` to the subscription
+  flow, so `docs/planning/...` paths become docs-only subscription inference.
+  Disposition: `DONE` as docs/architecture curation; no product/runtime repair
+  or duplicate QA proof follows from this signal alone. Next owner/action:
+  shared scanner/TSA should tokenize `plan` matching or bucket planning
+  evidence separately while preserving real billing/subscription/checkout
+  gates. Deploy impact none.
+
 - 2026-06-27: `LUC-5657` source-control closure for the
   [LUC-5656](/LUC/issues/LUC-5656) evidence packet is complete locally.
   Output:

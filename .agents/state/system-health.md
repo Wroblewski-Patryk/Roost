@@ -1,5 +1,211 @@
 # System Health
 
+- 2026-06-28: [LUC-5698](/LUC/issues/LUC-5698) closed local source control for
+  the [LUC-5697](/LUC/issues/LUC-5697) known-state generated/status/state
+  packet. Closure packet:
+  `docs/planning/luc-5698-source-control-closure-for-luc-5697-evidence-packet.md`.
+  Proof: generated JSON parse/readback PASS for architecture-awareness
+  (`2026-06-27T22:28:09.318Z`, `2518` entities / `5467` relations),
+  architecture-health (`2518` entities / `5467` relations; owner,
+  disconnected, task-link, implementation-task-link, and verified-without-proof
+  gaps all `0`), and app-completion (`2026-06-27T22:28:09.462Z`, `902` items /
+  `7` flows / `873` missing test links / `0` missing doc links / `0` blocked
+  records). `npm run architecture:status`, `npm run check:route-capabilities`,
+  and scoped `git diff --check` passed. No runtime, browser, Docker, database,
+  deploy, protected smoke, production, provider, credential, or watcher
+  process was started.
+
+- 2026-06-28: [LUC-5697](/LUC/issues/LUC-5697) known-state evidence refresh is
+  green locally in the Roost PM lane. Architecture-awareness refresh PASS
+  (`2026-06-27T22:28:09.318Z`, `2518` entities / `5467` relations /
+  `16083` files); app-completion refresh PASS (`2026-06-27T22:28:09.462Z`,
+  `902` items / `7` flows / `873` missing test links / `0` missing doc links
+  / `0` blocked records). `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `git diff --check` PASS with LF-to-CRLF warnings only. No local server,
+  browser, database, Docker, push, deploy, restart, protected smoke, provider
+  action, credential access, secret disclosure, or watcher process was
+  started. Source-control closure is delegated to
+  [LUC-5698](/LUC/issues/LUC-5698) because the shared worktree is mixed-dirty.
+
+- 2026-06-28: [LUC-5692](/LUC/issues/LUC-5692) completed next non-duplicated
+  QA proof selection without runtime mutation. Evidence packet:
+  `docs/planning/luc-5692-next-nonduplicated-qa-proof-selection.md`.
+  Fresh app-completion readback confirmed the current priority queue still has
+  `126` docs/agent rows and `74` runtime rows; runtime rows are limited to
+  Account access (`68`) and Dashboard overview (`6`) and are already covered by
+  existing proof packets. No local server, browser, database, Docker, push,
+  deploy, restart, protected smoke, provider action, credential access, secret
+  disclosure, or watcher process was started.
+
+- 2026-06-28: [LUC-5691](/LUC/issues/LUC-5691) completed current
+  app-completion missing-test evidence-link curation without runtime mutation.
+  Evidence packet:
+  `docs/planning/luc-5691-current-app-completion-missing-test-evidence-link-debt.md`.
+  Current app-completion generated `2026-06-27T22:11:48.179Z` reports `902`
+  items / `7` flows / `873` missing test links / `0` missing doc links / `0`
+  blocked records. Node readback split `200` priority rows into `126`
+  docs/agent evidence-link rows and `74` runtime rows; runtime rows are only
+  Account access (`68`) and Dashboard overview (`6`), both covered by recent
+  proof packets. No local server, browser, database, Docker, push, deploy,
+  restart, protected smoke, provider action, credential access, secret
+  disclosure, or watcher process was started.
+
+- 2026-06-28: [LUC-5679](/LUC/issues/LUC-5679) closed local source control for
+  the [LUC-5671](/LUC/issues/LUC-5671) known-state generated/status/state
+  packet. Closure packet:
+  `docs/planning/luc-5679-source-control-closure-for-luc-5671-evidence-packet.md`.
+  Proof: generated JSON parse/readback PASS for architecture-awareness
+  (`2026-06-27T22:11:33.008Z`, `2512` entities / `5447` relations),
+  architecture-health (`2512` entities / `5447` relations; owner,
+  disconnected, task-link, implementation-task-link, and verified-without-proof
+  gaps all `0`), and app-completion (`2026-06-27T22:11:48.179Z`, `902` items /
+  `7` flows / `873` missing test links / `0` missing doc links / `0` blocked
+  records). Scoped `git diff --check` passed with LF-to-CRLF warnings only;
+  `npm run architecture:status` passed (`GREEN`, graph `454/765/35`, queues
+  `0`, delta `0/0/0`). No runtime, browser, Docker, database, deploy,
+  protected smoke, production, provider, credential, or watcher process was
+  started.
+
+- 2026-06-28: [LUC-5684](/LUC/issues/LUC-5684) known-state evidence refresh is
+  green locally in the TSA lane. Architecture-awareness refresh PASS
+  (`2026-06-27T22:11:33.008Z`, `2512` entities / `5447` relations /
+  `16077` files); app-completion refresh PASS (`2026-06-27T22:11:48.179Z`,
+  `902` items / `7` flows / `873` missing test links / `0` missing doc links
+  / `0` blocked records); dependency report shows `438` dependency relations
+  across `95` entities; ownership, task-linkage, implementation-task-linkage,
+  docs-linkage, and verified-without-proof gaps remain `0`. `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No local server, browser,
+  database, Docker, push, deploy, restart, protected smoke, provider action,
+  credential access, or secret disclosure occurred. Runtime health remains
+  unchanged; source-control closure is delegated to
+  [LUC-5686](/LUC/issues/LUC-5686) because the shared worktree is mixed-dirty.
+
+- 2026-06-28: [LUC-5671](/LUC/issues/LUC-5671) known-state evidence refresh is
+  green locally after recovering from a prior adapter-level failed heartbeat.
+  Architecture-awareness refresh PASS (`2026-06-27T22:06:33.556Z`, `2511`
+  entities / `5443` relations / `16076` files); app-completion refresh PASS
+  (`2026-06-27T22:06:45.226Z`, `901` items / `7` flows / `872` missing test
+  links / `0` missing doc links / `0` blocked records); dependency report
+  shows `438` dependency relations across `95` entities; ownership,
+  task-linkage, implementation-task-linkage, docs-linkage, disconnected
+  entity, and verified-without-proof gaps remain `0`. `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No local server, browser,
+  database, Docker, push, deploy, restart, protected smoke, provider action,
+  credential access, or secret disclosure occurred. Runtime health remains
+  unchanged; source-control closure is complete locally in
+  [LUC-5679](/LUC/issues/LUC-5679).
+
+- 2026-06-28: [LUC-5673](/LUC/issues/LUC-5673) known-state evidence refresh is
+  green locally. Architecture-awareness refresh PASS
+  (`2026-06-27T22:03:02.476Z`, `2510` entities / `5439` relations /
+  `16075` files); app-completion refresh PASS (`2026-06-27T22:03:11.809Z`,
+  `900` items / `7` flows / `871` missing test links / `0` missing doc links
+  / `0` blocked records); `npm run architecture:status` PASS; `npm run
+  check:route-capabilities` PASS; `git diff --check` PASS with LF-to-CRLF
+  warnings only. No local server, browser, database, Docker, push, deploy,
+  restart, protected smoke, provider action, credential access, or secret
+  disclosure occurred. Runtime health remains unchanged; app-completion
+  aggregate debt is evidence-link/scanner confidence debt unless a concrete
+  unverified runtime row or fresh regression appears.
+
+- 2026-06-27: [LUC-5664](/LUC/issues/LUC-5664) completed the Test Automation
+  proof mapping for the post-[LUC-5662](/LUC/issues/LUC-5662)
+  `Trading operation` app-completion bucket. Evidence packet:
+  `docs/planning/luc-5664-trading-operation-missing-test-micro-lane.md`.
+  Current classifier replay maps the three rows to Strategy, not live trading:
+  `src/app.ts#/strategy`, `src/modules/strategy/strategy.routes.ts`, and
+  `web/src/features/departments/strategy-route.tsx`. Existing
+  [LUC-5417](/LUC/issues/LUC-5417), [LUC-5156](/LUC/issues/LUC-5156), and
+  current `src/tests/api.test.ts` already cover `/v1/strategy/context`,
+  workspace isolation, no mutation on read, MCP `strategy:read` exposure, and
+  scoped-key denial. `npm run check:route-capabilities` passed with `180`
+  manifest routes and `35` route files. No runtime, browser, Docker, database,
+  deploy, protected smoke, production, provider, credential, or watcher process
+  was started.
+
+- 2026-06-27: [LUC-5667](/LUC/issues/LUC-5667) closed local source control for
+  the [LUC-5666](/LUC/issues/LUC-5666) known-state evidence packet. Closure
+  packet:
+  `docs/planning/luc-5667-source-control-closure-for-luc-5666-evidence-packet.md`.
+  Proof: generated JSON parse/readback PASS for architecture-awareness,
+  architecture-health, and app-completion; scoped `git diff --check` PASS with
+  LF-to-CRLF warnings only; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass). No runtime, browser, Docker, database, deploy, protected
+  smoke, production, provider, credential, or watcher process was started.
+
+- 2026-06-27: [LUC-5669](/LUC/issues/LUC-5669) completed focused local QA
+  selection for remaining concrete route-shaped app-completion signals from
+  [LUC-5666](/LUC/issues/LUC-5666). Evidence packet:
+  `docs/planning/luc-5669-focused-qa-selection-for-route-proof-signals.md`.
+  `USE /auth` and `USE /v1/auth` are covered by existing auth and
+  [LUC-5661](/LUC/issues/LUC-5661) alias-parity API proof. `USE /dashboard`
+  is covered by existing `GET /v1/dashboard/command` assertions in
+  `src/tests/api.test.ts`. Verification passed: `npm run
+  check:route-capabilities` (`180` manifest routes / `35` route files) and
+  LUC-5669-scoped `npm run test:api:local` with build, migrations, seed, and
+  `7/7` Node API subtests passing. Cleanup: no
+  `companycore-luc-5669-postgres` container, no listener on port `55569`, and
+  no `chrome-headless-shell`. No protected production smoke, deploy, restart,
+  production mutation, provider action, credential access, or secret
+  disclosure occurred.
+
+- 2026-06-27: [LUC-5668](/LUC/issues/LUC-5668) completed docs/architecture
+  curation for post-[LUC-5666](/LUC/issues/LUC-5666) app-completion
+  evidence-link classification debt. Evidence packet:
+  `docs/planning/luc-5668-app-completion-evidence-link-classification-debt.md`.
+  Read-only parsing of `docs/status/app-completion-index.json` generated
+  `2026-06-27T21:34:57.134Z` confirmed `895` items / `7` flows / `867`
+  missing test links / `0` missing doc links / `0` blocked. The top-200
+  priority queue splits into `126` document/agent evidence-link rows and `74`
+  concrete non-document rows; `/v1/auth` is already verified by
+  [LUC-5661](/LUC/issues/LUC-5661), and `USE /dashboard` remains the focused
+  QA selection candidate. No runtime, browser, Docker, database, deploy,
+  protected smoke, production, provider, credential, or watcher process was
+  started.
+
+- 2026-06-27: [LUC-5663](/LUC/issues/LUC-5663) reconciled post-
+  [LUC-5662](/LUC/issues/LUC-5662) app-completion proof-link noise. Evidence
+  packet:
+  `docs/planning/luc-5663-app-completion-proof-link-noise-reconciliation.md`.
+  Read-only parsing of `docs/status/app-completion-index.json` generated
+  `2026-06-27T20:43:37.445Z` confirmed `887` items / `7` flows / `860`
+  missing test links / `0` blocked. The top-200 priority queue splits into
+  `126` document/agent rows and `74` concrete non-document rows. Concrete
+  route-shaped rows are limited to `USE /auth`, `USE /v1/auth`, and
+  `USE /dashboard`; [LUC-5661](/LUC/issues/LUC-5661) already verifies the
+  selected `/v1/auth` alias parity gap. No runtime, browser, Docker, database,
+  deploy, protected smoke, production, provider, credential, or watcher process
+  was started.
+
+- 2026-06-27: [LUC-5661](/LUC/issues/LUC-5661) completed local API alias proof
+  for `/v1/auth`. Evidence packet:
+  `docs/planning/luc-5661-v1-auth-alias-parity-api-proof.md`. Verification
+  passed: `npm run check:route-capabilities` (`180` manifest routes / `35`
+  route files), `npm run architecture:status` (`GREEN`, `454/765/35`, queues
+  `0`, delta `0/0/0`), and LUC-5661-scoped `npm run test:api:local` with
+  build, migrations, seed, and `7/7` Node API subtests passing. Cleanup: no
+  LUC-5661 Docker container and no `chrome-headless-shell`; port `55561`
+  belongs to a pre-existing embedded PostgreSQL process under
+  `.tmp/luc-5561-pg-data` and was not stopped.
+
+- 2026-06-27: [LUC-5658](/LUC/issues/LUC-5658) completed docs/architecture
+  curation for post-[LUC-5656](/LUC/issues/LUC-5656) subscription-entitlement
+  app-completion inference. Evidence packet:
+  `docs/planning/luc-5658-subscription-entitlement-app-completion-inference-curation.md`.
+  Current app-completion generated `2026-06-27T20:43:37.445Z` reports `540`
+  subscription/entitlement entities, but detailed readback found the priority
+  subset contains `105` documents and `1` agent prompt, all
+  `feature_or_capability`, with `0` concrete route/API/page rows. Shared
+  app-completion heuristic inspection confirmed `plan` keyword matching over
+  `docs/planning/...` paths as the root docs-only inference. No runtime,
+  browser, Docker, database, deploy, protected smoke, production, provider,
+  credential, or watcher process was started.
+
 - 2026-06-27: [LUC-5639](/LUC/issues/LUC-5639) closed local source control for
   the [LUC-5633](/LUC/issues/LUC-5633) known-state evidence packet. Closure
   packet:
@@ -1860,3 +2066,19 @@ Last updated: 2026-06-20
   excluded by prefix; `npm run architecture:status` remains green. Remaining
   task-link debt is `173` implementation entities and belongs to the
   Documentation Steward classification lane.
+# 2026-06-27 LUC-5666 Known-State Health
+
+- Architecture-awareness refresh: PASS, generated
+  `2026-06-27T21:34:49.183Z`, `2505` entities / `5418` relations /
+  `16070` files.
+- App-completion refresh: PASS, generated `2026-06-27T21:34:57.134Z`,
+  `895` items / `7` flows / `867` missing test links / `0` missing doc links
+  / `0` blocked records.
+- `npm run architecture:status`: PASS, `GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass.
+- `npm run check:route-capabilities`: PASS, `180` manifest routes / `35`
+  route files.
+- `git diff --check`: PASS with LF-to-CRLF warnings only.
+- Protected actions: not run. No push, deploy, restart, protected smoke,
+  production mutation, provider action, credential access, or secret
+  disclosure occurred.
