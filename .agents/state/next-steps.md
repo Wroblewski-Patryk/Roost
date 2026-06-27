@@ -1,5 +1,32 @@
 # Next Steps
 
+- `LUC-5624` Sales context and board proof is complete. Evidence packet:
+  `docs/planning/luc-5624-sales-context-and-board-proof.md`; browser artifacts:
+  `docs/ux/evidence/luc-5624-sales-board-proof/`. Verification:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5624-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55524`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS;
+  focused `npm run owner-console:ux-smoke` PASS for
+  `/areas?area=03-sprzedaz&view=overview` at desktop/tablet/mobile with
+  required Sales text and `consoleIssues=[]`; `npm run
+  check:route-capabilities` PASS; `npm run architecture:status` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. Next owner/action: no
+  product repair follows from [LUC-5624](/LUC/issues/LUC-5624). Continue with
+  remaining non-duplicated missing-test proof lanes or protected production
+  proof only through the separate approval/credential gate.
+
+- `LUC-5627` blocked architecture/app-completion status-label curation is
+  complete. Evidence packet:
+  `docs/planning/luc-5627-blocked-status-label-curation.md`. Current
+  projection after refresh: architecture blocked entities `0`;
+  app-completion `876` items / `7` flows / `851` missing test links /
+  `0` missing doc links / `0` blocked records. Classification: the prior
+  blocked labels were safety/queue wording and historical source-control
+  closure result packets, not active product/runtime blockers. Next
+  owner/action: no product repair follows from blocked labels; continue with
+  [LUC-5628](/LUC/issues/LUC-5628) Sales proof and source-control/release
+  lanes already on the board.
+
 - `LUC-5626` source-control closure is complete locally for the latest
   [LUC-5623](/LUC/issues/LUC-5623) known-state evidence packet. Closure
   packet:

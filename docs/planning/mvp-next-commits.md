@@ -1,5 +1,33 @@
 # MVP Next Commits
 
+- 2026-06-27: `LUC-5624` Sales context and board proof is complete. Evidence
+  packet: `docs/planning/luc-5624-sales-context-and-board-proof.md`. Proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5624-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55524`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after build, all `31` migrations, seed, and `7/7` Node API subtests;
+  focused `npm run owner-console:ux-smoke` PASS for
+  `/areas?area=03-sprzedaz&view=overview` at desktop/tablet/mobile with
+  required Sales text and `consoleIssues=[]`; `npm run
+  check:route-capabilities` PASS; `npm run architecture:status` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product repair, push,
+  deploy, protected smoke, production mutation, or credential action
+  warranted.
+
+- 2026-06-27: `LUC-5627` blocked architecture/app-completion status-label
+  curation is complete. Evidence packet:
+  `docs/planning/luc-5627-blocked-status-label-curation.md`. Proof:
+  scanner overrides classify safety/queue wording docs and superseded
+  source-control closure result packets as verified document entities for
+  projection purposes; Paperclip architecture-awareness refresh PASS generated
+  `2026-06-27T19:07:25.807Z` with `2486` entities / `5349` relations /
+  `16045` files and `0` blocked architecture entities; app-completion refresh
+  PASS generated `2026-06-27T19:07:46.702Z` with `876` items / `7` flows /
+  `851` missing test links / `0` missing doc links / `0` blocked records;
+  `npm run architecture:status` PASS; `git diff --check` PASS with
+  LF-to-CRLF warnings only. No product repair, push, deploy, protected smoke,
+  runtime, or credential action warranted.
+
 - 2026-06-27: `LUC-5626` source-control closure is complete locally for the
   latest [LUC-5623](/LUC/issues/LUC-5623) known-state evidence packet.
   Closure packet:

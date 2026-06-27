@@ -1,5 +1,58 @@
 # Module Confidence Ledger
 
+Known-state note: [LUC-5617](/LUC/issues/LUC-5617) is
+VERIFIED_WITH_FOLLOWUPS for Roost architecture/app-completion baseline in the
+COO coordination lane. Evidence packet:
+`docs/planning/luc-5617-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-27T19:07:25.807Z` with
+`2486` entities / `5349` relations / `16045` files and scanner overrides
+applied (`16` entity / `3` relation). App-completion refresh generated
+`2026-06-27T19:07:46.702Z` with `876` items / `7` flows / `851` missing test
+links / `0` missing doc links / `0` blocked records. `npm run
+architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+`0/0/0`); `npm run check:route-capabilities` PASS (`180` manifest routes /
+`35` route files). Confidence classification: architecture, route capability,
+ownership, task-link, and blocked-record posture are verified locally; product
+journey confidence remains partially verified because broad missing-test-link
+debt requires focused QA proof ladders. Protected production proof remains
+approval/credential gated. Source-control closure should classify the current
+generated/status packet without claiming sibling evidence packets.
+
+QA proof note: [LUC-5624](/LUC/issues/LUC-5624) is VERIFIED_DONE for the
+Sales Management app-completion proof lane selected by
+[LUC-5619](/LUC/issues/LUC-5619). Evidence packet:
+`docs/planning/luc-5624-sales-context-and-board-proof.md`. API prerequisite
+`COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5624-postgres`
+`COMPANYCORE_TEST_DB_PORT=55524`
+`COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` passed
+after server/web build, all `31` migrations, seed, and `7/7` Node API
+subtests. Browser proof used local server `http://127.0.0.1:31524` and
+verified signed-in `/areas?area=03-sprzedaz&view=overview` rendering at
+desktop `1440x960`, tablet `834x1112`, and mobile `390x844`; report
+`docs/ux/evidence/luc-5624-sales-board-proof/report.json` records `3`
+screenshots, `21` assertions, required Sales text present, and
+`consoleIssues=[]`. `npm run check:route-capabilities`, `npm run
+architecture:status`, report validation, and `git diff --check` passed.
+Confidence classification: current Sales Management context and board are
+`verified` locally for the selected app-completion lane. No product repair
+issue is warranted; protected production proof remains a separate release gate.
+
+Planning curation note: [LUC-5627](/LUC/issues/LUC-5627) is VERIFIED_DONE for
+blocked architecture/app-completion status-label curation after
+[LUC-5623](/LUC/issues/LUC-5623). Evidence packet:
+`docs/planning/luc-5627-blocked-status-label-curation.md`. The curated labels
+were safety/queue wording false positives and historical source-control
+closure result packets, not active product/runtime blockers. Scanner overrides
+now mark those four document entities as verified for projection purposes.
+Fresh Paperclip architecture-awareness generated `2026-06-27T19:07:25.807Z`
+with `2486` entities / `5349` relations / `16045` files and `16` entity
+overrides applied; architecture blocked entities are `0`. Fresh
+app-completion generated `2026-06-27T19:07:46.702Z` with `876` items /
+`7` flows / `851` missing test links / `0` missing doc links / `0` blocked
+records. Confidence classification: blocked-label projection is verified
+clean; remaining confidence debt is missing-test-link proof work, not a
+blocked product repair.
+
 Source-control note: [LUC-5626](/LUC/issues/LUC-5626) is VERIFIED_DONE for
 the latest [LUC-5623](/LUC/issues/LUC-5623) generated/status/state evidence
 packet. Closure packet:

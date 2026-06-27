@@ -1,5 +1,51 @@
 # PROJECT_STATE
 
+- 2026-06-27: `LUC-5624` Sales context and board app-completion proof
+  completed locally. Output:
+  `docs/planning/luc-5624-sales-context-and-board-proof.md`. Evidence: API
+  prerequisite
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5624-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55524`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `7/7` Node API
+  subtests. Browser proof used disposable PostgreSQL
+  `companycore-luc-5624-browser-postgres` on port `55534` and local server
+  `http://127.0.0.1:31524`; report
+  `docs/ux/evidence/luc-5624-sales-board-proof/report.json` verifies signed
+  in `/areas?area=03-sprzedaz&view=overview` rendering at desktop, tablet, and
+  mobile, required Sales text present, `3` screenshots, `21` assertions, and
+  `consoleIssues=[]`. `npm run check:route-capabilities` PASS (`180`
+  manifest routes / `35` route files); `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, queues `0`, delta `0/0/0`); `git diff
+  --check` PASS with LF-to-CRLF warnings only. Cleanup stopped the validation
+  server, removed disposable DB containers, confirmed no `chrome-headless-shell`,
+  and left no listeners on ports `31524` or `55534`. No product code, schema,
+  migration authoring, push, deploy, protected smoke, production mutation,
+  provider action, credential access, or secret disclosure occurred. Deploy
+  impact none.
+
+- 2026-06-27: `LUC-5627` blocked architecture/app-completion status-label
+  curation completed after [LUC-5623](/LUC/issues/LUC-5623). Output:
+  `docs/planning/luc-5627-blocked-status-label-curation.md`. Classification:
+  `docs/NEXT_STEPS.md` and `NO_TEMPORARY_SOLUTIONS.md` were safety/queue
+  wording false positives; [LUC-5610](/LUC/issues/LUC-5610) and
+  [LUC-5615](/LUC/issues/LUC-5615) were historical blocked source-control
+  closure outcomes superseded by [LUC-5626](/LUC/issues/LUC-5626), not active
+  product/runtime blockers. Changed `docs/architecture/scanner-overrides.json`
+  to mark those four document entities as verified for projection purposes.
+  Evidence: Paperclip architecture-awareness refresh PASS generated
+  `2026-06-27T19:07:25.807Z` with `2486` entities / `5349` relations /
+  `16045` files and `16` entity overrides applied; architecture blocked
+  entities `0`; app-completion refresh PASS generated
+  `2026-06-27T19:07:46.702Z` with `876` items / `7` flows / `851` missing
+  test links / `0` missing doc links / `0` blocked records; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
+  worklist `0`, delta `0/0/0`); `git diff --check` PASS with LF-to-CRLF
+  warnings only. No product code, runtime, browser, Docker, database,
+  protected smoke, production mutation, credential access, push, or deploy
+  occurred. No product repair child issue is warranted; remaining confidence
+  debt is broad missing-test-link proof work.
+
 - 2026-06-27: `LUC-5626` source-control closure completed locally for the
   latest [LUC-5623](/LUC/issues/LUC-5623) known-state evidence packet. Output:
   `docs/planning/luc-5626-source-control-closure-for-luc-5623-evidence-packet.md`.

@@ -1,5 +1,37 @@
 # System Health
 
+- 2026-06-27: [LUC-5624](/LUC/issues/LUC-5624) verified the Sales Management
+  app-completion lane locally. API prerequisite
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5624-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55524`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after build, `31` migrations, seed, and `7/7` Node API subtests. Browser
+  proof on `http://127.0.0.1:31524` generated
+  `docs/ux/evidence/luc-5624-sales-board-proof/report.json` and `3`
+  screenshots for `/areas?area=03-sprzedaz&view=overview` at
+  desktop/tablet/mobile. Report assertions passed, required Sales text was
+  present, and `consoleIssues=[]`. `npm run check:route-capabilities`, `npm
+  run architecture:status`, report validation, and `git diff --check` passed.
+  Cleanup removed validation-owned server/database resources and left no
+  LUC-5624 containers, no `chrome-headless-shell`, and no listeners on ports
+  `31524` or `55534`. Deploy impact none.
+
+- 2026-06-27: [LUC-5627](/LUC/issues/LUC-5627) completed blocked-label
+  curation after [LUC-5623](/LUC/issues/LUC-5623). The remaining blocked
+  statuses were not product/runtime blockers: two were safety/queue wording
+  false positives and two were historical source-control closure result
+  packets superseded by [LUC-5626](/LUC/issues/LUC-5626). Scanner overrides now
+  classify those four document entities as verified for architecture and
+  app-completion projection. Fresh Paperclip architecture-awareness generated
+  `2026-06-27T19:07:25.807Z` with `2486` entities / `5349` relations /
+  `16045` files, `16` entity overrides applied, and `0` blocked architecture
+  entities. Fresh app-completion generated `2026-06-27T19:07:46.702Z` with
+  `876` items / `7` flows / `851` missing test links / `0` missing doc links /
+  `0` blocked records. `npm run architecture:status` stayed `GREEN`; `git
+  diff --check` passed with LF-to-CRLF warnings only. No runtime, browser,
+  Docker, database, deploy, protected smoke, production, provider, credential,
+  or watcher process was started.
+
 - 2026-06-27: [LUC-5626](/LUC/issues/LUC-5626) completed local
   source-control closure for the latest [LUC-5623](/LUC/issues/LUC-5623)
   known-state evidence packet. Closure packet:

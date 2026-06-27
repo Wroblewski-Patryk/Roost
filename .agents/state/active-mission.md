@@ -4,6 +4,111 @@ Last updated: 2026-06-27
 
 ## Current Mission
 
+- Mission ID: LUC-5617-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_WITH_FOLLOWUPS
+- Selected objective: Refresh Roost local architecture and app-completion
+  evidence from the [LUC-5617](/LUC/issues/LUC-5617) local-board wake, then
+  convert findings into concrete next repair/proof lanes without protected
+  action or product implementation.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5617](/LUC/issues/LUC-5617), assigned to the COO, with a new
+  local-board comment asking for local evidence collection and concrete next
+  repair lanes.
+- Scope: rerun architecture-awareness, refresh app-completion, read required
+  generated reports, run lightweight local gates, publish an evidence packet,
+  and update source-of-truth state.
+- Exclusions: no product code, schema, migration, runtime server, browser,
+  database container, Docker, push, deploy, restart, protected smoke,
+  production mutation, provider action, credential access, secret disclosure,
+  or watcher.
+- Output:
+  `docs/planning/luc-5617-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: architecture-awareness refresh PASS generated
+  `2026-06-27T19:07:25.807Z` with `2486` entities / `5349` relations /
+  `16045` files and scanner overrides applied (`16` entity / `3` relation).
+  App-completion refresh PASS generated `2026-06-27T19:07:46.702Z` with
+  `876` items / `7` flows / `851` missing test links / `0` missing doc links /
+  `0` blocked records. `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files).
+- Final disposition: known-state evidence scope is complete with follow-up
+  lanes. No architecture, ownership, task-link, or blocked-record repair is
+  warranted from this pass. Remaining owners/actions: QA/Test continues
+  focused missing-test proof ladders, Roost PM/source-control closure
+  classifies the current generated/status packet, and runtime secret
+  owner/board keeps protected target proof gated. Deploy impact none.
+
+## Previous Mission
+
+- Mission ID: LUC-5624-SALES-CONTEXT-AND-BOARD-PROOF
+- Status: VERIFIED_DONE
+- Selected objective: Prove the Sales Management app-completion lane selected
+  by [LUC-5619](/LUC/issues/LUC-5619) with local API prerequisite and
+  desktop/tablet/mobile browser evidence.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5624](/LUC/issues/LUC-5624), assigned to QA, with the explicit request
+  to prove Sales context and board app-completion evidence.
+- Scope: verify `GET /v1/sales/context`, `sales:read`, current
+  `src/tests/api.test.ts` Sales assertions, and signed-in rendering of
+  `/areas?area=03-sprzedaz&view=overview`.
+- Exclusions: no product code, schema, migration, test authoring, provider
+  call, credential access, secret handling, push, deploy, protected smoke,
+  production mutation, or long-running watcher.
+- Output:
+  `docs/planning/luc-5624-sales-context-and-board-proof.md` and
+  `docs/ux/evidence/luc-5624-sales-board-proof/report.json`.
+- Evidence: `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5624-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55524`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after build, all `31` migrations, seed, and `7/7` Node API subtests.
+  Browser proof on `http://127.0.0.1:31524` PASS for
+  `/areas?area=03-sprzedaz&view=overview` at desktop, tablet, and mobile with
+  `3` screenshots, `21` assertions, required Sales text present, and
+  `consoleIssues=[]`. `npm run check:route-capabilities` PASS; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`); `git diff --check` PASS with LF-to-CRLF warnings only. Cleanup
+  confirmed no LUC-5624 containers, no `chrome-headless-shell`, and no
+  listeners on ports `31524` or `55534`.
+- Final disposition: Sales context and board are locally verified for the
+  selected app-completion lane. No product repair issue is warranted. Deploy
+  impact none; protected production proof remains separately gated.
+
+## Previous Mission
+
+- Mission ID: LUC-5627-BLOCKED-STATUS-LABEL-CURATION
+- Status: VERIFIED_DONE
+- Selected objective: Curate blocked architecture/app-completion status labels
+  after [LUC-5623](/LUC/issues/LUC-5623) without hiding product/runtime risk.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5627](/LUC/issues/LUC-5627), assigned to the Technical Solution
+  Architect.
+- Scope: inspect the current blocked-status signal, classify safety-policy
+  wording versus stale closure records versus true blockers, update scanner
+  overrides only where warranted, refresh architecture/app-completion outputs,
+  and record final blocked counts.
+- Exclusions: no product code, schema, migration, runtime server, browser,
+  Docker, database, protected smoke, production mutation, credential access,
+  provider call, push, deploy, restart, or watcher action.
+- Output:
+  `docs/planning/luc-5627-blocked-status-label-curation.md`.
+- Evidence: `docs/architecture/scanner-overrides.json` now marks
+  `docs/NEXT_STEPS.md`, `NO_TEMPORARY_SOLUTIONS.md`, and superseded
+  source-control closure packets [LUC-5610](/LUC/issues/LUC-5610) /
+  [LUC-5615](/LUC/issues/LUC-5615) as verified document entities for
+  projection purposes. Paperclip architecture-awareness refresh PASS generated
+  `2026-06-27T19:07:25.807Z` with `2486` entities / `5349` relations /
+  `16045` files and `16` entity overrides applied; architecture blocked
+  entities `0`. App-completion refresh PASS generated
+  `2026-06-27T19:07:46.702Z` with `876` items / `7` flows / `851` missing
+  test links / `0` missing doc links / `0` blocked records. `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, delta
+  `0/0/0`); `git diff --check` PASS with LF-to-CRLF warnings only.
+- Final disposition: blocked-label curation complete; no product/runtime repair
+  child issue warranted. Remaining confidence debt is broad missing-test-link
+  proof work and already-delegated Sales proof. Deploy impact none.
+
+## Previous Mission
+
 - Mission ID: LUC-5626-SOURCE-CONTROL-CLOSURE-FOR-LUC-5623-EVIDENCE-PACKET
 - Status: VERIFIED_DONE
 - Selected objective: Close source control for the latest

@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-06-27T19:04:14.213Z",
+  "generated_at": "2026-06-27T19:07:25.807Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
     "entities": 2486,
-    "relations": 5345,
+    "relations": 5349,
     "by_type": {
       "agent": 47,
       "api_endpoint": 43,

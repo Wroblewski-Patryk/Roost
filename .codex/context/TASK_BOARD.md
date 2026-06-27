@@ -2,6 +2,40 @@
 
 ## Now
 
+- 2026-06-27: `LUC-5624` Sales context and board proof is complete. Output:
+  `docs/planning/luc-5624-sales-context-and-board-proof.md`. Evidence:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5624-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55524`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after build, all `31` migrations, seed, and `7/7` Node API subtests.
+  Browser proof on `http://127.0.0.1:31524` verified signed-in
+  `/areas?area=03-sprzedaz&view=overview` rendering at desktop, tablet, and
+  mobile with required Sales text, `3` screenshots, `21` assertions, and
+  `consoleIssues=[]`; artifacts:
+  `docs/ux/evidence/luc-5624-sales-board-proof/`. `npm run
+  check:route-capabilities` PASS; `npm run architecture:status` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. Disposition: `DONE`; no
+  product repair issue warranted. Cleanup confirmed no LUC-5624 containers, no
+  `chrome-headless-shell`, and no listeners on ports `31524` or `55534`.
+  Deploy impact none.
+
+- 2026-06-27: `LUC-5627` blocked architecture/app-completion status-label
+  curation is complete. Output:
+  `docs/planning/luc-5627-blocked-status-label-curation.md`. Evidence:
+  `docs/architecture/scanner-overrides.json` now classifies
+  `docs/NEXT_STEPS.md`, `NO_TEMPORARY_SOLUTIONS.md`,
+  `docs/planning/luc-5610-source-control-closure-for-luc-5609-evidence-packet.md`,
+  and
+  `docs/planning/luc-5615-source-control-closure-for-luc-5613-evidence-packet.md`
+  as verified document entities for projection purposes. Paperclip
+  architecture-awareness refresh PASS (`2486` entities / `5349` relations /
+  `16045` files, generated `2026-06-27T19:07:25.807Z`, `16` entity overrides
+  applied); architecture blocked entities `0`; app-completion refresh PASS
+  (`876` items / `7` flows / `851` missing test links / `0` blocked records,
+  generated `2026-06-27T19:07:46.702Z`); `npm run architecture:status` PASS;
+  `git diff --check` PASS with LF-to-CRLF warnings only. Disposition:
+  `DONE`; no product/runtime repair child issue warranted. Deploy impact none.
+
 - 2026-06-27: `LUC-5626` source-control closure is complete locally for the
   latest [LUC-5623](/LUC/issues/LUC-5623) known-state evidence packet. Output:
   `docs/planning/luc-5626-source-control-closure-for-luc-5623-evidence-packet.md`.
