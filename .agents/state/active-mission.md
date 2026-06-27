@@ -4,6 +4,37 @@ Last updated: 2026-06-28
 
 ## Current Mission
 
+- Mission ID: LUC-5701-KNOWN-STATE-EVIDENCE-ARCHITECTURE-BASELINE
+- Status: VERIFIED_BASELINE
+- Selected objective: Refresh Roost known-state architecture/app-completion
+  evidence for [LUC-5701](/LUC/issues/LUC-5701) and decide whether new repair
+  lanes are warranted before coding.
+- Why this mission now: Paperclip scoped the heartbeat to high-priority
+  [LUC-5701](/LUC/issues/LUC-5701), assigned to Roost Product Manager, for
+  known-state evidence collection and architecture baseline.
+- Scope: run the required Paperclip architecture-awareness refresh, refresh
+  app-completion, read generated graph/status artifacts, run lightweight local
+  gates, publish a planning evidence packet, update state, and record local
+  source-control closure.
+- Exclusions: no product code, scanner code repair, schema, migration,
+  runtime server, browser, database, Docker, push, deploy, restart, protected
+  smoke, production mutation, provider action, credential access, or secret
+  disclosure.
+- Output:
+  `docs/planning/luc-5701-known-state-evidence-and-architecture-baseline.md`.
+- Evidence: architecture-awareness refresh generated
+  `2026-06-27T22:38:36.031Z` with `2520` entities / `5475` relations /
+  `16085` files; app-completion refresh generated
+  `2026-06-27T22:38:43.896Z` with `910` items / `7` flows / `880` missing
+  test links / `0` missing doc links / `0` blocked records. `npm run
+  architecture:status`, `npm run check:route-capabilities`, and `git diff
+  --check` passed.
+- Final disposition: verified baseline with no new product repair selected.
+  Current runtime priority rows remain Account access and Dashboard overview,
+  already classified by recent proof lanes. Deploy impact none.
+
+## Previous Mission
+
 - Mission ID: LUC-5698-SOURCE-CONTROL-CLOSURE-LUC-5697
 - Status: VERIFIED_DONE
 - Selected objective: Close local source control for the

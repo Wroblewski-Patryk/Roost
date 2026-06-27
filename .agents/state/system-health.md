@@ -1,5 +1,18 @@
 # System Health
 
+- 2026-06-28: [LUC-5701](/LUC/issues/LUC-5701) known-state evidence refresh is
+  green locally in the Roost PM lane. Architecture-awareness refresh PASS
+  (`2026-06-27T22:38:36.031Z`, `2520` entities / `5475` relations /
+  `16085` files); app-completion refresh PASS (`2026-06-27T22:38:43.896Z`,
+  `910` items / `7` flows / `880` missing test links / `0` missing doc links
+  / `0` blocked records). `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `git diff --check` PASS with LF-to-CRLF warnings only. No local server,
+  browser, database, Docker, push, deploy, restart, protected smoke, provider
+  action, credential access, secret disclosure, or watcher process was
+  started.
+
 - 2026-06-28: [LUC-5698](/LUC/issues/LUC-5698) closed local source control for
   the [LUC-5697](/LUC/issues/LUC-5697) known-state generated/status/state
   packet. Closure packet:

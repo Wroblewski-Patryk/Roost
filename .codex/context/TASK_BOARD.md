@@ -2,6 +2,21 @@
 
 ## Now
 
+- 2026-06-28: `LUC-5701` Roost known-state evidence and architecture baseline
+  is complete locally. Output:
+  `docs/planning/luc-5701-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS (`2520` entities / `5475`
+  relations / `16085` files, generated `2026-06-27T22:38:36.031Z`);
+  app-completion refresh PASS (`910` items / `7` flows / `880` missing test
+  links / `0` missing doc links / `0` blocked records, generated
+  `2026-06-27T22:38:43.896Z`); `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, queues `0`, delta `0/0/0`); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `git diff --check` PASS with LF-to-CRLF warnings only. Disposition: no new
+  product repair or duplicate QA lane is warranted from this baseline alone.
+  Top-200 runtime rows remain Account access and Dashboard overview, already
+  classified by recent proof lanes. Deploy impact none.
+
 - 2026-06-28: `LUC-5698` source-control closure for the
   [LUC-5697](/LUC/issues/LUC-5697) evidence packet is complete locally.
   Output:

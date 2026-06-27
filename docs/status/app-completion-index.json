@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-06-27T22:28:09.462Z",
+  "generatedAt": "2026-06-27T22:38:43.896Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
   "counts": {
-    "items": 902,
+    "items": 910,
     "flows": 7,
     "needsBrowserReview": 0,
-    "missingTestLink": 873,
+    "missingTestLink": 880,
     "missingDocLink": 0,
     "blocked": 0
   },
@@ -45,14 +45,14 @@
     },
     {
       "userFlow": "Subscription and entitlement",
-      "total": 554,
+      "total": 562,
       "risks": {
-        "missing_test_link": 528,
-        "implemented_needs_proof": 22,
+        "missing_test_link": 535,
+        "implemented_needs_proof": 23,
         "ok": 4
       },
       "gates": {
-        "subscription": 554,
+        "subscription": 562,
         "configuration": 18,
         "auth": 4
       }

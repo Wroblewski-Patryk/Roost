@@ -1,5 +1,24 @@
 # PROJECT_STATE
 
+- 2026-06-28: `LUC-5701` Roost known-state evidence and architecture baseline
+  completed locally in the Roost PM lane. Output:
+  `docs/planning/luc-5701-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS generated
+  `2026-06-27T22:38:36.031Z` with `2520` entities / `5475` relations /
+  `16085` files and scanner overrides applied (`16` entity / `3` relation);
+  app-completion refresh PASS generated `2026-06-27T22:38:43.896Z` with
+  `910` items / `7` flows / `880` missing test links / `0` missing doc links
+  / `0` blocked records. `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, queue `0`, worklist `0`, delta `0/0/0`, all gates pass);
+  `npm run check:route-capabilities` PASS (`180` manifest routes / `35` route
+  files); `git diff --check` PASS with LF-to-CRLF warnings only. Current
+  top-200 app-completion split is `126` document/agent rows and `74` runtime
+  rows; runtime rows are still Account access (`68`) and Dashboard overview
+  (`6`), already covered by recent proof lanes. No product code, scanner code
+  repair, schema, migration, runtime server, browser, database, Docker, push,
+  deploy, restart, protected smoke, production mutation, provider action,
+  credential access, or secret disclosure occurred. Deploy impact none.
+
 - 2026-06-28: `LUC-5698` source-control closure for the
   [LUC-5697](/LUC/issues/LUC-5697) evidence packet completed locally. Output:
   `docs/planning/luc-5698-source-control-closure-for-luc-5697-evidence-packet.md`.
