@@ -90,6 +90,66 @@
       ]
     },
     {
+      "path": "src/app.ts",
+      "description": "Express application composition and route mounting entry point; behavior proof belongs to mounted route/module tests.",
+      "evidence": [
+        "docs/architecture/system-architecture.md",
+        "docs/planning/luc-1680-api-route-confidence-matrix.md"
+      ]
+    },
+    {
+      "path": "src/db/prisma.ts",
+      "description": "Prisma client infrastructure for the backend data layer; schema and runtime behavior are covered by database and local testing documentation.",
+      "evidence": [
+        "docs/DATABASE.md",
+        "docs/engineering/testing.md",
+        "docs/planning/luc-3544-task-link-classification-for-unlinked-implementation-rows.md"
+      ]
+    },
+    {
+      "path": "src/integrations/clickup/webhook-signature.ts",
+      "description": "ClickUp webhook signature support; integration contract evidence lives in generated integration architecture and ClickUp provider proof planning.",
+      "evidence": [
+        "docs/architecture/nodes/generated/INT-AUTO-0006.md",
+        "docs/planning/luc-5427-clickup-provider-task-sync-proof-ladder.md"
+      ]
+    },
+    {
+      "path": "src/integrations/integration-settings.service.ts",
+      "description": "Workspace integration-settings service used by configuration flows; provider behavior remains covered by settings and authority proof packets.",
+      "evidence": [
+        "docs/architecture/nodes/generated/SVC-AUTO-0001.md",
+        "docs/architecture/nodes/generated/INT-AUTO-0012.md",
+        "docs/planning/luc-5984-auth-subscription-configuration-authority-risk-review.md"
+      ]
+    },
+    {
+      "path": "src/integrations/secrets.ts",
+      "description": "Encrypted integration secret infrastructure; security behavior is documented in the security baseline and authority risk review.",
+      "evidence": [
+        "docs/architecture/nodes/generated/INT-AUTO-0013.md",
+        "docs/security/security-baseline.md",
+        "docs/planning/luc-5984-auth-subscription-configuration-authority-risk-review.md"
+      ]
+    },
+    {
+      "path": "src/modules/events/event.service.ts",
+      "description": "Event service infrastructure used by audited domain actions; behavior proof belongs to the consuming command routes and event evidence contracts.",
+      "evidence": [
+        "docs/architecture/nodes/generated/SVC-AUTO-0002.md",
+        "docs/planning/v1-architecture-control-map.md"
+      ]
+    },
+    {
+      "path": "src/operating-model/catalog.ts",
+      "description": "Operating-model catalog infrastructure for CompanyCore registry metadata; behavior is documented in the operating model architecture and stage task contracts.",
+      "evidence": [
+        "docs/architecture/companycore-business-module-map.md",
+        "docs/planning/company-os-stage1-task-contracts.md",
+        "docs/planning/v1-architecture-control-map.md"
+      ]
+    },
+    {
       "path": "docs/NEXT_STEPS.md",
       "status": "verified",
       "description": "Historical and canonical queue index. The scanner must not treat its `Blocked Work` queue section as document-level blocked status.",

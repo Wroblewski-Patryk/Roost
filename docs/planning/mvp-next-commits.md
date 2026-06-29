@@ -1,5 +1,680 @@
 # MVP Next Commits
 
+- 2026-06-28: [LUC-6092](/LUC/issues/LUC-6092) completed local Roost
+  known-state evidence and architecture baseline. Evidence packet:
+  `docs/planning/luc-6092-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T22:16:20.399Z` with `2670` entities / `6040` relations /
+  `16239` files; app-completion refresh PASS generated
+  `2026-06-28T22:16:30.970Z` with `1054` items / `7` flows / `1013`
+  missing test links / `0` missing doc links / `0` blocked records / `0`
+  browser-review records; `npm run architecture:status` PASS; `npm run
+  check:route-capabilities` PASS; `git diff --check` PASS with LF-to-CRLF
+  warnings only. No product implementation follows from this baseline alone.
+  Next lane is [LUC-6100](/LUC/issues/LUC-6100) Documentation/source-control
+  closure for this generated/status packet. Push/deploy/protected smoke held.
+
+- 2026-06-28: [LUC-6068](/LUC/issues/LUC-6068) completed local Roost
+  known-state evidence and architecture baseline. Evidence packet:
+  `docs/planning/luc-6068-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T21:44:11.397Z` with `2667` entities / `6030` relations /
+  `16236` files; app-completion refresh PASS generated
+  `2026-06-28T21:44:19.406Z` with `1051` items / `7` flows / `1010`
+  missing test links / `0` missing doc links / `0` blocked records / `0`
+  browser-review records; `npm run architecture:status` PASS; `npm run
+  check:route-capabilities` PASS; `git diff --check` PASS with LF-to-CRLF
+  warnings only. No product implementation follows from this baseline alone.
+  Next lane is [LUC-6069](/LUC/issues/LUC-6069) Documentation/source-control
+  closure for this generated/status packet. Push/deploy/protected smoke held.
+
+- 2026-06-28: [LUC-6061](/LUC/issues/LUC-6061) completed source-control
+  closure for the [LUC-6050](/LUC/issues/LUC-6050) evidence packet. Output:
+  `docs/planning/luc-6061-source-control-closure-for-luc-6050-evidence-packet.md`.
+  Proof: parent packet readback PASS; current generated architecture and
+  app-completion readback PASS; `git diff --check` PASS with LF-to-CRLF
+  warnings only; branch readback `main...origin/main [ahead 129]`; divergence
+  `0 129`; HEAD `a939a028d316529c4bb2e936b37c6a9bd2334d29`. Commit not
+  created because the generated/status artifacts are no longer isolatable to
+  [LUC-6050](/LUC/issues/LUC-6050), the shared worktree includes unrelated
+  `src/tests/api.test.ts` and older untracked evidence artifacts, and `main`
+  is already `129` commits ahead of origin. Push/deploy/protected smoke held;
+  deploy impact none; no next owner remains for [LUC-6061](/LUC/issues/LUC-6061).
+
+- 2026-06-28: [LUC-6060](/LUC/issues/LUC-6060) completed app-completion
+  evidence-link curation after [LUC-6054](/LUC/issues/LUC-6054). Output:
+  `docs/planning/luc-6060-app-completion-evidence-link-curation-after-luc-6054.md`.
+  Proof: seven implementation infrastructure missing-doc rows were linked via
+  `docs/architecture/scanner-overrides.json`; architecture-awareness refresh
+  PASS (`2664` entities / `6016` relations / `16233` files); app-completion
+  refresh PASS (`1048` items / `7` flows / `1007` missing test links / `0`
+  missing doc links / `0` blocked / `0` browser-review records);
+  `npm run architecture:status` PASS; `git diff --check` PASS with
+  LF-to-CRLF warnings only. No product implementation, protected action,
+  push, deploy, or runtime mutation. No next owner remains for
+  [LUC-6060](/LUC/issues/LUC-6060).
+
+- 2026-06-28: [LUC-6050](/LUC/issues/LUC-6050) completed local Roost
+  known-state evidence and architecture baseline. Evidence packet:
+  `docs/planning/luc-6050-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T21:07:06.067Z` with `2657` entities / `5988` relations /
+  `16226` files; app-completion refresh PASS generated
+  `2026-06-28T21:07:14.491Z` with `1041` items / `7` flows / `1001` missing
+  test links / `7` missing doc links / `0` blocked records / `0`
+  browser-review records; `npm run architecture:status` PASS; `npm run
+  check:route-capabilities` PASS; `git diff --check` PASS with LF-to-CRLF
+  warnings only. No product implementation follows from this baseline alone.
+  Next lane is [LUC-6061](/LUC/issues/LUC-6061) Documentation/source-control
+  closure for this generated/status packet. Push/deploy/protected smoke held.
+
+- 2026-06-28: [LUC-6052](/LUC/issues/LUC-6052) completed app-completion
+  proof/doc-link curation after [LUC-6036](/LUC/issues/LUC-6036). Output:
+  `docs/planning/luc-6052-app-completion-proof-doc-link-curation-after-luc-6036.md`.
+  Proof: current app-completion readback generated
+  `2026-06-28T21:07:14.491Z` with `1041` items / `7` flows / `1001` missing
+  test links / `7` missing doc links / `0` blocked / `0` browser-review
+  records; the seven missing-doc rows classify as implementation
+  infrastructure doc/scanner-link debt; `/auth`, `/v1/auth`, and `/dashboard`
+  map to existing proof packets. No fresh nonduplicated QA/runtime target
+  remains. Push/deploy/protected smoke held; deploy impact none.
+
+- 2026-06-28: [LUC-6049](/LUC/issues/LUC-6049) completed local Roost
+  known-state evidence and architecture baseline. Evidence packet:
+  `docs/planning/luc-6049-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T21:05:12.376Z` with `2655` entities / `5982` relations /
+  `16224` files; app-completion refresh PASS generated
+  `2026-06-28T21:05:20.705Z` with `1039` items / `7` flows / `999` missing
+  test links / `7` missing doc links / `0` blocked records / `0`
+  browser-review records; `npm run architecture:status` PASS; `npm run
+  check:route-capabilities` PASS; `git diff --check` PASS with LF-to-CRLF
+  warnings only. No product implementation follows from this baseline alone.
+  Next owner: [LUC-6056](/LUC/issues/LUC-6056) Documentation Steward
+  source-control closure for this generated/status packet. Push/deploy/
+  protected smoke held.
+
+- 2026-06-28: [LUC-6023](/LUC/issues/LUC-6023) completed app-completion
+  proof-link/doc-link curation after [LUC-6019](/LUC/issues/LUC-6019).
+  Evidence packet:
+  `docs/planning/luc-6023-app-completion-proof-link-doc-link-curation-after-luc-6019.md`.
+  Proof: app-completion readback confirmed `1034` items / `7` flows / `994`
+  missing test links / `7` missing doc links / `0` blocked / `0`
+  browser-review records generated `2026-06-28T16:07:56.654Z`; top `200`
+  priority rows split into Account access `89`, Dashboard overview `6`,
+  Exchange configuration `1`, and Subscription/entitlement `104`; seven
+  missing-doc-link rows are implementation infrastructure doc/scanner-link
+  debt; `/auth`, `/v1/auth`, and `/dashboard` map to existing proof packets.
+  No fresh QA/runtime repair lane remains for this snapshot. Push/deploy/
+  protected smoke held.
+
+- 2026-06-28: [LUC-6019](/LUC/issues/LUC-6019) completed local Roost
+  known-state evidence and architecture baseline. Evidence packet:
+  `docs/planning/luc-6019-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T16:07:22.751Z` with `2650` entities / `5962` relations /
+  `16219` files; app-completion refresh PASS generated
+  `2026-06-28T16:07:56.654Z` with `1034` items / `7` flows / `994` missing
+  test links / `7` missing doc links / `0` blocked records / `0`
+  browser-review records; `npm run architecture:status` PASS; `npm run
+  check:route-capabilities` PASS; `git diff --check` PASS with LF-to-CRLF
+  warnings only. No product implementation follows from this baseline alone.
+  Next repair lanes are [LUC-6022](/LUC/issues/LUC-6022) source-control
+  closure for this generated/status packet and
+  [LUC-6023](/LUC/issues/LUC-6023) app-completion proof-link/doc-link curation
+  for the refreshed missing-doc links and top priority proof-link rows.
+  Push/deploy/protected smoke held.
+
+- 2026-06-28: [LUC-6001](/LUC/issues/LUC-6001) completed local Roost
+  known-state evidence and architecture baseline. Evidence packet:
+  `docs/planning/luc-6001-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T15:06:59.430Z` with `2644` entities / `5938` relations /
+  `16213` files; app-completion refresh PASS generated
+  `2026-06-28T15:07:24.394Z` with `1028` items / `7` flows / `988` missing
+  test links / `7` missing doc links / `0` blocked records / `0`
+  browser-review records; `npm run architecture:status` PASS; `npm run
+  check:route-capabilities` PASS; `git diff --check` PASS with LF-to-CRLF
+  warnings only. No product implementation follows from this baseline alone.
+  Next repair lane is [LUC-6006](/LUC/issues/LUC-6006) Documentation Steward
+  source-control closure for this generated/status packet. Push/deploy/
+  protected smoke held.
+
+- 2026-06-28: [LUC-5988](/LUC/issues/LUC-5988) completed local Roost
+  known-state evidence and architecture baseline. Evidence packet:
+  `docs/planning/luc-5988-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T14:39:58.101Z` with `2640` entities / `5922` relations /
+  `16209` files; app-completion refresh PASS after one transient Windows
+  output-file retry generated `2026-06-28T14:40:50.857Z` with `1024` items /
+  `7` flows / `984` missing test links / `7` missing doc links / `0` blocked
+  records / `0` browser-review records; `npm run architecture:status` PASS;
+  `npm run check:route-capabilities` PASS; `git diff --check` PASS with
+  LF-to-CRLF warnings only. No product implementation follows from this
+  baseline alone. Next repair lanes are [LUC-5991](/LUC/issues/LUC-5991)
+  Documentation Steward source-control closure for this generated/status packet
+  and [LUC-5992](/LUC/issues/LUC-5992) TSA app-completion evidence-link
+  curation for the refreshed missing-doc links and top priority proof-link
+  rows. Push/deploy/protected smoke held.
+
+- 2026-06-28: [LUC-5982](/LUC/issues/LUC-5982) completed source-control
+  closure for the [LUC-5980](/LUC/issues/LUC-5980) architecture evidence
+  refresh. Closure packet:
+  `docs/planning/luc-5982-source-control-closure-for-luc-5980-evidence-refresh.md`.
+  Proof: parent scan context confirmed `2636` entities / `5907` relations /
+  `16205` files; generated architecture readback PASS from
+  `docs/graphs/architecture-awareness.json` and
+  `docs/graphs/architecture-health.json` at `2026-06-28T14:15:05.233Z`;
+  scoped generated diff stat for the ten parent files was `34807` insertions /
+  `28741` deletions; `git diff --check` PASS with LF-to-CRLF warnings only;
+  branch readback `main...origin/main [ahead 129]`; divergence `0 129`; HEAD
+  `a939a028`. Commit not created due to mixed-dirty shared worktree and ahead
+  branch. Push not needed; deploy impact none.
+
+- 2026-06-28: [LUC-5977](/LUC/issues/LUC-5977) completed source-control
+  closure for the [LUC-5974](/LUC/issues/LUC-5974) known-state evidence
+  packet. Closure packet:
+  `docs/planning/luc-5977-source-control-closure-for-luc-5974-evidence-packet.md`.
+  Proof: parent packet readback PASS; generated architecture readback PASS
+  (`2634` entities / `5899` relations generated
+  `2026-06-28T14:04:39.578Z`); app-completion readback PASS (`1018` items /
+  `7` flows / `979` missing test links / `7` missing doc links / `0`
+  blocked generated `2026-06-28T14:05:10.291Z`); `git diff --check` PASS with
+  LF-to-CRLF warnings only; branch readback `main...origin/main [ahead 129]`;
+  divergence `0 129`; HEAD `a939a028`. Commit not created due to mixed-dirty
+  shared worktree and ahead branch. Push not needed; deploy impact none.
+
+- 2026-06-28: [LUC-5970](/LUC/issues/LUC-5970) completed local Roost
+  known-state evidence and architecture baseline. Evidence packet:
+  `docs/planning/luc-5970-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T13:44:31.688Z` with `2631` entities / `5887` relations /
+  `16200` files; app-completion refresh PASS generated
+  `2026-06-28T13:44:52.939Z` with `1015` items / `7` flows / `976`
+  missing test links / `7` missing doc links / `0` blocked records / `0`
+  browser-review records; `npm run architecture:status` PASS; `npm run
+  check:route-capabilities` PASS; `git diff --check` PASS with LF-to-CRLF
+  warnings only. No product implementation follows from this baseline alone.
+  Next repair lanes are [LUC-5971](/LUC/issues/LUC-5971) source-control
+  closure for this generated/status packet and [LUC-5972](/LUC/issues/LUC-5972)
+  app-completion evidence-link curation for the refreshed missing-doc links and
+  top priority proof-link rows. Push/deploy/protected smoke held.
+
+- 2026-06-28: [LUC-5963](/LUC/issues/LUC-5963) completed local Roost
+  known-state evidence and architecture baseline. Evidence packet:
+  `docs/planning/luc-5963-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T13:16:20.107Z` with `2627` entities / `5873` relations /
+  `16196` files; app-completion refresh PASS generated
+  `2026-06-28T13:17:04.687Z` with `1011` items / `7` flows / `972`
+  missing test links / `7` missing doc links / `0` blocked records / `0`
+  browser-review records; `npm run architecture:status` PASS; `npm run
+  check:route-capabilities` PASS; `git diff --check` PASS with LF-to-CRLF
+  warnings only. No product implementation follows from this baseline alone.
+  Next repair lanes are [LUC-5965](/LUC/issues/LUC-5965) source-control
+  closure for this generated/status packet and [LUC-5966](/LUC/issues/LUC-5966)
+  app-completion evidence-link curation for the refreshed missing-doc links and
+  top priority proof-link rows. Push/deploy/protected smoke held.
+
+- 2026-06-28: [LUC-5962](/LUC/issues/LUC-5962) completed app-completion
+  evidence-link curation after the [LUC-5957](/LUC/issues/LUC-5957) baseline.
+  Evidence packet:
+  `docs/planning/luc-5962-app-completion-evidence-link-curation-after-luc-5957.md`.
+  Proof: app-completion readback PASS generated `2026-06-28T13:08:00.007Z`
+  with `1008` items / `7` flows / `969` missing test links / `7` missing doc
+  links / `0` blocked / `0` browser-review records. Reconstructed
+  missing-doc-link rows are tested implementation/infrastructure records, and
+  route-shaped rows `/auth`, `/v1/auth`, and `/dashboard` map to existing
+  proof packets. Decision: no fresh nonduplicated QA target from this snapshot;
+  aggregate debt remains docs/proof-link scanner curation until a future
+  refresh exposes a concrete unverified runtime row or fresh regression.
+  Push/deploy/protected smoke not needed.
+
+- 2026-06-28: [LUC-5953](/LUC/issues/LUC-5953) completed app-completion
+  doc-link/proof-link curation after the [LUC-5950](/LUC/issues/LUC-5950)
+  baseline. Evidence packet:
+  `docs/planning/luc-5953-app-completion-doc-link-proof-link-curation-after-luc-5950.md`.
+  Proof: app-completion readback PASS generated `2026-06-28T12:48:01.818Z`
+  with `1004` items / `7` flows / `965` missing test links / `7` missing doc
+  links / `0` blocked / `0` browser-review records. Reconstructed
+  missing-doc-link rows are tested implementation/infrastructure records, and
+  route-shaped rows `/auth`, `/v1/auth`, and `/dashboard` map to existing
+  proof packets. Decision: no fresh nonduplicated QA target from this snapshot;
+  aggregate debt remains docs/proof-link scanner curation until a future
+  refresh exposes a concrete unverified runtime row or fresh regression.
+  Push/deploy/protected smoke not needed.
+
+- 2026-06-28: [LUC-5951](/LUC/issues/LUC-5951) completed local Roost
+  known-state evidence and architecture baseline. Evidence packet:
+  `docs/planning/luc-5951-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T12:47:44.980Z` with `2620` entities / `5847` relations /
+  `16189` files; app-completion refresh PASS generated
+  `2026-06-28T12:48:01.818Z` with `1004` items / `7` flows / `965`
+  missing test links / `7` missing doc links / `0` blocked records / `0`
+  browser-review records; `npm run architecture:status` PASS; `npm run
+  check:route-capabilities` PASS; `git diff --check` PASS with LF-to-CRLF
+  warnings only. No product implementation follows from this baseline alone.
+  Next repair lanes are [LUC-5954](/LUC/issues/LUC-5954) source-control
+  closure for this generated/status packet and existing
+  [LUC-5953](/LUC/issues/LUC-5953) app-completion doc-link/proof-link curation
+  for the refreshed missing-doc links plus repeated route/proof families.
+  Push/deploy/protected smoke held.
+
+- 2026-06-28: [LUC-5950](/LUC/issues/LUC-5950) completed local Roost
+  known-state evidence and architecture baseline after local-board requested
+  evidence collection and concrete repair lanes. Evidence packet:
+  `docs/planning/luc-5950-known-state-evidence-and-architecture-baseline.md`.
+  Proof: architecture-awareness scanner/readback PASS generated
+  `2026-06-28T12:47:44.980Z` with `2620` entities / `5847` relations;
+  app-completion refresh/readback PASS generated
+  `2026-06-28T12:48:01.818Z` with `1004` items / `7` flows / `965` missing
+  test links / `7` missing doc links / `0` blocked / `0` browser-review
+  records; `npm run architecture:status` PASS; `npm run
+  check:route-capabilities` PASS; `git diff --check` PASS with LF-to-CRLF
+  warnings only. No product implementation follows from this baseline alone.
+  Next repair lanes are [LUC-5952](/LUC/issues/LUC-5952) source-control
+  closure and [LUC-5953](/LUC/issues/LUC-5953) app-completion doc-link/
+  proof-link curation. Push/deploy/protected smoke held.
+
+- 2026-06-28: [LUC-5940](/LUC/issues/LUC-5940) completed app-completion
+  proof-link curation after the [LUC-5937](/LUC/issues/LUC-5937) baseline.
+  Evidence packet:
+  `docs/planning/luc-5940-app-completion-proof-link-curation-after-luc-5937.md`.
+  Proof: app-completion readback PASS generated
+  `2026-06-28T12:02:46.825Z` with `998` items / `7` flows / `966` missing
+  test links / `0` missing doc links / `0` blocked / `0` browser-review
+  records; top `200` priority rows split into Account access `88`, Dashboard
+  overview `6`, Exchange configuration `1`, and Subscription/entitlement
+  `105`; runtime-shaped rows are limited to Account access `68` and Dashboard
+  overview `6`; route-shaped rows `/auth`, `/v1/auth`, and `/dashboard` map
+  to existing proof packets. Decision: no fresh nonduplicated QA target from
+  this snapshot; aggregate missing-test debt remains proof-link/scanner
+  curation until a future refresh exposes a concrete unverified runtime row or
+  fresh regression. Push/deploy/protected smoke not needed.
+
+- 2026-06-28: [LUC-5937](/LUC/issues/LUC-5937) completed local Roost
+  known-state evidence and architecture baseline. Evidence packet:
+  `docs/planning/luc-5937-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T12:02:39.357Z` with `2614` entities / `5823` relations /
+  `16183` files; app-completion refresh PASS generated
+  `2026-06-28T12:02:46.825Z` with `998` items / `7` flows / `966` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Next repair lanes are
+  [LUC-5939](/LUC/issues/LUC-5939) source-control closure for this
+  generated/status/planning packet and [LUC-5940](/LUC/issues/LUC-5940)
+  app-completion proof-link curation for repeated route/proof families.
+  Push/deploy/protected smoke held.
+
+- 2026-06-28: [LUC-5932](/LUC/issues/LUC-5932) closed local source-control
+  posture for the [LUC-5931](/LUC/issues/LUC-5931) evidence packet. Output:
+  `docs/planning/luc-5932-source-control-closure-for-luc-5931-evidence-packet.md`.
+  Proof: [LUC-5931](/LUC/issues/LUC-5931) packet readback PASS; current
+  app-completion readback PASS (`994` items / `7` flows / `963` missing test
+  links generated `2026-06-28T11:44:09.779Z`); current architecture readback
+  PASS (`2610` entities / `5809` relations generated
+  `2026-06-28T11:43:49.594Z`); `git diff --check` PASS with LF-to-CRLF
+  warnings only; branch divergence `0 129`; HEAD `a939a028`. Commit not
+  created because the shared worktree is mixed-dirty and branch is `129`
+  commits ahead of origin. Push not needed; deploy impact none.
+
+- 2026-06-28: [LUC-5912](/LUC/issues/LUC-5912) completed local Roost
+  known-state evidence and architecture baseline. Evidence packet:
+  `docs/planning/luc-5912-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T10:28:32.916Z` with `2601` entities / `5773` relations /
+  `16170` files; app-completion refresh PASS generated
+  `2026-06-28T10:28:44.979Z` with `985` items / `7` flows / `954` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Next repair lanes are
+  [LUC-5913](/LUC/issues/LUC-5913) source-control closure for this
+  generated/status/planning packet and [LUC-5914](/LUC/issues/LUC-5914)
+  app-completion evidence-link curation after this baseline.
+  Push/deploy/protected smoke held.
+
+- 2026-06-28: [LUC-5908](/LUC/issues/LUC-5908) closed local source-control
+  posture for the [LUC-5904](/LUC/issues/LUC-5904) evidence packet. Output:
+  `docs/planning/luc-5908-source-control-closure-for-luc-5904-evidence-packet.md`.
+  Proof: [LUC-5904](/LUC/issues/LUC-5904) packet readback PASS; current
+  app-completion readback PASS (`983` items / `7` flows / `952` missing test
+  links generated `2026-06-28T10:12:24.779Z`); current architecture readback
+  PASS (`2599` entities / `5765` relations generated
+  `2026-06-28T10:11:51.955Z`); `git diff --check` PASS with LF-to-CRLF
+  warnings only; branch divergence `0 129`; HEAD `a939a028`. Commit not
+  created because the shared worktree is mixed-dirty and branch is `129`
+  commits ahead of origin. Push not needed; deploy impact none.
+
+- 2026-06-28: [LUC-5904](/LUC/issues/LUC-5904) known-state evidence and
+  architecture baseline completed locally. Packet:
+  `docs/planning/luc-5904-known-state-evidence-and-architecture-baseline.md`.
+  Proof: architecture-awareness refresh PASS (`2599` entities / `5765`
+  relations / `16168` files); app-completion refresh PASS after one transient
+  Windows file-open retry (`983` items / `7` flows / `952` missing test links
+  / `0` missing doc links / `0` blocked); `npm run architecture:status` PASS;
+  `npm run check:route-capabilities` PASS; `git diff --check` PASS with
+  LF-to-CRLF warnings only. Next owner: [LUC-5908](/LUC/issues/LUC-5908)
+  Documentation Steward source-control closure for the generated/status
+  packet.
+
+- 2026-06-28: `LUC-5885` completed app-completion evidence-link curation after
+  the [LUC-5883](/LUC/issues/LUC-5883) baseline. Evidence packet:
+  `docs/planning/luc-5885-app-completion-evidence-link-curation-after-luc-5883.md`.
+  Proof: app-completion readback PASS generated
+  `2026-06-28T08:43:09.905Z` with `972` items / `7` flows / `941` missing
+  test links / `0` missing doc links / `0` blocked / `0` browser-review
+  records; top `200` priority rows split into Account access `88`, Dashboard
+  overview `6`, Exchange configuration `1`, and Subscription/entitlement
+  `105`; route-shaped rows `/auth`, `/v1/auth`, and `/dashboard` map to
+  existing proof packets. Decision: no fresh non-duplicated QA target from
+  this snapshot. Push/deploy/protected smoke held.
+
+- 2026-06-28: `LUC-5883` completed local Roost known-state evidence and
+  architecture baseline. Evidence packet:
+  `docs/planning/luc-5883-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T08:43:09.904Z` with `2591` entities / `5733` relations /
+  `16160` files; app-completion refresh PASS generated
+  `2026-06-28T08:43:09.905Z` with `972` items / `7` flows / `941` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Next repair lanes are source-control
+  closure for this generated/status/planning packet and app-completion
+  evidence-link curation after this baseline:
+  [LUC-5884](/LUC/issues/LUC-5884) and
+  [LUC-5885](/LUC/issues/LUC-5885). Push/deploy/protected smoke held.
+
+- 2026-06-28: `LUC-5845` completed local Roost known-state evidence and
+  architecture baseline. Evidence packet:
+  `docs/planning/luc-5845-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T06:42:55.680Z` with `2577` entities / `5680` relations /
+  `16146` files; app-completion refresh PASS generated
+  `2026-06-28T06:43:03.524Z` with `961` items / `7` flows / `930` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Source-control closure sidecar
+  [LUC-5847](/LUC/issues/LUC-5847) is assigned to Documentation Steward for
+  this generated/status/planning packet. Push/deploy/protected smoke held.
+
+- 2026-06-28: `LUC-5819` completed local Roost known-state evidence and
+  architecture baseline. Evidence packet:
+  `docs/planning/luc-5819-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T06:03:11.025Z` with `2570` entities / `5652` relations /
+  `16139` files; app-completion refresh PASS generated
+  `2026-06-28T06:03:17.735Z` with `954` items / `7` flows / `923` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Next commit candidate is source-control
+  closure for this generated/status/planning packet via
+  [LUC-5821](/LUC/issues/LUC-5821). Push/deploy/protected smoke held.
+
+- 2026-06-28: `LUC-5815` completed local Roost known-state evidence and
+  architecture baseline. Evidence packet:
+  `docs/planning/luc-5815-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T05:42:18.323Z` with `2568` entities / `5644` relations /
+  `16137` files; app-completion refresh PASS generated
+  `2026-06-28T05:42:24.003Z` with `952` items / `7` flows / `921` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Next commit candidate is source-control
+  closure for this generated/status/planning packet via
+  [LUC-5816](/LUC/issues/LUC-5816). Push/deploy/protected smoke held.
+
+- 2026-06-28: `LUC-5805` completed local Roost known-state evidence and
+  architecture baseline. Evidence packet:
+  `docs/planning/luc-5805-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T04:43:13.445Z` with `2564` entities / `5632` relations /
+  `16133` files; app-completion refresh PASS generated
+  `2026-06-28T04:43:20.082Z` with `948` items / `7` flows / `917` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Next commit candidate is source-control
+  closure for this generated/status/planning packet via
+  [LUC-5807](/LUC/issues/LUC-5807). Push/deploy/protected smoke held.
+
+- 2026-06-28: `LUC-5802` closed local source-control posture for the
+  [LUC-5801](/LUC/issues/LUC-5801) evidence packet. Output:
+  `docs/planning/luc-5802-source-control-closure-for-luc-5801-evidence-packet.md`.
+  Proof: [LUC-5801](/LUC/issues/LUC-5801) packet readback PASS; current
+  architecture/app-completion generated readback PASS (`2562` entities /
+  `5624` relations; `946` items / `7` flows / `915` missing test links);
+  `npm run architecture:status` PASS; `npm run check:route-capabilities`
+  PASS; `git diff --check` PASS with LF-to-CRLF warnings only. Commit not
+  created because the shared worktree is mixed-dirty, includes unrelated
+  `src/tests/api.test.ts`, older untracked planning/UX evidence artifacts, and
+  `main` is `128` commits ahead of origin. Push not needed; deploy impact none.
+
+- 2026-06-28: `LUC-5795` closed local source-control posture for the
+  [LUC-5794](/LUC/issues/LUC-5794) evidence packet. Output:
+  `docs/planning/luc-5795-source-control-closure-for-luc-5794-evidence-packet.md`.
+  Proof: [LUC-5794](/LUC/issues/LUC-5794) packet readback PASS; current
+  architecture/app-completion generated readback PASS (`2560` entities /
+  `5616` relations; `944` items / `7` flows / `913` missing test links);
+  `npm run architecture:status` PASS; `npm run check:route-capabilities`
+  PASS; `git diff --check` PASS with LF-to-CRLF warnings only. Commit not
+  created because the shared worktree is mixed-dirty, includes unrelated
+  `src/tests/api.test.ts`, older untracked planning/UX evidence artifacts, and
+  `main` is `128` commits ahead of origin. Push not needed; deploy impact none.
+
+- 2026-06-28: `LUC-5783` completed local Roost known-state evidence and
+  architecture baseline. Evidence packet:
+  `docs/planning/luc-5783-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T03:12:29.385Z` with `2556` entities / `5604` relations /
+  `16125` files; app-completion refresh PASS generated
+  `2026-06-28T03:12:38.677Z` with `940` items / `7` flows / `909` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Next commit candidate is source-control
+  closure for this generated/status/planning packet via
+  [LUC-5784](/LUC/issues/LUC-5784). Push/deploy/protected smoke held.
+
+- 2026-06-28: `LUC-5777` completed local Roost known-state evidence and
+  architecture baseline. Evidence packet:
+  `docs/planning/luc-5777-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T02:42:27.708Z` with `2550` entities / `5580` relations /
+  `16119` files; app-completion refresh PASS generated
+  `2026-06-28T02:42:41.423Z` with `934` items / `7` flows / `903` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Next commit candidates are source-control
+  closure for this generated/status packet and one narrow QA/Test proof lane
+  selected from current app-completion missing-test-link debt. Push/deploy/
+  protected smoke held.
+
+- 2026-06-28: `LUC-5762` closed local source-control posture for the
+  [LUC-5759](/LUC/issues/LUC-5759) evidence packet. Output:
+  `docs/planning/luc-5762-source-control-closure-for-luc-5759-evidence-packet.md`.
+  Proof: [LUC-5759](/LUC/issues/LUC-5759) packet readback PASS; current
+  generated architecture/app-completion readback PASS with later
+  [LUC-5758](/LUC/issues/LUC-5758) shared-refresh drift; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. Commit not created because
+  the shared worktree is mixed-dirty and `main` is `128` commits ahead of
+  origin. Push held/not needed; deploy impact none.
+
+- 2026-06-28: `LUC-5758` completed the latest Roost known-state evidence and
+  architecture baseline. Evidence packet:
+  `docs/planning/luc-5758-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T02:16:47.007Z` with `2542` entities / `5557` relations /
+  `16107` files; app-completion refresh PASS generated
+  `2026-06-28T02:16:53.040Z` with `932` items / `7` flows / `901` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Source-control closure follow-up
+  [LUC-5765](/LUC/issues/LUC-5765) is assigned to Documentation Steward.
+  Push/deploy/protected smoke held.
+
+- 2026-06-28: `LUC-5759` completed the latest Roost known-state evidence and
+  architecture baseline in the TSA lane. Evidence packet:
+  `docs/planning/luc-5759-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T02:12:36.364Z` with `2539` entities / `5549` relations /
+  `16104` files; app-completion refresh PASS generated
+  `2026-06-28T02:12:43.500Z` with `929` items / `7` flows / `898` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Source-control closure is delegated to
+  [LUC-5762](/LUC/issues/LUC-5762). Push/deploy/protected smoke held.
+
+- 2026-06-28: [LUC-5753](/LUC/issues/LUC-5753) closed local source-control
+  posture for the [LUC-5750](/LUC/issues/LUC-5750) evidence packet. Output:
+  `docs/planning/luc-5753-source-control-closure-for-luc-5750-evidence-packet.md`.
+  Verification passed: generated readback for architecture-awareness and
+  app-completion, `npm run architecture:status`, `npm run
+  check:route-capabilities`, and `git diff --check`. Commit not created
+  because the shared worktree is mixed-dirty and branch is `128` commits ahead
+  of origin. Push/deploy/protected smoke held.
+
+- 2026-06-28: `LUC-5750` completed the latest Roost known-state evidence and
+  architecture baseline. Evidence packet:
+  `docs/planning/luc-5750-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T02:03:46.022Z` with `2536` entities / `5537` relations /
+  `16101` files; app-completion refresh PASS generated
+  `2026-06-28T02:03:53.359Z` with `926` items / `7` flows / `895` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Source-control closure is complete locally
+  via [LUC-5753](/LUC/issues/LUC-5753). Push/deploy/protected smoke held.
+
+- 2026-06-28: [LUC-5748](/LUC/issues/LUC-5748) closed local source-control
+  posture for the [LUC-5747](/LUC/issues/LUC-5747) evidence packet. Output:
+  `docs/planning/luc-5748-source-control-closure-for-luc-5747-evidence-packet.md`.
+  Verification passed: generated readback for architecture-awareness and
+  app-completion, `npm run architecture:status`, `npm run
+  check:route-capabilities`, and `git diff --check`. Commit not created
+  because the shared worktree is mixed-dirty and branch is `128` commits ahead
+  of origin. Push/deploy/protected smoke held.
+
+- 2026-06-28: `LUC-5747` completed the latest Roost known-state evidence and
+  architecture baseline. Evidence packet:
+  `docs/planning/luc-5747-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T01:42:12.510Z` with `2534` entities / `5529` relations /
+  `16099` files; app-completion refresh PASS generated
+  `2026-06-28T01:42:20.188Z` with `924` items / `7` flows / `893` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Source-control closure is delegated to
+  [LUC-5748](/LUC/issues/LUC-5748). Push/deploy/protected smoke held.
+
+- 2026-06-28: `LUC-5739` completed the latest Roost known-state evidence and
+  architecture baseline. Evidence packet:
+  `docs/planning/luc-5739-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T01:12:30.817Z` with `2532` entities / `5521` relations /
+  `16097` files; app-completion refresh PASS generated
+  `2026-06-28T01:12:39.927Z` with `922` items / `7` flows / `891` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Source-control closure is delegated to
+  [LUC-5741](/LUC/issues/LUC-5741). Push/deploy/protected smoke held.
+
+- 2026-06-28: [LUC-5734](/LUC/issues/LUC-5734) closed local source-control
+  posture for the [LUC-5732](/LUC/issues/LUC-5732) evidence packet. Output:
+  `docs/planning/luc-5734-source-control-closure-for-luc-5732-evidence-packet.md`.
+  Verification passed: generated readback for architecture-awareness and
+  app-completion, `npm run architecture:status`, `npm run
+  check:route-capabilities`, and `git diff --check`. Commit not created
+  because the shared worktree is mixed-dirty and branch is `128` commits ahead
+  of origin. Push/deploy/protected smoke held.
+
+- 2026-06-28: `LUC-5732` completed the latest Roost known-state evidence and
+  architecture baseline. Evidence packet:
+  `docs/planning/luc-5732-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T00:42:40.965Z` with `2530` entities / `5513` relations /
+  `16095` files; app-completion refresh PASS generated
+  `2026-06-28T00:42:49.399Z` with `920` items / `7` flows / `889` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Source-control closure is complete locally
+  via [LUC-5734](/LUC/issues/LUC-5734). Push/deploy/protected smoke held.
+
+- 2026-06-28: `LUC-5726` completed the latest Roost known-state evidence and
+  architecture baseline after the local-board wake comment. Evidence packet:
+  `docs/planning/luc-5726-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-28T00:17:23.490Z` with `2528` entities / `5505` relations /
+  `16093` files; app-completion refresh PASS generated
+  `2026-06-28T00:17:23.522Z` with `916` items / `7` flows / `885` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Source-control closure is delegated to
+  [LUC-5728](/LUC/issues/LUC-5728). Push/deploy/protected smoke held.
+
+- 2026-06-28: [LUC-5719](/LUC/issues/LUC-5719) closed local source-control
+  posture for the [LUC-5718](/LUC/issues/LUC-5718) evidence packet. Output:
+  `docs/planning/luc-5719-source-control-closure-for-luc-5718-evidence-packet.md`.
+  Verification passed: generated readback for architecture-health and
+  app-completion, `npm run architecture:status`, `npm run
+  check:route-capabilities`, and `git diff --check`. Commit not created
+  because the shared worktree is mixed-dirty and branch is `128` commits ahead
+  of origin. Push/deploy/protected smoke held.
+
+- 2026-06-28: `LUC-5718` completed the latest Roost known-state evidence and
+  architecture baseline. Evidence packet:
+  `docs/planning/luc-5718-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-27T23:42:25.261Z` with `2526` entities / `5497` relations /
+  `16091` files; app-completion refresh PASS generated
+  `2026-06-27T23:43:09.132Z` with `916` items / `7` flows / `885` missing
+  test links / `0` blocked records / `0` browser-review records; `npm run
+  architecture:status` PASS; `npm run check:route-capabilities` PASS; `git
+  diff --check` PASS with LF-to-CRLF warnings only. No product implementation
+  follows from this baseline alone. Source-control closure is delegated to
+  [LUC-5719](/LUC/issues/LUC-5719). Push/deploy/protected smoke held.
+
+- 2026-06-28: `LUC-5716` closed local source-control posture for the
+  [LUC-5711](/LUC/issues/LUC-5711) evidence packet. Closure packet:
+  `docs/planning/luc-5716-source-control-closure-for-luc-5711-evidence-packet.md`.
+  Proof: generated architecture-health readback PASS (`2522` entities / `5483`
+  relations, generated `2026-06-27T23:17:15.345Z`); app-completion readback
+  PASS (`912` items / `7` flows / `882` missing test links / `0` blocked,
+  generated `2026-06-27T23:17:24.780Z`); `npm run architecture:status` PASS;
+  `npm run check:route-capabilities` PASS; scoped `git diff --check` PASS
+  with LF-to-CRLF warnings only. Commit held because the shared worktree
+  contains unrelated LUC-5713 API-test work and older untracked evidence
+  packets. Push/deploy/protected smoke not needed.
+
+- 2026-06-28: `LUC-5711` completed the latest Roost known-state evidence and
+  architecture baseline. Evidence packet:
+  `docs/planning/luc-5711-known-state-evidence-and-architecture-baseline.md`.
+  Proof: Paperclip architecture-awareness scanner PASS generated
+  `2026-06-27T23:17:15.345Z` with `2522` entities / `5483` relations /
+  `16087` files; app-completion refresh PASS generated
+  `2026-06-27T23:17:24.780Z` with `912` items / `7` flows / `882` missing
+  test links / `0` blocked records; `npm run architecture:status` PASS;
+  `npm run check:route-capabilities` PASS; `git diff --check` PASS with
+  LF-to-CRLF warnings only. No product implementation follows from this
+  baseline alone. Source-control closure is delegated to
+  [LUC-5716](/LUC/issues/LUC-5716). Push/deploy/protected smoke held.
+
 - 2026-06-28: `LUC-5709` completed the latest Roost known-state evidence and
   architecture baseline. Evidence packet:
   `docs/planning/luc-5709-known-state-evidence-and-architecture-baseline.md`.

@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-27T23:17:15.345Z
+Generated: 2026-06-29T01:35:03.604Z
 
 ## Canonical Exports
 
@@ -112,6 +112,11 @@ Generated: 2026-06-27T23:17:15.345Z
 | component | implemented | cc-text-input.tsx | web/src/components/cc-text-input.tsx | Engineering Delivery Lead |
 | document | implemented | pull_request_template.md | .github/pull_request_template.md | Engineering Delivery Lead |
 | document | implemented | Workflow Guidance | .github/workflows/README.md | Engineering Delivery Lead |
+| document | implemented | Architecture Graph | .tmp/luc-5770-architecture-baseline/graphs/architecture-graph.md | Engineering Delivery Lead |
+| document | deprecated | Architecture Awareness Report | .tmp/luc-5770-architecture-baseline/status/architecture-awareness-report.md | Engineering Delivery Lead |
+| document | implemented | Dependency Report | .tmp/luc-5770-architecture-baseline/status/architecture-dependency-report.md | Engineering Delivery Lead |
+| document | deprecated | Ownership Report | .tmp/luc-5770-architecture-baseline/status/architecture-ownership-report.md | Engineering Delivery Lead |
+| document | implemented | Task Synchronization Report | .tmp/luc-5770-architecture-baseline/status/task-synchronization-report.md | Engineering Delivery Lead |
 | document | implemented | AGENTS.md - Unified Project Conductor Standard | AGENTS.md | Engineering Delivery Lead |
 | document | implemented | AI Testing Protocol | AI_TESTING_PROTOCOL.md | Engineering Delivery Lead |
 | document | implemented | Definition Of Done | DEFINITION_OF_DONE.md | Engineering Delivery Lead |
@@ -508,11 +513,6 @@ Generated: 2026-06-27T23:17:15.345Z
 | document | implemented | Security | docs/architecture/nodes/generated/MW-AUTO-0005.md | Docs Memory Lead |
 | document | implemented | /areas?area=00-ogolny&view=overview | docs/architecture/nodes/generated/PAGE-00-GENERAL.md | Docs Memory Lead |
 | document | implemented | /areas?area=04-operacje&view=tasks | docs/architecture/nodes/generated/PAGE-04-OPERATIONS-TASKS.md | Docs Memory Lead |
-| document | implemented | /areas?area=06-kadry&view=directory | docs/architecture/nodes/generated/PAGE-06-PEOPLE-AGENTS.md | Docs Memory Lead |
-| document | implemented | /areas?area=08-zasoby&view=files | docs/architecture/nodes/generated/PAGE-08-ASSETS-FILES.md | Docs Memory Lead |
-| document | implemented | /areas?area=12-zarzadzanie&view=departments | docs/architecture/nodes/generated/PAGE-12-MANAGEMENT-DEPARTMENTS.md | Docs Memory Lead |
-| document | implemented | /account/settings | docs/architecture/nodes/generated/PAGE-AUTO-0001.md | Docs Memory Lead |
-| document | implemented | /areas | docs/architecture/nodes/generated/PAGE-AUTO-0002.md | Docs Memory Lead |
 
 ## Relation Index
 
@@ -655,6 +655,7 @@ Generated: 2026-06-27T23:17:15.345Z
 | documents | document:approval-aware-agent-command-flow:0786da2dd2 | module:docs:6784d83cb0 | docs/operations/approval-aware-agent-command-flow.md |
 | documents | document:approval-aware-mcp-command-flow:6e97e6838d | module:docs:6784d83cb0 | docs/operations/approval-aware-mcp-command-flow.md |
 | documents | document:approvals-model:fb962cf3cd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0006.md |
+| documents | document:architecture-awareness-report:e81b52bbfb | module:tmp:8b20b5b6eb | .tmp/luc-5770-architecture-baseline/status/architecture-awareness-report.md |
 | documents | document:architecture-documentation:80d86f79f2 | module:docs:6784d83cb0 | docs/architecture/README.md |
 | documents | document:architecture-drift-report:2048752ce8 | module:docs:6784d83cb0 | docs/status/architecture-drift-report.md |
 | documents | document:architecture-evidence-graph-system:0193b4b4eb | module:docs:6784d83cb0 | docs/architecture/architecture-evidence-graph-system.md |
@@ -664,6 +665,7 @@ Generated: 2026-06-27T23:17:15.345Z
 | documents | document:architecture-evidence-system:a7d552a139 | module:docs:6784d83cb0 | docs/architecture/architecture-evidence-system.md |
 | documents | document:architecture-graph-check-prompt:784b214385 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PROMPT-ARCH-GRAPH-CHECK.md |
 | documents | document:architecture-graph-generator:2fc512b479 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/SCRIPT-ARCH-GRAPH-GENERATOR.md |
+| documents | document:architecture-graph:b786238bfa | module:tmp:8b20b5b6eb | .tmp/luc-5770-architecture-baseline/graphs/architecture-graph.md |
 | documents | document:architecture-health-dashboard:3341f66d62 | module:docs:6784d83cb0 | docs/status/architecture-health-dashboard.md |
 | documents | document:architecture-map-status:40009e1221 | module:docs:6784d83cb0 | docs/status/architecture-map-status.md |
 | documents | document:architecture-map:9fa8863725 | module:docs:6784d83cb0 | docs/maps/architecture-map.md |
@@ -822,6 +824,7 @@ Generated: 2026-06-27T23:17:15.345Z
 | documents | document:department-management-systems-v1-blueprint:6b147b19d9 | module:docs:6784d83cb0 | docs/architecture/department-management-systems-v1-blueprint.md |
 | documents | document:dependencies-model:dcedb370d9 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0020.md |
 | documents | document:dependency-relation-csv:7f2e92b2e9 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/CSV-RELATIONS.md |
+| documents | document:dependency-report:a1d3f8ab43 | module:tmp:8b20b5b6eb | .tmp/luc-5770-architecture-baseline/status/architecture-dependency-report.md |
 | documents | document:deployment-gate:a45551c4d4 | module:item:884f3f28db | DEPLOYMENT_GATE.md |
 | documents | document:deployment-template-local-stage-production:ccee546c5b | module:docs:6784d83cb0 | docs/operations/deployment-template-local-stage-production.md |
 | documents | document:deployment:a292540d71 | module:docs:6784d83cb0 | docs/DEPLOYMENT.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-06-27T23:17:15.345Z
 | documents | document:luc-5374-source-control-closure-for-luc-5373-evidence-packet:e8fa4f8d25 | module:docs:6784d83cb0 | docs/planning/luc-5374-source-control-closure-for-luc-5373-evidence-packet.md |
 | documents | document:luc-5377-known-state-evidence-and-architecture-baseline:7c3cc9783e | module:docs:6784d83cb0 | docs/planning/luc-5377-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5379-source-control-closure-for-luc-5377-evidence-packet:fd346c6c46 | module:docs:6784d83cb0 | docs/planning/luc-5379-source-control-closure-for-luc-5377-evidence-packet.md |
-| documents | document:luc-5380-app-completion-account-access-proof-ladder:4115dc198e | module:docs:6784d83cb0 | docs/planning/luc-5380-app-completion-account-access-proof-ladder.md |
-| documents | document:luc-5383-known-state-evidence-and-architecture-baseline:65232b7024 | module:docs:6784d83cb0 | docs/planning/luc-5383-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5385-source-control-closure-for-luc-5383-evidence-packet:e8e80a1010 | module:docs:6784d83cb0 | docs/planning/luc-5385-source-control-closure-for-luc-5383-evidence-packet.md |
