@@ -1,28 +1,28 @@
 {
-  "generatedAt": "2026-06-29T01:35:21.428Z",
+  "generatedAt": "2026-06-29T08:35:36.162Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
   "counts": {
-    "items": 373,
+    "items": 374,
     "flows": 7,
     "needsBrowserReview": 0,
-    "missingTestLink": 362,
+    "missingTestLink": 363,
     "missingDocLink": 0,
     "blocked": 0
   },
   "flows": [
     {
       "userFlow": "Account access",
-      "total": 93,
+      "total": 94,
       "risks": {
-        "missing_test_link": 90,
+        "missing_test_link": 91,
         "implemented_needs_proof": 2,
         "ok": 1
       },
       "gates": {
-        "auth": 93,
-        "configuration": 13,
+        "auth": 94,
+        "configuration": 14,
         "subscription": 3
       }
     },
@@ -507,6 +507,28 @@
       "userFlow": "Account access",
       "gates": [
         "auth"
+      ],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 4,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "document:luc-6155-auth-config-api-proof-lane:5f91846a03",
+      "type": "document",
+      "kind": "feature_or_capability",
+      "name": "LUC-6155 Auth/Config API Proof Lane",
+      "path": "docs/planning/luc-6155-auth-config-api-proof-lane.md",
+      "owner": "Docs Memory Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Account access",
+      "gates": [
+        "auth",
+        "configuration"
       ],
       "evidence": {
         "hasTest": false,
@@ -4106,25 +4128,6 @@
       "kind": "feature_or_capability",
       "name": "check-architecture-risk-hotspots-gate.mjs",
       "path": "scripts/check-architecture-risk-hotspots-gate.mjs",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Unclassified user workflow",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "feature:check-architecture-roadmap-gate-mjs:8ca270d844",
-      "type": "feature",
-      "kind": "feature_or_capability",
-      "name": "check-architecture-roadmap-gate.mjs",
-      "path": "scripts/check-architecture-roadmap-gate.mjs",
       "owner": "Engineering Delivery Lead",
       "status": "implemented_needs_proof",
       "userFlow": "Unclassified user workflow",

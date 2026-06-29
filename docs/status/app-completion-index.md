@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-06-29T01:35:21.428Z
+Generated: 2026-06-29T08:35:36.162Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -12,17 +12,17 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 
 ## Counts
 
-- Items: 373
+- Items: 374
 - User flows: 7
 - Needs browser/screenshot review: 0
-- Missing test link: 362
+- Missing test link: 363
 - Missing doc link: 0
 - Blocked: 0
 
 ## Flow Summary
 
 - Unclassified user workflow: 196 entities; risks {"missing_test_link":191,"implemented_needs_proof":5}; gates {"auth":6,"configuration":10}
-- Account access: 93 entities; risks {"missing_test_link":90,"implemented_needs_proof":2,"ok":1}; gates {"auth":93,"configuration":13,"subscription":3}
+- Account access: 94 entities; risks {"missing_test_link":91,"implemented_needs_proof":2,"ok":1}; gates {"auth":94,"configuration":14,"subscription":3}
 - User configuration: 61 entities; risks {"missing_test_link":60,"implemented_needs_proof":1}; gates {"configuration":61,"auth":3}
 - Dashboard overview: 13 entities; risks {"missing_test_link":13}; gates {"configuration":7}
 - Subscription and entitlement: 4 entities; risks {"missing_test_link":3,"implemented_needs_proof":1}; gates {"subscription":4}
@@ -53,6 +53,7 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Account access | missing_test_link | feature_or_capability | LUC-5661 /v1 Auth Alias Parity API Proof | Docs Memory Lead | docs/planning/luc-5661-v1-auth-alias-parity-api-proof.md | auth |
 | Account access | missing_test_link | feature_or_capability | LUC-5984 Auth/Subscription/Configuration Authority Risk Review | Docs Memory Lead | docs/planning/luc-5984-auth-subscription-configuration-authority-risk-review.md | auth, subscription, configuration |
 | Account access | missing_test_link | feature_or_capability | LUC-6118 Account Access Auth API Proof | Docs Memory Lead | docs/planning/luc-6118-account-access-auth-api-proof.md | auth |
+| Account access | missing_test_link | feature_or_capability | LUC-6155 Auth/Config API Proof Lane | Docs Memory Lead | docs/planning/luc-6155-auth-config-api-proof-lane.md | auth, configuration |
 | Account access | missing_test_link | feature_or_capability | REACT-WEB-LAYOUT-001 Authenticated Layout Foundation | Docs Memory Lead | docs/planning/react-web-layout-foundation-task-contract.md | auth |
 | Account access | missing_test_link | feature_or_capability | V1 Production Authenticated Parity Task Contract | Docs Memory Lead | docs/planning/v1-production-authenticated-parity-task-contract.md | auth |
 | Account access | missing_test_link | feature_or_capability | V1AUTH-001 Owner Auth Redirect Flow | Docs Memory Lead | docs/planning/v1auth-001-owner-auth-redirect-task-contract.md | auth |
@@ -112,7 +113,6 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Account access | missing_test_link | feature_or_capability | requireUserAuth | Engineering Delivery Lead | src/modules/workspaces/workspaces.routes.ts#requireUserAuth | auth |
 | Account access | missing_test_link | feature_or_capability | auth-token.ts | Engineering Delivery Lead | web/src/api/auth-token.ts | auth |
 | Account access | missing_test_link | feature_or_capability | clearOwnerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#clearOwnerToken | auth |
-| Account access | missing_test_link | feature_or_capability | isSignedIn | Engineering Delivery Lead | web/src/api/auth-token.ts#isSignedIn | auth |
 
 ## Agent Rule
 

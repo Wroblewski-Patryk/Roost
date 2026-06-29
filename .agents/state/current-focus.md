@@ -1,5 +1,85 @@
 # Current Focus
 
+- 2026-06-29: Documentation Steward focus [LUC-6217](/LUC/issues/LUC-6217)
+  is complete for source-control closure of
+  [LUC-6213](/LUC/issues/LUC-6213). Closure packet:
+  `docs/planning/luc-6217-source-control-closure-for-luc-6213-evidence-packet.md`.
+  Proof: parent packet readback, current generated architecture/app-completion
+  readback, `git status --short --branch`, HEAD/divergence, focused diff stat,
+  and `git diff --check` completed. Commit was not created because the shared
+  Roost worktree is mixed-dirty, includes unrelated `src/tests/api.test.ts`
+  plus older planning/UX/operations evidence artifacts, and `main` is already
+  `130` commits ahead of origin. Push not needed; deploy impact none; next
+  owner none for [LUC-6217](/LUC/issues/LUC-6217).
+
+- 2026-06-29: Documentation Steward focus [LUC-6209](/LUC/issues/LUC-6209)
+  is complete for source-control closure of
+  [LUC-6204](/LUC/issues/LUC-6204). Closure packet:
+  `docs/planning/luc-6209-source-control-closure-for-luc-6204-evidence-packet.md`.
+  Proof: parent packet readback, current generated architecture/app-completion
+  readback, `git status --short --branch`, HEAD/divergence, focused diff stat,
+  and `git diff --check` completed. Commit was not created because the shared
+  Roost worktree is mixed-dirty, includes unrelated `src/tests/api.test.ts`
+  plus older planning/UX evidence artifacts, and `main` is already `130`
+  commits ahead of origin. Push not needed; deploy impact none; next owner
+  none for [LUC-6209](/LUC/issues/LUC-6209).
+
+- 2026-06-29: Current IPM focus [LUC-6207](/LUC/issues/LUC-6207) is complete
+  for local Roost known-state evidence and repair-lane routing. Packet:
+  `docs/planning/luc-6207-known-state-evidence-and-architecture-baseline.md`.
+  Proof: architecture-awareness refresh `2026-06-29T08:05:21.153Z`
+  (`2697` entities / `6142` relations / `16262` files); app-completion
+  refresh `2026-06-29T08:05:45.454Z` (`374` items / `7` flows /
+  `363` missing test links / `0` missing doc links / `0` blocked /
+  `0` browser-review records); `npm run architecture:status`,
+  `npm run check:route-capabilities`, and `git diff --check` passed. No
+  product implementation or protected action selected. Next owner:
+  [LUC-6212](/LUC/issues/LUC-6212) Documentation/source-control closure for
+  this generated/status/planning packet.
+
+- 2026-06-29: Current Roost PM focus [LUC-6157](/LUC/issues/LUC-6157) is
+  queue reconciliation after [LUC-6151](/LUC/issues/LUC-6151) and the newer
+  [LUC-6152](/LUC/issues/LUC-6152) known-state packet. Packet:
+  `docs/planning/luc-6157-pm-queue-reconciliation-after-luc-6151.md`.
+  [LUC-6158](/LUC/issues/LUC-6158) source-control closure,
+  [LUC-6154](/LUC/issues/LUC-6154) QA proof selection, and
+  [LUC-6155](/LUC/issues/LUC-6155) backend API proof, and
+  [LUC-6159](/LUC/issues/LUC-6159) app-completion curation are done in
+  Paperclip. NEXT is [LUC-6156](/LUC/issues/LUC-6156) frontend/browser
+  evidence curation.
+  [LUC-6153](/LUC/issues/LUC-6153) is superseded by
+  [LUC-6158](/LUC/issues/LUC-6158). Protected runtime and release actions
+  remain held.
+
+- 2026-06-29: QVE focus [LUC-6145](/LUC/issues/LUC-6145) is complete for the
+  next nonduplicated app-completion proof target after
+  [LUC-6143](/LUC/issues/LUC-6143). Packet:
+  `docs/planning/luc-6145-next-app-completion-proof-target-after-luc-6143.md`.
+  Selected target: `Trading operation` / `GET /v1/strategy/context`, backed by
+  `src/modules/strategy/strategy.routes.ts` and consumed by
+  `web/src/features/departments/strategy-route.tsx`. Proof: task-owned
+  PostgreSQL `companycore-luc-6145-postgres` on `127.0.0.1:55645`;
+  `npm run build:server`, `npm run prisma:migrate:deploy`, `npm run seed`,
+  scoped Node test `CompanyCore v1 protected API flow`, `npm run
+  check:route-capabilities`, `npm run architecture:status`, and
+  `git diff --check` passed. This confirms the earlier
+  [LUC-5417](/LUC/issues/LUC-5417) Strategy proof mapping still passes; no
+  repair lane is warranted. Next owner none for
+  [LUC-6145](/LUC/issues/LUC-6145); browser/production proof remains separate
+  if Strategy becomes release-critical.
+
+- 2026-06-29: Current Roost PM focus [LUC-6136](/LUC/issues/LUC-6136) is
+  complete for local known-state evidence and repair-lane routing. Packet:
+  `docs/planning/luc-6136-known-state-evidence-and-architecture-baseline.md`.
+  Proof: architecture-awareness refresh `2026-06-29T01:35:03.604Z` (`2683`
+  entities / `6088` relations / `16248` files); app-completion refresh
+  `2026-06-29T01:35:21.428Z` (`373` items / `7` flows / `362` missing test
+  links / `0` missing doc links / `0` blocked); `npm run architecture:status`,
+  `npm run check:route-capabilities`, and `git diff --check` passed. No
+  product implementation or protected action selected. Next owner none for
+  this PM baseline unless a future source-control/release lane needs a commit
+  source ref.
+
 - 2026-06-29: TSA focus [LUC-6120](/LUC/issues/LUC-6120) is complete for
   app-completion subscription classifier planning-path noise. Packet:
   `docs/planning/luc-6120-app-completion-subscription-classifier-planning-path-fix.md`.
@@ -1176,6 +1256,20 @@ setup snippets for Paperclip, Codex, and future MCP-compatible agents in
 1. Stability
 2. Architecture alignment
 3. No regressions
+# 2026-06-29 Focus Update
+
+- Current Roost focus after [LUC-6167](/LUC/issues/LUC-6167): maintain thin
+  known-state readiness behind Soar. Local architecture and route-capability
+  gates are green, task sync and ownership are clean, and app-completion
+  carries aggregate missing-test-link confidence debt (`363`) without a fresh
+  concrete broken journey.
+- Latest evidence packet:
+  `docs/planning/luc-6167-evidence-collection-and-architecture-baseline.md`.
+- Next focus: avoid duplicate repair lanes from repeated known-state
+  snapshots; create new specialist work only when a refreshed snapshot exposes
+  a concrete nonduplicated defect, blocker, owner gap, route failure, security
+  risk, or missing proof target not already covered by existing packets.
+
 4. Correct flows
 5. UX quality
 6. Visual polish
@@ -1236,3 +1330,29 @@ setup snippets for Paperclip, Codex, and future MCP-compatible agents in
   create new specialist work only when a refreshed snapshot exposes a concrete
   nonduplicated defect, blocker, owner gap, route failure, security risk, or
   missing proof target.
+
+# 2026-06-29 Focus Update
+
+- Current Roost focus after [LUC-6191](/LUC/issues/LUC-6191): keep thin
+  readiness evidence honest and avoid duplicate QA runtime proof from aggregate
+  app-completion missing-test-link counts.
+- Latest proof-link curation packet:
+  `docs/planning/luc-6191-app-completion-proof-link-curation-after-luc-6166.md`.
+- Decision: no fresh nonduplicated proof target from the `374` item /
+  `363` missing-test-link snapshot; remaining signal is evidence-link/scanner
+  confidence debt unless a future snapshot exposes a concrete unproved route,
+  frontend journey, or reproduced failure.
+# 2026-06-29 Current Focus Addendum
+
+- [LUC-6218](/LUC/issues/LUC-6218) completed local Roost known-state
+  evidence collection. Packet:
+  `docs/planning/luc-6218-known-state-evidence-and-architecture-baseline.md`.
+- Current local gates are green: architecture-awareness `2705` entities /
+  `6176` relations / `16270` files, app-completion `374` items /
+  `363` missing-test-link rows / `0` blocked, architecture status PASS, route
+  capability PASS, diff hygiene PASS with LF-to-CRLF warnings only.
+- Next active handoff is [LUC-6220](/LUC/issues/LUC-6220) Documentation
+  Steward source-control closure for the generated/status/planning packet.
+- Do not start product repair from the aggregate missing-test-link count alone;
+  select QA/runtime work only from a fresh concrete unproved route, browser
+  journey, or reproduced failure.

@@ -1,5 +1,130 @@
 # System Health
 
+- 2026-06-29: [LUC-6218](/LUC/issues/LUC-6218) known-state health PASS.
+  Architecture-awareness refresh: `2705` entities / `6176` relations /
+  `16270` files generated `2026-06-29T08:35:36.166Z`. App-completion
+  readback: `374` items / `7` flows / `363` missing test links /
+  `0` missing doc links / `0` blocked / `0` browser-review records.
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`);
+  `npm run check:route-capabilities` PASS (`180` manifest routes /
+  `35` route files); `git diff --check` PASS with LF-to-CRLF warnings only.
+  Source-control posture remains mixed-dirty and ahead of origin; closure is
+  delegated to [LUC-6220](/LUC/issues/LUC-6220). No runtime service, browser,
+  Docker, database, protected smoke, push, deploy, provider mutation,
+  credential access, or secret access was started.
+
+- 2026-06-29: [LUC-6217](/LUC/issues/LUC-6217) local source-control closure
+  PASS for the [LUC-6213](/LUC/issues/LUC-6213) evidence packet. Parent
+  packet readback PASS; current generated architecture readback matches the
+  parent snapshot (`2702` entities / `6162` relations generated
+  `2026-06-29T08:18:36.145Z`); app-completion readback `374` items / `7`
+  flows / `363` missing test links / `0` missing doc links / `0` blocked /
+  `0` browser-review records generated `2026-06-29T08:18:46.487Z`. `git
+  status --short --branch` confirmed `main...origin/main [ahead 130]`; HEAD
+  `7bdc016ef071c9d940cd45fd40b1af8bc26bb54e`; divergence `0 130`; `git diff
+  --check` passed with LF-to-CRLF warnings only. Commit not created because
+  the packet is not safely isolatable in the mixed-dirty shared worktree. No
+  runtime server, browser, Docker, database, protected smoke, provider action,
+  credential access, production mutation, push, or deploy was performed.
+
+- 2026-06-29: [LUC-6213](/LUC/issues/LUC-6213) known-state health PASS.
+  Architecture-awareness refresh: `2702` entities / `6162` relations /
+  `16267` files. App-completion readback: `374` items / `7` flows /
+  `363` missing test links / `0` missing doc links / `0` blocked /
+  `0` browser-review records. `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`); `npm run check:route-capabilities` PASS
+  (`180` manifest routes / `35` route files); `git diff --check` PASS with
+  LF-to-CRLF warnings only. No runtime service, browser, Docker, database,
+  protected smoke, push, deploy, provider mutation, credential access, or
+  secret access was started.
+
+- 2026-06-29: [LUC-6210](/LUC/issues/LUC-6210) app-completion proof-link
+  curation PASS. Current app-completion readback: `374` items / `7` flows /
+  `363` missing test links / `0` missing doc links / `0` blocked /
+  `0` browser-review records. No fresh runtime failure, blocked row, missing
+  doc link, route-capability failure, browser-review row, or protected action
+  need was exposed. Remaining signal is scanner/evidence-link confidence debt.
+  No local server, browser, Docker, database, protected smoke, provider action,
+  credential access, secret disclosure, or production mutation was started.
+
+- 2026-06-29: [LUC-6209](/LUC/issues/LUC-6209) local source-control closure
+  PASS for the [LUC-6204](/LUC/issues/LUC-6204) evidence packet. Parent packet
+  readback PASS; current generated architecture readback has drifted to the
+  newer local snapshot (`2697` entities / `6142` relations generated
+  `2026-06-29T08:05:21.153Z`); app-completion readback `374` items / `7`
+  flows / `363` missing test links / `0` missing doc links / `0` blocked /
+  `0` browser-review records generated `2026-06-29T08:05:45.454Z`. `git
+  status --short --branch` confirmed `main...origin/main [ahead 130]`; HEAD
+  `7bdc016ef071c9d940cd45fd40b1af8bc26bb54e`; divergence `0 130`; `git diff
+  --check` passed with LF-to-CRLF warnings only. Commit not created because
+  the packet is not safely isolatable in the mixed-dirty shared worktree. No
+  runtime server, browser, Docker, database, protected smoke, provider action,
+  credential access, production mutation, push, or deploy was performed.
+
+- 2026-06-29: [LUC-6207](/LUC/issues/LUC-6207) local evidence refresh PASS.
+  Architecture awareness generated `2026-06-29T08:05:21.153Z` with `2697`
+  entities / `6142` relations / `16262` files. App-completion generated
+  `2026-06-29T08:05:45.454Z` with `374` items / `7` flows / `363` missing
+  test links / `0` missing doc links / `0` blocked / `0` browser-review
+  records. `npm run architecture:status` passed (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass). `npm run check:route-capabilities` passed (`180` manifest
+  routes / `35` route files). `git diff --check` passed with LF-to-CRLF
+  warnings only. No matching scanner/app-completion/status Node process
+  remained. No runtime server, browser, Docker, database, watcher, push,
+  deploy, restart, protected smoke, provider action, credential access,
+  production mutation, or secret disclosure was performed.
+
+- 2026-06-29: [LUC-6190](/LUC/issues/LUC-6190) scanner timeout hygiene PASS.
+  Scanner `--status-only` returned `completed=true`, `missing=[]`, `2691`
+  entities / `6121` relations, scanner `elapsedMs=51`, outer
+  `Measure-Command` `961.6611ms`. Full scanner rerun with
+  `--max-elapsed-ms 180000` completed with `2695` entities / `6136` relations
+  / `16260` files, scanner `elapsedMs=26688`, outer `Measure-Command`
+  `27235.3821ms`, and final progress `complete`. App-completion refresh
+  passed (`374` items / `7` flows / `363` missing test links / `0` blocked).
+  `npm run architecture:status` passed (`GREEN`, graph `454/765/35`) and
+  `npm run check:route-capabilities` passed (`180` manifest routes / `35`
+  route files). No matching scanner/app-completion/status Node process
+  remained. Classification: [LUC-6166](/LUC/issues/LUC-6166) timeout was
+  outer command timeout/runner ambiguity, not a reproduced scanner hang or
+  script defect. Future known-state scanner runs should use
+  `--max-elapsed-ms 180000` with outer timeout at least `240000ms`.
+
+- 2026-06-29: [LUC-6155](/LUC/issues/LUC-6155) Backend API proof for auth/config endpoints completed locally. Evidence packet: `docs/planning/luc-6155-auth-config-api-proof-lane.md`. Verification: `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-6155-postgres COMPANYCORE_TEST_DB_PORT=55655 COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS after server/web build, `31` migrations, seed, and `8/8` Node API subtests; `npm run check:route-capabilities` PASS (`180` manifest routes / `35` route files); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`); `git diff --check` PASS with LF-to-CRLF warnings only. Cleanup confirmed no `companycore-luc-6155-postgres` container and no `chrome-headless-shell` processes remained. The [LUC-5570](/LUC/issues/LUC-5570) behavioral API proof blocker is now closed.
+
+- 2026-06-29: [LUC-6145](/LUC/issues/LUC-6145) local QA proof PASS for the
+  selected nonduplicated app-completion target after
+  [LUC-6143](/LUC/issues/LUC-6143). Selected flow: `Trading operation`.
+  Selected route/files: `GET /v1/strategy/context`,
+  `src/modules/strategy/strategy.routes.ts`,
+  `web/src/features/departments/strategy-route.tsx`, and
+  `src/tests/api.test.ts`. Validation used task-owned PostgreSQL container
+  `companycore-luc-6145-postgres` on `127.0.0.1:55645`; `npm run
+  build:server`, `npm run prisma:migrate:deploy`, `npm run seed`, and scoped
+  Node test `CompanyCore v1 protected API flow` all passed (`1/1`). `npm run
+  check:route-capabilities` passed (`180` manifest routes / `35` route
+  files). `npm run architecture:status` passed (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass). `git diff --check` passed with LF-to-CRLF warnings only. No
+  product code, push, deploy, protected smoke, credential access, production
+  mutation, or secret disclosure was performed. This confirms the earlier
+  [LUC-5417](/LUC/issues/LUC-5417) Strategy proof mapping still passes; it is
+  not a new repair signal.
+
+- 2026-06-29: [LUC-6136](/LUC/issues/LUC-6136) local evidence refresh PASS.
+  Architecture awareness generated `2026-06-29T01:35:03.604Z` with `2683`
+  entities / `6088` relations / `16248` files. App-completion generated
+  `2026-06-29T01:35:21.428Z` with `373` items / `7` flows / `362` missing
+  test links / `0` missing doc links / `0` blocked / `0` browser-review
+  records. `npm run architecture:status` passed (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass). `npm run check:route-capabilities` passed (`180` manifest
+  routes / `35` route files). `git diff --check` passed with LF-to-CRLF
+  warnings only. No runtime server, browser, Docker, database, watcher, push,
+  deploy, restart, protected smoke, provider action, credential access,
+  production mutation, or secret disclosure was performed.
+
 - 2026-06-29: [LUC-6126](/LUC/issues/LUC-6126) local evidence refresh PASS.
   Architecture awareness generated `2026-06-28T23:02:45.027Z` with `2679`
   entities / `6076` relations / `16248` files. App-completion generated
@@ -3227,6 +3352,23 @@ Last updated: 2026-06-20
 
 # 2026-06-28 LUC-5701 Continuation Health
 
+# 2026-06-29 LUC-6167 Local Evidence Health
+
+- Status: GREEN for local architecture/status gates.
+- Evidence: architecture-awareness refresh PASS (`2691` entities / `6121`
+  relations / `16256` files generated `2026-06-29T07:07:18.555Z`);
+  app-completion refresh PASS (`374` items / `7` flows / `363` missing test
+  links / `0` missing doc links / `0` blocked / `0` browser-review records
+  generated `2026-06-29T07:09:46.105Z`); `npm run architecture:status` PASS;
+  `npm run check:route-capabilities` PASS; `git diff --check` PASS with
+  LF-to-CRLF warnings only.
+- Task sync and ownership: `0` actionable task-link gaps, `0`
+  verified-without-proof rows, `0` unowned entities, and `0` disconnected
+  entities.
+- Protected actions: none. No server, browser, Docker, database, watcher,
+  protected smoke, push, deploy, restart, provider action, credential access,
+  production mutation, or secret disclosure was performed.
+
 - Wake comment required local evidence collection and repair-lane conversion
   without push, deploy, restart, protected smoke, production mutation, or
   secret disclosure.
@@ -3307,3 +3449,36 @@ Last updated: 2026-06-20
 - Portfolio radar: root `APPLICATIONS_INDEX.md` and `APPLICATIONS_INDEX.csv`
   refreshed locally; Softwarehouse audit readback reported
   `rootPortfolioDriftCount=0` with unrelated existing audit warnings.
+
+# 2026-06-29 LUC-6191 Proof-Link Curation Health
+
+- App-completion status: partially verified. Current index generated
+  `2026-06-29T07:09:46.105Z` with `374` items / `7` flows / `363`
+  missing-test-link rows / `0` missing docs / `0` blocked / `0`
+  browser-review records.
+- Verification status: curation PASS. Priority-row grouping and duplicate
+  proof check found no fresh nonduplicated runtime target; strongest candidates
+  duplicate recent Account access, auth/config, Integration Settings, and
+  Strategy proof packets.
+- Source-control posture: mixed dirty shared worktree,
+  `main...origin/main [ahead 130]`; [LUC-6191](/LUC/issues/LUC-6191) is not
+  committed because its packet is not safely isolatable from existing
+  generated/status churn and unrelated dirty files.
+- Runtime/process posture: no local server, browser, database, Docker,
+  watcher, push, deploy, restart, protected smoke, provider action, credential
+  access, production mutation, or secret disclosure performed.
+
+# 2026-06-29 LUC-6204 Health Signal
+
+- Architecture-awareness scanner: PASS, `2696` entities / `6140` relations /
+  `16261` files, generated `2026-06-29T08:01:22.405Z`.
+- App-completion index: PASS, `374` items / `7` flows / `363` missing test
+  links / `0` missing doc links / `0` blocked / `0` browser-review records,
+  generated `2026-06-29T08:03:05.122Z`.
+- `npm run architecture:status`: PASS, `GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`.
+- `npm run check:route-capabilities`: PASS, `180` manifest routes / `35`
+  route files.
+- `git diff --check`: PASS with LF-to-CRLF warnings only.
+- Runtime/deploy: no local server, browser, Docker, protected smoke, deploy,
+  restart, credential access, or production mutation performed.

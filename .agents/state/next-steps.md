@@ -1,5 +1,135 @@
 # Next Steps
 
+- 2026-06-29: [LUC-6218](/LUC/issues/LUC-6218) known-state baseline is
+  complete for local evidence collection. Packet:
+  `docs/planning/luc-6218-known-state-evidence-and-architecture-baseline.md`.
+  Current evidence: architecture-awareness scanner PASS (`2705` entities,
+  `6176` relations, `16270` files); app-completion PASS (`374` items,
+  `7` flows, `363` missing test links, `0` missing doc links, `0` blocked,
+  `0` browser-review records); `npm run architecture:status` PASS;
+  `npm run check:route-capabilities` PASS; `git diff --check` PASS with
+  LF-to-CRLF warnings only. Next owner decision: no new product repair,
+  backend, frontend, security, ops, or broad QA lane from this baseline. The
+  required follow-up is [LUC-6220](/LUC/issues/LUC-6220)
+  Documentation/source-control closure for the generated/status/planning
+  packet because the shared worktree is mixed-dirty and ahead of origin.
+
+- 2026-06-29: [LUC-6217](/LUC/issues/LUC-6217) source-control closure for
+  [LUC-6213](/LUC/issues/LUC-6213) is complete. Closure packet:
+  `docs/planning/luc-6217-source-control-closure-for-luc-6213-evidence-packet.md`.
+  No next owner remains for [LUC-6217](/LUC/issues/LUC-6217). Future broad
+  source-control batching belongs to Delivery/Repository ownership if the
+  board explicitly scopes included files and push/deploy expectations.
+
+- 2026-06-29: [LUC-6213](/LUC/issues/LUC-6213) known-state baseline is
+  complete for local evidence collection. Packet:
+  `docs/planning/luc-6213-known-state-evidence-and-architecture-baseline.md`.
+  Current evidence: architecture-awareness scanner PASS (`2702` entities,
+  `6162` relations, `16267` files); app-completion PASS (`374` items,
+  `7` flows, `363` missing test links, `0` missing doc links, `0` blocked,
+  `0` browser-review records); `npm run architecture:status` PASS;
+  `npm run check:route-capabilities` PASS; `git diff --check` PASS with
+  LF-to-CRLF warnings only. Next owner decision: no new product repair,
+  backend, frontend, security, ops, or broad QA lane from this baseline. The
+  required follow-up is [LUC-6217](/LUC/issues/LUC-6217)
+  Documentation/source-control closure for the generated/status/planning
+  packet because the shared worktree is mixed-dirty and ahead of origin.
+
+- 2026-06-29: [LUC-6212](/LUC/issues/LUC-6212) source-control closure for
+  [LUC-6207](/LUC/issues/LUC-6207) is complete. Closure packet:
+  `docs/planning/luc-6212-source-control-closure-for-luc-6207-evidence-packet.md`.
+  No next owner remains for [LUC-6212](/LUC/issues/LUC-6212). Future broad
+  source-control batching belongs to Delivery/Repository ownership if the
+  board explicitly scopes included files and push/deploy expectations.
+
+- 2026-06-29: [LUC-6210](/LUC/issues/LUC-6210) is complete for TSA
+  app-completion proof-link curation after [LUC-6204](/LUC/issues/LUC-6204).
+  No fresh nonduplicated runtime proof target was selected from the current
+  `374` item / `363` missing-test-link snapshot. Next legal improvement is
+  Documentation Steward / Architecture curation that links existing proof
+  packets to generated rows where specific and reproducible; do not open
+  duplicate QA/runtime proof unless a future snapshot exposes a fresh concrete
+  route, browser journey, or reproduced failure. [LUC-6209](/LUC/issues/LUC-6209)
+  remains the source-control closure lane for the generated/status packet.
+
+- 2026-06-29: [LUC-6209](/LUC/issues/LUC-6209) source-control closure for
+  [LUC-6204](/LUC/issues/LUC-6204) is complete. Closure packet:
+  `docs/planning/luc-6209-source-control-closure-for-luc-6204-evidence-packet.md`.
+  No next owner remains for [LUC-6209](/LUC/issues/LUC-6209). Future broad
+  source-control batching belongs to Delivery/Repository ownership if the
+  board explicitly scopes included files and push/deploy expectations.
+
+- 2026-06-29: [LUC-6207](/LUC/issues/LUC-6207) known-state baseline is
+  complete for local evidence collection. Packet:
+  `docs/planning/luc-6207-known-state-evidence-and-architecture-baseline.md`.
+  Current evidence: architecture-awareness scanner PASS (`2697` entities,
+  `6142` relations, `16262` files, generated
+  `2026-06-29T08:05:21.153Z`); app-completion PASS (`374` items, `7` flows,
+  `363` missing test links, `0` missing doc links, `0` blocked,
+  `0` browser-review records); `npm run architecture:status` PASS;
+  `npm run check:route-capabilities` PASS; `git diff --check` PASS with
+  LF-to-CRLF warnings only. Next owner decision: no new product repair,
+  backend, frontend, security, ops, or broad QA lane from this baseline. The
+  required follow-up is [LUC-6212](/LUC/issues/LUC-6212)
+  Documentation/source-control closure for the generated/status/planning
+  packet because the shared worktree is mixed-dirty and ahead of origin.
+
+- 2026-06-29: [LUC-6159](/LUC/issues/LUC-6159) is complete for TSA
+  app-completion missing-test-link curation after
+  [LUC-6152](/LUC/issues/LUC-6152). No fresh non-duplicated QA/runtime proof
+  target is selected from the current `373` item / `362` missing-test-link
+  snapshot. Do not rerun Account access, Strategy/Trading, or Integration
+  Settings local API proof solely from the aggregate count; those strongest
+  candidates already map to [LUC-6118](/LUC/issues/LUC-6118),
+  [LUC-6145](/LUC/issues/LUC-6145), and [LUC-5263](/LUC/issues/LUC-5263).
+  Next useful work, if selected, is a Documentation/Architecture evidence-link
+  curation lane that links specific existing proof packets to generated
+  app-completion rows without overstating runtime verification.
+
+- 2026-06-29: [LUC-6157](/LUC/issues/LUC-6157) PM queue reconciliation is the
+  current Roost coordination source. Packet:
+  `docs/planning/luc-6157-pm-queue-reconciliation-after-luc-6151.md`.
+  Done in Paperclip: [LUC-6158](/LUC/issues/LUC-6158) source-control closure,
+  [LUC-6154](/LUC/issues/LUC-6154) QA proof selection, and
+  [LUC-6155](/LUC/issues/LUC-6155) backend API proof, and
+  [LUC-6159](/LUC/issues/LUC-6159) app-completion curation. NEXT:
+  [LUC-6156](/LUC/issues/LUC-6156) frontend/browser evidence curation.
+  Superseded: [LUC-6153](/LUC/issues/LUC-6153), because the newer
+  [LUC-6152](/LUC/issues/LUC-6152) refresh is already covered by
+  [LUC-6158](/LUC/issues/LUC-6158). Do not open another broad known-state loop
+  unless a fresh snapshot exposes a concrete failed gate, blocker, owner gap,
+  route failure, security risk, or nonduplicated proof target.
+
+- 2026-06-29: [LUC-6154](/LUC/issues/LUC-6154) is complete for QA proof
+  selection after [LUC-6151](/LUC/issues/LUC-6151). Do not create a duplicate
+  Google Drive OAuth/configuration runtime repair from the current
+  app-completion rows: `src/tests/api.test.ts` named test
+  `CompanyCore v1 protected API flow` already covers the selected
+  authorize-url/exchange/settings/import/reconcile/refresh family, and prior
+  local proof on 2026-06-29 already ran that named flow. Future QA work should
+  select a new concrete runtime row only if a later snapshot exposes an
+  unverified route outside already-mapped Auth, Google Drive config,
+  Finance/subscription, Strategy/trading, and Dashboard proof packets, or if a
+  fresh regression is reproduced.
+
+- 2026-06-29: [LUC-6145](/LUC/issues/LUC-6145) is complete for QA selection
+  and local proof confirmation of the current `Trading operation` /
+  Strategy target after [LUC-6143](/LUC/issues/LUC-6143). No
+  Engineering/Frontend/Ops/Security repair child is warranted because
+  `GET /v1/strategy/context` passed focused local API proof and duplicates the
+  earlier [LUC-5417](/LUC/issues/LUC-5417) Strategy proof mapping. Future
+  app-completion work should not rerun this Strategy API proof unless a new
+  runtime failure, browser requirement, or production release gate explicitly
+  scopes it.
+
+- 2026-06-29: [LUC-6136](/LUC/issues/LUC-6136) is complete for local
+  evidence collection. No backend, frontend, security, ops, runtime, broad QA,
+  push, deploy, restart, or protected-smoke lane is selected from this
+  snapshot. Future work should select a narrow proof lane only from a
+  nonduplicated concrete app-completion row or reproduced runtime failure; do
+  not create broad repair work from the aggregate `362` missing-test-link
+  count alone.
+
 - 2026-06-29: [LUC-6126](/LUC/issues/LUC-6126) follow-up lane:
   [LUC-6127](/LUC/issues/LUC-6127) Documentation Steward source-control
   closure for `docs/planning/luc-6126-known-state-evidence-and-architecture-baseline.md`
@@ -1849,21 +1979,17 @@
   planning specs with verified downstream runtime/proof evidence do not remain
   classified as active blocked records.
 
-- `LUC-5570` API auth/config route coverage is partially verified and blocked
-  only at behavioral API-suite execution. Evidence packet:
-  `docs/planning/luc-5570-api-auth-config-route-coverage.md`. Static/backend
-  proof completed: `npm run build:server` PASS, `npm run
-  check:route-capabilities` PASS (`180` manifest routes / `35` route files),
-  `git diff --check` PASS with LF-to-CRLF warnings only, and `npm run
-  architecture:status` PASS (`GREEN`, graph `454/765/35`, queue `0`,
-  worklist `0`, delta `0/0/0`). Blocked proof:
-  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-5570-postgres`
-  `COMPANYCORE_TEST_DB_PORT=55570`
-  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` could
-  not start because Docker Desktop's Linux engine pipe is unavailable. Next
-  owner/action: rerun the same API harness in a Docker-enabled environment or
-  with an approved safe local `DATABASE_URL`; no product repair issue is
-  warranted unless that run fails.
+- `LUC-6155` completed the backend auth/config behavioral API proof that was
+  blocked in [LUC-5570](/LUC/issues/LUC-5570). Evidence packet:
+  `docs/planning/luc-6155-auth-config-api-proof-lane.md`. Proof:
+  `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-6155-postgres`
+  `COMPANYCORE_TEST_DB_PORT=55655`
+  `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0 npm run test:api:local` PASS
+  after server/web build, all `31` migrations, seed, and `8/8` Node API
+  subtests; `npm run check:route-capabilities` PASS; `npm run
+  architecture:status` PASS; `git diff --check` PASS with LF-to-CRLF warnings
+  only. No backend follow-up remains for this proof lane; protected production
+  auth/config smoke remains a separate release/Ops gate if selected.
 
 - `LUC-5560` top-flow test-link proof ladder is partially verified and blocked
   at behavioral API proof. Evidence packet:
@@ -7762,6 +7888,19 @@ Last updated: 2026-06-20
   from `docs/status/app-completion-index.md`. Exclude recently verified Auth /
   account access, User settings, Sales context and board proof, Finance browser
   proof, Assets, Relationships, and Product/Delivery lanes unless a fresh
+- 2026-06-29: [LUC-6167](/LUC/issues/LUC-6167) known-state baseline completed.
+  - Current evidence: architecture-awareness scanner PASS (`2691` entities,
+    `6121` relations, `16256` files, generated
+    `2026-06-29T07:07:18.555Z`); app-completion PASS (`374` items, `7`
+    flows, `363` missing test links, `0` missing doc links, `0` blocked,
+    `0` browser-review records); `npm run architecture:status` PASS;
+    `npm run check:route-capabilities` PASS; `git diff --check` PASS with
+    LF-to-CRLF warnings only.
+  - Next owner decision: no new product repair, backend, frontend, security,
+    ops, or broad QA lane from this baseline. Future Docs/Scanner or QA work
+    needs a concrete unverified runtime row outside already-classified proof
+    families or a reproduced fresh regression.
+
   regression signal appears. Protected target proof remains gated by fresh
   approval/credential evidence.
 
@@ -7842,3 +7981,42 @@ Last updated: 2026-06-20
    app-completion or architecture snapshot shows a concrete blocker, failed
    route capability gate, owner gap, verified-without-proof row, or
    user-facing proof target not already covered by existing packets.
+
+# 2026-06-29 Next Steps After LUC-6166
+
+1. [LUC-6189](/LUC/issues/LUC-6189): close source-control posture for the
+   [LUC-6166](/LUC/issues/LUC-6166) evidence packet before treating
+   generated/status changes as releasable.
+2. [LUC-6190](/LUC/issues/LUC-6190): classify the architecture-awareness
+   scanner timeout after artifact write so future known-state lanes know
+   whether to increase timeout, reduce scope, or fix a cleanup hang.
+3. [LUC-6191](/LUC/issues/LUC-6191): curate the `363` app-completion
+   missing-test-link rows only to find a nonduplicated proof target; do not
+   create broad implementation work from aggregate scanner debt alone.
+
+# 2026-06-29 Next Steps After LUC-6191
+
+1. Keep [LUC-6191](/LUC/issues/LUC-6191) closed as a verification curation
+   packet. It selected no new QA runtime proof target because the top
+   app-completion candidates duplicate existing Account access, auth/config,
+   Integration Settings, and Strategy proof packets.
+2. Remaining app-completion work should be Documentation/Architecture
+   evidence-link curation against generated rows, or a QA rerun only after a
+   future snapshot exposes a concrete unproved route, frontend journey, or
+   reproduced failure.
+3. [LUC-6190](/LUC/issues/LUC-6190) remains the separate scanner-timeout
+   hygiene lane from the [LUC-6166](/LUC/issues/LUC-6166) follow-up set.
+
+# 2026-06-29 LUC-6204 Next Steps
+
+1. [LUC-6209](/LUC/issues/LUC-6209): Documentation Steward closes
+   source-control posture for the [LUC-6204](/LUC/issues/LUC-6204)
+   generated/status/planning packet in the mixed-dirty, ahead worktree;
+   commit only if the packet becomes safely isolatable.
+2. [LUC-6210](/LUC/issues/LUC-6210): Technical Solution Architect curates
+   the app-completion proof-link rows after [LUC-6204](/LUC/issues/LUC-6204),
+   selecting a fresh nonduplicated proof target only if the snapshot exposes
+   one.
+3. Do not open backend/frontend/security/ops product repair from
+   [LUC-6204](/LUC/issues/LUC-6204) alone; the local baseline did not expose a
+   failed, blocked, or unowned product behavior.
