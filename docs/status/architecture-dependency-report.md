@@ -1,10 +1,10 @@
 # Dependency Report
 
-Generated: 2026-06-29T08:35:36.166Z
+Generated: 2026-06-30T19:49:33.889Z
 
 ## Summary
 
-- Dependency relations: 438
+- Dependency relations: 437
 - Entities with dependencies: 95
 
 ## Dependency Edges
@@ -29,7 +29,6 @@ Generated: 2026-06-29T08:35:36.166Z
 | api-key.middleware.ts | uses | api-error.ts | src/middleware/api-error |
 | api-key.ts | uses | env.ts | src/config/env |
 | api-keys.routes.ts | uses | prisma.ts | src/db/prisma |
-| api-keys.routes.ts | uses | api-key.middleware.ts | src/auth/api-key |
 | api-keys.routes.ts | uses | api-key.ts | src/auth/api-key |
 | api-keys.routes.ts | uses | agent-key-profiles.ts | src/auth/agent-key-profiles |
 | api-keys.routes.ts | uses | capabilities.ts | src/auth/capabilities |

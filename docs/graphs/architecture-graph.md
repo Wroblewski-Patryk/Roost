@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-29T08:35:36.166Z
+Generated: 2026-06-30T19:49:33.889Z
 
 ## Canonical Exports
 
@@ -42,14 +42,14 @@ Generated: 2026-06-29T08:35:36.166Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | Module Confidence Ledger | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-06-30 LUC-6408 Confidence Note | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | System Health | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-06-30 LUC-6408 Health Check | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -565,6 +565,8 @@ Generated: 2026-06-29T08:35:36.166Z
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
+| documents | agent:2026-06-30-luc-6408-confidence-note:a9710f0e9f | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
+| documents | agent:2026-06-30-luc-6408-health-check:1d524e134a | module:agents:4ae71ba13a | .agents/state/system-health.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -588,7 +590,6 @@ Generated: 2026-06-29T08:35:36.166Z
 | documents | agent:general-workspace-rules:2b434882d7 | module:agents:4ae71ba13a | .agents/workflows/general.md |
 | documents | agent:known-issues:5043444a16 | module:agents:4ae71ba13a | .agents/state/known-issues.md |
 | documents | agent:mission-control:86ecd445b8 | module:agents:4ae71ba13a | .agents/core/mission-control.md |
-| documents | agent:module-confidence-ledger:f4e40a82b8 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
 | documents | agent:next-steps:f65f9bc52d | module:agents:4ae71ba13a | .agents/state/next-steps.md |
 | documents | agent:ops-release:1193a6d307 | module:agents:4ae71ba13a | .agents/prompts/ops-release.md |
 | documents | agent:planner:5b56a0bd47 | module:agents:4ae71ba13a | .agents/prompts/planner.md |
@@ -609,7 +610,6 @@ Generated: 2026-06-29T08:35:36.166Z
 | documents | agent:risk-register:a357934902 | module:agents:4ae71ba13a | .agents/state/risk-register.md |
 | documents | agent:security-auditor:63dc9d9ff4 | module:agents:4ae71ba13a | .agents/prompts/security-auditor.md |
 | documents | agent:subagent-orchestration-workflow:7e6a3994c0 | module:agents:4ae71ba13a | .agents/workflows/subagent-orchestration.md |
-| documents | agent:system-health:6c9795d9b5 | module:agents:4ae71ba13a | .agents/state/system-health.md |
 | documents | agent:user-collaboration-workflow:98bfb8bc00 | module:agents:4ae71ba13a | .agents/workflows/user-collaboration.md |
 | documents | agent:world-class-delivery-workflow:8464f9dcd7 | module:agents:4ae71ba13a | .agents/workflows/world-class-delivery.md |
 | documents | document:acceptance-criteria-model:13886f82fd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0001.md |
