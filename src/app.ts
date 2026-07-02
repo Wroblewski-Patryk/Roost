@@ -40,7 +40,7 @@ import { targetsRouter } from "./modules/targets/targets.routes";
 import { taskListsRouter } from "./modules/task-lists/task-lists.routes";
 import { tasksRouter } from "./modules/tasks/tasks.routes";
 import { clickUpWebhooksRouter } from "./modules/webhooks/clickup-webhooks.routes";
-import { healthRouter } from "./health/health.routes";
+import { buildInfoRouter, healthRouter, readinessRouter } from "./health/health.routes";
 import { interactionsRouter } from "./modules/interactions/interactions.routes";
 import { workspacesRouter } from "./modules/workspaces/workspaces.routes";
 import { workforceRouter } from "./modules/workforce/workforce.routes";
@@ -189,6 +189,9 @@ export function createApp() {
   });
   app.use("/health", healthRouter);
   app.use("/v1/health", healthRouter);
+  app.use("/ready", readinessRouter);
+  app.use("/v1/ready", readinessRouter);
+  app.use("/api/build-info", buildInfoRouter);
   app.use(["/auth", "/v1/auth"], authRateLimiter);
   app.use("/auth", authRouter);
   app.use("/v1/auth", authRouter);

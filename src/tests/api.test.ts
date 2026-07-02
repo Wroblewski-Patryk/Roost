@@ -345,10 +345,22 @@ test("production health reports safe Coolify build metadata", async () => {
     const server = createApp().listen(0);
     await new Promise((resolve) => server.once("listening", resolve));
     const { port } = server.address();
-    const response = await fetch("http://127.0.0.1:" + port + "/health");
-    const body = await response.json();
+    const baseUrl = "http://127.0.0.1:" + port;
+    const health = await fetch(baseUrl + "/health");
+    const ready = await fetch(baseUrl + "/ready");
+    const buildInfo = await fetch(baseUrl + "/api/build-info");
+    const body = await health.json();
+    const readyBody = await ready.json();
+    const buildInfoBody = await buildInfo.json();
     server.close();
-    console.log(JSON.stringify(body.build));
+    console.log(JSON.stringify({
+      healthStatus: health.status,
+      readyStatus: ready.status,
+      buildInfoStatus: buildInfo.status,
+      healthBuild: body.build,
+      readyBuild: readyBody.build,
+      buildInfoBuild: buildInfoBody.build
+    }));
   `, {
     NODE_ENV: "production",
     DATABASE_URL: "postgresql://companycore:companycore@localhost:5432/companycore?schema=public",
@@ -362,12 +374,21 @@ test("production health reports safe Coolify build metadata", async () => {
   });
 
   assert.equal(result.exitCode, 0, `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`);
-  const build = JSON.parse(result.stdout) as {
-    commit: string;
-    image: string;
+  const summary = JSON.parse(result.stdout) as {
+    healthStatus: number;
+    readyStatus: number;
+    buildInfoStatus: number;
+    healthBuild: { commit: string; image: string };
+    readyBuild: { commit: string; image: string };
+    buildInfoBuild: { commit: string; image: string };
   };
-  assert.equal(build.commit, "coolify-source-commit-for-tests");
-  assert.equal(build.image, "backend-companycore-coolify-for-tests");
+  assert.equal(summary.healthStatus, 200);
+  assert.equal(summary.readyStatus, 200);
+  assert.equal(summary.buildInfoStatus, 200);
+  assert.deepEqual(summary.healthBuild, summary.readyBuild);
+  assert.deepEqual(summary.healthBuild, summary.buildInfoBuild);
+  assert.equal(summary.healthBuild.commit, "coolify-source-commit-for-tests");
+  assert.equal(summary.healthBuild.image, "backend-companycore-coolify-for-tests");
 });
 
 test("production CORS allows approved origins and rejects unknown browser origins", async () => {
@@ -516,6 +537,12 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(health.status, 200);
   const v1Health = await request("/v1/health");
   assert.equal(v1Health.status, 200);
+  const ready = await request("/ready");
+  assert.equal(ready.status, 200);
+  const v1Ready = await request("/v1/ready");
+  assert.equal(v1Ready.status, 200);
+  const buildInfo = await request("/api/build-info");
+  assert.equal(buildInfo.status, 200);
 
   const webhookBody = JSON.stringify({
     webhook_id: "clickup-webhook-1",
