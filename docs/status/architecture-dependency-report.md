@@ -1,10 +1,10 @@
 # Dependency Report
 
-Generated: 2026-06-30T19:49:33.889Z
+Generated: 2026-07-02T14:47:50.452Z
 
 ## Summary
 
-- Dependency relations: 437
+- Dependency relations: 438
 - Entities with dependencies: 95
 
 ## Dependency Edges
@@ -373,6 +373,7 @@ Generated: 2026-06-30T19:49:33.889Z
 | server.ts | uses | env.ts | src/config/env |
 | server.ts | uses | app.ts | src/app |
 | server.ts | uses | clickup.maintenance-scheduler.ts | src/integrations/clickup/clickup.maintenance-scheduler |
+| settings-routes.tsx | uses | client.ts | web/src/api/client |
 | settings-routes.tsx | uses | cc-button.tsx | web/src/components/cc-button |
 | settings-routes.tsx | uses | cc-notice.tsx | web/src/components/cc-notice |
 | settings-routes.tsx | uses | use-owner-packet.ts | web/src/hooks/use-owner-packet |

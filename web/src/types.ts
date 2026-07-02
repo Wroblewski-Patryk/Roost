@@ -30,6 +30,41 @@ export type WorkspaceSummary = {
   updatedAt?: string;
 };
 
+export type IntegrationStatus = {
+  configured?: boolean;
+  secretConfigured?: boolean;
+  active?: boolean;
+  config?: Record<string, unknown>;
+  updatedAt?: string | null;
+  lastValidatedAt?: string | null;
+  hasRefreshToken?: boolean;
+  hasClientId?: boolean;
+  hasClientSecret?: boolean;
+  tokenExpired?: boolean;
+};
+
+export type ConnectionPacket = {
+  service?: string;
+  apiVersion?: string;
+  status?: string;
+  auth?: {
+    type?: "user" | "api_key";
+    userId?: string;
+    apiKeyId?: string;
+    workspaceId?: string;
+  };
+  workspace?: {
+    id?: string;
+    name?: string;
+  };
+  capabilities?: string[];
+  scopeMode?: "broad" | "scoped";
+  integrations?: {
+    clickup?: IntegrationStatus;
+    googleDrive?: IntegrationStatus;
+  };
+};
+
 export type RouteProposal = {
   id: string;
   title?: string;

@@ -206,9 +206,233 @@
         "docs/planning/dms-07-finance-context-read-api-task-contract.md",
         "docs/planning/luc-5568-assets-finance-blocked-spec-record-classification.md"
       ]
+    },
+    {
+      "path": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified local API test and browser smoke proof for Account access registration, login, token persistence, protected-route rendering, and /v1/auth/me readback.",
+      "evidence": [
+        "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+        "docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json",
+        "docs/ux/evidence/luc-5561-auth-account-access/register-form-filled.png",
+        "docs/ux/evidence/luc-5561-auth-account-access/post-register-protected-route.png",
+        "docs/ux/evidence/luc-5561-auth-account-access/login-form-filled.png",
+        "docs/ux/evidence/luc-5561-auth-account-access/post-login-protected-route.png"
+      ]
+    },
+    {
+      "path": "docs/planning/luc-5569-user-settings-proof-ladder.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified browser test proof for signed-in Account settings and Workspace settings on desktop, tablet, and mobile with no console issues.",
+      "evidence": [
+        "docs/planning/luc-5569-user-settings-proof-ladder.md",
+        "docs/ux/evidence/luc-5569-user-settings-proof/report.json"
+      ]
+    },
+    {
+      "path": "docs/planning/luc-5624-sales-context-and-board-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified browser test proof for the signed-in Sales board route on desktop, tablet, and mobile with required sales and blocked-write-action text present.",
+      "evidence": [
+        "docs/planning/luc-5624-sales-context-and-board-proof.md",
+        "docs/ux/evidence/luc-5624-sales-board-proof/report.json"
+      ]
+    },
+    {
+      "path": "docs/planning/luc-5433-finance-browser-proof-ladder.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified browser test proof for the signed-in Finance board route on desktop, tablet, and mobile with required finance text present.",
+      "evidence": [
+        "docs/planning/luc-5433-finance-browser-proof-ladder.md",
+        "docs/ux/evidence/luc-5433-finance-browser-proof/report.json"
+      ]
+    },
+    {
+      "path": "docs/planning/luc-6905-exchange-connection-configuration-visible-settings-chain.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified frontend settings proof for the Exchange connection/configuration chain: /workspace/settings renders backend-connected, redacted ClickUp and Google Drive readiness using /v1/connection and integration-settings contracts.",
+      "evidence": [
+        "docs/planning/luc-6905-exchange-connection-configuration-visible-settings-chain.md",
+        "C:/Users/wrobl/AppData/Local/Temp/roost-luc-6905-settings-proof/report.json",
+        "C:/Users/wrobl/AppData/Local/Temp/roost-luc-6905-settings-proof/desktop-workspace-settings.png",
+        "C:/Users/wrobl/AppData/Local/Temp/roost-luc-6905-settings-proof/mobile-workspace-settings.png"
+      ]
     }
   ],
   "relationOverrides": [
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/auth",
+      "toType": "api_endpoint",
+      "evidence": "LUC-6696 app-completion proof-link association"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/v1/auth",
+      "toType": "api_endpoint",
+      "evidence": "LUC-6696 app-completion proof-link association"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "docs/architecture/nodes/generated/PAGE-AUTO-0003.md",
+      "toType": "document",
+      "evidence": "LUC-6696 app-completion proof-link association"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "docs/architecture/nodes/generated/PAGE-AUTO-0004.md",
+      "toType": "document",
+      "evidence": "LUC-6696 app-completion proof-link association"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/auth",
+      "fromType": "api_endpoint",
+      "toPath": "docs/architecture/system-architecture.md",
+      "toType": "document",
+      "evidence": "LUC-6696 app-completion proof-link association"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/v1/auth",
+      "fromType": "api_endpoint",
+      "toPath": "docs/architecture/system-architecture.md",
+      "toType": "document",
+      "evidence": "LUC-6696 app-completion proof-link association"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5569-user-settings-proof-ladder.md",
+      "fromType": "test",
+      "toPath": "docs/architecture/nodes/generated/PAGE-AUTO-0001.md",
+      "toType": "document",
+      "evidence": "LUC-6696 app-completion proof-link association"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5569-user-settings-proof-ladder.md",
+      "fromType": "test",
+      "toPath": "docs/architecture/nodes/generated/PAGE-AUTO-0010.md",
+      "toType": "document",
+      "evidence": "LUC-6696 app-completion proof-link association"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5624-sales-context-and-board-proof.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/sales",
+      "toType": "api_endpoint",
+      "evidence": "LUC-6696 app-completion proof-link association"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5624-sales-context-and-board-proof.md",
+      "fromType": "test",
+      "toPath": "docs/architecture/nodes/generated/API-AUTO-0079.md",
+      "toType": "document",
+      "evidence": "LUC-6696 app-completion proof-link association"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/sales",
+      "fromType": "api_endpoint",
+      "toPath": "docs/architecture/nodes/generated/API-AUTO-0079.md",
+      "toType": "document",
+      "evidence": "LUC-6696 app-completion proof-link association"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5433-finance-browser-proof-ladder.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/finance",
+      "toType": "api_endpoint",
+      "evidence": "LUC-6696 app-completion proof-link association"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5433-finance-browser-proof-ladder.md",
+      "fromType": "test",
+      "toPath": "docs/architecture/nodes/generated/API-AUTO-0041.md",
+      "toType": "document",
+      "evidence": "LUC-6696 app-completion proof-link association"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/finance",
+      "fromType": "api_endpoint",
+      "toPath": "docs/architecture/nodes/generated/API-AUTO-0041.md",
+      "toType": "document",
+      "evidence": "LUC-6696 app-completion proof-link association"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6905-exchange-connection-configuration-visible-settings-chain.md",
+      "fromType": "test",
+      "toPath": "web/src/features/settings/settings-routes.tsx",
+      "toType": "feature",
+      "evidence": "LUC-6911 Exchange event-chain proof-link refresh after LUC-6905"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6905-exchange-connection-configuration-visible-settings-chain.md",
+      "fromType": "test",
+      "toPath": "docs/architecture/nodes/generated/PAGE-AUTO-0010.md",
+      "toType": "document",
+      "evidence": "LUC-6911 Exchange event-chain proof-link refresh after LUC-6905"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6905-exchange-connection-configuration-visible-settings-chain.md",
+      "fromType": "test",
+      "toPath": "src/modules/connection/connection.routes.ts",
+      "toType": "feature",
+      "evidence": "LUC-6911 Exchange event-chain proof-link refresh after LUC-6905"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6905-exchange-connection-configuration-visible-settings-chain.md",
+      "fromType": "test",
+      "toPath": "src/modules/integration-settings/integration-settings.routes.ts",
+      "toType": "feature",
+      "evidence": "LUC-6911 Exchange event-chain proof-link refresh after LUC-6905"
+    },
+    {
+      "type": "connected_to",
+      "fromPath": "src/modules/integration-settings/integration-settings.routes.ts#mergeGoogleDriveSecret",
+      "fromType": "function",
+      "toPath": "web/src/features/settings/settings-routes.tsx",
+      "toType": "feature",
+      "evidence": "LUC-6911 Exchange event-chain frontend mapping after LUC-6905"
+    },
+    {
+      "type": "connected_to",
+      "fromPath": "src/modules/integration-settings/integration-settings.routes.ts#mergeGoogleDriveSecret",
+      "fromType": "function",
+      "toPath": "web/src/types.ts",
+      "toType": "model",
+      "evidence": "LUC-6911 Exchange event-chain frontend type mapping after LUC-6905"
+    },
+    {
+      "type": "connected_to",
+      "fromPath": "src/modules/integration-settings/integration-settings.routes.ts#mergeGoogleDriveSecret",
+      "fromType": "function",
+      "toPath": "web/src/i18n/messages.ts",
+      "toType": "feature",
+      "evidence": "LUC-6911 Exchange event-chain frontend copy mapping after LUC-6905"
+    },
     {
       "type": "documents",
       "fromPath": "src/tests/api.test.ts#registerOwner",

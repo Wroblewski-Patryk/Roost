@@ -532,6 +532,49 @@ after(async () => {
   await prisma.$disconnect();
 });
 
+test("account and workspace settings profile contract exposes active owner workspace", async () => {
+  const owner = await registerOwner("settings-profile-owner@example.com", "Settings Profile Workspace");
+  const headers = { Authorization: `Bearer ${owner.token}` };
+
+  const profile = await request("/v1/auth/me", { headers });
+  assert.equal(profile.status, 200);
+  const profileBody = profile.body as {
+    data: {
+      authType: string;
+      userId: string;
+      workspaceId: string;
+      workspaces: Array<{
+        id: string;
+        name: string;
+        role: string;
+        active: boolean;
+      }>;
+    };
+  };
+
+  assert.equal(profileBody.data.authType, "user");
+  assert.ok(profileBody.data.userId);
+  assert.equal(profileBody.data.workspaceId, owner.workspace.id);
+  assert.equal(profileBody.data.workspaces.length, 1);
+  assert.deepEqual(profileBody.data.workspaces[0], {
+    id: owner.workspace.id,
+    name: "Settings Profile Workspace",
+    role: "owner",
+    active: true
+  });
+
+  const legacyProfile = await request("/auth/me", { headers });
+  assert.equal(legacyProfile.status, 200);
+  const legacyProfileBody = legacyProfile.body as {
+    data: {
+      workspaceId: string;
+      workspaces: Array<{ id: string; name: string; role: string; active: boolean }>;
+    };
+  };
+  assert.equal(legacyProfileBody.data.workspaceId, profileBody.data.workspaceId);
+  assert.deepEqual(legacyProfileBody.data.workspaces, profileBody.data.workspaces);
+});
+
 test("CompanyCore v1 protected API flow", async () => {
   const health = await request("/health");
   assert.equal(health.status, 200);

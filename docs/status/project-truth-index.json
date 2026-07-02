@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-07-02T15:25:35.182Z",
+  "project": "Roost",
+  "root": "C:/Personal/Projekty/Aplikacje/Roost",
+  "status": "known_and_routable",
+  "counts": {
+    "appCompletionItems": 374,
+    "eventChains": 7,
+    "incompleteEventChains": 0,
+    "runtimeFindings": 0,
+    "criticalRuntimeFindings": 0,
+    "operationalGateGaps": 0,
+    "totalGaps": 0
+  },
+  "firstGap": null,
+  "gaps": []
+}

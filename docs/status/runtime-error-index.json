@@ -1,0 +1,11 @@
+{
+  "generatedAt": "2026-07-02T15:25:35.182Z",
+  "project": "Roost",
+  "root": "C:/Personal/Projekty/Aplikacje/Roost",
+  "counts": {
+    "runtimeFindings": 0,
+    "criticalFindings": 0,
+    "blockedFindings": 0
+  },
+  "findings": []
+}

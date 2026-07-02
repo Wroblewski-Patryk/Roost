@@ -1,0 +1,202 @@
+{
+  "baseUrl": "http://127.0.0.1:31569",
+  "generatedAt": "2026-06-27T18:33:31.766Z",
+  "health": {
+    "status": "ok",
+    "service": "companycore",
+    "name": "LuckySparrow Company Core",
+    "build": {
+      "commit": "unknown",
+      "image": "unknown"
+    }
+  },
+  "ownerEmail": "owner@example.com",
+  "routes": [
+    "/account/settings",
+    "/workspace/settings"
+  ],
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 960
+    },
+    {
+      "name": "tablet",
+      "width": 834,
+      "height": 1112
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "screenshots": [
+    {
+      "viewport": "desktop",
+      "route": "/account/settings",
+      "file": "docs\\ux\\evidence\\luc-5569-user-settings-proof\\desktop-account-settings.png"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/workspace/settings",
+      "file": "docs\\ux\\evidence\\luc-5569-user-settings-proof\\desktop-workspace-settings.png"
+    },
+    {
+      "viewport": "tablet",
+      "route": "/account/settings",
+      "file": "docs\\ux\\evidence\\luc-5569-user-settings-proof\\tablet-account-settings.png"
+    },
+    {
+      "viewport": "tablet",
+      "route": "/workspace/settings",
+      "file": "docs\\ux\\evidence\\luc-5569-user-settings-proof\\tablet-workspace-settings.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/account/settings",
+      "file": "docs\\ux\\evidence\\luc-5569-user-settings-proof\\mobile-account-settings.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/workspace/settings",
+      "file": "docs\\ux\\evidence\\luc-5569-user-settings-proof\\mobile-workspace-settings.png"
+    }
+  ],
+  "assertions": [
+    {
+      "viewport": "desktop",
+      "route": "/account/settings",
+      "renderedRoute": null,
+      "routeTitle": "",
+      "signedIn": true
+    },
+    {
+      "viewport": "desktop",
+      "route": "/account/settings",
+      "requiredText": "Account settings",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "desktop",
+      "route": "/account/settings",
+      "requiredText": "Workspace role",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "desktop",
+      "route": "/workspace/settings",
+      "renderedRoute": null,
+      "routeTitle": "",
+      "signedIn": true
+    },
+    {
+      "viewport": "desktop",
+      "route": "/workspace/settings",
+      "requiredText": "Workspace settings",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "desktop",
+      "route": "/workspace/settings",
+      "requiredText": "Integrations and API",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "desktop",
+      "route": "/workspace/settings",
+      "requiredText": "API keys",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "tablet",
+      "route": "/account/settings",
+      "renderedRoute": null,
+      "routeTitle": "",
+      "signedIn": true
+    },
+    {
+      "viewport": "tablet",
+      "route": "/account/settings",
+      "requiredText": "Account settings",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "tablet",
+      "route": "/account/settings",
+      "requiredText": "Workspace role",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "tablet",
+      "route": "/workspace/settings",
+      "renderedRoute": null,
+      "routeTitle": "",
+      "signedIn": true
+    },
+    {
+      "viewport": "tablet",
+      "route": "/workspace/settings",
+      "requiredText": "Workspace settings",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "tablet",
+      "route": "/workspace/settings",
+      "requiredText": "Integrations and API",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "tablet",
+      "route": "/workspace/settings",
+      "requiredText": "API keys",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/account/settings",
+      "renderedRoute": null,
+      "routeTitle": "",
+      "signedIn": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/account/settings",
+      "requiredText": "Account settings",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/account/settings",
+      "requiredText": "Workspace role",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/workspace/settings",
+      "renderedRoute": null,
+      "routeTitle": "",
+      "signedIn": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/workspace/settings",
+      "requiredText": "Workspace settings",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/workspace/settings",
+      "requiredText": "Integrations and API",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/workspace/settings",
+      "requiredText": "API keys",
+      "requiredTextPresent": true
+    }
+  ],
+  "consoleIssues": []
+}

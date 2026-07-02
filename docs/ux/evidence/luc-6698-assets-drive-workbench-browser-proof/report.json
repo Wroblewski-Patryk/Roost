@@ -1,0 +1,281 @@
+{
+  "issue": "LUC-6698",
+  "generatedAt": "2026-07-01T21:51:54.104Z",
+  "baseUrl": "http://127.0.0.1:3238",
+  "route": "/areas?area=08-zasoby&view=files",
+  "health": {
+    "status": 200,
+    "body": {
+      "status": "ok",
+      "service": "companycore",
+      "name": "LuckySparrow Company Core",
+      "build": {
+        "commit": "unknown",
+        "image": "unknown"
+      }
+    }
+  },
+  "buildWeb": "passed before browser proof",
+  "fixtureScope": "Disposable local Postgres database only; no provider mutation or production data.",
+  "apiSummary": {
+    "status": 200,
+    "totalItems": 12,
+    "driveFiles": 5,
+    "contentSnapshots": 3,
+    "luc6698Resources": [
+      {
+        "name": "LUC 6698 Proof Root",
+        "sourceModel": "GoogleDriveFile",
+        "sourceId": "96f20455-0950-4a12-9d1c-6e790b213dff",
+        "resourceType": "folder",
+        "mimeType": "application/vnd.google-apps.folder",
+        "previewText": null
+      },
+      {
+        "name": "LUC 6698 unsupported binary.bin",
+        "sourceModel": "GoogleDriveFile",
+        "sourceId": "3682acf2-1dd6-4746-a2dd-8db89fc98be1",
+        "resourceType": "knowledge_note",
+        "mimeType": "application/octet-stream",
+        "previewText": null
+      },
+      {
+        "name": "LUC 6698 manifest.json",
+        "sourceModel": "GoogleDriveFile",
+        "sourceId": "99a1fdf6-13c9-4005-a21e-a1b493658cd4",
+        "resourceType": "json",
+        "mimeType": "application/json",
+        "previewText": "{\"proof\":\"luc-6698\",\"status\":\"ready\"}"
+      },
+      {
+        "name": "LUC 6698 Asset data.csv",
+        "sourceModel": "GoogleDriveFile",
+        "sourceId": "0fc539b5-89c8-48a8-a533-5dabf6e6be8e",
+        "resourceType": "csv",
+        "mimeType": "text/csv",
+        "previewText": "Name,Status\nProof file,Ready"
+      },
+      {
+        "name": "LUC 6698 Company architecture.md",
+        "sourceModel": "GoogleDriveFile",
+        "sourceId": "f92fc910-91c1-4a5d-9512-afb64f476f52",
+        "resourceType": "markdown",
+        "mimeType": "text/markdown",
+        "previewText": "# Company architecture\n\nRoost assets preview can render markdown content for browser proof."
+      }
+    ]
+  },
+  "screenshots": [
+    {
+      "viewport": "desktop",
+      "state": "loading",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-6698-assets-drive-workbench-browser-proof\\desktop-loading.png",
+      "note": "Captured during initial delayed-request pass."
+    },
+    {
+      "viewport": "desktop",
+      "state": "ready",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-6698-assets-drive-workbench-browser-proof\\desktop-ready.png"
+    },
+    {
+      "viewport": "desktop",
+      "state": "empty-filter",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-6698-assets-drive-workbench-browser-proof\\desktop-empty-filter.png"
+    },
+    {
+      "viewport": "desktop",
+      "state": "markdown-preview",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-6698-assets-drive-workbench-browser-proof\\desktop-markdown-preview.png"
+    },
+    {
+      "viewport": "desktop",
+      "state": "unsupported-preview",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-6698-assets-drive-workbench-browser-proof\\desktop-unsupported-preview.png"
+    },
+    {
+      "viewport": "tablet",
+      "state": "ready",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-6698-assets-drive-workbench-browser-proof\\tablet-ready.png"
+    },
+    {
+      "viewport": "tablet",
+      "state": "empty-filter",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-6698-assets-drive-workbench-browser-proof\\tablet-empty-filter.png"
+    },
+    {
+      "viewport": "tablet",
+      "state": "markdown-preview",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-6698-assets-drive-workbench-browser-proof\\tablet-markdown-preview.png"
+    },
+    {
+      "viewport": "tablet",
+      "state": "unsupported-preview",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-6698-assets-drive-workbench-browser-proof\\tablet-unsupported-preview.png"
+    },
+    {
+      "viewport": "mobile",
+      "state": "ready",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-6698-assets-drive-workbench-browser-proof\\mobile-ready.png"
+    },
+    {
+      "viewport": "mobile",
+      "state": "empty-filter",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-6698-assets-drive-workbench-browser-proof\\mobile-empty-filter.png"
+    },
+    {
+      "viewport": "mobile",
+      "state": "markdown-preview",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-6698-assets-drive-workbench-browser-proof\\mobile-markdown-preview.png"
+    },
+    {
+      "viewport": "mobile",
+      "state": "unsupported-preview",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-6698-assets-drive-workbench-browser-proof\\mobile-unsupported-preview.png"
+    }
+  ],
+  "results": [
+    {
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 960
+      },
+      "url": "http://127.0.0.1:3238/areas?area=08-zasoby&view=files",
+      "readyOverflow": {
+        "width": 1440,
+        "documentClientWidth": 1440,
+        "documentScrollWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "hasHorizontalOverflow": false
+      },
+      "emptyOverflow": {
+        "width": 1440,
+        "documentClientWidth": 1440,
+        "documentScrollWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "hasHorizontalOverflow": false
+      },
+      "markdownOverflow": {
+        "width": 1440,
+        "documentClientWidth": 1440,
+        "documentScrollWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "hasHorizontalOverflow": false
+      },
+      "unsupportedOverflow": {
+        "width": 1440,
+        "documentClientWidth": 1440,
+        "documentScrollWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "hasHorizontalOverflow": false
+      },
+      "emptyStateVerified": true,
+      "markdownPreviewVerified": true,
+      "unsupportedStateVerified": true,
+      "emptyTextSample": "R\nRoost\nOperating center\nCOMPANY / WORKSPACE\nLuckySparrow\nWorkspace settings\n\nDEPARTMENTS\n\nGeneral\nCompany orchestration, routing, and cross-department command.\nStrategy\nStrategic goals, decisions, priorities, and roadmap governance.\nProduct\nProduct and service definition, delivery scope, and improvement loops.\nSales\nLead, offer, deal, and commercial follow-up management.\nOperations\nProcedures, task boards, calendars, routines, and operational controls.\nRelationships\nClients, partners, support, ",
+      "markdownTextSample": "Company architecture\n\nRoost assets preview can render markdown content for browser proof.",
+      "unsupportedTextSample": "No inline preview yet\n\nLocal fixture for binary preview.",
+      "consoleIssues": [],
+      "pageErrors": [],
+      "failedRequests": []
+    },
+    {
+      "viewport": {
+        "name": "tablet",
+        "width": 834,
+        "height": 1112
+      },
+      "url": "http://127.0.0.1:3238/areas?area=08-zasoby&view=files",
+      "readyOverflow": {
+        "width": 834,
+        "documentClientWidth": 834,
+        "documentScrollWidth": 834,
+        "bodyScrollWidth": 834,
+        "hasHorizontalOverflow": false
+      },
+      "emptyOverflow": {
+        "width": 834,
+        "documentClientWidth": 834,
+        "documentScrollWidth": 834,
+        "bodyScrollWidth": 834,
+        "hasHorizontalOverflow": false
+      },
+      "markdownOverflow": {
+        "width": 834,
+        "documentClientWidth": 834,
+        "documentScrollWidth": 834,
+        "bodyScrollWidth": 834,
+        "hasHorizontalOverflow": false
+      },
+      "unsupportedOverflow": {
+        "width": 834,
+        "documentClientWidth": 834,
+        "documentScrollWidth": 834,
+        "bodyScrollWidth": 834,
+        "hasHorizontalOverflow": false
+      },
+      "emptyStateVerified": true,
+      "markdownPreviewVerified": true,
+      "unsupportedStateVerified": true,
+      "emptyTextSample": "R\nRoost\nAssets\nFiles and folders\nROOT FOLDERS\nSearch root folders\nAll root folders\n1 source folders\nClear\n08 ASSETS\nLUC 6698 Proof Root\n08 Assets - 4 resource\nFOLDER TREE\nAll folders\nLUC 6698 Proof Root\nLUC 6698 Asset data.csv\nLUC 6698 Company architecture.md\nLUC 6698 manifest.json\nLUC 6698 unsupported binary.bin\nFiles and folders\n\n0 of 0 items\n\nAll\nFolders\nFiles\nSort by name\nRecently modified\nSort by type\nSort by source\nTYPE FILTERS\nAll types\n0\nClear filters\nNo matching files or folders\n\nClear ",
+      "markdownTextSample": "Company architecture\n\nRoost assets preview can render markdown content for browser proof.",
+      "unsupportedTextSample": "No inline preview yet\n\nLocal fixture for binary preview.",
+      "consoleIssues": [],
+      "pageErrors": [],
+      "failedRequests": []
+    },
+    {
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "url": "http://127.0.0.1:3238/areas?area=08-zasoby&view=files",
+      "readyOverflow": {
+        "width": 390,
+        "documentClientWidth": 390,
+        "documentScrollWidth": 390,
+        "bodyScrollWidth": 390,
+        "hasHorizontalOverflow": false
+      },
+      "emptyOverflow": {
+        "width": 390,
+        "documentClientWidth": 390,
+        "documentScrollWidth": 390,
+        "bodyScrollWidth": 390,
+        "hasHorizontalOverflow": false
+      },
+      "markdownOverflow": {
+        "width": 390,
+        "documentClientWidth": 390,
+        "documentScrollWidth": 390,
+        "bodyScrollWidth": 390,
+        "hasHorizontalOverflow": false
+      },
+      "unsupportedOverflow": {
+        "width": 390,
+        "documentClientWidth": 390,
+        "documentScrollWidth": 390,
+        "bodyScrollWidth": 390,
+        "hasHorizontalOverflow": false
+      },
+      "emptyStateVerified": true,
+      "markdownPreviewVerified": true,
+      "unsupportedStateVerified": true,
+      "emptyTextSample": "R\nRoost\nAssets\nFiles and folders\nROOT FOLDERS\nSearch root folders\nAll root folders\n1 source folders\nClear\n08 ASSETS\nLUC 6698 Proof Root\n08 Assets - 4 resource\nFOLDER TREE\nAll folders\nLUC 6698 Proof Root\nLUC 6698 Asset data.csv\nLUC 6698 Company architecture.md\nLUC 6698 manifest.json\nLUC 6698 unsupported binary.bin\nFiles and folders\n\n0 of 0 items\n\nAll\nFolders\nFiles\nSort by name\nRecently modified\nSort by type\nSort by source\nTYPE FILTERS\nAll types\n0\nClear filters\nNo matching files or folders\n\nClear ",
+      "markdownTextSample": "Company architecture\n\nRoost assets preview can render markdown content for browser proof.",
+      "unsupportedTextSample": "No inline preview yet\n\nLocal fixture for binary preview.",
+      "consoleIssues": [],
+      "pageErrors": [],
+      "failedRequests": []
+    }
+  ],
+  "aggregate": {
+    "consoleIssues": [],
+    "pageErrors": [],
+    "failedRequiredRequests": [],
+    "horizontalOverflowFailures": [],
+    "stateFailures": []
+  },
+  "assessment": "No product repair warranted; aggregate arrays are empty, so remaining debt is stale proof-linkage/evidence debt."
+}

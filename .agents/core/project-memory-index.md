@@ -1,6 +1,6 @@
 # Project Memory Index
 
-Last updated: 2026-06-01
+Last updated: 2026-07-02
 
 ## Purpose
 
@@ -8,6 +8,28 @@ This file is the mandatory full-picture protocol for agents. It prevents the
 project from drifting into repeated small fixes with no clear release progress.
 Every non-trivial task must connect local code changes to the current product
 state, architecture intent, module confidence, and the next release objective.
+
+## Latest Generated Truth
+
+- 2026-07-02: [LUC-6913](/LUC/issues/LUC-6913) closed the public runtime
+  readiness/build-info probe gap after [LUC-6916](/LUC/issues/LUC-6916) and
+  [LUC-6918](/LUC/issues/LUC-6918) completed deployment verification. Use
+  `docs/planning/luc-6913-public-runtime-probe-401-diagnosis-and-local-repair.md`
+  plus `docs/status/project-truth-index.json` for current proof: production
+  no-secret probes pass for web home, web build-info, API health, and API
+  readiness; protected `/v1/connection` remains fail-closed without
+  credentials; Project Truth generated `2026-07-02T15:23:33.218Z` with
+  `criticalRuntimeFindings=0`, `operationalGateGaps=0`, and `totalGaps=0`.
+
+- 2026-07-02: [LUC-6911](/LUC/issues/LUC-6911) refreshed the generated
+  Exchange connection/configuration event-chain memory after
+  [LUC-6905](/LUC/issues/LUC-6905). Use
+  `docs/planning/luc-6911-exchange-event-chain-index-refresh-after-luc-6905.md`
+  plus `docs/status/event-chain-index.json` for the current proof: the chain is
+  `chain_indexed` with `frontend=2`, `backend=3`, `worker=9`,
+  `missingLayers=[]`, and incomplete event chains `0`. Current Project Truth
+  residual gaps are public runtime readiness/build-info findings owned by DRE
+  and Ops, not the Exchange docs-memory chain.
 
 ## Required Indexes
 
@@ -179,6 +201,15 @@ continue from repository files alone:
   and missing inferred proof signals. Do not treat unequal aggregate counts
   between those layers as drift without a concrete missing or contradictory
   entity.
+- `docs/architecture/scanner-overrides.json`: targeted architecture-awareness
+  scanner corrections and proof associations. As of 2026-07-01,
+  [LUC-6696](/LUC/issues/LUC-6696) classifies existing [LUC-5561](/LUC/issues/LUC-5561),
+  [LUC-5569](/LUC/issues/LUC-5569), [LUC-5624](/LUC/issues/LUC-5624), and
+  [LUC-5433](/LUC/issues/LUC-5433) proof packets as verified test evidence
+  and links them to matching auth, settings, sales, and finance generated
+  rows. Current app-completion readback after regeneration is `374` items /
+  `7` flows / `353` missing test links / `0` missing doc links / `0` blocked
+  / `0` browser-review records.
 - `docs/architecture/autonomous-company-operating-system.md`: accepted
   explicit architecture boundary from 2026-05-16. CompanyCore is the company
   operating system, not an embedded AI system. Humans use responsive web UI;

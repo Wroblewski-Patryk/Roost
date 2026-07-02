@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-06-30T19:49:33.889Z
+Generated: 2026-07-02T14:47:50.452Z
 
 ## Canonical Exports
 
@@ -42,14 +42,14 @@ Generated: 2026-06-30T19:49:33.889Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-06-30 LUC-6408 Confidence Note | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-02 LUC-6905 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-06-30 LUC-6408 Health Check | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-02 LUC-6905 Health Check | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -561,12 +561,15 @@ Generated: 2026-06-30T19:49:33.889Z
 | connected_to | api_endpoint:use-v1:347b48829e | module:src:13b5974e74 | src/app.ts |
 | connected_to | api_endpoint:use-workforce:a03aa869cd | module:src:13b5974e74 | src/app.ts |
 | connected_to | api_endpoint:use-workspaces:8d243549bd | module:src:13b5974e74 | src/app.ts |
+| connected_to | function:mergegoogledrivesecret:3382200622 | feature:settings-routes-tsx:8e262225e5 | LUC-6911 Exchange event-chain frontend mapping after LUC-6905 |
+| connected_to | function:mergegoogledrivesecret:3382200622 | model:types-ts:1fce583d96 | LUC-6911 Exchange event-chain frontend type mapping after LUC-6905 |
+| connected_to | function:mergegoogledrivesecret:3382200622 | feature:messages-ts:2ff8f72a93 | LUC-6911 Exchange event-chain frontend copy mapping after LUC-6905 |
 | connected_to | project:roost:122c92a083 | task:luc-3712-architecture-task-link-backfill-for-173-implementation-rows:7fd1216070 | .codex/tasks/luc-3712-architecture-task-link-backfill.md |
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
-| documents | agent:2026-06-30-luc-6408-confidence-note:a9710f0e9f | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
-| documents | agent:2026-06-30-luc-6408-health-check:1d524e134a | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-02-luc-6905-health-check:cd22f15ed7 | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-02-luc-6905-module-confidence-update:ed8d76ece4 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -612,6 +615,10 @@ Generated: 2026-06-30T19:49:33.889Z
 | documents | agent:subagent-orchestration-workflow:7e6a3994c0 | module:agents:4ae71ba13a | .agents/workflows/subagent-orchestration.md |
 | documents | agent:user-collaboration-workflow:98bfb8bc00 | module:agents:4ae71ba13a | .agents/workflows/user-collaboration.md |
 | documents | agent:world-class-delivery-workflow:8464f9dcd7 | module:agents:4ae71ba13a | .agents/workflows/world-class-delivery.md |
+| documents | api_endpoint:use-auth:d272d61067 | document:system-architecture:1149ef3528 | LUC-6696 app-completion proof-link association |
+| documents | api_endpoint:use-finance:b8821dee32 | document:get-v1-finance-context:db0b7f023e | LUC-6696 app-completion proof-link association |
+| documents | api_endpoint:use-sales:0c7ec2cf8b | document:get-v1-sales-context:078045055f | LUC-6696 app-completion proof-link association |
+| documents | api_endpoint:use-v1-auth:02d088cd05 | document:system-architecture:1149ef3528 | LUC-6696 app-completion proof-link association |
 | documents | document:acceptance-criteria-model:13886f82fd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0001.md |
 | documents | document:account-settings:d3a7a298ae | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PAGE-AUTO-0001.md |
 | documents | document:acf-maint-001-large-file-modularization:17a3f6c8ae | module:docs:6784d83cb0 | docs/planning/acf-maint-001-task-contract.md |
@@ -862,6 +869,7 @@ Generated: 2026-06-30T19:49:33.889Z
 | documents | document:error-handler:ed4c1d1625 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MW-AUTO-0004.md |
 | documents | document:errors:3c1f230b6b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/CLS-AUTO-0002.md |
 | documents | document:errors:e24da99501 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/INT-AUTO-0007.md |
+| documents | document:event-chain-index:888e4c737d | module:docs:6784d83cb0 | docs/status/event-chain-index.md |
 | documents | document:event-service:082f02c205 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/SVC-AUTO-0002.md |
 | documents | document:events-coverage-expansion:7365d41bb3 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-AUTO-0010.md |
 | documents | document:events-model:ad16fd0164 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0021.md |
@@ -1059,6 +1067,7 @@ Generated: 2026-06-30T19:49:33.889Z
 | documents | document:luc-4787-source-control-closure-for-luc-4784-evidence-packet:2bc68483ba | module:docs:6784d83cb0 | docs/planning/luc-4787-source-control-closure-for-luc-4784-evidence-packet.md |
 | documents | document:luc-4795-known-state-evidence-and-architecture-baseline:4f8327b872 | module:docs:6784d83cb0 | docs/planning/luc-4795-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4798-source-control-closure-for-luc-4795-evidence-packet:031f1129f3 | module:docs:6784d83cb0 | docs/planning/luc-4798-source-control-closure-for-luc-4795-evidence-packet.md |
+| documents | document:luc-4804-roost-protected-recheck:f911a80f70 | module:docs:6784d83cb0 | docs/planning/luc-4804-roost-protected-recheck.md |
 | documents | document:luc-4808-known-state-evidence-and-architecture-baseline:1fa2874211 | module:docs:6784d83cb0 | docs/planning/luc-4808-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4812-source-control-closure-for-luc-4808-evidence-packet:876c60ce05 | module:docs:6784d83cb0 | docs/planning/luc-4812-source-control-closure-for-luc-4808-evidence-packet.md |
 | documents | document:luc-4813-assets-proof-ladder-target-from-implementation-without-tests:bee7b8946b | module:docs:6784d83cb0 | docs/planning/luc-4813-assets-proof-ladder-target-from-implementation-without-tests.md |
@@ -1091,6 +1100,7 @@ Generated: 2026-06-30T19:49:33.889Z
 | documents | document:luc-4900-known-state-evidence-and-architecture-baseline:68de691a71 | module:docs:6784d83cb0 | docs/planning/luc-4900-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4905-source-control-closure-for-luc-4900-known-state-evidence-packet:88ff2c9a1c | module:docs:6784d83cb0 | docs/planning/luc-4905-source-control-closure-for-luc-4900-known-state-evidence-packet.md |
 | documents | document:luc-4906-legal-operating-graph-overview-proof-ladder:a775f4a8cf | module:docs:6784d83cb0 | docs/planning/luc-4906-legal-proof-ladder.md |
+| documents | document:luc-4914-roost-protected-recheck:7e335f834d | module:docs:6784d83cb0 | docs/planning/luc-4914-roost-protected-recheck.md |
 | documents | document:luc-4916-known-state-evidence-and-architecture-baseline:1c3bd384d9 | module:docs:6784d83cb0 | docs/planning/luc-4916-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4919-source-control-closure-for-luc-4916-known-state-evidence-packet:d447d1be6d | module:docs:6784d83cb0 | docs/planning/luc-4919-source-control-closure-for-luc-4916-known-state-evidence-packet.md |
 | documents | document:luc-4920-innovation-operating-graph-overview-proof-ladder:c9342f2078 | module:docs:6784d83cb0 | docs/planning/luc-4920-innovation-proof-ladder.md |
@@ -1208,13 +1218,3 @@ Generated: 2026-06-30T19:49:33.889Z
 | documents | document:luc-5338-read-only-department-intelligence-proof-ladder:00f2b9df8f | module:docs:6784d83cb0 | docs/planning/luc-5338-read-only-department-intelligence-proof-ladder.md |
 | documents | document:luc-5344-known-state-evidence-and-architecture-baseline:25307e25ff | module:docs:6784d83cb0 | docs/planning/luc-5344-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5346-source-control-closure-for-luc-5344-evidence-packet:6842e6e539 | module:docs:6784d83cb0 | docs/planning/luc-5346-source-control-closure-for-luc-5344-evidence-packet.md |
-| documents | document:luc-5350-known-state-evidence-and-architecture-baseline:4520f8e744 | module:docs:6784d83cb0 | docs/planning/luc-5350-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5354-source-control-closure-for-luc-5350-evidence-packet:1d5c52a69f | module:docs:6784d83cb0 | docs/planning/luc-5354-source-control-closure-for-luc-5350-evidence-packet.md |
-| documents | document:luc-5359-known-state-evidence-and-architecture-baseline:58402152ad | module:docs:6784d83cb0 | docs/planning/luc-5359-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5364-source-control-closure-for-luc-5359-evidence-packet:64d8ce50c3 | module:docs:6784d83cb0 | docs/planning/luc-5364-source-control-closure-for-luc-5359-evidence-packet.md |
-| documents | document:luc-5366-known-state-evidence-and-architecture-baseline:fcd47552c2 | module:docs:6784d83cb0 | docs/planning/luc-5366-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5368-source-control-closure-for-luc-5366-evidence-packet:e9ee7501c3 | module:docs:6784d83cb0 | docs/planning/luc-5368-source-control-closure-for-luc-5366-evidence-packet.md |
-| documents | document:luc-5373-known-state-evidence-and-architecture-baseline:71c65df066 | module:docs:6784d83cb0 | docs/planning/luc-5373-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5374-source-control-closure-for-luc-5373-evidence-packet:e8fa4f8d25 | module:docs:6784d83cb0 | docs/planning/luc-5374-source-control-closure-for-luc-5373-evidence-packet.md |
-| documents | document:luc-5377-known-state-evidence-and-architecture-baseline:7c3cc9783e | module:docs:6784d83cb0 | docs/planning/luc-5377-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5379-source-control-closure-for-luc-5377-evidence-packet:fd346c6c46 | module:docs:6784d83cb0 | docs/planning/luc-5379-source-control-closure-for-luc-5377-evidence-packet.md |

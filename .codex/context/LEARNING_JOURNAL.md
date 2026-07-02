@@ -26,6 +26,34 @@ fixes for this repository.
 
 ## Entries
 
+### 2026-06-29 - Treat Local Paperclip API Timeouts As Control-Plane Blockers
+- Context: [LUC-6232](/LUC/issues/LUC-6232) was locally verified, but the
+  Paperclip control-plane update path had to close the issue through
+  `127.0.0.1:3200`.
+- Symptom: `POST /api/issues/{issueId}/checkout`, `/api/health`,
+  `/api/issues/{issueId}/heartbeat-context`, `GET /api/issues/{issueId}`, and
+  final `PATCH /api/issues/{issueId}` timed out even though the Roost evidence
+  packet and Git proof were complete.
+- Root cause: The local Paperclip API was not responding within bounded
+  request windows during the heartbeat; this was a control-plane availability
+  failure, not a Roost evidence or source-control failure.
+- Guardrail: When local Paperclip API routes time out across health and issue
+  routes, complete the local evidence readback, make one bounded final update
+  attempt with the run audit header, then report the issue disposition as
+  blocked on Paperclip API responsiveness instead of mutating the app repo or
+  retrying indefinitely.
+- Preferred pattern: Use native Node `fetch` or project helpers with explicit
+  abort timeouts, include `X-Paperclip-Run-Id` for mutating requests, and keep
+  the closure comment ready for replay once the control plane is healthy.
+- Avoid: Re-running repository scans, staging/committing, restarting services,
+  or repeatedly retrying Paperclip mutations when `/api/health` also times out.
+- Evidence: On 2026-06-29, LUC-6232 local proof rechecked
+  `docs/planning/luc-6232-source-control-closure-for-luc-6227-evidence-packet.md`,
+  `git status --short --branch`, `git rev-parse HEAD`,
+  `git rev-list --left-right --count origin/main...HEAD`, and
+  `git diff --check`; Paperclip checkout, health, heartbeat-context, issue
+  read, and final `PATCH` requests all aborted by timeout.
+
 ### 2026-06-27 - Recheck Local Validation Residue Before Browser Reruns
 - Context: LUC-5561 reran auth/account browser proof after earlier local
   attempts left evidence under `docs/ux/evidence/luc-5561-auth-account-access/`.
@@ -691,3 +719,21 @@ fixes for this repository.
 - Evidence: DMS-01-005A passed `npm run test:api` on
   `127.0.0.1:55496` after applying this sequence, then removed
   `.tmp/companycore-strategy001-pg*`.
+
+### 2026-06-30 - Paperclip health can pass while issue routes are non-responsive
+- Context: [LUC-6233](/LUC/issues/LUC-6233) source-control closure evidence was
+  complete, but the board issue still needed final status reconciliation.
+- Symptom: `GET http://127.0.0.1:3201/api/health` returned `ok`, while issue
+  operations timed out: checkout, heartbeat-context, and issue search.
+- Root cause: Not isolated in this Roost lane; the local Paperclip runtime
+  reported `devServer.restartRequired=true` and existing route/client hangs,
+  but this issue explicitly excluded restart or control-plane repair.
+- Guardrail: Treat health as only listener/readiness evidence. Before claiming
+  Paperclip status reconciliation is possible, prove the specific issue route
+  needed for checkout/comment/status update with a short timeout.
+- Preferred pattern: If health passes but issue routes time out, leave product
+  evidence untouched, avoid broad process cleanup, and record the unblock owner
+  as the Paperclip local runtime owner / control-plane operator.
+- Evidence: LUC-6233 2026-06-30 retry recorded route timeouts and preserved the
+  verified Roost source-control packet without restart, push, deploy, or
+  unrelated file cleanup.

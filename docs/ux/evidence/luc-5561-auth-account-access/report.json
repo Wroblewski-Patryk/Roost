@@ -1,0 +1,7 @@
+{
+  "issue": "LUC-5561",
+  "status": "superseded",
+  "generatedAt": "2026-06-27T18:20:04.821Z",
+  "supersededBy": "browser-auth-smoke-report.json",
+  "note": "Earlier failed browser attempts in this directory were superseded by the final passing auth smoke report."
+}

@@ -1,4 +1,612 @@
+# 2026-07-02 LUC-6913 Parent Closure Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost public runtime readiness probe | verified in production | [LUC-6913](/LUC/issues/LUC-6913) closure packet `docs/planning/luc-6913-public-runtime-probe-401-diagnosis-and-local-repair.md`; blockers [LUC-6916](/LUC/issues/LUC-6916) and [LUC-6918](/LUC/issues/LUC-6918) are complete; local `HEAD` and `origin/main` are `6913628cf180a359bb0a3774d71c2b7855bfe0e5`; public `/health`, `/v1/health`, `/ready`, `/v1/ready`, web `/api/build-info`, and web root returned `200`; protected `/v1/connection` returned `401 missing_api_key` without credentials; Project Truth generated `2026-07-02T15:23:33.218Z` with `publicProbe.status=pass`, `criticalRuntimeFindings=0`, `operationalGateGaps=0`, `totalGaps=0`. | No remaining public probe repair, release-gate, or parent-closure action for [LUC-6913](/LUC/issues/LUC-6913). Protected CompanyCore smoke remains a separate credential-gated lane. |
+
+# 2026-07-02 LUC-6916 Parent Release-Gate Closure
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost public runtime readiness probe | verified in production | [LUC-6916](/LUC/issues/LUC-6916) integrated child deploy evidence from [LUC-6918](/LUC/issues/LUC-6918) and rechecked production directly. Local `HEAD` and `origin/main` both point to `6913628cf180a359bb0a3774d71c2b7855bfe0e5`; public `/health`, `/v1/health`, `/ready`, `/v1/ready`, and web `/api/build-info` returned `200` at that commit; web root returned `200`; protected `/v1/connection` returned `401 missing_api_key` without credentials. Project Truth apply generated `2026-07-02T15:17:41.570Z` with `publicProbe.status=pass`, `criticalRuntimeFindings=0`, `operationalGateGaps=0`, and `totalGaps=0`; `npm run architecture:status` PASS. | No remaining public probe repair or release-gate action for [LUC-6916](/LUC/issues/LUC-6916). Protected CompanyCore smoke remains a separate credential-gated lane, not part of this issue. |
+
+# 2026-07-02 LUC-6918 Production Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost public runtime readiness probe | verified in production | [LUC-6918](/LUC/issues/LUC-6918) packet `docs/planning/luc-6918-public-readiness-probe-production-deploy.md`; `origin/main` and production health now report `6913628cf180a359bb0a3774d71c2b7855bfe0e5`; `/ready`, `/v1/ready`, and web `/api/build-info` return `200`; `/v1/connection` remains `401 missing_api_key` without credentials; Project Truth generated `2026-07-02T15:12:14.899Z` with `publicProbe.status=pass`, `criticalRuntimeFindings=0`, `operationalGateGaps=0`, and `totalGaps=0`. | No DRE repair remains. Parent [LUC-6916](/LUC/issues/LUC-6916) can integrate release evidence and close the gate. |
+
+# 2026-07-02 LUC-6916 Release-Gate Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost public runtime readiness probe | implemented and committed, production failed, release routed | [LUC-6916](/LUC/issues/LUC-6916) packet `docs/planning/luc-6916-release-gate-routing-for-public-probe-repair.md`; commit `6913628cf180a359bb0a3774d71c2b7855bfe0e5` exists; `npm run build:server` PASS; `npm run architecture:status` PASS; public probes still show old build `5c6fff326d47b442763c0d78b52bf9306ce3bd9a` and `401 missing_api_key` on `/ready`, `/v1/ready`, and `/api/build-info`; Project Truth apply generated `2026-07-02T15:06:07.674Z` with `public_runtime_probe=failed`. | [LUC-6918](/LUC/issues/LUC-6918) DRE deploys or blocks the clean release path, then reruns public no-secret probes and Project Truth apply. |
+
+# 2026-07-02 LUC-6913 Child-Completion Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost public runtime readiness probe | implemented and committed, production failed | [LUC-6914](/LUC/issues/LUC-6914) committed the local route repair as `6913628cf180a359bb0a3774d71c2b7855bfe0e5`; post-child public probes still show API `/health` serving build `5c6fff326d47b442763c0d78b52bf9306ce3bd9a`, while `/ready`, `/v1/ready`, and `/api/build-info` return `401 missing_api_key`; Project Truth apply generated `2026-07-02T15:02:50.246Z` with `criticalRuntimeFindings=1` and `operationalGateGaps=2`. | [LUC-6916](/LUC/issues/LUC-6916) must approve or route production release mutation for commit `6913628c`, then DRE/Ops reruns public no-secret probes and Project Truth apply. |
+
+# 2026-07-02 LUC-6913 Module Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost public runtime readiness probe | implemented locally, production not verified | [LUC-6913](/LUC/issues/LUC-6913) packet `docs/planning/luc-6913-public-runtime-probe-401-diagnosis-and-local-repair.md`; public no-secret probes reproduced `401 missing_api_key` on `/api/build-info` and `/ready`; local repair added public `/ready`, `/v1/ready`, and `/api/build-info` aliases before `requireApiKey`; `npm run build:server` PASS; local production-mode probe returned `200` for the new aliases and kept `/v1/connection` fail-closed at `401` without an API key. | Source-control/release owner must isolate or approve the mixed-dirty workspace for commit/deploy, then DRE/Ops must run public probes and Project Truth apply against production. |
+
+# 2026-07-02 LUC-6912 Module Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost public runtime readiness probe | failed, routed | [LUC-6912](/LUC/issues/LUC-6912) packet `docs/planning/luc-6912-public-runtime-probe-gap-routing.md`; direct public probes returned `200` for Roost web root and API health; Project Truth regeneration with `ROOST_PUBLIC_URL` and `ROOST_API_PUBLIC_URL` changed the gate from `unknown` to concrete `401 missing_api_key` failures for `https://roost.luckysparrow.ch/api/build-info` and `https://api.roost.luckysparrow.ch/ready`. | [LUC-6913](/LUC/issues/LUC-6913) owns DRE diagnosis: determine whether the public probe contract is wrong for Roost, routes are incorrectly protected, or production/proxy config needs public readiness/build-info paths. |
+
+# 2026-07-02 LUC-6902 Parent Closure Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Exchange connection and configuration event-chain parent | verified locally | [LUC-6902](/LUC/issues/LUC-6902) closure readback in `docs/planning/luc-6902-exchange-chain-diagnosis-and-handoff.md`; [LUC-6905](/LUC/issues/LUC-6905) implemented the frontend settings mapping; [LUC-6911](/LUC/issues/LUC-6911) linked the evidence and refreshed Project Truth. Current `docs/status/event-chain-index.json` generated `2026-07-02T14:52:18.743Z` reports `incompleteChains=0` and `Exchange connection and configuration` as `chain_indexed` with `missingLayers=[]`. | No further event-chain repair remains for [LUC-6902](/LUC/issues/LUC-6902). Optional future QA remains real-backend `/workspace/settings` browser proof when Docker/local DB are available; public runtime probe findings are separate Ops/DRE work. |
+
+# 2026-07-02 LUC-6911 Module Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Exchange connection and configuration event chain | verified locally | [LUC-6911](/LUC/issues/LUC-6911) packet `docs/planning/luc-6911-exchange-event-chain-index-refresh-after-luc-6905.md`; [LUC-6905](/LUC/issues/LUC-6905) frontend proof is linked in `docs/architecture/scanner-overrides.json`; architecture-awareness refresh PASS (`2794` entities / `6524` relations / `16376` files); Project Truth apply PASS; `docs/status/event-chain-index.json` generated `2026-07-02T14:47:57.402Z` reports `Exchange connection and configuration` as `chain_indexed` with `frontend=2`, `backend=3`, `worker=9`, and `missingLayers=[]`; global incomplete event chains are `0`. | No further Documentation Steward action remains for this event-chain gap. Optional future QA/Ops work: real-backend `/workspace/settings` browser proof when Docker/local DB are available, and public runtime probe when DRE has target facts. |
+
+# 2026-07-02 LUC-6905 Module Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Exchange connection and configuration frontend chain | partially verified | [LUC-6905](/LUC/issues/LUC-6905) packet `docs/planning/luc-6905-exchange-connection-configuration-visible-settings-chain.md`; `/workspace/settings` now calls `/v1/connection`, `/v1/integration-settings/clickup`, and `/v1/integration-settings/google_drive` and renders redacted ClickUp/Google Drive status instead of disabled placeholders. `npm run build:web` PASS; `npm run build:server` PASS; Playwright fallback desktop/mobile proof PASS with backend-shaped responses, no overflow, no console/page issues, and no raw secret leakage. | [LUC-6911](/LUC/issues/LUC-6911) refreshes generated Project Truth/event-chain indexes and links this packet as frontend evidence. Run real-backend browser proof when Docker/local DB are available. |
+
+# 2026-07-02 LUC-6902 Blocker Recheck
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Exchange connection and configuration event-chain closure | blocked by docs/index refresh | [LUC-6905](/LUC/issues/LUC-6905) is `done` and implemented the visible frontend settings chain, but `docs/status/event-chain-index.json` generated `2026-07-02T14:45:30.537Z` still reports `Exchange connection and configuration` with `frontend=0` and `missingLayers=["frontend"]`. [LUC-6911](/LUC/issues/LUC-6911) is already open and in progress for Documentation Steward index refresh/linking. | Keep parent [LUC-6902](/LUC/issues/LUC-6902) blocked by [LUC-6911](/LUC/issues/LUC-6911). Close the parent only after generated Project Truth/event-chain evidence links the LUC-6905 frontend packet or records a precise generator/tooling blocker. |
+
+# 2026-07-02 LUC-6906 Confidence Note
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Exchange connection and configuration frontend chain | blocked | [LUC-6906](/LUC/issues/LUC-6906) packet `docs/planning/luc-6906-exchange-chain-integration-disposition.md`; `docs/status/event-chain-index.json` generated `2026-07-02T14:19:08.363Z` still reports `frontend=0`, `backend=2`, `worker=9`, `data=0`, `tests=0`, `docs=2`, and `missingLayers=["frontend"]`; current `web/src/features/settings/settings-routes.tsx` still has disabled integration/API controls; backend route contracts exist. | Keep [LUC-6906](/LUC/issues/LUC-6906) blocked by [LUC-6905](/LUC/issues/LUC-6905). Do not create duplicate diagnosis/implementation lanes until the frontend slice and browser proof complete, then refresh Project Truth/event-chain indexes. |
+
+# 2026-07-02 LUC-6902 Confidence Note
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Exchange connection and configuration frontend chain | blocked | [LUC-6902](/LUC/issues/LUC-6902) packet `docs/planning/luc-6902-exchange-chain-diagnosis-and-handoff.md`; `docs/status/event-chain-index.json` generated `2026-07-02T14:19:08.363Z` reports `frontend=0`, `backend=2`, `worker=9`, `docs=2`, `tests=0`, `missingLayers=["frontend"]`; runtime-error index has no findings; [LUC-5409](/LUC/issues/LUC-5409) proves the backend/API adapter connection posture; current `web/src/features/settings/settings-routes.tsx` still has disabled integration/API controls. | [LUC-6905](/LUC/issues/LUC-6905) owns the smallest frontend settings implementation/proof slice. Parent [LUC-6902](/LUC/issues/LUC-6902) remains blocked until frontend mapping, browser proof, index/docs refresh, and source-control disposition are integrated. |
+
+# 2026-07-02 LUC-6810 Confidence Note
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost CompanyCore readiness and milestone planning | partially verified | [LUC-6810](/LUC/issues/LUC-6810) packet `docs/planning/luc-6810-roost-companycore-readiness-and-milestone-review.md`; `npm run architecture:status` PASS; `npm run check:route-capabilities` PASS; architecture/app-completion readback shows no blocked records, no missing docs, no task-link gaps, and no disconnected entities. App-completion proof-link debt is improved to `353` missing-test-link rows after recent proof-link association, but still not fully closed. | Do not create product implementation work from this snapshot alone. Future proof should be source-control batching, evidence-link curation, or a named QA/Ops proof only when a concrete unproved route, browser journey, protected-proof authorization, target resource fact, or reproduced failure appears. |
+
+# 2026-07-01 LUC-6696 Module Confidence Update
+
+| Module/Journey | State | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Assets files/folders Drive preview browser proof | verified locally | [LUC-6698](/LUC/issues/LUC-6698) packet `docs/planning/luc-6698-assets-drive-workbench-browser-proof.md`; `npm run build:web` PASS; authenticated `/areas?area=08-zasoby&view=files` browser proof at desktop/tablet/mobile using disposable local Drive fixtures; `docs/ux/evidence/luc-6698-assets-drive-workbench-browser-proof/report.json` records `consoleIssues=[]`, `pageErrors=[]`, `failedRequiredRequests=[]`, `horizontalOverflowFailures=[]`, and `stateFailures=[]` across loading, ready, empty-filter, markdown preview, and unsupported preview states. | No product repair warranted from this proof. Keep remaining gap as stale proof-linkage/evidence debt unless future app-completion or browser evidence exposes a fresh Assets route defect. |
+| App-completion frontend/browser proof linkage | partially verified | `docs/planning/luc-6696-app-completion-proof-link-association-for-existing-ux-evidence.md`; architecture-awareness refresh generated `2780` entities / `6476` relations / `16345` files and applied `27` entity overrides plus `17` relation overrides; app-completion now reports `353` missing test links / `0` missing docs / `0` blocked, down from `363` missing test links. | Keep remaining aggregate missing-test-link rows as proof-link confidence debt unless a future snapshot exposes a concrete unproved route/API/browser failure. |
+| Account access, settings, Sales, and Finance browser proof association | verified locally, linked in generator | Existing [LUC-5561](/LUC/issues/LUC-5561), [LUC-5569](/LUC/issues/LUC-5569), [LUC-5624](/LUC/issues/LUC-5624), and [LUC-5433](/LUC/issues/LUC-5433) proof packets are now classified as verified test evidence in `docs/architecture/scanner-overrides.json`; targeted rows read back with `hasTest=true` and `hasDoc=true` or left the priority queue. | Do not request duplicate browser proof for these four evidence families unless evidence files go stale or a fresh route failure appears. |
+
+# 2026-07-01 LUC-6576 Confidence Note
+
+# 2026-07-01 LUC-6156 Module Confidence Update
+
+| Module/Journey | State | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| App-completion frontend/browser proof linkage | partially verified | `docs/planning/luc-6156-frontend-browser-evidence-link-curation.md`; current app-completion index reports `363` missing test links and `0` browser-review records while existing browser reports prove Account access, User configuration, Sales board, and Finance board routes/screenshots. Follow-up [LUC-6696](/LUC/issues/LUC-6696) created. | Repair generated proof-link association so existing planning packets and `docs/ux/evidence/**/report.json` assets satisfy matching route/component rows before requesting duplicate browser proof. |
+| Account access browser route proof | verified locally, partially linked | [LUC-5561](/LUC/issues/LUC-5561) packet and `docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json` status `passed`; registration/login token persistence, `/v1/auth/me`, and protected-route rendering assertions passed. | Link existing proof to current app-completion Account access rows; do not rerun UI proof unless a future route failure appears. |
+| User configuration browser route proof | verified locally, partially linked | [LUC-5569](/LUC/issues/LUC-5569) packet and `docs/ux/evidence/luc-5569-user-settings-proof/report.json`; `/account/settings` and `/workspace/settings` rendered signed-in on desktop/tablet/mobile with required text and `consoleIssues=[]`. | Link existing proof to current User configuration rows; do not rerun UI proof unless evidence files go stale or a defect appears. |
+| Sales and Finance board browser proof | verified locally, partially linked | [LUC-5624](/LUC/issues/LUC-5624) and [LUC-5433](/LUC/issues/LUC-5433) reports prove signed-in desktop/tablet/mobile selected-area board rendering with required text and `consoleIssues=[]`. | Treat as existing route/browser evidence; production proof remains separate if release-critical. |
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost CompanyCore readiness and milestone planning | partially verified | [LUC-6576](/LUC/issues/LUC-6576) packet `docs/planning/luc-6576-roost-companycore-readiness-and-milestone-review.md`; `npm run architecture:status` PASS; `npm run check:route-capabilities` PASS; architecture/app-completion readback shows no blocked records, no missing docs, no task-link gaps, no owner gaps, and no disconnected entities. | Do not create product implementation work from this snapshot alone. Future proof should be source-control batching, evidence-link curation, or a named QA/Ops proof only when a concrete unproved route, browser journey, protected-proof authorization, target resource fact, or reproduced failure appears. |
+
+# 2026-07-01 LUC-6472 Module Confidence Update
+
+# 2026-07-01 LUC-4914 Module Confidence Update
+
+| Module / Journey | State | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost CompanyCore protected MCP smoke | blocked | `docs/planning/luc-4914-roost-protected-recheck.md`; `npm run aog:deploy-smoke` failed at MCP manifest preflight with `403 invalid_api_key`, `requestId=406a2e5d-c88e-4bbf-8965-09cd63a26040`; API key and base URL presence were confirmed without value disclosure. | Runtime secret owner, Security/Ops owner, or board gate owner repairs/replaces the service key, then opens a fresh one-run protected recheck. |
+
+| Module/Journey | State | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Architecture-health implementation-without-tests signal | partially verified | `docs/planning/luc-6472-implementation-without-tests-signal-classification-after-luc-6460.md`; raw signal `1166`, actionable `1157`, noise `9`, verified-without-proof `0`; `npm run check:route-capabilities` PASS; `npm run architecture:status` PASS. | Treat as proof-ladder confidence debt, not broad test-generation work. Select future QA proof only from a fresh concrete route/API/browser gap, protected-proof authorization, or reproduced failure. |
+| API mount surface | partially verified | `43` API endpoint rows plus `src/app.ts` mount-surface rows classify as scanner granularity; route capability gate passed for `180` manifest routes and `35` route files. | Prove mounted behavior through named route/API journeys, not generic mount tests. |
+| Web UI component/route surface | partially verified | `261` actionable rows in web UI component/route surfaces; no browser-review row or reproduced UI failure appeared in this heartbeat. | Run browser/UI proof only for a named route or concrete regression. |
+
+# 2026-06-30 LUC-6408 Confidence Note
+
+# 2026-06-30 LUC-6471 Module Confidence Update
+
+| Module/Journey | State | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| App-completion index | partially verified | `docs/planning/luc-6471-app-completion-proof-link-curation-after-luc-6460.md`; current snapshot `374` items / `7` flows / `363` missing-test-link rows / `0` missing docs / `0` blocked / `0` browser-review records; `200` exposed priority rows grouped and duplicate-checked. | Do not run duplicate QA proof from aggregate counts. Link existing proof packets to generated rows, or select a new QA proof only when a future snapshot exposes a concrete unproved route/journey/failure. |
+| Account access / auth-config | partially verified | Top current rows duplicate [LUC-6118](/LUC/issues/LUC-6118), [LUC-6154](/LUC/issues/LUC-6154), [LUC-6155](/LUC/issues/LUC-6155), [LUC-6366](/LUC/issues/LUC-6366), [LUC-6373](/LUC/issues/LUC-6373), [LUC-6396](/LUC/issues/LUC-6396), and [LUC-6398](/LUC/issues/LUC-6398) proof/curation packets. | Evidence-link curation rather than new runtime proof unless a fresh failure appears. |
+| User configuration / Integration Settings | partially verified | Strongest target-shaped rows duplicate [LUC-5263](/LUC/issues/LUC-5263), [LUC-6154](/LUC/issues/LUC-6154), [LUC-6155](/LUC/issues/LUC-6155), and recent auth/config/OAuth curation packets. | Evidence-link curation rather than duplicate local API rerun. |
+| Strategy / Trading operation | verified locally, partially linked | [LUC-6145](/LUC/issues/LUC-6145) reran and passed `GET /v1/strategy/context`; app-completion still shows link debt. | Link proof relation; browser/production proof remains separate if release-critical. |
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost CompanyCore readiness and milestone planning | partially verified | [LUC-6408](/LUC/issues/LUC-6408) packet `docs/planning/luc-6408-roost-companycore-readiness-and-milestone-review.md`; `npm run architecture:status` PASS; `npm run check:route-capabilities` PASS; architecture/app-completion readback shows no blockers, no owner gaps, no task-link gaps, and no verified-without-proof rows. | Do not create implementation work from this snapshot alone. Next proof is either source-control closure for this packet or evidence-link curation of existing app-completion missing-test-link rows; protected VPS/production proof requires fresh approval and credential/resource facts. |
+
 # Module Confidence Ledger
+Known-state note: [LUC-6396](/LUC/issues/LUC-6396) is
+VERIFIED_DONE_NO_COMMIT for app-completion proof-link curation after
+[LUC-6376](/LUC/issues/LUC-6376). Evidence packet:
+`docs/planning/luc-6396-app-completion-proof-link-curation-after-luc-6376.md`.
+App-completion readback generated `2026-06-30T06:38:15.392Z` with `374`
+items / `7` flows / `363` missing-test-link rows / `0` missing docs /
+`0` blocked records / `0` browser-review records. Confidence classification:
+architecture, route-capability, blocked-record, and duplicate-proof posture
+remain verified locally; product journey confidence remains partially verified
+because app-completion still contains aggregate missing-test-link proof-link
+debt. No fresh nonduplicated runtime proof target was selected from this
+snapshot. No product implementation, test authoring, protected runtime action,
+browser proof, or broad QA lane is selected from aggregate counts alone.
+
+Known-state note: [LUC-6393](/LUC/issues/LUC-6393) is
+VERIFIED_BASELINE_NO_PRODUCT_REPAIR_SELECTED for Roost architecture/
+app-completion evidence in the Documentation Steward lane. Evidence packet:
+`docs/planning/luc-6393-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-30T06:38:07.363Z` with
+`2762` entities / `6395` relations / `16327` files. App-completion refresh
+passed with `374` items / `7` flows / `363` missing test links /
+`0` missing doc links / `0` blocked records / `0` browser-review records.
+`npm run architecture:status`, `npm run check:route-capabilities`, and `git
+diff --check` passed. Confidence classification: architecture, ownership,
+task-linkage, route-capability, and blocked-record posture are verified
+locally; product journey confidence remains partially verified because
+app-completion still contains aggregate missing-test-link proof-link debt. No
+product implementation, protected runtime action, browser proof, or broad QA
+lane is selected from aggregate counts alone. Source-control closure is the
+only follow-up if this generated/status/planning packet needs releasable
+source-control posture from the mixed-dirty, ahead worktree.
+
+Known-state note: [LUC-6370](/LUC/issues/LUC-6370) is
+VERIFIED_BASELINE_WITH_SOURCE_CONTROL_AND_QA_FOLLOW_UP for Roost
+architecture/app-completion evidence in the IPM lane. Evidence packet:
+`docs/planning/luc-6370-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-30T02:23:46.935Z` with
+`2757` entities / `6375` relations / `16322` files. App-completion refresh
+passed with `374` items / `7` flows / `363` missing test links /
+`0` missing doc links / `0` blocked records / `0` browser-review records.
+`npm run architecture:status`, `npm run check:route-capabilities`, and `git
+diff --check` passed. Confidence classification: architecture, ownership,
+task-linkage, route-capability, and blocked-record posture are verified
+locally; product journey confidence remains partially verified because
+app-completion still contains aggregate missing-test-link proof-link debt. No
+product implementation, protected runtime action, browser proof, or broad QA
+lane is selected from aggregate counts alone. Source-control closure and
+evidence-link curation are the required follow-ups:
+[LUC-6372](/LUC/issues/LUC-6372) and [LUC-6373](/LUC/issues/LUC-6373).
+
+Known-state note: [LUC-6362](/LUC/issues/LUC-6362) is
+VERIFIED_BASELINE_WITH_SOURCE_CONTROL_FOLLOW_UP for Roost architecture/
+app-completion evidence in the Roost PM lane. Evidence packet:
+`docs/planning/luc-6362-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-30T02:13:59.773Z` with
+`2753` entities / `6359` relations / `16318` files. App-completion refresh
+passed on retry with `374` items / `7` flows / `363` missing test links /
+`0` missing doc links / `0` blocked records / `0` browser-review records.
+`npm run architecture:status`, `npm run check:route-capabilities`, and `git
+diff --check` passed. Confidence classification: architecture, ownership,
+task-linkage, route-capability, and blocked-record posture are verified
+locally; product journey confidence remains partially verified because
+app-completion still contains aggregate missing-test-link proof-link debt. No
+product implementation, protected runtime action, browser proof, or broad QA
+lane is selected from aggregate counts alone. Source-control closure is the
+required follow-up because the shared worktree is mixed dirty and
+`main...origin/main [ahead 131]`. Follow-up:
+[LUC-6367](/LUC/issues/LUC-6367).
+
+Known-state note: [LUC-6359](/LUC/issues/LUC-6359) is
+VERIFIED_DONE_NO_COMMIT for app-completion proof-link curation after
+[LUC-6355](/LUC/issues/LUC-6355). Evidence packet:
+`docs/planning/luc-6359-app-completion-proof-link-curation-after-luc-6355.md`.
+App-completion readback generated `2026-06-30T02:03:53.202Z` with `374`
+items / `7` flows / `363` missing test links / `0` missing doc links /
+`0` blocked records / `0` browser-review records. Confidence classification:
+architecture, route-capability, blocked-record, and duplicate-proof posture
+remain verified locally; product journey confidence remains partially verified
+because app-completion still contains aggregate missing-test-link proof-link
+debt. No fresh nonduplicated runtime proof target was selected from this
+snapshot. No product implementation, protected runtime action, browser proof,
+or broad QA lane is selected from aggregate counts alone.
+
+Known-state note: [LUC-6355](/LUC/issues/LUC-6355) is
+VERIFIED_BASELINE_WITH_FOLLOW_UP_LANES for Roost architecture/app-completion
+evidence in the Roost PM lane. Evidence packet:
+`docs/planning/luc-6355-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-30T02:03:53.225Z` with
+`2750` entities / `6349` relations / `16315` files. App-completion refresh
+reported `374` items / `7` flows / `363` missing test links /
+`0` missing doc links / `0` blocked records / `0` browser-review records.
+`npm run architecture:status`, `npm run check:route-capabilities`, and `git
+diff --check` passed. Confidence classification: architecture, ownership,
+task-linkage, route-capability, and blocked-record posture are verified
+locally; product journey confidence remains partially verified because
+app-completion still contains aggregate missing-test-link proof-link debt. No
+product implementation, protected runtime action, browser proof, or broad QA
+lane is selected from aggregate counts alone. Follow-up lanes:
+[LUC-6358](/LUC/issues/LUC-6358) source-control closure and
+[LUC-6359](/LUC/issues/LUC-6359) app-completion proof-link curation.
+
+Known-state note: [LUC-6352](/LUC/issues/LUC-6352) completed
+source-control closure for the [LUC-6349](/LUC/issues/LUC-6349) Roost
+architecture/app-completion evidence packet. Closure packet:
+`docs/planning/luc-6352-source-control-closure-for-luc-6349-evidence-packet.md`.
+Confidence classification remains unchanged from [LUC-6349](/LUC/issues/LUC-6349):
+architecture, ownership, task-linkage, route-capability, and blocked-record
+posture are verified locally; product journey confidence remains partially
+verified because app-completion still contains aggregate missing-test-link
+proof-link debt. Source-control confidence for this packet is verified as
+not safely committable from the current shared mixed-dirty, ahead worktree.
+
+Known-state note: [LUC-6353](/LUC/issues/LUC-6353) is
+VERIFIED_DONE_NO_COMMIT for app-completion missing-test-link curation after
+[LUC-6349](/LUC/issues/LUC-6349). Evidence packet:
+`docs/planning/luc-6353-app-completion-missing-test-link-curation-after-luc-6349.md`.
+App-completion readback generated `2026-06-30T01:45:42.791Z` with `374`
+items / `7` flows / `363` missing test links / `0` missing doc links /
+`0` blocked records / `0` browser-review records. Confidence classification:
+architecture, route-capability, blocked-record, and duplicate-proof posture
+remain verified locally; product journey confidence remains partially verified
+because app-completion still contains aggregate missing-test-link proof-link
+debt. No fresh nonduplicated runtime proof target was selected from this
+snapshot. No product implementation, protected runtime action, browser proof,
+or broad QA lane is selected from aggregate counts alone.
+
+Known-state note: [LUC-6351](/LUC/issues/LUC-6351) is
+VERIFIED_DONE_NO_COMMIT for app-completion proof-link curation after
+[LUC-6348](/LUC/issues/LUC-6348). Evidence packet:
+`docs/planning/luc-6351-app-completion-proof-link-curation-after-luc-6348.md`.
+App-completion readback generated `2026-06-30T01:45:42.791Z` with `374`
+items / `7` flows / `363` missing test links / `0` missing doc links /
+`0` blocked records / `0` browser-review records. Confidence classification:
+architecture, route-capability, blocked-record, and duplicate-proof posture
+remain verified locally; product journey confidence remains partially verified
+because app-completion still contains aggregate missing-test-link proof-link
+debt. No fresh nonduplicated runtime proof target was selected from this
+snapshot. No product implementation, protected runtime action, browser proof,
+or broad QA lane is selected from aggregate counts alone.
+
+Known-state note: [LUC-6350](/LUC/issues/LUC-6350) completed
+source-control closure for the [LUC-6348](/LUC/issues/LUC-6348) Roost
+architecture/app-completion evidence packet. Closure packet:
+`docs/planning/luc-6350-source-control-closure-for-luc-6348-evidence-packet.md`.
+Confidence classification remains unchanged from [LUC-6348](/LUC/issues/LUC-6348):
+architecture, ownership, task-linkage, route-capability, and blocked-record
+posture are verified locally; product journey confidence remains partially
+verified because app-completion still contains aggregate missing-test-link
+proof-link debt. Source-control confidence for this packet is verified as
+not safely committable from the current shared mixed-dirty, ahead worktree.
+
+Known-state note: [LUC-6349](/LUC/issues/LUC-6349) is
+VERIFIED_BASELINE_WITH_FOLLOW_UP_LANES for Roost architecture/app-completion
+evidence in the IPM lane. Evidence packet:
+`docs/planning/luc-6349-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-30T01:45:33.248Z` with
+`2744` entities / `6326` relations / `16309` files. App-completion refresh
+reported `374` items / `7` flows / `363` missing test links /
+`0` missing doc links / `0` blocked records / `0` browser-review records.
+`npm run architecture:status`, `npm run check:route-capabilities`, and `git
+diff --check` passed. Confidence classification: architecture, ownership,
+task-linkage, route-capability, and blocked-record posture are verified
+locally; product journey confidence remains partially verified because
+app-completion still contains aggregate missing-test-link proof-link debt. No
+product implementation, protected runtime action, browser proof, or broad QA
+lane is selected from aggregate counts alone. Follow-up lanes:
+[LUC-6352](/LUC/issues/LUC-6352) source-control closure and
+[LUC-6353](/LUC/issues/LUC-6353) app-completion proof-link curation.
+
+Known-state note: [LUC-6348](/LUC/issues/LUC-6348) is
+VERIFIED_BASELINE_WITH_FOLLOW_UP_LANES for Roost architecture/app-completion
+evidence in the Roost PM lane. Evidence packet:
+`docs/planning/luc-6348-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-30T01:43:45.783Z` with
+`2744` entities / `6326` relations / `16309` files. App-completion refresh
+reported `374` items / `7` flows / `363` missing test links /
+`0` missing doc links / `0` blocked records / `0` browser-review records.
+`npm run architecture:status`, `npm run check:route-capabilities`, and `git
+diff --check` passed. Confidence classification: architecture, ownership,
+task-linkage, route-capability, and blocked-record posture are verified
+locally; product journey confidence remains partially verified because
+app-completion still contains aggregate missing-test-link proof-link debt. No
+product implementation, protected runtime action, browser proof, or broad QA
+lane is selected from aggregate counts alone. Follow-up lanes:
+[LUC-6350](/LUC/issues/LUC-6350) source-control closure for this generated/
+status/planning packet, plus [LUC-6351](/LUC/issues/LUC-6351)
+app-completion proof-link curation only if it finds a fresh nonduplicated
+proof target.
+
+Known-state note: [LUC-6344](/LUC/issues/LUC-6344) is
+VERIFIED_DONE_NO_COMMIT for app-completion missing-test-link curation after
+[LUC-6341](/LUC/issues/LUC-6341). Evidence packet:
+`docs/planning/luc-6344-app-completion-missing-test-link-curation-after-luc-6341.md`.
+App-completion readback generated `2026-06-30T01:13:17.763Z` with `374`
+items / `7` flows / `363` missing test links / `0` missing doc links /
+`0` blocked records / `0` browser-review records. Confidence classification:
+architecture, route-capability, blocked-record, and duplicate-proof posture
+remain verified locally; product journey confidence remains partially verified
+because app-completion still contains aggregate missing-test-link proof-link
+debt. No fresh nonduplicated runtime proof target was selected from this
+snapshot. No product implementation, protected runtime action, browser proof,
+or broad QA lane is selected from aggregate counts alone.
+
+Known-state note: [LUC-6336](/LUC/issues/LUC-6336) is
+VERIFIED_BASELINE_WITH_FOLLOW_UP_LANES for Roost architecture/app-completion
+evidence in the Roost PM lane. Evidence packet:
+`docs/planning/luc-6336-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-30T01:03:39.126Z` with
+`2738` entities / `6302` relations / `16303` files. App-completion refresh
+reported `374` items / `7` flows / `363` missing test links /
+`0` missing doc links / `0` blocked records / `0` browser-review records.
+`npm run architecture:status` and `npm run check:route-capabilities` passed.
+Confidence classification: architecture, ownership, task-linkage,
+route-capability, and blocked-record posture are verified locally; product
+journey confidence remains partially verified because app-completion still
+contains aggregate missing-test-link proof-link debt. No product
+implementation, protected runtime action, browser proof, or broad QA lane is
+selected from aggregate counts alone. Follow-up lanes: source-control closure
+for this generated/status/planning packet, plus app-completion proof-link
+curation only if it finds a fresh nonduplicated proof target.
+
+Known-state note: [LUC-6333](/LUC/issues/LUC-6333) is
+VERIFIED_BASELINE_WITH_SOURCE_CONTROL_FOLLOW_UP for Roost architecture/
+app-completion evidence in the Roost PM lane. Evidence packet:
+`docs/planning/luc-6333-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-30T00:43:30.772Z` with
+`2736` entities / `6294` relations / `16301` files. App-completion refresh
+reported `374` items / `7` flows / `363` missing test links /
+`0` missing doc links / `0` blocked records / `0` browser-review records.
+`npm run architecture:status`, `npm run check:route-capabilities`, and `git
+diff --check` passed. Confidence classification: architecture, ownership,
+task-linkage, route-capability, and blocked-record posture are verified
+locally; product journey confidence remains partially verified because
+app-completion still contains aggregate missing-test-link proof-link debt. No
+product implementation, protected runtime action, browser proof, or broad QA
+lane is selected from this snapshot alone. Source-control closure is delegated
+to [LUC-6334](/LUC/issues/LUC-6334) because the shared worktree is mixed dirty
+and ahead of origin by `131`.
+
+Known-state note: [LUC-6327](/LUC/issues/LUC-6327) is
+VERIFIED_BASELINE_WITH_SOURCE_CONTROL_FOLLOW_UP for Roost architecture/
+app-completion evidence in the Roost PM lane. Evidence packet:
+`docs/planning/luc-6327-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-30T00:13:49.928Z` with
+`2734` entities / `6286` relations / `16299` files. App-completion refresh
+reported `374` items / `7` flows / `363` missing test links /
+`0` missing doc links / `0` blocked records / `0` browser-review records.
+`npm run architecture:status`, `npm run check:route-capabilities`, and `git
+diff --check` passed. Confidence classification: architecture, ownership,
+task-linkage, route-capability, and blocked-record posture are verified
+locally; product journey confidence remains partially verified because
+app-completion still contains aggregate missing-test-link proof-link debt. No
+product implementation, protected runtime action, browser proof, or broad QA
+lane is selected from this snapshot alone. Source-control closure is delegated
+to [LUC-6328](/LUC/issues/LUC-6328) because the shared worktree is mixed dirty
+and ahead of origin by `131`.
+
+Known-state note: [LUC-6324](/LUC/issues/LUC-6324) completed
+source-control closure for the [LUC-6321](/LUC/issues/LUC-6321) Roost
+architecture/app-completion evidence packet. Closure packet:
+`docs/planning/luc-6324-source-control-closure-for-luc-6321-evidence-packet.md`.
+Confidence classification remains unchanged from [LUC-6321](/LUC/issues/LUC-6321):
+architecture, ownership, task-linkage, route-capability, and blocked-record
+posture are verified locally; product journey confidence remains partially
+verified because app-completion still contains aggregate missing-test-link
+proof-link debt. Source-control confidence for this packet is verified as
+not safely committable from the current shared mixed-dirty, ahead worktree.
+
+Known-state note: [LUC-6325](/LUC/issues/LUC-6325) is
+VERIFIED_DONE_NO_COMMIT for app-completion missing-test-link curation after
+[LUC-6321](/LUC/issues/LUC-6321). Evidence packet:
+`docs/planning/luc-6325-app-completion-missing-test-link-curation-after-luc-6321.md`.
+App-completion readback generated `2026-06-30T00:04:34.059Z` with `374`
+items / `7` flows / `363` missing test links / `0` missing doc links /
+`0` blocked records / `0` browser-review records. Confidence classification:
+architecture, route-capability, blocked-record, and duplicate-proof posture
+remain verified locally; product journey confidence remains partially verified
+because app-completion still contains aggregate missing-test-link proof-link
+debt. No fresh nonduplicated runtime proof target was selected from this
+snapshot. No product implementation, protected runtime action, browser proof,
+or broad QA lane is selected from aggregate counts alone.
+
+Known-state note: [LUC-6321](/LUC/issues/LUC-6321) is
+VERIFIED_BASELINE_WITH_FOLLOW_UP_LANES for Roost architecture/app-completion
+evidence in the Roost PM lane. Evidence packet:
+`docs/planning/luc-6321-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-30T00:04:23.821Z` with
+`2731` entities / `6274` relations / `16296` files. App-completion refresh
+reported `374` items / `7` flows / `363` missing test links /
+`0` missing doc links / `0` blocked records / `0` browser-review records.
+`npm run architecture:status` and `npm run check:route-capabilities` passed.
+Confidence classification: architecture, ownership, task-linkage,
+route-capability, and blocked-record posture are verified locally; product
+journey confidence remains partially verified because app-completion still
+contains aggregate missing-test-link proof-link debt. No product
+implementation, protected runtime action, browser proof, or broad QA lane is
+selected from aggregate counts alone. Follow-up lanes:
+[LUC-6324](/LUC/issues/LUC-6324) source-control closure and
+[LUC-6325](/LUC/issues/LUC-6325) app-completion proof-link curation.
+
+Known-state note: [LUC-6319](/LUC/issues/LUC-6319) is
+VERIFIED_DONE_NO_COMMIT for app-completion missing-test-link curation after
+[LUC-6317](/LUC/issues/LUC-6317). Evidence packet:
+`docs/planning/luc-6319-app-completion-missing-test-link-curation-after-luc-6317.md`.
+App-completion readback generated `2026-06-29T23:44:04.499Z` with `374`
+items / `7` flows / `363` missing test links / `0` missing doc links /
+`0` blocked records / `0` browser-review records. Confidence classification:
+architecture, route-capability, blocked-record, and duplicate-proof posture
+remain verified locally; product journey confidence remains partially verified
+because app-completion still contains aggregate missing-test-link proof-link
+debt. No fresh nonduplicated runtime proof target was selected from this
+snapshot. No product implementation, protected runtime action, browser proof,
+or broad QA lane is selected from aggregate counts alone.
+
+Known-state note: [LUC-6302](/LUC/issues/LUC-6302) is
+VERIFIED_BASELINE_WITH_SOURCE_CONTROL_FOLLOW_UP for Roost architecture/
+app-completion evidence in the IPM lane. Evidence packet:
+`docs/planning/luc-6302-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-29T22:43:43.944Z` with
+`2724` entities / `6246` relations / `16289` files. App-completion refresh
+passed on retry and generated `2026-06-29T22:44:02.214Z` with `374` items /
+`7` flows / `363` missing test links / `0` missing doc links / `0` blocked /
+`0` browser-review records. `npm run architecture:status`, `npm run
+check:route-capabilities`, and `git diff --check` passed. Confidence
+classification: architecture, ownership, task-linkage, route-capability, and
+blocked-record posture are verified locally; product journey confidence remains
+partially verified because app-completion still contains aggregate
+missing-test-link proof-link debt. No product implementation, protected runtime
+action, or broad QA lane is selected from this snapshot alone.
+[LUC-6305](/LUC/issues/LUC-6305) owns source-control closure because the shared
+worktree is mixed dirty and ahead of origin.
+
+Known-state note: [LUC-6292](/LUC/issues/LUC-6292) is
+VERIFIED_BASELINE_WITH_FOLLOW_UP_LANES for Roost architecture/app-completion
+evidence in the Roost PM lane. Evidence packet:
+`docs/planning/luc-6292-known-state-evidence-and-architecture-baseline.md`.
+Architecture status is green by `npm run architecture:status` (`454` nodes /
+`765` relations / `35` chains, queues `0`, delta `0/0/0`) and route capability
+mapping is verified by `npm run check:route-capabilities` (`180` manifest
+routes / `35` route files). Current generated readback is from
+`2026-06-29T09:04:49.056Z` / `2026-06-29T09:05:27.429Z`: `2716` architecture
+entities / `6217` relations and `374` app-completion items / `7` flows /
+`363` missing-test-link rows / `0` missing docs / `0` blocked /
+`0` browser-review records. Confidence classification: architecture,
+ownership, task-linkage, route-capability, and blocked-record posture are
+verified locally; product journey confidence remains partially verified because
+app-completion still contains aggregate missing-test-link proof-link debt.
+Follow-up lanes: [LUC-6294](/LUC/issues/LUC-6294) source-control closure for
+this packet and [LUC-6295](/LUC/issues/LUC-6295) app-completion proof-link
+curation. No product implementation, protected runtime action, or broad QA lane
+is selected from this snapshot alone.
+
+Known-state note: [LUC-6237](/LUC/issues/LUC-6237) completed source-control
+closure for the [LUC-6236](/LUC/issues/LUC-6236) Roost architecture/
+app-completion evidence packet. Closure packet:
+`docs/planning/luc-6237-source-control-closure-for-luc-6236-evidence-packet.md`.
+Confidence classification remains unchanged from [LUC-6236](/LUC/issues/LUC-6236):
+architecture, ownership, task-linkage, route-capability, and blocked-record
+posture are verified locally; product journey confidence remains partially
+verified because app-completion still contains aggregate missing-test-link
+debt. Source-control classification: not committed, not pushed, deploy impact
+none, because the shared worktree is mixed dirty and `main` is `131` commits
+ahead of origin with unrelated `src/tests/api.test.ts` and older planning/UX/
+operations artifacts.
+
+Known-state note: [LUC-6236](/LUC/issues/LUC-6236) is
+VERIFIED_BASELINE_WITH_SOURCE_CONTROL_FOLLOW_UP for Roost architecture/
+app-completion evidence in the Roost PM lane. Evidence packet:
+`docs/planning/luc-6236-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-29T09:04:49.056Z` with
+`2716` entities / `6217` relations / `16281` files. App-completion refresh
+reported `374` items / `7` flows / `363` missing test links /
+`0` missing doc links / `0` blocked records / `0` browser-review records.
+`npm run architecture:status`, `npm run check:route-capabilities`, and
+`git diff --check` passed. Confidence classification: architecture,
+ownership, task-linkage, route-capability, and blocked-record posture remain
+verified locally; product journey confidence remains partially verified
+because app-completion still contains aggregate missing-test-link debt. No
+product implementation, protected runtime action, or broad QA lane is selected
+from this snapshot alone. [LUC-6237](/LUC/issues/LUC-6237) owns
+Documentation/source-control closure because the shared worktree is mixed dirty
+and ahead of origin.
+
+Known-state note: [LUC-6231](/LUC/issues/LUC-6231) is
+VERIFIED_BASELINE_WITH_SOURCE_CONTROL_FOLLOW_UP for Roost architecture/
+app-completion evidence in the IPM lane. Evidence packet:
+`docs/planning/luc-6231-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-29T08:57:55.517Z` with
+`2714` entities / `6207` relations / `16279` files. App-completion refresh
+reported `374` items / `7` flows / `363` missing test links /
+`0` missing doc links / `0` blocked records / `0` browser-review records.
+`npm run architecture:status`, `npm run check:route-capabilities`, and
+`git diff --check` passed. Confidence classification: architecture,
+ownership, task-linkage, route-capability, and blocked-record posture remain
+verified locally; product journey confidence remains partially verified
+because app-completion still contains aggregate missing-test-link debt. No
+product implementation, protected runtime action, or broad QA lane is selected
+from this snapshot alone. [LUC-6233](/LUC/issues/LUC-6233) owns
+Documentation/source-control closure because the shared worktree is mixed dirty
+and ahead of origin.
+
+Known-state note: [LUC-6229](/LUC/issues/LUC-6229) is
+VERIFIED_BASELINE_WITH_SOURCE_CONTROL_FOLLOW_UP for Roost architecture/
+app-completion evidence in the Roost PM lane. Evidence packet:
+`docs/planning/luc-6229-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-29T08:54:32.831Z` with
+`2712` entities / `6199` relations / `16277` files. App-completion refresh
+reported `374` items / `7` flows / `363` missing test links /
+`0` missing doc links / `0` blocked records / `0` browser-review records.
+`npm run architecture:status`, `npm run check:route-capabilities`, and
+`git diff --check` passed. Confidence classification: architecture,
+ownership, task-linkage, route-capability, and blocked-record posture remain
+verified locally; product journey confidence remains partially verified
+because app-completion still contains aggregate missing-test-link debt. No
+product implementation, protected runtime action, or broad QA lane is selected
+from this snapshot alone. [LUC-6230](/LUC/issues/LUC-6230) owns
+Documentation/source-control closure because the shared worktree is mixed dirty
+and ahead of origin.
+
+Known-state note: [LUC-6227](/LUC/issues/LUC-6227) is
+VERIFIED_BASELINE_WITH_SOURCE_CONTROL_FOLLOW_UP for Roost architecture/
+app-completion evidence in the COO lane. Evidence packet:
+`docs/planning/luc-6227-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-29T08:50:32.566Z` with
+`2711` entities / `6195` relations / `16276` files. App-completion refresh
+reported `374` items / `7` flows / `363` missing test links /
+`0` missing doc links / `0` blocked records / `0` browser-review records.
+`npm run architecture:status`, `npm run check:route-capabilities`, and
+`git diff --check` passed. Confidence classification: architecture,
+ownership, task-linkage, route-capability, and blocked-record posture remain
+verified locally; product journey confidence remains partially verified
+because app-completion still contains aggregate missing-test-link debt. No
+product implementation, protected runtime action, or broad QA lane is selected
+from this snapshot alone. [LUC-6232](/LUC/issues/LUC-6232) owns
+source-control closure because the shared worktree is mixed dirty and ahead of
+origin.
+
+Known-state note: [LUC-6225](/LUC/issues/LUC-6225) is
+VERIFIED_BASELINE_WITH_SOURCE_CONTROL_FOLLOW_UP for Roost architecture/
+app-completion evidence in the TSA lane. Evidence packet:
+`docs/planning/luc-6225-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-29T08:48:36.294Z` with
+`2709` entities / `6189` relations / `16274` files. App-completion refresh
+reported `374` items / `7` flows / `363` missing test links /
+`0` missing doc links / `0` blocked records / `0` browser-review records.
+`npm run architecture:status`, `npm run check:route-capabilities`, and
+`git diff --check` passed. Confidence classification: architecture,
+ownership, task-linkage, route-capability, and blocked-record posture remain
+verified locally; product journey confidence remains partially verified
+because app-completion still contains aggregate missing-test-link debt. No
+product implementation, protected runtime action, or broad QA lane is selected
+from this snapshot alone. [LUC-6228](/LUC/issues/LUC-6228) owns
+Documentation/source-control closure because the shared worktree is mixed dirty
+and ahead of origin.
+
+Known-state note: [LUC-6222](/LUC/issues/LUC-6222) is
+VERIFIED_BASELINE_WITH_SOURCE_CONTROL_FOLLOW_UP for Roost architecture/
+app-completion evidence in the Roost PM lane. Evidence packet:
+`docs/planning/luc-6222-known-state-evidence-and-architecture-baseline.md`.
+Architecture-awareness refresh generated `2026-06-29T08:43:27.008Z` with
+`2707` entities / `6183` relations / `16272` files. App-completion refresh
+reported `374` items / `7` flows / `363` missing test links /
+`0` missing doc links / `0` blocked records / `0` browser-review records.
+`npm run architecture:status`, `npm run check:route-capabilities`, and
+`git diff --check` passed. Confidence classification: architecture,
+ownership, task-linkage, route-capability, and blocked-record posture remain
+verified locally; product journey confidence remains partially verified
+because app-completion still contains aggregate missing-test-link debt. No
+product implementation, protected runtime action, or broad QA lane is selected
+from this snapshot alone. [LUC-6224](/LUC/issues/LUC-6224) owns
+Documentation/source-control closure because the shared worktree is mixed dirty
+and ahead of origin.
 
 Known-state note: [LUC-6218](/LUC/issues/LUC-6218) is
 VERIFIED_BASELINE_WITH_SOURCE_CONTROL_FOLLOW_UP for Roost architecture/
@@ -6275,6 +6883,24 @@ it honest. Do not turn uncertainty into optimism.
 | LUC-5633-KNOWN-STATE | Architecture known-state baseline | Fresh architecture/app-completion evidence and QA proof-selection handoff | P1 | VERIFIED | Medium | 2026-06-27 Roost PM proof: architecture-awareness refresh PASS (`entities=2490`, `relations=5365`, `files=16049`, generated `2026-06-27T19:18:34.557Z`); app-completion refresh PASS (`880` items, `7` flows, `855` missing test links, `0` blocked records, generated `2026-06-27T19:18:42.156Z`); `npm run architecture:status` PASS (`GREEN`, `454/765/35`, queue `0`, worklist `0`); `npm run check:route-capabilities` PASS (`180` manifest routes / `35` route files); packet `docs/planning/luc-5633-known-state-evidence-and-architecture-baseline.md`. | Missing-test-link debt remains broad confidence debt, not a direct broken-flow signal: `implementation_without_tests=1166`, `actionable_implementation_without_tests=1157`, app-completion `missingTestLink=855`. Protected target proof remains gated. | QA/Test selects the next non-duplicated proof ladder from app-completion debt; Roost PM or SCM owner closes source control for the generated/status packet if needed. | Roost PM + QA/Test | 2026-06-27 |
 | LUC-5701-KNOWN-STATE | Architecture known-state baseline | Continuation evidence refresh and repair-lane conversion decision | P1 | VERIFIED | Medium | 2026-06-28 Roost PM continuation proof: architecture-awareness refresh PASS (`2521` entities / `5479` relations / `16086` files, generated `2026-06-27T22:44:52.759Z`); app-completion refresh PASS (`911` items / `7` flows / `881` missing test links / `0` missing doc links / `0` blocked / `0` browser-review records, generated `2026-06-27T22:45:00.058Z`); `npm run architecture:status` PASS; `npm run check:route-capabilities` PASS; packet `docs/planning/luc-5701-known-state-evidence-and-architecture-baseline.md`. | Aggregate missing-test-link debt remains confidence debt. The only continuation delta is one generated/document evidence row, with no new broken journey, blocked record, missing doc link, route-capability failure, owner gap, task-link gap, or verified-without-proof gap. | No new product repair or broad QA lane from this baseline. Future Docs/Scanner or QA work needs a concrete unverified runtime row outside the already-classified Account access / Dashboard overview set, or a reproduced fresh regression. | Roost PM + Docs/Scanner + QA/Test | 2026-06-28 |
 
+# 2026-06-30 LUC-6295 Module Confidence Update
+
+| Module/Journey | State | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| App-completion index | partially verified | `docs/planning/luc-6295-app-completion-proof-link-curation-after-luc-6292.md`; current snapshot `374` items / `7` flows / `363` missing-test-link rows / `0` missing docs / `0` blocked / `0` browser-review records; `200` exposed priority rows grouped and duplicate-checked. | Do not run duplicate QA proof from aggregate counts. Link existing proof packets to generated rows, or select a new QA proof only when a future snapshot exposes a concrete unproved route/journey/failure. |
+| Account access / auth-config | partially verified | Top current rows duplicate [LUC-6118](/LUC/issues/LUC-6118), [LUC-6154](/LUC/issues/LUC-6154), [LUC-6155](/LUC/issues/LUC-6155), and prior curation packets. | Evidence-link curation rather than new runtime proof unless a fresh failure appears. |
+| User configuration / Integration Settings | partially verified | Strongest target-shaped rows duplicate [LUC-5263](/LUC/issues/LUC-5263) and recent auth/config curation packets. | Evidence-link curation rather than duplicate local API rerun. |
+| Strategy / Trading operation | verified locally, partially linked | [LUC-6145](/LUC/issues/LUC-6145) reran and passed `GET /v1/strategy/context`; app-completion still shows link debt. | Link proof relation; browser/production proof remains separate if release-critical. |
+
+# 2026-06-30 LUC-6366 Module Confidence Update
+
+| Module/Journey | State | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| App-completion index | partially verified | `docs/planning/luc-6366-app-completion-proof-link-curation-after-luc-6363.md`; current snapshot `374` items / `7` flows / `363` missing-test-link rows / `0` missing docs / `0` blocked / `0` browser-review records; `200` exposed priority rows grouped and duplicate-checked. | Do not run duplicate QA proof from aggregate counts. Link existing proof packets to generated rows, or select a new QA proof only when a future snapshot exposes a concrete unproved route/journey/failure. |
+| Account access / auth-config | partially verified | Top current rows duplicate [LUC-6118](/LUC/issues/LUC-6118), [LUC-6154](/LUC/issues/LUC-6154), [LUC-6155](/LUC/issues/LUC-6155), [LUC-6359](/LUC/issues/LUC-6359), and prior curation packets. | Evidence-link curation rather than new runtime proof unless a fresh failure appears. |
+| User configuration / Integration Settings | partially verified | Strongest target-shaped rows duplicate [LUC-5263](/LUC/issues/LUC-5263), [LUC-6154](/LUC/issues/LUC-6154), and recent auth/config curation packets. | Evidence-link curation rather than duplicate local API rerun. |
+| Strategy / Trading operation | verified locally, partially linked | [LUC-6145](/LUC/issues/LUC-6145) reran and passed `GET /v1/strategy/context`; app-completion still shows link debt. | Link proof relation; browser/production proof remains separate if release-critical. |
+
 ## Maintenance Rules
 
 - Update this file when a feature ships, a bug is fixed, a regression appears,
@@ -6318,3 +6944,24 @@ it honest. Do not turn uncertainty into optimism.
 | Account access / auth-config | partially verified | Top current rows duplicate [LUC-6118](/LUC/issues/LUC-6118), [LUC-6154](/LUC/issues/LUC-6154), and [LUC-6155](/LUC/issues/LUC-6155) proof/mapping packets. | Evidence-link curation rather than new runtime proof unless a fresh failure appears. |
 | User configuration / Integration Settings | partially verified | Strongest target-like rows duplicate [LUC-5263](/LUC/issues/LUC-5263) and recent auth/config curation packets. | Evidence-link curation rather than duplicate local API rerun. |
 | Strategy / Trading operation | verified locally, partially linked | [LUC-6145](/LUC/issues/LUC-6145) reran and passed `GET /v1/strategy/context`; app-completion still shows link debt. | Link proof relation; browser/production proof remains separate if release-critical. |
+
+# 2026-06-29 LUC-6236 Module Confidence Update
+
+| Module/Journey | State | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Architecture awareness and task synchronization | partially verified | `docs/planning/luc-6236-known-state-evidence-and-architecture-baseline.md`; earlier same-day artifacts generated `2026-06-29T09:04:49.056Z` show `2716` entities / `6217` relations, owner gaps `0`, disconnected entities `0`, verified-without-proof rows `0`. Continuation scanner retry timed out after `604100ms`, and no matching scanner process remained. | Scanner-timeout hygiene should explain the long retry before future baselines call this command cleanly passing. |
+| App-completion index | partially verified | `docs/status/app-completion-index.md` generated `2026-06-29T09:05:27.429Z`; `374` items / `7` flows / `363` missing-test-link rows / `0` missing docs / `0` blocked / `0` browser-review records. | Treat remaining signal as proof-link confidence debt unless a future snapshot exposes a concrete unproved route, blocked journey, or reproduced failure. |
+| Route/product repair selection | verified for no-new-lane decision | No fresh owner gap, disconnected entity, missing doc link, blocked app-completion row, or reproduced broken journey was found in the readback. | Do not create duplicate broad repair work from aggregate missing-test-link counts alone. |
+# 2026-06-30 LUC-6310 Module Confidence Update
+
+| Module/Journey | State | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Architecture awareness and task synchronization | verified | `docs/planning/luc-6310-known-state-evidence-and-architecture-baseline.md`; architecture refresh PASS (`2726` entities / `6254` relations / `16291` files); task synchronization shows `0` actionable/raw task-link gaps, `0` implementation-without-task gaps, and `0` verified-without-proof rows. | No architecture/task-sync repair selected from this snapshot. |
+| App-completion index | partially verified | `docs/status/app-completion-index.md` refreshed with `374` items / `7` flows / `363` missing-test-link rows / `0` missing docs / `0` blocked / `0` browser-review records. | Treat remaining signal as proof-link confidence debt unless a future snapshot exposes a concrete unproved route, blocked journey, or reproduced failure. |
+| Route capability manifest | verified | `npm run check:route-capabilities` PASS with `180` manifest routes and `35` route files. | No route repair selected. |
+# 2026-06-30 LUC-6341 Confidence Update
+
+| Module / Journey | State | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost architecture awareness and route-capability baseline | verified | [LUC-6341](/LUC/issues/LUC-6341) packet `docs/planning/luc-6341-known-state-evidence-and-architecture-baseline.md`; architecture-awareness `2741` entities / `6314` relations / `16306` files; `npm run architecture:status` PASS; `npm run check:route-capabilities` PASS. | [LUC-6343](/LUC/issues/LUC-6343) Documentation Steward closes source-control posture for generated/status packet. |
+| App-completion user journeys | partially verified | Same packet; app-completion `374` items / `7` flows / `363` missing-test-link rows / `0` missing doc links / `0` blocked / `0` browser-review records. | [LUC-6344](/LUC/issues/LUC-6344) QA/Verification curates missing-test-link rows and selects at most one fresh nonduplicated proof target only if concrete. |

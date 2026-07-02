@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-29T08:35:36.162Z",
+  "generatedAt": "2026-07-01T21:37:49.704Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -7,7 +7,7 @@
     "items": 374,
     "flows": 7,
     "needsBrowserReview": 0,
-    "missingTestLink": 363,
+    "missingTestLink": 353,
     "missingDocLink": 0,
     "blocked": 0
   },
@@ -16,9 +16,9 @@
       "userFlow": "Account access",
       "total": 94,
       "risks": {
-        "missing_test_link": 91,
-        "implemented_needs_proof": 2,
-        "ok": 1
+        "implemented_needs_proof": 6,
+        "missing_test_link": 86,
+        "ok": 2
       },
       "gates": {
         "auth": 94,
@@ -70,8 +70,8 @@
       "userFlow": "Unclassified user workflow",
       "total": 196,
       "risks": {
-        "missing_test_link": 191,
-        "implemented_needs_proof": 5
+        "missing_test_link": 189,
+        "implemented_needs_proof": 7
       },
       "gates": {
         "auth": 6,
@@ -82,8 +82,9 @@
       "userFlow": "User configuration",
       "total": 61,
       "risks": {
-        "missing_test_link": 60,
-        "implemented_needs_proof": 1
+        "missing_test_link": 57,
+        "implemented_needs_proof": 3,
+        "ok": 1
       },
       "gates": {
         "configuration": 61,
@@ -105,13 +106,13 @@
         "auth"
       ],
       "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
+        "hasTest": true,
+        "hasDoc": true,
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
+      "relatedEntityCount": 7,
+      "risk": "implemented_needs_proof"
     },
     {
       "id": "api_endpoint:use-v1-auth:02d088cd05",
@@ -126,13 +127,13 @@
         "auth"
       ],
       "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
+        "hasTest": true,
+        "hasDoc": true,
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
+      "relatedEntityCount": 7,
+      "risk": "implemented_needs_proof"
     },
     {
       "id": "agent:decision-register:73d1cd6fc8",
@@ -275,13 +276,13 @@
         "auth"
       ],
       "evidence": {
-        "hasTest": false,
+        "hasTest": true,
         "hasDoc": true,
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 2,
-      "risk": "missing_test_link"
+      "relatedEntityCount": 3,
+      "risk": "implemented_needs_proof"
     },
     {
       "id": "document:auth-register:f4cb58594c",
@@ -296,13 +297,13 @@
         "auth"
       ],
       "evidence": {
-        "hasTest": false,
+        "hasTest": true,
         "hasDoc": true,
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 2,
-      "risk": "missing_test_link"
+      "relatedEntityCount": 3,
+      "risk": "implemented_needs_proof"
     },
     {
       "id": "document:auth-workspace-and-integration-plan:3a747b15bf",
@@ -394,27 +395,6 @@
       "kind": "feature_or_capability",
       "name": "LUC-5333 Department And Workforce Authority Proof Ladder",
       "path": "docs/planning/luc-5333-department-workforce-authority-proof-ladder.md",
-      "owner": "Docs Memory Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "document:luc-5561-auth-and-account-access-local-smoke-proof:e0036f5e1a",
-      "type": "document",
-      "kind": "feature_or_capability",
-      "name": "LUC-5561 Auth And Account Access Local Smoke Proof",
-      "path": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
       "owner": "Docs Memory Lead",
       "status": "implemented_needs_proof",
       "userFlow": "Account access",
@@ -788,7 +768,7 @@
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 19,
+      "relatedEntityCount": 18,
       "risk": "missing_test_link"
     },
     {
@@ -2802,13 +2782,13 @@
       "userFlow": "Unclassified user workflow",
       "gates": [],
       "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
+        "hasTest": true,
+        "hasDoc": true,
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
+      "relatedEntityCount": 7,
+      "risk": "implemented_needs_proof"
     },
     {
       "id": "api_endpoint:use-goals:da30547c55",
@@ -3087,13 +3067,13 @@
       "userFlow": "Unclassified user workflow",
       "gates": [],
       "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
+        "hasTest": true,
+        "hasDoc": true,
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
+      "relatedEntityCount": 7,
+      "risk": "implemented_needs_proof"
     },
     {
       "id": "api_endpoint:use-targets:7ea27c60ae",
@@ -3530,7 +3510,7 @@
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 6,
+      "relatedEntityCount": 8,
       "risk": "missing_test_link"
     },
     {
@@ -4128,6 +4108,25 @@
       "kind": "feature_or_capability",
       "name": "check-architecture-risk-hotspots-gate.mjs",
       "path": "scripts/check-architecture-risk-hotspots-gate.mjs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 4,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "feature:check-architecture-roadmap-gate-mjs:8ca270d844",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "check-architecture-roadmap-gate.mjs",
+      "path": "scripts/check-architecture-roadmap-gate.mjs",
       "owner": "Engineering Delivery Lead",
       "status": "implemented_needs_proof",
       "userFlow": "Unclassified user workflow",

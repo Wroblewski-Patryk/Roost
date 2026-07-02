@@ -1,0 +1,44 @@
+{
+  "generatedAt": "2026-07-02T15:25:35.182Z",
+  "project": "Roost",
+  "root": "C:/Personal/Projekty/Aplikacje/Roost",
+  "status": "ready_for_repair_flow",
+  "gates": [
+    {
+      "gate": "architecture_exports",
+      "status": "present",
+      "evidence": "docs/graphs/architecture-awareness.json",
+      "requiredFor": "cross-layer ownership and dependency tracing"
+    },
+    {
+      "gate": "app_completion_index",
+      "status": "present",
+      "evidence": "docs/status/app-completion-index.json",
+      "requiredFor": "user-flow works/fails/unknown classification"
+    },
+    {
+      "gate": "event_chain_index",
+      "status": "covered",
+      "evidence": "docs/status/event-chain-index.json",
+      "requiredFor": "backend/frontend/worker impact analysis"
+    },
+    {
+      "gate": "runtime_error_index",
+      "status": "covered",
+      "evidence": "docs/status/runtime-error-index.json",
+      "requiredFor": "agent-owned bug discovery and repair routing"
+    },
+    {
+      "gate": "public_runtime_probe",
+      "status": "pass",
+      "evidence": [
+        "https://roost.luckysparrow.ch",
+        "https://roost.luckysparrow.ch/api/build-info",
+        "https://api.roost.luckysparrow.ch/health",
+        "https://api.roost.luckysparrow.ch/ready"
+      ],
+      "requiredFor": "production parity with local behavior"
+    }
+  ],
+  "nextAction": "Use the first failing gate to create or wake the smallest owner-scoped repair/proof lane; do not rely on narrative status."
+}

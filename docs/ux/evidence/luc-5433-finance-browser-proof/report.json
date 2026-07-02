@@ -1,0 +1,165 @@
+{
+  "baseUrl": "http://127.0.0.1:31543",
+  "generatedAt": "2026-06-21T02:39:37.409Z",
+  "health": {
+    "status": "ok",
+    "service": "companycore",
+    "name": "LuckySparrow Company Core",
+    "build": {
+      "commit": "unknown",
+      "image": "unknown"
+    }
+  },
+  "ownerEmail": "owner@example.com",
+  "routes": [
+    "/areas?area=07-finanse&view=overview"
+  ],
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 960
+    },
+    {
+      "name": "tablet",
+      "width": 834,
+      "height": 1112
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "screenshots": [
+    {
+      "viewport": "desktop",
+      "route": "/areas?area=07-finanse&view=overview",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-5433-finance-browser-proof\\desktop-areas-area-07-finanse-view-overview.png"
+    },
+    {
+      "viewport": "tablet",
+      "route": "/areas?area=07-finanse&view=overview",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-5433-finance-browser-proof\\tablet-areas-area-07-finanse-view-overview.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/areas?area=07-finanse&view=overview",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-5433-finance-browser-proof\\mobile-areas-area-07-finanse-view-overview.png"
+    }
+  ],
+  "assertions": [
+    {
+      "viewport": "desktop",
+      "route": "/areas?area=07-finanse&view=overview",
+      "renderedRoute": null,
+      "routeTitle": "",
+      "signedIn": true
+    },
+    {
+      "viewport": "desktop",
+      "route": "/areas?area=07-finanse&view=overview",
+      "requiredText": "Finance and Billing Management",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "desktop",
+      "route": "/areas?area=07-finanse&view=overview",
+      "requiredText": "Invoice readiness",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "desktop",
+      "route": "/areas?area=07-finanse&view=overview",
+      "requiredText": "Commercial exceptions",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "desktop",
+      "route": "/areas?area=07-finanse&view=overview",
+      "requiredText": "Pricing model",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "desktop",
+      "route": "/areas?area=07-finanse&view=overview",
+      "requiredText": "Blocked write actions",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "tablet",
+      "route": "/areas?area=07-finanse&view=overview",
+      "renderedRoute": null,
+      "routeTitle": "",
+      "signedIn": true
+    },
+    {
+      "viewport": "tablet",
+      "route": "/areas?area=07-finanse&view=overview",
+      "requiredText": "Finance and Billing Management",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "tablet",
+      "route": "/areas?area=07-finanse&view=overview",
+      "requiredText": "Invoice readiness",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "tablet",
+      "route": "/areas?area=07-finanse&view=overview",
+      "requiredText": "Commercial exceptions",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "tablet",
+      "route": "/areas?area=07-finanse&view=overview",
+      "requiredText": "Pricing model",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "tablet",
+      "route": "/areas?area=07-finanse&view=overview",
+      "requiredText": "Blocked write actions",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/areas?area=07-finanse&view=overview",
+      "renderedRoute": null,
+      "routeTitle": "",
+      "signedIn": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/areas?area=07-finanse&view=overview",
+      "requiredText": "Finance and Billing Management",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/areas?area=07-finanse&view=overview",
+      "requiredText": "Invoice readiness",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/areas?area=07-finanse&view=overview",
+      "requiredText": "Commercial exceptions",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/areas?area=07-finanse&view=overview",
+      "requiredText": "Pricing model",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/areas?area=07-finanse&view=overview",
+      "requiredText": "Blocked write actions",
+      "requiredTextPresent": true
+    }
+  ],
+  "consoleIssues": []
+}

@@ -1,0 +1,2 @@
+Superseded by browser-auth-smoke-report.json generated on 2026-06-27T18:20:04.821Z.
+The final LUC-5561 browser auth smoke status is passed.
