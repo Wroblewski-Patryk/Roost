@@ -164,13 +164,15 @@ export function WorkspaceSettingsRoute() {
   const { t } = useLanguage();
   const profile = useOwnerPacket<AuthMe>("/v1/auth/me", true, t);
   const connection = useOwnerPacket<ConnectionPacket>("/v1/connection", true, t);
-  const clickUpSetting = useIntegrationSetting("clickup", true);
-  const googleDriveSetting = useIntegrationSetting("google_drive", true);
+  const clickUpConnectionStatus = connection.data?.integrations?.clickup;
+  const googleDriveConnectionStatus = connection.data?.integrations?.googleDrive;
+  const clickUpSetting = useIntegrationSetting("clickup", connection.status === "ready" && Boolean(clickUpConnectionStatus?.configured || clickUpConnectionStatus?.secretConfigured));
+  const googleDriveSetting = useIntegrationSetting("google_drive", connection.status === "ready" && Boolean(googleDriveConnectionStatus?.configured || googleDriveConnectionStatus?.secretConfigured));
   const activeWorkspace = profile.data?.workspaces?.find((workspace) => workspace.active);
   const connectionReady = connection.status === "ready" && connection.data?.status === "ok";
   const configuredCount = [
-    clickUpSetting.data ?? connection.data?.integrations?.clickup,
-    googleDriveSetting.data ?? connection.data?.integrations?.googleDrive
+    clickUpSetting.data ?? clickUpConnectionStatus,
+    googleDriveSetting.data ?? googleDriveConnectionStatus
   ].filter((integration) => Boolean(integration?.active && (integration.secretConfigured ?? integration.configured))).length;
 
   return (
@@ -206,13 +208,13 @@ export function WorkspaceSettingsRoute() {
         </div>
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           <IntegrationCard
-            connectionStatus={connection.data?.integrations?.clickup}
+            connectionStatus={clickUpConnectionStatus}
             icon="ph-kanban"
             settingStatus={clickUpSetting}
             title={t("workspaceSettings.clickup")}
           />
           <IntegrationCard
-            connectionStatus={connection.data?.integrations?.googleDrive}
+            connectionStatus={googleDriveConnectionStatus}
             icon="ph-folder-open"
             settingStatus={googleDriveSetting}
             title={t("workspaceSettings.googleDrive")}

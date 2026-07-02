@@ -1,0 +1,144 @@
+{
+  "baseUrl": "http://127.0.0.1:3242",
+  "generatedAt": "2026-07-02T19:16:41.457Z",
+  "health": {
+    "status": "ok",
+    "service": "companycore",
+    "name": "LuckySparrow Company Core",
+    "build": {
+      "commit": "unknown",
+      "image": "unknown"
+    }
+  },
+  "ownerEmail": "luc-7047-owner@example.test",
+  "routes": [
+    "/account/settings",
+    "/workspace/settings"
+  ],
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 960
+    },
+    {
+      "name": "tablet",
+      "width": 834,
+      "height": 1112
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "screenshots": [
+    {
+      "viewport": "desktop",
+      "route": "/account/settings",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-7047-settings-runtime-browser-proof-configured\\desktop-account-settings.png"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/workspace/settings",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-7047-settings-runtime-browser-proof-configured\\desktop-workspace-settings.png"
+    },
+    {
+      "viewport": "tablet",
+      "route": "/account/settings",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-7047-settings-runtime-browser-proof-configured\\tablet-account-settings.png"
+    },
+    {
+      "viewport": "tablet",
+      "route": "/workspace/settings",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-7047-settings-runtime-browser-proof-configured\\tablet-workspace-settings.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/account/settings",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-7047-settings-runtime-browser-proof-configured\\mobile-account-settings.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/workspace/settings",
+      "file": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-7047-settings-runtime-browser-proof-configured\\mobile-workspace-settings.png"
+    }
+  ],
+  "assertions": [
+    {
+      "viewport": "desktop",
+      "route": "/account/settings",
+      "signedIn": true,
+      "missingRequiredText": [],
+      "horizontalOverflow": false,
+      "overflow": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440
+      },
+      "rawLeakMatches": []
+    },
+    {
+      "viewport": "desktop",
+      "route": "/workspace/settings",
+      "signedIn": true,
+      "missingRequiredText": [],
+      "horizontalOverflow": false,
+      "overflow": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440
+      },
+      "rawLeakMatches": []
+    },
+    {
+      "viewport": "tablet",
+      "route": "/account/settings",
+      "signedIn": true,
+      "missingRequiredText": [],
+      "horizontalOverflow": false,
+      "overflow": {
+        "scrollWidth": 834,
+        "clientWidth": 834
+      },
+      "rawLeakMatches": []
+    },
+    {
+      "viewport": "tablet",
+      "route": "/workspace/settings",
+      "signedIn": true,
+      "missingRequiredText": [],
+      "horizontalOverflow": false,
+      "overflow": {
+        "scrollWidth": 834,
+        "clientWidth": 834
+      },
+      "rawLeakMatches": []
+    },
+    {
+      "viewport": "mobile",
+      "route": "/account/settings",
+      "signedIn": true,
+      "missingRequiredText": [],
+      "horizontalOverflow": false,
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390
+      },
+      "rawLeakMatches": []
+    },
+    {
+      "viewport": "mobile",
+      "route": "/workspace/settings",
+      "signedIn": true,
+      "missingRequiredText": [],
+      "horizontalOverflow": false,
+      "overflow": {
+        "scrollWidth": 390,
+        "clientWidth": 390
+      },
+      "rawLeakMatches": []
+    }
+  ],
+  "consoleIssues": [],
+  "pageErrors": [],
+  "failedRequiredRequests": []
+}

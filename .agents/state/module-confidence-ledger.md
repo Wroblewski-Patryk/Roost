@@ -1,3 +1,15 @@
+# 2026-07-02 LUC-7047 Settings Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| User configuration settings runtime/browser proof | partially verified, repair routed | [LUC-7047](/LUC/issues/LUC-7047) packet `docs/planning/luc-7047-settings-runtime-browser-proof.md`; Docker available; `npm run test:api:local` with disposable PostgreSQL `companycore-luc-7047-postgres` on port `55557` PASS (`31` migrations, seed, `8/8` API subtests); configured-state Playwright proof for `/account/settings` and `/workspace/settings` PASS across desktop/tablet/mobile with no console/page errors, failed required requests, horizontal overflow, or secret leakage. Fresh-workspace proof FAILED because `/v1/integration-settings/clickup` and `/v1/integration-settings/google_drive` returned `404 integration_not_configured`, producing browser console errors instead of unconfigured provider status. | [LUC-7062](/LUC/issues/LUC-7062) FEW repairs fresh-workspace unconfigured provider status so `/workspace/settings` can show ClickUp/Google Drive as unconfigured without console errors, then reruns the same browser proof. |
+
+# 2026-07-02 LUC-7062 Module Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Workspace settings unconfigured integration providers | verified locally | [LUC-7062](/LUC/issues/LUC-7062) packet `docs/planning/luc-7062-workspace-settings-unconfigured-provider-404-repair.md`; `web/src/features/settings/settings-routes.tsx` now gates optional `/v1/integration-settings/:provider` detail fetches behind the `/v1/connection` configured/secret summary; `npm run build:web` PASS; Playwright request proof rendered authenticated `/workspace/settings` with ClickUp and Google Drive unconfigured, made zero `/v1/integration-settings/*` requests, and recorded `failedRequests=[]` plus `consoleIssues=[]`. | No remaining FEW repair. Configured-provider browser proof remains covered by [LUC-7047](/LUC/issues/LUC-7047); future source-control/release lane can batch this local frontend fix when the shared worktree is clean enough. |
+
 # 2026-07-02 LUC-6913 Parent Closure Confidence Update
 
 | Module/Journey | Status | Evidence | Next Proof Or Fix |

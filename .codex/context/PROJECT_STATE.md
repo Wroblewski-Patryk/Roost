@@ -1,5 +1,65 @@
 # PROJECT_STATE
 
+- 2026-07-02: [LUC-7062](/LUC/issues/LUC-7062) fixed
+  `/workspace/settings` unconfigured provider 404 browser errors. Output:
+  `docs/planning/luc-7062-workspace-settings-unconfigured-provider-404-repair.md`.
+  Code change: `web/src/features/settings/settings-routes.tsx` now uses
+  `/v1/connection` as the safe unconfigured provider summary and only fetches
+  `/v1/integration-settings/:provider` after the connection packet reports
+  stored provider configuration or a secret. Evidence: `npm run build:web`
+  PASS; local Playwright request proof on `http://127.0.0.1:3252/workspace/settings`
+  PASS with mocked authenticated API responses, `providerRequests=[]`,
+  `failedRequests=[]`, `consoleIssues=[]`, visible workspace settings text,
+  and visible unconfigured status. Cleanup stopped validation-owned
+  `chrome-headless-shell` PID `37052`; temporary server port `3252` was
+  closed. Commit not created because the shared worktree already contains
+  unrelated dirty generated/state/evidence files. Push not needed; deploy
+  impact local frontend-only. No backend, database, provider, credential,
+  protected smoke, production mutation, push, deploy, restart, or secret
+  disclosure occurred.
+
+- 2026-07-02: [LUC-7047](/LUC/issues/LUC-7047) executed the
+  [LUC-5556](/LUC/issues/LUC-5556) settings proof ladder runtime/browser
+  continuation. Output:
+  `docs/planning/luc-7047-settings-runtime-browser-proof.md`. Evidence:
+  Docker was available (`28.3.2`); `npm run test:api:local` passed against
+  disposable PostgreSQL `companycore-luc-7047-postgres` on port `55557`
+  (`31` migrations, seed, `8/8` API subtests). Local server
+  `http://127.0.0.1:3242` returned `/health` `200`. Fresh-workspace
+  `/workspace/settings` browser proof failed because
+  `/v1/integration-settings/clickup` and
+  `/v1/integration-settings/google_drive` returned `404
+  integration_not_configured`, causing browser console failed-resource errors
+  instead of unconfigured provider status. Configured-state browser proof
+  passed for `/account/settings` and `/workspace/settings` at
+  desktop/tablet/mobile with no console/page errors, no failed required
+  requests, no horizontal overflow, and no local proof token/secret leakage.
+  Created [LUC-7062](/LUC/issues/LUC-7062) for FEW to repair unconfigured
+  provider status. Cleanup stopped validation server, removed disposable DB
+  container, and left no validation-owned headless browser processes. No
+  product code, push, deploy, protected smoke, production mutation, credential
+  value read, live provider action, or secret disclosure occurred.
+
+- 2026-07-02: [LUC-6995](/LUC/issues/LUC-6995) completed the Documentation
+  Steward resume/closure for stale-blocked [LUC-6474](/LUC/issues/LUC-6474).
+  Output:
+  `docs/planning/luc-6474-source-control-closure-for-luc-6464-evidence-packet.md`.
+  Evidence: [LUC-6464](/LUC/issues/LUC-6464)'s final issue-thread comment
+  [91bc9b24-9d41-4f71-8947-d08c28050c10](/LUC/issues/LUC-6464#comment-91bc9b24-9d41-4f71-8947-d08c28050c10)
+  contains the parent evidence packet facts that the old local-file-only
+  [LUC-6474](/LUC/issues/LUC-6474) closure could not find: architecture and
+  app-completion readbacks, `npm run architecture:status` PASS,
+  `npm run check:route-capabilities` PASS, `git diff --check` PASS with
+  LF-to-CRLF warnings only, branch/HEAD/divergence, mixed dirty posture,
+  no-commit decision, push/deploy impact, residual risk, and child handoffs.
+  [LUC-6474](/LUC/issues/LUC-6474) is no longer blocked on missing local
+  `docs/planning/*6464*` evidence. Commit not created because the shared
+  worktree contains generated status/index changes from later Project Truth
+  work; push not needed; deploy impact none. No product code, runtime process,
+  browser, Docker, database, protected smoke, provider mutation, credential
+  access, secret disclosure, push, deploy, restart, or production mutation
+  occurred.
+
 - 2026-07-02: [LUC-6913](/LUC/issues/LUC-6913) parent public runtime probe
   repair is closed after blockers [LUC-6916](/LUC/issues/LUC-6916) and
   [LUC-6918](/LUC/issues/LUC-6918) completed. Output:

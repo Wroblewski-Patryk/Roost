@@ -2,6 +2,47 @@
 
 Last updated: 2026-07-02
 
+## LUC-7062 Checkpoint
+
+- 2026-07-02: [LUC-7062](/LUC/issues/LUC-7062) repaired the FEW-owned
+  `/workspace/settings` unconfigured provider 404 browser error. Scope was
+  single-lane frontend request gating; no subagent delegation was used because
+  the change was limited to `web/src/features/settings/settings-routes.tsx`
+  and focused browser proof. Output:
+  `docs/planning/luc-7062-workspace-settings-unconfigured-provider-404-repair.md`.
+  Proof: `npm run build:web` PASS; Playwright static harness PASS for
+  authenticated `/workspace/settings` with `/v1/connection` reporting ClickUp
+  and Google Drive unconfigured. The page rendered workspace settings and
+  unconfigured status, made zero `/v1/integration-settings/*` requests, and
+  had `failedRequests=[]` plus `consoleIssues=[]`. Cleanup: temporary port
+  `3252` closed; validation-owned `chrome-headless-shell` PID `37052` from an
+  early failed harness attempt was stopped; follow-up browser process check had
+  no output. Deploy impact local frontend-only; no backend, database, provider,
+  credential, protected smoke, push, deploy, restart, or production mutation
+  occurred.
+
+## LUC-7047 Checkpoint
+
+- 2026-07-02: [LUC-7047](/LUC/issues/LUC-7047) executed the
+  [LUC-5556](/LUC/issues/LUC-5556) settings proof ladder in the TAE lane.
+  Scope was single-lane QA verification; no subagent delegation was used
+  because the work was bounded to local API prerequisite proof, browser proof,
+  defect routing, source-of-truth updates, and cleanup. Output:
+  `docs/planning/luc-7047-settings-runtime-browser-proof.md`.
+  Proof: Docker was available; `npm run test:api:local` passed with disposable
+  PostgreSQL `companycore-luc-7047-postgres` on port `55557`, `31` migrations,
+  seed, and `8/8` API subtests. Configured-state Playwright proof passed for
+  `/account/settings` and `/workspace/settings` at desktop/tablet/mobile with
+  no console/page errors, failed required requests, horizontal overflow, or
+  local proof token/secret leakage. Fresh-workspace proof failed because
+  `/v1/integration-settings/clickup` and
+  `/v1/integration-settings/google_drive` returned `404
+  integration_not_configured`, producing browser console errors instead of
+  unconfigured provider status. Follow-up [LUC-7062](/LUC/issues/LUC-7062)
+  was created and assigned to FEW. Cleanup stopped the validation server,
+  removed the disposable PostgreSQL container, and left no validation-owned
+  headless browser process.
+
 ## LUC-6918 Checkpoint
 
 - 2026-07-02 parent-closure integration: [LUC-6913](/LUC/issues/LUC-6913)
@@ -537,6 +578,26 @@ Last updated: 2026-07-02
   test authoring, credential access, or secret disclosure.
 
 ## LUC-6474 Checkpoint
+
+- 2026-07-02 resume closure: [LUC-6474](/LUC/issues/LUC-6474) is no longer
+  blocked on missing local `docs/planning/*6464*` evidence because
+  [LUC-6464](/LUC/issues/LUC-6464)'s final issue-thread comment is the
+  authoritative parent evidence packet. Resume was delegated by
+  [LUC-6995](/LUC/issues/LUC-6995) after [LUC-6992](/LUC/issues/LUC-6992)
+  confirmed direct coordinator updates to [LUC-6474](/LUC/issues/LUC-6474)
+  were outside its authorization boundary. Evidence comment:
+  [91bc9b24-9d41-4f71-8947-d08c28050c10](/LUC/issues/LUC-6464#comment-91bc9b24-9d41-4f71-8947-d08c28050c10).
+  Updated packet:
+  `docs/planning/luc-6474-source-control-closure-for-luc-6464-evidence-packet.md`.
+  Scope remained single-lane documentation/source-control closure; no
+  subagent delegation was used because the work was a bounded issue-thread
+  evidence integration and Paperclip disposition. No product code, push,
+  deploy, restart, protected smoke, provider mutation, credential access,
+  secret disclosure, runtime process, browser, Docker, or database action
+  occurred. Commit not created because the shared worktree contains generated
+  status/index changes from later Project Truth work; push not needed; deploy
+  impact none. Parent no-stall issue [LUC-6992](/LUC/issues/LUC-6992) can
+  clear its child blocker after [LUC-6995](/LUC/issues/LUC-6995) closes.
 
 - 2026-06-30: [LUC-6474](/LUC/issues/LUC-6474) Documentation Steward
   source-control closure for [LUC-6464](/LUC/issues/LUC-6464) could not be

@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-07-01T21:37:49.704Z
+Generated: 2026-07-02T16:50:11.927Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -12,52 +12,29 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 
 ## Counts
 
-- Items: 374
-- User flows: 7
+- Items: 1237
+- User flows: 5
 - Needs browser/screenshot review: 0
-- Missing test link: 353
-- Missing doc link: 0
+- Missing test link: 1201
+- Missing doc link: 20
+- Implemented, needs proof: 11
 - Blocked: 0
+- Known non-ok risk items: 1232
+- Priority review items indexed: 200/1232
+- Priority review truncated: true
 
 ## Flow Summary
 
-- Unclassified user workflow: 196 entities; risks {"missing_test_link":189,"implemented_needs_proof":7}; gates {"auth":6,"configuration":10}
-- Account access: 94 entities; risks {"implemented_needs_proof":6,"missing_test_link":86,"ok":2}; gates {"auth":94,"configuration":14,"subscription":3}
-- User configuration: 61 entities; risks {"missing_test_link":57,"implemented_needs_proof":3,"ok":1}; gates {"configuration":61,"auth":3}
-- Dashboard overview: 13 entities; risks {"missing_test_link":13}; gates {"configuration":7}
-- Subscription and entitlement: 4 entities; risks {"missing_test_link":3,"implemented_needs_proof":1}; gates {"subscription":4}
-- Trading operation: 4 entities; risks {"missing_test_link":3,"implemented_needs_proof":1}; gates {}
-- Exchange connection and configuration: 2 entities; risks {"missing_test_link":2}; gates {"configuration":2}
+- Unclassified user workflow: 1090 entities; risks {"missing_test_link":1062,"ok":2,"implemented_needs_proof":8,"missing_doc_link":18}; gates {"configuration":7,"auth":1}
+- Account access: 70 entities; risks {"ok":3,"missing_test_link":65,"implemented_needs_proof":2}; gates {"auth":70,"configuration":9,"subscription":2}
+- Dashboard overview: 34 entities; risks {"missing_test_link":34}; gates {"configuration":7}
+- User configuration: 33 entities; risks {"missing_test_link":31,"missing_doc_link":2}; gates {"configuration":31}
+- Trading operation: 10 entities; risks {"missing_test_link":9,"implemented_needs_proof":1}; gates {}
 
 ## Priority Review Queue
 
 | User flow | Risk | Kind | Entity | Owner | Path | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
-| Account access | implemented_needs_proof | api_endpoint | USE /auth | Engineering Delivery Lead | src/app.ts#/auth | auth |
-| Account access | implemented_needs_proof | api_endpoint | USE /v1/auth | Engineering Delivery Lead | src/app.ts#/v1/auth | auth |
-| Account access | missing_test_link | feature_or_capability | Decision Register | Engineering Delivery Lead | .agents/state/decision-register.md | auth |
-| Account access | missing_test_link | feature_or_capability | Risk Register | Engineering Delivery Lead | .agents/state/risk-register.md | auth |
-| Account access | missing_test_link | feature_or_capability | POST /v1/integration-settings/google_drive/oauth/authorize-url | Docs Memory Lead | docs/architecture/nodes/generated/API-AUTO-0144.md | auth, configuration |
-| Account access | missing_test_link | feature_or_capability | POST /v1/integration-settings/google_drive/oauth/exchange | Docs Memory Lead | docs/architecture/nodes/generated/API-AUTO-0145.md | auth, configuration |
-| Account access | missing_test_link | feature_or_capability | Authenticated Shell component | Docs Memory Lead | docs/architecture/nodes/generated/COMP-SHELL.md | auth |
-| Account access | missing_test_link | feature_or_capability | Google Drive.Auth | Docs Memory Lead | docs/architecture/nodes/generated/INT-AUTO-0008.md | auth |
-| Account access | implemented_needs_proof | feature_or_capability | /auth/login | Docs Memory Lead | docs/architecture/nodes/generated/PAGE-AUTO-0003.md | auth |
-| Account access | implemented_needs_proof | feature_or_capability | /auth/register | Docs Memory Lead | docs/architecture/nodes/generated/PAGE-AUTO-0004.md | auth |
-| Account access | missing_test_link | feature_or_capability | Auth, Workspace, And Integration Plan | Docs Memory Lead | docs/planning/auth-workspace-integration-plan.md | auth |
-| Account access | missing_test_link | feature_or_capability | LUC-5084 Authenticated Browser Route Proof | Docs Memory Lead | docs/planning/luc-5084-authenticated-browser-route-proof.md | auth |
-| Account access | missing_test_link | feature_or_capability | LUC-5132 Security And AI Authority Evidence Recheck | Docs Memory Lead | docs/planning/luc-5132-security-ai-authority-evidence-recheck.md | auth |
-| Account access | missing_test_link | feature_or_capability | LUC-5315 Auth Workspace API-Key Authority Proof Ladder | Docs Memory Lead | docs/planning/luc-5315-auth-workspace-api-key-authority-proof-ladder.md | auth |
-| Account access | missing_test_link | feature_or_capability | LUC-5333 Department And Workforce Authority Proof Ladder | Docs Memory Lead | docs/planning/luc-5333-department-workforce-authority-proof-ladder.md | auth |
-| Account access | missing_test_link | feature_or_capability | LUC-5570 API Auth/Config Route Coverage | Docs Memory Lead | docs/planning/luc-5570-api-auth-config-route-coverage.md | auth, configuration |
-| Account access | missing_test_link | feature_or_capability | LUC-5661 /v1 Auth Alias Parity API Proof | Docs Memory Lead | docs/planning/luc-5661-v1-auth-alias-parity-api-proof.md | auth |
-| Account access | missing_test_link | feature_or_capability | LUC-5984 Auth/Subscription/Configuration Authority Risk Review | Docs Memory Lead | docs/planning/luc-5984-auth-subscription-configuration-authority-risk-review.md | auth, subscription, configuration |
-| Account access | missing_test_link | feature_or_capability | LUC-6118 Account Access Auth API Proof | Docs Memory Lead | docs/planning/luc-6118-account-access-auth-api-proof.md | auth |
-| Account access | missing_test_link | feature_or_capability | LUC-6155 Auth/Config API Proof Lane | Docs Memory Lead | docs/planning/luc-6155-auth-config-api-proof-lane.md | auth, configuration |
-| Account access | missing_test_link | feature_or_capability | REACT-WEB-LAYOUT-001 Authenticated Layout Foundation | Docs Memory Lead | docs/planning/react-web-layout-foundation-task-contract.md | auth |
-| Account access | missing_test_link | feature_or_capability | V1 Production Authenticated Parity Task Contract | Docs Memory Lead | docs/planning/v1-production-authenticated-parity-task-contract.md | auth |
-| Account access | missing_test_link | feature_or_capability | V1AUTH-001 Owner Auth Redirect Flow | Docs Memory Lead | docs/planning/v1auth-001-owner-auth-redirect-task-contract.md | auth |
-| Account access | missing_test_link | feature_or_capability | Authenticated Shell Layout Audit | Docs Memory Lead | docs/ux/authenticated-shell-layout-audit-2026-05-14.md | auth |
-| Account access | missing_test_link | feature_or_capability | migration.sql | Engineering Delivery Lead | prisma/migrations/202605022_workspace_auth/migration.sql | auth |
 | Account access | missing_test_link | feature_or_capability | authHeaders | Engineering Delivery Lead | scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders | auth |
 | Account access | missing_test_link | feature_or_capability | authHeaders | Engineering Delivery Lead | scripts/operating-model-registry-lifecycle-smoke.mjs#authHeaders | auth |
 | Account access | missing_test_link | feature_or_capability | registerOwner | Engineering Delivery Lead | scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner | auth |
@@ -113,6 +90,31 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Account access | missing_test_link | feature_or_capability | auth-token.ts | Engineering Delivery Lead | web/src/api/auth-token.ts | auth |
 | Account access | missing_test_link | feature_or_capability | clearOwnerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#clearOwnerToken | auth |
 | Account access | missing_test_link | feature_or_capability | isSignedIn | Engineering Delivery Lead | web/src/api/auth-token.ts#isSignedIn | auth |
+| Account access | missing_test_link | feature_or_capability | ownerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#ownerToken | auth |
+| Account access | missing_test_link | feature_or_capability | setOwnerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#setOwnerToken | auth |
+| Account access | missing_test_link | feature_or_capability | client.ts | Engineering Delivery Lead | web/src/api/client.ts | auth |
+| Account access | missing_test_link | feature_or_capability | errors.ts | Engineering Delivery Lead | web/src/api/errors.ts | auth |
+| Account access | missing_test_link | feature_or_capability | canonicalPostAuthPath | Engineering Delivery Lead | web/src/app-route-registry.ts#canonicalPostAuthPath | auth |
+| Account access | missing_test_link | feature_or_capability | auth-pages.tsx | Engineering Delivery Lead | web/src/features/auth/auth-pages.tsx | auth |
+| Account access | missing_test_link | feature_or_capability | AuthRoute | Engineering Delivery Lead | web/src/features/auth/auth-pages.tsx#AuthRoute | auth |
+| Account access | missing_test_link | feature_or_capability | onSubmit | Engineering Delivery Lead | web/src/features/auth/auth-pages.tsx#onSubmit | auth |
+| Account access | missing_test_link | feature_or_capability | auth-validation.ts | Engineering Delivery Lead | web/src/features/auth/auth-validation.ts | auth |
+| Account access | missing_test_link | feature_or_capability | hasAuthErrors | Engineering Delivery Lead | web/src/features/auth/auth-validation.ts#hasAuthErrors | auth |
+| Account access | missing_test_link | feature_or_capability | validateAuthForm | Engineering Delivery Lead | web/src/features/auth/auth-validation.ts#validateAuthForm | auth |
+| Account access | missing_test_link | feature_or_capability | AuthenticatedImage | Engineering Delivery Lead | web/src/features/departments/assets-route.tsx#AuthenticatedImage | auth |
+| Dashboard overview | missing_test_link | api_endpoint | USE /dashboard | Engineering Delivery Lead | src/app.ts#/dashboard | - |
+| Dashboard overview | missing_test_link | feature_or_capability | build-architecture-health-dashboard.mjs | Engineering Delivery Lead | scripts/build-architecture-health-dashboard.mjs | - |
+| Dashboard overview | missing_test_link | feature_or_capability | main | Engineering Delivery Lead | scripts/build-architecture-health-dashboard.mjs#main | - |
+| Dashboard overview | missing_test_link | feature_or_capability | readJson | Engineering Delivery Lead | scripts/build-architecture-health-dashboard.mjs#readJson | - |
+| Dashboard overview | missing_test_link | feature_or_capability | toBoolIcon | Engineering Delivery Lead | scripts/build-architecture-health-dashboard.mjs#toBoolIcon | - |
+| Dashboard overview | missing_test_link | feature_or_capability | check-architecture-health-dashboard-gate.mjs | Engineering Delivery Lead | scripts/check-architecture-health-dashboard-gate.mjs | - |
+| Dashboard overview | missing_test_link | feature_or_capability | fail | Engineering Delivery Lead | scripts/check-architecture-health-dashboard-gate.mjs#fail | - |
+| Dashboard overview | missing_test_link | feature_or_capability | readJson | Engineering Delivery Lead | scripts/check-architecture-health-dashboard-gate.mjs#readJson | - |
+| Dashboard overview | missing_test_link | feature_or_capability | src/modules/dashboard | Engineering Delivery Lead | src/modules/dashboard | - |
+| Dashboard overview | missing_test_link | feature_or_capability | dashboard.routes.ts | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts | - |
+| Dashboard overview | missing_test_link | feature_or_capability | coerceCount | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#coerceCount | - |
+| Dashboard overview | missing_test_link | feature_or_capability | pickHealth | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#pickHealth | - |
+| Dashboard overview | missing_test_link | feature_or_capability | riskRank | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#riskRank | - |
 
 ## Agent Rule
 

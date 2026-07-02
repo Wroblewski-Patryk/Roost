@@ -1,3 +1,42 @@
+# 2026-07-02 LUC-7062 Settings Runtime Browser Health Check
+
+- Status: `/workspace/settings` unconfigured provider 404 browser error is
+  fixed and locally verified.
+- Evidence: `npm run build:web` PASS. Playwright static harness proof for
+  authenticated `/workspace/settings` with `/v1/connection` reporting ClickUp
+  and Google Drive unconfigured returned PASS: `providerRequests=[]`,
+  `failedRequests=[]`, `consoleIssues=[]`, visible workspace settings text,
+  and visible unconfigured status.
+- Cleanup: temporary static server port `3252` closed. Validation-owned
+  `chrome-headless-shell` PID `37052` from an early failed harness attempt was
+  stopped; follow-up process check returned no browser process output.
+- Deploy impact: local frontend-only; no backend/database/provider/production
+  mutation.
+
+# 2026-07-02 LUC-7047 Settings Runtime Browser Health Check
+
+- Status: [LUC-5556](/LUC/issues/LUC-5556) settings proof ladder is no longer
+  blocked by Docker/local DB availability, but fresh-workspace settings proof
+  found a real unconfigured-provider defect.
+- API prerequisite: `COMPANYCORE_TEST_DB_CONTAINER=companycore-luc-7047-postgres
+  COMPANYCORE_TEST_DB_PORT=55557 COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0
+  COMPANYCORE_TEST_DB_KEEP=1 npm run test:api:local` PASS. Build server/web
+  passed, `31` migrations applied, seed passed, and API tests passed `8/8`.
+- Browser proof: configured local provider rows passed for `/account/settings`
+  and `/workspace/settings` at desktop/tablet/mobile. Report:
+  `docs/ux/evidence/luc-7047-settings-runtime-browser-proof-configured/report.json`
+  with `consoleIssues=[]`, `pageErrors=[]`, `failedRequiredRequests=[]`, no
+  horizontal overflow, and no local proof token/secret leakage.
+- Failed state: fresh owner workspace without integration rows produced `404
+  integration_not_configured` for `/v1/integration-settings/clickup` and
+  `/v1/integration-settings/google_drive`, creating browser console errors.
+  Report:
+  `docs/ux/evidence/luc-7047-settings-runtime-browser-proof/report.json`.
+- Follow-up: [LUC-7062](/LUC/issues/LUC-7062) assigned to FEW for durable
+  unconfigured provider status repair.
+- Cleanup: validation server and disposable PostgreSQL container were stopped
+  after proof; validation-owned headless browser processes were cleaned up.
+
 # 2026-07-02 LUC-6913 Parent Closure Health Check
 
 - Status: Roost public runtime readiness/build-info repair is verified in

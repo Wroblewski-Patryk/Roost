@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T15:25:35.182Z",
+  "generatedAt": "2026-07-02T16:50:21.334Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "ready_for_repair_flow",
@@ -27,6 +27,12 @@
       "status": "covered",
       "evidence": "docs/status/runtime-error-index.json",
       "requiredFor": "agent-owned bug discovery and repair routing"
+    },
+    {
+      "gate": "app_completion_risk_index",
+      "status": "gaps_indexed",
+      "evidence": "docs/status/app-completion-index.json",
+      "requiredFor": "user-facing flow verification across frontend, backend, tests, docs, auth/config, and browser proof"
     },
     {
       "gate": "public_runtime_probe",

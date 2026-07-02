@@ -26,6 +26,26 @@ fixes for this repository.
 
 ## Entries
 
+### 2026-07-02 - Close Browser Harnesses After Failed Assertions
+- Context: [LUC-7062](/LUC/issues/LUC-7062) used ad hoc Playwright request
+  proofs for `/workspace/settings` before the harness server and mocks were
+  fully correct.
+- Symptom: an early failed harness attempt left one `chrome-headless-shell`
+  process after the assertion timed out.
+- Root cause: the first harness did not close the browser in every timeout
+  path while static-server issues were still being diagnosed.
+- Guardrail: wrap local Playwright browser proofs in `try/finally`, always
+  close the browser and temporary server, then run a narrow
+  `Get-Process chrome-headless-shell,chromium -ErrorAction SilentlyContinue`
+  cleanup check before final disposition.
+- Preferred pattern: build the harness around `finally { await browser.close();
+  server.close(); }`, inspect process command/path before stopping leftovers,
+  and record cleanup evidence in the task packet.
+- Avoid: ending a heartbeat after browser timeout failures without a process
+  cleanup check.
+- Evidence: validation-owned `chrome-headless-shell` PID `37052` was stopped;
+  follow-up browser process check returned no output.
+
 ### 2026-06-29 - Treat Local Paperclip API Timeouts As Control-Plane Blockers
 - Context: [LUC-6232](/LUC/issues/LUC-6232) was locally verified, but the
   Paperclip control-plane update path had to close the issue through

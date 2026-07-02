@@ -1,6 +1,49 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-02: [LUC-7062](/LUC/issues/LUC-7062) workspace settings
+  unconfigured provider 404 repair is complete locally. Packet:
+  `docs/planning/luc-7062-workspace-settings-unconfigured-provider-404-repair.md`.
+  Evidence: `web/src/features/settings/settings-routes.tsx` now skips optional
+  provider-detail settings calls until `/v1/connection` reports that ClickUp
+  or Google Drive has stored configuration/secret material; `npm run
+  build:web` PASS; Playwright request proof for authenticated
+  `/workspace/settings` with unconfigured providers PASS with
+  `providerRequests=[]`, `failedRequests=[]`, and `consoleIssues=[]`. Cleanup
+  stopped validation-owned headless browser PID `37052`; temporary port `3252`
+  closed. Commit not created due to unrelated shared dirty worktree state;
+  push not needed; deploy impact local frontend-only. No remaining FEW action
+  for this issue.
+
+- 2026-07-02: [LUC-7047](/LUC/issues/LUC-7047) settings runtime/browser proof
+  is complete as a QA execution packet with a routed repair. Packet:
+  `docs/planning/luc-7047-settings-runtime-browser-proof.md`. Evidence:
+  `npm run test:api:local` passed against disposable PostgreSQL
+  `companycore-luc-7047-postgres` on port `55557` (`31` migrations, seed,
+  `8/8` API subtests). Fresh-workspace `/workspace/settings` browser proof
+  failed on `404 integration_not_configured` responses from ClickUp and Google
+  Drive settings endpoints, which caused console errors. Configured-state
+  proof passed across desktop/tablet/mobile with no console/page errors,
+  failed required requests, horizontal overflow, or local proof secret leakage.
+  Follow-up [LUC-7062](/LUC/issues/LUC-7062) is assigned to FEW for the
+  unconfigured provider status repair. Cleanup completed; deploy impact none;
+  no product code, push, deploy, protected smoke, production mutation,
+  credential access, live provider action, or secret disclosure occurred.
+
+- 2026-07-02: [LUC-6995](/LUC/issues/LUC-6995) Documentation Steward resume
+  for stale-blocked [LUC-6474](/LUC/issues/LUC-6474) is complete. Packet:
+  `docs/planning/luc-6474-source-control-closure-for-luc-6464-evidence-packet.md`.
+  Evidence: [LUC-6464](/LUC/issues/LUC-6464)'s final issue-thread comment
+  [91bc9b24-9d41-4f71-8947-d08c28050c10](/LUC/issues/LUC-6464#comment-91bc9b24-9d41-4f71-8947-d08c28050c10)
+  is the authoritative parent evidence packet and includes the required
+  architecture/app-completion readbacks, command results, git posture,
+  no-commit decision, push/deploy impact, residual risk, and child handoffs.
+  [LUC-6474](/LUC/issues/LUC-6474) no longer has a live missing-file blocker.
+  Commit not created; push not needed; deploy impact none. No protected
+  action, product code, runtime process, browser, Docker, database, provider
+  mutation, credential access, secret disclosure, push, deploy, restart, or
+  production mutation occurred.
+
 - 2026-07-02: [LUC-6913](/LUC/issues/LUC-6913) parent public runtime probe
   repair is complete. Packet:
   `docs/planning/luc-6913-public-runtime-probe-401-diagnosis-and-local-repair.md`.
