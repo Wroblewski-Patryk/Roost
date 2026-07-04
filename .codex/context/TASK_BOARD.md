@@ -1,6 +1,45 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-04: [LUC-24](/LUC/issues/LUC-24) Roost bounded local route/API
+  evidence slice is complete. Packet:
+  `docs/planning/luc-24-roost-bounded-local-route-api-evidence-slice.md`.
+  Evidence: selected the public readiness/build-info API slice plus protected
+  fail-closed check; Docker/Linux runtime was unavailable
+  (`dockerDesktopLinuxEngine` named pipe missing), so `npm run test:api:local`
+  was not run; `npm run architecture:status` PASS; `npm run
+  check:route-capabilities` PASS; `npm run build:server` PASS; short-lived
+  local app probe returned `200` for `/health`, `/v1/health`, `/ready`,
+  `/v1/ready`, and `/api/build-info`, and `401 missing_api_key` for protected
+  `/v1/connection` without credentials. No code, protected smoke, secret
+  access, push, deploy, restart, rollback, provider action, paid/noisy
+  automation, or production mutation occurred. Next owner: [LUC-19](/LUC/issues/LUC-19)
+  can choose Docker/QVE runtime follow-up, source-control closure, or an
+  owner-gated protected proof; do not open broad product implementation from
+  this slice alone.
+
+- 2026-07-04: [LUC-22](/LUC/issues/LUC-22) Roost local architecture and repo
+  preflight is complete. Packet:
+  `docs/planning/luc-22-roost-local-architecture-and-repo-preflight.md`.
+  Evidence: architecture source-of-truth entry points reviewed with no blocking
+  fit conflict; Git posture `main...origin/main [ahead 2]`, HEAD
+  `65987e86eb99ec2d11eb957ae7fd93124094f7da`, divergence `0 2`, and
+  pre-existing dirty state limited to state/context files before this packet.
+  `npm run architecture:status` PASS, `npm run check:route-capabilities` PASS,
+  and `git diff --check` PASS with LF-to-CRLF warnings only. Next owner:
+  [LUC-23](/LUC/issues/LUC-23) Technology local evidence gate; no code,
+  protected smoke, push, deploy, restart, secret access, or production action
+  occurred.
+
+- 2026-07-03: [LUC-7141](/LUC/issues/LUC-7141) stale-blocker closure is
+  complete for [LUC-5570](/LUC/issues/LUC-5570). Evidence:
+  `docs/planning/luc-5570-api-auth-config-route-coverage.md` left
+  [LUC-5570](/LUC/issues/LUC-5570) blocked only because the local Docker-backed
+  API harness could not start; `docs/planning/luc-6155-auth-config-api-proof-lane.md`
+  later proved the same auth/config assertions through `npm run test:api:local`
+  PASS with disposable PostgreSQL, `31` migrations, seed, and `8/8` API
+  subtests. No remaining CBE action for [LUC-5570](/LUC/issues/LUC-5570).
+
 - 2026-07-02: [LUC-7062](/LUC/issues/LUC-7062) workspace settings
   unconfigured provider 404 repair is complete locally. Packet:
   `docs/planning/luc-7062-workspace-settings-unconfigured-provider-404-repair.md`.

@@ -1,4 +1,26 @@
 # Next Steps
+- 2026-07-04: [LUC-24](/LUC/issues/LUC-24) has no remaining Roost PM evidence
+  action. Packet:
+  `docs/planning/luc-24-roost-bounded-local-route-api-evidence-slice.md`.
+  The bounded public readiness/build-info route slice passed locally and the
+  protected `/v1/connection` negative check returned `401 missing_api_key`.
+  Docker/Linux runtime is unavailable in this heartbeat, so DB-backed
+  `npm run test:api:local` remains a Docker/QVE follow-up gate rather than a
+  product failure. [LUC-19](/LUC/issues/LUC-19) can decide whether the next
+  Roost Stage 1 action is Docker/QVE runtime proof, source-control closure, or
+  owner-gated protected proof. Do not open broad implementation from this
+  slice alone.
+
+- 2026-07-04: [LUC-22](/LUC/issues/LUC-22) has no remaining Roost PM
+  preflight action. Packet:
+  `docs/planning/luc-22-roost-local-architecture-and-repo-preflight.md`.
+  Architecture fit, Git posture, `npm run architecture:status`, `npm run
+  check:route-capabilities`, and `git diff --check` are recorded. Next owner:
+  [LUC-23](/LUC/issues/LUC-23) Technology local evidence gate should confirm
+  the same posture and run `npm run test:api:local` only if Docker/Linux
+  runtime is available. Do not open product implementation, push/deploy,
+  protected smoke, or secret work from [LUC-22](/LUC/issues/LUC-22) alone.
+
 - 2026-07-02: [LUC-7062](/LUC/issues/LUC-7062) has no remaining FEW repair.
   The `/workspace/settings` unconfigured provider 404 browser error is fixed
   locally. Evidence: `npm run build:web` PASS; Playwright request proof with

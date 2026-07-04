@@ -1,3 +1,33 @@
+# 2026-07-04 LUC-24 Local Route/API Health Signal
+
+- Architecture fit reviewed with no blocking conflict; Docker/Linux runtime
+  unavailable (`dockerDesktopLinuxEngine` named pipe missing), so
+  `npm run test:api:local` was not run; `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`, all
+  gates pass); `npm run check:route-capabilities` PASS (`180` manifest routes
+  / `35` route files); `npm run build:server` PASS; local short-lived
+  built-app probe PASS for `/health`, `/v1/health`, `/ready`, `/v1/ready`,
+  `/api/build-info` returning `200` with build metadata and protected
+  `/v1/connection` returning `401 missing_api_key` without credentials. No
+  browser, database, protected smoke, credential value read, push, deploy,
+  restart, rollback, provider mutation, paid/noisy automation, or production
+  mutation occurred.
+
+# 2026-07-04 LUC-22 Preflight Health Signal
+
+- Architecture fit: reviewed `docs/architecture/README.md` and
+  `docs/architecture/architecture-source-of-truth.md`; no blocking conflict
+  found for local evidence-gated continuation.
+- Git posture: `main...origin/main [ahead 2]`, HEAD
+  `65987e86eb99ec2d11eb957ae7fd93124094f7da`, divergence `0 2`.
+- Local gates: `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, all gates pass);
+  `npm run check:route-capabilities` PASS (`180` manifest routes / `35` route
+  files); `git diff --check` PASS with LF-to-CRLF warnings only.
+- Runtime/deploy posture: unchanged. No server, browser, Docker, database,
+  protected smoke, push, deploy, restart, provider mutation, credential access,
+  secret disclosure, rollback, or production mutation occurred.
+
 # 2026-07-02 LUC-7062 Settings Runtime Browser Health Check
 
 - Status: `/workspace/settings` unconfigured provider 404 browser error is

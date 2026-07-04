@@ -1,6 +1,65 @@
 # Active Mission Packet
 
-Last updated: 2026-07-02
+Last updated: 2026-07-04
+
+## LUC-24 Checkpoint
+
+- 2026-07-04: [LUC-24](/LUC/issues/LUC-24) completed a single-lane Roost PM
+  bounded local route/API evidence slice for Stage 1 Local Autonomy Expansion.
+  Scope was local route/API verification and source-of-truth update only; no
+  subagent delegation was used because the task requested one bounded proof
+  and no product implementation. Output:
+  `docs/planning/luc-24-roost-bounded-local-route-api-evidence-slice.md`.
+  Proof: selected public readiness/build-info aliases plus protected
+  `/v1/connection` fail-closed behavior; Docker/Linux runtime unavailable
+  because `dockerDesktopLinuxEngine` named pipe was missing, so `npm run
+  test:api:local` was not run; `npm run architecture:status` PASS; `npm run
+  check:route-capabilities` PASS; `npm run build:server` PASS; short-lived
+  local built-app probe PASS for `/health`, `/v1/health`, `/ready`,
+  `/v1/ready`, `/api/build-info` = `200` with build metadata and
+  `/v1/connection` = `401 missing_api_key`. Decision: [LUC-19](/LUC/issues/LUC-19)
+  can inspect this packet and choose Docker/QVE runtime follow-up,
+  source-control closure, or owner-gated protected proof. No product code,
+  browser, database, protected smoke, credential value read, push, deploy,
+  restart, rollback, provider action, paid/noisy automation, or production
+  mutation occurred.
+
+## LUC-22 Checkpoint
+
+- 2026-07-04: [LUC-22](/LUC/issues/LUC-22) completed single-lane Roost PM
+  architecture/repo preflight for Stage 1 Local Autonomy Expansion. Scope was
+  local source-of-truth review, Git posture, narrow gates, and next-slice
+  recommendation; no subagent delegation was used because the task explicitly
+  required evidence before any implementation expansion. Output:
+  `docs/planning/luc-22-roost-local-architecture-and-repo-preflight.md`.
+  Proof: architecture entry points reviewed with no blocking fit conflict; Git
+  posture `main...origin/main [ahead 2]`, HEAD
+  `65987e86eb99ec2d11eb957ae7fd93124094f7da`, divergence `0 2`;
+  `npm run architecture:status` PASS; `npm run check:route-capabilities` PASS;
+  `git diff --check` PASS with LF-to-CRLF warnings only. Decision:
+  [LUC-23](/LUC/issues/LUC-23) should own the next Technology evidence gate,
+  adding Docker-backed `npm run test:api:local` only when local Linux runtime is
+  available. No product code, runtime server, browser, Docker, database,
+  protected smoke, push, deploy, restart, credential access, secret
+  disclosure, rollback, provider action, or production mutation occurred.
+
+## LUC-7141 Checkpoint
+
+- 2026-07-03: [LUC-7141](/LUC/issues/LUC-7141) completed single-lane CBE
+  stale-blocker reconciliation for [LUC-5570](/LUC/issues/LUC-5570). Scope was
+  issue/status closure and local source-of-truth update only; no subagent
+  delegation was used because the evidence comparison was bounded to existing
+  backend proof packets. Evidence:
+  `docs/planning/luc-5570-api-auth-config-route-coverage.md` records
+  [LUC-5570](/LUC/issues/LUC-5570)'s only blocked proof as Docker engine
+  availability for `npm run test:api:local`; `docs/planning/luc-6155-auth-config-api-proof-lane.md`
+  records the later behavioral API proof PASS with disposable PostgreSQL,
+  `31` migrations, seed, `8/8` Node API subtests, route-capability PASS, and
+  architecture-status PASS. Decision: [LUC-5570](/LUC/issues/LUC-5570) no
+  longer has a live backend blocker or repair-child need after
+  [LUC-6155](/LUC/issues/LUC-6155). No product code, tests, runtime process,
+  browser, Docker, database, protected smoke, credential access, push, deploy,
+  restart, provider action, secret disclosure, or production mutation occurred.
 
 ## LUC-7062 Checkpoint
 

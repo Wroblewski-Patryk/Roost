@@ -1,5 +1,57 @@
 # PROJECT_STATE
 
+- 2026-07-04: [LUC-24](/LUC/issues/LUC-24) completed a bounded Roost local
+  route/API evidence slice for Stage 1 Local Autonomy Expansion. Output:
+  `docs/planning/luc-24-roost-bounded-local-route-api-evidence-slice.md`.
+  Evidence: architecture entry points reviewed with no blocking fit conflict;
+  selected slice was public readiness/build-info aliases plus protected
+  `/v1/connection` fail-closed behavior; `docker info --format
+  '{{.ServerVersion}}'` failed because the `dockerDesktopLinuxEngine` named
+  pipe was missing, so `npm run test:api:local` was not run; `npm run
+  architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, all gates pass); `npm run check:route-capabilities`
+  PASS (`180` manifest routes / `35` route files); `npm run build:server`
+  PASS; local short-lived built-app probe PASS for `/health`, `/v1/health`,
+  `/ready`, `/v1/ready`, `/api/build-info` returning `200` with build
+  metadata and `/v1/connection` returning `401 missing_api_key`. No product
+  code, browser, database, protected smoke, credential value read, push,
+  deploy, restart, rollback, provider action, paid/noisy automation, or
+  production mutation occurred.
+
+- 2026-07-04: [LUC-22](/LUC/issues/LUC-22) completed Roost local architecture
+  and repo preflight for Stage 1 Local Autonomy Expansion. Output:
+  `docs/planning/luc-22-roost-local-architecture-and-repo-preflight.md`.
+  Evidence: architecture entry points `docs/architecture/README.md` and
+  `docs/architecture/architecture-source-of-truth.md` reviewed with no
+  blocking fit conflict; `git status --short --branch` reported
+  `main...origin/main [ahead 2]`; `HEAD` was
+  `65987e86eb99ec2d11eb957ae7fd93124094f7da`; divergence was `0 2`;
+  pre-existing dirty files were `.agents/state/active-mission.md`,
+  `.codex/context/PROJECT_STATE.md`, and `.codex/context/TASK_BOARD.md`.
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `git diff --check` PASS with LF-to-CRLF warnings only. Recommended next
+  local slice: [LUC-23](/LUC/issues/LUC-23) should run the Technology local
+  evidence gate, adding `npm run test:api:local` only if Docker/Linux runtime
+  is available. No product code, architecture rewrite, runtime process,
+  browser, Docker, database, protected smoke, credential value read, secret
+  disclosure, push, deploy, restart, rollback, provider action, or production
+  mutation occurred.
+
+- 2026-07-03: [LUC-7141](/LUC/issues/LUC-7141) closed stale blocked
+  [LUC-5570](/LUC/issues/LUC-5570) after verifying [LUC-6155](/LUC/issues/LUC-6155)
+  proof. Evidence: `docs/planning/luc-5570-api-auth-config-route-coverage.md`
+  recorded the only remaining blocker as Docker Desktop Linux engine
+  availability for `npm run test:api:local`; `docs/planning/luc-6155-auth-config-api-proof-lane.md`
+  later ran the behavioral API proof successfully with disposable PostgreSQL,
+  `31` migrations, seed, `8/8` Node API subtests, route-capability PASS, and
+  architecture-status PASS. [LUC-5570](/LUC/issues/LUC-5570) has no remaining
+  backend repair child need. No product code, tests, runtime process, browser,
+  Docker, database, protected smoke, credential access, push, deploy, restart,
+  provider action, secret disclosure, or production mutation occurred in this
+  closure heartbeat.
+
 - 2026-07-02: [LUC-7062](/LUC/issues/LUC-7062) fixed
   `/workspace/settings` unconfigured provider 404 browser errors. Output:
   `docs/planning/luc-7062-workspace-settings-unconfigured-provider-404-repair.md`.

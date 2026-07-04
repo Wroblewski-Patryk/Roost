@@ -1,3 +1,9 @@
+# 2026-07-04 LUC-24 Module Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost public readiness/build-info local API slice | verified locally, DB-backed runtime gate unavailable | [LUC-24](/LUC/issues/LUC-24) packet `docs/planning/luc-24-roost-bounded-local-route-api-evidence-slice.md`; architecture fit reviewed; `npm run architecture:status` PASS; `npm run check:route-capabilities` PASS; `npm run build:server` PASS; short-lived local built-app probe returned `200` for `/health`, `/v1/health`, `/ready`, `/v1/ready`, and `/api/build-info` with build metadata; protected `/v1/connection` returned `401 missing_api_key` without credentials. Docker/Linux runtime was unavailable because `dockerDesktopLinuxEngine` named pipe was missing, so `npm run test:api:local` was not run. | [LUC-19](/LUC/issues/LUC-19) can choose Docker/QVE runtime follow-up for the DB-backed API harness, source-control closure for local evidence packets, or owner-gated protected proof. No product repair is warranted from this slice alone. |
+
 # 2026-07-02 LUC-7047 Settings Confidence Update
 
 | Module/Journey | Status | Evidence | Next Proof Or Fix |
