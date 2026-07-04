@@ -3,20 +3,30 @@ import os from "node:os";
 import path from "node:path";
 import { chromium } from "playwright";
 
-const baseUrl = (process.env.COMPANYCORE_BASE_URL || "http://localhost:3001").replace(/\/+$/, "");
-const ownerEmail = process.env.COMPANYCORE_OWNER_EMAIL || process.env.SEED_OWNER_EMAIL || "owner@example.com";
-const ownerPassword = process.env.COMPANYCORE_OWNER_PASSWORD || process.env.SEED_OWNER_PASSWORD || "change-me-local-password";
+const baseUrl = (
+  process.env.COMPANYCORE_BASE_URL
+  || process.env.ROOST_PROD_BASE_URL
+  || "http://localhost:3001"
+).replace(/\/+$/, "");
+const ownerEmail = process.env.COMPANYCORE_OWNER_EMAIL
+  || process.env.ROOST_PROD_TEST_EMAIL
+  || process.env.SEED_OWNER_EMAIL
+  || "owner@example.com";
+const ownerPassword = process.env.COMPANYCORE_OWNER_PASSWORD
+  || process.env.ROOST_PROD_TEST_PASSWORD
+  || process.env.SEED_OWNER_PASSWORD
+  || "change-me-local-password";
 const outputRoot = process.env.COMPANYCORE_UX_ARTIFACT_DIR
   || path.join(os.tmpdir(), "companycore-ux-smoke", new Date().toISOString().replace(/[:.]/g, "-"));
 
 const defaultRoutes = [
-  "/dashboard",
-  "/data",
-  "/data/tasks",
-  "/areas",
-  "/relationships",
-  "/settings/drive",
-  "/settings/api"
+  "/areas?area=00-ogolny&view=overview",
+  "/areas?area=04-operacje&view=tasks",
+  "/areas?area=08-zasoby&view=overview",
+  "/areas?area=08-zasoby&view=files",
+  "/areas?area=09-technologia&view=overview",
+  "/workspace/settings",
+  "/account/settings"
 ];
 
 const routes = (process.env.COMPANYCORE_UX_ROUTES || "")
@@ -48,6 +58,7 @@ function parseJsonEnv(name, fallback) {
 const viewports = parseJsonEnv("COMPANYCORE_UX_VIEWPORTS_JSON", defaultViewports);
 const requiredTextByRoute = parseJsonEnv("COMPANYCORE_UX_REQUIRED_TEXT_JSON", {});
 const fullPageScreenshots = process.env.COMPANYCORE_UX_FULL_PAGE === "1";
+const networkIdleTimeoutMs = Number(process.env.COMPANYCORE_UX_NETWORK_IDLE_TIMEOUT_MS || 3000);
 
 async function request(pathname, options = {}) {
   const response = await fetch(`${baseUrl}${pathname}`, {
@@ -74,9 +85,17 @@ function slug(input) {
   return input.replace(/^\//, "").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "root";
 }
 
+function redactEmail(email) {
+  const [name, domain] = String(email || "").split("@");
+  if (!name || !domain) {
+    return "redacted";
+  }
+  return `${name.slice(0, 2)}***@${domain}`;
+}
+
 async function waitForConsoleHydration(page) {
   await page.waitForSelector("body", { timeout: 10000 });
-  await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {});
+  await page.waitForLoadState("networkidle", { timeout: networkIdleTimeoutMs }).catch(() => {});
   await page.waitForTimeout(450);
 }
 
@@ -84,6 +103,15 @@ async function screenshot(page, fileName) {
   const filePath = path.join(outputRoot, fileName);
   await page.screenshot({ path: filePath, fullPage: fullPageScreenshots });
   return filePath;
+}
+
+async function anyVisible(locators) {
+  for (const locator of locators) {
+    if (await locator.first().isVisible().catch(() => false)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 async function main() {
@@ -173,62 +201,64 @@ async function main() {
         });
       }
 
-      if (viewport.name === "desktop" && routes.includes("/dashboard")) {
-        await page.goto(`${baseUrl}/dashboard`, { waitUntil: "domcontentloaded" });
+      if (viewport.name === "desktop" && routes.includes("/areas?area=00-ogolny&view=overview")) {
+        await page.goto(`${baseUrl}/areas?area=00-ogolny&view=overview`, { waitUntil: "domcontentloaded" });
         await waitForConsoleHydration(page);
-        await page.locator("#moduleSearch").fill("api");
-        await page.waitForSelector("#moduleResults:not([hidden])", { timeout: 5000 });
-        screenshots.push({
-          viewport: viewport.name,
-          route: "/dashboard",
-          interaction: "module switcher search for api",
-          file: await screenshot(page, "desktop-dashboard-module-switcher-api.png")
-        });
-      }
-
-      if (viewport.name === "desktop" && routes.includes("/data")) {
-        await page.goto(`${baseUrl}/data`, { waitUntil: "domcontentloaded" });
-        await waitForConsoleHydration(page);
-        await page.locator("#dataSearch").fill("tasks");
+        await page.getByRole("searchbox", { name: /search/i }).first().fill("api");
         await page.waitForTimeout(250);
         screenshots.push({
           viewport: viewport.name,
-          route: "/data",
-          interaction: "data filter search for tasks",
-          file: await screenshot(page, "desktop-data-filter-tasks.png")
+          route: "/areas?area=00-ogolny&view=overview",
+          interaction: "dashboard proposal table search for api",
+          file: await screenshot(page, "desktop-dashboard-search-api.png")
         });
       }
 
-      if (viewport.name === "desktop" && routes.includes("/data/tasks")) {
-        await page.goto(`${baseUrl}/data/tasks`, { waitUntil: "domcontentloaded" });
+      if (viewport.name === "desktop" && routes.includes("/areas?area=04-operacje&view=tasks")) {
+        await page.goto(`${baseUrl}/areas?area=04-operacje&view=tasks`, { waitUntil: "domcontentloaded" });
         await waitForConsoleHydration(page);
-        const newDraft = page.locator('[data-table-action="new-draft"]');
-        if (await newDraft.count()) {
-          await newDraft.click();
-          await page.waitForTimeout(250);
-        }
+        await page.getByRole("searchbox", { name: /search/i }).first().fill("tasks");
+        await page.waitForTimeout(250);
         screenshots.push({
           viewport: viewport.name,
-          route: "/data/tasks",
-          interaction: "task typed editor draft state without submit",
-          file: await screenshot(page, "desktop-data-tasks-editor-draft.png")
+          route: "/areas?area=04-operacje&view=tasks",
+          interaction: "operations task table search for tasks",
+          file: await screenshot(page, "desktop-operations-search-tasks.png")
         });
       }
 
-      if (viewport.name === "desktop" && routes.includes("/settings/drive")) {
-        await page.goto(`${baseUrl}/settings/drive`, { waitUntil: "domcontentloaded" });
+      if (viewport.name === "desktop" && routes.includes("/areas?area=08-zasoby&view=files")) {
+        await page.goto(`${baseUrl}/areas?area=08-zasoby&view=files`, { waitUntil: "domcontentloaded" });
         await waitForConsoleHydration(page);
+        await page.getByRole("searchbox", { name: /search/i }).first().fill("drive");
+        await page.waitForTimeout(250);
+        screenshots.push({
+          viewport: viewport.name,
+          route: "/areas?area=08-zasoby&view=files",
+          interaction: "asset files table search for drive",
+          file: await screenshot(page, "desktop-assets-files-search-drive.png")
+        });
+      }
+
+      if (viewport.name === "desktop" && routes.includes("/workspace/settings")) {
+        await page.goto(`${baseUrl}/workspace/settings`, { waitUntil: "domcontentloaded" });
+        await waitForConsoleHydration(page);
+        const integrationStatusVisible = await anyVisible([
+          page.getByRole("heading", { name: /google drive/i }),
+          page.getByRole("heading", { name: /integrations and api/i }),
+          page.getByRole("button", { name: /integrations and api/i })
+        ]);
         assertions.push({
           viewport: viewport.name,
-          route: "/settings/drive",
-          control: "googleDriveImportButton",
-          disabled: await page.locator("#googleDriveImportButton").isDisabled()
+          route: "/workspace/settings",
+          control: "workspaceIntegrationStatus",
+          visible: integrationStatusVisible
         });
         screenshots.push({
           viewport: viewport.name,
-          route: "/settings/drive",
-          interaction: "disabled provider setup controls",
-          file: await screenshot(page, "desktop-drive-disabled-setup-state.png")
+          route: "/workspace/settings",
+          interaction: "redacted provider setup status",
+          file: await screenshot(page, "desktop-workspace-settings-drive-status.png")
         });
       }
 
@@ -242,9 +272,10 @@ async function main() {
     baseUrl,
     generatedAt: new Date().toISOString(),
     health: health.data || health,
-    ownerEmail,
+    ownerEmail: redactEmail(ownerEmail),
     routes,
     viewports,
+    networkIdleTimeoutMs,
     screenshots,
     assertions,
     consoleIssues
@@ -252,7 +283,7 @@ async function main() {
   const reportPath = path.join(outputRoot, "report.json");
   await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 
-  const failedAssertions = assertions.filter((assertion) => assertion.signedIn === false || assertion.disabled === false || assertion.requiredTextPresent === false);
+  const failedAssertions = assertions.filter((assertion) => assertion.signedIn === false || assertion.visible === false || assertion.requiredTextPresent === false);
   if (consoleIssues.length > 0 || failedAssertions.length > 0) {
     console.error(`CompanyCore owner-console UX smoke failed. Artifacts: ${outputRoot}`);
     console.error(JSON.stringify({ consoleIssues, failedAssertions }, null, 2));
