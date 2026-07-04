@@ -1,6 +1,99 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-04: [LUC-111](/LUC/issues/LUC-111) Project Truth function-level
+  classification override support for Account access `authHeaders` is
+  complete. Packet:
+  `docs/planning/luc-111-function-level-classification-overrides-authheaders.md`.
+  Evidence: Paperclip architecture-awareness scanner now resolves generated
+  `path#symbol` entities for overrides and still allows file-level proof
+  packets to be reclassified by override; scanner syntax PASS;
+  architecture-awareness PASS (`2813` entities / `6599` relations / `16445`
+  files; overrides `32/30`); app-completion PASS (`1243` items / `5` flows /
+  `1205` missing test links / `20` missing doc links / `11`
+  implemented-needs-proof / `0` blocked); Project Truth apply PASS generated
+  `2026-07-04T19:17:17.322Z` with public probe `pass`, runtime/event/ops
+  gaps `0`, and `appCompletionGaps=1236`. Target readback: both
+  `authHeaders` rows are absent from app-completion priority review and
+  Project Truth; first gap moved to
+  `scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner`. No
+  duplicate Account access runtime proof lane is needed.
+
+- 2026-07-04: [LUC-110](/LUC/issues/LUC-110) Account access `authHeaders`
+  function-row classification curation is complete after child tooling
+  integration. Packet:
+  `docs/planning/luc-110-account-access-authheaders-function-row-classification.md`.
+  Decision: the two smoke-local helper rows should be `verified`, not
+  excluded and not reproved. Source-of-truth override intent was added to
+  `docs/architecture/scanner-overrides.json`; child [LUC-111](/LUC/issues/LUC-111)
+  repaired scanner support for generated `path#symbol` overrides. Final
+  readback: architecture-awareness PASS (`2813` entities / `6599` relations /
+  `16445` files; overrides `32/30`); app-completion PASS with both target rows
+  absent from priority review; Project Truth apply PASS generated
+  `2026-07-04T19:17:17.322Z` with public probe `pass` and runtime/event/ops
+  gaps `0`; first gap moved to
+  `scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner`. No
+  product code, runtime proof, protected smoke, secret access, push, deploy,
+  restart, or production mutation occurred.
+
+- 2026-07-04: [LUC-107](/LUC/issues/LUC-107) Roost Project Truth Account
+  access `authHeaders` fresh runtime proof is complete. Packet:
+  `docs/planning/luc-107-account-access-authheaders-fresh-proof.md`. Evidence:
+  Docker `28.3.2`; Docker-backed migrate/seed plus
+  `company-os:trace-smoke` and `operating-model:registry-smoke` PASS with both
+  scripts returning `ok: true`; target smoke traces:
+  `v1evid-1783191924411` and `v1evid-om-1783191927569`. Architecture-awareness
+  refresh PASS (`2812` entities / `6589` relations / `16444` files; overrides
+  `30/30`); app-completion refresh PASS; Project Truth apply PASS generated
+  `2026-07-04T19:06:57.019Z`, public probe `pass`,
+  `criticalRuntimeFindings=0`, `incompleteEventChains=0`, and
+  `operationalGateGaps=0`; target row readback has `hasTest=true` and
+  `hasDoc=true` for both helper rows. Residual Project Truth first-gap status
+  remains `implemented_needs_proof`, which is now evidence-model
+  classification debt for function helpers rather than an Account access
+  runtime defect. Next owner: [LUC-110](/LUC/issues/LUC-110) is assigned to
+  Roost PM to decide function-row override, exclusion, or parent-smoke mapping.
+  No product code, protected smoke, secret access, push, deploy, restart, or
+  production mutation occurred.
+
+- 2026-07-04: [LUC-94](/LUC/issues/LUC-94) Roost Company OS seed
+  idempotency repair is complete. Packet:
+  `docs/planning/luc-94-company-os-seed-idempotency.md`. Evidence:
+  `prisma/seed.ts` now keeps the deployment-health automation rule idempotent
+  and ensures its trigger separately; `npm run build:server` PASS; Docker
+  `28.3.2` available; Docker-backed migrate plus two consecutive seed runs
+  PASS; Docker-backed migrate/seed plus `company-os:trace-smoke` and
+  `operating-model:registry-smoke` PASS with both scripts returning `ok:
+  true`. Cleanup removed validation-owned Docker resources and follow-up
+  checks found no matching `roost` / `companycore` containers, volumes, or
+  networks. Deploy impact none; no protected smoke, secret access, push,
+  deploy, restart, provider action, or production mutation occurred.
+
+- 2026-07-04: [LUC-85](/LUC/issues/LUC-85) Roost Project Truth Account access
+  `authHeaders` missing-test-link proof-link repair is complete. Packet:
+  `docs/planning/luc-85-account-access-authheaders-proof-link.md`. Evidence:
+  LUC-85 verified test packet and V1EVID document links were added in
+  `docs/architecture/scanner-overrides.json` for both
+  `scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders` and
+  `scripts/operating-model-registry-lifecycle-smoke.mjs#authHeaders`.
+  Architecture-awareness refresh PASS (`2810/6577/16442`, overrides
+  `29/28`); app-completion refresh PASS (`1243` items / `1205` missing test
+  links / `20` missing doc links / `13` implemented-needs-proof / `0`
+  blocked); Project Truth apply PASS with public probe `pass`,
+  `criticalRuntimeFindings=0`, `incompleteEventChains=0`, and
+  `operationalGateGaps=0`. Exact row readback now has `hasTest=true` and
+  `hasDoc=true`; remaining `implemented_needs_proof` is a generated
+  function-status classification, not this missing-test-link gap. Fresh Docker
+  proof rerun was attempted but stopped before target smokes because
+  `npm run seed` hit Prisma `P2002` on
+  `AutomationRule(workspace_id,name)` in `prisma/seed.ts:916`; validation
+  Docker resources were removed and follow-up checks found no matching
+  `roost` / `companycore` containers or volume. Follow-up
+  [LUC-94](/LUC/issues/LUC-94) was created for Data Persistence Engineer to
+  repair seed idempotency before fresh Docker smoke proof is required. No
+  product code, protected smoke, secret access, push, deploy, restart, or
+  production mutation occurred.
+
 - 2026-07-04: [LUC-24](/LUC/issues/LUC-24) Roost bounded local route/API
   evidence slice is complete. Packet:
   `docs/planning/luc-24-roost-bounded-local-route-api-evidence-slice.md`.

@@ -1,3 +1,72 @@
+# 2026-07-04 LUC-111 Project Truth Tooling Health Signal
+
+- Status: Account access `authHeaders` Project Truth classification is
+  verified after function-level override support was added to the shared
+  architecture-awareness scanner.
+- Evidence: [LUC-111](/LUC/issues/LUC-111) packet
+  `docs/planning/luc-111-function-level-classification-overrides-authheaders.md`.
+  Scanner syntax PASS; architecture-awareness refresh PASS generated
+  `2026-07-04T19:16:54.227Z`, `2813` entities / `6599` relations /
+  `16445` files, `32` entity overrides applied, and `30` relation overrides
+  applied.
+- Index evidence: app-completion refresh PASS with `1243` items / `5` flows /
+  `1205` missing test links / `20` missing doc links / `11`
+  implemented-needs-proof / `0` blocked; both `authHeaders` target paths are
+  absent from priority review. Project Truth apply PASS generated
+  `2026-07-04T19:17:17.322Z`, public probe `pass`, runtime findings `0`,
+  incomplete event chains `0`, operational gate gaps `0`, and no
+  `authHeaders` in the JSON/Markdown outputs.
+- Runtime/deploy posture: unchanged. No product code, runtime proof, browser,
+  Docker, protected smoke, credential value read, push, deploy, restart,
+  provider action, or production mutation occurred.
+
+# 2026-07-04 LUC-110 Project Truth Classification Health Signal
+
+- Status: Account access `authHeaders` runtime behavior and generated Project
+  Truth classification are verified.
+- Evidence: [LUC-110](/LUC/issues/LUC-110) packet
+  `docs/planning/luc-110-account-access-authheaders-function-row-classification.md`
+  plus child [LUC-111](/LUC/issues/LUC-111) packet
+  `docs/planning/luc-111-function-level-classification-overrides-authheaders.md`.
+  PM decision selected `verified` for both smoke-local helper rows and added
+  intended overrides in `docs/architecture/scanner-overrides.json`; LUC-111
+  made generated `path#symbol` entities reachable by scanner overrides.
+- Regeneration: architecture-awareness PASS (`2813` entities / `6599`
+  relations / `16445` files; overrides `32/30`); app-completion PASS with
+  both target rows absent from priority review; Project Truth PASS generated
+  `2026-07-04T19:17:17.322Z`, public probe `pass`, runtime findings `0`,
+  incomplete event chains `0`, operational gate gaps `0`, and no
+  `authHeaders` output.
+- Runtime/deploy posture: unchanged. No runtime process, browser, Docker,
+  protected smoke, secret access, push, deploy, restart, provider action, or
+  production mutation occurred.
+
+# 2026-07-04 LUC-107 Account Access Auth Headers Health Signal
+
+- Status: Account access `authHeaders` helper behavior is verified locally by
+  fresh Docker-backed runtime proof; Project Truth still has a generator
+  classification debt for the same function rows.
+- Evidence: Docker `28.3.2`; `docker compose run --rm -T -e
+  AUTH_TOKEN_SECRET=... -e INTEGRATION_SECRET_KEY=... -e
+  API_KEY_HASH_SECRET=... backend sh -lc "npm run prisma:migrate:deploy &&
+  npm run seed && npm run company-os:trace-smoke && npm run
+  operating-model:registry-smoke"` PASS. `company-os:trace-smoke` returned
+  `ok: true`, trace `v1evid-1783191924411`, event count `9`, audit-log count
+  `7`; `operating-model:registry-smoke` returned `ok: true`, trace
+  `v1evid-om-1783191927569`, and verified registry CRUD, aggregate readback,
+  and cross-workspace deny behavior.
+- Index evidence: architecture-awareness refresh PASS (`2812` entities /
+  `6589` relations / `16444` files); app-completion refresh PASS; Project
+  Truth apply PASS generated `2026-07-04T19:06:57.019Z` with public probe
+  `pass`, `criticalRuntimeFindings=0`, `incompleteEventChains=0`, and
+  `operationalGateGaps=0`. Target rows have `hasTest=true` and `hasDoc=true`
+  but still report `risk=implemented_needs_proof`.
+- Cleanup: validation-owned Docker resources were removed with `docker compose
+  down -v`; follow-up filtered checks for `roost` / `companycore` containers,
+  volumes, and networks returned no output.
+- Deploy impact: none. No protected smoke, credential value read, push, deploy,
+  restart, provider action, or production mutation occurred.
+
 # 2026-07-04 LUC-24 Local Route/API Health Signal
 
 - Architecture fit reviewed with no blocking conflict; Docker/Linux runtime

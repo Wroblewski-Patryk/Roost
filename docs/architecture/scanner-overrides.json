@@ -262,6 +262,71 @@
         "C:/Users/wrobl/AppData/Local/Temp/roost-luc-6905-settings-proof/desktop-workspace-settings.png",
         "C:/Users/wrobl/AppData/Local/Temp/roost-luc-6905-settings-proof/mobile-workspace-settings.png"
       ]
+    },
+    {
+      "path": "docs/planning/luc-85-account-access-authheaders-proof-link.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified evidence-link packet for Account access authHeaders helper rows in local Company OS and operating-model smoke scripts.",
+      "evidence": [
+        "docs/planning/luc-85-account-access-authheaders-proof-link.md",
+        "docs/planning/web-console-v2-task-contracts.md",
+        ".agents/state/system-health.md",
+        ".agents/state/requirements-verification-matrix.md"
+      ]
+    },
+    {
+      "path": "docs/planning/luc-107-account-access-authheaders-fresh-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Fresh Docker-backed runtime proof for Account access authHeaders helper rows in local Company OS and operating-model smoke scripts.",
+      "evidence": [
+        "docs/planning/luc-107-account-access-authheaders-fresh-proof.md",
+        "scripts/company-os-lifecycle-trace-smoke.mjs",
+        "scripts/operating-model-registry-lifecycle-smoke.mjs",
+        "docs/planning/luc-94-company-os-seed-idempotency.md"
+      ]
+    },
+    {
+      "path": "scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders",
+      "status": "verified",
+      "description": "Smoke-local Account access authHeaders helper verified by LUC-107 Docker-backed Company OS lifecycle proof; app-completion should not route another runtime proof lane for this helper row.",
+      "evidence": [
+        "docs/planning/luc-107-account-access-authheaders-fresh-proof.md",
+        "docs/planning/luc-110-account-access-authheaders-function-row-classification.md",
+        "scripts/company-os-lifecycle-trace-smoke.mjs"
+      ]
+    },
+    {
+      "path": "scripts/operating-model-registry-lifecycle-smoke.mjs#authHeaders",
+      "status": "verified",
+      "description": "Smoke-local Account access authHeaders helper verified by LUC-107 Docker-backed operating-model registry proof; app-completion should not route another runtime proof lane for this helper row.",
+      "evidence": [
+        "docs/planning/luc-107-account-access-authheaders-fresh-proof.md",
+        "docs/planning/luc-110-account-access-authheaders-function-row-classification.md",
+        "scripts/operating-model-registry-lifecycle-smoke.mjs"
+      ]
+    },
+    {
+      "path": "docs/planning/luc-137-account-access-registerowner-proof-link.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified evidence-link packet for the Account access registerOwner helper in the operating-model registry smoke.",
+      "evidence": [
+        "docs/planning/luc-137-account-access-registerowner-proof-link.md",
+        "docs/planning/luc-107-account-access-authheaders-fresh-proof.md",
+        "scripts/operating-model-registry-lifecycle-smoke.mjs"
+      ]
+    },
+    {
+      "path": "scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner",
+      "status": "verified",
+      "description": "Smoke-local Account access registerOwner helper verified by LUC-107 Docker-backed operating-model registry proof and linked by LUC-137.",
+      "evidence": [
+        "docs/planning/luc-107-account-access-authheaders-fresh-proof.md",
+        "docs/planning/luc-137-account-access-registerowner-proof-link.md",
+        "scripts/operating-model-registry-lifecycle-smoke.mjs"
+      ]
     }
   ],
   "relationOverrides": [
@@ -408,6 +473,78 @@
       "toPath": "src/modules/integration-settings/integration-settings.routes.ts",
       "toType": "feature",
       "evidence": "LUC-6911 Exchange event-chain proof-link refresh after LUC-6905"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-85-account-access-authheaders-proof-link.md",
+      "fromType": "test",
+      "toPath": "scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders",
+      "toType": "function",
+      "evidence": "LUC-85 Account access authHeaders proof-link repair"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-85-account-access-authheaders-proof-link.md",
+      "fromType": "test",
+      "toPath": "scripts/operating-model-registry-lifecycle-smoke.mjs#authHeaders",
+      "toType": "function",
+      "evidence": "LUC-85 Account access authHeaders proof-link repair"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-107-account-access-authheaders-fresh-proof.md",
+      "fromType": "test",
+      "toPath": "scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders",
+      "toType": "function",
+      "evidence": "LUC-107 fresh Docker-backed Account access authHeaders proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-107-account-access-authheaders-fresh-proof.md",
+      "fromType": "test",
+      "toPath": "scripts/operating-model-registry-lifecycle-smoke.mjs#authHeaders",
+      "toType": "function",
+      "evidence": "LUC-107 fresh Docker-backed Account access authHeaders proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders",
+      "fromType": "function",
+      "toPath": "docs/planning/web-console-v2-task-contracts.md",
+      "toType": "document",
+      "evidence": "LUC-85 Account access authHeaders source-of-truth link"
+    },
+    {
+      "type": "documents",
+      "fromPath": "scripts/operating-model-registry-lifecycle-smoke.mjs#authHeaders",
+      "fromType": "function",
+      "toPath": "docs/planning/web-console-v2-task-contracts.md",
+      "toType": "document",
+      "evidence": "LUC-85 Account access authHeaders source-of-truth link"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-137-account-access-registerowner-proof-link.md",
+      "fromType": "test",
+      "toPath": "scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner",
+      "toType": "function",
+      "evidence": "LUC-137 Account access registerOwner proof-link repair"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-107-account-access-authheaders-fresh-proof.md",
+      "fromType": "test",
+      "toPath": "scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner",
+      "toType": "function",
+      "evidence": "LUC-137 links existing Docker-backed operating-model registry proof to registerOwner"
+    },
+    {
+      "type": "documents",
+      "fromPath": "scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner",
+      "fromType": "function",
+      "toPath": "docs/planning/luc-137-account-access-registerowner-proof-link.md",
+      "toType": "test",
+      "evidence": "LUC-137 Account access registerOwner source-of-truth link"
     },
     {
       "type": "connected_to",

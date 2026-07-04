@@ -1,5 +1,124 @@
 # PROJECT_STATE
 
+- 2026-07-04: [LUC-111](/LUC/issues/LUC-111) repaired the Project Truth
+  tooling blocker for Account access `authHeaders` function-level
+  classification overrides. Output:
+  `docs/planning/luc-111-function-level-classification-overrides-authheaders.md`.
+  Tooling change:
+  `C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse/scripts/build-architecture-awareness-index.mjs`
+  now registers generated endpoint/function/class `path#symbol` entities in
+  the override lookup map while preserving file-level type/status override
+  behavior. Evidence: scanner syntax PASS; architecture-awareness PASS at
+  `2026-07-04T19:16:54.227Z` with `2813` entities / `6599` relations /
+  `16445` files and `32` entity / `30` relation overrides applied;
+  app-completion PASS with `1243` items / `5` flows / `1205` missing test
+  links / `20` missing doc links / `11` implemented-needs-proof / `0`
+  blocked; Project Truth apply PASS at `2026-07-04T19:17:17.322Z`, public
+  probe `pass`, runtime/event/ops gaps `0`. Readback: both target
+  `authHeaders` function rows are `status=verified`, absent from
+  app-completion priority review, and absent from Project Truth; first gap is
+  now `scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner`.
+  No product code, runtime proof, browser, Docker, protected smoke, credential
+  value read, push, deploy, restart, provider action, or production mutation
+  occurred.
+
+- 2026-07-04: [LUC-110](/LUC/issues/LUC-110) curated the Roost Project Truth
+  Account access `authHeaders` helper function-row classification after
+  [LUC-107](/LUC/issues/LUC-107). Output:
+  `docs/planning/luc-110-account-access-authheaders-function-row-classification.md`.
+  Decision: both smoke-local helper rows should be `verified`; do not exclude
+  them from architecture memory and do not create another Account access
+  runtime proof lane without a fresh behavioral failure. The intended verified
+  overrides were added to `docs/architecture/scanner-overrides.json`, and
+  child [LUC-111](/LUC/issues/LUC-111) repaired scanner support for generated
+  `path#symbol` entity overrides. Final evidence: architecture-awareness PASS
+  (`2813` entities / `6599` relations / `16445` files; overrides `32/30`);
+  app-completion PASS with both target rows absent from priority review;
+  Project Truth apply PASS generated `2026-07-04T19:17:17.322Z` with public
+  probe `pass`, runtime/event/ops gaps `0`, and no `authHeaders` output. First
+  gap moved to
+  `scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner`, which
+  is separate proof-link debt. No product code, runtime proof, browser,
+  Docker, protected smoke, credential value read, push, deploy, restart,
+  provider action, or production mutation occurred.
+
+- 2026-07-04: [LUC-107](/LUC/issues/LUC-107) proved the Roost Project Truth
+  Account access `authHeaders` implemented-needs-proof rows with fresh local
+  Docker runtime evidence. Output:
+  `docs/planning/luc-107-account-access-authheaders-fresh-proof.md`. Evidence:
+  Docker `28.3.2`; pre-run filtered checks found no matching validation-owned
+  `roost` / `companycore` resources; Docker-backed `npm run
+  prisma:migrate:deploy && npm run seed && npm run company-os:trace-smoke &&
+  npm run operating-model:registry-smoke` PASS after injecting disposable
+  local proof env vars directly into the backend container. The Company OS
+  trace smoke returned `ok: true`, trace `v1evid-1783191924411`, event count
+  `9`, and audit-log count `7`; the operating-model registry smoke returned
+  `ok: true`, trace `v1evid-om-1783191927569`, and verified registry CRUD,
+  aggregate readback, and cross-workspace deny behavior. Architecture-awareness
+  refresh PASS (`2812` entities / `6589` relations / `16444` files; `30`
+  entity overrides and `30` relation overrides applied); app-completion refresh
+  PASS; Project Truth apply PASS generated `2026-07-04T19:06:57.019Z` with
+  public probe `pass`, `criticalRuntimeFindings=0`,
+  `incompleteEventChains=0`, and `operationalGateGaps=0`; target row readback
+  has `hasTest=true` and `hasDoc=true` for both `authHeaders` rows. Residual:
+  generated Project Truth still reports `implemented_needs_proof` for these
+  helper function rows, so remaining work is evidence-model classification
+  curation by Roost PM in [LUC-110](/LUC/issues/LUC-110), not runtime Account
+  access repair.
+  Cleanup removed validation-owned Docker resources; no protected smoke,
+  credential value read, product code, push, deploy, restart, provider action,
+  or production mutation occurred.
+
+- 2026-07-04: [LUC-94](/LUC/issues/LUC-94) repaired the Roost Company OS
+  seed idempotency blocker found during the LUC-85 Docker proof rerun. Output:
+  `docs/planning/luc-94-company-os-seed-idempotency.md`. Code change:
+  `prisma/seed.ts` now upserts the `Escalate failed deployment health check`
+  automation rule separately from its trigger, then ensures the trigger with
+  lookup plus update/create instead of a nested create in the rule upsert.
+  Evidence: `npm run build:server` PASS; Docker `28.3.2` available;
+  `docker compose up -d --build backend` PASS; Docker-backed
+  `npm run prisma:migrate:deploy && npm run seed && npm run seed` PASS against
+  disposable Postgres; Docker-backed `npm run prisma:migrate:deploy && npm run
+  seed && npm run company-os:trace-smoke && npm run
+  operating-model:registry-smoke` PASS with both smoke scripts returning
+  `ok: true`. The first compose backend start exposed the existing local
+  production-env requirement for `AUTH_TOKEN_SECRET` before seed logic; reruns
+  used disposable local proof env values only. Cleanup removed validation-owned
+  containers, network, and volume with `docker compose down -v`; follow-up
+  checks found no matching `roost` / `companycore` containers, volumes, or
+  networks. No schema migration, protected smoke, credential value read, push,
+  deploy, restart, provider action, or production mutation occurred.
+
+- 2026-07-04: [LUC-85](/LUC/issues/LUC-85) completed the Roost Project Truth
+  Account access `authHeaders` missing-test-link proof-link repair. Output:
+  `docs/planning/luc-85-account-access-authheaders-proof-link.md`. Evidence:
+  `docs/architecture/scanner-overrides.json` now classifies the LUC-85 packet
+  as verified test evidence and links it to both
+  `scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders` and
+  `scripts/operating-model-registry-lifecycle-smoke.mjs#authHeaders`, with
+  document links back to the V1EVID source packet. Architecture-awareness
+  refresh PASS (`2810` entities / `6577` relations / `16442` files; `29`
+  entity overrides and `28` relation overrides applied); app-completion
+  refresh PASS (`1243` items / `5` flows / `1205` missing test links / `20`
+  missing doc links / `13` implemented-needs-proof / `0` blocked); Project
+  Truth apply PASS generated `2026-07-04T17:35:41.452Z` with public probe
+  `pass`, `criticalRuntimeFindings=0`, `incompleteEventChains=0`, and
+  `operationalGateGaps=0`. Target row readback: both `authHeaders` rows now
+  have `hasTest=true` and `hasDoc=true`; remaining generated risk is
+  `implemented_needs_proof` due function-entity status classification, not
+  missing-test-link. `npm run architecture:status` PASS; `git diff --check`
+  PASS with LF-to-CRLF warnings only. A fresh Docker proof rerun was attempted:
+  Docker `28.3.2` was available, the backend stack built, and migrations
+  applied, but `npm run seed` failed before target smokes with Prisma `P2002`
+  on `AutomationRule(workspace_id,name)` in `prisma/seed.ts:916`; validation
+  containers, network, and volume were removed with `docker compose down -v`
+  and follow-up checks found no matching `roost` / `companycore` resources.
+  Follow-up [LUC-94](/LUC/issues/LUC-94) was created for Data Persistence
+  Engineer to repair seed idempotency before fresh Docker smoke proof is
+  required.
+  No product code, test code, browser, protected smoke, credential access,
+  push, deploy, restart, provider action, or production mutation occurred.
+
 - 2026-07-04: [LUC-24](/LUC/issues/LUC-24) completed a bounded Roost local
   route/API evidence slice for Stage 1 Local Autonomy Expansion. Output:
   `docs/planning/luc-24-roost-bounded-local-route-api-evidence-slice.md`.

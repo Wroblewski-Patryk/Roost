@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-07-02T16:50:11.927Z",
+  "generatedAt": "2026-07-04T20:50:48.017Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
   "counts": {
-    "items": 1237,
+    "items": 1243,
     "flows": 5,
     "needsBrowserReview": 0,
-    "missingTestLink": 1201,
+    "missingTestLink": 1204,
     "missingDocLink": 20,
     "implementedNeedsProof": 11,
     "blocked": 0,
-    "riskItems": 1232,
-    "appCompletionRiskItems": 1232,
+    "riskItems": 1235,
+    "appCompletionRiskItems": 1235,
     "priorityReviewItems": 200,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": true
@@ -22,8 +22,8 @@
       "userFlow": "Account access",
       "total": 70,
       "risks": {
-        "ok": 3,
-        "missing_test_link": 65,
+        "ok": 6,
+        "missing_test_link": 62,
         "implemented_needs_proof": 2
       },
       "gates": {
@@ -53,9 +53,9 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "total": 1090,
+      "total": 1096,
       "risks": {
-        "missing_test_link": 1062,
+        "missing_test_link": 1068,
         "ok": 2,
         "implemented_needs_proof": 8,
         "missing_doc_link": 18
@@ -78,69 +78,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "function:authheaders:ed04499fb2",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "authHeaders",
-      "path": "scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:authheaders:6a8d223725",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "authHeaders",
-      "path": "scripts/operating-model-registry-lifecycle-smoke.mjs#authHeaders",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:registerowner:7b740fcbb4",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "registerOwner",
-      "path": "scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
     {
       "id": "module:src-auth:957e834344",
       "type": "module",
@@ -2191,7 +2128,7 @@
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 186,
+      "relatedEntityCount": 192,
       "risk": "implemented_needs_proof"
     },
     {
@@ -2439,6 +2376,25 @@
         "needsScreenshotReview": false
       },
       "relatedEntityCount": 4,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "api_endpoint:use-api-build-info:36fe7c3255",
+      "type": "api_endpoint",
+      "kind": "api_endpoint",
+      "name": "USE /api/build-info",
+      "path": "src/app.ts#/api/build-info",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": false,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 3,
       "risk": "missing_test_link"
     },
     {
@@ -2860,6 +2816,25 @@
       "risk": "missing_test_link"
     },
     {
+      "id": "api_endpoint:use-ready:cd82f6ee50",
+      "type": "api_endpoint",
+      "kind": "api_endpoint",
+      "name": "USE /ready",
+      "path": "src/app.ts#/ready",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": false,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 3,
+      "risk": "missing_test_link"
+    },
+    {
       "id": "api_endpoint:use-relationships:acd9b6327c",
       "type": "api_endpoint",
       "kind": "api_endpoint",
@@ -2971,6 +2946,25 @@
         "needsScreenshotReview": false
       },
       "relatedEntityCount": 4,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "api_endpoint:use-v1-ready:035c4febde",
+      "type": "api_endpoint",
+      "kind": "api_endpoint",
+      "name": "USE /v1/ready",
+      "path": "src/app.ts#/v1/ready",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": false,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 3,
       "risk": "missing_test_link"
     },
     {
@@ -3122,7 +3116,7 @@
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 2893,
+      "relatedEntityCount": 2923,
       "risk": "implemented_needs_proof"
     },
     {

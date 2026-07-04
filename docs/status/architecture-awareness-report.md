@@ -1,6 +1,6 @@
 # Architecture Awareness Report
 
-Generated: 2026-07-02T14:47:50.452Z
+Generated: 2026-07-04T20:50:31.159Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 
@@ -9,17 +9,17 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | Type | Count |
 | --- | ---: |
 | agent | 47 |
-| api_endpoint | 43 |
+| api_endpoint | 46 |
 | component | 7 |
-| document | 1463 |
+| document | 1475 |
 | feature | 170 |
-| function | 950 |
+| function | 953 |
 | migration | 31 |
 | model | 5 |
 | module | 67 |
 | project | 1 |
 | task | 4 |
-| test | 6 |
+| test | 9 |
 
 ## Counts By Status
 
@@ -27,22 +27,22 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | --- | ---: |
 | blocked | 1 |
 | deprecated | 6 |
-| implemented | 2763 |
+| implemented | 2778 |
 | in_progress | 1 |
 | tested | 8 |
-| verified | 15 |
+| verified | 21 |
 
 ## Health Signals
 
-- Raw implementation entities without inferred tests: 1163
-- Actionable implementation entities without inferred tests: 1154
-- Raw implementation entities without inferred docs: 0
-- Actionable implementation entities without inferred docs: 0
+- Raw implementation entities without inferred tests: 1166
+- Actionable implementation entities without inferred tests: 1157
+- Raw implementation entities without inferred docs: 3
+- Actionable implementation entities without inferred docs: 3
 - Classified inferred-link noise: 9
 - Raw tasks without architecture links: 0
 - Actionable tasks without architecture links: 0
-- Raw implementation entities without task links: 0
-- Actionable implementation entities without task links: 0
+- Raw implementation entities without task links: 3
+- Actionable implementation entities without task links: 3
 - Classified task-linkage noise: 0
 - Entities without owner attribution: 0
 - Disconnected entities: 0
@@ -54,6 +54,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - api_endpoint: USE /agent-logs (src/app.ts#/agent-logs)
 - api_endpoint: USE /agents (src/app.ts#/agents)
 - api_endpoint: USE /api-keys (src/app.ts#/api-keys)
+- api_endpoint: USE /api/build-info (src/app.ts#/api/build-info)
 - api_endpoint: USE /assets (src/app.ts#/assets)
 - api_endpoint: USE /clients (src/app.ts#/clients)
 - api_endpoint: USE /commercial-exceptions (src/app.ts#/commercial-exceptions)
@@ -78,6 +79,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - api_endpoint: USE /pipeline-stages (src/app.ts#/pipeline-stages)
 - api_endpoint: USE /process-core (src/app.ts#/process-core)
 - api_endpoint: USE /projects (src/app.ts#/projects)
+- api_endpoint: USE /ready (src/app.ts#/ready)
 - api_endpoint: USE /relationships (src/app.ts#/relationships)
 - api_endpoint: USE /strategy (src/app.ts#/strategy)
 - api_endpoint: USE /targets (src/app.ts#/targets)
@@ -85,13 +87,14 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - api_endpoint: USE /tasks (src/app.ts#/tasks)
 - api_endpoint: USE /v1 (src/app.ts#/v1)
 - api_endpoint: USE /v1/health (src/app.ts#/v1/health)
+- api_endpoint: USE /v1/ready (src/app.ts#/v1/ready)
 - api_endpoint: USE /v1/webhooks/clickup (src/app.ts#/v1/webhooks/clickup)
-- api_endpoint: USE /workforce (src/app.ts#/workforce)
-- api_endpoint: USE /workspaces (src/app.ts#/workspaces)
-- component: cc-button.tsx (web/src/components/cc-button.tsx)
 
 ## Top Actionable Missing Doc Links
 
+- api_endpoint: USE /api/build-info (src/app.ts#/api/build-info)
+- api_endpoint: USE /ready (src/app.ts#/ready)
+- api_endpoint: USE /v1/ready (src/app.ts#/v1/ready)
 
 ## Classified Inferred-Link Noise
 
@@ -120,6 +123,6 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 
 - This is an inferred baseline. CTO/Docs Memory must promote or correct important relations.
 - Curated graph coverage input: `C:/Personal/Projekty/Aplikacje/Roost/docs/graphs/architecture-graph.json` (covered paths: 0).
-- Override input: `C:/Personal/Projekty/Aplikacje/Roost/docs/architecture/scanner-overrides.json` (entity entries: 28, relation entries: 24).
-- Override summary: excluded files 0, entity overrides 28, relation overrides 24, critical entities tagged 0.
+- Override input: `C:/Personal/Projekty/Aplikacje/Roost/docs/architecture/scanner-overrides.json` (entity entries: 34, relation entries: 33).
+- Override summary: excluded files 0, entity overrides 34, relation overrides 33, critical entities tagged 0.
 - `verified` still requires fresh command/browser/deploy evidence, not only file presence.

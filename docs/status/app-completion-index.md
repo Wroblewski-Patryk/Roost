@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-07-02T16:50:11.927Z
+Generated: 2026-07-04T20:50:48.017Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -12,21 +12,21 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 
 ## Counts
 
-- Items: 1237
+- Items: 1243
 - User flows: 5
 - Needs browser/screenshot review: 0
-- Missing test link: 1201
+- Missing test link: 1204
 - Missing doc link: 20
 - Implemented, needs proof: 11
 - Blocked: 0
-- Known non-ok risk items: 1232
-- Priority review items indexed: 200/1232
+- Known non-ok risk items: 1235
+- Priority review items indexed: 200/1235
 - Priority review truncated: true
 
 ## Flow Summary
 
-- Unclassified user workflow: 1090 entities; risks {"missing_test_link":1062,"ok":2,"implemented_needs_proof":8,"missing_doc_link":18}; gates {"configuration":7,"auth":1}
-- Account access: 70 entities; risks {"ok":3,"missing_test_link":65,"implemented_needs_proof":2}; gates {"auth":70,"configuration":9,"subscription":2}
+- Unclassified user workflow: 1096 entities; risks {"missing_test_link":1068,"ok":2,"implemented_needs_proof":8,"missing_doc_link":18}; gates {"configuration":7,"auth":1}
+- Account access: 70 entities; risks {"ok":6,"missing_test_link":62,"implemented_needs_proof":2}; gates {"auth":70,"configuration":9,"subscription":2}
 - Dashboard overview: 34 entities; risks {"missing_test_link":34}; gates {"configuration":7}
 - User configuration: 33 entities; risks {"missing_test_link":31,"missing_doc_link":2}; gates {"configuration":31}
 - Trading operation: 10 entities; risks {"missing_test_link":9,"implemented_needs_proof":1}; gates {}
@@ -35,9 +35,6 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 
 | User flow | Risk | Kind | Entity | Owner | Path | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
-| Account access | missing_test_link | feature_or_capability | authHeaders | Engineering Delivery Lead | scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders | auth |
-| Account access | missing_test_link | feature_or_capability | authHeaders | Engineering Delivery Lead | scripts/operating-model-registry-lifecycle-smoke.mjs#authHeaders | auth |
-| Account access | missing_test_link | feature_or_capability | registerOwner | Engineering Delivery Lead | scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner | auth |
 | Account access | missing_test_link | feature_or_capability | src/auth | Engineering Delivery Lead | src/auth | auth |
 | Account access | missing_test_link | feature_or_capability | agent-key-profiles.ts | Engineering Delivery Lead | src/auth/agent-key-profiles.ts | auth |
 | Account access | missing_test_link | feature_or_capability | findAgentKeyProfile | Engineering Delivery Lead | src/auth/agent-key-profiles.ts#findAgentKeyProfile | auth |
@@ -115,6 +112,9 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Dashboard overview | missing_test_link | feature_or_capability | coerceCount | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#coerceCount | - |
 | Dashboard overview | missing_test_link | feature_or_capability | pickHealth | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#pickHealth | - |
 | Dashboard overview | missing_test_link | feature_or_capability | riskRank | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#riskRank | - |
+| Dashboard overview | missing_test_link | feature_or_capability | startOfToday | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#startOfToday | - |
+| Dashboard overview | missing_test_link | feature_or_capability | startOfTomorrow | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#startOfTomorrow | - |
+| Dashboard overview | missing_test_link | feature_or_capability | sumCounts | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#sumCounts | - |
 
 ## Agent Rule
 

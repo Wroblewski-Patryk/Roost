@@ -1,6 +1,6 @@
 # Project Memory Index
 
-Last updated: 2026-07-02
+Last updated: 2026-07-04
 
 ## Purpose
 
@@ -10,6 +10,63 @@ Every non-trivial task must connect local code changes to the current product
 state, architecture intent, module confidence, and the next release objective.
 
 ## Latest Generated Truth
+
+- 2026-07-04: [LUC-111](/LUC/issues/LUC-111) repaired the function-level
+  override tooling blocker from [LUC-110](/LUC/issues/LUC-110). Use
+  `docs/planning/luc-111-function-level-classification-overrides-authheaders.md`
+  for the current proof: the shared architecture-awareness scanner registers
+  generated `path#symbol` entities for endpoint/function/class overrides while
+  preserving existing file-level type/status override behavior. Roost
+  architecture-awareness generated `2813` entities / `6599` relations /
+  `16445` files with `32` entity and `30` relation overrides applied;
+  app-completion generated `1243` items / `5` flows / `1236` risk items; and
+  Project Truth generated `2026-07-04T19:17:17.322Z` with public probe `pass`,
+  runtime findings `0`, incomplete event chains `0`, and operational gate
+  gaps `0`. Both Account access `authHeaders` helper rows are now verified and
+  absent from app-completion/Project Truth priority output. Do not open another
+  Account access runtime proof for these rows without a fresh behavioral
+  failure.
+
+- 2026-07-04: [LUC-110](/LUC/issues/LUC-110) curated the Account access
+  `authHeaders` function-row classification after [LUC-107](/LUC/issues/LUC-107)
+  proof. Use
+  `docs/planning/luc-110-account-access-authheaders-function-row-classification.md`
+  for the current decision: the two smoke-local helper rows should be
+  classified `verified`, not excluded and not sent to another Account access
+  runtime proof lane. The intended source-of-truth overrides are recorded in
+  `docs/architecture/scanner-overrides.json`. Child [LUC-111](/LUC/issues/LUC-111)
+  repaired the scanner tooling blocker by making generated `path#symbol`
+  entities reachable through override lookup. Final readback:
+  architecture-awareness generated `2813` entities / `6599` relations /
+  `16445` files; app-completion no longer reports either target row; Project
+  Truth generated `2026-07-04T19:17:17.322Z` with public probe `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, no `authHeaders` output, and first gap moved to
+  `scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner`.
+
+- 2026-07-04: [LUC-107](/LUC/issues/LUC-107) added fresh Docker-backed
+  runtime proof for the Account access `authHeaders` helper rows. Use
+  `docs/planning/luc-107-account-access-authheaders-fresh-proof.md` for the
+  current QA packet: Docker-backed migrate/seed plus
+  `company-os:trace-smoke` and `operating-model:registry-smoke` pass with
+  both scripts returning `ok: true`; architecture-awareness generated
+  `2812` entities / `6589` relations / `16444` files; Project Truth generated
+  `2026-07-04T19:06:57.019Z` with public probe `pass`, runtime findings `0`,
+  incomplete event chains `0`, and operational gate gaps `0`. The two target
+  rows have `hasTest=true` and `hasDoc=true`, but Project Truth still labels
+  the function rows `implemented_needs_proof`; treat this as generated
+  evidence-model debt for function-level smoke helpers, not a runtime Account
+  access defect. Follow-up [LUC-110](/LUC/issues/LUC-110) is assigned to Roost
+  PM for the remaining classification decision.
+
+- 2026-07-04: [LUC-94](/LUC/issues/LUC-94) repaired and verified the Company
+  OS seed idempotency blocker that prevented fresh Docker smoke reruns after
+  [LUC-85](/LUC/issues/LUC-85). Use
+  `docs/planning/luc-94-company-os-seed-idempotency.md` for current proof:
+  `prisma/seed.ts` separates the deployment-health automation-rule upsert from
+  trigger ensure logic; Docker-backed migrate plus two consecutive seed runs
+  pass; Docker-backed Company OS trace and operating-model registry smokes both
+  return `ok: true`; validation Docker resources were removed.
 
 - 2026-07-02: [LUC-6913](/LUC/issues/LUC-6913) closed the public runtime
   readiness/build-info probe gap after [LUC-6916](/LUC/issues/LUC-6916) and

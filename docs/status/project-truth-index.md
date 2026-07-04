@@ -1,6 +1,6 @@
 # Project Truth Index
 
-Generated: 2026-07-02T16:50:21.334Z
+Generated: 2026-07-04T20:50:53.135Z
 Project: Roost
 Status: gaps_require_routing
 
@@ -8,23 +8,23 @@ This is the routing surface agents should use before guessing whether an app wor
 
 | Metric | Count |
 | --- | ---: |
-| appCompletionItems | 1237 |
+| appCompletionItems | 1243 |
 | eventChains | 7 |
 | incompleteEventChains | 0 |
 | runtimeFindings | 0 |
 | criticalRuntimeFindings | 0 |
-| appCompletionGaps | 1232 |
+| appCompletionGaps | 1235 |
 | indexedAppCompletionGaps | 200 |
-| knownAppCompletionRiskItems | 1232 |
+| knownAppCompletionRiskItems | 1235 |
 | appCompletionPriorityReviewItems | 200 |
 | appCompletionPriorityReviewTruncated | true |
 | operationalGateGaps | 0 |
 | indexedGaps | 200 |
-| totalGaps | 1232 |
+| totalGaps | 1235 |
 
 ## First Gap
 
-- medium: Account access: authHeaders has app-completion risk missing_test_link.
+- medium: Account access: src/auth has app-completion risk missing_test_link.
 - Owner: Test Automation Engineer + QA Regression Lead
 - Next action: Add or link the smallest relevant automated/manual verification for this flow before claiming it works.
 
@@ -32,9 +32,6 @@ This is the routing surface agents should use before guessing whether an app wor
 
 | Severity | Kind | Flow | Summary | Next owner |
 | --- | --- | --- | --- | --- |
-| medium | app_completion_gap | Account access | Account access: authHeaders has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
-| medium | app_completion_gap | Account access | Account access: authHeaders has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
-| medium | app_completion_gap | Account access | Account access: registerOwner has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Account access | Account access: src/auth has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Account access | Account access: agent-key-profiles.ts has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Account access | Account access: findAgentKeyProfile has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
@@ -112,3 +109,6 @@ This is the routing surface agents should use before guessing whether an app wor
 | medium | app_completion_gap | Dashboard overview | Dashboard overview: coerceCount has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Dashboard overview | Dashboard overview: pickHealth has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Dashboard overview | Dashboard overview: riskRank has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
+| medium | app_completion_gap | Dashboard overview | Dashboard overview: startOfToday has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
+| medium | app_completion_gap | Dashboard overview | Dashboard overview: startOfTomorrow has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
+| medium | app_completion_gap | Dashboard overview | Dashboard overview: sumCounts has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |

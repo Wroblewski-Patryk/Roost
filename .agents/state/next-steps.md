@@ -1,4 +1,45 @@
 # Next Steps
+- 2026-07-04: [LUC-111](/LUC/issues/LUC-111) has no remaining TSA/tooling
+  action. Packet:
+  `docs/planning/luc-111-function-level-classification-overrides-authheaders.md`.
+  Function-level scanner overrides now apply to generated `path#symbol`
+  entities, and existing file-level proof-packet reclassification still works.
+  Architecture-awareness, app-completion, and Project Truth were regenerated;
+  both Account access `authHeaders` rows are absent from app-completion
+  priority review and Project Truth. Do not open another Account access
+  runtime proof or classification lane for these helper rows unless a fresh
+  behavioral failure is reproduced. The current Project Truth first gap is the
+  separate `scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner`
+  proof-link row.
+
+- 2026-07-04: [LUC-110](/LUC/issues/LUC-110) made and completed the Account
+  access `authHeaders` function-row classification decision after child
+  tooling integration. Packet:
+  `docs/planning/luc-110-account-access-authheaders-function-row-classification.md`.
+  Decision: both smoke-local helper rows should be `verified`, not excluded
+  and not sent to another Account access runtime proof lane. [LUC-111](/LUC/issues/LUC-111)
+  repaired generated `path#symbol` override support; architecture-awareness,
+  app-completion, and Project Truth were rerun. Both target rows are absent
+  from app-completion priority review and Project Truth, and the first gap is
+  now the separate
+  `scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner`
+  proof-link row. Do not open another Account access proof lane unless a fresh
+  behavioral failure is reproduced.
+
+- 2026-07-04: [LUC-107](/LUC/issues/LUC-107) has no remaining QA runtime
+  proof action. Packet:
+  `docs/planning/luc-107-account-access-authheaders-fresh-proof.md`. Fresh
+  Docker-backed migrate/seed plus `company-os:trace-smoke` and
+  `operating-model:registry-smoke` passed with both scripts returning
+  `ok: true`, and target app-completion rows read back with `hasTest=true` and
+  `hasDoc=true`. Remaining Project Truth first-gap classification for
+  `authHeaders` is evidence-model debt: Docs Memory / Roost PM should decide
+  whether function-level smoke helpers need a status override, exclusion from
+  app-completion, or parent-smoke mapping. Follow-up
+  [LUC-110](/LUC/issues/LUC-110) is assigned to Roost PM for that curation.
+  Do not open another Account access runtime repair for these two helper rows
+  unless a fresh behavioral failure is reproduced.
+
 - 2026-07-04: [LUC-24](/LUC/issues/LUC-24) has no remaining Roost PM evidence
   action. Packet:
   `docs/planning/luc-24-roost-bounded-local-route-api-evidence-slice.md`.

@@ -1,3 +1,33 @@
+# 2026-07-04 LUC-111 Module Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Account access `authHeaders` Project Truth function-row classification | verified | [LUC-111](/LUC/issues/LUC-111) packet `docs/planning/luc-111-function-level-classification-overrides-authheaders.md`; shared scanner tooling now resolves generated `path#symbol` entities for overrides while preserving file-level proof-packet reclassification. Architecture-awareness refresh PASS (`2813` entities / `6599` relations / `16445` files; `32` entity overrides and `30` relation overrides applied); target rows read `status=verified`; app-completion PASS and both target paths are absent from `priorityReviewItems`; Project Truth apply PASS generated `2026-07-04T19:17:17.322Z`, contains no `authHeaders`, and first gap moved to `scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner`. | No further Account access `authHeaders` runtime proof or classification repair is warranted unless a fresh behavioral failure is reproduced. The new `registerOwner` first gap is separate app-completion proof-link debt, not part of this issue. |
+
+# 2026-07-04 LUC-110 Module Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Account access `authHeaders` Project Truth function-row classification | verified | [LUC-110](/LUC/issues/LUC-110) packet `docs/planning/luc-110-account-access-authheaders-function-row-classification.md`; [LUC-107](/LUC/issues/LUC-107) already proved both helper rows with Docker-backed Company OS and operating-model smokes. PM classification decision: the rows should be marked `verified`, not excluded and not reproved. [LUC-111](/LUC/issues/LUC-111) repaired generated `path#symbol` override support; final architecture-awareness PASS (`2813` entities / `6599` relations / `16445` files; overrides `32/30`), app-completion PASS with both target rows absent from priority review, and Project Truth PASS at `2026-07-04T19:17:17.322Z` with no `authHeaders` output. | No further Account access `authHeaders` runtime proof or classification repair is warranted unless a fresh behavioral failure is reproduced. The current `registerOwner` first gap is separate proof-link debt. |
+
+# 2026-07-04 LUC-107 Module Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Account access `authHeaders` runtime proof | verified locally, residual generated status debt | [LUC-107](/LUC/issues/LUC-107) packet `docs/planning/luc-107-account-access-authheaders-fresh-proof.md`; Docker `28.3.2` available; pre-run and post-run filtered checks found no matching validation-owned `roost` / `companycore` resources; Docker-backed migrate/seed plus `company-os:trace-smoke` and `operating-model:registry-smoke` PASS with both smokes returning `ok: true`. The smokes register local owners, build bearer Authorization headers through the target `authHeaders` helpers, and use those headers for protected API calls. Architecture-awareness refresh PASS (`2812` entities / `6589` relations / `16444` files; `30` entity overrides and `30` relation overrides applied); app-completion and Project Truth refresh PASS; target row readback has `hasTest=true` and `hasDoc=true` for both rows. | No Account access runtime repair is warranted for these helper rows. Residual Project Truth first-gap classification remains because function rows still report `implemented_needs_proof` despite proof links; [LUC-110](/LUC/issues/LUC-110) is assigned to Roost PM for evidence-model curation to decide function-level status override, exclusion, or parent-smoke mapping. |
+
+# 2026-07-04 LUC-94 Module Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Company OS foundation seed idempotency | verified locally | [LUC-94](/LUC/issues/LUC-94) packet `docs/planning/luc-94-company-os-seed-idempotency.md`; `prisma/seed.ts` now upserts the deployment-health automation rule separately and ensures the related trigger with lookup plus update/create; `npm run build:server` PASS; Docker-backed `npm run prisma:migrate:deploy && npm run seed && npm run seed` PASS; Docker-backed `npm run prisma:migrate:deploy && npm run seed && npm run company-os:trace-smoke && npm run operating-model:registry-smoke` PASS with both smokes returning `ok: true`; validation-owned Docker resources cleaned up and no matching `roost` / `companycore` resources remained. | No remaining seed blocker for fresh Docker smoke reruns. Existing production container env requirements remain separate runtime configuration behavior. |
+
+# 2026-07-04 LUC-85 Module Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Account access `authHeaders` Project Truth missing-test-link | verified for missing-test-link, residual generated status risk | [LUC-85](/LUC/issues/LUC-85) packet `docs/planning/luc-85-account-access-authheaders-proof-link.md`; `docs/architecture/scanner-overrides.json` links verified LUC-85 test evidence to `scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders` and `scripts/operating-model-registry-lifecycle-smoke.mjs#authHeaders`, plus document links to the V1EVID source packet. Architecture-awareness refresh PASS (`2810` entities / `6577` relations / `16442` files); Project Truth apply PASS; row readback now has `hasTest=true` and `hasDoc=true` for both helper rows. Fresh Docker proof rerun was attempted but seed setup failed before target smokes with Prisma `P2002` on `AutomationRule(workspace_id,name)` in `prisma/seed.ts:916`; validation Docker resources were cleaned up. | No product repair or duplicate browser proof from this missing-test-link gap. A future Docs Memory / PM evidence-model lane can decide whether smoke helper functions should be excluded from app-completion or whether function-level status overrides should be supported, because residual generated risk is `implemented_needs_proof`. [LUC-94](/LUC/issues/LUC-94) is assigned to Data Persistence Engineer to repair seed idempotency before fresh Docker smoke proof is required. |
+
 # 2026-07-04 LUC-24 Module Confidence Update
 
 | Module/Journey | Status | Evidence | Next Proof Or Fix |

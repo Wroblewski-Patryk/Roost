@@ -2,6 +2,123 @@
 
 Last updated: 2026-07-04
 
+## LUC-111 Checkpoint
+
+- 2026-07-04: [LUC-111](/LUC/issues/LUC-111) completed a single-lane
+  Technical Solution Architect tooling repair for Project Truth function-level
+  classification overrides. Delegation was not used because the implementation
+  surface was one scanner mechanism plus generated index proof. Output:
+  `docs/planning/luc-111-function-level-classification-overrides-authheaders.md`.
+  Code/tooling change:
+  `C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse/scripts/build-architecture-awareness-index.mjs`
+  now registers generated endpoint/function/class paths and resolves entity
+  overrides by path before applying requested type/status mutations. Proof:
+  scanner syntax PASS; architecture-awareness PASS (`2813` entities / `6599`
+  relations / `16445` files; `32` entity overrides and `30` relation
+  overrides applied); app-completion PASS; Project Truth apply PASS at
+  `2026-07-04T19:17:17.322Z`; both target `authHeaders` rows are no longer in
+  priority outputs, and first gap moved to `registerOwner`. No product code,
+  runtime proof, browser, Docker, protected smoke, credential value read,
+  push, deploy, restart, provider action, or production mutation occurred.
+
+## LUC-110 Checkpoint
+
+- 2026-07-04: [LUC-110](/LUC/issues/LUC-110) completed a single-lane Roost PM
+  Project Truth curation checkpoint for the Account access `authHeaders`
+  helper function rows after [LUC-107](/LUC/issues/LUC-107). No subagent was
+  used for the PM decision because the classification surface was bounded to
+  two generated function rows. Output:
+  `docs/planning/luc-110-account-access-authheaders-function-row-classification.md`.
+  Decision: both smoke-local helpers should be `verified`, not excluded from
+  architecture memory and not sent to another Account access proof lane.
+  Source-of-truth curation was added to
+  `docs/architecture/scanner-overrides.json`, then regeneration initially
+  proved a tooling blocker because scanner entity overrides only resolved
+  file-level paths. Child [LUC-111](/LUC/issues/LUC-111) repaired generated
+  `path#symbol` override support. Final integration proof:
+  architecture-awareness PASS (`2813` entities / `6599` relations / `16445`
+  files; overrides `32/30`), app-completion PASS with both target rows absent
+  from priority review, and Project Truth apply PASS at
+  `2026-07-04T19:17:17.322Z` with public probe `pass`, runtime/event/ops gaps
+  `0`, and no `authHeaders` output. First gap moved to
+  `scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner`, a
+  separate proof-link row. No product code, runtime proof, browser, protected
+  smoke, credential value read, push, deploy, restart, provider action, or
+  production mutation occurred.
+
+## LUC-107 Checkpoint
+
+- 2026-07-04: [LUC-107](/LUC/issues/LUC-107) completed a single-lane QA
+  verification checkpoint for the Roost Project Truth Account access
+  `authHeaders` `implemented_needs_proof` rows. No subagent delegation was used
+  because the runtime proof was tightly scoped to two smoke-script helper rows.
+  Output: `docs/planning/luc-107-account-access-authheaders-fresh-proof.md`.
+  Proof: Docker `28.3.2`; pre-run filtered checks found no existing
+  validation-owned `roost` / `companycore` resources; Docker-backed migrate,
+  seed, `company-os:trace-smoke`, and `operating-model:registry-smoke` PASS
+  with both smokes returning `ok: true`; final cleanup removed Compose
+  resources and follow-up filtered checks returned no output. The first
+  attempt failed before target behavior because proof-only env vars were not
+  injected into the runtime container; it was cleaned up and retried with
+  explicit `-e` values. Architecture-awareness refresh PASS (`2812` entities /
+  `6589` relations / `16444` files; `30` entity overrides and `30` relation
+  overrides applied); app-completion refresh PASS; Project Truth apply PASS
+  generated `2026-07-04T19:06:57.019Z`, public probe `pass`,
+  `criticalRuntimeFindings=0`, `incompleteEventChains=0`, and
+  `operationalGateGaps=0`; `npm run architecture:status` PASS; `git diff
+  --check` PASS with LF-to-CRLF warnings only. Residual: Project Truth still
+  classifies the helper function rows as `implemented_needs_proof` despite
+  `hasTest=true` and `hasDoc=true`, so the remaining action is Docs Memory /
+  Roost PM evidence-model curation, not Account access runtime repair. No
+  product code, browser, protected smoke, credential value read, push, deploy,
+  restart, provider action, or production mutation occurred.
+
+## LUC-94 Checkpoint
+
+- 2026-07-04: [LUC-94](/LUC/issues/LUC-94) completed a single-lane DBE seed
+  idempotency repair for Docker smoke reruns. Scope was `prisma/seed.ts` and
+  the Company OS foundation automation-rule seed path; no subagent delegation
+  was used because the issue was bounded to one persistence helper and local
+  Docker proof. Output:
+  `docs/planning/luc-94-company-os-seed-idempotency.md`. Proof:
+  `npm run build:server` PASS; Docker `28.3.2` available; Docker-backed
+  migrate plus two consecutive seed runs PASS; Docker-backed migrate/seed plus
+  `company-os:trace-smoke` and `operating-model:registry-smoke` PASS with both
+  smoke scripts returning `ok: true`. Cleanup removed validation-owned Docker
+  containers, network, and volume, and follow-up checks found no matching
+  `roost` / `companycore` resources. No schema migration, protected smoke,
+  credential value read, push, deploy, restart, provider action, or production
+  mutation occurred.
+
+## LUC-85 Checkpoint
+
+- 2026-07-04: [LUC-85](/LUC/issues/LUC-85) completed a single-lane TAE
+  Project Truth proof-link repair for the Account access `authHeaders`
+  missing-test-link gap. Scope was evidence/index linkage only; no subagent
+  delegation was used because the task was bounded to a specific generated
+  gap and existing smoke evidence. Output:
+  `docs/planning/luc-85-account-access-authheaders-proof-link.md`. Proof:
+  `docs/architecture/scanner-overrides.json` now adds the LUC-85 packet as a
+  verified test entity and links it to both `authHeaders` helper rows, with
+  V1EVID document links. Architecture-awareness refresh PASS (`2810` entities
+  / `6577` relations / `16442` files; `29` entity overrides and `28` relation
+  overrides applied); app-completion refresh PASS; Project Truth apply PASS
+  generated `2026-07-04T17:35:41.452Z` with public probe `pass`,
+  `criticalRuntimeFindings=0`, `incompleteEventChains=0`, and
+  `operationalGateGaps=0`. Exact row readback: both `authHeaders` rows now
+  report `hasTest=true` and `hasDoc=true`. Residual: generated risk remains
+  `implemented_needs_proof` because function entities default to implemented
+  status and function-level status overrides are not supported by the current
+  scanner. Fresh Docker proof rerun was attempted but seed setup failed before
+  target smokes with Prisma `P2002` on `AutomationRule(workspace_id,name)` in
+  `prisma/seed.ts:916`; validation containers, network, and volume were cleaned
+  up and follow-up checks found no matching `roost` / `companycore` resources.
+  Follow-up [LUC-94](/LUC/issues/LUC-94) was created for Data Persistence
+  Engineer to repair seed idempotency before fresh Docker smoke proof is
+  required.
+  No product code, test code, browser, protected smoke, credential value read,
+  push, deploy, restart, provider action, or production mutation occurred.
+
 ## LUC-24 Checkpoint
 
 - 2026-07-04: [LUC-24](/LUC/issues/LUC-24) completed a single-lane Roost PM

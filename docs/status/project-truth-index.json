@@ -1,76 +1,37 @@
 {
-  "generatedAt": "2026-07-02T16:50:21.334Z",
+  "generatedAt": "2026-07-04T20:50:53.135Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "gaps_require_routing",
   "counts": {
-    "appCompletionItems": 1237,
+    "appCompletionItems": 1243,
     "eventChains": 7,
     "incompleteEventChains": 0,
     "runtimeFindings": 0,
     "criticalRuntimeFindings": 0,
-    "appCompletionGaps": 1232,
+    "appCompletionGaps": 1235,
     "indexedAppCompletionGaps": 200,
-    "knownAppCompletionRiskItems": 1232,
+    "knownAppCompletionRiskItems": 1235,
     "appCompletionPriorityReviewItems": 200,
     "appCompletionPriorityReviewTruncated": true,
     "operationalGateGaps": 0,
     "indexedGaps": 200,
-    "totalGaps": 1232
+    "totalGaps": 1235
   },
   "firstGap": {
     "kind": "app_completion_gap",
     "severity": "medium",
     "userFlow": "Account access",
-    "summary": "Account access: authHeaders has app-completion risk missing_test_link.",
+    "summary": "Account access: src/auth has app-completion risk missing_test_link.",
     "nextOwner": "Test Automation Engineer + QA Regression Lead",
     "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
     "evidence": [
-      "scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders"
+      "src/auth"
     ],
-    "sourceItemId": "function:authheaders:ed04499fb2",
+    "sourceItemId": "module:src-auth:957e834344",
     "risk": "missing_test_link"
   },
   "gaps": [
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Account access",
-      "summary": "Account access: authHeaders has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders"
-      ],
-      "sourceItemId": "function:authheaders:ed04499fb2",
-      "risk": "missing_test_link"
-    },
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Account access",
-      "summary": "Account access: authHeaders has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "scripts/operating-model-registry-lifecycle-smoke.mjs#authHeaders"
-      ],
-      "sourceItemId": "function:authheaders:6a8d223725",
-      "risk": "missing_test_link"
-    },
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Account access",
-      "summary": "Account access: registerOwner has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner"
-      ],
-      "sourceItemId": "function:registerowner:7b740fcbb4",
-      "risk": "missing_test_link"
-    },
     {
       "kind": "app_completion_gap",
       "severity": "medium",
@@ -1544,6 +1505,19 @@
       "kind": "app_completion_gap",
       "severity": "medium",
       "userFlow": "Unclassified user workflow",
+      "summary": "Unclassified user workflow: USE /api/build-info has app-completion risk missing_test_link.",
+      "nextOwner": "Test Automation Engineer + QA Regression Lead",
+      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "evidence": [
+        "src/app.ts#/api/build-info"
+      ],
+      "sourceItemId": "api_endpoint:use-api-build-info:36fe7c3255",
+      "risk": "missing_test_link"
+    },
+    {
+      "kind": "app_completion_gap",
+      "severity": "medium",
+      "userFlow": "Unclassified user workflow",
       "summary": "Unclassified user workflow: USE /assets has app-completion risk missing_test_link.",
       "nextOwner": "Test Automation Engineer + QA Regression Lead",
       "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
@@ -1830,6 +1804,19 @@
       "kind": "app_completion_gap",
       "severity": "medium",
       "userFlow": "Unclassified user workflow",
+      "summary": "Unclassified user workflow: USE /ready has app-completion risk missing_test_link.",
+      "nextOwner": "Test Automation Engineer + QA Regression Lead",
+      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "evidence": [
+        "src/app.ts#/ready"
+      ],
+      "sourceItemId": "api_endpoint:use-ready:cd82f6ee50",
+      "risk": "missing_test_link"
+    },
+    {
+      "kind": "app_completion_gap",
+      "severity": "medium",
+      "userFlow": "Unclassified user workflow",
       "summary": "Unclassified user workflow: USE /relationships has app-completion risk missing_test_link.",
       "nextOwner": "Test Automation Engineer + QA Regression Lead",
       "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
@@ -1902,6 +1889,19 @@
         "src/app.ts#/v1/health"
       ],
       "sourceItemId": "api_endpoint:use-v1-health:145d12bca3",
+      "risk": "missing_test_link"
+    },
+    {
+      "kind": "app_completion_gap",
+      "severity": "medium",
+      "userFlow": "Unclassified user workflow",
+      "summary": "Unclassified user workflow: USE /v1/ready has app-completion risk missing_test_link.",
+      "nextOwner": "Test Automation Engineer + QA Regression Lead",
+      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "evidence": [
+        "src/app.ts#/v1/ready"
+      ],
+      "sourceItemId": "api_endpoint:use-v1-ready:035c4febde",
       "risk": "missing_test_link"
     },
     {

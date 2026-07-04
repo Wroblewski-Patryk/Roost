@@ -913,7 +913,7 @@ async function ensureCompanyOsFoundation(workspaceId: string) {
       }
     });
 
-    await prisma.automationRule.upsert({
+    const deploymentHealthRule = await prisma.automationRule.upsert({
       where: {
         workspaceId_name: {
           workspaceId,
@@ -933,19 +933,37 @@ async function ensureCompanyOsFoundation(workspaceId: string) {
         pipelineId: deploymentPipeline.id,
         condition: { eventType: "deployment_health_failed" },
         action: { requestApproval: true, notifyRole: "Human Owner" },
-        status: "active",
-        triggers: {
-          create: [
-            {
-              workspaceId,
-              sourceType: "system_event",
-              eventType: "deployment_health_failed",
-              status: "active"
-            }
-          ]
-        }
-      }
+        status: "active"
+      },
+      select: { id: true }
     });
+
+    const deploymentHealthTrigger = await prisma.trigger.findFirst({
+      where: {
+        workspaceId,
+        automationRuleId: deploymentHealthRule.id,
+        sourceType: "system_event",
+        eventType: "deployment_health_failed"
+      },
+      select: { id: true }
+    });
+
+    if (deploymentHealthTrigger) {
+      await prisma.trigger.update({
+        where: { id: deploymentHealthTrigger.id },
+        data: { status: "active" }
+      });
+    } else {
+      await prisma.trigger.create({
+        data: {
+          workspaceId,
+          automationRuleId: deploymentHealthRule.id,
+          sourceType: "system_event",
+          eventType: "deployment_health_failed",
+          status: "active"
+        }
+      });
+    }
 
     await prisma.knowledgeItem.upsert({
       where: {

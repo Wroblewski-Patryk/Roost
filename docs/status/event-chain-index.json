@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T16:50:21.334Z",
+  "generatedAt": "2026-07-04T20:50:53.135Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 175,
-      "linkedRelationCount": 489,
+      "entityCount": 181,
+      "linkedRelationCount": 526,
       "layers": {
         "frontend": {
           "count": 17,
@@ -156,7 +156,7 @@
           "truncated": false
         },
         "backend": {
-          "count": 48,
+          "count": 50,
           "sample": [
             {
               "id": "api_endpoint:use-auth:d272d61067",
@@ -471,6 +471,22 @@
               "status": "implemented"
             },
             {
+              "id": "function:authheaders:ed04499fb2",
+              "type": "function",
+              "name": "authHeaders",
+              "path": "scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:authheaders:6a8d223725",
+              "type": "function",
+              "name": "authHeaders",
+              "path": "scripts/operating-model-registry-lifecycle-smoke.mjs#authHeaders",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:authactor:8976974c1d",
               "type": "function",
               "name": "authActor",
@@ -546,7 +562,7 @@
           "truncated": false
         },
         "worker": {
-          "count": 86,
+          "count": 85,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -1157,14 +1173,6 @@
               "status": "implemented"
             },
             {
-              "id": "function:authheaders:ed04499fb2",
-              "type": "function",
-              "name": "authHeaders",
-              "path": "scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "feature:company-os-lifecycle-trace-smoke-mjs:e5d0515cf5",
               "type": "feature",
               "name": "company-os-lifecycle-trace-smoke.mjs",
@@ -1173,12 +1181,12 @@
               "status": "implemented"
             },
             {
-              "id": "function:authheaders:6a8d223725",
-              "type": "function",
-              "name": "authHeaders",
-              "path": "scripts/operating-model-registry-lifecycle-smoke.mjs#authHeaders",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "id": "document:luc-107-account-access-auth-headers-fresh-proof:153bf13d90",
+              "type": "test",
+              "name": "LUC-107 Account Access Auth Headers Fresh Proof",
+              "path": "docs/planning/luc-107-account-access-authheaders-fresh-proof.md",
+              "owner": "Docs Memory Lead",
+              "status": "verified"
             },
             {
               "id": "feature:operating-model-registry-lifecycle-smoke-mjs:ec398b8193",
@@ -1187,6 +1195,14 @@
               "path": "scripts/operating-model-registry-lifecycle-smoke.mjs",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "function:registerowner:7b740fcbb4",
+              "type": "function",
+              "name": "registerOwner",
+              "path": "scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             }
           ],
           "truncated": true
@@ -1197,8 +1213,24 @@
           "truncated": false
         },
         "tests": {
-          "count": 1,
+          "count": 3,
           "sample": [
+            {
+              "id": "document:luc-85-account-access-auth-headers-proof-link:42d649454d",
+              "type": "test",
+              "name": "LUC-85 Account Access Auth Headers Proof Link",
+              "path": "docs/planning/luc-85-account-access-authheaders-proof-link.md",
+              "owner": "Docs Memory Lead",
+              "status": "verified"
+            },
+            {
+              "id": "document:luc-137-account-access-registerowner-proof-link:66e93ff64a",
+              "type": "test",
+              "name": "LUC-137 Account Access RegisterOwner Proof Link",
+              "path": "docs/planning/luc-137-account-access-registerowner-proof-link.md",
+              "owner": "Docs Memory Lead",
+              "status": "verified"
+            },
             {
               "id": "document:luc-5569-user-settings-proof-ladder:dab46a382c",
               "type": "test",
@@ -1211,7 +1243,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 22,
+          "count": 25,
           "sample": [
             {
               "id": "document:system-architecture:1149ef3528",
@@ -1266,6 +1298,22 @@
               "type": "document",
               "name": "Auth, Workspace, And Integration Plan",
               "path": "docs/planning/auth-workspace-integration-plan.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:luc-110-account-access-auth-headers-function-row-classification:33a5d98774",
+              "type": "document",
+              "name": "LUC-110 Account Access Auth Headers Function-Row Classification",
+              "path": "docs/planning/luc-110-account-access-authheaders-function-row-classification.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:luc-111-function-level-classification-overrides-for-auth-headers:2ca947ab7a",
+              "type": "document",
+              "name": "LUC-111 Function-Level Classification Overrides For Auth Headers",
+              "path": "docs/planning/luc-111-function-level-classification-overrides-authheaders.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
             },
@@ -1386,6 +1434,14 @@
               "type": "document",
               "name": "Authenticated Shell Layout Audit",
               "path": "docs/ux/authenticated-shell-layout-audit-2026-05-14.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:web-console-v2-task-contracts:502b5a3d4f",
+              "type": "document",
+              "name": "Web Console V2 Task Contracts",
+              "path": "docs/planning/web-console-v2-task-contracts.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
             }
@@ -2179,8 +2235,8 @@
     },
     {
       "userFlow": "Subscription and entitlement",
-      "entityCount": 986,
-      "linkedRelationCount": 3425,
+      "entityCount": 1001,
+      "linkedRelationCount": 3479,
       "layers": {
         "frontend": {
           "count": 35,
@@ -2469,7 +2525,7 @@
           "truncated": false
         },
         "backend": {
-          "count": 123,
+          "count": 129,
           "sample": [
             {
               "id": "component:cc-button-tsx:dff712debb",
@@ -2688,6 +2744,14 @@
               "status": "implemented"
             },
             {
+              "id": "document:luc-24-roost-bounded-local-route-api-evidence-slice:0984f9f859",
+              "type": "document",
+              "name": "LUC-24 Roost Bounded Local Route/API Evidence Slice",
+              "path": "docs/planning/luc-24-roost-bounded-local-route-api-evidence-slice.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
               "id": "document:luc-5648-top-route-missing-test-link-map:e7cfe67e03",
               "type": "document",
               "name": "LUC-5648 Top Route Missing-Test Link Map",
@@ -2734,6 +2798,22 @@
               "path": "docs/planning/v2vis-005-settings-drive-route-body-polish-task-contract.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
+            },
+            {
+              "id": "function:authheaders:6a8d223725",
+              "type": "function",
+              "name": "authHeaders",
+              "path": "scripts/operating-model-registry-lifecycle-smoke.mjs#authHeaders",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:authheaders:ed04499fb2",
+              "type": "function",
+              "name": "authHeaders",
+              "path": "scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             },
             {
               "id": "document:web-route-loading-theme-continuity-task-contract:833cea4cfc",
@@ -3072,42 +3152,18 @@
               "status": "implemented"
             },
             {
-              "id": "api_endpoint:use-auth:d272d61067",
+              "id": "api_endpoint:use-ready:cd82f6ee50",
               "type": "api_endpoint",
-              "name": "USE /auth",
-              "path": "src/app.ts#/auth",
+              "name": "USE /ready",
+              "path": "src/app.ts#/ready",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
             {
-              "id": "api_endpoint:use-v1-auth:02d088cd05",
+              "id": "api_endpoint:use-v1-ready:035c4febde",
               "type": "api_endpoint",
-              "name": "USE /v1/auth",
-              "path": "src/app.ts#/v1/auth",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "api_endpoint:use-v1:347b48829e",
-              "type": "api_endpoint",
-              "name": "USE /v1",
-              "path": "src/app.ts#/v1",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:mountprotectedroutes:46ca800830",
-              "type": "function",
-              "name": "mountProtectedRoutes",
-              "path": "src/app.ts#mountProtectedRoutes",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "feature:agent-logs-routes-ts:81332abd40",
-              "type": "feature",
-              "name": "agent-logs.routes.ts",
-              "path": "src/modules/agent-logs/agent-logs.routes.ts",
+              "name": "USE /v1/ready",
+              "path": "src/app.ts#/v1/ready",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             }
@@ -3115,7 +3171,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 48,
+          "count": 51,
           "sample": [
             {
               "id": "agent:planner:5b56a0bd47",
@@ -3228,6 +3284,30 @@
               "path": ".codex/context/LEARNING_JOURNAL.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
+            },
+            {
+              "id": "document:luc-6912-public-runtime-probe-gap-routing:85fcbc19fd",
+              "type": "document",
+              "name": "LUC-6912 Public Runtime Probe Gap Routing",
+              "path": "docs/planning/luc-6912-public-runtime-probe-gap-routing.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:task:45a242aa9f",
+              "type": "document",
+              "name": "Task",
+              "path": "docs/planning/luc-6913-public-runtime-probe-401-diagnosis-and-local-repair.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:luc-7047-settings-runtime-browser-proof:97916ed940",
+              "type": "document",
+              "name": "LUC-7047 Settings Runtime Browser Proof",
+              "path": "docs/planning/luc-7047-settings-runtime-browser-proof.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
             },
             {
               "id": "document:no-temporary-solutions:f4aac3d420",
@@ -3515,7 +3595,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 780,
+          "count": 786,
           "sample": [
             {
               "id": "document:task:93ac653bad",
@@ -4168,8 +4248,8 @@
     },
     {
       "userFlow": "Trading operation",
-      "entityCount": 55,
-      "linkedRelationCount": 129,
+      "entityCount": 57,
+      "linkedRelationCount": 132,
       "layers": {
         "frontend": {
           "count": 7,
@@ -4234,7 +4314,7 @@
           "truncated": false
         },
         "backend": {
-          "count": 19,
+          "count": 21,
           "sample": [
             {
               "id": "api_endpoint:use-strategy:0ead398998",
@@ -4321,6 +4401,22 @@
               "type": "component",
               "name": "cc-notice.tsx",
               "path": "web/src/components/cc-notice.tsx",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:publicruntimeinfo:f54df97432",
+              "type": "function",
+              "name": "publicRuntimeInfo",
+              "path": "src/health/health.routes.ts#publicRuntimeInfo",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "feature:health-routes-ts:bbcf23ef19",
+              "type": "feature",
+              "name": "health.routes.ts",
+              "path": "src/health/health.routes.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -4645,8 +4741,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2707,
-      "linkedRelationCount": 6437,
+      "entityCount": 2728,
+      "linkedRelationCount": 6523,
       "layers": {
         "frontend": {
           "count": 92,
@@ -5295,7 +5391,7 @@
           "truncated": true
         },
         "backend": {
-          "count": 513,
+          "count": 520,
           "sample": [
             {
               "id": "api_endpoint:get:1998daec82",
@@ -5342,6 +5438,14 @@
               "type": "api_endpoint",
               "name": "USE /api-keys",
               "path": "src/app.ts#/api-keys",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "api_endpoint:use-api-build-info:36fe7c3255",
+              "type": "api_endpoint",
+              "name": "USE /api/build-info",
+              "path": "src/app.ts#/api/build-info",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -5538,6 +5642,14 @@
               "status": "implemented"
             },
             {
+              "id": "api_endpoint:use-ready:cd82f6ee50",
+              "type": "api_endpoint",
+              "name": "USE /ready",
+              "path": "src/app.ts#/ready",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
               "id": "api_endpoint:use-relationships:acd9b6327c",
               "type": "api_endpoint",
               "name": "USE /relationships",
@@ -5598,6 +5710,14 @@
               "type": "api_endpoint",
               "name": "USE /v1/health",
               "path": "src/app.ts#/v1/health",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "api_endpoint:use-v1-ready:035c4febde",
+              "type": "api_endpoint",
+              "name": "USE /v1/ready",
+              "path": "src/app.ts#/v1/ready",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -5778,6 +5898,14 @@
               "status": "implemented"
             },
             {
+              "id": "function:authheaders:ed04499fb2",
+              "type": "function",
+              "name": "authHeaders",
+              "path": "scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "feature:companycore-mcp-server-mjs:0c499f7f8f",
               "type": "feature",
               "name": "companycore-mcp-server.mjs",
@@ -5904,44 +6032,12 @@
               "path": "scripts/generate-architecture-graph.mjs#keyForRoute",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "function:normalizepageroute:ddd51729f1",
-              "type": "function",
-              "name": "normalizePageRoute",
-              "path": "scripts/generate-architecture-graph.mjs#normalizePageRoute",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:parsemanifestroutes:172b2af58f",
-              "type": "function",
-              "name": "parseManifestRoutes",
-              "path": "scripts/generate-architecture-graph.mjs#parseManifestRoutes",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:parsereactapproutes:6babcfcf2d",
-              "type": "function",
-              "name": "parseReactAppRoutes",
-              "path": "scripts/generate-architecture-graph.mjs#parseReactAppRoutes",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:routemodule:4b19ccf10a",
-              "type": "function",
-              "name": "routeModule",
-              "path": "scripts/sync-architecture-registry.mjs#routeModule",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 728,
+          "count": 732,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -6176,9 +6272,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-02-luc-6905-module-confidence-update:ed8d76ece4",
+              "id": "agent:2026-07-04-luc-111-module-confidence-update:b20ad11523",
               "type": "agent",
-              "name": "2026-07-02 LUC-6905 Module Confidence Update",
+              "name": "2026-07-04 LUC-111 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -6232,9 +6328,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-02-luc-6905-health-check:cd22f15ed7",
+              "id": "agent:2026-07-04-luc-111-project-truth-tooling-health-signal:f66017c3dc",
               "type": "agent",
-              "name": "2026-07-02 LUC-6905 Health Check",
+              "name": "2026-07-04 LUC-111 Project Truth Tooling Health Signal",
               "path": ".agents/state/system-health.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -6592,7 +6688,7 @@
           "truncated": false
         },
         "tests": {
-          "count": 5,
+          "count": 7,
           "sample": [
             {
               "id": "document:playwright-assets-proof:82d901185f",
@@ -6627,10 +6723,26 @@
               "status": "implemented"
             },
             {
+              "id": "document:luc-137-account-access-registerowner-proof-link:66e93ff64a",
+              "type": "test",
+              "name": "LUC-137 Account Access RegisterOwner Proof Link",
+              "path": "docs/planning/luc-137-account-access-registerowner-proof-link.md",
+              "owner": "Docs Memory Lead",
+              "status": "verified"
+            },
+            {
               "id": "document:luc-5569-user-settings-proof-ladder:dab46a382c",
               "type": "test",
               "name": "LUC-5569 User Settings Proof Ladder",
               "path": "docs/planning/luc-5569-user-settings-proof-ladder.md",
+              "owner": "Docs Memory Lead",
+              "status": "verified"
+            },
+            {
+              "id": "document:luc-85-account-access-auth-headers-proof-link:42d649454d",
+              "type": "test",
+              "name": "LUC-85 Account Access Auth Headers Proof Link",
+              "path": "docs/planning/luc-85-account-access-authheaders-proof-link.md",
               "owner": "Docs Memory Lead",
               "status": "verified"
             }
@@ -6638,7 +6750,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 1368,
+          "count": 1376,
           "sample": [
             {
               "id": "document:get-v1-finance-context:db0b7f023e",
