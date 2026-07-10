@@ -1,3 +1,21 @@
+# 2026-07-10 LUC-321 Source-Control Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost source-control closure for LUC-262/LUC-267/LUC-268 evidence packet | verified locally | [LUC-321](/LUC/issues/LUC-321) task contract `.codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md`; dirty state classified as current docs/state/generated architecture/status artifacts plus task contracts; `git diff --check` PASS with LF-to-CRLF warnings only; no raw secret values found in redaction review. | No remaining source-control action in this sidecar after local commit. Push/deploy/protected smoke remain separate gated lanes. |
+
+# 2026-07-10 LUC-268 Module Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Account access / integration-settings proof-link confidence | partially verified, graph proof links curated | [LUC-268](/LUC/issues/LUC-268) task contract `.codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md`; [LUC-6155](/LUC/issues/LUC-6155) verified auth/config API proof is linked in `docs/architecture/scanner-overrides.json` to `src/integrations/integration-settings.service.ts`, `src/integrations/secrets.ts`, `src/modules/integration-settings/integration-settings.routes.ts`, and `src/integrations/google-drive/google-drive.auth.ts`. Architecture-awareness PASS generated `2026-07-10T01:15:26.020Z` with `2818` entities / `6624` relations / `16449` files and overrides `36/37`; app-completion PASS/PARTIAL reports `1203` missing test links, `20` missing doc links, `12` implemented-needs-proof, and `0` blocked. | Do not open duplicate auth/config runtime proof from aggregate app-completion counts. Future owner decision may safely status-classify specific tested infrastructure rows, or future QA can select a concrete new route/journey only if a fresh unproved behavior appears. |
+
+# 2026-07-10 LUC-267 Module Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost public readiness/build-info alias task-linkage | verified locally | [LUC-267](/LUC/issues/LUC-267) task contract `.codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md`; architecture-awareness refresh PASS generated `2026-07-10T01:12:23.222Z` with `2818` entities / `6620` relations / `16449` files and overrides `34/33`; `docs/status/task-synchronization-report.md` reports `0` actionable and `0` raw implementation entities without task links; graph readback has three task `documents` relations to `src/app.ts#/api/build-info`, `src/app.ts#/ready`, and `src/app.ts#/v1/ready`; `git diff --check` PASS with LF-to-CRLF warnings only. | No further Documentation Steward task-link curation remains for these three aliases. Source-control disposition and app-completion proof-link/proof-target curation remain separate LUC-262 follow-up lanes. |
+
 # 2026-07-10 LUC-262 Module Confidence Update
 
 | Module/Journey | Status | Evidence | Next Proof Or Fix |

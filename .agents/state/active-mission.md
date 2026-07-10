@@ -1,6 +1,61 @@
 # Active Mission Packet
 
-Last updated: 2026-07-04
+Last updated: 2026-07-10
+
+## LUC-321 Checkpoint
+
+- 2026-07-10: [LUC-321](/LUC/issues/LUC-321) completed the Roost PM
+  source-control closure sidecar for [LUC-262](/LUC/issues/LUC-262),
+  [LUC-267](/LUC/issues/LUC-267), and [LUC-268](/LUC/issues/LUC-268). Output:
+  `.codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md`.
+  Scope was single-lane source-control classification and local commit
+  disposition; no subagent delegation was used because the work was bounded to
+  local docs/status/evidence/context state. Classification found only current
+  generated architecture/status artifacts, task contracts, scanner overrides,
+  and source-of-truth state updates for the three linked issues. `git diff
+  --check` PASS with LF-to-CRLF warnings only; redaction review found no raw
+  secret values, only path names or negative evidence statements. Local
+  source-control closure commit is required by the sidecar contract; push,
+  deploy, protected smoke, restart, provider action, credential value read,
+  secret disclosure, and production mutation remained out of scope.
+
+## LUC-268 Checkpoint
+
+- 2026-07-10: [LUC-268](/LUC/issues/LUC-268) completed a single-lane QA
+  app-completion proof-link curation checkpoint after
+  [LUC-262](/LUC/issues/LUC-262). Output:
+  `.codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md`.
+  Scope was generated evidence linkage only; no subagent delegation was used
+  because the work was bounded to one proof family and generated readback.
+  `docs/architecture/scanner-overrides.json` now records
+  [LUC-6155](/LUC/issues/LUC-6155) as verified auth/config API proof evidence
+  and links it to integration-settings service/routes, secrets helper, and
+  Google Drive OAuth helper rows. Architecture-awareness PASS generated
+  `2026-07-10T01:15:26.020Z` with `2818` entities / `6624` relations /
+  `16449` files and overrides `36/37`; app-completion PASS/PARTIAL generated
+  `1243` items / `1203` missing test links / `20` missing doc links / `12`
+  implemented-needs-proof / `0` blocked. `npm run architecture:status` PASS;
+  `git diff --check` PASS with LF-to-CRLF warnings only. Residual:
+  app-completion still treats tested+documented auth/config infrastructure as
+  proof-review debt unless a future owner safely reclassifies status. No
+  product code, runtime process, browser, Docker, database, protected smoke,
+  credential value read, push, deploy, restart, provider action, or production
+  mutation occurred.
+
+## LUC-267 Checkpoint
+
+- 2026-07-10: [LUC-267](/LUC/issues/LUC-267) completed Documentation Steward
+  route-alias task-link curation for the public readiness/build-info aliases
+  surfaced by [LUC-262](/LUC/issues/LUC-262). Output:
+  `.codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md`.
+  Architecture-awareness PASS generated `2026-07-10T01:12:23.222Z` with
+  `2818` entities / `6620` relations / `16449` files and overrides `34/33`.
+  `docs/status/task-synchronization-report.md` now reports no actionable or
+  raw task-link gaps, and graph readback links the LUC-267 task entity to
+  `/api/build-info`, `/ready`, and `/v1/ready`. `git diff --check` PASS with
+  LF-to-CRLF warnings only. No product code, runtime process, browser, Docker,
+  database, protected smoke, credential value read, push, deploy, restart,
+  provider action, or production mutation occurred.
 
 ## LUC-262 Checkpoint
 

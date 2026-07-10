@@ -1,6 +1,6 @@
 # Architecture Awareness Report
 
-Generated: 2026-07-10T00:59:44.007Z
+Generated: 2026-07-10T01:15:26.020Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 
@@ -11,15 +11,15 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | agent | 47 |
 | api_endpoint | 46 |
 | component | 7 |
-| document | 1475 |
+| document | 1476 |
 | feature | 170 |
 | function | 953 |
 | migration | 31 |
 | model | 5 |
 | module | 67 |
 | project | 1 |
-| task | 4 |
-| test | 9 |
+| task | 5 |
+| test | 10 |
 
 ## Counts By Status
 
@@ -27,22 +27,22 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | --- | ---: |
 | blocked | 1 |
 | deprecated | 6 |
-| implemented | 2778 |
+| implemented | 2779 |
 | in_progress | 1 |
 | tested | 8 |
-| verified | 21 |
+| verified | 23 |
 
 ## Health Signals
 
-- Raw implementation entities without inferred tests: 1166
-- Actionable implementation entities without inferred tests: 1157
-- Raw implementation entities without inferred docs: 3
-- Actionable implementation entities without inferred docs: 3
+- Raw implementation entities without inferred tests: 1163
+- Actionable implementation entities without inferred tests: 1154
+- Raw implementation entities without inferred docs: 0
+- Actionable implementation entities without inferred docs: 0
 - Classified inferred-link noise: 9
 - Raw tasks without architecture links: 0
 - Actionable tasks without architecture links: 0
-- Raw implementation entities without task links: 3
-- Actionable implementation entities without task links: 3
+- Raw implementation entities without task links: 0
+- Actionable implementation entities without task links: 0
 - Classified task-linkage noise: 0
 - Entities without owner attribution: 0
 - Disconnected entities: 0
@@ -92,9 +92,6 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 
 ## Top Actionable Missing Doc Links
 
-- api_endpoint: USE /api/build-info (src/app.ts#/api/build-info)
-- api_endpoint: USE /ready (src/app.ts#/ready)
-- api_endpoint: USE /v1/ready (src/app.ts#/v1/ready)
 
 ## Classified Inferred-Link Noise
 
@@ -123,6 +120,6 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 
 - This is an inferred baseline. CTO/Docs Memory must promote or correct important relations.
 - Curated graph coverage input: `C:/Personal/Projekty/Aplikacje/Roost/docs/graphs/architecture-graph.json` (covered paths: 0).
-- Override input: `C:/Personal/Projekty/Aplikacje/Roost/docs/architecture/scanner-overrides.json` (entity entries: 34, relation entries: 33).
-- Override summary: excluded files 0, entity overrides 34, relation overrides 33, critical entities tagged 0.
+- Override input: `C:/Personal/Projekty/Aplikacje/Roost/docs/architecture/scanner-overrides.json` (entity entries: 36, relation entries: 37).
+- Override summary: excluded files 0, entity overrides 36, relation overrides 37, critical entities tagged 0.
 - `verified` still requires fresh command/browser/deploy evidence, not only file presence.

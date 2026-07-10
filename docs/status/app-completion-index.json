@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-10T01:00:15.626Z",
+  "generatedAt": "2026-07-10T01:15:29.046Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -7,9 +7,9 @@
     "items": 1243,
     "flows": 5,
     "needsBrowserReview": 0,
-    "missingTestLink": 1204,
+    "missingTestLink": 1203,
     "missingDocLink": 20,
-    "implementedNeedsProof": 11,
+    "implementedNeedsProof": 12,
     "blocked": 0,
     "riskItems": 1235,
     "appCompletionRiskItems": 1235,
@@ -23,12 +23,12 @@
       "total": 70,
       "risks": {
         "ok": 6,
-        "missing_test_link": 62,
-        "implemented_needs_proof": 2
+        "missing_test_link": 61,
+        "implemented_needs_proof": 3
       },
       "gates": {
         "auth": 70,
-        "configuration": 9,
+        "configuration": 10,
         "subscription": 2
       }
     },
@@ -658,16 +658,17 @@
       "status": "implemented_needs_proof",
       "userFlow": "Account access",
       "gates": [
-        "auth"
+        "auth",
+        "configuration"
       ],
       "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
+        "hasTest": true,
+        "hasDoc": true,
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 40,
-      "risk": "missing_test_link"
+      "relatedEntityCount": 41,
+      "risk": "implemented_needs_proof"
     },
     {
       "id": "function:buildgoogledriveauthorizationurl:bab074bcc0",
@@ -923,7 +924,7 @@
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 31,
+      "relatedEntityCount": 32,
       "risk": "implemented_needs_proof"
     },
     {
@@ -968,7 +969,7 @@
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 15,
+      "relatedEntityCount": 16,
       "risk": "implemented_needs_proof"
     },
     {
@@ -2394,7 +2395,7 @@
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 3,
+      "relatedEntityCount": 4,
       "risk": "missing_test_link"
     },
     {
@@ -2831,7 +2832,7 @@
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 3,
+      "relatedEntityCount": 4,
       "risk": "missing_test_link"
     },
     {
@@ -2964,7 +2965,7 @@
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 3,
+      "relatedEntityCount": 4,
       "risk": "missing_test_link"
     },
     {
@@ -3116,7 +3117,7 @@
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 2923,
+      "relatedEntityCount": 2927,
       "risk": "implemented_needs_proof"
     },
     {

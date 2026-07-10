@@ -1,38 +1,38 @@
 {
-  "generated_at": "2026-07-10T00:59:44.007Z",
+  "generated_at": "2026-07-10T01:15:26.020Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 2815,
-    "relations": 6610,
+    "entities": 2818,
+    "relations": 6624,
     "by_type": {
       "agent": 47,
       "api_endpoint": 46,
       "component": 7,
-      "document": 1475,
+      "document": 1476,
       "feature": 170,
       "function": 953,
       "migration": 31,
       "model": 5,
       "module": 67,
       "project": 1,
-      "task": 4,
-      "test": 9
+      "task": 5,
+      "test": 10
     },
     "by_status": {
       "blocked": 1,
       "deprecated": 6,
-      "implemented": 2778,
+      "implemented": 2779,
       "in_progress": 1,
       "tested": 8,
-      "verified": 21
+      "verified": 23
     }
   },
   "signals": {
     "implementation_without_tests": {
-      "count": 1166,
+      "count": 1163,
       "items": [
         {
           "id": "api_endpoint:get:1998daec82",
@@ -1067,14 +1067,6 @@
           "owner": "Engineering Delivery Lead"
         },
         {
-          "id": "feature:google-drive-auth-ts:3aca51d9d5",
-          "type": "feature",
-          "name": "google-drive.auth.ts",
-          "path": "src/integrations/google-drive/google-drive.auth.ts",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
           "id": "feature:google-drive-client-ts:e2fe799173",
           "type": "feature",
           "name": "google-drive.client.ts",
@@ -1095,22 +1087,6 @@
           "type": "feature",
           "name": "google-drive.sync.ts",
           "path": "src/integrations/google-drive/google-drive.sync.ts",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "feature:integration-settings-service-ts:33ba35e79f",
-          "type": "feature",
-          "name": "integration-settings.service.ts",
-          "path": "src/integrations/integration-settings.service.ts",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "feature:secrets-ts:9896d14c7b",
-          "type": "feature",
-          "name": "secrets.ts",
-          "path": "src/integrations/secrets.ts",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
@@ -1633,40 +1609,39 @@
           "path": "web/src/features/departments/operations-route.tsx",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:people-agents-route-tsx:b254839db2",
+          "type": "feature",
+          "name": "people-agents-route.tsx",
+          "path": "web/src/features/departments/people-agents-route.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:product-delivery-route-tsx:7a46360823",
+          "type": "feature",
+          "name": "product-delivery-route.tsx",
+          "path": "web/src/features/departments/product-delivery-route.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:relationships-route-tsx:28cd4ddddd",
+          "type": "feature",
+          "name": "relationships-route.tsx",
+          "path": "web/src/features/departments/relationships-route.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
         }
       ]
     },
     "implementation_without_docs": {
-      "count": 3,
-      "items": [
-        {
-          "id": "api_endpoint:use-api-build-info:36fe7c3255",
-          "type": "api_endpoint",
-          "name": "USE /api/build-info",
-          "path": "src/app.ts#/api/build-info",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "api_endpoint:use-ready:cd82f6ee50",
-          "type": "api_endpoint",
-          "name": "USE /ready",
-          "path": "src/app.ts#/ready",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "api_endpoint:use-v1-ready:035c4febde",
-          "type": "api_endpoint",
-          "name": "USE /v1/ready",
-          "path": "src/app.ts#/v1/ready",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        }
-      ]
+      "count": 0,
+      "items": []
     },
     "actionable_implementation_without_tests": {
-      "count": 1157,
+      "count": 1154,
       "items": [
         {
           "id": "api_endpoint:get:1998daec82",
@@ -2701,14 +2676,6 @@
           "owner": "Engineering Delivery Lead"
         },
         {
-          "id": "feature:google-drive-auth-ts:3aca51d9d5",
-          "type": "feature",
-          "name": "google-drive.auth.ts",
-          "path": "src/integrations/google-drive/google-drive.auth.ts",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
           "id": "feature:google-drive-client-ts:e2fe799173",
           "type": "feature",
           "name": "google-drive.client.ts",
@@ -2729,22 +2696,6 @@
           "type": "feature",
           "name": "google-drive.sync.ts",
           "path": "src/integrations/google-drive/google-drive.sync.ts",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "feature:integration-settings-service-ts:33ba35e79f",
-          "type": "feature",
-          "name": "integration-settings.service.ts",
-          "path": "src/integrations/integration-settings.service.ts",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "feature:secrets-ts:9896d14c7b",
-          "type": "feature",
-          "name": "secrets.ts",
-          "path": "src/integrations/secrets.ts",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
@@ -3267,37 +3218,36 @@
           "path": "web/src/features/departments/product-delivery-route.tsx",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:relationships-route-tsx:28cd4ddddd",
+          "type": "feature",
+          "name": "relationships-route.tsx",
+          "path": "web/src/features/departments/relationships-route.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:sales-route-tsx:935c44c44d",
+          "type": "feature",
+          "name": "sales-route.tsx",
+          "path": "web/src/features/departments/sales-route.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "feature:shared-tsx:fa310986ee",
+          "type": "feature",
+          "name": "shared.tsx",
+          "path": "web/src/features/departments/shared.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
         }
       ]
     },
     "actionable_implementation_without_docs": {
-      "count": 3,
-      "items": [
-        {
-          "id": "api_endpoint:use-api-build-info:36fe7c3255",
-          "type": "api_endpoint",
-          "name": "USE /api/build-info",
-          "path": "src/app.ts#/api/build-info",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "api_endpoint:use-ready:cd82f6ee50",
-          "type": "api_endpoint",
-          "name": "USE /ready",
-          "path": "src/app.ts#/ready",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "api_endpoint:use-v1-ready:035c4febde",
-          "type": "api_endpoint",
-          "name": "USE /v1/ready",
-          "path": "src/app.ts#/v1/ready",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        }
-      ]
+      "count": 0,
+      "items": []
     },
     "classified_inferred_link_noise": {
       "count": 9,
@@ -3406,62 +3356,12 @@
       "items": []
     },
     "implementation_without_task": {
-      "count": 3,
-      "items": [
-        {
-          "id": "api_endpoint:use-api-build-info:36fe7c3255",
-          "type": "api_endpoint",
-          "name": "USE /api/build-info",
-          "path": "src/app.ts#/api/build-info",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "api_endpoint:use-ready:cd82f6ee50",
-          "type": "api_endpoint",
-          "name": "USE /ready",
-          "path": "src/app.ts#/ready",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "api_endpoint:use-v1-ready:035c4febde",
-          "type": "api_endpoint",
-          "name": "USE /v1/ready",
-          "path": "src/app.ts#/v1/ready",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        }
-      ]
+      "count": 0,
+      "items": []
     },
     "raw_implementation_without_task": {
-      "count": 3,
-      "items": [
-        {
-          "id": "api_endpoint:use-api-build-info:36fe7c3255",
-          "type": "api_endpoint",
-          "name": "USE /api/build-info",
-          "path": "src/app.ts#/api/build-info",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "api_endpoint:use-ready:cd82f6ee50",
-          "type": "api_endpoint",
-          "name": "USE /ready",
-          "path": "src/app.ts#/ready",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "api_endpoint:use-v1-ready:035c4febde",
-          "type": "api_endpoint",
-          "name": "USE /v1/ready",
-          "path": "src/app.ts#/v1/ready",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        }
-      ]
+      "count": 0,
+      "items": []
     },
     "classified_task_linkage_noise": {
       "count": 0,

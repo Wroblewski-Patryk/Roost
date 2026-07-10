@@ -1,6 +1,49 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-10: [LUC-321](/LUC/issues/LUC-321) Roost source-control closure
+  sidecar for [LUC-262](/LUC/issues/LUC-262), [LUC-267](/LUC/issues/LUC-267),
+  and [LUC-268](/LUC/issues/LUC-268) is complete locally. Task contract:
+  `.codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md`.
+  Evidence: dirty state classified as current docs/state/generated
+  architecture/status artifacts plus task contracts for the linked issues;
+  `git diff --name-status` showed only `.agents`, `.codex`,
+  `docs/architecture`, `docs/graphs`, and `docs/status` paths; branch
+  divergence was `0 1` before closure; `git diff --check` PASS with
+  LF-to-CRLF warnings only; redaction review found no raw secret values.
+  Commit closure was selected per the sidecar contract. No push, deploy,
+  protected smoke, restart, provider action, credential value read, secret
+  disclosure, or production mutation occurred.
+
+- 2026-07-10: [LUC-268](/LUC/issues/LUC-268) Roost app-completion proof-link
+  curation is complete as a partial QA curation result. Task contract:
+  `.codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md`.
+  Evidence: [LUC-6155](/LUC/issues/LUC-6155) verified auth/config API proof is
+  now linked in `docs/architecture/scanner-overrides.json` to the
+  integration-settings service, secrets helper, integration-settings routes,
+  and Google Drive OAuth helper; architecture-awareness refresh PASS generated
+  `2026-07-10T01:15:26.020Z` with `2818` entities / `6624` relations /
+  `16449` files and overrides `36/37`; app-completion refresh reports
+  `1243` items / `1203` missing test links / `20` missing doc links / `12`
+  implemented-needs-proof / `0` blocked. `npm run architecture:status` PASS;
+  `git diff --check` PASS with LF-to-CRLF warnings only. Residual:
+  app-completion still requires cautious proof-review/status-classification
+  decisions for broad auth/config infrastructure; no duplicate runtime proof
+  or product repair lane is warranted from aggregate counts alone.
+
+- 2026-07-10: [LUC-267](/LUC/issues/LUC-267) Roost public route alias
+  task-link curation is complete locally. Task contract:
+  `.codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md`.
+  Evidence: architecture-awareness refresh PASS generated
+  `2026-07-10T01:12:23.222Z` with `2818` entities / `6620` relations /
+  `16449` files and overrides `34/33`; `docs/status/task-synchronization-report.md`
+  now reports `0` actionable implementation entities without task links and
+  `0` raw implementation entities without task links; graph readback links
+  the LUC-267 task entity to `/api/build-info`, `/ready`, and `/v1/ready`.
+  `git diff --check` PASS with LF-to-CRLF warnings only. No product code,
+  protected smoke, push, deploy, restart, production mutation, provider
+  action, credential access, or secret disclosure occurred.
+
 - 2026-07-10: [LUC-262](/LUC/issues/LUC-262) Roost known-state evidence
   collection is complete locally and converted into follow-up lanes. Packet:
   `docs/planning/luc-262-known-state-evidence-and-architecture-baseline.md`.

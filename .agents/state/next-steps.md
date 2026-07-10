@@ -1,4 +1,32 @@
 # Next Steps
+- 2026-07-10: [LUC-321](/LUC/issues/LUC-321) has no remaining source-control
+  closure action after the local commit. Push/deploy/protected smoke remain
+  outside this sidecar lane and must not be inferred from source-control
+  closure. Continue only with separately approved protected delivery gates or
+  future narrow evidence curation if a concrete new gap is assigned.
+
+- 2026-07-10: [LUC-268](/LUC/issues/LUC-268) has no remaining QA
+  proof-link curation action for the selected [LUC-6155](/LUC/issues/LUC-6155)
+  auth/config proof family. The LUC-268 task contract records graph proof
+  relations to integration-settings service/routes, secrets helper, and Google
+  Drive OAuth helper rows, with architecture-awareness PASS and
+  app-completion PASS/PARTIAL. Remaining aggregate app-completion debt should
+  not trigger duplicate runtime proof. Next action, if any, is a separate
+  PM/architecture status-classification decision for specific tested
+  auth/config infrastructure rows, or a future QA target only when a fresh
+  concrete unproved route/journey appears.
+
+- 2026-07-10: [LUC-267](/LUC/issues/LUC-267) has no remaining Documentation
+  Steward task-link curation action. The LUC-267 task contract links
+  `/api/build-info`, `/ready`, and `/v1/ready` to the route-alias curation
+  issue, and architecture-awareness readback generated
+  `2026-07-10T01:12:23.222Z` reports `0` actionable implementation entities
+  without task links. Continue only with the separate LUC-262 follow-up lanes:
+  source-control closure for generated/status/planning changes and
+  app-completion proof-link/proof-target curation. Do not open product code,
+  protected smoke, push/deploy, provider, credential, or production work from
+  [LUC-267](/LUC/issues/LUC-267).
+
 - 2026-07-10: [LUC-262](/LUC/issues/LUC-262) has no remaining Roost PM
   evidence-collection action after the local baseline packet
   `docs/planning/luc-262-known-state-evidence-and-architecture-baseline.md`.

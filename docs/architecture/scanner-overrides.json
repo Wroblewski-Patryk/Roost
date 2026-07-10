@@ -115,6 +115,15 @@
       ]
     },
     {
+      "path": "src/integrations/google-drive/google-drive.auth.ts",
+      "description": "Google Drive OAuth helper used by owner-authorized integration settings and Drive import flows; behavior proof belongs to the integration-settings API proof lane and Drive provider proof packets.",
+      "evidence": [
+        "docs/architecture/nodes/generated/INT-AUTO-0008.md",
+        "docs/planning/luc-6154-qa-proof-selection-highest-risk-missing-test-links.md",
+        "docs/planning/luc-6155-auth-config-api-proof-lane.md"
+      ]
+    },
+    {
       "path": "src/integrations/integration-settings.service.ts",
       "description": "Workspace integration-settings service used by configuration flows; provider behavior remains covered by settings and authority proof packets.",
       "evidence": [
@@ -219,6 +228,16 @@
         "docs/ux/evidence/luc-5561-auth-account-access/post-register-protected-route.png",
         "docs/ux/evidence/luc-5561-auth-account-access/login-form-filled.png",
         "docs/ux/evidence/luc-5561-auth-account-access/post-login-protected-route.png"
+      ]
+    },
+    {
+      "path": "docs/planning/luc-6155-auth-config-api-proof-lane.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified local API proof for the auth/config boundary, including owner workspace settings, /v1/auth alias assertions, integration-settings routes, protected API flow, route capability status, and architecture status.",
+      "evidence": [
+        "docs/planning/luc-6155-auth-config-api-proof-lane.md",
+        "src/tests/api.test.ts"
       ]
     },
     {
@@ -377,6 +396,38 @@
       "toPath": "docs/architecture/system-architecture.md",
       "toType": "document",
       "evidence": "LUC-6696 app-completion proof-link association"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6155-auth-config-api-proof-lane.md",
+      "fromType": "test",
+      "toPath": "src/integrations/integration-settings.service.ts",
+      "toType": "feature",
+      "evidence": "LUC-268 app-completion proof-link curation after LUC-262"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6155-auth-config-api-proof-lane.md",
+      "fromType": "test",
+      "toPath": "src/integrations/secrets.ts",
+      "toType": "feature",
+      "evidence": "LUC-268 app-completion proof-link curation after LUC-262"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6155-auth-config-api-proof-lane.md",
+      "fromType": "test",
+      "toPath": "src/modules/integration-settings/integration-settings.routes.ts",
+      "toType": "feature",
+      "evidence": "LUC-268 app-completion proof-link curation after LUC-262"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6155-auth-config-api-proof-lane.md",
+      "fromType": "test",
+      "toPath": "src/integrations/google-drive/google-drive.auth.ts",
+      "toType": "feature",
+      "evidence": "LUC-268 app-completion proof-link curation after LUC-262"
     },
     {
       "type": "tests",

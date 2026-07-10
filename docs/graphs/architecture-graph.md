@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-10T00:59:44.007Z
+Generated: 2026-07-10T01:15:26.020Z
 
 ## Canonical Exports
 
@@ -42,14 +42,14 @@ Generated: 2026-07-10T00:59:44.007Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-04 LUC-111 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-10 LUC-267 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-04 LUC-111 Project Truth Tooling Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-10 LUC-267 Task-Link Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -567,12 +567,13 @@ Generated: 2026-07-10T00:59:44.007Z
 | connected_to | function:mergegoogledrivesecret:3382200622 | feature:settings-routes-tsx:8e262225e5 | LUC-6911 Exchange event-chain frontend mapping after LUC-6905 |
 | connected_to | function:mergegoogledrivesecret:3382200622 | model:types-ts:1fce583d96 | LUC-6911 Exchange event-chain frontend type mapping after LUC-6905 |
 | connected_to | function:mergegoogledrivesecret:3382200622 | feature:messages-ts:2ff8f72a93 | LUC-6911 Exchange event-chain frontend copy mapping after LUC-6905 |
+| connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-3712-architecture-task-link-backfill-for-173-implementation-rows:7fd1216070 | .codex/tasks/luc-3712-architecture-task-link-backfill.md |
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
-| documents | agent:2026-07-04-luc-111-module-confidence-update:b20ad11523 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
-| documents | agent:2026-07-04-luc-111-project-truth-tooling-health-signal:f66017c3dc | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-10-luc-267-module-confidence-update:3426c4844c | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
+| documents | agent:2026-07-10-luc-267-task-link-health-signal:bb55740631 | module:agents:4ae71ba13a | .agents/state/system-health.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -1023,6 +1024,8 @@ Generated: 2026-07-10T00:59:44.007Z
 | documents | document:luc-2362-dirty-state-context-docs-classification:45e28d0a3a | module:docs:6784d83cb0 | docs/planning/luc-2362-dirty-state-context-docs-classification.md |
 | documents | document:luc-24-roost-bounded-local-route-api-evidence-slice:0984f9f859 | module:docs:6784d83cb0 | docs/planning/luc-24-roost-bounded-local-route-api-evidence-slice.md |
 | documents | document:luc-2401-source-control-classification-for-luc-261-dirty-docs-state-packet:6d04a28fc2 | module:docs:6784d83cb0 | docs/planning/luc-2401-source-control-classification-for-luc-261-dirty-docs-state-packet.md |
+| documents | document:luc-262-known-state-evidence-and-architecture-baseline:55300c6981 | module:docs:6784d83cb0 | docs/planning/luc-262-known-state-evidence-and-architecture-baseline.md |
+| documents | document:luc-266-generated-evidence-source-control-closure:16db982bdf | module:docs:6784d83cb0 | docs/planning/luc-266-generated-evidence-source-control-closure.md |
 | documents | document:luc-271-deployment-mode-acceptance-criteria-clarification:f101ba18a7 | module:docs:6784d83cb0 | docs/planning/luc-271-deployment-mode-acceptance-criteria.md |
 | documents | document:luc-2830-known-state-evidence-and-architecture-baseline:5a89e4d6b7 | module:docs:6784d83cb0 | docs/planning/luc-2830-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-2833-source-control-closure-for-luc-2830-known-state-baseline:d20ac0467d | module:docs:6784d83cb0 | docs/planning/luc-2833-source-control-closure-for-luc-2830-known-state-baseline.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-07-10T00:59:44.007Z
 | documents | document:luc-5293-tasks-and-clickup-task-lifecycle-proof-ladder:75b74f1be7 | module:docs:6784d83cb0 | docs/planning/luc-5293-tasks-clickup-task-lifecycle-proof-ladder.md |
 | documents | document:luc-5301-api-endpoint-test-evidence-gap-qa-triage:cdbb7ed7ff | module:docs:6784d83cb0 | docs/planning/luc-5301-api-endpoint-test-evidence-gap-qa-triage.md |
 | documents | document:luc-5302-architecture-evidence-roadmap-awareness-reconciliation:be8d4d03a4 | module:docs:6784d83cb0 | docs/planning/luc-5302-architecture-evidence-roadmap-awareness-reconciliation.md |
-| documents | document:luc-5313-known-state-evidence-and-architecture-baseline:ab0c5ded26 | module:docs:6784d83cb0 | docs/planning/luc-5313-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5314-source-control-closure-for-luc-5313-evidence-packet:0607170919 | module:docs:6784d83cb0 | docs/planning/luc-5314-source-control-closure-for-luc-5313-evidence-packet.md |
-| documents | document:luc-5315-auth-workspace-api-key-authority-proof-ladder:78ba167753 | module:docs:6784d83cb0 | docs/planning/luc-5315-auth-workspace-api-key-authority-proof-ladder.md |

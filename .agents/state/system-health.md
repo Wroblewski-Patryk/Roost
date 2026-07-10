@@ -1,3 +1,58 @@
+# 2026-07-10 LUC-321 Source-Control Closure Health Signal
+
+- Status: local Roost docs/status/evidence packet for
+  [LUC-262](/LUC/issues/LUC-262), [LUC-267](/LUC/issues/LUC-267), and
+  [LUC-268](/LUC/issues/LUC-268) is commit-eligible and closed by the
+  source-control sidecar lane.
+- Evidence: [LUC-321](/LUC/issues/LUC-321) task contract
+  `.codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md`;
+  `git diff --name-status` showed only `.agents`, `.codex`,
+  `docs/architecture`, `docs/graphs`, and `docs/status` paths; `git diff
+  --check` PASS with LF-to-CRLF warnings only.
+- Runtime/deploy posture: unchanged. No product code, runtime process, browser,
+  Docker, database, protected smoke, push, deploy, restart, provider action,
+  credential value read, secret disclosure, or production mutation occurred.
+
+# 2026-07-10 LUC-268 App-Completion Proof-Link Health Signal
+
+- Status: Account access / integration-settings graph proof-link confidence is
+  partially verified after QA curation.
+- Evidence: [LUC-268](/LUC/issues/LUC-268) task contract
+  `.codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md`.
+  `docs/architecture/scanner-overrides.json` links verified
+  [LUC-6155](/LUC/issues/LUC-6155) auth/config API proof to
+  integration-settings service/routes, secrets helper, and Google Drive OAuth
+  helper rows. Architecture-awareness regeneration PASS generated
+  `2026-07-10T01:15:26.020Z`, `2818` entities / `6624` relations /
+  `16449` files, and overrides `36/37`.
+- Index evidence: app-completion regeneration reports `1243` items / `1203`
+  missing test links / `20` missing doc links / `12`
+  implemented-needs-proof / `0` blocked. This is a partial curation result:
+  graph relations exist, but the app-completion reducer still requires
+  cautious proof-review/status-classification for broad auth/config
+  infrastructure.
+- Runtime/deploy posture: unchanged. No product code, runtime proof, browser,
+  Docker, protected smoke, credential value read, push, deploy, restart,
+  provider action, or production mutation occurred.
+
+# 2026-07-10 LUC-267 Task-Link Health Signal
+
+- Status: Roost public readiness/build-info alias task-linkage is verified
+  locally.
+- Evidence: [LUC-267](/LUC/issues/LUC-267) task contract
+  `.codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md`.
+  Architecture-awareness regeneration PASS generated
+  `2026-07-10T01:12:23.222Z`, `2818` entities / `6620` relations /
+  `16449` files, and overrides `34/33`.
+- Index evidence: `docs/status/task-synchronization-report.md` reports `0`
+  actionable tasks without architecture links, `0` raw tasks without
+  architecture links, `0` actionable implementation entities without task
+  links, `0` raw implementation entities without task links, `0` classified
+  task-linkage noise, and `0` verified entities without proof evidence.
+- Runtime/deploy posture: unchanged. No product code, runtime proof, browser,
+  Docker, protected smoke, credential value read, push, deploy, restart,
+  provider action, or production mutation occurred.
+
 # 2026-07-04 LUC-111 Project Truth Tooling Health Signal
 
 - Status: Account access `authHeaders` Project Truth classification is

@@ -1,5 +1,66 @@
 # PROJECT_STATE
 
+- 2026-07-10: [LUC-321](/LUC/issues/LUC-321) completed Roost local
+  source-control closure for the [LUC-262](/LUC/issues/LUC-262),
+  [LUC-267](/LUC/issues/LUC-267), and [LUC-268](/LUC/issues/LUC-268)
+  generated evidence packet. Source-of-truth task contract:
+  `.codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md`.
+  Classification: dirty state was limited to current docs/state/generated
+  architecture/status artifacts, scanner overrides, and task contracts from
+  those three issues; no runtime code, schema, migration, provider, protected,
+  deployment, credential-bearing, or production mutation paths were present.
+  Validation: branch `main`, divergence `0 1` before closure, HEAD
+  `4c014563ff26ed70fda77983764199155b12833b`, `git diff --name-status` showed
+  only `.agents`, `.codex`, `docs/architecture`, `docs/graphs`, and
+  `docs/status` paths, and `git diff --check` PASS with LF-to-CRLF warnings
+  only. Redaction review found no raw secret values. Local commit closure was
+  selected per the sidecar issue contract. Push, deploy, protected smoke,
+  restart, provider mutation, credential value access, secret disclosure, and
+  production mutation did not occur.
+
+- 2026-07-10: [LUC-268](/LUC/issues/LUC-268) completed QA app-completion
+  proof-link curation after [LUC-262](/LUC/issues/LUC-262). Source-of-truth
+  task contract:
+  `.codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md`.
+  `docs/architecture/scanner-overrides.json` now records
+  [LUC-6155](/LUC/issues/LUC-6155) as verified auth/config API proof evidence
+  and links it to `src/integrations/integration-settings.service.ts`,
+  `src/integrations/secrets.ts`,
+  `src/modules/integration-settings/integration-settings.routes.ts`, and
+  `src/integrations/google-drive/google-drive.auth.ts`; the Google Drive auth
+  file also received specific doc evidence. Architecture-awareness
+  regeneration PASS generated `2026-07-10T01:15:26.020Z` with `2818`
+  entities / `6624` relations / `16449` files and overrides `36/37`.
+  App-completion regeneration PASS/PARTIAL generated `1243` items / `1203`
+  missing test links / `20` missing doc links / `12`
+  implemented-needs-proof / `0` blocked. The graph proof relations are
+  present, but app-completion still treats tested+documented security/config
+  infrastructure as proof-review debt unless status is explicitly
+  reclassified; no broad runtime proof target was selected. `npm run
+  architecture:status` PASS; `git diff --check` PASS with LF-to-CRLF warnings
+  only. No product code, runtime process, browser, Docker, database,
+  protected smoke, push, deploy, restart, provider mutation, credential
+  access, secret disclosure, or production mutation occurred.
+
+- 2026-07-10: [LUC-267](/LUC/issues/LUC-267) completed Roost public route
+  alias task-link curation for the three LUC-262 task-sync gaps:
+  `src/app.ts#/api/build-info`, `src/app.ts#/ready`, and
+  `src/app.ts#/v1/ready`. Source-of-truth task contract:
+  `.codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md`.
+  Architecture-awareness regeneration PASS generated
+  `2026-07-10T01:12:23.222Z` with `2818` entities / `6620` relations /
+  `16449` files and overrides `34/33`. Readback:
+  `docs/status/task-synchronization-report.md` now reports `0` actionable
+  tasks without architecture links, `0` raw tasks without architecture links,
+  `0` actionable implementation entities without task links, `0` raw
+  implementation entities without task links, `0` classified task-linkage
+  noise, and `0` verified entities without proof evidence. Graph readback
+  shows three `documents` relations from the LUC-267 task entity to the three
+  endpoint entities. `git diff --check` PASS with LF-to-CRLF warnings only.
+  No product code, runtime process, browser, Docker, database, protected
+  smoke, push, deploy, restart, provider mutation, credential access, secret
+  disclosure, or production mutation occurred.
+
 - 2026-07-10: [LUC-262](/LUC/issues/LUC-262) completed Roost local
   known-state evidence collection and converted findings into repair lanes.
   Output:
