@@ -1,6 +1,21 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-10: [LUC-262](/LUC/issues/LUC-262) Roost known-state evidence
+  collection is complete locally and converted into follow-up lanes. Packet:
+  `docs/planning/luc-262-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness PASS (`2815` entities / `6610` relations /
+  `16447` files; overrides `34/33`); app-completion PASS (`1243` items /
+  `5` flows / `1204` missing test links / `20` missing doc links /
+  `11` implemented-needs-proof / `0` blocked / `0` browser-review records);
+  `npm run architecture:status` PASS; `npm run check:route-capabilities`
+  PASS; `git diff --check` PASS. Concrete next lanes: route-alias task-link
+  curation for `/api/build-info`, `/ready`, and `/v1/ready`; app-completion
+  proof-link/proof-target curation; source-control closure for the generated
+  evidence packet. No product code, protected smoke, push, deploy, restart,
+  production mutation, provider action, credential access, or secret
+  disclosure occurred.
+
 - 2026-07-04: [LUC-111](/LUC/issues/LUC-111) Project Truth function-level
   classification override support for Account access `authHeaders` is
   complete. Packet:

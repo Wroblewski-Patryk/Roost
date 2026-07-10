@@ -1,3 +1,9 @@
+# 2026-07-10 LUC-262 Module Confidence Update
+
+| Module/Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost known-state architecture baseline | partially verified, curation lanes routed | [LUC-262](/LUC/issues/LUC-262) packet `docs/planning/luc-262-known-state-evidence-and-architecture-baseline.md`; architecture-awareness refresh PASS (`2815` entities / `6610` relations / `16447` files; overrides `34/33`); app-completion refresh PASS (`1243` items / `5` flows / `1204` missing test links / `20` missing doc links / `11` implemented-needs-proof / `0` blocked / `0` browser-review records); `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, queues `0`, all gates pass); `npm run check:route-capabilities` PASS (`180` manifest routes / `35` route files); `git diff --check` PASS. | Documentation/source-control closure must classify generated/status/planning changes. Documentation/Architecture should link public route aliases `/api/build-info`, `/ready`, and `/v1/ready` to the relevant readiness/build-info task lineage. QA/Verification should only select a new proof target if a nonduplicated concrete row exists; aggregate missing-test-link counts alone are not product repair evidence. |
+
 # 2026-07-04 LUC-111 Module Confidence Update
 
 | Module/Journey | Status | Evidence | Next Proof Or Fix |

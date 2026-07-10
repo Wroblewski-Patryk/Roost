@@ -1,5 +1,28 @@
 # PROJECT_STATE
 
+- 2026-07-10: [LUC-262](/LUC/issues/LUC-262) completed Roost local
+  known-state evidence collection and converted findings into repair lanes.
+  Output:
+  `docs/planning/luc-262-known-state-evidence-and-architecture-baseline.md`.
+  Evidence: architecture-awareness refresh PASS generated
+  `2026-07-10T00:59:44.007Z` with `2815` entities / `6610` relations /
+  `16447` files and `34` entity / `33` relation overrides applied;
+  app-completion refresh PASS generated `2026-07-10T01:00:15.626Z` with
+  `1243` items / `5` flows / `1204` missing test links / `20` missing doc
+  links / `11` implemented-needs-proof / `0` blocked / `0` browser-review
+  records; `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  evidence queue `0`, chain worklist `0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `git diff --check` PASS. Task-sync readback now exposes three concrete
+  implementation-without-task-link rows for public route aliases:
+  `/api/build-info`, `/ready`, and `/v1/ready`. Follow-up lanes are
+  Documentation/source-control closure for this generated packet,
+  Documentation/Architecture route-alias task-link curation, and
+  QA/Verification app-completion proof-link/proof-target curation. No product
+  code, runtime process, browser, Docker, database, protected smoke, push,
+  deploy, restart, provider mutation, credential access, secret disclosure, or
+  production mutation occurred.
+
 - 2026-07-04: [LUC-111](/LUC/issues/LUC-111) repaired the Project Truth
   tooling blocker for Account access `authHeaders` function-level
   classification overrides. Output:

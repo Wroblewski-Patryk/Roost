@@ -2,6 +2,27 @@
 
 Last updated: 2026-07-04
 
+## LUC-262 Checkpoint
+
+- 2026-07-10: [LUC-262](/LUC/issues/LUC-262) completed the Roost PM local
+  known-state evidence collection and repair-lane conversion checkpoint.
+  Output:
+  `docs/planning/luc-262-known-state-evidence-and-architecture-baseline.md`.
+  Scope was local evidence only after board comment
+  [373feb7e-ba16-4cc2-a002-7cf6bd4e9a3b](/LUC/issues/LUC-262#comment-373feb7e-ba16-4cc2-a002-7cf6bd4e9a3b);
+  no protected smoke, push, deploy, restart, production mutation, provider
+  action, or secret access occurred. Evidence: architecture-awareness PASS
+  (`2815` entities / `6610` relations / `16447` files; overrides `34/33`);
+  app-completion PASS (`1243` items / `5` flows / `1204` missing test links /
+  `20` missing doc links / `11` implemented-needs-proof / `0` blocked /
+  `0` browser-review records); `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, queues `0`, all gates pass); `npm run
+  check:route-capabilities` PASS (`180` manifest routes / `35` route files);
+  `git diff --check` PASS. Concrete repair lanes: public route alias
+  task-link curation for `/api/build-info`, `/ready`, and `/v1/ready`;
+  app-completion proof-link/proof-target curation; and source-control closure
+  for the generated/status/planning packet.
+
 ## LUC-111 Checkpoint
 
 - 2026-07-04: [LUC-111](/LUC/issues/LUC-111) completed a single-lane

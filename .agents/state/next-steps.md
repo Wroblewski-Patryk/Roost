@@ -1,4 +1,19 @@
 # Next Steps
+- 2026-07-10: [LUC-262](/LUC/issues/LUC-262) has no remaining Roost PM
+  evidence-collection action after the local baseline packet
+  `docs/planning/luc-262-known-state-evidence-and-architecture-baseline.md`.
+  Current evidence: architecture-awareness PASS (`2815` entities, `6610`
+  relations, `16447` files), app-completion PASS (`1243` items, `5` flows,
+  `1204` missing test links, `20` missing doc links, `11`
+  implemented-needs-proof, `0` blocked), architecture status GREEN, route
+  capabilities OK, and diff hygiene PASS. Next owners should only execute the
+  three concrete lanes created from this snapshot: source-control closure for
+  generated/status/planning files, route-alias task-link curation for
+  `/api/build-info`, `/ready`, and `/v1/ready`, and app-completion
+  proof-link/proof-target curation. Do not open product implementation,
+  protected smoke, push, deploy, restart, production mutation, provider
+  action, or secret work from [LUC-262](/LUC/issues/LUC-262) alone.
+
 - 2026-07-04: [LUC-111](/LUC/issues/LUC-111) has no remaining TSA/tooling
   action. Packet:
   `docs/planning/luc-111-function-level-classification-overrides-authheaders.md`.
