@@ -1,3 +1,59 @@
+# 2026-07-12 LUC-602 Source-Control Closure Health Signal
+
+- Status: source-control state is classified before deploy readiness.
+- Evidence: [LUC-602](/LUC/issues/LUC-602) task contract
+  `.codex/tasks/luc-602-source-control-closure-classification-before-deploy-readiness.md`;
+  `git status --short --branch` showed `main...origin/main [ahead 1]` with
+  dirty Project Truth Google Drive proof/doc-link artifacts and generated
+  architecture/status readbacks; `git diff --stat` before this packet/state
+  update showed `85` tracked changed files, `11375` insertions, and `10152`
+  deletions; branch divergence was `0 1`; staged changes were none; `git diff
+  --check` PASS with LF-to-CRLF warnings only; redaction-oriented scan found
+  expected OAuth/docs/test terminology and fake unit-test fixture values only;
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass).
+- Runtime/deploy posture: deploy remains blocked until the dirty worktree is
+  coherently committed or otherwise closed by an approved release lane. No
+  commit, push, deploy, protected smoke, restart, provider action, production
+  mutation, credential access, or secret disclosure occurred.
+
+# 2026-07-12 LUC-582 Account Access Google Drive Fresh OAuth Doc-Link Health Signal
+
+- Status: focused Google Drive OAuth freshness/refresh documentation-link
+  confidence is verified locally.
+- Evidence: [LUC-582](/LUC/issues/LUC-582) task contract
+  `.codex/tasks/luc-582-account-access-google-drive-fresh-oauth-doc-link.md`;
+  architecture-awareness refresh generated `2026-07-12T01:10:26.053Z` with
+  `2830` entities / `6732` relations / `16451` files and overrides `76/112`;
+  app-completion refresh generated `1157` missing test links / `24` missing
+  doc links / `11` implemented-needs-proof / `0` blocked / `1192` known risk
+  items; Project Truth apply generated `2026-07-12T01:10:37.676Z` with public
+  probe `pass`, runtime/event/ops gaps `0`, and first gap now
+  `src/integrations/google-drive/google-drive.auth.ts#getGoogleDriveClientForWorkspace`
+  `missing_test_link`; `npm run architecture:status` PASS.
+- Runtime/deploy posture: unchanged. No live Google provider call, protected
+  smoke, deploy, push, restart, production mutation, or secret disclosure
+  occurred.
+
+# 2026-07-12 LUC-576 Account Access Google Drive Fresh OAuth Health Signal
+
+- Status: focused Google Drive OAuth freshness/refresh proof is verified
+  locally.
+- Evidence: [LUC-576](/LUC/issues/LUC-576) task contract
+  `.codex/tasks/luc-576-account-access-google-drive-fresh-oauth-proof.md`;
+  `npm run build:server` PASS; `node --test dist/tests/google-drive-auth.test.js`
+  PASS (`4/4`); `npm run architecture:refresh` PASS; Paperclip
+  architecture-awareness refresh generated `2026-07-12T01:00:19.293Z` with
+  `2829` entities / `6729` relations / `16451` files and overrides `76/112`;
+  app-completion refresh generated `2026-07-12T01:00:30.160Z` with `1157`
+  missing test links / `25` missing doc links / `11` implemented-needs-proof /
+  `0` blocked / `1193` known risk items; Project Truth apply generated
+  `2026-07-12T01:00:34.275Z` with public probe `pass`, runtime/event/ops gaps
+  `0`, and first gap now the same symbol as `missing_doc_link`.
+- Runtime/deploy posture: unchanged. No live Google provider call, protected
+  smoke, deploy, push, restart, production mutation, or secret disclosure
+  occurred.
+
 # 2026-07-10 LUC-321 Source-Control Closure Health Signal
 
 - Status: local Roost docs/status/evidence packet for

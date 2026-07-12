@@ -1,6 +1,6 @@
 # Project Memory Index
 
-Last updated: 2026-07-04
+Last updated: 2026-07-12
 
 ## Purpose
 
@@ -10,6 +10,56 @@ Every non-trivial task must connect local code changes to the current product
 state, architecture intent, module confidence, and the next release objective.
 
 ## Latest Generated Truth
+
+- 2026-07-12: [LUC-582](/LUC/issues/LUC-582) cleared the Account access
+  `getFreshGoogleDriveOAuthForWorkspace` `missing_doc_link` row. Use
+  `.codex/tasks/luc-582-account-access-google-drive-fresh-oauth-doc-link.md`
+  for current proof: `docs/architecture/relations/documentation-links.csv`
+  links the exact generated function path to
+  `docs/planning/google-drive-v2-task-contracts.md`; architecture-awareness
+  generated `2026-07-12T01:10:26.053Z` with `2830` entities / `6732`
+  relations / `16451` files and overrides `76/112`; app-completion generated
+  `1157` missing test links / `24` missing doc links /
+  `11` implemented-needs-proof / `0` blocked / `1192` known risk items;
+  Project Truth generated `2026-07-12T01:10:37.676Z` with public probe
+  `pass`, runtime findings `0`, incomplete event chains `0`, operational gate
+  gaps `0`, and first gap moved to
+  `src/integrations/google-drive/google-drive.auth.ts#getGoogleDriveClientForWorkspace`
+  `missing_test_link`. Do not open another doc-link curation for
+  `getFreshGoogleDriveOAuthForWorkspace` without a fresh generated regression.
+
+- 2026-07-12: [LUC-570](/LUC/issues/LUC-570) cleared the Account access
+  `exchangeGoogleDriveAuthorizationCode` `missing_doc_link` row. Use
+  `.codex/tasks/luc-570-account-access-google-drive-authorization-code-exchange-doc-link.md`
+  for current proof: `docs/architecture/relations/documentation-links.csv`
+  links the exact generated function path to
+  `docs/planning/google-drive-v2-task-contracts.md`; architecture-awareness
+  generated `2026-07-12T00:33:44.707Z` with `2828` entities / `6719`
+  relations / `16451` files and overrides `75/111`; app-completion generated
+  `2026-07-12T00:33:50.001Z` with `1158` missing test links / `24` missing
+  doc links / `11` implemented-needs-proof / `0` blocked / `1193` known risk
+  items; Project Truth generated `2026-07-12T00:33:58.683Z` with public probe
+  `pass`, runtime findings `0`, incomplete event chains `0`, operational gate
+  gaps `0`, and first gap moved to
+  `src/integrations/google-drive/google-drive.auth.ts#getFreshGoogleDriveOAuthForWorkspace`
+  `missing_test_link`. Do not open another doc-link curation for
+  `exchangeGoogleDriveAuthorizationCode` without a fresh generated regression.
+
+- 2026-07-12: [LUC-563](/LUC/issues/LUC-563) cleared the Account access
+  `buildGoogleDriveAuthorizationUrl` `missing_doc_link` row. Use
+  `.codex/tasks/luc-563-account-access-google-drive-authorization-url-doc-link.md`
+  for current proof: `docs/architecture/relations/documentation-links.csv`
+  links the exact generated function path to
+  `docs/planning/google-drive-v2-task-contracts.md`; architecture-awareness
+  generated `2825` entities / `6710` relations / `16451` files with overrides
+  `74/110`; app-completion generated `2026-07-12T00:26:07.673Z` with `1159`
+  missing test links / `24` missing doc links / `11` implemented-needs-proof /
+  `0` blocked / `1194` known risk items; Project Truth generated
+  `2026-07-12T00:26:07.785Z` with public probe `pass`, runtime findings `0`,
+  incomplete event chains `0`, operational gate gaps `0`, and first gap moved
+  to `src/integrations/google-drive/google-drive.auth.ts#exchangeGoogleDriveAuthorizationCode`
+  `missing_test_link`. Do not open another doc-link curation for
+  `buildGoogleDriveAuthorizationUrl` without a fresh generated regression.
 
 - 2026-07-04: [LUC-111](/LUC/issues/LUC-111) repaired the function-level
   override tooling blocker from [LUC-110](/LUC/issues/LUC-110). Use

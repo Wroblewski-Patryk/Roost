@@ -1,6 +1,6 @@
 # Task Synchronization Report
 
-Generated: 2026-07-11T23:33:04.593Z
+Generated: 2026-07-12T01:10:26.053Z
 
 ## Contract
 
@@ -8,8 +8,8 @@ Every task should identify the feature/module it changes, dependency expectation
 
 ## Signals
 
-- Actionable tasks without architecture links: 3
-- Raw tasks without architecture links: 3
+- Actionable tasks without architecture links: 5
+- Raw tasks without architecture links: 5
 - Actionable implementation entities without task links: 0
 - Raw implementation entities without task links: 0
 - Classified task-linkage noise: 0
@@ -23,6 +23,8 @@ Every task should identify the feature/module it changes, dependency expectation
 - LUC-527 Account Access Missing-Test-Link Proof (.codex/tasks/luc-527-account-access-missing-test-link-proof.md)
 - LUC-538 Account Access Google Drive Auth Proof (.codex/tasks/luc-538-account-access-google-drive-auth-proof.md)
 - LUC-546 Account Access Google Drive Authorization URL Proof (.codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md)
+- LUC-550 Project Truth Readback After LUC-546 (.codex/tasks/luc-550-project-truth-readback-after-luc-546.md)
+- LUC-567 Account Access Google Drive Authorization-Code Exchange Proof (.codex/tasks/luc-567-account-access-google-drive-authorization-code-exchange-proof.md)
 
 ## Actionable Implementation Without Task Links
 
@@ -34,5 +36,7 @@ Every task should identify the feature/module it changes, dependency expectation
 - LUC-527 Account Access Missing-Test-Link Proof (.codex/tasks/luc-527-account-access-missing-test-link-proof.md)
 - LUC-538 Account Access Google Drive Auth Proof (.codex/tasks/luc-538-account-access-google-drive-auth-proof.md)
 - LUC-546 Account Access Google Drive Authorization URL Proof (.codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md)
+- LUC-550 Project Truth Readback After LUC-546 (.codex/tasks/luc-550-project-truth-readback-after-luc-546.md)
+- LUC-567 Account Access Google Drive Authorization-Code Exchange Proof (.codex/tasks/luc-567-account-access-google-drive-authorization-code-exchange-proof.md)
 
 ### Raw Implementation Without Task Links

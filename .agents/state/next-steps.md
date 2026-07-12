@@ -1,4 +1,67 @@
 # Next Steps
+- 2026-07-12: [LUC-602](/LUC/issues/LUC-602) has no remaining PM
+  classification action. The source-control state is known: local
+  architecture/status consistency is green, but deploy readiness is blocked by
+  the dirty, uncommitted Project Truth Google Drive packet. Next action, only
+  if a release is selected, is a separate coherent source-control
+  closure/commit and release-gate lane that records commit SHA, checks, push
+  policy, Coolify/deploy impact, and smoke plan. Do not push, deploy, run
+  protected smoke, restart, mutate production, or read credentials from
+  [LUC-602](/LUC/issues/LUC-602).
+
+- 2026-07-12: [LUC-582](/LUC/issues/LUC-582) has no remaining Documentation
+  Steward action after the curated doc-link and generated Project Truth
+  readback. The dispatched `getFreshGoogleDriveOAuthForWorkspace`
+  `missing_doc_link` row is gone; app-completion missing doc links are now
+  `24`, known risk items `1192`, and Project Truth first gap is
+  `src/integrations/google-drive/google-drive.auth.ts#getGoogleDriveClientForWorkspace`
+  `missing_test_link`. Next action, only if selected by Project Truth routing,
+  is a Test Automation Engineer + QA Regression Lead proof-link lane for that
+  symbol. Do not open product code, live Google provider, protected smoke,
+  push/deploy, restart, production mutation, credential, or secret work from
+  [LUC-582](/LUC/issues/LUC-582).
+
+- 2026-07-12: [LUC-576](/LUC/issues/LUC-576) no longer has a remaining QA/Test
+  action after the completed `getFreshGoogleDriveOAuthForWorkspace`
+  missing-test-link proof. The first gap advanced to
+  `src/integrations/google-drive/google-drive.auth.ts#getFreshGoogleDriveOAuthForWorkspace`
+  `missing_doc_link`, owned by Docs Memory Lead + Project Manager. No further
+  no-network Google Drive OAuth proof should be opened from this issue unless
+  a fresh regression appears.
+
+- 2026-07-12: [LUC-570](/LUC/issues/LUC-570) has no remaining Documentation
+  Steward action after the curated doc-link and generated Project Truth
+  readback. The dispatched `exchangeGoogleDriveAuthorizationCode`
+  `missing_doc_link` row is gone; app-completion missing doc links remain
+  `24`, known risk items are now `1193`, and Project Truth first gap is
+  `src/integrations/google-drive/google-drive.auth.ts#getFreshGoogleDriveOAuthForWorkspace`
+  `missing_test_link`. Next action, only if selected by Project Truth routing,
+  is a Test Automation Engineer + QA Regression Lead proof-link lane for that
+  symbol. Do not open product code, live Google provider, protected smoke,
+  push/deploy, restart, production mutation, credential, or secret work from
+  [LUC-570](/LUC/issues/LUC-570).
+
+- 2026-07-12: [LUC-567](/LUC/issues/LUC-567) has no remaining 09 TAE
+  missing-test-link action after the focused no-network automated proof and
+  generated Project Truth/app-completion readback. The dispatched
+  `exchangeGoogleDriveAuthorizationCode` `missing_test_link` row is gone;
+  Project Truth now reports the same symbol as `missing_doc_link`. Follow-up
+  [LUC-570](/LUC/issues/LUC-570) is assigned to Documentation Steward for that
+  source-of-truth doc-link lane. Do not open product code, live Google
+  provider, protected smoke, push/deploy, restart, production mutation,
+  credential, or secret work from [LUC-567](/LUC/issues/LUC-567).
+
+- 2026-07-12: [LUC-563](/LUC/issues/LUC-563) has no remaining Documentation
+  Steward action after the curated doc-link and generated Project Truth
+  readback. The dispatched `buildGoogleDriveAuthorizationUrl`
+  `missing_doc_link` row is gone; app-completion missing doc links are now
+  `24`, known risk items `1194`, and Project Truth first gap is
+  `src/integrations/google-drive/google-drive.auth.ts#exchangeGoogleDriveAuthorizationCode`
+  `missing_test_link`. Child [LUC-567](/LUC/issues/LUC-567) is assigned to
+  09 TAE for that proof-link/test lane. Do not open product code, live Google
+  provider, protected smoke, push/deploy, restart, production mutation,
+  credential, or secret work from [LUC-563](/LUC/issues/LUC-563).
+
 - 2026-07-12: [LUC-550](/LUC/issues/LUC-550) has no remaining Documentation
   Steward readback action after the external Project Truth/app-completion
   refresh. The current first gap is

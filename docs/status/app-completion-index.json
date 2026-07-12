@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-11T23:33:10.964Z",
+  "generatedAt": "2026-07-12T01:10:33.609Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -7,12 +7,12 @@
     "items": 1243,
     "flows": 5,
     "needsBrowserReview": 0,
-    "missingTestLink": 1159,
-    "missingDocLink": 25,
+    "missingTestLink": 1157,
+    "missingDocLink": 24,
     "implementedNeedsProof": 11,
     "blocked": 0,
-    "riskItems": 1195,
-    "appCompletionRiskItems": 1195,
+    "riskItems": 1192,
+    "appCompletionRiskItems": 1192,
     "priorityReviewItems": 200,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": true
@@ -22,10 +22,10 @@
       "userFlow": "Account access",
       "total": 70,
       "risks": {
-        "ok": 46,
-        "missing_doc_link": 5,
-        "missing_test_link": 17,
-        "implemented_needs_proof": 2
+        "ok": 49,
+        "missing_test_link": 15,
+        "implemented_needs_proof": 2,
+        "missing_doc_link": 4
       },
       "gates": {
         "auth": 70,
@@ -79,70 +79,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "function:buildgoogledriveauthorizationurl:bab074bcc0",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "buildGoogleDriveAuthorizationUrl",
-      "path": "src/integrations/google-drive/google-drive.auth.ts#buildGoogleDriveAuthorizationUrl",
-      "owner": "Engineering Delivery Lead",
-      "status": "verified",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 2,
-      "risk": "missing_doc_link"
-    },
-    {
-      "id": "function:exchangegoogledriveauthorizationcode:7cbd2d2e54",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "exchangeGoogleDriveAuthorizationCode",
-      "path": "src/integrations/google-drive/google-drive.auth.ts#exchangeGoogleDriveAuthorizationCode",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth",
-        "configuration"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:getfreshgoogledriveoauthforworkspace:86a58962cc",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "getFreshGoogleDriveOAuthForWorkspace",
-      "path": "src/integrations/google-drive/google-drive.auth.ts#getFreshGoogleDriveOAuthForWorkspace",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
     {
       "id": "function:getgoogledriveclientforworkspace:1d1d0eae6f",
       "type": "function",
@@ -3940,6 +3876,63 @@
       "kind": "feature_or_capability",
       "name": "toCsv",
       "path": "scripts/build-architecture-risk-hotspots-report.mjs#toCsv",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "feature:build-architecture-roadmap-mjs:0310317884",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "build-architecture-roadmap.mjs",
+      "path": "scripts/build-architecture-roadmap.mjs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 12,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:build:4604fcb8ff",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "build",
+      "path": "scripts/build-architecture-roadmap.mjs#build",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:fmtdate:32bbcdfcb5",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "fmtDate",
+      "path": "scripts/build-architecture-roadmap.mjs#fmtDate",
       "owner": "Engineering Delivery Lead",
       "status": "implemented_needs_proof",
       "userFlow": "Unclassified user workflow",

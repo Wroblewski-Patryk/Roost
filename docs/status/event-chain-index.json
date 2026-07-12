@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-11T23:33:14.756Z",
+  "generatedAt": "2026-07-12T01:10:37.676Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 186,
-      "linkedRelationCount": 611,
+      "entityCount": 202,
+      "linkedRelationCount": 664,
       "layers": {
         "frontend": {
           "count": 16,
@@ -658,7 +658,7 @@
           "truncated": false
         },
         "worker": {
-          "count": 78,
+          "count": 91,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -683,6 +683,30 @@
               "path": ".agents/state/risk-register.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "agent:2026-07-12-luc-576-account-access-google-drive-fresh-oauth-health-signal:00481b0dca",
+              "type": "agent",
+              "name": "2026-07-12 LUC-576 Account Access Google Drive Fresh OAuth Health Signal",
+              "path": ".agents/state/system-health.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "task:learning-journal:2ea07ed275",
+              "type": "task",
+              "name": "LEARNING_JOURNAL",
+              "path": ".codex/context/LEARNING_JOURNAL.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb",
+              "type": "task",
+              "name": "LUC-321 Source-Control Closure For LUC-262/LUC-267/LUC-268",
+              "path": ".codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             },
             {
               "id": "agent:user-collaboration-workflow:98bfb8bc00",
@@ -930,7 +954,7 @@
               "name": "getFreshGoogleDriveOAuthForWorkspace",
               "path": "src/integrations/google-drive/google-drive.auth.ts#getFreshGoogleDriveOAuthForWorkspace",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:exchangegoogledriveauthorizationcode:7cbd2d2e54",
@@ -938,7 +962,7 @@
               "name": "exchangeGoogleDriveAuthorizationCode",
               "path": "src/integrations/google-drive/google-drive.auth.ts#exchangeGoogleDriveAuthorizationCode",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:buildgoogledriveauthorizationurl:bab074bcc0",
@@ -1275,17 +1299,9 @@
               "path": ".codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
-            },
-            {
-              "id": "module:src-tests:6d29dd4ad6",
-              "type": "module",
-              "name": "src/tests",
-              "path": "src/tests",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
-          "truncated": false
+          "truncated": true
         },
         "data": {
           "count": 0,
@@ -1331,7 +1347,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 24,
+          "count": 27,
           "sample": [
             {
               "id": "document:system-architecture:1149ef3528",
@@ -1518,10 +1534,34 @@
               "status": "implemented"
             },
             {
+              "id": "document:google-drive-v2-task-contracts:9974023e7e",
+              "type": "document",
+              "name": "Google Drive V2 Task Contracts",
+              "path": "docs/planning/google-drive-v2-task-contracts.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
               "id": "document:web-layer-react-ownership:beb6e31ebd",
               "type": "document",
               "name": "Web Layer React Ownership",
               "path": "docs/architecture/web-layer-react-ownership.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:project-truth-index:effbf3bcee",
+              "type": "document",
+              "name": "Project Truth Index",
+              "path": "docs/status/project-truth-index.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:app-completion-index:2db9905a4e",
+              "type": "document",
+              "name": "App Completion Index",
+              "path": "docs/status/app-completion-index.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
             }
@@ -2315,8 +2355,8 @@
     },
     {
       "userFlow": "Subscription and entitlement",
-      "entityCount": 1003,
-      "linkedRelationCount": 3485,
+      "entityCount": 1010,
+      "linkedRelationCount": 3500,
       "layers": {
         "frontend": {
           "count": 34,
@@ -3243,7 +3283,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 51,
+          "count": 58,
           "sample": [
             {
               "id": "agent:planner:5b56a0bd47",
@@ -3308,6 +3348,54 @@
               "path": "docs/planning/agent-runtime-gap-closure-plan.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
+            },
+            {
+              "id": "function:buildgoogledriveauthorizationurl:bab074bcc0",
+              "type": "function",
+              "name": "buildGoogleDriveAuthorizationUrl",
+              "path": "src/integrations/google-drive/google-drive.auth.ts#buildGoogleDriveAuthorizationUrl",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:exchangegoogledriveauthorizationcode:7cbd2d2e54",
+              "type": "function",
+              "name": "exchangeGoogleDriveAuthorizationCode",
+              "path": "src/integrations/google-drive/google-drive.auth.ts#exchangeGoogleDriveAuthorizationCode",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:getfreshgoogledriveoauthforworkspace:86a58962cc",
+              "type": "function",
+              "name": "getFreshGoogleDriveOAuthForWorkspace",
+              "path": "src/integrations/google-drive/google-drive.auth.ts#getFreshGoogleDriveOAuthForWorkspace",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:luc-563-account-access-google-drive-authorization-url-doc-link:ee62128225",
+              "type": "task",
+              "name": "LUC-563 Account Access Google Drive Authorization URL Doc Link",
+              "path": ".codex/tasks/luc-563-account-access-google-drive-authorization-url-doc-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:luc-570-account-access-google-drive-authorization-code-exchange-doc-link:a79611a3b6",
+              "type": "task",
+              "name": "LUC-570 Account Access Google Drive Authorization Code Exchange Doc Link",
+              "path": ".codex/tasks/luc-570-account-access-google-drive-authorization-code-exchange-doc-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:luc-582-account-access-google-drive-fresh-oauth-doc-link:37fe22c7ac",
+              "type": "task",
+              "name": "LUC-582 Account Access Google Drive Fresh OAuth Doc Link",
+              "path": ".codex/tasks/luc-582-account-access-google-drive-fresh-oauth-doc-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             },
             {
               "id": "document:task:0e616fae32",
@@ -3564,6 +3652,14 @@
               "path": "src/modules/workforce/workforce.service.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "test:google-drive-auth-test-ts:fe2cea5fcb",
+              "type": "test",
+              "name": "google-drive-auth.test.ts",
+              "path": "src/tests/google-drive-auth.test.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "tested"
             },
             {
               "id": "feature:webhook-signature-ts:6831ccdf43",
@@ -5021,8 +5117,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2737,
-      "linkedRelationCount": 6574,
+      "entityCount": 2743,
+      "linkedRelationCount": 6593,
       "layers": {
         "frontend": {
           "count": 91,
@@ -6317,7 +6413,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 733,
+          "count": 739,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -6358,6 +6454,14 @@
               "path": ".agents/core/mission-control.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "task:luc-576-account-access-google-drive-fresh-oauth-proof:8796d3b129",
+              "type": "task",
+              "name": "LUC-576 Account Access Google Drive Fresh OAuth Proof",
+              "path": ".codex/tasks/luc-576-account-access-google-drive-fresh-oauth-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             },
             {
               "id": "agent:agent-operating-system:2f229839b5",
@@ -6568,9 +6672,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-12-luc-546-module-confidence-update:9315b73862",
+              "id": "agent:2026-07-12-luc-576-module-confidence-update:dba2ca476d",
               "type": "agent",
-              "name": "2026-07-12 LUC-546 Module Confidence Update",
+              "name": "2026-07-12 LUC-576 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -6620,14 +6724,6 @@
               "type": "agent",
               "name": "Responsibility Learning",
               "path": ".agents/state/responsibility-learning.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "agent:2026-07-10-luc-321-source-control-closure-health-signal:467e7ef98a",
-              "type": "agent",
-              "name": "2026-07-10 LUC-321 Source-Control Closure Health Signal",
-              "path": ".agents/state/system-health.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },

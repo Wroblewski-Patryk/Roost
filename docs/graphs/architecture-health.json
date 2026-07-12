@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-07-11T23:33:04.593Z",
+  "generated_at": "2026-07-12T01:10:26.053Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 2824,
-    "relations": 6708,
+    "entities": 2830,
+    "relations": 6732,
     "by_type": {
       "agent": 47,
       "api_endpoint": 46,
@@ -18,21 +18,21 @@
       "model": 5,
       "module": 67,
       "project": 1,
-      "task": 10,
+      "task": 16,
       "test": 12
     },
     "by_status": {
       "blocked": 1,
       "deprecated": 6,
-      "implemented": 2737,
+      "implemented": 2735,
       "in_progress": 1,
       "tested": 9,
-      "verified": 70
+      "verified": 78
     }
   },
   "signals": {
     "implementation_without_tests": {
-      "count": 1122,
+      "count": 1120,
       "items": [
         {
           "id": "api_endpoint:get:1998daec82",
@@ -1641,7 +1641,7 @@
       "items": []
     },
     "actionable_implementation_without_tests": {
-      "count": 1113,
+      "count": 1111,
       "items": [
         {
           "id": "api_endpoint:get:1998daec82",
@@ -3348,7 +3348,7 @@
       "items": []
     },
     "tasks_without_architecture": {
-      "count": 3,
+      "count": 5,
       "items": [
         {
           "id": "task:luc-527-account-access-missing-test-link-proof:559cf874cf",
@@ -3371,13 +3371,29 @@
           "type": "task",
           "name": "LUC-546 Account Access Google Drive Authorization URL Proof",
           "path": ".codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md",
+          "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "task:luc-550-project-truth-readback-after-luc-546:43739fbe1a",
+          "type": "task",
+          "name": "LUC-550 Project Truth Readback After LUC-546",
+          "path": ".codex/tasks/luc-550-project-truth-readback-after-luc-546.md",
+          "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "task:luc-567-account-access-google-drive-authorization-code-exchange-proof:1628c6b299",
+          "type": "task",
+          "name": "LUC-567 Account Access Google Drive Authorization-Code Exchange Proof",
+          "path": ".codex/tasks/luc-567-account-access-google-drive-authorization-code-exchange-proof.md",
           "status": "verified",
           "owner": "Engineering Delivery Lead"
         }
       ]
     },
     "raw_tasks_without_architecture": {
-      "count": 3,
+      "count": 5,
       "items": [
         {
           "id": "task:luc-527-account-access-missing-test-link-proof:559cf874cf",
@@ -3400,6 +3416,22 @@
           "type": "task",
           "name": "LUC-546 Account Access Google Drive Authorization URL Proof",
           "path": ".codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md",
+          "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "task:luc-550-project-truth-readback-after-luc-546:43739fbe1a",
+          "type": "task",
+          "name": "LUC-550 Project Truth Readback After LUC-546",
+          "path": ".codex/tasks/luc-550-project-truth-readback-after-luc-546.md",
+          "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "task:luc-567-account-access-google-drive-authorization-code-exchange-proof:1628c6b299",
+          "type": "task",
+          "name": "LUC-567 Account Access Google Drive Authorization-Code Exchange Proof",
+          "path": ".codex/tasks/luc-567-account-access-google-drive-authorization-code-exchange-proof.md",
           "status": "verified",
           "owner": "Engineering Delivery Lead"
         }

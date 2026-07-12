@@ -1,0 +1,4 @@
+entity_path,doc_path,reason
+src/integrations/google-drive/google-drive.auth.ts#buildGoogleDriveAuthorizationUrl,docs/planning/google-drive-v2-task-contracts.md,Google Drive OAuth URL generation and workspace OAuth client credential behavior are documented in the accepted Google Drive V2 task contract.
+src/integrations/google-drive/google-drive.auth.ts#exchangeGoogleDriveAuthorizationCode,docs/planning/google-drive-v2-task-contracts.md,Google Drive OAuth token exchange and workspace OAuth client credential behavior are documented in the accepted Google Drive V2 task contract.
+src/integrations/google-drive/google-drive.auth.ts#getFreshGoogleDriveOAuthForWorkspace,docs/planning/google-drive-v2-task-contracts.md,Google Drive OAuth freshness checking token refresh and refreshed workspace OAuth material persistence are documented in the accepted Google Drive V2 task contract.

@@ -1,5 +1,163 @@
 # PROJECT_STATE
 
+- 2026-07-12: [LUC-603](/LUC/issues/LUC-603) completed Roost PM
+  source-control closure for the previously classified Project Truth Google
+  Drive proof/doc-link packet. Source-of-truth task contract:
+  `.codex/tasks/luc-603-source-control-closure-project-truth-packet.md`.
+  Decision: commit locally rather than defer because the packet was coherent
+  and narrow gates passed. Validation before commit: `git diff --check` PASS
+  with LF-to-CRLF warnings only; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); `npm run build:server` PASS; focused
+  `node --test dist/tests/google-drive-auth.test.js` PASS; redaction-oriented
+  scan found no secret-bearing token patterns in scoped source/task/docs state.
+  Push, deploy, protected smoke, restart, provider action, production mutation,
+  credential value access, and secret disclosure did not occur.
+
+- 2026-07-12: [LUC-602](/LUC/issues/LUC-602) completed Roost PM
+  source-control closure classification before deploy readiness. Source-of-
+  truth task contract:
+  `.codex/tasks/luc-602-source-control-closure-classification-before-deploy-readiness.md`.
+  Classification: the dirty worktree is attributable to the current Project
+  Truth Google Drive proof/doc-link packet and generated architecture/status
+  readbacks, plus `.agents` / `.codex/context` state updates, task packets,
+  `docs/architecture/relations/documentation-links.csv`, and the focused
+  `src/tests/google-drive-auth.test.ts` no-network proof file. Evidence:
+  branch `main...origin/main [ahead 1]`; divergence `0 1`; no staged changes;
+  `git diff --stat` before the LUC-602 packet/state update showed `85`
+  tracked changed files, `11375` insertions, and `10152` deletions;
+  `git diff --check` PASS with LF-to-CRLF warnings only; redaction-oriented
+  scan found only expected OAuth/docs/test terminology and fake unit-test
+  fixture values; `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`, all
+  gates pass). Deploy readiness decision: local architecture/status
+  consistency is verified, but deploy is blocked while the worktree remains
+  dirty and uncommitted. No commit, push, deploy, protected smoke, restart,
+  production mutation, provider action, credential value access, or secret
+  disclosure occurred.
+
+- 2026-07-12: [LUC-582](/LUC/issues/LUC-582) completed Documentation Steward
+  doc-link curation for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#getFreshGoogleDriveOAuthForWorkspace`
+  Project Truth gap. Source-of-truth task contract:
+  `.codex/tasks/luc-582-account-access-google-drive-fresh-oauth-doc-link.md`.
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  generated function path to `docs/planning/google-drive-v2-task-contracts.md`,
+  which documents Google Drive OAuth runtime hardening, access-token refresh
+  before provider calls, and refreshed workspace OAuth material persistence.
+  Architecture-awareness refresh generated `2026-07-12T01:10:26.053Z` with
+  `2830` entities / `6732` relations / `16451` files and overrides `76/112`.
+  App-completion refresh generated `1243` items / `5` flows / `1157` missing
+  test links / `24` missing doc links / `11` implemented-needs-proof / `0`
+  blocked / `1192` known risk items. Project Truth apply generated
+  `2026-07-12T01:10:37.676Z` with public probe `pass`, critical runtime
+  findings `0`, incomplete event chains `0`, operational gate gaps `0`, and
+  total gaps `1192`. The dispatched `getFreshGoogleDriveOAuthForWorkspace`
+  `missing_doc_link` row is absent from Project Truth gaps; the first gap is
+  now `getGoogleDriveClientForWorkspace` `missing_test_link`, owned by Test
+  Automation Engineer + QA Regression Lead. `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  all gates pass). No product code, test code, provider call, protected smoke,
+  deploy, restart, push, production mutation, credential value access, or
+  secret disclosure occurred.
+
+- 2026-07-12: [LUC-576](/LUC/issues/LUC-576) completed 09 TAE automated
+  proof for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#getFreshGoogleDriveOAuthForWorkspace`
+  missing-test-link gap. Source-of-truth task contract:
+  `.codex/tasks/luc-576-account-access-google-drive-fresh-oauth-proof.md`.
+  `src/tests/google-drive-auth.test.ts` now proves both the fresh-token return
+  path and stale-token refresh/persist path without a live Google call.
+  `docs/architecture/scanner-overrides.json` links the exact function path to
+  that test. External architecture-awareness refresh generated
+  `2026-07-12T01:00:19.293Z` with `2829` entities / `6729` relations /
+  `16451` files and overrides `76/112`. App-completion refresh generated
+  `2026-07-12T01:00:30.160Z` with `1157` missing test links / `25` missing
+  doc links / `11` implemented-needs-proof / `0` blocked / `1193` known risk
+  items. Project Truth apply generated `2026-07-12T01:00:34.275Z` with public
+  probe `pass`, critical runtime findings `0`, incomplete event chains `0`,
+  operational gate gaps `0`, and first gap now
+  `src/integrations/google-drive/google-drive.auth.ts#getFreshGoogleDriveOAuthForWorkspace`
+  `missing_doc_link`. `npm run architecture:status` PASS. No live Google
+  provider call, protected smoke, deploy, restart, push, production mutation,
+  credential access, or secret disclosure occurred.
+
+- 2026-07-12: [LUC-570](/LUC/issues/LUC-570) completed Documentation Steward
+  doc-link curation for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#exchangeGoogleDriveAuthorizationCode`
+  Project Truth gap. Source-of-truth task contract:
+  `.codex/tasks/luc-570-account-access-google-drive-authorization-code-exchange-doc-link.md`.
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  generated function path to `docs/planning/google-drive-v2-task-contracts.md`,
+  which documents Google Drive OAuth setup, token behavior, and workspace OAuth
+  client credential handling. External architecture-awareness refresh
+  generated `2026-07-12T00:33:44.707Z` with `2828` entities / `6719`
+  relations / `16451` files and overrides `75/111`. App-completion refresh
+  generated `2026-07-12T00:33:50.001Z` with `1243` items / `5` flows /
+  `1158` missing test links / `24` missing doc links /
+  `11` implemented-needs-proof / `0` blocked / `1193` known risk items.
+  Project Truth apply generated `2026-07-12T00:33:58.683Z` with public probe
+  `pass`, critical runtime findings `0`, incomplete event chains `0`,
+  operational gate gaps `0`, and total gaps `1193`. The dispatched
+  `exchangeGoogleDriveAuthorizationCode` `missing_doc_link` row is absent from
+  Project Truth gaps; the first gap is now `getFreshGoogleDriveOAuthForWorkspace`
+  `missing_test_link`, owned by Test Automation Engineer + QA Regression Lead.
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, all gates pass). No product code, provider
+  call, protected smoke, deploy, restart, push, production mutation,
+  credential value access, or secret disclosure occurred.
+
+- 2026-07-12: [LUC-567](/LUC/issues/LUC-567) completed 09 TAE automated
+  proof for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#exchangeGoogleDriveAuthorizationCode`
+  missing-test-link gap. Source-of-truth task contract:
+  `.codex/tasks/luc-567-account-access-google-drive-authorization-code-exchange-proof.md`.
+  `src/tests/google-drive-auth.test.ts` now verifies the helper posts a
+  no-network Google OAuth token exchange request with client id, client
+  secret, authorization code, redirect URI, and `authorization_code` grant
+  type, then normalizes access token, refresh token, token type, scope, and
+  expiry output. `docs/architecture/scanner-overrides.json` links that focused
+  test to the exact generated function row and marks the row verified.
+  Validation: override JSON parse PASS; `npm run build:server` PASS;
+  `node --test dist/tests/google-drive-auth.test.js` PASS (`2/2`);
+  `npm run architecture:refresh` PASS; Paperclip architecture-awareness
+  refresh generated `2026-07-12T00:31:53.311Z` with `2827` entities / `6716`
+  relations / `16451` files and overrides `75/111`; app-completion refresh
+  generated `1158` missing test links / `25` missing doc links / `11`
+  implemented-needs-proof / `0` blocked / `1194` known risk items; Project
+  Truth apply generated `2026-07-12T00:32:00.083Z` with public probe `pass`,
+  critical runtime findings `0`, incomplete event chains `0`, operational
+  gate gaps `0`, and first gap now the same symbol as `missing_doc_link`.
+  Follow-up [LUC-570](/LUC/issues/LUC-570) was created for Documentation
+  Steward to clear that doc-link readback. No live Google call, browser,
+  Docker/database runtime proof, protected smoke, deploy, restart, push,
+  production mutation, credential value access, or secret disclosure occurred.
+
+- 2026-07-12: [LUC-563](/LUC/issues/LUC-563) completed Documentation Steward
+  doc-link curation for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#buildGoogleDriveAuthorizationUrl`
+  Project Truth gap. Source-of-truth task contract:
+  `.codex/tasks/luc-563-account-access-google-drive-authorization-url-doc-link.md`.
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  generated function path to `docs/planning/google-drive-v2-task-contracts.md`,
+  which documents Google Drive OAuth URL generation and workspace OAuth client
+  behavior. External architecture-awareness refresh generated
+  `2026-07-12T00:26:04.160Z` with `2825` entities / `6710` relations /
+  `16451` files and overrides `74/110`. App-completion refresh generated
+  `2026-07-12T00:26:07.673Z` with `1243` items / `5` flows / `1159` missing
+  test links / `24` missing doc links / `11` implemented-needs-proof / `0`
+  blocked / `1194` known risk items. Project Truth apply generated
+  `2026-07-12T00:26:07.785Z` with public probe `pass`, critical runtime
+  findings `0`, incomplete event chains `0`, operational gate gaps `0`, and
+  total gaps `1194`. The dispatched `buildGoogleDriveAuthorizationUrl`
+  `missing_doc_link` row is absent from Project Truth gaps; the first gap is
+  now `exchangeGoogleDriveAuthorizationCode` `missing_test_link`; child
+  [LUC-567](/LUC/issues/LUC-567) is assigned to 09 TAE for that next
+  proof-link lane. `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, all gates pass). No
+  product code, provider call, protected smoke, deploy, restart, push,
+  production mutation, credential value access, or secret disclosure occurred.
+
 - 2026-07-12: [LUC-550](/LUC/issues/LUC-550) completed Documentation Steward
   Project Truth readback refresh after [LUC-546](/LUC/issues/LUC-546).
   Source-of-truth task contract:

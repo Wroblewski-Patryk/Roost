@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-11T23:33:04.593Z
+Generated: 2026-07-12T01:10:26.053Z
 
 ## Canonical Exports
 
@@ -42,14 +42,14 @@ Generated: 2026-07-11T23:33:04.593Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-12 LUC-546 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-12 LUC-576 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-10 LUC-321 Source-Control Closure Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-12 LUC-576 Account Access Google Drive Fresh OAuth Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -574,11 +574,17 @@ Generated: 2026-07-11T23:33:04.593Z
 | connected_to | project:roost:122c92a083 | task:luc-527-account-access-missing-test-link-proof:559cf874cf | .codex/tasks/luc-527-account-access-missing-test-link-proof.md |
 | connected_to | project:roost:122c92a083 | task:luc-538-account-access-google-drive-auth-proof:5704d9d0a8 | .codex/tasks/luc-538-account-access-google-drive-auth-proof.md |
 | connected_to | project:roost:122c92a083 | task:luc-546-account-access-google-drive-authorization-url-proof:14978d5a65 | .codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md |
+| connected_to | project:roost:122c92a083 | task:luc-550-project-truth-readback-after-luc-546:43739fbe1a | .codex/tasks/luc-550-project-truth-readback-after-luc-546.md |
+| connected_to | project:roost:122c92a083 | task:luc-563-account-access-google-drive-authorization-url-doc-link:ee62128225 | .codex/tasks/luc-563-account-access-google-drive-authorization-url-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:luc-567-account-access-google-drive-authorization-code-exchange-proof:1628c6b299 | .codex/tasks/luc-567-account-access-google-drive-authorization-code-exchange-proof.md |
+| connected_to | project:roost:122c92a083 | task:luc-570-account-access-google-drive-authorization-code-exchange-doc-link:a79611a3b6 | .codex/tasks/luc-570-account-access-google-drive-authorization-code-exchange-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:luc-576-account-access-google-drive-fresh-oauth-proof:8796d3b129 | .codex/tasks/luc-576-account-access-google-drive-fresh-oauth-proof.md |
+| connected_to | project:roost:122c92a083 | task:luc-582-account-access-google-drive-fresh-oauth-doc-link:37fe22c7ac | .codex/tasks/luc-582-account-access-google-drive-fresh-oauth-doc-link.md |
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
-| documents | agent:2026-07-10-luc-321-source-control-closure-health-signal:467e7ef98a | module:agents:4ae71ba13a | .agents/state/system-health.md |
-| documents | agent:2026-07-12-luc-546-module-confidence-update:9315b73862 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
+| documents | agent:2026-07-12-luc-576-account-access-google-drive-fresh-oauth-health-signal:00481b0dca | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-12-luc-576-module-confidence-update:dba2ca476d | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -984,6 +990,9 @@ Generated: 2026-07-11T23:33:04.593Z
 | documents | document:google-drive-production-smoke:fc9bb13362 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PIPE-AUTO-0016.md |
 | documents | document:google-drive-sync:c5c94bd078 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/INT-AUTO-0011.md |
 | documents | document:google-drive-v2-task-contracts:9974023e7e | module:docs:6784d83cb0 | docs/planning/google-drive-v2-task-contracts.md |
+| documents | document:google-drive-v2-task-contracts:9974023e7e | function:buildgoogledriveauthorizationurl:bab074bcc0 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:google-drive-v2-task-contracts:9974023e7e | function:exchangegoogledriveauthorizationcode:7cbd2d2e54 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:google-drive-v2-task-contracts:9974023e7e | function:getfreshgoogledriveoauthforworkspace:86a58962cc | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:guardrail-commands:15d613ea93 | module:docs:6784d83cb0 | docs/automation/guardrail-commands.md |
 | documents | document:history-overview:a2f6cccbc0 | module:history:95c2eae45a | history/history-overview.md |
 | documents | document:human-agent-web-architecture-map:de4023df03 | module:docs:6784d83cb0 | docs/planning/human-agent-web-architecture-map.md |
@@ -1209,12 +1218,3 @@ Generated: 2026-07-11T23:33:04.593Z
 | documents | document:luc-5248-source-control-closure-for-luc-5243-evidence-packet:aa5ffefd28 | module:docs:6784d83cb0 | docs/planning/luc-5248-source-control-closure-for-luc-5243-evidence-packet.md |
 | documents | document:luc-5251-source-control-closure-for-luc-5244-evidence-packet:3df23752ad | module:docs:6784d83cb0 | docs/planning/luc-5251-source-control-closure-for-luc-5244-evidence-packet.md |
 | documents | document:luc-5257-known-state-evidence-and-architecture-baseline:02482b8cd3 | module:docs:6784d83cb0 | docs/planning/luc-5257-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5262-source-control-closure-for-luc-5257-evidence-packet:c9fb11b183 | module:docs:6784d83cb0 | docs/planning/luc-5262-source-control-closure-for-luc-5257-evidence-packet.md |
-| documents | document:luc-5263-integration-settings-api-journey-proof:0708711682 | module:docs:6784d83cb0 | docs/planning/luc-5263-integration-settings-api-journey-proof.md |
-| documents | document:luc-5273-agent-observability-api-proof-ladder:082bed26f7 | module:docs:6784d83cb0 | docs/planning/luc-5273-agent-observability-api-proof-ladder.md |
-| documents | document:luc-5278-known-state-evidence-and-architecture-baseline:ff847c3ba8 | module:docs:6784d83cb0 | docs/planning/luc-5278-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5280-source-control-closure-for-luc-5278-evidence-packet:fa438cc576 | module:docs:6784d83cb0 | docs/planning/luc-5280-source-control-closure-for-luc-5278-evidence-packet.md |
-| documents | document:luc-5281-google-drive-api-proof-ladder:921f49233c | module:docs:6784d83cb0 | docs/planning/luc-5281-google-drive-api-proof-ladder.md |
-| documents | document:luc-5283-known-state-evidence-and-architecture-baseline:b5e3f45ae0 | module:docs:6784d83cb0 | docs/planning/luc-5283-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5284-known-state-evidence-and-architecture-baseline:623bde1d48 | module:docs:6784d83cb0 | docs/planning/luc-5284-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5286-source-control-closure-for-luc-5283-evidence-packet:559f022668 | module:docs:6784d83cb0 | docs/planning/luc-5286-source-control-closure-for-luc-5283-evidence-packet.md |

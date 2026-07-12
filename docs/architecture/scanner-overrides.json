@@ -138,6 +138,24 @@
       ]
     },
     {
+      "path": "src/integrations/google-drive/google-drive.auth.ts#exchangeGoogleDriveAuthorizationCode",
+      "status": "verified",
+      "description": "Google Drive OAuth authorization-code exchange helper verified by a focused no-network unit test for token POST parameters and normalized OAuth token output.",
+      "evidence": [
+        "src/tests/google-drive-auth.test.ts",
+        ".codex/tasks/luc-567-account-access-google-drive-authorization-code-exchange-proof.md"
+      ]
+    },
+    {
+      "path": "src/integrations/google-drive/google-drive.auth.ts#getFreshGoogleDriveOAuthForWorkspace",
+      "status": "verified",
+      "description": "Google Drive OAuth freshness and refresh helper verified by a focused no-network unit test for fresh-token return behavior and stale-token refresh persistence.",
+      "evidence": [
+        "src/tests/google-drive-auth.test.ts",
+        ".codex/tasks/luc-576-account-access-google-drive-fresh-oauth-proof.md"
+      ]
+    },
+    {
       "path": "src/integrations/integration-settings.service.ts",
       "description": "Workspace integration-settings service used by configuration flows; provider behavior remains covered by settings and authority proof packets.",
       "evidence": [
@@ -1365,6 +1383,22 @@
       "toPath": "src/integrations/google-drive/google-drive.auth.ts#buildGoogleDriveAuthorizationUrl",
       "toType": "function",
       "evidence": "LUC-546 Account access Google Drive authorization URL symbol proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/google-drive-auth.test.ts",
+      "fromType": "test",
+      "toPath": "src/integrations/google-drive/google-drive.auth.ts#exchangeGoogleDriveAuthorizationCode",
+      "toType": "function",
+      "evidence": "LUC-567 Account access Google Drive authorization-code exchange symbol proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/google-drive-auth.test.ts",
+      "fromType": "test",
+      "toPath": "src/integrations/google-drive/google-drive.auth.ts#getFreshGoogleDriveOAuthForWorkspace",
+      "toType": "function",
+      "evidence": "LUC-576 Account access Google Drive fresh OAuth symbol proof"
     },
     {
       "type": "tests",
