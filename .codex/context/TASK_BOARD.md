@@ -1,6 +1,23 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-12: [LUC-610](/LUC/issues/LUC-610) Account access
+  `getGoogleDriveClientForWorkspace` missing-test-link proof is complete
+  locally. Task contract:
+  `.codex/tasks/luc-610-account-access-google-drive-client-proof.md`.
+  Evidence: `src/tests/google-drive-auth.test.ts` now proves the workspace
+  client helper uses the fresh workspace access token in a Drive client request
+  without a live Google call; scanner overrides link the exact symbol row to
+  the focused test; scanner JSON parse PASS; `npm run build:server` PASS;
+  focused `node --test dist/tests/google-drive-auth.test.js` PASS (`5/5`);
+  `npm run architecture:refresh` PASS; external architecture-awareness,
+  app-completion, and Project Truth were refreshed sequentially and the
+  dispatched `missing_test_link` row cleared. Same-symbol doc-link evidence is
+  recorded in [LUC-614](/LUC/issues/LUC-614), and the latest Project Truth
+  readback no longer lists `getGoogleDriveClientForWorkspace` in gaps. No live
+  Google provider call, protected smoke, deploy, restart, push, production
+  mutation, credential access, or secret disclosure occurred.
+
 - 2026-07-12: [LUC-603](/LUC/issues/LUC-603) source-control closure for the
   Project Truth Google Drive proof/doc-link packet is complete locally. Task
   contract:

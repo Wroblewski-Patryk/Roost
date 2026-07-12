@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-12T01:10:37.676Z",
+  "generatedAt": "2026-07-12T03:23:58.329Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 202,
-      "linkedRelationCount": 664,
+      "entityCount": 200,
+      "linkedRelationCount": 663,
       "layers": {
         "frontend": {
           "count": 16,
@@ -658,7 +658,7 @@
           "truncated": false
         },
         "worker": {
-          "count": 91,
+          "count": 89,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -683,30 +683,6 @@
               "path": ".agents/state/risk-register.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "agent:2026-07-12-luc-576-account-access-google-drive-fresh-oauth-health-signal:00481b0dca",
-              "type": "agent",
-              "name": "2026-07-12 LUC-576 Account Access Google Drive Fresh OAuth Health Signal",
-              "path": ".agents/state/system-health.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "task:learning-journal:2ea07ed275",
-              "type": "task",
-              "name": "LEARNING_JOURNAL",
-              "path": ".codex/context/LEARNING_JOURNAL.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb",
-              "type": "task",
-              "name": "LUC-321 Source-Control Closure For LUC-262/LUC-267/LUC-268",
-              "path": ".codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
             },
             {
               "id": "agent:user-collaboration-workflow:98bfb8bc00",
@@ -747,6 +723,14 @@
               "path": "docs",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "task:task:6dfadbc975",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-602-source-control-closure-classification-before-deploy-readiness.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             },
             {
               "id": "task:task-board:9aaadac0a2",
@@ -946,7 +930,7 @@
               "name": "getGoogleDriveClientForWorkspace",
               "path": "src/integrations/google-drive/google-drive.auth.ts#getGoogleDriveClientForWorkspace",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:getfreshgoogledriveoauthforworkspace:86a58962cc",
@@ -1297,6 +1281,22 @@
               "type": "task",
               "name": "LUC-546 Account Access Google Drive Authorization URL Proof",
               "path": ".codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:luc-563-account-access-google-drive-authorization-url-doc-link:ee62128225",
+              "type": "task",
+              "name": "LUC-563 Account Access Google Drive Authorization URL Doc Link",
+              "path": ".codex/tasks/luc-563-account-access-google-drive-authorization-url-doc-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:luc-567-account-access-google-drive-authorization-code-exchange-proof:1628c6b299",
+              "type": "task",
+              "name": "LUC-567 Account Access Google Drive Authorization-Code Exchange Proof",
+              "path": ".codex/tasks/luc-567-account-access-google-drive-authorization-code-exchange-proof.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             }
@@ -2355,8 +2355,8 @@
     },
     {
       "userFlow": "Subscription and entitlement",
-      "entityCount": 1010,
-      "linkedRelationCount": 3500,
+      "entityCount": 1011,
+      "linkedRelationCount": 3503,
       "layers": {
         "frontend": {
           "count": 34,
@@ -3283,7 +3283,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 58,
+          "count": 59,
           "sample": [
             {
               "id": "agent:planner:5b56a0bd47",
@@ -3370,6 +3370,14 @@
               "type": "function",
               "name": "getFreshGoogleDriveOAuthForWorkspace",
               "path": "src/integrations/google-drive/google-drive.auth.ts#getFreshGoogleDriveOAuthForWorkspace",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:getgoogledriveclientforworkspace:1d1d0eae6f",
+              "type": "function",
+              "name": "getGoogleDriveClientForWorkspace",
+              "path": "src/integrations/google-drive/google-drive.auth.ts#getGoogleDriveClientForWorkspace",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -5117,8 +5125,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2743,
-      "linkedRelationCount": 6593,
+      "entityCount": 2746,
+      "linkedRelationCount": 6611,
       "layers": {
         "frontend": {
           "count": 91,
@@ -6413,7 +6421,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 739,
+          "count": 742,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -6464,6 +6472,22 @@
               "status": "verified"
             },
             {
+              "id": "task:task:69188765b3",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-603-source-control-closure-project-truth-packet.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:6dfadbc975",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-602-source-control-closure-classification-before-deploy-readiness.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "agent:agent-operating-system:2f229839b5",
               "type": "agent",
               "name": "Agent Operating System",
@@ -6508,6 +6532,14 @@
               "type": "task",
               "name": "LUC-268 Roost App-Completion Proof-Link Curation After LUC-262",
               "path": ".codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:72d51c9ff1",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-610-account-access-google-drive-client-proof.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -6672,9 +6704,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-12-luc-576-module-confidence-update:dba2ca476d",
+              "id": "agent:2026-07-12-luc-602-module-confidence-update:6fe2607bda",
               "type": "agent",
-              "name": "2026-07-12 LUC-576 Module Confidence Update",
+              "name": "2026-07-12 LUC-602 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -6724,6 +6756,14 @@
               "type": "agent",
               "name": "Responsibility Learning",
               "path": ".agents/state/responsibility-learning.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "agent:2026-07-12-luc-602-source-control-closure-health-signal:46d8dda33a",
+              "type": "agent",
+              "name": "2026-07-12 LUC-602 Source-Control Closure Health Signal",
+              "path": ".agents/state/system-health.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -7020,38 +7060,6 @@
               "type": "document",
               "name": "LuckySparrow Company Core v1",
               "path": "README.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:integrations:ec6d120857",
-              "type": "document",
-              "name": "Integrations",
-              "path": "src/integrations/README.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "module:src-integrations:5ddfa7c31f",
-              "type": "module",
-              "name": "src/integrations",
-              "path": "src/integrations",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:agent-logs-module:09e2b8691e",
-              "type": "document",
-              "name": "Agent Logs Module",
-              "path": "src/modules/agent-logs/README.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "module:src-modules-agent-logs:a40b906887",
-              "type": "module",
-              "name": "src/modules/agent-logs",
-              "path": "src/modules/agent-logs",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             }

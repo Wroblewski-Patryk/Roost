@@ -2,6 +2,61 @@
 
 Last updated: 2026-07-12
 
+## LUC-614 Checkpoint
+
+- 2026-07-12: [LUC-614](/LUC/issues/LUC-614) completed a single-lane
+  Documentation Steward doc-link curation for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#getGoogleDriveClientForWorkspace`
+  `missing_doc_link` row. Output:
+  `.codex/tasks/luc-614-account-access-google-drive-client-doc-link.md`.
+  Scope was docs/index evidence only; no delegation was used because the
+  supported curated documentation-link mechanism was available and the row was
+  exact. Added `docs/architecture/relations/documentation-links.csv` linking
+  the generated function path to
+  `docs/planning/google-drive-v2-task-contracts.md`. `npm run
+  architecture:refresh` PASS; architecture-awareness refresh PASS generated
+  `2026-07-12T03:23:48.974Z` with `2833` entities / `6752` relations /
+  `16451` files and overrides `77/113`; app-completion refresh PASS generated
+  `1156` missing test links / `24` missing doc links /
+  `11` implemented-needs-proof / `0` blocked / `1191` known risk items;
+  Project Truth apply PASS generated `2026-07-12T03:23:58.329Z`, public probe
+  `pass`, runtime/event/ops gaps `0`, target symbol absent from app-completion
+  and Project Truth, and first gap now
+  `src/integrations/google-drive/google-drive.auth.ts#getGoogleOAuthClient`
+  `missing_test_link`. `npm run architecture:status` PASS; `git diff --check`
+  PASS with LF-to-CRLF warnings only. No product code, provider call,
+  protected smoke, credential value read, push, deploy, restart, or production
+  mutation occurred.
+
+## LUC-610 Checkpoint
+
+- 2026-07-12: [LUC-610](/LUC/issues/LUC-610) completed a single-lane 09 TAE
+  automated proof for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#getGoogleDriveClientForWorkspace`
+  `missing_test_link` row. Output:
+  `.codex/tasks/luc-610-account-access-google-drive-client-proof.md`.
+  Scope was focused local unit proof, exact symbol scanner override,
+  architecture/app-completion/Project Truth readback, and source-of-truth
+  updates; no subagent delegation was used because the row was narrow and
+  independently testable. Added a no-network test proving the workspace helper
+  reads fresh OAuth state and uses the access token in the downstream
+  `GoogleDriveClient.listFiles` Authorization header. Validation: scanner
+  override JSON parse PASS; `npm run build:server` PASS; focused
+  `node --test dist/tests/google-drive-auth.test.js` PASS (`5/5`);
+  `npm run architecture:refresh` PASS; Paperclip architecture-awareness
+  refresh PASS generated `2026-07-12T03:20:21.660Z` with `2832` entities /
+  `6748` relations / `16451` files and overrides `77/113`; sequential
+  app-completion refresh PASS moved missing-test-link to `1156`; Project Truth
+  apply PASS generated `2026-07-12T03:21:00.696Z`, public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap moved to the same symbol as
+  `missing_doc_link`. The adjacent [LUC-614](/LUC/issues/LUC-614) doc-link
+  packet is recorded in
+  `.codex/tasks/luc-614-account-access-google-drive-client-doc-link.md`; its
+  latest Project Truth apply generated `2026-07-12T03:23:58.329Z` and no
+  longer lists `getGoogleDriveClientForWorkspace` in generated gaps. No live
+  Google provider call, protected smoke, credential value read, push, deploy,
+  restart, or production mutation occurred.
+
 ## LUC-603 Checkpoint
 
 - 2026-07-12: [LUC-603](/LUC/issues/LUC-603) completed Roost PM

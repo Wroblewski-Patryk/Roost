@@ -1,5 +1,32 @@
 # PROJECT_STATE
 
+- 2026-07-12: [LUC-610](/LUC/issues/LUC-610) completed 09 TAE automated
+  proof for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#getGoogleDriveClientForWorkspace`
+  missing-test-link gap. Source-of-truth task contract:
+  `.codex/tasks/luc-610-account-access-google-drive-client-proof.md`.
+  `src/tests/google-drive-auth.test.ts` now proves the helper returns a
+  `GoogleDriveClient` that issues a Drive request with the fresh workspace
+  access token, with `globalThis.fetch` stubbed and no live Google provider
+  call. `docs/architecture/scanner-overrides.json` links the exact function
+  path to that test. Validation: scanner override JSON parse PASS;
+  `npm run build:server` PASS; focused
+  `node --test dist/tests/google-drive-auth.test.js` PASS (`5/5`);
+  `npm run architecture:refresh` PASS. External architecture-awareness refresh
+  generated `2026-07-12T03:20:21.660Z` with `2832` entities / `6748`
+  relations / `16451` files and overrides `77/113`. App-completion refresh
+  generated `1156` missing test links / `25` missing doc links / `11`
+  implemented-needs-proof / `0` blocked / `1192` known risk items. Project
+  Truth apply generated `2026-07-12T03:21:00.696Z` with public probe `pass`,
+  critical runtime findings `0`, incomplete event chains `0`, operational
+  gate gaps `0`, and first gap moved to the same symbol as `missing_doc_link`.
+  The same-symbol doc-link packet is recorded in
+  `.codex/tasks/luc-614-account-access-google-drive-client-doc-link.md`; the
+  latest Project Truth apply generated `2026-07-12T03:23:58.329Z` and no
+  longer lists `getGoogleDriveClientForWorkspace` in gaps. No protected smoke,
+  deploy, restart, push, production mutation, credential value access, or
+  secret disclosure occurred.
+
 - 2026-07-12: [LUC-603](/LUC/issues/LUC-603) completed Roost PM
   source-control closure for the previously classified Project Truth Google
   Drive proof/doc-link packet. Source-of-truth task contract:

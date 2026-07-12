@@ -11,6 +11,42 @@ state, architecture intent, module confidence, and the next release objective.
 
 ## Latest Generated Truth
 
+- 2026-07-12: [LUC-614](/LUC/issues/LUC-614) cleared the Account access
+  `getGoogleDriveClientForWorkspace` `missing_doc_link` row. Use
+  `.codex/tasks/luc-614-account-access-google-drive-client-doc-link.md` for
+  current proof: `docs/architecture/relations/documentation-links.csv` links
+  the exact generated function path to
+  `docs/planning/google-drive-v2-task-contracts.md`; architecture-awareness
+  generated `2026-07-12T03:23:48.974Z` with `2833` entities / `6752`
+  relations / `16451` files and overrides `77/113`; app-completion generated
+  `1156` missing test links / `24` missing doc links /
+  `11` implemented-needs-proof / `0` blocked / `1191` known risk items;
+  Project Truth generated `2026-07-12T03:23:58.329Z` with public probe
+  `pass`, runtime findings `0`, incomplete event chains `0`, operational gate
+  gaps `0`, and first gap moved to
+  `src/integrations/google-drive/google-drive.auth.ts#getGoogleOAuthClient`
+  `missing_test_link`. Do not open another doc-link curation for
+  `getGoogleDriveClientForWorkspace` without a fresh generated regression.
+
+- 2026-07-12: [LUC-610](/LUC/issues/LUC-610) cleared the Account access
+  `getGoogleDriveClientForWorkspace` `missing_test_link` row. Use
+  `.codex/tasks/luc-610-account-access-google-drive-client-proof.md` for
+  current proof: `src/tests/google-drive-auth.test.ts` verifies the workspace
+  client helper uses the fresh workspace access token in a stubbed Drive
+  request; `docs/architecture/scanner-overrides.json` links the exact
+  generated function path to the test; architecture-awareness generated
+  `2026-07-12T03:20:21.660Z` with `2832` entities / `6748` relations /
+  `16451` files and overrides `77/113`; app-completion generated `1156`
+  missing test links / `25` missing doc links / `11` implemented-needs-proof /
+  `0` blocked / `1192` known risk items; Project Truth generated
+  `2026-07-12T03:21:00.696Z` with public probe `pass`, runtime findings `0`,
+  incomplete event chains `0`, operational gate gaps `0`, and first gap moved
+  to the same symbol as `missing_doc_link`. The same-symbol doc-link packet in
+  [LUC-614](/LUC/issues/LUC-614) generated `2026-07-12T03:23:58.329Z` and no
+  longer lists `getGoogleDriveClientForWorkspace` in Project Truth gaps. Do
+  not open another missing-test-link proof or doc-link curation for
+  `getGoogleDriveClientForWorkspace` without a fresh generated regression.
+
 - 2026-07-12: [LUC-582](/LUC/issues/LUC-582) cleared the Account access
   `getFreshGoogleDriveOAuthForWorkspace` `missing_doc_link` row. Use
   `.codex/tasks/luc-582-account-access-google-drive-fresh-oauth-doc-link.md`

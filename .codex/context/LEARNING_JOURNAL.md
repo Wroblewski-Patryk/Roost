@@ -26,6 +26,29 @@ fixes for this repository.
 
 ## Entries
 
+### 2026-07-12 - Refresh Project Truth Inputs Sequentially
+- Context: [LUC-610](/LUC/issues/LUC-610) added a new Google Drive auth test
+  relation and refreshed generated Project Truth/app-completion readbacks.
+- Symptom: The first Project Truth apply still reported
+  `getGoogleDriveClientForWorkspace` as `missing_test_link` even though the
+  refreshed architecture graph later showed the exact test relation.
+- Root cause: `build-app-completion-index.mjs` was started in parallel with
+  `build-architecture-awareness-index.mjs`, so it consumed the previous
+  `docs/graphs/architecture-awareness.json` before the new graph was written.
+- Guardrail: Run architecture-awareness refresh to completion before running
+  app-completion, then run Project Truth apply only after app-completion has
+  consumed the fresh graph.
+- Preferred pattern: `build-architecture-awareness-index` -> `build-app-completion-index`
+  -> `build-project-truth-indexes --apply`, with a target readback after each
+  proof-link change.
+- Avoid: Parallelizing producer/consumer generated-index commands when the
+  later command reads the earlier command's output file.
+- Evidence: The first [LUC-610](/LUC/issues/LUC-610) Project Truth apply at
+  `2026-07-12T03:20:30.009Z` kept the target at `missing_test_link`; the
+  sequential rerun generated app-completion with `missingTestLink=1156` and
+  Project Truth at `2026-07-12T03:21:00.696Z` moved the same target to
+  `missing_doc_link`.
+
 ### 2026-07-02 - Close Browser Harnesses After Failed Assertions
 - Context: [LUC-7062](/LUC/issues/LUC-7062) used ad hoc Playwright request
   proofs for `/workspace/settings` before the harness server and mocks were

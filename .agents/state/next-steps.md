@@ -1,4 +1,17 @@
 # Next Steps
+- 2026-07-12: [LUC-610](/LUC/issues/LUC-610) no longer has a remaining 09 TAE
+  missing-test-link action after the completed
+  `getGoogleDriveClientForWorkspace` no-network proof and generated Project
+  Truth/app-completion readback. The same-symbol doc-link packet is recorded
+  in [LUC-614](/LUC/issues/LUC-614), and the latest generated readback no
+  longer lists `getGoogleDriveClientForWorkspace` in Project Truth gaps. The
+  next generated Account access gap is
+  `src/integrations/google-drive/google-drive.auth.ts#getGoogleOAuthClient`
+  `missing_test_link`, owned by Test Automation Engineer + QA Regression Lead
+  only if selected. Do not open live Google provider, protected smoke,
+  push/deploy, restart, production mutation, credential, or secret work from
+  [LUC-610](/LUC/issues/LUC-610).
+
 - 2026-07-12: [LUC-602](/LUC/issues/LUC-602) has no remaining PM
   classification action. The source-control state is known: local
   architecture/status consistency is green, but deploy readiness is blocked by

@@ -48,6 +48,85 @@ test("getFreshGoogleDriveOAuthForWorkspace returns fresh oauth without refreshin
   assert.equal(updateCalled, false);
 });
 
+test("getGoogleDriveClientForWorkspace returns a client using the fresh workspace access token", async (t) => {
+  const integrationSettingsModule = (await import("../integrations/integration-settings.service")) as any;
+  const authModule = await import("../integrations/google-drive/google-drive.auth");
+
+  const freshOauth = {
+    clientId: "unit-google-client-id",
+    clientSecret: "unit-google-client-secret",
+    refreshToken: "unit-refresh-token",
+    accessToken: "unit-client-access-token",
+    expiresAt: new Date(Date.now() + 120_000).toISOString(),
+    tokenType: "Bearer",
+    scope: "https://www.googleapis.com/auth/drive.file"
+  };
+
+  const originalGetSettings = integrationSettingsModule.getGoogleDriveSettingsForWorkspace;
+  const originalUpdate = prisma.integrationSetting.update;
+  const originalFetch = globalThis.fetch;
+  let requestedWorkspaceId: string | undefined;
+  let requestUrl: string | undefined;
+  let requestInit: RequestInit | undefined;
+
+  integrationSettingsModule.getGoogleDriveSettingsForWorkspace = (async (workspaceId: string) => {
+    requestedWorkspaceId = workspaceId;
+    return {
+      oauth: freshOauth,
+      config: null,
+      rawSetting: {
+        active: true
+      }
+    };
+  }) as typeof integrationSettingsModule.getGoogleDriveSettingsForWorkspace;
+  prisma.integrationSetting.update = (async () => {
+    throw new Error("fresh client path must not persist");
+  }) as any;
+  globalThis.fetch = (async (url, init) => {
+    requestUrl = String(url);
+    requestInit = init ?? {};
+    return new Response(JSON.stringify({
+      files: [{
+        id: "unit-file-id",
+        name: "Unit file",
+        mimeType: "application/vnd.google-apps.document"
+      }]
+    }), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+  }) as typeof fetch;
+
+  t.after(() => {
+    integrationSettingsModule.getGoogleDriveSettingsForWorkspace = originalGetSettings;
+    prisma.integrationSetting.update = originalUpdate;
+    globalThis.fetch = originalFetch;
+  });
+
+  const client = await authModule.getGoogleDriveClientForWorkspace("workspace-client");
+  const files = await client.listFiles({ pageSize: 1, fields: "files(id,name,mimeType)" });
+
+  assert.equal(requestedWorkspaceId, "workspace-client");
+  assert.deepEqual(files.files, [{
+    id: "unit-file-id",
+    name: "Unit file",
+    mimeType: "application/vnd.google-apps.document"
+  }]);
+  assert.ok(requestUrl);
+  const url = new URL(requestUrl!);
+  assert.equal(url.origin, "https://www.googleapis.com");
+  assert.equal(url.pathname, "/drive/v3/files");
+  assert.equal(url.searchParams.get("pageSize"), "1");
+  assert.equal(url.searchParams.get("fields"), "files(id,name,mimeType)");
+  assert.equal(url.searchParams.get("spaces"), "drive");
+  assert.deepEqual(requestInit?.headers, {
+    Authorization: "Bearer unit-client-access-token",
+    "Content-Type": "application/json"
+  });
+});
+
 test("buildGoogleDriveAuthorizationUrl returns owner OAuth consent URL without provider call", async () => {
   process.env.GOOGLE_OAUTH_CLIENT_ID = "unit-google-client-id";
   process.env.GOOGLE_OAUTH_CLIENT_SECRET = "unit-google-client-secret";
