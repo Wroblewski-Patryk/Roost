@@ -1,4 +1,39 @@
 # Next Steps
+- 2026-07-12: [LUC-623](/LUC/issues/LUC-623) has no remaining PM
+  classification action. The source-control state is known: `main` is ahead of
+  `origin/main` by `3`, architecture status is green, and the dirty tree is a
+  coherent Google Drive Project Truth proof/doc-link plus generated readback
+  packet, but deploy readiness is blocked while the worktree remains dirty and
+  uncommitted. Next action, only when selected as a release/source-control
+  lane, is to commit or explicitly defer the packet and record commit SHA,
+  push policy, deploy impact, and smoke/rollback evidence. Do not push,
+  deploy, run protected smoke, restart, mutate production, or read credentials
+  from [LUC-623](/LUC/issues/LUC-623).
+
+- 2026-07-12: [LUC-620](/LUC/issues/LUC-620) has no remaining Documentation
+  Steward action after the curated doc-link and generated Project Truth
+  readback. The dispatched `getGoogleOAuthClient` `missing_doc_link` row is
+  gone; app-completion missing doc links are now `24`, known risk items
+  `1190`, and Project Truth first gap is
+  `src/integrations/google-drive/google-drive.auth.ts#getStoredGoogleDriveSecret`
+  `missing_test_link`. Next action, only if selected by Project Truth routing,
+  is a Test Automation Engineer + QA Regression Lead proof-link lane for that
+  symbol. Do not open product code, live Google provider, protected smoke,
+  push/deploy, restart, production mutation, credential, or secret work from
+  [LUC-620](/LUC/issues/LUC-620).
+
+- 2026-07-12: [LUC-617](/LUC/issues/LUC-617) no longer has a remaining 09 TAE
+  missing-test-link action after the completed `getGoogleOAuthClient`
+  no-network proof and generated Project Truth/app-completion readback. The
+  dispatched missing-test-link row is gone; Project Truth first gap is now
+  `src/integrations/google-drive/google-drive.auth.ts#getGoogleOAuthClient`
+  `missing_doc_link`, delegated to Documentation Steward in
+  [LUC-620](/LUC/issues/LUC-620). Do not
+  open another QA proof lane for this symbol unless a fresh generated
+  regression or behavioral failure appears; do not run live Google provider,
+  protected smoke, push/deploy, restart, production mutation, credential, or
+  secret work from [LUC-617](/LUC/issues/LUC-617).
+
 - 2026-07-12: [LUC-610](/LUC/issues/LUC-610) no longer has a remaining 09 TAE
   missing-test-link action after the completed
   `getGoogleDriveClientForWorkspace` no-network proof and generated Project

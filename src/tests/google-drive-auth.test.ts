@@ -156,6 +156,38 @@ test("buildGoogleDriveAuthorizationUrl returns owner OAuth consent URL without p
   assert.equal(url.searchParams.get("login_hint"), "owner@example.com");
 });
 
+test("buildGoogleDriveAuthorizationUrl uses stored workspace OAuth client credentials", async (t) => {
+  const { encryptSecret } = await import("../integrations/secrets");
+  const { buildGoogleDriveAuthorizationUrl } = await import("../integrations/google-drive/google-drive.auth");
+
+  const originalFindUnique = prisma.integrationSetting.findUnique;
+  let requestedWorkspaceId: string | undefined;
+
+  prisma.integrationSetting.findUnique = (async (args: any) => {
+    requestedWorkspaceId = args?.where?.workspaceId_provider?.workspaceId;
+    return {
+      secretCiphertext: encryptSecret(JSON.stringify({
+        clientId: "stored-workspace-client-id",
+        clientSecret: "stored-workspace-client-secret",
+        refreshToken: "stored-refresh-token"
+      }))
+    };
+  }) as any;
+
+  t.after(() => {
+    prisma.integrationSetting.findUnique = originalFindUnique;
+  });
+
+  const authorizeUrl = await buildGoogleDriveAuthorizationUrl({
+    workspaceId: "workspace-oauth-client",
+    redirectUri: "https://roost.example/oauth/callback"
+  });
+  const url = new URL(authorizeUrl);
+
+  assert.equal(requestedWorkspaceId, "workspace-oauth-client");
+  assert.equal(url.searchParams.get("client_id"), "stored-workspace-client-id");
+});
+
 test("getFreshGoogleDriveOAuthForWorkspace refreshes expired oauth and persists the refreshed secret", async (t) => {
   const integrationSettingsModule = (await import("../integrations/integration-settings.service")) as any;
   const { decryptSecret } = await import("../integrations/secrets");

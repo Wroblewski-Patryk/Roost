@@ -1,5 +1,71 @@
 # PROJECT_STATE
 
+- 2026-07-12: [LUC-623](/LUC/issues/LUC-623) completed Roost PM
+  source-control classification before deploy readiness. Source-of-truth task
+  contract:
+  `.codex/tasks/luc-623-source-control-classification-before-deploy-readiness.md`.
+  Classification: the current dirty primary checkout is coherent around the
+  latest Google Drive Project Truth proof/doc-link packet and generated
+  architecture/status readbacks, but deploy readiness remains blocked until a
+  clean source-control closure commits or explicitly defers the packet. Evidence:
+  `git status --short --branch` showed `main...origin/main [ahead 3]` with
+  `87` tracked modified files and `2` untracked LUC task packets; branch
+  divergence was `0 3`; no staged changes; `git diff --stat` showed `87`
+  files changed, `10640` insertions, and `10142` deletions; `git diff --check`
+  PASS with LF-to-CRLF warnings only; `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass); redaction-oriented scan found
+  secret-shaped assignments only in fake no-network Google Drive OAuth test
+  fixtures. No commit, push, deploy, protected smoke, restart, provider action,
+  production mutation, credential value access, or secret disclosure occurred.
+
+- 2026-07-12: [LUC-620](/LUC/issues/LUC-620) completed Documentation Steward
+  doc-link curation for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#getGoogleOAuthClient`
+  Project Truth gap. Source-of-truth task contract:
+  `.codex/tasks/luc-620-account-access-google-oauth-client-doc-link.md`.
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  generated function path to `docs/planning/google-drive-v2-task-contracts.md`,
+  which documents workspace OAuth client credential storage and fallback
+  behavior. `npm run architecture:refresh` PASS. External
+  architecture-awareness refresh generated `2026-07-12T03:57:25.133Z` with
+  `2836` entities / `6761` relations / `16451` files and overrides `78/114`.
+  App-completion refresh generated `1155` missing test links / `24` missing
+  doc links / `11` implemented-needs-proof / `0` blocked / `1190` known risk
+  items. Project Truth apply generated `2026-07-12T03:57:51.354Z` with public
+  probe `pass`, critical runtime findings `0`, incomplete event chains `0`,
+  operational gate gaps `0`, and first gap moved to
+  `src/integrations/google-drive/google-drive.auth.ts#getStoredGoogleDriveSecret`
+  `missing_test_link`. No product code, provider call, protected smoke,
+  deploy, restart, push, production mutation, credential value access, or
+  secret disclosure occurred.
+
+- 2026-07-12: [LUC-617](/LUC/issues/LUC-617) completed 09 TAE automated
+  proof for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#getGoogleOAuthClient`
+  missing-test-link gap. Source-of-truth task contract:
+  `.codex/tasks/luc-617-account-access-google-oauth-client-proof.md`.
+  `src/tests/google-drive-auth.test.ts` now proves the private resolver
+  through the supported public authorization URL path: a stubbed stored
+  workspace OAuth secret is read and its client id is used in the generated
+  Google authorization URL, with no live Google provider call.
+  `docs/architecture/scanner-overrides.json` links the exact function path to
+  that test. Validation: scanner override JSON parse PASS;
+  `npm run build:server` PASS; focused
+  `node --test dist/tests/google-drive-auth.test.js` PASS (`6/6`);
+  `npm run architecture:refresh` PASS. External architecture-awareness refresh
+  generated `2026-07-12T03:49:06.795Z` with `2834` entities / `6755`
+  relations / `16451` files and overrides `78/114`. App-completion refresh
+  generated `1155` missing test links / `25` missing doc links / `11`
+  implemented-needs-proof / `0` blocked / `1191` known risk items. Project
+  Truth apply generated `2026-07-12T03:49:15.955Z` with public probe `pass`,
+  critical runtime findings `0`, incomplete event chains `0`, operational
+  gate gaps `0`, and first gap moved to the same symbol as `missing_doc_link`.
+  Follow-up [LUC-620](/LUC/issues/LUC-620) was created for Documentation
+  Steward to clear that same-symbol doc-link readback.
+  No protected smoke, deploy, restart, push, production mutation, credential
+  value access, or secret disclosure occurred.
+
 - 2026-07-12: [LUC-610](/LUC/issues/LUC-610) completed 09 TAE automated
   proof for the Account access
   `src/integrations/google-drive/google-drive.auth.ts#getGoogleDriveClientForWorkspace`

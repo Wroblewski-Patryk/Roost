@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-12T03:23:54.570Z",
+  "generatedAt": "2026-07-12T03:57:30.586Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -7,12 +7,12 @@
     "items": 1243,
     "flows": 5,
     "needsBrowserReview": 0,
-    "missingTestLink": 1156,
+    "missingTestLink": 1155,
     "missingDocLink": 24,
     "implementedNeedsProof": 11,
     "blocked": 0,
-    "riskItems": 1191,
-    "appCompletionRiskItems": 1191,
+    "riskItems": 1190,
+    "appCompletionRiskItems": 1190,
     "priorityReviewItems": 200,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": true
@@ -22,14 +22,14 @@
       "userFlow": "Account access",
       "total": 70,
       "risks": {
-        "ok": 50,
-        "missing_test_link": 14,
+        "ok": 51,
+        "missing_test_link": 13,
         "implemented_needs_proof": 2,
         "missing_doc_link": 4
       },
       "gates": {
         "auth": 70,
-        "configuration": 16,
+        "configuration": 17,
         "subscription": 2
       }
     },
@@ -79,27 +79,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "function:getgoogleoauthclient:f132646466",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "getGoogleOAuthClient",
-      "path": "src/integrations/google-drive/google-drive.auth.ts#getGoogleOAuthClient",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
     {
       "id": "function:getstoredgoogledrivesecret:2763c40172",
       "type": "function",
@@ -3931,6 +3910,25 @@
       "kind": "feature_or_capability",
       "name": "readJson",
       "path": "scripts/build-architecture-roadmap.mjs#readJson",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:top:394fc8c40e",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "top",
+      "path": "scripts/build-architecture-roadmap.mjs#top",
       "owner": "Engineering Delivery Lead",
       "status": "implemented_needs_proof",
       "userFlow": "Unclassified user workflow",

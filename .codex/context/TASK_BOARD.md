@@ -1,6 +1,65 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-12: [LUC-623](/LUC/issues/LUC-623) source-control classification
+  before deploy readiness is complete locally. Task contract:
+  `.codex/tasks/luc-623-source-control-classification-before-deploy-readiness.md`.
+  Evidence: `git status --short --branch` showed `main...origin/main [ahead
+  3]` with `87` tracked modified files and `2` untracked LUC task packets;
+  `git rev-list --left-right --count origin/main...HEAD` returned `0 3`;
+  `git log --oneline origin/main..HEAD` listed `c2ff15fc` Google Drive
+  workspace client auth proof, `e407af2a` LUC-603 Project Truth packet
+  closure, and `e136beaa` LUC-557 source-state closure; staged changes were
+  none; `git diff --stat` showed `87` files changed, `10640` insertions, and
+  `10142` deletions; `git diff --check` PASS with LF-to-CRLF warnings only;
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass);
+  redaction-oriented scan found only fake no-network Google Drive OAuth test
+  fixture rows in `src/tests/google-drive-auth.test.ts`. Deploy readiness
+  remains blocked while the worktree is dirty and uncommitted. No commit,
+  push, deploy, protected smoke, restart, provider action, production
+  mutation, credential access, or secret disclosure occurred.
+
+- 2026-07-12: [LUC-620](/LUC/issues/LUC-620) Account access
+  `getGoogleOAuthClient` missing-doc-link curation is complete locally. Task
+  contract:
+  `.codex/tasks/luc-620-account-access-google-oauth-client-doc-link.md`.
+  Evidence: added a `docs/architecture/relations/documentation-links.csv` row
+  linking the exact generated function path
+  `src/integrations/google-drive/google-drive.auth.ts#getGoogleOAuthClient`
+  to `docs/planning/google-drive-v2-task-contracts.md`; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh PASS
+  generated `2026-07-12T03:57:25.133Z` with `2836` entities / `6761`
+  relations / `16451` files and overrides `78/114`; app-completion refresh
+  PASS generated `1155` missing test links / `24` missing doc links /
+  `11` implemented-needs-proof / `0` blocked / `1190` known risk items;
+  Project Truth apply PASS generated `2026-07-12T03:57:51.354Z` with public
+  probe `pass`, critical runtime findings `0`, incomplete event chains `0`,
+  operational gate gaps `0`, total gaps `1190`; the target symbol is absent
+  from the first Project Truth gap. First gap advanced to
+  `getStoredGoogleDriveSecret` `missing_test_link`, owned by Test Automation
+  Engineer + QA Regression Lead. No product code, provider call, protected
+  smoke, deploy, restart, push, production mutation, credential access, or
+  secret disclosure occurred.
+
+- 2026-07-12: [LUC-617](/LUC/issues/LUC-617) Account access
+  `getGoogleOAuthClient` missing-test-link proof is complete locally. Task
+  contract:
+  `.codex/tasks/luc-617-account-access-google-oauth-client-proof.md`.
+  Evidence: `src/tests/google-drive-auth.test.ts` now proves the resolver
+  reads stored workspace OAuth client credentials through the public
+  authorization URL path without a live Google call; scanner overrides link
+  the exact symbol row to the focused test; scanner JSON parse PASS;
+  `npm run build:server` PASS; focused
+  `node --test dist/tests/google-drive-auth.test.js` PASS (`6/6`);
+  `npm run architecture:refresh` PASS; external architecture-awareness,
+  app-completion, and Project Truth were refreshed sequentially and the
+  dispatched `missing_test_link` row cleared. Project Truth first gap is now
+  the same symbol as `missing_doc_link`, owned by Docs Memory Lead + Project
+  Manager; follow-up [LUC-620](/LUC/issues/LUC-620) is assigned to
+  Documentation Steward for that source-of-truth doc-link lane. No live Google provider call, protected smoke, deploy, restart,
+  push, production mutation, credential access, or secret disclosure occurred.
+
 - 2026-07-12: [LUC-610](/LUC/issues/LUC-610) Account access
   `getGoogleDriveClientForWorkspace` missing-test-link proof is complete
   locally. Task contract:

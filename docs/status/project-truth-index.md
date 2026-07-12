@@ -1,6 +1,6 @@
 # Project Truth Index
 
-Generated: 2026-07-12T03:23:58.329Z
+Generated: 2026-07-12T03:57:51.354Z
 Project: Roost
 Status: gaps_require_routing
 
@@ -13,18 +13,18 @@ This is the routing surface agents should use before guessing whether an app wor
 | incompleteEventChains | 0 |
 | runtimeFindings | 0 |
 | criticalRuntimeFindings | 0 |
-| appCompletionGaps | 1191 |
+| appCompletionGaps | 1190 |
 | indexedAppCompletionGaps | 200 |
-| knownAppCompletionRiskItems | 1191 |
+| knownAppCompletionRiskItems | 1190 |
 | appCompletionPriorityReviewItems | 200 |
 | appCompletionPriorityReviewTruncated | true |
 | operationalGateGaps | 0 |
 | indexedGaps | 200 |
-| totalGaps | 1191 |
+| totalGaps | 1190 |
 
 ## First Gap
 
-- medium: Account access: getGoogleOAuthClient has app-completion risk missing_test_link.
+- medium: Account access: getStoredGoogleDriveSecret has app-completion risk missing_test_link.
 - Owner: Test Automation Engineer + QA Regression Lead
 - Next action: Add or link the smallest relevant automated/manual verification for this flow before claiming it works.
 
@@ -32,7 +32,6 @@ This is the routing surface agents should use before guessing whether an app wor
 
 | Severity | Kind | Flow | Summary | Next owner |
 | --- | --- | --- | --- | --- |
-| medium | app_completion_gap | Account access | Account access: getGoogleOAuthClient has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Account access | Account access: getStoredGoogleDriveSecret has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Account access | Account access: hasFreshAccessToken has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Account access | Account access: mergeGoogleDriveConfig has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
@@ -112,3 +111,4 @@ This is the routing surface agents should use before guessing whether an app wor
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /departments has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /events has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /goals has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
+| medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /google-drive has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |

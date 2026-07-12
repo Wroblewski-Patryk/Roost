@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-07-12T03:23:54.570Z
+Generated: 2026-07-12T03:57:30.586Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -15,18 +15,18 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 - Items: 1243
 - User flows: 5
 - Needs browser/screenshot review: 0
-- Missing test link: 1156
+- Missing test link: 1155
 - Missing doc link: 24
 - Implemented, needs proof: 11
 - Blocked: 0
-- Known non-ok risk items: 1191
-- Priority review items indexed: 200/1191
+- Known non-ok risk items: 1190
+- Priority review items indexed: 200/1190
 - Priority review truncated: true
 
 ## Flow Summary
 
 - Unclassified user workflow: 1096 entities; risks {"missing_test_link":1068,"ok":2,"implemented_needs_proof":8,"missing_doc_link":18}; gates {"configuration":7,"auth":1}
-- Account access: 70 entities; risks {"ok":50,"missing_test_link":14,"implemented_needs_proof":2,"missing_doc_link":4}; gates {"auth":70,"configuration":16,"subscription":2}
+- Account access: 70 entities; risks {"ok":51,"missing_test_link":13,"implemented_needs_proof":2,"missing_doc_link":4}; gates {"auth":70,"configuration":17,"subscription":2}
 - Dashboard overview: 34 entities; risks {"missing_test_link":34}; gates {"configuration":7}
 - User configuration: 33 entities; risks {"missing_test_link":31,"missing_doc_link":2}; gates {"configuration":31}
 - Trading operation: 10 entities; risks {"missing_test_link":9,"implemented_needs_proof":1}; gates {}
@@ -35,7 +35,6 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 
 | User flow | Risk | Kind | Entity | Owner | Path | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
-| Account access | missing_test_link | feature_or_capability | getGoogleOAuthClient | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#getGoogleOAuthClient | auth |
 | Account access | missing_test_link | feature_or_capability | getStoredGoogleDriveSecret | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#getStoredGoogleDriveSecret | auth, configuration |
 | Account access | missing_test_link | feature_or_capability | hasFreshAccessToken | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#hasFreshAccessToken | auth |
 | Account access | missing_test_link | feature_or_capability | mergeGoogleDriveConfig | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#mergeGoogleDriveConfig | auth, configuration |
@@ -115,6 +114,7 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /departments | Engineering Delivery Lead | src/app.ts#/departments | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /events | Engineering Delivery Lead | src/app.ts#/events | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /goals | Engineering Delivery Lead | src/app.ts#/goals | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /google-drive | Engineering Delivery Lead | src/app.ts#/google-drive | - |
 
 ## Agent Rule
 

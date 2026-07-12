@@ -1,5 +1,51 @@
 # MVP Next Commits
 
+- 2026-07-12: [LUC-623](/LUC/issues/LUC-623) completed source-control
+  classification before deploy readiness. Evidence packet:
+  `.codex/tasks/luc-623-source-control-classification-before-deploy-readiness.md`.
+  Proof: `git status --short --branch` showed `main...origin/main [ahead 3]`
+  with `87` tracked modified files and `2` untracked LUC task packets;
+  divergence `0 3`; no staged changes; `git diff --stat` showed `87` files
+  changed, `10640` insertions, and `10142` deletions; `git diff --check` PASS
+  with LF-to-CRLF warnings only; `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`,
+  all gates pass); redaction-oriented scan found only fake no-network Google
+  Drive OAuth test fixture rows. Commit not created because the issue scope
+  was classification before deploy readiness, not closure of the prior proof
+  packet. Push not needed; deploy impact blocked until source-control closure
+  records a clean commit/defer decision.
+
+- 2026-07-12: [LUC-620](/LUC/issues/LUC-620) completed the Account access
+  `getGoogleOAuthClient` missing-doc-link curation. Evidence packet:
+  `.codex/tasks/luc-620-account-access-google-oauth-client-doc-link.md`.
+  Proof: `npm run architecture:refresh` PASS; architecture-awareness refresh
+  PASS (`2836` entities / `6761` relations / `16451` files, overrides
+  `78/114`); app-completion refresh PASS (`1155` missing test links /
+  `24` missing doc links / `11` implemented-needs-proof / `0` blocked);
+  Project Truth apply PASS generated `2026-07-12T03:57:51.354Z` with public
+  probe `pass`, runtime/event/ops gaps `0`, and first gap now
+  `getStoredGoogleDriveSecret` `missing_test_link`. No live Google provider
+  call, protected smoke, push, deploy, restart, production mutation,
+  credential access, or secret disclosure occurred. Next owner for the
+  residual first gap: Test Automation Engineer + QA Regression Lead if
+  Project Truth routing selects that symbol.
+
+- 2026-07-12: [LUC-617](/LUC/issues/LUC-617) completed the Account access
+  `getGoogleOAuthClient` missing-test-link proof. Evidence packet:
+  `.codex/tasks/luc-617-account-access-google-oauth-client-proof.md`. Proof:
+  scanner override JSON parse PASS; `npm run build:server` PASS; focused
+  `node --test dist/tests/google-drive-auth.test.js` PASS (`6/6`);
+  `npm run architecture:refresh` PASS; architecture-awareness refresh PASS
+  (`2834` entities / `6755` relations / `16451` files, overrides `78/114`);
+  app-completion refresh PASS (`1155` missing test links / `25` missing doc
+  links / `11` implemented-needs-proof / `0` blocked); Project Truth apply
+  PASS generated `2026-07-12T03:49:15.955Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap now the same symbol as
+  `missing_doc_link`. No live Google provider call, protected smoke, push,
+  deploy, restart, production mutation, credential access, or secret
+  disclosure occurred. Next owner for the residual same-symbol doc-link gap:
+  Documentation Steward in [LUC-620](/LUC/issues/LUC-620).
+
 - 2026-07-02: [LUC-6911](/LUC/issues/LUC-6911) completed the docs-memory
   Exchange event-chain index refresh after [LUC-6905](/LUC/issues/LUC-6905).
   Evidence packet:

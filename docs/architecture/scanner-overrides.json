@@ -147,6 +147,15 @@
       ]
     },
     {
+      "path": "src/integrations/google-drive/google-drive.auth.ts#getGoogleOAuthClient",
+      "status": "verified",
+      "description": "Google Drive OAuth client credential resolver verified by a focused no-network unit test that reads stored workspace OAuth client credentials for the authorization URL path.",
+      "evidence": [
+        "src/tests/google-drive-auth.test.ts",
+        ".codex/tasks/luc-617-account-access-google-oauth-client-proof.md"
+      ]
+    },
+    {
       "path": "src/integrations/google-drive/google-drive.auth.ts#exchangeGoogleDriveAuthorizationCode",
       "status": "verified",
       "description": "Google Drive OAuth authorization-code exchange helper verified by a focused no-network unit test for token POST parameters and normalized OAuth token output.",
@@ -1400,6 +1409,14 @@
       "toPath": "src/integrations/google-drive/google-drive.auth.ts#getGoogleDriveClientForWorkspace",
       "toType": "function",
       "evidence": "LUC-610 Account access Google Drive workspace client symbol proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/google-drive-auth.test.ts",
+      "fromType": "test",
+      "toPath": "src/integrations/google-drive/google-drive.auth.ts#getGoogleOAuthClient",
+      "toType": "function",
+      "evidence": "LUC-617 Account access Google Drive OAuth client resolver symbol proof"
     },
     {
       "type": "tests",

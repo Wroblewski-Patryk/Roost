@@ -2,6 +2,76 @@
 
 Last updated: 2026-07-12
 
+## LUC-623 Checkpoint
+
+- 2026-07-12: [LUC-623](/LUC/issues/LUC-623) completed a single-lane Roost
+  PM source-control classification before deploy readiness. Output:
+  `.codex/tasks/luc-623-source-control-classification-before-deploy-readiness.md`.
+  Scope was classification only; no subagent delegation was used because the
+  task was bounded to source-control/release posture and did not require code,
+  runtime, or owner-specific repair. Evidence: `main...origin/main [ahead 3]`,
+  branch divergence `0 3`, no staged changes, `87` tracked modified files,
+  `2` untracked LUC task packets, `87` files changed with `10640` insertions
+  and `10142` deletions, `git diff --check` PASS with LF-to-CRLF warnings
+  only, and `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`,
+  queues `0`, delta `0/0/0`, all gates pass). Redaction-oriented scan found
+  only fake no-network Google Drive OAuth test fixture rows. Deploy readiness
+  decision: blocked until the dirty packet is coherently committed or
+  explicitly deferred by a source-control/release lane. No commit, push,
+  deploy, protected smoke, restart, provider action, production mutation,
+  credential access, or secret disclosure occurred.
+
+## LUC-620 Checkpoint
+
+- 2026-07-12: [LUC-620](/LUC/issues/LUC-620) completed a single-lane
+  Documentation Steward doc-link curation for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#getGoogleOAuthClient`
+  `missing_doc_link` row. Output:
+  `.codex/tasks/luc-620-account-access-google-oauth-client-doc-link.md`.
+  Scope was docs/index evidence only; no delegation was used because the
+  supported curated documentation-link mechanism was available and the row was
+  exact. Added `docs/architecture/relations/documentation-links.csv` linking
+  the generated function path to
+  `docs/planning/google-drive-v2-task-contracts.md`. `npm run
+  architecture:refresh` PASS; architecture-awareness refresh PASS generated
+  `2026-07-12T03:57:25.133Z` with `2836` entities / `6761` relations /
+  `16451` files and overrides `78/114`; app-completion refresh PASS generated
+  `1155` missing test links / `24` missing doc links /
+  `11` implemented-needs-proof / `0` blocked / `1190` known risk items;
+  Project Truth apply PASS generated `2026-07-12T03:57:51.354Z`, public
+  probe `pass`, runtime/event/ops gaps `0`, and first gap now
+  `src/integrations/google-drive/google-drive.auth.ts#getStoredGoogleDriveSecret`
+  `missing_test_link`. No product code, provider call, protected smoke,
+  credential value read, push, deploy, restart, or production mutation
+  occurred.
+
+## LUC-617 Checkpoint
+
+- 2026-07-12: [LUC-617](/LUC/issues/LUC-617) completed a single-lane 09 TAE
+  automated proof for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#getGoogleOAuthClient`
+  `missing_test_link` row. Output:
+  `.codex/tasks/luc-617-account-access-google-oauth-client-proof.md`.
+  Scope was focused local unit proof, exact symbol scanner override,
+  architecture/app-completion/Project Truth readback, and source-of-truth
+  updates; no subagent delegation was used because the row was narrow and
+  independently testable through the supported public authorization URL path.
+  Added a no-network test proving the resolver reads stored workspace OAuth
+  client credentials and uses the stored client id in the generated Google
+  authorization URL. Validation: scanner override JSON parse PASS;
+  `npm run build:server` PASS; focused
+  `node --test dist/tests/google-drive-auth.test.js` PASS (`6/6`);
+  `npm run architecture:refresh` PASS; Paperclip architecture-awareness
+  refresh PASS generated `2026-07-12T03:49:06.795Z` with `2834` entities /
+  `6755` relations / `16451` files and overrides `78/114`;
+  app-completion refresh PASS moved missing-test-link to `1155`;
+  Project Truth apply PASS generated `2026-07-12T03:49:15.955Z`, public
+  probe `pass`, runtime/event/ops gaps `0`, and first gap now the same
+  symbol as `missing_doc_link`. Follow-up [LUC-620](/LUC/issues/LUC-620) was
+  created for Documentation Steward doc-link curation. No live Google provider call, protected
+  smoke, credential value read, push, deploy, restart, or production mutation
+  occurred.
+
 ## LUC-614 Checkpoint
 
 - 2026-07-12: [LUC-614](/LUC/issues/LUC-614) completed a single-lane
