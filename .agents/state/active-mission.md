@@ -1,6 +1,100 @@
 # Active Mission Packet
 
-Last updated: 2026-07-10
+Last updated: 2026-07-12
+
+## LUC-550 Checkpoint
+
+- 2026-07-12: [LUC-550](/LUC/issues/LUC-550) completed a single-lane
+  Documentation Steward readback refresh after [LUC-546](/LUC/issues/LUC-546).
+  Output:
+  `.codex/tasks/luc-550-project-truth-readback-after-luc-546.md`. Scope was
+  generated Project Truth/app-completion readback only; no delegation was used
+  because the external generator path was available and the work was bounded
+  to docs/status artifacts plus source-of-truth updates. Architecture-awareness
+  refresh PASS generated `2026-07-11T23:33:04.593Z` with `2824` entities /
+  `6708` relations / `16450` files and overrides `74/110`. App-completion
+  refresh PASS generated `2026-07-11T23:33:10.964Z` with `1243` items /
+  `5` flows / `1159` missing test links / `25` missing doc links / `11`
+  implemented-needs-proof / `0` blocked / `1195` known risk items. Project
+  Truth apply PASS generated `2026-07-11T23:33:14.756Z` with public probe
+  `pass`, critical runtime findings `0`, incomplete event chains `0`,
+  operational gate gaps `0`, and first gap now
+  `src/integrations/google-drive/google-drive.auth.ts#buildGoogleDriveAuthorizationUrl`
+  `missing_doc_link`. `npm run architecture:status` PASS (`GREEN`,
+  graph `454/765/35`, evidence queue `0`, chain worklist `0`, all gates
+  pass). No product code, provider call, protected smoke, credential value
+  read, push, deploy, restart, or production mutation occurred.
+
+## LUC-546 Checkpoint
+
+- 2026-07-12: [LUC-546](/LUC/issues/LUC-546) completed a single-lane TAE
+  automated proof-link repair for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#buildGoogleDriveAuthorizationUrl`
+  missing-test-link row. Output:
+  `.codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md`.
+  Scope was focused local unit proof, exact symbol scanner override, and
+  architecture gate verification; no subagent delegation was used because the
+  row was narrow and independently testable. Added
+  `src/tests/google-drive-auth.test.ts`, which verifies the generated Google
+  OAuth consent URL parameters without a live provider call or workspace DB
+  lookup. `docs/architecture/scanner-overrides.json` now marks the exact
+  function row verified and links the new test. Validation: override JSON
+  parse PASS; `npm run build:server` PASS; `node --test
+  dist/tests/google-drive-auth.test.js` PASS (`1/1`); `npm run
+  architecture:refresh` PASS with graph `454/765/35`, evidence queue `0`,
+  chain worklist `0`, and architecture evidence gate PASS. No browser,
+  Docker/database runtime proof, protected smoke, credential value read, live
+  Google provider action, push, deploy, restart, or production mutation
+  occurred. Residual: the external Project Truth/app-completion generator is
+  not exposed as a standalone repo script in this checkout, so generated
+  `docs/status/*truth*` readback remains for the next dispatcher refresh.
+
+## LUC-538 Checkpoint
+
+- 2026-07-12: [LUC-538](/LUC/issues/LUC-538) completed a single-lane QVE
+  Project Truth proof classification for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts` implemented-needs-proof
+  row. Output:
+  `.codex/tasks/luc-538-account-access-google-drive-auth-proof.md`. Scope was
+  local evidence/status curation plus generated readback; no subagent
+  delegation was used because existing [LUC-6154](/LUC/issues/LUC-6154) and
+  [LUC-6155](/LUC/issues/LUC-6155) proof already covered the helper file
+  behavior. `docs/architecture/scanner-overrides.json` now marks the file row
+  verified and links the LUC-538 packet. Architecture-awareness PASS generated
+  `2026-07-11T23:01:17.280Z` with `2822` entities / `6705` relations /
+  `16449` files and overrides `73/109`; app-completion PASS generated
+  `2026-07-11T23:01:36.814Z`, moving implemented-needs-proof from `12` to
+  `11` and known risk items from `1196` to `1195`; Project Truth apply
+  generated `2026-07-11T23:02:19.091Z` with public probe `pass`, critical
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and first gap moved to `buildGoogleDriveAuthorizationUrl`
+  missing-test-link.
+  `npm run architecture:status` PASS. No product code, test code, browser,
+  Docker/database runtime proof, protected smoke, credential value read, live
+  Google provider action, push, deploy, restart, or production mutation
+  occurred.
+
+## LUC-527 Checkpoint
+
+- 2026-07-11: [LUC-527](/LUC/issues/LUC-527) completed a single-lane TAE
+  Project Truth Account access missing-test-link repair for the dispatched
+  `src/auth` gap. Output:
+  `.codex/tasks/luc-527-account-access-missing-test-link-proof.md`. Scope was
+  evidence-link/status curation plus generated readback; no subagent
+  delegation was used because the work was bounded to one proof family and
+  the existing LUC-6118/LUC-5561 evidence packets. `docs/architecture/scanner-overrides.json`
+  now links [LUC-6118](/LUC/issues/LUC-6118) verified API proof to backend
+  Account access auth module/helper rows and links [LUC-5561](/LUC/issues/LUC-5561)
+  verified browser/API proof to frontend auth rows. Architecture-awareness
+  PASS generated `2026-07-11T21:46:01.358Z` with `2820` entities / `6703`
+  relations / `16449` files and overrides `73/109`; app-completion PASS
+  moved missing-test-link from `1203` to `1160`; Project Truth apply PASS
+  kept public probe `pass`, critical runtime findings `0`, incomplete event
+  chains `0`, operational gate gaps `0`, and moved first gap from `src/auth`
+  missing-test-link to `google-drive.auth.ts` implemented-needs-proof.
+  `npm run architecture:status` PASS. No product code, test code, runtime
+  process, browser, Docker, database, protected smoke, credential value read,
+  push, deploy, restart, provider action, or production mutation occurred.
 
 ## LUC-321 Checkpoint
 

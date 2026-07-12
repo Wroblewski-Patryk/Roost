@@ -1,4 +1,15 @@
 # Next Steps
+- 2026-07-12: [LUC-550](/LUC/issues/LUC-550) has no remaining Documentation
+  Steward readback action after the external Project Truth/app-completion
+  refresh. The current first gap is
+  `src/integrations/google-drive/google-drive.auth.ts#buildGoogleDriveAuthorizationUrl`
+  `missing_doc_link`; [LUC-546](/LUC/issues/LUC-546)'s `missing_test_link`
+  condition is cleared. Next action, only if selected by Project Truth
+  routing, is a Docs Memory / PM doc-link curation lane for that symbol. Do
+  not open product code, live Google provider, protected smoke, push/deploy,
+  restart, production mutation, credential, or secret work from this readback
+  issue.
+
 - 2026-07-10: [LUC-321](/LUC/issues/LUC-321) has no remaining source-control
   closure action after the local commit. Push/deploy/protected smoke remain
   outside this sidecar lane and must not be inferred from source-control

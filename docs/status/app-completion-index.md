@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-07-10T01:15:29.046Z
+Generated: 2026-07-11T23:33:10.964Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -15,18 +15,18 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 - Items: 1243
 - User flows: 5
 - Needs browser/screenshot review: 0
-- Missing test link: 1203
-- Missing doc link: 20
-- Implemented, needs proof: 12
+- Missing test link: 1159
+- Missing doc link: 25
+- Implemented, needs proof: 11
 - Blocked: 0
-- Known non-ok risk items: 1235
-- Priority review items indexed: 200/1235
+- Known non-ok risk items: 1195
+- Priority review items indexed: 200/1195
 - Priority review truncated: true
 
 ## Flow Summary
 
 - Unclassified user workflow: 1096 entities; risks {"missing_test_link":1068,"ok":2,"implemented_needs_proof":8,"missing_doc_link":18}; gates {"configuration":7,"auth":1}
-- Account access: 70 entities; risks {"ok":6,"missing_test_link":61,"implemented_needs_proof":3}; gates {"auth":70,"configuration":10,"subscription":2}
+- Account access: 70 entities; risks {"ok":46,"missing_doc_link":5,"missing_test_link":17,"implemented_needs_proof":2}; gates {"auth":70,"configuration":16,"subscription":2}
 - Dashboard overview: 34 entities; risks {"missing_test_link":34}; gates {"configuration":7}
 - User configuration: 33 entities; risks {"missing_test_link":31,"missing_doc_link":2}; gates {"configuration":31}
 - Trading operation: 10 entities; risks {"missing_test_link":9,"implemented_needs_proof":1}; gates {}
@@ -35,35 +35,7 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 
 | User flow | Risk | Kind | Entity | Owner | Path | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
-| Account access | missing_test_link | feature_or_capability | src/auth | Engineering Delivery Lead | src/auth | auth |
-| Account access | missing_test_link | feature_or_capability | agent-key-profiles.ts | Engineering Delivery Lead | src/auth/agent-key-profiles.ts | auth |
-| Account access | missing_test_link | feature_or_capability | findAgentKeyProfile | Engineering Delivery Lead | src/auth/agent-key-profiles.ts#findAgentKeyProfile | auth |
-| Account access | missing_test_link | feature_or_capability | api-key.middleware.ts | Engineering Delivery Lead | src/auth/api-key.middleware.ts | auth |
-| Account access | missing_test_link | feature_or_capability | bearerToken | Engineering Delivery Lead | src/auth/api-key.middleware.ts#bearerToken | auth |
-| Account access | missing_test_link | feature_or_capability | requireAuthContext | Engineering Delivery Lead | src/auth/api-key.middleware.ts#requireAuthContext | auth |
-| Account access | missing_test_link | feature_or_capability | api-key.ts | Engineering Delivery Lead | src/auth/api-key.ts | auth |
-| Account access | missing_test_link | feature_or_capability | apiKeyPrefix | Engineering Delivery Lead | src/auth/api-key.ts#apiKeyPrefix | auth, configuration |
-| Account access | missing_test_link | feature_or_capability | generateApiKey | Engineering Delivery Lead | src/auth/api-key.ts#generateApiKey | auth, configuration |
-| Account access | missing_test_link | feature_or_capability | hashApiKey | Engineering Delivery Lead | src/auth/api-key.ts#hashApiKey | auth, configuration |
-| Account access | missing_test_link | feature_or_capability | capabilities.ts | Engineering Delivery Lead | src/auth/capabilities.ts | auth |
-| Account access | missing_test_link | feature_or_capability | capabilityForRequest | Engineering Delivery Lead | src/auth/capabilities.ts#capabilityForRequest | auth |
-| Account access | missing_test_link | feature_or_capability | effectiveCapabilities | Engineering Delivery Lead | src/auth/capabilities.ts#effectiveCapabilities | auth |
-| Account access | missing_test_link | feature_or_capability | hasCapability | Engineering Delivery Lead | src/auth/capabilities.ts#hasCapability | auth |
-| Account access | missing_test_link | feature_or_capability | normalizedRequestPaths | Engineering Delivery Lead | src/auth/capabilities.ts#normalizedRequestPaths | auth |
-| Account access | missing_test_link | feature_or_capability | routePattern | Engineering Delivery Lead | src/auth/capabilities.ts#routePattern | auth |
-| Account access | missing_test_link | feature_or_capability | scopesAreBroad | Engineering Delivery Lead | src/auth/capabilities.ts#scopesAreBroad | auth |
-| Account access | missing_test_link | feature_or_capability | password.ts | Engineering Delivery Lead | src/auth/password.ts | auth |
-| Account access | missing_test_link | feature_or_capability | hashPassword | Engineering Delivery Lead | src/auth/password.ts#hashPassword | auth |
-| Account access | missing_test_link | feature_or_capability | verifyPassword | Engineering Delivery Lead | src/auth/password.ts#verifyPassword | auth |
-| Account access | missing_test_link | feature_or_capability | token.ts | Engineering Delivery Lead | src/auth/token.ts | auth |
-| Account access | missing_test_link | feature_or_capability | base64UrlDecode | Engineering Delivery Lead | src/auth/token.ts#base64UrlDecode | auth |
-| Account access | missing_test_link | feature_or_capability | base64UrlEncode | Engineering Delivery Lead | src/auth/token.ts#base64UrlEncode | auth |
-| Account access | missing_test_link | feature_or_capability | createAuthToken | Engineering Delivery Lead | src/auth/token.ts#createAuthToken | auth |
-| Account access | missing_test_link | feature_or_capability | sign | Engineering Delivery Lead | src/auth/token.ts#sign | auth |
-| Account access | missing_test_link | feature_or_capability | verifyAuthToken | Engineering Delivery Lead | src/auth/token.ts#verifyAuthToken | auth |
-| Account access | missing_test_link | feature_or_capability | src/features/auth | Engineering Delivery Lead | src/features/auth | auth |
-| Account access | implemented_needs_proof | feature_or_capability | google-drive.auth.ts | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts | auth, configuration |
-| Account access | missing_test_link | feature_or_capability | buildGoogleDriveAuthorizationUrl | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#buildGoogleDriveAuthorizationUrl | auth |
+| Account access | missing_doc_link | feature_or_capability | buildGoogleDriveAuthorizationUrl | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#buildGoogleDriveAuthorizationUrl | auth |
 | Account access | missing_test_link | feature_or_capability | exchangeGoogleDriveAuthorizationCode | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#exchangeGoogleDriveAuthorizationCode | auth, configuration |
 | Account access | missing_test_link | feature_or_capability | getFreshGoogleDriveOAuthForWorkspace | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#getFreshGoogleDriveOAuthForWorkspace | auth |
 | Account access | missing_test_link | feature_or_capability | getGoogleDriveClientForWorkspace | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#getGoogleDriveClientForWorkspace | auth |
@@ -77,27 +49,15 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Account access | implemented_needs_proof | feature_or_capability | integration-settings.service.ts | Engineering Delivery Lead | src/integrations/integration-settings.service.ts | auth, subscription, configuration |
 | Account access | missing_test_link | feature_or_capability | parseGoogleDriveOAuthSecret | Engineering Delivery Lead | src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret | auth, configuration |
 | Account access | implemented_needs_proof | feature_or_capability | secrets.ts | Engineering Delivery Lead | src/integrations/secrets.ts | auth, subscription, configuration |
-| Account access | missing_test_link | feature_or_capability | src/modules/auth | Engineering Delivery Lead | src/modules/auth | auth |
-| Account access | missing_test_link | feature_or_capability | auth.routes.ts | Engineering Delivery Lead | src/modules/auth/auth.routes.ts | auth |
 | Account access | missing_test_link | feature_or_capability | authActor | Engineering Delivery Lead | src/modules/company-os/company-os.routes.ts#authActor | auth |
 | Account access | missing_test_link | feature_or_capability | authActor | Engineering Delivery Lead | src/modules/company-os/workflow-definition-drafts.routes.ts#authActor | auth |
 | Account access | missing_test_link | feature_or_capability | authActor | Engineering Delivery Lead | src/modules/intake/intake.routes.ts#authActor | auth |
 | Account access | missing_test_link | feature_or_capability | entityAuthority | Engineering Delivery Lead | src/modules/workforce/workforce.service.ts#entityAuthority | auth |
 | Account access | missing_test_link | feature_or_capability | requireUserAuth | Engineering Delivery Lead | src/modules/workspaces/workspaces.routes.ts#requireUserAuth | auth |
-| Account access | missing_test_link | feature_or_capability | auth-token.ts | Engineering Delivery Lead | web/src/api/auth-token.ts | auth |
-| Account access | missing_test_link | feature_or_capability | clearOwnerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#clearOwnerToken | auth |
-| Account access | missing_test_link | feature_or_capability | isSignedIn | Engineering Delivery Lead | web/src/api/auth-token.ts#isSignedIn | auth |
-| Account access | missing_test_link | feature_or_capability | ownerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#ownerToken | auth |
-| Account access | missing_test_link | feature_or_capability | setOwnerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#setOwnerToken | auth |
-| Account access | missing_test_link | feature_or_capability | client.ts | Engineering Delivery Lead | web/src/api/client.ts | auth |
-| Account access | missing_test_link | feature_or_capability | errors.ts | Engineering Delivery Lead | web/src/api/errors.ts | auth |
-| Account access | missing_test_link | feature_or_capability | canonicalPostAuthPath | Engineering Delivery Lead | web/src/app-route-registry.ts#canonicalPostAuthPath | auth |
-| Account access | missing_test_link | feature_or_capability | auth-pages.tsx | Engineering Delivery Lead | web/src/features/auth/auth-pages.tsx | auth |
-| Account access | missing_test_link | feature_or_capability | AuthRoute | Engineering Delivery Lead | web/src/features/auth/auth-pages.tsx#AuthRoute | auth |
-| Account access | missing_test_link | feature_or_capability | onSubmit | Engineering Delivery Lead | web/src/features/auth/auth-pages.tsx#onSubmit | auth |
-| Account access | missing_test_link | feature_or_capability | auth-validation.ts | Engineering Delivery Lead | web/src/features/auth/auth-validation.ts | auth |
-| Account access | missing_test_link | feature_or_capability | hasAuthErrors | Engineering Delivery Lead | web/src/features/auth/auth-validation.ts#hasAuthErrors | auth |
-| Account access | missing_test_link | feature_or_capability | validateAuthForm | Engineering Delivery Lead | web/src/features/auth/auth-validation.ts#validateAuthForm | auth |
+| Account access | missing_doc_link | feature_or_capability | clearOwnerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#clearOwnerToken | auth |
+| Account access | missing_doc_link | feature_or_capability | isSignedIn | Engineering Delivery Lead | web/src/api/auth-token.ts#isSignedIn | auth |
+| Account access | missing_doc_link | feature_or_capability | ownerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#ownerToken | auth |
+| Account access | missing_doc_link | feature_or_capability | setOwnerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#setOwnerToken | auth |
 | Account access | missing_test_link | feature_or_capability | AuthenticatedImage | Engineering Delivery Lead | web/src/features/departments/assets-route.tsx#AuthenticatedImage | auth |
 | Dashboard overview | missing_test_link | api_endpoint | USE /dashboard | Engineering Delivery Lead | src/app.ts#/dashboard | - |
 | Dashboard overview | missing_test_link | feature_or_capability | build-architecture-health-dashboard.mjs | Engineering Delivery Lead | scripts/build-architecture-health-dashboard.mjs | - |
@@ -115,6 +75,46 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Dashboard overview | missing_test_link | feature_or_capability | startOfToday | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#startOfToday | - |
 | Dashboard overview | missing_test_link | feature_or_capability | startOfTomorrow | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#startOfTomorrow | - |
 | Dashboard overview | missing_test_link | feature_or_capability | sumCounts | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#sumCounts | - |
+| Dashboard overview | missing_test_link | feature_or_capability | cc-button.tsx | Engineering Delivery Lead | web/src/components/cc-button.tsx | configuration |
+| Dashboard overview | missing_test_link | feature_or_capability | cc-data-table.tsx | Engineering Delivery Lead | web/src/components/cc-data-table.tsx | configuration |
+| Dashboard overview | missing_test_link | feature_or_capability | cc-field.tsx | Engineering Delivery Lead | web/src/components/cc-field.tsx | configuration |
+| Dashboard overview | missing_test_link | feature_or_capability | cc-notice.tsx | Engineering Delivery Lead | web/src/components/cc-notice.tsx | configuration |
+| Dashboard overview | missing_test_link | feature_or_capability | cc-resource-selector.tsx | Engineering Delivery Lead | web/src/components/cc-resource-selector.tsx | configuration |
+| Dashboard overview | missing_test_link | feature_or_capability | cc-route-loading.tsx | Engineering Delivery Lead | web/src/components/cc-route-loading.tsx | configuration |
+| Dashboard overview | missing_test_link | feature_or_capability | cc-text-input.tsx | Engineering Delivery Lead | web/src/components/cc-text-input.tsx | configuration |
+| Dashboard overview | missing_test_link | feature_or_capability | AssetsOverview | Engineering Delivery Lead | web/src/features/departments/assets-route.tsx#AssetsOverview | - |
+| Dashboard overview | missing_test_link | feature_or_capability | general-dashboard.tsx | Engineering Delivery Lead | web/src/features/departments/general-dashboard.tsx | - |
+| Dashboard overview | missing_test_link | feature_or_capability | GeneralDashboard | Engineering Delivery Lead | web/src/features/departments/general-dashboard.tsx#GeneralDashboard | - |
+| Dashboard overview | missing_test_link | feature_or_capability | healthTone | Engineering Delivery Lead | web/src/features/departments/general-dashboard.tsx#healthTone | - |
+| Dashboard overview | missing_test_link | feature_or_capability | itemMeta | Engineering Delivery Lead | web/src/features/departments/general-dashboard.tsx#itemMeta | - |
+| Dashboard overview | missing_test_link | feature_or_capability | public-home.tsx | Engineering Delivery Lead | web/src/features/public/public-home.tsx | - |
+| Dashboard overview | missing_test_link | feature_or_capability | HeroTopology | Engineering Delivery Lead | web/src/features/public/public-home.tsx#HeroTopology | - |
+| Dashboard overview | missing_test_link | feature_or_capability | PublicHomeRoute | Engineering Delivery Lead | web/src/features/public/public-home.tsx#PublicHomeRoute | - |
+| Dashboard overview | missing_test_link | feature_or_capability | RoostGlyph | Engineering Delivery Lead | web/src/features/public/public-home.tsx#RoostGlyph | - |
+| Dashboard overview | missing_test_link | feature_or_capability | StatusRail | Engineering Delivery Lead | web/src/features/public/public-home.tsx#StatusRail | - |
+| Dashboard overview | missing_test_link | feature_or_capability | tx | Engineering Delivery Lead | web/src/features/public/public-home.tsx#tx | - |
+| Trading operation | missing_test_link | api_endpoint | USE /strategy | Engineering Delivery Lead | src/app.ts#/strategy | - |
+| Trading operation | implemented_needs_proof | feature_or_capability | app.ts | Engineering Delivery Lead | src/app.ts | - |
+| Trading operation | missing_test_link | feature_or_capability | src/modules/strategy | Engineering Delivery Lead | src/modules/strategy | - |
+| Trading operation | missing_test_link | feature_or_capability | strategy.routes.ts | Engineering Delivery Lead | src/modules/strategy/strategy.routes.ts | - |
+| Trading operation | missing_test_link | feature_or_capability | asJsonArray | Engineering Delivery Lead | src/modules/strategy/strategy.routes.ts#asJsonArray | - |
+| Trading operation | missing_test_link | feature_or_capability | taskLooksStrategic | Engineering Delivery Lead | src/modules/strategy/strategy.routes.ts#taskLooksStrategic | - |
+| Trading operation | missing_test_link | feature_or_capability | textMatchesStrategy | Engineering Delivery Lead | src/modules/strategy/strategy.routes.ts#textMatchesStrategy | - |
+| Trading operation | missing_test_link | feature_or_capability | strategy-route.tsx | Engineering Delivery Lead | web/src/features/departments/strategy-route.tsx | - |
+| Trading operation | missing_test_link | feature_or_capability | formatDate | Engineering Delivery Lead | web/src/features/departments/strategy-route.tsx#formatDate | - |
+| Trading operation | missing_test_link | feature_or_capability | StrategyRoute | Engineering Delivery Lead | web/src/features/departments/strategy-route.tsx#StrategyRoute | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | GET / | Engineering Delivery Lead | src/app.ts#/ | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /agent-events | Engineering Delivery Lead | src/app.ts#/agent-events | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /agent-logs | Engineering Delivery Lead | src/app.ts#/agent-logs | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /agents | Engineering Delivery Lead | src/app.ts#/agents | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /api-keys | Engineering Delivery Lead | src/app.ts#/api-keys | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /api/build-info | Engineering Delivery Lead | src/app.ts#/api/build-info | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /assets | Engineering Delivery Lead | src/app.ts#/assets | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /clients | Engineering Delivery Lead | src/app.ts#/clients | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /commercial-exceptions | Engineering Delivery Lead | src/app.ts#/commercial-exceptions | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /company-os | Engineering Delivery Lead | src/app.ts#/company-os | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /connection | Engineering Delivery Lead | src/app.ts#/connection | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /deals | Engineering Delivery Lead | src/app.ts#/deals | - |
 
 ## Agent Rule
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-04T20:50:53.135Z",
+  "generatedAt": "2026-07-11T23:33:14.756Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,11 +10,11 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 181,
-      "linkedRelationCount": 526,
+      "entityCount": 186,
+      "linkedRelationCount": 611,
       "layers": {
         "frontend": {
-          "count": 17,
+          "count": 16,
           "sample": [
             {
               "id": "document:authenticated-shell-component:a65936ca97",
@@ -38,14 +38,6 @@
               "name": "/auth/register",
               "path": "docs/architecture/nodes/generated/PAGE-AUTO-0004.md",
               "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "feature:auth-pages-tsx:a25a1ef0c5",
-              "type": "feature",
-              "name": "auth-pages.tsx",
-              "path": "web/src/features/auth/auth-pages.tsx",
-              "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
             {
@@ -86,7 +78,7 @@
               "name": "onSubmit",
               "path": "web/src/features/auth/auth-pages.tsx#onSubmit",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:public-layout-tsx:348c47081e",
@@ -110,7 +102,7 @@
               "name": "auth-validation.ts",
               "path": "web/src/features/auth/auth-validation.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:validateauthform:6984e722b4",
@@ -118,7 +110,7 @@
               "name": "validateAuthForm",
               "path": "web/src/features/auth/auth-validation.ts#validateAuthForm",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:hasautherrors:87f05043a4",
@@ -126,7 +118,7 @@
               "name": "hasAuthErrors",
               "path": "web/src/features/auth/auth-validation.ts#hasAuthErrors",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "document:account-settings:d3a7a298ae",
@@ -156,7 +148,7 @@
           "truncated": false
         },
         "backend": {
-          "count": 50,
+          "count": 63,
           "sample": [
             {
               "id": "api_endpoint:use-auth:d272d61067",
@@ -207,6 +199,22 @@
               "status": "implemented"
             },
             {
+              "id": "feature:agent-key-profiles-ts:5c15d0332b",
+              "type": "feature",
+              "name": "agent-key-profiles.ts",
+              "path": "src/auth/agent-key-profiles.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "feature:capabilities-ts:8aa6c04dd1",
+              "type": "feature",
+              "name": "capabilities.ts",
+              "path": "src/auth/capabilities.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "feature:api-keys-routes-ts:3f908ca65c",
               "type": "feature",
               "name": "api-keys.routes.ts",
@@ -215,12 +223,28 @@
               "status": "implemented"
             },
             {
+              "id": "function:requireauthcontext:0e3e5e68f0",
+              "type": "function",
+              "name": "requireAuthContext",
+              "path": "src/auth/api-key.middleware.ts#requireAuthContext",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "feature:api-key-ts:ad12ed7339",
+              "type": "feature",
+              "name": "api-key.ts",
+              "path": "src/auth/api-key.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "feature:auth-routes-ts:ee1c62d0bd",
               "type": "feature",
               "name": "auth.routes.ts",
               "path": "src/modules/auth/auth.routes.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:routepattern:23e2a07448",
@@ -228,7 +252,47 @@
               "name": "routePattern",
               "path": "src/auth/capabilities.ts#routePattern",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
+            },
+            {
+              "id": "function:normalizedrequestpaths:573d38689b",
+              "type": "function",
+              "name": "normalizedRequestPaths",
+              "path": "src/auth/capabilities.ts#normalizedRequestPaths",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:scopesarebroad:8744860a85",
+              "type": "function",
+              "name": "scopesAreBroad",
+              "path": "src/auth/capabilities.ts#scopesAreBroad",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:effectivecapabilities:92c59b47d0",
+              "type": "function",
+              "name": "effectiveCapabilities",
+              "path": "src/auth/capabilities.ts#effectiveCapabilities",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:hascapability:e847bb3441",
+              "type": "function",
+              "name": "hasCapability",
+              "path": "src/auth/capabilities.ts#hasCapability",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:capabilityforrequest:bc33f6bb86",
+              "type": "function",
+              "name": "capabilityForRequest",
+              "path": "src/auth/capabilities.ts#capabilityForRequest",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             },
             {
               "id": "feature:connection-routes-ts:889d2c0f84",
@@ -255,6 +319,14 @@
               "status": "implemented"
             },
             {
+              "id": "document:luc-6155-auth-config-api-proof-lane:5f91846a03",
+              "type": "test",
+              "name": "LUC-6155 Auth/Config API Proof Lane",
+              "path": "docs/planning/luc-6155-auth-config-api-proof-lane.md",
+              "owner": "Docs Memory Lead",
+              "status": "verified"
+            },
+            {
               "id": "feature:assets-routes-ts:98ce76e11e",
               "type": "feature",
               "name": "assets.routes.ts",
@@ -279,12 +351,20 @@
               "status": "implemented"
             },
             {
+              "id": "module:src-modules-auth:703297e779",
+              "type": "module",
+              "name": "src/modules/auth",
+              "path": "src/modules/auth",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "route:auth-token-ts:f000fc4d3b",
               "type": "feature",
               "name": "auth-token.ts",
               "path": "web/src/api/auth-token.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:ownertoken:cff9bd9e05",
@@ -327,12 +407,20 @@
               "status": "implemented"
             },
             {
+              "id": "feature:auth-pages-tsx:a25a1ef0c5",
+              "type": "feature",
+              "name": "auth-pages.tsx",
+              "path": "web/src/features/auth/auth-pages.tsx",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "route:client-ts:3849b0a7cf",
               "type": "feature",
               "name": "client.ts",
               "path": "web/src/api/client.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:codefromstatus:17ee7a7221",
@@ -404,7 +492,7 @@
               "name": "errors.ts",
               "path": "web/src/api/errors.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:errorcode:1097d8941d",
@@ -428,7 +516,7 @@
               "name": "AuthRoute",
               "path": "web/src/features/auth/auth-pages.tsx#AuthRoute",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:app-route-registry-ts:ef4852fcf0",
@@ -469,6 +557,14 @@
               "path": "web/src/components/cc-text-input.tsx",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "module:src-features-auth:e655c0cda7",
+              "type": "module",
+              "name": "src/features/auth",
+              "path": "src/features/auth",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             },
             {
               "id": "function:authheaders:ed04499fb2",
@@ -548,7 +644,7 @@
               "name": "canonicalPostAuthPath",
               "path": "web/src/app-route-registry.ts#canonicalPostAuthPath",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:authenticatedimage:f7895977e5",
@@ -562,7 +658,7 @@
           "truncated": false
         },
         "worker": {
-          "count": 85,
+          "count": 78,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -637,11 +733,11 @@
               "status": "verified"
             },
             {
-              "id": "feature:agent-key-profiles-ts:5c15d0332b",
-              "type": "feature",
-              "name": "agent-key-profiles.ts",
-              "path": "src/auth/agent-key-profiles.ts",
-              "owner": "Engineering Delivery Lead",
+              "id": "document:testing-strategy:7c8f87966a",
+              "type": "document",
+              "name": "Testing Strategy",
+              "path": "docs/engineering/testing.md",
+              "owner": "Docs Memory Lead",
               "status": "implemented"
             },
             {
@@ -650,15 +746,7 @@
               "name": "findAgentKeyProfile",
               "path": "src/auth/agent-key-profiles.ts#findAgentKeyProfile",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "feature:capabilities-ts:8aa6c04dd1",
-              "type": "feature",
-              "name": "capabilities.ts",
-              "path": "src/auth/capabilities.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "module:src-auth:957e834344",
@@ -666,7 +754,7 @@
               "name": "src/auth",
               "path": "src/auth",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:workforce-service-ts:51867d486c",
@@ -682,7 +770,7 @@
               "name": "api-key.middleware.ts",
               "path": "src/auth/api-key.middleware.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:bearertoken:cd49d60966",
@@ -690,15 +778,7 @@
               "name": "bearerToken",
               "path": "src/auth/api-key.middleware.ts#bearerToken",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:requireauthcontext:0e3e5e68f0",
-              "type": "function",
-              "name": "requireAuthContext",
-              "path": "src/auth/api-key.middleware.ts#requireAuthContext",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:prisma-ts:dafac5460d",
@@ -709,20 +789,12 @@
               "status": "implemented"
             },
             {
-              "id": "feature:api-key-ts:ad12ed7339",
-              "type": "feature",
-              "name": "api-key.ts",
-              "path": "src/auth/api-key.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "feature:token-ts:50c86e6225",
               "type": "feature",
               "name": "token.ts",
               "path": "src/auth/token.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:api-error-ts:d388409f24",
@@ -738,7 +810,7 @@
               "name": "generateApiKey",
               "path": "src/auth/api-key.ts#generateApiKey",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:hashapikey:9cc7524c7a",
@@ -746,7 +818,7 @@
               "name": "hashApiKey",
               "path": "src/auth/api-key.ts#hashApiKey",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:apikeyprefix:4a68eb945b",
@@ -754,53 +826,13 @@
               "name": "apiKeyPrefix",
               "path": "src/auth/api-key.ts#apiKeyPrefix",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:env-ts:5b349453d9",
               "type": "feature",
               "name": "env.ts",
               "path": "src/config/env.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:normalizedrequestpaths:573d38689b",
-              "type": "function",
-              "name": "normalizedRequestPaths",
-              "path": "src/auth/capabilities.ts#normalizedRequestPaths",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:scopesarebroad:8744860a85",
-              "type": "function",
-              "name": "scopesAreBroad",
-              "path": "src/auth/capabilities.ts#scopesAreBroad",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:effectivecapabilities:92c59b47d0",
-              "type": "function",
-              "name": "effectiveCapabilities",
-              "path": "src/auth/capabilities.ts#effectiveCapabilities",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:hascapability:e847bb3441",
-              "type": "function",
-              "name": "hasCapability",
-              "path": "src/auth/capabilities.ts#hasCapability",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:capabilityforrequest:bc33f6bb86",
-              "type": "function",
-              "name": "capabilityForRequest",
-              "path": "src/auth/capabilities.ts#capabilityForRequest",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -818,7 +850,7 @@
               "name": "password.ts",
               "path": "src/auth/password.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:hashpassword:feef2ae853",
@@ -826,7 +858,7 @@
               "name": "hashPassword",
               "path": "src/auth/password.ts#hashPassword",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:verifypassword:8405520815",
@@ -834,7 +866,7 @@
               "name": "verifyPassword",
               "path": "src/auth/password.ts#verifyPassword",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:base64urlencode:1ea7ec83b1",
@@ -842,7 +874,7 @@
               "name": "base64UrlEncode",
               "path": "src/auth/token.ts#base64UrlEncode",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:base64urldecode:6cfe3afa36",
@@ -850,7 +882,7 @@
               "name": "base64UrlDecode",
               "path": "src/auth/token.ts#base64UrlDecode",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:sign:1025844865",
@@ -858,7 +890,7 @@
               "name": "sign",
               "path": "src/auth/token.ts#sign",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:createauthtoken:50f7ab3e8e",
@@ -866,7 +898,7 @@
               "name": "createAuthToken",
               "path": "src/auth/token.ts#createAuthToken",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:verifyauthtoken:07c9b4f680",
@@ -874,7 +906,7 @@
               "name": "verifyAuthToken",
               "path": "src/auth/token.ts#verifyAuthToken",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:google-drive-auth-ts:3aca51d9d5",
@@ -882,7 +914,7 @@
               "name": "google-drive.auth.ts",
               "path": "src/integrations/google-drive/google-drive.auth.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:getgoogledriveclientforworkspace:1d1d0eae6f",
@@ -914,7 +946,7 @@
               "name": "buildGoogleDriveAuthorizationUrl",
               "path": "src/integrations/google-drive/google-drive.auth.ts#buildGoogleDriveAuthorizationUrl",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:mergegoogledriveconfig:814153a3bb",
@@ -1149,26 +1181,10 @@
               "status": "implemented"
             },
             {
-              "id": "module:src-modules-auth:703297e779",
-              "type": "module",
-              "name": "src/modules/auth",
-              "path": "src/modules/auth",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "module:src-api:f5a3d431e4",
               "type": "module",
               "name": "src/api",
               "path": "src/api",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "module:src-features-auth:e655c0cda7",
-              "type": "module",
-              "name": "src/features/auth",
-              "path": "src/features/auth",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -1203,9 +1219,73 @@
               "path": "scripts/operating-model-registry-lifecycle-smoke.mjs#registerOwner",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
+            },
+            {
+              "id": "test:google-drive-auth-test-ts:fe2cea5fcb",
+              "type": "test",
+              "name": "google-drive-auth.test.ts",
+              "path": "src/tests/google-drive-auth.test.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "tested"
+            },
+            {
+              "id": "function:entityauthority:b0421607e6",
+              "type": "function",
+              "name": "entityAuthority",
+              "path": "src/modules/workforce/workforce.service.ts#entityAuthority",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:registerowner:04cb5d87eb",
+              "type": "function",
+              "name": "registerOwner",
+              "path": "src/tests/api.test.ts#registerOwner",
+              "owner": "Engineering Delivery Lead",
+              "status": "tested"
+            },
+            {
+              "id": "migration:migration-sql:00295854b1",
+              "type": "migration",
+              "name": "migration.sql",
+              "path": "prisma/migrations/202605022_workspace_auth/migration.sql",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "module:prisma:80aadafbbd",
+              "type": "module",
+              "name": "prisma",
+              "path": "prisma",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "task:luc-538-account-access-google-drive-auth-proof:5704d9d0a8",
+              "type": "task",
+              "name": "LUC-538 Account Access Google Drive Auth Proof",
+              "path": ".codex/tasks/luc-538-account-access-google-drive-auth-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:luc-546-account-access-google-drive-authorization-url-proof:14978d5a65",
+              "type": "task",
+              "name": "LUC-546 Account Access Google Drive Authorization URL Proof",
+              "path": ".codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "module:src-tests:6d29dd4ad6",
+              "type": "module",
+              "name": "src/tests",
+              "path": "src/tests",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
             }
           ],
-          "truncated": true
+          "truncated": false
         },
         "data": {
           "count": 0,
@@ -1213,8 +1293,16 @@
           "truncated": false
         },
         "tests": {
-          "count": 3,
+          "count": 4,
           "sample": [
+            {
+              "id": "document:luc-6118-account-access-auth-api-proof:efa369034b",
+              "type": "test",
+              "name": "LUC-6118 Account Access Auth API Proof",
+              "path": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+              "owner": "Docs Memory Lead",
+              "status": "verified"
+            },
             {
               "id": "document:luc-85-account-access-auth-headers-proof-link:42d649454d",
               "type": "test",
@@ -1243,7 +1331,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 25,
+          "count": 24,
           "sample": [
             {
               "id": "document:system-architecture:1149ef3528",
@@ -1366,22 +1454,6 @@
               "status": "implemented"
             },
             {
-              "id": "document:luc-6118-account-access-auth-api-proof:efa369034b",
-              "type": "document",
-              "name": "LUC-6118 Account Access Auth API Proof",
-              "path": "docs/planning/luc-6118-account-access-auth-api-proof.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:luc-6155-auth-config-api-proof-lane:5f91846a03",
-              "type": "document",
-              "name": "LUC-6155 Auth/Config API Proof Lane",
-              "path": "docs/planning/luc-6155-auth-config-api-proof-lane.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
               "id": "document:react-web-layout-001-authenticated-layout-foundation:977dd39002",
               "type": "document",
               "name": "REACT-WEB-LAYOUT-001 Authenticated Layout Foundation",
@@ -1442,6 +1514,14 @@
               "type": "document",
               "name": "Web Console V2 Task Contracts",
               "path": "docs/planning/web-console-v2-task-contracts.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:web-layer-react-ownership:beb6e31ebd",
+              "type": "document",
+              "name": "Web Layer React Ownership",
+              "path": "docs/architecture/web-layer-react-ownership.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
             }
@@ -2235,11 +2315,11 @@
     },
     {
       "userFlow": "Subscription and entitlement",
-      "entityCount": 1001,
-      "linkedRelationCount": 3479,
+      "entityCount": 1003,
+      "linkedRelationCount": 3485,
       "layers": {
         "frontend": {
-          "count": 35,
+          "count": 34,
           "sample": [
             {
               "id": "function:iconclass:e1458be526",
@@ -2262,14 +2342,6 @@
               "type": "module",
               "name": "src/components",
               "path": "src/components",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "feature:auth-pages-tsx:a25a1ef0c5",
-              "type": "feature",
-              "name": "auth-pages.tsx",
-              "path": "web/src/features/auth/auth-pages.tsx",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -2525,7 +2597,7 @@
           "truncated": false
         },
         "backend": {
-          "count": 129,
+          "count": 130,
           "sample": [
             {
               "id": "component:cc-button-tsx:dff712debb",
@@ -2558,6 +2630,14 @@
               "path": "web/src/features/departments/assets-route.tsx",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "feature:auth-pages-tsx:a25a1ef0c5",
+              "type": "feature",
+              "name": "auth-pages.tsx",
+              "path": "web/src/features/auth/auth-pages.tsx",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             },
             {
               "id": "feature:management-route-tsx:465001c13c",
@@ -3158,14 +3238,6 @@
               "path": "src/app.ts#/ready",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "api_endpoint:use-v1-ready:035c4febde",
-              "type": "api_endpoint",
-              "name": "USE /v1/ready",
-              "path": "src/app.ts#/v1/ready",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
@@ -3363,7 +3435,7 @@
               "name": "api-key.middleware.ts",
               "path": "src/auth/api-key.middleware.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:env-ts:5b349453d9",
@@ -3459,7 +3531,7 @@
               "name": "google-drive.auth.ts",
               "path": "src/integrations/google-drive/google-drive.auth.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:google-drive-content-ts:dfd2b35d30",
@@ -3595,7 +3667,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 786,
+          "count": 788,
           "sample": [
             {
               "id": "document:task:93ac653bad",
@@ -4248,8 +4320,8 @@
     },
     {
       "userFlow": "Trading operation",
-      "entityCount": 57,
-      "linkedRelationCount": 132,
+      "entityCount": 83,
+      "linkedRelationCount": 196,
       "layers": {
         "frontend": {
           "count": 7,
@@ -4314,7 +4386,7 @@
           "truncated": false
         },
         "backend": {
-          "count": 21,
+          "count": 31,
           "sample": [
             {
               "id": "api_endpoint:use-strategy:0ead398998",
@@ -4331,6 +4403,86 @@
               "path": "src/app.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "feature:agent-key-profiles-ts:5c15d0332b",
+              "type": "feature",
+              "name": "agent-key-profiles.ts",
+              "path": "src/auth/agent-key-profiles.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "feature:api-key-ts:ad12ed7339",
+              "type": "feature",
+              "name": "api-key.ts",
+              "path": "src/auth/api-key.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "feature:capabilities-ts:8aa6c04dd1",
+              "type": "feature",
+              "name": "capabilities.ts",
+              "path": "src/auth/capabilities.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:capabilityforrequest:bc33f6bb86",
+              "type": "function",
+              "name": "capabilityForRequest",
+              "path": "src/auth/capabilities.ts#capabilityForRequest",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:effectivecapabilities:92c59b47d0",
+              "type": "function",
+              "name": "effectiveCapabilities",
+              "path": "src/auth/capabilities.ts#effectiveCapabilities",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:hascapability:e847bb3441",
+              "type": "function",
+              "name": "hasCapability",
+              "path": "src/auth/capabilities.ts#hasCapability",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:normalizedrequestpaths:573d38689b",
+              "type": "function",
+              "name": "normalizedRequestPaths",
+              "path": "src/auth/capabilities.ts#normalizedRequestPaths",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:requireauthcontext:0e3e5e68f0",
+              "type": "function",
+              "name": "requireAuthContext",
+              "path": "src/auth/api-key.middleware.ts#requireAuthContext",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:routepattern:23e2a07448",
+              "type": "function",
+              "name": "routePattern",
+              "path": "src/auth/capabilities.ts#routePattern",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:scopesarebroad:8744860a85",
+              "type": "function",
+              "name": "scopesAreBroad",
+              "path": "src/auth/capabilities.ts#scopesAreBroad",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             },
             {
               "id": "feature:strategy-routes-ts:cedc4e61d8",
@@ -4488,7 +4640,7 @@
           "truncated": false
         },
         "worker": {
-          "count": 23,
+          "count": 39,
           "sample": [
             {
               "id": "module:src:13b5974e74",
@@ -4547,6 +4699,22 @@
               "status": "implemented"
             },
             {
+              "id": "feature:api-key-middleware-ts:b3416cccca",
+              "type": "feature",
+              "name": "api-key.middleware.ts",
+              "path": "src/auth/api-key.middleware.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "feature:password-ts:e497710000",
+              "type": "feature",
+              "name": "password.ts",
+              "path": "src/auth/password.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "feature:test-api-local-mjs:fef8423ba8",
               "type": "feature",
               "name": "test-api-local.mjs",
@@ -4555,12 +4723,124 @@
               "status": "implemented"
             },
             {
+              "id": "feature:token-ts:50c86e6225",
+              "type": "feature",
+              "name": "token.ts",
+              "path": "src/auth/token.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:apikeyprefix:4a68eb945b",
+              "type": "function",
+              "name": "apiKeyPrefix",
+              "path": "src/auth/api-key.ts#apiKeyPrefix",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:base64urldecode:6cfe3afa36",
+              "type": "function",
+              "name": "base64UrlDecode",
+              "path": "src/auth/token.ts#base64UrlDecode",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:base64urlencode:1ea7ec83b1",
+              "type": "function",
+              "name": "base64UrlEncode",
+              "path": "src/auth/token.ts#base64UrlEncode",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:bearertoken:cd49d60966",
+              "type": "function",
+              "name": "bearerToken",
+              "path": "src/auth/api-key.middleware.ts#bearerToken",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:createauthtoken:50f7ab3e8e",
+              "type": "function",
+              "name": "createAuthToken",
+              "path": "src/auth/token.ts#createAuthToken",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:findagentkeyprofile:1fa7551329",
+              "type": "function",
+              "name": "findAgentKeyProfile",
+              "path": "src/auth/agent-key-profiles.ts#findAgentKeyProfile",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:generateapikey:c45aa0d6a2",
+              "type": "function",
+              "name": "generateApiKey",
+              "path": "src/auth/api-key.ts#generateApiKey",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:hashapikey:9cc7524c7a",
+              "type": "function",
+              "name": "hashApiKey",
+              "path": "src/auth/api-key.ts#hashApiKey",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:hashpassword:feef2ae853",
+              "type": "function",
+              "name": "hashPassword",
+              "path": "src/auth/password.ts#hashPassword",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:registerowner:04cb5d87eb",
               "type": "function",
               "name": "registerOwner",
               "path": "src/tests/api.test.ts#registerOwner",
               "owner": "Engineering Delivery Lead",
               "status": "tested"
+            },
+            {
+              "id": "function:sign:1025844865",
+              "type": "function",
+              "name": "sign",
+              "path": "src/auth/token.ts#sign",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:verifyauthtoken:07c9b4f680",
+              "type": "function",
+              "name": "verifyAuthToken",
+              "path": "src/auth/token.ts#verifyAuthToken",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:verifypassword:8405520815",
+              "type": "function",
+              "name": "verifyPassword",
+              "path": "src/auth/password.ts#verifyPassword",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "module:src-auth:957e834344",
+              "type": "module",
+              "name": "src/auth",
+              "path": "src/auth",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             },
             {
               "id": "document:agent-runtime-contract:8994a426da",
@@ -4741,11 +5021,11 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2728,
-      "linkedRelationCount": 6523,
+      "entityCount": 2737,
+      "linkedRelationCount": 6574,
       "layers": {
         "frontend": {
-          "count": 92,
+          "count": 91,
           "sample": [
             {
               "id": "agent:frontend-builder:8a06b01964",
@@ -4866,14 +5146,6 @@
               "path": "docs/planning/luc-6905-exchange-connection-configuration-visible-settings-chain.md",
               "owner": "Docs Memory Lead",
               "status": "verified"
-            },
-            {
-              "id": "feature:auth-pages-tsx:a25a1ef0c5",
-              "type": "feature",
-              "name": "auth-pages.tsx",
-              "path": "web/src/features/auth/auth-pages.tsx",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             },
             {
               "id": "feature:core-area-data-ts:6641a7b845",
@@ -5073,7 +5345,7 @@
               "name": "auth-validation.ts",
               "path": "web/src/features/auth/auth-validation.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:language-selector-tsx:c6c7d66278",
@@ -5386,12 +5658,20 @@
               "path": "docs/architecture/nodes/generated/COMP-SHELL.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
+            },
+            {
+              "id": "document:areas-area-00-ogolny-view-overview:eae5a91042",
+              "type": "document",
+              "name": "/areas?area=00-ogolny&view=overview",
+              "path": "docs/architecture/nodes/generated/PAGE-00-GENERAL.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "backend": {
-          "count": 520,
+          "count": 528,
           "sample": [
             {
               "id": "api_endpoint:get:1998daec82",
@@ -5448,6 +5728,14 @@
               "path": "src/app.ts#/api/build-info",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba",
+              "type": "task",
+              "name": "LUC-267 Roost Public Route Alias Task-Link Curation",
+              "path": ".codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             },
             {
               "id": "api_endpoint:use-assets:ac41eec16d",
@@ -5834,6 +6122,30 @@
               "status": "implemented"
             },
             {
+              "id": "feature:auth-routes-ts:ee1c62d0bd",
+              "type": "feature",
+              "name": "auth.routes.ts",
+              "path": "src/modules/auth/auth.routes.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "module:src-modules-auth:703297e779",
+              "type": "module",
+              "name": "src/modules/auth",
+              "path": "src/modules/auth",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "module:src-features-auth:e655c0cda7",
+              "type": "module",
+              "name": "src/features/auth",
+              "path": "src/features/auth",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "document:areas-route-body-usability-audit:aaabf779c4",
               "type": "document",
               "name": "Areas Route Body Usability Audit",
@@ -6000,44 +6312,12 @@
               "path": "scripts/companycore-mcp-server.mjs#summarizeBody",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "function:calltool:4ca98c9701",
-              "type": "function",
-              "name": "callTool",
-              "path": "scripts/companycore-mcp-server.mjs#callTool",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:handlerequest:1ddcea5501",
-              "type": "function",
-              "name": "handleRequest",
-              "path": "scripts/companycore-mcp-server.mjs#handleRequest",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:methodfromroutename:5d3bfeaee0",
-              "type": "function",
-              "name": "methodFromRouteName",
-              "path": "scripts/enrich-architecture-relations.mjs#methodFromRouteName",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:keyforroute:fdd494ff1c",
-              "type": "function",
-              "name": "keyForRoute",
-              "path": "scripts/generate-architecture-graph.mjs#keyForRoute",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 732,
+          "count": 733,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -6118,6 +6398,14 @@
               "path": ".agents/core/project-memory-index.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f",
+              "type": "task",
+              "name": "LUC-268 Roost App-Completion Proof-Link Curation After LUC-262",
+              "path": ".codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             },
             {
               "id": "agent:quality-gates:d55623d7b6",
@@ -6232,6 +6520,14 @@
               "status": "implemented"
             },
             {
+              "id": "task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb",
+              "type": "task",
+              "name": "LUC-321 Source-Control Closure For LUC-262/LUC-267/LUC-268",
+              "path": ".codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task-board:9aaadac0a2",
               "type": "task",
               "name": "TASK_BOARD",
@@ -6272,9 +6568,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-04-luc-111-module-confidence-update:b20ad11523",
+              "id": "agent:2026-07-12-luc-546-module-confidence-update:9315b73862",
               "type": "agent",
-              "name": "2026-07-04 LUC-111 Module Confidence Update",
+              "name": "2026-07-12 LUC-546 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -6328,9 +6624,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-04-luc-111-project-truth-tooling-health-signal:f66017c3dc",
+              "id": "agent:2026-07-10-luc-321-source-control-closure-health-signal:467e7ef98a",
               "type": "agent",
-              "name": "2026-07-04 LUC-111 Project Truth Tooling Health Signal",
+              "name": "2026-07-10 LUC-321 Source-Control Closure Health Signal",
               "path": ".agents/state/system-health.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -6662,22 +6958,6 @@
               "path": "src/modules/agent-logs",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "document:decisions-module:0eff59d7cc",
-              "type": "document",
-              "name": "Decisions Module",
-              "path": "src/modules/decisions/README.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "module:src-modules-decisions:aa86f9f5a9",
-              "type": "module",
-              "name": "src/modules/decisions",
-              "path": "src/modules/decisions",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
@@ -6688,7 +6968,7 @@
           "truncated": false
         },
         "tests": {
-          "count": 7,
+          "count": 8,
           "sample": [
             {
               "id": "document:playwright-assets-proof:82d901185f",
@@ -6735,6 +7015,14 @@
               "type": "test",
               "name": "LUC-5569 User Settings Proof Ladder",
               "path": "docs/planning/luc-5569-user-settings-proof-ladder.md",
+              "owner": "Docs Memory Lead",
+              "status": "verified"
+            },
+            {
+              "id": "document:luc-6118-account-access-auth-api-proof:efa369034b",
+              "type": "test",
+              "name": "LUC-6118 Account Access Auth API Proof",
+              "path": "docs/planning/luc-6118-account-access-auth-api-proof.md",
               "owner": "Docs Memory Lead",
               "status": "verified"
             },
@@ -7403,8 +7691,8 @@
     },
     {
       "userFlow": "User configuration",
-      "entityCount": 94,
-      "linkedRelationCount": 219,
+      "entityCount": 95,
+      "linkedRelationCount": 227,
       "layers": {
         "frontend": {
           "count": 7,
@@ -7469,7 +7757,7 @@
           "truncated": false
         },
         "backend": {
-          "count": 23,
+          "count": 25,
           "sample": [
             {
               "id": "api_endpoint:use-integration-settings:7da089bd2f",
@@ -7502,6 +7790,14 @@
               "path": "docs/ux/settings-drive-route-body-usability-audit-2026-05-15.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
+            },
+            {
+              "id": "feature:api-key-ts:ad12ed7339",
+              "type": "feature",
+              "name": "api-key.ts",
+              "path": "src/auth/api-key.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             },
             {
               "id": "feature:health-routes-ts:bbcf23ef19",
@@ -7550,6 +7846,14 @@
               "path": "src/modules/integration-settings/integration-settings.routes.ts#compareFolders",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "document:luc-6155-auth-config-api-proof-lane:5f91846a03",
+              "type": "test",
+              "name": "LUC-6155 Auth/Config API Proof Lane",
+              "path": "docs/planning/luc-6155-auth-config-api-proof-lane.md",
+              "owner": "Docs Memory Lead",
+              "status": "verified"
             },
             {
               "id": "feature:settings-routes-tsx:8e262225e5",
@@ -7621,7 +7925,7 @@
               "name": "client.ts",
               "path": "web/src/api/client.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "component:cc-button-tsx:dff712debb",
@@ -7659,7 +7963,7 @@
           "truncated": false
         },
         "worker": {
-          "count": 41,
+          "count": 40,
           "sample": [
             {
               "id": "module:src:13b5974e74",
@@ -7766,14 +8070,6 @@
               "status": "implemented"
             },
             {
-              "id": "feature:api-key-ts:ad12ed7339",
-              "type": "feature",
-              "name": "api-key.ts",
-              "path": "src/auth/api-key.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "feature:clickup-maintenance-scheduler-ts:b786011e97",
               "type": "feature",
               "name": "clickup.maintenance-scheduler.ts",
@@ -7795,7 +8091,7 @@
               "name": "google-drive.auth.ts",
               "path": "src/integrations/google-drive/google-drive.auth.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:secrets-ts:9896d14c7b",
@@ -7811,7 +8107,7 @@
               "name": "token.ts",
               "path": "src/auth/token.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:prisma-ts:dafac5460d",

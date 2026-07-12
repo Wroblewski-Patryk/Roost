@@ -9,6 +9,7 @@
     {
       "path": "web/src/api/client.ts",
       "type": "feature",
+      "status": "verified",
       "description": "Web API client utility for authenticated account access and dashboard data journeys; not a standalone browser route.",
       "evidence": [
         "docs/architecture/web-layer-react-ownership.md",
@@ -18,6 +19,7 @@
     {
       "path": "web/src/api/auth-token.ts",
       "type": "feature",
+      "status": "verified",
       "description": "Web auth token utility for authenticated account access journeys; not a standalone browser route.",
       "evidence": [
         "docs/architecture/web-layer-react-ownership.md",
@@ -27,6 +29,7 @@
     {
       "path": "web/src/api/errors.ts",
       "type": "feature",
+      "status": "verified",
       "description": "Web API error recovery utility for authenticated account access journeys; not a standalone browser route.",
       "evidence": [
         "docs/architecture/web-layer-react-ownership.md",
@@ -116,11 +119,22 @@
     },
     {
       "path": "src/integrations/google-drive/google-drive.auth.ts",
+      "status": "verified",
       "description": "Google Drive OAuth helper used by owner-authorized integration settings and Drive import flows; behavior proof belongs to the integration-settings API proof lane and Drive provider proof packets.",
       "evidence": [
         "docs/architecture/nodes/generated/INT-AUTO-0008.md",
         "docs/planning/luc-6154-qa-proof-selection-highest-risk-missing-test-links.md",
-        "docs/planning/luc-6155-auth-config-api-proof-lane.md"
+        "docs/planning/luc-6155-auth-config-api-proof-lane.md",
+        ".codex/tasks/luc-538-account-access-google-drive-auth-proof.md"
+      ]
+    },
+    {
+      "path": "src/integrations/google-drive/google-drive.auth.ts#buildGoogleDriveAuthorizationUrl",
+      "status": "verified",
+      "description": "Google Drive OAuth authorization URL helper verified by a focused no-network unit test for client id, redirect URI, scopes, offline access, consent prompt, state, and login hint parameters.",
+      "evidence": [
+        "src/tests/google-drive-auth.test.ts",
+        ".codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md"
       ]
     },
     {
@@ -228,6 +242,345 @@
         "docs/ux/evidence/luc-5561-auth-account-access/post-register-protected-route.png",
         "docs/ux/evidence/luc-5561-auth-account-access/login-form-filled.png",
         "docs/ux/evidence/luc-5561-auth-account-access/post-login-protected-route.png"
+      ]
+    },
+    {
+      "path": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified focused local API proof for Account access auth module behavior, including /auth and /v1/auth registration, login, identity readback, invalid credentials, invalid bearer denial, protected request denial, and workspace isolation.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth",
+      "status": "verified",
+      "description": "Backend Account access auth module verified by focused local API proof for registration, login, identity readback, invalid credentials, invalid bearer denial, protected request denial, and workspace isolation.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts",
+        "docs/engineering/testing.md"
+      ]
+    },
+    {
+      "path": "src/auth/agent-key-profiles.ts",
+      "status": "verified",
+      "description": "Agent key profile auth helper covered by Account access API proof and route capability checks.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/agent-key-profiles.ts#findAgentKeyProfile",
+      "status": "verified",
+      "description": "Agent key profile lookup helper covered through protected API flow and scoped key behavior.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/api-key.middleware.ts",
+      "status": "verified",
+      "description": "API key middleware covered by missing-key, protected request, scoped auth, and invalid bearer denial proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/api-key.middleware.ts#bearerToken",
+      "status": "verified",
+      "description": "Bearer-token extraction helper covered by invalid bearer denial and owner-token protected request proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/api-key.middleware.ts#requireAuthContext",
+      "status": "verified",
+      "description": "Auth context guard covered by protected route denial and authenticated owner protected route proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/api-key.ts",
+      "status": "verified",
+      "description": "Workspace API key helper covered by protected API flow and API-key route assertions in Account access proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/api-key.ts#apiKeyPrefix",
+      "status": "verified",
+      "description": "API key prefix helper covered by workspace API-key creation/readback paths in Account access proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/api-key.ts#generateApiKey",
+      "status": "verified",
+      "description": "API key generation helper covered by workspace API-key creation/readback paths in Account access proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/api-key.ts#hashApiKey",
+      "status": "verified",
+      "description": "API key hashing helper covered by protected API-key auth and denial behavior in Account access proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/capabilities.ts",
+      "status": "verified",
+      "description": "Capability helper module covered by scoped protected route access, denial, and route capability drift proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts",
+        "docs/engineering/testing.md"
+      ]
+    },
+    {
+      "path": "src/auth/capabilities.ts#capabilityForRequest",
+      "status": "verified",
+      "description": "Capability matching helper covered by scoped protected route access and route capability drift proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/capabilities.ts#effectiveCapabilities",
+      "status": "verified",
+      "description": "Effective-capability helper covered by scoped protected route access and denial proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/capabilities.ts#hasCapability",
+      "status": "verified",
+      "description": "Capability decision helper covered by scoped protected route access and denial proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/capabilities.ts#normalizedRequestPaths",
+      "status": "verified",
+      "description": "Request path normalization helper covered by route capability drift proof and protected route assertions.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/capabilities.ts#routePattern",
+      "status": "verified",
+      "description": "Route pattern helper covered by route capability drift proof and protected route assertions.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/capabilities.ts#scopesAreBroad",
+      "status": "verified",
+      "description": "Broad-scope helper covered by scoped protected route behavior and route capability checks.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/password.ts",
+      "status": "verified",
+      "description": "Password helper module covered by registration, login, and invalid credentials proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/password.ts#hashPassword",
+      "status": "verified",
+      "description": "Password hashing helper covered by registration plus successful and failed login proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/password.ts#verifyPassword",
+      "status": "verified",
+      "description": "Password verification helper covered by successful login and invalid credentials proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/token.ts",
+      "status": "verified",
+      "description": "Owner auth token helper module covered by registration, login, identity readback, and invalid bearer denial proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/token.ts#base64UrlDecode",
+      "status": "verified",
+      "description": "Token base64url decode helper covered by owner-token readback and invalid bearer denial proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/token.ts#base64UrlEncode",
+      "status": "verified",
+      "description": "Token base64url encode helper covered by owner-token creation and identity readback proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/token.ts#createAuthToken",
+      "status": "verified",
+      "description": "Owner token creation helper covered by registration, login, and identity readback proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/token.ts#sign",
+      "status": "verified",
+      "description": "Token signing helper covered by owner token creation and identity readback proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/auth/token.ts#verifyAuthToken",
+      "status": "verified",
+      "description": "Owner token verification helper covered by identity readback and invalid bearer denial proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "src/modules/auth",
+      "status": "verified",
+      "description": "Auth route module verified by focused /auth and /v1/auth local API proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts",
+        "docs/architecture/system-architecture.md"
+      ]
+    },
+    {
+      "path": "src/modules/auth/auth.routes.ts",
+      "status": "verified",
+      "description": "Auth routes verified by registration, login, identity readback, invalid credentials, invalid bearer denial, and /v1/auth alias proof.",
+      "evidence": [
+        "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts",
+        "docs/architecture/system-architecture.md"
+      ]
+    },
+    {
+      "path": "src/features/auth",
+      "status": "verified",
+      "description": "Frontend Account access auth feature verified by browser proof for registration, login, token persistence, protected route rendering, and /v1/auth/me readback.",
+      "evidence": [
+        "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+        "docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json",
+        "docs/architecture/web-layer-react-ownership.md"
+      ]
+    },
+    {
+      "path": "web/src/app-route-registry.ts#canonicalPostAuthPath",
+      "status": "verified",
+      "description": "Post-auth path normalization covered by Account access browser proof after registration and login.",
+      "evidence": [
+        "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+        "docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json"
+      ]
+    },
+    {
+      "path": "web/src/features/auth/auth-pages.tsx",
+      "status": "verified",
+      "description": "Auth page component covered by browser proof for registration, login, validation, token persistence, and protected-route rendering.",
+      "evidence": [
+        "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+        "docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json"
+      ]
+    },
+    {
+      "path": "web/src/features/auth/auth-pages.tsx#AuthRoute",
+      "status": "verified",
+      "description": "Auth route component covered by Account access browser proof for registration and login journeys.",
+      "evidence": [
+        "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+        "docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json"
+      ]
+    },
+    {
+      "path": "web/src/features/auth/auth-pages.tsx#onSubmit",
+      "status": "verified",
+      "description": "Auth submit handler covered by Account access browser proof for registration and login.",
+      "evidence": [
+        "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+        "docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json"
+      ]
+    },
+    {
+      "path": "web/src/features/auth/auth-validation.ts",
+      "status": "verified",
+      "description": "Auth form validation helper covered by Account access proof and auth form validation assertions.",
+      "evidence": [
+        "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+        "docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json"
+      ]
+    },
+    {
+      "path": "web/src/features/auth/auth-validation.ts#hasAuthErrors",
+      "status": "verified",
+      "description": "Auth validation error helper covered by Account access auth form proof.",
+      "evidence": [
+        "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+        "docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json"
+      ]
+    },
+    {
+      "path": "web/src/features/auth/auth-validation.ts#validateAuthForm",
+      "status": "verified",
+      "description": "Auth form validation helper covered by Account access auth form proof.",
+      "evidence": [
+        "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+        "docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json"
       ]
     },
     {
@@ -399,6 +752,582 @@
     },
     {
       "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "src/features/auth",
+      "toType": "module",
+      "evidence": "LUC-527 Account access frontend missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/features/auth",
+      "fromType": "module",
+      "toPath": "docs/architecture/web-layer-react-ownership.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access frontend proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/api/auth-token.ts",
+      "toType": "feature",
+      "evidence": "LUC-527 Account access frontend missing-test-link proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/api/auth-token.ts#clearOwnerToken",
+      "toType": "function",
+      "evidence": "LUC-527 Account access frontend missing-test-link proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/api/auth-token.ts#isSignedIn",
+      "toType": "function",
+      "evidence": "LUC-527 Account access frontend missing-test-link proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/api/auth-token.ts#ownerToken",
+      "toType": "function",
+      "evidence": "LUC-527 Account access frontend missing-test-link proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/api/auth-token.ts#setOwnerToken",
+      "toType": "function",
+      "evidence": "LUC-527 Account access frontend missing-test-link proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/api/client.ts",
+      "toType": "feature",
+      "evidence": "LUC-527 Account access frontend missing-test-link proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/api/errors.ts",
+      "toType": "feature",
+      "evidence": "LUC-527 Account access frontend missing-test-link proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/app-route-registry.ts#canonicalPostAuthPath",
+      "toType": "function",
+      "evidence": "LUC-527 Account access frontend missing-test-link proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/auth/auth-pages.tsx",
+      "toType": "feature",
+      "evidence": "LUC-527 Account access frontend missing-test-link proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/auth/auth-pages.tsx#AuthRoute",
+      "toType": "function",
+      "evidence": "LUC-527 Account access frontend missing-test-link proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/auth/auth-pages.tsx#onSubmit",
+      "toType": "function",
+      "evidence": "LUC-527 Account access frontend missing-test-link proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/auth/auth-validation.ts",
+      "toType": "feature",
+      "evidence": "LUC-527 Account access frontend missing-test-link proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/auth/auth-validation.ts#hasAuthErrors",
+      "toType": "function",
+      "evidence": "LUC-527 Account access frontend missing-test-link proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/auth/auth-validation.ts#validateAuthForm",
+      "toType": "function",
+      "evidence": "LUC-527 Account access frontend missing-test-link proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth",
+      "toType": "module",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth",
+      "fromType": "module",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/agent-key-profiles.ts",
+      "toType": "feature",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/agent-key-profiles.ts",
+      "fromType": "feature",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/agent-key-profiles.ts#findAgentKeyProfile",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/agent-key-profiles.ts#findAgentKeyProfile",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/api-key.middleware.ts",
+      "toType": "feature",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/api-key.middleware.ts",
+      "fromType": "feature",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/api-key.middleware.ts#bearerToken",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/api-key.middleware.ts#bearerToken",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/api-key.middleware.ts#requireAuthContext",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/api-key.middleware.ts#requireAuthContext",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/api-key.ts",
+      "toType": "feature",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/api-key.ts",
+      "fromType": "feature",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/api-key.ts#apiKeyPrefix",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/api-key.ts#apiKeyPrefix",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/api-key.ts#generateApiKey",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/api-key.ts#generateApiKey",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/api-key.ts#hashApiKey",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/api-key.ts#hashApiKey",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/capabilities.ts",
+      "toType": "feature",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/capabilities.ts",
+      "fromType": "feature",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/capabilities.ts#capabilityForRequest",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/capabilities.ts#capabilityForRequest",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/capabilities.ts#effectiveCapabilities",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/capabilities.ts#effectiveCapabilities",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/capabilities.ts#hasCapability",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/capabilities.ts#hasCapability",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/capabilities.ts#normalizedRequestPaths",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/capabilities.ts#normalizedRequestPaths",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/capabilities.ts#routePattern",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/capabilities.ts#routePattern",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/capabilities.ts#scopesAreBroad",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/capabilities.ts#scopesAreBroad",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/password.ts",
+      "toType": "feature",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/password.ts",
+      "fromType": "feature",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/password.ts#hashPassword",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/password.ts#hashPassword",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/password.ts#verifyPassword",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/password.ts#verifyPassword",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/token.ts",
+      "toType": "feature",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/token.ts",
+      "fromType": "feature",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/token.ts#base64UrlDecode",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/token.ts#base64UrlDecode",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/token.ts#base64UrlEncode",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/token.ts#base64UrlEncode",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/token.ts#createAuthToken",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/token.ts#createAuthToken",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/token.ts#sign",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/token.ts#sign",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/auth/token.ts#verifyAuthToken",
+      "toType": "function",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/auth/token.ts#verifyAuthToken",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/modules/auth",
+      "toType": "module",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/modules/auth",
+      "fromType": "module",
+      "toPath": "docs/architecture/system-architecture.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6118-account-access-auth-api-proof.md",
+      "fromType": "test",
+      "toPath": "src/modules/auth/auth.routes.ts",
+      "toType": "feature",
+      "evidence": "LUC-527 Account access auth module missing-test-link proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/modules/auth/auth.routes.ts",
+      "fromType": "feature",
+      "toPath": "docs/architecture/system-architecture.md",
+      "toType": "document",
+      "evidence": "LUC-527 Account access auth module proof documentation"
+    },
+    {
+      "type": "tests",
       "fromPath": "docs/planning/luc-6155-auth-config-api-proof-lane.md",
       "fromType": "test",
       "toPath": "src/integrations/integration-settings.service.ts",
@@ -428,6 +1357,14 @@
       "toPath": "src/integrations/google-drive/google-drive.auth.ts",
       "toType": "feature",
       "evidence": "LUC-268 app-completion proof-link curation after LUC-262"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/google-drive-auth.test.ts",
+      "fromType": "test",
+      "toPath": "src/integrations/google-drive/google-drive.auth.ts#buildGoogleDriveAuthorizationUrl",
+      "toType": "function",
+      "evidence": "LUC-546 Account access Google Drive authorization URL symbol proof"
     },
     {
       "type": "tests",

@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-07-02T14:48:02.747Z",
+  "generatedAt": "2026-07-11T23:27:58.616Z",
   "previous": {
-    "generatedAt": "2026-06-27T19:01:42.198Z",
+    "generatedAt": "2026-07-02T14:48:02.747Z",
     "graph": {
       "nodes": 0,
       "relations": 0,
@@ -17,7 +17,7 @@
     "roadmapStatus": "GREEN"
   },
   "current": {
-    "generatedAt": "2026-07-02T14:48:02.747Z",
+    "generatedAt": "2026-07-11T23:27:58.616Z",
     "graph": {
       "nodes": 0,
       "relations": 0,

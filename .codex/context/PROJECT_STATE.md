@@ -1,5 +1,67 @@
 # PROJECT_STATE
 
+- 2026-07-12: [LUC-550](/LUC/issues/LUC-550) completed Documentation Steward
+  Project Truth readback refresh after [LUC-546](/LUC/issues/LUC-546).
+  Source-of-truth task contract:
+  `.codex/tasks/luc-550-project-truth-readback-after-luc-546.md`.
+  External architecture-awareness refresh from `Paperclip_Softwarehouse`
+  generated `2026-07-11T23:33:04.593Z` with `2824` entities / `6708`
+  relations / `16450` files and overrides `74/110`. App-completion refresh
+  generated `2026-07-11T23:33:10.964Z` with `1243` items / `5` flows /
+  `1159` missing test links / `25` missing doc links / `11`
+  implemented-needs-proof / `0` blocked / `1195` known risk items. Project
+  Truth apply generated `2026-07-11T23:33:14.756Z` with public probe `pass`,
+  critical runtime findings `0`, incomplete event chains `0`, operational
+  gate gaps `0`, and total gaps `1195`. First gap moved from the
+  [LUC-546](/LUC/issues/LUC-546) `missing_test_link` row to
+  `src/integrations/google-drive/google-drive.auth.ts#buildGoogleDriveAuthorizationUrl`
+  `missing_doc_link`. `npm run architecture:status` PASS (`GREEN`, graph
+  `454/765/35`, evidence queue `0`, chain worklist `0`, all gates pass). No
+  product code, provider call, protected smoke, deploy, restart, push,
+  production mutation, credential value access, or secret disclosure occurred.
+
+- 2026-07-12: [LUC-546](/LUC/issues/LUC-546) completed QA automated proof for
+  the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#buildGoogleDriveAuthorizationUrl`
+  missing-test-link gap. Source-of-truth task contract:
+  `.codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md`.
+  `src/tests/google-drive-auth.test.ts` now verifies the helper builds the
+  expected Google OAuth consent URL with configured client id, redirect URI,
+  Drive scopes, offline access, consent prompt, state, and login hint, without
+  contacting Google or reading workspace secrets. `docs/architecture/scanner-overrides.json`
+  links that focused test to the exact generated function row and marks the row
+  verified. Validation: scanner override JSON parse PASS; `npm run
+  build:server` PASS; `node --test dist/tests/google-drive-auth.test.js` PASS
+  (`1/1`); `npm run architecture:refresh` PASS with graph `454/765/35`,
+  evidence queue `0`, chain worklist `0`, and architecture evidence gate PASS.
+  No browser, Docker/database runtime proof, protected smoke, live Google
+  provider action, credential value access, push, deploy, restart, or
+  production mutation occurred. Residual: this checkout does not expose a
+  standalone Project Truth/app-completion generator, so generated
+  `docs/status` first-gap readback remains for the external dispatcher refresh.
+
+- 2026-07-11: [LUC-527](/LUC/issues/LUC-527) completed QA Project Truth
+  proof-link repair for the dispatched Account access `src/auth`
+  missing-test-link gap. Source-of-truth task contract:
+  `.codex/tasks/luc-527-account-access-missing-test-link-proof.md`.
+  `docs/architecture/scanner-overrides.json` now records
+  [LUC-6118](/LUC/issues/LUC-6118) as verified Account access auth API proof
+  evidence and links it to backend `src/auth` module/helper rows; existing
+  [LUC-5561](/LUC/issues/LUC-5561) browser/API proof is linked to frontend
+  auth module/token/client/page/validation rows. Architecture-awareness
+  regeneration PASS generated `2026-07-11T21:46:01.358Z` with `2820`
+  entities / `6703` relations / `16449` files and overrides `73/109`
+  applied. App-completion regeneration PASS generated
+  `2026-07-11T21:46:03.663Z`, moving missing-test-link from `1203` to `1160`
+  and known risk items from `1235` to `1196`. Project Truth apply PASS:
+  public probe `pass`, critical runtime findings `0`, incomplete event
+  chains `0`, operational gate gaps `0`; first gap moved from `src/auth`
+  missing-test-link to `src/integrations/google-drive/google-drive.auth.ts`
+  implemented-needs-proof. `npm run architecture:status` PASS. No product
+  code, test code, runtime process, browser, Docker, database, protected
+  smoke, push, deploy, restart, provider mutation, credential access, secret
+  disclosure, or production mutation occurred.
+
 - 2026-07-10: [LUC-321](/LUC/issues/LUC-321) completed Roost local
   source-control closure for the [LUC-262](/LUC/issues/LUC-262),
   [LUC-267](/LUC/issues/LUC-267), and [LUC-268](/LUC/issues/LUC-268)

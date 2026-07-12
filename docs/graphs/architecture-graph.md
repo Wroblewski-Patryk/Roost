@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-10T01:15:26.020Z
+Generated: 2026-07-11T23:33:04.593Z
 
 ## Canonical Exports
 
@@ -42,14 +42,14 @@ Generated: 2026-07-10T01:15:26.020Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-10 LUC-267 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-12 LUC-546 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-10 LUC-267 Task-Link Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-10 LUC-321 Source-Control Closure Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -568,12 +568,17 @@ Generated: 2026-07-10T01:15:26.020Z
 | connected_to | function:mergegoogledrivesecret:3382200622 | model:types-ts:1fce583d96 | LUC-6911 Exchange event-chain frontend type mapping after LUC-6905 |
 | connected_to | function:mergegoogledrivesecret:3382200622 | feature:messages-ts:2ff8f72a93 | LUC-6911 Exchange event-chain frontend copy mapping after LUC-6905 |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
+| connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
+| connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
 | connected_to | project:roost:122c92a083 | task:luc-3712-architecture-task-link-backfill-for-173-implementation-rows:7fd1216070 | .codex/tasks/luc-3712-architecture-task-link-backfill.md |
+| connected_to | project:roost:122c92a083 | task:luc-527-account-access-missing-test-link-proof:559cf874cf | .codex/tasks/luc-527-account-access-missing-test-link-proof.md |
+| connected_to | project:roost:122c92a083 | task:luc-538-account-access-google-drive-auth-proof:5704d9d0a8 | .codex/tasks/luc-538-account-access-google-drive-auth-proof.md |
+| connected_to | project:roost:122c92a083 | task:luc-546-account-access-google-drive-authorization-url-proof:14978d5a65 | .codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md |
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
-| documents | agent:2026-07-10-luc-267-module-confidence-update:3426c4844c | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
-| documents | agent:2026-07-10-luc-267-task-link-health-signal:bb55740631 | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-10-luc-321-source-control-closure-health-signal:467e7ef98a | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-12-luc-546-module-confidence-update:9315b73862 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -1213,8 +1218,3 @@ Generated: 2026-07-10T01:15:26.020Z
 | documents | document:luc-5283-known-state-evidence-and-architecture-baseline:b5e3f45ae0 | module:docs:6784d83cb0 | docs/planning/luc-5283-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5284-known-state-evidence-and-architecture-baseline:623bde1d48 | module:docs:6784d83cb0 | docs/planning/luc-5284-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5286-source-control-closure-for-luc-5283-evidence-packet:559f022668 | module:docs:6784d83cb0 | docs/planning/luc-5286-source-control-closure-for-luc-5283-evidence-packet.md |
-| documents | document:luc-5287-qa-proof-ladder-duplicate-disposition:56ed5e8993 | module:docs:6784d83cb0 | docs/planning/luc-5287-qa-proof-ladder-duplicate-disposition.md |
-| documents | document:luc-5292-source-control-closure-for-luc-5291-evidence-refresh:cc70dce114 | module:docs:6784d83cb0 | docs/planning/luc-5292-source-control-closure-for-luc-5291-evidence-refresh.md |
-| documents | document:luc-5293-tasks-and-clickup-task-lifecycle-proof-ladder:75b74f1be7 | module:docs:6784d83cb0 | docs/planning/luc-5293-tasks-clickup-task-lifecycle-proof-ladder.md |
-| documents | document:luc-5301-api-endpoint-test-evidence-gap-qa-triage:cdbb7ed7ff | module:docs:6784d83cb0 | docs/planning/luc-5301-api-endpoint-test-evidence-gap-qa-triage.md |
-| documents | document:luc-5302-architecture-evidence-roadmap-awareness-reconciliation:be8d4d03a4 | module:docs:6784d83cb0 | docs/planning/luc-5302-architecture-evidence-roadmap-awareness-reconciliation.md |
