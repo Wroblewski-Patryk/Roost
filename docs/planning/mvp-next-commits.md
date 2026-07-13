@@ -1,5 +1,22 @@
 # MVP Next Commits
 
+- 2026-07-13: [LUC-949](/LUC/issues/LUC-949) completed focused verification
+  for Account access `src/integrations/secrets.ts`. Evidence packet:
+  `.codex/tasks/luc-949-account-access-secrets-proof.md`. Proof:
+  `npm run build:server` PASS; focused `node --test dist/tests/secrets.test.js`
+  PASS (`3/3`); architecture-awareness refresh PASS (`2862` entities /
+  `6928` relations / `16461` files) marks `src/integrations/secrets.ts`
+  `verified` with direct evidence from `src/tests/secrets.test.ts`;
+  app-completion refresh PASS (`1145` missing test links / `28` missing doc
+  links / `9` implemented-needs-proof / `0` blocked); Project Truth apply
+  PASS generated `2026-07-13T17:04:49.764Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap now
+  `src/modules/company-os/company-os.routes.ts#authActor`
+  `missing_test_link`. No live provider call, protected smoke, push, deploy,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Next owner for the new first gap: Test Automation Engineer + QA
+  Regression Lead if Project Truth routing keeps the same priority order.
+
 - 2026-07-13: [LUC-948](/LUC/issues/LUC-948) completed source-control closure
   for the coherent [LUC-943](/LUC/issues/LUC-943) documentation-link packet.
   Evidence packet:

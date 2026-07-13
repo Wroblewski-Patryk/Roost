@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-13T16:35:47.698Z",
+  "generatedAt": "2026-07-13T17:04:39.973Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -7,9 +7,9 @@
     "items": 1243,
     "flows": 5,
     "needsBrowserReview": 0,
-    "missingTestLink": 1148,
-    "missingDocLink": 24,
-    "implementedNeedsProof": 10,
+    "missingTestLink": 1145,
+    "missingDocLink": 28,
+    "implementedNeedsProof": 9,
     "blocked": 0,
     "riskItems": 1182,
     "appCompletionRiskItems": 1182,
@@ -20,17 +20,15 @@
   "flows": [
     {
       "userFlow": "Account access",
-      "total": 70,
+      "total": 69,
       "risks": {
         "ok": 59,
-        "implemented_needs_proof": 1,
         "missing_test_link": 6,
         "missing_doc_link": 4
       },
       "gates": {
-        "auth": 70,
-        "configuration": 19,
-        "subscription": 1
+        "auth": 69,
+        "configuration": 18
       }
     },
     {
@@ -54,15 +52,15 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "total": 1096,
+      "total": 1097,
       "risks": {
-        "missing_test_link": 1068,
+        "missing_test_link": 1065,
         "ok": 2,
         "implemented_needs_proof": 8,
-        "missing_doc_link": 18
+        "missing_doc_link": 22
       },
       "gates": {
-        "configuration": 7,
+        "configuration": 8,
         "auth": 1
       }
     },
@@ -79,29 +77,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "feature:secrets-ts:9896d14c7b",
-      "type": "feature",
-      "kind": "feature_or_capability",
-      "name": "secrets.ts",
-      "path": "src/integrations/secrets.ts",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth",
-        "subscription",
-        "configuration"
-      ],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 16,
-      "risk": "implemented_needs_proof"
-    },
     {
       "id": "function:authactor:8976974c1d",
       "type": "function",
@@ -3919,6 +3894,25 @@
         "needsScreenshotReview": false
       },
       "relatedEntityCount": 14,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:loadcsv:ee61f04aba",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "loadCsv",
+      "path": "scripts/check-architecture-chain-integrity.mjs#loadCsv",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
       "risk": "missing_test_link"
     }
   ]

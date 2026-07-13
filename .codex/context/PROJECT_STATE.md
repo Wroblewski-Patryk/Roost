@@ -1,5 +1,37 @@
 # PROJECT_STATE
 
+- 2026-07-13: [LUC-958](/LUC/issues/LUC-958) completed the Roost PM
+  source-control closure for the current [LUC-949](/LUC/issues/LUC-949) proof
+  packet. Source-of-truth task contract:
+  `.codex/tasks/luc-958-source-control-closure-for-luc-949.md`. Current
+  evidence: fresh git inspection narrowed the local packet to `29` tracked
+  modified docs/state/generated paths plus `2` untracked task-owned files
+  before this closure sync; focused `npm run build:server` PASS and focused
+  `node --test dist/tests/secrets.test.js` PASS (`3/3`) reconfirm the exact
+  proof/test packet remains valid; redaction-oriented inspection found no live
+  token, API key, or private-key markers in the dirty bundle. The local commit
+  is now the correct closure action; push was not needed and deploy impact is
+  none.
+
+- 2026-07-13: [LUC-949](/LUC/issues/LUC-949) completed focused verification
+  for Account access `src/integrations/secrets.ts`. Source-of-truth task
+  contract: `.codex/tasks/luc-949-account-access-secrets-proof.md`. Current
+  evidence: `src/tests/secrets.test.ts` directly proves round-trip encryption,
+  malformed payload rejection, and fail-closed ciphertext tamper rejection;
+  `npm run build:server` PASS; focused `node --test dist/tests/secrets.test.js`
+  PASS (`3/3`); architecture-awareness refresh generated
+  `2026-07-13T17:04:29.431Z` with `2862` entities / `6928` relations /
+  `16461` files and marks `src/integrations/secrets.ts` `verified`;
+  app-completion refresh generated `1243` items / `5` flows / `1145` missing
+  test links / `28` missing doc links / `9` implemented-needs-proof /
+  `0` blocked / `1182` known risk items; Project Truth apply generated
+  `2026-07-13T17:04:49.764Z` with public probe `pass`, runtime/event/ops
+  gaps `0`, and first gap moved to
+  `src/modules/company-os/company-os.routes.ts#authActor`
+  `missing_test_link`. No provider call, protected smoke, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred.
+
 - 2026-07-13: [LUC-939](/LUC/issues/LUC-939) completed verification closure
   for Account access non-production OAuth secret handling. Source-of-truth
   task contract:

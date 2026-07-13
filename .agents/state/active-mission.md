@@ -2,6 +2,50 @@
 
 Last updated: 2026-07-13
 
+## LUC-958 Checkpoint
+
+- 2026-07-13: [LUC-958](/LUC/issues/LUC-958) completed a single-lane Roost PM
+  source-control closure for the coherent [LUC-949](/LUC/issues/LUC-949)
+  proof packet. Output:
+  `.codex/tasks/luc-958-source-control-closure-for-luc-949.md`. Scope stayed
+  inside fresh git forensics, redaction-oriented inspection of the exact
+  proof/test plus docs/state/generated bundle, and durable local closure; no
+  subagent delegation was used because the lane remained bounded PM
+  source-control work. Evidence: fresh git inspection narrowed the bundle to
+  `29` modified tracked paths plus `2` untracked task-owned files before this
+  closure packet was added; `git rev-list --left-right --count
+  origin/main...HEAD` -> `0 11`; `git diff --check` PASS with LF-to-CRLF
+  warnings only; focused `npm run build:server` PASS; focused
+  `node --test dist/tests/secrets.test.js` PASS (`3/3`); redaction-oriented
+  inspection found no live token, API key, or private-key markers in the dirty
+  bundle. Commit decision: committed locally in this closure lane; push status
+  `not needed`; deploy impact `none`. Final disposition: `done`. Next
+  owner/action: Test Automation Engineer + QA Regression Lead for the new first
+  Project Truth gap `src/modules/company-os/company-os.routes.ts#authActor`
+  `missing_test_link`.
+
+## LUC-949 Checkpoint
+
+- 2026-07-13: [LUC-949](/LUC/issues/LUC-949) completed a single-lane QA
+  verification closure for the Account access
+  `src/integrations/secrets.ts` `implemented_needs_proof` row. Output:
+  `.codex/tasks/luc-949-account-access-secrets-proof.md`. Scope stayed inside
+  focused secret-helper proof, scanner override verification status, generated
+  architecture/app-completion/Project Truth refresh, and durable state
+  updates; no subagent delegation was used because the lane was narrow and
+  fully QA-owned. Evidence: `npm run build:server` PASS; focused
+  `node --test dist/tests/secrets.test.js` PASS (`3/3`);
+  architecture-awareness refresh PASS generated `2026-07-13T17:04:29.431Z`
+  with `2862` entities / `6928` relations / `16461` files and marks
+  `src/integrations/secrets.ts` `verified`; app-completion refresh PASS now
+  reports `1145` missing test links / `28` missing doc links /
+  `9` implemented-needs-proof / `0` blocked; Project Truth apply PASS
+  generated `2026-07-13T17:04:49.764Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to
+  `src/modules/company-os/company-os.routes.ts#authActor`
+  `missing_test_link`. Final disposition: `done`. Next owner/action:
+  Test Automation Engineer + QA Regression Lead for the new first gap.
+
 ## LUC-948 Checkpoint
 
 - 2026-07-13: [LUC-948](/LUC/issues/LUC-948) completed a single-lane Roost PM

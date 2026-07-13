@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-13T16:34:45.973Z
+Generated: 2026-07-13T17:04:29.431Z
 
 ## Canonical Exports
 
@@ -607,6 +607,7 @@ Generated: 2026-07-13T16:34:45.973Z
 | connected_to | project:roost:122c92a083 | task:task:3f22b73136 | .codex/tasks/luc-928-account-access-refresh-google-drive-oauth-doc-link.md |
 | connected_to | project:roost:122c92a083 | task:task:a2f6573d7c | .codex/tasks/luc-939-account-access-non-production-oauth-secret-proof-closure.md |
 | connected_to | project:roost:122c92a083 | task:task:6f7cafdc16 | .codex/tasks/luc-943-account-access-parse-google-drive-oauth-secret-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:task:546ca92f5c | .codex/tasks/luc-948-source-control-closure-for-luc-943.md |
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
@@ -1217,4 +1218,3 @@ Generated: 2026-07-13T16:34:45.973Z
 | documents | document:luc-5132-security-and-ai-authority-evidence-recheck:1317ba6163 | module:docs:6784d83cb0 | docs/planning/luc-5132-security-ai-authority-evidence-recheck.md |
 | documents | document:luc-5135-known-state-evidence-and-architecture-baseline:8b0a832ad2 | module:docs:6784d83cb0 | docs/planning/luc-5135-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5144-source-control-closure-for-luc-5135-evidence-packet:7ed17f42e0 | module:docs:6784d83cb0 | docs/planning/luc-5144-source-control-closure-for-luc-5135-evidence-packet.md |
-| documents | document:luc-5150-known-state-evidence-and-architecture-baseline:756cbf6000 | module:docs:6784d83cb0 | docs/planning/luc-5150-known-state-evidence-and-architecture-baseline.md |

@@ -249,11 +249,11 @@
     },
     {
       "path": "src/integrations/secrets.ts",
-      "description": "Encrypted integration secret infrastructure; security behavior is documented in the security baseline and authority risk review.",
+      "status": "verified",
+      "description": "Encrypted integration secret helper verified by a focused unit test that proves round-trip encryption, malformed payload rejection, and fail-closed integrity checks for tampered ciphertext.",
       "evidence": [
-        "docs/architecture/nodes/generated/INT-AUTO-0013.md",
-        "docs/security/security-baseline.md",
-        "docs/planning/luc-5984-auth-subscription-configuration-authority-risk-review.md"
+        "src/tests/secrets.test.ts",
+        ".codex/tasks/luc-949-account-access-secrets-proof.md"
       ]
     },
     {
@@ -1476,6 +1476,14 @@
       "toPath": "src/integrations/secrets.ts",
       "toType": "feature",
       "evidence": "LUC-268 app-completion proof-link curation after LUC-262"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/secrets.test.ts",
+      "fromType": "test",
+      "toPath": "src/integrations/secrets.ts",
+      "toType": "feature",
+      "evidence": "LUC-949 Account access secrets helper proof"
     },
     {
       "type": "tests",

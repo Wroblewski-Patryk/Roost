@@ -1,6 +1,6 @@
 # Project Memory Index
 
-Last updated: 2026-07-12
+Last updated: 2026-07-13
 
 ## Purpose
 
@@ -10,6 +10,23 @@ Every non-trivial task must connect local code changes to the current product
 state, architecture intent, module confidence, and the next release objective.
 
 ## Latest Generated Truth
+
+- 2026-07-13: [LUC-949](/LUC/issues/LUC-949) cleared the Account access
+  `src/integrations/secrets.ts` `implemented_needs_proof` row with direct QA
+  proof. Use `.codex/tasks/luc-949-account-access-secrets-proof.md` for
+  current evidence: `src/tests/secrets.test.ts` proves round-trip encryption,
+  malformed payload rejection, and fail-closed tamper rejection; refreshed
+  architecture-awareness generated `2026-07-13T17:04:29.431Z` with `2862`
+  entities / `6928` relations / `16461` files and marks
+  `src/integrations/secrets.ts` `verified`; app-completion generated `1243`
+  items / `5` flows / `1145` missing test links / `28` missing doc links /
+  `9` implemented-needs-proof / `0` blocked / `1182` risk items; Project
+  Truth generated `2026-07-13T17:04:49.764Z` with public probe `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and first gap moved to
+  `src/modules/company-os/company-os.routes.ts#authActor`
+  `missing_test_link`. Do not reopen another secrets-helper proof lane unless
+  a fresh generated regression removes the verified status.
 
 - 2026-07-13: [LUC-943](/LUC/issues/LUC-943) cleared the Account access
   `parseGoogleDriveOAuthSecret` `missing_doc_link` row. Use

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-13T16:35:49.119Z",
+  "generatedAt": "2026-07-13T17:04:49.764Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "gaps_require_routing",
@@ -22,29 +22,16 @@
     "kind": "app_completion_gap",
     "severity": "medium",
     "userFlow": "Account access",
-    "summary": "Account access: secrets.ts has app-completion risk implemented_needs_proof.",
-    "nextOwner": "QA Regression Lead + Project Manager",
-    "nextAction": "Run and record fresh proof for the implemented behavior, then update completion/project-truth indexes.",
+    "summary": "Account access: authActor has app-completion risk missing_test_link.",
+    "nextOwner": "Test Automation Engineer + QA Regression Lead",
+    "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
     "evidence": [
-      "src/integrations/secrets.ts"
+      "src/modules/company-os/company-os.routes.ts#authActor"
     ],
-    "sourceItemId": "feature:secrets-ts:9896d14c7b",
-    "risk": "implemented_needs_proof"
+    "sourceItemId": "function:authactor:8976974c1d",
+    "risk": "missing_test_link"
   },
   "gaps": [
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Account access",
-      "summary": "Account access: secrets.ts has app-completion risk implemented_needs_proof.",
-      "nextOwner": "QA Regression Lead + Project Manager",
-      "nextAction": "Run and record fresh proof for the implemented behavior, then update completion/project-truth indexes.",
-      "evidence": [
-        "src/integrations/secrets.ts"
-      ],
-      "sourceItemId": "feature:secrets-ts:9896d14c7b",
-      "risk": "implemented_needs_proof"
-    },
     {
       "kind": "app_completion_gap",
       "severity": "medium",
@@ -2630,6 +2617,19 @@
         "scripts/check-architecture-chain-integrity.mjs"
       ],
       "sourceItemId": "feature:check-architecture-chain-integrity-mjs:6b9a42b230",
+      "risk": "missing_test_link"
+    },
+    {
+      "kind": "app_completion_gap",
+      "severity": "medium",
+      "userFlow": "Unclassified user workflow",
+      "summary": "Unclassified user workflow: loadCsv has app-completion risk missing_test_link.",
+      "nextOwner": "Test Automation Engineer + QA Regression Lead",
+      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "evidence": [
+        "scripts/check-architecture-chain-integrity.mjs#loadCsv"
+      ],
+      "sourceItemId": "function:loadcsv:ee61f04aba",
       "risk": "missing_test_link"
     }
   ]

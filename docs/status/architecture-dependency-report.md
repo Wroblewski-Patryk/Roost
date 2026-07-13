@@ -1,11 +1,11 @@
 # Dependency Report
 
-Generated: 2026-07-13T16:34:45.973Z
+Generated: 2026-07-13T17:04:29.431Z
 
 ## Summary
 
-- Dependency relations: 439
-- Entities with dependencies: 96
+- Dependency relations: 440
+- Entities with dependencies: 97
 
 ## Dependency Edges
 
@@ -450,3 +450,4 @@ Generated: 2026-07-13T16:34:45.973Z
 | api.test.ts | uses | catalog.ts | src/operating-model/catalog |
 | api.test.ts | uses | secrets.ts | src/integrations/secrets |
 | google-drive-auth.test.ts | uses | prisma.ts | src/db/prisma |
+| secrets.test.ts | uses | secrets.ts | src/integrations/secrets |

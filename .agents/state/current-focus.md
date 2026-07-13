@@ -1,5 +1,16 @@
 # Current Focus
 
+- 2026-07-13: [LUC-949](/LUC/issues/LUC-949) closed the Account access
+  `src/integrations/secrets.ts` proof lane. Packet:
+  `.codex/tasks/luc-949-account-access-secrets-proof.md`. Current
+  app-completion readback now shows `1243` items / `5` flows / `1145`
+  missing test links / `28` missing doc links / `9`
+  implemented-needs-proof / `0` blocked / `0` browser-review records /
+  `1182` risk items, and Project Truth first gap has moved to
+  `src/modules/company-os/company-os.routes.ts#authActor`
+  `missing_test_link`. Focus shifts away from secret-helper proof authoring to
+  the next QA-owned Account access gap.
+
 - 2026-07-13: [LUC-939](/LUC/issues/LUC-939) closed the duplicate Account
   access non-production OAuth secret proof lane. Packet:
   `.codex/tasks/luc-939-account-access-non-production-oauth-secret-proof-closure.md`.

@@ -1,4 +1,25 @@
 # Next Steps
+- 2026-07-13: [LUC-958](/LUC/issues/LUC-958) has no remaining PM
+  source-control action. The durable packet is
+  `.codex/tasks/luc-958-source-control-closure-for-luc-949.md`, and the
+  coherent [LUC-949](/LUC/issues/LUC-949) proof/test plus docs/state/generated
+  bundle is now committed locally. Next owner/action moves to Test Automation
+  Engineer + QA Regression Lead for
+  `src/modules/company-os/company-os.routes.ts#authActor`
+  `missing_test_link`. Do not reopen another PM recount unless a new dirty
+  bundle appears.
+
+- 2026-07-13: [LUC-949](/LUC/issues/LUC-949) has no remaining QA action for
+  `src/integrations/secrets.ts`. The durable packet is
+  `.codex/tasks/luc-949-account-access-secrets-proof.md`. Current fact:
+  `src/tests/secrets.test.ts` now proves round-trip encryption plus fail-closed
+  malformed/tampered secret rejection, and generated truth no longer reports
+  `src/integrations/secrets.ts` as `implemented_needs_proof`. Next action, if
+  selected by Project Truth routing, is a new QA proof lane for
+  `src/modules/company-os/company-os.routes.ts#authActor`
+  `missing_test_link`. Do not reopen the secrets helper unless a fresh
+  regression removes its verified graph status.
+
 - 2026-07-13: [LUC-939](/LUC/issues/LUC-939) has no remaining 09 IDE proof
   action. The durable packet is
   `.codex/tasks/luc-939-account-access-non-production-oauth-secret-proof-closure.md`.

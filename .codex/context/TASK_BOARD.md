@@ -1,6 +1,41 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-13: [LUC-958](/LUC/issues/LUC-958) source-control closure for the
+  current [LUC-949](/LUC/issues/LUC-949) proof packet is complete locally. Task
+  contract: `.codex/tasks/luc-958-source-control-closure-for-luc-949.md`.
+  Evidence: fresh git inspection narrowed the current bundle to `29` tracked
+  modified paths plus `2` untracked task-owned files before this closure sync:
+  one focused behavior test, one proof task packet, and the derivative
+  docs/state/generated refresh with `0` unrelated runtime or env paths;
+  `git rev-list --left-right --count origin/main...HEAD` -> `0 11`; `git diff
+  --check` PASS with LF-to-CRLF warnings only; focused `npm run build:server`
+  PASS; focused `node --test dist/tests/secrets.test.js` PASS (`3/3`); scoped
+  redaction inspection found no live-token, API-key, or private-key markers.
+  Commit decision: local closure commit created, push status `not needed`,
+  deploy impact `none`. No protected smoke, restart, production mutation,
+  credential access, or secret disclosure occurred.
+
+- 2026-07-13: [LUC-949](/LUC/issues/LUC-949) Account access
+  `src/integrations/secrets.ts` implemented-needs-proof verification is
+  complete locally. Task contract:
+  `.codex/tasks/luc-949-account-access-secrets-proof.md`. Evidence:
+  `src/tests/secrets.test.ts` now proves round-trip encryption, malformed
+  payload rejection, and fail-closed ciphertext tamper rejection; `npm run
+  build:server` PASS; focused `node --test dist/tests/secrets.test.js` PASS
+  (`3/3`); architecture-awareness refresh PASS generated
+  `2026-07-13T17:04:29.431Z` with `2862` entities / `6928` relations /
+  `16461` files and marks `src/integrations/secrets.ts` verified with direct
+  test evidence; app-completion refresh PASS generated `1145` missing test
+  links / `28` missing doc links / `9` implemented-needs-proof / `0`
+  blocked / `1182` known risk items; Project Truth apply PASS generated
+  `2026-07-13T17:04:49.764Z` with public probe `pass`, runtime/event/ops
+  gaps `0`, and first gap advanced to
+  `src/modules/company-os/company-os.routes.ts#authActor`
+  `missing_test_link`. No runtime code, provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred.
+
 - 2026-07-13: [LUC-948](/LUC/issues/LUC-948) source-control closure for the
   current [LUC-943](/LUC/issues/LUC-943) documentation-link packet is complete
   locally. Task contract:
