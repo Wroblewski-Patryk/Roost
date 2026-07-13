@@ -2,6 +2,48 @@
 
 Last updated: 2026-07-13
 
+## LUC-939 Checkpoint
+
+- 2026-07-13: [LUC-939](/LUC/issues/LUC-939) completed as a single-lane 09 IDE
+  verification closure for Account access non-production OAuth secret handling.
+  Output:
+  `.codex/tasks/luc-939-account-access-non-production-oauth-secret-proof-closure.md`.
+  Scope stayed inside exact helper/test readback, fresh focused local
+  verification, and durable source-of-truth closure updates; no subagent
+  delegation was used because the lane was narrow and already matched the
+  existing [LUC-895](/LUC/issues/LUC-895) proof surface. Evidence:
+  `npm run build:server` PASS; focused
+  `node --test dist/tests/google-drive-auth.test.js --test-name-pattern "parseGoogleDriveOAuthSecret"`
+  PASS; repository truth readback still shows
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  `verified` with direct test evidence from
+  `src/tests/google-drive-auth.test.ts`, and the only residual same-symbol gap
+  remains `missing_doc_link`. Final disposition: `done`. Next owner/action:
+  Docs Memory Lead + Project Manager for the residual doc-link gap only.
+
+## LUC-928 Checkpoint
+
+- 2026-07-13: [LUC-928](/LUC/issues/LUC-928) completed a single-lane
+  Documentation Steward doc-link curation for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth`
+  `missing_doc_link` row. Output:
+  `.codex/tasks/luc-928-account-access-refresh-google-drive-oauth-doc-link.md`.
+  Scope stayed inside the exact documentation-link relation, generated
+  architecture/app-completion/Project Truth refresh, and durable state updates;
+  no subagent delegation was used because the row was narrow and matched the
+  existing Google Drive auth doc-link pattern. Evidence: architecture-awareness
+  refresh PASS generated `2026-07-13T16:04:02.061Z` with `2858` entities /
+  `6899` relations / `16460` files and materialized the exact
+  `document:google-drive-v2-task-contracts -> function:refreshGoogleDriveOAuth`
+  relation; app-completion refresh PASS now reports `1148` missing test links /
+  `25` missing doc links / `10` implemented-needs-proof / `0` blocked /
+  `1183` risk items; Project Truth apply PASS generated
+  `2026-07-13T16:04:45.806Z` with public probe `pass`, runtime/event/ops gaps
+  `0`, and first gap advanced to
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  `missing_doc_link`. Final disposition: `done`. Next owner/action: Docs
+  Memory Lead + Project Manager for the new first gap.
+
 ## LUC-926 Checkpoint
 
 - 2026-07-13: [LUC-926](/LUC/issues/LUC-926) completed a single-lane Roost PM
@@ -67,24 +109,24 @@ Last updated: 2026-07-13
 
 - 2026-07-13: [LUC-904](/LUC/issues/LUC-904) completed the Roost PM
   local-only source-control closure sidecar created from the board comment on
-  the dependency-blocked parent path. Output:
+  the dependency-blocked parent path, then reopened and repaired after the
+  previous `done` disposition was left on a dirty repo. Output:
   `.codex/tasks/luc-904-source-control-closure-local-dirty-state-sidecar.md`.
-  Scope stayed inside fresh git forensics, exact dirty-bucket recount,
-  focused validation of the only executable dirty files, and durable
-  no-commit closure evidence; no subagent delegation was used because the lane
-  was bounded PM source-control work. Evidence: `git status --short --branch`
-  still shows `main...origin/main [ahead 4]`; fresh porcelain reads `90`
-  tracked modified paths plus `19` untracked paths (`109` total) grouped as
-  `agent_state=6`, `codex_context=3`, `project_docs=79`, `task_packets=13`,
-  `planning_packets=3`, `ux_evidence=3`, and `behavior_tests=2`
-  (`src/tests/api.test.ts`, `src/tests/google-drive-auth.test.ts`);
-  `git rev-list --left-right --count origin/main...HEAD` -> `0 4`;
-  `git diff --check` PASS with LF-to-CRLF warnings only; `npm run
-  build:server` PASS; focused `node --test dist/tests/google-drive-auth.test.js`
-  PASS (`10/10`); `npm run test:api:local` PASS (`8/8`). Cleanup checks found
-  no validation-owned Docker container and no `chrome-headless-shell`
-  process. Commit decision: `not committed`; push status `not needed`; deploy
-  impact `none`. Final disposition: `done`.
+  Scope stayed inside fresh git forensics, exact dirty-bucket recount, narrow
+  docs/state validation, and final local closure. No subagent delegation was
+  used because the lane remained bounded PM source-control work. Reopen
+  evidence: `git status --short --branch` now shows `main...origin/main [ahead
+  9]`; fresh porcelain reads `29` tracked modified paths plus `2` untracked
+  task packets (`31` total) grouped as `agent_state=5`, `codex_context=2`,
+  `project_docs=22`, `task_packets=2`, and no `planning_packets`,
+  `ux_evidence`, or `behavior_tests`. Validation: `git diff --check` PASS
+  with LF-to-CRLF warnings only; `npm run architecture:status` PASS
+  (`GREEN`, graph `454/765/35`, evidence queue `0`, chain worklist `0`,
+  delta `0/0/0`, all gates pass `yes`). Decision: the reopened worktree had
+  narrowed to docs/state/evidence only and satisfied the issue's local-commit
+  rule, so the sidecar moved from invalid `done + dirty` to a real local
+  closure commit. Push status `not needed`; deploy impact `none`. Final
+  disposition: `done`.
 
 ## LUC-893 Checkpoint
 

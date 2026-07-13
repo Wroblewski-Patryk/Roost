@@ -1,5 +1,41 @@
 # PROJECT_STATE
 
+- 2026-07-13: [LUC-939](/LUC/issues/LUC-939) completed verification closure
+  for Account access non-production OAuth secret handling. Source-of-truth
+  task contract:
+  `.codex/tasks/luc-939-account-access-non-production-oauth-secret-proof-closure.md`.
+  Current evidence: fresh `npm run build:server` PASS and focused
+  `node --test dist/tests/google-drive-auth.test.js --test-name-pattern "parseGoogleDriveOAuthSecret"`
+  PASS reconfirm the exact helper
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  remains proven locally through `src/tests/google-drive-auth.test.ts` without
+  network/provider access; repository truth readback still classifies the same
+  helper only as `missing_doc_link`, so no new runtime proof or product code
+  change was required in this lane. No live Google provider call, protected
+  smoke, deploy, push, restart, production mutation, credential access, or
+  secret disclosure occurred.
+
+- 2026-07-13: [LUC-928](/LUC/issues/LUC-928) completed Documentation Steward
+  doc-link curation on the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth`
+  Project Truth gap. Source-of-truth task contract:
+  `.codex/tasks/luc-928-account-access-refresh-google-drive-oauth-doc-link.md`.
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  generated function path to `docs/planning/google-drive-v2-task-contracts.md`,
+  which documents Google OAuth refresh-token exchange, workspace OAuth client
+  credential reuse, and refreshed secret persistence. Architecture-awareness
+  refresh PASS generated `2026-07-13T16:04:02.061Z` with `2858` entities /
+  `6899` relations / `16460` files and materialized the exact `document`
+  relation. App-completion refresh now reports `1243` items / `5` flows /
+  `1148` missing test links / `25` missing doc links /
+  `10` implemented-needs-proof / `0` blocked / `1183` known risk items.
+  Project Truth apply generated `2026-07-13T16:04:45.806Z` with public probe
+  `pass`, critical runtime findings `0`, incomplete event chains `0`,
+  operational gate gaps `0`, and first gap moved to
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  `missing_doc_link`. No runtime code, provider call, protected smoke, deploy,
+  push, or secret behavior changed.
+
 - 2026-07-13: [LUC-926](/LUC/issues/LUC-926) completed the Roost PM
   source-control closure for the current [LUC-895](/LUC/issues/LUC-895) proof
   bundle. Source-of-truth task contract:
@@ -51,20 +87,19 @@
   source-control closure sidecar for the dependency-blocked parent lane.
   Source-of-truth task contract:
   `.codex/tasks/luc-904-source-control-closure-local-dirty-state-sidecar.md`.
-  Current evidence: fresh git readback still shows `main...origin/main [ahead
-  4]`, `90` tracked modified paths, and `19` untracked paths (`109` total).
-  The dirty packet remains mixed but well-classified: `6` agent-state paths,
-  `3` `.codex/context` paths, `79` modified project-doc/status paths, `13`
-  untracked task packets, `3` untracked planning packets, `3` untracked UX
-  proof artifacts, and only `2` behavior-impacting dirty test files
-  (`src/tests/api.test.ts`, `src/tests/google-drive-auth.test.ts`). Fresh
-  proof: `git diff --check` PASS with LF-to-CRLF warnings only; `npm run
-  build:server` PASS; focused `node --test dist/tests/google-drive-auth.test.js`
-  PASS (`10/10`); `npm run test:api:local` PASS (`8/8`). Cleanup checks found
-  no validation-owned Docker container and no `chrome-headless-shell`
-  process. Commit decision: `not committed`; push status `not needed`; deploy
-  impact `none`. The blocked parent path can now consume this local closure
-  evidence without reopening the git forensics.
+  Reopen repair changed the local closure result. Current evidence now shows
+  `main...origin/main [ahead 9]`, `29` tracked modified paths, and `2`
+  untracked task packets (`31` total). The reopened dirty packet had narrowed
+  to docs/state/evidence only: `5` `.agents/state` paths, `2`
+  `.codex/context` paths, `22` modified project-doc/status/graph paths, and
+  `2` untracked task packets with no dirty executable test or runtime source
+  files. Fresh proof: `git diff --check` PASS with LF-to-CRLF warnings only;
+  `npm run architecture:status` PASS (`GREEN`, graph `454/765/35`, evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, all gates pass `yes`).
+  Redaction-oriented grep across the dirty bundle found only documentation/code
+  references, not live secret values. Commit decision: `committed locally`;
+  push status `not needed`; deploy impact `none`. This sidecar is now closed
+  with a valid local source-control closure outcome.
 
 - 2026-07-13: [LUC-893](/LUC/issues/LUC-893) completed the Account access
   `refreshGoogleDriveOAuth` missing-test-link proof-link repair.

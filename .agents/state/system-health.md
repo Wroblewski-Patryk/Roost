@@ -1,3 +1,23 @@
+# 2026-07-13 LUC-928 Account Access refreshGoogleDriveOAuth Health Signal
+
+- Status: focused Google Drive OAuth refresh helper documentation-link
+  confidence is verified locally.
+- Evidence: [LUC-928](/LUC/issues/LUC-928) task contract
+  `.codex/tasks/luc-928-account-access-refresh-google-drive-oauth-doc-link.md`;
+  architecture-awareness refresh generated `2026-07-13T16:04:02.061Z` with
+  `2858` entities / `6899` relations / `16460` files and materialized the
+  exact `document:google-drive-v2-task-contracts ->
+  function:refreshGoogleDriveOAuth` relation; app-completion refresh generated
+  `1148` missing test links / `25` missing doc links /
+  `10` implemented-needs-proof / `0` blocked / `1183` known risk items;
+  Project Truth apply generated `2026-07-13T16:04:45.806Z` with public probe
+  `pass`, runtime/event/ops gaps `0`, and first gap now
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  `missing_doc_link`.
+- Runtime/deploy posture: unchanged. No live Google provider call, protected
+  smoke, deploy, push, restart, production mutation, credential access, or
+  secret disclosure occurred.
+
 # 2026-07-13 LUC-895 Account Access parseGoogleDriveOAuthSecret Health Signal
 
 - Status: focused helper proof is verified locally and the generated

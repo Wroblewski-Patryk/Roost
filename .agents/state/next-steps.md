@@ -1,4 +1,25 @@
 # Next Steps
+- 2026-07-13: [LUC-939](/LUC/issues/LUC-939) has no remaining 09 IDE proof
+  action. The durable packet is
+  `.codex/tasks/luc-939-account-access-non-production-oauth-secret-proof-closure.md`.
+  Current fact: focused local verification reconfirmed
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  is already proven and the only residual same-symbol gap is `missing_doc_link`.
+  Do not reopen another non-production OAuth secret proof lane for this helper
+  unless a fresh generated regression removes the linked test evidence.
+
+- 2026-07-13: [LUC-928](/LUC/issues/LUC-928) has no remaining Documentation
+  Steward action after the curated doc-link and generated Project Truth
+  readback. The dispatched `refreshGoogleDriveOAuth` `missing_doc_link` row is
+  gone; app-completion missing doc links are now `25`, known risk items
+  `1183`, and Project Truth first gap is
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  `missing_doc_link`. Next action, only if selected by Project Truth routing,
+  is another Docs Memory Lead + Project Manager doc-link lane for that exact
+  helper. Do not open product code, live Google provider, protected smoke,
+  push/deploy, restart, production mutation, credential, or secret work from
+  [LUC-928](/LUC/issues/LUC-928).
+
 - 2026-07-13: [LUC-926](/LUC/issues/LUC-926) has no remaining PM
   source-control action. The durable packet is
   `.codex/tasks/luc-926-source-control-closure-for-luc-895.md`, and the
@@ -29,13 +50,10 @@
 - 2026-07-13: [LUC-904](/LUC/issues/LUC-904) has no remaining PM source-control
   action after the completed local closure sidecar. The durable packet is
   `.codex/tasks/luc-904-source-control-closure-local-dirty-state-sidecar.md`.
-  Current closure fact: the dirty bundle is still mixed (`90` tracked
-  modified, `19` untracked) and only `src/tests/api.test.ts` plus
-  `src/tests/google-drive-auth.test.ts` are behavior-impacting; both have
-  fresh local proof. Do not open a synthetic commit lane from this packet
-  alone. The next owner is the blocked parent delivery-gate path, which should
-  consume this local closure evidence rather than ask for another PM recount
-  unless the dirty bundle changes again.
+  Current closure fact after reopen repair: the bundle narrowed to docs/state/
+  evidence only (`29` tracked modified, `2` untracked), passed `npm run
+  architecture:status`, and was preserved with one local closure commit. Do
+  not reopen another PM recount unless a new dirty bundle appears.
 
 - 2026-07-13: [LUC-893](/LUC/issues/LUC-893) no longer has a remaining 09 TAE
   missing-test-link action after the completed `refreshGoogleDriveOAuth`

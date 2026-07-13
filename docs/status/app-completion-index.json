@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-13T15:38:16.725Z",
+  "generatedAt": "2026-07-13T16:04:45.741Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -8,11 +8,11 @@
     "flows": 5,
     "needsBrowserReview": 0,
     "missingTestLink": 1148,
-    "missingDocLink": 26,
+    "missingDocLink": 25,
     "implementedNeedsProof": 10,
     "blocked": 0,
-    "riskItems": 1184,
-    "appCompletionRiskItems": 1184,
+    "riskItems": 1183,
+    "appCompletionRiskItems": 1183,
     "priorityReviewItems": 200,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": true
@@ -22,8 +22,8 @@
       "userFlow": "Account access",
       "total": 70,
       "risks": {
-        "ok": 57,
-        "missing_doc_link": 6,
+        "ok": 58,
+        "missing_doc_link": 5,
         "implemented_needs_proof": 1,
         "missing_test_link": 6
       },
@@ -79,28 +79,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "function:refreshgoogledriveoauth:04d8992f2d",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "refreshGoogleDriveOAuth",
-      "path": "src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth",
-      "owner": "Engineering Delivery Lead",
-      "status": "verified",
-      "userFlow": "Account access",
-      "gates": [
-        "auth",
-        "configuration"
-      ],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 2,
-      "risk": "missing_doc_link"
-    },
     {
       "id": "function:parsegoogledriveoauthsecret:de301200ef",
       "type": "function",
@@ -3914,6 +3892,25 @@
       "kind": "feature_or_capability",
       "name": "readText",
       "path": "scripts/check-architecture-chain-coverage.mjs#readText",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:writetext:8279419401",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "writeText",
+      "path": "scripts/check-architecture-chain-coverage.mjs#writeText",
       "owner": "Engineering Delivery Lead",
       "status": "implemented_needs_proof",
       "userFlow": "Unclassified user workflow",

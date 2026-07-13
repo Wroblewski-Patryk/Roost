@@ -1,3 +1,9 @@
+# 2026-07-13 LUC-928 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Account access refreshGoogleDriveOAuth doc-link confidence | verified for dispatched missing-doc-link gap | [LUC-928](/LUC/issues/LUC-928) task contract `.codex/tasks/luc-928-account-access-refresh-google-drive-oauth-doc-link.md`; `docs/architecture/relations/documentation-links.csv` links `src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth` to `docs/planning/google-drive-v2-task-contracts.md`; architecture-awareness refresh generated `2026-07-13T16:04:02.061Z` with `2858` entities / `6899` relations / `16460` files and materialized the exact `document` relation; app-completion refresh now reports `1148` missing test links / `25` missing doc links / `10` implemented-needs-proof / `0` blocked; Project Truth apply generated `2026-07-13T16:04:45.806Z` with public probe `pass`, runtime/event/ops gaps `0`, and target symbol absent from first gap. | No further Documentation Steward action is needed for `refreshGoogleDriveOAuth`. The next Project Truth gap is `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret` `missing_doc_link`, owned by Docs Memory Lead + Project Manager. |
+
 # 2026-07-13 LUC-895 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

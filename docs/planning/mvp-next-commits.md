@@ -1,5 +1,21 @@
 # MVP Next Commits
 
+- 2026-07-13: [LUC-928](/LUC/issues/LUC-928) completed the Account access
+  `refreshGoogleDriveOAuth` missing-doc-link curation. Evidence packet:
+  `.codex/tasks/luc-928-account-access-refresh-google-drive-oauth-doc-link.md`.
+  Proof: architecture-awareness refresh PASS (`2858` entities / `6899`
+  relations / `16460` files) and materialized the exact
+  `document:google-drive-v2-task-contracts -> refreshGoogleDriveOAuth`
+  relation; app-completion refresh PASS (`1148` missing test links /
+  `25` missing doc links / `10` implemented-needs-proof / `0` blocked);
+  Project Truth apply PASS generated `2026-07-13T16:04:45.806Z` with public
+  probe `pass`, runtime/event/ops gaps `0`, and first gap now
+  `parseGoogleDriveOAuthSecret` `missing_doc_link`. No live Google provider
+  call, protected smoke, push, deploy, restart, production mutation,
+  credential access, or secret disclosure occurred. Next owner for the
+  residual first gap: Docs Memory Lead + Project Manager if Project Truth
+  routing selects that symbol.
+
 - 2026-07-13: [LUC-926](/LUC/issues/LUC-926) completed source-control closure
   for the coherent [LUC-895](/LUC/issues/LUC-895) proof bundle. Evidence
   packet: `.codex/tasks/luc-926-source-control-closure-for-luc-895.md`. Proof:

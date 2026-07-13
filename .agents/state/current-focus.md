@@ -1,5 +1,25 @@
 # Current Focus
 
+- 2026-07-13: [LUC-939](/LUC/issues/LUC-939) closed the duplicate Account
+  access non-production OAuth secret proof lane. Packet:
+  `.codex/tasks/luc-939-account-access-non-production-oauth-secret-proof-closure.md`.
+  Fresh local verification (`npm run build:server`; focused
+  `node --test dist/tests/google-drive-auth.test.js --test-name-pattern "parseGoogleDriveOAuthSecret"`)
+  confirms the exact helper remains proven through
+  [LUC-895](/LUC/issues/LUC-895); current focus stays on the residual same-row
+  `missing_doc_link`, not another proof retry.
+
+- 2026-07-13: [LUC-928](/LUC/issues/LUC-928) completed the Account access
+  `refreshGoogleDriveOAuth` doc-link lane. Packet:
+  `.codex/tasks/luc-928-account-access-refresh-google-drive-oauth-doc-link.md`.
+  Current app-completion readback now shows `1243` items / `5` flows /
+  `1148` missing test links / `25` missing doc links / `10`
+  implemented-needs-proof / `0` blocked / `0` browser-review records /
+  `1183` risk items, and Project Truth first gap has moved to
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  `missing_doc_link`. No runtime, provider, protected, deploy, push, or secret
+  behavior changed.
+
 - 2026-07-13: [LUC-926](/LUC/issues/LUC-926) closed the PM source-control
   lane by committing the coherent [LUC-895](/LUC/issues/LUC-895) proof bundle
   locally. Packet: `.codex/tasks/luc-926-source-control-closure-for-luc-895.md`.
@@ -17,14 +37,14 @@
   + Project Manager.
 
 - 2026-07-13: [LUC-904](/LUC/issues/LUC-904) completed the local source-control
-  closure sidecar for the mixed Roost dirty bundle. Packet:
+  closure sidecar for the reopened Roost dirty bundle. Packet:
   `.codex/tasks/luc-904-source-control-closure-local-dirty-state-sidecar.md`.
-  Current local closure fact is unchanged in shape but fresher in evidence:
-  `main...origin/main [ahead 4]`, `90` tracked modified paths, `19`
-  untracked paths, only `2` behavior-impacting dirty files
-  (`src/tests/api.test.ts`, `src/tests/google-drive-auth.test.ts`), and no
-  safe PM commit path. Focus stays on precise proof/doc-link routing rather
-  than sweeping mixed evidence/state churn into a synthetic commit.
+  Reopen review changed the closure fact materially: `main...origin/main
+  [ahead 9]`, `29` tracked modified paths, `2` untracked task packets, zero
+  behavior-impacting dirty files, and a docs/state/evidence-only bundle that
+  qualified for a local operational evidence commit. Focus returns to narrow
+  proof/doc-link routing; this source-control sidecar no longer needs to stay
+  open.
 
 - 2026-07-13: [LUC-893](/LUC/issues/LUC-893) completed the Account access
   `refreshGoogleDriveOAuth` proof-link lane. Packet:
