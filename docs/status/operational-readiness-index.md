@@ -1,6 +1,6 @@
 # Operational Readiness Index
 
-Generated: 2026-07-13T17:04:49.764Z
+Generated: 2026-07-13T17:38:37.978Z
 Project: Roost
 Status: ready_for_repair_flow
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-13T17:04:39.973Z",
+  "generatedAt": "2026-07-13T17:38:37.919Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -7,8 +7,8 @@
     "items": 1243,
     "flows": 5,
     "needsBrowserReview": 0,
-    "missingTestLink": 1145,
-    "missingDocLink": 28,
+    "missingTestLink": 1144,
+    "missingDocLink": 29,
     "implementedNeedsProof": 9,
     "blocked": 0,
     "riskItems": 1182,
@@ -23,8 +23,8 @@
       "total": 69,
       "risks": {
         "ok": 59,
-        "missing_test_link": 6,
-        "missing_doc_link": 4
+        "missing_doc_link": 5,
+        "missing_test_link": 5
       },
       "gates": {
         "auth": 69,
@@ -84,19 +84,19 @@
       "name": "authActor",
       "path": "src/modules/company-os/company-os.routes.ts#authActor",
       "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
+      "status": "verified",
       "userFlow": "Account access",
       "gates": [
         "auth"
       ],
       "evidence": {
-        "hasTest": false,
+        "hasTest": true,
         "hasDoc": false,
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
       "relatedEntityCount": 1,
-      "risk": "missing_test_link"
+      "risk": "missing_doc_link"
     },
     {
       "id": "function:authactor:8f0ce27a64",

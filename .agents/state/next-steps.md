@@ -1,4 +1,27 @@
 # Next Steps
+- 2026-07-13: [LUC-961](/LUC/issues/LUC-961) has no remaining PM
+  source-control action. The durable packet is
+  `.codex/tasks/luc-961-source-control-closure-for-luc-959.md`, and the
+  coherent [LUC-959](/LUC/issues/LUC-959) proof/test plus docs/state/generated
+  bundle is now committed locally. Next owner/action moves to Docs Memory Lead
+  + Project Manager for the residual same-symbol `missing_doc_link`. External
+  task reconciliation still needs an authorized ClickUp or Paperclip
+  task-mutation path; do not reopen another PM recount unless a new dirty
+  bundle appears or authorized board writeback becomes available.
+
+- 2026-07-13: [LUC-959](/LUC/issues/LUC-959) has no remaining 09 TAE
+  missing-test-link action for
+  `src/modules/company-os/company-os.routes.ts#authActor`. The durable packet
+  is `.codex/tasks/luc-959-account-access-company-os-authactor-proof.md`.
+  Current fact: refreshed app-completion marks the exact helper
+  `status=verified` with `hasTest=true`, and Project Truth now classifies the
+  same symbol only as `missing_doc_link`. Next owner/action is Docs Memory
+  Lead + Project Manager for the residual same-symbol doc-link gap; the next
+  QA-owned missing-test-link lane, if selected by Project Truth routing, is
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`.
+  Do not reopen another QA proof lane for `company-os.routes.ts#authActor`
+  unless a fresh generated regression removes its linked test evidence.
+
 - 2026-07-13: [LUC-958](/LUC/issues/LUC-958) has no remaining PM
   source-control action. The durable packet is
   `.codex/tasks/luc-958-source-control-closure-for-luc-949.md`, and the

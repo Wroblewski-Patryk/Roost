@@ -1,5 +1,43 @@
 # PROJECT_STATE
 
+- 2026-07-13: [LUC-961](/LUC/issues/LUC-961) completed the Roost PM
+  source-control closure for the current [LUC-959](/LUC/issues/LUC-959) proof
+  packet locally. Source-of-truth task contract:
+  `.codex/tasks/luc-961-source-control-closure-for-luc-959.md`. Current
+  evidence: fresh git inspection narrowed the local packet to `32` tracked
+  modified paths plus `1` untracked task-owned file before this closure sync;
+  `npm run test:api:local` PASS (`8/8`) reconfirmed the exact Company OS
+  proof/test packet remains valid; `git diff --check` required two trailing
+  whitespace fixes in `.codex/context/TASK_BOARD.md` and
+  `docs/planning/mvp-next-commits.md` and then passed with LF-to-CRLF
+  warnings only; redaction-oriented inspection found no live token, API key,
+  private-key, or real OpenAI secret-key markers in the dirty bundle. The
+  local commit is the correct closure action; push was not needed and deploy
+  impact is none. External task writeback remained blocked because ClickUp
+  returned `Team not authorized` for `LUC-961`.
+
+- 2026-07-13: [LUC-959](/LUC/issues/LUC-959) completed focused verification
+  for Account access
+  `src/modules/company-os/company-os.routes.ts#authActor`. Source-of-truth
+  task contract:
+  `.codex/tasks/luc-959-account-access-company-os-authactor-proof.md`.
+  Current evidence: `src/tests/api.test.ts` now explicitly proves Company OS
+  approval-request actor attribution for both bearer-owner and API-key request
+  paths; `npm run test:api:local` PASS (`8/8`); architecture-awareness refresh
+  generated `2026-07-13T17:38:37.936Z` with `2865` entities / `6958`
+  relations / `16461` files and marks
+  `src/modules/company-os/company-os.routes.ts#authActor` `verified`;
+  app-completion refresh generated `1243` items / `5` flows / `1144`
+  missing test links / `29` missing doc links / `9`
+  implemented-needs-proof / `0` blocked / `1182` known risk items and now
+  reads the exact helper as `status=verified`, `hasTest=true`,
+  `risk=missing_doc_link`; Project Truth apply generated
+  `2026-07-13T17:38:37.978Z` with public probe `pass`, runtime/event/ops
+  gaps `0`, and first gap moved from the same symbol `missing_test_link` to
+  the same symbol `missing_doc_link`. No provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access outside the
+  local disposable API-key proof, or secret disclosure occurred.
+
 - 2026-07-13: [LUC-958](/LUC/issues/LUC-958) completed the Roost PM
   source-control closure for the current [LUC-949](/LUC/issues/LUC-949) proof
   packet. Source-of-truth task contract:

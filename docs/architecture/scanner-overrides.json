@@ -257,6 +257,15 @@
       ]
     },
     {
+      "path": "src/modules/company-os/company-os.routes.ts#authActor",
+      "status": "verified",
+      "description": "Company OS route actor resolver verified by focused API proof that records bearer owner requests as user actors and Company OS API-key approval requests as agent actors in audit and event evidence.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        ".codex/tasks/luc-959-account-access-company-os-authactor-proof.md"
+      ]
+    },
+    {
       "path": "src/modules/events/event.service.ts",
       "description": "Event service infrastructure used by audited domain actions; behavior proof belongs to the consuming command routes and event evidence contracts.",
       "evidence": [
@@ -1612,6 +1621,14 @@
       "toPath": "src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret",
       "toType": "function",
       "evidence": "LUC-895 Account access parseGoogleDriveOAuthSecret proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/company-os/company-os.routes.ts#authActor",
+      "toType": "function",
+      "evidence": "LUC-959 Account access Company OS authActor proof"
     },
     {
       "type": "tests",

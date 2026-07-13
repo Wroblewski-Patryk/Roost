@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-13T17:04:29.431Z
+Generated: 2026-07-13T17:38:37.936Z
 
 ## Canonical Exports
 
@@ -49,7 +49,7 @@ Generated: 2026-07-13T17:04:29.431Z
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-13 LUC-943 Account Access parseGoogleDriveOAuthSecret Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-13 LUC-949 Account Access secrets.ts Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -608,11 +608,14 @@ Generated: 2026-07-13T17:04:29.431Z
 | connected_to | project:roost:122c92a083 | task:task:a2f6573d7c | .codex/tasks/luc-939-account-access-non-production-oauth-secret-proof-closure.md |
 | connected_to | project:roost:122c92a083 | task:task:6f7cafdc16 | .codex/tasks/luc-943-account-access-parse-google-drive-oauth-secret-doc-link.md |
 | connected_to | project:roost:122c92a083 | task:task:546ca92f5c | .codex/tasks/luc-948-source-control-closure-for-luc-943.md |
+| connected_to | project:roost:122c92a083 | task:task:638b05362c | .codex/tasks/luc-949-account-access-secrets-proof.md |
+| connected_to | project:roost:122c92a083 | task:task:ec249a7163 | .codex/tasks/luc-958-source-control-closure-for-luc-949.md |
+| connected_to | project:roost:122c92a083 | task:task:8d9a7cbaa9 | .codex/tasks/luc-959-account-access-company-os-authactor-proof.md |
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
 | documents | agent:2026-07-13-luc-928-module-confidence-update:24182f19a5 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
-| documents | agent:2026-07-13-luc-943-account-access-parsegoogledriveoauthsecret-health-signal:5a2aca7692 | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-13-luc-949-account-access-secrets-ts-health-signal:f6767de320 | module:agents:4ae71ba13a | .agents/state/system-health.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-07-13T17:04:29.431Z
 | documents | document:luc-5129-qa-proof-triage-for-implemented-entities-without-tests:c600b89c77 | module:docs:6784d83cb0 | docs/planning/luc-5129-qa-proof-triage-for-implemented-entities-without-tests.md |
 | documents | document:luc-5130-architecture-scope-reconciliation:852ffa7019 | module:docs:6784d83cb0 | docs/planning/luc-5130-architecture-scope-reconciliation.md |
 | documents | document:luc-5131-protected-target-proof-checklist:935701e5f5 | module:docs:6784d83cb0 | docs/planning/luc-5131-protected-target-proof-checklist.md |
-| documents | document:luc-5132-security-and-ai-authority-evidence-recheck:1317ba6163 | module:docs:6784d83cb0 | docs/planning/luc-5132-security-ai-authority-evidence-recheck.md |
-| documents | document:luc-5135-known-state-evidence-and-architecture-baseline:8b0a832ad2 | module:docs:6784d83cb0 | docs/planning/luc-5135-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5144-source-control-closure-for-luc-5135-evidence-packet:7ed17f42e0 | module:docs:6784d83cb0 | docs/planning/luc-5144-source-control-closure-for-luc-5135-evidence-packet.md |

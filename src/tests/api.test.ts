@@ -4495,10 +4495,15 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(lifecycleApprovalRequestBody.data.status, "pending");
   assert.ok(lifecycleApprovalRequestBody.data.correlationId);
   assert.ok(lifecycleApprovalRequestBody.data.auditLogId);
+  const ownerAWorkspace = await prisma.workspace.findUniqueOrThrow({
+    where: { id: ownerA.workspace.id }
+  });
   const lifecycleRequestAudit = await prisma.auditLog.findUniqueOrThrow({
     where: { id: lifecycleApprovalRequestBody.data.auditLogId }
   });
   assert.equal(lifecycleRequestAudit.action, "approval.requested");
+  assert.equal(lifecycleRequestAudit.actorType, "user");
+  assert.equal(lifecycleRequestAudit.actorId, ownerAWorkspace.ownerUserId);
   assert.equal(lifecycleRequestAudit.correlationId, lifecycleApprovalRequestBody.data.correlationId);
   const lifecycleRequestEvent = await prisma.event.findFirstOrThrow({
     where: {
@@ -4509,6 +4514,8 @@ test("CompanyCore v1 protected API flow", async () => {
     }
   });
   assert.equal(lifecycleRequestEvent.resourceType, "approval");
+  assert.equal(lifecycleRequestEvent.actorType, "user");
+  assert.equal(lifecycleRequestEvent.actorId, ownerAWorkspace.ownerUserId);
 
   const lifecycleApprovalDecision = await request(`/v1/company-os/approvals/${lifecycleApprovalRequestBody.data.id}/decision`, {
     method: "POST",
@@ -4524,9 +4531,6 @@ test("CompanyCore v1 protected API flow", async () => {
   };
   assert.equal(lifecycleApprovalDecisionBody.data.status, "approved");
   assert.equal(lifecycleApprovalDecisionBody.data.decisionReason, "Scope and rollback plan are acceptable.");
-  const ownerAWorkspace = await prisma.workspace.findUniqueOrThrow({
-    where: { id: ownerA.workspace.id }
-  });
   assert.equal(lifecycleApprovalDecisionBody.data.approverUserId, ownerAWorkspace.ownerUserId);
   const decidedApproval = await prisma.approval.findUniqueOrThrow({
     where: { id: lifecycleApprovalRequestBody.data.id }
@@ -6175,6 +6179,74 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(createdOperatorProfileKeyBody.data.scopes.includes("company-os:stage-run:write"));
   assert.ok(createdOperatorProfileKeyBody.data.scopes.includes("company-os:workflow-definition:write"));
   assert.ok(createdOperatorProfileKeyBody.data.scopes.includes("company-os:workflow-definition:activate"));
+
+  const createdCompanyOsApprovalKey = await request("/v1/api-keys", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({
+      name: "Company OS approval requester",
+      scopes: ["connection:read", "company-os:approval:request"]
+    })
+  });
+  assert.equal(createdCompanyOsApprovalKey.status, 201);
+  const createdCompanyOsApprovalKeyBody = createdCompanyOsApprovalKey.body as {
+    data: { key: string; scopes: string[] };
+  };
+  assert.ok(createdCompanyOsApprovalKeyBody.data.scopes.includes("connection:read"));
+  assert.ok(createdCompanyOsApprovalKeyBody.data.scopes.includes("company-os:approval:request"));
+  const companyOsApprovalKeyAuth = { "X-API-Key": createdCompanyOsApprovalKeyBody.data.key };
+  const companyOsApprovalConnection = await request("/v1/connection", {
+    headers: companyOsApprovalKeyAuth
+  });
+  assert.equal(companyOsApprovalConnection.status, 200);
+  const companyOsApprovalConnectionBody = companyOsApprovalConnection.body as {
+    data: {
+      auth: { apiKeyId?: string };
+      capabilities: string[];
+    };
+  };
+  assert.ok(companyOsApprovalConnectionBody.data.auth.apiKeyId);
+  assert.ok(companyOsApprovalConnectionBody.data.capabilities.includes("company-os:approval:request"));
+  assert.ok(!companyOsApprovalConnectionBody.data.capabilities.includes("company-os:approval:decide"));
+  const apiKeyLifecycleApprovalRequest = await request("/v1/company-os/approvals/request", {
+    method: "POST",
+    headers: companyOsApprovalKeyAuth,
+    body: JSON.stringify({
+      requestedByType: "agent",
+      requestedById: pmAgentRole.id,
+      requestedForAction: "operator.review",
+      resourceType: "stage_run",
+      resourceId: stageRun.id,
+      riskLevel: "medium",
+      approverRoleId: humanOwnerRole.id,
+      pipelineRunId: pipelineRun.id,
+      stageRunId: stageRun.id,
+      inputPayload: {
+        source: "company-os-authactor-api-key-proof"
+      }
+    })
+  });
+  assert.equal(apiKeyLifecycleApprovalRequest.status, 201);
+  const apiKeyLifecycleApprovalRequestBody = apiKeyLifecycleApprovalRequest.body as {
+    data: { id: string; correlationId: string; auditLogId: string };
+  };
+  const apiKeyLifecycleRequestAudit = await prisma.auditLog.findUniqueOrThrow({
+    where: { id: apiKeyLifecycleApprovalRequestBody.data.auditLogId }
+  });
+  assert.equal(apiKeyLifecycleRequestAudit.action, "approval.requested");
+  assert.equal(apiKeyLifecycleRequestAudit.actorType, "agent");
+  assert.equal(apiKeyLifecycleRequestAudit.actorId, companyOsApprovalConnectionBody.data.auth.apiKeyId);
+  const apiKeyLifecycleRequestEvent = await prisma.event.findFirstOrThrow({
+    where: {
+      workspaceId: ownerA.workspace.id,
+      type: "approval_requested",
+      resourceId: apiKeyLifecycleApprovalRequestBody.data.id,
+      correlationId: apiKeyLifecycleApprovalRequestBody.data.correlationId
+    }
+  });
+  assert.equal(apiKeyLifecycleRequestEvent.actorType, "agent");
+  assert.equal(apiKeyLifecycleRequestEvent.actorId, companyOsApprovalConnectionBody.data.auth.apiKeyId);
+
   const operatorProfileMcpManifest = await request("/v1/mcp/manifest", { headers: { "X-API-Key": createdOperatorProfileKeyBody.data.key } });
   assert.equal(operatorProfileMcpManifest.status, 200);
   const operatorProfileMcpManifestBody = operatorProfileMcpManifest.body as {

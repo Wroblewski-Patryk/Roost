@@ -1,3 +1,41 @@
+# 2026-07-13 LUC-961 Source-Control Closure Health Signal
+
+- Status: focused PM source-control closure for the current
+  [LUC-959](/LUC/issues/LUC-959) packet is verified locally.
+- Evidence: [LUC-961](/LUC/issues/LUC-961) task contract
+  `.codex/tasks/luc-961-source-control-closure-for-luc-959.md`; fresh git
+  inspection narrowed the packet to `32` modified tracked paths plus `1`
+  untracked task-owned file before this closure sync; `git rev-list
+  --left-right --count origin/main...HEAD` -> `0 12`; `git diff --check`
+  initially failed on two trailing-whitespace lines and then passed after
+  cleanup with LF-to-CRLF warnings only; `npm run test:api:local` PASS
+  (`8/8`); scoped redaction inspection found no live-token, API-key,
+  private-key, or real OpenAI secret-key markers.
+- Runtime/deploy posture: unchanged. No provider call, protected smoke,
+  deploy, push, restart, production mutation, or secret disclosure occurred.
+  External issue writeback remains blocked because ClickUp returned `Team not
+  authorized` for `LUC-961`.
+
+# 2026-07-13 LUC-959 Account Access company-os authActor Health Signal
+
+- Status: focused Company OS auth actor proof is verified locally.
+- Evidence: [LUC-959](/LUC/issues/LUC-959) task contract
+  `.codex/tasks/luc-959-account-access-company-os-authactor-proof.md`;
+  `src/tests/api.test.ts` proves Company OS approval-request actor
+  attribution for bearer-owner and API-key paths; `npm run test:api:local`
+  PASS (`8/8`); refreshed architecture-awareness generated
+  `2026-07-13T17:38:37.936Z` with `2865` entities / `6958` relations /
+  `16461` files and marks
+  `src/modules/company-os/company-os.routes.ts#authActor` `verified`;
+  app-completion refresh now reports `1144` missing test links / `29`
+  missing doc links / `9` implemented-needs-proof / `0` blocked and reads the
+  exact helper as `hasTest=true`, `risk=missing_doc_link`; Project Truth apply
+  generated `2026-07-13T17:38:37.978Z` and no longer reports the helper as
+  `missing_test_link`.
+- Runtime/deploy posture: unchanged. No provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access outside the
+  local disposable API-key proof, or secret disclosure occurred.
+
 # 2026-07-13 LUC-949 Account Access secrets.ts Health Signal
 
 - Status: focused encrypted-secret helper confidence is verified locally.

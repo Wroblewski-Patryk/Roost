@@ -488,6 +488,20 @@ fixes for this repository.
   script files.
 - Avoid: Piping PowerShell here-strings directly into remote bash when the
   script reads API keys, tokens, or passwords.
+
+### 2026-07-13 - ClickUp task connector may be unauthorized for the current team
+
+- Context: LUC-959 needed a durable issue-system writeback after local proof
+  completion.
+- Symptom: The ClickUp task connector returned `Team not authorized` when the
+  session tried to read or update `LUC-959`.
+- Root cause: The available connector credentials are not authorized for the
+  current task team, so task status/comment writes cannot be completed from
+  this session.
+- Guardrail: Treat the local proof packet as complete, but do not claim the
+  external issue has been updated unless a later session has valid team access
+  or another authorized issue path.
+- Evidence: `clickup_get_task` on `LUC-959` returned `Team not authorized`.
 - Evidence: During CCV1-055 smoke, a piped here-string produced remote
   `command not found` output from a BOM-prefixed line; rerunning via an ASCII
   temporary script executed correctly and returned Jarvis CompanyCore connector

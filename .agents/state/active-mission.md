@@ -2,6 +2,55 @@
 
 Last updated: 2026-07-13
 
+## LUC-961 Checkpoint
+
+- 2026-07-13: [LUC-961](/LUC/issues/LUC-961) completed a single-lane Roost PM
+  source-control closure for the coherent [LUC-959](/LUC/issues/LUC-959)
+  proof packet. Output:
+  `.codex/tasks/luc-961-source-control-closure-for-luc-959.md`. Scope stayed
+  inside fresh git forensics, whitespace cleanup for two state-doc lines,
+  redaction-oriented inspection of the exact proof/test plus
+  docs/state/generated bundle, and durable local closure; no subagent
+  delegation was used because the lane remained bounded PM source-control
+  work. Evidence: fresh git inspection narrowed the bundle to `32` modified
+  tracked paths plus `1` untracked task-owned file before this closure packet
+  was added; `git rev-list --left-right --count origin/main...HEAD` ->
+  `0 12`; `git diff --check` initially failed on two trailing-whitespace
+  lines and then passed after cleanup with LF-to-CRLF warnings only; `npm run
+  test:api:local` PASS (`8/8`); redaction-oriented inspection found no live
+  token, API key, private-key, or real OpenAI secret-key markers in the dirty
+  bundle. Commit decision: committed locally in this closure lane; push status
+  `not needed`; deploy impact `none`. External board/task writeback remains
+  blocked because ClickUp returned `Team not authorized` for `LUC-961`.
+  Final disposition: `done` locally, external writeback blocked. Next
+  owner/action: Docs Memory Lead + Project Manager for the residual same-symbol
+  `missing_doc_link`, plus a control-plane/operator owner for authorized task
+  reconciliation if required.
+
+## LUC-959 Checkpoint
+
+- 2026-07-13: [LUC-959](/LUC/issues/LUC-959) completed as a single-lane 09 TAE
+  proof closure for the Account access
+  `src/modules/company-os/company-os.routes.ts#authActor`
+  `missing_test_link` row. Output:
+  `.codex/tasks/luc-959-account-access-company-os-authactor-proof.md`. Scope
+  stayed inside focused Company OS API assertions, exact scanner proof
+  linkage, generated architecture/app-completion/Project Truth refresh, and
+  source-of-truth updates; no subagent delegation was used because the row was
+  narrow and role-owned. Evidence: `npm run test:api:local` PASS (`8/8`);
+  architecture-awareness refresh PASS generated `2026-07-13T17:38:37.936Z`
+  with `2865` entities / `6958` relations / `16461` files and the exact
+  helper row `verified`; app-completion refresh PASS now reports `1144`
+  missing test links / `29` missing doc links / `9`
+  implemented-needs-proof / `0` blocked and reads the same helper as
+  `hasTest=true`, `risk=missing_doc_link`; Project Truth apply PASS generated
+  `2026-07-13T17:38:37.978Z` with public probe `pass`, runtime/event/ops
+  gaps `0`, and first gap advanced from the same symbol `missing_test_link`
+  to `missing_doc_link`. Final disposition: `done`. Next owner/action: Docs
+  Memory Lead + Project Manager for the residual same-symbol doc-link gap; the
+  next QA-owned missing-test-link gap is
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`.
+
 ## LUC-958 Checkpoint
 
 - 2026-07-13: [LUC-958](/LUC/issues/LUC-958) completed a single-lane Roost PM

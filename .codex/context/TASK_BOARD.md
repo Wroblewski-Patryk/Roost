@@ -1,6 +1,44 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-13: [LUC-961](/LUC/issues/LUC-961) source-control closure for the
+  current [LUC-959](/LUC/issues/LUC-959) proof packet is complete locally. Task
+  contract: `.codex/tasks/luc-961-source-control-closure-for-luc-959.md`.
+  Evidence: fresh git inspection narrowed the current bundle to `32` tracked
+  modified paths plus `1` untracked task-owned file before this closure sync:
+  one focused behavior test, one proof task packet, the derivative
+  docs/state/generated refresh, and the in-scope ClickUp authorization
+  learning-journal note with `0` unrelated runtime or env paths; `git
+  rev-list --left-right --count origin/main...HEAD` -> `0 12`; `git diff
+  --check` required two trailing-whitespace cleanups and then passed with
+  LF-to-CRLF warnings only; `npm run test:api:local` PASS (`8/8`); scoped
+  redaction inspection found no live-token, API-key, private-key, or real
+  OpenAI secret-key markers. Commit decision: local closure commit created,
+  push status `not needed`, deploy impact `none`. External issue writeback is
+  still blocked because ClickUp returned `Team not authorized` for `LUC-961`.
+
+- 2026-07-13: [LUC-959](/LUC/issues/LUC-959) Account access
+  `src/modules/company-os/company-os.routes.ts#authActor`
+  missing-test-link verification is complete locally. Task contract:
+  `.codex/tasks/luc-959-account-access-company-os-authactor-proof.md`.
+  Evidence: `src/tests/api.test.ts` now explicitly proves Company OS
+  approval-request actor attribution for both bearer-owner and API-key
+  request paths; `npm run test:api:local` PASS (`8/8`);
+  architecture-awareness refresh PASS generated `2026-07-13T17:38:37.936Z`
+  with `2865` entities / `6958` relations / `16461` files and marks
+  `src/modules/company-os/company-os.routes.ts#authActor` `verified`;
+  app-completion refresh PASS generated `1144` missing test links /
+  `29` missing doc links / `9` implemented-needs-proof / `0`
+  blocked / `1182` known risk items and the exact helper now reads
+  `status=verified`, `hasTest=true`, `risk=missing_doc_link`; Project Truth
+  apply PASS generated `2026-07-13T17:38:37.978Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to the same symbol as
+  `missing_doc_link`. No runtime route logic, provider call, protected smoke,
+  deploy, push, restart, production mutation, or secret disclosure occurred.
+  Next owner for the residual same-symbol gap: Docs Memory Lead + Project
+  Manager. Next QA-owned missing-test-link gap:
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`.
+
 - 2026-07-13: [LUC-958](/LUC/issues/LUC-958) source-control closure for the
   current [LUC-949](/LUC/issues/LUC-949) proof packet is complete locally. Task
   contract: `.codex/tasks/luc-958-source-control-closure-for-luc-949.md`.

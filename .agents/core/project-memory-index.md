@@ -11,6 +11,41 @@ state, architecture intent, module confidence, and the next release objective.
 
 ## Latest Generated Truth
 
+- 2026-07-13: [LUC-961](/LUC/issues/LUC-961) closed the current
+  [LUC-959](/LUC/issues/LUC-959) local dirty-state packet. Use
+  `.codex/tasks/luc-961-source-control-closure-for-luc-959.md` for current
+  evidence: fresh git inspection narrowed the packet to `32` modified tracked
+  paths plus `1` untracked task-owned file before closure; `git rev-list
+  --left-right --count origin/main...HEAD` -> `0 12`; `git diff --check`
+  needed two trailing-whitespace cleanup lines and then passed; `npm run
+  test:api:local` PASS (`8/8`); scoped redaction inspection found no live
+  token, API key, private-key, or real OpenAI secret-key markers. The local
+  bundle is coherent and committed; push/deploy were not needed. External task
+  writeback is still blocked because ClickUp returned `Team not authorized`
+  for `LUC-961`, so do not assume board status is reconciled until an
+  authorized path updates it.
+
+- 2026-07-13: [LUC-959](/LUC/issues/LUC-959) cleared the Account access
+  `src/modules/company-os/company-os.routes.ts#authActor`
+  `missing_test_link` row. Use
+  `.codex/tasks/luc-959-account-access-company-os-authactor-proof.md` for
+  current evidence: `src/tests/api.test.ts` explicitly proves Company OS
+  approval-request actor attribution for bearer-owner and API-key request
+  paths; `npm run test:api:local` PASS (`8/8`); refreshed
+  architecture-awareness generated `2026-07-13T17:38:37.936Z` with `2865`
+  entities / `6958` relations / `16461` files and marks the exact helper
+  `verified`; app-completion generated `1243` items / `5` flows / `1144`
+  missing test links / `29` missing doc links / `9`
+  implemented-needs-proof / `0` blocked / `1182` risk items and now reads
+  the helper as `hasTest=true`, `risk=missing_doc_link`; Project Truth
+  generated `2026-07-13T17:38:37.978Z` with public probe `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and first gap moved from the same symbol `missing_test_link` to
+  `missing_doc_link`. Do not reopen another QA proof lane for
+  `company-os.routes.ts#authActor` without a fresh generated regression; the
+  next remaining Account access QA gap is
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`.
+
 - 2026-07-13: [LUC-949](/LUC/issues/LUC-949) cleared the Account access
   `src/integrations/secrets.ts` `implemented_needs_proof` row with direct QA
   proof. Use `.codex/tasks/luc-949-account-access-secrets-proof.md` for

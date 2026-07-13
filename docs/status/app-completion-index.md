@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-07-13T17:04:39.973Z
+Generated: 2026-07-13T17:38:37.919Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -15,8 +15,8 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 - Items: 1243
 - User flows: 5
 - Needs browser/screenshot review: 0
-- Missing test link: 1145
-- Missing doc link: 28
+- Missing test link: 1144
+- Missing doc link: 29
 - Implemented, needs proof: 9
 - Blocked: 0
 - Known non-ok risk items: 1182
@@ -26,7 +26,7 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 ## Flow Summary
 
 - Unclassified user workflow: 1097 entities; risks {"missing_test_link":1065,"ok":2,"implemented_needs_proof":8,"missing_doc_link":22}; gates {"configuration":8,"auth":1}
-- Account access: 69 entities; risks {"ok":59,"missing_test_link":6,"missing_doc_link":4}; gates {"auth":69,"configuration":18}
+- Account access: 69 entities; risks {"ok":59,"missing_doc_link":5,"missing_test_link":5}; gates {"auth":69,"configuration":18}
 - Dashboard overview: 34 entities; risks {"missing_test_link":34}; gates {"configuration":7}
 - User configuration: 33 entities; risks {"missing_test_link":31,"missing_doc_link":2}; gates {"configuration":31}
 - Trading operation: 10 entities; risks {"missing_test_link":9,"implemented_needs_proof":1}; gates {}
@@ -35,7 +35,7 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 
 | User flow | Risk | Kind | Entity | Owner | Path | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
-| Account access | missing_test_link | feature_or_capability | authActor | Engineering Delivery Lead | src/modules/company-os/company-os.routes.ts#authActor | auth |
+| Account access | missing_doc_link | feature_or_capability | authActor | Engineering Delivery Lead | src/modules/company-os/company-os.routes.ts#authActor | auth |
 | Account access | missing_test_link | feature_or_capability | authActor | Engineering Delivery Lead | src/modules/company-os/workflow-definition-drafts.routes.ts#authActor | auth |
 | Account access | missing_test_link | feature_or_capability | authActor | Engineering Delivery Lead | src/modules/intake/intake.routes.ts#authActor | auth |
 | Account access | missing_test_link | feature_or_capability | entityAuthority | Engineering Delivery Lead | src/modules/workforce/workforce.service.ts#entityAuthority | auth |

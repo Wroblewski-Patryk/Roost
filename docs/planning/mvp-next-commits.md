@@ -1,5 +1,41 @@
 # MVP Next Commits
 
+- 2026-07-13: [LUC-961](/LUC/issues/LUC-961) completed source-control closure
+  for the coherent [LUC-959](/LUC/issues/LUC-959) proof packet. Evidence
+  packet: `.codex/tasks/luc-961-source-control-closure-for-luc-959.md`.
+  Proof: fresh git inspection narrowed the worktree to `32` modified tracked
+  paths plus `1` untracked task packet before the closure packet was added,
+  all inside the focused Company OS proof bundle and derivative
+  docs/state/generated surfaces; `git rev-list --left-right --count
+  origin/main...HEAD` -> `0 12`; `git diff --check` required two
+  trailing-whitespace cleanups and then passed with LF-to-CRLF warnings only;
+  `npm run test:api:local` PASS (`8/8`); scoped redaction inspection found no
+  live-token, API-key, private-key, or real OpenAI secret-key markers in the
+  preserved bundle. Local commit is now the correct closure action; push not
+  needed; deploy impact none. External task writeback is still blocked because
+  ClickUp returned `Team not authorized` for `LUC-961`.
+
+- 2026-07-13: [LUC-959](/LUC/issues/LUC-959) completed focused verification
+  for Account access
+  `src/modules/company-os/company-os.routes.ts#authActor`. Evidence packet:
+  `.codex/tasks/luc-959-account-access-company-os-authactor-proof.md`. Proof:
+  `src/tests/api.test.ts` now explicitly proves Company OS approval-request
+  actor attribution for bearer-owner and API-key request paths; `npm run
+  test:api:local` PASS (`8/8`); architecture-awareness refresh PASS (`2865`
+  entities / `6958` relations / `16461` files) marks
+  `src/modules/company-os/company-os.routes.ts#authActor` `verified`;
+  app-completion refresh PASS (`1144` missing test links / `29` missing doc
+  links / `9` implemented-needs-proof / `0` blocked) now reads the exact
+  helper as `status=verified`, `hasTest=true`, `risk=missing_doc_link`;
+  Project Truth apply PASS generated `2026-07-13T17:38:37.978Z` with public
+  probe `pass`, runtime/event/ops gaps `0`, and first gap now
+  `src/modules/company-os/company-os.routes.ts#authActor`
+  `missing_doc_link`. No provider call, protected smoke, push, deploy,
+  restart, production mutation, or secret disclosure occurred. Next owner for
+  the residual same-symbol gap: Docs Memory Lead + Project Manager. Next
+  remaining QA-owned missing-test-link gap:
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`.
+
 - 2026-07-13: [LUC-949](/LUC/issues/LUC-949) completed focused verification
   for Account access `src/integrations/secrets.ts`. Evidence packet:
   `.codex/tasks/luc-949-account-access-secrets-proof.md`. Proof:

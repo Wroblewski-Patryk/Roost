@@ -1,5 +1,25 @@
 # Current Focus
 
+- 2026-07-13: [LUC-961](/LUC/issues/LUC-961) closed the PM source-control
+  lane for the current [LUC-959](/LUC/issues/LUC-959) proof packet. Packet:
+  `.codex/tasks/luc-961-source-control-closure-for-luc-959.md`. The local
+  dirty bundle was coherent and commit-eligible after two trailing-whitespace
+  cleanup lines, but external issue writeback remains blocked because ClickUp
+  returned `Team not authorized` for `LUC-961`. Focus shifts away from PM
+  closure work to the residual same-symbol `missing_doc_link` owned by Docs
+  Memory Lead + Project Manager.
+
+- 2026-07-13: [LUC-959](/LUC/issues/LUC-959) closed the Account access
+  `src/modules/company-os/company-os.routes.ts#authActor`
+  missing-test-link row. Packet:
+  `.codex/tasks/luc-959-account-access-company-os-authactor-proof.md`.
+  The exact helper now reads `verified` with `hasTest=true` in refreshed
+  app-completion, and Project Truth classifies the same symbol only as
+  `missing_doc_link`. Focus shifts away from QA proof authoring for this
+  helper to Docs Memory Lead + Project Manager for the residual same-symbol
+  doc-link gap; the next QA-owned missing-test-link gap is
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`.
+
 - 2026-07-13: [LUC-949](/LUC/issues/LUC-949) closed the Account access
   `src/integrations/secrets.ts` proof lane. Packet:
   `.codex/tasks/luc-949-account-access-secrets-proof.md`. Current

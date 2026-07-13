@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-13T17:04:49.764Z",
+  "generatedAt": "2026-07-13T17:38:37.978Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 222,
-      "linkedRelationCount": 822,
+      "entityCount": 220,
+      "linkedRelationCount": 821,
       "layers": {
         "frontend": {
           "count": 16,
@@ -588,7 +588,7 @@
               "name": "authActor",
               "path": "src/modules/company-os/company-os.routes.ts#authActor",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:company-os-routes-ts:e81f3be58a",
@@ -658,7 +658,7 @@
           "truncated": false
         },
         "worker": {
-          "count": 108,
+          "count": 106,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -683,78 +683,6 @@
               "path": ".agents/state/risk-register.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "agent:2026-07-13-luc-943-account-access-parsegoogledriveoauthsecret-health-signal:5a2aca7692",
-              "type": "agent",
-              "name": "2026-07-13 LUC-943 Account Access parseGoogleDriveOAuthSecret Health Signal",
-              "path": ".agents/state/system-health.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "task:learning-journal:2ea07ed275",
-              "type": "task",
-              "name": "LEARNING_JOURNAL",
-              "path": ".codex/context/LEARNING_JOURNAL.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb",
-              "type": "task",
-              "name": "LUC-321 Source-Control Closure For LUC-262/LUC-267/LUC-268",
-              "path": ".codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:0dc3773294",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-623-source-control-classification-before-deploy-readiness.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:431cec34c5",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-895-account-access-parse-google-drive-oauth-secret-proof.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:546ca92f5c",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-948-source-control-closure-for-luc-943.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:6dfadbc975",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-602-source-control-closure-classification-before-deploy-readiness.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:c2d0550ce1",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-926-source-control-closure-for-luc-895.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:d0b2850854",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
             },
             {
               "id": "agent:user-collaboration-workflow:98bfb8bc00",
@@ -797,6 +725,22 @@
               "status": "implemented"
             },
             {
+              "id": "task:task:0dc3773294",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-623-source-control-classification-before-deploy-readiness.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:638b05362c",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-949-account-access-secrets-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:6d579ee56c",
               "type": "task",
               "name": "Task",
@@ -805,10 +749,26 @@
               "status": "verified"
             },
             {
+              "id": "task:task:6dfadbc975",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-602-source-control-closure-classification-before-deploy-readiness.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:a2f6573d7c",
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-939-account-access-non-production-oauth-secret-proof-closure.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:d0b2850854",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -1299,6 +1259,46 @@
               "path": "src/tests/google-drive-auth.test.ts",
               "owner": "Engineering Delivery Lead",
               "status": "tested"
+            },
+            {
+              "id": "function:entityauthority:b0421607e6",
+              "type": "function",
+              "name": "entityAuthority",
+              "path": "src/modules/workforce/workforce.service.ts#entityAuthority",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:registerowner:04cb5d87eb",
+              "type": "function",
+              "name": "registerOwner",
+              "path": "src/tests/api.test.ts#registerOwner",
+              "owner": "Engineering Delivery Lead",
+              "status": "tested"
+            },
+            {
+              "id": "migration:migration-sql:00295854b1",
+              "type": "migration",
+              "name": "migration.sql",
+              "path": "prisma/migrations/202605022_workspace_auth/migration.sql",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "module:prisma:80aadafbbd",
+              "type": "module",
+              "name": "prisma",
+              "path": "prisma",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "task:luc-538-account-access-google-drive-auth-proof:5704d9d0a8",
+              "type": "task",
+              "name": "LUC-538 Account Access Google Drive Auth Proof",
+              "path": ".codex/tasks/luc-538-account-access-google-drive-auth-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             }
           ],
           "truncated": true
@@ -2214,8 +2214,8 @@
     },
     {
       "userFlow": "Exchange connection and configuration",
-      "entityCount": 33,
-      "linkedRelationCount": 72,
+      "entityCount": 54,
+      "linkedRelationCount": 179,
       "layers": {
         "frontend": {
           "count": 2,
@@ -2278,8 +2278,104 @@
           "truncated": false
         },
         "worker": {
-          "count": 21,
+          "count": 38,
           "sample": [
+            {
+              "id": "agent:2026-07-13-luc-949-account-access-secrets-ts-health-signal:f6767de320",
+              "type": "agent",
+              "name": "2026-07-13 LUC-949 Account Access secrets.ts Health Signal",
+              "path": ".agents/state/system-health.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "module:agents:4ae71ba13a",
+              "type": "module",
+              "name": ".agents",
+              "path": ".agents",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "task:learning-journal:2ea07ed275",
+              "type": "task",
+              "name": "LEARNING_JOURNAL",
+              "path": ".codex/context/LEARNING_JOURNAL.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb",
+              "type": "task",
+              "name": "LUC-321 Source-Control Closure For LUC-262/LUC-267/LUC-268",
+              "path": ".codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:0dc3773294",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-623-source-control-classification-before-deploy-readiness.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:431cec34c5",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-895-account-access-parse-google-drive-oauth-secret-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:546ca92f5c",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-948-source-control-closure-for-luc-943.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:6dfadbc975",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-602-source-control-closure-classification-before-deploy-readiness.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:8d9a7cbaa9",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-959-account-access-company-os-authactor-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:c2d0550ce1",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-926-source-control-closure-for-luc-895.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:d0b2850854",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:ec249a7163",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-958-source-control-closure-for-luc-949.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
             {
               "id": "module:docs:6784d83cb0",
               "type": "module",
@@ -2441,6 +2537,46 @@
               "status": "verified"
             },
             {
+              "id": "task:task:638b05362c",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-949-account-access-secrets-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "agent:active-mission-packet:a0e3255194",
+              "type": "agent",
+              "name": "Active Mission Packet",
+              "path": ".agents/state/active-mission.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "agent:responsibility-lanes:5223e4bc50",
+              "type": "agent",
+              "name": "Responsibility Lanes",
+              "path": ".agents/workflows/responsibility-lanes.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "agent:responsibility-learning:82503fb0f6",
+              "type": "agent",
+              "name": "Responsibility Learning",
+              "path": ".agents/state/responsibility-learning.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "agent:agent-process-evals:143b49414c",
+              "type": "agent",
+              "name": "Agent Process Evals",
+              "path": ".agents/state/agent-evals.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
               "id": "module:src-tests:6d29dd4ad6",
               "type": "module",
               "name": "src/tests",
@@ -2462,7 +2598,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 5,
+          "count": 9,
           "sample": [
             {
               "id": "document:secrets:6d9c5eb0e8",
@@ -2503,6 +2639,38 @@
               "path": "docs/status/project-truth-index.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
+            },
+            {
+              "id": "document:mvp-next-commits:ccc83152eb",
+              "type": "document",
+              "name": "MVP Next Commits",
+              "path": "docs/planning/mvp-next-commits.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:user-feedback-loop:84e8338074",
+              "type": "document",
+              "name": "User Feedback Loop",
+              "path": "docs/governance/user-feedback-loop.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:service-reliability-and-observability:886f9bd027",
+              "type": "document",
+              "name": "Service Reliability And Observability",
+              "path": "docs/operations/service-reliability-and-observability.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:secure-development-lifecycle:2414479969",
+              "type": "document",
+              "name": "Secure Development Lifecycle",
+              "path": "docs/security/secure-development-lifecycle.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
             }
           ],
           "truncated": false
@@ -2515,8 +2683,8 @@
     },
     {
       "userFlow": "Subscription and entitlement",
-      "entityCount": 1036,
-      "linkedRelationCount": 3554,
+      "entityCount": 1039,
+      "linkedRelationCount": 3557,
       "layers": {
         "frontend": {
           "count": 34,
@@ -3443,7 +3611,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 81,
+          "count": 84,
           "sample": [
             {
               "id": "agent:planner:5b56a0bd47",
@@ -3790,10 +3958,26 @@
               "status": "verified"
             },
             {
+              "id": "task:task:638b05362c",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-949-account-access-secrets-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:6d579ee56c",
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-754-account-access-has-fresh-access-token-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:8d9a7cbaa9",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-959-account-access-company-os-authactor-proof.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -3810,6 +3994,14 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:ec249a7163",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-958-source-control-closure-for-luc-949.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -4058,30 +4250,6 @@
               "type": "feature",
               "name": "catalog.ts",
               "path": "src/operating-model/catalog.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:map:7dfbcd871d",
-              "type": "function",
-              "name": "map",
-              "path": "src/operating-model/catalog.ts#map",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:classifyoperatingareakey:23da67a129",
-              "type": "function",
-              "name": "classifyOperatingAreaKey",
-              "path": "src/operating-model/catalog.ts#classifyOperatingAreaKey",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:ensureoperatingmodelforworkspace:40373f7b3a",
-              "type": "function",
-              "name": "ensureOperatingModelForWorkspace",
-              "path": "src/operating-model/catalog.ts#ensureOperatingModelForWorkspace",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             }
@@ -5453,8 +5621,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2775,
-      "linkedRelationCount": 6767,
+      "entityCount": 2778,
+      "linkedRelationCount": 6796,
       "layers": {
         "frontend": {
           "count": 91,
@@ -6749,7 +6917,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 767,
+          "count": 770,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -6816,6 +6984,14 @@
               "status": "verified"
             },
             {
+              "id": "task:task:638b05362c",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-949-account-access-secrets-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:69188765b3",
               "type": "task",
               "name": "Task",
@@ -6844,6 +7020,14 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-822-roost-source-control-classify-dirty-project-state.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:8d9a7cbaa9",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-959-account-access-company-os-authactor-proof.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -6996,6 +7180,14 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-617-account-access-google-oauth-client-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:ec249a7163",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-958-source-control-closure-for-luc-949.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -7366,30 +7558,6 @@
               "path": ".tmp",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "document:architecture-awareness-report:e81b52bbfb",
-              "type": "document",
-              "name": "Architecture Awareness Report",
-              "path": ".tmp/luc-5770-architecture-baseline/status/architecture-awareness-report.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "deprecated"
-            },
-            {
-              "id": "document:dependency-report:a1d3f8ab43",
-              "type": "document",
-              "name": "Dependency Report",
-              "path": ".tmp/luc-5770-architecture-baseline/status/architecture-dependency-report.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:ownership-report:4096c37c8b",
-              "type": "document",
-              "name": "Ownership Report",
-              "path": ".tmp/luc-5770-architecture-baseline/status/architecture-ownership-report.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "deprecated"
             }
           ],
           "truncated": true

@@ -1,3 +1,9 @@
+# 2026-07-13 LUC-959 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Account access Company OS authActor proof | verified for dispatched missing-test-link gap | [LUC-959](/LUC/issues/LUC-959) task contract `.codex/tasks/luc-959-account-access-company-os-authactor-proof.md`; `src/tests/api.test.ts` now explicitly proves Company OS approval-request actor attribution for bearer-owner and API-key paths; `npm run test:api:local` PASS (`8/8`); architecture-awareness refresh generated `2026-07-13T17:38:37.936Z` with the exact helper `verified`; refreshed app-completion now reads `src/modules/company-os/company-os.routes.ts#authActor` with `status=verified`, `hasTest=true`, and `risk=missing_doc_link`; Project Truth apply generated `2026-07-13T17:38:37.978Z` and no longer reports the helper as `missing_test_link`. | No further 09 TAE missing-test-link work is needed for `src/modules/company-os/company-os.routes.ts#authActor`. The residual same-symbol doc-link gap now belongs to Docs Memory Lead + Project Manager, and the next QA-owned missing-test-link gap is `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`. |
+
 # 2026-07-13 LUC-928 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |
