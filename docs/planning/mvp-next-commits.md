@@ -1,5 +1,38 @@
 # MVP Next Commits
 
+- 2026-07-13: [LUC-893](/LUC/issues/LUC-893) completed the Account access
+  `refreshGoogleDriveOAuth` missing-test-link proof-link repair. Evidence
+  packet:
+  `.codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md`.
+  Proof: `npm run build:server` PASS; focused
+  `node --test dist/tests/google-drive-auth.test.js` PASS (`10/10`);
+  architecture-awareness refresh PASS (`2853` entities / `6860` relations /
+  `16460` files, override entries `85/125`, applied `84/121`);
+  app-completion refresh PASS (`1149` missing test links / `25` missing doc
+  links / `10` implemented-needs-proof / `0` blocked); Project Truth apply
+  PASS generated `2026-07-13T13:31:45.772Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap now
+  `refreshGoogleDriveOAuth` `missing_doc_link`. No live Google provider call,
+  protected smoke, push, deploy, restart, production mutation, credential
+  access, or secret disclosure occurred. Next owner for the residual same-row
+  doc-link gap: Docs Memory Lead + Project Manager. Next remaining Account
+  access test gap after that: `parseGoogleDriveOAuthSecret` `missing_test_link`.
+
+- 2026-07-12: [LUC-788](/LUC/issues/LUC-788) completed the Account access
+  `postGoogleOAuthToken` missing-doc-link curation. Evidence packet:
+  `.codex/tasks/luc-788-account-access-post-google-oauth-token-doc-link.md`.
+  Proof: `npm run architecture:refresh` PASS; architecture-awareness refresh
+  PASS (`2850` entities / `6838` relations / `16460` files, overrides
+  `83/120`); app-completion refresh PASS (`1150` missing test links /
+  `24` missing doc links / `11` implemented-needs-proof / `0` blocked);
+  Project Truth apply PASS generated `2026-07-12T17:52:31.095Z` with public
+  probe `pass`, runtime/event/ops gaps `0`, and first gap now
+  `refreshGoogleDriveOAuth` `missing_test_link`. No live Google provider
+  call, protected smoke, push, deploy, restart, production mutation,
+  credential access, or secret disclosure occurred. Next owner for the
+  residual first gap: Test Automation Engineer + QA Regression Lead if
+  Project Truth routing selects that symbol.
+
 - 2026-07-12: [LUC-623](/LUC/issues/LUC-623) completed source-control
   classification before deploy readiness. Evidence packet:
   `.codex/tasks/luc-623-source-control-classification-before-deploy-readiness.md`.

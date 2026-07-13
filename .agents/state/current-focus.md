@@ -1,5 +1,80 @@
 # Current Focus
 
+- 2026-07-13: [LUC-904](/LUC/issues/LUC-904) completed the local source-control
+  closure sidecar for the mixed Roost dirty bundle. Packet:
+  `.codex/tasks/luc-904-source-control-closure-local-dirty-state-sidecar.md`.
+  Current local closure fact is unchanged in shape but fresher in evidence:
+  `main...origin/main [ahead 4]`, `90` tracked modified paths, `19`
+  untracked paths, only `2` behavior-impacting dirty files
+  (`src/tests/api.test.ts`, `src/tests/google-drive-auth.test.ts`), and no
+  safe PM commit path. Focus stays on precise proof/doc-link routing rather
+  than sweeping mixed evidence/state churn into a synthetic commit.
+
+- 2026-07-13: [LUC-893](/LUC/issues/LUC-893) completed the Account access
+  `refreshGoogleDriveOAuth` proof-link lane. Packet:
+  `.codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md`.
+  Current app-completion readback now shows `1243` items / `5` flows /
+  `1149` missing test links / `25` missing doc links / `10`
+  implemented-needs-proof / `0` blocked / `0` browser-review records /
+  `1184` risk items, and Project Truth first gap has moved to
+  `src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth`
+  `missing_doc_link`. No runtime, provider, protected, deploy, push, or
+  secret behavior changed.
+
+- 2026-07-12: [LUC-788](/LUC/issues/LUC-788) completed the Account access
+  `postGoogleOAuthToken` doc-link lane. Packet:
+  `.codex/tasks/luc-788-account-access-post-google-oauth-token-doc-link.md`.
+  Current app-completion readback now shows `1243` items / `5` flows /
+  `1150` missing test links / `24` missing doc links / `11`
+  implemented-needs-proof / `0` blocked / `0` browser-review records /
+  `1185` risk items, and Project Truth first gap has moved to
+  `src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth`
+  `missing_test_link`. No runtime, provider, protected, deploy, push, or
+  secret behavior changed.
+
+- 2026-07-12: [LUC-779](/LUC/issues/LUC-779) completed the current Roost
+  known-state evidence and architecture baseline refresh after the latest
+  generated-state churn. Packet:
+  `docs/planning/luc-779-known-state-evidence-and-architecture-baseline.md`.
+  Current gates remain green and the current app-completion snapshot still
+  reads as broad proof-link debt rather than a fresh broken journey: `1243`
+  items / `5` flows / `1153` missing test links / `24` missing doc links /
+  `11` implemented-needs-proof / `0` blocked / `0` browser-review records /
+  `1188` risk items. Keep future proof selection concrete and non-duplicative;
+  do not launch a new runtime lane from aggregate counts alone.
+
+- 2026-07-12: [LUC-754](/LUC/issues/LUC-754) completed the Account access
+  `hasFreshAccessToken` proof lane. Packet:
+  `.codex/tasks/luc-754-account-access-has-fresh-access-token-proof.md`.
+  Current app-completion readback now shows `1243` items / `5` flows /
+  `1153` missing test links / `25` missing doc links / `11`
+  implemented-needs-proof / `0` blocked / `0` browser-review records /
+  `1189` risk items, and Project Truth first gap has moved to
+  `src/integrations/google-drive/google-drive.auth.ts#hasFreshAccessToken`
+  `missing_doc_link`. No runtime, provider, protected, deploy, push, or
+  secret behavior changed.
+
+- 2026-07-12: [LUC-742](/LUC/issues/LUC-742) completed the Account access
+  stored Google Drive secret doc-link proof lane. Packet:
+  `.codex/tasks/luc-742-account-access-stored-google-drive-secret-doc-link.md`.
+  Current app-completion readback now shows `1243` items / `5` flows /
+  `1154` missing test links / `24` missing doc links / `11`
+  implemented-needs-proof / `0` blocked / `0` browser-review records /
+  `1189` risk items, and Project Truth first gap has moved to
+  `src/integrations/google-drive/google-drive.auth.ts#hasFreshAccessToken`
+  `missing_test_link`. No runtime, provider, protected, deploy, push, or
+  secret behavior changed.
+
+- 2026-07-12: [LUC-736](/LUC/issues/LUC-736) completed the current Roost
+  known-state evidence and architecture baseline refresh. Packet:
+  `docs/planning/luc-736-known-state-evidence-and-architecture-baseline.md`.
+  Current gates are green and the current app-completion snapshot still reads
+  as broad proof-link debt rather than a fresh broken journey: `1243` items /
+  `5` flows / `1154` missing test links / `24` missing doc links / `11`
+  implemented-needs-proof / `0` blocked / `0` browser-review records /
+  `1189` risk items. Keep future proof selection concrete and non-duplicative;
+  do not launch a new runtime lane from aggregate counts alone.
+
 - 2026-06-29: Documentation Steward focus [LUC-6217](/LUC/issues/LUC-6217)
   is complete for source-control closure of
   [LUC-6213](/LUC/issues/LUC-6213). Closure packet:

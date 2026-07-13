@@ -1,0 +1,119 @@
+{
+  "baseUrl": "http://127.0.0.1:31527",
+  "generatedAt": "2026-07-12T14:30:52.536Z",
+  "health": {
+    "status": "ok",
+    "service": "companycore",
+    "name": "LuckySparrow Company Core",
+    "build": {
+      "commit": "unknown",
+      "image": "unknown"
+    }
+  },
+  "ownerEmail": "lu***@example.com",
+  "routes": [
+    "/areas?area=01-strategia&view=overview"
+  ],
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 960
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "networkIdleTimeoutMs": 3000,
+  "screenshots": [
+    {
+      "viewport": "desktop",
+      "route": "/areas?area=01-strategia&view=overview",
+      "file": "docs\\ux\\evidence\\luc-727-strategy-route-local-proof\\desktop-areas-area-01-strategia-view-overview.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/areas?area=01-strategia&view=overview",
+      "file": "docs\\ux\\evidence\\luc-727-strategy-route-local-proof\\mobile-areas-area-01-strategia-view-overview.png"
+    }
+  ],
+  "assertions": [
+    {
+      "viewport": "desktop",
+      "route": "/areas?area=01-strategia&view=overview",
+      "renderedRoute": null,
+      "routeTitle": "",
+      "signedIn": true
+    },
+    {
+      "viewport": "desktop",
+      "route": "/areas?area=01-strategia&view=overview",
+      "requiredText": "Strategy Management System",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "desktop",
+      "route": "/areas?area=01-strategia&view=overview",
+      "requiredText": "Metrics",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "desktop",
+      "route": "/areas?area=01-strategia&view=overview",
+      "requiredText": "Strategic risks",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "desktop",
+      "route": "/areas?area=01-strategia&view=overview",
+      "requiredText": "Recent strategic tasks",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "desktop",
+      "route": "/areas?area=01-strategia&view=overview",
+      "requiredText": "No strategy goals",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/areas?area=01-strategia&view=overview",
+      "renderedRoute": null,
+      "routeTitle": "",
+      "signedIn": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/areas?area=01-strategia&view=overview",
+      "requiredText": "Strategy Management System",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/areas?area=01-strategia&view=overview",
+      "requiredText": "Metrics",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/areas?area=01-strategia&view=overview",
+      "requiredText": "Strategic risks",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/areas?area=01-strategia&view=overview",
+      "requiredText": "Recent strategic tasks",
+      "requiredTextPresent": true
+    },
+    {
+      "viewport": "mobile",
+      "route": "/areas?area=01-strategia&view=overview",
+      "requiredText": "No strategy goals",
+      "requiredTextPresent": true
+    }
+  ],
+  "consoleIssues": []
+}

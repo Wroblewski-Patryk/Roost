@@ -1,6 +1,255 @@
 # Active Mission Packet
 
-Last updated: 2026-07-12
+Last updated: 2026-07-13
+
+## LUC-904 Checkpoint
+
+- 2026-07-13: [LUC-904](/LUC/issues/LUC-904) completed the Roost PM
+  local-only source-control closure sidecar created from the board comment on
+  the dependency-blocked parent path. Output:
+  `.codex/tasks/luc-904-source-control-closure-local-dirty-state-sidecar.md`.
+  Scope stayed inside fresh git forensics, exact dirty-bucket recount,
+  focused validation of the only executable dirty files, and durable
+  no-commit closure evidence; no subagent delegation was used because the lane
+  was bounded PM source-control work. Evidence: `git status --short --branch`
+  still shows `main...origin/main [ahead 4]`; fresh porcelain reads `90`
+  tracked modified paths plus `19` untracked paths (`109` total) grouped as
+  `agent_state=6`, `codex_context=3`, `project_docs=79`, `task_packets=13`,
+  `planning_packets=3`, `ux_evidence=3`, and `behavior_tests=2`
+  (`src/tests/api.test.ts`, `src/tests/google-drive-auth.test.ts`);
+  `git rev-list --left-right --count origin/main...HEAD` -> `0 4`;
+  `git diff --check` PASS with LF-to-CRLF warnings only; `npm run
+  build:server` PASS; focused `node --test dist/tests/google-drive-auth.test.js`
+  PASS (`10/10`); `npm run test:api:local` PASS (`8/8`). Cleanup checks found
+  no validation-owned Docker container and no `chrome-headless-shell`
+  process. Commit decision: `not committed`; push status `not needed`; deploy
+  impact `none`. Final disposition: `done`.
+
+## LUC-893 Checkpoint
+
+- 2026-07-13: [LUC-893](/LUC/issues/LUC-893) completed a single-lane 09 TAE
+  proof-link repair for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth`
+  `missing_test_link` row. Output:
+  `.codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md`.
+  Scope stayed inside the exact scanner proof relation, focused no-network
+  validation, generated architecture/app-completion/Project Truth readback,
+  and source-of-truth updates; no subagent delegation was used because the row
+  was narrow and the existing stale-refresh proof already exercised the helper
+  through the supported public path. Evidence: `npm run build:server` PASS;
+  focused `node --test dist/tests/google-drive-auth.test.js` PASS (`10/10`);
+  `node C:\Personal\Projekty\Aplikacje\Paperclip_Softwarehouse\scripts\build-architecture-awareness-index.mjs --project Roost --root C:\Personal\Projekty\Aplikacje\Roost`
+  PASS generated `2026-07-13T13:31:27.552Z` with `2853` entities / `6860`
+  relations / `16460` files and override entries `85/125` with `84/121`
+  applied; `node C:\Personal\Projekty\Aplikacje\Paperclip_Softwarehouse\scripts\build-app-completion-index.mjs --project Roost --root C:\Personal\Projekty\Aplikacje\Roost`
+  PASS reduced missing-test-link to `1149`; `node
+  C:\Personal\Projekty\Aplikacje\Paperclip_Softwarehouse\scripts\build-project-truth-indexes.mjs --project Roost --root C:\Personal\Projekty\Aplikacje\Roost --apply`
+  PASS moved Project Truth first gap to the same symbol as
+  `missing_doc_link`. Cleanup: no deploy, push, restart, protected smoke, or
+  production mutation occurred. Final disposition: `done`.
+
+## LUC-822 Checkpoint
+
+- 2026-07-12: [LUC-822](/LUC/issues/LUC-822) completed a single-lane Roost
+  PM source-control classification for the current dirty project state.
+  Output:
+  `.codex/tasks/luc-822-roost-source-control-classify-dirty-project-state.md`.
+  Scope stayed inside git/source-control inspection, narrow validation of the
+  only executable dirty paths, durable evidence capture, and canonical state
+  sync. No subagent delegation was used because the issue remained a bounded
+  PM closure/classification lane. Evidence: `main...origin/main [ahead 4]`
+  with `90` tracked modified files and `14` untracked paths; semantic
+  reclassification now reads `project-docs=95 current evidence-only paths`,
+  `agent-state=6 current evidence-only paths`, `codex-context=3 current
+  evidence-only paths`, and `other=2 current behavior-impacting test files`
+  (`src/tests/api.test.ts`, `src/tests/google-drive-auth.test.ts`); `git diff
+  --check` PASS with LF-to-CRLF warnings only; `npm run architecture:status`
+  PASS (`GREEN`, graph `454/765/35`); `npm run build:server` PASS; focused
+  `node --test dist/tests/google-drive-auth.test.js` PASS (`10/10`); `npm run
+  test:api:local` PASS (`8/8`). Cleanup checks found no validation-owned
+  Docker container and no `chrome-headless-shell` process. Commit decision:
+  `not committed` because the dirty tree still mixes multiple completed proof,
+  doc-link, generated-state, and shared-context packets beyond a single PM
+  closure commit. Final disposition: `done`.
+
+## LUC-788 Checkpoint
+
+- 2026-07-12: [LUC-788](/LUC/issues/LUC-788) completed a single-lane
+  Documentation Steward doc-link curation for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#postGoogleOAuthToken`
+  `missing_doc_link` row. Output target:
+  `.codex/tasks/luc-788-account-access-post-google-oauth-token-doc-link.md`.
+  Scope stayed inside the docs/index evidence path: exact documentation-link
+  relation, generated architecture/app-completion/Project Truth readback, and
+  canonical state updates. No subagent delegation was used because the row was
+  narrow, exact, and already matched the established Google Drive auth
+  documentation-link pattern. Evidence: `npm run architecture:refresh` PASS;
+  external architecture-awareness refresh PASS generated
+  `2026-07-12T17:52:17.179Z` with `2850` entities / `6838` relations /
+  `16460` files; app-completion refresh PASS generated `1150` missing test
+  links / `24` missing doc links / `11` implemented-needs-proof /
+  `0` blocked / `1185` known risk items; Project Truth apply PASS generated
+  `2026-07-12T17:52:31.095Z` and moved the first gap to
+  `src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth`
+  `missing_test_link`. Final Paperclip disposition: `done` at
+  `2026-07-12T17:54:07.738Z`.
+
+## LUC-787 Checkpoint
+
+- 2026-07-12: [LUC-787](/LUC/issues/LUC-787) completed a single-lane
+  Documentation Steward doc-link curation for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#normalizeTokenResponse`
+  `missing_doc_link` row. Output target:
+  `.codex/tasks/luc-787-account-access-normalize-token-response-doc-link.md`.
+  Scope stayed inside the docs/index evidence path: exact documentation-link
+  relation, generated architecture/app-completion/Project Truth readback, and
+  canonical state updates. No subagent delegation was used because the row was
+  narrow, exact, and already matched the established Google Drive auth
+  documentation-link pattern. Evidence: `npm run architecture:refresh` PASS;
+  external architecture-awareness refresh PASS generated
+  `2026-07-12T17:46:13.895Z` with `2849` entities / `6833` relations /
+  `16460` files; app-completion refresh PASS generated `1150` missing test
+  links / `25` missing doc links / `11` implemented-needs-proof /
+  `0` blocked / `1186` known risk items; Project Truth apply PASS generated
+  `2026-07-12T17:47:51.661Z` and moved the first gap to
+  `src/integrations/google-drive/google-drive.auth.ts#postGoogleOAuthToken`
+  `missing_doc_link`. Final Paperclip disposition: `done` at
+  `2026-07-12T17:49:36.213Z`.
+
+## LUC-786 Checkpoint
+
+- 2026-07-12: [LUC-786](/LUC/issues/LUC-786) completed a single-lane
+  Documentation Steward doc-link curation for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#mergeGoogleDriveConfig`
+  `missing_doc_link` row. Output target:
+  `.codex/tasks/luc-786-account-access-merge-google-drive-config-doc-link.md`.
+  Scope stayed inside the docs/index evidence path: exact documentation-link
+  relation, generated architecture/app-completion/Project Truth readback, and
+  canonical state updates. No subagent delegation was used because the row was
+  narrow, exact, and already matched the established Google Drive auth
+  documentation-link pattern. Evidence: `npm run architecture:refresh` PASS;
+  external architecture-awareness refresh PASS generated
+  `2026-07-12T17:41:34.026Z` with `2848` entities / `6828` relations /
+  `16460` files; app-completion refresh PASS generated `1150` missing test
+  links / `26` missing doc links / `11` implemented-needs-proof /
+  `0` blocked / `1187` known risk items; Project Truth apply PASS generated
+  `2026-07-12T17:42:41.463Z` and moved the first gap to
+  `src/integrations/google-drive/google-drive.auth.ts#normalizeTokenResponse`
+  `missing_doc_link`. Final Paperclip disposition: `done` at
+  `2026-07-12T17:43:38.535Z`.
+
+## LUC-779 Checkpoint
+
+- 2026-07-12: [LUC-779](/LUC/issues/LUC-779) completed a single-lane Roost
+  known-state evidence and architecture baseline refresh after the latest
+  Account access proof/doc-link churn. Output:
+  `docs/planning/luc-779-known-state-evidence-and-architecture-baseline.md`.
+  Scope stayed inside the PM evidence path: shared-contract reread, live
+  architecture refresh/status proof, current app-completion readback,
+  source-control posture classification, and canonical state-pointer sync. No
+  subagent delegation was used because the issue remained a bounded PM
+  evidence lane with no fresh owner split. Evidence: `npm run
+  architecture:refresh` PASS; `npm run architecture:status` PASS (`GREEN`,
+  graph `454 nodes / 765 relations / 35 chains`, evidence queue `0`, chain
+  worklist `0`, delta `0/0/0`, all gates pass `yes`); `docs/status/app-completion-index.md`
+  and `.json` now generate `2026-07-12T17:10:10.554Z` with `1243` items / `5`
+  flows / `1153` missing test links / `24` missing doc links / `11`
+  implemented-needs-proof / `0` blocked / `0` browser-review records / `1188`
+  known risk items; current source-control readback showed
+  `main...origin/main [ahead 4]` with `89` tracked modified files and `8`
+  untracked paths in the shared worktree. Cleanup: no deploy, push, restart,
+  protected smoke, or production mutation occurred. Final disposition: `done`.
+
+## LUC-754 Checkpoint
+
+- 2026-07-12: [LUC-754](/LUC/issues/LUC-754) completed a single-lane 09 TAE
+  proof-link repair for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#hasFreshAccessToken`
+  `missing_test_link` row and the follow-up doc-link curation for the same
+  symbol. Output:
+  `.codex/tasks/luc-754-account-access-has-fresh-access-token-proof.md`.
+  Scope stayed inside the focused Google Drive auth test, scanner evidence
+  relation, generated architecture/app-completion/Project Truth readback, and
+  source-of-truth updates; no subagent delegation was used because the row was
+  narrow and already exercised by an existing supported public path. Evidence:
+  `npm run build:server` PASS; focused `node --test dist/tests/google-drive-auth.test.js`
+  PASS (`7/7`); `node C:\Personal\Projekty\Aplikacije\Paperclip_Softwarehouse\scripts\build-architecture-awareness-index.mjs --project Roost --root C:\Personal\Projekty\Aplikacje\Roost`
+  PASS materialized the new test relation and updated the graph to `2843`
+  entities / `6810` relations / `35` chains with `80` entity overrides and
+  `117` relation overrides applied; `node
+  C:\Personal\Projekty\Aplikacje\Paperclip_Softwarehouse\scripts\build-app-completion-index.mjs --project Roost --root C:\Personal\Projekty\Aplikacije\Roost`
+  PASS reduced missing-test-link to `1153`; `node
+  C:\Personal\Projekty\Aplikacje\Paperclip_Softwarehouse\scripts\build-project-truth-indexes.mjs --project Roost --root C:\Personal\Projekty\Aplikacje\Roost --apply`
+  PASS moved Project Truth first gap to
+  `src/integrations/google-drive/google-drive.auth.ts#hasFreshAccessToken`
+  `missing_doc_link`. Cleanup: no deploy, push, restart, protected smoke, or
+  production mutation occurred. Final disposition: `done`.
+
+## LUC-736 Checkpoint
+
+- 2026-07-12: [LUC-736](/LUC/issues/LUC-736) completed a single-lane Roost
+  known-state evidence and architecture baseline refresh. Output:
+  `docs/planning/luc-736-known-state-evidence-and-architecture-baseline.md`.
+  Scope stayed inside the current-state evidence path: shared-contract reread,
+  live architecture status proof, current app-completion readback, and
+  canonical state-pointer sync. Evidence: `npm run architecture:status` PASS
+  (`GREEN`, graph `454 nodes / 765 relations / 35 chains`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, all gates pass `yes`);
+  `docs/status/app-completion-index.md` and `.json` report `1243` items / `5`
+  flows / `1154` missing test links / `25` missing doc links / `11`
+  implemented-needs-proof / `0` blocked / `0` browser-review records / `1190`
+  known risk items, generated `2026-07-12T14:25:50.879Z`; current source
+  control readback showed `main...origin/main [ahead 4]` with existing dirty
+  shared-worktree edits and generated packet files. Cleanup: no deploy, push,
+  restart, protected smoke, or production mutation occurred. Final disposition:
+  `done`.
+
+## LUC-727 Checkpoint
+
+- 2026-07-12: [LUC-727](/LUC/issues/LUC-727) completed a single-lane 09 FEW
+  local browser proof for the Strategy route gap family. Output:
+  `docs/planning/luc-727-strategy-route-local-proof.md`. Scope stayed inside
+  the Strategy route family proof ladder: gap-family mapping,
+  validation-owned local API/runtime readiness, authenticated desktop/mobile
+  browser assertions for `/areas?area=01-strategia&view=overview`, evidence
+  artifacts, and source-of-truth updates. No subagent delegation was used
+  because the issue was a bounded frontend/browser verification lane. Evidence:
+  current generated `Trading operation` rows were confirmed to map to
+  `src/app.ts#/strategy`, `src/modules/strategy/strategy.routes.ts`, and
+  `web/src/features/departments/strategy-route.tsx`; task-owned PostgreSQL
+  container `companycore-luc-727-postgres` on `127.0.0.1:55527` supported
+  `npm run test:api:local` PASS; local backend health on
+  `http://127.0.0.1:31527/health` returned `200`; `npm run owner-console:ux-smoke`
+  PASS recorded signed-in desktop/mobile route proof plus screenshots and
+  `consoleIssues=[]` in
+  `docs/ux/evidence/luc-727-strategy-route-local-proof/report.json`. Cleanup:
+  `docker rm -f companycore-luc-727-postgres` PASS; validation backend listener
+  on `31527` was stopped and follow-up port check found no listener. Existing
+  `chrome-headless-shell` PIDs were observed post-run without a pre-run
+  baseline, so no shared browser processes were terminated.
+
+## LUC-721 Checkpoint
+
+- 2026-07-12: [LUC-721](/LUC/issues/LUC-721) completed a single-lane 09 TAE
+  proof-link repair for the Account access
+  `src/integrations/google-drive/google-drive.auth.ts#getStoredGoogleDriveSecret`
+  `missing_test_link` row. Output:
+  `.codex/tasks/luc-721-account-access-stored-google-drive-secret-proof.md`.
+  Scope stayed inside the focused Google Drive auth test, exact scanner
+  override relation, generated architecture/app-completion/Project Truth
+  readback, and source-of-truth updates; no subagent delegation was used
+  because the row was narrow and already exercised by an existing supported
+  public path. Validation: scanner override JSON parse PASS; `npm run
+  build:server` PASS; focused `node --test dist/tests/google-drive-auth.test.js`
+  PASS (`6/6`); `npm run architecture:refresh` PASS; Paperclip
+  architecture-awareness refresh PASS generated `2026-07-12T14:25:38.748Z`
+  with `2837` entities / `6774` relations / `16451` files and overrides
+  `79/115`; app-completion refresh PASS moved missing-test-link to `1154`;
+  Project Truth apply PASS generated `2026-07-12T14:25:54.970Z`, public
+  probe `pass`, runtime/event/ops gaps `0`, and first gap now the same symbol
+  as `missing_doc_link`. No live Google provider call, protected smoke,
+  credential value read, push, deploy, restart, or production mutation
+  occurred.
 
 ## LUC-623 Checkpoint
 

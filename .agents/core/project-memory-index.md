@@ -11,6 +11,110 @@ state, architecture intent, module confidence, and the next release objective.
 
 ## Latest Generated Truth
 
+- 2026-07-12: [LUC-788](/LUC/issues/LUC-788) cleared the Account access
+  `postGoogleOAuthToken` `missing_doc_link` row. Use
+  `.codex/tasks/luc-788-account-access-post-google-oauth-token-doc-link.md`
+  for current proof: `docs/architecture/relations/documentation-links.csv`
+  now links `src/integrations/google-drive/google-drive.auth.ts#postGoogleOAuthToken`
+  to `docs/planning/google-drive-v2-task-contracts.md`; architecture-awareness
+  generated `2026-07-12T17:52:17.179Z` with `2850` entities / `6838`
+  relations / `16460` files and overrides `83/120`; app-completion generated
+  `1243` items / `5` flows / `1150` missing test links / `24` missing doc
+  links / `11` implemented-needs-proof / `0` blocked / `1185` risk items;
+  Project Truth generated `2026-07-12T17:52:31.095Z` with public probe
+  `pass`, runtime findings `0`, incomplete event chains `0`, operational gate
+  gaps `0`, and moved the first gap to
+  `src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth`
+  `missing_test_link`. Do not open another missing-doc-link curation for
+  `postGoogleOAuthToken` without a fresh generated regression; the next
+  remaining Account access gap belongs to Test Automation Engineer + QA
+  Regression Lead.
+
+- 2026-07-12: [LUC-778](/LUC/issues/LUC-778) cleared the Account access
+  `postGoogleOAuthToken` `missing_test_link` row. Use
+  `.codex/tasks/luc-778-account-access-post-google-oauth-token-proof.md` for
+  current proof: `src/tests/google-drive-auth.test.ts` now verifies the
+  authorization-code token POST helper through the public exchange path,
+  including fail-closed `integration_invalid_token` mapping for a rejected
+  Google token response; `docs/architecture/scanner-overrides.json` links the
+  exact generated function path to that proof; architecture-awareness
+  generated `2026-07-12T17:19:25.328Z` with `2847` entities / `6821`
+  relations / `16460` files and overrides `83/120`; app-completion generated
+  `2026-07-12T17:20:05.758Z` with `1243` items / `5` flows / `1150` missing
+  test links / `27` missing doc links / `11` implemented-needs-proof /
+  `0` blocked / `1188` risk items; Project Truth generated
+  `2026-07-12T17:20:06.350Z` with public probe `pass`, runtime findings `0`,
+  incomplete event chains `0`, operational gate gaps `0`, and moved the same
+  symbol to `missing_doc_link`. Do not open another missing-test-link proof
+  for `postGoogleOAuthToken` without a fresh generated regression; the next
+  remaining Account access test gap is
+  `src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth`.
+
+- 2026-07-12: [LUC-779](/LUC/issues/LUC-779) refreshed the current Roost
+  known-state evidence and architecture baseline after the latest shared
+  Account access proof/doc-link churn. Use
+  `docs/planning/luc-779-known-state-evidence-and-architecture-baseline.md`
+  for the current proof: `npm run architecture:refresh` and `npm run
+  architecture:status` are both `PASS`; architecture remains `GREEN`
+  (`454` nodes / `765` relations / `35` chains, evidence queue `0`, chain
+  worklist `0`, delta `0/0/0`); `docs/status/app-completion-index.md` and
+  `.json` are current at `2026-07-12T17:10:10.554Z` with `1243` items / `5`
+  flows / `1153` missing test links / `24` missing doc links / `11`
+  implemented-needs-proof / `0` blocked / `0` browser-review records / `1188`
+  risk items. Do not open a duplicate proof lane from the aggregate counts
+  alone; residual debt is still classification/proof-link curation, not a new
+  broken journey.
+
+- 2026-07-12: [LUC-736](/LUC/issues/LUC-736) refreshed the current Roost
+  known-state evidence and architecture baseline. Use
+  `docs/planning/luc-736-known-state-evidence-and-architecture-baseline.md`
+  for the current proof: `npm run architecture:status` is still `GREEN`
+  (`454` nodes / `765` relations / `35` chains, evidence queue `0`, chain
+  worklist `0`, delta `0/0/0`); `docs/status/app-completion-index.md` and
+  `.json` are current at `2026-07-12T14:25:50.879Z` with `1243` items / `5`
+  flows / `1154` missing test links / `25` missing doc links / `11`
+  implemented-needs-proof / `0` blocked / `0` browser-review records /
+  `1190` risk items. Do not open a duplicate proof lane from the aggregate
+  counts alone; residual debt is still classification/proof-link curation,
+  not a new broken journey.
+
+- 2026-07-12: [LUC-727](/LUC/issues/LUC-727) cleared the current Strategy
+  route frontend/browser proof gap family. Use
+  `docs/planning/luc-727-strategy-route-local-proof.md` for current proof:
+  the repeated `Trading operation` app-completion rows still map to the
+  Strategy route family (`src/app.ts#/strategy`,
+  `src/modules/strategy/strategy.routes.ts`, and
+  `web/src/features/departments/strategy-route.tsx`) rather than a live
+  trading surface; `npm run owner-console:ux-smoke` verified signed-in desktop
+  and mobile rendering of `/areas?area=01-strategia&view=overview` on a
+  validation-owned local runtime; required route text for `Strategy Management
+  System`, `Metrics`, `Strategic risks`, `Recent strategic tasks`, and
+  `No strategy goals` was present; screenshots and report artifacts live under
+  `docs/ux/evidence/luc-727-strategy-route-local-proof/`. Do not open another
+  Strategy browser proof lane without a fresh generated browser-review row or
+  behavioral regression; residual `Trading operation` naming is classifier debt,
+  not a new frontend defect.
+
+- 2026-07-12: [LUC-721](/LUC/issues/LUC-721) cleared the Account access
+  `getStoredGoogleDriveSecret` `missing_test_link` row. Use
+  `.codex/tasks/luc-721-account-access-stored-google-drive-secret-proof.md`
+  for current proof: `src/tests/google-drive-auth.test.ts` verifies the stored
+  workspace OAuth secret lookup contract through the public authorization URL
+  path by asserting the Prisma query requests `select.secretCiphertext` and
+  the stored client id is used in the generated Google authorization URL;
+  `docs/architecture/scanner-overrides.json` links the exact generated helper
+  path to that test; architecture-awareness generated
+  `2026-07-12T14:25:38.748Z` with `2837` entities / `6774` relations /
+  `16451` files and overrides `79/115`; app-completion generated `1154`
+  missing test links / `25` missing doc links / `11` implemented-needs-proof /
+  `0` blocked / `1190` known risk items; Project Truth generated
+  `2026-07-12T14:25:54.970Z` with public probe `pass`, runtime findings `0`,
+  incomplete event chains `0`, operational gate gaps `0`, and first gap moved
+  to the same symbol as `missing_doc_link`. Do not open another
+  missing-test-link proof for `getStoredGoogleDriveSecret` without a fresh
+  generated regression; same-symbol doc-link curation now belongs to Docs
+  Memory Lead + Project Manager.
+
 - 2026-07-12: [LUC-620](/LUC/issues/LUC-620) cleared the Account access
   `getGoogleOAuthClient` `missing_doc_link` row. Use
   `.codex/tasks/luc-620-account-access-google-oauth-client-doc-link.md` for

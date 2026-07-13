@@ -1,4 +1,113 @@
 # Next Steps
+- 2026-07-13: [LUC-904](/LUC/issues/LUC-904) has no remaining PM source-control
+  action after the completed local closure sidecar. The durable packet is
+  `.codex/tasks/luc-904-source-control-closure-local-dirty-state-sidecar.md`.
+  Current closure fact: the dirty bundle is still mixed (`90` tracked
+  modified, `19` untracked) and only `src/tests/api.test.ts` plus
+  `src/tests/google-drive-auth.test.ts` are behavior-impacting; both have
+  fresh local proof. Do not open a synthetic commit lane from this packet
+  alone. The next owner is the blocked parent delivery-gate path, which should
+  consume this local closure evidence rather than ask for another PM recount
+  unless the dirty bundle changes again.
+
+- 2026-07-13: [LUC-893](/LUC/issues/LUC-893) no longer has a remaining 09 TAE
+  missing-test-link action after the completed `refreshGoogleDriveOAuth`
+  proof-link repair and generated Project Truth/app-completion readback. The
+  dispatched `missing_test_link` row is gone; Project Truth first gap is now
+  `src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth`
+  `missing_doc_link`, owned by Docs Memory Lead + Project Manager. The next
+  remaining Account access test gap after that is
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  `missing_test_link`. Do not open another QA proof lane for
+  `refreshGoogleDriveOAuth` unless a fresh generated regression or behavioral
+  failure appears; do not run live Google provider, protected smoke,
+  push/deploy, restart, production mutation, credential, or secret work from
+  [LUC-893](/LUC/issues/LUC-893).
+
+- 2026-07-12: [LUC-788](/LUC/issues/LUC-788) has no remaining Documentation
+  Steward action after the curated doc-link and generated Project Truth
+  readback. The dispatched `postGoogleOAuthToken` `missing_doc_link` row is
+  gone; app-completion missing doc links are now `24`, known risk items
+  `1185`, and Project Truth first gap is
+  `src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth`
+  `missing_test_link`. Next action, only if selected by Project Truth routing,
+  is a Test Automation Engineer + QA Regression Lead proof-link lane for that
+  symbol. Do not open product code, live Google provider, protected smoke,
+  push/deploy, restart, production mutation, credential, or secret work from
+  [LUC-788](/LUC/issues/LUC-788).
+
+- 2026-07-12: [LUC-779](/LUC/issues/LUC-779) known-state evidence baseline is
+  complete locally. The durable packet is
+  `docs/planning/luc-779-known-state-evidence-and-architecture-baseline.md`.
+  Current architecture status is green and the current app-completion index
+  remains a broad confidence queue (`1243` items / `5` flows / `1153` missing
+  test links / `24` missing doc links / `11` implemented-needs-proof / `0`
+  blocked / `0` browser-review records / `1188` risk items). Do not open a
+  duplicate proof lane from the aggregate counts alone; select a new lane only
+  if a future generated refresh exposes a concrete fresh regression or owner
+  gap.
+
+- 2026-07-12: [LUC-754](/LUC/issues/LUC-754) completed the Account access
+  `hasFreshAccessToken` proof lane. The durable packet is
+  `.codex/tasks/luc-754-account-access-has-fresh-access-token-proof.md`.
+  Current evidence: focused no-network auth test passes, `build-architecture-awareness-index`
+  applied the new relation, app-completion now shows `1153` missing test links
+  and `25` missing doc links, and Project Truth first gap is
+  `src/integrations/google-drive/google-drive.auth.ts#hasFreshAccessToken`
+  `missing_doc_link`. Do not open another QA proof lane for this symbol
+  unless a fresh generated regression appears.
+
+- 2026-07-12: [LUC-736](/LUC/issues/LUC-736) known-state evidence baseline is
+  complete locally. The durable packet is
+  `docs/planning/luc-736-known-state-evidence-and-architecture-baseline.md`.
+  Current architecture status is green and the current app-completion index
+  remains a broad confidence queue (`1243` items / `5` flows / `1154` missing
+  test links / `24` missing doc links / `11` implemented-needs-proof / `0`
+  blocked / `0` browser-review records / `1189` risk items). Do not open a
+  duplicate proof lane from the aggregate counts alone; select a new lane only
+  if a future generated refresh exposes a concrete fresh regression or owner
+  gap.
+
+- 2026-07-12: [LUC-742](/LUC/issues/LUC-742) Account access stored Google
+  Drive secret doc-link proof is complete locally. The durable packet is
+  `.codex/tasks/luc-742-account-access-stored-google-drive-secret-doc-link.md`.
+  The exact helper row now links to
+  `docs/planning/google-drive-v2-task-contracts.md`; app-completion now shows
+  `25` missing doc links; Project Truth first gap has moved to
+  `hasFreshAccessToken` `missing_doc_link`. Do not open another doc-link lane
+  for this same symbol unless a fresh generated regression appears.
+
+- 2026-07-12: [LUC-727](/LUC/issues/LUC-727) has no remaining 09 FEW
+  frontend/browser proof action after the completed authenticated desktop and
+  mobile Strategy route verification. The current generated `Trading operation`
+  rows were proven to belong to the Strategy route family, and the local
+  evidence packet is now
+  `docs/planning/luc-727-strategy-route-local-proof.md` with screenshots in
+  `docs/ux/evidence/luc-727-strategy-route-local-proof/`. Do not open another
+  Strategy frontend proof lane unless a fresh browser-review row, route
+  regression, or concrete behavioral failure appears. If the generated bucket
+  name remains noisy after future refreshes, the next owner is docs/scanner
+  curation rather than another browser run.
+
+- 2026-07-12: [LUC-726](/LUC/issues/LUC-726) has no remaining backend route
+  proof action after the completed `/dashboard/command` parity assertion and
+  scanner evidence linkage. Do not open another backend dashboard proof lane
+  unless a fresh generated route/module regression or behavioral failure
+  appears. If dashboard overview gaps persist after the next generated refresh,
+  the next owner should be QA/Docs/Frontend for browser/component evidence,
+  not Core Backend Engineer.
+
+- 2026-07-12: [LUC-721](/LUC/issues/LUC-721) no longer has a remaining 09 TAE
+  missing-test-link action after the completed `getStoredGoogleDriveSecret`
+  proof-link repair and generated Project Truth/app-completion readback. The
+  dispatched `missing_test_link` row is gone; Project Truth first gap is now
+  `src/integrations/google-drive/google-drive.auth.ts#getStoredGoogleDriveSecret`
+  `missing_doc_link`, owned by Docs Memory Lead + Project Manager. Do not open
+  another QA proof lane for this symbol unless a fresh generated regression or
+  behavioral failure appears; do not run live Google provider, protected
+  smoke, push/deploy, restart, production mutation, credential, or secret work
+  from [LUC-721](/LUC/issues/LUC-721).
+
 - 2026-07-12: [LUC-623](/LUC/issues/LUC-623) has no remaining PM
   classification action. The source-control state is known: `main` is ahead of
   `origin/main` by `3`, architecture status is green, and the dirty tree is a

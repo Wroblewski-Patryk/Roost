@@ -26,6 +26,69 @@ fixes for this repository.
 
 ## Entries
 
+### 2026-07-12 - Project Truth Reads The Scanner Export, Not The Project-Only Refresh
+- Context: [LUC-742](/LUC/issues/LUC-742) needed to clear an Account access
+  missing-doc-link row for `getStoredGoogleDriveSecret`.
+- Symptom: `npm run architecture:refresh` left app-completion unchanged even
+  after the local source-of-truth relation edit.
+- Root cause: `build-app-completion-index.mjs` reads
+  `docs/graphs/architecture-awareness.json`, which comes from
+  `build-architecture-awareness-index.mjs`, not from the project-native
+  architecture refresh alone.
+- Guardrail: when Project Truth or app-completion does not move after a local
+  docs/architecture edit, regenerate the scanner awareness export first, then
+  rebuild app-completion, then apply Project Truth.
+- Preferred pattern: `build-architecture-awareness-index` -> `build-app-completion-index`
+  -> `build-project-truth-indexes --apply`.
+- Avoid: assuming `npm run architecture:refresh` is sufficient for the scanner
+  export used by Project Truth.
+- Evidence: [LUC-742](/LUC/issues/LUC-742) app-completion dropped from `25`
+  to `24` missing doc links only after the scanner export was rebuilt.
+
+### 2026-07-12 - Build Architecture Awareness Before Rebuilding App Completion
+- Context: [LUC-754](/LUC/issues/LUC-754) proved the Account access
+  `hasFreshAccessToken` freshness branch and needed the generated status files
+  to move.
+- Symptom: `npm run architecture:refresh` alone left app-completion and Project
+  Truth at the old first gap even after the focused no-network test passed.
+- Root cause: the app-completion and Project Truth builders consumed the
+  previous architecture-awareness export until `build-architecture-awareness-index.mjs`
+  was run directly.
+- Guardrail: after any proof-link change, rebuild architecture-awareness
+  explicitly, then rebuild app-completion, then apply Project Truth.
+- Preferred pattern: `build-architecture-awareness-index` ->
+  `build-app-completion-index` -> `build-project-truth-indexes --apply`.
+- Avoid: relying on `npm run architecture:refresh` alone when the generated
+  first gap has to move.
+- Evidence: [LUC-754](/LUC/issues/LUC-754) moved missing-test-link from
+  `1154` to `1153` only after the direct architecture-awareness rebuild; the
+  Project Truth first gap then advanced to `missing_doc_link`.
+
+### 2026-07-12 - Treat Paperclip Issue-Route HTTP 500s As Control-Plane Blockers
+- Context: [LUC-727](/LUC/issues/LUC-727) completed local frontend/browser
+  proof, uploaded attachments successfully, and then attempted final Paperclip
+  comment/status mutation through the local API at `127.0.0.1:3200`.
+- Symptom: checkout and read routes succeeded, and attachment uploads
+  succeeded, but both `POST /api/issues/{issueId}/comments` and
+  `PATCH /api/issues/{issueId}` returned HTTP `500` with
+  `{\"error\":\"Internal server error\"}`.
+- Root cause: the local Paperclip control plane can be partially healthy for
+  checkout/read/upload while issue comment/status mutation routes fail
+  server-side.
+- Guardrail: when Paperclip mutation routes return repeatable `500`s, treat the
+  issue as control-plane blocked; finish repository-side evidence, record the
+  exact failing endpoints and HTTP responses in the task packet, and do not
+  pretend the board status changed.
+- Preferred pattern: verify `checkout` plus a read route first, upload
+  attachments with explicit content types for non-image files, then if final
+  issue mutation fails with `500`, capture the API evidence and leave an
+  explicit unblock owner/action in durable repo docs.
+- Avoid: assuming a successful checkout means comment/PATCH routes are healthy,
+  or reporting the issue as done when the board status/comment never landed.
+- Evidence: [LUC-727](/LUC/issues/LUC-727) `checkout` and `heartbeat-context`
+  returned normally; attachment uploads succeeded; comment and status updates
+  returned HTTP `500`.
+
 ### 2026-07-12 - Refresh Project Truth Inputs Sequentially
 - Context: [LUC-610](/LUC/issues/LUC-610) added a new Google Drive auth test
   relation and refreshed generated Project Truth/app-completion readbacks.
