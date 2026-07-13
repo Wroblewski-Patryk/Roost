@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-07-12T03:57:30.586Z
+Generated: 2026-07-13T13:31:38.250Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -15,18 +15,18 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 - Items: 1243
 - User flows: 5
 - Needs browser/screenshot review: 0
-- Missing test link: 1155
-- Missing doc link: 24
-- Implemented, needs proof: 11
+- Missing test link: 1149
+- Missing doc link: 25
+- Implemented, needs proof: 10
 - Blocked: 0
-- Known non-ok risk items: 1190
-- Priority review items indexed: 200/1190
+- Known non-ok risk items: 1184
+- Priority review items indexed: 200/1184
 - Priority review truncated: true
 
 ## Flow Summary
 
 - Unclassified user workflow: 1096 entities; risks {"missing_test_link":1068,"ok":2,"implemented_needs_proof":8,"missing_doc_link":18}; gates {"configuration":7,"auth":1}
-- Account access: 70 entities; risks {"ok":51,"missing_test_link":13,"implemented_needs_proof":2,"missing_doc_link":4}; gates {"auth":70,"configuration":17,"subscription":2}
+- Account access: 70 entities; risks {"ok":57,"missing_doc_link":5,"missing_test_link":7,"implemented_needs_proof":1}; gates {"auth":70,"configuration":19,"subscription":1}
 - Dashboard overview: 34 entities; risks {"missing_test_link":34}; gates {"configuration":7}
 - User configuration: 33 entities; risks {"missing_test_link":31,"missing_doc_link":2}; gates {"configuration":31}
 - Trading operation: 10 entities; risks {"missing_test_link":9,"implemented_needs_proof":1}; gates {}
@@ -35,13 +35,7 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 
 | User flow | Risk | Kind | Entity | Owner | Path | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
-| Account access | missing_test_link | feature_or_capability | getStoredGoogleDriveSecret | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#getStoredGoogleDriveSecret | auth, configuration |
-| Account access | missing_test_link | feature_or_capability | hasFreshAccessToken | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#hasFreshAccessToken | auth |
-| Account access | missing_test_link | feature_or_capability | mergeGoogleDriveConfig | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#mergeGoogleDriveConfig | auth, configuration |
-| Account access | missing_test_link | feature_or_capability | normalizeTokenResponse | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#normalizeTokenResponse | auth |
-| Account access | missing_test_link | feature_or_capability | postGoogleOAuthToken | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#postGoogleOAuthToken | auth |
-| Account access | missing_test_link | feature_or_capability | refreshGoogleDriveOAuth | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth | auth |
-| Account access | implemented_needs_proof | feature_or_capability | integration-settings.service.ts | Engineering Delivery Lead | src/integrations/integration-settings.service.ts | auth, subscription, configuration |
+| Account access | missing_doc_link | feature_or_capability | refreshGoogleDriveOAuth | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth | auth, configuration |
 | Account access | missing_test_link | feature_or_capability | parseGoogleDriveOAuthSecret | Engineering Delivery Lead | src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret | auth, configuration |
 | Account access | implemented_needs_proof | feature_or_capability | secrets.ts | Engineering Delivery Lead | src/integrations/secrets.ts | auth, subscription, configuration |
 | Account access | missing_test_link | feature_or_capability | authActor | Engineering Delivery Lead | src/modules/company-os/company-os.routes.ts#authActor | auth |
@@ -115,6 +109,12 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /events | Engineering Delivery Lead | src/app.ts#/events | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /goals | Engineering Delivery Lead | src/app.ts#/goals | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /google-drive | Engineering Delivery Lead | src/app.ts#/google-drive | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /health | Engineering Delivery Lead | src/app.ts#/health | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /intake | Engineering Delivery Lead | src/app.ts#/intake | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /interactions | Engineering Delivery Lead | src/app.ts#/interactions | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /mcp | Engineering Delivery Lead | src/app.ts#/mcp | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /notes | Engineering Delivery Lead | src/app.ts#/notes | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /operating-graph | Engineering Delivery Lead | src/app.ts#/operating-graph | - |
 
 ## Agent Rule
 

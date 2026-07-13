@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-12T03:57:51.354Z",
+  "generatedAt": "2026-07-13T13:32:06.999Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "gaps_require_routing",
@@ -9,119 +9,41 @@
     "incompleteEventChains": 0,
     "runtimeFindings": 0,
     "criticalRuntimeFindings": 0,
-    "appCompletionGaps": 1190,
+    "appCompletionGaps": 1184,
     "indexedAppCompletionGaps": 200,
-    "knownAppCompletionRiskItems": 1190,
+    "knownAppCompletionRiskItems": 1184,
     "appCompletionPriorityReviewItems": 200,
     "appCompletionPriorityReviewTruncated": true,
     "operationalGateGaps": 0,
     "indexedGaps": 200,
-    "totalGaps": 1190
+    "totalGaps": 1184
   },
   "firstGap": {
     "kind": "app_completion_gap",
     "severity": "medium",
     "userFlow": "Account access",
-    "summary": "Account access: getStoredGoogleDriveSecret has app-completion risk missing_test_link.",
-    "nextOwner": "Test Automation Engineer + QA Regression Lead",
-    "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+    "summary": "Account access: refreshGoogleDriveOAuth has app-completion risk missing_doc_link.",
+    "nextOwner": "Docs Memory Lead + Project Manager",
+    "nextAction": "Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.",
     "evidence": [
-      "src/integrations/google-drive/google-drive.auth.ts#getStoredGoogleDriveSecret"
+      "src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth"
     ],
-    "sourceItemId": "function:getstoredgoogledrivesecret:2763c40172",
-    "risk": "missing_test_link"
+    "sourceItemId": "function:refreshgoogledriveoauth:04d8992f2d",
+    "risk": "missing_doc_link"
   },
   "gaps": [
     {
       "kind": "app_completion_gap",
       "severity": "medium",
       "userFlow": "Account access",
-      "summary": "Account access: getStoredGoogleDriveSecret has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/integrations/google-drive/google-drive.auth.ts#getStoredGoogleDriveSecret"
-      ],
-      "sourceItemId": "function:getstoredgoogledrivesecret:2763c40172",
-      "risk": "missing_test_link"
-    },
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Account access",
-      "summary": "Account access: hasFreshAccessToken has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/integrations/google-drive/google-drive.auth.ts#hasFreshAccessToken"
-      ],
-      "sourceItemId": "function:hasfreshaccesstoken:beeb6487ae",
-      "risk": "missing_test_link"
-    },
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Account access",
-      "summary": "Account access: mergeGoogleDriveConfig has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/integrations/google-drive/google-drive.auth.ts#mergeGoogleDriveConfig"
-      ],
-      "sourceItemId": "function:mergegoogledriveconfig:814153a3bb",
-      "risk": "missing_test_link"
-    },
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Account access",
-      "summary": "Account access: normalizeTokenResponse has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/integrations/google-drive/google-drive.auth.ts#normalizeTokenResponse"
-      ],
-      "sourceItemId": "function:normalizetokenresponse:b4d666013c",
-      "risk": "missing_test_link"
-    },
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Account access",
-      "summary": "Account access: postGoogleOAuthToken has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/integrations/google-drive/google-drive.auth.ts#postGoogleOAuthToken"
-      ],
-      "sourceItemId": "function:postgoogleoauthtoken:aed8d79cd2",
-      "risk": "missing_test_link"
-    },
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Account access",
-      "summary": "Account access: refreshGoogleDriveOAuth has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "summary": "Account access: refreshGoogleDriveOAuth has app-completion risk missing_doc_link.",
+      "nextOwner": "Docs Memory Lead + Project Manager",
+      "nextAction": "Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.",
       "evidence": [
         "src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth"
       ],
       "sourceItemId": "function:refreshgoogledriveoauth:04d8992f2d",
-      "risk": "missing_test_link"
-    },
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Account access",
-      "summary": "Account access: integration-settings.service.ts has app-completion risk implemented_needs_proof.",
-      "nextOwner": "QA Regression Lead + Project Manager",
-      "nextAction": "Run and record fresh proof for the implemented behavior, then update completion/project-truth indexes.",
-      "evidence": [
-        "src/integrations/integration-settings.service.ts"
-      ],
-      "sourceItemId": "feature:integration-settings-service-ts:33ba35e79f",
-      "risk": "implemented_needs_proof"
+      "risk": "missing_doc_link"
     },
     {
       "kind": "app_completion_gap",
@@ -2630,6 +2552,84 @@
         "scripts/build-architecture-roadmap.mjs#top"
       ],
       "sourceItemId": "function:top:394fc8c40e",
+      "risk": "missing_test_link"
+    },
+    {
+      "kind": "app_completion_gap",
+      "severity": "medium",
+      "userFlow": "Unclassified user workflow",
+      "summary": "Unclassified user workflow: writeText has app-completion risk missing_test_link.",
+      "nextOwner": "Test Automation Engineer + QA Regression Lead",
+      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "evidence": [
+        "scripts/build-architecture-roadmap.mjs#writeText"
+      ],
+      "sourceItemId": "function:writetext:2f7bf85953",
+      "risk": "missing_test_link"
+    },
+    {
+      "kind": "app_completion_gap",
+      "severity": "medium",
+      "userFlow": "Unclassified user workflow",
+      "summary": "Unclassified user workflow: check-architecture-chain-coverage.mjs has app-completion risk missing_test_link.",
+      "nextOwner": "Test Automation Engineer + QA Regression Lead",
+      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "evidence": [
+        "scripts/check-architecture-chain-coverage.mjs"
+      ],
+      "sourceItemId": "feature:check-architecture-chain-coverage-mjs:4152b061a3",
+      "risk": "missing_test_link"
+    },
+    {
+      "kind": "app_completion_gap",
+      "severity": "medium",
+      "userFlow": "Unclassified user workflow",
+      "summary": "Unclassified user workflow: loadCsv has app-completion risk missing_test_link.",
+      "nextOwner": "Test Automation Engineer + QA Regression Lead",
+      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "evidence": [
+        "scripts/check-architecture-chain-coverage.mjs#loadCsv"
+      ],
+      "sourceItemId": "function:loadcsv:54ee58c669",
+      "risk": "missing_test_link"
+    },
+    {
+      "kind": "app_completion_gap",
+      "severity": "medium",
+      "userFlow": "Unclassified user workflow",
+      "summary": "Unclassified user workflow: main has app-completion risk missing_test_link.",
+      "nextOwner": "Test Automation Engineer + QA Regression Lead",
+      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "evidence": [
+        "scripts/check-architecture-chain-coverage.mjs#main"
+      ],
+      "sourceItemId": "function:main:4922aab04f",
+      "risk": "missing_test_link"
+    },
+    {
+      "kind": "app_completion_gap",
+      "severity": "medium",
+      "userFlow": "Unclassified user workflow",
+      "summary": "Unclassified user workflow: parseCsv has app-completion risk missing_test_link.",
+      "nextOwner": "Test Automation Engineer + QA Regression Lead",
+      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "evidence": [
+        "scripts/check-architecture-chain-coverage.mjs#parseCsv"
+      ],
+      "sourceItemId": "function:parsecsv:baffcf53c5",
+      "risk": "missing_test_link"
+    },
+    {
+      "kind": "app_completion_gap",
+      "severity": "medium",
+      "userFlow": "Unclassified user workflow",
+      "summary": "Unclassified user workflow: readText has app-completion risk missing_test_link.",
+      "nextOwner": "Test Automation Engineer + QA Regression Lead",
+      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "evidence": [
+        "scripts/check-architecture-chain-coverage.mjs#readText"
+      ],
+      "sourceItemId": "function:readtext:be520563a3",
       "risk": "missing_test_link"
     }
   ]

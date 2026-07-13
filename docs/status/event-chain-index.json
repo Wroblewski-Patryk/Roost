@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-12T03:57:51.354Z",
+  "generatedAt": "2026-07-13T13:32:06.999Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 205,
-      "linkedRelationCount": 681,
+      "entityCount": 217,
+      "linkedRelationCount": 765,
       "layers": {
         "frontend": {
           "count": 16,
@@ -658,7 +658,7 @@
           "truncated": false
         },
         "worker": {
-          "count": 94,
+          "count": 103,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -685,9 +685,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-12-luc-617-account-access-google-oauth-client-health-signal:02f75cfaab",
+              "id": "agent:2026-07-12-luc-788-account-access-postgoogleoauthtoken-health-signal:a51a9a29fb",
               "type": "agent",
-              "name": "2026-07-12 LUC-617 Account Access Google OAuth Client Health Signal",
+              "name": "2026-07-12 LUC-788 Account Access postGoogleOAuthToken Health Signal",
               "path": ".agents/state/system-health.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -709,12 +709,28 @@
               "status": "verified"
             },
             {
+              "id": "task:task:0dc3773294",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-623-source-control-classification-before-deploy-readiness.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:6dfadbc975",
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-602-source-control-closure-classification-before-deploy-readiness.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
+            },
+            {
+              "id": "task:task:d0b2850854",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "in_progress"
             },
             {
               "id": "agent:user-collaboration-workflow:98bfb8bc00",
@@ -755,6 +771,14 @@
               "path": "docs",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "task:task:6d579ee56c",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-754-account-access-has-fresh-access-token-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             },
             {
               "id": "task:task-board:9aaadac0a2",
@@ -986,7 +1010,7 @@
               "name": "mergeGoogleDriveConfig",
               "path": "src/integrations/google-drive/google-drive.auth.ts#mergeGoogleDriveConfig",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:hasfreshaccesstoken:beeb6487ae",
@@ -994,7 +1018,7 @@
               "name": "hasFreshAccessToken",
               "path": "src/integrations/google-drive/google-drive.auth.ts#hasFreshAccessToken",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:refreshgoogledriveoauth:04d8992f2d",
@@ -1002,7 +1026,7 @@
               "name": "refreshGoogleDriveOAuth",
               "path": "src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:postgoogleoauthtoken:aed8d79cd2",
@@ -1010,7 +1034,7 @@
               "name": "postGoogleOAuthToken",
               "path": "src/integrations/google-drive/google-drive.auth.ts#postGoogleOAuthToken",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:normalizetokenresponse:b4d666013c",
@@ -1018,7 +1042,7 @@
               "name": "normalizeTokenResponse",
               "path": "src/integrations/google-drive/google-drive.auth.ts#normalizeTokenResponse",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:getgoogleoauthclient:f132646466",
@@ -1034,7 +1058,7 @@
               "name": "getStoredGoogleDriveSecret",
               "path": "src/integrations/google-drive/google-drive.auth.ts#getStoredGoogleDriveSecret",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:errors-ts:6cad1638b0",
@@ -1050,7 +1074,7 @@
               "name": "integration-settings.service.ts",
               "path": "src/integrations/integration-settings.service.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:secrets-ts:9896d14c7b",
@@ -1275,30 +1299,6 @@
               "path": "src/tests/api.test.ts#registerOwner",
               "owner": "Engineering Delivery Lead",
               "status": "tested"
-            },
-            {
-              "id": "migration:migration-sql:00295854b1",
-              "type": "migration",
-              "name": "migration.sql",
-              "path": "prisma/migrations/202605022_workspace_auth/migration.sql",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "module:prisma:80aadafbbd",
-              "type": "module",
-              "name": "prisma",
-              "path": "prisma",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "task:luc-538-account-access-google-drive-auth-proof:5704d9d0a8",
-              "type": "task",
-              "name": "LUC-538 Account Access Google Drive Auth Proof",
-              "path": ".codex/tasks/luc-538-account-access-google-drive-auth-proof.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
             }
           ],
           "truncated": true
@@ -1347,7 +1347,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 27,
+          "count": 30,
           "sample": [
             {
               "id": "document:system-architecture:1149ef3528",
@@ -1564,6 +1564,30 @@
               "path": "docs/status/app-completion-index.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
+            },
+            {
+              "id": "document:mvp-next-commits:ccc83152eb",
+              "type": "document",
+              "name": "MVP Next Commits",
+              "path": "docs/planning/mvp-next-commits.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:service-reliability-and-observability:886f9bd027",
+              "type": "document",
+              "name": "Service Reliability And Observability",
+              "path": "docs/operations/service-reliability-and-observability.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:secure-development-lifecycle:2414479969",
+              "type": "document",
+              "name": "Secure Development Lifecycle",
+              "path": "docs/security/secure-development-lifecycle.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
             }
           ],
           "truncated": false
@@ -1576,8 +1600,8 @@
     },
     {
       "userFlow": "Dashboard overview",
-      "entityCount": 71,
-      "linkedRelationCount": 157,
+      "entityCount": 72,
+      "linkedRelationCount": 158,
       "layers": {
         "frontend": {
           "count": 22,
@@ -1762,7 +1786,7 @@
           "truncated": false
         },
         "backend": {
-          "count": 15,
+          "count": 16,
           "sample": [
             {
               "id": "api_endpoint:use-dashboard:a4fbc07380",
@@ -1883,6 +1907,14 @@
               "path": "web/src/features/departments/assets-route.tsx",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "task:task:b7bc2d8179",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             }
           ],
           "truncated": false
@@ -2182,8 +2214,8 @@
     },
     {
       "userFlow": "Exchange connection and configuration",
-      "entityCount": 16,
-      "linkedRelationCount": 18,
+      "entityCount": 25,
+      "linkedRelationCount": 35,
       "layers": {
         "frontend": {
           "count": 2,
@@ -2238,7 +2270,7 @@
           "truncated": false
         },
         "worker": {
-          "count": 9,
+          "count": 14,
           "sample": [
             {
               "id": "module:docs:6784d83cb0",
@@ -2278,7 +2310,7 @@
               "name": "integration-settings.service.ts",
               "path": "src/integrations/integration-settings.service.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:decryptsecret:65d393d288",
@@ -2311,6 +2343,46 @@
               "path": "src/integrations/secrets.ts#encryptSecret",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "task:task:fa04be220c",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-721-account-access-stored-google-drive-secret-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "agent:project-memory-index:8428fccaed",
+              "type": "agent",
+              "name": "Project Memory Index",
+              "path": ".agents/core/project-memory-index.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "agent:2026-07-13-luc-894-module-confidence-update:0eff2bc1f4",
+              "type": "agent",
+              "name": "2026-07-13 LUC-894 Module Confidence Update",
+              "path": ".agents/state/module-confidence-ledger.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "agent:mission-control:86ecd445b8",
+              "type": "agent",
+              "name": "Mission Control",
+              "path": ".agents/core/mission-control.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "task:task:abe276f713",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-742-account-access-stored-google-drive-secret-doc-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             }
           ],
           "truncated": false
@@ -2326,7 +2398,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 2,
+          "count": 5,
           "sample": [
             {
               "id": "document:secrets:6d9c5eb0e8",
@@ -2343,6 +2415,30 @@
               "path": "docs/architecture/nodes/generated/MW-AUTO-0001.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
+            },
+            {
+              "id": "document:google-drive-v2-task-contracts:9974023e7e",
+              "type": "document",
+              "name": "Google Drive V2 Task Contracts",
+              "path": "docs/planning/google-drive-v2-task-contracts.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:app-completion-index:2db9905a4e",
+              "type": "document",
+              "name": "App Completion Index",
+              "path": "docs/status/app-completion-index.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:project-truth-index:effbf3bcee",
+              "type": "document",
+              "name": "Project Truth Index",
+              "path": "docs/status/project-truth-index.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
             }
           ],
           "truncated": false
@@ -2355,8 +2451,8 @@
     },
     {
       "userFlow": "Subscription and entitlement",
-      "entityCount": 1014,
-      "linkedRelationCount": 3508,
+      "entityCount": 1029,
+      "linkedRelationCount": 3543,
       "layers": {
         "frontend": {
           "count": 34,
@@ -2637,7 +2733,7 @@
           "truncated": false
         },
         "backend": {
-          "count": 130,
+          "count": 131,
           "sample": [
             {
               "id": "component:cc-button-tsx:dff712debb",
@@ -2884,6 +2980,14 @@
               "type": "document",
               "name": "LUC-5669 Focused QA Selection For Route Proof Signals",
               "path": "docs/planning/luc-5669-focused-qa-selection-for-route-proof-signals.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:luc-727-strategy-route-local-proof:4d6242697f",
+              "type": "document",
+              "name": "LUC-727 Strategy Route Local Proof",
+              "path": "docs/planning/luc-727-strategy-route-local-proof.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
             },
@@ -3270,20 +3374,12 @@
               "path": "src/app.ts#/v1/health",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "api_endpoint:use-ready:cd82f6ee50",
-              "type": "api_endpoint",
-              "name": "USE /ready",
-              "path": "src/app.ts#/ready",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 62,
+          "count": 74,
           "sample": [
             {
               "id": "agent:planner:5b56a0bd47",
@@ -3374,6 +3470,14 @@
               "status": "verified"
             },
             {
+              "id": "function:hasfreshaccesstoken:beeb6487ae",
+              "type": "function",
+              "name": "hasFreshAccessToken",
+              "path": "src/integrations/google-drive/google-drive.auth.ts#hasFreshAccessToken",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:getgoogledriveclientforworkspace:1d1d0eae6f",
               "type": "function",
               "name": "getGoogleDriveClientForWorkspace",
@@ -3386,6 +3490,38 @@
               "type": "function",
               "name": "getGoogleOAuthClient",
               "path": "src/integrations/google-drive/google-drive.auth.ts#getGoogleOAuthClient",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:getstoredgoogledrivesecret:2763c40172",
+              "type": "function",
+              "name": "getStoredGoogleDriveSecret",
+              "path": "src/integrations/google-drive/google-drive.auth.ts#getStoredGoogleDriveSecret",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:mergegoogledriveconfig:814153a3bb",
+              "type": "function",
+              "name": "mergeGoogleDriveConfig",
+              "path": "src/integrations/google-drive/google-drive.auth.ts#mergeGoogleDriveConfig",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:normalizetokenresponse:b4d666013c",
+              "type": "function",
+              "name": "normalizeTokenResponse",
+              "path": "src/integrations/google-drive/google-drive.auth.ts#normalizeTokenResponse",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:postgoogleoauthtoken:aed8d79cd2",
+              "type": "function",
+              "name": "postGoogleOAuthToken",
+              "path": "src/integrations/google-drive/google-drive.auth.ts#postGoogleOAuthToken",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -3426,6 +3562,38 @@
               "type": "task",
               "name": "LUC-620 Account Access Google OAuth Client Doc Link",
               "path": ".codex/tasks/luc-620-account-access-google-oauth-client-doc-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:23d2637e83",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-786-account-access-merge-google-drive-config-doc-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:506a5a0842",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-788-account-access-post-google-oauth-token-doc-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:8f65f8da2d",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-787-account-access-normalize-token-response-doc-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:abe276f713",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-742-account-access-stored-google-drive-secret-doc-link.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -3500,6 +3668,30 @@
               "path": "docs/planning/luc-7047-settings-runtime-browser-proof.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
+            },
+            {
+              "id": "task:task:0dc3773294",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-623-source-control-classification-before-deploy-readiness.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:6d579ee56c",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-754-account-access-has-fresh-access-token-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:d0b2850854",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "in_progress"
             },
             {
               "id": "document:no-temporary-solutions:f4aac3d420",
@@ -3675,7 +3867,7 @@
               "name": "integration-settings.service.ts",
               "path": "src/integrations/integration-settings.service.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:workforce-service-ts:51867d486c",
@@ -3795,7 +3987,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 788,
+          "count": 790,
           "sample": [
             {
               "id": "document:task:93ac653bad",
@@ -5149,8 +5341,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2749,
-      "linkedRelationCount": 6618,
+      "entityCount": 2766,
+      "linkedRelationCount": 6705,
       "layers": {
         "frontend": {
           "count": 91,
@@ -5799,7 +5991,7 @@
           "truncated": true
         },
         "backend": {
-          "count": 528,
+          "count": 530,
           "sample": [
             {
               "id": "api_endpoint:get:1998daec82",
@@ -6445,7 +6637,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 745,
+          "count": 758,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -6496,6 +6688,14 @@
               "status": "verified"
             },
             {
+              "id": "task:task:0dc3773294",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-623-source-control-classification-before-deploy-readiness.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:69188765b3",
               "type": "task",
               "name": "Task",
@@ -6504,10 +6704,42 @@
               "status": "verified"
             },
             {
+              "id": "task:task:6d579ee56c",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-754-account-access-has-fresh-access-token-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:6dfadbc975",
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-602-source-control-closure-classification-before-deploy-readiness.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:780e0f6c76",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-822-roost-source-control-classify-dirty-project-state.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:d0b2850854",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "in_progress"
+            },
+            {
+              "id": "task:task:fa04be220c",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-721-account-access-stored-google-drive-secret-proof.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -6560,10 +6792,42 @@
               "status": "verified"
             },
             {
+              "id": "task:task:23d2637e83",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-786-account-access-merge-google-drive-config-doc-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:506a5a0842",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-788-account-access-post-google-oauth-token-doc-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:72d51c9ff1",
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-610-account-access-google-drive-client-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:8f65f8da2d",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-787-account-access-normalize-token-response-doc-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:abe276f713",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-742-account-access-stored-google-drive-secret-doc-link.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -6736,9 +7000,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-12-luc-617-module-confidence-update:7ff362a17c",
+              "id": "agent:2026-07-13-luc-894-module-confidence-update:0eff2bc1f4",
               "type": "agent",
-              "name": "2026-07-12 LUC-617 Module Confidence Update",
+              "name": "2026-07-13 LUC-894 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -7014,78 +7278,6 @@
               "path": "src/tests/api.test.ts",
               "owner": "Engineering Delivery Lead",
               "status": "tested"
-            },
-            {
-              "id": "document:clickup-maintenance-scheduler:477b5530e9",
-              "type": "document",
-              "name": "Clickup.Maintenance Scheduler",
-              "path": "docs/architecture/nodes/generated/CRON-AUTO-0001.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:clickup-maintenance-scheduler:57c62aeb4b",
-              "type": "document",
-              "name": "Clickup.Maintenance Scheduler",
-              "path": "docs/architecture/nodes/generated/INT-AUTO-0002.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "feature:test-api-local-mjs:fef8423ba8",
-              "type": "feature",
-              "name": "test-api-local.mjs",
-              "path": "scripts/test-api-local.mjs",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:local-development:a611abe27f",
-              "type": "document",
-              "name": "Local Development",
-              "path": "docs/engineering/local-development.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:autonomous-engineering-loop:471c2db101",
-              "type": "document",
-              "name": "Autonomous Engineering Loop",
-              "path": "docs/governance/autonomous-engineering-loop.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:world-class-product-engineering-standard:ef3afcecef",
-              "type": "document",
-              "name": "World-Class Product Engineering Standard",
-              "path": "docs/governance/world-class-product-engineering-standard.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:integration-checklist:721c1de001",
-              "type": "document",
-              "name": "Integration Checklist",
-              "path": "INTEGRATION_CHECKLIST.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:new-project-bootstrap:2066835c1f",
-              "type": "document",
-              "name": "New Project Bootstrap",
-              "path": "NEW_PROJECT_BOOTSTRAP.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:luckysparrow-company-core-v1:a99bcdd8c4",
-              "type": "document",
-              "name": "LuckySparrow Company Core v1",
-              "path": "README.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
@@ -7166,7 +7358,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 1376,
+          "count": 1378,
           "sample": [
             {
               "id": "document:get-v1-finance-context:db0b7f023e",
@@ -7819,8 +8011,8 @@
     },
     {
       "userFlow": "User configuration",
-      "entityCount": 95,
-      "linkedRelationCount": 227,
+      "entityCount": 101,
+      "linkedRelationCount": 237,
       "layers": {
         "frontend": {
           "count": 7,
@@ -8091,7 +8283,7 @@
           "truncated": false
         },
         "worker": {
-          "count": 40,
+          "count": 45,
           "sample": [
             {
               "id": "module:src:13b5974e74",
@@ -8275,7 +8467,7 @@
               "name": "integration-settings.service.ts",
               "path": "src/integrations/integration-settings.service.ts",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "feature:async-handler-ts:d4ef00961e",
@@ -8412,6 +8604,46 @@
               "path": "prisma",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "task:luc-776-account-access-merge-google-drive-config-proof:e36150e530",
+              "type": "task",
+              "name": "luc-776-account-access-merge-google-drive-config-proof",
+              "path": ".codex/tasks/luc-776-account-access-merge-google-drive-config-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:23d2637e83",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-786-account-access-merge-google-drive-config-doc-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "agent:project-memory-index:8428fccaed",
+              "type": "agent",
+              "name": "Project Memory Index",
+              "path": ".agents/core/project-memory-index.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "agent:2026-07-13-luc-894-module-confidence-update:0eff2bc1f4",
+              "type": "agent",
+              "name": "2026-07-13 LUC-894 Module Confidence Update",
+              "path": ".agents/state/module-confidence-ledger.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "task:luc-894-account-access-integration-settings-service-proof:457629a0b9",
+              "type": "task",
+              "name": "luc-894-account-access-integration-settings-service-proof",
+              "path": ".codex/tasks/luc-894-account-access-integration-settings-service-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             }
           ],
           "truncated": false
@@ -8436,7 +8668,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 21,
+          "count": 22,
           "sample": [
             {
               "id": "document:delete-v1-integration-settings-clickup-webhooks-id:3dacf46c8a",
@@ -8603,6 +8835,14 @@
               "type": "document",
               "name": "V1 Settings Canonical Spec",
               "path": "docs/ux/v1-settings-canonical-spec-2026-05-15.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:google-drive-v2-task-contracts:9974023e7e",
+              "type": "document",
+              "name": "Google Drive V2 Task Contracts",
+              "path": "docs/planning/google-drive-v2-task-contracts.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
             }

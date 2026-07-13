@@ -1,38 +1,38 @@
 {
-  "generated_at": "2026-07-12T03:57:25.133Z",
+  "generated_at": "2026-07-13T13:31:27.552Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 2836,
-    "relations": 6761,
+    "entities": 2853,
+    "relations": 6860,
     "by_type": {
       "agent": 47,
       "api_endpoint": 46,
       "component": 7,
-      "document": 1475,
+      "document": 1478,
       "feature": 170,
       "function": 953,
       "migration": 31,
       "model": 5,
       "module": 67,
       "project": 1,
-      "task": 22,
+      "task": 36,
       "test": 12
     },
     "by_status": {
       "blocked": 1,
       "deprecated": 6,
-      "implemented": 2733,
-      "in_progress": 1,
+      "implemented": 2729,
+      "in_progress": 2,
       "tested": 9,
-      "verified": 86
+      "verified": 106
     }
   },
   "signals": {
     "implementation_without_tests": {
-      "count": 1118,
+      "count": 1112,
       "items": [
         {
           "id": "api_endpoint:get:1998daec82",
@@ -1641,7 +1641,7 @@
       "items": []
     },
     "actionable_implementation_without_tests": {
-      "count": 1109,
+      "count": 1103,
       "items": [
         {
           "id": "api_endpoint:get:1998daec82",
@@ -3348,7 +3348,7 @@
       "items": []
     },
     "tasks_without_architecture": {
-      "count": 5,
+      "count": 10,
       "items": [
         {
           "id": "task:luc-527-account-access-missing-test-link-proof:559cf874cf",
@@ -3387,13 +3387,53 @@
           "type": "task",
           "name": "LUC-567 Account Access Google Drive Authorization-Code Exchange Proof",
           "path": ".codex/tasks/luc-567-account-access-google-drive-authorization-code-exchange-proof.md",
+          "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "task:task:b7bc2d8179",
+          "type": "task",
+          "name": "Task",
+          "path": ".codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md",
+          "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "task:luc-776-account-access-merge-google-drive-config-proof:e36150e530",
+          "type": "task",
+          "name": "luc-776-account-access-merge-google-drive-config-proof",
+          "path": ".codex/tasks/luc-776-account-access-merge-google-drive-config-proof.md",
+          "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "task:luc-777-account-access-normalize-token-response-proof:a0e8285b13",
+          "type": "task",
+          "name": "luc-777-account-access-normalize-token-response-proof",
+          "path": ".codex/tasks/luc-777-account-access-normalize-token-response-proof.md",
+          "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "task:luc-778-account-access-post-google-oauth-token-proof:9be0ffde49",
+          "type": "task",
+          "name": "luc-778-account-access-post-google-oauth-token-proof",
+          "path": ".codex/tasks/luc-778-account-access-post-google-oauth-token-proof.md",
+          "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "task:luc-894-account-access-integration-settings-service-proof:457629a0b9",
+          "type": "task",
+          "name": "luc-894-account-access-integration-settings-service-proof",
+          "path": ".codex/tasks/luc-894-account-access-integration-settings-service-proof.md",
           "status": "verified",
           "owner": "Engineering Delivery Lead"
         }
       ]
     },
     "raw_tasks_without_architecture": {
-      "count": 5,
+      "count": 10,
       "items": [
         {
           "id": "task:luc-527-account-access-missing-test-link-proof:559cf874cf",
@@ -3432,6 +3472,46 @@
           "type": "task",
           "name": "LUC-567 Account Access Google Drive Authorization-Code Exchange Proof",
           "path": ".codex/tasks/luc-567-account-access-google-drive-authorization-code-exchange-proof.md",
+          "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "task:task:b7bc2d8179",
+          "type": "task",
+          "name": "Task",
+          "path": ".codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md",
+          "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "task:luc-776-account-access-merge-google-drive-config-proof:e36150e530",
+          "type": "task",
+          "name": "luc-776-account-access-merge-google-drive-config-proof",
+          "path": ".codex/tasks/luc-776-account-access-merge-google-drive-config-proof.md",
+          "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "task:luc-777-account-access-normalize-token-response-proof:a0e8285b13",
+          "type": "task",
+          "name": "luc-777-account-access-normalize-token-response-proof",
+          "path": ".codex/tasks/luc-777-account-access-normalize-token-response-proof.md",
+          "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "task:luc-778-account-access-post-google-oauth-token-proof:9be0ffde49",
+          "type": "task",
+          "name": "luc-778-account-access-post-google-oauth-token-proof",
+          "path": ".codex/tasks/luc-778-account-access-post-google-oauth-token-proof.md",
+          "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "task:luc-894-account-access-integration-settings-service-proof:457629a0b9",
+          "type": "task",
+          "name": "luc-894-account-access-integration-settings-service-proof",
+          "path": ".codex/tasks/luc-894-account-access-integration-settings-service-proof.md",
           "status": "verified",
           "owner": "Engineering Delivery Lead"
         }

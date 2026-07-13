@@ -1,6 +1,6 @@
 # Project Truth Index
 
-Generated: 2026-07-12T03:57:51.354Z
+Generated: 2026-07-13T13:32:06.999Z
 Project: Roost
 Status: gaps_require_routing
 
@@ -13,32 +13,26 @@ This is the routing surface agents should use before guessing whether an app wor
 | incompleteEventChains | 0 |
 | runtimeFindings | 0 |
 | criticalRuntimeFindings | 0 |
-| appCompletionGaps | 1190 |
+| appCompletionGaps | 1184 |
 | indexedAppCompletionGaps | 200 |
-| knownAppCompletionRiskItems | 1190 |
+| knownAppCompletionRiskItems | 1184 |
 | appCompletionPriorityReviewItems | 200 |
 | appCompletionPriorityReviewTruncated | true |
 | operationalGateGaps | 0 |
 | indexedGaps | 200 |
-| totalGaps | 1190 |
+| totalGaps | 1184 |
 
 ## First Gap
 
-- medium: Account access: getStoredGoogleDriveSecret has app-completion risk missing_test_link.
-- Owner: Test Automation Engineer + QA Regression Lead
-- Next action: Add or link the smallest relevant automated/manual verification for this flow before claiming it works.
+- medium: Account access: refreshGoogleDriveOAuth has app-completion risk missing_doc_link.
+- Owner: Docs Memory Lead + Project Manager
+- Next action: Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.
 
 ## Gaps
 
 | Severity | Kind | Flow | Summary | Next owner |
 | --- | --- | --- | --- | --- |
-| medium | app_completion_gap | Account access | Account access: getStoredGoogleDriveSecret has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
-| medium | app_completion_gap | Account access | Account access: hasFreshAccessToken has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
-| medium | app_completion_gap | Account access | Account access: mergeGoogleDriveConfig has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
-| medium | app_completion_gap | Account access | Account access: normalizeTokenResponse has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
-| medium | app_completion_gap | Account access | Account access: postGoogleOAuthToken has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
-| medium | app_completion_gap | Account access | Account access: refreshGoogleDriveOAuth has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
-| medium | app_completion_gap | Account access | Account access: integration-settings.service.ts has app-completion risk implemented_needs_proof. | QA Regression Lead + Project Manager |
+| medium | app_completion_gap | Account access | Account access: refreshGoogleDriveOAuth has app-completion risk missing_doc_link. | Docs Memory Lead + Project Manager |
 | medium | app_completion_gap | Account access | Account access: parseGoogleDriveOAuthSecret has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Account access | Account access: secrets.ts has app-completion risk implemented_needs_proof. | QA Regression Lead + Project Manager |
 | medium | app_completion_gap | Account access | Account access: authActor has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
@@ -112,3 +106,9 @@ This is the routing surface agents should use before guessing whether an app wor
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /events has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /goals has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /google-drive has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
+| medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /health has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
+| medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /intake has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
+| medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /interactions has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
+| medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /mcp has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
+| medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /notes has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
+| medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /operating-graph has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |

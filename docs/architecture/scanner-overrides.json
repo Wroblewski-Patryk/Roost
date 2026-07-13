@@ -156,12 +156,40 @@
       ]
     },
     {
+      "path": "src/integrations/google-drive/google-drive.auth.ts#getStoredGoogleDriveSecret",
+      "status": "verified",
+      "description": "Stored Google Drive OAuth secret lookup helper verified by a focused no-network unit test that reads encrypted workspace OAuth credentials and feeds the stored client id into the authorization URL path.",
+      "evidence": [
+        "src/tests/google-drive-auth.test.ts",
+        ".codex/tasks/luc-721-account-access-stored-google-drive-secret-proof.md",
+        "docs/planning/google-drive-v2-task-contracts.md"
+      ]
+    },
+    {
       "path": "src/integrations/google-drive/google-drive.auth.ts#exchangeGoogleDriveAuthorizationCode",
       "status": "verified",
       "description": "Google Drive OAuth authorization-code exchange helper verified by a focused no-network unit test for token POST parameters and normalized OAuth token output.",
       "evidence": [
         "src/tests/google-drive-auth.test.ts",
         ".codex/tasks/luc-567-account-access-google-drive-authorization-code-exchange-proof.md"
+      ]
+    },
+    {
+      "path": "src/integrations/google-drive/google-drive.auth.ts#normalizeTokenResponse",
+      "status": "verified",
+      "description": "Google Drive OAuth token normalization helper verified by a focused no-network unit test that preserves the stored refresh token when Google omits a rotated refresh token in the refresh response.",
+      "evidence": [
+        "src/tests/google-drive-auth.test.ts",
+        ".codex/tasks/luc-777-account-access-normalize-token-response-proof.md"
+      ]
+    },
+    {
+      "path": "src/integrations/google-drive/google-drive.auth.ts#postGoogleOAuthToken",
+      "status": "verified",
+      "description": "Google Drive OAuth token POST helper verified by focused no-network authorization-code exchange tests that cover successful request normalization and invalid-token rejection mapping without live Google calls.",
+      "evidence": [
+        "src/tests/google-drive-auth.test.ts",
+        ".codex/tasks/luc-778-account-access-post-google-oauth-token-proof.md"
       ]
     },
     {
@@ -174,12 +202,40 @@
       ]
     },
     {
-      "path": "src/integrations/integration-settings.service.ts",
-      "description": "Workspace integration-settings service used by configuration flows; provider behavior remains covered by settings and authority proof packets.",
+      "path": "src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth",
+      "status": "verified",
+      "description": "Google Drive OAuth refresh helper verified through the supported stale-token refresh path by a focused no-network unit test that exchanges a refresh token, preserves stored client credentials, and persists the refreshed secret.",
       "evidence": [
-        "docs/architecture/nodes/generated/SVC-AUTO-0001.md",
-        "docs/architecture/nodes/generated/INT-AUTO-0012.md",
-        "docs/planning/luc-5984-auth-subscription-configuration-authority-risk-review.md"
+        "src/tests/google-drive-auth.test.ts",
+        ".codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md"
+      ]
+    },
+    {
+      "path": "src/integrations/google-drive/google-drive.auth.ts#hasFreshAccessToken",
+      "status": "verified",
+      "description": "Google Drive OAuth freshness predicate verified by a focused no-network unit test that treats missing expiresAt as fresh without refreshing or persisting.",
+      "evidence": [
+        "src/tests/google-drive-auth.test.ts",
+        ".codex/tasks/luc-754-account-access-has-fresh-access-token-proof.md"
+      ]
+    },
+    {
+      "path": "src/integrations/google-drive/google-drive.auth.ts#mergeGoogleDriveConfig",
+      "status": "verified",
+      "description": "Google Drive config merge helper verified by a focused no-network unit test that preserves existing fields while applying explicit overrides from the next config payload.",
+      "evidence": [
+        "src/tests/google-drive-auth.test.ts",
+        ".codex/tasks/luc-776-account-access-merge-google-drive-config-proof.md"
+      ]
+    },
+    {
+      "path": "src/integrations/integration-settings.service.ts",
+      "status": "verified",
+      "description": "Workspace integration-settings service verified by the local auth/config API proof lane, including persisted Google Drive OAuth settings reload, invalid ciphertext recovery, OAuth exchange repair, Drive import, and refresh-backed reuse through the public integration-settings flow.",
+      "evidence": [
+        ".codex/tasks/luc-894-account-access-integration-settings-service-proof.md",
+        "docs/planning/luc-6155-auth-config-api-proof-lane.md",
+        "src/tests/api.test.ts"
       ]
     },
     {
@@ -287,6 +343,16 @@
       "description": "Verified focused local API proof for Account access auth module behavior, including /auth and /v1/auth registration, login, identity readback, invalid credentials, invalid bearer denial, protected request denial, and workspace isolation.",
       "evidence": [
         "docs/planning/luc-6118-account-access-auth-api-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": ".codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified focused local API proof for the dashboard overview route-shaped gap, including parity between /v1/dashboard/command and the unversioned protected /dashboard/command mount.",
+      "evidence": [
+        ".codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md",
         "src/tests/api.test.ts"
       ]
     },
@@ -785,6 +851,30 @@
       "toPath": "docs/architecture/system-architecture.md",
       "toType": "document",
       "evidence": "LUC-6696 app-completion proof-link association"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/dashboard",
+      "toType": "api_endpoint",
+      "evidence": "LUC-726 dashboard overview route-gap local proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard",
+      "toType": "module",
+      "evidence": "LUC-726 dashboard overview route-gap local proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard/dashboard.routes.ts",
+      "toType": "feature",
+      "evidence": "LUC-726 dashboard overview route-gap local proof"
     },
     {
       "type": "tests",
@@ -1396,6 +1486,14 @@
     },
     {
       "type": "tests",
+      "fromPath": ".codex/tasks/luc-894-account-access-integration-settings-service-proof.md",
+      "fromType": "test",
+      "toPath": "src/integrations/integration-settings.service.ts",
+      "toType": "feature",
+      "evidence": "LUC-894 Account access integration settings service proof"
+    },
+    {
+      "type": "tests",
       "fromPath": "src/tests/google-drive-auth.test.ts",
       "fromType": "test",
       "toPath": "src/integrations/google-drive/google-drive.auth.ts#buildGoogleDriveAuthorizationUrl",
@@ -1422,6 +1520,22 @@
       "type": "tests",
       "fromPath": "src/tests/google-drive-auth.test.ts",
       "fromType": "test",
+      "toPath": "src/integrations/google-drive/google-drive.auth.ts#getStoredGoogleDriveSecret",
+      "toType": "function",
+      "evidence": "LUC-721 Account access stored Google Drive secret symbol proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/integrations/google-drive/google-drive.auth.ts#getStoredGoogleDriveSecret",
+      "fromType": "function",
+      "toPath": "docs/planning/google-drive-v2-task-contracts.md",
+      "toType": "document",
+      "evidence": "LUC-742 Account access stored Google Drive secret doc-link"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/google-drive-auth.test.ts",
+      "fromType": "test",
       "toPath": "src/integrations/google-drive/google-drive.auth.ts#exchangeGoogleDriveAuthorizationCode",
       "toType": "function",
       "evidence": "LUC-567 Account access Google Drive authorization-code exchange symbol proof"
@@ -1430,9 +1544,49 @@
       "type": "tests",
       "fromPath": "src/tests/google-drive-auth.test.ts",
       "fromType": "test",
+      "toPath": "src/integrations/google-drive/google-drive.auth.ts#normalizeTokenResponse",
+      "toType": "function",
+      "evidence": "LUC-777 Account access normalizeTokenResponse symbol proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/google-drive-auth.test.ts",
+      "fromType": "test",
+      "toPath": "src/integrations/google-drive/google-drive.auth.ts#postGoogleOAuthToken",
+      "toType": "function",
+      "evidence": "LUC-778 Account access postGoogleOAuthToken symbol proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/google-drive-auth.test.ts",
+      "fromType": "test",
       "toPath": "src/integrations/google-drive/google-drive.auth.ts#getFreshGoogleDriveOAuthForWorkspace",
       "toType": "function",
       "evidence": "LUC-576 Account access Google Drive fresh OAuth symbol proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/google-drive-auth.test.ts",
+      "fromType": "test",
+      "toPath": "src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth",
+      "toType": "function",
+      "evidence": "LUC-893 Account access refresh Google Drive OAuth proof-link repair"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/google-drive-auth.test.ts",
+      "fromType": "test",
+      "toPath": "src/integrations/google-drive/google-drive.auth.ts#hasFreshAccessToken",
+      "toType": "function",
+      "evidence": "LUC-754 Account access Google Drive freshness predicate proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/google-drive-auth.test.ts",
+      "fromType": "test",
+      "toPath": "src/integrations/google-drive/google-drive.auth.ts#mergeGoogleDriveConfig",
+      "toType": "function",
+      "evidence": "LUC-776 Account access merge Google Drive config proof"
     },
     {
       "type": "tests",

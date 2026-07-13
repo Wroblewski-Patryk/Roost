@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-12T03:57:25.133Z
+Generated: 2026-07-13T13:31:27.552Z
 
 ## Canonical Exports
 
@@ -42,14 +42,14 @@ Generated: 2026-07-12T03:57:25.133Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-12 LUC-617 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-13 LUC-894 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-12 LUC-617 Account Access Google OAuth Client Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-12 LUC-788 Account Access postGoogleOAuthToken Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -586,11 +586,25 @@ Generated: 2026-07-12T03:57:25.133Z
 | connected_to | project:roost:122c92a083 | task:luc-614-account-access-google-drive-client-doc-link:97708da9d1 | .codex/tasks/luc-614-account-access-google-drive-client-doc-link.md |
 | connected_to | project:roost:122c92a083 | task:task:db7795a324 | .codex/tasks/luc-617-account-access-google-oauth-client-proof.md |
 | connected_to | project:roost:122c92a083 | task:luc-620-account-access-google-oauth-client-doc-link:884bb5c6d4 | .codex/tasks/luc-620-account-access-google-oauth-client-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:task:0dc3773294 | .codex/tasks/luc-623-source-control-classification-before-deploy-readiness.md |
+| connected_to | project:roost:122c92a083 | task:task:fa04be220c | .codex/tasks/luc-721-account-access-stored-google-drive-secret-proof.md |
+| connected_to | project:roost:122c92a083 | task:task:b7bc2d8179 | .codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md |
+| connected_to | project:roost:122c92a083 | task:task:abe276f713 | .codex/tasks/luc-742-account-access-stored-google-drive-secret-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:task:6d579ee56c | .codex/tasks/luc-754-account-access-has-fresh-access-token-proof.md |
+| connected_to | project:roost:122c92a083 | task:luc-776-account-access-merge-google-drive-config-proof:e36150e530 | .codex/tasks/luc-776-account-access-merge-google-drive-config-proof.md |
+| connected_to | project:roost:122c92a083 | task:luc-777-account-access-normalize-token-response-proof:a0e8285b13 | .codex/tasks/luc-777-account-access-normalize-token-response-proof.md |
+| connected_to | project:roost:122c92a083 | task:luc-778-account-access-post-google-oauth-token-proof:9be0ffde49 | .codex/tasks/luc-778-account-access-post-google-oauth-token-proof.md |
+| connected_to | project:roost:122c92a083 | task:task:23d2637e83 | .codex/tasks/luc-786-account-access-merge-google-drive-config-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:task:8f65f8da2d | .codex/tasks/luc-787-account-access-normalize-token-response-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:task:506a5a0842 | .codex/tasks/luc-788-account-access-post-google-oauth-token-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:task:780e0f6c76 | .codex/tasks/luc-822-roost-source-control-classify-dirty-project-state.md |
+| connected_to | project:roost:122c92a083 | task:task:d0b2850854 | .codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:luc-894-account-access-integration-settings-service-proof:457629a0b9 | .codex/tasks/luc-894-account-access-integration-settings-service-proof.md |
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
-| documents | agent:2026-07-12-luc-617-account-access-google-oauth-client-health-signal:02f75cfaab | module:agents:4ae71ba13a | .agents/state/system-health.md |
-| documents | agent:2026-07-12-luc-617-module-confidence-update:7ff362a17c | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
+| documents | agent:2026-07-12-luc-788-account-access-postgoogleoauthtoken-health-signal:a51a9a29fb | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-13-luc-894-module-confidence-update:0eff2bc1f4 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -999,8 +1013,13 @@ Generated: 2026-07-12T03:57:25.133Z
 | documents | document:google-drive-v2-task-contracts:9974023e7e | function:buildgoogledriveauthorizationurl:bab074bcc0 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:google-drive-v2-task-contracts:9974023e7e | function:exchangegoogledriveauthorizationcode:7cbd2d2e54 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:google-drive-v2-task-contracts:9974023e7e | function:getfreshgoogledriveoauthforworkspace:86a58962cc | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:google-drive-v2-task-contracts:9974023e7e | function:hasfreshaccesstoken:beeb6487ae | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:google-drive-v2-task-contracts:9974023e7e | function:getgoogledriveclientforworkspace:1d1d0eae6f | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:google-drive-v2-task-contracts:9974023e7e | function:getgoogleoauthclient:f132646466 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:google-drive-v2-task-contracts:9974023e7e | function:getstoredgoogledrivesecret:2763c40172 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:google-drive-v2-task-contracts:9974023e7e | function:mergegoogledriveconfig:814153a3bb | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:google-drive-v2-task-contracts:9974023e7e | function:normalizetokenresponse:b4d666013c | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:google-drive-v2-task-contracts:9974023e7e | function:postgoogleoauthtoken:aed8d79cd2 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:guardrail-commands:15d613ea93 | module:docs:6784d83cb0 | docs/automation/guardrail-commands.md |
 | documents | document:history-overview:a2f6cccbc0 | module:history:95c2eae45a | history/history-overview.md |
 | documents | document:human-agent-web-architecture-map:de4023df03 | module:docs:6784d83cb0 | docs/planning/human-agent-web-architecture-map.md |
@@ -1199,22 +1218,3 @@ Generated: 2026-07-12T03:57:25.133Z
 | documents | document:luc-5172-known-state-evidence-and-architecture-baseline:e78849f78a | module:docs:6784d83cb0 | docs/planning/luc-5172-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5176-source-control-closure-for-luc-5172-evidence-packet:1f23364388 | module:docs:6784d83cb0 | docs/planning/luc-5176-source-control-closure-for-luc-5172-evidence-packet.md |
 | documents | document:luc-5183-source-control-closure-for-luc-5178-evidence-packet:b9a43147a1 | module:docs:6784d83cb0 | docs/planning/luc-5183-source-control-closure-for-luc-5178-evidence-packet.md |
-| documents | document:luc-5184-finance-api-journey-proof:05a5c7eedc | module:docs:6784d83cb0 | docs/planning/luc-5184-finance-api-journey-proof.md |
-| documents | document:luc-5201-assets-preview-api-journey-proof:ea1d43e282 | module:docs:6784d83cb0 | docs/planning/luc-5201-assets-preview-api-journey-proof.md |
-| documents | document:luc-5202-architecture-awareness-heartbeat-safety:2a6480060f | module:docs:6784d83cb0 | docs/planning/luc-5202-architecture-awareness-heartbeat-safety.md |
-| documents | document:luc-5208-relationships-api-journey-proof:002b1cab4c | module:docs:6784d83cb0 | docs/planning/luc-5208-relationships-api-journey-proof.md |
-| documents | document:luc-5211-known-state-evidence-and-architecture-baseline:6951a2e643 | module:docs:6784d83cb0 | docs/planning/luc-5211-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5212-source-control-closure-for-luc-5211-evidence-packet:2a37e9f8d7 | module:docs:6784d83cb0 | docs/planning/luc-5212-source-control-closure-for-luc-5211-evidence-packet.md |
-| documents | document:luc-5215-known-state-evidence-and-architecture-baseline:8385363348 | module:docs:6784d83cb0 | docs/planning/luc-5215-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5217-source-control-closure-for-luc-5215-evidence-packet:b025c32481 | module:docs:6784d83cb0 | docs/planning/luc-5217-source-control-closure-for-luc-5215-evidence-packet.md |
-| documents | document:luc-5219-source-control-closure-for-luc-5218-evidence-packet:2cd5972171 | module:docs:6784d83cb0 | docs/planning/luc-5219-source-control-closure-for-luc-5218-evidence-packet.md |
-| documents | document:luc-5220-process-core-api-journey-proof:fbb338f2c1 | module:docs:6784d83cb0 | docs/planning/luc-5220-process-core-api-journey-proof.md |
-| documents | document:luc-5225-source-control-closure-for-luc-5224-evidence-packet:1beeb967fe | module:docs:6784d83cb0 | docs/planning/luc-5225-source-control-closure-for-luc-5224-evidence-packet.md |
-| documents | document:luc-5226-operating-model-api-journey-proof:3b4478a713 | module:docs:6784d83cb0 | docs/planning/luc-5226-operating-model-api-journey-proof.md |
-| documents | document:luc-5230-known-state-evidence-and-architecture-baseline:98faf29644 | module:docs:6784d83cb0 | docs/planning/luc-5230-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5233-known-state-evidence-and-architecture-baseline:275ab35d8a | module:docs:6784d83cb0 | docs/planning/luc-5233-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5234-source-control-closure-for-luc-5230-evidence-packet:31d7d01b98 | module:docs:6784d83cb0 | docs/planning/luc-5234-source-control-closure-for-luc-5230-evidence-packet.md |
-| documents | document:luc-5235-dashboard-command-api-journey-proof:f9db9f5716 | module:docs:6784d83cb0 | docs/planning/luc-5235-dashboard-command-api-journey-proof.md |
-| documents | document:luc-5238-known-state-evidence-and-architecture-baseline:312fc26547 | module:docs:6784d83cb0 | docs/planning/luc-5238-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5239-source-control-closure-for-luc-5233-evidence-packet:093c63cb06 | module:docs:6784d83cb0 | docs/planning/luc-5239-source-control-closure-for-luc-5233-evidence-packet.md |
-| documents | document:luc-5240-company-os-api-journey-proof:ea3a0dde11 | module:docs:6784d83cb0 | docs/planning/luc-5240-company-os-api-journey-proof.md |

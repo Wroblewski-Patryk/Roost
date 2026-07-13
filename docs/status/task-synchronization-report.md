@@ -1,6 +1,6 @@
 # Task Synchronization Report
 
-Generated: 2026-07-12T03:57:25.133Z
+Generated: 2026-07-13T13:31:27.552Z
 
 ## Contract
 
@@ -8,8 +8,8 @@ Every task should identify the feature/module it changes, dependency expectation
 
 ## Signals
 
-- Actionable tasks without architecture links: 5
-- Raw tasks without architecture links: 5
+- Actionable tasks without architecture links: 10
+- Raw tasks without architecture links: 10
 - Actionable implementation entities without task links: 0
 - Raw implementation entities without task links: 0
 - Classified task-linkage noise: 0
@@ -25,6 +25,11 @@ Every task should identify the feature/module it changes, dependency expectation
 - LUC-546 Account Access Google Drive Authorization URL Proof (.codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md)
 - LUC-550 Project Truth Readback After LUC-546 (.codex/tasks/luc-550-project-truth-readback-after-luc-546.md)
 - LUC-567 Account Access Google Drive Authorization-Code Exchange Proof (.codex/tasks/luc-567-account-access-google-drive-authorization-code-exchange-proof.md)
+- Task (.codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md)
+- luc-776-account-access-merge-google-drive-config-proof (.codex/tasks/luc-776-account-access-merge-google-drive-config-proof.md)
+- luc-777-account-access-normalize-token-response-proof (.codex/tasks/luc-777-account-access-normalize-token-response-proof.md)
+- luc-778-account-access-post-google-oauth-token-proof (.codex/tasks/luc-778-account-access-post-google-oauth-token-proof.md)
+- luc-894-account-access-integration-settings-service-proof (.codex/tasks/luc-894-account-access-integration-settings-service-proof.md)
 
 ## Actionable Implementation Without Task Links
 
@@ -38,5 +43,10 @@ Every task should identify the feature/module it changes, dependency expectation
 - LUC-546 Account Access Google Drive Authorization URL Proof (.codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md)
 - LUC-550 Project Truth Readback After LUC-546 (.codex/tasks/luc-550-project-truth-readback-after-luc-546.md)
 - LUC-567 Account Access Google Drive Authorization-Code Exchange Proof (.codex/tasks/luc-567-account-access-google-drive-authorization-code-exchange-proof.md)
+- Task (.codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md)
+- luc-776-account-access-merge-google-drive-config-proof (.codex/tasks/luc-776-account-access-merge-google-drive-config-proof.md)
+- luc-777-account-access-normalize-token-response-proof (.codex/tasks/luc-777-account-access-normalize-token-response-proof.md)
+- luc-778-account-access-post-google-oauth-token-proof (.codex/tasks/luc-778-account-access-post-google-oauth-token-proof.md)
+- luc-894-account-access-integration-settings-service-proof (.codex/tasks/luc-894-account-access-integration-settings-service-proof.md)
 
 ### Raw Implementation Without Task Links
