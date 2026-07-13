@@ -2,6 +2,50 @@
 
 Last updated: 2026-07-13
 
+## LUC-948 Checkpoint
+
+- 2026-07-13: [LUC-948](/LUC/issues/LUC-948) completed a single-lane Roost PM
+  source-control closure for the coherent [LUC-943](/LUC/issues/LUC-943)
+  documentation-link packet. Output:
+  `.codex/tasks/luc-948-source-control-closure-for-luc-943.md`. Scope stayed
+  inside fresh git forensics, redaction-oriented inspection of the exact
+  docs/state/generated bundle, and durable local closure; no subagent
+  delegation was used because the lane remained bounded PM source-control work.
+  Evidence: fresh git inspection narrowed the bundle to `26` modified tracked
+  paths plus `1` untracked task packet before the closure packet was added,
+  with no dirty runtime or test files; `git rev-list --left-right --count
+  origin/main...HEAD` -> `0 10`; `git diff --check` PASS with LF-to-CRLF
+  warnings only; `git diff --stat` showed `26` tracked files changed with
+  docs/state/generated churn only; redaction-oriented inspection found no live
+  token or private-key markers in the dirty bundle. Commit decision: committed
+  locally in this closure lane; push status `not needed`; deploy impact `none`.
+  Final disposition: `done`. Next owner/action: QA Regression Lead + Project
+  Manager for the new first Project Truth gap `src/integrations/secrets.ts`
+  `implemented_needs_proof`.
+
+## LUC-943 Checkpoint
+
+- 2026-07-13: [LUC-943](/LUC/issues/LUC-943) completed a single-lane
+  Documentation Steward doc-link curation for the Account access
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  `missing_doc_link` row. Output:
+  `.codex/tasks/luc-943-account-access-parse-google-drive-oauth-secret-doc-link.md`.
+  Scope stayed inside the exact documentation-link relation, generated
+  architecture/app-completion/Project Truth refresh, and durable state updates;
+  no subagent delegation was used because the row was narrow and already
+  matched the established Google Drive OAuth doc-link pattern. Evidence:
+  architecture-awareness refresh PASS generated `2026-07-13T16:34:45.973Z`
+  with `2860` entities / `6916` relations / `16460` files and materialized the exact
+  `document:google-drive-v2-task-contracts -> function:parseGoogleDriveOAuthSecret`
+  relation; app-completion refresh PASS now reports `1148` missing test links /
+  `24` missing doc links / `10` implemented-needs-proof / `0` blocked and
+  removed the target from the `missing_doc_link` queue; Project Truth apply
+  PASS generated `2026-07-13T16:35:49.119Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and advanced the first gap to
+  `src/integrations/secrets.ts` `implemented_needs_proof`. Final disposition:
+  `done`. Next owner/action: QA Regression Lead + Project Manager for the new
+  first gap.
+
 ## LUC-939 Checkpoint
 
 - 2026-07-13: [LUC-939](/LUC/issues/LUC-939) completed as a single-lane 09 IDE

@@ -11,6 +11,24 @@ state, architecture intent, module confidence, and the next release objective.
 
 ## Latest Generated Truth
 
+- 2026-07-13: [LUC-943](/LUC/issues/LUC-943) cleared the Account access
+  `parseGoogleDriveOAuthSecret` `missing_doc_link` row. Use
+  `.codex/tasks/luc-943-account-access-parse-google-drive-oauth-secret-doc-link.md`
+  for current proof: `docs/architecture/relations/documentation-links.csv`
+  links the exact generated function path to
+  `docs/planning/google-drive-v2-task-contracts.md`; architecture-awareness
+  generated `2026-07-13T16:34:45.973Z` with `2860` entities / `6916`
+  relations / `16460` files and materialized the exact `document` relation;
+  app-completion generated `1243` items / `5` flows / `1148` missing test
+  links / `24` missing doc links / `10` implemented-needs-proof /
+  `0` blocked / `1182` risk items; Project Truth generated
+  `2026-07-13T16:35:49.119Z` with public probe `pass`, runtime findings `0`,
+  incomplete event chains `0`, operational gate gaps `0`, and first gap moved
+  to `src/integrations/secrets.ts` `implemented_needs_proof`. Do not open
+  another missing-doc-link curation for `parseGoogleDriveOAuthSecret` without
+  a fresh generated regression; the next remaining Account access gap belongs
+  to QA Regression Lead + Project Manager.
+
 - 2026-07-12: [LUC-788](/LUC/issues/LUC-788) cleared the Account access
   `postGoogleOAuthToken` `missing_doc_link` row. Use
   `.codex/tasks/luc-788-account-access-post-google-oauth-token-doc-link.md`

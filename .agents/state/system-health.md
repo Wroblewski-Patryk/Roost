@@ -1,3 +1,24 @@
+# 2026-07-13 LUC-943 Account Access parseGoogleDriveOAuthSecret Health Signal
+
+- Status: focused integration-settings helper documentation-link confidence is
+  verified locally.
+- Evidence: [LUC-943](/LUC/issues/LUC-943) task contract
+  `.codex/tasks/luc-943-account-access-parse-google-drive-oauth-secret-doc-link.md`;
+  `docs/architecture/relations/documentation-links.csv` links
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  to `docs/planning/google-drive-v2-task-contracts.md`; refreshed
+  architecture-awareness generated `2026-07-13T16:34:45.973Z` with `2860`
+  entities / `6916` relations / `16460` files and materializes the exact
+  `document:google-drive-v2-task-contracts ->
+  function:parseGoogleDriveOAuthSecret` relation; app-completion refresh now
+  reports `1148` missing test links / `24` missing doc links /
+  `10` implemented-needs-proof / `0` blocked; Project Truth apply generated
+  `2026-07-13T16:35:49.119Z` and no longer reports the helper as
+  `missing_doc_link`.
+- Runtime/deploy posture: unchanged. No live Google provider call, protected
+  smoke, deploy, push, restart, production mutation, credential access, or
+  secret disclosure occurred.
+
 # 2026-07-13 LUC-928 Account Access refreshGoogleDriveOAuth Health Signal
 
 - Status: focused Google Drive OAuth refresh helper documentation-link

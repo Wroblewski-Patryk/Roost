@@ -1,6 +1,22 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-13: [LUC-948](/LUC/issues/LUC-948) source-control closure for the
+  current [LUC-943](/LUC/issues/LUC-943) documentation-link packet is complete
+  locally. Task contract:
+  `.codex/tasks/luc-948-source-control-closure-for-luc-943.md`. Evidence:
+  `git status --short --branch` showed `main...origin/main [ahead 10]` with
+  only the current docs/state/generated packet dirty before this closure sync:
+  `26` tracked modified paths plus `1` untracked LUC packet, all coherent with
+  the exact [LUC-943](/LUC/issues/LUC-943) doc-link refresh and with `0` dirty
+  runtime/test paths; `git rev-list --left-right --count origin/main...HEAD`
+  -> `0 10`; `git diff --check` PASS with LF-to-CRLF warnings only; `git diff
+  --stat` showed docs/state/generated churn only; scoped redaction inspection
+  found no live-token or private-key markers. Commit decision: local closure
+  commit created, push status `not needed`, deploy impact `none`. No protected
+  smoke, restart, production mutation, credential access, or secret disclosure
+  occurred.
+
 - 2026-07-13: [LUC-939](/LUC/issues/LUC-939) Account access non-production
   OAuth secret handling proof closure is complete locally. Task contract:
   `.codex/tasks/luc-939-account-access-non-production-oauth-secret-proof-closure.md`.

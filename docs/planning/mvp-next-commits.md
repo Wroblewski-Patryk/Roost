@@ -1,5 +1,35 @@
 # MVP Next Commits
 
+- 2026-07-13: [LUC-948](/LUC/issues/LUC-948) completed source-control closure
+  for the coherent [LUC-943](/LUC/issues/LUC-943) documentation-link packet.
+  Evidence packet:
+  `.codex/tasks/luc-948-source-control-closure-for-luc-943.md`. Proof: fresh
+  git inspection narrowed the worktree to `26` modified tracked paths plus
+  `1` untracked task packet before the closure packet was added, all inside
+  docs/state/generated surfaces and with `0` dirty runtime/test files;
+  `git rev-list --left-right --count origin/main...HEAD` -> `0 10`;
+  `git diff --check` PASS with LF-to-CRLF warnings only; `git diff --stat`
+  showed docs/state/generated churn only; scoped redaction inspection found no
+  live-token or private-key markers in the preserved bundle. Local commit is
+  now the correct closure action; push not needed; deploy impact none.
+
+- 2026-07-13: [LUC-943](/LUC/issues/LUC-943) completed the Account access
+  `parseGoogleDriveOAuthSecret` missing-doc-link curation. Evidence packet:
+  `.codex/tasks/luc-943-account-access-parse-google-drive-oauth-secret-doc-link.md`.
+  Proof: architecture-awareness refresh PASS (`2860` entities / `6916`
+  relations / `16460` files) materialized the exact
+  `document:google-drive-v2-task-contracts -> parseGoogleDriveOAuthSecret`
+  relation; app-completion refresh PASS (`1148` missing test links /
+  `24` missing doc links / `10` implemented-needs-proof / `0` blocked)
+  no longer reports `parseGoogleDriveOAuthSecret` as `missing_doc_link`;
+  Project Truth apply PASS generated `2026-07-13T16:35:49.119Z` with public
+  probe `pass`, runtime/event/ops gaps `0`, and first gap now `secrets.ts`
+  `implemented_needs_proof`.
+  No live Google provider call, protected smoke, push, deploy, restart,
+  production mutation, credential access, or secret disclosure occurred.
+  Next owner for the new first gap: QA Regression Lead + Project Manager if
+  Project Truth routing keeps the same priority order.
+
 - 2026-07-13: [LUC-928](/LUC/issues/LUC-928) completed the Account access
   `refreshGoogleDriveOAuth` missing-doc-link curation. Evidence packet:
   `.codex/tasks/luc-928-account-access-refresh-google-drive-oauth-doc-link.md`.
@@ -44,8 +74,9 @@
   `src/tests/google-drive-auth.test.ts`. Refreshed app-completion and Project
   Truth now classify the same helper only as `missing_doc_link`. No live Google
   provider call, protected smoke, push, deploy, restart, production mutation,
-  credential value access, or secret disclosure occurred. Next owner/action:
-  Docs Memory Lead + Project Manager for the residual same-symbol doc-link gap.
+  credential value access, or secret disclosure occurred. The residual
+  same-symbol doc-link gap is now closed by [LUC-943](/LUC/issues/LUC-943),
+  and the next first gap is `secrets.ts` `implemented_needs_proof`.
 
 - 2026-07-13: [LUC-893](/LUC/issues/LUC-893) completed the Account access
   `refreshGoogleDriveOAuth` missing-test-link proof-link repair. Evidence

@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-07-13T16:04:45.741Z
+Generated: 2026-07-13T16:35:47.698Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -16,17 +16,17 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 - User flows: 5
 - Needs browser/screenshot review: 0
 - Missing test link: 1148
-- Missing doc link: 25
+- Missing doc link: 24
 - Implemented, needs proof: 10
 - Blocked: 0
-- Known non-ok risk items: 1183
-- Priority review items indexed: 200/1183
+- Known non-ok risk items: 1182
+- Priority review items indexed: 200/1182
 - Priority review truncated: true
 
 ## Flow Summary
 
 - Unclassified user workflow: 1096 entities; risks {"missing_test_link":1068,"ok":2,"implemented_needs_proof":8,"missing_doc_link":18}; gates {"configuration":7,"auth":1}
-- Account access: 70 entities; risks {"ok":58,"missing_doc_link":5,"implemented_needs_proof":1,"missing_test_link":6}; gates {"auth":70,"configuration":19,"subscription":1}
+- Account access: 70 entities; risks {"ok":59,"implemented_needs_proof":1,"missing_test_link":6,"missing_doc_link":4}; gates {"auth":70,"configuration":19,"subscription":1}
 - Dashboard overview: 34 entities; risks {"missing_test_link":34}; gates {"configuration":7}
 - User configuration: 33 entities; risks {"missing_test_link":31,"missing_doc_link":2}; gates {"configuration":31}
 - Trading operation: 10 entities; risks {"missing_test_link":9,"implemented_needs_proof":1}; gates {}
@@ -35,7 +35,6 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 
 | User flow | Risk | Kind | Entity | Owner | Path | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
-| Account access | missing_doc_link | feature_or_capability | parseGoogleDriveOAuthSecret | Engineering Delivery Lead | src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret | auth, configuration |
 | Account access | implemented_needs_proof | feature_or_capability | secrets.ts | Engineering Delivery Lead | src/integrations/secrets.ts | auth, subscription, configuration |
 | Account access | missing_test_link | feature_or_capability | authActor | Engineering Delivery Lead | src/modules/company-os/company-os.routes.ts#authActor | auth |
 | Account access | missing_test_link | feature_or_capability | authActor | Engineering Delivery Lead | src/modules/company-os/workflow-definition-drafts.routes.ts#authActor | auth |
@@ -115,6 +114,7 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /notes | Engineering Delivery Lead | src/app.ts#/notes | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /operating-graph | Engineering Delivery Lead | src/app.ts#/operating-graph | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /operating-model | Engineering Delivery Lead | src/app.ts#/operating-model | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /operations | Engineering Delivery Lead | src/app.ts#/operations | - |
 
 ## Agent Rule
 
