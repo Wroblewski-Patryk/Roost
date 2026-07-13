@@ -2072,6 +2072,26 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(dashboardCommandBody.data.blockedActions.some((action) => action.action === "assign_human_or_agent_from_dashboard"));
   assert.equal(dashboardCommandBody.data.agentPacket.mode, "read_only_command_center");
 
+  const unversionedDashboardCommand = await request("/dashboard/command", { headers: authA });
+  assert.equal(unversionedDashboardCommand.status, 200);
+  const unversionedDashboardCommandBody = unversionedDashboardCommand.body as typeof dashboardCommandBody;
+  assert.equal(
+    unversionedDashboardCommandBody.data.summary.openTasks,
+    dashboardCommandBody.data.summary.openTasks
+  );
+  assert.equal(
+    unversionedDashboardCommandBody.data.summary.pendingApprovals,
+    dashboardCommandBody.data.summary.pendingApprovals
+  );
+  assert.deepEqual(
+    unversionedDashboardCommandBody.data.departmentSignals,
+    dashboardCommandBody.data.departmentSignals
+  );
+  assert.equal(
+    unversionedDashboardCommandBody.data.agentPacket.mode,
+    dashboardCommandBody.data.agentPacket.mode
+  );
+
   const operationsWorkItemCountsBefore = {
     tasks: await prisma.task.count({ where: { workspaceId: ownerA.workspace.id } }),
     dependencies: await prisma.dependency.count({ where: { workspaceId: ownerA.workspace.id } }),

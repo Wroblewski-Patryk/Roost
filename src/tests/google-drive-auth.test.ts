@@ -48,6 +48,46 @@ test("getFreshGoogleDriveOAuthForWorkspace returns fresh oauth without refreshin
   assert.equal(updateCalled, false);
 });
 
+test("getFreshGoogleDriveOAuthForWorkspace treats oauth without expiresAt as fresh without refreshing or persisting", async (t) => {
+  const integrationSettingsModule = (await import("../integrations/integration-settings.service")) as any;
+  const authModule = await import("../integrations/google-drive/google-drive.auth");
+
+  const oauthWithoutExpiresAt = {
+    clientId: "unit-google-client-id",
+    clientSecret: "unit-google-client-secret",
+    refreshToken: "unit-refresh-token",
+    accessToken: "unit-fresh-access-token",
+    tokenType: "Bearer",
+    scope: "https://www.googleapis.com/auth/drive.file"
+  };
+
+  const originalGetSettings = integrationSettingsModule.getGoogleDriveSettingsForWorkspace;
+  const originalUpdate = prisma.integrationSetting.update;
+  let updateCalled = false;
+
+  integrationSettingsModule.getGoogleDriveSettingsForWorkspace = (async () => ({
+    oauth: oauthWithoutExpiresAt,
+    config: null,
+    rawSetting: {
+      active: true
+    }
+  })) as typeof integrationSettingsModule.getGoogleDriveSettingsForWorkspace;
+  prisma.integrationSetting.update = (async () => {
+    updateCalled = true;
+    throw new Error("oauth without expiresAt must not refresh or persist");
+  }) as any;
+
+  t.after(() => {
+    integrationSettingsModule.getGoogleDriveSettingsForWorkspace = originalGetSettings;
+    prisma.integrationSetting.update = originalUpdate;
+  });
+
+  const oauth = await authModule.getFreshGoogleDriveOAuthForWorkspace("workspace-no-expiry");
+
+  assert.equal(oauth, oauthWithoutExpiresAt);
+  assert.equal(updateCalled, false);
+});
+
 test("getGoogleDriveClientForWorkspace returns a client using the fresh workspace access token", async (t) => {
   const integrationSettingsModule = (await import("../integrations/integration-settings.service")) as any;
   const authModule = await import("../integrations/google-drive/google-drive.auth");
@@ -156,15 +196,17 @@ test("buildGoogleDriveAuthorizationUrl returns owner OAuth consent URL without p
   assert.equal(url.searchParams.get("login_hint"), "owner@example.com");
 });
 
-test("buildGoogleDriveAuthorizationUrl uses stored workspace OAuth client credentials", async (t) => {
+test("buildGoogleDriveAuthorizationUrl reads stored workspace OAuth secret for client credentials", async (t) => {
   const { encryptSecret } = await import("../integrations/secrets");
   const { buildGoogleDriveAuthorizationUrl } = await import("../integrations/google-drive/google-drive.auth");
 
   const originalFindUnique = prisma.integrationSetting.findUnique;
   let requestedWorkspaceId: string | undefined;
+  let requestedSelect: { secretCiphertext?: boolean } | undefined;
 
   prisma.integrationSetting.findUnique = (async (args: any) => {
     requestedWorkspaceId = args?.where?.workspaceId_provider?.workspaceId;
+    requestedSelect = args?.select;
     return {
       secretCiphertext: encryptSecret(JSON.stringify({
         clientId: "stored-workspace-client-id",
@@ -185,7 +227,32 @@ test("buildGoogleDriveAuthorizationUrl uses stored workspace OAuth client creden
   const url = new URL(authorizeUrl);
 
   assert.equal(requestedWorkspaceId, "workspace-oauth-client");
+  assert.deepEqual(requestedSelect, {
+    secretCiphertext: true
+  });
   assert.equal(url.searchParams.get("client_id"), "stored-workspace-client-id");
+});
+
+test("mergeGoogleDriveConfig preserves existing fields and applies explicit overrides", async () => {
+  const { mergeGoogleDriveConfig } = await import("../integrations/google-drive/google-drive.auth");
+
+  const merged = mergeGoogleDriveConfig({
+    folderIds: ["folder-alpha"],
+    selectedFolderIds: ["selected-alpha"],
+    importMode: "inspect_only",
+    changesPageToken: "page-token-1"
+  } as any, {
+    selectedFolderIds: ["selected-beta"],
+    importMode: "sync",
+    changesPageToken: undefined
+  } as any);
+
+  assert.deepEqual(merged, {
+    folderIds: ["folder-alpha"],
+    selectedFolderIds: ["selected-beta"],
+    importMode: "sync",
+    changesPageToken: undefined
+  });
 });
 
 test("getFreshGoogleDriveOAuthForWorkspace refreshes expired oauth and persists the refreshed secret", async (t) => {
@@ -275,6 +342,76 @@ test("getFreshGoogleDriveOAuthForWorkspace refreshes expired oauth and persists 
   assert.ok(expiresAt <= after + 3_601_000);
 });
 
+test("getFreshGoogleDriveOAuthForWorkspace keeps the stored refresh token when Google omits a rotated one", async (t) => {
+  const integrationSettingsModule = (await import("../integrations/integration-settings.service")) as any;
+  const { decryptSecret } = await import("../integrations/secrets");
+  const authModule = await import("../integrations/google-drive/google-drive.auth");
+
+  const expiredOauth = {
+    clientId: "unit-google-client-id",
+    clientSecret: "unit-google-client-secret",
+    refreshToken: "unit-refresh-token",
+    accessToken: "unit-expired-access-token",
+    expiresAt: new Date(Date.now() - 120_000).toISOString(),
+    tokenType: "Bearer",
+    scope: "https://www.googleapis.com/auth/drive.file"
+  };
+
+  const tokenResponse = {
+    access_token: "unit-refreshed-access-token",
+    expires_in: 3_600,
+    scope: "https://www.googleapis.com/auth/drive.metadata.readonly",
+    token_type: "Bearer"
+  };
+
+  const originalGetSettings = integrationSettingsModule.getGoogleDriveSettingsForWorkspace;
+  const originalUpdate = prisma.integrationSetting.update;
+  const originalFetch = globalThis.fetch;
+  let updateArgs: {
+    data: {
+      secretCiphertext: string;
+    };
+  } | undefined;
+
+  integrationSettingsModule.getGoogleDriveSettingsForWorkspace = (async () => ({
+    oauth: expiredOauth,
+    config: null,
+    rawSetting: {
+      active: true
+    }
+  })) as typeof integrationSettingsModule.getGoogleDriveSettingsForWorkspace;
+  prisma.integrationSetting.update = (async (args: any) => {
+    updateArgs = args as typeof updateArgs;
+    return args as any;
+  }) as any;
+  globalThis.fetch = (async () => new Response(JSON.stringify(tokenResponse), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })) as typeof fetch;
+
+  t.after(() => {
+    integrationSettingsModule.getGoogleDriveSettingsForWorkspace = originalGetSettings;
+    prisma.integrationSetting.update = originalUpdate;
+    globalThis.fetch = originalFetch;
+  });
+
+  const oauth = await authModule.getFreshGoogleDriveOAuthForWorkspace("workspace-keep-refresh-token");
+
+  assert.ok(updateArgs);
+  assert.equal(oauth.refreshToken, expiredOauth.refreshToken);
+  assert.equal(oauth.accessToken, tokenResponse.access_token);
+  assert.equal(oauth.scope, tokenResponse.scope);
+  assert.equal(oauth.tokenType, tokenResponse.token_type);
+  assert.equal(oauth.clientId, expiredOauth.clientId);
+  assert.equal(oauth.clientSecret, expiredOauth.clientSecret);
+  assert.equal(
+    JSON.parse(decryptSecret(updateArgs!.data.secretCiphertext)).refreshToken,
+    expiredOauth.refreshToken
+  );
+});
+
 test("exchangeGoogleDriveAuthorizationCode posts authorization code and normalizes tokens without live Google call", async (t) => {
   process.env.GOOGLE_OAUTH_CLIENT_ID = "unit-google-client-id";
   process.env.GOOGLE_OAUTH_CLIENT_SECRET = "unit-google-client-secret";
@@ -333,4 +470,36 @@ test("exchangeGoogleDriveAuthorizationCode posts authorization code and normaliz
   const expiresAt = new Date(oauth.expiresAt).getTime();
   assert.ok(expiresAt >= before + 3_599_000);
   assert.ok(expiresAt <= after + 3_601_000);
+});
+
+test("exchangeGoogleDriveAuthorizationCode maps rejected Google token responses to invalid-token integration errors", async (t) => {
+  process.env.GOOGLE_OAUTH_CLIENT_ID = "unit-google-client-id";
+  process.env.GOOGLE_OAUTH_CLIENT_SECRET = "unit-google-client-secret";
+
+  globalThis.fetch = (async () => new Response(JSON.stringify({
+    error: "invalid_grant"
+  }), {
+    status: 401,
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })) as typeof fetch;
+  t.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  const { exchangeGoogleDriveAuthorizationCode } = await import("../integrations/google-drive/google-drive.auth");
+
+  await assert.rejects(
+    () => exchangeGoogleDriveAuthorizationCode({
+      code: "unit-expired-auth-code",
+      redirectUri: "https://roost.example/oauth/callback"
+    }),
+    (error: any) => {
+      assert.equal(error?.code, "integration_invalid_token");
+      assert.equal(error?.status, 401);
+      assert.equal(error?.message, "Google OAuth token request was rejected.");
+      return true;
+    }
+  );
 });
