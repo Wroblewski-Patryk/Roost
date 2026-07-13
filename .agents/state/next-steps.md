@@ -1,4 +1,12 @@
 # Next Steps
+- 2026-07-13: [LUC-905](/LUC/issues/LUC-905) has no remaining PM
+  source-control action. The durable point-in-time packet is
+  `.codex/tasks/luc-905-source-control-closure-parent-dirty-state.md`; its
+  classified generated-doc bundle was consumed by `050201d3`. Do not reopen
+  LUC-904/LUC-905 for another recount while the repository remains clean.
+  Continue with the blocked parent delivery/release facts or the next bounded
+  app-completion proof lane.
+
 - 2026-07-13: [LUC-904](/LUC/issues/LUC-904) has no remaining PM source-control
   action after the completed local closure sidecar. The durable packet is
   `.codex/tasks/luc-904-source-control-closure-local-dirty-state-sidecar.md`.

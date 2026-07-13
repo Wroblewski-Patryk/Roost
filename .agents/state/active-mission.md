@@ -2,6 +2,20 @@
 
 Last updated: 2026-07-13
 
+## LUC-905 Checkpoint
+
+- 2026-07-13: [LUC-905](/LUC/issues/LUC-905) completed the Roost PM parent
+  source-control closure refresh. Its point-in-time packet is preserved at
+  `.codex/tasks/luc-905-source-control-closure-parent-dirty-state.md`.
+  Operator reconciliation then consumed the classified generated-doc bundle:
+  `050201d3 docs: refresh Roost architecture and status indexes`. The full
+  `npm run architecture:refresh` gate passed with `GREEN` health, graph
+  `454/765/35`, zero evidence queue, zero dead nodes, zero drift, and all gates
+  passing. The remaining LUC-905 memory updates are committed with this
+  checkpoint, leaving no source-control closure action. No push, deployment,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Final disposition: `done`.
+
 ## LUC-904 Checkpoint
 
 - 2026-07-13: [LUC-904](/LUC/issues/LUC-904) completed the Roost PM

@@ -1,5 +1,15 @@
 # PROJECT_STATE
 
+- 2026-07-13: [LUC-905](/LUC/issues/LUC-905) completed the Roost PM parent
+  source-control closure refresh. Source-of-truth packet:
+  `.codex/tasks/luc-905-source-control-closure-parent-dirty-state.md`.
+  The packet's generated architecture/status bundle was subsequently verified
+  through the full `npm run architecture:refresh` pipeline and committed as
+  `050201d3`. Health is `GREEN` with graph `454/765/35`, zero evidence queue,
+  zero dead nodes, zero drift, and all gates passing. The current repository
+  has no remaining mixed or generated source-control closure packet; the next
+  work belongs to the bounded app-completion or external delivery gate paths.
+
 - 2026-07-13: [LUC-904](/LUC/issues/LUC-904) completed the Roost local
   source-control closure sidecar for the dependency-blocked parent lane.
   Source-of-truth task contract:

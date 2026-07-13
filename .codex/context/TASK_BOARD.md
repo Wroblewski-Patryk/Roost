@@ -1,6 +1,15 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-13: [LUC-905](/LUC/issues/LUC-905) parent source-control closure is
+  complete locally. Task contract:
+  `.codex/tasks/luc-905-source-control-closure-parent-dirty-state.md`.
+  The generated architecture/status packet classified by the run was fully
+  regenerated, passed every architecture gate, and was committed as
+  `050201d3`. The repository has no remaining source-control closure packet.
+  No push, deploy, protected smoke, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
 - 2026-07-13: [LUC-904](/LUC/issues/LUC-904) local source-control closure
   sidecar is complete. Task contract:
   `.codex/tasks/luc-904-source-control-closure-local-dirty-state-sidecar.md`.
