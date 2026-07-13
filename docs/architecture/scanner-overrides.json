@@ -239,6 +239,15 @@
       ]
     },
     {
+      "path": "src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret",
+      "status": "verified",
+      "description": "Stored Google Drive OAuth secret parser verified by a focused no-network unit test that proves valid decrypted JSON parsing, fail-open null behavior, and fail-closed invalid-token handling for undecryptable ciphertext.",
+      "evidence": [
+        "src/tests/google-drive-auth.test.ts",
+        ".codex/tasks/luc-895-account-access-parse-google-drive-oauth-secret-proof.md"
+      ]
+    },
+    {
       "path": "src/integrations/secrets.ts",
       "description": "Encrypted integration secret infrastructure; security behavior is documented in the security baseline and authority risk review.",
       "evidence": [
@@ -1587,6 +1596,14 @@
       "toPath": "src/integrations/google-drive/google-drive.auth.ts#mergeGoogleDriveConfig",
       "toType": "function",
       "evidence": "LUC-776 Account access merge Google Drive config proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/google-drive-auth.test.ts",
+      "fromType": "test",
+      "toPath": "src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret",
+      "toType": "function",
+      "evidence": "LUC-895 Account access parseGoogleDriveOAuthSecret proof"
     },
     {
       "type": "tests",

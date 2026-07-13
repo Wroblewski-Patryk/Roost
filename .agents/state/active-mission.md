@@ -2,6 +2,53 @@
 
 Last updated: 2026-07-13
 
+## LUC-926 Checkpoint
+
+- 2026-07-13: [LUC-926](/LUC/issues/LUC-926) completed a single-lane Roost PM
+  source-control closure for the coherent [LUC-895](/LUC/issues/LUC-895) proof
+  bundle. Output:
+  `.codex/tasks/luc-926-source-control-closure-for-luc-895.md`. Scope stayed
+  inside fresh git forensics, focused validation of the one dirty
+  behavior-impacting proof file, redaction-oriented inspection of the proof
+  files, and durable closure evidence; no subagent delegation was used because
+  the lane stayed bounded to PM source-control work. Evidence: fresh git
+  inspection narrowed the bundle to `30` modified tracked paths plus `2`
+  untracked task packets (`32` total) grouped as `agent_state=6`,
+  `codex_context=2`, `project_docs_generated=21`, `task_packets=2`, and
+  `behavior_tests=1`
+  (`src/tests/google-drive-auth.test.ts`); `git rev-list --left-right --count
+  origin/main...HEAD` -> `0 8`; `git diff --check` PASS with LF-to-CRLF
+  warnings only; `npm run build:server` PASS; focused
+  `node --test dist/tests/google-drive-auth.test.js` PASS (`12/12`);
+  redaction-oriented inspection found no live-token markers in the dirty
+  proof/config files. Fresh app-completion and Project Truth readback now list
+  the same helper only as `missing_doc_link`, so the original
+  `missing_test_link` blocker is closed. Commit decision: committed locally in
+  this closure lane; push status `not needed`; deploy impact `none`. Final
+  disposition: `done`. Next owner/action after the commit is Docs Memory Lead +
+  Project Manager for the residual same-symbol doc-link gap.
+
+## LUC-895 Checkpoint
+
+- 2026-07-13: [LUC-895](/LUC/issues/LUC-895) completed as a single-lane 09 TAE
+  proof closure for the Account access
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  `missing_test_link` row. Output:
+  `.codex/tasks/luc-895-account-access-parse-google-drive-oauth-secret-proof.md`.
+  Scope stayed inside focused no-network helper proof, exact scanner override
+  linkage, generated architecture/app-completion/Project Truth refresh, and
+  source-of-truth updates; no subagent delegation was used because the row was
+  narrow and role-owned. Evidence:
+  `npm run build:server` PASS; focused `node --test dist/tests/google-drive-auth.test.js`
+  PASS (`12/12`); architecture-awareness refresh PASS generated
+  `2026-07-13T15:34:06.608Z` with `2856` entities / `6880` relations /
+  `16460` files and the exact helper row `verified` with related test
+  `src/tests/google-drive-auth.test.ts`; app-completion refresh and Project
+  Truth apply both PASSed and now list the same helper only as
+  `missing_doc_link`, confirming the original `missing_test_link` is closed.
+  Final disposition: `done`. Next owner/action for the residual same-symbol
+  doc-link gap: Docs Memory Lead + Project Manager.
+
 ## LUC-905 Checkpoint
 
 - 2026-07-13: [LUC-905](/LUC/issues/LUC-905) completed the Roost PM parent

@@ -1,3 +1,9 @@
+# 2026-07-13 LUC-895 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Account access parseGoogleDriveOAuthSecret helper proof | verified for dispatched missing-test-link gap | [LUC-895](/LUC/issues/LUC-895) task contract `.codex/tasks/luc-895-account-access-parse-google-drive-oauth-secret-proof.md`; `src/tests/google-drive-auth.test.ts` now proves valid decrypted JSON parsing plus fail-open/fail-closed invalid-ciphertext behavior; `docs/architecture/scanner-overrides.json` marks `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret` `verified`; `npm run build:server` PASS; `node --test dist/tests/google-drive-auth.test.js` PASS (`12/12`); architecture-awareness refresh generated `2026-07-13T15:34:06.608Z` with the exact helper `verified` and linked to `src/tests/google-drive-auth.test.ts`; refreshed app-completion and Project Truth now show the same helper with `hasTest=true` and `risk=missing_doc_link`. | No further 09 TAE proof work is needed for `parseGoogleDriveOAuthSecret`. The residual same-symbol doc-link gap now belongs to Docs Memory Lead + Project Manager. |
+
 # 2026-07-13 LUC-894 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

@@ -1,5 +1,21 @@
 # Current Focus
 
+- 2026-07-13: [LUC-926](/LUC/issues/LUC-926) closed the PM source-control
+  lane by committing the coherent [LUC-895](/LUC/issues/LUC-895) proof bundle
+  locally. Packet: `.codex/tasks/luc-926-source-control-closure-for-luc-895.md`.
+  Focus now shifts from source-control closure to the residual same-symbol
+  doc-link gap that remains after `parseGoogleDriveOAuthSecret` cleared
+  `missing_test_link`.
+
+- 2026-07-13: [LUC-895](/LUC/issues/LUC-895) closed the Account access
+  `parseGoogleDriveOAuthSecret` missing-test-link row.
+  Packet: `.codex/tasks/luc-895-account-access-parse-google-drive-oauth-secret-proof.md`.
+  The exact helper now reads `verified` in architecture-awareness with direct
+  `src/tests/google-drive-auth.test.ts` evidence, and refreshed app-completion
+  plus Project Truth keep the same row only as `missing_doc_link`. Focus
+  shifts away from QA proof authoring to doc-link curation by Docs Memory Lead
+  + Project Manager.
+
 - 2026-07-13: [LUC-904](/LUC/issues/LUC-904) completed the local source-control
   closure sidecar for the mixed Roost dirty bundle. Packet:
   `.codex/tasks/luc-904-source-control-closure-local-dirty-state-sidecar.md`.

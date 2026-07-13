@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-13T13:32:06.999Z",
+  "generatedAt": "2026-07-13T15:38:16.966Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "gaps_require_routing",
@@ -49,14 +49,14 @@
       "kind": "app_completion_gap",
       "severity": "medium",
       "userFlow": "Account access",
-      "summary": "Account access: parseGoogleDriveOAuthSecret has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "summary": "Account access: parseGoogleDriveOAuthSecret has app-completion risk missing_doc_link.",
+      "nextOwner": "Docs Memory Lead + Project Manager",
+      "nextAction": "Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.",
       "evidence": [
         "src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret"
       ],
       "sourceItemId": "function:parsegoogledriveoauthsecret:de301200ef",
-      "risk": "missing_test_link"
+      "risk": "missing_doc_link"
     },
     {
       "kind": "app_completion_gap",

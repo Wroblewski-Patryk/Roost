@@ -1,3 +1,21 @@
+# 2026-07-13 LUC-895 Account Access parseGoogleDriveOAuthSecret Health Signal
+
+- Status: focused helper proof is verified locally and the generated
+  missing-test-link is resolved.
+- Evidence: [LUC-895](/LUC/issues/LUC-895) task contract
+  `.codex/tasks/luc-895-account-access-parse-google-drive-oauth-secret-proof.md`;
+  `npm run build:server` PASS; `node --test dist/tests/google-drive-auth.test.js`
+  PASS (`12/12`); Paperclip architecture-awareness refresh generated
+  `2026-07-13T15:34:06.608Z` with `2856` entities / `6880` relations /
+  `16460` files and marks
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  `verified` with related test `src/tests/google-drive-auth.test.ts`;
+  app-completion refresh and Project Truth apply both PASS and now report the
+  same helper only as `missing_doc_link`.
+- Runtime/deploy posture: unchanged. No live Google provider call, protected
+  smoke, deploy, push, restart, production mutation, credential value access,
+  or secret disclosure occurred.
+
 # 2026-07-12 LUC-788 Account Access postGoogleOAuthToken Health Signal
 
 - Status: focused Google Drive OAuth token POST helper documentation-link

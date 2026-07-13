@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-07-13T13:31:38.250Z
+Generated: 2026-07-13T15:38:16.725Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -15,8 +15,8 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 - Items: 1243
 - User flows: 5
 - Needs browser/screenshot review: 0
-- Missing test link: 1149
-- Missing doc link: 25
+- Missing test link: 1148
+- Missing doc link: 26
 - Implemented, needs proof: 10
 - Blocked: 0
 - Known non-ok risk items: 1184
@@ -26,7 +26,7 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 ## Flow Summary
 
 - Unclassified user workflow: 1096 entities; risks {"missing_test_link":1068,"ok":2,"implemented_needs_proof":8,"missing_doc_link":18}; gates {"configuration":7,"auth":1}
-- Account access: 70 entities; risks {"ok":57,"missing_doc_link":5,"missing_test_link":7,"implemented_needs_proof":1}; gates {"auth":70,"configuration":19,"subscription":1}
+- Account access: 70 entities; risks {"ok":57,"missing_doc_link":6,"implemented_needs_proof":1,"missing_test_link":6}; gates {"auth":70,"configuration":19,"subscription":1}
 - Dashboard overview: 34 entities; risks {"missing_test_link":34}; gates {"configuration":7}
 - User configuration: 33 entities; risks {"missing_test_link":31,"missing_doc_link":2}; gates {"configuration":31}
 - Trading operation: 10 entities; risks {"missing_test_link":9,"implemented_needs_proof":1}; gates {}
@@ -36,7 +36,7 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | User flow | Risk | Kind | Entity | Owner | Path | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
 | Account access | missing_doc_link | feature_or_capability | refreshGoogleDriveOAuth | Engineering Delivery Lead | src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth | auth, configuration |
-| Account access | missing_test_link | feature_or_capability | parseGoogleDriveOAuthSecret | Engineering Delivery Lead | src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret | auth, configuration |
+| Account access | missing_doc_link | feature_or_capability | parseGoogleDriveOAuthSecret | Engineering Delivery Lead | src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret | auth, configuration |
 | Account access | implemented_needs_proof | feature_or_capability | secrets.ts | Engineering Delivery Lead | src/integrations/secrets.ts | auth, subscription, configuration |
 | Account access | missing_test_link | feature_or_capability | authActor | Engineering Delivery Lead | src/modules/company-os/company-os.routes.ts#authActor | auth |
 | Account access | missing_test_link | feature_or_capability | authActor | Engineering Delivery Lead | src/modules/company-os/workflow-definition-drafts.routes.ts#authActor | auth |

@@ -1,6 +1,42 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-13: [LUC-926](/LUC/issues/LUC-926) source-control closure for the
+  current [LUC-895](/LUC/issues/LUC-895) proof bundle is complete locally. Task
+  contract: `.codex/tasks/luc-926-source-control-closure-for-luc-895.md`.
+  Evidence: fresh git readback narrowed the bundle to `30` modified tracked
+  paths plus `2` untracked task packets (`32` total), all coherent with the
+  completed proof/status refresh: `agent_state=6`, `codex_context=2`,
+  `project_docs_generated=21`, `task_packets=2`, and `behavior_tests=1`
+  (`src/tests/google-drive-auth.test.ts`); `git diff --check` PASS with
+  LF-to-CRLF warnings only; `npm run build:server` PASS; focused
+  `node --test dist/tests/google-drive-auth.test.js` PASS (`12/12`); targeted
+  redaction inspection of the proof/config files found no live-token markers.
+  Commit decision: committed locally because fresh app-completion and Project
+  Truth readback cleared the original `missing_test_link` and left only the
+  same-symbol `missing_doc_link`. No push, deploy, protected smoke, restart,
+  production mutation, credential access, or secret disclosure occurred.
+
+- 2026-07-13: [LUC-895](/LUC/issues/LUC-895) Account access
+  `parseGoogleDriveOAuthSecret` missing-test-link proof lane is complete.
+  Task contract:
+  `.codex/tasks/luc-895-account-access-parse-google-drive-oauth-secret-proof.md`.
+  Evidence: `src/tests/google-drive-auth.test.ts` now proves valid decrypted
+  JSON parsing plus fail-open/fail-closed invalid-ciphertext behavior;
+  `docs/architecture/scanner-overrides.json` marks
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  `verified` and links the test; `npm run build:server` PASS; focused
+  `node --test dist/tests/google-drive-auth.test.js` PASS (`12/12`);
+  architecture-awareness refresh PASS generated
+  `2026-07-13T15:34:06.608Z` with `2856` entities / `6880` relations /
+  `16460` files and the exact helper row read back as `verified` with related
+  test evidence. Fresh app-completion and Project Truth readback now resolve
+  the original `missing_test_link`: the same helper remains only as
+  `missing_doc_link`. No runtime code, provider call, protected smoke, deploy,
+  push, restart, production mutation, credential value access, or secret
+  disclosure occurred. Next owner for the residual same-symbol doc-link gap:
+  Docs Memory Lead + Project Manager.
+
 - 2026-07-13: [LUC-905](/LUC/issues/LUC-905) parent source-control closure is
   complete locally. Task contract:
   `.codex/tasks/luc-905-source-control-closure-parent-dirty-state.md`.

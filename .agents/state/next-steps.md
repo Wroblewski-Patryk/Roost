@@ -1,4 +1,23 @@
 # Next Steps
+- 2026-07-13: [LUC-926](/LUC/issues/LUC-926) has no remaining PM
+  source-control action. The durable packet is
+  `.codex/tasks/luc-926-source-control-closure-for-luc-895.md`, and the
+  coherent [LUC-895](/LUC/issues/LUC-895) proof/status bundle is now committed
+  locally. Next owner/action moves to Docs Memory Lead + Project Manager for
+  the residual same-symbol `missing_doc_link`.
+
+- 2026-07-13: [LUC-895](/LUC/issues/LUC-895) should not be retried as another
+  QA proof lane. The durable packet is
+  `.codex/tasks/luc-895-account-access-parse-google-drive-oauth-secret-proof.md`.
+  Current fact: architecture-awareness now marks
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  `verified` with direct test evidence from
+  `src/tests/google-drive-auth.test.ts`, and refreshed app-completion and
+  Project Truth now classify the same helper only as `missing_doc_link`. Next
+  owner/action is Docs Memory Lead + Project Manager for the residual doc-link
+  gap; do not open another 09 TAE proof retry for this helper unless a fresh
+  regression removes `hasTest=true`.
+
 - 2026-07-13: [LUC-905](/LUC/issues/LUC-905) has no remaining PM
   source-control action. The durable point-in-time packet is
   `.codex/tasks/luc-905-source-control-closure-parent-dirty-state.md`; its

@@ -1,5 +1,36 @@
 # MVP Next Commits
 
+- 2026-07-13: [LUC-926](/LUC/issues/LUC-926) completed source-control closure
+  for the coherent [LUC-895](/LUC/issues/LUC-895) proof bundle. Evidence
+  packet: `.codex/tasks/luc-926-source-control-closure-for-luc-895.md`. Proof:
+  fresh git inspection narrowed the bundle to `30` modified tracked paths plus
+  `2` untracked task packets grouped as `agent_state=6`, `codex_context=2`,
+  `project_docs_generated=21`, `task_packets=2`, and `behavior_tests=1`
+  (`src/tests/google-drive-auth.test.ts`); `git diff --check` PASS with
+  LF-to-CRLF warnings only; `npm run build:server` PASS; focused
+  `node --test dist/tests/google-drive-auth.test.js` PASS (`12/12`); targeted
+  redaction inspection found no live-token markers in the proof/config files.
+  Fresh app-completion and Project Truth readback resolve the original
+  `missing_test_link`, so the local commit is now legal; push not needed;
+  deploy impact none.
+
+- 2026-07-13: [LUC-895](/LUC/issues/LUC-895) proved Account access
+  `parseGoogleDriveOAuthSecret` locally and cleared the original
+  `missing_test_link`. Evidence packet:
+  `.codex/tasks/luc-895-account-access-parse-google-drive-oauth-secret-proof.md`.
+  Proof: `npm run build:server` PASS; focused
+  `node --test dist/tests/google-drive-auth.test.js` PASS (`12/12`);
+  architecture-awareness refresh PASS (`2856` entities / `6880` relations /
+  `16460` files, override entries `86/126`, applied `85/122`) and the exact
+  helper row
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  now reads `verified` with direct test evidence from
+  `src/tests/google-drive-auth.test.ts`. Refreshed app-completion and Project
+  Truth now classify the same helper only as `missing_doc_link`. No live Google
+  provider call, protected smoke, push, deploy, restart, production mutation,
+  credential value access, or secret disclosure occurred. Next owner/action:
+  Docs Memory Lead + Project Manager for the residual same-symbol doc-link gap.
+
 - 2026-07-13: [LUC-893](/LUC/issues/LUC-893) completed the Account access
   `refreshGoogleDriveOAuth` missing-test-link proof-link repair. Evidence
   packet:

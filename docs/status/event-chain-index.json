@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-13T13:32:06.999Z",
+  "generatedAt": "2026-07-13T15:38:16.966Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 217,
-      "linkedRelationCount": 765,
+      "entityCount": 219,
+      "linkedRelationCount": 781,
       "layers": {
         "frontend": {
           "count": 16,
@@ -658,7 +658,7 @@
           "truncated": false
         },
         "worker": {
-          "count": 103,
+          "count": 105,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -730,7 +730,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "agent:user-collaboration-workflow:98bfb8bc00",
@@ -777,6 +777,14 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-754-account-access-has-fresh-access-token-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:d5122aa43d",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-905-source-control-closure-parent-dirty-state.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -1146,7 +1154,7 @@
               "name": "parseGoogleDriveOAuthSecret",
               "path": "src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "function:googledrivesecretstatus:b6b2c9a410",
@@ -1291,14 +1299,6 @@
               "path": "src/modules/workforce/workforce.service.ts#entityAuthority",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "function:registerowner:04cb5d87eb",
-              "type": "function",
-              "name": "registerOwner",
-              "path": "src/tests/api.test.ts#registerOwner",
-              "owner": "Engineering Delivery Lead",
-              "status": "tested"
             }
           ],
           "truncated": true
@@ -2451,8 +2451,8 @@
     },
     {
       "userFlow": "Subscription and entitlement",
-      "entityCount": 1029,
-      "linkedRelationCount": 3543,
+      "entityCount": 1030,
+      "linkedRelationCount": 3544,
       "layers": {
         "frontend": {
           "count": 34,
@@ -3379,7 +3379,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 74,
+          "count": 75,
           "sample": [
             {
               "id": "agent:planner:5b56a0bd47",
@@ -3678,6 +3678,14 @@
               "status": "verified"
             },
             {
+              "id": "task:task:431cec34c5",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-895-account-access-parse-google-drive-oauth-secret-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:6d579ee56c",
               "type": "task",
               "name": "Task",
@@ -3691,7 +3699,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "document:no-temporary-solutions:f4aac3d420",
@@ -5341,8 +5349,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2766,
-      "linkedRelationCount": 6705,
+      "entityCount": 2769,
+      "linkedRelationCount": 6724,
       "layers": {
         "frontend": {
           "count": 91,
@@ -6637,7 +6645,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 758,
+          "count": 761,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -6696,6 +6704,14 @@
               "status": "verified"
             },
             {
+              "id": "task:task:431cec34c5",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-895-account-access-parse-google-drive-oauth-secret-proof.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:69188765b3",
               "type": "task",
               "name": "Task",
@@ -6733,7 +6749,15 @@
               "name": "Task",
               "path": ".codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
+            },
+            {
+              "id": "task:task:d5122aa43d",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-905-source-control-closure-parent-dirty-state.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             },
             {
               "id": "task:task:fa04be220c",
@@ -6964,6 +6988,14 @@
               "type": "task",
               "name": "TASK_BOARD",
               "path": ".codex/context/TASK_BOARD.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:bfa3c4d5b9",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-904-source-control-closure-local-dirty-state-sidecar.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -7254,30 +7286,6 @@
               "path": "DEFINITION_OF_DONE.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "document:deployment-gate:a45551c4d4",
-              "type": "document",
-              "name": "Deployment Gate",
-              "path": "DEPLOYMENT_GATE.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "module:docs:6784d83cb0",
-              "type": "module",
-              "name": "docs",
-              "path": "docs",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "test:api-test-ts:dab84a1d63",
-              "type": "test",
-              "name": "api.test.ts",
-              "path": "src/tests/api.test.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "tested"
             }
           ],
           "truncated": true

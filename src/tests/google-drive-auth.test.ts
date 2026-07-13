@@ -233,6 +233,50 @@ test("buildGoogleDriveAuthorizationUrl reads stored workspace OAuth secret for c
   assert.equal(url.searchParams.get("client_id"), "stored-workspace-client-id");
 });
 
+test("parseGoogleDriveOAuthSecret decrypts and parses stored workspace OAuth JSON", async () => {
+  const { encryptSecret } = await import("../integrations/secrets");
+  const { parseGoogleDriveOAuthSecret } = await import("../integrations/integration-settings.service");
+
+  const ciphertext = encryptSecret(JSON.stringify({
+    clientId: "stored-workspace-client-id",
+    clientSecret: "stored-workspace-client-secret",
+    refreshToken: "stored-refresh-token",
+    accessToken: "stored-access-token",
+    expiresAt: "2026-07-13T00:00:00.000Z",
+    tokenType: "Bearer",
+    scope: "https://www.googleapis.com/auth/drive.file"
+  }));
+
+  assert.deepEqual(parseGoogleDriveOAuthSecret(ciphertext), {
+    clientId: "stored-workspace-client-id",
+    clientSecret: "stored-workspace-client-secret",
+    refreshToken: "stored-refresh-token",
+    accessToken: "stored-access-token",
+    expiresAt: "2026-07-13T00:00:00.000Z",
+    tokenType: "Bearer",
+    scope: "https://www.googleapis.com/auth/drive.file"
+  });
+});
+
+test("parseGoogleDriveOAuthSecret returns null for fail-open and throws invalid-token for fail-closed invalid ciphertext", async () => {
+  const { parseGoogleDriveOAuthSecret } = await import("../integrations/integration-settings.service");
+
+  assert.equal(
+    parseGoogleDriveOAuthSecret("not-an-encrypted-secret", { failClosed: false }),
+    null
+  );
+
+  assert.throws(
+    () => parseGoogleDriveOAuthSecret("not-an-encrypted-secret"),
+    (error: any) => {
+      assert.equal(error?.code, "integration_invalid_token");
+      assert.equal(error?.status, 401);
+      assert.equal(error?.message, "Stored Google Drive OAuth secret could not be decrypted.");
+      return true;
+    }
+  );
+});
+
 test("mergeGoogleDriveConfig preserves existing fields and applies explicit overrides", async () => {
   const { mergeGoogleDriveConfig } = await import("../integrations/google-drive/google-drive.auth");
 

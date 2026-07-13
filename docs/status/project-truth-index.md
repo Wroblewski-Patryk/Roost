@@ -1,6 +1,6 @@
 # Project Truth Index
 
-Generated: 2026-07-13T13:32:06.999Z
+Generated: 2026-07-13T15:38:16.966Z
 Project: Roost
 Status: gaps_require_routing
 
@@ -33,7 +33,7 @@ This is the routing surface agents should use before guessing whether an app wor
 | Severity | Kind | Flow | Summary | Next owner |
 | --- | --- | --- | --- | --- |
 | medium | app_completion_gap | Account access | Account access: refreshGoogleDriveOAuth has app-completion risk missing_doc_link. | Docs Memory Lead + Project Manager |
-| medium | app_completion_gap | Account access | Account access: parseGoogleDriveOAuthSecret has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
+| medium | app_completion_gap | Account access | Account access: parseGoogleDriveOAuthSecret has app-completion risk missing_doc_link. | Docs Memory Lead + Project Manager |
 | medium | app_completion_gap | Account access | Account access: secrets.ts has app-completion risk implemented_needs_proof. | QA Regression Lead + Project Manager |
 | medium | app_completion_gap | Account access | Account access: authActor has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Account access | Account access: authActor has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |

@@ -1,5 +1,42 @@
 # PROJECT_STATE
 
+- 2026-07-13: [LUC-926](/LUC/issues/LUC-926) completed the Roost PM
+  source-control closure for the current [LUC-895](/LUC/issues/LUC-895) proof
+  bundle. Source-of-truth task contract:
+  `.codex/tasks/luc-926-source-control-closure-for-luc-895.md`. Current
+  evidence: fresh git inspection narrowed the bundle to `30` modified tracked
+  paths plus `2` untracked task packets, all attributable to the completed
+  proof/status refresh (`agent_state=6`, `codex_context=2`,
+  `project_docs_generated=21`, `task_packets=2`, `behavior_tests=1`);
+  `git diff --check` PASS with LF-to-CRLF warnings only; `npm run
+  build:server` PASS; focused `node --test dist/tests/google-drive-auth.test.js`
+  PASS (`12/12`); redaction-oriented inspection of the proof/config files found
+  no live-token markers. Commit decision: committed locally in this closure
+  lane; push status `not needed`; deploy impact `none`. The original
+  app-completion blocker is resolved, and the next owner/action is Docs Memory
+  Lead + Project Manager for the residual same-symbol `missing_doc_link`.
+
+- 2026-07-13: [LUC-895](/LUC/issues/LUC-895) completed the exact local proof
+  for Account access
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`.
+  Source-of-truth task contract:
+  `.codex/tasks/luc-895-account-access-parse-google-drive-oauth-secret-proof.md`.
+  Current evidence: `src/tests/google-drive-auth.test.ts` now proves valid
+  decrypted JSON parsing plus fail-open and fail-closed invalid-ciphertext
+  behavior; `docs/architecture/scanner-overrides.json` marks the exact helper
+  `verified` and links that test; `npm run build:server` PASS; focused
+  `node --test dist/tests/google-drive-auth.test.js` PASS (`12/12`);
+  architecture-awareness refresh PASS generated `2026-07-13T15:34:06.608Z`
+  with `2856` entities / `6880` relations / `16460` files and overrides
+  `86/126` with `85/122` applied; the generated graph now marks
+  `parseGoogleDriveOAuthSecret` `verified` with related test
+  `src/tests/google-drive-auth.test.ts`. Fresh app-completion and Project
+  Truth readback now resolve the original `missing_test_link`: the same helper
+  remains only as `missing_doc_link`, owned by Docs Memory Lead + Project
+  Manager. No runtime code, live Google provider call, protected smoke,
+  deploy, push, restart, production mutation, credential value access, or
+  secret disclosure occurred.
+
 - 2026-07-13: [LUC-905](/LUC/issues/LUC-905) completed the Roost PM parent
   source-control closure refresh. Source-of-truth packet:
   `.codex/tasks/luc-905-source-control-closure-parent-dirty-state.md`.

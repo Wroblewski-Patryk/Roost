@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-13T13:31:27.552Z
+Generated: 2026-07-13T15:34:06.608Z
 
 ## Canonical Exports
 
@@ -600,6 +600,9 @@ Generated: 2026-07-13T13:31:27.552Z
 | connected_to | project:roost:122c92a083 | task:task:780e0f6c76 | .codex/tasks/luc-822-roost-source-control-classify-dirty-project-state.md |
 | connected_to | project:roost:122c92a083 | task:task:d0b2850854 | .codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md |
 | connected_to | project:roost:122c92a083 | task:luc-894-account-access-integration-settings-service-proof:457629a0b9 | .codex/tasks/luc-894-account-access-integration-settings-service-proof.md |
+| connected_to | project:roost:122c92a083 | task:task:431cec34c5 | .codex/tasks/luc-895-account-access-parse-google-drive-oauth-secret-proof.md |
+| connected_to | project:roost:122c92a083 | task:task:bfa3c4d5b9 | .codex/tasks/luc-904-source-control-closure-local-dirty-state-sidecar.md |
+| connected_to | project:roost:122c92a083 | task:task:d5122aa43d | .codex/tasks/luc-905-source-control-closure-parent-dirty-state.md |
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-07-13T13:31:27.552Z
 | documents | document:luc-5161-source-control-closure-for-luc-5158-evidence-packet:b84b344666 | module:docs:6784d83cb0 | docs/planning/luc-5161-source-control-closure-for-luc-5158-evidence-packet.md |
 | documents | document:luc-5165-known-state-evidence-and-architecture-baseline:4c645160dc | module:docs:6784d83cb0 | docs/planning/luc-5165-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-5168-source-control-closure-for-luc-5165-evidence-packet:75bf6a274b | module:docs:6784d83cb0 | docs/planning/luc-5168-source-control-closure-for-luc-5165-evidence-packet.md |
-| documents | document:luc-5172-known-state-evidence-and-architecture-baseline:e78849f78a | module:docs:6784d83cb0 | docs/planning/luc-5172-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5176-source-control-closure-for-luc-5172-evidence-packet:1f23364388 | module:docs:6784d83cb0 | docs/planning/luc-5176-source-control-closure-for-luc-5172-evidence-packet.md |
-| documents | document:luc-5183-source-control-closure-for-luc-5178-evidence-packet:b9a43147a1 | module:docs:6784d83cb0 | docs/planning/luc-5183-source-control-closure-for-luc-5178-evidence-packet.md |

@@ -1,6 +1,6 @@
 # Known Issues
 
-Last updated: 2026-05-20
+Last updated: 2026-07-13
 
 ## Open Issues
 
@@ -31,6 +31,11 @@ Last updated: 2026-05-20
 
 ## Recently Closed Issues
 
+- KI-013 App-completion evidence model mismatch: closed on 2026-07-13 after
+  fresh generated readback resolved
+  `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`
+  to `verified` with `hasTest=true`; the residual same-symbol gap is now
+  correctly `missing_doc_link`, not `missing_test_link`.
 - KI-012 Local API integration validation runner: closed on 2026-05-18 by
   FOUNDATION-P1-001 after Docker Desktop was recovered, `docker info` reported
   engine `28.3.2`, and `npm run test:api:local` passed against disposable
