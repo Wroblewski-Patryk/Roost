@@ -1,6 +1,27 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-15: [LUC-1174](/LUC/issues/LUC-1174) unclassified
+  `src/app.ts#/clients` missing-doc-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1174-prove-unclassified-user-workflow-missing-doc-link-for-use-clients.md`.
+  Evidence: `docs/API.md` now documents the protected `/v1/clients`
+  endpoints together with the compatibility `/clients` aliases and
+  workspace-scoped CRUD behavior; `docs/architecture/relations/documentation-links.csv`
+  links the exact Clients mount to that accepted API contract;
+  `npm run architecture:refresh` PASS; external architecture-awareness
+  refresh generated `2026-07-14T23:10:33.327Z` with `3036` entities / `7686`
+  relations / `16523` files and materialized the exact documentation link;
+  sequential app-completion refresh now reports `missingDocLink=0`, no longer
+  treats `api_endpoint:use-clients:da4494ab5d` as `missing_doc_link`, and
+  routes `src/app.ts#/commercial-exceptions` as the new first
+  `missing_test_link`; Project Truth apply generated `2026-07-14T23:10:57.260Z`
+  with public probes `pass` and advances the first remaining gap to
+  `src/app.ts#/commercial-exceptions`. No runtime product logic, provider
+  call, deploy, push, restart, production mutation, credential access, or
+  secret disclosure occurred. Next owner: Test Automation Engineer + QA
+  Regression Lead for the routed proof gap on `src/app.ts#/commercial-exceptions`.
+
 - 2026-07-15: [LUC-1169](/LUC/issues/LUC-1169) unclassified
   `src/app.ts#/clients` missing-test-link verification is complete locally.
   Task contract:

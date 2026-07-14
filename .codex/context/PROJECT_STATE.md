@@ -1,5 +1,29 @@
 # PROJECT_STATE
 
+- 2026-07-15: [LUC-1174](/LUC/issues/LUC-1174) completed the local
+  documentation-link closure for unclassified `src/app.ts#/clients`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1174-prove-unclassified-user-workflow-missing-doc-link-for-use-clients.md`.
+  Current evidence: `docs/API.md` now documents the protected `/v1/clients`
+  endpoints together with the compatibility `/clients` aliases and
+  workspace-scoped CRUD behavior; `docs/architecture/relations/documentation-links.csv`
+  links the exact `src/app.ts#/clients` mount to that contract; `npm run
+  architecture:refresh` PASS; external architecture-awareness rebuild
+  generated `2026-07-14T23:10:33.327Z` with `3036` entities / `7686`
+  relations / `16523` files and materialized the exact documentation
+  relation; sequential app-completion refresh now reports `46` items /
+  `4` flows / `31` missing test links / `0` missing doc links /
+  `0` implemented-needs-proof / `0` blocked / `31` risk items; Project Truth
+  apply generated `2026-07-14T23:10:57.260Z` with public probes `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and first gap advanced to `src/app.ts#/commercial-exceptions`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime feature
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. The next owner/action is
+  Test Automation Engineer + QA Regression Lead for the proof-link closure on
+  `src/app.ts#/commercial-exceptions`.
+
 - 2026-07-15: [LUC-1169](/LUC/issues/LUC-1169) completed the local proof-link
   closure for unclassified `src/app.ts#/clients`, and the routed gap advanced
   from QA-owned `missing_test_link` to docs-owned `missing_doc_link`.

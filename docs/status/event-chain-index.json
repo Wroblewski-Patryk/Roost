@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T22:36:58.833Z",
+  "generatedAt": "2026-07-14T23:10:57.260Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 327,
-      "linkedRelationCount": 1392,
+      "entityCount": 329,
+      "linkedRelationCount": 1406,
       "layers": {
         "frontend": {
           "count": 30,
@@ -906,7 +906,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 151,
+          "count": 153,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -1029,12 +1029,20 @@
               "status": "verified"
             },
             {
+              "id": "task:learning-journal:2ea07ed275",
+              "type": "task",
+              "name": "LEARNING_JOURNAL",
+              "path": ".codex/context/LEARNING_JOURNAL.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:7879ec3809",
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1169-prove-unclassified-user-workflow-missing-test-link-for-use-clients.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:157c1a1016",
@@ -1537,14 +1545,6 @@
               "type": "feature",
               "name": "clickup.sync.ts",
               "path": "src/integrations/clickup/clickup.sync.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "feature:clickup-webhooks-ts:d7a007967a",
-              "type": "feature",
-              "name": "clickup.webhooks.ts",
-              "path": "src/integrations/clickup/clickup.webhooks.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             }
@@ -3305,9 +3305,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-14-luc-1135-module-confidence-update:d91d7cf978",
+              "id": "agent:2026-07-15-luc-1169-module-confidence-update:0a456dee60",
               "type": "agent",
-              "name": "2026-07-14 LUC-1135 Module Confidence Update",
+              "name": "2026-07-15 LUC-1169 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -3476,7 +3476,7 @@
     {
       "userFlow": "Subscription and entitlement",
       "entityCount": 1170,
-      "linkedRelationCount": 4094,
+      "linkedRelationCount": 4097,
       "layers": {
         "frontend": {
           "count": 48,
@@ -6483,9 +6483,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-14-luc-1135-module-confidence-update:d91d7cf978",
+              "id": "agent:2026-07-15-luc-1169-module-confidence-update:0a456dee60",
               "type": "agent",
-              "name": "2026-07-14 LUC-1135 Module Confidence Update",
+              "name": "2026-07-15 LUC-1169 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -6597,8 +6597,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2894,
-      "linkedRelationCount": 7409,
+      "entityCount": 2896,
+      "linkedRelationCount": 7428,
       "layers": {
         "frontend": {
           "count": 85,
@@ -7602,6 +7602,14 @@
               "status": "verified"
             },
             {
+              "id": "api_endpoint:use-clients:da4494ab5d",
+              "type": "api_endpoint",
+              "name": "USE /clients",
+              "path": "src/app.ts#/clients",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:authactor:b3f790a259",
               "type": "function",
               "name": "authActor",
@@ -7880,20 +7888,12 @@
               "path": "docs/ux/route-frame-usability-audit-2026-05-15.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
-            },
-            {
-              "id": "function:routemodule:a757884098",
-              "type": "function",
-              "name": "routeModule",
-              "path": "scripts/backfill-architecture-nodes.mjs#routeModule",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 846,
+          "count": 848,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -7992,6 +7992,14 @@
               "status": "verified"
             },
             {
+              "id": "task:task:2dc0937607",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1174-prove-unclassified-user-workflow-missing-doc-link-for-use-clients.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:431cec34c5",
               "type": "task",
               "name": "Task",
@@ -8069,7 +8077,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-1169-prove-unclassified-user-workflow-missing-test-link-for-use-clients.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:877880df05",
@@ -8448,6 +8456,14 @@
               "status": "verified"
             },
             {
+              "id": "task:luc-1174-completion-evidence:65eeab039e",
+              "type": "task",
+              "name": "luc-1174-completion-evidence",
+              "path": ".codex/tasks/luc-1174-completion-evidence.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb",
               "type": "task",
               "name": "LUC-321 Source-Control Closure For LUC-262/LUC-267/LUC-268",
@@ -8516,22 +8532,6 @@
               "type": "agent",
               "name": "Current Focus",
               "path": ".agents/state/current-focus.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "agent:delivery-map:704464f41b",
-              "type": "agent",
-              "name": "Delivery Map",
-              "path": ".agents/state/delivery-map.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "agent:known-issues:5043444a16",
-              "type": "agent",
-              "name": "Known Issues",
-              "path": ".agents/state/known-issues.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             }
@@ -9886,9 +9886,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-14-luc-1135-module-confidence-update:d91d7cf978",
+              "id": "agent:2026-07-15-luc-1169-module-confidence-update:0a456dee60",
               "type": "agent",
-              "name": "2026-07-14 LUC-1135 Module Confidence Update",
+              "name": "2026-07-15 LUC-1169 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"

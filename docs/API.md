@@ -2628,6 +2628,11 @@ Safe native sync response:
 ## Clients
 
 ```http
+GET /v1/clients
+GET /v1/clients/:id
+POST /v1/clients
+PATCH /v1/clients/:id
+DELETE /v1/clients/:id
 GET /clients
 GET /clients/:id
 POST /clients
@@ -2642,6 +2647,10 @@ DELETE /clients/:id
   "email": "jane@example.com"
 }
 ```
+
+Clients are workspace-scoped CRM records. The protected `/v1/clients` routes
+and their compatibility `/clients` aliases support list, read, create, update,
+and archive behavior without letting callers override workspace ownership.
 
 ## Pipeline Stages
 

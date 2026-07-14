@@ -1,5 +1,27 @@
 # Active Mission Packet
 
+## LUC-1174 Checkpoint
+
+- 2026-07-15: [LUC-1174](/LUC/issues/LUC-1174) closed the routed
+  unclassified endpoint `src/app.ts#/clients` `missing_doc_link` row. Packet:
+  `.codex/tasks/luc-1174-prove-unclassified-user-workflow-missing-doc-link-for-use-clients.md`.
+  `docs/API.md` now documents the protected `/v1/clients` endpoints together
+  with the compatibility `/clients` aliases and workspace-scoped CRUD
+  behavior; `docs/architecture/relations/documentation-links.csv` links the
+  exact mount to that accepted API contract; `npm run architecture:refresh`
+  PASS; external architecture-awareness rebuild generated
+  `2026-07-14T23:10:33.327Z` with `3036` entities / `7686` relations /
+  `16523` files and materialized the exact documentation link; sequential
+  app-completion refresh now reports `missingDocLink=0`; sequential Project
+  Truth apply generated `2026-07-14T23:10:57.260Z` with public probes `pass`
+  and advanced the first gap to `src/app.ts#/commercial-exceptions`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime feature
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Next owner/action: Test
+  Automation Engineer + QA Regression Lead for the routed proof gap on
+  `src/app.ts#/commercial-exceptions`.
+
 ## LUC-1169 Checkpoint
 
 - 2026-07-15: [LUC-1169](/LUC/issues/LUC-1169) closed the routed

@@ -1,4 +1,19 @@
 # Next Steps
+- 2026-07-15: [LUC-1174](/LUC/issues/LUC-1174) has no remaining
+  Documentation Steward action for the exact unclassified endpoint
+  `src/app.ts#/clients`. The durable packet is
+  `.codex/tasks/luc-1174-prove-unclassified-user-workflow-missing-doc-link-for-use-clients.md`.
+  Current fact: `docs/API.md` documents the protected `/v1/clients` route
+  family plus the compatibility `/clients` aliases, and
+  `docs/architecture/relations/documentation-links.csv` links the exact mount
+  to that contract; refreshed app-completion now reports `missingDocLink=0`,
+  and Project Truth now routes `src/app.ts#/commercial-exceptions` as the
+  first remaining `missing_test_link` gap. Next action belongs to Test
+  Automation Engineer + QA Regression Lead for focused proof-link work on
+  `src/app.ts#/commercial-exceptions`. Do not reopen another docs lane for
+  `src/app.ts#/clients` unless a fresh generated regression removes the linked
+  API contract evidence.
+
 - 2026-07-15: [LUC-1169](/LUC/issues/LUC-1169) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint
   `src/app.ts#/clients`. The durable packet is

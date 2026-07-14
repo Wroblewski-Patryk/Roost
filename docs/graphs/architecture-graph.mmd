@@ -1,6 +1,6 @@
 flowchart TD
   agent_2026_07_14_luc_1131_api_keys_proof_link_health_signal_11a238807e["agent: 2026-07-14 LUC-1131 API Keys Proof-Link Health Signal"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
-  agent_2026_07_14_luc_1135_module_confidence_update_d91d7cf978["agent: 2026-07-14 LUC-1135 Module Confidence Update"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
+  agent_2026_07_15_luc_1169_module_confidence_update_0a456dee60["agent: 2026-07-15 LUC-1169 Module Confidence Update"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
   agent_active_mission_packet_a0e3255194["agent: Active Mission Packet"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
   agent_agent_checklists_0b1e39f5f6["agent: Agent Checklists"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
   agent_agent_hierarchy_4835752b62["agent: Agent Hierarchy"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
@@ -86,6 +86,7 @@ flowchart TD
   document_api_a617d1cb61["document: API"] -->|documents| module_docs_6784d83cb0["module: docs"]
   document_api_a617d1cb61["document: API"] -->|documents| api_endpoint_use_api_build_info_36fe7c3255["api_endpoint: USE /api/build-info"]
   document_api_a617d1cb61["document: API"] -->|documents| api_endpoint_use_agents_1c136317c6["api_endpoint: USE /agents"]
+  document_api_a617d1cb61["document: API"] -->|documents| api_endpoint_use_clients_da4494ab5d["api_endpoint: USE /clients"]
   document_api_a617d1cb61["document: API"] -->|documents| function_authactor_b3f790a259["function: authActor"]
   document_api_a617d1cb61["document: API"] -->|documents| function_authactor_8f0ce27a64["function: authActor"]
   document_api_a617d1cb61["document: API"] -->|documents| function_requireuserauth_215e610fd9["function: requireUserAuth"]
@@ -218,4 +219,3 @@ flowchart TD
   document_clients_coverage_expansion_355fcd5c44["document: Clients Coverage Expansion"] -->|documents| module_docs_6784d83cb0["module: docs"]
   document_clients_model_68c6d8818b["document: clients model"] -->|documents| module_docs_6784d83cb0["module: docs"]
   document_code_quality_guardrails_5e712340e2["document: Code Quality Guardrails"] -->|documents| module_docs_6784d83cb0["module: docs"]
-  document_codebase_map_1e1145f7bb["document: Codebase Map"] -->|documents| module_docs_6784d83cb0["module: docs"]

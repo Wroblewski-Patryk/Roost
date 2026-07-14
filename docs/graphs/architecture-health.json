@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-07-14T22:36:49.446Z",
+  "generated_at": "2026-07-14T23:10:33.327Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 3034,
-    "relations": 7667,
+    "entities": 3036,
+    "relations": 7686,
     "by_type": {
       "agent": 47,
       "api_endpoint": 46,
@@ -18,16 +18,16 @@
       "model": 5,
       "module": 67,
       "project": 1,
-      "task": 96,
+      "task": 98,
       "test": 82
     },
     "by_status": {
       "blocked": 1,
       "deprecated": 6,
       "implemented": 2690,
-      "in_progress": 2,
+      "in_progress": 1,
       "tested": 19,
-      "verified": 316
+      "verified": 319
     }
   },
   "signals": {

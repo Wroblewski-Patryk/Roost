@@ -26,6 +26,28 @@ fixes for this repository.
 
 ## Entries
 
+### 2026-07-15 - Truth Generators Must Run Sequentially After Graph Refresh
+- Context: `LUC-1174` closed the `src/app.ts#/clients` missing-doc-link lane.
+- Symptom: running architecture-awareness, app-completion, and Project Truth in
+  parallel left `docs/status/app-completion-index.json` and
+  `docs/status/project-truth-index.json` routing `api_endpoint:use-clients:da4494ab5d`
+  as `missing_doc_link` even though the refreshed graph already contained the
+  exact `document -> api_endpoint` relation.
+- Root cause: the dependent generators can read the pre-refresh graph when they
+  start before the refreshed `docs/graphs/architecture-awareness.json` is fully
+  written.
+- Guardrail: run the chain in order when documentation or proof links changed:
+  `npm run architecture:refresh` (and architecture-awareness rebuild) first,
+  then `build-app-completion-index.mjs`, then
+  `build-project-truth-indexes.mjs`.
+- Preferred pattern: parallelize only independent reads; keep generated-truth
+  steps sequential when later outputs depend on earlier artifacts.
+- Avoid: treating a stale first post-refresh index as evidence that the new
+  relation failed.
+- Evidence: `.codex/tasks/luc-1174-prove-unclassified-user-workflow-missing-doc-link-for-use-clients.md`
+  plus the sequential rerun that reduced `missingDocLink` from `1` to `0` and
+  advanced Project Truth to `src/app.ts#/commercial-exceptions`.
+
 ### 2026-07-14 - Architecture-Awareness Task Indexing Must Read Structured Header Status First
 - Context: LUC-1160 investigated why the completed `LUC-1151` doc-link packet still indexed as `in_progress` in `docs/graphs/architecture-proof-register.csv` and `docs/graphs/architecture-awareness.json`.
 - Symptom: re-running `build-architecture-awareness-index.mjs` left `task:task:c9bb805c35` active even though `.codex/tasks/luc-1151-prove-unclassified-user-workflow-missing-doc-link-for-use-api-build-info.md` already declared `Status: DONE`.
