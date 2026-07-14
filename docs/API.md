@@ -619,6 +619,22 @@ Safe discovery response:
 GET /health
 ```
 
+Public runtime metadata aliases stay outside the API-key guard and reuse the
+same safe build metadata contract as `/health`:
+
+```http
+GET /v1/health
+GET /ready
+GET /v1/ready
+GET /api/build-info
+```
+
+These routes are public on both the API host and the web host compatibility
+surface, return `200` when the app is healthy, and expose only safe build
+metadata such as service name, version, environment-safe commit identifiers,
+and readiness status. They must not require `X-API-Key`, must not fall through
+to `requireApiKey`, and must not expose secrets or workspace-scoped data.
+
 ## Connection Handshake
 
 Adapters should call this endpoint first to verify that their workspace API key

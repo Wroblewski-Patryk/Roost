@@ -1,6 +1,21 @@
 # Current Focus
 
-# Current Focus
+## LUC-1151 Checkpoint
+
+- 2026-07-14: [LUC-1151](/LUC/issues/LUC-1151) closed the routed
+  unclassified endpoint `src/app.ts#/api/build-info` `missing_doc_link` row.
+  Packet:
+  `.codex/tasks/luc-1151-prove-unclassified-user-workflow-missing-doc-link-for-use-api-build-info.md`.
+  `docs/API.md` now documents the public `/api/build-info` alias with the same
+  safe runtime-metadata contract as `/health` and `/ready`, and
+  `docs/architecture/relations/documentation-links.csv` links the exact mount
+  to that contract; `npm run architecture:refresh` PASS; external
+  architecture-awareness rebuild generated `2026-07-14T21:05:27.299Z` with
+  `3029` entities / `7631` relations / `16522` files; sequential
+  app-completion refresh now reports `missingDocLink=0`; sequential Project
+  Truth apply generated `2026-07-14T21:05:46.574Z` with public probes `pass`
+  and advanced the first gap to `src/app.ts#/assets` `missing_test_link`;
+  `npm run architecture:status` PASS (`GREEN`, `454/765/35`).
 
 ## LUC-1135 Checkpoint
 

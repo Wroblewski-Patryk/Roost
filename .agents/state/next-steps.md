@@ -1,4 +1,17 @@
 # Next Steps
+- 2026-07-14: [LUC-1151](/LUC/issues/LUC-1151) has no remaining
+  Documentation Steward action for the exact unclassified endpoint
+  `src/app.ts#/api/build-info`. The durable packet is
+  `.codex/tasks/luc-1151-prove-unclassified-user-workflow-missing-doc-link-for-use-api-build-info.md`.
+  Current fact: `docs/API.md` documents the public `/api/build-info` alias and
+  `docs/architecture/relations/documentation-links.csv` links the exact mount
+  to that contract; refreshed app-completion now reports `missingDocLink=0`,
+  and Project Truth now routes `src/app.ts#/assets` as the first remaining
+  `missing_test_link` gap. Next action belongs to Test Automation Engineer +
+  QA Regression Lead for focused proof-link work on `src/app.ts#/assets`. Do
+  not reopen another docs lane for `src/app.ts#/api/build-info` unless a fresh
+  generated regression removes the linked API contract evidence.
+
 - 2026-07-14: [LUC-1135](/LUC/issues/LUC-1135) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint
   `src/app.ts#/api/build-info`. The durable packet is

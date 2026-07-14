@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T20:11:46.597Z",
+  "generatedAt": "2026-07-14T21:05:46.574Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 322,
-      "linkedRelationCount": 1355,
+      "entityCount": 323,
+      "linkedRelationCount": 1365,
       "layers": {
         "frontend": {
           "count": 30,
@@ -906,7 +906,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 148,
+          "count": 149,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -1026,7 +1026,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-1135-prove-unclassified-user-workflow-missing-test-link-for-use-api-build-info.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:157c1a1016",
@@ -3289,9 +3289,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-14-luc-1131-module-confidence-update:044a540dac",
+              "id": "agent:2026-07-14-luc-1135-module-confidence-update:d91d7cf978",
               "type": "agent",
-              "name": "2026-07-14 LUC-1131 Module Confidence Update",
+              "name": "2026-07-14 LUC-1135 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -3460,7 +3460,7 @@
     {
       "userFlow": "Subscription and entitlement",
       "entityCount": 1170,
-      "linkedRelationCount": 4092,
+      "linkedRelationCount": 4093,
       "layers": {
         "frontend": {
           "count": 48,
@@ -6467,9 +6467,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-14-luc-1131-module-confidence-update:044a540dac",
+              "id": "agent:2026-07-14-luc-1135-module-confidence-update:d91d7cf978",
               "type": "agent",
-              "name": "2026-07-14 LUC-1131 Module Confidence Update",
+              "name": "2026-07-14 LUC-1135 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -6581,8 +6581,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2887,
-      "linkedRelationCount": 7356,
+      "entityCount": 2889,
+      "linkedRelationCount": 7373,
       "layers": {
         "frontend": {
           "count": 85,
@@ -7586,6 +7586,14 @@
               "status": "implemented"
             },
             {
+              "id": "api_endpoint:use-api-build-info:36fe7c3255",
+              "type": "api_endpoint",
+              "name": "USE /api/build-info",
+              "path": "src/app.ts#/api/build-info",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "api_endpoint:use-agents:1c136317c6",
               "type": "api_endpoint",
               "name": "USE /agents",
@@ -7864,20 +7872,12 @@
               "path": "docs/ux/areas-route-body-usability-audit-2026-05-15.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
-            },
-            {
-              "id": "document:route-frame-usability-audit:949e010b32",
-              "type": "document",
-              "name": "Route Frame Usability Audit",
-              "path": "docs/ux/route-frame-usability-audit-2026-05-15.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 840,
+          "count": 842,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -7965,7 +7965,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-1135-prove-unclassified-user-workflow-missing-test-link-for-use-api-build-info.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:431cec34c5",
@@ -8078,6 +8078,14 @@
               "path": ".codex/tasks/luc-1008-architecture-chain-integrity-proof.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
+            },
+            {
+              "id": "task:task:c9bb805c35",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1151-prove-unclassified-user-workflow-missing-doc-link-for-use-api-build-info.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "in_progress"
             },
             {
               "id": "task:task:d0b2850854",
@@ -8384,6 +8392,14 @@
               "status": "implemented"
             },
             {
+              "id": "task:luc-1135-completion-evidence:78293fc999",
+              "type": "task",
+              "name": "luc-1135-completion-evidence",
+              "path": ".codex/tasks/luc-1135-completion-evidence.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb",
               "type": "task",
               "name": "LUC-321 Source-Control Closure For LUC-262/LUC-267/LUC-268",
@@ -8472,9 +8488,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-14-luc-1131-module-confidence-update:044a540dac",
+              "id": "agent:2026-07-14-luc-1135-module-confidence-update:d91d7cf978",
               "type": "agent",
-              "name": "2026-07-14 LUC-1131 Module Confidence Update",
+              "name": "2026-07-14 LUC-1135 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -8500,22 +8516,6 @@
               "type": "agent",
               "name": "Quality Attribute Scenarios",
               "path": ".agents/state/quality-attribute-scenarios.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "agent:regression-log:43781d0a01",
-              "type": "agent",
-              "name": "Regression Log",
-              "path": ".agents/state/regression-log.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "agent:requirements-verification-matrix:048af4ced3",
-              "type": "agent",
-              "name": "Requirements Verification Matrix",
-              "path": ".agents/state/requirements-verification-matrix.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             }
@@ -9870,9 +9870,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-14-luc-1131-module-confidence-update:044a540dac",
+              "id": "agent:2026-07-14-luc-1135-module-confidence-update:d91d7cf978",
               "type": "agent",
-              "name": "2026-07-14 LUC-1131 Module Confidence Update",
+              "name": "2026-07-14 LUC-1135 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
