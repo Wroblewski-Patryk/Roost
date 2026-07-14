@@ -1,6 +1,6 @@
 # Project Truth Index
 
-Generated: 2026-07-14T15:07:59.922Z
+Generated: 2026-07-14T15:57:20.025Z
 Project: Roost
 Status: gaps_require_routing
 
@@ -13,18 +13,18 @@ This is the routing surface agents should use before guessing whether an app wor
 | incompleteEventChains | 0 |
 | runtimeFindings | 0 |
 | criticalRuntimeFindings | 0 |
-| appCompletionGaps | 1141 |
+| appCompletionGaps | 1139 |
 | indexedAppCompletionGaps | 200 |
-| knownAppCompletionRiskItems | 1141 |
+| knownAppCompletionRiskItems | 1139 |
 | appCompletionPriorityReviewItems | 200 |
 | appCompletionPriorityReviewTruncated | true |
 | operationalGateGaps | 0 |
 | indexedGaps | 200 |
-| totalGaps | 1141 |
+| totalGaps | 1139 |
 
 ## First Gap
 
-- medium: Unclassified user workflow: USE /agent-events has app-completion risk missing_test_link.
+- medium: Unclassified user workflow: USE /agents has app-completion risk missing_test_link.
 - Owner: Test Automation Engineer + QA Regression Lead
 - Next action: Add or link the smallest relevant automated/manual verification for this flow before claiming it works.
 
@@ -32,8 +32,6 @@ This is the routing surface agents should use before guessing whether an app wor
 
 | Severity | Kind | Flow | Summary | Next owner |
 | --- | --- | --- | --- | --- |
-| medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /agent-events has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
-| medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /agent-logs has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /agents has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /api-keys has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /api/build-info has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
@@ -112,3 +110,5 @@ This is the routing surface agents should use before guessing whether an app wor
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: build-architecture-chain-hardening-worklist.mjs has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: csvEscape has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: loadCsv has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
+| medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: main has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
+| medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: parseCsv has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |

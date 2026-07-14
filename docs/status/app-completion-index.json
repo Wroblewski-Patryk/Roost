@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T15:06:25.290Z",
+  "generatedAt": "2026-07-14T15:57:15.493Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -7,12 +7,12 @@
     "items": 1282,
     "flows": 5,
     "needsBrowserReview": 0,
-    "missingTestLink": 1103,
+    "missingTestLink": 1101,
     "missingDocLink": 30,
     "implementedNeedsProof": 8,
     "blocked": 0,
-    "riskItems": 1141,
-    "appCompletionRiskItems": 1141,
+    "riskItems": 1139,
+    "appCompletionRiskItems": 1139,
     "priorityReviewItems": 200,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": true
@@ -49,14 +49,14 @@
       "userFlow": "Unclassified user workflow",
       "total": 1116,
       "risks": {
-        "missing_test_link": 1072,
-        "ok": 8,
+        "ok": 10,
+        "missing_test_link": 1070,
         "implemented_needs_proof": 8,
         "missing_doc_link": 28
       },
       "gates": {
-        "configuration": 8,
-        "auth": 1
+        "auth": 3,
+        "configuration": 8
       }
     },
     {
@@ -72,44 +72,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "api_endpoint:use-agent-events:1b4c65ace9",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /agent-events",
-      "path": "src/app.ts#/agent-events",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Unclassified user workflow",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "api_endpoint:use-agent-logs:fe1d6cbaa9",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /agent-logs",
-      "path": "src/app.ts#/agent-logs",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Unclassified user workflow",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
     {
       "id": "api_endpoint:use-agents:1c136317c6",
       "type": "api_endpoint",
@@ -867,7 +829,7 @@
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 2961,
+      "relatedEntityCount": 2963,
       "risk": "implemented_needs_proof"
     },
     {
@@ -3863,6 +3825,44 @@
       "kind": "feature_or_capability",
       "name": "slug",
       "path": "scripts/check-architecture-node-links.mjs#slug",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "feature:check-architecture-pipeline-nodes-mjs:489110dee7",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "check-architecture-pipeline-nodes.mjs",
+      "path": "scripts/check-architecture-pipeline-nodes.mjs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 4,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:parsecsv:6f68fd47e0",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "parseCsv",
+      "path": "scripts/check-architecture-pipeline-nodes.mjs#parseCsv",
       "owner": "Engineering Delivery Lead",
       "status": "implemented_needs_proof",
       "userFlow": "Unclassified user workflow",

@@ -2,6 +2,52 @@
 
 Last updated: 2026-07-14
 
+## LUC-1108 Checkpoint
+
+- 2026-07-14: [LUC-1108](/LUC/issues/LUC-1108) closed the routed
+  unclassified endpoint `src/app.ts#/agent-logs` `missing_test_link` row.
+  Packet:
+  `.codex/tasks/luc-1108-unclassified-user-workflow-use-agent-logs-proof-link.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Agent Logs
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus the agent-log route module
+  `src/modules/agent-logs/agent-logs.routes.ts`; `npm run architecture:refresh`,
+  external architecture-awareness refresh, sequential app-completion refresh,
+  sequential Project Truth apply, and `npm run architecture:status` all
+  passed. Refreshed app-completion now reports `missingTestLink=1101`, no
+  longer includes `api_endpoint:use-agent-logs:fe1d6cbaa9`, and refreshed
+  Project Truth generated `2026-07-14T15:57:20.025Z` now advances the queue
+  to unclassified `src/app.ts#/agents` as the next proof target.
+
+## LUC-1107 Checkpoint
+
+- 2026-07-14: [LUC-1107](/LUC/issues/LUC-1107) completed the local QA
+  proof-link closure for the routed unclassified endpoint
+  `src/app.ts#/agent-events`, and the issue-side disposition is now
+  `done` locally because the current heartbeat successfully refreshed the
+  project truth queue from `src/app.ts#/agent-events` to
+  `src/app.ts#/agent-logs`. Output:
+  `.codex/tasks/luc-1107-unclassified-user-workflow-use-agent-events-proof-link.md`.
+  Scope stayed inside exact agent-observability evidence-link curation to the
+  existing API proof family, generated architecture/app-completion/Project
+  Truth refresh, and durable state updates; no subagent delegation was used
+  because the routed gap was narrow and role-owned. Current evidence:
+  `docs/architecture/scanner-overrides.json` now marks
+  `src/app.ts#/agent-events` `verified` through
+  `src/tests/api.test.ts` and
+  `docs/planning/luc-5273-agent-observability-api-proof-ladder.md`;
+  `npm run architecture:refresh` PASS; sequential external
+  architecture-awareness refresh generated `2026-07-14T15:43:59.555Z` with
+  `3023` entities / `7563` relations / `16522` files; sequential
+  app-completion refresh reduced `missingTestLink` from `1103` to `1102` and
+  no longer routes `api_endpoint:use-agent-events:1b4c65ace9`; sequential
+  Project Truth apply generated `2026-07-14T15:44:15.147Z` with public probes
+  `pass` and advanced the first gap to unclassified `src/app.ts#/agent-logs`;
+  `npm run architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue
+  `0`, chain worklist `0`). Final disposition: `done`. Next owner/action:
+  Test Automation Engineer + QA Regression Lead for the new first proof gap
+  on `src/app.ts#/agent-logs`.
+
 ## LUC-1101 Checkpoint
 
 - 2026-07-14: [LUC-1101](/LUC/issues/LUC-1101) completed the local QA

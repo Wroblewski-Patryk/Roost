@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-14T15:06:25.285Z
+Generated: 2026-07-14T15:57:05.892Z
 
 ## Canonical Exports
 
@@ -42,7 +42,7 @@ Generated: 2026-07-14T15:06:25.285Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-14 LUC-1097 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-14 LUC-1107 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
@@ -61,8 +61,8 @@ Generated: 2026-07-14T15:06:25.285Z
 | agent | implemented | World-Class Delivery Workflow | .agents/workflows/world-class-delivery.md | Engineering Delivery Lead |
 | agent | implemented | Agents Module | src/modules/agents/README.md | Engineering Delivery Lead |
 | api_endpoint | verified | GET / | src/app.ts#/ | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /agent-events | src/app.ts#/agent-events | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /agent-logs | src/app.ts#/agent-logs | Engineering Delivery Lead |
+| api_endpoint | verified | USE /agent-events | src/app.ts#/agent-events | Engineering Delivery Lead |
+| api_endpoint | verified | USE /agent-logs | src/app.ts#/agent-logs | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /agents | src/app.ts#/agents | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /api-keys | src/app.ts#/api-keys | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /api/build-info | src/app.ts#/api/build-info | Engineering Delivery Lead |
@@ -594,6 +594,8 @@ Generated: 2026-07-14T15:06:25.285Z
 | connected_to | project:roost:122c92a083 | task:luc-1097-trading-operation-asjsonarray-doc-link:26dda14ec0 | .codex/tasks/luc-1097-trading-operation-asjsonarray-doc-link.md |
 | connected_to | project:roost:122c92a083 | task:task:8cf71581bf | .codex/tasks/luc-1099-trading-operation-strategy-route-proof-link.md |
 | connected_to | project:roost:122c92a083 | task:task:148fa638f5 | .codex/tasks/luc-1101-unclassified-root-get-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:task:0fcef1b6c4 | .codex/tasks/luc-1107-unclassified-user-workflow-use-agent-events-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:task:877880df05 | .codex/tasks/luc-1108-unclassified-user-workflow-use-agent-logs-proof-link.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -652,8 +654,8 @@ Generated: 2026-07-14T15:06:25.285Z
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
-| documents | agent:2026-07-14-luc-1097-module-confidence-update:56279f60ea | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
 | documents | agent:2026-07-14-luc-1099-strategy-frontend-proof-link-health-signal:317f83ab0d | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-14-luc-1107-module-confidence-update:6d548bc2b2 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -1134,6 +1136,7 @@ Generated: 2026-07-14T15:06:25.285Z
 | documents | document:luc-1090-dashboard-overview-assetsoverview-proof:7cabd23652 | module:docs:6784d83cb0 | docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md |
 | documents | document:luc-1099-source-control-closure-for-luc-261-dirty-state:c349f0ce07 | module:docs:6784d83cb0 | docs/planning/luc-1099-source-control-closure-for-luc-261-dirty-state.md |
 | documents | document:luc-110-account-access-auth-headers-function-row-classification:33a5d98774 | module:docs:6784d83cb0 | docs/planning/luc-110-account-access-authheaders-function-row-classification.md |
+| documents | document:luc-1106-source-control-closure-for-luc-962-luc-971-luc-974-luc-977-plus-40-dirty-state:50fc4a4201 | module:docs:6784d83cb0 | docs/planning/luc-1106-source-control-closure-for-luc-962-luc-971-luc-974-luc-977-plus-40.md |
 | documents | document:luc-111-function-level-classification-overrides-for-auth-headers:2ca947ab7a | module:docs:6784d83cb0 | docs/planning/luc-111-function-level-classification-overrides-authheaders.md |
 | documents | document:luc-137-account-access-registerowner-proof-link:66e93ff64a | module:docs:6784d83cb0 | docs/planning/luc-137-account-access-registerowner-proof-link.md |
 | documents | document:luc-1392-source-control-closure-for-luc-261-luc-1214-luc-1215-luc-1216-plus-3:fddab300bd | module:docs:6784d83cb0 | docs/planning/luc-1392-source-control-closure-luc-261-1214-1218-plus.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-07-14T15:06:25.285Z
 | documents | document:luc-4831-source-control-closure-for-luc-4824-evidence-packet:174e9c8a7a | module:docs:6784d83cb0 | docs/planning/luc-4831-source-control-closure-for-luc-4824-evidence-packet.md |
 | documents | document:luc-4834-source-control-closure-for-combined-evidence-batch:7cd2ed1149 | module:docs:6784d83cb0 | docs/planning/luc-4834-source-control-closure-for-combined-evidence-batch.md |
 | documents | document:luc-4837-known-state-evidence-and-architecture-baseline:6704c4c8c8 | module:docs:6784d83cb0 | docs/planning/luc-4837-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4841-source-control-closure-for-luc-4837-evidence-packet:ef8566fce8 | module:docs:6784d83cb0 | docs/planning/luc-4841-source-control-closure-for-luc-4837-evidence-packet.md |
-| documents | document:luc-4842-relationships-proof-ladder-target-from-test-evidence-debt:49722e1e69 | module:docs:6784d83cb0 | docs/planning/luc-4842-relationships-proof-ladder-target-from-test-evidence-debt.md |
-| documents | document:luc-4844-relationships-context-proof-ladder:ff746b9615 | module:docs:6784d83cb0 | docs/planning/luc-4844-relationships-context-proof-ladder.md |

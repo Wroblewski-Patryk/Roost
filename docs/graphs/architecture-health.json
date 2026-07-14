@@ -1,53 +1,45 @@
 {
-  "generated_at": "2026-07-14T15:06:25.285Z",
+  "generated_at": "2026-07-14T15:57:05.892Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 3021,
-    "relations": 7547,
+    "entities": 3024,
+    "relations": 7578,
     "by_type": {
       "agent": 47,
       "api_endpoint": 46,
       "component": 7,
-      "document": 1487,
+      "document": 1488,
       "feature": 173,
       "function": 990,
       "migration": 31,
       "model": 5,
       "module": 67,
       "project": 1,
-      "task": 85,
+      "task": 87,
       "test": 82
     },
     "by_status": {
       "blocked": 1,
       "deprecated": 6,
-      "implemented": 2695,
+      "implemented": 2694,
       "in_progress": 2,
       "tested": 19,
-      "verified": 298
+      "verified": 302
     }
   },
   "signals": {
     "implementation_without_tests": {
-      "count": 1075,
+      "count": 1074,
       "items": [
         {
           "id": "api_endpoint:use-agent-events:1b4c65ace9",
           "type": "api_endpoint",
           "name": "USE /agent-events",
           "path": "src/app.ts#/agent-events",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "api_endpoint:use-agent-logs:fe1d6cbaa9",
-          "type": "api_endpoint",
-          "name": "USE /agent-logs",
-          "path": "src/app.ts#/agent-logs",
-          "status": "implemented",
+          "status": "verified",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -1633,6 +1625,14 @@
           "path": "scripts/agent-training-smoke.mjs#request",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "function:fail:ea5c145594",
+          "type": "function",
+          "name": "fail",
+          "path": "scripts/aog-deploy-smoke.mjs#fail",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
         }
       ]
     },
@@ -1641,22 +1641,14 @@
       "items": []
     },
     "actionable_implementation_without_tests": {
-      "count": 1062,
+      "count": 1061,
       "items": [
         {
           "id": "api_endpoint:use-agent-events:1b4c65ace9",
           "type": "api_endpoint",
           "name": "USE /agent-events",
           "path": "src/app.ts#/agent-events",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "api_endpoint:use-agent-logs:fe1d6cbaa9",
-          "type": "api_endpoint",
-          "name": "USE /agent-logs",
-          "path": "src/app.ts#/agent-logs",
-          "status": "implemented",
+          "status": "verified",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -3240,6 +3232,14 @@
           "type": "function",
           "name": "run",
           "path": "scripts/aog-deploy-smoke.mjs#run",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "function:csvescape:409a3fe163",
+          "type": "function",
+          "name": "csvEscape",
+          "path": "scripts/backfill-architecture-nodes.mjs#csvEscape",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         }

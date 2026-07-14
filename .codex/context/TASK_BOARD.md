@@ -1,6 +1,48 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-14: [LUC-1108](/LUC/issues/LUC-1108) unclassified
+  `src/app.ts#/agent-logs` missing-test-link verification is complete
+  locally. Task contract:
+  `.codex/tasks/luc-1108-unclassified-user-workflow-use-agent-logs-proof-link.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  Agent Logs mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/agent-logs/agent-logs.routes.ts`;
+  `npm run architecture:refresh` PASS; external architecture-awareness
+  refresh generated `2026-07-14T15:57:05.892Z` with `3024` entities / `7578`
+  relations / `16522` files and materialized the exact verification links;
+  sequential app-completion refresh reduced `missingTestLink` from `1102` to
+  `1101` and no longer reports `api_endpoint:use-agent-logs:fe1d6cbaa9`;
+  Project Truth apply generated `2026-07-14T15:57:20.025Z` with public
+  probes `pass` and advanced the first routed gap to
+  `src/app.ts#/agents`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`). No runtime product
+  logic, provider call, protected smoke, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Next owner:
+  Test Automation Engineer + QA Regression Lead for the new first routed
+  proof gap on `src/app.ts#/agents`.
+
+- 2026-07-14: [LUC-1107](/LUC/issues/LUC-1107) unclassified
+  `src/app.ts#/agent-events` missing-test-link verification is complete
+  locally. Task contract:
+  `.codex/tasks/luc-1107-unclassified-user-workflow-use-agent-events-proof-link.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  Agent Events mount `verified` through the existing API proof in
+  `src/tests/api.test.ts` plus the existing agent-observability API packet
+  `docs/planning/luc-5273-agent-observability-api-proof-ladder.md`;
+  `npm run architecture:refresh` PASS; external architecture-awareness
+  refresh generated `2026-07-14T15:43:59.555Z` with `3023` entities / `7563`
+  relations / `16522` files and materialized the exact verification links;
+  sequential app-completion refresh reduced `missingTestLink` from `1103` to
+  `1102` and no longer reports `api_endpoint:use-agent-events:1b4c65ace9`;
+  Project Truth apply generated `2026-07-14T15:44:15.147Z` with public
+  probes `pass` and advanced the first routed gap to `src/app.ts#/agent-logs`;
+  `npm run architecture:status` PASS (`GREEN`, `454/765/35`). No runtime
+  product logic, provider call, protected smoke, deploy, push, restart,
+  production mutation, credential access, or secret disclosure occurred.
+  Next owner: Test Automation Engineer + QA Regression Lead for the new first
+  routed proof gap on `src/app.ts#/agent-logs`.
+
 - 2026-07-14: [LUC-1101](/LUC/issues/LUC-1101) unclassified `src/app.ts#/`
   missing-test-link verification is complete locally, but the live issue
   disposition remains blocked because the GitHub issue API returned `404 Not

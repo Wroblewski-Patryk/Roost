@@ -1,5 +1,27 @@
 # PROJECT_STATE
 
+- 2026-07-14: [LUC-1108](/LUC/issues/LUC-1108) completed the local proof-link
+  closure for unclassified `src/app.ts#/agent-logs`, and the local evidence
+  packet is complete. Source-of-truth task contract:
+  `.codex/tasks/luc-1108-unclassified-user-workflow-use-agent-logs-proof-link.md`.
+  Current evidence: `docs/architecture/scanner-overrides.json` now marks the
+  exact Agent Logs mount `verified` through the existing protected API suite
+  in `src/tests/api.test.ts` plus `src/modules/agent-logs/agent-logs.routes.ts`;
+  `npm run architecture:refresh` PASS; sequential architecture-awareness
+  refresh generated `2026-07-14T15:57:05.892Z` with `3024` entities / `7578`
+  relations / `16522` files and materialized the exact verification links;
+  sequential app-completion refresh reports `1282` items / `5` flows /
+  `1101` missing test links / `30` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1139` risk items and no longer
+  reports `api_endpoint:use-agent-logs:fe1d6cbaa9`; Project Truth apply
+  generated `2026-07-14T15:57:20.025Z` with public probes `pass` and first
+  gap advanced to unclassified `src/app.ts#/agents`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`,
+  chain worklist `0`). No runtime feature logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. If a live board mutation is required later, Paperclip / tracker
+  owner must provide the reachable tracker mutation path or issue endpoint.
+
 - 2026-07-14: [LUC-1101](/LUC/issues/LUC-1101) completed the local proof-link
   closure for unclassified `src/app.ts#/`, but the live issue disposition is
   blocked because the GitHub issue API returned `404 Not Found` for

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T15:07:59.922Z",
+  "generatedAt": "2026-07-14T15:57:20.025Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "gaps_require_routing",
@@ -9,55 +9,29 @@
     "incompleteEventChains": 0,
     "runtimeFindings": 0,
     "criticalRuntimeFindings": 0,
-    "appCompletionGaps": 1141,
+    "appCompletionGaps": 1139,
     "indexedAppCompletionGaps": 200,
-    "knownAppCompletionRiskItems": 1141,
+    "knownAppCompletionRiskItems": 1139,
     "appCompletionPriorityReviewItems": 200,
     "appCompletionPriorityReviewTruncated": true,
     "operationalGateGaps": 0,
     "indexedGaps": 200,
-    "totalGaps": 1141
+    "totalGaps": 1139
   },
   "firstGap": {
     "kind": "app_completion_gap",
     "severity": "medium",
     "userFlow": "Unclassified user workflow",
-    "summary": "Unclassified user workflow: USE /agent-events has app-completion risk missing_test_link.",
+    "summary": "Unclassified user workflow: USE /agents has app-completion risk missing_test_link.",
     "nextOwner": "Test Automation Engineer + QA Regression Lead",
     "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
     "evidence": [
-      "src/app.ts#/agent-events"
+      "src/app.ts#/agents"
     ],
-    "sourceItemId": "api_endpoint:use-agent-events:1b4c65ace9",
+    "sourceItemId": "api_endpoint:use-agents:1c136317c6",
     "risk": "missing_test_link"
   },
   "gaps": [
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /agent-events has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/app.ts#/agent-events"
-      ],
-      "sourceItemId": "api_endpoint:use-agent-events:1b4c65ace9",
-      "risk": "missing_test_link"
-    },
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /agent-logs has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/app.ts#/agent-logs"
-      ],
-      "sourceItemId": "api_endpoint:use-agent-logs:fe1d6cbaa9",
-      "risk": "missing_test_link"
-    },
     {
       "kind": "app_completion_gap",
       "severity": "medium",
@@ -2630,6 +2604,32 @@
         "scripts/check-architecture-node-links.mjs#slug"
       ],
       "sourceItemId": "function:slug:e7d37ebb7c",
+      "risk": "missing_test_link"
+    },
+    {
+      "kind": "app_completion_gap",
+      "severity": "medium",
+      "userFlow": "Unclassified user workflow",
+      "summary": "Unclassified user workflow: check-architecture-pipeline-nodes.mjs has app-completion risk missing_test_link.",
+      "nextOwner": "Test Automation Engineer + QA Regression Lead",
+      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "evidence": [
+        "scripts/check-architecture-pipeline-nodes.mjs"
+      ],
+      "sourceItemId": "feature:check-architecture-pipeline-nodes-mjs:489110dee7",
+      "risk": "missing_test_link"
+    },
+    {
+      "kind": "app_completion_gap",
+      "severity": "medium",
+      "userFlow": "Unclassified user workflow",
+      "summary": "Unclassified user workflow: parseCsv has app-completion risk missing_test_link.",
+      "nextOwner": "Test Automation Engineer + QA Regression Lead",
+      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "evidence": [
+        "scripts/check-architecture-pipeline-nodes.mjs#parseCsv"
+      ],
+      "sourceItemId": "function:parsecsv:6f68fd47e0",
       "risk": "missing_test_link"
     }
   ]

@@ -1,4 +1,34 @@
 # Next Steps
+- 2026-07-14: [LUC-1108](/LUC/issues/LUC-1108) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/agent-logs`. The durable packet is
+  `.codex/tasks/luc-1108-unclassified-user-workflow-use-agent-logs-proof-link.md`.
+  Current fact: refreshed architecture-awareness marks the exact Agent Logs
+  mount `verified` through the existing API proof in `src/tests/api.test.ts`
+  and `src/modules/agent-logs/agent-logs.routes.ts`, refreshed app-completion
+  no longer reports `api_endpoint:use-agent-logs:fe1d6cbaa9`, and Project
+  Truth now routes `src/app.ts#/agents` as the first remaining proof gap.
+  Next action, only if selected by Project Truth routing, is a Test
+  Automation Engineer + QA Regression Lead proof-link lane for
+  `src/app.ts#/agents`. Do not reopen another QA proof lane for
+  `src/app.ts#/agent-logs` unless a fresh generated regression removes the
+  linked API evidence.
+
+- 2026-07-14: [LUC-1107](/LUC/issues/LUC-1107) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified root endpoint
+  `src/app.ts#/agent-events`. The durable packet is
+  `.codex/tasks/luc-1107-unclassified-user-workflow-use-agent-events-proof-link.md`.
+  Current fact: refreshed architecture-awareness marks the exact Agent Events
+  mount `verified` through the existing API proof in `src/tests/api.test.ts`
+  and `docs/planning/luc-5273-agent-observability-api-proof-ladder.md`,
+  refreshed app-completion no longer reports
+  `api_endpoint:use-agent-events:1b4c65ace9`, and Project Truth now routes
+  `src/app.ts#/agent-logs` as the first remaining proof gap. Next action,
+  only if selected by Project Truth routing, is a Test Automation Engineer +
+  QA Regression Lead proof-link lane for `src/app.ts#/agent-logs`. Do not
+  reopen another QA proof lane for `src/app.ts#/agent-events` unless a fresh
+  generated regression removes the linked API evidence.
+
 - 2026-07-14: [LUC-1101](/LUC/issues/LUC-1101) has no remaining 09 TAE
   missing-test-link action for the exact unclassified root endpoint
   `src/app.ts#/`. The durable packet is

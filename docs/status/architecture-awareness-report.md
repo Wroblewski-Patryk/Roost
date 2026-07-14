@@ -1,6 +1,6 @@
 # Architecture Awareness Report
 
-Generated: 2026-07-14T15:06:25.285Z
+Generated: 2026-07-14T15:57:05.892Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 
@@ -11,14 +11,14 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | agent | 47 |
 | api_endpoint | 46 |
 | component | 7 |
-| document | 1487 |
+| document | 1488 |
 | feature | 173 |
 | function | 990 |
 | migration | 31 |
 | model | 5 |
 | module | 67 |
 | project | 1 |
-| task | 85 |
+| task | 87 |
 | test | 82 |
 
 ## Counts By Status
@@ -27,15 +27,15 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | --- | ---: |
 | blocked | 1 |
 | deprecated | 6 |
-| implemented | 2695 |
+| implemented | 2694 |
 | in_progress | 2 |
 | tested | 19 |
-| verified | 298 |
+| verified | 302 |
 
 ## Health Signals
 
-- Raw implementation entities without inferred tests: 1075
-- Actionable implementation entities without inferred tests: 1062
+- Raw implementation entities without inferred tests: 1074
+- Actionable implementation entities without inferred tests: 1061
 - Raw implementation entities without inferred docs: 0
 - Actionable implementation entities without inferred docs: 0
 - Classified inferred-link noise: 13
@@ -50,7 +50,6 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 ## Top Actionable Missing Test Links
 
 - api_endpoint: USE /agent-events (src/app.ts#/agent-events)
-- api_endpoint: USE /agent-logs (src/app.ts#/agent-logs)
 - api_endpoint: USE /agents (src/app.ts#/agents)
 - api_endpoint: USE /api-keys (src/app.ts#/api-keys)
 - api_endpoint: USE /api/build-info (src/app.ts#/api/build-info)
@@ -89,6 +88,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - api_endpoint: USE /workspaces (src/app.ts#/workspaces)
 - component: cc-notice.tsx (web/src/components/cc-notice.tsx)
 - feature: seed.ts (prisma/seed.ts)
+- feature: adapter-smoke.mjs (scripts/adapter-smoke.mjs)
 
 ## Top Actionable Missing Doc Links
 
@@ -124,6 +124,6 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 
 - This is an inferred baseline. CTO/Docs Memory must promote or correct important relations.
 - Curated graph coverage input: `C:/Personal/Projekty/Aplikacje/Roost/docs/graphs/architecture-graph.json` (covered paths: 0).
-- Override input: `C:/Personal/Projekty/Aplikacje/Roost/docs/architecture/scanner-overrides.json` (entity entries: 226, relation entries: 257).
-- Override summary: excluded files 0, entity overrides 218, relation overrides 224, critical entities tagged 0.
+- Override input: `C:/Personal/Projekty/Aplikacje/Roost/docs/architecture/scanner-overrides.json` (entity entries: 228, relation entries: 259).
+- Override summary: excluded files 0, entity overrides 220, relation overrides 226, critical entities tagged 0.
 - `verified` still requires fresh command/browser/deploy evidence, not only file presence.

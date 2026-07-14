@@ -1,3 +1,15 @@
+# 2026-07-14 LUC-1108 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Agent Logs proof linkage | verified for dispatched missing-test-link gap | [LUC-1108](/LUC/issues/LUC-1108) focused proof-link packet `.codex/tasks/luc-1108-unclassified-user-workflow-use-agent-logs-proof-link.md`; `docs/architecture/scanner-overrides.json` marks `src/app.ts#/agent-logs` `verified` through the existing protected API suite coverage in `src/tests/api.test.ts` plus `src/modules/agent-logs/agent-logs.routes.ts`; `npm run architecture:refresh` PASS; sequential architecture-awareness refresh generated `2026-07-14T15:57:05.892Z` with `3024` entities / `7578` relations / `16522` files and materialized the exact proof relations; sequential app-completion refresh reduced `missingTestLink` from `1102` to `1101` and no longer routes `api_endpoint:use-agent-logs:fe1d6cbaa9`; sequential Project Truth apply generated `2026-07-14T15:57:20.025Z` with public probes `pass` and advanced the first routed gap to `src/app.ts#/agents`; `npm run architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`). | No further QA proof work is needed for `src/app.ts#/agent-logs` unless a fresh generated regression removes the linked API evidence. The next routed gap is unclassified `src/app.ts#/agents`, owned by Test Automation Engineer + QA Regression Lead. |
+
+# 2026-07-14 LUC-1107 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Agent Events proof linkage | verified for dispatched missing-test-link gap | [LUC-1107](/LUC/issues/LUC-1107) focused proof-link packet `.codex/tasks/luc-1107-unclassified-user-workflow-use-agent-events-proof-link.md`; `docs/architecture/scanner-overrides.json` marks `src/app.ts#/agent-events` `verified` through the existing local agent-observability API proof in `src/tests/api.test.ts` plus `docs/planning/luc-5273-agent-observability-api-proof-ladder.md`; `npm run architecture:refresh` PASS; sequential external architecture-awareness refresh generated `2026-07-14T15:43:59.555Z` with `3023` entities / `7563` relations / `16522` files and materialized the exact proof relations; sequential app-completion refresh reduced `missingTestLink` from `1103` to `1102` and no longer routes `api_endpoint:use-agent-events:1b4c65ace9`; sequential Project Truth apply generated `2026-07-14T15:44:15.147Z` with public probes `pass` and advanced the first routed gap to `src/app.ts#/agent-logs`; `npm run architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`). | No further QA proof work is needed for `src/app.ts#/agent-events` unless a fresh generated regression removes the linked API evidence. The next routed gap is unclassified `src/app.ts#/agent-logs`, owned by Test Automation Engineer + QA Regression Lead. |
+
 # 2026-07-14 LUC-1097 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

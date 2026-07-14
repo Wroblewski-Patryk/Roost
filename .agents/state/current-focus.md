@@ -1,5 +1,38 @@
 # Current Focus
 
+# Current Focus
+
+- 2026-07-14: [LUC-1108](/LUC/issues/LUC-1108) closed the routed
+  unclassified endpoint `src/app.ts#/agent-logs` `missing_test_link` row.
+  Packet:
+  `.codex/tasks/luc-1108-unclassified-user-workflow-use-agent-logs-proof-link.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Agent Logs
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus the existing route module
+  `src/modules/agent-logs/agent-logs.routes.ts`; `npm run architecture:refresh`,
+  sequential architecture-awareness refresh, sequential app-completion
+  refresh, Project Truth apply, and `npm run architecture:status` all
+  passed. Refreshed app-completion now reports `missingTestLink=1101`,
+  no longer includes `api_endpoint:use-agent-logs:fe1d6cbaa9`, and
+  refreshed Project Truth generated `2026-07-14T15:57:20.025Z` now advances
+  the queue to unclassified `src/app.ts#/agents` as the next proof target.
+
+- 2026-07-14: [LUC-1107](/LUC/issues/LUC-1107) closed the routed
+  unclassified endpoint `src/app.ts#/agent-events` `missing_test_link` row.
+  Packet:
+  `.codex/tasks/luc-1107-unclassified-user-workflow-use-agent-events-proof-link.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Agent Events
+  mount `verified` through the existing local API proof in
+  `src/tests/api.test.ts` plus the existing agent-observability API packet
+  `docs/planning/luc-5273-agent-observability-api-proof-ladder.md`; `npm run
+  architecture:refresh`, external architecture-awareness refresh, sequential
+  app-completion refresh, sequential Project Truth apply, and
+  `npm run architecture:status` all passed. Refreshed app-completion now
+  reports `missingTestLink=1102`, no longer includes
+  `api_endpoint:use-agent-events:1b4c65ace9`, and refreshed Project Truth
+  generated `2026-07-14T15:44:15.147Z` now advances the queue to unclassified
+  `src/app.ts#/agent-logs` as the next proof target.
+
 - 2026-07-14: [LUC-1101](/LUC/issues/LUC-1101) closed the routed
   unclassified endpoint `src/app.ts#/` `missing_test_link` row. Packet:
   `.codex/tasks/luc-1101-unclassified-root-get-proof-link.md`.

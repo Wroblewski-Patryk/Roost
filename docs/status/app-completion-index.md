@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-07-14T15:06:25.290Z
+Generated: 2026-07-14T15:57:15.493Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -15,17 +15,17 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 - Items: 1282
 - User flows: 5
 - Needs browser/screenshot review: 0
-- Missing test link: 1103
+- Missing test link: 1101
 - Missing doc link: 30
 - Implemented, needs proof: 8
 - Blocked: 0
-- Known non-ok risk items: 1141
-- Priority review items indexed: 200/1141
+- Known non-ok risk items: 1139
+- Priority review items indexed: 200/1139
 - Priority review truncated: true
 
 ## Flow Summary
 
-- Unclassified user workflow: 1116 entities; risks {"missing_test_link":1072,"ok":8,"implemented_needs_proof":8,"missing_doc_link":28}; gates {"configuration":8,"auth":1}
+- Unclassified user workflow: 1116 entities; risks {"ok":10,"missing_test_link":1070,"implemented_needs_proof":8,"missing_doc_link":28}; gates {"auth":3,"configuration":8}
 - Account access: 80 entities; risks {"ok":80}; gates {"auth":80,"configuration":18}
 - Dashboard overview: 44 entities; risks {"ok":44}; gates {}
 - User configuration: 33 entities; risks {"missing_test_link":31,"missing_doc_link":2}; gates {"configuration":31}
@@ -35,8 +35,6 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 
 | User flow | Risk | Kind | Entity | Owner | Path | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
-| Unclassified user workflow | missing_test_link | api_endpoint | USE /agent-events | Engineering Delivery Lead | src/app.ts#/agent-events | - |
-| Unclassified user workflow | missing_test_link | api_endpoint | USE /agent-logs | Engineering Delivery Lead | src/app.ts#/agent-logs | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /agents | Engineering Delivery Lead | src/app.ts#/agents | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /api-keys | Engineering Delivery Lead | src/app.ts#/api-keys | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /api/build-info | Engineering Delivery Lead | src/app.ts#/api/build-info | - |
@@ -115,6 +113,8 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Unclassified user workflow | missing_test_link | feature_or_capability | build-architecture-chain-hardening-worklist.mjs | Engineering Delivery Lead | scripts/build-architecture-chain-hardening-worklist.mjs | - |
 | Unclassified user workflow | missing_test_link | feature_or_capability | csvEscape | Engineering Delivery Lead | scripts/build-architecture-chain-hardening-worklist.mjs#csvEscape | - |
 | Unclassified user workflow | missing_test_link | feature_or_capability | loadCsv | Engineering Delivery Lead | scripts/build-architecture-chain-hardening-worklist.mjs#loadCsv | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | main | Engineering Delivery Lead | scripts/build-architecture-chain-hardening-worklist.mjs#main | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | parseCsv | Engineering Delivery Lead | scripts/build-architecture-chain-hardening-worklist.mjs#parseCsv | - |
 
 ## Agent Rule
 

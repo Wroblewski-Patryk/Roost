@@ -453,6 +453,27 @@
       ]
     },
     {
+      "path": "src/app.ts#/agent-events",
+      "status": "verified",
+      "description": "Agent Events mount verified through the focused local API proof for the read/ack agent observability chain, which exercises the mounted /v1/agent-events route and ack capability without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "docs/planning/luc-5273-agent-observability-api-proof-ladder.md",
+        ".codex/tasks/luc-1107-unclassified-user-workflow-use-agent-events-proof-link.md"
+      ]
+    },
+    {
+      "path": "src/app.ts#/agent-logs",
+      "status": "verified",
+      "description": "Agent Logs mount verified through the existing protected API suite coverage for GET and POST /v1/agent-logs, which exercises the mounted /v1/agent-logs route and workspace-scoped read/write behavior without changing runtime code.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/agent-logs/agent-logs.routes.ts",
+        "docs/planning/luc-5273-agent-observability-api-proof-ladder.md",
+        ".codex/tasks/luc-1108-unclassified-user-workflow-use-agent-logs-proof-link.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/strategy",
       "status": "verified",
       "description": "Protected Strategy route mount verified by the current local API harness for `GET /v1/strategy/context`, plus the existing Strategy route browser proof that consumes the same mounted packet from the authenticated 01 Strategy overview surface.",
@@ -2395,6 +2416,22 @@
       "toPath": "src/app.ts#/",
       "toType": "api_endpoint",
       "evidence": "LUC-1101 root route focused proof-link packet"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/agent-logs",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1108 Agent Logs proof-link closure through the protected API suite"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/modules/agent-logs/agent-logs.routes.ts",
+      "fromType": "module",
+      "toPath": "src/app.ts#/agent-logs",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1108 Agent Logs mount and protected route coverage"
     },
     {
       "type": "tests",
