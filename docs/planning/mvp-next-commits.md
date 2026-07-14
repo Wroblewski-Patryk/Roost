@@ -1,5 +1,26 @@
 # MVP Next Commits
 
+- 2026-07-15: [LUC-1183](/LUC/issues/LUC-1183) completed focused proof-link
+  closure for unclassified `src/app.ts#/commercial-exceptions`. Evidence
+  packet:
+  `.codex/tasks/luc-1183-prove-unclassified-user-workflow-missing-test-link-for-use-commercial-exceptions.md`.
+  Proof linkage: `docs/architecture/scanner-overrides.json` now marks the
+  exact Commercial Exceptions mount `verified` with direct evidence from
+  `src/tests/api.test.ts`,
+  `src/modules/commercial-exceptions/commercial-exceptions.routes.ts`, and
+  `docs/planning/luc-5246-commercial-exceptions-api-journey-proof.md`; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-14T23:35:59.921Z` with `3038` entities / `7701`
+  relations / `16523` files and materialized the exact proof relations;
+  sequential app-completion refresh dropped `missingTestLink` from `31` to
+  `30` and no longer reports
+  `api_endpoint:use-commercial-exceptions:18765c44f9`; Project Truth apply
+  generated `2026-07-14T23:37:29.886Z` and advanced the first gap to
+  unclassified `src/app.ts#/company-os`; no provider call, protected smoke,
+  push, deploy, restart, production mutation, credential access, or secret
+  disclosure occurred. Next owner: Test Automation Engineer + QA Regression
+  Lead for the routed proof gap on `src/app.ts#/company-os`.
+
 - 2026-07-14: [LUC-1101](/LUC/issues/LUC-1101) completed focused proof-link
   closure for unclassified `src/app.ts#/`. Evidence packet:
   `.codex/tasks/luc-1101-unclassified-root-get-proof-link.md`. Proof

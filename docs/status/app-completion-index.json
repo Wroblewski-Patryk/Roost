@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T23:10:52.292Z",
+  "generatedAt": "2026-07-14T23:37:29.886Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -8,25 +8,25 @@
     "items": 46,
     "flows": 4,
     "needsBrowserReview": 0,
-    "missingTestLink": 31,
+    "missingTestLink": 30,
     "missingDocLink": 0,
     "implementedNeedsProof": 0,
     "blocked": 0,
-    "riskItems": 31,
-    "appCompletionRiskItems": 31,
-    "priorityReviewItems": 31,
+    "riskItems": 30,
+    "appCompletionRiskItems": 30,
+    "priorityReviewItems": 30,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": false
   },
   "flows": [
     {
       "userFlow": "Account access",
-      "total": 6,
+      "total": 7,
       "risks": {
-        "ok": 6
+        "ok": 7
       },
       "gates": {
-        "auth": 6,
+        "auth": 7,
         "configuration": 1
       }
     },
@@ -40,10 +40,10 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "total": 38,
+      "total": 37,
       "risks": {
         "ok": 8,
-        "missing_test_link": 30
+        "missing_test_link": 29
       },
       "gates": {
         "auth": 5
@@ -61,25 +61,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "api_endpoint:use-commercial-exceptions:18765c44f9",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /commercial-exceptions",
-      "path": "src/app.ts#/commercial-exceptions",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Unclassified user workflow",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
     {
       "id": "api_endpoint:use-company-os:fb1b853293",
       "type": "api_endpoint",

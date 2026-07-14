@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-14T23:10:33.327Z
+Generated: 2026-07-14T23:35:59.921Z
 
 ## Canonical Exports
 
@@ -69,7 +69,7 @@ Generated: 2026-07-14T23:10:33.327Z
 | api_endpoint | verified | USE /assets | src/app.ts#/assets | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /auth | src/app.ts#/auth | Engineering Delivery Lead |
 | api_endpoint | verified | USE /clients | src/app.ts#/clients | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /commercial-exceptions | src/app.ts#/commercial-exceptions | Engineering Delivery Lead |
+| api_endpoint | verified | USE /commercial-exceptions | src/app.ts#/commercial-exceptions | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /company-os | src/app.ts#/company-os | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /connection | src/app.ts#/connection | Engineering Delivery Lead |
 | api_endpoint | verified | USE /dashboard | src/app.ts#/dashboard | Engineering Delivery Lead |
@@ -603,10 +603,12 @@ Generated: 2026-07-14T23:10:33.327Z
 | connected_to | project:roost:122c92a083 | task:luc-1151-completion-evidence:3773ef3c2d | .codex/tasks/luc-1151-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:c9bb805c35 | .codex/tasks/luc-1151-prove-unclassified-user-workflow-missing-doc-link-for-use-api-build-info.md |
 | connected_to | project:roost:122c92a083 | task:task:612815b6ef | .codex/tasks/luc-1160-normalize-luc-1151-task-status-indexing.md |
+| connected_to | project:roost:122c92a083 | task:luc-1161-task-contract:4a0638966f | .codex/tasks/luc-1161-prove-unclassified-user-workflow-missing-test-link-for-use-assets.md |
 | connected_to | project:roost:122c92a083 | task:task:1d586e023e | .codex/tasks/luc-1168-source-control-closure-classify-project-docs-dirty-packet-from-luc-1167.md |
 | connected_to | project:roost:122c92a083 | task:task:7879ec3809 | .codex/tasks/luc-1169-prove-unclassified-user-workflow-missing-test-link-for-use-clients.md |
 | connected_to | project:roost:122c92a083 | task:luc-1174-completion-evidence:65eeab039e | .codex/tasks/luc-1174-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:2dc0937607 | .codex/tasks/luc-1174-prove-unclassified-user-workflow-missing-doc-link-for-use-clients.md |
+| connected_to | project:roost:122c92a083 | task:task:6d90bf89a7 | .codex/tasks/luc-1183-prove-unclassified-user-workflow-missing-test-link-for-use-commercial-exceptions.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-07-14T23:10:33.327Z
 | documents | document:luc-4757-known-state-evidence-and-architecture-baseline:7f5d77caf7 | module:docs:6784d83cb0 | docs/planning/luc-4757-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4762-source-control-closure-for-luc-4757-known-state-packet:c1691eed7b | module:docs:6784d83cb0 | docs/planning/luc-4762-source-control-closure-for-luc-4757-evidence-packet.md |
 | documents | document:luc-4763-first-proof-ladder-target-from-implementation-without-tests:b8667470a3 | module:docs:6784d83cb0 | docs/planning/luc-4763-first-proof-ladder-target-from-implementation-without-tests.md |
-| documents | document:luc-4774-known-state-evidence-and-architecture-baseline:fce86bc340 | module:docs:6784d83cb0 | docs/planning/luc-4774-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4777-operations-work-items-proof-ladder:fe8b8063d3 | module:docs:6784d83cb0 | docs/planning/luc-4777-operations-work-items-proof-ladder.md |

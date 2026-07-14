@@ -1,4 +1,21 @@
 # Next Steps
+- 2026-07-15: [LUC-1183](/LUC/issues/LUC-1183) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/commercial-exceptions`. The durable packet is
+  `.codex/tasks/luc-1183-prove-unclassified-user-workflow-missing-test-link-for-use-commercial-exceptions.md`.
+  Current fact: refreshed architecture-awareness marks the exact Commercial
+  Exceptions mount `verified` through the existing API proof in
+  `src/tests/api.test.ts`,
+  `src/modules/commercial-exceptions/commercial-exceptions.routes.ts`, and
+  `docs/planning/luc-5246-commercial-exceptions-api-journey-proof.md`;
+  refreshed app-completion no longer routes
+  `api_endpoint:use-commercial-exceptions:18765c44f9` as `missing_test_link`;
+  and Project Truth now advances the first routed gap to
+  `src/app.ts#/company-os`. Next action belongs to Test Automation Engineer +
+  QA Regression Lead for proof-link closure on `src/app.ts#/company-os`. Do not
+  reopen another QA proof lane for `src/app.ts#/commercial-exceptions` unless a
+  fresh generated regression removes the linked API evidence.
+
 - 2026-07-15: [LUC-1174](/LUC/issues/LUC-1174) has no remaining
   Documentation Steward action for the exact unclassified endpoint
   `src/app.ts#/clients`. The durable packet is

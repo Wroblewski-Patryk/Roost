@@ -1,6 +1,29 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-15: [LUC-1183](/LUC/issues/LUC-1183) unclassified
+  `src/app.ts#/commercial-exceptions` missing-test-link verification is
+  complete locally. Task contract:
+  `.codex/tasks/luc-1183-prove-unclassified-user-workflow-missing-test-link-for-use-commercial-exceptions.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  Commercial Exceptions mount `verified` through the existing protected API
+  suite in `src/tests/api.test.ts`,
+  `src/modules/commercial-exceptions/commercial-exceptions.routes.ts`, and
+  `docs/planning/luc-5246-commercial-exceptions-api-journey-proof.md`; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-14T23:35:59.921Z` with `3038` entities / `7701`
+  relations / `16523` files and materialized the exact proof links; sequential
+  app-completion refresh now reports `missingTestLink=30`, no longer treats
+  `api_endpoint:use-commercial-exceptions:18765c44f9` as `missing_test_link`,
+  and routes `src/app.ts#/company-os` as the new first gap; Project Truth
+  apply generated `2026-07-14T23:37:29.886Z` with public probes `pass` and
+  advances the first routed gap to `src/app.ts#/company-os`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`,
+  chain worklist `0`). No runtime product logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Next owner: Test Automation Engineer + QA Regression Lead for the
+  routed proof gap on `src/app.ts#/company-os`.
+
 - 2026-07-15: [LUC-1174](/LUC/issues/LUC-1174) unclassified
   `src/app.ts#/clients` missing-doc-link verification is complete locally.
   Task contract:

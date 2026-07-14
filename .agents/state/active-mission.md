@@ -1,5 +1,26 @@
 # Active Mission Packet
 
+## LUC-1183 Checkpoint
+
+- 2026-07-15: [LUC-1183](/LUC/issues/LUC-1183) closed the routed
+  unclassified endpoint `src/app.ts#/commercial-exceptions`
+  `missing_test_link` row. Packet:
+  `.codex/tasks/luc-1183-prove-unclassified-user-workflow-missing-test-link-for-use-commercial-exceptions.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Commercial
+  Exceptions mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`,
+  `src/modules/commercial-exceptions/commercial-exceptions.routes.ts`, and
+  `docs/planning/luc-5246-commercial-exceptions-api-journey-proof.md`; `npm run
+  architecture:refresh` PASS; external architecture-awareness rebuild
+  generated `2026-07-14T23:35:59.921Z` with `3038` entities / `7701`
+  relations / `16523` files; sequential app-completion refresh now reports
+  `missingTestLink=30`; sequential Project Truth apply generated
+  `2026-07-14T23:37:29.886Z` with public probes `pass` and advanced the first
+  gap to `src/app.ts#/company-os` `missing_test_link`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`). No runtime feature
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred.
+
 ## LUC-1174 Checkpoint
 
 - 2026-07-15: [LUC-1174](/LUC/issues/LUC-1174) closed the routed

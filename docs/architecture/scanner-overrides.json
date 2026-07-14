@@ -528,6 +528,17 @@
       ]
     },
     {
+      "path": "src/app.ts#/commercial-exceptions",
+      "status": "verified",
+      "description": "Commercial Exceptions mount verified through the existing protected API suite coverage for unauthenticated denial, workspace-scoped GET /v1/commercial-exceptions reads, client filtering, foreign-workspace isolation, blocked discount actions, and MCP capability exposure without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/commercial-exceptions/commercial-exceptions.routes.ts",
+        "docs/planning/luc-5246-commercial-exceptions-api-journey-proof.md",
+        ".codex/tasks/luc-1183-prove-unclassified-user-workflow-missing-test-link-for-use-commercial-exceptions.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/strategy",
       "status": "verified",
       "description": "Protected Strategy route mount verified by the current local API harness for `GET /v1/strategy/context`, plus the existing Strategy route browser proof that consumes the same mounted packet from the authenticated 01 Strategy overview surface.",

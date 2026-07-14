@@ -1,5 +1,34 @@
 # PROJECT_STATE
 
+- 2026-07-15: [LUC-1183](/LUC/issues/LUC-1183) completed the local proof-link
+  closure for unclassified `src/app.ts#/commercial-exceptions`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1183-prove-unclassified-user-workflow-missing-test-link-for-use-commercial-exceptions.md`.
+  Current evidence: `src/tests/api.test.ts`,
+  `src/modules/commercial-exceptions/commercial-exceptions.routes.ts`, and
+  `docs/planning/luc-5246-commercial-exceptions-api-journey-proof.md` already
+  verify unauthenticated denial, workspace-scoped reads, client filtering,
+  foreign-workspace isolation, blocked actions, and MCP capability exposure
+  for the protected `/v1/commercial-exceptions` packet, and
+  `docs/architecture/scanner-overrides.json` now links that existing proof to
+  the exact `src/app.ts#/commercial-exceptions` mount; `npm run
+  architecture:refresh` PASS; external architecture-awareness rebuild
+  generated `2026-07-14T23:35:59.921Z` with `3038` entities / `7701`
+  relations / `16523` files and materialized the exact proof relation;
+  sequential app-completion refresh now reports `46` items / `4` flows /
+  `30` missing test links / `0` missing doc links / `0`
+  implemented-needs-proof / `0` blocked / `30` risk items and no longer routes
+  `src/app.ts#/commercial-exceptions` as `missing_test_link`; Project Truth
+  apply generated `2026-07-14T23:37:29.886Z` with public probes `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and first gap advanced to `src/app.ts#/company-os`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime feature
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. The next owner/action is
+  Test Automation Engineer + QA Regression Lead for the proof-link closure on
+  `src/app.ts#/company-os`.
+
 - 2026-07-15: [LUC-1174](/LUC/issues/LUC-1174) completed the local
   documentation-link closure for unclassified `src/app.ts#/clients`.
   Source-of-truth task packet:
