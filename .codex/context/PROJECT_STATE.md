@@ -1,5 +1,25 @@
 # PROJECT_STATE
 
+- 2026-07-14: [LUC-1131](/LUC/issues/LUC-1131) completed the local proof-link
+  closure for unclassified `src/app.ts#/api-keys`, and the routed gap
+  advanced to `src/app.ts#/api/build-info`. Source-of-truth task packet:
+  `.codex/tasks/luc-1131-prove-unclassified-user-workflow-missing-test-link-for-use-api-keys.md`.
+  Current evidence: `docs/architecture/scanner-overrides.json` now marks the
+  exact API-keys mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/api-keys/api-keys.routes.ts` and
+  `docs/API.md`; `npm run architecture:refresh` PASS; external
+  architecture-awareness rebuild generated `2026-07-14T18:56:51.968Z` with
+  `3026` entities / `7604` relations / `16522` files and materialized the
+  exact verification links; sequential app-completion refresh now reports
+  `missingTestLink=34`; sequential Project Truth apply generated
+  `2026-07-14T18:57:50.091Z` with public probes `pass` and advanced the first
+  gap to `src/app.ts#/api/build-info`; `npm run architecture:status` PASS
+  (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`). No runtime
+  feature logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. The next owner/action is
+  Test Automation Engineer + QA Regression Lead for the new first routed
+  proof gap on `src/app.ts#/api/build-info`.
+
 - 2026-07-14: [LUC-1114](/LUC/issues/LUC-1114) completed the local proof-link
   closure for unclassified `src/app.ts#/agents`, and the local evidence
   packet is complete. Source-of-truth task contract:

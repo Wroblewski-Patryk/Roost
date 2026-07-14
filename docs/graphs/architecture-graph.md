@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-14T17:45:21.137Z
+Generated: 2026-07-14T18:56:51.968Z
 
 ## Canonical Exports
 
@@ -64,7 +64,7 @@ Generated: 2026-07-14T17:45:21.137Z
 | api_endpoint | verified | USE /agent-events | src/app.ts#/agent-events | Engineering Delivery Lead |
 | api_endpoint | verified | USE /agent-logs | src/app.ts#/agent-logs | Engineering Delivery Lead |
 | api_endpoint | verified | USE /agents | src/app.ts#/agents | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /api-keys | src/app.ts#/api-keys | Engineering Delivery Lead |
+| api_endpoint | verified | USE /api-keys | src/app.ts#/api-keys | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /api/build-info | src/app.ts#/api/build-info | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /assets | src/app.ts#/assets | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /auth | src/app.ts#/auth | Engineering Delivery Lead |
@@ -597,6 +597,7 @@ Generated: 2026-07-14T17:45:21.137Z
 | connected_to | project:roost:122c92a083 | task:task:0fcef1b6c4 | .codex/tasks/luc-1107-unclassified-user-workflow-use-agent-events-proof-link.md |
 | connected_to | project:roost:122c92a083 | task:task:877880df05 | .codex/tasks/luc-1108-unclassified-user-workflow-use-agent-logs-proof-link.md |
 | connected_to | project:roost:122c92a083 | task:task:9d14f2d371 | .codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:task:a5b42ad253 | .codex/tasks/luc-1131-prove-unclassified-user-workflow-missing-test-link-for-use-api-keys.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -740,6 +741,7 @@ Generated: 2026-07-14T17:45:21.137Z
 | documents | document:api-key-middleware:071d632449 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MW-AUTO-0001.md |
 | documents | document:api-keys-model:02bff86e2b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0005.md |
 | documents | document:api:a617d1cb61 | module:docs:6784d83cb0 | docs/API.md |
+| documents | document:api:a617d1cb61 | api_endpoint:use-agents:1c136317c6 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:b3f790a259 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:8f0ce27a64 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:requireuserauth:215e610fd9 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
@@ -1216,5 +1218,3 @@ Generated: 2026-07-14T17:45:21.137Z
 | documents | document:luc-4813-assets-proof-ladder-target-from-implementation-without-tests:bee7b8946b | module:docs:6784d83cb0 | docs/planning/luc-4813-assets-proof-ladder-target-from-implementation-without-tests.md |
 | documents | document:luc-4821-assets-files-folders-proof-ladder:ebad0c5bf4 | module:docs:6784d83cb0 | docs/planning/luc-4821-assets-files-folders-proof-ladder.md |
 | documents | document:luc-4824-known-state-evidence-and-architecture-baseline:b81849e6ea | module:docs:6784d83cb0 | docs/planning/luc-4824-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4831-source-control-closure-for-luc-4824-evidence-packet:174e9c8a7a | module:docs:6784d83cb0 | docs/planning/luc-4831-source-control-closure-for-luc-4824-evidence-packet.md |
-| documents | document:luc-4834-source-control-closure-for-combined-evidence-batch:7cd2ed1149 | module:docs:6784d83cb0 | docs/planning/luc-4834-source-control-closure-for-combined-evidence-batch.md |

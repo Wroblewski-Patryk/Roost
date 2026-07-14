@@ -1,3 +1,20 @@
+# 2026-07-14 LUC-1131 API Keys Proof-Link Health Signal
+
+- Status: routed unclassified API-keys endpoint proof-link closure is
+  verified locally.
+- Evidence: [LUC-1131](/LUC/issues/LUC-1131) task packet
+  `.codex/tasks/luc-1131-prove-unclassified-user-workflow-missing-test-link-for-use-api-keys.md`;
+  `docs/architecture/scanner-overrides.json` now marks `src/app.ts#/api-keys`
+  `verified` through the existing API proof in `src/tests/api.test.ts` plus
+  `src/modules/api-keys/api-keys.routes.ts` and `docs/API.md`; `npm run
+  architecture:refresh` PASS; external architecture-awareness rebuild
+  generated `2026-07-14T18:56:51.968Z` with `3026` entities / `7604`
+  relations / `16522` files; app-completion refresh generated `34` missing
+  test links and no longer routes `USE /api-keys`; Project Truth apply
+  generated `2026-07-14T18:57:50.091Z` with public probes `pass` and first
+  gap advanced to `src/app.ts#/api/build-info`; `npm run architecture:status`
+  PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`).
+
 # 2026-07-14 LUC-1099 Strategy Frontend Proof-Link Health Signal
 
 # 2026-07-14 LUC-1101 Root GET Proof-Link Health Signal

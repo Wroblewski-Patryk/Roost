@@ -2,6 +2,24 @@
 
 # Current Focus
 
+## LUC-1131 Checkpoint
+
+- 2026-07-14: [LUC-1131](/LUC/issues/LUC-1131) closed the routed
+  unclassified endpoint `src/app.ts#/api-keys` `missing_test_link` row and
+  then advanced the next first gap to `src/app.ts#/api/build-info`. Packet:
+  `.codex/tasks/luc-1131-prove-unclassified-user-workflow-missing-test-link-for-use-api-keys.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact API-keys
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/api-keys/api-keys.routes.ts` and
+  `docs/API.md`; `npm run architecture:refresh` PASS; external
+  architecture-awareness rebuild generated `2026-07-14T18:56:51.968Z` with
+  `3026` entities / `7604` relations / `16522` files and materialized the
+  exact verification links; sequential app-completion refresh now reports
+  `missingTestLink=34`; sequential Project Truth apply generated
+  `2026-07-14T18:57:50.091Z` with public probes `pass` and advanced the
+  first gap to `src/app.ts#/api/build-info`; `npm run architecture:status`
+  PASS (`GREEN`, `454/765/35`).
+
 ## LUC-1114 Checkpoint
 
 - 2026-07-14: [LUC-1114](/LUC/issues/LUC-1114) closed the routed

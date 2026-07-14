@@ -1,3 +1,9 @@
+# 2026-07-14 LUC-1131 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| API keys proof linkage | verified for dispatched missing-test-link gap | [LUC-1131](/LUC/issues/LUC-1131) focused proof-link packet `.codex/tasks/luc-1131-prove-unclassified-user-workflow-missing-test-link-for-use-api-keys.md`; `docs/architecture/scanner-overrides.json` marks `src/app.ts#/api-keys` `verified` through the existing protected API suite coverage in `src/tests/api.test.ts` plus `src/modules/api-keys/api-keys.routes.ts` and `docs/API.md`; `npm run architecture:refresh` PASS; external architecture-awareness rebuild generated `2026-07-14T18:56:51.968Z` with `3026` entities / `7604` relations / `16522` files and materialized the exact proof relations; sequential app-completion refresh reduced `missingTestLink` from `35` to `34` and no longer routes `api_endpoint:use-api-keys:d7553f1e44`; sequential Project Truth apply generated `2026-07-14T18:57:50.091Z` with public probes `pass` and advanced the first routed gap to `src/app.ts#/api/build-info`; `npm run architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`). | No further QA proof work is needed for `src/app.ts#/api-keys` unless a fresh generated regression removes the linked API evidence. The next routed gap is `src/app.ts#/api/build-info`, owned by Test Automation Engineer + QA Regression Lead. |
+
 # 2026-07-14 LUC-1108 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

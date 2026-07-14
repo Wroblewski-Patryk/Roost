@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T17:46:53.496Z",
+  "generatedAt": "2026-07-14T18:57:50.091Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 317,
-      "linkedRelationCount": 1326,
+      "entityCount": 319,
+      "linkedRelationCount": 1341,
       "layers": {
         "frontend": {
           "count": 31,
@@ -268,7 +268,7 @@
           "truncated": false
         },
         "backend": {
-          "count": 95,
+          "count": 96,
           "sample": [
             {
               "id": "api_endpoint:use-agent-events:1b4c65ace9",
@@ -307,6 +307,14 @@
               "type": "api_endpoint",
               "name": "USE /agents",
               "path": "src/app.ts#/agents",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "api_endpoint:use-api-keys:d7553f1e44",
+              "type": "api_endpoint",
+              "name": "USE /api-keys",
+              "path": "src/app.ts#/api-keys",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -901,20 +909,12 @@
               "path": "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
               "owner": "Docs Memory Lead",
               "status": "verified"
-            },
-            {
-              "id": "feature:luc-1090-assets-overview-proof-mjs:defdaad588",
-              "type": "test",
-              "name": "luc-1090-assets-overview-proof.mjs",
-              "path": "scripts/luc-1090-assets-overview-proof.mjs",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 145,
+          "count": 146,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -1019,6 +1019,14 @@
               "path": ".codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
+            },
+            {
+              "id": "task:task:a5b42ad253",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1131-prove-unclassified-user-workflow-missing-test-link-for-use-api-keys.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "in_progress"
             },
             {
               "id": "task:task:157c1a1016",
@@ -1547,14 +1555,6 @@
               "path": ".codex/tasks/luc-1015-account-access-workspaces-requireuserauth-doc-link.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
-            },
-            {
-              "id": "task:luc-1018-account-access-clearownertoken-doc-link:3ab92912b8",
-              "type": "task",
-              "name": "LUC-1018 Account Access clearOwnerToken Doc Link",
-              "path": ".codex/tasks/luc-1018-account-access-clear-owner-token-doc-link.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
             }
           ],
           "truncated": true
@@ -1605,6 +1605,14 @@
         "docs": {
           "count": 41,
           "sample": [
+            {
+              "id": "document:api:a617d1cb61",
+              "type": "document",
+              "name": "API",
+              "path": "docs/API.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
             {
               "id": "document:system-architecture:1149ef3528",
               "type": "document",
@@ -1818,14 +1826,6 @@
               "type": "document",
               "name": "Company OS Stage 1 Task Contracts",
               "path": "docs/planning/company-os-stage1-task-contracts.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:api:a617d1cb61",
-              "type": "document",
-              "name": "API",
-              "path": "docs/API.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
             },
@@ -3259,8 +3259,8 @@
     },
     {
       "userFlow": "Subscription and entitlement",
-      "entityCount": 1169,
-      "linkedRelationCount": 4087,
+      "entityCount": 1170,
+      "linkedRelationCount": 4092,
       "layers": {
         "frontend": {
           "count": 48,
@@ -4299,7 +4299,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 146,
+          "count": 147,
           "sample": [
             {
               "id": "agent:planner:5b56a0bd47",
@@ -4838,6 +4838,14 @@
               "status": "verified"
             },
             {
+              "id": "task:task:a5b42ad253",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1131-prove-unclassified-user-workflow-missing-test-link-for-use-api-keys.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "in_progress"
+            },
+            {
               "id": "task:task:b1280c7901",
               "type": "task",
               "name": "Task",
@@ -4932,14 +4940,6 @@
               "path": "src/app.ts#createApp",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "feature:api-key-middleware-ts:b3416cccca",
-              "type": "feature",
-              "name": "api-key.middleware.ts",
-              "path": "src/auth/api-key.middleware.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
             }
           ],
           "truncated": true
@@ -5608,8 +5608,8 @@
     },
     {
       "userFlow": "Trading operation",
-      "entityCount": 113,
-      "linkedRelationCount": 383,
+      "entityCount": 114,
+      "linkedRelationCount": 392,
       "layers": {
         "frontend": {
           "count": 4,
@@ -5880,7 +5880,7 @@
           "truncated": false
         },
         "worker": {
-          "count": 73,
+          "count": 74,
           "sample": [
             {
               "id": "module:agents:4ae71ba13a",
@@ -6025,6 +6025,14 @@
               "path": ".codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
+            },
+            {
+              "id": "task:task:a5b42ad253",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1131-prove-unclassified-user-workflow-missing-test-link-for-use-api-keys.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "in_progress"
             },
             {
               "id": "task:task:c2d0550ce1",
@@ -6549,8 +6557,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2885,
-      "linkedRelationCount": 7334,
+      "entityCount": 2886,
+      "linkedRelationCount": 7346,
       "layers": {
         "frontend": {
           "count": 86,
@@ -7226,22 +7234,6 @@
               "status": "verified"
             },
             {
-              "id": "api_endpoint:use-api-keys:d7553f1e44",
-              "type": "api_endpoint",
-              "name": "USE /api-keys",
-              "path": "src/app.ts#/api-keys",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "feature:app-ts:e798655a78",
-              "type": "feature",
-              "name": "app.ts",
-              "path": "src/app.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
               "id": "api_endpoint:use-api-build-info:36fe7c3255",
               "type": "api_endpoint",
               "name": "USE /api/build-info",
@@ -7254,6 +7246,14 @@
               "type": "task",
               "name": "LUC-267 Roost Public Route Alias Task-Link Curation",
               "path": ".codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "feature:app-ts:e798655a78",
+              "type": "feature",
+              "name": "app.ts",
+              "path": "src/app.ts",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -7570,6 +7570,14 @@
               "status": "implemented"
             },
             {
+              "id": "api_endpoint:use-agents:1c136317c6",
+              "type": "api_endpoint",
+              "name": "USE /agents",
+              "path": "src/app.ts#/agents",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:authactor:b3f790a259",
               "type": "function",
               "name": "authActor",
@@ -7845,7 +7853,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 837,
+          "count": 838,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -8022,6 +8030,14 @@
               "path": ".codex/tasks/luc-939-account-access-non-production-oauth-secret-proof-closure.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
+            },
+            {
+              "id": "task:task:a5b42ad253",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1131-prove-unclassified-user-workflow-missing-test-link-for-use-api-keys.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "in_progress"
             },
             {
               "id": "task:task:b1280c7901",
@@ -8476,14 +8492,6 @@
               "type": "agent",
               "name": "Responsibility Learning",
               "path": ".agents/state/responsibility-learning.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "agent:agent-tasks:5144b7fe4a",
-              "type": "agent",
-              "name": "Agent Tasks",
-              "path": ".agents/tasks/README.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             }
