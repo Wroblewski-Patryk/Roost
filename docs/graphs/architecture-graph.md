@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-14T15:57:05.892Z
+Generated: 2026-07-14T16:41:14.237Z
 
 ## Canonical Exports
 
@@ -42,7 +42,7 @@ Generated: 2026-07-14T15:57:05.892Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-14 LUC-1107 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-14 LUC-1108 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
@@ -63,7 +63,7 @@ Generated: 2026-07-14T15:57:05.892Z
 | api_endpoint | verified | GET / | src/app.ts#/ | Engineering Delivery Lead |
 | api_endpoint | verified | USE /agent-events | src/app.ts#/agent-events | Engineering Delivery Lead |
 | api_endpoint | verified | USE /agent-logs | src/app.ts#/agent-logs | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /agents | src/app.ts#/agents | Engineering Delivery Lead |
+| api_endpoint | verified | USE /agents | src/app.ts#/agents | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /api-keys | src/app.ts#/api-keys | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /api/build-info | src/app.ts#/api/build-info | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /assets | src/app.ts#/assets | Engineering Delivery Lead |
@@ -596,6 +596,7 @@ Generated: 2026-07-14T15:57:05.892Z
 | connected_to | project:roost:122c92a083 | task:task:148fa638f5 | .codex/tasks/luc-1101-unclassified-root-get-proof-link.md |
 | connected_to | project:roost:122c92a083 | task:task:0fcef1b6c4 | .codex/tasks/luc-1107-unclassified-user-workflow-use-agent-events-proof-link.md |
 | connected_to | project:roost:122c92a083 | task:task:877880df05 | .codex/tasks/luc-1108-unclassified-user-workflow-use-agent-logs-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:task:9d14f2d371 | .codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -655,7 +656,7 @@ Generated: 2026-07-14T15:57:05.892Z
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
 | documents | agent:2026-07-14-luc-1099-strategy-frontend-proof-link-health-signal:317f83ab0d | module:agents:4ae71ba13a | .agents/state/system-health.md |
-| documents | agent:2026-07-14-luc-1107-module-confidence-update:6d548bc2b2 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
+| documents | agent:2026-07-14-luc-1108-module-confidence-update:3156146211 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -1217,4 +1218,3 @@ Generated: 2026-07-14T15:57:05.892Z
 | documents | document:luc-4824-known-state-evidence-and-architecture-baseline:b81849e6ea | module:docs:6784d83cb0 | docs/planning/luc-4824-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4831-source-control-closure-for-luc-4824-evidence-packet:174e9c8a7a | module:docs:6784d83cb0 | docs/planning/luc-4831-source-control-closure-for-luc-4824-evidence-packet.md |
 | documents | document:luc-4834-source-control-closure-for-combined-evidence-batch:7cd2ed1149 | module:docs:6784d83cb0 | docs/planning/luc-4834-source-control-closure-for-combined-evidence-batch.md |
-| documents | document:luc-4837-known-state-evidence-and-architecture-baseline:6704c4c8c8 | module:docs:6784d83cb0 | docs/planning/luc-4837-known-state-evidence-and-architecture-baseline.md |

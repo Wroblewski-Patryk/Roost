@@ -474,6 +474,16 @@
       ]
     },
     {
+      "path": "src/app.ts#/agents",
+      "status": "verified",
+      "description": "Agents mount verified through the existing protected API suite coverage for GET /agents and the workspace-scoped /v1/agents CRUD chain, which exercises the mounted root compatibility alias and agent registry behavior without changing runtime code.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/agents/agents.routes.ts",
+        ".codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/strategy",
       "status": "verified",
       "description": "Protected Strategy route mount verified by the current local API harness for `GET /v1/strategy/context`, plus the existing Strategy route browser proof that consumes the same mounted packet from the authenticated 01 Strategy overview surface.",

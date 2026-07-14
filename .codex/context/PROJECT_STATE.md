@@ -1,5 +1,27 @@
 # PROJECT_STATE
 
+- 2026-07-14: [LUC-1114](/LUC/issues/LUC-1114) completed the local proof-link
+  closure for unclassified `src/app.ts#/agents`, and the local evidence
+  packet is complete. Source-of-truth task contract:
+  `.codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md`.
+  Current evidence: `docs/architecture/scanner-overrides.json` now marks the
+  exact Agents mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/agents/agents.routes.ts`;
+  `npm run architecture:refresh` PASS; external architecture-awareness
+  rebuild generated `2026-07-14T16:41:14.237Z` with `3025` entities / `7592`
+  relations / `16522` files and materialized the exact verification links;
+  sequential app-completion refresh reports `1282` items / `5` flows /
+  `1100` missing test links / `31` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1139` risk items and now routes
+  `src/app.ts#/agents` as `missing_doc_link`; Project Truth apply generated
+  `2026-07-14T16:41:27.287Z` with public probes `pass` and first gap advanced
+  to docs-owned `src/app.ts#/agents`; `npm run architecture:status` PASS
+  (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`). No runtime
+  feature logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. The new next owner/action
+  is Docs Memory Lead + Project Manager for the `src/app.ts#/agents` doc-link
+  follow-up.
+
 - 2026-07-14: [LUC-1108](/LUC/issues/LUC-1108) completed the local proof-link
   closure for unclassified `src/app.ts#/agent-logs`, and the local evidence
   packet is complete. Source-of-truth task contract:

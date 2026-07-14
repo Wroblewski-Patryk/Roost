@@ -1,4 +1,18 @@
 # Next Steps
+- 2026-07-14: [LUC-1114](/LUC/issues/LUC-1114) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/agents`. The durable packet is
+  `.codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md`.
+  Current fact: refreshed architecture-awareness marks the exact Agents mount
+  `verified` through the existing API proof in `src/tests/api.test.ts` and
+  `src/modules/agents/agents.routes.ts`, refreshed app-completion now reports
+  `missingTestLink=1100` and routes `src/app.ts#/agents` as
+  `missing_doc_link`, and Project Truth now routes the same endpoint as the
+  first remaining gap with docs ownership. Next action belongs to Docs Memory
+  Lead + Project Manager for the source-of-truth doc link on `src/app.ts#/agents`.
+  Do not reopen another QA proof lane for `src/app.ts#/agents` unless a fresh
+  generated regression removes the linked API evidence.
+
 - 2026-07-14: [LUC-1108](/LUC/issues/LUC-1108) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint
   `src/app.ts#/agent-logs`. The durable packet is

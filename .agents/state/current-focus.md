@@ -2,6 +2,24 @@
 
 # Current Focus
 
+## LUC-1114 Checkpoint
+
+- 2026-07-14: [LUC-1114](/LUC/issues/LUC-1114) closed the routed
+  unclassified endpoint `src/app.ts#/agents` `missing_test_link` row.
+  Packet:
+  `.codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Agents mount
+  `verified` through the existing protected API suite in `src/tests/api.test.ts`
+  plus `src/modules/agents/agents.routes.ts`; `npm run architecture:refresh`
+  PASS; external architecture-awareness rebuild generated
+  `2026-07-14T16:41:14.237Z` with `3025` entities / `7592` relations /
+  `16522` files and materialized the exact verification links; sequential
+  app-completion refresh reduced `missingTestLink` from `1101` to `1100` and
+  now routes `src/app.ts#/agents` as `missing_doc_link`; sequential Project
+  Truth apply generated `2026-07-14T16:41:27.287Z` with public probes `pass`
+  and advanced the first gap to docs-owned `src/app.ts#/agents`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`).
+
 - 2026-07-14: [LUC-1108](/LUC/issues/LUC-1108) closed the routed
   unclassified endpoint `src/app.ts#/agent-logs` `missing_test_link` row.
   Packet:

@@ -1,6 +1,26 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-14: [LUC-1114](/LUC/issues/LUC-1114) unclassified
+  `src/app.ts#/agents` missing-test-link verification is complete locally and
+  the routed gap has advanced to a docs-owned follow-up. Task contract:
+  `.codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  Agents mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/agents/agents.routes.ts`;
+  `npm run architecture:refresh` PASS; external architecture-awareness
+  rebuild generated `2026-07-14T16:41:14.237Z` with `3025` entities / `7592`
+  relations / `16522` files and materialized the exact verification links;
+  sequential app-completion refresh reduced `missingTestLink` from `1101` to
+  `1100` and now reports `src/app.ts#/agents` as `missing_doc_link`;
+  Project Truth apply generated `2026-07-14T16:41:27.287Z` with public probes
+  `pass` and advanced the first routed gap to docs-owned `src/app.ts#/agents`;
+  `npm run architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue
+  `0`, chain worklist `0`). No runtime product logic, provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Next owner: Docs Memory Lead +
+  Project Manager for the new first routed proof gap on `src/app.ts#/agents`.
+
 - 2026-07-14: [LUC-1108](/LUC/issues/LUC-1108) unclassified
   `src/app.ts#/agent-logs` missing-test-link verification is complete
   locally. Task contract:

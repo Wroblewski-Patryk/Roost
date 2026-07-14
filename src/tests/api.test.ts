@@ -7986,6 +7986,10 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(agent.status, 201);
   const agentId = (agent.body as { data: { id: string } }).data.id;
 
+  const agentsAlias = await request("/agents", { headers: authA });
+  assert.equal(agentsAlias.status, 200);
+  assert.ok((agentsAlias.body as { data: Array<{ id: string }> }).data.some((entry) => entry.id === agentId));
+
   const readAgent = await request(`/v1/agents/${agentId}`, { headers: authA });
   assert.equal(readAgent.status, 200);
 
