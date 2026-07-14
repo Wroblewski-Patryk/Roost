@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T21:05:46.574Z",
+  "generatedAt": "2026-07-14T22:18:17.180Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -6581,8 +6581,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2889,
-      "linkedRelationCount": 7373,
+      "entityCount": 2891,
+      "linkedRelationCount": 7383,
       "layers": {
         "frontend": {
           "count": 85,
@@ -7877,7 +7877,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 842,
+          "count": 844,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -7984,6 +7984,14 @@
               "status": "verified"
             },
             {
+              "id": "task:task:612815b6ef",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1160-normalize-luc-1151-task-status-indexing.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:638b05362c",
               "type": "task",
               "name": "Task",
@@ -8085,7 +8093,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-1151-prove-unclassified-user-workflow-missing-doc-link-for-use-api-build-info.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:d0b2850854",
@@ -8400,6 +8408,14 @@
               "status": "verified"
             },
             {
+              "id": "task:luc-1151-completion-evidence:3773ef3c2d",
+              "type": "task",
+              "name": "luc-1151-completion-evidence",
+              "path": ".codex/tasks/luc-1151-completion-evidence.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb",
               "type": "task",
               "name": "LUC-321 Source-Control Closure For LUC-262/LUC-267/LUC-268",
@@ -8502,22 +8518,6 @@
               "path": ".codex/context/LEARNING_JOURNAL.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
-            },
-            {
-              "id": "agent:next-steps:f65f9bc52d",
-              "type": "agent",
-              "name": "Next Steps",
-              "path": ".agents/state/next-steps.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "agent:quality-attribute-scenarios:df9832217e",
-              "type": "agent",
-              "name": "Quality Attribute Scenarios",
-              "path": ".agents/state/quality-attribute-scenarios.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true

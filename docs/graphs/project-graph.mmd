@@ -442,6 +442,7 @@ graph TD
   PIPE-AUTO-0039["Build Architecture Registry Catalog<br/>pipeline / tested"]
   PIPE-AUTO-0040["Aog Deploy Smoke<br/>pipeline / tested"]
   CRON-AUTO-0001["Clickup.Maintenance Scheduler<br/>cron_job / tested"]
+  TEST-BROWSER-ASSETS-OVERVIEW["Browser rendered Assets overview proof<br/>test / verified"]
   TEST-PROD-DRIVE-IMPORT-SMOKE["Production Drive import and freshness smoke<br/>test / verified"]
   TEST-AUTO-0001["npm run check:public-js<br/>test / tested"]
   TEST-AUTO-0002["npm run test<br/>test / tested"]
@@ -486,6 +487,7 @@ graph TD
   COMP-MANAGEMENT-ROUTE -->|uses| COMP-CC-DATA-TABLE
   TEST-API-LOCAL -->|covers| API-DEPARTMENTS-LIST
   TEST-BROWSER-MGMT-DEPT -->|covers| COMP-MANAGEMENT-ROUTE
+  TEST-BROWSER-ASSETS-OVERVIEW -->|covers| COMP-ASSETS-ROUTE
   FEAT-MGMT-DEPT-CATALOG -->|owns| API-DEPARTMENTS-LIST
   FEAT-MGMT-DEPT-CATALOG -->|owns| API-DEPARTMENTS-CREATE
   FEAT-MGMT-DEPT-CATALOG -->|owns| API-DEPARTMENTS-UPDATE
@@ -1218,3 +1220,6 @@ graph TD
   FEAT-AUTO-0029 -->|depends_on| DOC-ARCH-EVIDENCE-SYSTEM
   AGENT-COORDINATOR -->|depends_on| FEAT-AUTO-0029
   FEAT-AUTO-0029 -->|contains| API-AUTO-0170
+  FEAT-ASSETS-CONTEXT -->|contains| TEST-BROWSER-ASSETS-OVERVIEW
+  TEST-BROWSER-ASSETS-OVERVIEW -->|depends_on| COMP-ASSETS-ROUTE
+  AGENT-COORDINATOR -->|depends_on| TEST-BROWSER-ASSETS-OVERVIEW

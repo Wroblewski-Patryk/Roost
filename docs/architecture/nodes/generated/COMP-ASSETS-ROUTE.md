@@ -49,11 +49,13 @@ React Assets workbench over files, folders, previews, filters, and context.
 - contains -> [[UI-ASSETS-FILE-PREVIEW|Assets file preview]] (partial)
 - depends_on -> [[UI-ASSETS-FILE-PREVIEW|Assets file preview]] (partial)
 - [[PAGE-08-ASSETS-FILES|/areas?area=08-zasoby&view=files]] -> renders (verified)
+- [[TEST-BROWSER-ASSETS-OVERVIEW|Browser rendered Assets overview proof]] -> covers (verified)
 - [[FEAT-ASSETS-CONTEXT|Assets Context Workbench]] -> contains (partial)
 - [[COMP-SHELL|Authenticated Shell component]] -> depends_on (partial)
 - [[UI-ASSETS-FILE-PREVIEW|Assets file preview]] -> depends_on (partial)
 - [[TEST-PLAYWRIGHT-ASSETS|Playwright Assets proof]] -> depends_on (partial)
 - [[PAGE-08-ASSETS-FILES|/areas?area=08-zasoby&view=files]] -> depends_on (partial)
+- [[TEST-BROWSER-ASSETS-OVERVIEW|Browser rendered Assets overview proof]] -> depends_on (partial)
 
 ## Chains
 

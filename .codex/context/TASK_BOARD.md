@@ -1,6 +1,26 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-15: [LUC-1168](/LUC/issues/LUC-1168) source-control closure for the
+  inherited `project-docs` dirty packet from [LUC-1167](/LUC/issues/LUC-1167)
+  is complete locally. Task contract:
+  `.codex/tasks/luc-1168-source-control-closure-classify-project-docs-dirty-packet-from-luc-1167.md`.
+  Evidence: `git status --short --branch` narrowed the packet to one coherent
+  docs/status/generated group on `## main...origin/main [ahead 21]` with `77`
+  modified tracked paths plus `1` untracked generated node;
+  representative diffs show the packet is the current `LUC-1090` Assets
+  overview proof promotion in `docs/architecture/scanner-overrides.json`,
+  `docs/architecture/nodes/tests.csv`, and
+  `docs/status/evidence-status.csv`, plus expected graph/status regeneration;
+  `git diff --check` PASS; bounded redaction scan on `docs/architecture`,
+  `docs/status`, and `docs/graphs` found no high-confidence secret markers;
+  `npm run architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue
+  `0`, chain worklist `0`). Commit decision: local commit required because the
+  packet is current and coherent, while leaving it dirty would reopen the same
+  closure lane. No runtime product logic, provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred. Next owner: none after local commit and issue closeout.
+
 - 2026-07-14: [LUC-1135](/LUC/issues/LUC-1135) unclassified
   `src/app.ts#/api/build-info` missing-test-link verification is complete
   locally and the routed gap has advanced to the same symbol as `missing_doc_link`

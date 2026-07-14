@@ -1,6 +1,6 @@
 # Architecture Health Dashboard
 
-Generated at: 2026-07-14T21:05:13.140Z
+Generated at: 2026-07-14T22:17:42.574Z
 
 ## Gate Status
 
@@ -17,8 +17,8 @@ Generated at: 2026-07-14T21:05:13.140Z
 
 ## Graph Snapshot
 
-- Nodes: 454
-- Relations: 765
+- Nodes: 455
+- Relations: 769
 - Chains: 35
 
 ## Refresh Delta

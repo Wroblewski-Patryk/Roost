@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T21:04:54.395Z",
+  "generatedAt": "2026-07-14T22:17:20.263Z",
   "nodes": [
     {
       "id": "FEAT-ARCH-EVIDENCE-SYSTEM",
@@ -6647,6 +6647,21 @@
       ]
     },
     {
+      "id": "TEST-BROWSER-ASSETS-OVERVIEW",
+      "name": "Browser rendered Assets overview proof",
+      "type": "test",
+      "status": "verified",
+      "layer": "testing",
+      "module": "assets",
+      "feature": "assets-context",
+      "verificationStatus": "verified",
+      "riskLevel": "medium",
+      "filePath": "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+      "tags": [
+        "#test #browser #assets #dashboard"
+      ]
+    },
+    {
       "id": "TEST-PROD-DRIVE-IMPORT-SMOKE",
       "name": "Production Drive import and freshness smoke",
       "type": "test",
@@ -7041,6 +7056,13 @@
       "id": "REL-TEST-002",
       "source": "TEST-BROWSER-MGMT-DEPT",
       "target": "COMP-MANAGEMENT-ROUTE",
+      "type": "covers",
+      "status": "verified"
+    },
+    {
+      "id": "REL-TEST-003",
+      "source": "TEST-BROWSER-ASSETS-OVERVIEW",
+      "target": "COMP-ASSETS-ROUTE",
       "type": "covers",
       "status": "verified"
     },
@@ -12166,6 +12188,27 @@
       "source": "FEAT-AUTO-0029",
       "target": "API-AUTO-0170",
       "type": "contains",
+      "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0733",
+      "source": "FEAT-ASSETS-CONTEXT",
+      "target": "TEST-BROWSER-ASSETS-OVERVIEW",
+      "type": "contains",
+      "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0734",
+      "source": "TEST-BROWSER-ASSETS-OVERVIEW",
+      "target": "COMP-ASSETS-ROUTE",
+      "type": "depends_on",
+      "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0735",
+      "source": "AGENT-COORDINATOR",
+      "target": "TEST-BROWSER-ASSETS-OVERVIEW",
+      "type": "depends_on",
       "status": "partial"
     }
   ],

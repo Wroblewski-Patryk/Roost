@@ -441,6 +441,18 @@
       ]
     },
     {
+      "path": "src/app.ts#/assets",
+      "status": "verified",
+      "description": "Protected Assets route mount verified by the local API harness for `GET /v1/assets/context`, plus the focused Assets overview browser proof that renders the live `/areas?area=08-zasoby&view=overview` surface with bearer-auth context requests and responsive screenshots.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+        "docs/ux/evidence/luc-1090-assets-overview-proof/report.json",
+        "scripts/luc-1090-assets-overview-proof.mjs",
+        ".codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/",
       "status": "verified",
       "description": "Root route mount verified across both intended branches: API hosts return CompanyCore service metadata, while web hosts serve the React public home shell proven by the focused public-home browser packet.",
@@ -4111,6 +4123,22 @@
       "fromType": "test",
       "toPath": "web/src/features/departments/assets-route.tsx#AssetsOverview",
       "toType": "function",
+      "evidence": "LUC-1090 Assets overview browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/assets",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1090 Assets overview browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1090-assets-overview-proof.mjs",
+      "fromType": "test",
+      "toPath": "src/app.ts#/assets",
+      "toType": "api_endpoint",
       "evidence": "LUC-1090 Assets overview browser proof"
     },
     {

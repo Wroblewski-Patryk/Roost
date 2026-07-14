@@ -76,6 +76,7 @@ tags: "#feature #assets #drive"
 - contains -> [[CRON-AUTO-0001|Clickup.Maintenance Scheduler]] (partial)
 - contains -> [[TEST-PROD-DRIVE-IMPORT-SMOKE|Production Drive import and freshness smoke]] (partial)
 - contains -> [[DOC-OPS-AGENT-RUNTIME-LEDGER|Operations agent runtime coverage ledger]] (partial)
+- contains -> [[TEST-BROWSER-ASSETS-OVERVIEW|Browser rendered Assets overview proof]] (partial)
 - [[COMP-SHELL|Authenticated Shell component]] -> depends_on (partial)
 
 ## Chains
