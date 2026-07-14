@@ -1,0 +1,48 @@
+{
+  "issue": "LUC-1082",
+  "status": "passed",
+  "generatedAt": "2026-07-14T10:38:50.718Z",
+  "baseUrl": "http://127.0.0.1:53025",
+  "canonicalDashboardPath": "/areas?area=00-ogolny&view=overview",
+  "requestCounts": {
+    "authMe": 1,
+    "departments": 1,
+    "dashboardCommand": 1
+  },
+  "authHeaders": {
+    "authMeHeaders": [
+      "Bearer luc-1082-proof-token"
+    ],
+    "departmentsHeaders": [
+      "Bearer luc-1082-proof-token"
+    ],
+    "dashboardCommandHeaders": [
+      "Bearer luc-1082-proof-token"
+    ]
+  },
+  "loadingState": {
+    "title": "Loading records",
+    "detail": "CompanyCore is preparing this table view.",
+    "noticeCount": 3,
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-1082-dashboard-cc-notice-proof\\desktop-dashboard-loading-notice.png",
+    "noHorizontalOverflow": true
+  },
+  "errorState": {
+    "title": "CompanyCore hit a server problem. Try again in a moment.",
+    "noticeCount": 3,
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-1082-dashboard-cc-notice-proof\\desktop-dashboard-error-notice.png",
+    "noHorizontalOverflow": true
+  },
+  "assertions": {
+    "redirectedToCanonicalDashboard": true,
+    "dashboardCommandUsedBearerToken": true,
+    "authMeUsedBearerToken": true,
+    "departmentsUsedBearerToken": true,
+    "loadingNoticeRendered": true,
+    "errorNoticeRendered": true,
+    "noHorizontalOverflow": true,
+    "runtimeErrors": true
+  },
+  "consoleIssues": [],
+  "pageErrors": []
+}

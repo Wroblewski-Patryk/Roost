@@ -1,0 +1,84 @@
+{
+  "issue": "LUC-1090",
+  "status": "passed",
+  "generatedAt": "2026-07-14T12:37:00.063Z",
+  "baseUrl": "http://127.0.0.1:60322",
+  "route": "/areas?area=08-zasoby&view=overview",
+  "requestCounts": {
+    "authMe": 2,
+    "departments": 2,
+    "assets": 2
+  },
+  "authHeaders": {
+    "authMeHeaders": [
+      "Bearer luc-1090-proof-token",
+      "Bearer luc-1090-proof-token"
+    ],
+    "departmentsHeaders": [
+      "Bearer luc-1090-proof-token",
+      "Bearer luc-1090-proof-token"
+    ],
+    "assetsHeaders": [
+      "Bearer luc-1090-proof-token",
+      "Bearer luc-1090-proof-token"
+    ]
+  },
+  "desktop": {
+    "viewport": {
+      "width": 1440,
+      "height": 1024
+    },
+    "titleVisible": true,
+    "descriptionVisible": true,
+    "filesSectionVisible": true,
+    "openFilesHref": "/areas?area=08-zasoby&view=files",
+    "summaryLabels": [
+      "total Resources",
+      "source Roots",
+      "ai Ready Resources"
+    ],
+    "summaryValues": [
+      "12",
+      "3",
+      "9"
+    ],
+    "storedTokenMatches": true,
+    "noHorizontalOverflow": true,
+    "screenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-1090-assets-overview-proof\\desktop-assets-overview.png"
+  },
+  "mobile": {
+    "viewport": {
+      "width": 393,
+      "height": 852
+    },
+    "titleVisible": true,
+    "descriptionVisible": true,
+    "filesSectionVisible": true,
+    "openFilesHref": "/areas?area=08-zasoby&view=files",
+    "summaryLabels": [
+      "total Resources",
+      "source Roots",
+      "ai Ready Resources"
+    ],
+    "summaryValues": [
+      "12",
+      "3",
+      "9"
+    ],
+    "storedTokenMatches": true,
+    "noHorizontalOverflow": true,
+    "screenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-1090-assets-overview-proof\\mobile-assets-overview.png"
+  },
+  "assertions": {
+    "authMeUsedBearerToken": true,
+    "departmentsUsedBearerToken": true,
+    "assetsUsedBearerToken": true,
+    "overviewContentVisible": true,
+    "openFilesCtaTargetsFilesRoute": true,
+    "summaryCardsRendered": true,
+    "noHorizontalOverflow": true,
+    "runtimeErrors": true
+  },
+  "consoleIssues": [],
+  "pageErrors": []
+}

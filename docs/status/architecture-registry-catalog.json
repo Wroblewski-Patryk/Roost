@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-13T14:08:19.677Z",
+  "generatedAt": "2026-07-14T15:06:48.275Z",
   "totalFiles": 30,
   "missingFiles": 0,
-  "totalRows": 1767,
+  "totalRows": 1780,
   "files": [
     {
       "file": "docs/architecture/nodes/nodes.csv",
@@ -175,7 +175,7 @@
     {
       "file": "docs/testing/test-map.csv",
       "exists": true,
-      "rowCount": 8,
+      "rowCount": 21,
       "headerCount": 13
     },
     {

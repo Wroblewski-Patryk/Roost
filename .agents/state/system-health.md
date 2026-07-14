@@ -1,3 +1,697 @@
+# 2026-07-14 LUC-1099 Strategy Frontend Proof-Link Health Signal
+
+# 2026-07-14 LUC-1101 Root GET Proof-Link Health Signal
+
+- Status: routed unclassified root endpoint proof-link closure is verified
+  locally.
+- Evidence: [LUC-1101](/LUC/issues/LUC-1101) task contract
+  `.codex/tasks/luc-1101-unclassified-root-get-proof-link.md`;
+  `docs/architecture/scanner-overrides.json` now marks `src/app.ts#/`
+  `verified` through the existing API-host proof in `src/tests/api.test.ts`
+  plus the existing public-home browser packet
+  `docs/planning/luc-998-dashboard-public-home-frontend-proof.md`,
+  `docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json`, and
+  `scripts/luc-998-dashboard-public-home-proof.mjs`; `npm run
+  test:api:local` PASS (`8/8`); `npm run architecture:refresh` PASS;
+  external architecture-awareness refresh generated `2026-07-14T15:06:25.285Z`
+  with `3021` entities / `7547` relations / `16521` files; app-completion
+  refresh generated `1282` items / `5` flows / `1103` missing test links /
+  `30` missing doc links / `8` implemented-needs-proof / `0` blocked /
+  `1141` risk items and no longer reports `GET /`; Project Truth apply
+  generated `2026-07-14T15:07:59.922Z` with public probes `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to
+  `src/app.ts#/agent-events`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+- Status: focused Trading operation frontend proof-link closure is verified
+  locally.
+- Evidence: [LUC-1099](/LUC/issues/LUC-1099) task contract
+  `.codex/tasks/luc-1099-trading-operation-strategy-route-proof-link.md`;
+  `docs/architecture/scanner-overrides.json` now marks
+  `web/src/features/departments/strategy-route.tsx`, `#formatDate`, and
+  `#StrategyRoute` `verified` through the existing authenticated Strategy
+  browser proof packet `docs/planning/luc-727-strategy-route-local-proof.md`;
+  the same packet is now typed as a `test` artifact and
+  `docs/testing/test-map.csv` records `TEST-BROWSER-STRATEGY-ROUTE`; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-14T14:37:39.642Z` with `3020` entities / `7529`
+  relations / `16521` files; app-completion refresh generated `1282` items /
+  `5` flows / `1104` missing test links / `30` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1142` risk items and no longer
+  reports the Strategy frontend family; Project Truth apply generated
+  `2026-07-14T14:37:50.179Z` with public probes `pass`, runtime/event/ops
+  gaps `0`, and first gap advanced to unclassified `src/app.ts#/`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`,
+  chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-1095 Strategy Module Proof-Link Health Signal
+
+- 2026-07-14 LUC-1097 Strategy Helper Doc-Link Health Signal
+
+- Status: focused Trading operation helper doc-link closure is verified
+  locally.
+- Evidence: [LUC-1097](/LUC/issues/LUC-1097) task contract
+  `.codex/tasks/luc-1097-trading-operation-asjsonarray-doc-link.md`;
+  `docs/API.md` now documents the Strategy context invariants for normalized
+  `decisionLogs[].optionsConsidered`, keyword-filtered strategy knowledge and
+  Drive rows, and strategic-task selection; `docs/architecture/relations/documentation-links.csv`
+  links `src/modules/strategy`, `strategy.routes.ts`, `asJsonArray`,
+  `textMatchesStrategy`, and `taskLooksStrategic` to that contract; and
+  `docs/architecture/scanner-overrides.json` adds direct helper-level
+  `documents` relations to `docs/API.md`; sequential `npm run
+  architecture:refresh` PASS; sequential architecture-awareness refresh
+  generated `2026-07-14T14:06:49.888Z` with `3019` entities / `7516`
+  relations / `16521` files; sequential app-completion refresh generated
+  `1282` items / `5` flows / `1107` missing test links / `30`
+  missing doc links / `8` implemented-needs-proof / `0` blocked / `1145`
+  risk items and no longer reports the Strategy helper family as
+  `missing_doc_link`; sequential Project Truth apply generated
+  `2026-07-14T14:06:52.216Z` with public probes `pass`, runtime/event/ops
+  gaps `0`, and first gap advanced to Trading operation frontend
+  `missing_test_link` on `web/src/features/departments/strategy-route.tsx`;
+  `npm run architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue
+  `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-1095 Strategy Module Proof-Link Health Signal
+
+- Status: focused Trading operation backend proof-link closure is verified
+  locally.
+- Evidence: [LUC-1095](/LUC/issues/LUC-1095) task contract
+  `.codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md`;
+  `docs/architecture/scanner-overrides.json` now marks `src/modules/strategy`,
+  `src/modules/strategy/strategy.routes.ts`, `asJsonArray`,
+  `textMatchesStrategy`, and `taskLooksStrategic` `verified` through the
+  existing Strategy API proof in `src/tests/api.test.ts` and the accepted
+  Strategy read-packet contract
+  `docs/planning/v1-strategy-context-read-api-task-contract.md`; `npm run
+  test:api:local` PASS; `npm run architecture:refresh` PASS; external
+  architecture-awareness refresh generated `2026-07-14T13:36:44.472Z` with
+  `3018` entities / `7502` relations / `16521` files; app-completion refresh
+  generated `2026-07-14T13:36:50.846Z` with `1282` items / `5` flows /
+  `1107` missing test links / `33` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1148` risk items and no longer
+  reports the backend Strategy family as `missing_test_link`; Project Truth
+  apply generated `2026-07-14T13:36:55.194Z` with public probes `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to Trading operation
+  `src/modules/strategy/strategy.routes.ts#asJsonArray` `missing_doc_link`;
+  `npm run architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue
+  `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-1093 use-strategy Health Signal
+
+- Status: routed Trading operation endpoint proof-link closure is verified
+  locally.
+- Evidence: [LUC-1093](/LUC/issues/LUC-1093) task contract
+  `.codex/tasks/luc-1093-trading-operation-use-strategy-proof-link.md`;
+  `docs/architecture/scanner-overrides.json` now marks `src/app.ts#/strategy`
+  `verified` through the existing Strategy API/browser proof family:
+  `src/tests/api.test.ts`,
+  `docs/planning/v1-strategy-context-read-api-task-contract.md`, and
+  `docs/planning/luc-727-strategy-route-local-proof.md`; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-14T13:05:21.123Z` with `3017` entities / `7487`
+  relations / `16521` files and materialized the exact `test` relation from
+  `src/tests/api.test.ts` to `src/app.ts#/strategy`; sequential
+  app-completion refresh reduced `missingTestLink` from `1113` to `1112` and
+  no longer reports `api_endpoint:use-strategy:0ead398998`; sequential Project
+  Truth apply generated `2026-07-14T13:05:36.955Z` with public probes `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to Trading operation
+  `src/modules/strategy`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-1090 AssetsOverview Health Signal
+
+- Status: focused dashboard Assets overview proof-link closure is verified
+  locally.
+- Evidence: [LUC-1090](/LUC/issues/LUC-1090) task contract
+  `.codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md`;
+  `scripts/luc-1090-assets-overview-proof.mjs`,
+  `docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md`, and
+  `docs/ux/evidence/luc-1090-assets-overview-proof/report.json` prove the live
+  `08 Assets` overview route rendered the heading, description, summary cards,
+  and `Open files` CTA on desktop and mobile while every mocked
+  `/v1/auth/me`, `/v1/departments`, and `/v1/assets/context` request used
+  `Authorization: Bearer luc-1090-proof-token`; `docs/architecture/scanner-overrides.json`
+  marks `AssetsOverview` and the focused proof harness/helper family with
+  durable `verified` + `test` linkage; `docs/testing/test-map.csv` records
+  `TEST-BROWSER-ASSETS-OVERVIEW`; `npm run build:web` PASS; `npm run
+  architecture:refresh` PASS; Paperclip architecture-awareness refresh
+  generated `2026-07-14T12:39:31.558Z` with `3015` entities / `7465`
+  relations / `16521` files; app-completion refresh generated
+  `1282` items / `5` flows / `1113` missing test links / `30` missing doc
+  links / `8` implemented-needs-proof / `0` blocked / `1151` risk items and
+  no longer reports `AssetsOverview` as a routed `missing_test_link`; Project
+  Truth apply generated `2026-07-14T12:39:43.507Z` with public probes `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to Trading operation
+  `src/app.ts#/strategy`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-1088 Dashboard Shared Text Input Health Signal
+
+- Status: focused dashboard shared-component proof-link closure is verified
+  locally.
+- Evidence: [LUC-1088](/LUC/issues/LUC-1088) task contract
+  `.codex/tasks/luc-1088-dashboard-overview-cc-text-input-proof-link.md`;
+  `docs/architecture/scanner-overrides.json` marks
+  `web/src/components/cc-text-input.tsx` and `#CcTextInput` `verified`
+  through the existing auth proof surfaces that actually render the component:
+  `docs/planning/luc-5561-auth-account-access-local-smoke-proof.md`,
+  `docs/planning/luc-1063-account-access-set-owner-token-proof.md`,
+  `scripts/luc-1063-account-access-set-owner-token-proof.mjs`, and
+  `docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json`;
+  `npm run architecture:refresh` PASS; Paperclip architecture-awareness
+  refresh generated `2026-07-14T12:05:26.000Z` with `3003` entities / `7440`
+  relations / `16516` files; app-completion refresh generated
+  `2026-07-14T12:05:31.553Z` with `1282` items / `5` flows /
+  `1114` missing test links / `30` missing doc links /
+  `8` implemented-needs-proof / `0` blocked / `1152` risk items and no longer
+  reports `cc-text-input.tsx` as the first Dashboard overview
+  `missing_test_link`; Project Truth apply generated
+  `2026-07-14T12:05:35.254Z` with public probes `pass`, runtime/event/ops
+  gaps `0`, and first gap advanced to `AssetsOverview`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain
+  worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-1082 Dashboard Shared Notice Health Signal
+
+- Status: focused dashboard shared-component proof-link closure is verified
+  locally.
+- Evidence: [LUC-1082](/LUC/issues/LUC-1082) task contract
+  `.codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md`;
+  `scripts/luc-1082-dashboard-cc-notice-proof.mjs` and
+  `docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md` prove the
+  live dashboard overview route renders `CcNotice` in loading and fail-closed
+  error states; `docs/ux/evidence/luc-1082-dashboard-cc-notice-proof/report.json`
+  generated `2026-07-14T10:38:50.718Z` records canonical redirect,
+  bearer-auth request reuse, `loadingState.noticeCount=3`,
+  `errorState.noticeCount=3`, and `noHorizontalOverflow=true`;
+  `docs/architecture/scanner-overrides.json` marks `cc-notice.tsx`,
+  `CcNotice`, and the focused proof script family `verified`;
+  `docs/testing/test-map.csv` records `TEST-BROWSER-DASHBOARD-NOTICE`; `npm run
+  build:web` PASS; `npm run architecture:refresh` PASS; Paperclip
+  architecture-awareness refresh generated `2026-07-14T10:44:57.508Z` with
+  `2978` entities / `7370` relations / `16504` files; app-completion refresh
+  generated `2026-07-14T10:42:11.615Z` with `1277` items / `5` flows /
+  `1123` missing test links / `25` missing doc links /
+  `8` implemented-needs-proof / `0` blocked / `1156` risk items and no longer
+  reports `cc-notice.tsx` as the first Dashboard overview `missing_test_link`;
+  Project Truth apply generated `2026-07-14T10:45:07.009Z` with public probes
+  `pass`, runtime/event/ops gaps `0`, and first gap advanced to
+  `cc-resource-selector.tsx`.
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-1080 Dashboard Shared Field Health Signal
+
+- Status: focused dashboard shared-component proof-link closure is verified
+  locally.
+- Evidence: [LUC-1080](/LUC/issues/LUC-1080) task contract
+  `.codex/tasks/luc-1080-dashboard-overview-cc-field-proof-link.md`;
+  `docs/architecture/scanner-overrides.json` marks
+  `web/src/components/cc-field.tsx` and `#CcField` `verified` through the
+  existing auth proof surfaces that actually render the component:
+  `docs/planning/luc-5561-auth-account-access-local-smoke-proof.md`,
+  `docs/planning/luc-1063-account-access-set-owner-token-proof.md`,
+  `scripts/luc-1063-account-access-set-owner-token-proof.mjs`, and
+  `docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json`;
+  `npm run architecture:refresh` PASS; Paperclip architecture-awareness
+  refresh generated `2026-07-14T10:07:13.800Z` with `2967` entities / `7339`
+  relations / `16499` files; app-completion refresh dropped
+  `missingTestLink` from `1127` to `1125` and no longer reports
+  `cc-field.tsx` as the first Dashboard overview `missing_test_link`;
+  Project Truth apply advanced the first routed gap to `cc-notice.tsx`;
+  `npm run architecture:status` PASS (`GREEN`, evidence queue `0`, chain
+  worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-1078 Dashboard Shared Data Table Health Signal
+
+- Status: focused dashboard shared-component proof-link closure is verified
+  locally.
+- Evidence: [LUC-1078](/LUC/issues/LUC-1078) task contract
+  `.codex/tasks/luc-1078-dashboard-overview-cc-data-table-proof-link.md`;
+  `docs/architecture/scanner-overrides.json` marks
+  `web/src/components/cc-data-table.tsx`, `#CcDataTable`, and `#filterBar`
+  `verified` through the existing `LUC-998` dashboard/public-home browser
+  proof; `npm run architecture:refresh` PASS; Paperclip architecture-awareness
+  refresh generated `2026-07-14T09:37:53.270Z` with `2966` entities / `7331`
+  relations / `16499` files; app-completion refresh dropped
+  `missingTestLink` from `1130` to `1127` and no longer reports
+  `cc-data-table.tsx` as the first Dashboard overview `missing_test_link`;
+  Project Truth apply advanced the first routed gap to `cc-field.tsx`;
+  `npm run architecture:status` PASS (`GREEN`, evidence queue `0`, chain
+  worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-1074 Dashboard Module Doc-Link Health Signal
+
+- Status: focused dashboard backend doc-link closure is verified locally.
+- Evidence: [LUC-1074](/LUC/issues/LUC-1074) task contract
+  `.codex/tasks/luc-1074-dashboard-overview-src-modules-dashboard-doc-link.md`;
+  `docs/API.md` now documents the protected dashboard command-center contract
+  for `GET /v1/dashboard/command` and `/dashboard/command`; `docs/architecture/relations/documentation-links.csv`
+  links `src/modules/dashboard`, `dashboard.routes.ts`, `coerceCount`,
+  `pickHealth`, `riskRank`, `startOfToday`, `startOfTomorrow`, and
+  `sumCounts` to that accepted route contract; `npm run architecture:refresh`
+  PASS; Paperclip architecture-awareness refresh generated
+  `2026-07-14T08:36:13.709Z` with `2963` entities / `7304` relations /
+  `16499` files; app-completion refresh generated `2026-07-14T08:36:22.303Z`
+  with `1278` items / `5` flows / `1133` missing test links / `25` missing
+  doc links / `8` implemented-needs-proof / `0` blocked / `1166` risk items
+  and no longer reports the dashboard backend family as `missing_doc_link`;
+  Project Truth apply generated `2026-07-14T08:36:31.429Z` with public probe
+  `pass`, runtime/event/ops gaps `0`, and first gap advanced to Dashboard
+  overview `cc-button.tsx` `missing_test_link`; `npm run architecture:status`
+  PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-1072 Dashboard Module Proof-Link Health Signal
+
+- Status: focused dashboard backend proof-link closure is verified locally.
+- Evidence: [LUC-1072](/LUC/issues/LUC-1072) task contract
+  `.codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md`;
+  `docs/architecture/scanner-overrides.json` marks `src/modules/dashboard`,
+  `dashboard.routes.ts`, `coerceCount`, `pickHealth`, `riskRank`,
+  `startOfToday`, `startOfTomorrow`, and `sumCounts` `verified` through the
+  existing `src/tests/api.test.ts` dashboard command proof; `npm run
+  test:api:local` PASS; `npm run architecture:refresh` PASS; architecture
+  awareness refresh generated `2026-07-14T08:13:04.553Z` with `2967`
+  entities / `7309` relations / `16500` files; app-completion refresh
+  generated `2026-07-14T08:13:10.712Z` with `1282` items / `5` flows /
+  `1134` missing test links / `32` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1174` risk items and no longer
+  reports the backend dashboard family as `missing_test_link`; Project Truth
+  apply generated `2026-07-14T08:13:13.951Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to Dashboard overview
+  `src/modules/dashboard` `missing_doc_link`; `npm run architecture:status`
+  PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-1070 Architecture Health Dashboard Gate Health Signal
+
+- Status: focused architecture dashboard gate proof is verified locally.
+- Evidence: [LUC-1070](/LUC/issues/LUC-1070) task contract
+  `.codex/tasks/luc-1070-dashboard-architecture-health-dashboard-gate-proof.md`;
+  `src/tests/architecture-health-dashboard-gate.test.ts` proves coherent pass
+  output plus malformed dashboard JSON and invariant-mismatch fail-closed
+  behavior; `docs/architecture/scanner-overrides.json` marks
+  `scripts/check-architecture-health-dashboard-gate.mjs`, `#readJson`, and
+  `#fail` `verified`; `docs/testing/test-map.csv` records
+  `TEST-ARCH-HEALTH-DASHBOARD-GATE`; architecture-awareness refresh generated
+  `2026-07-14T07:35:56.053Z` with `2961` entities / `7283` relations /
+  `16499` files; app-completion refresh generated `2026-07-14T07:36:04.059Z`
+  with `1278` items / `5` flows / `1141` missing test links / `25`
+  missing doc links / `8` implemented-needs-proof / `0` blocked / `1174`
+  risk items and no longer reports the gate script or helpers; Project Truth
+  apply generated `2026-07-14T07:36:10.441Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to Dashboard overview
+  `src/modules/dashboard` `missing_test_link`; `npm run architecture:status`
+  PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-1068 Architecture Health Dashboard Builder Health Signal
+
+- Status: focused architecture dashboard proof is verified locally.
+- Evidence: [LUC-1068](/LUC/issues/LUC-1068) task contract
+  `.codex/tasks/luc-1068-dashboard-architecture-health-dashboard-proof.md`;
+  `src/tests/architecture-health-dashboard.test.ts` proves both coherent
+  green dashboard aggregation and failing output behavior with missing
+  optional inputs; `docs/architecture/scanner-overrides.json` marks
+  `scripts/build-architecture-health-dashboard.mjs`, `#main`, `#readJson`,
+  and `#toBoolIcon` `verified`; `docs/testing/test-map.csv` records
+  `TEST-ARCH-HEALTH-DASHBOARD`; architecture-awareness refresh generated
+  `2026-07-14T07:08:41.300Z` with `2957` entities / `7273` relations /
+  `16498` files; app-completion refresh generated `2026-07-14T07:08:47.178Z`
+  with `1275` items / `5` flows / `1144` missing test links / `25`
+  missing doc links / `8` implemented-needs-proof / `0` blocked / `1177`
+  risk items and no longer reports the script or helpers; Project Truth apply
+  generated `2026-07-14T07:08:52.015Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to Dashboard overview
+  `scripts/check-architecture-health-dashboard-gate.mjs`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-1058 Account Access setOwnerToken Health Signal
+
+- Status: documentation-link closeout is verified locally.
+- Evidence: [LUC-1058](/LUC/issues/LUC-1058) task contract
+  `.codex/tasks/luc-1058-account-access-set-owner-token-doc-link.md`;
+  `docs/API.md` already documents the session-token write contract for
+  `setOwnerToken`; `docs/architecture/relations/documentation-links.csv` now
+  links the exact helper to that accepted doc; refreshed architecture-awareness
+  generated `2026-07-14T05:36:53.993Z` with `2934` entities / `7226`
+  relations / `16491` files and materialized the exact doc relation plus the
+  task/state trace; app-completion refresh now reports `24` missing doc links
+  and no longer lists the helper; Project Truth apply generated
+  `2026-07-14T05:36:53.989Z` and advanced the same symbol to
+  `implemented_needs_proof`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call, protected
+  smoke, deploy, push, restart, production mutation, credential access, or
+  secret disclosure occurred.
+
+# 2026-07-14 LUC-1028 Projects Route Health Signal
+
+- Status: focused `GET /v1/projects` confidence is verified locally.
+- Evidence: [LUC-1028](/LUC/issues/LUC-1028) task contract
+  `.codex/tasks/luc-1028-projects-route-get-proof.md`; `src/tests/api.test.ts`
+  now proves the owning workspace sees the created `Service project` on
+  `GET /v1/projects` while another workspace still receives an empty list;
+  `npm run test:api:local` PASS; override JSON parse PASS; refreshed
+  architecture-awareness generated `2026-07-14T02:33:29.098Z` with `2910`
+  entities / `7164` relations / `16481` files and materialized the
+  `LUC-1028 GET /v1/projects local proof` relation; app-completion refresh now
+  reports `1264` items / `5` flows / `1141` missing test links / `27` missing
+  doc links / `8` implemented-needs-proof / `0` blocked / `1176` risk items;
+  Project Truth apply generated `2026-07-14T02:33:29.089Z` and the first
+  remaining gap is `web/src/api/auth-token.ts#isSignedIn` `missing_doc_link`;
+  `npm run architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue
+  `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call, protected
+  smoke, deploy, push, restart, production mutation, credential access, or
+  secret disclosure occurred.
+
+# 2026-07-14 LUC-1022 Account Access clearOwnerToken Health Signal
+
+- Status: focused frontend auth-token reset confidence is verified locally.
+- Evidence: [LUC-1022](/LUC/issues/LUC-1022) proof packet
+  `docs/planning/luc-1022-account-access-clear-owner-token-proof.md`; focused
+  Playwright script `scripts/luc-1022-account-access-clear-owner-token-proof.mjs`
+  proves both user-menu sign-out clearing `companycoreOwnerToken` and mocked
+  `401 invalid_token` auth-reset clearing with reload back to the login
+  surface; browser evidence is saved to
+  `docs/ux/evidence/luc-1022-clear-owner-token-proof/report.json` plus
+  desktop screenshots; `npm run build:web` PASS; refreshed
+  architecture-awareness generated `2026-07-14T02:31:18.061Z` with `2909`
+  entities / `7158` relations / `16481` files and marks the exact helper
+  `verified`; app-completion refresh now reports `1141` missing test links /
+  `27` missing doc links / `8` implemented-needs-proof / `0` blocked and no
+  longer lists `clearOwnerToken`; Project Truth apply advanced the first gap
+  to `web/src/api/auth-token.ts#isSignedIn` `missing_doc_link`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain
+  worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-1010 Account Access workspace requireUserAuth Health Signal
+
+- Status: focused workspace user-auth guard confidence is verified locally.
+- Evidence: [LUC-1010](/LUC/issues/LUC-1010) task contract
+  `.codex/tasks/luc-1010-account-access-workspaces-requireuserauth-proof.md`;
+  `src/tests/api.test.ts` now proves owner workspace list/create/select
+  behavior plus API-key denial for workspace list/create/select routes;
+  `npm run test:api:local` PASS; override JSON parse PASS; refreshed
+  architecture-awareness generated `2026-07-14T01:06:38.415Z` with `2896`
+  entities / `7130` relations / `16476` files and marks
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth` `verified`;
+  app-completion refresh now reports `1131` missing test links /
+  `29` missing doc links / `8` implemented-needs-proof / `0` blocked and no
+  longer lists the helper as `missing_test_link`; Project Truth apply
+  generated `2026-07-14T01:06:48.833Z` and the first remaining gap is the same
+  symbol as `missing_doc_link`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-1007 Google Drive Route Health Signal
+
+- Status: focused Google Drive route-mount confidence is verified locally.
+- Evidence: [LUC-1007](/LUC/issues/LUC-1007) proof packet
+  `docs/planning/luc-1007-google-drive-route-proof.md`; paired readback
+  `docs/planning/luc-1007-google-drive-route-readback.md`;
+  `docs/architecture/scanner-overrides.json` links both artifacts to
+  `src/app.ts#/google-drive`; `docs/architecture/relations/documentation-links.csv`
+  records the exact route-mount documentation row; `npm run test:api:local`
+  PASS and the existing `src/tests/api.test.ts` protected API flow exercises
+  the mounted Google Drive files, content, scope, description, Docs, and
+  Sheets endpoints; refreshed architecture-awareness generated
+  `2026-07-14T00:40:45.243Z` with `2895` entities / `7121` relations /
+  `16476` files; app-completion refresh now reports `1132` missing test links /
+  `28` missing doc links / `8` implemented-needs-proof / `0` blocked and no
+  longer lists `/google-drive`; Project Truth apply generated
+  `2026-07-14T00:41:50.830Z` and the first remaining gap is
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-1008 Architecture Chain Integrity Health Signal
+
+- Status: focused architecture chain-integrity script confidence is verified
+  locally.
+- Evidence: [LUC-1008](/LUC/issues/LUC-1008) task contract
+  `.codex/tasks/luc-1008-architecture-chain-integrity-proof.md`;
+  `src/tests/architecture-chain-integrity.test.ts` proves the clean pass path
+  and fail-closed issue-report path for
+  `scripts/check-architecture-chain-integrity.mjs`; `npm run build:server`
+  PASS; `node --test dist/tests/architecture-chain-integrity.test.js`
+  PASS (`2/2`); refreshed architecture-awareness generated
+  `2026-07-14T00:38:46.442Z` with `2894` entities / `7118` relations /
+  `16475` files and marks the target script plus helper functions `verified`;
+  app-completion refresh now reports `1132` missing test links /
+  `29` missing doc links / `8` implemented-needs-proof / `0` blocked and no
+  longer lists the target script entities; Project Truth apply generated
+  `2026-07-14T00:38:46.408Z` and the first remaining gap is
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-997 Account Access workforce entityAuthority Health Signal
+
+- Status: focused workforce authority confidence is verified locally.
+- Evidence: [LUC-997](/LUC/issues/LUC-997) task contract
+  `.codex/tasks/luc-997-account-access-workforce-entityauthority-proof.md`;
+  `src/tests/api.test.ts` now proves workforce authority readback for the
+  user-backed human record and a created agent record through
+  `GET /v1/workforce`; override JSON parse PASS; disposable local DB proof
+  PASS via `npm run prisma:migrate:deploy`, `npm run seed`, and
+  `node --test dist/tests/api.test.js` (`8/8`) against a local
+  `postgres:16-alpine` container; refreshed architecture-awareness
+  generated `2026-07-14T00:24:17.027Z` with `2888` entities / `7077`
+  relations / `16471` files and marks
+  `src/modules/workforce/workforce.service.ts#entityAuthority` `verified`;
+  app-completion refresh now reports `1140` missing test links /
+  `28` missing doc links / `9` implemented-needs-proof / `0` blocked and no
+  longer lists the helper; Project Truth apply generated
+  `2026-07-14T00:24:58.011Z` and the first remaining gap is
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link`.
+- Runtime/deploy posture: unchanged for this lane. No provider call, protected
+  smoke, deploy, push, restart, production mutation, credential access, or
+  secret disclosure occurred.
+
+# 2026-07-14 LUC-989 Source-Control Closure Health Signal
+
+- Status: the original [LUC-982](/LUC/issues/LUC-982) intake authActor proof
+  packet is preserved locally, but isolated commit closure is not healthy or
+  truthful from the current mixed dirty worktree.
+- Evidence: [LUC-989](/LUC/issues/LUC-989) task contract
+  `.codex/tasks/luc-989-source-control-closure-for-luc-982.md`;
+  `git status --short --branch` reports `main...origin/main [ahead 13]`;
+  fresh porcelain showed `32` modified tracked paths and `15` untracked paths
+  before this closure packet; `git rev-list --left-right --count
+  origin/main...HEAD` -> `0 13`; `git diff --check` PASS with LF-to-CRLF
+  warnings only; readback confirms the original `src/tests/api.test.ts` /
+  scanner / graphs / status packet is mixed with later
+  [LUC-988](/LUC/issues/LUC-988), [LUC-990](/LUC/issues/LUC-990),
+  [LUC-971](/LUC/issues/LUC-971), [LUC-997](/LUC/issues/LUC-997),
+  [LUC-998](/LUC/issues/LUC-998), and [LUC-997](/LUC/issues/LUC-997) artifacts.
+- Runtime/deploy posture: unchanged. No provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred. The closure result is `no commit created` because the
+  packet is no longer safely isolatable.
+
+# 2026-07-14 LUC-998 Dashboard Overview And Public Home Health Signal
+
+- Status: focused dashboard/public-home frontend confidence is verified
+  locally.
+- Evidence: [LUC-998](/LUC/issues/LUC-998) task contract
+  `.codex/tasks/luc-998-dashboard-public-home-frontend-proof.md`;
+  `npm run build:web` PASS; focused Playwright proof saved
+  `docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json` plus
+  desktop/mobile screenshots and proved `/` render, signed-in `/dashboard`
+  canonical redirect, bearer-auth shell requests, zero console/page errors,
+  and no desktop/mobile horizontal overflow; refreshed architecture-awareness
+  generated `2026-07-14T00:21:11.899Z` with `2887` entities / `7074`
+  relations / `16471` files and marks the exact dashboard/public-home rows
+  `verified`; app-completion refresh now reports `1140` missing test links /
+  `29` missing doc links / `9` implemented-needs-proof / `0` blocked and no
+  longer lists the target route entities; Project Truth apply generated
+  `2026-07-14T00:21:51.327Z` and the first remaining gap is the unrelated
+  production `api_health` probe failure.
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-14 LUC-990 Account Access intake authActor Doc-Link Health Signal
+
+- Status: focused intake auth actor documentation-link confidence is verified
+  locally for the assigned duplicate lane.
+- Evidence: [LUC-990](/LUC/issues/LUC-990) task contract
+  `.codex/tasks/luc-990-account-access-intake-authactor-doc-link.md`;
+  `docs/API.md` explicitly documents bearer-owner versus API-key actor
+  attribution for `intake.route_proposed` audit/event evidence;
+  `docs/architecture/relations/documentation-links.csv` links
+  `src/modules/intake/intake.routes.ts#authActor` to `docs/API.md`; refreshed
+  architecture-awareness generated `2026-07-13T23:08:32.101Z` with `2874`
+  entities / `7034` relations / `16464` files; app-completion refresh now
+  reports `1141` missing test links / `28` missing doc links /
+  `9` implemented-needs-proof / `0` blocked and no longer lists the helper as
+  `missing_doc_link`; Project Truth apply generated `2026-07-13T23:08:46.804Z`
+  and keeps the first gap at
+  `src/modules/workforce/workforce.service.ts#entityAuthority`
+  `missing_test_link`.
+- Runtime/deploy posture: unchanged. No provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred.
+
+# 2026-07-13 LUC-988 Account Access intake authActor Doc-Link Health Signal
+
+- Status: focused intake auth actor documentation-link confidence is verified
+  locally.
+- Evidence: [LUC-988](/LUC/issues/LUC-988) task contract
+  `.codex/tasks/luc-988-account-access-intake-authactor-doc-link.md`;
+  `docs/architecture/relations/documentation-links.csv` links
+  `src/modules/intake/intake.routes.ts#authActor` to `docs/API.md`;
+  refreshed architecture-awareness generated `2026-07-13T23:10:00.099Z`
+  with `2874` entities / `7034` relations / `16464` files and materializes
+  the exact `document:API -> function:authActor` relation; app-completion
+  refresh now reports `1141` missing test links / `28` missing doc links /
+  `9` implemented-needs-proof / `0` blocked and no longer lists the helper as
+  `missing_doc_link`; Project Truth apply generated
+  `2026-07-13T23:11:09.288Z` and advanced the first gap to
+  `src/modules/workforce/workforce.service.ts#entityAuthority`
+  `missing_test_link`.
+- Runtime/deploy posture: unchanged. No provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred.
+
+# 2026-07-13 LUC-982 Account Access intake authActor Health Signal
+
+- Status: focused intake auth actor proof is verified locally.
+- Evidence: [LUC-982](/LUC/issues/LUC-982) task contract
+  `.codex/tasks/luc-982-account-access-intake-authactor-proof.md`; focused
+  local disposable-DB proof PASS via `npm run prisma:migrate:deploy` plus a
+  temporary `tsx` route smoke that proved bearer-owner and API-key intake
+  route proposals record the expected actor attribution; refreshed
+  architecture-awareness generated `2026-07-13T23:00:41.419Z` with `2872`
+  entities / `7014` relations / `16464` files and marks
+  `src/modules/intake/intake.routes.ts#authActor` `verified`; app-completion
+  refresh now reports `1141` missing test links / `29` missing doc links /
+  `9` implemented-needs-proof / `0` blocked and reads the exact helper as
+  `hasTest=true`, `risk=missing_doc_link`; Project Truth apply generated
+  `2026-07-13T23:01:01.396Z` and no longer reports the helper as
+  `missing_test_link`.
+- Runtime/deploy posture: unchanged. No provider call, protected smoke,
+  deploy, push, restart, production mutation, or secret disclosure occurred.
+  Cleanup removed validation container `companycore-luc-982-postgres`, and no
+  `chrome-headless-shell` process remained. Separate broader-suite note:
+  source-level `tsx --test` smoke exposed an unrelated `/v1/auth/register`
+  `Prisma P2028` transaction-timeout risk before the new intake assertions.
+
+# 2026-07-13 LUC-977 Account Access workflow-definition-drafts authActor Doc-Link Health Signal
+
+- Status: focused workflow-definition-drafts auth actor documentation-link
+  confidence is verified locally.
+- Evidence: [LUC-977](/LUC/issues/LUC-977) task contract
+  `.codex/tasks/luc-977-account-access-workflow-definition-drafts-authactor-doc-link.md`;
+  `docs/architecture/relations/documentation-links.csv` links
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor` to
+  `docs/API.md`; refreshed architecture-awareness generated
+  `2026-07-13T19:05:03.219Z` with `2871` entities / `7007` relations /
+  `16465` files; app-completion refresh now reports `1142` missing test links
+  / `28` missing doc links / `9` implemented-needs-proof / `0` blocked and no
+  longer lists the helper as `missing_doc_link`; Project Truth apply generated
+  `2026-07-13T19:05:13.520Z` and advanced the first gap to
+  `src/modules/intake/intake.routes.ts#authActor` `missing_test_link`.
+- Runtime/deploy posture: unchanged. No provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred.
+
+# 2026-07-13 LUC-974 Account Access workflow-definition-drafts authActor Health Signal
+
+- Status: focused workflow-definition-drafts auth actor proof is verified
+  locally.
+- Evidence: [LUC-974](/LUC/issues/LUC-974) task contract
+  `.codex/tasks/luc-974-account-access-workflow-definition-drafts-authactor-proof.md`;
+  `src/tests/api.test.ts` proves workflow-definition draft actor attribution
+  for bearer-owner and API-key paths; `npm run test:api:local` PASS (`8/8`);
+  refreshed architecture-awareness generated `2026-07-13T18:38:17.797Z` with
+  `2870` entities / `7002` relations / `16465` files and marks
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`
+  `verified`; app-completion refresh now reports `1142` missing test links /
+  `29` missing doc links / `9` implemented-needs-proof / `0` blocked and
+  reads the exact helper as `hasTest=true`, `risk=missing_doc_link`; Project
+  Truth apply generated `2026-07-13T18:38:29.270Z` and no longer reports the
+  helper as `missing_test_link`.
+- Runtime/deploy posture: unchanged. No provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access outside the
+  local disposable API-key proof, or secret disclosure occurred.
+
+# 2026-07-13 LUC-962 Account Access company-os authActor Doc-Link Health Signal
+
+- Status: focused Company OS auth actor documentation-link confidence is
+  verified locally.
+- Evidence: [LUC-962](/LUC/issues/LUC-962) task contract
+  `.codex/tasks/luc-962-account-access-company-os-authactor-doc-link.md`;
+  `docs/architecture/relations/documentation-links.csv` links
+  `src/modules/company-os/company-os.routes.ts#authActor` to
+  `docs/planning/company-os-stage1-task-contracts.md`; refreshed
+  architecture-awareness generated `2026-07-13T18:04:09.254Z` with `2867`
+  entities / `6971` relations / `16461` files and materializes the exact
+  `document:company-os-stage-1-task-contracts -> function:authActor` relation;
+  app-completion refresh now reports `1144` missing test links / `28` missing
+  doc links / `9` implemented-needs-proof / `0` blocked and no longer lists
+  the helper as `missing_doc_link`; Project Truth apply generated
+  `2026-07-13T18:05:15.282Z` and advanced the first gap to
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`
+  `missing_test_link`.
+- Runtime/deploy posture: unchanged. No provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred.
+
 # 2026-07-13 LUC-961 Source-Control Closure Health Signal
 
 - Status: focused PM source-control closure for the current

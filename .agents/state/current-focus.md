@@ -1,5 +1,409 @@
 # Current Focus
 
+- 2026-07-14: [LUC-1101](/LUC/issues/LUC-1101) closed the routed
+  unclassified endpoint `src/app.ts#/` `missing_test_link` row. Packet:
+  `.codex/tasks/luc-1101-unclassified-root-get-proof-link.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact root mount
+  `verified` through the existing API-host proof in `src/tests/api.test.ts`
+  plus the existing public-home browser packet
+  `docs/planning/luc-998-dashboard-public-home-frontend-proof.md`,
+  `docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json`, and
+  `scripts/luc-998-dashboard-public-home-proof.mjs`; `npm run
+  test:api:local`, `npm run architecture:refresh`, sequential external
+  architecture-awareness refresh, sequential app-completion refresh,
+  sequential Project Truth apply, and `npm run architecture:status` all
+  passed. Refreshed app-completion no longer reports
+  `api_endpoint:get:1998daec82`, and refreshed Project Truth generated
+  `2026-07-14T15:07:59.922Z` now advances the queue to unclassified
+  `src/app.ts#/agent-events` as the next proof target.
+
+- 2026-07-14: [LUC-1099](/LUC/issues/LUC-1099) closed the routed Trading
+  operation frontend-family `missing_test_link` rows on
+  `web/src/features/departments/strategy-route.tsx`, `#formatDate`, and
+  `#StrategyRoute`. Packet:
+  `.codex/tasks/luc-1099-trading-operation-strategy-route-proof-link.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact route file
+  and both function rows `verified` through the existing authenticated
+  Strategy browser proof packet
+  `docs/planning/luc-727-strategy-route-local-proof.md`, and that packet is
+  now typed as a `test` artifact with `docs/testing/test-map.csv` entry
+  `TEST-BROWSER-STRATEGY-ROUTE`. Repo `npm run architecture:refresh`,
+  sequential external architecture-awareness refresh, sequential
+  app-completion refresh, sequential Project Truth apply, and
+  `npm run architecture:status` all passed. Refreshed Project Truth no longer
+  routes the Strategy frontend family and instead advances the queue to the
+  unclassified endpoint `src/app.ts#/` as the next proof target.
+
+- 2026-07-14: [LUC-1097](/LUC/issues/LUC-1097) closed the routed Trading
+  operation helper-family `missing_doc_link` queue for `asJsonArray`,
+  `textMatchesStrategy`, and `taskLooksStrategic`. Packet:
+  `.codex/tasks/luc-1097-trading-operation-asjsonarray-doc-link.md`.
+  `docs/API.md` now documents the Strategy context invariants behind
+  decision-log array normalization, keyword-filtered strategy knowledge/Drive
+  rows, and strategic-task selection; `docs/architecture/relations/documentation-links.csv`
+  and `docs/architecture/scanner-overrides.json` now link the exact Strategy
+  backend module/helper family to that contract. Sequential `npm run
+  architecture:refresh`, external architecture-awareness refresh,
+  sequential app-completion refresh, Project Truth apply, and `npm run
+  architecture:status` all passed. Refreshed Project Truth no longer routes
+  Strategy backend docs debt and instead advances the Trading operation queue
+  to frontend `missing_test_link` debt on
+  `web/src/features/departments/strategy-route.tsx`.
+
+- 2026-07-14: [LUC-1095](/LUC/issues/LUC-1095) closed the routed Trading
+  operation backend-family `missing_test_link` row on `src/modules/strategy`.
+  Packet: `.codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md`.
+  `docs/architecture/scanner-overrides.json` now marks `src/modules/strategy`,
+  `strategy.routes.ts`, `asJsonArray`, `textMatchesStrategy`, and
+  `taskLooksStrategic` `verified` through the existing local Strategy API
+  harness in `src/tests/api.test.ts` plus the accepted Strategy read-packet
+  contract `docs/planning/v1-strategy-context-read-api-task-contract.md`.
+  Repo `npm run test:api:local`, `npm run architecture:refresh`, sequential
+  external architecture-awareness refresh, sequential app-completion refresh,
+  Project Truth apply, and `npm run architecture:status` all passed.
+  Refreshed Project Truth no longer routes the backend Strategy family as
+  `missing_test_link` and instead advances the queue to Trading operation
+  `src/modules/strategy/strategy.routes.ts#asJsonArray` as a docs-owned
+  `missing_doc_link` gap.
+
+- 2026-07-14: [LUC-1093](/LUC/issues/LUC-1093) closed the routed Trading
+  operation `missing_test_link` row on `src/app.ts#/strategy`. Packet:
+  `.codex/tasks/luc-1093-trading-operation-use-strategy-proof-link.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact protected
+  Strategy route mount `verified` through the existing local API harness in
+  `src/tests/api.test.ts`, `docs/planning/v1-strategy-context-read-api-task-contract.md`,
+  and the existing authenticated Strategy browser proof packet
+  `docs/planning/luc-727-strategy-route-local-proof.md`. Repo
+  `npm run architecture:refresh`, sequential external architecture-awareness
+  refresh, sequential app-completion refresh, Project Truth apply, and
+  `npm run architecture:status` all passed. Refreshed Project Truth no longer
+  routes `src/app.ts#/strategy` and instead advances the queue to Trading
+  operation `src/modules/strategy`.
+
+- 2026-07-14: [LUC-1090](/LUC/issues/LUC-1090) closed the Dashboard overview
+  `AssetsOverview` `missing_test_link` row on
+  `web/src/features/departments/assets-route.tsx#AssetsOverview`. Packet:
+  `.codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md`.
+  `docs/architecture/scanner-overrides.json` now marks `AssetsOverview` and
+  the focused proof harness/helper family `verified` through the new browser
+  proof packet:
+  `docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md`,
+  `scripts/luc-1090-assets-overview-proof.mjs`, and
+  `docs/ux/evidence/luc-1090-assets-overview-proof/report.json`. Repo
+  `npm run build:web`, `npm run architecture:refresh`, sequential Paperclip
+  architecture-awareness refresh, sequential app-completion refresh, Project
+  Truth apply, and `npm run architecture:status` all passed. Refreshed Project
+  Truth no longer routes `AssetsOverview` and instead advances the queue to
+  Trading operation `src/app.ts#/strategy` as the next routed proof target.
+
+- 2026-07-14: [LUC-1088](/LUC/issues/LUC-1088) closed the Dashboard overview
+  shared text-input `missing_test_link` row on
+  `web/src/components/cc-text-input.tsx`. Packet:
+  `.codex/tasks/luc-1088-dashboard-overview-cc-text-input-proof-link.md`.
+  `docs/architecture/scanner-overrides.json` now marks `cc-text-input.tsx`
+  and `CcTextInput` `verified` through the existing auth browser proof packet:
+  `docs/planning/luc-5561-auth-account-access-local-smoke-proof.md`,
+  `docs/planning/luc-1063-account-access-set-owner-token-proof.md`,
+  `scripts/luc-1063-account-access-set-owner-token-proof.mjs`, and
+  `docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json`.
+  Repo `npm run architecture:refresh`, sequential Paperclip
+  architecture-awareness refresh, sequential app-completion refresh, Project
+  Truth apply, and `npm run architecture:status` all passed. Refreshed Project
+  Truth no longer routes `cc-text-input.tsx` and instead advances the queue to
+  `AssetsOverview` as the next Dashboard overview proof target.
+
+- 2026-07-14: [LUC-1082](/LUC/issues/LUC-1082) closed the Dashboard overview
+  shared notice `missing_test_link` row on `web/src/components/cc-notice.tsx`.
+  Packet:
+  `.codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md`.
+  `docs/architecture/scanner-overrides.json` now marks `cc-notice.tsx`,
+  `CcNotice`, and the focused proof script family `verified` through the new
+  dashboard overview browser proof packet:
+  `docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md`,
+  `scripts/luc-1082-dashboard-cc-notice-proof.mjs`, and
+  `docs/ux/evidence/luc-1082-dashboard-cc-notice-proof/report.json`. Repo
+  `npm run architecture:refresh`, Paperclip architecture-awareness refresh,
+  app-completion refresh, and Project Truth apply all passed. Refreshed
+  Project Truth no longer routes `cc-notice.tsx` and instead advances the queue
+  to `cc-resource-selector.tsx` as the next shared frontend proof target.
+
+- 2026-07-14: [LUC-1078](/LUC/issues/LUC-1078) closed the Dashboard overview
+  shared managed-table `missing_test_link` row on
+  `web/src/components/cc-data-table.tsx`. Packet:
+  `.codex/tasks/luc-1078-dashboard-overview-cc-data-table-proof-link.md`.
+  `docs/architecture/scanner-overrides.json` now marks
+  `cc-data-table.tsx`, `CcDataTable`, and `filterBar` `verified` through the
+  existing `LUC-998` browser proof artifacts rather than a duplicate harness.
+  Repo `npm run architecture:refresh`, Paperclip architecture-awareness
+  refresh, app-completion refresh, Project Truth apply, and
+  `npm run architecture:status` all passed. Refreshed Project Truth no longer
+  routes `cc-data-table.tsx` as the first Dashboard overview gap and instead
+  advances the queue to `cc-field.tsx` as the next shared frontend proof
+  target.
+
+- 2026-07-14: [LUC-1074](/LUC/issues/LUC-1074) closed the Dashboard overview
+  backend-family `missing_doc_link` queue for `src/modules/dashboard`,
+  `dashboard.routes.ts`, `coerceCount`, `pickHealth`, `riskRank`,
+  `startOfToday`, `startOfTomorrow`, and `sumCounts`. Packet:
+  `.codex/tasks/luc-1074-dashboard-overview-src-modules-dashboard-doc-link.md`.
+  `docs/API.md` now documents the dashboard command-center contract, and
+  `docs/architecture/relations/documentation-links.csv` links the exact
+  backend module, route file, and helper symbols to that accepted doc. Repo
+  `npm run architecture:refresh`, Paperclip architecture-awareness refresh,
+  app-completion refresh, Project Truth apply, and `npm run architecture:status`
+  all passed. Refreshed Project Truth no longer routes dashboard backend docs
+  debt and instead advances the first Dashboard overview gap to shared
+  frontend proof debt on `cc-data-table.tsx`, followed by the sibling
+  components and `AssetsOverview`. The live Paperclip issue disposition for
+  [LUC-1076](/LUC/issues/LUC-1076) is now `done` with typed completion
+  evidence.
+
+- 2026-07-14: [LUC-1072](/LUC/issues/LUC-1072) closed the Dashboard overview
+  `src/modules/dashboard` `missing_test_link` row by linking the existing
+  dashboard API proof to the backend module, route file, and helper functions.
+  Packet:
+  `.codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md`.
+  `docs/architecture/scanner-overrides.json` now marks
+  `src/modules/dashboard`, `dashboard.routes.ts`, `coerceCount`,
+  `pickHealth`, `riskRank`, `startOfToday`, `startOfTomorrow`, and
+  `sumCounts` `verified` through the existing `src/tests/api.test.ts`
+  harness; `npm run test:api:local`, `npm run architecture:refresh`, the
+  Paperclip architecture-awareness refresh, app-completion refresh, Project
+  Truth apply, and `npm run architecture:status` all passed. Refreshed
+  Project Truth now routes the same backend family only as `missing_doc_link`,
+  owned by Docs Memory Lead + Project Manager, while separate dashboard
+  frontend proof debt remains on `AssetsOverview`.
+
+- 2026-07-14: [LUC-1070](/LUC/issues/LUC-1070) closed the Dashboard overview
+  `scripts/check-architecture-health-dashboard-gate.mjs`
+  `missing_test_link` row. Packet:
+  `.codex/tasks/luc-1070-dashboard-architecture-health-dashboard-gate-proof.md`.
+  `src/tests/architecture-health-dashboard-gate.test.ts` now proves coherent
+  pass output plus malformed JSON and invariant-mismatch fail-closed behavior;
+  `docs/architecture/scanner-overrides.json` marks the script plus `readJson`
+  and `fail` `verified`; `docs/testing/test-map.csv` records
+  `TEST-ARCH-HEALTH-DASHBOARD-GATE`. Refreshed architecture-awareness
+  generated `2026-07-14T07:35:56.053Z` with `2961` entities / `7283`
+  relations / `16499` files; refreshed app-completion now reports `1141`
+  missing test links / `25` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1174` risk items, and Project
+  Truth first gap has advanced to the next Dashboard overview verification
+  target: `src/modules/dashboard` `missing_test_link`, owned by Test
+  Automation Engineer + QA Regression Lead.
+
+- LUC-1070 was then patched to `done` on the live Paperclip issue control
+  plane after the actual issue UUID and API base were discovered. The typed
+  completion evidence bundle and closeout comment are on the same issue, and
+  the guardrail is to verify the live control plane and issue ID before
+  treating a tracker as unreachable.
+
+- 2026-07-14: [LUC-1068](/LUC/issues/LUC-1068) closed the Dashboard overview
+  `scripts/build-architecture-health-dashboard.mjs` `missing_test_link` row.
+  Packet: `.codex/tasks/luc-1068-dashboard-architecture-health-dashboard-proof.md`.
+  `src/tests/architecture-health-dashboard.test.ts` now proves both coherent
+  green dashboard aggregation and failing output behavior with missing optional
+  inputs; `docs/architecture/scanner-overrides.json` marks the script plus
+  `main`, `readJson`, and `toBoolIcon` `verified`; `docs/testing/test-map.csv`
+  records `TEST-ARCH-HEALTH-DASHBOARD`. Refreshed architecture-awareness
+  generated `2026-07-14T07:08:41.300Z` with `2957` entities / `7273`
+  relations / `16498` files; refreshed app-completion now reports `1144`
+  missing test links / `25` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1177` risk items, and Project
+  Truth first gap has advanced to the next Dashboard overview verification
+  target: `scripts/check-architecture-health-dashboard-gate.mjs`
+  `missing_test_link`, owned by Test Automation Engineer + QA Regression Lead.
+
+- 2026-07-14: [LUC-1066](/LUC/issues/LUC-1066) closed the Dashboard overview
+  `src/app.ts#/dashboard` `missing_test_link` row. Packet:
+  `docs/planning/luc-1066-dashboard-overview-use-dashboard-proof-link.md`.
+  Existing LUC-998/LUC-726 dashboard proof is now linked directly at the
+  route entity through `docs/architecture/scanner-overrides.json`, and
+  `docs/testing/test-map.csv` records the focused browser command. Refreshed
+  app-completion now reports `1148` missing test links / `25` missing doc
+  links / `8` implemented-needs-proof / `0` blocked / `1181` risk items, and
+  Project Truth first gap has advanced to the next Dashboard overview
+  verification target: `scripts/build-architecture-health-dashboard.mjs`
+  `missing_test_link`, owned by Test Automation Engineer + QA Regression Lead.
+
+- 2026-07-14: [LUC-1058](/LUC/issues/LUC-1058) closed the Account access
+  `web/src/api/auth-token.ts#setOwnerToken` `missing_doc_link` row. Packet:
+  `.codex/tasks/luc-1058-account-access-set-owner-token-doc-link.md`.
+  `docs/API.md` already documents the session-token write behavior and
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  helper to that contract. Refreshed app-completion now reports `24` missing
+  doc links and no longer lists the helper, while Project Truth has advanced
+  the same symbol to `implemented_needs_proof`, owned by QA Regression Lead +
+  Project Manager.
+
+- 2026-07-14: [LUC-1034](/LUC/issues/LUC-1034) closed the Account access
+  `web/src/api/auth-token.ts#isSignedIn` `missing_doc_link` row. Packet:
+  `.codex/tasks/luc-1034-account-access-issignedin-doc-link.md`.
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  helper to `docs/API.md`, which already documents signed-in UI state as
+  session-token-derived state. Refreshed app-completion now reports `1141`
+  missing test links / `26` missing doc links / `9`
+  implemented-needs-proof / `0` blocked / `1176` risk items, and Project
+  Truth first gap has advanced from the same symbol `missing_doc_link` to the
+  same symbol `implemented_needs_proof`, owned by QA Regression Lead +
+  Project Manager.
+
+- 2026-07-14: [LUC-1022](/LUC/issues/LUC-1022) closed the Account access
+  `web/src/api/auth-token.ts#clearOwnerToken`
+  implemented-needs-proof row. Packet:
+  `docs/planning/luc-1022-account-access-clear-owner-token-proof.md`. The
+  focused browser proof now demonstrates both sign-out token clearing and
+  `401 invalid_token` auth-reset clearing through the real frontend shell,
+  with linked evidence in `docs/ux/evidence/luc-1022-clear-owner-token-proof/`.
+  The exact helper is now `verified`, app-completion reports `1141` missing
+  test links / `27` missing doc links / `8` implemented-needs-proof /
+  `0` blocked / `1176` risk items, and Project Truth first gap has advanced to
+  `web/src/api/auth-token.ts#isSignedIn` `missing_doc_link`, owned by Docs
+  Memory Lead + Project Manager.
+
+- 2026-07-14: [LUC-1018](/LUC/issues/LUC-1018) closed the Account access
+  `web/src/api/auth-token.ts#clearOwnerToken` `missing_doc_link` row. Packet:
+  `.codex/tasks/luc-1018-account-access-clear-owner-token-doc-link.md`.
+  `docs/API.md` now documents the frontend auth-token session-storage contract
+  and `docs/architecture/relations/documentation-links.csv` links the exact
+  helper to that accepted doc. Refreshed app-completion now reports `1131`
+  missing test links / `27` missing doc links / `9`
+  implemented-needs-proof / `0` blocked / `1167` risk items, and Project
+  Truth first gap has advanced from the same symbol `missing_doc_link` to the
+  same symbol `implemented_needs_proof`, owned by QA Regression Lead +
+  Project Manager.
+
+- 2026-07-14: [LUC-1015](/LUC/issues/LUC-1015) closed the Account access
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  missing-doc-link row. Packet:
+  `.codex/tasks/luc-1015-account-access-workspaces-requireuserauth-doc-link.md`.
+  The accepted API contract now documents that workspace list/create/select
+  routes require bearer-user auth, deny `X-API-Key` callers fail closed,
+  verify membership before workspace selection, and mint fresh workspace-scoped
+  bearer tokens only after owner-auth checks. The exact helper is now out of
+  the `missing_doc_link` queue, app-completion reports `1131` missing test
+  links / `28` missing doc links / `8` implemented-needs-proof / `0` blocked /
+  `1167` risk items, and Project Truth first gap has advanced to
+  `web/src/api/auth-token.ts#clearOwnerToken` `missing_doc_link`, owned by
+  Docs Memory Lead + Project Manager.
+
+- 2026-07-14: [LUC-1010](/LUC/issues/LUC-1010) closed the Account access
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  missing-test-link row. Packet:
+  `.codex/tasks/luc-1010-account-access-workspaces-requireuserauth-proof.md`.
+  The exact helper is no longer in the `missing_test_link` queue, app-completion
+  now reports `1131` missing test links / `29` missing doc links /
+  `8` implemented-needs-proof / `0` blocked / `1168` risk items, and Project
+  Truth first gap has narrowed to the same symbol as
+  `missing_doc_link`, now owned by Docs Memory Lead + Project Manager.
+
+- 2026-07-14: [LUC-1008](/LUC/issues/LUC-1008) closed the architecture
+  chain-integrity proof lane. Packet:
+  `.codex/tasks/luc-1008-architecture-chain-integrity-proof.md`. The exact
+  `scripts/check-architecture-chain-integrity.mjs` feature plus `loadCsv`,
+  `main`, `parseCsv`, `readText`, `splitIds`, and `writeText` are no longer
+  in the `missing_test_link` queue, app-completion now reports `1132`
+  missing test links / `29` missing doc links / `8` implemented-needs-proof /
+  `0` blocked / `1169` risk items, and Project Truth first gap remains the
+  next QA-owned Account access helper:
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link`.
+
+- 2026-07-14: [LUC-989](/LUC/issues/LUC-989) closed the PM source-control lane
+  for the current [LUC-982](/LUC/issues/LUC-982) proof packet with a truthful
+  no-commit outcome. Packet:
+  `.codex/tasks/luc-989-source-control-closure-for-luc-982.md`. The original
+  intake authActor proof is still preserved locally, but the shared dirty
+  worktree has advanced into a newer mixed packet that also includes later
+  [LUC-988](/LUC/issues/LUC-988), [LUC-990](/LUC/issues/LUC-990),
+  [LUC-971](/LUC/issues/LUC-971), [LUC-997](/LUC/issues/LUC-997), and
+  [LUC-998](/LUC/issues/LUC-998) artifacts.
+  Focus shifts away from isolated LUC-982 recounts to board/operator
+  sequencing for a fresh combined source-control closure issue or explicit
+  supersession.
+
+- 2026-07-14: [LUC-997](/LUC/issues/LUC-997) closed the Account access
+  `src/modules/workforce/workforce.service.ts#entityAuthority`
+  missing-test-link row. Packet:
+  `.codex/tasks/luc-997-account-access-workforce-entityauthority-proof.md`.
+  The exact helper
+  is no longer in the app-completion queue, app-completion now reports `1140`
+  missing test links / `28` missing doc links / `9` implemented-needs-proof /
+  `0` blocked / `1177` risk items, and Project Truth first gap has advanced to
+  the next QA-owned Account access helper:
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link`.
+
+- 2026-07-14: [LUC-998](/LUC/issues/LUC-998) closed the Dashboard overview /
+  public home frontend proof lane. Packet:
+  `.codex/tasks/luc-998-dashboard-public-home-frontend-proof.md`. The exact
+  `general-dashboard` / `public-home` route entities are no longer in the
+  `missing_test_link` queue, app-completion now reports `1140` missing test
+  links / `29` missing doc links / `9` implemented-needs-proof / `0` blocked /
+  `1178` risk items, and Project Truth first gap is now the unrelated
+  production `api_health` probe failure on
+  `https://api.roost.luckysparrow.ch/health`.
+
+- 2026-07-14: [LUC-990](/LUC/issues/LUC-990) closed the assigned duplicate
+  Account access `src/modules/intake/intake.routes.ts#authActor` doc-link lane
+  with an explicit intake API contract clarification. Packet:
+  `.codex/tasks/luc-990-account-access-intake-authactor-doc-link.md`. The
+  exact helper remains out of the `missing_doc_link` queue, app-completion now
+  reports `1141` missing test links / `28` missing doc links /
+  `9` implemented-needs-proof / `0` blocked / `1178` risk items, and Project
+  Truth first gap remains the next QA-owned Account access helper:
+  `src/modules/workforce/workforce.service.ts#entityAuthority`
+  `missing_test_link`.
+
+- 2026-07-13: [LUC-988](/LUC/issues/LUC-988) completed the Account access
+  `src/modules/intake/intake.routes.ts#authActor` doc-link lane. Packet:
+  `.codex/tasks/luc-988-account-access-intake-authactor-doc-link.md`.
+  The exact helper is no longer in the `missing_doc_link` queue, app-completion
+  now reports `1141` missing test links / `28` missing doc links /
+  `9` implemented-needs-proof / `0` blocked / `1178` risk items, and Project
+  Truth first gap has advanced to the next QA-owned Account access helper:
+  `src/modules/workforce/workforce.service.ts#entityAuthority`
+  `missing_test_link`.
+
+- 2026-07-13: [LUC-982](/LUC/issues/LUC-982) closed the Account access
+  `src/modules/intake/intake.routes.ts#authActor` missing-test-link row.
+  Packet: `.codex/tasks/luc-982-account-access-intake-authactor-proof.md`.
+  The exact helper now reads `verified` with `hasTest=true` in refreshed
+  app-completion, and Project Truth classifies the same symbol only as
+  `missing_doc_link`. Focus shifts away from QA proof authoring for this
+  helper to Docs Memory Lead + Project Manager for the residual same-symbol
+  doc-link gap. Separate note: a broader source-level API smoke exposed an
+  unrelated `/v1/auth/register` `Prisma P2028` transaction-timeout risk.
+
+- 2026-07-13: [LUC-977](/LUC/issues/LUC-977) completed the Account access
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`
+  doc-link lane. Packet:
+  `.codex/tasks/luc-977-account-access-workflow-definition-drafts-authactor-doc-link.md`.
+  The exact helper is no longer in the `missing_doc_link` queue, app-completion
+  now reports `1142` missing test links / `28` missing doc links /
+  `9` implemented-needs-proof / `0` blocked / `1179` risk items, and Project
+  Truth first gap has advanced to the next QA-owned Account access auth helper:
+  `src/modules/intake/intake.routes.ts#authActor` `missing_test_link`.
+
+- 2026-07-13: [LUC-974](/LUC/issues/LUC-974) closed the Account access
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`
+  missing-test-link row. Packet:
+  `.codex/tasks/luc-974-account-access-workflow-definition-drafts-authactor-proof.md`.
+  The exact helper now reads `verified` with `hasTest=true` in refreshed
+  app-completion, and Project Truth classifies the same symbol only as
+  `missing_doc_link`. Focus shifts away from QA proof authoring for this
+  helper to Docs Memory Lead + Project Manager for the residual same-symbol
+  doc-link gap.
+
+- 2026-07-13: [LUC-962](/LUC/issues/LUC-962) completed the Account access
+  `src/modules/company-os/company-os.routes.ts#authActor` doc-link lane.
+  Packet: `.codex/tasks/luc-962-account-access-company-os-authactor-doc-link.md`.
+  The exact helper is no longer in the `missing_doc_link` queue, app-completion
+  now reports `1144` missing test links / `28` missing doc links /
+  `9` implemented-needs-proof / `0` blocked / `1181` risk items, and Project
+  Truth first gap has advanced to the next QA-owned Company OS auth helper:
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`
+  `missing_test_link`.
+
 - 2026-07-13: [LUC-961](/LUC/issues/LUC-961) closed the PM source-control
   lane for the current [LUC-959](/LUC/issues/LUC-959) proof packet. Packet:
   `.codex/tasks/luc-961-source-control-closure-for-luc-959.md`. The local

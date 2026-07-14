@@ -1,0 +1,58 @@
+{
+  "timestamp": "2026-07-14T04:07:17.358Z",
+  "baseUrl": "http://127.0.0.1:63271",
+  "route": "/areas?area=08-zasoby&view=files",
+  "assertions": {
+    "desktop": {
+      "viewport": {
+        "width": 1440,
+        "height": 1024
+      },
+      "storedTokenMatches": true,
+      "assetsContextUsedBearerAuth": true,
+      "authMeUsedBearerAuth": true,
+      "departmentsUsedBearerAuth": true,
+      "previewUsedBearerAuth": true,
+      "renderedBlobPreview": true,
+      "noHorizontalOverflow": true,
+      "screenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-1043-owner-token-proof\\desktop-owner-token-assets.png"
+    },
+    "mobile": {
+      "viewport": {
+        "width": 393,
+        "height": 852
+      },
+      "storedTokenMatches": true,
+      "assetsContextUsedBearerAuth": true,
+      "authMeUsedBearerAuth": true,
+      "departmentsUsedBearerAuth": true,
+      "previewUsedBearerAuth": true,
+      "renderedBlobPreview": true,
+      "noHorizontalOverflow": true,
+      "screenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-1043-owner-token-proof\\mobile-owner-token-assets.png"
+    },
+    "previewRequestCount": 4,
+    "assetsContextRequestCount": 2
+  },
+  "requestLog": {
+    "authMeHeaders": [
+      "Bearer proof-token",
+      "Bearer proof-token"
+    ],
+    "departmentsHeaders": [
+      "Bearer proof-token",
+      "Bearer proof-token"
+    ],
+    "assetsContextHeaders": [
+      "Bearer proof-token",
+      "Bearer proof-token"
+    ],
+    "previewHeaders": [
+      "Bearer proof-token",
+      "Bearer proof-token",
+      "Bearer proof-token",
+      "Bearer proof-token"
+    ]
+  },
+  "errors": []
+}

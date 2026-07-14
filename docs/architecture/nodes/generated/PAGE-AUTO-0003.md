@@ -52,7 +52,7 @@ Auto-scaffolded from React route drift report.
 
 ## Tests
 
-- No test rows.
+- `TEST-BROWSER-SET-OWNER-TOKEN` node scripts/luc-1063-account-access-set-owner-token-proof.mjs: `verified`
 
 ## Evidence
 

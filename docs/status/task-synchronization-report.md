@@ -1,6 +1,6 @@
 # Task Synchronization Report
 
-Generated: 2026-07-13T17:38:37.936Z
+Generated: 2026-07-14T15:06:25.285Z
 
 ## Contract
 
@@ -8,8 +8,8 @@ Every task should identify the feature/module it changes, dependency expectation
 
 ## Signals
 
-- Actionable tasks without architecture links: 10
-- Raw tasks without architecture links: 10
+- Actionable tasks without architecture links: 12
+- Raw tasks without architecture links: 12
 - Actionable implementation entities without task links: 0
 - Raw implementation entities without task links: 0
 - Classified task-linkage noise: 0
@@ -20,6 +20,7 @@ Every task should identify the feature/module it changes, dependency expectation
 
 ## Actionable Tasks Without Architecture Links
 
+- Task (.codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md)
 - LUC-527 Account Access Missing-Test-Link Proof (.codex/tasks/luc-527-account-access-missing-test-link-proof.md)
 - LUC-538 Account Access Google Drive Auth Proof (.codex/tasks/luc-538-account-access-google-drive-auth-proof.md)
 - LUC-546 Account Access Google Drive Authorization URL Proof (.codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md)
@@ -30,6 +31,7 @@ Every task should identify the feature/module it changes, dependency expectation
 - luc-777-account-access-normalize-token-response-proof (.codex/tasks/luc-777-account-access-normalize-token-response-proof.md)
 - luc-778-account-access-post-google-oauth-token-proof (.codex/tasks/luc-778-account-access-post-google-oauth-token-proof.md)
 - luc-894-account-access-integration-settings-service-proof (.codex/tasks/luc-894-account-access-integration-settings-service-proof.md)
+- Task (.codex/tasks/luc-974-account-access-workflow-definition-drafts-authactor-proof.md)
 
 ## Actionable Implementation Without Task Links
 
@@ -38,6 +40,7 @@ Every task should identify the feature/module it changes, dependency expectation
 
 ### Raw Tasks Without Architecture Links
 
+- Task (.codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md)
 - LUC-527 Account Access Missing-Test-Link Proof (.codex/tasks/luc-527-account-access-missing-test-link-proof.md)
 - LUC-538 Account Access Google Drive Auth Proof (.codex/tasks/luc-538-account-access-google-drive-auth-proof.md)
 - LUC-546 Account Access Google Drive Authorization URL Proof (.codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md)
@@ -48,5 +51,6 @@ Every task should identify the feature/module it changes, dependency expectation
 - luc-777-account-access-normalize-token-response-proof (.codex/tasks/luc-777-account-access-normalize-token-response-proof.md)
 - luc-778-account-access-post-google-oauth-token-proof (.codex/tasks/luc-778-account-access-post-google-oauth-token-proof.md)
 - luc-894-account-access-integration-settings-service-proof (.codex/tasks/luc-894-account-access-integration-settings-service-proof.md)
+- Task (.codex/tasks/luc-974-account-access-workflow-definition-drafts-authactor-proof.md)
 
 ### Raw Implementation Without Task Links

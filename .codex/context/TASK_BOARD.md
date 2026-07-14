@@ -1,6 +1,989 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-14: [LUC-1101](/LUC/issues/LUC-1101) unclassified `src/app.ts#/`
+  missing-test-link verification is complete locally, but the live issue
+  disposition remains blocked because the GitHub issue API returned `404 Not
+  Found` for `Wroblewski-Patryk/Roost#1101`. Task contract:
+  `.codex/tasks/luc-1101-unclassified-root-get-proof-link.md`. Evidence:
+  `docs/architecture/scanner-overrides.json` now marks the exact root mount
+  `verified` through the existing API-host root proof in `src/tests/api.test.ts`
+  plus the existing public-home browser proof packet
+  `docs/planning/luc-998-dashboard-public-home-frontend-proof.md`,
+  `docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json`, and
+  `scripts/luc-998-dashboard-public-home-proof.mjs`; `npm run
+  test:api:local` PASS (`8/8`); `npm run architecture:refresh` PASS;
+  external architecture-awareness refresh generated `2026-07-14T15:06:25.285Z`
+  with `3021` entities / `7547` relations / `16521` files and materialized
+  the exact verification links; sequential app-completion refresh dropped
+  `missingTestLink` from `1104` to `1103` and no longer reports
+  `api_endpoint:get:1998daec82`; Project Truth apply generated
+  `2026-07-14T15:07:59.922Z` with public probes `pass` and advanced the first
+  routed gap to `src/app.ts#/agent-events`; `npm run architecture:status`
+  PASS (`GREEN`, `454/765/35`). No runtime product logic, provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Unblock owner: Paperclip / tracker
+  owner. Unblock action: provide a reachable tracker mutation path or issue
+  endpoint for the live issue record.
+
+- 2026-07-14: [LUC-1099](/LUC/issues/LUC-1099) Trading operation
+  `web/src/features/departments/strategy-route.tsx` missing-test-link
+  verification is complete locally. Task contract:
+  `.codex/tasks/luc-1099-trading-operation-strategy-route-proof-link.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks
+  `web/src/features/departments/strategy-route.tsx`,
+  `web/src/features/departments/strategy-route.tsx#formatDate`, and
+  `web/src/features/departments/strategy-route.tsx#StrategyRoute` `verified`
+  through the existing authenticated Strategy browser proof packet
+  `docs/planning/luc-727-strategy-route-local-proof.md`; the same packet is
+  now typed as a `test` artifact and `docs/testing/test-map.csv` records
+  `TEST-BROWSER-STRATEGY-ROUTE`; `npm run architecture:refresh` PASS;
+  external architecture-awareness refresh generated `2026-07-14T14:37:39.642Z`
+  with `3020` entities / `7529` relations / `16521` files and materialized the
+  exact verification links; sequential app-completion refresh dropped
+  `missingTestLink` from `1107` to `1104` and no longer reports the Strategy
+  frontend family in `priorityReviewItems`; Project Truth apply generated
+  `2026-07-14T14:37:50.179Z` with public probes `pass` and advanced the first
+  routed gap to `src/app.ts#/`; `npm run architecture:status` PASS
+  (`GREEN`, `454/765/35`). No runtime product logic, provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Next owner: Test Automation
+  Engineer + QA Regression Lead for the new first routed proof gap on
+  `src/app.ts#/`.
+
+- 2026-07-14: [LUC-1097](/LUC/issues/LUC-1097) Trading operation
+  `src/modules/strategy/strategy.routes.ts#asJsonArray` missing-doc-link
+  closure is complete locally. Task contract:
+  `.codex/tasks/luc-1097-trading-operation-asjsonarray-doc-link.md`.
+  Evidence: `docs/API.md` now documents Strategy context invariants for
+  normalized decision-log options, keyword-filtered strategy knowledge/Drive
+  rows, and strategic-task selection; `docs/architecture/relations/documentation-links.csv`
+  links the Strategy backend module, route file, and helper symbols to that
+  accepted contract; `docs/architecture/scanner-overrides.json` adds exact
+  helper-level `documents` relations for `asJsonArray`,
+  `textMatchesStrategy`, and `taskLooksStrategic`; sequential `npm run
+  architecture:refresh` PASS; sequential external architecture-awareness
+  refresh generated `2026-07-14T14:06:49.888Z` with `3019` entities / `7516`
+  relations / `16521` files and materialized the exact helper documentation
+  links; sequential app-completion refresh reduced `missingDocLink` from `33`
+  to `30` and no longer routes the Strategy helper family as
+  `missing_doc_link`; sequential Project Truth apply generated
+  `2026-07-14T14:06:52.216Z` with public probes `pass` and advanced the first
+  Trading operation gap to frontend `missing_test_link` on
+  `web/src/features/departments/strategy-route.tsx`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`). No runtime product
+  logic, provider call, protected smoke, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Next owner:
+  Test Automation Engineer + QA Regression Lead for the routed frontend
+  Trading operation proof gap on `strategy-route.tsx`, `formatDate`, and
+  `StrategyRoute`.
+
+- 2026-07-14: [LUC-1095](/LUC/issues/LUC-1095) Trading operation
+  `src/modules/strategy` missing-test-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the Strategy
+  backend module family `verified` through the existing local Strategy API
+  proof in `src/tests/api.test.ts` and
+  `docs/planning/v1-strategy-context-read-api-task-contract.md`; `npm run
+  test:api:local` PASS; `npm run architecture:refresh` PASS; external
+  architecture-awareness refresh generated `2026-07-14T13:36:44.472Z` with
+  `3018` entities / `7502` relations / `16521` files and materialized the
+  exact proof relations; sequential app-completion refresh dropped
+  `missingTestLink` from `1112` to `1107` and no longer reports
+  `module:src-modules-strategy:af6e751a33` or the backend `strategy.routes.ts`
+  family as `missing_test_link`; Project Truth apply generated
+  `2026-07-14T13:36:55.194Z` with public probes `pass` and advanced the first
+  Trading operation gap to helper-level `missing_doc_link` on
+  `src/modules/strategy/strategy.routes.ts#asJsonArray`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`). No runtime product
+  logic, provider call, protected smoke, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Next owner:
+  Docs Memory Lead + Project Manager for the routed Strategy helper
+  documentation gap if selected by Project Truth routing.
+
+- 2026-07-14: [LUC-1093](/LUC/issues/LUC-1093) Trading operation
+  `src/app.ts#/strategy` missing-test-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1093-trading-operation-use-strategy-proof-link.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  protected Strategy route mount `verified` through the existing local
+  Strategy API/browser proof family:
+  `src/tests/api.test.ts`,
+  `docs/planning/v1-strategy-context-read-api-task-contract.md`, and
+  `docs/planning/luc-727-strategy-route-local-proof.md`; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-14T13:05:21.123Z` with `3017` entities / `7487`
+  relations / `16521` files and materialized the exact proof relation;
+  sequential app-completion refresh dropped `missingTestLink` from `1113` to
+  `1112` and no longer reports `api_endpoint:use-strategy:0ead398998`;
+  Project Truth apply generated `2026-07-14T13:05:36.955Z` with public probes
+  `pass` and advanced the first routed gap to Trading operation
+  `src/modules/strategy`; `npm run architecture:status` PASS
+  (`GREEN`, `454/765/35`). No runtime product logic, provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Next owner: Test Automation Engineer
+  + QA Regression Lead for the new first routed Trading operation proof gap on
+  `src/modules/strategy` if selected by Project Truth routing.
+
+- 2026-07-14: [LUC-1090](/LUC/issues/LUC-1090) Dashboard overview
+  `AssetsOverview` missing-test-link verification is complete locally. Task
+  contract:
+  `.codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md`.
+  Evidence: `scripts/luc-1090-assets-overview-proof.mjs`,
+  `docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md`, and
+  `docs/ux/evidence/luc-1090-assets-overview-proof/report.json` now prove the
+  live Assets overview route renders its heading, description, summary cards,
+  and `Open files` CTA on desktop and mobile while `/v1/auth/me`,
+  `/v1/departments`, and `/v1/assets/context` requests all carry
+  `Authorization: Bearer luc-1090-proof-token`; `docs/architecture/scanner-overrides.json`
+  marks `web/src/features/departments/assets-route.tsx#AssetsOverview` and the
+  focused proof harness/helper family with durable `verified` + `test`
+  linkage; `docs/testing/test-map.csv` records `TEST-BROWSER-ASSETS-OVERVIEW`;
+  `npm run build:web` PASS; `npm run architecture:refresh` PASS; sequential
+  external architecture-awareness refresh generated `2026-07-14T12:39:31.558Z`
+  with `3015` entities / `7465` relations / `16521` files and materialized the
+  exact verification links; sequential app-completion refresh generated
+  `1282` items / `5` flows / `1113` missing test links / `30`
+  missing doc links / `8` implemented-needs-proof / `0` blocked / `1151`
+  risk items and no longer routes `AssetsOverview` as the first Dashboard
+  overview `missing_test_link`; Project Truth apply generated
+  `2026-07-14T12:39:43.507Z` with public probes `pass` and advanced the first
+  routed gap to Trading operation `src/app.ts#/strategy`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`). No runtime product logic,
+  provider call, protected smoke, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Next owner: Test
+  Automation Engineer + QA Regression Lead for the new first routed proof gap
+  on `src/app.ts#/strategy` if selected by Project Truth routing.
+
+- 2026-07-14: [LUC-1088](/LUC/issues/LUC-1088) Dashboard overview
+  `cc-text-input.tsx` missing-test-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1088-dashboard-overview-cc-text-input-proof-link.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks
+  `web/src/components/cc-text-input.tsx` and `#CcTextInput` `verified`
+  through the existing auth browser proof packet:
+  `docs/planning/luc-5561-auth-account-access-local-smoke-proof.md`,
+  `docs/planning/luc-1063-account-access-set-owner-token-proof.md`,
+  `scripts/luc-1063-account-access-set-owner-token-proof.mjs`, and
+  `docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json`;
+  `npm run architecture:refresh` PASS; sequential external
+  architecture-awareness refresh generated `2026-07-14T12:05:26.000Z` with
+  `3003` entities / `7440` relations / `16516` files and materialized the
+  exact verification links; sequential app-completion refresh generated
+  `2026-07-14T12:05:31.553Z` with `1282` items / `5` flows / `1114`
+  missing test links / `30` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1152` risk items and no longer
+  routes the `cc-text-input.tsx` family as the first Dashboard overview
+  `missing_test_link`; Project Truth apply generated `2026-07-14T12:05:35.254Z`
+  with public probes `pass` and advanced the first routed gap to
+  `AssetsOverview`; `npm run architecture:status` PASS
+  (`GREEN`, `454/765/35`). No runtime product logic, provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Next owner: Test Automation Engineer
+  + QA Regression Lead for the new first Dashboard overview proof gap on
+  `web/src/features/departments/assets-route.tsx#AssetsOverview` if selected
+  by Project Truth routing.
+
+- 2026-07-14: [LUC-1086](/LUC/issues/LUC-1086) Dashboard overview
+  `cc-route-loading.tsx` missing-test-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1086-dashboard-overview-cc-route-loading-proof-link.md`.
+  Evidence: `scripts/luc-1086-dashboard-cc-route-loading-proof.mjs`,
+  `docs/planning/luc-1086-dashboard-overview-cc-route-loading-proof.md`, and
+  `docs/ux/evidence/luc-1086-dashboard-cc-route-loading-proof/report.json`
+  now prove the live signed-in `/dashboard` route visibly renders
+  `CcRouteLoading` while the built `general-dashboard-*.js` chunk is delayed,
+  preserves the Roost themed fallback background, carries the expected bearer
+  token on mocked dashboard requests, and avoids horizontal overflow before
+  the ready state renders; `docs/architecture/scanner-overrides.json` marks
+  the exact `cc-route-loading` component/function rows and focused proof
+  harness/helper rows with durable `verified` + `test` classification and
+  test relations; `docs/testing/test-map.csv` records
+  `TEST-BROWSER-DASHBOARD-ROUTE-LOADING`; `npm run build:web` PASS; `node
+  scripts/luc-1086-dashboard-cc-route-loading-proof.mjs` PASS; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-14T11:40:59.847Z` with `3002` entities / `7422`
+  relations / `16516` files and materialized the exact verification links;
+  sequential app-completion refresh generated `2026-07-14T11:41:06.206Z`
+  with `1282` items / `5` flows / `1116` missing test links / `30` missing
+  doc links / `8` implemented-needs-proof / `0` blocked / `1154` risk items
+  and no longer routes the `cc-route-loading.tsx` family as the first
+  Dashboard overview `missing_test_link`; Project Truth apply generated
+  `2026-07-14T11:41:11.036Z` with public probes `pass` and advanced the first
+  routed gap to `cc-text-input.tsx`; `npm run architecture:status` PASS
+  (`GREEN`, `454/765/35`). No runtime product logic, provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Next owner: Test Automation Engineer
+  + QA Regression Lead for the new first Dashboard overview shared-component
+  proof gap on `web/src/components/cc-text-input.tsx` if selected by Project
+  Truth routing.
+
+- 2026-07-14: [LUC-1084](/LUC/issues/LUC-1084) Dashboard overview
+  `cc-resource-selector.tsx` missing-test-link verification is complete
+  locally. Task contract:
+  `.codex/tasks/luc-1084-dashboard-overview-cc-resource-selector-proof-link.md`.
+  Evidence: `scripts/luc-1084-cc-resource-selector-proof.mjs`,
+  `docs/planning/luc-1084-dashboard-overview-cc-resource-selector-proof.md`,
+  and `docs/ux/evidence/luc-1084-cc-resource-selector-proof/report.json` now
+  prove the shared selector component renders, filters, and reaches its
+  fail-closed no-match state inside the live Operations Tasks and Assets
+  Files/Folders routes; `docs/architecture/scanner-overrides.json` marks the
+  exact `cc-resource-selector` component/function rows and focused proof
+  harness/helper rows with durable `test`/`verified` classification and test
+  relations; `docs/testing/test-map.csv` records
+  `TEST-BROWSER-RESOURCE-SELECTOR`; `npm run build:web` PASS; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-14T11:15:11.557Z` with `2991` entities / `7401`
+  relations / `16511` files and materialized the exact verification links;
+  sequential app-completion refresh dropped `missingTestLink` from `1134` to
+  `1118` and no longer routes the `cc-resource-selector.tsx` family as the
+  first Dashboard overview `missing_test_link`; Project Truth apply advanced
+  the first routed gap to `cc-route-loading.tsx`; `npm run architecture:status`
+  PASS (`GREEN`, `454/765/35`). No runtime product logic, provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Next owner: Test Automation Engineer
+  + QA Regression Lead for the new first Dashboard overview shared-component
+  proof gap on `web/src/components/cc-route-loading.tsx` if selected by
+  Project Truth routing.
+
+- 2026-07-14: [LUC-1082](/LUC/issues/LUC-1082) Dashboard overview
+  `cc-notice.tsx` missing-test-link verification is complete locally. Task
+  contract:
+  `.codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md`.
+  Evidence: `scripts/luc-1082-dashboard-cc-notice-proof.mjs`,
+  `docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md`, and
+  `docs/ux/evidence/luc-1082-dashboard-cc-notice-proof/report.json` now prove
+  the shared notice component renders in loading and fail-closed error states
+  inside the live Dashboard overview route; `docs/architecture/scanner-overrides.json`
+  marks `web/src/components/cc-notice.tsx`, `#CcNotice`, and the focused proof
+  script family `verified`; `npm run build:web` PASS; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-14T10:44:57.508Z` with `2978` entities / `7370`
+  relations / `16504` files and materialized the exact verification links;
+  refreshed app-completion dropped `missingTestLink` from `1125` to `1123`
+  and no longer reports `cc-notice.tsx` as the first Dashboard overview
+  `missing_test_link`; Project Truth apply advanced the first routed gap to
+  `cc-resource-selector.tsx`; no runtime product logic, provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Next owner: Test Automation Engineer
+  + QA Regression Lead for the `cc-resource-selector.tsx` dashboard
+  shared-component proof gap if selected by Project Truth routing.
+
+- 2026-07-14: [LUC-1080](/LUC/issues/LUC-1080) Dashboard overview
+  `cc-field.tsx` missing-test-link verification is complete locally. Task
+  contract:
+  `.codex/tasks/luc-1080-dashboard-overview-cc-field-proof-link.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks
+  `web/src/components/cc-field.tsx` and `#CcField` `verified` through the
+  existing auth browser proof surfaces that actually render the shared field:
+  `docs/planning/luc-5561-auth-account-access-local-smoke-proof.md`,
+  `docs/planning/luc-1063-account-access-set-owner-token-proof.md`,
+  `scripts/luc-1063-account-access-set-owner-token-proof.mjs`, and
+  `docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json`;
+  `npm run architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-14T10:07:13.800Z` with `2967` entities / `7339`
+  relations / `16499` files and materialized the exact verification links;
+  refreshed app-completion dropped `missingTestLink` from `1127` to `1125`
+  and no longer reports `cc-field.tsx` as the first Dashboard overview
+  `missing_test_link`; Project Truth apply advanced the first routed gap to
+  `cc-notice.tsx`; `npm run architecture:status` PASS (`GREEN`, evidence
+  queue `0`, chain worklist `0`). No runtime product logic, provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Next owner: Test Automation Engineer
+  + QA Regression Lead for the `cc-notice.tsx` dashboard shared-component
+  proof gap if selected by Project Truth routing.
+
+- 2026-07-14: [LUC-1078](/LUC/issues/LUC-1078) Dashboard overview
+  `cc-data-table.tsx` missing-test-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1078-dashboard-overview-cc-data-table-proof-link.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks
+  `web/src/components/cc-data-table.tsx`, `#CcDataTable`, and `#filterBar`
+  `verified` through the existing `LUC-998` dashboard/public-home browser
+  proof packet and script; `npm run architecture:refresh` PASS; external
+  architecture-awareness refresh generated `2026-07-14T09:37:53.270Z` with
+  `2966` entities / `7331` relations / `16499` files and materialized the
+  exact verification links; refreshed app-completion dropped
+  `missingTestLink` from `1130` to `1127` and no longer reports
+  `cc-data-table.tsx` as the first Dashboard overview `missing_test_link`;
+  Project Truth apply advanced the first routed gap to `cc-field.tsx`;
+  `npm run architecture:status` PASS (`GREEN`, evidence queue `0`, chain
+  worklist `0`). No runtime product logic, provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred. Next owner: Test Automation Engineer + QA Regression
+  Lead for the `cc-field.tsx` dashboard shared-component proof gap if
+  selected by Project Truth routing.
+
+- 2026-07-14: [LUC-1074](/LUC/issues/LUC-1074) Dashboard overview
+  `src/modules/dashboard` missing-doc-link closure is complete locally. Task
+  contract:
+  `.codex/tasks/luc-1074-dashboard-overview-src-modules-dashboard-doc-link.md`.
+  Evidence: `docs/API.md` now documents the dashboard command-center contract
+  for `GET /v1/dashboard/command` and `/dashboard/command`; `docs/architecture/relations/documentation-links.csv`
+  links `src/modules/dashboard`, `dashboard.routes.ts`, `coerceCount`,
+  `pickHealth`, `riskRank`, `startOfToday`, `startOfTomorrow`, and
+  `sumCounts` to that accepted doc; `npm run architecture:refresh` PASS;
+  architecture-awareness refresh generated `2026-07-14T08:36:13.709Z` with
+  `2963` entities / `7304` relations / `16499` files and materialized the
+  exact dashboard doc relations; app-completion refresh generated `1278`
+  items / `5` flows / `1133` missing test links / `25`
+  missing doc links / `8` implemented-needs-proof / `0` blocked / `1166`
+  risk items and no longer reports that backend family as `missing_doc_link`;
+  Project Truth apply generated `2026-07-14T08:36:31.429Z` and advanced the
+  first gap to Dashboard overview `cc-data-table.tsx` `missing_test_link`;
+  `npm run architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue
+  `0`, chain worklist `0`). No runtime product logic, provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Next owner: Test Automation
+  Engineer + QA Regression Lead for the dashboard frontend/shared-component
+  proof queue, with `AssetsOverview` still remaining in that same flow
+  family. The live Paperclip issue disposition for
+  [LUC-1076](/LUC/issues/LUC-1076) is now `done` with typed completion
+  evidence.
+
+- 2026-07-14: [LUC-1072](/LUC/issues/LUC-1072) Dashboard overview
+  `src/modules/dashboard` missing-test-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks
+  `src/modules/dashboard`, `dashboard.routes.ts`, `coerceCount`,
+  `pickHealth`, `riskRank`, `startOfToday`, `startOfTomorrow`, and
+  `sumCounts` `verified` through the existing `src/tests/api.test.ts`
+  dashboard command proof; `npm run test:api:local` PASS; `npm run
+  architecture:refresh` PASS; architecture-awareness refresh generated
+  `2026-07-14T08:13:04.553Z` with `2967` entities / `7309` relations /
+  `16500` files and marks the exact backend dashboard family `verified`;
+  app-completion refresh generated `1282` items / `5` flows / `1134`
+  missing test links / `32` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1174` risk items and no longer
+  reports that backend family as `missing_test_link`; Project Truth apply
+  generated `2026-07-14T08:13:13.951Z` and advanced the first gap to the same
+  backend family `missing_doc_link`; `npm run architecture:status` PASS
+  (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`). No
+  runtime product logic, provider call, protected smoke, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Next owner: Docs Memory Lead + Project Manager for the same
+  backend family doc-link gap; the next separate QA-owned dashboard proof gap
+  is `AssetsOverview`.
+
+- 2026-07-14: [LUC-1070](/LUC/issues/LUC-1070) Dashboard overview
+  `scripts/check-architecture-health-dashboard-gate.mjs`
+  missing-test-link verification is complete locally. Task contract:
+  `.codex/tasks/luc-1070-dashboard-architecture-health-dashboard-gate-proof.md`.
+  Evidence: `src/tests/architecture-health-dashboard-gate.test.ts` proves
+  coherent pass output plus malformed dashboard JSON and
+  `allGreen` invariant-mismatch fail-closed behavior;
+  `docs/architecture/scanner-overrides.json` now marks the exact gate script
+  plus `readJson` and `fail` `verified`; `docs/testing/test-map.csv` records
+  `TEST-ARCH-HEALTH-DASHBOARD-GATE`; architecture-awareness refresh generated
+  `2026-07-14T07:35:56.053Z` with `2961` entities / `7283` relations /
+  `16499` files and marks the exact script/helper entities `verified`;
+  app-completion refresh generated `1278` items / `5` flows / `1141`
+  missing test links / `25` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1174` risk items and no longer
+  reports the gate rows; Project Truth apply generated
+  `2026-07-14T07:36:10.441Z` and advanced the first gap to Dashboard
+  overview `src/modules/dashboard` `missing_test_link`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`,
+  chain worklist `0`). No runtime product logic, provider call, protected
+  smoke, deploy, push, restart, production mutation, credential access, or
+  secret disclosure occurred. Next owner: Test Automation Engineer + QA
+  Regression Lead for the new first Dashboard overview proof gap, if
+  selected.
+
+- 2026-07-14: [LUC-1068](/LUC/issues/LUC-1068) Dashboard overview
+  `scripts/build-architecture-health-dashboard.mjs` missing-test-link
+  verification is complete locally. Task contract:
+  `.codex/tasks/luc-1068-dashboard-architecture-health-dashboard-proof.md`.
+  Evidence: `src/tests/architecture-health-dashboard.test.ts` proves both
+  coherent green dashboard aggregation and failing output behavior with
+  missing optional inputs; `docs/architecture/scanner-overrides.json` marks
+  the exact script plus `main`, `readJson`, and `toBoolIcon` `verified`;
+  `docs/testing/test-map.csv` records `TEST-ARCH-HEALTH-DASHBOARD`;
+  `npm run build:server` PASS; focused
+  `node --test dist/tests/architecture-health-dashboard.test.js` PASS (`2/2`);
+  architecture-awareness refresh generated `2026-07-14T07:08:41.300Z` with
+  `2957` entities / `7273` relations / `16498` files and marks the exact
+  script/helper entities `verified`; app-completion refresh generated `1275`
+  items / `5` flows / `1144` missing test links / `25` missing doc links /
+  `8` implemented-needs-proof / `0` blocked / `1177` risk items and no
+  longer reports the script/helper rows as `missing_test_link`; Project Truth
+  apply generated `2026-07-14T07:08:52.015Z` and advanced the first gap to
+  Dashboard overview `scripts/check-architecture-health-dashboard-gate.mjs`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`). No runtime product
+  logic, provider call, protected smoke, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Next owner:
+  Test Automation Engineer + QA Regression Lead for the new first Dashboard
+  overview proof gap, if selected.
+
+- 2026-07-14: [LUC-1066](/LUC/issues/LUC-1066) Dashboard overview
+  `src/app.ts#/dashboard` missing-test-link verification is complete locally.
+  Task contract:
+  `docs/planning/luc-1066-dashboard-overview-use-dashboard-proof-link.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  route `verified` with direct proof evidence from
+  `docs/planning/luc-998-dashboard-public-home-frontend-proof.md`,
+  `scripts/luc-998-dashboard-public-home-proof.mjs`,
+  `docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json`, and
+  `.codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md`;
+  `docs/testing/test-map.csv` records `TEST-BROWSER-DASHBOARD-ALIAS`;
+  architecture-awareness refresh generated `2026-07-14T06:37:46.608Z` with
+  `2952` entities / `7253` relations / `16496` files and marks
+  `src/app.ts#/dashboard` `verified`; app-completion refresh generated `1273`
+  items / `5` flows / `1148` missing test links / `25` missing doc links /
+  `8` implemented-needs-proof / `0` blocked / `1181` risk items and no
+  longer reports the route as `missing_test_link`; Project Truth apply
+  generated `2026-07-14T06:37:56.416Z` and advanced the first gap to
+  Dashboard overview `scripts/build-architecture-health-dashboard.mjs`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`). No runtime product
+  logic, provider call, protected smoke, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Next owner:
+  Test Automation Engineer + QA Regression Lead for the new first Dashboard
+  overview proof gap, if selected.
+
+- 2026-07-14: [LUC-1063](/LUC/issues/LUC-1063) Account access
+  `web/src/api/auth-token.ts#setOwnerToken`
+  implemented-needs-proof verification is complete locally. Task contract:
+  `docs/planning/luc-1063-account-access-set-owner-token-proof.md`. Evidence:
+  `scripts/luc-1063-account-access-set-owner-token-proof.mjs` proves auth
+  success stores `login-proof-token` before private-route recovery and
+  workspace selection stores `workspace-switched-token` before the dashboard
+  reloads into the new workspace context; browser evidence is stored in
+  `docs/ux/evidence/luc-1063-set-owner-token-proof/report.json` plus desktop
+  screenshots; `docs/architecture/scanner-overrides.json` marks the exact
+  helper `verified`; `docs/testing/test-map.csv` records the focused proof
+  command; `npm run build:web` PASS; architecture-awareness refresh generated
+  `2026-07-14T06:11:45.434Z` with `2952` entities / `7247` relations /
+  `16496` files and marks `web/src/api/auth-token.ts#setOwnerToken`
+  `verified`; app-completion refresh generated `1283` items / `5` flows /
+  `1159` missing test links / `25` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1192` risk items and no longer
+  reports the helper as `implemented_needs_proof`; Project Truth apply
+  generated `2026-07-14T06:11:52.343Z` and advanced the first gap to
+  Dashboard overview `src/app.ts#/dashboard` `missing_test_link`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain
+  worklist `0`). No runtime product logic, provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred. Next owner: Test Automation Engineer + QA Regression
+  Lead for the new first Dashboard overview proof gap.
+
+- 2026-07-14: [LUC-1058](/LUC/issues/LUC-1058) Account access
+  `web/src/api/auth-token.ts#setOwnerToken` missing-doc-link curation is
+  complete locally. Task contract:
+  `.codex/tasks/luc-1058-account-access-set-owner-token-doc-link.md`.
+  Evidence: `docs/API.md` already documents that `setOwnerToken` stores the
+  current bearer token in the session-scoped `companycoreOwnerToken` key
+  after auth or workspace selection, and
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  helper to that accepted contract; architecture-awareness refresh PASS
+  generated `2026-07-14T05:36:53.993Z` with `2934` entities / `7226`
+  relations / `16491` files and materialized the exact doc relation plus the
+  task/state trace; app-completion refresh PASS now reports `1160` missing
+  test links / `24` missing doc links / `9` implemented-needs-proof /
+  `0` blocked / `1193` risk items and no longer reports the helper as
+  `missing_doc_link`; Project Truth apply PASS generated
+  `2026-07-14T05:36:53.989Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to the same symbol as
+  `implemented_needs_proof`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`). No runtime logic
+  change, provider call, protected smoke, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Next owner: QA
+  Regression Lead + Project Manager for focused proof routing on the same
+  helper.
+
+- 2026-07-14: [LUC-1043](/LUC/issues/LUC-1043) Account access
+  `web/src/api/auth-token.ts#ownerToken` implemented-needs-proof verification
+  is complete locally. Task contract:
+  `docs/planning/luc-1043-account-access-owner-token-proof.md`. Evidence:
+  `scripts/luc-1043-account-access-owner-token-proof.mjs` proves a seeded
+  `companycoreOwnerToken` is reused for bearer-auth `/v1/auth/me`,
+  `/v1/departments`, and `/v1/assets/context` requests plus protected
+  `/v1/assets/files/proof-image/preview` fetches in the live Assets files
+  route on desktop and mobile; browser evidence is stored in
+  `docs/ux/evidence/luc-1043-owner-token-proof/report.json` plus desktop and
+  mobile screenshots; `docs/architecture/scanner-overrides.json` marks the
+  exact helper `verified`; `docs/testing/test-map.csv` records the focused
+  proof command; `npm run build:web` PASS; architecture-awareness refresh
+  generated `2026-07-14T04:09:26.784Z` with `2933` entities / `7221`
+  relations / `16491` files and marked `web/src/api/auth-token.ts#ownerToken`
+  `verified`; app-completion refresh generated `2026-07-14T04:09:42.591Z`
+  with `1283` items / `5` flows / `1160` missing test links / `25` missing
+  doc links / `8` implemented-needs-proof / `0` blocked / `1193` risk items
+  and no longer reports the helper as `implemented_needs_proof`; Project
+  Truth apply generated `2026-07-14T04:31:10.694Z` and advanced the first
+  Account access gap to `web/src/api/auth-token.ts#setOwnerToken`
+  `missing_doc_link`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`). No runtime product
+  logic, provider call, protected smoke, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Next owner:
+  Docs Memory Lead + Project Manager for the remaining same-file doc-link
+  debt on `setOwnerToken`.
+
+- 2026-07-14: [LUC-1041](/LUC/issues/LUC-1041) Account access
+  `web/src/api/auth-token.ts#ownerToken` missing-doc-link curation is
+  complete locally. Task contract:
+  `.codex/tasks/luc-1041-account-access-owner-token-doc-link.md`. Evidence:
+  `docs/API.md` already documents that `ownerToken` reads the current bearer
+  token from `companycoreOwnerToken` session storage, and
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  helper path to that accepted auth contract; architecture-awareness refresh
+  PASS generated `2026-07-14T03:34:17.209Z` with `2921` entities / `7197`
+  relations / `16486` files; app-completion refresh PASS now reports `1150`
+  missing test links / `25` missing doc links / `9`
+  implemented-needs-proof / `0` blocked / `1184` risk items and no longer
+  reports the helper as `missing_doc_link`; Project Truth apply PASS
+  generated `2026-07-14T03:34:34.359Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to the same symbol as
+  `implemented_needs_proof`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`). No runtime logic
+  change, provider call, protected smoke, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Next owner: QA
+  Regression Lead + Project Manager for focused proof routing on the same
+  helper, with residual same-file doc-link debt still on `setOwnerToken`.
+
+- 2026-07-14: [LUC-1038](/LUC/issues/LUC-1038) Account access
+  `web/src/api/auth-token.ts#isSignedIn` implemented-needs-proof verification
+  is complete locally. Task contract:
+  `docs/planning/luc-1038-account-access-is-signed-in-proof.md`. Evidence:
+  `scripts/luc-1038-account-access-is-signed-in-proof.mjs` proves a seeded
+  `companycoreOwnerToken` opens the authenticated dashboard route with
+  bearer-auth `/v1/auth/me`, `/v1/departments`, and `/v1/dashboard/command`
+  requests, while an empty session fails closed to the login surface and
+  records the canonical pending private path; browser evidence is stored in
+  `docs/ux/evidence/luc-1038-is-signed-in-proof/report.json` plus desktop
+  signed-in/signed-out screenshots; `docs/architecture/scanner-overrides.json`
+  marks the exact helper `verified`; `docs/testing/test-map.csv` records the
+  focused proof command; `npm run build:web` PASS; architecture-awareness
+  refresh generated `2026-07-14T03:26:42.443Z` with `2921` entities / `7190`
+  relations / `16486` files and verifies `function:issignedin:ca7bd93172`;
+  app-completion refresh generated `1273` items / `5` flows / `1150` missing
+  test links / `26` missing doc links / `8` implemented-needs-proof /
+  `0` blocked and no longer reports the helper; Project Truth apply generated
+  `2026-07-14T03:26:51.838Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to
+  `web/src/api/auth-token.ts#ownerToken` `missing_doc_link`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain
+  worklist `0`). No runtime product logic, provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred. Next owner: Docs Memory Lead + Project Manager for the
+  new first auth-token doc-link gap on `ownerToken`, with residual same-file
+  debt still on `setOwnerToken`.
+
+- 2026-07-14: [LUC-1034](/LUC/issues/LUC-1034) Account access
+  `web/src/api/auth-token.ts#isSignedIn` missing-doc-link curation is
+  complete locally. Task contract:
+  `.codex/tasks/luc-1034-account-access-issignedin-doc-link.md`. Evidence:
+  `docs/API.md` already documented that signed-in UI state comes from
+  `companycoreOwnerToken` session presence, and
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  helper path to that accepted auth contract; architecture-awareness refresh
+  PASS generated `2026-07-14T03:04:05.881Z` with `2911` entities / `7177`
+  relations / `16481` files; app-completion refresh PASS now reports `1141`
+  missing test links / `26` missing doc links / `9`
+  implemented-needs-proof / `0` blocked / `1176` risk items and no longer
+  reports the helper as `missing_doc_link`; Project Truth apply PASS
+  generated `2026-07-14T03:05:10.652Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to the same symbol as
+  `implemented_needs_proof`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`). No runtime logic
+  change, provider call, protected smoke, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Next owner: QA
+  Regression Lead + Project Manager for focused proof routing on the same
+  helper, with residual same-file doc-link debt still on `ownerToken` and
+  `setOwnerToken`.
+
+- 2026-07-14: [LUC-1028](/LUC/issues/LUC-1028) `GET /v1/projects` backend
+  proof-link closure is complete locally. Task contract:
+  `.codex/tasks/luc-1028-projects-route-get-proof.md`. Evidence:
+  `src/tests/api.test.ts` now explicitly proves the owning workspace sees the
+  created `Service project` on `GET /v1/projects` while another workspace
+  still receives an empty list; `docs/architecture/scanner-overrides.json`
+  links `src/tests/api.test.ts` and the task packet to
+  `docs/architecture/nodes/generated/API-AUTO-0076.md`; architecture-awareness
+  refresh PASS generated `2026-07-14T02:33:29.098Z` with `2910` entities /
+  `7164` relations / `16481` files and materialized the `LUC-1028 GET
+  /v1/projects local proof` relation; app-completion refresh PASS now reports
+  `1141` missing test links / `27` missing doc links /
+  `8` implemented-needs-proof / `0` blocked / `1176` risk items; Project
+  Truth apply PASS generated `2026-07-14T02:33:29.089Z` with public probe
+  `pass`, runtime/event/ops gaps `0`, and first gap advanced to
+  `web/src/api/auth-token.ts#isSignedIn` `missing_doc_link`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain
+  worklist `0`). No runtime route logic change, provider call, protected
+  smoke, deploy, push, restart, production mutation, credential access, or
+  secret disclosure occurred. Next owner: Docs Memory Lead + Project Manager
+  for the new first gap.
+
+- 2026-07-14: [LUC-1022](/LUC/issues/LUC-1022) Account access
+  `web/src/api/auth-token.ts#clearOwnerToken`
+  implemented-needs-proof verification is complete locally. Task contract:
+  `docs/planning/luc-1022-account-access-clear-owner-token-proof.md`.
+  Evidence: `scripts/luc-1022-account-access-clear-owner-token-proof.mjs`
+  proves both user-menu sign-out clearing `companycoreOwnerToken` and mocked
+  `401 invalid_token` auth-reset clearing with reload back to the login
+  surface; `docs/ux/evidence/luc-1022-clear-owner-token-proof/report.json`
+  plus desktop screenshots capture the exact browser evidence;
+  `docs/architecture/scanner-overrides.json` links the proof artifacts and
+  marks the exact helper `verified`; `docs/testing/test-map.csv` records the
+  focused browser command; `npm run build:web` PASS; architecture-awareness
+  refresh PASS generated `2026-07-14T02:31:18.061Z` with `2909` entities /
+  `7158` relations / `16481` files and verifies the exact helper;
+  app-completion refresh PASS now reports `1141` missing test links /
+  `27` missing doc links / `8` implemented-needs-proof / `0` blocked /
+  `1176` risk items and no longer routes `clearOwnerToken`; Project Truth
+  apply PASS advanced the first gap to
+  `web/src/api/auth-token.ts#isSignedIn` `missing_doc_link`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain
+  worklist `0`). No runtime feature logic change, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Next owner: Docs Memory Lead + Project Manager for the new first
+  gap, with residual same-file doc-link debt still on `ownerToken` and
+  `setOwnerToken`.
+
+- 2026-07-14: [LUC-1018](/LUC/issues/LUC-1018) Account access
+  `web/src/api/auth-token.ts#clearOwnerToken` missing-doc-link curation is
+  complete locally. Task contract:
+  `.codex/tasks/luc-1018-account-access-clear-owner-token-doc-link.md`.
+  Evidence: `docs/API.md` now documents frontend auth-token session storage
+  via `companycoreOwnerToken`, including session-only reads/writes,
+  stale-token removal on sign-out or auth reset, and signed-in state derived
+  from token presence; `docs/architecture/relations/documentation-links.csv`
+  links the exact helper path to `docs/API.md`; architecture-awareness refresh
+  PASS generated `2026-07-14T02:04:24.823Z` with `2898` entities / `7144`
+  relations / `16476` files; app-completion refresh PASS now reports `1131`
+  missing test links / `27` missing doc links / `9`
+  implemented-needs-proof / `0` blocked / `1167` risk items and no longer
+  reports the helper as `missing_doc_link`; Project Truth apply PASS
+  generated `2026-07-14T02:05:32.013Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to the same symbol as
+  `implemented_needs_proof`. No runtime logic change, provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Next owner: QA Regression Lead +
+  Project Manager for the same-helper proof gap.
+
+- 2026-07-14: [LUC-1015](/LUC/issues/LUC-1015) Account access
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  missing-doc-link curation is complete locally. Task contract:
+  `.codex/tasks/luc-1015-account-access-workspaces-requireuserauth-doc-link.md`.
+  Evidence: `docs/API.md` now documents that workspace list/create/select
+  routes require bearer-user auth, deny `X-API-Key` callers fail closed,
+  verify membership before selection, and mint fresh workspace-scoped bearer
+  tokens only on the owner-auth path;
+  `docs/architecture/relations/documentation-links.csv` links the exact helper
+  path to `docs/API.md`; architecture-awareness refresh PASS generated
+  `2026-07-14T01:34:48.409Z` with `2897` entities / `7133` relations /
+  `16476` files; app-completion refresh PASS now reports `1131` missing test
+  links / `28` missing doc links / `8` implemented-needs-proof / `0` blocked /
+  `1167` risk items and no longer reports the helper; Project Truth apply PASS
+  generated `2026-07-14T01:35:57.823Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to
+  `web/src/api/auth-token.ts#clearOwnerToken` `missing_doc_link`. No runtime
+  logic change, provider call, protected smoke, deploy, push, restart,
+  production mutation, credential access, or secret disclosure occurred. Next
+  owner: Docs Memory Lead + Project Manager for the new first gap.
+
+- 2026-07-14: [LUC-1010](/LUC/issues/LUC-1010) Account access
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  missing-test-link verification is complete locally. Task contract:
+  `.codex/tasks/luc-1010-account-access-workspaces-requireuserauth-proof.md`.
+  Evidence: `src/tests/api.test.ts` now explicitly proves owner workspace
+  list/create/select behavior plus API-key denial for workspace
+  list/create/select routes; `docs/architecture/scanner-overrides.json` links
+  the proof packet and `src/tests/api.test.ts` to the exact helper path;
+  `npm run test:api:local` PASS; architecture-awareness refresh PASS
+  generated `2026-07-14T01:06:38.415Z` with `2896` entities / `7130`
+  relations / `16476` files and marks the helper `verified`; app-completion
+  refresh PASS now reports `1131` missing test links / `29` missing doc links
+  / `8` implemented-needs-proof / `0` blocked / `1168` known risk items and
+  no longer reports the helper as `missing_test_link`; Project Truth apply
+  PASS generated `2026-07-14T01:06:48.833Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to the same symbol as
+  `missing_doc_link`. No runtime feature logic change, provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Next owner: Docs Memory Lead +
+  Project Manager for the residual same-symbol doc-link gap.
+
+- 2026-07-14: [LUC-1007](/LUC/issues/LUC-1007) Google Drive route mount
+  proof/readback closure is complete locally. Task contract:
+  `docs/planning/luc-1007-google-drive-route-proof.md`. Evidence:
+  `docs/planning/luc-1007-google-drive-route-readback.md` now documents the
+  protected `src/app.ts#/google-drive` mount and mounted
+  `/v1/google-drive` endpoint family; `docs/architecture/scanner-overrides.json`
+  links the focused proof as `test` evidence and the readback as `document`
+  evidence for the exact route mount; `docs/architecture/relations/documentation-links.csv`
+  records the exact `src/app.ts#/google-drive` documentation row; existing
+  `src/tests/api.test.ts` coverage plus `npm run test:api:local` PASS prove
+  the mounted Google Drive files/content/scope/description/Docs/Sheets API
+  family; architecture-awareness refresh PASS generated
+  `2026-07-14T00:40:45.243Z` with `2895` entities / `7121` relations /
+  `16476` files; app-completion refresh PASS now reports `1132` missing test
+  links / `28` missing doc links / `8` implemented-needs-proof / `0` blocked /
+  `1168` known risk items and no longer reports `/google-drive`; Project Truth
+  apply PASS generated `2026-07-14T00:41:50.830Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap remains
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link`. No runtime logic change, provider call, protected
+  smoke, deploy, push, restart, production mutation, credential access, or
+  secret disclosure occurred. Next owner: Test Automation Engineer + QA
+  Regression Lead for the new first gap.
+
+- 2026-07-14: [LUC-1008](/LUC/issues/LUC-1008) architecture chain-integrity
+  runtime proof is complete locally. Task contract:
+  `.codex/tasks/luc-1008-architecture-chain-integrity-proof.md`. Evidence:
+  `src/tests/architecture-chain-integrity.test.ts` now proves
+  `scripts/check-architecture-chain-integrity.mjs` both passes with coherent
+  verified-chain metadata and fails closed with a persisted issue report for
+  inconsistent verified chains; `npm run build:server` PASS; focused
+  `node --test dist/tests/architecture-chain-integrity.test.js` PASS (`2/2`);
+  architecture-awareness refresh PASS generated
+  `2026-07-14T00:38:46.442Z` with `2894` entities / `7118` relations /
+  `16475` files and marks the script plus `loadCsv`, `main`, `parseCsv`,
+  `readText`, `splitIds`, and `writeText` `verified`; app-completion refresh
+  PASS now reports `1132` missing test links / `29` missing doc links /
+  `8` implemented-needs-proof / `0` blocked / `1169` known risk items and no
+  longer reports the target script entities; Project Truth apply PASS
+  generated `2026-07-14T00:38:46.408Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap remains
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link`. No runtime script logic, provider call, protected
+  smoke, deploy, push, restart, production mutation, credential access, or
+  secret disclosure occurred. Next owner: Test Automation Engineer + QA
+  Regression Lead for the new first gap.
+
+- 2026-07-14: [LUC-1001](/LUC/issues/LUC-1001) Account access
+  `src/modules/workforce/workforce.service.ts#entityAuthority`
+  missing-doc-link curation is complete locally. Task contract:
+  `.codex/tasks/luc-1001-account-access-workforce-entityauthority-doc-link.md`.
+  Evidence: `docs/API.md` now documents the read-only `GET /v1/workforce`
+  authority packet for human and agent rows, including
+  `human_workspace_authority`, `profile_not_bound`, recommended profiles,
+  capability samples, and fail-closed blocked actions;
+  `docs/architecture/relations/documentation-links.csv` links the exact helper
+  path to `docs/API.md`; architecture-awareness refresh PASS generated
+  `2026-07-14T00:27:58.241Z` with `2890` entities / `7091` relations /
+  `16471` files and materialized the doc relation; app-completion refresh PASS
+  kept totals at `1140` missing test links / `28` missing doc links /
+  `9` implemented-needs-proof / `0` blocked / `1177` known risk items and no
+  longer reports the helper in the priority queue; Project Truth apply PASS
+  generated `2026-07-14T00:28:06.622Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap remains
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link`. No runtime feature logic, provider call, protected
+  smoke, deploy, push, restart, production mutation, credential access, or
+  secret disclosure occurred. Next owner: Test Automation Engineer + QA
+  Regression Lead for the new first gap.
+
+- 2026-07-14: [LUC-989](/LUC/issues/LUC-989) source-control closure for the
+  current [LUC-982](/LUC/issues/LUC-982) proof packet is complete locally.
+  Task contract:
+  `.codex/tasks/luc-989-source-control-closure-for-luc-982.md`. Evidence:
+  fresh git inspection confirms `main...origin/main [ahead 13]` with `32`
+  modified tracked paths and `15` untracked paths before this closure packet;
+  the original `src/tests/api.test.ts` / scanner / generated truth packet is
+  still present, but it is mixed with later
+  [LUC-988](/LUC/issues/LUC-988), [LUC-990](/LUC/issues/LUC-990),
+  [LUC-971](/LUC/issues/LUC-971), [LUC-997](/LUC/issues/LUC-997), and
+  [LUC-998](/LUC/issues/LUC-998) artifacts;
+  `git rev-list --left-right --count origin/main...HEAD` -> `0 13`; `git diff
+  --check` PASS with LF-to-CRLF warnings only. Commit decision: no local
+  closure commit created because the packet is no longer safely isolatable as
+  an exact [LUC-982](/LUC/issues/LUC-982) sidecar. Push status `not needed`,
+  deploy impact `none`. Next owner: board operator / Roost Project Manager
+  sequencing lane for a fresh combined source-control closure issue or
+  explicit supersession.
+- 2026-07-14: [LUC-997](/LUC/issues/LUC-997) Account access
+  `src/modules/workforce/workforce.service.ts#entityAuthority`
+  missing-test-link verification is complete locally. Task contract:
+  `.codex/tasks/luc-997-account-access-workforce-entityauthority-proof.md`.
+  Evidence:
+  `src/tests/api.test.ts` now explicitly proves workforce authority readback
+  for the user-backed human record and a created agent record through
+  `GET /v1/workforce`; override JSON parse PASS; disposable local DB proof
+  PASS via `npm run prisma:migrate:deploy`, `npm run seed`, and
+  `node --test dist/tests/api.test.js` (`8/8`) against a local
+  `postgres:16-alpine` container; architecture-awareness refresh PASS
+  generated `2026-07-14T00:24:17.027Z` with `2888` entities / `7077`
+  relations / `16471` files and marks the exact helper `verified`;
+  app-completion refresh PASS generated `1140` missing test links /
+  `28` missing doc links / `9` implemented-needs-proof / `0` blocked /
+  `1177` known risk items and no longer reports the helper in the priority
+  queue; Project Truth apply PASS generated `2026-07-14T00:24:58.011Z` with
+  public probe `pass`, runtime/event/ops gaps `0`, and first gap advanced to
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link`. No runtime feature logic, provider call, protected
+  smoke, deploy, push, restart, production mutation, credential access, or
+  secret disclosure occurred. Next owner: Test Automation Engineer + QA
+  Regression Lead for the new first gap.
+
+- 2026-07-14: [LUC-998](/LUC/issues/LUC-998) Dashboard overview and public
+  home frontend proof is complete locally. Task contract:
+  `.codex/tasks/luc-998-dashboard-public-home-frontend-proof.md`. Evidence:
+  `npm run build:web` PASS; focused Playwright proof via
+  `node scripts/luc-998-dashboard-public-home-proof.mjs` saved
+  `docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json` plus
+  desktop/mobile screenshots and proved `/` public-home render,
+  `/dashboard -> /areas?area=00-ogolny&view=overview` canonical redirect,
+  bearer-auth dashboard shell requests, zero console/page errors, and no
+  desktop/mobile horizontal overflow; architecture-awareness refresh PASS
+  generated `2026-07-14T00:21:11.899Z` with `2887` entities / `7074`
+  relations / `16471` files; app-completion refresh PASS reduced
+  `missing_test_link` from `1150` to `1140` and no longer lists the
+  `general-dashboard` / `public-home` LUC-998 entities; Project Truth apply
+  PASS generated `2026-07-14T00:21:51.327Z` and the target route entities are
+  absent from the gap list. Residual unrelated risk: first remaining gap is
+  the production `api_health` probe failure on
+  `https://api.roost.luckysparrow.ch/health`, owned by Deployment Reliability
+  Engineer + Ops Release Lead. No backend route logic, provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+- 2026-07-14: [LUC-990](/LUC/issues/LUC-990) Account access
+  `src/modules/intake/intake.routes.ts#authActor` duplicate missing-doc-link
+  verification is complete locally. Task contract:
+  `.codex/tasks/luc-990-account-access-intake-authactor-doc-link.md`.
+  Evidence: `docs/API.md` now explicitly documents bearer-owner versus API-key
+  actor attribution for `intake.route_proposed` audit/event evidence, and
+  `docs/architecture/relations/documentation-links.csv` still links the exact
+  generated function path to `docs/API.md`; architecture-awareness refresh
+  PASS generated `2026-07-13T23:08:32.101Z` with `2874` entities / `7034`
+  relations / `16464` files; app-completion refresh PASS generated `1141`
+  missing test links / `28` missing doc links /
+  `9` implemented-needs-proof / `0` blocked / `1178` known risk items and no
+  longer reports the symbol as `missing_doc_link`; Project Truth apply PASS
+  generated `2026-07-13T23:08:46.804Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap remains
+  `src/modules/workforce/workforce.service.ts#entityAuthority`
+  `missing_test_link`. No runtime code, provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred. Next owner: Test Automation Engineer + QA Regression
+  Lead.
+
+- 2026-07-13: [LUC-988](/LUC/issues/LUC-988) Account access
+  `src/modules/intake/intake.routes.ts#authActor` missing-doc-link curation is
+  complete locally. Task contract:
+  `.codex/tasks/luc-988-account-access-intake-authactor-doc-link.md`.
+  Evidence: `docs/architecture/relations/documentation-links.csv` now links
+  the exact generated function path to `docs/API.md`; architecture-awareness
+  refresh PASS generated `2026-07-13T23:10:00.099Z` with `2874` entities /
+  `7034` relations / `16464` files and materialized the exact
+  `document:API -> function:authActor` relation; app-completion refresh PASS
+  generated `1141` missing test links / `28` missing doc links /
+  `9` implemented-needs-proof / `0` blocked / `1178` known risk items and no
+  longer reports the symbol as `missing_doc_link`; Project Truth apply PASS
+  generated `2026-07-13T23:11:09.288Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to
+  `src/modules/workforce/workforce.service.ts#entityAuthority`
+  `missing_test_link`. No runtime code, provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred. Next owner: Test Automation Engineer + QA Regression
+  Lead.
+
+- 2026-07-13: [LUC-982](/LUC/issues/LUC-982) Account access
+  `src/modules/intake/intake.routes.ts#authActor` missing-test-link
+  verification is complete locally. Task contract:
+  `.codex/tasks/luc-982-account-access-intake-authactor-proof.md`.
+  Evidence: `src/tests/api.test.ts` now explicitly proves intake route-proposal
+  actor attribution for bearer-owner and API-key request paths; focused local
+  disposable-DB proof PASS via `npm run prisma:migrate:deploy` plus a
+  temporary `tsx` route smoke; architecture-awareness refresh PASS generated
+  `2026-07-13T23:00:41.419Z` with `2872` entities / `7014` relations /
+  `16464` files and marks `src/modules/intake/intake.routes.ts#authActor`
+  `verified`; app-completion refresh PASS generated `1141` missing test links
+  / `29` missing doc links / `9` implemented-needs-proof / `0` blocked /
+  `1179` known risk items and the exact helper now reads `status=verified`,
+  `hasTest=true`, `risk=missing_doc_link`; Project Truth apply PASS generated
+  `2026-07-13T23:01:01.396Z` with public probe `pass`, runtime/event/ops
+  gaps `0`, and first gap advanced to the same symbol as `missing_doc_link`.
+  No runtime route logic, provider call, protected smoke, deploy, push,
+  restart, production mutation, or secret disclosure occurred. Separate note:
+  broader source-level `tsx --test` smoke failed earlier on an unrelated
+  `/v1/auth/register` `Prisma P2028` transaction-timeout path before the new
+  intake assertions were reached. Next owner for the residual same-symbol gap:
+  Docs Memory Lead + Project Manager.
+
+- 2026-07-13: [LUC-977](/LUC/issues/LUC-977) Account access
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`
+  missing-doc-link curation is complete locally. Task contract:
+  `.codex/tasks/luc-977-account-access-workflow-definition-drafts-authactor-doc-link.md`.
+  Evidence: `docs/architecture/relations/documentation-links.csv` now links
+  the exact generated function path to `docs/API.md`; architecture-awareness
+  refresh PASS generated `2026-07-13T19:05:03.219Z` with `2871` entities /
+  `7007` relations / `16465` files; app-completion refresh PASS generated
+  `1142` missing test links / `28` missing doc links /
+  `9` implemented-needs-proof / `0` blocked / `1179` known risk items and no
+  longer reports the symbol as `missing_doc_link`; Project Truth apply PASS
+  generated `2026-07-13T19:05:13.520Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to
+  `src/modules/intake/intake.routes.ts#authActor` `missing_test_link`. No
+  runtime code, provider call, protected smoke, deploy, push, restart,
+  production mutation, credential access, or secret disclosure occurred. Next
+  owner: Test Automation Engineer + QA Regression Lead.
+
+- 2026-07-13: [LUC-974](/LUC/issues/LUC-974) Account access
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`
+  missing-test-link verification is complete locally. Task contract:
+  `.codex/tasks/luc-974-account-access-workflow-definition-drafts-authactor-proof.md`.
+  Evidence: `src/tests/api.test.ts` now explicitly proves workflow-definition
+  draft actor attribution for both bearer-owner and API-key request paths;
+  `npm run test:api:local` PASS (`8/8`); architecture-awareness refresh PASS
+  generated `2026-07-13T18:38:17.797Z` with `2870` entities / `7002`
+  relations / `16465` files and marks
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`
+  `verified`; app-completion refresh PASS generated `1142` missing test links
+  / `29` missing doc links / `9` implemented-needs-proof / `0` blocked /
+  `1179` known risk items and the exact helper now reads `status=verified`,
+  `hasTest=true`, `risk=missing_doc_link`; Project Truth apply PASS generated
+  `2026-07-13T18:38:29.270Z` with public probe `pass`, runtime/event/ops
+  gaps `0`, and first gap advanced to the same symbol as `missing_doc_link`.
+  No runtime route logic, provider call, protected smoke, deploy, push,
+  restart, production mutation, or secret disclosure occurred. Next owner for
+  the residual same-symbol gap: Docs Memory Lead + Project Manager.
+
+- 2026-07-13: [LUC-971](/LUC/issues/LUC-971) Account access
+  `web/src/features/departments/assets-route.tsx#AuthenticatedImage`
+  frontend proof is complete locally. Task contract:
+  `.codex/tasks/luc-971-account-access-authenticated-image-frontend-proof.md`.
+  Evidence: focused local Playwright proof saved
+  `docs/ux/evidence/luc-971-authenticated-image-proof/report.json` plus
+  desktop/mobile screenshots; the proof records `previewRequestCount=4`,
+  `Authorization: Bearer proof-token` on every protected preview request,
+  blob-backed rendered image `src` values, zero console/page errors, and no
+  desktop/mobile horizontal overflow. `npm run build:web` PASS; scanner
+  overrides now link
+  `docs/planning/luc-971-account-access-authenticated-image-frontend-proof.md`
+  as `test` evidence for the exact function row; architecture-awareness refresh
+  PASS; app-completion refresh PASS and the exact symbol is absent from the
+  priority risk queue; Project Truth apply PASS generated
+  `2026-07-13T18:19:44.470Z` and no longer reports the function as
+  `missing_test_link`. No runtime code, provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred. Next owner/action: Test Automation Engineer + QA
+  Regression Lead for the new first Project Truth gap
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`.
+
+- 2026-07-13: [LUC-962](/LUC/issues/LUC-962) Account access
+  `src/modules/company-os/company-os.routes.ts#authActor`
+  missing-doc-link curation is complete locally. Task contract:
+  `.codex/tasks/luc-962-account-access-company-os-authactor-doc-link.md`.
+  Evidence: `docs/architecture/relations/documentation-links.csv` now links
+  the exact generated function path to
+  `docs/planning/company-os-stage1-task-contracts.md`; architecture-awareness
+  refresh PASS generated `2026-07-13T18:04:09.254Z` with `2867` entities /
+  `6971` relations / `16461` files and materialized the exact document
+  relation; app-completion refresh PASS generated `1144` missing test links /
+  `28` missing doc links / `9` implemented-needs-proof / `0` blocked /
+  `1181` known risk items; Project Truth apply PASS generated
+  `2026-07-13T18:05:15.282Z` with public probe `pass`, runtime/event/ops gaps
+  `0`, and first gap advanced to
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`
+  `missing_test_link`. No runtime code, provider call, protected smoke,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred. Next owner: Test Automation Engineer + QA Regression
+  Lead.
+
 - 2026-07-13: [LUC-961](/LUC/issues/LUC-961) source-control closure for the
   current [LUC-959](/LUC/issues/LUC-959) proof packet is complete locally. Task
   contract: `.codex/tasks/luc-961-source-control-closure-for-luc-959.md`.

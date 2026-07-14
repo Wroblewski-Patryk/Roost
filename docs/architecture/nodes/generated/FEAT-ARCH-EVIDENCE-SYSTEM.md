@@ -105,6 +105,9 @@ Obsidian-first CSV registry and generated graph system for architecture evidence
 ## Tests
 
 - `TEST-ARCH-GRAPH` npm run architecture:graph: `tested`
+- `TEST-ARCH-CHAIN-INTEGRITY` node --test dist/tests/architecture-chain-integrity.test.js: `tested`
+- `TEST-ARCH-HEALTH-DASHBOARD` node --test dist/tests/architecture-health-dashboard.test.js: `tested`
+- `TEST-ARCH-HEALTH-DASHBOARD-GATE` node --test dist/tests/architecture-health-dashboard-gate.test.js: `tested`
 
 ## Evidence
 

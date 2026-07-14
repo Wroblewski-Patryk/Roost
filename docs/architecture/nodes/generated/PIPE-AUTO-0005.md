@@ -52,7 +52,8 @@ Auto-synchronized pipeline node from repository source.
 
 ## Tests
 
-- No test rows.
+- `TEST-ARCH-HEALTH-DASHBOARD` node --test dist/tests/architecture-health-dashboard.test.js: `tested`
+- `TEST-ARCH-HEALTH-DASHBOARD-GATE` node --test dist/tests/architecture-health-dashboard-gate.test.js: `tested`
 
 ## Evidence
 

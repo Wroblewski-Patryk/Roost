@@ -751,8 +751,31 @@ test("CompanyCore v1 protected API flow", async () => {
 
   const initialWorkforce = await request("/v1/workforce", { headers: authA });
   assert.equal(initialWorkforce.status, 200);
-  const initialWorkforceBody = initialWorkforce.body as { data: { summary: { humans: number }; entities: Array<{ id: string; source?: string }> } };
+  const initialWorkforceBody = initialWorkforce.body as {
+    data: {
+      summary: { humans: number };
+      entities: Array<{
+        id: string;
+        source?: string;
+        authority: {
+          mode: string;
+          recommendedProfiles: Array<{ id: string }>;
+          visibleScopeSample: string[];
+          supportedCapabilities: string[];
+        };
+      }>;
+    };
+  };
   assert.equal(initialWorkforceBody.data.summary.humans, 1);
+  const userBackedWorkforce = initialWorkforceBody.data.entities.find((entity) => entity.source === "user");
+  assert.ok(userBackedWorkforce);
+  assert.equal(userBackedWorkforce.authority.mode, "human_workspace_authority");
+  assert.deepEqual(userBackedWorkforce.authority.recommendedProfiles, []);
+  assert.deepEqual(userBackedWorkforce.authority.visibleScopeSample, ["workspace_owner"]);
+  assert.ok(userBackedWorkforce.authority.supportedCapabilities.includes("workforce:read"));
+  assert.ok(userBackedWorkforce.authority.supportedCapabilities.includes("operations:write"));
+  assert.ok(userBackedWorkforce.authority.supportedCapabilities.includes("tasks:write"));
+  assert.ok(userBackedWorkforce.authority.supportedCapabilities.includes("events:read"));
 
   const workforceAgent = await request("/v1/workforce", {
     method: "POST",
@@ -800,6 +823,42 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(workforceAgentBody.data.bigFiveProfile.openness, 0.8);
   assert.equal(workforceAgentBody.data.syncStatus, "not_synced");
 
+  const workforceAfterCreate = await request("/v1/workforce", { headers: authA });
+  assert.equal(workforceAfterCreate.status, 200);
+  const workforceAfterCreateBody = workforceAfterCreate.body as {
+    data: {
+      entities: Array<{
+        id: string;
+        authority: {
+          mode: string;
+          riskLevel: string;
+          recommendedProfiles: Array<{ id: string }>;
+          visibleScopeSample: string[];
+          supportedCapabilities: string[];
+          blockedActions: Array<{ action: string }>;
+        };
+      }>;
+    };
+  };
+  const workforceAgentListEntity = workforceAfterCreateBody.data.entities.find((entity) => entity.id === workforceAgentBody.data.id);
+  assert.ok(workforceAgentListEntity);
+  assert.equal(workforceAgentListEntity.authority.mode, "profile_not_bound");
+  assert.equal(workforceAgentListEntity.authority.riskLevel, "low");
+  assert.deepEqual(
+    workforceAgentListEntity.authority.recommendedProfiles.map((profile) => profile.id),
+    ["mcp_company_os_reader", "mcp_knowledge_reader", "mcp_memory_writer"]
+  );
+  assert.ok(workforceAgentListEntity.authority.visibleScopeSample.includes("connection:read"));
+  assert.ok(workforceAgentListEntity.authority.visibleScopeSample.includes("workforce:read"));
+  assert.ok(workforceAgentListEntity.authority.supportedCapabilities.includes("workforce:write"));
+  assert.ok(workforceAgentListEntity.authority.supportedCapabilities.includes("operations:read"));
+  assert.ok(workforceAgentListEntity.authority.supportedCapabilities.includes("tasks:write"));
+  assert.ok(
+    workforceAgentListEntity.authority.blockedActions.some((blockedAction) => (
+      blockedAction.action === "assign_work_without_assignment_model"
+    ))
+  );
+
   const workforceSync = await request(`/v1/workforce/${workforceAgentBody.data.id}/actions/sync`, {
     method: "POST",
     headers: authA
@@ -809,8 +868,6 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(workforceSyncBody.data.entity.syncStatus, "queued");
   assert.ok(workforceSyncBody.data.outboxId);
 
-  const userBackedWorkforce = initialWorkforceBody.data.entities.find((entity) => entity.source === "user");
-  assert.ok(userBackedWorkforce);
   const blockedOwnerDelete = await request(`/v1/workforce/${userBackedWorkforce.id}/actions/delete`, {
     method: "POST",
     headers: authA
@@ -1103,6 +1160,11 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(proposalAudit.action, "intake.route_proposed");
   assert.equal(proposalAudit.resourceType, "intake_route_proposal");
+  const ownerAWorkspaceForIntake = await prisma.workspace.findUniqueOrThrow({
+    where: { id: ownerA.workspace.id }
+  });
+  assert.equal(proposalAudit.actorType, "user");
+  assert.equal(proposalAudit.actorId, ownerAWorkspaceForIntake.ownerUserId);
 
   const proposalEvent = await prisma.event.findFirstOrThrow({
     where: {
@@ -1112,6 +1174,8 @@ test("CompanyCore v1 protected API flow", async () => {
     }
   });
   assert.equal(proposalEvent.source, "companycore_intake");
+  assert.equal(proposalEvent.actorType, "user");
+  assert.equal(proposalEvent.actorId, ownerAWorkspaceForIntake.ownerUserId);
 
   const pendingPaperclipEventAfterProposal = await prisma.agentEventOutbox.findUniqueOrThrow({
     where: { id: paperclipIntakeEvent.id }
@@ -1248,12 +1312,91 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(invalidDepartmentProposal.status, 400);
 
+  const createdIntakeKey = await request("/v1/api-keys", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({
+      name: "Intake authActor proof",
+      scopes: ["connection:read", "intake:write"]
+    })
+  });
+  assert.equal(createdIntakeKey.status, 201);
+  const createdIntakeKeyBody = createdIntakeKey.body as {
+    data: { id: string; key: string; scopes: string[] };
+  };
+  assert.ok(createdIntakeKeyBody.data.scopes.includes("connection:read"));
+  assert.ok(createdIntakeKeyBody.data.scopes.includes("intake:write"));
+  const intakeKeyAuth = { "X-API-Key": createdIntakeKeyBody.data.key };
+
+  const intakeKeyConnection = await request("/v1/connection", {
+    headers: intakeKeyAuth
+  });
+  assert.equal(intakeKeyConnection.status, 200);
+  const intakeKeyConnectionBody = intakeKeyConnection.body as {
+    data: {
+      auth: { apiKeyId?: string };
+      capabilities: string[];
+    };
+  };
+  assert.equal(intakeKeyConnectionBody.data.auth.apiKeyId, createdIntakeKeyBody.data.id);
+  assert.ok(intakeKeyConnectionBody.data.capabilities.includes("intake:write"));
+
+  const apiKeyRouteProposal = await request("/v1/intake/actions/propose-route", {
+    method: "POST",
+    headers: intakeKeyAuth,
+    body: JSON.stringify({
+      sourceModel: "AgentEventOutbox",
+      sourceId: paperclipIntakeEvent.id,
+      targetDepartmentKey: "04-operacje",
+      classification: "needs_owner_decision",
+      reason: "Prove intake authActor records API-key route proposals as agent actors.",
+      proposedNextAction: "Escalate the intake packet to operations ownership review.",
+      riskLevel: "high",
+      requestOwnerDecision: false,
+      createTaskDraft: false,
+      idempotencyKey: "paperclip-discount-route-api-key-proof"
+    })
+  });
+  assert.equal(apiKeyRouteProposal.status, 201);
+  const apiKeyRouteProposalBody = apiKeyRouteProposal.body as {
+    data: {
+      proposal: { id: string };
+      evidence: { decisionId: string; auditLogId: string | null };
+    };
+  };
+  const apiKeyProposalDecision = await prisma.decision.findFirstOrThrow({
+    where: {
+      id: apiKeyRouteProposalBody.data.evidence.decisionId,
+      workspaceId: ownerA.workspace.id,
+      source: "companycore_intake"
+    }
+  });
+  const apiKeyProposalAudit = await prisma.auditLog.findUniqueOrThrow({
+    where: { id: apiKeyRouteProposalBody.data.evidence.auditLogId! }
+  });
+  assert.equal(apiKeyProposalAudit.action, "intake.route_proposed");
+  assert.equal(apiKeyProposalAudit.actorType, "agent");
+  assert.equal(apiKeyProposalAudit.actorId, intakeKeyConnectionBody.data.auth.apiKeyId);
+  const apiKeyProposalEvent = await prisma.event.findFirstOrThrow({
+    where: {
+      workspaceId: ownerA.workspace.id,
+      type: "intake.route_proposed",
+      resourceId: apiKeyProposalDecision.id
+    }
+  });
+  assert.equal(apiKeyProposalEvent.source, "companycore_intake");
+  assert.equal(apiKeyProposalEvent.actorType, "agent");
+  assert.equal(apiKeyProposalEvent.actorId, intakeKeyConnectionBody.data.auth.apiKeyId);
+
   await prisma.event.deleteMany({ where: { resourceId: proposalDecision.id } });
   await prisma.auditLog.deleteMany({ where: { resourceId: proposalDecision.id } });
   if (routeProposalBody.data.evidence.taskId) {
     await prisma.task.delete({ where: { id: routeProposalBody.data.evidence.taskId } });
   }
   await prisma.decision.delete({ where: { id: proposalDecision.id } });
+  await prisma.event.deleteMany({ where: { resourceId: apiKeyProposalDecision.id } });
+  await prisma.auditLog.deleteMany({ where: { resourceId: apiKeyProposalDecision.id } });
+  await prisma.decision.delete({ where: { id: apiKeyProposalDecision.id } });
   await prisma.risk.delete({ where: { id: highIntakeRisk.id } });
   await prisma.approval.delete({ where: { id: pendingIntakeApproval.id } });
   await prisma.externalFieldMapping.delete({ where: { id: unassignedField.id } });
@@ -5204,6 +5347,36 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(archivedStandardAudit.action, "standard.archived");
 
+  const createdWorkflowDefinitionKey = await request("/v1/api-keys", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({
+      name: "Workflow definition authActor proof",
+      scopes: ["connection:read", "company-os:workflow-definition:write", "company-os:workflow-definition:activate"]
+    })
+  });
+  assert.equal(createdWorkflowDefinitionKey.status, 201);
+  const createdWorkflowDefinitionKeyBody = createdWorkflowDefinitionKey.body as {
+    data: { key: string; scopes: string[] };
+  };
+  assert.ok(createdWorkflowDefinitionKeyBody.data.scopes.includes("connection:read"));
+  assert.ok(createdWorkflowDefinitionKeyBody.data.scopes.includes("company-os:workflow-definition:write"));
+  assert.ok(createdWorkflowDefinitionKeyBody.data.scopes.includes("company-os:workflow-definition:activate"));
+  const workflowDefinitionKeyAuth = { "X-API-Key": createdWorkflowDefinitionKeyBody.data.key };
+  const workflowDefinitionKeyConnection = await request("/v1/connection", {
+    headers: workflowDefinitionKeyAuth
+  });
+  assert.equal(workflowDefinitionKeyConnection.status, 200);
+  const workflowDefinitionKeyConnectionBody = workflowDefinitionKeyConnection.body as {
+    data: {
+      auth: { apiKeyId?: string };
+      capabilities: string[];
+    };
+  };
+  assert.ok(workflowDefinitionKeyConnectionBody.data.auth.apiKeyId);
+  assert.ok(workflowDefinitionKeyConnectionBody.data.capabilities.includes("company-os:workflow-definition:write"));
+  assert.ok(workflowDefinitionKeyConnectionBody.data.capabilities.includes("company-os:workflow-definition:activate"));
+
   const createdWorkflowDraft = await request("/v1/company-os/workflow-definitions/drafts", {
     method: "POST",
     headers: authA,
@@ -5245,7 +5418,9 @@ test("CompanyCore v1 protected API flow", async () => {
     where: { id: createdWorkflowDraftBody.data.auditLogId }
   });
   assert.equal(createdWorkflowDraftAudit.action, "workflow_definition_draft.created");
-  await prisma.event.findFirstOrThrow({
+  assert.equal(createdWorkflowDraftAudit.actorType, "user");
+  assert.equal(createdWorkflowDraftAudit.actorId, ownerAWorkspace.ownerUserId);
+  const createdWorkflowDraftEvent = await prisma.event.findFirstOrThrow({
     where: {
       workspaceId: ownerA.workspace.id,
       type: "workflow_definition_draft_created",
@@ -5253,6 +5428,8 @@ test("CompanyCore v1 protected API flow", async () => {
       correlationId: createdWorkflowDraftBody.data.correlationId
     }
   });
+  assert.equal(createdWorkflowDraftEvent.actorType, "user");
+  assert.equal(createdWorkflowDraftEvent.actorId, ownerAWorkspace.ownerUserId);
 
   const repeatedWorkflowDraft = await request("/v1/company-os/workflow-definitions/drafts", {
     method: "POST",
@@ -5871,6 +6048,55 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(repeatedProcedureActivation.status, 409);
   assert.equal((repeatedProcedureActivation.body as { error: string }).error, "workflow_definition_draft_not_activatable");
 
+  const apiKeyWorkflowDraft = await request("/v1/company-os/workflow-definitions/drafts", {
+    method: "POST",
+    headers: workflowDefinitionKeyAuth,
+    body: JSON.stringify({
+      rootObjectType: "procedure",
+      rootObjectId: activatedProcedureDraftBody.data.activatedRootObjectId,
+      name: "Client Onboarding SOP v3",
+      reason: "Prove workflow definition authActor records API-key actor attribution.",
+      riskLevel: "medium",
+      changeSet: {
+        purpose: "Run client onboarding with explicit agent-owned versioning evidence.",
+        expectedResult: "Kickoff remains ready with agent attribution evidence.",
+        requiredTools: ["companycore", "clickup"],
+        requiredPermissions: ["client:write", "task:write"],
+        steps: [
+          {
+            stepOrder: 1,
+            instruction: "Prepare kickoff plan and capture agent-auth proof.",
+            stepType: "integration_call",
+            requiredToolAdapterId: clickUpAdapter.id,
+            validationRule: { evidenceRequired: true }
+          }
+        ]
+      },
+      idempotencyKey: "workflow-draft-api-key-proof-001",
+      sourceChannel: "api-test"
+    })
+  });
+  assert.equal(apiKeyWorkflowDraft.status, 201);
+  const apiKeyWorkflowDraftBody = apiKeyWorkflowDraft.body as {
+    data: { id: string; auditLogId: string; correlationId: string; actorType: string; actorId: string | null };
+  };
+  const apiKeyWorkflowDraftAudit = await prisma.auditLog.findUniqueOrThrow({
+    where: { id: apiKeyWorkflowDraftBody.data.auditLogId }
+  });
+  assert.equal(apiKeyWorkflowDraftAudit.action, "workflow_definition_draft.created");
+  assert.equal(apiKeyWorkflowDraftAudit.actorType, "agent");
+  assert.equal(apiKeyWorkflowDraftAudit.actorId, workflowDefinitionKeyConnectionBody.data.auth.apiKeyId);
+  const apiKeyWorkflowDraftEvent = await prisma.event.findFirstOrThrow({
+    where: {
+      workspaceId: ownerA.workspace.id,
+      type: "workflow_definition_draft_created",
+      resourceId: apiKeyWorkflowDraftBody.data.id,
+      correlationId: apiKeyWorkflowDraftBody.data.correlationId
+    }
+  });
+  assert.equal(apiKeyWorkflowDraftEvent.actorType, "agent");
+  assert.equal(apiKeyWorkflowDraftEvent.actorId, workflowDefinitionKeyConnectionBody.data.auth.apiKeyId);
+
   const crossWorkspaceWorkflowDraftUpdate = await request(`/v1/company-os/workflow-definitions/drafts/${createdWorkflowDraftBody.data.id}`, {
     method: "PATCH",
     headers: authB,
@@ -5953,6 +6179,14 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(serviceCannotListWorkspaces.status, 403);
   assert.equal((serviceCannotListWorkspaces.body as { error: string }).error, "forbidden");
+
+  const serviceCannotCreateWorkspace = await request("/v1/workspaces", {
+    method: "POST",
+    headers: { "X-API-Key": serviceKey },
+    body: JSON.stringify({ name: "Service key should not create workspace" })
+  });
+  assert.equal(serviceCannotCreateWorkspace.status, 403);
+  assert.equal((serviceCannotCreateWorkspace.body as { error: string }).error, "forbidden");
 
   const serviceCannotSelectWorkspace = await request(`/v1/workspaces/${secondWorkspaceBody.data.workspace.id}/actions/select`, {
     method: "POST",
@@ -7096,11 +7330,18 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(connectionBody.data.integrations.clickup.configured, false);
   assert.equal(connectionBody.data.integrations.googleDrive.configured, false);
 
+  const projectAId = (serviceProject.body as { data: { id: string } }).data.id;
+  const projectListA = await request("/v1/projects", { headers: authA });
+  assert.equal(projectListA.status, 200);
+  assert.ok((projectListA.body as { data: Array<{ id: string; name: string }> }).data.some((project) => (
+    project.id === projectAId
+    && project.name === "Service project"
+  )));
+
   const projectListB = await request("/v1/projects", { headers: authB });
   assert.equal(projectListB.status, 200);
   assert.equal((projectListB.body as { data: unknown[] }).data.length, 0);
 
-  const projectAId = (serviceProject.body as { data: { id: string } }).data.id;
   const workflowProcess = await prisma.process.create({
     data: {
       workspaceId: ownerA.workspace.id,

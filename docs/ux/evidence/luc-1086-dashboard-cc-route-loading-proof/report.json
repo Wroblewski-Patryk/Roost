@@ -1,0 +1,50 @@
+{
+  "issue": "LUC-1086",
+  "status": "passed",
+  "generatedAt": "2026-07-14T11:37:29.998Z",
+  "baseUrl": "http://127.0.0.1:58594",
+  "canonicalDashboardPath": "/areas?area=00-ogolny&view=overview",
+  "delayedChunkRequests": 1,
+  "requestCounts": {
+    "authMe": 1,
+    "departments": 1,
+    "dashboardCommand": 1
+  },
+  "authHeaders": {
+    "authMeHeaders": [
+      "Bearer luc-1086-proof-token"
+    ],
+    "departmentsHeaders": [
+      "Bearer luc-1086-proof-token"
+    ],
+    "dashboardCommandHeaders": [
+      "Bearer luc-1086-proof-token"
+    ]
+  },
+  "loadingState": {
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-1086-dashboard-cc-route-loading-proof\\dashboard-route-loading.png",
+    "theme": "roost",
+    "loadingBackground": "rgb(22, 27, 34)",
+    "bodyBackground": "rgb(22, 27, 34)",
+    "noHorizontalOverflow": true
+  },
+  "readyState": {
+    "screenshot": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-1086-dashboard-cc-route-loading-proof\\dashboard-route-ready.png",
+    "noHorizontalOverflow": true
+  },
+  "assertions": {
+    "redirectedToCanonicalDashboard": true,
+    "routeChunkWasDelayed": true,
+    "routeLoadingRendered": false,
+    "routeLoadingThemeApplied": true,
+    "routeLoadingLabelRendered": false,
+    "dashboardRenderedAfterChunkRelease": true,
+    "dashboardCommandUsedBearerToken": true,
+    "authMeUsedBearerToken": true,
+    "departmentsUsedBearerToken": true,
+    "noHorizontalOverflow": true,
+    "runtimeErrors": true
+  },
+  "consoleIssues": [],
+  "pageErrors": []
+}

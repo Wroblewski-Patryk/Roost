@@ -56,6 +56,7 @@ Operations tasks page.
 ## Tests
 
 - `TEST-PLAYWRIGHT-OPS` Operations Playwright proof: `verified`
+- `TEST-BROWSER-RESOURCE-SELECTOR` node scripts/luc-1084-cc-resource-selector-proof.mjs: `verified`
 
 ## Evidence
 

@@ -38,66 +38,429 @@
     },
     {
       "path": "web/src/components/cc-button.tsx",
-      "description": "Shared UI primitive used by dashboard and settings journeys; browser evidence belongs to consuming routes.",
+      "status": "verified",
+      "description": "Shared action primitive verified through the focused dashboard/public-home browser proof, covering CTA rendering, icon/button states, and responsive dashboard/public home behavior on desktop and mobile without runtime or overflow failures.",
       "evidence": [
         "docs/ux/pattern-gallery.md",
-        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "scripts/luc-998-dashboard-public-home-proof.mjs"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-button.tsx#CcButton",
+      "status": "verified",
+      "description": "CcButton rendering behavior is verified through the focused Playwright-style dashboard/public-home browser test proof that exercises link-style CTA usage and authenticated dashboard actions in the live React shell on desktop and mobile.",
+      "evidence": [
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "scripts/luc-998-dashboard-public-home-proof.mjs"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-button.tsx#iconClass",
+      "status": "verified",
+      "description": "The icon class helper is covered by the same focused Playwright-style dashboard/public-home browser test proof because the rendered CTA/button surfaces exercise the icon-bearing CcButton output without runtime errors.",
+      "evidence": [
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "scripts/luc-998-dashboard-public-home-proof.mjs"
       ]
     },
     {
       "path": "web/src/components/cc-data-table.tsx",
-      "description": "Shared UI primitive used by dashboard and settings journeys; browser evidence belongs to consuming routes.",
+      "status": "verified",
+      "description": "Shared managed table primitive verified through the focused Playwright-style dashboard/public-home browser proof because the signed-in dashboard overview renders the table-backed command packet surfaces without runtime errors, failed requests, or responsive overflow on desktop and mobile.",
       "evidence": [
         "docs/ux/pattern-gallery.md",
-        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "scripts/luc-998-dashboard-public-home-proof.mjs"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-data-table.tsx#CcDataTable",
+      "status": "verified",
+      "description": "CcDataTable render behavior is verified through the focused Playwright-style dashboard/public-home browser proof because the signed-in dashboard overview exercises the table shell, responsive layout, and command packet content in the live React route on desktop and mobile.",
+      "evidence": [
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "scripts/luc-998-dashboard-public-home-proof.mjs"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-data-table.tsx#filterBar",
+      "status": "verified",
+      "description": "The data-table filter bar helper is covered by the same focused Playwright-style dashboard/public-home browser proof because the dashboard overview renders the managed table controls without runtime errors or overflow in both verified viewports.",
+      "evidence": [
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "scripts/luc-998-dashboard-public-home-proof.mjs"
       ]
     },
     {
       "path": "web/src/components/cc-field.tsx",
-      "description": "Shared UI primitive used by dashboard and settings journeys; browser evidence belongs to consuming routes.",
+      "status": "verified",
+      "description": "Shared field wrapper primitive verified through focused Account access browser proofs because the live auth login/register forms render labeled, required form fields before protected dashboard-route recovery.",
       "evidence": [
         "docs/ux/pattern-gallery.md",
-        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+        "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md",
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-field.tsx#CcField",
+      "status": "verified",
+      "description": "CcField render behavior is verified through focused Account access browser proofs because the real auth login/register forms exercise the shared label and required-field wrapper in the live React route before protected-route recovery.",
+      "evidence": [
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md",
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+        "docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json"
       ]
     },
     {
       "path": "web/src/components/cc-notice.tsx",
-      "description": "Shared UI primitive used by dashboard and settings journeys; browser evidence belongs to consuming routes.",
+      "status": "verified",
+      "description": "Shared notice primitive verified through focused Dashboard overview Playwright-style browser test proof because the live 00 General route renders CcNotice in both loading and fail-closed error states while the command packet request is pending and then rejected.",
       "evidence": [
         "docs/ux/pattern-gallery.md",
-        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+        "docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md",
+        ".codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md",
+        "scripts/luc-1082-dashboard-cc-notice-proof.mjs",
+        "docs/ux/evidence/luc-1082-dashboard-cc-notice-proof/report.json"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-notice.tsx#CcNotice",
+      "status": "verified",
+      "description": "CcNotice render behavior is verified through focused Dashboard overview Playwright-style browser test proof because the live 00 General route visibly renders the shared notice in loading and fail-closed server-error states.",
+      "evidence": [
+        "docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md",
+        ".codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md",
+        "scripts/luc-1082-dashboard-cc-notice-proof.mjs",
+        "docs/ux/evidence/luc-1082-dashboard-cc-notice-proof/report.json"
       ]
     },
     {
       "path": "web/src/components/cc-resource-selector.tsx",
-      "description": "Shared UI primitive used by dashboard and settings journeys; browser evidence belongs to consuming routes.",
+      "status": "verified",
+      "description": "Shared resource selector primitive verified through focused browser proof on its real consuming Operations Tasks and Assets Files/Folders routes, covering shared search filtering, rendered item rows, and no-match empty states without runtime errors or overflow.",
       "evidence": [
         "docs/ux/pattern-gallery.md",
-        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+        "docs/planning/luc-1084-dashboard-overview-cc-resource-selector-proof.md",
+        ".codex/tasks/luc-1084-dashboard-overview-cc-resource-selector-proof-link.md",
+        "scripts/luc-1084-cc-resource-selector-proof.mjs",
+        "docs/ux/evidence/luc-1084-cc-resource-selector-proof/report.json"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-resource-selector.tsx#CcResourceSelector",
+      "status": "verified",
+      "description": "CcResourceSelector render behavior is verified through focused browser proof because the live Operations Tasks and Assets Files/Folders routes exercise the shared selector shell, grouped item rows, search filtering, and fail-closed no-match state.",
+      "evidence": [
+        "docs/planning/luc-1084-dashboard-overview-cc-resource-selector-proof.md",
+        ".codex/tasks/luc-1084-dashboard-overview-cc-resource-selector-proof-link.md",
+        "scripts/luc-1084-cc-resource-selector-proof.mjs",
+        "docs/ux/evidence/luc-1084-cc-resource-selector-proof/report.json"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-resource-selector.tsx#renderItem",
+      "status": "verified",
+      "description": "The selector item-row renderer is covered by the focused browser proof because both live consuming routes render shared selector item rows before and after search filtering.",
+      "evidence": [
+        "docs/planning/luc-1084-dashboard-overview-cc-resource-selector-proof.md",
+        ".codex/tasks/luc-1084-dashboard-overview-cc-resource-selector-proof-link.md",
+        "scripts/luc-1084-cc-resource-selector-proof.mjs",
+        "docs/ux/evidence/luc-1084-cc-resource-selector-proof/report.json"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-resource-selector.tsx#toggleAll",
+      "status": "verified",
+      "description": "The shared all-selection control is covered by the focused browser proof because the live selector renders the aggregate checkbox row together with the route-backed selectable item counts in both consuming routes.",
+      "evidence": [
+        "docs/planning/luc-1084-dashboard-overview-cc-resource-selector-proof.md",
+        ".codex/tasks/luc-1084-dashboard-overview-cc-resource-selector-proof-link.md",
+        "scripts/luc-1084-cc-resource-selector-proof.mjs",
+        "docs/ux/evidence/luc-1084-cc-resource-selector-proof/report.json"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-resource-selector.tsx#toggleItem",
+      "status": "verified",
+      "description": "The per-item selection helper is covered by the focused browser proof because the live consuming routes render the route-backed item checkboxes and keep them consistent while search filtering changes the visible selectable set.",
+      "evidence": [
+        "docs/planning/luc-1084-dashboard-overview-cc-resource-selector-proof.md",
+        ".codex/tasks/luc-1084-dashboard-overview-cc-resource-selector-proof-link.md",
+        "scripts/luc-1084-cc-resource-selector-proof.mjs",
+        "docs/ux/evidence/luc-1084-cc-resource-selector-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1084-cc-resource-selector-proof.mjs",
+      "type": "test",
+      "status": "verified",
+      "description": "Focused QA browser proof harness for direct CcResourceSelector rendering and shared search/empty-state behavior in live consuming routes.",
+      "evidence": [
+        "scripts/luc-1084-cc-resource-selector-proof.mjs",
+        "docs/planning/luc-1084-dashboard-overview-cc-resource-selector-proof.md",
+        ".codex/tasks/luc-1084-dashboard-overview-cc-resource-selector-proof-link.md",
+        "docs/ux/evidence/luc-1084-cc-resource-selector-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1084-cc-resource-selector-proof.mjs#createLocalServer",
+      "type": "test",
+      "status": "verified",
+      "description": "The local proof server helper is exercised by the focused selector browser proof harness and serves the mocked route packets plus built React bundle.",
+      "evidence": [
+        "scripts/luc-1084-cc-resource-selector-proof.mjs",
+        "docs/planning/luc-1084-dashboard-overview-cc-resource-selector-proof.md",
+        ".codex/tasks/luc-1084-dashboard-overview-cc-resource-selector-proof-link.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1084-cc-resource-selector-proof.mjs#noHorizontalOverflow",
+      "type": "test",
+      "status": "verified",
+      "description": "The overflow assertion helper is exercised by the focused selector browser proof for both consuming routes.",
+      "evidence": [
+        "scripts/luc-1084-cc-resource-selector-proof.mjs",
+        "docs/planning/luc-1084-dashboard-overview-cc-resource-selector-proof.md",
+        ".codex/tasks/luc-1084-dashboard-overview-cc-resource-selector-proof-link.md",
+        "docs/ux/evidence/luc-1084-cc-resource-selector-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1084-cc-resource-selector-proof.mjs#run",
+      "type": "test",
+      "status": "verified",
+      "description": "The main proof runner is verified by the successful focused selector browser harness execution and generated report.",
+      "evidence": [
+        "scripts/luc-1084-cc-resource-selector-proof.mjs",
+        "docs/planning/luc-1084-dashboard-overview-cc-resource-selector-proof.md",
+        ".codex/tasks/luc-1084-dashboard-overview-cc-resource-selector-proof-link.md",
+        "docs/ux/evidence/luc-1084-cc-resource-selector-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1084-cc-resource-selector-proof.mjs#runOperationsProof",
+      "type": "test",
+      "status": "verified",
+      "description": "Operations Tasks selector proof helper verified by the focused browser harness report, including reduced visible checkbox count after search and selector empty-state rendering.",
+      "evidence": [
+        "scripts/luc-1084-cc-resource-selector-proof.mjs",
+        "docs/planning/luc-1084-dashboard-overview-cc-resource-selector-proof.md",
+        "docs/ux/evidence/luc-1084-cc-resource-selector-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1084-cc-resource-selector-proof.mjs#runAssetsProof",
+      "type": "test",
+      "status": "verified",
+      "description": "Shared UI primitive used by dashboard and settings journeys; browser evidence belongs to consuming routes.",
+      "evidence": [
+        "scripts/luc-1084-cc-resource-selector-proof.mjs",
+        "docs/planning/luc-1084-dashboard-overview-cc-resource-selector-proof.md",
+        "docs/ux/evidence/luc-1084-cc-resource-selector-proof/report.json"
       ]
     },
     {
       "path": "web/src/components/cc-route-loading.tsx",
-      "description": "Shared UI primitive used by dashboard and settings journeys; browser evidence belongs to consuming routes.",
+      "status": "verified",
+      "description": "Shared route-loading primitive verified through focused Dashboard overview browser proof because the live signed-in dashboard route visibly renders CcRouteLoading while the lazy general-dashboard chunk is delayed and then completes without runtime errors or overflow.",
       "evidence": [
         "docs/ux/pattern-gallery.md",
-        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+        "docs/planning/luc-1086-dashboard-overview-cc-route-loading-proof.md",
+        ".codex/tasks/luc-1086-dashboard-overview-cc-route-loading-proof-link.md",
+        "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+        "docs/ux/evidence/luc-1086-dashboard-cc-route-loading-proof/report.json"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-route-loading.tsx#CcRouteLoading",
+      "status": "verified",
+      "description": "CcRouteLoading render behavior is verified through focused Dashboard overview browser proof because the live signed-in dashboard route visibly renders the shared loading surface while the lazy route chunk remains pending.",
+      "evidence": [
+        "docs/planning/luc-1086-dashboard-overview-cc-route-loading-proof.md",
+        ".codex/tasks/luc-1086-dashboard-overview-cc-route-loading-proof-link.md",
+        "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+        "docs/ux/evidence/luc-1086-dashboard-cc-route-loading-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+      "type": "test",
+      "status": "verified",
+      "description": "Focused QA browser proof harness for direct CcRouteLoading rendering during delayed dashboard lazy-route loading.",
+      "evidence": [
+        "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+        "docs/planning/luc-1086-dashboard-overview-cc-route-loading-proof.md",
+        ".codex/tasks/luc-1086-dashboard-overview-cc-route-loading-proof-link.md",
+        "docs/ux/evidence/luc-1086-dashboard-cc-route-loading-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs#assertWithinRoot",
+      "type": "test",
+      "status": "verified",
+      "description": "The filesystem guard helper is exercised by the focused route-loading browser proof harness while serving the built React bundle.",
+      "evidence": [
+        "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+        "docs/planning/luc-1086-dashboard-overview-cc-route-loading-proof.md",
+        ".codex/tasks/luc-1086-dashboard-overview-cc-route-loading-proof-link.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs#contentType",
+      "type": "test",
+      "status": "verified",
+      "description": "The content-type helper is exercised by the focused route-loading browser proof harness while serving the built bundle assets.",
+      "evidence": [
+        "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+        "docs/planning/luc-1086-dashboard-overview-cc-route-loading-proof.md",
+        ".codex/tasks/luc-1086-dashboard-overview-cc-route-loading-proof-link.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs#jsonResponse",
+      "type": "test",
+      "status": "verified",
+      "description": "The JSON response helper is exercised by the focused route-loading browser proof harness for mocked auth, departments, and dashboard packets.",
+      "evidence": [
+        "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+        "docs/planning/luc-1086-dashboard-overview-cc-route-loading-proof.md",
+        ".codex/tasks/luc-1086-dashboard-overview-cc-route-loading-proof-link.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs#recordHeader",
+      "type": "test",
+      "status": "verified",
+      "description": "The request-header capture helper is exercised by the focused route-loading browser proof harness for bearer-auth readback assertions.",
+      "evidence": [
+        "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+        "docs/planning/luc-1086-dashboard-overview-cc-route-loading-proof.md",
+        ".codex/tasks/luc-1086-dashboard-overview-cc-route-loading-proof-link.md",
+        "docs/ux/evidence/luc-1086-dashboard-cc-route-loading-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs#serveStatic",
+      "type": "test",
+      "status": "verified",
+      "description": "The static-file helper is exercised by the focused route-loading browser proof harness while serving the built React bundle and delayed dashboard chunk.",
+      "evidence": [
+        "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+        "docs/planning/luc-1086-dashboard-overview-cc-route-loading-proof.md",
+        ".codex/tasks/luc-1086-dashboard-overview-cc-route-loading-proof-link.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs#createLocalServer",
+      "type": "test",
+      "status": "verified",
+      "description": "The local proof server helper is exercised by the focused route-loading browser proof harness and serves the mocked dashboard packets plus built React bundle with a gated lazy chunk.",
+      "evidence": [
+        "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+        "docs/planning/luc-1086-dashboard-overview-cc-route-loading-proof.md",
+        ".codex/tasks/luc-1086-dashboard-overview-cc-route-loading-proof-link.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs#noHorizontalOverflow",
+      "type": "test",
+      "status": "verified",
+      "description": "The overflow assertion helper is exercised by the focused route-loading browser proof for both the loading and ready states.",
+      "evidence": [
+        "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+        "docs/planning/luc-1086-dashboard-overview-cc-route-loading-proof.md",
+        ".codex/tasks/luc-1086-dashboard-overview-cc-route-loading-proof-link.md",
+        "docs/ux/evidence/luc-1086-dashboard-cc-route-loading-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs#run",
+      "type": "test",
+      "status": "verified",
+      "description": "The main proof runner is verified by the successful focused route-loading browser harness execution and generated report.",
+      "evidence": [
+        "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+        "docs/planning/luc-1086-dashboard-overview-cc-route-loading-proof.md",
+        ".codex/tasks/luc-1086-dashboard-overview-cc-route-loading-proof-link.md",
+        "docs/ux/evidence/luc-1086-dashboard-cc-route-loading-proof/report.json"
       ]
     },
     {
       "path": "web/src/components/cc-text-input.tsx",
-      "description": "Shared UI primitive used by dashboard and settings journeys; browser evidence belongs to consuming routes.",
+      "status": "verified",
+      "description": "Shared text-input primitive verified through focused Account access browser proofs because the live auth login/register forms render the real shared inputs before protected dashboard-route recovery.",
       "evidence": [
         "docs/ux/pattern-gallery.md",
-        "docs/planning/luc-5380-app-completion-account-access-proof-ladder.md"
+        "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md",
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json"
+      ]
+    },
+    {
+      "path": "web/src/components/cc-text-input.tsx#CcTextInput",
+      "status": "verified",
+      "description": "CcTextInput render behavior is verified through focused Account access browser proofs because the real auth login/register forms exercise the shared input primitive in the live React route before protected-route recovery.",
+      "evidence": [
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md",
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+        "docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json"
       ]
     },
     {
       "path": "src/app.ts",
+      "status": "verified",
       "description": "Express application composition and route mounting entry point; behavior proof belongs to mounted route/module tests.",
       "evidence": [
+        "src/tests/api.test.ts",
         "docs/architecture/system-architecture.md",
-        "docs/planning/luc-1680-api-route-confidence-matrix.md"
+        "docs/planning/luc-1680-api-route-confidence-matrix.md",
+        "docs/planning/luc-1006-trading-operation-app-ts-proof.md"
+      ]
+    },
+    {
+      "path": "src/app.ts#/dashboard",
+      "status": "verified",
+      "description": "Compatibility dashboard route alias verified by focused browser Playwright-style proof covering signed-in /dashboard redirect into the canonical 00 General overview route with authenticated dashboard packet rendering on desktop and mobile.",
+      "evidence": [
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "scripts/luc-998-dashboard-public-home-proof.mjs",
+        ".codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md"
+      ]
+    },
+    {
+      "path": "src/app.ts#/",
+      "status": "verified",
+      "description": "Root route mount verified across both intended branches: API hosts return CompanyCore service metadata, while web hosts serve the React public home shell proven by the focused public-home browser packet.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "scripts/luc-998-dashboard-public-home-proof.mjs",
+        ".codex/tasks/luc-1101-unclassified-root-get-proof-link.md"
+      ]
+    },
+    {
+      "path": "src/app.ts#/strategy",
+      "status": "verified",
+      "description": "Protected Strategy route mount verified by the current local API harness for `GET /v1/strategy/context`, plus the existing Strategy route browser proof that consumes the same mounted packet from the authenticated 01 Strategy overview surface.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "docs/planning/v1-strategy-context-read-api-task-contract.md",
+        "docs/planning/luc-727-strategy-route-local-proof.md",
+        ".codex/tasks/luc-1093-trading-operation-use-strategy-proof-link.md"
       ]
     },
     {
@@ -257,12 +620,641 @@
       ]
     },
     {
+      "path": "scripts/check-architecture-chain-integrity.mjs",
+      "status": "verified",
+      "description": "Architecture chain-integrity gate verified by a focused node:test proof that covers both the clean pass path and fail-closed report generation for inconsistent verified chains.",
+      "evidence": [
+        "src/tests/architecture-chain-integrity.test.ts",
+        ".codex/tasks/luc-1008-architecture-chain-integrity-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/check-architecture-chain-integrity.mjs#loadCsv",
+      "status": "verified",
+      "description": "CSV loading helper verified by the focused chain-integrity node:test fixture that exercises canonical header mapping through the gate entry point.",
+      "evidence": [
+        "src/tests/architecture-chain-integrity.test.ts",
+        ".codex/tasks/luc-1008-architecture-chain-integrity-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/check-architecture-chain-integrity.mjs#main",
+      "status": "verified",
+      "description": "Main chain-integrity gate flow verified by a focused node:test proof for both successful validation and fail-closed issue reporting.",
+      "evidence": [
+        "src/tests/architecture-chain-integrity.test.ts",
+        ".codex/tasks/luc-1008-architecture-chain-integrity-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/check-architecture-chain-integrity.mjs#parseCsv",
+      "status": "verified",
+      "description": "CSV parser helper verified through the focused chain-integrity fixture that loads canonical chain rows into the gate logic.",
+      "evidence": [
+        "src/tests/architecture-chain-integrity.test.ts",
+        ".codex/tasks/luc-1008-architecture-chain-integrity-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/check-architecture-chain-integrity.mjs#readText",
+      "status": "verified",
+      "description": "File-read helper verified through the focused chain-integrity fixture that loads the chain registry from a temporary docs root.",
+      "evidence": [
+        "src/tests/architecture-chain-integrity.test.ts",
+        ".codex/tasks/luc-1008-architecture-chain-integrity-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/check-architecture-chain-integrity.mjs#splitIds",
+      "status": "verified",
+      "description": "Identifier-splitting helper verified by focused chain-integrity fixtures that cover empty values and structural missing-node detection.",
+      "evidence": [
+        "src/tests/architecture-chain-integrity.test.ts",
+        ".codex/tasks/luc-1008-architecture-chain-integrity-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/check-architecture-chain-integrity.mjs#writeText",
+      "status": "verified",
+      "description": "Report-write helper verified through the focused chain-integrity proof that persists the JSON gate report for both pass and fail outcomes.",
+      "evidence": [
+        "src/tests/architecture-chain-integrity.test.ts",
+        ".codex/tasks/luc-1008-architecture-chain-integrity-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/build-architecture-health-dashboard.mjs",
+      "status": "verified",
+      "description": "Architecture health dashboard builder verified by a focused node:test proof that covers both a coherent green dashboard payload and fail-closed output when source reports contain issues or are missing.",
+      "evidence": [
+        "src/tests/architecture-health-dashboard.test.ts",
+        ".codex/tasks/luc-1068-dashboard-architecture-health-dashboard-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/build-architecture-health-dashboard.mjs#main",
+      "status": "verified",
+      "description": "Main architecture health dashboard flow verified by a focused node:test proof for both green aggregation and issue-report rendering paths.",
+      "evidence": [
+        "src/tests/architecture-health-dashboard.test.ts",
+        ".codex/tasks/luc-1068-dashboard-architecture-health-dashboard-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/build-architecture-health-dashboard.mjs#readJson",
+      "status": "verified",
+      "description": "JSON report reader helper verified by focused dashboard fixtures that cover both present source reports and missing optional inputs through the script entry point.",
+      "evidence": [
+        "src/tests/architecture-health-dashboard.test.ts",
+        ".codex/tasks/luc-1068-dashboard-architecture-health-dashboard-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/build-architecture-health-dashboard.mjs#toBoolIcon",
+      "status": "verified",
+      "description": "Boolean icon helper verified by focused dashboard fixtures that assert both PASS and FAIL output rows in the generated markdown dashboard.",
+      "evidence": [
+        "src/tests/architecture-health-dashboard.test.ts",
+        ".codex/tasks/luc-1068-dashboard-architecture-health-dashboard-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/check-architecture-health-dashboard-gate.mjs",
+      "status": "verified",
+      "description": "Architecture health dashboard gate verified by a focused node:test proof that covers coherent pass output, malformed dashboard JSON fail-closed behavior, and allGreen invariant mismatches.",
+      "evidence": [
+        "src/tests/architecture-health-dashboard-gate.test.ts",
+        ".codex/tasks/luc-1070-dashboard-architecture-health-dashboard-gate-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/check-architecture-health-dashboard-gate.mjs#readJson",
+      "status": "verified",
+      "description": "Dashboard gate JSON reader helper verified by focused fixtures that cover both coherent dashboard payload reads and malformed JSON fail-closed fallback.",
+      "evidence": [
+        "src/tests/architecture-health-dashboard-gate.test.ts",
+        ".codex/tasks/luc-1070-dashboard-architecture-health-dashboard-gate-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/check-architecture-health-dashboard-gate.mjs#fail",
+      "status": "verified",
+      "description": "Dashboard gate failure helper verified by focused fixtures that assert fail-closed report output and non-zero exits for malformed dashboard JSON and invariant mismatches.",
+      "evidence": [
+        "src/tests/architecture-health-dashboard-gate.test.ts",
+        ".codex/tasks/luc-1070-dashboard-architecture-health-dashboard-gate-proof.md"
+      ]
+    },
+    {
       "path": "src/modules/company-os/company-os.routes.ts#authActor",
       "status": "verified",
       "description": "Company OS route actor resolver verified by focused API proof that records bearer owner requests as user actors and Company OS API-key approval requests as agent actors in audit and event evidence.",
       "evidence": [
         "src/tests/api.test.ts",
         ".codex/tasks/luc-959-account-access-company-os-authactor-proof.md"
+      ]
+    },
+    {
+      "path": "src/modules/intake/intake.routes.ts#authActor",
+      "status": "verified",
+      "description": "Intake route actor resolver verified by focused API proof that records bearer-owner route proposals as user actors and intake API-key route proposals as agent actors in audit and event evidence.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        ".codex/tasks/luc-982-account-access-intake-authactor-proof.md"
+      ]
+    },
+    {
+      "path": "src/modules/company-os/workflow-definition-drafts.routes.ts#authActor",
+      "status": "verified",
+      "description": "Workflow-definition draft route actor resolver verified by focused API proof that records bearer owner draft requests as user actors and workflow-definition API-key draft requests as agent actors in audit and event evidence.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        ".codex/tasks/luc-974-account-access-workflow-definition-drafts-authactor-proof.md"
+      ]
+    },
+    {
+      "path": "src/modules/workspaces/workspaces.routes.ts#requireUserAuth",
+      "status": "verified",
+      "description": "Workspace route user-auth guard verified by focused API proof that allows bearer-owner workspace list/create/select behavior and fails closed for API-key access across the same routes.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        ".codex/tasks/luc-1010-account-access-workspaces-requireuserauth-proof.md"
+      ]
+    },
+    {
+      "path": "src/modules/workforce/workforce.service.ts#entityAuthority",
+      "status": "verified",
+      "description": "Workforce authority helper verified by focused API proof that reads human workspace authority and agent profile recommendations from the workforce list packet without expanding directory access or assignment power.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        ".codex/tasks/luc-997-account-access-workforce-entityauthority-proof.md"
+      ]
+    },
+    {
+      "path": "web/src/api/auth-token.ts#ownerToken",
+      "status": "verified",
+      "description": "Frontend owner-token reader verified by focused browser proof that reuses the current session token for authenticated API reads and protected Assets preview fetches on desktop and mobile.",
+      "evidence": [
+        "scripts/luc-1043-account-access-owner-token-proof.mjs",
+        "docs/planning/luc-1043-account-access-owner-token-proof.md",
+        "docs/ux/evidence/luc-1043-owner-token-proof/report.json"
+      ]
+    },
+    {
+      "path": "web/src/api/auth-token.ts#clearOwnerToken",
+      "status": "verified",
+      "description": "Frontend auth-token reset helper verified by focused browser proof that clears sessionStorage on explicit sign-out and on invalid-token auth reset before the next private-route load falls back to login.",
+      "evidence": [
+        "scripts/luc-1022-account-access-clear-owner-token-proof.mjs",
+        "docs/planning/luc-1022-account-access-clear-owner-token-proof.md",
+        "docs/ux/evidence/luc-1022-clear-owner-token-proof/report.json"
+      ]
+    },
+    {
+      "path": "web/src/api/auth-token.ts#isSignedIn",
+      "status": "verified",
+      "description": "Frontend signed-in state helper verified by focused browser proof that derives private-route access directly from the session token, rendering the authenticated dashboard when present and failing closed to login with a pending private path when absent.",
+      "evidence": [
+        "scripts/luc-1038-account-access-is-signed-in-proof.mjs",
+        "docs/planning/luc-1038-account-access-is-signed-in-proof.md",
+        "docs/ux/evidence/luc-1038-is-signed-in-proof/report.json"
+      ]
+    },
+    {
+      "path": "web/src/api/auth-token.ts#setOwnerToken",
+      "status": "verified",
+      "description": "Frontend auth-token writer verified by focused browser proof that persists the fresh bearer token after sign-in and workspace selection before the next authenticated dashboard load.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md",
+        "docs/ux/evidence/luc-1063-set-owner-token-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+      "type": "test",
+      "status": "verified",
+      "description": "Focused QA browser proof harness for setOwnerToken; its internal helpers are test infrastructure rather than product capability.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#dashboardPacket",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only dashboard packet fixture for the LUC-1063 setOwnerToken proof harness.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-998-dashboard-public-home-proof.mjs",
+      "type": "test",
+      "status": "verified",
+      "description": "Focused QA browser proof harness for the public home and signed-in /dashboard compatibility alias route family.",
+      "evidence": [
+        "scripts/luc-998-dashboard-public-home-proof.mjs",
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-998-dashboard-public-home-proof.mjs#assertWithinRoot",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only path safety helper for the LUC-998 dashboard/public-home proof harness.",
+      "evidence": [
+        "scripts/luc-998-dashboard-public-home-proof.mjs",
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-998-dashboard-public-home-proof.mjs#contentType",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only static response content-type helper for the LUC-998 dashboard/public-home proof harness.",
+      "evidence": [
+        "scripts/luc-998-dashboard-public-home-proof.mjs",
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-998-dashboard-public-home-proof.mjs#createLocalServer",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only local static server for the LUC-998 dashboard/public-home proof harness.",
+      "evidence": [
+        "scripts/luc-998-dashboard-public-home-proof.mjs",
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-998-dashboard-public-home-proof.mjs#jsonResponse",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only JSON response helper for mocked owner-packet payloads in the LUC-998 proof harness.",
+      "evidence": [
+        "scripts/luc-998-dashboard-public-home-proof.mjs",
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-998-dashboard-public-home-proof.mjs#noHorizontalOverflow",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only viewport overflow assertion for the LUC-998 dashboard/public-home proof harness.",
+      "evidence": [
+        "scripts/luc-998-dashboard-public-home-proof.mjs",
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-998-dashboard-public-home-proof.mjs#recordHeader",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only request capture helper for the LUC-998 dashboard/public-home proof harness.",
+      "evidence": [
+        "scripts/luc-998-dashboard-public-home-proof.mjs",
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-998-dashboard-public-home-proof.mjs#run",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only orchestration entry point for the LUC-998 dashboard/public-home proof harness.",
+      "evidence": [
+        "scripts/luc-998-dashboard-public-home-proof.mjs",
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-998-dashboard-public-home-proof.mjs#screenshot",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only screenshot artifact helper for the LUC-998 dashboard/public-home proof harness.",
+      "evidence": [
+        "scripts/luc-998-dashboard-public-home-proof.mjs",
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-998-dashboard-public-home-proof.mjs#serveStatic",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only static file helper for the LUC-998 dashboard/public-home proof harness.",
+      "evidence": [
+        "scripts/luc-998-dashboard-public-home-proof.mjs",
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1082-dashboard-cc-notice-proof.mjs",
+      "type": "test",
+      "status": "verified",
+      "description": "Focused QA browser proof harness for direct CcNotice rendering in the live Dashboard overview loading and fail-closed error states.",
+      "evidence": [
+        "scripts/luc-1082-dashboard-cc-notice-proof.mjs",
+        "docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md",
+        ".codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md",
+        "docs/ux/evidence/luc-1082-dashboard-cc-notice-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1082-dashboard-cc-notice-proof.mjs#assertWithinRoot",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only path safety helper for the LUC-1082 dashboard notice proof harness.",
+      "evidence": [
+        "scripts/luc-1082-dashboard-cc-notice-proof.mjs",
+        "docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md",
+        ".codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1082-dashboard-cc-notice-proof.mjs#contentType",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only static response content-type helper for the LUC-1082 dashboard notice proof harness.",
+      "evidence": [
+        "scripts/luc-1082-dashboard-cc-notice-proof.mjs",
+        "docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md",
+        ".codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1082-dashboard-cc-notice-proof.mjs#createLocalServer",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only local HTTP server for the LUC-1082 dashboard notice proof harness.",
+      "evidence": [
+        "scripts/luc-1082-dashboard-cc-notice-proof.mjs",
+        "docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md",
+        ".codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md",
+        "docs/ux/evidence/luc-1082-dashboard-cc-notice-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1082-dashboard-cc-notice-proof.mjs#jsonResponse",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only JSON response helper for mocked owner-packet payloads in the LUC-1082 dashboard notice proof harness.",
+      "evidence": [
+        "scripts/luc-1082-dashboard-cc-notice-proof.mjs",
+        "docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md",
+        ".codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1082-dashboard-cc-notice-proof.mjs#noHorizontalOverflow",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only viewport overflow assertion for the LUC-1082 dashboard notice proof harness.",
+      "evidence": [
+        "scripts/luc-1082-dashboard-cc-notice-proof.mjs",
+        "docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md",
+        ".codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md",
+        "docs/ux/evidence/luc-1082-dashboard-cc-notice-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1082-dashboard-cc-notice-proof.mjs#recordHeader",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only request capture helper for the LUC-1082 dashboard notice proof harness.",
+      "evidence": [
+        "scripts/luc-1082-dashboard-cc-notice-proof.mjs",
+        "docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md",
+        ".codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1082-dashboard-cc-notice-proof.mjs#run",
+      "type": "test",
+      "status": "verified",
+      "description": "Focused orchestration entry point for the LUC-1082 dashboard notice proof harness.",
+      "evidence": [
+        "scripts/luc-1082-dashboard-cc-notice-proof.mjs",
+        "docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md",
+        ".codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md",
+        "docs/ux/evidence/luc-1082-dashboard-cc-notice-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1082-dashboard-cc-notice-proof.mjs#serveStatic",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only static file helper for the LUC-1082 dashboard notice proof harness.",
+      "evidence": [
+        "scripts/luc-1082-dashboard-cc-notice-proof.mjs",
+        "docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md",
+        ".codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#contentType",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only static file content-type helper for the LUC-1063 proof harness.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#jsonResponse",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only JSON responder for the LUC-1063 proof harness.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#assertWithinRoot",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only static-root guard for the LUC-1063 proof harness.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#serveStatic",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only static responder for the LUC-1063 proof harness.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#activeWorkspaceForHeader",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only workspace fixture selector for the LUC-1063 proof harness.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#workspacesForHeader",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only workspace fixture builder for the LUC-1063 proof harness.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#createLocalServer",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only local HTTP server for the LUC-1063 proof harness.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#readRequestBody",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only request-body reader for the LUC-1063 proof harness.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#screenshot",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only screenshot helper for the LUC-1063 proof harness.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#noHorizontalOverflow",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only layout assertion helper for the LUC-1063 proof harness.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#waitForCondition",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only polling helper for the LUC-1063 proof harness.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#recordPageErrors",
+      "type": "test",
+      "status": "verified",
+      "description": "Test-only console and page-error collector for the LUC-1063 proof harness.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#runLoginScenario",
+      "type": "test",
+      "status": "verified",
+      "description": "Focused auth-success scenario for the LUC-1063 setOwnerToken proof harness.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md",
+        "docs/ux/evidence/luc-1063-set-owner-token-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#runWorkspaceSelectionScenario",
+      "type": "test",
+      "status": "verified",
+      "description": "Focused workspace-selection scenario for the LUC-1063 setOwnerToken proof harness.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md",
+        "docs/ux/evidence/luc-1063-set-owner-token-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#run",
+      "type": "test",
+      "status": "verified",
+      "description": "Focused entry point for the LUC-1063 setOwnerToken proof harness.",
+      "evidence": [
+        "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+        "docs/planning/luc-1063-account-access-set-owner-token-proof.md",
+        "docs/ux/evidence/luc-1063-set-owner-token-proof/report.json"
+      ]
+    },
+    {
+      "path": ".codex/tasks/luc-1010-account-access-workspaces-requireuserauth-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified focused API proof packet for workspace route user-auth guarding, covering owner workspace list/create/select behavior and API-key denial across the same routes.",
+      "evidence": [
+        ".codex/tasks/luc-1010-account-access-workspaces-requireuserauth-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": ".codex/tasks/luc-997-account-access-workforce-entityauthority-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified focused API proof packet for workforce entityAuthority readback, covering human workspace authority, filtered capability exposure, and agent profile recommendations from the workforce list route.",
+      "evidence": [
+        ".codex/tasks/luc-997-account-access-workforce-entityauthority-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": ".codex/tasks/luc-1028-projects-route-get-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified focused API proof packet for GET /v1/projects, covering same-workspace project visibility and cross-workspace empty-list isolation on the protected route.",
+      "evidence": [
+        ".codex/tasks/luc-1028-projects-route-get-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": ".codex/tasks/luc-974-account-access-workflow-definition-drafts-authactor-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified focused API proof packet for workflow-definition draft authActor attribution, covering bearer-owner and workflow-definition API-key draft creation evidence.",
+      "evidence": [
+        ".codex/tasks/luc-974-account-access-workflow-definition-drafts-authactor-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": ".codex/tasks/luc-982-account-access-intake-authactor-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified focused API proof packet for intake authActor attribution, covering bearer-owner and intake API-key route proposal evidence.",
+      "evidence": [
+        ".codex/tasks/luc-982-account-access-intake-authactor-proof.md",
+        "src/tests/api.test.ts"
       ]
     },
     {
@@ -372,6 +1364,27 @@
       "evidence": [
         ".codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md",
         "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "docs/planning/luc-1007-google-drive-route-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified focused local API proof for the Google Drive route mount, including mounted /v1/google-drive files, content, scope, description, Docs, and Sheets flows exercised through the protected app.ts registration.",
+      "evidence": [
+        "docs/planning/luc-1007-google-drive-route-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "docs/planning/luc-1007-google-drive-route-readback.md",
+      "type": "document",
+      "status": "verified",
+      "description": "Focused route readback for the protected google-drive mount in src/app.ts and the mounted /v1/google-drive endpoint family.",
+      "evidence": [
+        "docs/planning/luc-1007-google-drive-route-readback.md",
+        "src/app.ts",
+        "src/modules/google-drive/google-drive.routes.ts"
       ]
     },
     {
@@ -819,6 +1832,479 @@
         "docs/planning/luc-137-account-access-registerowner-proof-link.md",
         "scripts/operating-model-registry-lifecycle-smoke.mjs"
       ]
+    },
+    {
+      "path": "docs/planning/luc-971-account-access-authenticated-image-frontend-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified frontend proof packet for the AuthenticatedImage account-access surface in the Assets files route, including bearer-auth preview fetches and rendered blob previews on desktop and mobile.",
+      "evidence": [
+        "docs/planning/luc-971-account-access-authenticated-image-frontend-proof.md",
+        "docs/ux/evidence/luc-971-authenticated-image-proof/report.json",
+        "docs/ux/evidence/luc-971-authenticated-image-proof/desktop-assets-authenticated-image.png",
+        "docs/ux/evidence/luc-971-authenticated-image-proof/mobile-assets-authenticated-image.png"
+      ]
+    },
+    {
+      "path": "web/src/features/departments/assets-route.tsx#AuthenticatedImage",
+      "status": "verified",
+      "description": "Authenticated image preview component verified by LUC-971 frontend browser proof: owner-token requests to the protected preview endpoint rendered blob-backed image previews in the Assets files view.",
+      "evidence": [
+        "docs/planning/luc-971-account-access-authenticated-image-frontend-proof.md",
+        "docs/planning/assets-image-preview-task-contract.md",
+        "docs/ux/evidence/luc-971-authenticated-image-proof/report.json",
+        "web/src/features/departments/assets-route.tsx"
+      ]
+    },
+    {
+      "path": "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified frontend/browser proof packet for the AssetsOverview dashboard surface in the Assets overview route, including bearer-auth context requests, summary-card render proof, files CTA readback, and desktop/mobile screenshots.",
+      "evidence": [
+        "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+        "docs/ux/evidence/luc-1090-assets-overview-proof/report.json",
+        "docs/ux/evidence/luc-1090-assets-overview-proof/desktop-assets-overview.png",
+        "docs/ux/evidence/luc-1090-assets-overview-proof/mobile-assets-overview.png"
+      ]
+    },
+    {
+      "path": "scripts/luc-1090-assets-overview-proof.mjs",
+      "type": "test",
+      "status": "verified",
+      "description": "Focused QA browser proof harness for direct AssetsOverview rendering in the live Assets overview route with bearer-auth readback and responsive screenshots.",
+      "evidence": [
+        "scripts/luc-1090-assets-overview-proof.mjs",
+        "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+        ".codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md",
+        "docs/ux/evidence/luc-1090-assets-overview-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1090-assets-overview-proof.mjs#assertWithinRoot",
+      "type": "test",
+      "status": "verified",
+      "description": "The filesystem guard helper is exercised by the focused AssetsOverview browser proof harness while serving the built React bundle.",
+      "evidence": [
+        "scripts/luc-1090-assets-overview-proof.mjs",
+        "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+        ".codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1090-assets-overview-proof.mjs#contentType",
+      "type": "test",
+      "status": "verified",
+      "description": "The content-type helper is exercised by the focused AssetsOverview browser proof harness while serving the built bundle assets.",
+      "evidence": [
+        "scripts/luc-1090-assets-overview-proof.mjs",
+        "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+        ".codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1090-assets-overview-proof.mjs#createLocalServer",
+      "type": "test",
+      "status": "verified",
+      "description": "The local proof server helper is exercised by the focused AssetsOverview browser proof harness and serves mocked auth, departments, and assets context packets plus the built React bundle.",
+      "evidence": [
+        "scripts/luc-1090-assets-overview-proof.mjs",
+        "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+        ".codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1090-assets-overview-proof.mjs#jsonResponse",
+      "type": "test",
+      "status": "verified",
+      "description": "The JSON response helper is exercised by the focused AssetsOverview browser proof harness for mocked auth, departments, and assets packets.",
+      "evidence": [
+        "scripts/luc-1090-assets-overview-proof.mjs",
+        "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+        ".codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md"
+      ]
+    },
+    {
+      "path": "scripts/luc-1090-assets-overview-proof.mjs#noHorizontalOverflow",
+      "type": "test",
+      "status": "verified",
+      "description": "The overflow assertion helper is exercised by the focused AssetsOverview browser proof for both verified viewports.",
+      "evidence": [
+        "scripts/luc-1090-assets-overview-proof.mjs",
+        "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+        ".codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md",
+        "docs/ux/evidence/luc-1090-assets-overview-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1090-assets-overview-proof.mjs#recordHeader",
+      "type": "test",
+      "status": "verified",
+      "description": "The request-header capture helper is exercised by the focused AssetsOverview browser proof harness for bearer-auth readback assertions.",
+      "evidence": [
+        "scripts/luc-1090-assets-overview-proof.mjs",
+        "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+        ".codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md",
+        "docs/ux/evidence/luc-1090-assets-overview-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1090-assets-overview-proof.mjs#run",
+      "type": "test",
+      "status": "verified",
+      "description": "The main proof runner is verified by the successful AssetsOverview browser harness execution and generated report.",
+      "evidence": [
+        "scripts/luc-1090-assets-overview-proof.mjs",
+        "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+        ".codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md",
+        "docs/ux/evidence/luc-1090-assets-overview-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1090-assets-overview-proof.mjs#runScenario",
+      "type": "test",
+      "status": "verified",
+      "description": "The viewport scenario helper is exercised by the focused AssetsOverview browser proof for desktop and mobile route rendering assertions.",
+      "evidence": [
+        "scripts/luc-1090-assets-overview-proof.mjs",
+        "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+        ".codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md",
+        "docs/ux/evidence/luc-1090-assets-overview-proof/report.json"
+      ]
+    },
+    {
+      "path": "scripts/luc-1090-assets-overview-proof.mjs#serveStatic",
+      "type": "test",
+      "status": "verified",
+      "description": "The static-file helper is exercised by the focused AssetsOverview browser proof harness while serving the built React bundle.",
+      "evidence": [
+        "scripts/luc-1090-assets-overview-proof.mjs",
+        "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+        ".codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md"
+      ]
+    },
+    {
+      "path": "web/src/features/departments/assets-route.tsx#AssetsOverview",
+      "status": "verified",
+      "description": "Assets overview dashboard surface verified by LUC-1090 browser proof: the live `08 Assets` overview route rendered the heading, description, summary cards, and files CTA while authenticated `/v1/auth/me`, `/v1/departments`, and `/v1/assets/context` requests carried the owner bearer token on desktop and mobile.",
+      "evidence": [
+        "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+        ".codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md",
+        "docs/ux/evidence/luc-1090-assets-overview-proof/report.json",
+        "web/src/features/departments/assets-route.tsx"
+      ]
+    },
+    {
+      "path": "web/src/features/departments/strategy-route.tsx",
+      "status": "verified",
+      "description": "Strategy route feature verified by the existing LUC-727 authenticated browser proof: the signed-in `01 Strategy` overview route rendered the management heading, summary surface, metrics, strategic risks, recent tasks section, and seeded empty-state copy on desktop and mobile through the live `/v1/strategy/context` consumer.",
+      "evidence": [
+        "docs/planning/luc-727-strategy-route-local-proof.md",
+        ".codex/tasks/luc-1099-trading-operation-strategy-route-proof-link.md",
+        "docs/ux/evidence/luc-727-strategy-route-local-proof/report.json",
+        "web/src/features/departments/strategy-route.tsx"
+      ]
+    },
+    {
+      "path": "web/src/features/departments/strategy-route.tsx#formatDate",
+      "status": "verified",
+      "description": "Strategy due-date formatting helper verified indirectly by the existing LUC-727 authenticated browser proof because the recent-strategic-tasks cards are rendered through the live Strategy route packet that uses `formatDate` for due-date copy.",
+      "evidence": [
+        "docs/planning/luc-727-strategy-route-local-proof.md",
+        ".codex/tasks/luc-1099-trading-operation-strategy-route-proof-link.md",
+        "docs/ux/evidence/luc-727-strategy-route-local-proof/report.json",
+        "web/src/features/departments/strategy-route.tsx"
+      ]
+    },
+    {
+      "path": "web/src/features/departments/strategy-route.tsx#StrategyRoute",
+      "status": "verified",
+      "description": "StrategyRoute verified by the existing LUC-727 authenticated browser proof: the live signed-in Strategy overview route consumes `/v1/strategy/context`, renders the shell, summary cards, managed goals table, metrics, strategic risks, recent tasks, and blocked-actions surface without a fresh frontend defect.",
+      "evidence": [
+        "docs/planning/luc-727-strategy-route-local-proof.md",
+        ".codex/tasks/luc-1099-trading-operation-strategy-route-proof-link.md",
+        "docs/ux/evidence/luc-727-strategy-route-local-proof/report.json",
+        "web/src/features/departments/strategy-route.tsx"
+      ]
+    },
+    {
+      "path": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified frontend/browser proof packet for the public home and dashboard overview route family, including public-home render proof, signed-in dashboard redirect/readback, bearer-auth shell requests, and desktop/mobile screenshots.",
+      "evidence": [
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/desktop-public-home.png",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/mobile-public-home.png",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/desktop-dashboard-overview.png",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/mobile-dashboard-overview.png"
+      ]
+    },
+    {
+      "path": "docs/planning/luc-727-strategy-route-local-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified frontend/browser proof packet for the Strategy overview route family, including authenticated local `/areas?area=01-strategia&view=overview` rendering on desktop and mobile, required heading/summary assertions, and Strategy route gap-family mapping.",
+      "evidence": [
+        "docs/planning/luc-727-strategy-route-local-proof.md",
+        "docs/ux/evidence/luc-727-strategy-route-local-proof/report.json",
+        "docs/ux/evidence/luc-727-strategy-route-local-proof/desktop-areas-area-01-strategia-view-overview.png",
+        "docs/ux/evidence/luc-727-strategy-route-local-proof/mobile-areas-area-01-strategia-view-overview.png",
+        ".codex/tasks/luc-1099-trading-operation-strategy-route-proof-link.md"
+      ]
+    },
+    {
+      "path": ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified backend proof-link packet for the Dashboard overview module and helper family, linking the existing local API harness coverage for the dashboard command packet to the generated module-level missing-test rows.",
+      "evidence": [
+        ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+        "src/tests/api.test.ts",
+        ".codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md"
+      ]
+    },
+    {
+      "path": "src/modules/dashboard",
+      "status": "verified",
+      "description": "Dashboard overview backend module verified by the local API harness through the protected dashboard command packet, including summary aggregation, department signals, next actions, blocked actions, and parity between versioned and unversioned route mounts.",
+      "evidence": [
+        ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+        "src/tests/api.test.ts",
+        ".codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md"
+      ]
+    },
+    {
+      "path": "src/modules/dashboard/dashboard.routes.ts",
+      "status": "verified",
+      "description": "Dashboard command route module verified by the local API harness through the protected `/v1/dashboard/command` packet plus explicit parity assertions for the unversioned `/dashboard/command` compatibility mount.",
+      "evidence": [
+        ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+        "src/tests/api.test.ts",
+        ".codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md"
+      ]
+    },
+    {
+      "path": "src/modules/dashboard/dashboard.routes.ts#coerceCount",
+      "status": "verified",
+      "description": "Dashboard count-normalization helper verified indirectly by the local dashboard command API proof, which exercises null-safe summary aggregation and open-task pressure totals through the real route response.",
+      "evidence": [
+        ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+        "src/tests/api.test.ts",
+        "src/modules/dashboard/dashboard.routes.ts"
+      ]
+    },
+    {
+      "path": "src/modules/dashboard/dashboard.routes.ts#pickHealth",
+      "status": "verified",
+      "description": "Dashboard health-selection helper verified indirectly by the local dashboard command API proof, which asserts department signal health and count output for the Operations surface through the real route response.",
+      "evidence": [
+        ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+        "src/tests/api.test.ts",
+        "src/modules/dashboard/dashboard.routes.ts"
+      ]
+    },
+    {
+      "path": "src/modules/dashboard/dashboard.routes.ts#riskRank",
+      "status": "verified",
+      "description": "Dashboard risk-ranking helper verified indirectly by the local dashboard command API proof, which exercises critical-risk prioritization and priority-item emission through the protected route response.",
+      "evidence": [
+        ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+        "src/tests/api.test.ts",
+        "src/modules/dashboard/dashboard.routes.ts"
+      ]
+    },
+    {
+      "path": "src/modules/dashboard/dashboard.routes.ts#startOfToday",
+      "status": "verified",
+      "description": "Dashboard date-boundary helper verified indirectly by the local dashboard command API proof, which exercises overdue and due-today task grouping through the real protected route response.",
+      "evidence": [
+        ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+        "src/tests/api.test.ts",
+        "src/modules/dashboard/dashboard.routes.ts"
+      ]
+    },
+    {
+      "path": "src/modules/dashboard/dashboard.routes.ts#startOfTomorrow",
+      "status": "verified",
+      "description": "Dashboard next-day boundary helper verified indirectly by the local dashboard command API proof, which exercises due-today task bucketing through the real protected route response.",
+      "evidence": [
+        ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+        "src/tests/api.test.ts",
+        "src/modules/dashboard/dashboard.routes.ts"
+      ]
+    },
+    {
+      "path": "src/modules/dashboard/dashboard.routes.ts#sumCounts",
+      "status": "verified",
+      "description": "Dashboard count-aggregation helper verified indirectly by the local dashboard command API proof, which exercises open-task, routing-backlog, and workforce-pressure totals through the real protected route response.",
+      "evidence": [
+        ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+        "src/tests/api.test.ts",
+        "src/modules/dashboard/dashboard.routes.ts"
+      ]
+    },
+    {
+      "path": ".codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified backend proof-link packet for the Strategy module and helper family, linking the existing local Strategy context API harness coverage to the generated module-level missing-test rows.",
+      "evidence": [
+        ".codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md",
+        "src/tests/api.test.ts",
+        "docs/planning/v1-strategy-context-read-api-task-contract.md"
+      ]
+    },
+    {
+      "path": "src/modules/strategy",
+      "status": "verified",
+      "description": "Strategy backend module verified by the local API harness through the protected `/v1/strategy/context` packet, including workspace-scoped strategy summaries, read-only agent packet semantics, MCP visibility, and scoped-key denial.",
+      "evidence": [
+        ".codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md",
+        "src/tests/api.test.ts",
+        "docs/planning/v1-strategy-context-read-api-task-contract.md"
+      ]
+    },
+    {
+      "path": "src/modules/strategy/strategy.routes.ts",
+      "status": "verified",
+      "description": "Strategy context route module verified by the local API harness through the protected `/v1/strategy/context` packet, including workspace isolation, no-mutation read behavior, MCP manifest exposure, and capability-based denial for scoped keys.",
+      "evidence": [
+        ".codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md",
+        "src/tests/api.test.ts",
+        "docs/planning/v1-strategy-context-read-api-task-contract.md"
+      ]
+    },
+    {
+      "path": "src/modules/strategy/strategy.routes.ts#asJsonArray",
+      "status": "verified",
+      "description": "Strategy JSON-array normalization helper verified indirectly by the local Strategy context API proof, which asserts the decision-log options payload through the real protected route response.",
+      "evidence": [
+        ".codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md",
+        "src/tests/api.test.ts",
+        "src/modules/strategy/strategy.routes.ts"
+      ]
+    },
+    {
+      "path": "src/modules/strategy/strategy.routes.ts#textMatchesStrategy",
+      "status": "verified",
+      "description": "Strategy text-matching helper verified indirectly by the local Strategy context API proof, which filters strategy knowledge items and Drive files into the read-only packet through the real protected route response.",
+      "evidence": [
+        ".codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md",
+        "src/tests/api.test.ts",
+        "src/modules/strategy/strategy.routes.ts"
+      ]
+    },
+    {
+      "path": "src/modules/strategy/strategy.routes.ts#taskLooksStrategic",
+      "status": "verified",
+      "description": "Strategy task classifier helper verified indirectly by the local Strategy context API proof, which surfaces seeded strategic follow-up tasks in the read-only packet through the real protected route response.",
+      "evidence": [
+        ".codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md",
+        "src/tests/api.test.ts",
+        "src/modules/strategy/strategy.routes.ts"
+      ]
+    },
+    {
+      "path": "web/src/features/departments/general-dashboard.tsx",
+      "status": "verified",
+      "description": "Dashboard overview route module verified by LUC-998 frontend browser proof: signed-in /dashboard resolved to the canonical 00 General route, rendered the overview packet, and stayed responsive on desktop and mobile.",
+      "evidence": [
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "web/src/features/departments/general-dashboard.tsx"
+      ]
+    },
+    {
+      "path": "web/src/features/departments/general-dashboard.tsx#GeneralDashboard",
+      "status": "verified",
+      "description": "GeneralDashboard verified by LUC-998 frontend browser proof through canonical signed-in /dashboard rendering, mocked owner packet readback, and desktop/mobile responsive evidence.",
+      "evidence": [
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "web/src/features/departments/general-dashboard.tsx"
+      ]
+    },
+    {
+      "path": "web/src/features/departments/general-dashboard.tsx#healthTone",
+      "status": "verified",
+      "description": "Dashboard health badge mapping verified by LUC-998 route proof through rendered ready/watch/blocked department signal badges in the signed-in dashboard overview.",
+      "evidence": [
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "web/src/features/departments/general-dashboard.tsx"
+      ]
+    },
+    {
+      "path": "web/src/features/departments/general-dashboard.tsx#itemMeta",
+      "status": "verified",
+      "description": "Dashboard itemMeta helper verified by LUC-998 route proof through rendered priority item metadata badges in the signed-in dashboard overview.",
+      "evidence": [
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "web/src/features/departments/general-dashboard.tsx"
+      ]
+    },
+    {
+      "path": "web/src/features/public/public-home.tsx",
+      "status": "verified",
+      "description": "Public home route module verified by LUC-998 frontend browser proof: / rendered the Roost hero, CTA, and footer language selector without runtime errors or responsive overflow on desktop and mobile.",
+      "evidence": [
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "web/src/features/public/public-home.tsx"
+      ]
+    },
+    {
+      "path": "web/src/features/public/public-home.tsx#HeroTopology",
+      "status": "verified",
+      "description": "HeroTopology verified by LUC-998 frontend browser proof through rendered public-home topology content and responsive screenshots on desktop and mobile.",
+      "evidence": [
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "web/src/features/public/public-home.tsx"
+      ]
+    },
+    {
+      "path": "web/src/features/public/public-home.tsx#PublicHomeRoute",
+      "status": "verified",
+      "description": "PublicHomeRoute verified by LUC-998 frontend browser proof through direct / rendering, CTA visibility, footer language selector presence, and responsive screenshots.",
+      "evidence": [
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "web/src/features/public/public-home.tsx"
+      ]
+    },
+    {
+      "path": "web/src/features/public/public-home.tsx#RoostGlyph",
+      "status": "verified",
+      "description": "RoostGlyph verified by LUC-998 frontend browser proof through rendered public-home brand mark in the topology hero and layout screenshots.",
+      "evidence": [
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "web/src/features/public/public-home.tsx"
+      ]
+    },
+    {
+      "path": "web/src/features/public/public-home.tsx#StatusRail",
+      "status": "verified",
+      "description": "StatusRail verified by LUC-998 frontend browser proof through rendered public-home status labels and responsive screenshots.",
+      "evidence": [
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "web/src/features/public/public-home.tsx"
+      ]
+    },
+    {
+      "path": "web/src/features/public/public-home.tsx#tx",
+      "status": "verified",
+      "description": "Public-home message-key translation helper verified by LUC-998 frontend browser proof through rendered localized labels across the topology and status surfaces.",
+      "evidence": [
+        "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+        "docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json",
+        "web/src/features/public/public-home.tsx"
+      ]
     }
   ],
   "relationOverrides": [
@@ -880,6 +2366,54 @@
     },
     {
       "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1101 root route API-host proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1101 root route public-home browser proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-998-dashboard-public-home-proof.mjs",
+      "fromType": "test",
+      "toPath": "src/app.ts#/",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1101 root route public-home branch proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1101-unclassified-root-get-proof-link.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1101 root route focused proof-link packet"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/strategy",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1093 Trading operation use-strategy proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-727-strategy-route-local-proof.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/strategy",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1093 Trading operation use-strategy browser-backed route proof linkage"
+    },
+    {
+      "type": "tests",
       "fromPath": ".codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md",
       "fromType": "test",
       "toPath": "src/modules/dashboard",
@@ -893,6 +2427,270 @@
       "toPath": "src/modules/dashboard/dashboard.routes.ts",
       "toType": "feature",
       "evidence": "LUC-726 dashboard overview route-gap local proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard",
+      "toType": "module",
+      "evidence": "LUC-1072 Dashboard overview module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard",
+      "toType": "module",
+      "evidence": "LUC-1072 Dashboard overview module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard/dashboard.routes.ts",
+      "toType": "feature",
+      "evidence": "LUC-1072 Dashboard overview module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard/dashboard.routes.ts",
+      "toType": "feature",
+      "evidence": "LUC-1072 Dashboard overview module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard/dashboard.routes.ts#coerceCount",
+      "toType": "function",
+      "evidence": "LUC-1072 Dashboard overview module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard/dashboard.routes.ts#coerceCount",
+      "toType": "function",
+      "evidence": "LUC-1072 Dashboard overview module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard/dashboard.routes.ts#pickHealth",
+      "toType": "function",
+      "evidence": "LUC-1072 Dashboard overview module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard/dashboard.routes.ts#pickHealth",
+      "toType": "function",
+      "evidence": "LUC-1072 Dashboard overview module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard/dashboard.routes.ts#riskRank",
+      "toType": "function",
+      "evidence": "LUC-1072 Dashboard overview module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard/dashboard.routes.ts#riskRank",
+      "toType": "function",
+      "evidence": "LUC-1072 Dashboard overview module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard/dashboard.routes.ts#startOfToday",
+      "toType": "function",
+      "evidence": "LUC-1072 Dashboard overview module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard/dashboard.routes.ts#startOfToday",
+      "toType": "function",
+      "evidence": "LUC-1072 Dashboard overview module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard/dashboard.routes.ts#startOfTomorrow",
+      "toType": "function",
+      "evidence": "LUC-1072 Dashboard overview module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard/dashboard.routes.ts#startOfTomorrow",
+      "toType": "function",
+      "evidence": "LUC-1072 Dashboard overview module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard/dashboard.routes.ts#sumCounts",
+      "toType": "function",
+      "evidence": "LUC-1072 Dashboard overview module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
+      "fromType": "test",
+      "toPath": "src/modules/dashboard/dashboard.routes.ts#sumCounts",
+      "toType": "function",
+      "evidence": "LUC-1072 Dashboard overview module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/strategy",
+      "toType": "module",
+      "evidence": "LUC-1095 Trading operation strategy module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md",
+      "fromType": "test",
+      "toPath": "src/modules/strategy",
+      "toType": "module",
+      "evidence": "LUC-1095 Trading operation strategy module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/strategy/strategy.routes.ts",
+      "toType": "feature",
+      "evidence": "LUC-1095 Trading operation strategy module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md",
+      "fromType": "test",
+      "toPath": "src/modules/strategy/strategy.routes.ts",
+      "toType": "feature",
+      "evidence": "LUC-1095 Trading operation strategy module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/strategy/strategy.routes.ts#asJsonArray",
+      "toType": "function",
+      "evidence": "LUC-1095 Trading operation strategy module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md",
+      "fromType": "test",
+      "toPath": "src/modules/strategy/strategy.routes.ts#asJsonArray",
+      "toType": "function",
+      "evidence": "LUC-1095 Trading operation strategy module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/strategy/strategy.routes.ts#textMatchesStrategy",
+      "toType": "function",
+      "evidence": "LUC-1095 Trading operation strategy module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md",
+      "fromType": "test",
+      "toPath": "src/modules/strategy/strategy.routes.ts#textMatchesStrategy",
+      "toType": "function",
+      "evidence": "LUC-1095 Trading operation strategy module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/strategy/strategy.routes.ts#taskLooksStrategic",
+      "toType": "function",
+      "evidence": "LUC-1095 Trading operation strategy module proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md",
+      "fromType": "test",
+      "toPath": "src/modules/strategy/strategy.routes.ts#taskLooksStrategic",
+      "toType": "function",
+      "evidence": "LUC-1095 Trading operation strategy module proof-link closure"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/modules/strategy/strategy.routes.ts#asJsonArray",
+      "fromType": "function",
+      "toPath": "docs/API.md",
+      "toType": "document",
+      "evidence": "LUC-1097 Strategy helper documentation linkage"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/modules/strategy/strategy.routes.ts#textMatchesStrategy",
+      "fromType": "function",
+      "toPath": "docs/API.md",
+      "toType": "document",
+      "evidence": "LUC-1097 Strategy helper documentation linkage"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/modules/strategy/strategy.routes.ts#taskLooksStrategic",
+      "fromType": "function",
+      "toPath": "docs/API.md",
+      "toType": "document",
+      "evidence": "LUC-1097 Strategy helper documentation linkage"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/full-function-architecture-audit-task-contract.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/dashboard",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1066 dashboard route alias proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-998-dashboard-public-home-proof.mjs",
+      "fromType": "test",
+      "toPath": "src/app.ts#/dashboard",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1066 dashboard route alias proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-1007-google-drive-route-proof.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/google-drive",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1007 Google Drive route-gap local proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "docs/planning/luc-1007-google-drive-route-readback.md",
+      "fromType": "document",
+      "toPath": "src/app.ts#/google-drive",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1007 Google Drive route-gap readback"
     },
     {
       "type": "tests",
@@ -1021,6 +2819,102 @@
       "toPath": "web/src/features/auth/auth-validation.ts#validateAuthForm",
       "toType": "function",
       "evidence": "LUC-527 Account access frontend missing-test-link proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-field.tsx",
+      "toType": "component",
+      "evidence": "LUC-1080 shared field proof-link closure through auth browser smoke"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-field.tsx#CcField",
+      "toType": "function",
+      "evidence": "LUC-1080 shared field proof-link closure through auth browser smoke"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-field.tsx",
+      "toType": "component",
+      "evidence": "LUC-1080 shared field proof-link closure through auth login browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-field.tsx#CcField",
+      "toType": "function",
+      "evidence": "LUC-1080 shared field proof-link closure through auth login browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-1063-account-access-set-owner-token-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-field.tsx",
+      "toType": "component",
+      "evidence": "LUC-1080 shared field proof-link closure through auth login browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-1063-account-access-set-owner-token-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-field.tsx#CcField",
+      "toType": "function",
+      "evidence": "LUC-1080 shared field proof-link closure through auth login browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-text-input.tsx",
+      "toType": "component",
+      "evidence": "LUC-1088 shared text-input proof-link closure through auth browser smoke"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-text-input.tsx#CcTextInput",
+      "toType": "function",
+      "evidence": "LUC-1088 shared text-input proof-link closure through auth browser smoke"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-text-input.tsx",
+      "toType": "component",
+      "evidence": "LUC-1088 shared text-input proof-link closure through auth login browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-text-input.tsx#CcTextInput",
+      "toType": "function",
+      "evidence": "LUC-1088 shared text-input proof-link closure through auth login browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-1063-account-access-set-owner-token-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-text-input.tsx",
+      "toType": "component",
+      "evidence": "LUC-1088 shared text-input proof-link closure through auth login browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-1063-account-access-set-owner-token-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-text-input.tsx#CcTextInput",
+      "toType": "function",
+      "evidence": "LUC-1088 shared text-input proof-link closure through auth login browser proof"
     },
     {
       "type": "tests",
@@ -1496,6 +3390,118 @@
     },
     {
       "type": "tests",
+      "fromPath": "src/tests/architecture-chain-integrity.test.ts",
+      "fromType": "test",
+      "toPath": "scripts/check-architecture-chain-integrity.mjs",
+      "toType": "feature",
+      "evidence": "LUC-1008 architecture chain-integrity runtime proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/architecture-chain-integrity.test.ts",
+      "fromType": "test",
+      "toPath": "scripts/check-architecture-chain-integrity.mjs#loadCsv",
+      "toType": "function",
+      "evidence": "LUC-1008 architecture chain-integrity runtime proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/architecture-chain-integrity.test.ts",
+      "fromType": "test",
+      "toPath": "scripts/check-architecture-chain-integrity.mjs#main",
+      "toType": "function",
+      "evidence": "LUC-1008 architecture chain-integrity runtime proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/architecture-chain-integrity.test.ts",
+      "fromType": "test",
+      "toPath": "scripts/check-architecture-chain-integrity.mjs#parseCsv",
+      "toType": "function",
+      "evidence": "LUC-1008 architecture chain-integrity runtime proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/architecture-chain-integrity.test.ts",
+      "fromType": "test",
+      "toPath": "scripts/check-architecture-chain-integrity.mjs#readText",
+      "toType": "function",
+      "evidence": "LUC-1008 architecture chain-integrity runtime proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/architecture-chain-integrity.test.ts",
+      "fromType": "test",
+      "toPath": "scripts/check-architecture-chain-integrity.mjs#splitIds",
+      "toType": "function",
+      "evidence": "LUC-1008 architecture chain-integrity runtime proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/architecture-chain-integrity.test.ts",
+      "fromType": "test",
+      "toPath": "scripts/check-architecture-chain-integrity.mjs#writeText",
+      "toType": "function",
+      "evidence": "LUC-1008 architecture chain-integrity runtime proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/architecture-health-dashboard.test.ts",
+      "fromType": "test",
+      "toPath": "scripts/build-architecture-health-dashboard.mjs",
+      "toType": "feature",
+      "evidence": "LUC-1068 architecture health dashboard runtime proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/architecture-health-dashboard.test.ts",
+      "fromType": "test",
+      "toPath": "scripts/build-architecture-health-dashboard.mjs#main",
+      "toType": "function",
+      "evidence": "LUC-1068 architecture health dashboard runtime proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/architecture-health-dashboard.test.ts",
+      "fromType": "test",
+      "toPath": "scripts/build-architecture-health-dashboard.mjs#readJson",
+      "toType": "function",
+      "evidence": "LUC-1068 architecture health dashboard runtime proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/architecture-health-dashboard.test.ts",
+      "fromType": "test",
+      "toPath": "scripts/build-architecture-health-dashboard.mjs#toBoolIcon",
+      "toType": "function",
+      "evidence": "LUC-1068 architecture health dashboard runtime proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/architecture-health-dashboard-gate.test.ts",
+      "fromType": "test",
+      "toPath": "scripts/check-architecture-health-dashboard-gate.mjs",
+      "toType": "feature",
+      "evidence": "LUC-1070 architecture health dashboard gate runtime proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/architecture-health-dashboard-gate.test.ts",
+      "fromType": "test",
+      "toPath": "scripts/check-architecture-health-dashboard-gate.mjs#readJson",
+      "toType": "function",
+      "evidence": "LUC-1070 architecture health dashboard gate runtime proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/architecture-health-dashboard-gate.test.ts",
+      "fromType": "test",
+      "toPath": "scripts/check-architecture-health-dashboard-gate.mjs#fail",
+      "toType": "function",
+      "evidence": "LUC-1070 architecture health dashboard gate runtime proof"
+    },
+    {
+      "type": "tests",
       "fromPath": "docs/planning/luc-6155-auth-config-api-proof-lane.md",
       "fromType": "test",
       "toPath": "src/modules/integration-settings/integration-settings.routes.ts",
@@ -1629,6 +3635,158 @@
       "toPath": "src/modules/company-os/company-os.routes.ts#authActor",
       "toType": "function",
       "evidence": "LUC-959 Account access Company OS authActor proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/intake/intake.routes.ts#authActor",
+      "toType": "function",
+      "evidence": "LUC-982 Account access intake authActor proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-982-account-access-intake-authactor-proof.md",
+      "fromType": "test",
+      "toPath": "src/modules/intake/intake.routes.ts#authActor",
+      "toType": "function",
+      "evidence": "LUC-982 Account access intake authActor proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/company-os/workflow-definition-drafts.routes.ts#authActor",
+      "toType": "function",
+      "evidence": "LUC-974 Account access workflow-definition-drafts authActor proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/workspaces/workspaces.routes.ts#requireUserAuth",
+      "toType": "function",
+      "evidence": "LUC-1010 Account access workspace requireUserAuth proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1010-account-access-workspaces-requireuserauth-proof.md",
+      "fromType": "test",
+      "toPath": "src/modules/workspaces/workspaces.routes.ts#requireUserAuth",
+      "toType": "function",
+      "evidence": "LUC-1010 Account access workspace requireUserAuth proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/modules/workforce/workforce.service.ts#entityAuthority",
+      "toType": "function",
+      "evidence": "LUC-997 Account access workforce entityAuthority proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-997-account-access-workforce-entityauthority-proof.md",
+      "fromType": "test",
+      "toPath": "src/modules/workforce/workforce.service.ts#entityAuthority",
+      "toType": "function",
+      "evidence": "LUC-997 Account access workforce entityAuthority proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "docs/architecture/nodes/generated/API-AUTO-0076.md",
+      "toType": "document",
+      "evidence": "LUC-1028 GET /v1/projects local proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1028-projects-route-get-proof.md",
+      "fromType": "test",
+      "toPath": "docs/architecture/nodes/generated/API-AUTO-0076.md",
+      "toType": "document",
+      "evidence": "LUC-1028 GET /v1/projects local proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1043-account-access-owner-token-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/api/auth-token.ts#ownerToken",
+      "toType": "function",
+      "evidence": "LUC-1043 Account access ownerToken proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-1043-account-access-owner-token-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/api/auth-token.ts#ownerToken",
+      "toType": "function",
+      "evidence": "LUC-1043 Account access ownerToken proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1022-account-access-clear-owner-token-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/api/auth-token.ts#clearOwnerToken",
+      "toType": "function",
+      "evidence": "LUC-1022 Account access clearOwnerToken proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-1022-account-access-clear-owner-token-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/api/auth-token.ts#clearOwnerToken",
+      "toType": "function",
+      "evidence": "LUC-1022 Account access clearOwnerToken proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1038-account-access-is-signed-in-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/api/auth-token.ts#isSignedIn",
+      "toType": "function",
+      "evidence": "LUC-1038 Account access isSignedIn proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-1038-account-access-is-signed-in-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/api/auth-token.ts#isSignedIn",
+      "toType": "function",
+      "evidence": "LUC-1038 Account access isSignedIn proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/api/auth-token.ts#setOwnerToken",
+      "toType": "function",
+      "evidence": "LUC-1063 Account access setOwnerToken proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-1063-account-access-set-owner-token-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/api/auth-token.ts#setOwnerToken",
+      "toType": "function",
+      "evidence": "LUC-1063 Account access setOwnerToken proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/modules/workforce/workforce.service.ts#entityAuthority",
+      "fromType": "function",
+      "toPath": "docs/engineering/testing.md",
+      "toType": "document",
+      "evidence": "LUC-997 workforce authority proof documentation"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-974-account-access-workflow-definition-drafts-authactor-proof.md",
+      "fromType": "test",
+      "toPath": "src/modules/company-os/workflow-definition-drafts.routes.ts#authActor",
+      "toType": "function",
+      "evidence": "LUC-974 Account access workflow-definition-drafts authActor proof"
     },
     {
       "type": "tests",
@@ -1845,6 +4003,366 @@
       "toPath": "docs/architecture/nodes/generated/TEST-API-LOCAL.md",
       "toType": "document",
       "evidence": "LUC-5410 missing-doc-link curation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-971-account-access-authenticated-image-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/departments/assets-route.tsx#AuthenticatedImage",
+      "toType": "function",
+      "evidence": "LUC-971 frontend authenticated image proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/departments/assets-route.tsx#AssetsOverview",
+      "toType": "function",
+      "evidence": "LUC-1090 Assets overview browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1090-assets-overview-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/features/departments/assets-route.tsx#AssetsOverview",
+      "toType": "function",
+      "evidence": "LUC-1090 Assets overview browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-727-strategy-route-local-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/departments/strategy-route.tsx",
+      "toType": "feature",
+      "evidence": "LUC-1099 Strategy route browser proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-727-strategy-route-local-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/departments/strategy-route.tsx#formatDate",
+      "toType": "function",
+      "evidence": "LUC-1099 Strategy route browser proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-727-strategy-route-local-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/departments/strategy-route.tsx#StrategyRoute",
+      "toType": "function",
+      "evidence": "LUC-1099 Strategy route browser proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/departments/general-dashboard.tsx",
+      "toType": "feature",
+      "evidence": "LUC-998 dashboard/public-home route proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/departments/general-dashboard.tsx#GeneralDashboard",
+      "toType": "function",
+      "evidence": "LUC-998 dashboard/public-home route proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/departments/general-dashboard.tsx#healthTone",
+      "toType": "function",
+      "evidence": "LUC-998 dashboard/public-home route proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/departments/general-dashboard.tsx#itemMeta",
+      "toType": "function",
+      "evidence": "LUC-998 dashboard/public-home route proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/public/public-home.tsx",
+      "toType": "feature",
+      "evidence": "LUC-998 dashboard/public-home route proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/public/public-home.tsx#HeroTopology",
+      "toType": "function",
+      "evidence": "LUC-998 dashboard/public-home route proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/public/public-home.tsx#PublicHomeRoute",
+      "toType": "function",
+      "evidence": "LUC-998 dashboard/public-home route proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/public/public-home.tsx#RoostGlyph",
+      "toType": "function",
+      "evidence": "LUC-998 dashboard/public-home route proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/public/public-home.tsx#StatusRail",
+      "toType": "function",
+      "evidence": "LUC-998 dashboard/public-home route proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/features/public/public-home.tsx#tx",
+      "toType": "function",
+      "evidence": "LUC-998 dashboard/public-home route proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-button.tsx",
+      "toType": "component",
+      "evidence": "LUC-1076 dashboard shared button proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-998-dashboard-public-home-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-button.tsx",
+      "toType": "component",
+      "evidence": "LUC-1076 dashboard shared button proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1076-dashboard-overview-cc-button-proof-link.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-button.tsx",
+      "toType": "component",
+      "evidence": "LUC-1076 dashboard shared button proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-button.tsx#CcButton",
+      "toType": "function",
+      "evidence": "LUC-1076 dashboard shared button proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-998-dashboard-public-home-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-button.tsx#CcButton",
+      "toType": "function",
+      "evidence": "LUC-1076 dashboard shared button proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1076-dashboard-overview-cc-button-proof-link.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-button.tsx#CcButton",
+      "toType": "function",
+      "evidence": "LUC-1076 dashboard shared button proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-button.tsx#iconClass",
+      "toType": "function",
+      "evidence": "LUC-1076 dashboard shared button proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-998-dashboard-public-home-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-button.tsx#iconClass",
+      "toType": "function",
+      "evidence": "LUC-1076 dashboard shared button proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1076-dashboard-overview-cc-button-proof-link.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-button.tsx#iconClass",
+      "toType": "function",
+      "evidence": "LUC-1076 dashboard shared button proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-data-table.tsx",
+      "toType": "component",
+      "evidence": "LUC-1078 dashboard shared data-table proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-998-dashboard-public-home-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-data-table.tsx",
+      "toType": "component",
+      "evidence": "LUC-1078 dashboard shared data-table proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1078-dashboard-overview-cc-data-table-proof-link.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-data-table.tsx",
+      "toType": "component",
+      "evidence": "LUC-1078 dashboard shared data-table proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-data-table.tsx#CcDataTable",
+      "toType": "function",
+      "evidence": "LUC-1078 dashboard shared data-table proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-998-dashboard-public-home-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-data-table.tsx#CcDataTable",
+      "toType": "function",
+      "evidence": "LUC-1078 dashboard shared data-table proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1078-dashboard-overview-cc-data-table-proof-link.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-data-table.tsx#CcDataTable",
+      "toType": "function",
+      "evidence": "LUC-1078 dashboard shared data-table proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-998-dashboard-public-home-frontend-proof.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-data-table.tsx#filterBar",
+      "toType": "function",
+      "evidence": "LUC-1078 dashboard shared data-table proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-998-dashboard-public-home-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-data-table.tsx#filterBar",
+      "toType": "function",
+      "evidence": "LUC-1078 dashboard shared data-table proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1078-dashboard-overview-cc-data-table-proof-link.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-data-table.tsx#filterBar",
+      "toType": "function",
+      "evidence": "LUC-1078 dashboard shared data-table proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1080-dashboard-overview-cc-field-proof-link.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-field.tsx",
+      "toType": "component",
+      "evidence": "LUC-1080 dashboard shared field proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1080-dashboard-overview-cc-field-proof-link.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-field.tsx#CcField",
+      "toType": "function",
+      "evidence": "LUC-1080 dashboard shared field proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1088-dashboard-overview-cc-text-input-proof-link.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-text-input.tsx",
+      "toType": "component",
+      "evidence": "LUC-1088 dashboard shared text-input proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1088-dashboard-overview-cc-text-input-proof-link.md",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-text-input.tsx#CcTextInput",
+      "toType": "function",
+      "evidence": "LUC-1088 dashboard shared text-input proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1084-cc-resource-selector-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-resource-selector.tsx",
+      "toType": "component",
+      "evidence": "LUC-1084 shared resource selector proof-link closure through focused browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1084-cc-resource-selector-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-resource-selector.tsx#CcResourceSelector",
+      "toType": "function",
+      "evidence": "LUC-1084 shared resource selector proof-link closure through focused browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1084-cc-resource-selector-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-resource-selector.tsx#renderItem",
+      "toType": "function",
+      "evidence": "LUC-1084 shared resource selector proof-link closure through focused browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1084-cc-resource-selector-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-resource-selector.tsx#toggleAll",
+      "toType": "function",
+      "evidence": "LUC-1084 shared resource selector proof-link closure through focused browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1084-cc-resource-selector-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-resource-selector.tsx#toggleItem",
+      "toType": "function",
+      "evidence": "LUC-1084 shared resource selector proof-link closure through focused browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-route-loading.tsx",
+      "toType": "component",
+      "evidence": "LUC-1086 dashboard shared route-loading proof-link closure through focused browser proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+      "fromType": "test",
+      "toPath": "web/src/components/cc-route-loading.tsx#CcRouteLoading",
+      "toType": "function",
+      "evidence": "LUC-1086 dashboard shared route-loading proof-link closure through focused browser proof"
     }
   ]
 }

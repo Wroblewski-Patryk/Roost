@@ -1,6 +1,6 @@
 # Architecture Awareness Report
 
-Generated: 2026-07-13T17:38:37.936Z
+Generated: 2026-07-14T15:06:25.285Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 
@@ -11,15 +11,15 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | agent | 47 |
 | api_endpoint | 46 |
 | component | 7 |
-| document | 1478 |
-| feature | 170 |
-| function | 953 |
+| document | 1487 |
+| feature | 173 |
+| function | 990 |
 | migration | 31 |
 | model | 5 |
 | module | 67 |
 | project | 1 |
-| task | 47 |
-| test | 13 |
+| task | 85 |
+| test | 82 |
 
 ## Counts By Status
 
@@ -27,20 +27,20 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | --- | ---: |
 | blocked | 1 |
 | deprecated | 6 |
-| implemented | 2726 |
-| in_progress | 1 |
-| tested | 10 |
-| verified | 121 |
+| implemented | 2695 |
+| in_progress | 2 |
+| tested | 19 |
+| verified | 298 |
 
 ## Health Signals
 
-- Raw implementation entities without inferred tests: 1107
-- Actionable implementation entities without inferred tests: 1098
+- Raw implementation entities without inferred tests: 1075
+- Actionable implementation entities without inferred tests: 1062
 - Raw implementation entities without inferred docs: 0
 - Actionable implementation entities without inferred docs: 0
-- Classified inferred-link noise: 9
-- Raw tasks without architecture links: 10
-- Actionable tasks without architecture links: 10
+- Classified inferred-link noise: 13
+- Raw tasks without architecture links: 12
+- Actionable tasks without architecture links: 12
 - Raw implementation entities without task links: 0
 - Actionable implementation entities without task links: 0
 - Classified task-linkage noise: 0
@@ -49,7 +49,6 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 
 ## Top Actionable Missing Test Links
 
-- api_endpoint: GET / (src/app.ts#/)
 - api_endpoint: USE /agent-events (src/app.ts#/agent-events)
 - api_endpoint: USE /agent-logs (src/app.ts#/agent-logs)
 - api_endpoint: USE /agents (src/app.ts#/agents)
@@ -60,13 +59,11 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - api_endpoint: USE /commercial-exceptions (src/app.ts#/commercial-exceptions)
 - api_endpoint: USE /company-os (src/app.ts#/company-os)
 - api_endpoint: USE /connection (src/app.ts#/connection)
-- api_endpoint: USE /dashboard (src/app.ts#/dashboard)
 - api_endpoint: USE /deals (src/app.ts#/deals)
 - api_endpoint: USE /decisions (src/app.ts#/decisions)
 - api_endpoint: USE /departments (src/app.ts#/departments)
 - api_endpoint: USE /events (src/app.ts#/events)
 - api_endpoint: USE /goals (src/app.ts#/goals)
-- api_endpoint: USE /google-drive (src/app.ts#/google-drive)
 - api_endpoint: USE /health (src/app.ts#/health)
 - api_endpoint: USE /intake (src/app.ts#/intake)
 - api_endpoint: USE /integration-settings (src/app.ts#/integration-settings)
@@ -81,7 +78,6 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - api_endpoint: USE /projects (src/app.ts#/projects)
 - api_endpoint: USE /ready (src/app.ts#/ready)
 - api_endpoint: USE /relationships (src/app.ts#/relationships)
-- api_endpoint: USE /strategy (src/app.ts#/strategy)
 - api_endpoint: USE /targets (src/app.ts#/targets)
 - api_endpoint: USE /task-lists (src/app.ts#/task-lists)
 - api_endpoint: USE /tasks (src/app.ts#/tasks)
@@ -89,6 +85,10 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - api_endpoint: USE /v1/health (src/app.ts#/v1/health)
 - api_endpoint: USE /v1/ready (src/app.ts#/v1/ready)
 - api_endpoint: USE /v1/webhooks/clickup (src/app.ts#/v1/webhooks/clickup)
+- api_endpoint: USE /workforce (src/app.ts#/workforce)
+- api_endpoint: USE /workspaces (src/app.ts#/workspaces)
+- component: cc-notice.tsx (web/src/components/cc-notice.tsx)
+- feature: seed.ts (prisma/seed.ts)
 
 ## Top Actionable Missing Doc Links
 
@@ -96,7 +96,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 ## Classified Inferred-Link Noise
 
 - config_only_file: 2
-- test_fixture_function: 7
+- test_fixture_function: 11
 
 ## Top Classified Noise Samples
 
@@ -109,6 +109,10 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - test_fixture_function: function: resetDatabase (src/tests/api.test.ts#resetDatabase)
 - test_fixture_function: function: runMcpBridgeSmoke (src/tests/api.test.ts#runMcpBridgeSmoke)
 - test_fixture_function: function: runNodeScript (src/tests/api.test.ts#runNodeScript)
+- test_fixture_function: function: runChainIntegrity (src/tests/architecture-chain-integrity.test.ts#runChainIntegrity)
+- test_fixture_function: function: runGateFixture (src/tests/architecture-health-dashboard-gate.test.ts#runGateFixture)
+- test_fixture_function: function: runDashboardFixture (src/tests/architecture-health-dashboard.test.ts#runDashboardFixture)
+- test_fixture_function: function: writeJson (src/tests/architecture-health-dashboard.test.ts#writeJson)
 
 ## Classified Task-Linkage Noise
 
@@ -120,6 +124,6 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 
 - This is an inferred baseline. CTO/Docs Memory must promote or correct important relations.
 - Curated graph coverage input: `C:/Personal/Projekty/Aplikacje/Roost/docs/graphs/architecture-graph.json` (covered paths: 0).
-- Override input: `C:/Personal/Projekty/Aplikacje/Roost/docs/architecture/scanner-overrides.json` (entity entries: 87, relation entries: 128).
-- Override summary: excluded files 0, entity overrides 86, relation overrides 124, critical entities tagged 0.
+- Override input: `C:/Personal/Projekty/Aplikacje/Roost/docs/architecture/scanner-overrides.json` (entity entries: 226, relation entries: 257).
+- Override summary: excluded files 0, entity overrides 218, relation overrides 224, critical entities tagged 0.
 - `verified` still requires fresh command/browser/deploy evidence, not only file presence.

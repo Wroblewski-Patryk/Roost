@@ -62,6 +62,12 @@ React 00 General dashboard command center consuming dashboard packet.
 ## Tests
 
 - `TEST-PLAYWRIGHT-DASHBOARD` Dashboard Playwright proof: `verified`
+- `TEST-BROWSER-CLEAR-OWNER-TOKEN` node scripts/luc-1022-account-access-clear-owner-token-proof.mjs: `verified`
+- `TEST-BROWSER-IS-SIGNED-IN` node scripts/luc-1038-account-access-is-signed-in-proof.mjs: `verified`
+- `TEST-BROWSER-SET-OWNER-TOKEN` node scripts/luc-1063-account-access-set-owner-token-proof.mjs: `verified`
+- `TEST-BROWSER-DASHBOARD-NOTICE` node scripts/luc-1082-dashboard-cc-notice-proof.mjs: `verified`
+- `TEST-BROWSER-DASHBOARD-ROUTE-LOADING` node scripts/luc-1086-dashboard-cc-route-loading-proof.mjs: `verified`
+- `TEST-BROWSER-DASHBOARD-ALIAS` node scripts/luc-998-dashboard-public-home-proof.mjs: `verified`
 
 ## Evidence
 

@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-07-14T03:26:34.224Z",
+  "baseUrl": "http://127.0.0.1:58161",
+  "assertions": {
+    "signedIn": {
+      "tokenPresent": true,
+      "dashboardRequestUsedBearerAuth": true,
+      "authMeRequestUsedBearerAuth": true,
+      "departmentsRequestUsedBearerAuth": true,
+      "pendingPrivatePathNotSet": true,
+      "canonicalPrivateRouteRendered": true,
+      "noHorizontalOverflow": true
+    },
+    "signedOut": {
+      "tokenMissing": true,
+      "loginSurfaceVisible": true,
+      "pendingPrivatePathRecorded": true,
+      "privateRouteStayedOnRequestedPath": true,
+      "noHorizontalOverflow": true
+    }
+  },
+  "requestLog": {
+    "authMeHeaders": [
+      "Bearer proof-token"
+    ],
+    "departmentsHeaders": [
+      "Bearer proof-token"
+    ],
+    "dashboardHeaders": [
+      "Bearer proof-token"
+    ]
+  },
+  "screenshots": {
+    "signedIn": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-1038-is-signed-in-proof\\desktop-signed-in-dashboard.png",
+    "signedOut": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-1038-is-signed-in-proof\\desktop-signed-out-login.png"
+  },
+  "errors": []
+}

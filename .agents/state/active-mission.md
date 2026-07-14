@@ -1,6 +1,1167 @@
 # Active Mission Packet
 
-Last updated: 2026-07-13
+Last updated: 2026-07-14
+
+## LUC-1101 Checkpoint
+
+- 2026-07-14: [LUC-1101](/LUC/issues/LUC-1101) completed the local QA
+  proof-link closure for the routed unclassified endpoint `src/app.ts#/`,
+  but the live issue disposition remains blocked because the GitHub issue API
+  returned `404 Not Found` for `Wroblewski-Patryk/Roost#1101`. A fresh
+  readback via `mcp__codex_apps__github._fetch_issue` on the same issue also
+  returned `404 Not Found`, so the tracker-side blocker remains unchanged.
+  Output:
+  `.codex/tasks/luc-1101-unclassified-root-get-proof-link.md`. Scope stayed
+  inside exact root-route evidence-link curation to the existing API and
+  browser proof family, generated
+  architecture/app-completion/Project Truth refresh, and durable state
+  updates; no subagent delegation was used because the routed gap was narrow
+  and role-owned. Current evidence:
+  `docs/architecture/scanner-overrides.json` now marks `src/app.ts#/`
+  `verified` through `src/tests/api.test.ts`,
+  `docs/planning/luc-998-dashboard-public-home-frontend-proof.md`,
+  `docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json`, and
+  `scripts/luc-998-dashboard-public-home-proof.mjs`; `npm run
+  test:api:local` PASS (`8/8`); `npm run architecture:refresh` PASS;
+  sequential external architecture-awareness refresh generated
+  `2026-07-14T15:06:25.285Z` with `3021` entities / `7547` relations /
+  `16521` files; sequential app-completion refresh generated
+  `2026-07-14T15:06:25.290Z` with `1103` missing test links and no longer
+  routes `api_endpoint:get:1998daec82`; sequential Project Truth apply
+  generated `2026-07-14T15:07:59.922Z` with public probes `pass` and
+  advanced the first gap to unclassified `src/app.ts#/agent-events`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`,
+  chain worklist `0`). Final disposition: `blocked` until a reachable tracker
+  mutation path is provided for the live issue record. Next owner/action:
+  Paperclip / tracker owner to provide a working issue endpoint or alternate
+  mutation path, then QA Regression Lead can reopen the heartbeat if a live
+  update is required.
+
+## LUC-1099 Checkpoint
+
+- 2026-07-14: [LUC-1099](/LUC/issues/LUC-1099) completed as a single-lane QA
+  proof-link closure for the routed Trading operation frontend family on
+  `web/src/features/departments/strategy-route.tsx`, `#formatDate`, and
+  `#StrategyRoute`. Output:
+  `.codex/tasks/luc-1099-trading-operation-strategy-route-proof-link.md`.
+  Scope stayed inside exact frontend evidence-link curation to the existing
+  authenticated Strategy browser packet, generated
+  architecture/app-completion/Project Truth refresh, and durable state
+  updates; no subagent delegation was used because the routed gap was narrow
+  and role-owned. Current evidence:
+  `docs/architecture/scanner-overrides.json` now marks the Strategy route file
+  and both exact function rows `verified` through
+  `docs/planning/luc-727-strategy-route-local-proof.md`,
+  `docs/ux/evidence/luc-727-strategy-route-local-proof/report.json`, and this
+  task packet; the LUC-727 planning packet is now typed as a `test` artifact;
+  `docs/testing/test-map.csv` records `TEST-BROWSER-STRATEGY-ROUTE`; `npm run
+  architecture:refresh` PASS; sequential external architecture-awareness
+  refresh generated `2026-07-14T14:37:39.642Z` with `3020` entities / `7529`
+  relations / `16521` files; sequential app-completion refresh reduced
+  `missingTestLink` from `1107` to `1104` and no longer routes the Strategy
+  frontend family; sequential Project Truth apply generated
+  `2026-07-14T14:37:50.179Z` with public probes `pass` and advanced the first
+  gap to unclassified `src/app.ts#/`; `npm run architecture:status` PASS
+  (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`). Final
+  disposition: `done`. Next owner/action: Test Automation Engineer + QA
+  Regression Lead for the new first routed proof gap on `src/app.ts#/`.
+
+## LUC-1097 Checkpoint
+
+- 2026-07-14: [LUC-1097](/LUC/issues/LUC-1097) completed as a single-lane
+  Documentation Steward doc-link closure for the routed Trading operation
+  Strategy helper family on `src/modules/strategy/strategy.routes.ts#asJsonArray`.
+  Output:
+  `.codex/tasks/luc-1097-trading-operation-asjsonarray-doc-link.md`. Scope
+  stayed inside accepted Strategy API-contract clarification, exact
+  helper-to-document relations, generated architecture/app-completion/Project
+  Truth refresh, and durable state updates; no subagent delegation was used
+  because the routed gap was narrow and documentation-owned. Current evidence:
+  `docs/API.md` now documents the Strategy context invariants for
+  array-normalized `decisionLogs[].optionsConsidered`, keyword-filtered
+  strategy knowledge and Drive files, and strategic-task selection;
+  `docs/architecture/relations/documentation-links.csv` now links
+  `src/modules/strategy`, `src/modules/strategy/strategy.routes.ts`,
+  `asJsonArray`, `textMatchesStrategy`, and `taskLooksStrategic` to that
+  accepted contract; `docs/architecture/scanner-overrides.json` now adds the
+  exact helper-level `documents` relations to `docs/API.md`; sequential `npm
+  run architecture:refresh` PASS; sequential external architecture-awareness
+  refresh generated `2026-07-14T14:06:49.888Z` with `3019` entities / `7516`
+  relations / `16521` files; sequential app-completion refresh reduced
+  `missingDocLink` from `33` to `30` and no longer routes the Strategy helper
+  family as `missing_doc_link`; sequential Project Truth apply generated
+  `2026-07-14T14:06:52.216Z` with public probes `pass` and advanced the first
+  Trading operation gap to frontend `missing_test_link` on
+  `web/src/features/departments/strategy-route.tsx`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain
+  worklist `0`). Final disposition: `done`. Next owner/action: Test
+  Automation Engineer + QA Regression Lead for the routed frontend Trading
+  operation proof gap on `strategy-route.tsx`, `formatDate`, and
+  `StrategyRoute`.
+
+## LUC-1095 Checkpoint
+
+- 2026-07-14: [LUC-1095](/LUC/issues/LUC-1095) completed as a single-lane QA
+  proof-link closure for the Trading operation backend module family on
+  `src/modules/strategy`. Output:
+  `.codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md`.
+  Scope stayed inside exact backend proof-link curation to the existing
+  Strategy context API harness, generated
+  architecture/app-completion/Project Truth refresh, and durable state
+  updates; no subagent delegation was used because the routed gap was narrow
+  and role-owned. Current evidence:
+  `docs/architecture/scanner-overrides.json` now marks `src/modules/strategy`,
+  `src/modules/strategy/strategy.routes.ts`, `asJsonArray`,
+  `textMatchesStrategy`, and `taskLooksStrategic` `verified` through
+  `src/tests/api.test.ts`, `docs/planning/v1-strategy-context-read-api-task-contract.md`,
+  and this task packet; `npm run test:api:local` PASS; `npm run
+  architecture:refresh` PASS; sequential external architecture-awareness
+  refresh generated `2026-07-14T13:36:44.472Z` with `3018` entities / `7502`
+  relations / `16521` files; sequential app-completion refresh reduced
+  `missingTestLink` from `1112` to `1107` and no longer routes the backend
+  Strategy module family as `missing_test_link`; sequential Project Truth
+  apply generated `2026-07-14T13:36:55.194Z` with public probes `pass` and
+  advanced the first Trading operation gap to helper-level
+  `missing_doc_link` on `src/modules/strategy/strategy.routes.ts#asJsonArray`;
+  `npm run architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue
+  `0`, chain worklist `0`). Final disposition: `done`. Next owner/action:
+  Docs Memory Lead + Project Manager for the routed Strategy helper
+  documentation gap on `asJsonArray`, `taskLooksStrategic`, and
+  `textMatchesStrategy`.
+
+## LUC-1093 Checkpoint
+
+- 2026-07-14: [LUC-1093](/LUC/issues/LUC-1093) completed as a single-lane QA
+  proof-link closure for the routed Trading operation
+  `src/app.ts#/strategy` `missing_test_link` row. Output:
+  `.codex/tasks/luc-1093-trading-operation-use-strategy-proof-link.md`.
+  Scope stayed inside exact endpoint-level proof-link curation to existing
+  Strategy API/browser evidence, generated architecture/app-completion/Project
+  Truth refresh, and durable state updates; no subagent delegation was used
+  because the routed gap was narrow and role-owned. Current evidence:
+  `docs/architecture/scanner-overrides.json` now marks
+  `src/app.ts#/strategy` `verified` through `src/tests/api.test.ts`,
+  `docs/planning/v1-strategy-context-read-api-task-contract.md`, and
+  `docs/planning/luc-727-strategy-route-local-proof.md`; `npm run
+  architecture:refresh` PASS; sequential external architecture-awareness
+  refresh generated `2026-07-14T13:05:21.123Z` with `3017` entities / `7487`
+  relations / `16521` files and materialized the exact `test` relation;
+  sequential app-completion refresh reduced `missingTestLink` from `1113` to
+  `1112` and no longer routes `api_endpoint:use-strategy:0ead398998`;
+  sequential Project Truth apply generated `2026-07-14T13:05:36.955Z` with
+  public probes `pass` and advanced the first routed gap to Trading operation
+  `src/modules/strategy`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`). Final disposition:
+  `done`. Next owner/action: Test Automation Engineer + QA Regression Lead for
+  the new first routed Trading operation proof gap on `src/modules/strategy`.
+
+## LUC-1090 Checkpoint
+
+- 2026-07-14: [LUC-1090](/LUC/issues/LUC-1090) completed as a single-lane QA
+  proof-link closure for the Dashboard overview `AssetsOverview` route surface
+  on `web/src/features/departments/assets-route.tsx#AssetsOverview`. Output:
+  `.codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md`.
+  Scope stayed inside exact route-level browser proof on the live signed-in
+  Assets overview route, scanner/test-map linkage, generated
+  architecture/app-completion/Project Truth refresh, and durable state
+  updates; no subagent delegation was used because the routed gap was narrow
+  and role-owned. Current evidence:
+  `scripts/luc-1090-assets-overview-proof.mjs` and
+  `docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md` prove
+  the live `08 Assets` overview route renders the heading, description, three
+  summary cards, and `Open files` CTA on desktop and mobile while the mocked
+  `/v1/auth/me`, `/v1/departments`, and `/v1/assets/context` requests all
+  carry `Authorization: Bearer luc-1090-proof-token`; `docs/architecture/scanner-overrides.json`
+  marks `AssetsOverview` and the focused proof harness/helper family with
+  durable `verified` + `test` linkage; `docs/testing/test-map.csv` records
+  `TEST-BROWSER-ASSETS-OVERVIEW`; `npm run build:web` PASS; focused browser
+  proof PASS with report generated under
+  `docs/ux/evidence/luc-1090-assets-overview-proof/`; `npm run
+  architecture:refresh` PASS; sequential Paperclip architecture-awareness
+  refresh generated `2026-07-14T12:39:31.558Z` with `3015` entities / `7465`
+  relations / `16521` files; refreshed app-completion generated `1282` items /
+  `5` flows / `1113` missing test links / `30` missing doc links /
+  `8` implemented-needs-proof / `0` blocked / `1151` risk items and no longer
+  routes `AssetsOverview` as the first gap; Project Truth apply generated
+  `2026-07-14T12:39:43.507Z` with public probes `pass` and advanced the first
+  routed gap to Trading operation `src/app.ts#/strategy`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain
+  worklist `0`). Final disposition: `done`. Next owner/action: Test
+  Automation Engineer + QA Regression Lead for the new first routed proof gap
+  on `src/app.ts#/strategy`.
+
+## LUC-1088 Checkpoint
+
+- 2026-07-14: [LUC-1088](/LUC/issues/LUC-1088) completed as a single-lane QA
+  proof-link closure for the Dashboard overview shared text-input component
+  family on `web/src/components/cc-text-input.tsx`. Output:
+  `.codex/tasks/luc-1088-dashboard-overview-cc-text-input-proof-link.md`.
+  Scope stayed inside exact scanner proof-link reuse to the existing auth
+  browser evidence, generated architecture/app-completion/Project Truth
+  refresh, and durable state updates; no subagent delegation was used because
+  the routed gap was narrow and role-owned. Current evidence:
+  `docs/architecture/scanner-overrides.json` now marks `cc-text-input.tsx`
+  and `CcTextInput` `verified` through
+  `docs/planning/luc-5561-auth-account-access-local-smoke-proof.md`,
+  `docs/planning/luc-1063-account-access-set-owner-token-proof.md`,
+  `scripts/luc-1063-account-access-set-owner-token-proof.mjs`, and
+  `docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json`;
+  `npm run architecture:refresh` PASS; sequential Paperclip
+  architecture-awareness refresh generated `2026-07-14T12:05:26.000Z` with
+  `3003` entities / `7440` relations / `16516` files; sequential
+  app-completion refresh dropped `missingTestLink` from `1116` to `1114` and
+  no longer routes `cc-text-input.tsx` as the first Dashboard overview
+  `missing_test_link`; Project Truth apply generated
+  `2026-07-14T12:05:35.254Z` with public probes `pass` and advanced the first
+  routed gap to `AssetsOverview`; `npm run architecture:status` PASS
+  (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`). Final
+  disposition: `done`. Next owner/action: Test Automation Engineer + QA
+  Regression Lead for the new first Dashboard overview proof gap on
+  `web/src/features/departments/assets-route.tsx#AssetsOverview`.
+
+## LUC-1086 Checkpoint
+
+- 2026-07-14: [LUC-1086](/LUC/issues/LUC-1086) completed as a single-lane QA
+  proof-link closure for the Dashboard overview shared route-loading
+  component family on `web/src/components/cc-route-loading.tsx`. Output:
+  `.codex/tasks/luc-1086-dashboard-overview-cc-route-loading-proof-link.md`.
+  Scope stayed inside exact route-level browser proof on the live signed-in
+  dashboard route, scanner/test-map linkage, generated
+  architecture/app-completion/Project Truth refresh, and durable state
+  updates; no subagent delegation was used because the routed gap was narrow
+  and role-owned. Current evidence:
+  `scripts/luc-1086-dashboard-cc-route-loading-proof.mjs` and
+  `docs/planning/luc-1086-dashboard-overview-cc-route-loading-proof.md` now
+  prove the delayed lazy chunk visibly mounts `CcRouteLoading`, preserves the
+  Roost theme during fallback, forwards the expected bearer token to the
+  mocked dashboard endpoints, and reaches the ready state without horizontal
+  overflow; `docs/architecture/scanner-overrides.json` now classifies the
+  focused proof harness/helper rows as `test`, links them to the exact
+  `cc-route-loading` component/function rows, and keeps the component family
+  `verified`; `docs/testing/test-map.csv` records
+  `TEST-BROWSER-DASHBOARD-ROUTE-LOADING`; `npm run build:web` PASS; focused
+  browser proof PASS with report generated under
+  `docs/ux/evidence/luc-1086-dashboard-cc-route-loading-proof/`; `npm run
+  architecture:refresh` PASS; Paperclip architecture-awareness refresh
+  generated `2026-07-14T11:40:59.847Z` with `3002` entities / `7422`
+  relations / `16516` files; refreshed app-completion generated
+  `2026-07-14T11:41:06.206Z` and no longer routes the `cc-route-loading.tsx`
+  family as the first Dashboard overview `missing_test_link`; Project Truth
+  apply generated `2026-07-14T11:41:11.036Z` with public probes `pass` and
+  advanced the first routed gap to `cc-text-input.tsx`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain
+  worklist `0`). Final disposition: `done`. Next owner/action: Test
+  Automation Engineer + QA Regression Lead for the new first Dashboard
+  overview shared-component proof gap on `web/src/components/cc-text-input.tsx`.
+
+## LUC-1084 Checkpoint
+
+- 2026-07-14: [LUC-1084](/LUC/issues/LUC-1084) completed as a single-lane QA
+  proof-link closure for the Dashboard overview shared resource-selector
+  component family on `web/src/components/cc-resource-selector.tsx`. Output:
+  `.codex/tasks/luc-1084-dashboard-overview-cc-resource-selector-proof-link.md`.
+  Scope stayed inside exact route-level browser proof on the live consuming
+  Operations Tasks and Assets Files/Folders routes, scanner/test-map linkage,
+  generated architecture/app-completion/Project Truth refresh, and durable
+  state updates; no subagent delegation was used because the routed gap was
+  narrow and role-owned. Current evidence:
+  `scripts/luc-1084-cc-resource-selector-proof.mjs` and
+  `docs/planning/luc-1084-dashboard-overview-cc-resource-selector-proof.md`
+  now prove selector rendering, search filtering, no-match empty states,
+  bearer-auth propagation, and no horizontal overflow on both consuming
+  routes; `docs/architecture/scanner-overrides.json` now classifies the
+  focused proof harness/helper rows as `test`, links them to the exact
+  `cc-resource-selector` component/function rows, and keeps the component
+  family `verified`; `docs/testing/test-map.csv` records
+  `TEST-BROWSER-RESOURCE-SELECTOR`; `npm run build:web` PASS; focused browser
+  proof PASS with report generated `2026-07-14T11:11:15.195Z`; `npm run
+  architecture:refresh` PASS; Paperclip architecture-awareness refresh
+  generated `2026-07-14T11:15:11.557Z` with `2991` entities / `7401`
+  relations / `16511` files; refreshed app-completion dropped
+  `missingTestLink` from `1134` to `1118` and no longer routes the
+  `cc-resource-selector.tsx` family as the first Dashboard overview
+  `missing_test_link`; Project Truth apply generated
+  `2026-07-14T11:15:19.491Z` with public probes `pass` and advanced the first
+  routed gap to `cc-route-loading.tsx`; `npm run architecture:status` PASS
+  (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`). Final
+  disposition: `done`. Next owner/action: Test Automation Engineer + QA
+  Regression Lead for the new first Dashboard overview shared-component proof
+  gap on `web/src/components/cc-route-loading.tsx`.
+
+## LUC-1082 Checkpoint
+
+- 2026-07-14: [LUC-1082](/LUC/issues/LUC-1082) completed as a single-lane QA
+  proof-link closure for the Dashboard overview shared notice component family
+  on `web/src/components/cc-notice.tsx`. Output:
+  `.codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md`. Scope
+  stayed inside exact route-level browser proof, scanner/test-map linkage,
+  generated architecture/app-completion/Project Truth refresh, and durable
+  state updates; no subagent delegation was used because the routed gap was
+  narrow and role-owned. Current evidence:
+  `scripts/luc-1082-dashboard-cc-notice-proof.mjs` and
+  `docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md` now prove the
+  live dashboard overview route renders `CcNotice` in both loading and
+  fail-closed error states; `docs/architecture/scanner-overrides.json` marks
+  `web/src/components/cc-notice.tsx`, `CcNotice`, and the focused proof script
+  family `verified`; `docs/testing/test-map.csv` records
+  `TEST-BROWSER-DASHBOARD-NOTICE`; `npm run build:web` PASS; focused browser
+  proof PASS with report generated `2026-07-14T10:38:50.718Z`; Paperclip
+  architecture-awareness refresh generated `2026-07-14T10:44:57.508Z` with
+  `2978` entities / `7370` relations / `16504` files; refreshed
+  app-completion dropped `missingTestLink` from `1125` to `1123` and no longer
+  reports `cc-notice.tsx` as the first Dashboard overview
+  `missing_test_link`; Project Truth apply generated
+  `2026-07-14T10:45:07.009Z` with public probes `pass` and advanced the first
+  routed gap to `cc-resource-selector.tsx`; `npm run architecture:refresh`
+  PASS. Final disposition: `done`. Next owner/action: Test Automation Engineer
+  + QA Regression Lead for the new first Dashboard overview shared-component
+  proof gap on `web/src/components/cc-resource-selector.tsx`.
+
+## LUC-1080 Checkpoint
+
+- 2026-07-14: [LUC-1080](/LUC/issues/LUC-1080) completed as a single-lane QA
+  proof-link closure for the Dashboard overview shared field component family
+  on `web/src/components/cc-field.tsx`. Output:
+  `.codex/tasks/luc-1080-dashboard-overview-cc-field-proof-link.md`. Scope
+  stayed inside exact proof-link reuse to the existing auth browser evidence,
+  generated architecture/app-completion/Project Truth refresh, and durable
+  state updates; no subagent delegation was used because the routed gap was
+  narrow and role-owned. Current evidence:
+  `docs/architecture/scanner-overrides.json` now marks `cc-field.tsx` and
+  `CcField` `verified` through
+  `docs/planning/luc-5561-auth-account-access-local-smoke-proof.md`,
+  `docs/planning/luc-1063-account-access-set-owner-token-proof.md`,
+  `scripts/luc-1063-account-access-set-owner-token-proof.mjs`, and
+  `docs/ux/evidence/luc-5561-auth-account-access/browser-auth-smoke-report.json`;
+  `npm run architecture:refresh` PASS; Paperclip architecture-awareness
+  refresh generated `2026-07-14T10:07:13.800Z` with `2967` entities /
+  `7339` relations / `16499` files; refreshed app-completion dropped
+  `missingTestLink` from `1127` to `1125` and no longer reports
+  `cc-field.tsx` as the first Dashboard overview `missing_test_link`;
+  Project Truth apply advanced the first routed gap to `cc-notice.tsx`; `npm
+  run architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`,
+  chain worklist `0`). Live Paperclip readback shows `status: done` with
+  persisted typed `completionEvidence` despite the closeout `PATCH` returning
+  `Internal server error`. Final disposition: `done`. Next owner/action: Test
+  Automation Engineer + QA Regression Lead for the new first Dashboard
+  overview shared-component proof gap on `web/src/components/cc-notice.tsx`.
+
+## LUC-1078 Checkpoint
+
+- 2026-07-14: [LUC-1078](/LUC/issues/LUC-1078) completed as a single-lane QA
+  proof-link closure for the Dashboard overview shared managed-table
+  component family on `web/src/components/cc-data-table.tsx`. Output:
+  `.codex/tasks/luc-1078-dashboard-overview-cc-data-table-proof-link.md`.
+  Scope stayed inside exact scanner proof-link reuse to the existing
+  `LUC-998` browser evidence, generated architecture/app-completion/Project
+  Truth refresh, and durable state updates; no subagent delegation was used
+  because the routed gap was narrow and role-owned. Current evidence:
+  `docs/architecture/scanner-overrides.json` now marks
+  `cc-data-table.tsx`, `CcDataTable`, and `filterBar` `verified` through
+  `docs/planning/luc-998-dashboard-public-home-frontend-proof.md`,
+  `docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json`, and
+  `scripts/luc-998-dashboard-public-home-proof.mjs`; `npm run
+  architecture:refresh` PASS; Paperclip architecture-awareness refresh
+  generated `2026-07-14T09:37:53.270Z` with `2966` entities / `7331`
+  relations / `16499` files; refreshed app-completion dropped
+  `missingTestLink` from `1130` to `1127` and no longer reports
+  `cc-data-table.tsx` as the first Dashboard overview `missing_test_link`;
+  Project Truth apply advanced the first routed gap to `cc-field.tsx`;
+  `npm run architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue
+  `0`, chain worklist `0`). Final disposition: `done`. Next owner/action:
+  Test Automation Engineer + QA Regression Lead for the new first Dashboard
+  overview shared-component proof gap on `web/src/components/cc-field.tsx`.
+
+## LUC-1074 Checkpoint
+
+- 2026-07-14: [LUC-1074](/LUC/issues/LUC-1074) completed as a single-lane
+  Documentation Steward doc-link closure for the Dashboard overview backend
+  family on `src/modules/dashboard`. Output:
+  `.codex/tasks/luc-1074-dashboard-overview-src-modules-dashboard-doc-link.md`.
+  Scope stayed inside accepted API-contract documentation, exact
+  symbol-to-document relations, generated architecture/app-completion/Project
+  Truth refresh, and durable state updates; no subagent delegation was used
+  because the routed gap was narrow and documentation-owned. Current evidence:
+  `docs/API.md` now documents the read-only dashboard command-center contract
+  for `GET /v1/dashboard/command` and `/dashboard/command`, including
+  workspace-scoped auth, normalized counts, due-date boundaries, risk ranking,
+  department signal health, and `read_only_command_center` agent semantics;
+  `docs/architecture/relations/documentation-links.csv` now links
+  `src/modules/dashboard`, `dashboard.routes.ts`, `coerceCount`,
+  `pickHealth`, `riskRank`, `startOfToday`, `startOfTomorrow`, and
+  `sumCounts` to that accepted doc; Paperclip architecture-awareness refresh
+  generated `2026-07-14T08:36:13.709Z` with `2963` entities / `7304`
+  relations / `16499` files; app-completion refresh generated `1278` items /
+  `5` flows / `1133` missing test links / `25` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1166` risk items and no longer
+  reports the dashboard backend family as `missing_doc_link`; Project Truth
+  apply generated `2026-07-14T08:36:31.429Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to Dashboard overview
+  `cc-data-table.tsx` `missing_test_link`; `npm run architecture:refresh`
+  PASS and `npm run architecture:status` PASS (`GREEN`, `454/765/35`,
+  evidence queue `0`, chain worklist `0`). Final disposition: `done`. Next
+  owner/action: Test Automation Engineer + QA Regression Lead for the new
+  first Dashboard overview frontend proof gap on
+  `web/src/components/cc-data-table.tsx`.
+
+- 2026-07-14: [LUC-1076](/LUC/issues/LUC-1076) has now been patched to `done`
+  on the live Paperclip issue control plane with typed completion evidence.
+
+## LUC-1072 Checkpoint
+
+- 2026-07-14: [LUC-1072](/LUC/issues/LUC-1072) completed as a single-lane QA
+  proof-link closure for the Dashboard overview `src/modules/dashboard`
+  `missing_test_link` row. Output:
+  `.codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md`.
+  Scope stayed inside exact scanner/test-map linkage to the existing dashboard
+  API harness proof, generated architecture/app-completion/Project Truth
+  refresh, and durable state updates; no subagent delegation was used because
+  the routed gap was narrow and role-owned. Current evidence:
+  `docs/architecture/scanner-overrides.json` marks `src/modules/dashboard`,
+  `dashboard.routes.ts`, `coerceCount`, `pickHealth`, `riskRank`,
+  `startOfToday`, `startOfTomorrow`, and `sumCounts` `verified` through the
+  existing `src/tests/api.test.ts` dashboard command proof; `npm run
+  test:api:local` PASS; architecture-awareness refresh generated
+  `2026-07-14T08:13:04.553Z` with `2967` entities / `7309` relations /
+  `16500` files and materialized the exact verification links;
+  app-completion refresh generated `1282` items / `5` flows / `1134`
+  missing test links / `32` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1174` risk items and no longer
+  reports the backend dashboard family as `missing_test_link`; Project Truth
+  apply generated `2026-07-14T08:13:13.951Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to Dashboard overview
+  `src/modules/dashboard` `missing_doc_link`; `npm run architecture:status`
+  PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`).
+  Final disposition: `done`. Next owner/action: Docs Memory Lead + Project
+  Manager for the same backend family `missing_doc_link` gap, while separate
+  dashboard frontend proof debt remains QA-owned on `AssetsOverview`.
+
+## LUC-1070 Checkpoint
+
+- 2026-07-14: [LUC-1070](/LUC/issues/LUC-1070) completed as a single-lane QA
+  proof closure for the Dashboard overview
+  `scripts/check-architecture-health-dashboard-gate.mjs`
+  `missing_test_link` row. Output:
+  `.codex/tasks/luc-1070-dashboard-architecture-health-dashboard-gate-proof.md`.
+  Scope stayed inside focused fixture-driven gate-script proof, exact
+  scanner/test-map linkage, generated architecture/app-completion/Project Truth
+  refresh, and durable state updates; no subagent delegation was used because
+  the routed gap was narrow and role-owned. Current evidence:
+  `src/tests/architecture-health-dashboard-gate.test.ts` proves coherent pass
+  output, malformed dashboard JSON fail-closed behavior, and
+  `allGreen` invariant mismatch handling; `docs/architecture/scanner-overrides.json`
+  marks `scripts/check-architecture-health-dashboard-gate.mjs`, `#readJson`,
+  and `#fail` `verified`; `docs/testing/test-map.csv` records
+  `TEST-ARCH-HEALTH-DASHBOARD-GATE`; architecture-awareness refresh generated
+  `2026-07-14T07:35:56.053Z` with `2961` entities / `7283` relations /
+  `16499` files and marks the exact script/helper entities `verified`;
+  app-completion refresh generated `1278` items / `5` flows / `1141`
+  missing test links / `25` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1174` risk items and no longer
+  reports the gate rows; Project Truth apply generated
+  `2026-07-14T07:36:10.441Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to Dashboard overview
+  `src/modules/dashboard` `missing_test_link`; `npm run architecture:status`
+  PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`).
+  Final disposition: `done`. Next owner/action: Test Automation Engineer + QA
+  Regression Lead for the new first Dashboard overview proof gap on
+  `src/modules/dashboard`, if selected by Project Truth routing.
+
+- 2026-07-14: The live Paperclip issue control plane was then reached with the
+  actual issue UUID and API base, and LUC-1070 was patched to `done` with
+  typed completion evidence plus the closeout comment on the same issue.
+  Guardrail: verify the live control plane and issue ID before treating a
+  tracker as unreachable.
+
+## LUC-1068 Checkpoint
+
+- 2026-07-14: [LUC-1068](/LUC/issues/LUC-1068) completed as a single-lane QA
+  proof closure for the Dashboard overview
+  `scripts/build-architecture-health-dashboard.mjs`
+  `missing_test_link` row. Output:
+  `.codex/tasks/luc-1068-dashboard-architecture-health-dashboard-proof.md`.
+  Scope stayed inside focused fixture-driven script proof, exact scanner/test-map
+  linkage, generated architecture/app-completion/Project Truth refresh, and
+  durable state updates; no subagent delegation was used because the routed
+  gap was narrow and role-owned. Current evidence:
+  `src/tests/architecture-health-dashboard.test.ts` proves both coherent green
+  dashboard aggregation and failing output behavior with missing optional
+  inputs; `docs/architecture/scanner-overrides.json` marks
+  `scripts/build-architecture-health-dashboard.mjs`, `#main`, `#readJson`,
+  and `#toBoolIcon` `verified`; `docs/testing/test-map.csv` records
+  `TEST-ARCH-HEALTH-DASHBOARD`; architecture-awareness refresh generated
+  `2026-07-14T07:08:41.300Z` with `2957` entities / `7273` relations /
+  `16498` files and marks the exact script/helper entities `verified`;
+  app-completion refresh generated `1275` items / `5` flows / `1144`
+  missing test links / `25` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1177` risk items and no longer
+  reports the script/helper rows; Project Truth apply generated
+  `2026-07-14T07:08:52.015Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to Dashboard overview
+  `scripts/check-architecture-health-dashboard-gate.mjs`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`). Final disposition:
+  `done`. Next owner/action: Test Automation Engineer + QA Regression Lead
+  for the new first Dashboard overview proof gap on
+  `scripts/check-architecture-health-dashboard-gate.mjs`, if selected by
+  Project Truth routing.
+
+## LUC-1066 Checkpoint
+
+- 2026-07-14: [LUC-1066](/LUC/issues/LUC-1066) completed as a single-lane QA
+  proof-link closure for the Dashboard overview `src/app.ts#/dashboard`
+  `missing_test_link` row. Output:
+  `docs/planning/luc-1066-dashboard-overview-use-dashboard-proof-link.md`.
+  Scope stayed inside exact scanner/test-map linkage, generated
+  architecture/app-completion/Project Truth refresh, and durable state
+  updates; no subagent delegation was used because the routed gap was narrow
+  and role-owned. Current evidence:
+  `docs/architecture/scanner-overrides.json` marks `src/app.ts#/dashboard`
+  `verified` with direct proof evidence from
+  `docs/planning/luc-998-dashboard-public-home-frontend-proof.md`,
+  `scripts/luc-998-dashboard-public-home-proof.mjs`,
+  `docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json`, and
+  `.codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md`;
+  `docs/testing/test-map.csv` records `TEST-BROWSER-DASHBOARD-ALIAS`;
+  architecture-awareness refresh generated `2026-07-14T06:37:46.608Z` with
+  `2952` entities / `7253` relations / `16496` files and marks the exact
+  route `verified`; app-completion refresh generated `1273` items / `5`
+  flows / `1148` missing test links / `25` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1181` risk items and no longer
+  reports `src/app.ts#/dashboard`; Project Truth apply generated
+  `2026-07-14T06:37:56.416Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to Dashboard overview
+  `scripts/build-architecture-health-dashboard.mjs` `missing_test_link`;
+  `npm run architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue
+  `0`, chain worklist `0`). Final disposition: `done`. Next owner/action:
+  Test Automation Engineer + QA Regression Lead for the new first Dashboard
+  overview proof gap on `scripts/build-architecture-health-dashboard.mjs`, if
+  selected by Project Truth routing.
+
+## LUC-1063 Checkpoint
+
+- 2026-07-14: [LUC-1063](/LUC/issues/LUC-1063) completed as a single-lane QA
+  verification closure for the Account access
+  `web/src/api/auth-token.ts#setOwnerToken`
+  `implemented_needs_proof` row. Output:
+  `docs/planning/luc-1063-account-access-set-owner-token-proof.md` plus
+  `scripts/luc-1063-account-access-set-owner-token-proof.mjs`. Scope stayed
+  inside focused frontend auth-token write verification, exact proof linkage,
+  generated architecture/app-completion/Project Truth refresh, and durable
+  state updates; no subagent delegation was used because the row was narrow
+  and role-owned. Current evidence: the focused Playwright proof script
+  verifies successful sign-in stores the fresh bearer token before private
+  route recovery and workspace selection stores the replacement token before
+  the dashboard reloads into the selected workspace context; evidence is saved
+  to `docs/ux/evidence/luc-1063-set-owner-token-proof/report.json` plus
+  desktop login and workspace-selection screenshots;
+  `docs/architecture/scanner-overrides.json` marks the exact helper
+  `verified` and links the proof artifacts; `docs/testing/test-map.csv`
+  records the focused browser command; `npm run build:web` PASS;
+  architecture-awareness refresh generated `2026-07-14T06:11:45.434Z` with
+  `2952` entities / `7247` relations / `16496` files and marks
+  `function:setownertoken:7303fbe684` `verified`; app-completion refresh
+  generated `1283` items / `5` flows / `1159` missing test links /
+  `25` missing doc links / `8` implemented-needs-proof / `0` blocked /
+  `1192` risk items and no longer routes `setOwnerToken`; Project Truth apply
+  generated `2026-07-14T06:11:52.343Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to Dashboard overview
+  `src/app.ts#/dashboard` `missing_test_link`; `npm run architecture:status`
+  PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`).
+  Final disposition: `done`. Next owner/action: Test Automation Engineer + QA
+  Regression Lead for the new first Dashboard overview proof gap on
+  `src/app.ts#/dashboard`.
+
+## LUC-1058 Checkpoint
+
+- 2026-07-14: [LUC-1058](/LUC/issues/LUC-1058) is a single-lane
+  Documentation Steward doc-link closure for the Account access
+  `web/src/api/auth-token.ts#setOwnerToken` `missing_doc_link` row. Output:
+  `.codex/tasks/luc-1058-account-access-set-owner-token-doc-link.md`. Scope
+  stays inside the accepted auth API contract, the exact documentation-link
+  relation, generated architecture/app-completion/Project Truth refresh, and
+  durable state updates; no subagent delegation is used because the row is
+  narrow and documentation-owned. Current evidence:
+  `docs/API.md` already documents that `setOwnerToken` stores the current
+  bearer token in `companycoreOwnerToken` session storage after auth or
+  workspace selection, and
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  helper path to `docs/API.md`; architecture-awareness refresh PASS generated
+  `2026-07-14T05:36:53.993Z` with `2934` entities / `7226` relations /
+  `16491` files and materialized the exact doc relation plus the task/state
+  trace; app-completion refresh PASS now reports `24` missing doc links and no
+  longer lists the helper; Project Truth apply PASS generated
+  `2026-07-14T05:36:53.989Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to the same symbol as
+  `implemented_needs_proof`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`). Final disposition:
+  `done`. Next owner/action: QA Regression Lead + Project Manager for the new
+  first Account access proof gap on `setOwnerToken`.
+
+## LUC-1041 Checkpoint
+
+- 2026-07-14: [LUC-1041](/LUC/issues/LUC-1041) completed as a single-lane
+  Documentation Steward doc-link closure for the Account access
+  `web/src/api/auth-token.ts#ownerToken` `missing_doc_link` row. Output:
+  `.codex/tasks/luc-1041-account-access-owner-token-doc-link.md`. Scope stayed
+  inside the accepted auth API contract, the exact documentation-link
+  relation, generated architecture/app-completion/Project Truth refresh, and
+  durable state updates; no subagent delegation was used because the row was
+  narrow and documentation-owned. Current evidence:
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  helper path to `docs/API.md`, which already documents session-scoped bearer
+  token reads from `companycoreOwnerToken`; architecture-awareness refresh
+  PASS generated `2026-07-14T03:34:17.209Z` with `2921` entities /
+  `7197` relations / `16486` files and materialized the exact doc relation;
+  app-completion refresh PASS now reports `1150` missing test links /
+  `25` missing doc links / `9` implemented-needs-proof / `0` blocked /
+  `1184` risk items and no longer reports the helper as `missing_doc_link`;
+  Project Truth apply PASS generated `2026-07-14T03:34:34.359Z` with public
+  probe `pass`, runtime/event/ops gaps `0`, and first gap advanced to the
+  same symbol as `implemented_needs_proof`; `npm run architecture:status`
+  PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`).
+  Final disposition: `done`. Next owner/action: QA Regression Lead + Project
+  Manager for the new first Account access proof gap on `ownerToken`, with
+  residual same-file doc-link debt still on `setOwnerToken`.
+
+## LUC-1038 Checkpoint
+
+- 2026-07-14: [LUC-1038](/LUC/issues/LUC-1038) completed as a single-lane QA
+  verification closure for the Account access
+  `web/src/api/auth-token.ts#isSignedIn`
+  `implemented_needs_proof` row. Output:
+  `docs/planning/luc-1038-account-access-is-signed-in-proof.md` plus
+  `scripts/luc-1038-account-access-is-signed-in-proof.mjs`. Scope stayed
+  inside focused frontend auth-token route-gating verification, exact proof
+  linkage, generated architecture/app-completion/Project Truth refresh, and
+  durable state updates; no subagent delegation was used because the row was
+  narrow and role-owned. Current evidence: the focused Playwright proof script
+  verifies a seeded `companycoreOwnerToken` renders the authenticated
+  dashboard with bearer-auth dashboard requests while an empty session fails
+  closed to the login surface and records the canonical pending private path;
+  evidence is saved to
+  `docs/ux/evidence/luc-1038-is-signed-in-proof/report.json` plus desktop
+  screenshots; `docs/architecture/scanner-overrides.json` marks the exact
+  helper `verified` and links the proof artifacts; `docs/testing/test-map.csv`
+  records the focused browser command; `npm run build:web` PASS;
+  architecture-awareness refresh PASS generated
+  `2026-07-14T03:26:42.443Z` with `2921` entities / `7190` relations /
+  `16486` files and marks `function:issignedin:ca7bd93172` `verified`;
+  app-completion refresh PASS now reports `1150` missing test links /
+  `26` missing doc links / `8` implemented-needs-proof / `0` blocked /
+  `1184` risk items and no longer routes `isSignedIn`; Project Truth apply
+  PASS generated `2026-07-14T03:26:51.838Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to
+  `web/src/api/auth-token.ts#ownerToken` `missing_doc_link`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain
+  worklist `0`). Final disposition: `done`. Next owner/action: Docs Memory
+  Lead + Project Manager for the new first auth-token doc-link gap on
+  `ownerToken`, with residual same-file doc-link debt still on
+  `setOwnerToken`.
+
+## LUC-1034 Checkpoint
+
+- 2026-07-14: [LUC-1034](/LUC/issues/LUC-1034) completed as a single-lane
+  Documentation Steward doc-link closure for the Account access
+  `web/src/api/auth-token.ts#isSignedIn` `missing_doc_link` row. Output:
+  `.codex/tasks/luc-1034-account-access-issignedin-doc-link.md`. Scope stayed
+  inside the accepted auth API contract, the exact documentation-link
+  relation, generated architecture/app-completion/Project Truth refresh, and
+  durable state updates; no subagent delegation was used because the row was
+  narrow and documentation-owned. Current evidence:
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  helper path to `docs/API.md`, which already documents signed-in UI state as
+  derived from `companycoreOwnerToken` presence; architecture-awareness
+  refresh PASS generated `2026-07-14T03:04:05.881Z` with `2911` entities /
+  `7177` relations / `16481` files and materialized the exact doc relation;
+  app-completion refresh PASS now reports `1141` missing test links /
+  `26` missing doc links / `9` implemented-needs-proof / `0` blocked /
+  `1176` risk items and no longer reports the helper as `missing_doc_link`;
+  Project Truth apply PASS generated `2026-07-14T03:05:10.652Z` with public
+  probe `pass`, runtime/event/ops gaps `0`, and first gap advanced to the
+  same symbol as `implemented_needs_proof`; `npm run architecture:status`
+  PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`).
+  Final disposition: `done`. Next owner/action: QA Regression Lead + Project
+  Manager for the new first Account access proof gap on `isSignedIn`, with
+  residual same-file doc-link debt still on `ownerToken` and `setOwnerToken`.
+
+## LUC-1028 Checkpoint
+
+- 2026-07-14: [LUC-1028](/LUC/issues/LUC-1028) completed as a single-lane 09
+  CBE backend proof-link closure for `GET /v1/projects`. Output:
+  `.codex/tasks/luc-1028-projects-route-get-proof.md`. Scope stayed inside the
+  existing protected API proof surface, exact scanner linkage for the projects
+  route document node, generated truth refresh, and durable state updates; no
+  subagent delegation was used because the lane was narrow and backend-owned.
+  Evidence: `src/tests/api.test.ts` now explicitly proves the owning workspace
+  sees its created `Service project` on `GET /v1/projects` while another
+  workspace still receives an empty list; `npm run test:api:local` PASS;
+  architecture-awareness refresh PASS generated `2026-07-14T02:33:29.098Z`
+  with `2910` entities / `7164` relations / `16481` files and materialized the
+  `LUC-1028 GET /v1/projects local proof` relation from `src/tests/api.test.ts`
+  plus the task packet to `document:get-v1-projects:2db380359a`;
+  app-completion refresh PASS now reports `1264` items / `5` flows / `1141`
+  missing test links / `27` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1176` risk items; Project Truth
+  apply PASS generated `2026-07-14T02:33:29.089Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to
+  `web/src/api/auth-token.ts#isSignedIn` `missing_doc_link`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain
+  worklist `0`). Final disposition: `done`. Next owner/action: Docs Memory Lead
+  + Project Manager for the new first Account access doc-link gap on
+  `web/src/api/auth-token.ts#isSignedIn`.
+
+## LUC-1022 Checkpoint
+
+- 2026-07-14: [LUC-1022](/LUC/issues/LUC-1022) completed as a single-lane QA
+  verification closure for the Account access
+  `web/src/api/auth-token.ts#clearOwnerToken`
+  `implemented_needs_proof` row. Output:
+  `docs/planning/luc-1022-account-access-clear-owner-token-proof.md` plus
+  `scripts/luc-1022-account-access-clear-owner-token-proof.mjs`. Scope stayed
+  inside focused frontend auth-token reset verification, exact proof linkage,
+  generated architecture/app-completion/Project Truth refresh, and durable
+  state updates; no subagent delegation was used because the row was narrow and
+  role-owned. Current evidence: the focused Playwright proof script verifies
+  both explicit sign-out token removal and fail-closed token clearing after a
+  mocked `401 invalid_token`; evidence is saved to
+  `docs/ux/evidence/luc-1022-clear-owner-token-proof/report.json` plus desktop
+  screenshots; `docs/architecture/scanner-overrides.json` marks the exact
+  helper `verified` and links the proof artifacts; `docs/testing/test-map.csv`
+  records the focused browser command; `npm run build:web` PASS;
+  architecture-awareness refresh PASS generated
+  `2026-07-14T02:31:18.061Z` with `2909` entities / `7158` relations /
+  `16481` files and marks `function:clearownertoken:2ccc56ad47` `verified`;
+  app-completion refresh PASS now reports `1141` missing test links /
+  `27` missing doc links / `8` implemented-needs-proof / `0` blocked /
+  `1176` risk items and no longer routes `clearOwnerToken`; Project Truth
+  apply PASS advanced the first Account access gap to
+  `web/src/api/auth-token.ts#isSignedIn` `missing_doc_link`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain
+  worklist `0`). Final disposition: `done`. Next owner/action: Docs Memory
+  Lead + Project Manager for the new first gap on `isSignedIn`, with residual
+  same-file doc-link debt still on `ownerToken` and `setOwnerToken`.
+
+## LUC-1018 Checkpoint
+
+- 2026-07-14: [LUC-1018](/LUC/issues/LUC-1018) completed as a single-lane
+  Documentation Steward doc-link closure for the Account access
+  `web/src/api/auth-token.ts#clearOwnerToken` `missing_doc_link` row. Output:
+  `.codex/tasks/luc-1018-account-access-clear-owner-token-doc-link.md`. Scope
+  stayed inside the accepted auth API contract, the exact documentation-link
+  relation, generated architecture/app-completion/Project Truth refresh, and
+  durable state updates; no subagent delegation was used because the row was
+  narrow and documentation-owned. Current evidence: `docs/API.md` now
+  documents frontend auth-token session storage via
+  `companycoreOwnerToken`, including session-only reads/writes, stale-token
+  removal on sign-out or auth reset, and signed-in state derived from token
+  presence; `docs/architecture/relations/documentation-links.csv` links the
+  exact helper path to `docs/API.md`; architecture-awareness refresh PASS
+  generated `2026-07-14T02:04:24.823Z` with `2898` entities / `7144`
+  relations / `16476` files; app-completion refresh PASS now reports `1131`
+  missing test links / `27` missing doc links / `9`
+  implemented-needs-proof / `0` blocked / `1167` risk items and no longer
+  reports the helper as `missing_doc_link`; Project Truth apply PASS
+  generated `2026-07-14T02:05:32.013Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to the same symbol as
+  `implemented_needs_proof`. Final disposition: `done`. Next owner/action: QA
+  Regression Lead + Project Manager for focused proof routing on the same
+  `clearOwnerToken` helper.
+
+## LUC-1015 Checkpoint
+
+- 2026-07-14: [LUC-1015](/LUC/issues/LUC-1015) completed as a single-lane
+  Documentation Steward doc-link closure for the Account access
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_doc_link` row. Output:
+  `.codex/tasks/luc-1015-account-access-workspaces-requireuserauth-doc-link.md`.
+  Scope stays inside the accepted workspace API contract, the exact
+  documentation-link relation, generated architecture/app-completion/Project
+  Truth refresh, and durable state updates; no subagent delegation is used
+  because the row is narrow and documentation-owned. Current evidence:
+  `docs/API.md` now documents that workspace list/create/select routes require
+  bearer-user auth, deny service API keys fail closed, check owner membership,
+  and issue fresh workspace-scoped bearer tokens only on the user-auth path;
+  `docs/architecture/relations/documentation-links.csv` links the exact helper
+  path to `docs/API.md`; architecture-awareness refresh PASS generated
+  `2026-07-14T01:34:48.409Z` with `2897` entities / `7133` relations /
+  `16476` files; app-completion refresh PASS generated
+  `2026-07-14T01:35:40.058Z` with `1131` missing test links /
+  `28` missing doc links / `8` implemented-needs-proof / `0` blocked /
+  `1167` risk items and no longer lists the helper; Project Truth apply PASS
+  generated `2026-07-14T01:35:57.823Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to
+  `web/src/api/auth-token.ts#clearOwnerToken` `missing_doc_link`. Final
+  disposition: `done`. Next owner/action: Docs Memory Lead + Project Manager
+  for the new first Account access doc-link gap on the frontend auth-token
+  helper.
+
+## LUC-1010 Checkpoint
+
+- 2026-07-14: [LUC-1010](/LUC/issues/LUC-1010) completed as a single-lane
+  09 TAE proof closure for the Account access
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link` row. Output:
+  `.codex/tasks/luc-1010-account-access-workspaces-requireuserauth-proof.md`.
+  Scope stayed inside focused workspace API auth assertions, exact scanner
+  proof linkage, generated architecture/app-completion/Project Truth refresh,
+  and durable state updates; no subagent delegation was used because the lane
+  was narrow and role-owned. Evidence: `src/tests/api.test.ts` now explicitly
+  proves owner workspace list/create/select behavior and API-key denial for
+  workspace list/create/select routes; `npm run test:api:local` PASS;
+  architecture-awareness refresh PASS generated
+  `2026-07-14T01:06:38.415Z` with `2896` entities / `7130` relations /
+  `16476` files and marks the exact helper `verified`; app-completion refresh
+  PASS now reports `1131` missing test links / `29` missing doc links /
+  `8` implemented-needs-proof / `0` blocked / `1168` known risk items and no
+  longer reports the helper as `missing_test_link`; Project Truth apply PASS
+  generated `2026-07-14T01:06:48.833Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to the same symbol as
+  `missing_doc_link`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`). Final disposition:
+  `done`. Next owner/action: Docs Memory Lead + Project Manager for the
+  residual Account access doc-link gap on the same helper.
+
+## LUC-1007 Checkpoint
+
+- 2026-07-14: [LUC-1007](/LUC/issues/LUC-1007) completed as a single-lane
+  Integration Domain Engineer proof-and-readback closure for
+  `src/app.ts#/google-drive`. Output:
+  `docs/planning/luc-1007-google-drive-route-proof.md` and
+  `docs/planning/luc-1007-google-drive-route-readback.md`. Scope stayed inside
+  existing Google Drive route-mount verification, exact doc/proof linkage,
+  generated architecture/app-completion/Project Truth refresh, and durable
+  state updates; no subagent delegation was used because the lane was narrow
+  and role-owned. Evidence: `npm run test:api:local` PASS on the current
+  workspace state; the existing `src/tests/api.test.ts` protected API flow
+  exercises the mounted Google Drive files, content, scope, description, Docs,
+  and Sheets endpoints; `docs/architecture/scanner-overrides.json` now links a
+  focused `test` proof plus paired `document` readback to
+  `src/app.ts#/google-drive`; `docs/architecture/relations/documentation-links.csv`
+  now records the exact readback link row; architecture-awareness refresh PASS
+  generated `2026-07-14T00:40:45.243Z` with `2895` entities / `7121`
+  relations / `16476` files; app-completion refresh PASS now reports `1132`
+  missing test links / `28` missing doc links / `8`
+  implemented-needs-proof / `0` blocked / `1168` known risk items and no
+  longer reports `/google-drive`; Project Truth apply PASS generated
+  `2026-07-14T00:41:50.830Z` with public probe `pass`, runtime/event/ops gaps
+  `0`, and first gap remaining at
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`). Final disposition:
+  `done`. Next owner/action: Test Automation Engineer + QA Regression Lead for
+  the new first Account access proof gap.
+
+## LUC-1008 Checkpoint
+
+- 2026-07-14: [LUC-1008](/LUC/issues/LUC-1008) completed as a single-lane
+  Runtime & Adapter Engineer proof closure for
+  `scripts/check-architecture-chain-integrity.mjs` and its inferred helper
+  functions `loadCsv`, `main`, `parseCsv`, `readText`, `splitIds`, and
+  `writeText`. Output:
+  `.codex/tasks/luc-1008-architecture-chain-integrity-proof.md`. Scope stayed
+  inside focused fixture-driven `node:test` proof, exact scanner/test-map
+  linkage, generated architecture/app-completion/Project Truth refresh, and
+  durable state updates; no subagent delegation was used because the lane was
+  narrow and role-owned. Evidence: `npm run build:server` PASS;
+  `node --test dist/tests/architecture-chain-integrity.test.js` PASS (`2/2`)
+  proving both the clean pass path and fail-closed issue-report generation;
+  architecture-awareness refresh PASS generated
+  `2026-07-14T00:38:46.442Z` with `2894` entities / `7118` relations /
+  `16475` files and applied the new proof links; app-completion refresh PASS
+  now reports `1132` missing test links / `29` missing doc links /
+  `8` implemented-needs-proof / `0` blocked / `1169` known risk items and no
+  longer lists `scripts/check-architecture-chain-integrity.mjs` or the six
+  helper functions; Project Truth apply PASS generated
+  `2026-07-14T00:38:46.408Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap remaining at
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`). Final disposition:
+  `done`. Next owner/action: Test Automation Engineer + QA Regression Lead for
+  the new first Account access proof gap.
+
+## LUC-1001 Checkpoint
+
+- 2026-07-14: [LUC-1001](/LUC/issues/LUC-1001) completed as a single-lane
+  Documentation Steward doc-link closure for the Account access
+  `src/modules/workforce/workforce.service.ts#entityAuthority`
+  `missing_doc_link` row. Output:
+  `.codex/tasks/luc-1001-account-access-workforce-entityauthority-doc-link.md`.
+  Scope stayed inside the accepted workforce API contract, the exact
+  documentation-link relation, generated architecture/app-completion/Project
+  Truth refresh, and durable state updates; no subagent delegation was used
+  because the row was narrow and documentation-owned. Evidence: `docs/API.md`
+  now documents the read-only `GET /v1/workforce` authority packet for human
+  and agent rows, including `human_workspace_authority` versus
+  `profile_not_bound`, recommended profiles, representative capability
+  samples, and fail-closed blocked actions;
+  `docs/architecture/relations/documentation-links.csv` links the exact helper
+  path to `docs/API.md`; architecture-awareness refresh PASS generated
+  `2026-07-14T00:27:58.241Z` with `2890` entities / `7091` relations /
+  `16471` files; app-completion refresh PASS kept totals at `1140` missing
+  test links / `28` missing doc links / `9` implemented-needs-proof /
+  `0` blocked while excluding the target helper from the queue; Project Truth
+  apply PASS generated `2026-07-14T00:28:06.622Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap now
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link`. Final disposition: `done`. Next owner/action: Test
+  Automation Engineer + QA Regression Lead for the new first Account access
+  proof gap, while residual same-flow doc-link debt remains on the web
+  auth-token helpers.
+
+## LUC-997 Checkpoint
+
+- 2026-07-14: [LUC-997](/LUC/issues/LUC-997) completed as a single-lane 09 CBE
+  proof closure for the Account access
+  `src/modules/workforce/workforce.service.ts#entityAuthority`
+  `missing_test_link` row. Output:
+  `.codex/tasks/luc-997-account-access-workforce-entityauthority-proof.md`.
+  Scope stayed
+  inside focused workforce authority readback assertions, exact scanner proof
+  linkage, generated architecture/app-completion/Project Truth refresh, and
+  durable state updates; no subagent delegation was used because the row was
+  narrow and role-owned. Evidence: override JSON parse PASS; disposable local
+  DB proof PASS via `npm run prisma:migrate:deploy`, `npm run seed`, and
+  `node --test dist/tests/api.test.js` (`8/8`) against a local
+  `postgres:16-alpine` container; the new API assertions prove the
+  user-backed human record exposes
+  `authority.mode=human_workspace_authority` with `workspace_owner` scope only
+  and the created agent packet exposes `authority.mode=profile_not_bound`,
+  `mcp_company_os_reader` / `mcp_knowledge_reader` /
+  `mcp_memory_writer` recommendations, representative workforce/operations/tasks
+  scopes, and blocked direct assignment expansion; architecture-awareness
+  refresh PASS generated `2026-07-14T00:24:17.027Z` with `2888` entities /
+  `7077` relations / `16471` files and the exact helper `verified`;
+  app-completion refresh PASS now reports `1140` missing test links /
+  `28` missing doc links / `9` implemented-needs-proof / `0` blocked and
+  excludes the target helper from the queue; Project Truth apply PASS
+  generated `2026-07-14T00:24:58.011Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and first gap advanced to
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link`. Final disposition: `done`. Next owner/action: Test
+  Automation Engineer + QA Regression Lead for the new first Account access
+  proof gap, or Docs Memory Lead + Project Manager for residual auth-token
+  doc-link debt.
+
+## LUC-989 Checkpoint
+
+- 2026-07-14: [LUC-989](/LUC/issues/LUC-989) completed as a single-lane Roost
+  PM source-control closure classification for the current
+  [LUC-982](/LUC/issues/LUC-982) proof packet. Output:
+  `.codex/tasks/luc-989-source-control-closure-for-luc-982.md`. Scope stayed
+  inside fresh git forensics, mixed-packet classification, and durable local
+  closure evidence; no subagent delegation was used because the lane was
+  bounded PM source-control work. Evidence: `git status --short --branch`
+  confirmed `main...origin/main [ahead 13]`; fresh porcelain before this
+  closure packet showed `32` modified tracked paths and `15` untracked paths;
+  `git rev-list --left-right --count origin/main...HEAD` -> `0 13`; `git diff
+  --check` PASS with LF-to-CRLF warnings only; readback confirmed the original
+  `src/tests/api.test.ts` plus scanner/graphs/status/task packet remains
+  present, but the dirty bundle is now mixed with later
+  [LUC-988](/LUC/issues/LUC-988), [LUC-990](/LUC/issues/LUC-990),
+  [LUC-971](/LUC/issues/LUC-971), [LUC-997](/LUC/issues/LUC-997),
+  [LUC-998](/LUC/issues/LUC-998), and [LUC-997](/LUC/issues/LUC-997) artifacts.
+  Final disposition: `done` with a no-commit decision because the packet is no
+  longer safely isolatable as an exact [LUC-982](/LUC/issues/LUC-982) closure.
+  Next owner/action: board operator / Roost Project Manager sequencing lane
+  for a fresh combined source-control closure issue or explicit supersession.
+
+## LUC-998 Checkpoint
+
+- 2026-07-14: [LUC-998](/LUC/issues/LUC-998) completed as a single-lane 09 FEW
+  frontend/browser proof closure for Dashboard overview
+  `web/src/features/departments/general-dashboard.tsx` and public home
+  `web/src/features/public/public-home.tsx` `missing_test_link` rows. Output:
+  `.codex/tasks/luc-998-dashboard-public-home-frontend-proof.md`. Scope stayed
+  inside focused browser proof, exact scanner proof linkage, generated
+  architecture/app-completion/Project Truth refresh, and durable state
+  updates; no subagent delegation was used because the lane was narrow and
+  FEW-owned. Evidence: `npm run build:web` PASS; focused Playwright proof
+  saved `docs/ux/evidence/luc-998-dashboard-public-home-proof/report.json`
+  plus desktop/mobile public-home and dashboard screenshots and proved `/`
+  render, signed-in `/dashboard` canonical redirect, bearer-auth shell
+  requests, zero console/page errors, and no desktop/mobile horizontal
+  overflow; architecture-awareness refresh PASS generated
+  `2026-07-14T00:21:11.899Z` with `2887` entities / `7074` relations /
+  `16471` files and the exact dashboard/public-home rows `verified`;
+  app-completion refresh PASS reduced `missing_test_link` from `1150` to
+  `1140` and excludes the target rows from the risk queue; Project Truth apply
+  PASS generated `2026-07-14T00:21:51.327Z` with the target route entities
+  absent from the gap list. Final disposition: `done`. Residual unrelated
+  runtime gap: production `api_health` probe failure on
+  `https://api.roost.luckysparrow.ch/health`, owned by Deployment Reliability
+  Engineer + Ops Release Lead.
+
+## LUC-990 Checkpoint
+
+- 2026-07-14: [LUC-990](/LUC/issues/LUC-990) completed as a single-lane
+  Documentation Steward verification/closure pass for the Account access
+  `src/modules/intake/intake.routes.ts#authActor` `missing_doc_link` row.
+  Output: `.codex/tasks/luc-990-account-access-intake-authactor-doc-link.md`.
+  Scope stayed inside the same exact documentation-link relation plus one
+  accepted API contract clarification line, generated
+  architecture/app-completion/Project Truth refresh, and durable evidence for
+  the assigned duplicate lane; no subagent delegation was used because the row
+  was narrow and role-owned. Evidence: `docs/API.md` now explicitly records
+  bearer-owner versus API-key actor attribution for `intake.route_proposed`
+  audit and event evidence; `docs/architecture/relations/documentation-links.csv`
+  links the exact generated function path to `docs/API.md`; architecture-
+  awareness refresh PASS generated `2026-07-13T23:08:32.101Z` with `2874`
+  entities / `7034` relations / `16464` files; app-completion refresh PASS
+  now reports `1141` missing test links / `28` missing doc links /
+  `9` implemented-needs-proof / `0` blocked and no longer lists the helper as
+  `missing_doc_link`; Project Truth apply PASS generated
+  `2026-07-13T23:08:46.804Z` with public probe `pass`, runtime/event/ops gaps
+  `0`, and first gap advanced to
+  `src/modules/workforce/workforce.service.ts#entityAuthority`
+  `missing_test_link`. Final disposition: `done`. Next owner/action: Test
+  Automation Engineer + QA Regression Lead for the new first gap.
+
+## LUC-988 Checkpoint
+
+- 2026-07-13: [LUC-988](/LUC/issues/LUC-988) completed as a single-lane Roost
+  PM doc-link curation for the Account access
+  `src/modules/intake/intake.routes.ts#authActor` `missing_doc_link` row.
+  Output:
+  `.codex/tasks/luc-988-account-access-intake-authactor-doc-link.md`.
+  Scope stayed inside the exact documentation-link relation, generated
+  architecture/app-completion/Project Truth refresh, and durable state
+  updates; no subagent delegation was used because the row was narrow and the
+  wake explicitly assigned PM takeover ownership for this baseline. Evidence:
+  architecture-awareness refresh PASS generated `2026-07-13T23:10:00.099Z`
+  with `2874` entities / `7034` relations / `16464` files and materialized
+  the exact `document:API -> function:authActor` relation; app-completion
+  refresh PASS now reports `1141` missing test links / `28` missing doc links
+  / `9` implemented-needs-proof / `0` blocked and removed the target from the
+  `missing_doc_link` queue; Project Truth apply PASS generated
+  `2026-07-13T23:11:09.288Z` with public probe `pass`, runtime/event/ops gaps
+  `0`, and advanced the first gap to
+  `src/modules/workforce/workforce.service.ts#entityAuthority`
+  `missing_test_link`. Final disposition: `done`. Next owner/action: Test
+  Automation Engineer + QA Regression Lead for the new first Project Truth gap.
+
+## LUC-982 Checkpoint
+
+- 2026-07-13: [LUC-982](/LUC/issues/LUC-982) completed as a single-lane 09 TAE
+  proof closure for the Account access
+  `src/modules/intake/intake.routes.ts#authActor` `missing_test_link` row.
+  Output: `.codex/tasks/luc-982-account-access-intake-authactor-proof.md`.
+  Scope stayed inside focused intake API actor assertions, exact scanner proof
+  linkage, generated architecture/app-completion/Project Truth refresh, and
+  durable state updates; no subagent delegation was used because the row was
+  narrow and role-owned. Evidence: focused local disposable-DB smoke PASS via
+  `npm run prisma:migrate:deploy` plus a temporary `tsx` intake-route proof
+  script that proved bearer-owner route proposals record `actorType=user` /
+  owner `actorId` and API-key route proposals record `actorType=agent` /
+  API-key `actorId`; architecture-awareness refresh PASS generated
+  `2026-07-13T23:00:41.419Z` with `2872` entities / `7014` relations /
+  `16464` files and marks the exact helper `verified`; app-completion refresh
+  PASS now reports `1141` missing test links / `29` missing doc links /
+  `9` implemented-needs-proof / `0` blocked and reads the same helper with
+  `hasTest=true`, `risk=missing_doc_link`; Project Truth apply PASS generated
+  `2026-07-13T23:01:01.396Z` with public probe `pass`, runtime/event/ops gaps
+  `0`, and first gap advanced from the same symbol `missing_test_link` to the
+  same symbol `missing_doc_link`. Additional evidence: broader source-level
+  `tsx --test` smoke failed earlier on a pre-existing `/v1/auth/register`
+  `Prisma P2028` transaction-timeout path unrelated to intake proof assertions.
+  Final disposition: `done`. Next owner/action: Docs Memory Lead + Project
+  Manager for the residual same-symbol doc-link gap.
+
+## LUC-977 Checkpoint
+
+- 2026-07-13: [LUC-977](/LUC/issues/LUC-977) completed a single-lane
+  Documentation Steward doc-link curation for the Account access
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`
+  `missing_doc_link` row. Output:
+  `.codex/tasks/luc-977-account-access-workflow-definition-drafts-authactor-doc-link.md`.
+  Scope stayed inside the exact documentation-link relation, generated
+  architecture/app-completion/Project Truth refresh, and durable state
+  updates; no subagent delegation was used because the row was narrow and
+  matched the existing source-of-truth doc-link pattern. Evidence:
+  architecture-awareness refresh PASS generated `2026-07-13T19:05:03.219Z`
+  with `2871` entities / `7007` relations / `16465` files; app-completion
+  refresh PASS now reports `1142` missing test links / `28` missing doc links
+  / `9` implemented-needs-proof / `0` blocked and removed the target from the
+  `missing_doc_link` queue; Project Truth apply PASS generated
+  `2026-07-13T19:05:13.520Z` with public probe `pass`, runtime/event/ops gaps
+  `0`, and advanced the first gap to
+  `src/modules/intake/intake.routes.ts#authActor` `missing_test_link`. Final
+  disposition: `done`. Next owner/action: Test Automation Engineer + QA
+  Regression Lead for the new first gap.
+
+## LUC-974 Checkpoint
+
+- 2026-07-13: [LUC-974](/LUC/issues/LUC-974) completed as a single-lane 09 TAE
+  proof closure for the Account access
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`
+  `missing_test_link` row. Output:
+  `.codex/tasks/luc-974-account-access-workflow-definition-drafts-authactor-proof.md`.
+  Scope stayed inside focused workflow-definition draft API actor assertions,
+  exact scanner proof linkage, generated architecture/app-completion/Project
+  Truth refresh, and durable state updates; no subagent delegation was used
+  because the row was narrow and role-owned. Evidence:
+  `npm run test:api:local` PASS (`8/8`); architecture-awareness refresh PASS
+  generated `2026-07-13T18:38:17.797Z` with `2870` entities / `7002`
+  relations / `16465` files and the exact helper `verified`; app-completion
+  refresh PASS now reports `1142` missing test links / `29` missing doc links
+  / `9` implemented-needs-proof / `0` blocked and reads the same helper with
+  `hasTest=true`, `risk=missing_doc_link`; Project Truth apply PASS generated
+  `2026-07-13T18:38:29.270Z` with public probe `pass`, runtime/event/ops gaps
+  `0`, and first gap advanced from the same symbol `missing_test_link` to the
+  same symbol `missing_doc_link`. Final disposition: `done`. Next owner/action:
+  Docs Memory Lead + Project Manager for the residual same-symbol doc-link gap.
+
+## LUC-971 Checkpoint
+
+- 2026-07-13: [LUC-971](/LUC/issues/LUC-971) completed as a single-lane 09 FEW
+  frontend/browser proof closure for the Account access
+  `web/src/features/departments/assets-route.tsx#AuthenticatedImage`
+  `missing_test_link` row. Output:
+  `.codex/tasks/luc-971-account-access-authenticated-image-frontend-proof.md`.
+  Scope stayed inside focused browser proof, exact scanner proof linkage,
+  generated architecture/app-completion/Project Truth refresh, and durable
+  state updates; no subagent delegation was used because the lane was narrow
+  and FEW-owned. Evidence: `npm run build:web` PASS; focused local Playwright
+  proof saved `docs/ux/evidence/luc-971-authenticated-image-proof/report.json`
+  plus desktop/mobile screenshots and proved four protected preview requests
+  with `Authorization: Bearer proof-token`, blob-backed rendered image `src`
+  values, zero console/page errors, and no desktop/mobile horizontal overflow;
+  architecture-awareness refresh PASS generated `2026-07-13T18:17:03.997Z`
+  with `2868` entities / `6992` relations / `16464` files and the exact
+  helper row `verified` with linked `test` evidence; app-completion refresh
+  PASS now reports `1143` missing test links / `28` missing doc links /
+  `9` implemented-needs-proof / `0` blocked and excludes the target from the
+  priority risk queue; Project Truth apply PASS generated
+  `2026-07-13T18:19:44.470Z` with public probe `pass`, runtime/event/ops gaps
+  `0`, and no `AuthenticatedImage` gap. Final disposition: `done`. Next
+  owner/action: Test Automation Engineer + QA Regression Lead for the new
+  first Project Truth gap
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`
+  `missing_test_link`.
+
+## LUC-962 Checkpoint
+
+- 2026-07-13: [LUC-962](/LUC/issues/LUC-962) completed a single-lane
+  Documentation Steward doc-link curation for the Account access
+  `src/modules/company-os/company-os.routes.ts#authActor`
+  `missing_doc_link` row. Output:
+  `.codex/tasks/luc-962-account-access-company-os-authactor-doc-link.md`.
+  Scope stayed inside the exact documentation-link relation, generated
+  architecture/app-completion/Project Truth refresh, and durable state
+  updates; no subagent delegation was used because the row was narrow and
+  matched the existing source-of-truth doc-link pattern. Evidence:
+  architecture-awareness refresh PASS generated `2026-07-13T18:04:09.254Z`
+  with `2867` entities / `6971` relations / `16461` files and materialized the
+  exact `document:company-os-stage-1-task-contracts -> function:authActor`
+  relation; app-completion refresh PASS now reports `1144` missing test links /
+  `28` missing doc links / `9` implemented-needs-proof / `0` blocked and
+  removed the target from the `missing_doc_link` queue; Project Truth apply
+  PASS generated `2026-07-13T18:05:15.282Z` with public probe `pass`,
+  runtime/event/ops gaps `0`, and advanced the first gap to
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`
+  `missing_test_link`. Final disposition: `done`. Next owner/action: Test
+  Automation Engineer + QA Regression Lead for the new first gap.
 
 ## LUC-961 Checkpoint
 
@@ -19273,3 +20434,32 @@ rerun.
 - Stop condition met: source-control closure packet recorded. Commit not
   created because the shared worktree is mixed-dirty and ahead of origin; push
   not needed; deploy impact none.
+# Active Mission Packet
+
+Last updated: 2026-07-14
+
+## LUC-1095 Checkpoint
+
+- 2026-07-14: [LUC-1095](/LUC/issues/LUC-1095) completed as a single-lane QA
+  proof-link closure for the Trading operation backend module family on
+  `src/modules/strategy`. Output:
+  `.codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md`.
+  Scope stayed inside exact backend proof-link curation to the existing
+  Strategy context API harness, generated
+  architecture/app-completion/Project Truth refresh, and durable state
+  updates; no subagent delegation was used because the routed gap was narrow
+  and role-owned. Current evidence:
+  `docs/architecture/scanner-overrides.json` now marks `src/modules/strategy`,
+  `src/modules/strategy/strategy.routes.ts`, `asJsonArray`,
+  `textMatchesStrategy`, and `taskLooksStrategic` `verified` through
+  `src/tests/api.test.ts`, `docs/planning/v1-strategy-context-read-api-task-contract.md`,
+  and this task packet; `npm run test:api:local` PASS; `npm run
+  architecture:refresh` PASS; sequential external architecture-awareness
+  refresh materialized the exact `test` relations; sequential app-completion
+  refresh no longer routes the backend Strategy module family as
+  `missing_test_link`; sequential Project Truth apply advanced the first
+  Trading operation gap beyond `src/modules/strategy`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`,
+  chain worklist `0`). Final disposition: `done`. Next owner/action: inspect
+  the refreshed first Trading operation gap and route it as a separate lane if
+  Project Truth still points at the remaining Strategy frontend family.

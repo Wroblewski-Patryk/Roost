@@ -1,0 +1,87 @@
+{
+  "timestamp": "2026-07-14T00:18:53.852Z",
+  "baseUrl": "http://127.0.0.1:58912",
+  "requestCounts": {
+    "authMe": 2,
+    "departments": 2,
+    "dashboardCommand": 2
+  },
+  "authHeaders": {
+    "authMeHeaders": [
+      "Bearer proof-token",
+      "Bearer proof-token"
+    ],
+    "departmentsHeaders": [
+      "Bearer proof-token",
+      "Bearer proof-token"
+    ],
+    "dashboardCommandHeaders": [
+      "Bearer proof-token",
+      "Bearer proof-token"
+    ]
+  },
+  "surfaces": [
+    {
+      "name": "desktop-public-home",
+      "route": "/",
+      "finalUrl": "/",
+      "screenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-998-dashboard-public-home-proof\\desktop-public-home.png",
+      "overflow": true,
+      "assertions": {
+        "heroTitle": true,
+        "enterRoostCta": true,
+        "footerLanguageSelector": true
+      }
+    },
+    {
+      "name": "desktop-dashboard-overview",
+      "route": "/dashboard",
+      "finalUrl": "/areas?area=00-ogolny&view=overview",
+      "screenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-998-dashboard-public-home-proof\\desktop-dashboard-overview.png",
+      "overflow": true,
+      "assertions": {
+        "canonicalDashboardRedirect": true,
+        "commandPacketVisible": true,
+        "priorityPanelVisible": true,
+        "nextActionsVisible": true,
+        "mockedPriorityItemVisible": true,
+        "mockedRouteProposalVisible": true
+      }
+    },
+    {
+      "name": "mobile-public-home",
+      "route": "/",
+      "finalUrl": "/",
+      "screenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-998-dashboard-public-home-proof\\mobile-public-home.png",
+      "overflow": true,
+      "assertions": {
+        "heroTitle": true,
+        "enterRoostCta": true,
+        "footerLanguageSelector": true
+      }
+    },
+    {
+      "name": "mobile-dashboard-overview",
+      "route": "/dashboard",
+      "finalUrl": "/areas?area=00-ogolny&view=overview",
+      "screenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-998-dashboard-public-home-proof\\mobile-dashboard-overview.png",
+      "overflow": true,
+      "assertions": {
+        "canonicalDashboardRedirect": true,
+        "commandPacketVisible": true,
+        "priorityPanelVisible": true,
+        "nextActionsVisible": true,
+        "mockedPriorityItemVisible": true,
+        "mockedRouteProposalVisible": true
+      }
+    }
+  ],
+  "assertions": {
+    "publicHomeDidNotCallDashboardCommand": true,
+    "dashboardRequestsUsedBearerToken": true,
+    "allSurfacesNoHorizontalOverflow": true,
+    "runtimeErrors": true,
+    "canonicalDashboardRedirect": true
+  },
+  "errors": []
+}

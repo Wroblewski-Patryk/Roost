@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-13T17:38:37.936Z
+Generated: 2026-07-14T15:06:25.285Z
 
 ## Canonical Exports
 
@@ -42,14 +42,14 @@ Generated: 2026-07-13T17:38:37.936Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-13 LUC-928 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-14 LUC-1097 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-13 LUC-949 Account Access secrets.ts Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-14 LUC-1099 Strategy Frontend Proof-Link Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -60,7 +60,7 @@ Generated: 2026-07-13T17:38:37.936Z
 | agent | implemented | User Collaboration Workflow | .agents/workflows/user-collaboration.md | Engineering Delivery Lead |
 | agent | implemented | World-Class Delivery Workflow | .agents/workflows/world-class-delivery.md | Engineering Delivery Lead |
 | agent | implemented | Agents Module | src/modules/agents/README.md | Engineering Delivery Lead |
-| api_endpoint | implemented | GET / | src/app.ts#/ | Engineering Delivery Lead |
+| api_endpoint | verified | GET / | src/app.ts#/ | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /agent-events | src/app.ts#/agent-events | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /agent-logs | src/app.ts#/agent-logs | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /agents | src/app.ts#/agents | Engineering Delivery Lead |
@@ -72,7 +72,7 @@ Generated: 2026-07-13T17:38:37.936Z
 | api_endpoint | implemented | USE /commercial-exceptions | src/app.ts#/commercial-exceptions | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /company-os | src/app.ts#/company-os | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /connection | src/app.ts#/connection | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /dashboard | src/app.ts#/dashboard | Engineering Delivery Lead |
+| api_endpoint | verified | USE /dashboard | src/app.ts#/dashboard | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /deals | src/app.ts#/deals | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /decisions | src/app.ts#/decisions | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /departments | src/app.ts#/departments | Engineering Delivery Lead |
@@ -95,7 +95,7 @@ Generated: 2026-07-13T17:38:37.936Z
 | api_endpoint | implemented | USE /ready | src/app.ts#/ready | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /relationships | src/app.ts#/relationships | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /sales | src/app.ts#/sales | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /strategy | src/app.ts#/strategy | Engineering Delivery Lead |
+| api_endpoint | verified | USE /strategy | src/app.ts#/strategy | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /targets | src/app.ts#/targets | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /task-lists | src/app.ts#/task-lists | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /tasks | src/app.ts#/tasks | Engineering Delivery Lead |
@@ -106,13 +106,13 @@ Generated: 2026-07-13T17:38:37.936Z
 | api_endpoint | implemented | USE /v1/webhooks/clickup | src/app.ts#/v1/webhooks/clickup | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /workforce | src/app.ts#/workforce | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /workspaces | src/app.ts#/workspaces | Engineering Delivery Lead |
-| component | implemented | cc-button.tsx | web/src/components/cc-button.tsx | Engineering Delivery Lead |
-| component | implemented | cc-data-table.tsx | web/src/components/cc-data-table.tsx | Engineering Delivery Lead |
-| component | implemented | cc-field.tsx | web/src/components/cc-field.tsx | Engineering Delivery Lead |
-| component | implemented | cc-notice.tsx | web/src/components/cc-notice.tsx | Engineering Delivery Lead |
-| component | implemented | cc-resource-selector.tsx | web/src/components/cc-resource-selector.tsx | Engineering Delivery Lead |
-| component | implemented | cc-route-loading.tsx | web/src/components/cc-route-loading.tsx | Engineering Delivery Lead |
-| component | implemented | cc-text-input.tsx | web/src/components/cc-text-input.tsx | Engineering Delivery Lead |
+| component | verified | cc-button.tsx | web/src/components/cc-button.tsx | Engineering Delivery Lead |
+| component | verified | cc-data-table.tsx | web/src/components/cc-data-table.tsx | Engineering Delivery Lead |
+| component | verified | cc-field.tsx | web/src/components/cc-field.tsx | Engineering Delivery Lead |
+| component | verified | cc-notice.tsx | web/src/components/cc-notice.tsx | Engineering Delivery Lead |
+| component | verified | cc-resource-selector.tsx | web/src/components/cc-resource-selector.tsx | Engineering Delivery Lead |
+| component | verified | cc-route-loading.tsx | web/src/components/cc-route-loading.tsx | Engineering Delivery Lead |
+| component | verified | cc-text-input.tsx | web/src/components/cc-text-input.tsx | Engineering Delivery Lead |
 | document | implemented | pull_request_template.md | .github/pull_request_template.md | Engineering Delivery Lead |
 | document | implemented | Workflow Guidance | .github/workflows/README.md | Engineering Delivery Lead |
 | document | implemented | Architecture Graph | .tmp/luc-5770-architecture-baseline/graphs/architecture-graph.md | Engineering Delivery Lead |
@@ -567,6 +567,33 @@ Generated: 2026-07-13T17:38:37.936Z
 | connected_to | function:mergegoogledrivesecret:3382200622 | feature:settings-routes-tsx:8e262225e5 | LUC-6911 Exchange event-chain frontend mapping after LUC-6905 |
 | connected_to | function:mergegoogledrivesecret:3382200622 | model:types-ts:1fce583d96 | LUC-6911 Exchange event-chain frontend type mapping after LUC-6905 |
 | connected_to | function:mergegoogledrivesecret:3382200622 | feature:messages-ts:2ff8f72a93 | LUC-6911 Exchange event-chain frontend copy mapping after LUC-6905 |
+| connected_to | project:roost:122c92a083 | task:luc-1001-account-access-workforce-entityauthority-doc-link:b7994c7a4e | .codex/tasks/luc-1001-account-access-workforce-entityauthority-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:task:b1280c7901 | .codex/tasks/luc-1008-architecture-chain-integrity-proof.md |
+| connected_to | project:roost:122c92a083 | task:task:66b2514fdb | .codex/tasks/luc-1010-account-access-workspaces-requireuserauth-proof.md |
+| connected_to | project:roost:122c92a083 | task:luc-1015-account-access-workspace-requireuserauth-doc-link:30073f9d5d | .codex/tasks/luc-1015-account-access-workspaces-requireuserauth-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:luc-1018-account-access-clearownertoken-doc-link:3ab92912b8 | .codex/tasks/luc-1018-account-access-clear-owner-token-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:task:e2dcf18d2c | .codex/tasks/luc-1028-projects-route-get-proof.md |
+| connected_to | project:roost:122c92a083 | task:luc-1034-account-access-issignedin-doc-link:08458c7797 | .codex/tasks/luc-1034-account-access-issignedin-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:luc-1041-account-access-ownertoken-doc-link:bbec1f6195 | .codex/tasks/luc-1041-account-access-owner-token-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:luc-1058-account-access-setownertoken-doc-link:aa33623fe1 | .codex/tasks/luc-1058-account-access-set-owner-token-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:task:c8961e2120 | .codex/tasks/luc-1068-dashboard-architecture-health-dashboard-proof.md |
+| connected_to | project:roost:122c92a083 | task:task:b5c3bb06fb | .codex/tasks/luc-1070-dashboard-architecture-health-dashboard-gate-proof.md |
+| connected_to | project:roost:122c92a083 | task:task:57e15dbd18 | .codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:luc-1074-dashboard-overview-src-modules-dashboard-doc-link:a6b7ca04de | .codex/tasks/luc-1074-dashboard-overview-src-modules-dashboard-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:task:906ce7e0df | .codex/tasks/luc-1076-dashboard-overview-cc-button-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:task:71631e2c9d | .codex/tasks/luc-1078-dashboard-overview-cc-data-table-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:task:ee81433627 | .codex/tasks/luc-1080-dashboard-overview-cc-field-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:task:5c63e3ca31 | .codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:luc-1084-dashboard-overview-cc-resource-selector-proof-link:9d3790e9a7 | .codex/tasks/luc-1084-dashboard-overview-cc-resource-selector-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:task:56da1c12f2 | .codex/tasks/luc-1086-dashboard-overview-cc-route-loading-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:task:a11b12588b | .codex/tasks/luc-1088-dashboard-overview-cc-text-input-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:luc-1090-dashboard-overview-assetsoverview-proof-link:cff55f352d | .codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:luc-1092-route-mixed-dirty-packet-after-luc-1090-assetsoverview-proof:8dcf3045c2 | .codex/tasks/luc-1092-route-mixed-dirty-packet-after-luc-1090-assetsoverview-proof.md |
+| connected_to | project:roost:122c92a083 | task:task:157c1a1016 | .codex/tasks/luc-1093-trading-operation-use-strategy-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:task:c4a21764fb | .codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:luc-1097-trading-operation-asjsonarray-doc-link:26dda14ec0 | .codex/tasks/luc-1097-trading-operation-asjsonarray-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:task:8cf71581bf | .codex/tasks/luc-1099-trading-operation-strategy-route-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:task:148fa638f5 | .codex/tasks/luc-1101-unclassified-root-get-proof-link.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -611,11 +638,22 @@ Generated: 2026-07-13T17:38:37.936Z
 | connected_to | project:roost:122c92a083 | task:task:638b05362c | .codex/tasks/luc-949-account-access-secrets-proof.md |
 | connected_to | project:roost:122c92a083 | task:task:ec249a7163 | .codex/tasks/luc-958-source-control-closure-for-luc-949.md |
 | connected_to | project:roost:122c92a083 | task:task:8d9a7cbaa9 | .codex/tasks/luc-959-account-access-company-os-authactor-proof.md |
+| connected_to | project:roost:122c92a083 | task:task:e460cf345a | .codex/tasks/luc-961-source-control-closure-for-luc-959.md |
+| connected_to | project:roost:122c92a083 | task:task:37eea451f8 | .codex/tasks/luc-962-account-access-company-os-authactor-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:task:29cc94d553 | .codex/tasks/luc-971-account-access-authenticated-image-frontend-proof.md |
+| connected_to | project:roost:122c92a083 | task:task:348405838f | .codex/tasks/luc-974-account-access-workflow-definition-drafts-authactor-proof.md |
+| connected_to | project:roost:122c92a083 | task:task:30e7505193 | .codex/tasks/luc-977-account-access-workflow-definition-drafts-authactor-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:luc-982-account-access-intake-authactor-proof:0b12794747 | .codex/tasks/luc-982-account-access-intake-authactor-proof.md |
+| connected_to | project:roost:122c92a083 | task:task:39692675ee | .codex/tasks/luc-988-account-access-intake-authactor-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:task:447271a3e0 | .codex/tasks/luc-989-source-control-closure-for-luc-982.md |
+| connected_to | project:roost:122c92a083 | task:task:83795f24a5 | .codex/tasks/luc-990-account-access-intake-authactor-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:task:4e382263fe | .codex/tasks/luc-997-account-access-workforce-entityauthority-proof.md |
+| connected_to | project:roost:122c92a083 | task:luc-998-dashboard-and-public-home-frontend-proof:d13d2bb165 | .codex/tasks/luc-998-dashboard-public-home-frontend-proof.md |
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
-| documents | agent:2026-07-13-luc-928-module-confidence-update:24182f19a5 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
-| documents | agent:2026-07-13-luc-949-account-access-secrets-ts-health-signal:f6767de320 | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-14-luc-1097-module-confidence-update:56279f60ea | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
+| documents | agent:2026-07-14-luc-1099-strategy-frontend-proof-link-health-signal:317f83ab0d | module:agents:4ae71ba13a | .agents/state/system-health.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -699,6 +737,27 @@ Generated: 2026-07-13T17:38:37.936Z
 | documents | document:api-key-middleware:071d632449 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/MW-AUTO-0001.md |
 | documents | document:api-keys-model:02bff86e2b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0005.md |
 | documents | document:api:a617d1cb61 | module:docs:6784d83cb0 | docs/API.md |
+| documents | document:api:a617d1cb61 | function:authactor:b3f790a259 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | function:authactor:8f0ce27a64 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | function:requireuserauth:215e610fd9 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | function:entityauthority:b0421607e6 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | function:ownertoken:cff9bd9e05 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | function:setownertoken:7303fbe684 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | function:clearownertoken:2ccc56ad47 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | function:issignedin:ca7bd93172 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | module:src-modules-dashboard:371b871372 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | feature:dashboard-routes-ts:cb24115ec5 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | function:coercecount:f105944c04 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | function:pickhealth:97c44d9ddb | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | function:riskrank:b7e74a6224 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | function:startoftoday:6c9c4ddbb2 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | function:startoftomorrow:8692cea6c0 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | function:sumcounts:369b91fee6 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | module:src-modules-strategy:af6e751a33 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | feature:strategy-routes-ts:cedc4e61d8 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | function:asjsonarray:b4688e6d13 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | function:textmatchesstrategy:aaa24fc170 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | function:tasklooksstrategic:830e2f3cd4 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:app-completion-index:2db9905a4e | module:docs:6784d83cb0 | docs/status/app-completion-index.md |
 | documents | document:app-creation-playbook:4c3d8fc278 | module:docs:6784d83cb0 | docs/governance/app-creation-playbook.md |
 | documents | document:application-completion-audit-task-contract-template:6956f095d1 | module:docs:6784d83cb0 | docs/planning/application-completion-audit-task-contract-template.md |
@@ -818,6 +877,7 @@ Generated: 2026-07-13T17:38:37.936Z
 | documents | document:company-os-definition-editing-contract:f92c4f0f81 | module:docs:6784d83cb0 | docs/architecture/company-os-definition-editing-contract.md |
 | documents | document:company-os-lifecycle-trace-smoke:986784755a | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PIPE-AUTO-0013.md |
 | documents | document:company-os-stage-1-task-contracts:d0249625db | module:docs:6784d83cb0 | docs/planning/company-os-stage1-task-contracts.md |
+| documents | document:company-os-stage-1-task-contracts:d0249625db | function:authactor:8976974c1d | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:company-os-workflow-definition-command-contract:5c46b8fae5 | module:docs:6784d83cb0 | docs/architecture/company-os-workflow-definition-command-contract.md |
 | documents | document:company-roles-model:4fbf469048 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0015.md |
 | documents | document:companycore-00-04-08-operating-loop-plan:e0c5fa88f8 | module:docs:6784d83cb0 | docs/planning/companycore-00-04-08-operating-loop-plan.md |
@@ -1057,8 +1117,21 @@ Generated: 2026-07-13T17:38:37.936Z
 | documents | document:language-policy:d7981ada8f | module:docs:6784d83cb0 | docs/governance/language-policy.md |
 | documents | document:legacy-archive-policy:36668ee5e4 | module:docs:6784d83cb0 | docs/governance/legacy-archive-policy.md |
 | documents | document:local-development:a611abe27f | module:docs:6784d83cb0 | docs/engineering/local-development.md |
+| documents | document:luc-1006-trading-operation-app-ts-proof:ce4d488666 | module:docs:6784d83cb0 | docs/planning/luc-1006-trading-operation-app-ts-proof.md |
+| documents | document:luc-1007-google-drive-route-proof:e4292733d1 | module:docs:6784d83cb0 | docs/planning/luc-1007-google-drive-route-proof.md |
+| documents | document:luc-1007-google-drive-route-readback:00653f4f53 | module:docs:6784d83cb0 | docs/planning/luc-1007-google-drive-route-readback.md |
+| documents | document:luc-1007-google-drive-route-readback:00653f4f53 | api_endpoint:use-google-drive:2b5bd7ccd8 | LUC-1007 Google Drive route-gap readback |
+| documents | document:luc-1022-account-access-clearownertoken-proof:2f4702a717 | module:docs:6784d83cb0 | docs/planning/luc-1022-account-access-clear-owner-token-proof.md |
+| documents | document:luc-1038-account-access-issignedin-proof:dc0bf99ae1 | module:docs:6784d83cb0 | docs/planning/luc-1038-account-access-is-signed-in-proof.md |
+| documents | document:luc-1043-account-access-ownertoken-proof:9b5c9a14ff | module:docs:6784d83cb0 | docs/planning/luc-1043-account-access-owner-token-proof.md |
 | documents | document:luc-1055-known-state-evidence-collection-and-architecture-baseline-md:edfe33628f | module:docs:6784d83cb0 | docs/planning/luc-1055-known-state-evidence-collection-and-architecture-baseline.md |
+| documents | document:luc-1063-account-access-setownertoken-proof:d71d832ff2 | module:docs:6784d83cb0 | docs/planning/luc-1063-account-access-set-owner-token-proof.md |
+| documents | document:luc-1066-dashboard-overview-use-dashboard-proof-link:8363b6e9c5 | module:docs:6784d83cb0 | docs/planning/luc-1066-dashboard-overview-use-dashboard-proof-link.md |
 | documents | document:luc-107-account-access-auth-headers-fresh-proof:153bf13d90 | module:docs:6784d83cb0 | docs/planning/luc-107-account-access-authheaders-fresh-proof.md |
+| documents | document:luc-1082-dashboard-overview-ccnotice-proof:b49bfff04e | module:docs:6784d83cb0 | docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md |
+| documents | document:luc-1084-dashboard-overview-ccresourceselector-proof:2ab3b0768f | module:docs:6784d83cb0 | docs/planning/luc-1084-dashboard-overview-cc-resource-selector-proof.md |
+| documents | document:luc-1086-dashboard-overview-ccrouteloading-proof:23e8251d06 | module:docs:6784d83cb0 | docs/planning/luc-1086-dashboard-overview-cc-route-loading-proof.md |
+| documents | document:luc-1090-dashboard-overview-assetsoverview-proof:7cabd23652 | module:docs:6784d83cb0 | docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md |
 | documents | document:luc-1099-source-control-closure-for-luc-261-dirty-state:c349f0ce07 | module:docs:6784d83cb0 | docs/planning/luc-1099-source-control-closure-for-luc-261-dirty-state.md |
 | documents | document:luc-110-account-access-auth-headers-function-row-classification:33a5d98774 | module:docs:6784d83cb0 | docs/planning/luc-110-account-access-authheaders-function-row-classification.md |
 | documents | document:luc-111-function-level-classification-overrides-for-auth-headers:2ca947ab7a | module:docs:6784d83cb0 | docs/planning/luc-111-function-level-classification-overrides-authheaders.md |
@@ -1145,76 +1218,3 @@ Generated: 2026-07-13T17:38:37.936Z
 | documents | document:luc-4841-source-control-closure-for-luc-4837-evidence-packet:ef8566fce8 | module:docs:6784d83cb0 | docs/planning/luc-4841-source-control-closure-for-luc-4837-evidence-packet.md |
 | documents | document:luc-4842-relationships-proof-ladder-target-from-test-evidence-debt:49722e1e69 | module:docs:6784d83cb0 | docs/planning/luc-4842-relationships-proof-ladder-target-from-test-evidence-debt.md |
 | documents | document:luc-4844-relationships-context-proof-ladder:ff746b9615 | module:docs:6784d83cb0 | docs/planning/luc-4844-relationships-context-proof-ladder.md |
-| documents | document:luc-4847-relationships-evidence-visibility-repair:1705fd2253 | module:docs:6784d83cb0 | docs/planning/luc-4847-relationships-evidence-visibility-repair.md |
-| documents | document:luc-4850-known-state-evidence-and-architecture-baseline:c3d23c2749 | module:docs:6784d83cb0 | docs/planning/luc-4850-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4855-source-control-closure-for-luc-4844-luc-4847-luc-4850-evidence-batch:5e2bbc15aa | module:docs:6784d83cb0 | docs/planning/luc-4855-source-control-closure-for-luc-4844-4847-4850-evidence-batch.md |
-| documents | document:luc-4856-tmp-proof-harness-scanner-hygiene:7d127cfdd7 | module:docs:6784d83cb0 | docs/planning/luc-4856-tmp-proof-harness-scanner-hygiene.md |
-| documents | document:luc-4857-product-delivery-proof-ladder-target-after-relationships:934be35156 | module:docs:6784d83cb0 | docs/planning/luc-4857-product-delivery-proof-ladder-target-after-relationships.md |
-| documents | document:luc-4861-product-delivery-proof-ladder:680ee89f97 | module:docs:6784d83cb0 | docs/planning/luc-4861-product-delivery-proof-ladder.md |
-| documents | document:luc-4863-source-control-closure-for-luc-4861-proof-ladder-evidence-batch:1ae5d9d342 | module:docs:6784d83cb0 | docs/planning/luc-4863-source-control-closure-for-luc-4861-proof-ladder-evidence-batch.md |
-| documents | document:luc-4864-known-state-evidence-and-architecture-baseline:641a23b3a2 | module:docs:6784d83cb0 | docs/planning/luc-4864-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4868-source-control-closure-for-luc-4864-known-state-evidence-packet:073d37062e | module:docs:6784d83cb0 | docs/planning/luc-4868-source-control-closure-for-luc-4864-known-state-evidence-packet.md |
-| documents | document:luc-4872-known-state-evidence-and-architecture-baseline:7a0e9fcda5 | module:docs:6784d83cb0 | docs/planning/luc-4872-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4879-source-control-closure-for-luc-4872-known-state-evidence-packet:2f9230dc8c | module:docs:6784d83cb0 | docs/planning/luc-4879-source-control-closure-for-luc-4872-known-state-evidence-packet.md |
-| documents | document:luc-4880-technology-and-ai-infrastructure-proof-ladder:e65ffc6f8e | module:docs:6784d83cb0 | docs/planning/luc-4880-technology-ai-proof-ladder.md |
-| documents | document:luc-4881-known-state-evidence-and-architecture-baseline:64e14a2af9 | module:docs:6784d83cb0 | docs/planning/luc-4881-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4882-source-control-closure-for-luc-4881-evidence-packet:167039583d | module:docs:6784d83cb0 | docs/planning/luc-4882-source-control-closure-for-luc-4881-evidence-packet.md |
-| documents | document:luc-4883-architecture-awareness-baseline-gap-curation:7e2af4a16d | module:docs:6784d83cb0 | docs/planning/luc-4883-architecture-awareness-baseline-gap-curation.md |
-| documents | document:luc-4885-known-state-evidence-and-architecture-baseline:b5af1a18fc | module:docs:6784d83cb0 | docs/planning/luc-4885-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4888-technology-and-ai-infrastructure-proof-ladder-closure:4a8292a256 | module:docs:6784d83cb0 | docs/planning/luc-4888-technology-ai-proof-ladder-closure.md |
-| documents | document:luc-4889-source-control-closure-for-luc-4880-luc-4881-luc-4883-evidence-batch:9bc74a847f | module:docs:6784d83cb0 | docs/planning/luc-4889-source-control-closure-for-luc-4880-4881-4883-evidence-batch.md |
-| documents | document:luc-4900-known-state-evidence-and-architecture-baseline:68de691a71 | module:docs:6784d83cb0 | docs/planning/luc-4900-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4905-source-control-closure-for-luc-4900-known-state-evidence-packet:88ff2c9a1c | module:docs:6784d83cb0 | docs/planning/luc-4905-source-control-closure-for-luc-4900-known-state-evidence-packet.md |
-| documents | document:luc-4906-legal-operating-graph-overview-proof-ladder:a775f4a8cf | module:docs:6784d83cb0 | docs/planning/luc-4906-legal-proof-ladder.md |
-| documents | document:luc-4914-roost-protected-recheck:7e335f834d | module:docs:6784d83cb0 | docs/planning/luc-4914-roost-protected-recheck.md |
-| documents | document:luc-4916-known-state-evidence-and-architecture-baseline:1c3bd384d9 | module:docs:6784d83cb0 | docs/planning/luc-4916-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4919-source-control-closure-for-luc-4916-known-state-evidence-packet:d447d1be6d | module:docs:6784d83cb0 | docs/planning/luc-4919-source-control-closure-for-luc-4916-known-state-evidence-packet.md |
-| documents | document:luc-4920-innovation-operating-graph-overview-proof-ladder:c9342f2078 | module:docs:6784d83cb0 | docs/planning/luc-4920-innovation-proof-ladder.md |
-| documents | document:luc-4921-roost-companycore-readiness-and-milestone-review:03f14d51de | module:docs:6784d83cb0 | docs/planning/luc-4921-roost-companycore-readiness-and-milestone-review.md |
-| documents | document:luc-4926-source-control-closure-for-luc-4920-innovation-proof-packet:e88b81be92 | module:docs:6784d83cb0 | docs/planning/luc-4926-source-control-closure-for-luc-4920-innovation-proof-packet.md |
-| documents | document:luc-4927-12-management-proof-selection:8eb8567370 | module:docs:6784d83cb0 | docs/planning/luc-4927-management-proof-selection.md |
-| documents | document:luc-4935-source-control-closure-for-luc-4931-architecture-awareness-refresh-artifacts:967de21d31 | module:docs:6784d83cb0 | docs/planning/luc-4935-source-control-closure-for-luc-4931-architecture-awareness-refresh-artifacts.md |
-| documents | document:luc-4936-management-departments-api-regression-coverage:20e658142c | module:docs:6784d83cb0 | docs/planning/luc-4936-management-departments-api-regression-coverage.md |
-| documents | document:luc-4937-roost-product-capability-map:63773d3d1f | module:docs:6784d83cb0 | docs/planning/luc-4937-roost-product-capability-map.md |
-| documents | document:luc-4941-known-state-evidence-and-architecture-baseline:eda2b6a8c2 | module:docs:6784d83cb0 | docs/planning/luc-4941-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4952-known-state-evidence-and-architecture-baseline:5ad6754744 | module:docs:6784d83cb0 | docs/planning/luc-4952-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4956-source-control-closure-for-luc-4952-known-state-evidence-packet:e5181b5764 | module:docs:6784d83cb0 | docs/planning/luc-4956-source-control-closure-for-luc-4952-known-state-evidence-packet.md |
-| documents | document:luc-4957-implementation-without-tests-architecture-health-signal-curation:2440a0035b | module:docs:6784d83cb0 | docs/planning/luc-4957-implementation-without-tests-architecture-health-signal-curation.md |
-| documents | document:luc-4962-known-state-evidence-and-architecture-baseline:571679d4c7 | module:docs:6784d83cb0 | docs/planning/luc-4962-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4965-source-control-closure-for-luc-4962-known-state-evidence-packet:c89b703bfa | module:docs:6784d83cb0 | docs/planning/luc-4965-source-control-closure-for-luc-4962-known-state-evidence-packet.md |
-| documents | document:luc-4968-known-state-evidence-and-architecture-baseline:b0ce55d5e4 | module:docs:6784d83cb0 | docs/planning/luc-4968-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4975-source-control-closure-for-luc-4968-known-state-evidence-packet:94e148a9f7 | module:docs:6784d83cb0 | docs/planning/luc-4975-source-control-closure-for-luc-4968-known-state-evidence-packet.md |
-| documents | document:luc-4978-known-state-evidence-and-architecture-baseline:d285d06c59 | module:docs:6784d83cb0 | docs/planning/luc-4978-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4982-source-control-closure-for-luc-4978-known-state-evidence-packet:4b5170aa3a | module:docs:6784d83cb0 | docs/planning/luc-4982-source-control-closure-for-luc-4978-known-state-evidence-packet.md |
-| documents | document:luc-4988-known-state-evidence-and-architecture-baseline:ee87dc0242 | module:docs:6784d83cb0 | docs/planning/luc-4988-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4992-source-control-closure-for-luc-4988-known-state-evidence-packet:22eacd1c65 | module:docs:6784d83cb0 | docs/planning/luc-4992-source-control-closure-for-luc-4988-known-state-evidence-packet.md |
-| documents | document:luc-4994-known-state-evidence-and-architecture-baseline:3608e0af32 | module:docs:6784d83cb0 | docs/planning/luc-4994-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4998-source-control-closure-for-luc-4994-known-state-evidence-packet:60c92cf6b9 | module:docs:6784d83cb0 | docs/planning/luc-4998-source-control-closure-for-luc-4994-known-state-evidence-packet.md |
-| documents | document:luc-5003-known-state-evidence-and-architecture-baseline:21bccc7be8 | module:docs:6784d83cb0 | docs/planning/luc-5003-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5010-source-control-closure-for-luc-5003-known-state-evidence-packet:14599a663c | module:docs:6784d83cb0 | docs/planning/luc-5010-source-control-closure-for-luc-5003-known-state-evidence-packet.md |
-| documents | document:luc-5015-known-state-evidence-and-architecture-baseline:45a81a083b | module:docs:6784d83cb0 | docs/planning/luc-5015-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5020-source-control-closure-for-luc-5015-known-state-evidence-packet:653a60688f | module:docs:6784d83cb0 | docs/planning/luc-5020-source-control-closure-for-luc-5015-known-state-evidence-packet.md |
-| documents | document:luc-5039-known-state-evidence-and-architecture-baseline:452327cf48 | module:docs:6784d83cb0 | docs/planning/luc-5039-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5046-source-control-closure-for-luc-5039-known-state-evidence-packet:5a1c8e8434 | module:docs:6784d83cb0 | docs/planning/luc-5046-source-control-closure-for-luc-5039-known-state-evidence-packet.md |
-| documents | document:luc-5050-roost-protected-recheck:48640a3f1c | module:docs:6784d83cb0 | docs/planning/luc-5050-roost-protected-recheck.md |
-| documents | document:luc-5052-known-state-evidence-and-architecture-baseline:677d241dde | module:docs:6784d83cb0 | docs/planning/luc-5052-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5055-source-control-closure-for-luc-5052-known-state-evidence-packet:4415829966 | module:docs:6784d83cb0 | docs/planning/luc-5055-source-control-closure-for-luc-5052-known-state-evidence-packet.md |
-| documents | document:luc-5060-known-state-evidence-and-architecture-baseline:ebc54c925c | module:docs:6784d83cb0 | docs/planning/luc-5060-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5065-release-critical-journey-proof-ladder:33f71c283e | module:docs:6784d83cb0 | docs/planning/luc-5065-release-critical-journey-proof-ladder.md |
-| documents | document:luc-5068-known-state-evidence-and-architecture-baseline:173172471b | module:docs:6784d83cb0 | docs/planning/luc-5068-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5072-source-control-closure-for-luc-5068-known-state-evidence-packet:55db98f382 | module:docs:6784d83cb0 | docs/planning/luc-5072-source-control-closure-for-luc-5068-known-state-evidence-packet.md |
-| documents | document:luc-5078-known-state-evidence-and-architecture-baseline:de560009eb | module:docs:6784d83cb0 | docs/planning/luc-5078-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5083-source-control-closure-for-luc-5078-known-state-evidence-packet:538bb46e5e | module:docs:6784d83cb0 | docs/planning/luc-5083-source-control-closure-for-luc-5078-known-state-evidence-packet.md |
-| documents | document:luc-5084-authenticated-browser-route-proof:229bf9170f | module:docs:6784d83cb0 | docs/planning/luc-5084-authenticated-browser-route-proof.md |
-| documents | document:luc-5090-known-state-evidence-and-architecture-baseline:250bba9d59 | module:docs:6784d83cb0 | docs/planning/luc-5090-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5095-source-control-closure-for-luc-5090-evidence-packet:169a48f375 | module:docs:6784d83cb0 | docs/planning/luc-5095-source-control-closure-for-luc-5090-evidence-packet.md |
-| documents | document:luc-5096-tmp-proof-harness-scanner-hygiene:54810f2b8a | module:docs:6784d83cb0 | docs/planning/luc-5096-tmp-proof-harness-scanner-hygiene.md |
-| documents | document:luc-5104-known-state-evidence-and-architecture-baseline:0a5c82f9de | module:docs:6784d83cb0 | docs/planning/luc-5104-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5107-known-state-evidence-and-architecture-baseline:0c58e100da | module:docs:6784d83cb0 | docs/planning/luc-5107-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5111-source-control-closure-for-luc-5104-evidence-packet:237380c8bb | module:docs:6784d83cb0 | docs/planning/luc-5111-source-control-closure-for-luc-5104-evidence-packet.md |
-| documents | document:luc-5112-source-control-closure-for-luc-5107-evidence-packet:b302ccbef4 | module:docs:6784d83cb0 | docs/planning/luc-5112-source-control-closure-for-luc-5107-evidence-packet.md |
-| documents | document:luc-5116-known-state-evidence-and-architecture-baseline:b7d5660a25 | module:docs:6784d83cb0 | docs/planning/luc-5116-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-5121-source-control-closure-for-luc-5116-evidence-packet:f42fc91fd2 | module:docs:6784d83cb0 | docs/planning/luc-5121-source-control-closure-for-luc-5116-evidence-packet.md |
-| documents | document:luc-5129-qa-proof-triage-for-implemented-entities-without-tests:c600b89c77 | module:docs:6784d83cb0 | docs/planning/luc-5129-qa-proof-triage-for-implemented-entities-without-tests.md |
-| documents | document:luc-5130-architecture-scope-reconciliation:852ffa7019 | module:docs:6784d83cb0 | docs/planning/luc-5130-architecture-scope-reconciliation.md |
-| documents | document:luc-5131-protected-target-proof-checklist:935701e5f5 | module:docs:6784d83cb0 | docs/planning/luc-5131-protected-target-proof-checklist.md |

@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-07-13T17:38:37.919Z
+Generated: 2026-07-14T15:06:25.290Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -12,84 +12,29 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 
 ## Counts
 
-- Items: 1243
+- Items: 1282
 - User flows: 5
 - Needs browser/screenshot review: 0
-- Missing test link: 1144
-- Missing doc link: 29
-- Implemented, needs proof: 9
+- Missing test link: 1103
+- Missing doc link: 30
+- Implemented, needs proof: 8
 - Blocked: 0
-- Known non-ok risk items: 1182
-- Priority review items indexed: 200/1182
+- Known non-ok risk items: 1141
+- Priority review items indexed: 200/1141
 - Priority review truncated: true
 
 ## Flow Summary
 
-- Unclassified user workflow: 1097 entities; risks {"missing_test_link":1065,"ok":2,"implemented_needs_proof":8,"missing_doc_link":22}; gates {"configuration":8,"auth":1}
-- Account access: 69 entities; risks {"ok":59,"missing_doc_link":5,"missing_test_link":5}; gates {"auth":69,"configuration":18}
-- Dashboard overview: 34 entities; risks {"missing_test_link":34}; gates {"configuration":7}
+- Unclassified user workflow: 1116 entities; risks {"missing_test_link":1072,"ok":8,"implemented_needs_proof":8,"missing_doc_link":28}; gates {"configuration":8,"auth":1}
+- Account access: 80 entities; risks {"ok":80}; gates {"auth":80,"configuration":18}
+- Dashboard overview: 44 entities; risks {"ok":44}; gates {}
 - User configuration: 33 entities; risks {"missing_test_link":31,"missing_doc_link":2}; gates {"configuration":31}
-- Trading operation: 10 entities; risks {"missing_test_link":9,"implemented_needs_proof":1}; gates {}
+- Trading operation: 9 entities; risks {"ok":9}; gates {}
 
 ## Priority Review Queue
 
 | User flow | Risk | Kind | Entity | Owner | Path | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
-| Account access | missing_doc_link | feature_or_capability | authActor | Engineering Delivery Lead | src/modules/company-os/company-os.routes.ts#authActor | auth |
-| Account access | missing_test_link | feature_or_capability | authActor | Engineering Delivery Lead | src/modules/company-os/workflow-definition-drafts.routes.ts#authActor | auth |
-| Account access | missing_test_link | feature_or_capability | authActor | Engineering Delivery Lead | src/modules/intake/intake.routes.ts#authActor | auth |
-| Account access | missing_test_link | feature_or_capability | entityAuthority | Engineering Delivery Lead | src/modules/workforce/workforce.service.ts#entityAuthority | auth |
-| Account access | missing_test_link | feature_or_capability | requireUserAuth | Engineering Delivery Lead | src/modules/workspaces/workspaces.routes.ts#requireUserAuth | auth |
-| Account access | missing_doc_link | feature_or_capability | clearOwnerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#clearOwnerToken | auth |
-| Account access | missing_doc_link | feature_or_capability | isSignedIn | Engineering Delivery Lead | web/src/api/auth-token.ts#isSignedIn | auth |
-| Account access | missing_doc_link | feature_or_capability | ownerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#ownerToken | auth |
-| Account access | missing_doc_link | feature_or_capability | setOwnerToken | Engineering Delivery Lead | web/src/api/auth-token.ts#setOwnerToken | auth |
-| Account access | missing_test_link | feature_or_capability | AuthenticatedImage | Engineering Delivery Lead | web/src/features/departments/assets-route.tsx#AuthenticatedImage | auth |
-| Dashboard overview | missing_test_link | api_endpoint | USE /dashboard | Engineering Delivery Lead | src/app.ts#/dashboard | - |
-| Dashboard overview | missing_test_link | feature_or_capability | build-architecture-health-dashboard.mjs | Engineering Delivery Lead | scripts/build-architecture-health-dashboard.mjs | - |
-| Dashboard overview | missing_test_link | feature_or_capability | main | Engineering Delivery Lead | scripts/build-architecture-health-dashboard.mjs#main | - |
-| Dashboard overview | missing_test_link | feature_or_capability | readJson | Engineering Delivery Lead | scripts/build-architecture-health-dashboard.mjs#readJson | - |
-| Dashboard overview | missing_test_link | feature_or_capability | toBoolIcon | Engineering Delivery Lead | scripts/build-architecture-health-dashboard.mjs#toBoolIcon | - |
-| Dashboard overview | missing_test_link | feature_or_capability | check-architecture-health-dashboard-gate.mjs | Engineering Delivery Lead | scripts/check-architecture-health-dashboard-gate.mjs | - |
-| Dashboard overview | missing_test_link | feature_or_capability | fail | Engineering Delivery Lead | scripts/check-architecture-health-dashboard-gate.mjs#fail | - |
-| Dashboard overview | missing_test_link | feature_or_capability | readJson | Engineering Delivery Lead | scripts/check-architecture-health-dashboard-gate.mjs#readJson | - |
-| Dashboard overview | missing_test_link | feature_or_capability | src/modules/dashboard | Engineering Delivery Lead | src/modules/dashboard | - |
-| Dashboard overview | missing_test_link | feature_or_capability | dashboard.routes.ts | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts | - |
-| Dashboard overview | missing_test_link | feature_or_capability | coerceCount | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#coerceCount | - |
-| Dashboard overview | missing_test_link | feature_or_capability | pickHealth | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#pickHealth | - |
-| Dashboard overview | missing_test_link | feature_or_capability | riskRank | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#riskRank | - |
-| Dashboard overview | missing_test_link | feature_or_capability | startOfToday | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#startOfToday | - |
-| Dashboard overview | missing_test_link | feature_or_capability | startOfTomorrow | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#startOfTomorrow | - |
-| Dashboard overview | missing_test_link | feature_or_capability | sumCounts | Engineering Delivery Lead | src/modules/dashboard/dashboard.routes.ts#sumCounts | - |
-| Dashboard overview | missing_test_link | feature_or_capability | cc-button.tsx | Engineering Delivery Lead | web/src/components/cc-button.tsx | configuration |
-| Dashboard overview | missing_test_link | feature_or_capability | cc-data-table.tsx | Engineering Delivery Lead | web/src/components/cc-data-table.tsx | configuration |
-| Dashboard overview | missing_test_link | feature_or_capability | cc-field.tsx | Engineering Delivery Lead | web/src/components/cc-field.tsx | configuration |
-| Dashboard overview | missing_test_link | feature_or_capability | cc-notice.tsx | Engineering Delivery Lead | web/src/components/cc-notice.tsx | configuration |
-| Dashboard overview | missing_test_link | feature_or_capability | cc-resource-selector.tsx | Engineering Delivery Lead | web/src/components/cc-resource-selector.tsx | configuration |
-| Dashboard overview | missing_test_link | feature_or_capability | cc-route-loading.tsx | Engineering Delivery Lead | web/src/components/cc-route-loading.tsx | configuration |
-| Dashboard overview | missing_test_link | feature_or_capability | cc-text-input.tsx | Engineering Delivery Lead | web/src/components/cc-text-input.tsx | configuration |
-| Dashboard overview | missing_test_link | feature_or_capability | AssetsOverview | Engineering Delivery Lead | web/src/features/departments/assets-route.tsx#AssetsOverview | - |
-| Dashboard overview | missing_test_link | feature_or_capability | general-dashboard.tsx | Engineering Delivery Lead | web/src/features/departments/general-dashboard.tsx | - |
-| Dashboard overview | missing_test_link | feature_or_capability | GeneralDashboard | Engineering Delivery Lead | web/src/features/departments/general-dashboard.tsx#GeneralDashboard | - |
-| Dashboard overview | missing_test_link | feature_or_capability | healthTone | Engineering Delivery Lead | web/src/features/departments/general-dashboard.tsx#healthTone | - |
-| Dashboard overview | missing_test_link | feature_or_capability | itemMeta | Engineering Delivery Lead | web/src/features/departments/general-dashboard.tsx#itemMeta | - |
-| Dashboard overview | missing_test_link | feature_or_capability | public-home.tsx | Engineering Delivery Lead | web/src/features/public/public-home.tsx | - |
-| Dashboard overview | missing_test_link | feature_or_capability | HeroTopology | Engineering Delivery Lead | web/src/features/public/public-home.tsx#HeroTopology | - |
-| Dashboard overview | missing_test_link | feature_or_capability | PublicHomeRoute | Engineering Delivery Lead | web/src/features/public/public-home.tsx#PublicHomeRoute | - |
-| Dashboard overview | missing_test_link | feature_or_capability | RoostGlyph | Engineering Delivery Lead | web/src/features/public/public-home.tsx#RoostGlyph | - |
-| Dashboard overview | missing_test_link | feature_or_capability | StatusRail | Engineering Delivery Lead | web/src/features/public/public-home.tsx#StatusRail | - |
-| Dashboard overview | missing_test_link | feature_or_capability | tx | Engineering Delivery Lead | web/src/features/public/public-home.tsx#tx | - |
-| Trading operation | missing_test_link | api_endpoint | USE /strategy | Engineering Delivery Lead | src/app.ts#/strategy | - |
-| Trading operation | implemented_needs_proof | feature_or_capability | app.ts | Engineering Delivery Lead | src/app.ts | - |
-| Trading operation | missing_test_link | feature_or_capability | src/modules/strategy | Engineering Delivery Lead | src/modules/strategy | - |
-| Trading operation | missing_test_link | feature_or_capability | strategy.routes.ts | Engineering Delivery Lead | src/modules/strategy/strategy.routes.ts | - |
-| Trading operation | missing_test_link | feature_or_capability | asJsonArray | Engineering Delivery Lead | src/modules/strategy/strategy.routes.ts#asJsonArray | - |
-| Trading operation | missing_test_link | feature_or_capability | taskLooksStrategic | Engineering Delivery Lead | src/modules/strategy/strategy.routes.ts#taskLooksStrategic | - |
-| Trading operation | missing_test_link | feature_or_capability | textMatchesStrategy | Engineering Delivery Lead | src/modules/strategy/strategy.routes.ts#textMatchesStrategy | - |
-| Trading operation | missing_test_link | feature_or_capability | strategy-route.tsx | Engineering Delivery Lead | web/src/features/departments/strategy-route.tsx | - |
-| Trading operation | missing_test_link | feature_or_capability | formatDate | Engineering Delivery Lead | web/src/features/departments/strategy-route.tsx#formatDate | - |
-| Trading operation | missing_test_link | feature_or_capability | StrategyRoute | Engineering Delivery Lead | web/src/features/departments/strategy-route.tsx#StrategyRoute | - |
-| Unclassified user workflow | missing_test_link | api_endpoint | GET / | Engineering Delivery Lead | src/app.ts#/ | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /agent-events | Engineering Delivery Lead | src/app.ts#/agent-events | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /agent-logs | Engineering Delivery Lead | src/app.ts#/agent-logs | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /agents | Engineering Delivery Lead | src/app.ts#/agents | - |
@@ -105,7 +50,6 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /departments | Engineering Delivery Lead | src/app.ts#/departments | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /events | Engineering Delivery Lead | src/app.ts#/events | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /goals | Engineering Delivery Lead | src/app.ts#/goals | - |
-| Unclassified user workflow | missing_test_link | api_endpoint | USE /google-drive | Engineering Delivery Lead | src/app.ts#/google-drive | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /health | Engineering Delivery Lead | src/app.ts#/health | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /intake | Engineering Delivery Lead | src/app.ts#/intake | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /interactions | Engineering Delivery Lead | src/app.ts#/interactions | - |
@@ -115,6 +59,62 @@ Agents use it to decide what to plan next: backend/API proof, frontend/browser p
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /operating-model | Engineering Delivery Lead | src/app.ts#/operating-model | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /operations | Engineering Delivery Lead | src/app.ts#/operations | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /pipeline-stages | Engineering Delivery Lead | src/app.ts#/pipeline-stages | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /process-core | Engineering Delivery Lead | src/app.ts#/process-core | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /projects | Engineering Delivery Lead | src/app.ts#/projects | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /ready | Engineering Delivery Lead | src/app.ts#/ready | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /relationships | Engineering Delivery Lead | src/app.ts#/relationships | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /targets | Engineering Delivery Lead | src/app.ts#/targets | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /task-lists | Engineering Delivery Lead | src/app.ts#/task-lists | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /tasks | Engineering Delivery Lead | src/app.ts#/tasks | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /v1 | Engineering Delivery Lead | src/app.ts#/v1 | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /v1/health | Engineering Delivery Lead | src/app.ts#/v1/health | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /v1/ready | Engineering Delivery Lead | src/app.ts#/v1/ready | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /v1/webhooks/clickup | Engineering Delivery Lead | src/app.ts#/v1/webhooks/clickup | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /workforce | Engineering Delivery Lead | src/app.ts#/workforce | - |
+| Unclassified user workflow | missing_test_link | api_endpoint | USE /workspaces | Engineering Delivery Lead | src/app.ts#/workspaces | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | . | Engineering Delivery Lead | . | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | .agents | Engineering Delivery Lead | .agents | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | .github | Engineering Delivery Lead | .github | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | .tmp | Engineering Delivery Lead | .tmp | - |
+| Unclassified user workflow | implemented_needs_proof | feature_or_capability | docs | Engineering Delivery Lead | docs | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | history | Engineering Delivery Lead | history | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | prisma | Engineering Delivery Lead | prisma | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | seed.ts | Engineering Delivery Lead | prisma/seed.ts | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | apiKeyPrefix | Engineering Delivery Lead | prisma/seed.ts#apiKeyPrefix | configuration |
+| Unclassified user workflow | missing_test_link | feature_or_capability | ensureCompanyOsFoundation | Engineering Delivery Lead | prisma/seed.ts#ensureCompanyOsFoundation | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | ensureSeedOperatingModel | Engineering Delivery Lead | prisma/seed.ts#ensureSeedOperatingModel | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | ensureWorkforceFoundation | Engineering Delivery Lead | prisma/seed.ts#ensureWorkforceFoundation | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | for | Engineering Delivery Lead | prisma/seed.ts#for | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | generatedWorkforceFiles | Engineering Delivery Lead | prisma/seed.ts#generatedWorkforceFiles | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | hashApiKey | Engineering Delivery Lead | prisma/seed.ts#hashApiKey | configuration |
+| Unclassified user workflow | missing_test_link | feature_or_capability | hashPassword | Engineering Delivery Lead | prisma/seed.ts#hashPassword | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | list | Engineering Delivery Lead | prisma/seed.ts#list | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | main | Engineering Delivery Lead | prisma/seed.ts#main | - |
+| Unclassified user workflow | missing_doc_link | feature_or_capability | scripts | Engineering Delivery Lead | scripts | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | adapter-smoke.mjs | Engineering Delivery Lead | scripts/adapter-smoke.mjs | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | assertCapability | Engineering Delivery Lead | scripts/adapter-smoke.mjs#assertCapability | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | request | Engineering Delivery Lead | scripts/adapter-smoke.mjs#request | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | agent-training-smoke.mjs | Engineering Delivery Lead | scripts/agent-training-smoke.mjs | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | assertCapability | Engineering Delivery Lead | scripts/agent-training-smoke.mjs#assertCapability | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | request | Engineering Delivery Lead | scripts/agent-training-smoke.mjs#request | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | aog-deploy-smoke.mjs | Engineering Delivery Lead | scripts/aog-deploy-smoke.mjs | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | fail | Engineering Delivery Lead | scripts/aog-deploy-smoke.mjs#fail | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | run | Engineering Delivery Lead | scripts/aog-deploy-smoke.mjs#run | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | backfill-architecture-nodes.mjs | Engineering Delivery Lead | scripts/backfill-architecture-nodes.mjs | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | csvEscape | Engineering Delivery Lead | scripts/backfill-architecture-nodes.mjs#csvEscape | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | dbModule | Engineering Delivery Lead | scripts/backfill-architecture-nodes.mjs#dbModule | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | loadCsv | Engineering Delivery Lead | scripts/backfill-architecture-nodes.mjs#loadCsv | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | main | Engineering Delivery Lead | scripts/backfill-architecture-nodes.mjs#main | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | pageModule | Engineering Delivery Lead | scripts/backfill-architecture-nodes.mjs#pageModule | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | parseCsv | Engineering Delivery Lead | scripts/backfill-architecture-nodes.mjs#parseCsv | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | readText | Engineering Delivery Lead | scripts/backfill-architecture-nodes.mjs#readText | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | routeFilePath | Engineering Delivery Lead | scripts/backfill-architecture-nodes.mjs#routeFilePath | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | routeModule | Engineering Delivery Lead | scripts/backfill-architecture-nodes.mjs#routeModule | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | toCsv | Engineering Delivery Lead | scripts/backfill-architecture-nodes.mjs#toCsv | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | writeText | Engineering Delivery Lead | scripts/backfill-architecture-nodes.mjs#writeText | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | build-architecture-chain-hardening-worklist.mjs | Engineering Delivery Lead | scripts/build-architecture-chain-hardening-worklist.mjs | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | csvEscape | Engineering Delivery Lead | scripts/build-architecture-chain-hardening-worklist.mjs#csvEscape | - |
+| Unclassified user workflow | missing_test_link | feature_or_capability | loadCsv | Engineering Delivery Lead | scripts/build-architecture-chain-hardening-worklist.mjs#loadCsv | - |
 
 ## Agent Rule
 

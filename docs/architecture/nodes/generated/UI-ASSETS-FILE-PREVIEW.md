@@ -56,6 +56,7 @@ Assets preview panel for typed Drive and resource content.
 ## Tests
 
 - `TEST-PLAYWRIGHT-ASSETS` Assets Playwright proof: `verified`
+- `TEST-BROWSER-OWNER-TOKEN` node scripts/luc-1043-account-access-owner-token-proof.mjs: `verified`
 
 ## Evidence
 

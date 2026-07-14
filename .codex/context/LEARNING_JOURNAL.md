@@ -26,6 +26,80 @@ fixes for this repository.
 
 ## Entries
 
+### 2026-07-14 - Paperclip Done-State Updates Need Inline Comment Text For Request-Comment Evidence
+- Context: LUC-1092 needed a terminal `done` transition on the live Paperclip control plane after local source-control closure evidence was recorded.
+- Symptom: a first `PATCH /api/issues/{issueId}` attempt failed validation because the typed `completionEvidence` bundle was shaped incorrectly, and `request_comment` refs were rejected until the update included the matching comment text.
+- Root cause: the issue API expects `completionEvidence.summary`, `riskLevel`, and category objects with `summary` plus `refs`, and `request_comment` evidence must be paired with the same update's `comment` field.
+- Guardrail: when closing a Paperclip issue with typed evidence, send one PATCH that includes `status: done`, a `comment` string, and a strictly typed `completionEvidence` bundle whose refs use the supported evidence kinds.
+- Preferred pattern: use one closeout comment plus one PATCH readback; reference the closeout comment through `request_comment` refs and confirm the persisted `done` state immediately afterward.
+- Avoid: inventing ad hoc completionEvidence keys, using plain strings in refs, or assuming `request_comment` refs work without the same-update comment text.
+- Evidence: `GET /api/issues/49b9c1ef-9159-4e5b-9d0c-ed385e694645/heartbeat-context` and `GET /api/issues/49b9c1ef-9159-4e5b-9d0c-ed385e694645` exposed the live schema; final `PATCH /api/issues/49b9c1ef-9159-4e5b-9d0c-ed385e694645` with a `comment` plus typed completion evidence succeeded and returned `status: done`, `completedAt: 2026-07-14T12:52:50.850Z`, and persisted `completionEvidence`.
+
+### 2026-07-14 - Use the Live Issue Control Plane When the Wake Exposes It
+- Context: LUC-1070 first appeared blocked behind GitHub/ClickUp lookup
+  failures, but the heartbeat context exposed the live Paperclip API URL,
+  the actual issue UUID, and a working checkout/update path.
+- Symptom: the issue could have stayed falsely blocked if we had treated the
+  external tracker search as authoritative after the live control plane was
+  already available.
+- Root cause: the wake context contained the real issue target, but the
+  earlier attempts focused on the wrong board surface before the issue API
+  was used directly.
+- Guardrail: when a scoped Paperclip wake exposes `PAPERCLIP_API_URL` and
+  `PAPERCLIP_TASK_ID`, checkout and close the issue on the live control plane
+  before declaring the lane blocked.
+- Preferred pattern: verify `/heartbeat-context`, claim the issue, and use a
+  same-issue `request_comment` ref in the typed `completionEvidence` bundle
+  for the closeout patch.
+- Avoid: stopping at external tracker keyword searches when the wake already
+  provides the live issue API target.
+- Evidence: `GET /api/issues/071b3552-ed88-4561-bbe2-f614430b1a00/heartbeat-context`
+  and `PATCH /api/issues/071b3552-ed88-4561-bbe2-f614430b1a00` both succeeded
+  for `LUC-1070`; the issue now reads `done` with typed completion evidence.
+
+### 2026-07-14 - Verify the Issue Control Plane Before Declaring Final Disposition
+- Context: LUC-1070 finished local proof closure, then needed a terminal issue
+  disposition through the board connector path.
+- Symptom: GitHub issue fetch for `Wroblewski-Patryk/Roost#1070` returned
+  `404 Not Found`, and ClickUp keyword searches for `LUC-1070` returned no
+  results.
+- Root cause: the available connectors in this session did not expose the
+  actual issue/control plane for this wake, so the repo proof could not be
+  mirrored into an external issue update.
+- Guardrail: before promising a `done`/`blocked` issue disposition, confirm
+  the exact tracker and permissions first; if the issue system is unreachable,
+  stop retrying the wrong connector and name the board owner or unblock action
+  explicitly.
+- Preferred pattern: separate local proof closure from board mutation, verify
+  the board target by ID or repository lookup, then write the final issue
+  state only after the connector confirms the issue exists.
+- Avoid: assuming the GitHub repo is the issue source of truth when the issue
+  lookup fails, or assuming a ClickUp custom ID is valid without a successful
+  search result.
+- Evidence: GitHub `GET /issues/1070` on `Wroblewski-Patryk/Roost` returned
+  `404`; ClickUp searches for `LUC-1070`, `architecture-health-dashboard-gate`,
+  and `check-architecture-health-dashboard-gate.mjs` returned zero results.
+
+### 2026-07-14 - Do Not Use `resume: true` On Terminal Closeout Comments
+- Context: [LUC-1001](/LUC/issues/LUC-1001) was already completed and then
+  woke again from the agent's own closeout comment.
+- Symptom: a terminal `done` issue reopened as an `issue_reopened_via_comment`
+  heartbeat even though no new user or board input existed.
+- Root cause: the closeout comment was posted through the Paperclip comment
+  route with `resume: true`, which intentionally acts as a wake signal instead
+  of inert evidence on a completed issue.
+- Guardrail: when posting closeout evidence on an issue that is already `done`
+  or is about to be finalized in the same heartbeat, omit `resume: true` from
+  the comment payload.
+- Preferred pattern: post the closeout comment without resume, then patch the
+  issue to `done` with typed completion evidence that references the created
+  comment.
+- Avoid: using `resume: true` as punctuation on self-authored closeout
+  comments.
+- Evidence: [LUC-1001](/LUC/issues/LUC-1001) reopened immediately after the
+  agent's own closeout comment `cd66062e-38ac-4736-a1f0-bf61005bd9a0`, and the
+  follow-up heartbeat had to restore the terminal `done` disposition.
+
 ### 2026-07-12 - Project Truth Reads The Scanner Export, Not The Project-Only Refresh
 - Context: [LUC-742](/LUC/issues/LUC-742) needed to clear an Account access
   missing-doc-link row for `getStoredGoogleDriveSecret`.
@@ -67,27 +141,38 @@ fixes for this repository.
 ### 2026-07-12 - Treat Paperclip Issue-Route HTTP 500s As Control-Plane Blockers
 - Context: [LUC-727](/LUC/issues/LUC-727) completed local frontend/browser
   proof, uploaded attachments successfully, and then attempted final Paperclip
-  comment/status mutation through the local API at `127.0.0.1:3200`.
+  comment/status mutation through the local API at `127.0.0.1:3200`. The same
+  mutation family reappeared on [LUC-1043](/LUC/issues/LUC-1043), where a
+  final `PATCH /api/issues/{issueId}` returned HTTP `500` even though the
+  issue state and `completionEvidence` were actually persisted.
 - Symptom: checkout and read routes succeeded, and attachment uploads
   succeeded, but both `POST /api/issues/{issueId}/comments` and
   `PATCH /api/issues/{issueId}` returned HTTP `500` with
   `{\"error\":\"Internal server error\"}`.
 - Root cause: the local Paperclip control plane can be partially healthy for
   checkout/read/upload while issue comment/status mutation routes fail
-  server-side.
+  server-side or return an error after persisting the mutation.
 - Guardrail: when Paperclip mutation routes return repeatable `500`s, treat the
-  issue as control-plane blocked; finish repository-side evidence, record the
-  exact failing endpoints and HTTP responses in the task packet, and do not
-  pretend the board status changed.
+  issue as a control-plane problem, but first re-read the issue with
+  `GET /api/issues/{issueId}` before assuming the mutation failed. If the
+  desired state or comment already persisted, use the readback as the closeout
+  proof; if not, finish repository-side evidence, record the exact failing
+  endpoints and HTTP responses in the task packet, and do not pretend the
+  board status changed.
 - Preferred pattern: verify `checkout` plus a read route first, upload
   attachments with explicit content types for non-image files, then if final
-  issue mutation fails with `500`, capture the API evidence and leave an
-  explicit unblock owner/action in durable repo docs.
+  issue mutation fails with `500`, immediately re-read the issue; only leave an
+  explicit unblock owner/action when the readback confirms the update did not
+  stick.
 - Avoid: assuming a successful checkout means comment/PATCH routes are healthy,
-  or reporting the issue as done when the board status/comment never landed.
+  assuming every `500` means no write happened, or reporting the issue as done
+  when the board status/comment never landed.
 - Evidence: [LUC-727](/LUC/issues/LUC-727) `checkout` and `heartbeat-context`
   returned normally; attachment uploads succeeded; comment and status updates
-  returned HTTP `500`.
+  returned HTTP `500`. [LUC-1043](/LUC/issues/LUC-1043) final `PATCH` returned
+  HTTP `500`, but follow-up `GET /api/issues/{issueId}` showed `status=done`,
+  persisted `completionEvidence`, and uploaded work products attached to the
+  issue.
 
 ### 2026-07-12 - Refresh Project Truth Inputs Sequentially
 - Context: [LUC-610](/LUC/issues/LUC-610) added a new Google Drive auth test
@@ -110,7 +195,10 @@ fixes for this repository.
   `2026-07-12T03:20:30.009Z` kept the target at `missing_test_link`; the
   sequential rerun generated app-completion with `missingTestLink=1156` and
   Project Truth at `2026-07-12T03:21:00.696Z` moved the same target to
-  `missing_doc_link`.
+  `missing_doc_link`. [LUC-1015](/LUC/issues/LUC-1015) reproduced the same
+  stale-read pattern when app-completion and Project Truth were started before
+  the architecture graph write had fully settled; the correct gap cleared only
+  after the sequential rerun to `2026-07-14T01:35:57.823Z`.
 
 ### 2026-07-02 - Close Browser Harnesses After Failed Assertions
 - Context: [LUC-7062](/LUC/issues/LUC-7062) used ad hoc Playwright request
@@ -502,6 +590,12 @@ fixes for this repository.
   external issue has been updated unless a later session has valid team access
   or another authorized issue path.
 - Evidence: `clickup_get_task` on `LUC-959` returned `Team not authorized`.
+- Evidence: During [LUC-1008](/LUC/issues/LUC-1008), `clickup_get_task_comments`
+  on `LUC-1008` returned `Team not authorized`, `_clickup_search` returned no
+  `LUC-1008` task result, `_clickup_update_task` reported `Task ID invalid`,
+  and `_clickup_create_task_comment` failed with
+  `clickup_create_task_comment not found`, confirming this session cannot rely
+  on ClickUp connector writeback for `LUC-*` task closure.
 - Evidence: During CCV1-055 smoke, a piped here-string produced remote
   `command not found` output from a BOM-prefixed line; rerunning via an ASCII
   temporary script executed correctly and returned Jarvis CompanyCore connector
@@ -857,3 +951,19 @@ fixes for this repository.
 - Evidence: LUC-6233 2026-06-30 retry recorded route timeouts and preserved the
   verified Roost source-control packet without restart, push, deploy, or
   unrelated file cleanup.
+# 2026-07-14 LUC-1082 Refresh Chain Readback Guardrail
+
+- Context: Dashboard overview `cc-notice.tsx` proof-link closure.
+- Verified lesson: when the Roost proof workflow needs both Paperclip
+  architecture-awareness and app-completion refresh, run them sequentially.
+  App-completion can read a stale graph if both generators run in parallel,
+  which makes Project Truth look unchanged even though scanner overrides and
+  test links are correct.
+- Required behavior next time:
+  1. build architecture-awareness
+  2. build app-completion
+  3. build/apply Project Truth
+- Evidence: sequential rerun generated architecture-awareness at
+  `2026-07-14T10:42:06.135Z`, app-completion at `2026-07-14T10:42:11.615Z`,
+  and Project Truth at `2026-07-14T10:42:15.861Z`, which finally advanced the
+  routed gap from `cc-notice.tsx` to `cc-resource-selector.tsx`.

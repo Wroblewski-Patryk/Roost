@@ -52,7 +52,7 @@ Auto-scaffolded from React route drift report.
 
 ## Tests
 
-- No test rows.
+- `TEST-BROWSER-DASHBOARD-ALIAS` node scripts/luc-998-dashboard-public-home-proof.mjs: `verified`
 
 ## Evidence
 

@@ -52,7 +52,7 @@ Auto-synchronized pipeline node from repository source.
 
 ## Tests
 
-- No test rows.
+- `TEST-ARCH-CHAIN-INTEGRITY` node --test dist/tests/architecture-chain-integrity.test.js: `tested`
 
 ## Evidence
 

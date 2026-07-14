@@ -1,0 +1,54 @@
+{
+  "timestamp": "2026-07-14T06:10:17.288Z",
+  "baseUrl": "http://127.0.0.1:64813",
+  "route": "/areas?area=00-ogolny&view=overview",
+  "assertions": {
+    "login": {
+      "storedTokenMatches": true,
+      "canonicalPrivateRouteRendered": true,
+      "pendingPrivatePathPreserved": true,
+      "loginReturnedSingleToken": true,
+      "authMeUsedStoredBearerAuth": true,
+      "departmentsUsedStoredBearerAuth": true,
+      "dashboardUsedStoredBearerAuth": true,
+      "noHorizontalOverflow": true,
+      "screenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-1063-set-owner-token-proof\\desktop-login-set-owner-token.png"
+    },
+    "workspaceSelection": {
+      "initialSessionTokenWasSeeded": true,
+      "storedTokenMatchesNewWorkspaceToken": true,
+      "activeWorkspaceSwitched": true,
+      "canonicalDashboardRendered": true,
+      "workspaceSelectUsedCurrentBearerAuth": true,
+      "authMeReloadUsedNewBearerAuth": true,
+      "departmentsReloadUsedNewBearerAuth": true,
+      "dashboardReloadUsedNewBearerAuth": true,
+      "noHorizontalOverflow": true,
+      "screenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-1063-set-owner-token-proof\\desktop-workspace-select-set-owner-token.png"
+    }
+  },
+  "requestLog": {
+    "loginBodies": [
+      "{\"email\":\"owner@example.test\",\"password\":\"secret-proof-password\"}"
+    ],
+    "authMeHeaders": [
+      "Bearer login-proof-token",
+      "Bearer workspace-initial-token",
+      "Bearer workspace-switched-token"
+    ],
+    "departmentsHeaders": [
+      "Bearer login-proof-token",
+      "Bearer workspace-initial-token",
+      "Bearer workspace-switched-token"
+    ],
+    "dashboardHeaders": [
+      "Bearer login-proof-token",
+      "Bearer workspace-initial-token",
+      "Bearer workspace-switched-token"
+    ],
+    "workspaceSelectHeaders": [
+      "Bearer workspace-initial-token"
+    ]
+  },
+  "errors": []
+}

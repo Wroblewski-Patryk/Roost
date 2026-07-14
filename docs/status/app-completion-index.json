@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-07-13T17:38:37.919Z",
+  "generatedAt": "2026-07-14T15:06:25.290Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
   "counts": {
-    "items": 1243,
+    "items": 1282,
     "flows": 5,
     "needsBrowserReview": 0,
-    "missingTestLink": 1144,
-    "missingDocLink": 29,
-    "implementedNeedsProof": 9,
+    "missingTestLink": 1103,
+    "missingDocLink": 30,
+    "implementedNeedsProof": 8,
     "blocked": 0,
-    "riskItems": 1182,
-    "appCompletionRiskItems": 1182,
+    "riskItems": 1141,
+    "appCompletionRiskItems": 1141,
     "priorityReviewItems": 200,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": true
@@ -20,44 +20,39 @@
   "flows": [
     {
       "userFlow": "Account access",
-      "total": 69,
+      "total": 80,
       "risks": {
-        "ok": 59,
-        "missing_doc_link": 5,
-        "missing_test_link": 5
+        "ok": 80
       },
       "gates": {
-        "auth": 69,
+        "auth": 80,
         "configuration": 18
       }
     },
     {
       "userFlow": "Dashboard overview",
-      "total": 34,
+      "total": 44,
       "risks": {
-        "missing_test_link": 34
+        "ok": 44
       },
-      "gates": {
-        "configuration": 7
-      }
+      "gates": {}
     },
     {
       "userFlow": "Trading operation",
-      "total": 10,
+      "total": 9,
       "risks": {
-        "missing_test_link": 9,
-        "implemented_needs_proof": 1
+        "ok": 9
       },
       "gates": {}
     },
     {
       "userFlow": "Unclassified user workflow",
-      "total": 1097,
+      "total": 1116,
       "risks": {
-        "missing_test_link": 1065,
-        "ok": 2,
+        "missing_test_link": 1072,
+        "ok": 8,
         "implemented_needs_proof": 8,
-        "missing_doc_link": 22
+        "missing_doc_link": 28
       },
       "gates": {
         "configuration": 8,
@@ -77,1085 +72,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "function:authactor:8976974c1d",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "authActor",
-      "path": "src/modules/company-os/company-os.routes.ts#authActor",
-      "owner": "Engineering Delivery Lead",
-      "status": "verified",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_doc_link"
-    },
-    {
-      "id": "function:authactor:8f0ce27a64",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "authActor",
-      "path": "src/modules/company-os/workflow-definition-drafts.routes.ts#authActor",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:authactor:b3f790a259",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "authActor",
-      "path": "src/modules/intake/intake.routes.ts#authActor",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:entityauthority:b0421607e6",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "entityAuthority",
-      "path": "src/modules/workforce/workforce.service.ts#entityAuthority",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:requireuserauth:215e610fd9",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "requireUserAuth",
-      "path": "src/modules/workspaces/workspaces.routes.ts#requireUserAuth",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:clearownertoken:2ccc56ad47",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "clearOwnerToken",
-      "path": "web/src/api/auth-token.ts#clearOwnerToken",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 2,
-      "risk": "missing_doc_link"
-    },
-    {
-      "id": "function:issignedin:ca7bd93172",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "isSignedIn",
-      "path": "web/src/api/auth-token.ts#isSignedIn",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 2,
-      "risk": "missing_doc_link"
-    },
-    {
-      "id": "function:ownertoken:cff9bd9e05",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "ownerToken",
-      "path": "web/src/api/auth-token.ts#ownerToken",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 2,
-      "risk": "missing_doc_link"
-    },
-    {
-      "id": "function:setownertoken:7303fbe684",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "setOwnerToken",
-      "path": "web/src/api/auth-token.ts#setOwnerToken",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 2,
-      "risk": "missing_doc_link"
-    },
-    {
-      "id": "function:authenticatedimage:f7895977e5",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "AuthenticatedImage",
-      "path": "web/src/features/departments/assets-route.tsx#AuthenticatedImage",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "api_endpoint:use-dashboard:a4fbc07380",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /dashboard",
-      "path": "src/app.ts#/dashboard",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "feature:build-architecture-health-dashboard-mjs:f597bc0ac8",
-      "type": "feature",
-      "kind": "feature_or_capability",
-      "name": "build-architecture-health-dashboard.mjs",
-      "path": "scripts/build-architecture-health-dashboard.mjs",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 8,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:main:eb73960da2",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "main",
-      "path": "scripts/build-architecture-health-dashboard.mjs#main",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:readjson:f3fdb64025",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "readJson",
-      "path": "scripts/build-architecture-health-dashboard.mjs#readJson",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:toboolicon:e618744061",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "toBoolIcon",
-      "path": "scripts/build-architecture-health-dashboard.mjs#toBoolIcon",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "feature:check-architecture-health-dashboard-gate-mjs:d6a4964ca2",
-      "type": "feature",
-      "kind": "feature_or_capability",
-      "name": "check-architecture-health-dashboard-gate.mjs",
-      "path": "scripts/check-architecture-health-dashboard-gate.mjs",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 7,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:fail:7ea16a3fea",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "fail",
-      "path": "scripts/check-architecture-health-dashboard-gate.mjs#fail",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:readjson:dc33699db3",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "readJson",
-      "path": "scripts/check-architecture-health-dashboard-gate.mjs#readJson",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "module:src-modules-dashboard:371b871372",
-      "type": "module",
-      "kind": "feature_or_capability",
-      "name": "src/modules/dashboard",
-      "path": "src/modules/dashboard",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 3,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "feature:dashboard-routes-ts:cb24115ec5",
-      "type": "feature",
-      "kind": "feature_or_capability",
-      "name": "dashboard.routes.ts",
-      "path": "src/modules/dashboard/dashboard.routes.ts",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 19,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:coercecount:f105944c04",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "coerceCount",
-      "path": "src/modules/dashboard/dashboard.routes.ts#coerceCount",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:pickhealth:97c44d9ddb",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "pickHealth",
-      "path": "src/modules/dashboard/dashboard.routes.ts#pickHealth",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:riskrank:b7e74a6224",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "riskRank",
-      "path": "src/modules/dashboard/dashboard.routes.ts#riskRank",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:startoftoday:6c9c4ddbb2",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "startOfToday",
-      "path": "src/modules/dashboard/dashboard.routes.ts#startOfToday",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:startoftomorrow:8692cea6c0",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "startOfTomorrow",
-      "path": "src/modules/dashboard/dashboard.routes.ts#startOfTomorrow",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:sumcounts:369b91fee6",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "sumCounts",
-      "path": "src/modules/dashboard/dashboard.routes.ts#sumCounts",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "component:cc-button-tsx:dff712debb",
-      "type": "component",
-      "kind": "feature_or_capability",
-      "name": "cc-button.tsx",
-      "path": "web/src/components/cc-button.tsx",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [
-        "configuration"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 17,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "component:cc-data-table-tsx:b40c218327",
-      "type": "component",
-      "kind": "feature_or_capability",
-      "name": "cc-data-table.tsx",
-      "path": "web/src/components/cc-data-table.tsx",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [
-        "configuration"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 45,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "component:cc-field-tsx:8702870575",
-      "type": "component",
-      "kind": "feature_or_capability",
-      "name": "cc-field.tsx",
-      "path": "web/src/components/cc-field.tsx",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [
-        "configuration"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 8,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "component:cc-notice-tsx:9eefa3dd0b",
-      "type": "component",
-      "kind": "feature_or_capability",
-      "name": "cc-notice.tsx",
-      "path": "web/src/components/cc-notice.tsx",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [
-        "configuration"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 21,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "component:cc-resource-selector-tsx:370866b79c",
-      "type": "component",
-      "kind": "feature_or_capability",
-      "name": "cc-resource-selector.tsx",
-      "path": "web/src/components/cc-resource-selector.tsx",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [
-        "configuration"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 14,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "component:cc-route-loading-tsx:920cadd9c7",
-      "type": "component",
-      "kind": "feature_or_capability",
-      "name": "cc-route-loading.tsx",
-      "path": "web/src/components/cc-route-loading.tsx",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [
-        "configuration"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 5,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "component:cc-text-input-tsx:8a4c63b1b4",
-      "type": "component",
-      "kind": "feature_or_capability",
-      "name": "cc-text-input.tsx",
-      "path": "web/src/components/cc-text-input.tsx",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [
-        "configuration"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 8,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:assetsoverview:4a3ad32923",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "AssetsOverview",
-      "path": "web/src/features/departments/assets-route.tsx#AssetsOverview",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "feature:general-dashboard-tsx:1e44e7a581",
-      "type": "feature",
-      "kind": "feature_or_capability",
-      "name": "general-dashboard.tsx",
-      "path": "web/src/features/departments/general-dashboard.tsx",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 26,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:generaldashboard:267cfd0d18",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "GeneralDashboard",
-      "path": "web/src/features/departments/general-dashboard.tsx#GeneralDashboard",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:healthtone:6892cbb287",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "healthTone",
-      "path": "web/src/features/departments/general-dashboard.tsx#healthTone",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:itemmeta:09258723e7",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "itemMeta",
-      "path": "web/src/features/departments/general-dashboard.tsx#itemMeta",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "feature:public-home-tsx:649fe0a227",
-      "type": "feature",
-      "kind": "feature_or_capability",
-      "name": "public-home.tsx",
-      "path": "web/src/features/public/public-home.tsx",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 22,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:herotopology:2abb6b4c04",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "HeroTopology",
-      "path": "web/src/features/public/public-home.tsx#HeroTopology",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:publichomeroute:ffaeaa372d",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "PublicHomeRoute",
-      "path": "web/src/features/public/public-home.tsx#PublicHomeRoute",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:roostglyph:149d4571ea",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "RoostGlyph",
-      "path": "web/src/features/public/public-home.tsx#RoostGlyph",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:statusrail:76dbacfde4",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "StatusRail",
-      "path": "web/src/features/public/public-home.tsx#StatusRail",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:tx:b82a9c769a",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "tx",
-      "path": "web/src/features/public/public-home.tsx#tx",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Dashboard overview",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "api_endpoint:use-strategy:0ead398998",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /strategy",
-      "path": "src/app.ts#/strategy",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Trading operation",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "feature:app-ts:e798655a78",
-      "type": "feature",
-      "kind": "feature_or_capability",
-      "name": "app.ts",
-      "path": "src/app.ts",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Trading operation",
-      "gates": [],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": true,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 192,
-      "risk": "implemented_needs_proof"
-    },
-    {
-      "id": "module:src-modules-strategy:af6e751a33",
-      "type": "module",
-      "kind": "feature_or_capability",
-      "name": "src/modules/strategy",
-      "path": "src/modules/strategy",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Trading operation",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 3,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "feature:strategy-routes-ts:cedc4e61d8",
-      "type": "feature",
-      "kind": "feature_or_capability",
-      "name": "strategy.routes.ts",
-      "path": "src/modules/strategy/strategy.routes.ts",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Trading operation",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 15,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:asjsonarray:b4688e6d13",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "asJsonArray",
-      "path": "src/modules/strategy/strategy.routes.ts#asJsonArray",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Trading operation",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:tasklooksstrategic:830e2f3cd4",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "taskLooksStrategic",
-      "path": "src/modules/strategy/strategy.routes.ts#taskLooksStrategic",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Trading operation",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:textmatchesstrategy:aaa24fc170",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "textMatchesStrategy",
-      "path": "src/modules/strategy/strategy.routes.ts#textMatchesStrategy",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Trading operation",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "feature:strategy-route-tsx:3c24c6d62c",
-      "type": "feature",
-      "kind": "feature_or_capability",
-      "name": "strategy-route.tsx",
-      "path": "web/src/features/departments/strategy-route.tsx",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Trading operation",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 22,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:formatdate:847d73789f",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "formatDate",
-      "path": "web/src/features/departments/strategy-route.tsx#formatDate",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Trading operation",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "function:strategyroute:a52fa483a3",
-      "type": "function",
-      "kind": "feature_or_capability",
-      "name": "StrategyRoute",
-      "path": "web/src/features/departments/strategy-route.tsx#StrategyRoute",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Trading operation",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 1,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "api_endpoint:get:1998daec82",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "GET /",
-      "path": "src/app.ts#/",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Unclassified user workflow",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
     {
       "id": "api_endpoint:use-agent-events:1b4c65ace9",
       "type": "api_endpoint",
@@ -1428,25 +344,6 @@
       "kind": "api_endpoint",
       "name": "USE /goals",
       "path": "src/app.ts#/goals",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Unclassified user workflow",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "api_endpoint:use-google-drive:2b5bd7ccd8",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /google-drive",
-      "path": "src/app.ts#/google-drive",
       "owner": "Engineering Delivery Lead",
       "status": "implemented_needs_proof",
       "userFlow": "Unclassified user workflow",
@@ -1970,7 +867,7 @@
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 2933,
+      "relatedEntityCount": 2961,
       "risk": "implemented_needs_proof"
     },
     {
@@ -2235,13 +1132,13 @@
       "userFlow": "Unclassified user workflow",
       "gates": [],
       "evidence": {
-        "hasTest": false,
+        "hasTest": true,
         "hasDoc": false,
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 125,
-      "risk": "missing_test_link"
+      "relatedEntityCount": 143,
+      "risk": "missing_doc_link"
     },
     {
       "id": "feature:adapter-smoke-mjs:a70330596e",
@@ -3878,11 +2775,30 @@
       "risk": "missing_test_link"
     },
     {
-      "id": "feature:check-architecture-chain-integrity-mjs:6b9a42b230",
+      "id": "feature:check-architecture-command-contract-mjs:0c35fdb41d",
       "type": "feature",
       "kind": "feature_or_capability",
-      "name": "check-architecture-chain-integrity.mjs",
-      "path": "scripts/check-architecture-chain-integrity.mjs",
+      "name": "check-architecture-command-contract.mjs",
+      "path": "scripts/check-architecture-command-contract.mjs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 2,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "feature:check-architecture-connectivity-mjs:228dc3e4e3",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "check-architecture-connectivity.mjs",
+      "path": "scripts/check-architecture-connectivity.mjs",
       "owner": "Engineering Delivery Lead",
       "status": "implemented_needs_proof",
       "userFlow": "Unclassified user workflow",
@@ -3897,11 +2813,1056 @@
       "risk": "missing_test_link"
     },
     {
-      "id": "function:loadcsv:ee61f04aba",
+      "id": "function:loadcsv:2831547584",
       "type": "function",
       "kind": "feature_or_capability",
       "name": "loadCsv",
-      "path": "scripts/check-architecture-chain-integrity.mjs#loadCsv",
+      "path": "scripts/check-architecture-connectivity.mjs#loadCsv",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:main:ba2b21788c",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "main",
+      "path": "scripts/check-architecture-connectivity.mjs#main",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:parsecsv:a84a53af30",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "parseCsv",
+      "path": "scripts/check-architecture-connectivity.mjs#parseCsv",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:readtext:05671e7ea3",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "readText",
+      "path": "scripts/check-architecture-connectivity.mjs#readText",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:splitids:769b159d1a",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "splitIds",
+      "path": "scripts/check-architecture-connectivity.mjs#splitIds",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:writetext:f238579a20",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "writeText",
+      "path": "scripts/check-architecture-connectivity.mjs#writeText",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "feature:check-architecture-csv-contract-mjs:e91c71cfa5",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "check-architecture-csv-contract.mjs",
+      "path": "scripts/check-architecture-csv-contract.mjs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 16,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:checkheaders:64048c4be6",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "checkHeaders",
+      "path": "scripts/check-architecture-csv-contract.mjs#checkHeaders",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:loadcsv:bfc78b933d",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "loadCsv",
+      "path": "scripts/check-architecture-csv-contract.mjs#loadCsv",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:main:2aa8c2e138",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "main",
+      "path": "scripts/check-architecture-csv-contract.mjs#main",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:normalize:945889c244",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "normalize",
+      "path": "scripts/check-architecture-csv-contract.mjs#normalize",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:parsecsv:40d772e569",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "parseCsv",
+      "path": "scripts/check-architecture-csv-contract.mjs#parseCsv",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:readtext:9605464f7a",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "readText",
+      "path": "scripts/check-architecture-csv-contract.mjs#readText",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:writetext:9950d406b4",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "writeText",
+      "path": "scripts/check-architecture-csv-contract.mjs#writeText",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "feature:check-architecture-delta-zero-mjs:74049bc5b7",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "check-architecture-delta-zero.mjs",
+      "path": "scripts/check-architecture-delta-zero.mjs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 2,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "feature:check-architecture-doc-baseline-mjs:a5ad3b00de",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "check-architecture-doc-baseline.mjs",
+      "path": "scripts/check-architecture-doc-baseline.mjs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 12,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:extractvalue:a44b67f28c",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "extractValue",
+      "path": "scripts/check-architecture-doc-baseline.mjs#extractValue",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:main:36ecdbdd37",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "main",
+      "path": "scripts/check-architecture-doc-baseline.mjs#main",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:readjson:bb4c145df3",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "readJson",
+      "path": "scripts/check-architecture-doc-baseline.mjs#readJson",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:readtext:ba2f97a032",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "readText",
+      "path": "scripts/check-architecture-doc-baseline.mjs#readText",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:writetext:8557b30918",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "writeText",
+      "path": "scripts/check-architecture-doc-baseline.mjs#writeText",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "feature:check-architecture-evidence-cardinality-mjs:381575c72b",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "check-architecture-evidence-cardinality.mjs",
+      "path": "scripts/check-architecture-evidence-cardinality.mjs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 6,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:fail:f340d62f2a",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "fail",
+      "path": "scripts/check-architecture-evidence-cardinality.mjs#fail",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:parsecsv:1fdd31cab6",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "parseCsv",
+      "path": "scripts/check-architecture-evidence-cardinality.mjs#parseCsv",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "feature:check-architecture-evidence-gate-mjs:781bf73563",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "check-architecture-evidence-gate.mjs",
+      "path": "scripts/check-architecture-evidence-gate.mjs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 2,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "feature:check-architecture-generated-node-frontmatter-mjs:ddbbafa011",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "check-architecture-generated-node-frontmatter.mjs",
+      "path": "scripts/check-architecture-generated-node-frontmatter.mjs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 6,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:parsefrontmatter:f23732f25d",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "parseFrontmatter",
+      "path": "scripts/check-architecture-generated-node-frontmatter.mjs#parseFrontmatter",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:slug:eb8d1dda0f",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "slug",
+      "path": "scripts/check-architecture-generated-node-frontmatter.mjs#slug",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "feature:check-architecture-graph-artifact-consistency-mjs:64c3a44f24",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "check-architecture-graph-artifact-consistency.mjs",
+      "path": "scripts/check-architecture-graph-artifact-consistency.mjs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 4,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:fail:c2449de797",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "fail",
+      "path": "scripts/check-architecture-graph-artifact-consistency.mjs#fail",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "feature:check-architecture-impact-delta-gate-mjs:9814b543c4",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "check-architecture-impact-delta-gate.mjs",
+      "path": "scripts/check-architecture-impact-delta-gate.mjs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 4,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:fail:3b49925af8",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "fail",
+      "path": "scripts/check-architecture-impact-delta-gate.mjs#fail",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "feature:check-architecture-node-artifacts-mjs:fa88014c2c",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "check-architecture-node-artifacts.mjs",
+      "path": "scripts/check-architecture-node-artifacts.mjs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 10,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:collectnodeids:72451bc015",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "collectNodeIds",
+      "path": "scripts/check-architecture-node-artifacts.mjs#collectNodeIds",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:main:4df36d9bfd",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "main",
+      "path": "scripts/check-architecture-node-artifacts.mjs#main",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:parsecsv:32f86ec7db",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "parseCsv",
+      "path": "scripts/check-architecture-node-artifacts.mjs#parseCsv",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:slug:97eda212f0",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "slug",
+      "path": "scripts/check-architecture-node-artifacts.mjs#slug",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "feature:check-architecture-node-catalog-consistency-mjs:3036946037",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "check-architecture-node-catalog-consistency.mjs",
+      "path": "scripts/check-architecture-node-catalog-consistency.mjs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 16,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:collectconflicts:5c4e2e6eb5",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "collectConflicts",
+      "path": "scripts/check-architecture-node-catalog-consistency.mjs#collectConflicts",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:loadcsv:3cc66c7521",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "loadCsv",
+      "path": "scripts/check-architecture-node-catalog-consistency.mjs#loadCsv",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:main:a1737974f1",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "main",
+      "path": "scripts/check-architecture-node-catalog-consistency.mjs#main",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:normalize:47e9370e0f",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "normalize",
+      "path": "scripts/check-architecture-node-catalog-consistency.mjs#normalize",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:parsecsv:0fe8542b14",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "parseCsv",
+      "path": "scripts/check-architecture-node-catalog-consistency.mjs#parseCsv",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:readtext:83fc4d4831",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "readText",
+      "path": "scripts/check-architecture-node-catalog-consistency.mjs#readText",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:writetext:f5c71c3511",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "writeText",
+      "path": "scripts/check-architecture-node-catalog-consistency.mjs#writeText",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "feature:check-architecture-node-integrity-mjs:0e4d4d0b7d",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "check-architecture-node-integrity.mjs",
+      "path": "scripts/check-architecture-node-integrity.mjs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 12,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:loadcsv:fc4333f16a",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "loadCsv",
+      "path": "scripts/check-architecture-node-integrity.mjs#loadCsv",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:main:aeea1e3dce",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "main",
+      "path": "scripts/check-architecture-node-integrity.mjs#main",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:parsecsv:1f8990408a",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "parseCsv",
+      "path": "scripts/check-architecture-node-integrity.mjs#parseCsv",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:readtext:3ab2a7d2d8",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "readText",
+      "path": "scripts/check-architecture-node-integrity.mjs#readText",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:writetext:310d8fc16b",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "writeText",
+      "path": "scripts/check-architecture-node-integrity.mjs#writeText",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "feature:check-architecture-node-links-mjs:7902816cff",
+      "type": "feature",
+      "kind": "feature_or_capability",
+      "name": "check-architecture-node-links.mjs",
+      "path": "scripts/check-architecture-node-links.mjs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 10,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:collectknownnodeslugs:3aaeb672e0",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "collectKnownNodeSlugs",
+      "path": "scripts/check-architecture-node-links.mjs#collectKnownNodeSlugs",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:main:af7f3ed479",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "main",
+      "path": "scripts/check-architecture-node-links.mjs#main",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:parsecsv:16cf25b8fd",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "parseCsv",
+      "path": "scripts/check-architecture-node-links.mjs#parseCsv",
+      "owner": "Engineering Delivery Lead",
+      "status": "implemented_needs_proof",
+      "userFlow": "Unclassified user workflow",
+      "gates": [],
+      "evidence": {
+        "hasTest": false,
+        "hasDoc": true,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 1,
+      "risk": "missing_test_link"
+    },
+    {
+      "id": "function:slug:e7d37ebb7c",
+      "type": "function",
+      "kind": "feature_or_capability",
+      "name": "slug",
+      "path": "scripts/check-architecture-node-links.mjs#slug",
       "owner": "Engineering Delivery Lead",
       "status": "implemented_needs_proof",
       "userFlow": "Unclassified user workflow",

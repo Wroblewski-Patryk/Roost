@@ -56,6 +56,9 @@ Assets files/folders page.
 ## Tests
 
 - `TEST-PLAYWRIGHT-ASSETS` Assets Playwright proof: `verified`
+- `TEST-BROWSER-OWNER-TOKEN` node scripts/luc-1043-account-access-owner-token-proof.mjs: `verified`
+- `TEST-BROWSER-RESOURCE-SELECTOR` node scripts/luc-1084-cc-resource-selector-proof.mjs: `verified`
+- `TEST-BROWSER-ASSETS-OVERVIEW` node scripts/luc-1090-assets-overview-proof.mjs: `verified`
 
 ## Evidence
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-13T14:08:11.565Z",
+  "generatedAt": "2026-07-14T15:06:38.297Z",
   "nodes": [
     {
       "id": "FEAT-ARCH-EVIDENCE-SYSTEM",
@@ -12880,6 +12880,186 @@
       ],
       "coveredChainIds": [
         "CHAIN-ASSETS-CONTEXT"
+      ],
+      "verificationStatus": "verified"
+    },
+    {
+      "id": "TEST-ARCH-CHAIN-INTEGRITY",
+      "name": "node --test dist/tests/architecture-chain-integrity.test.js",
+      "status": "implemented",
+      "command": "node --test dist/tests/architecture-chain-integrity.test.js",
+      "relatedNodeIds": [
+        "PIPE-AUTO-0007",
+        "FEAT-ARCH-EVIDENCE-SYSTEM"
+      ],
+      "coveredChainIds": [
+        "CHAIN-ARCH-EVIDENCE-SYSTEM"
+      ],
+      "verificationStatus": "tested"
+    },
+    {
+      "id": "TEST-ARCH-HEALTH-DASHBOARD",
+      "name": "node --test dist/tests/architecture-health-dashboard.test.js",
+      "status": "implemented",
+      "command": "node --test dist/tests/architecture-health-dashboard.test.js",
+      "relatedNodeIds": [
+        "PIPE-AUTO-0005",
+        "FEAT-ARCH-EVIDENCE-SYSTEM"
+      ],
+      "coveredChainIds": [
+        "CHAIN-ARCH-EVIDENCE-SYSTEM"
+      ],
+      "verificationStatus": "tested"
+    },
+    {
+      "id": "TEST-ARCH-HEALTH-DASHBOARD-GATE",
+      "name": "node --test dist/tests/architecture-health-dashboard-gate.test.js",
+      "status": "implemented",
+      "command": "node --test dist/tests/architecture-health-dashboard-gate.test.js",
+      "relatedNodeIds": [
+        "PIPE-AUTO-0005",
+        "FEAT-ARCH-EVIDENCE-SYSTEM"
+      ],
+      "coveredChainIds": [
+        "CHAIN-ARCH-EVIDENCE-SYSTEM"
+      ],
+      "verificationStatus": "tested"
+    },
+    {
+      "id": "TEST-BROWSER-CLEAR-OWNER-TOKEN",
+      "name": "node scripts/luc-1022-account-access-clear-owner-token-proof.mjs",
+      "status": "verified",
+      "command": "node scripts/luc-1022-account-access-clear-owner-token-proof.mjs",
+      "relatedNodeIds": [
+        "PAGE-00-GENERAL",
+        "COMP-GENERAL-DASHBOARD"
+      ],
+      "coveredChainIds": [
+        "CHAIN-DASHBOARD-COMMAND"
+      ],
+      "verificationStatus": "verified"
+    },
+    {
+      "id": "TEST-BROWSER-IS-SIGNED-IN",
+      "name": "node scripts/luc-1038-account-access-is-signed-in-proof.mjs",
+      "status": "verified",
+      "command": "node scripts/luc-1038-account-access-is-signed-in-proof.mjs",
+      "relatedNodeIds": [
+        "PAGE-00-GENERAL",
+        "COMP-GENERAL-DASHBOARD"
+      ],
+      "coveredChainIds": [
+        "CHAIN-DASHBOARD-COMMAND"
+      ],
+      "verificationStatus": "verified"
+    },
+    {
+      "id": "TEST-BROWSER-OWNER-TOKEN",
+      "name": "node scripts/luc-1043-account-access-owner-token-proof.mjs",
+      "status": "verified",
+      "command": "node scripts/luc-1043-account-access-owner-token-proof.mjs",
+      "relatedNodeIds": [
+        "PAGE-08-ASSETS-FILES",
+        "UI-ASSETS-FILE-PREVIEW"
+      ],
+      "coveredChainIds": [
+        "CHAIN-ASSETS-CONTEXT"
+      ],
+      "verificationStatus": "verified"
+    },
+    {
+      "id": "TEST-BROWSER-SET-OWNER-TOKEN",
+      "name": "node scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+      "status": "verified",
+      "command": "node scripts/luc-1063-account-access-set-owner-token-proof.mjs",
+      "relatedNodeIds": [
+        "PAGE-00-GENERAL",
+        "COMP-GENERAL-DASHBOARD",
+        "PAGE-AUTO-0003"
+      ],
+      "coveredChainIds": [
+        "CHAIN-DASHBOARD-COMMAND"
+      ],
+      "verificationStatus": "verified"
+    },
+    {
+      "id": "TEST-BROWSER-DASHBOARD-NOTICE",
+      "name": "node scripts/luc-1082-dashboard-cc-notice-proof.mjs",
+      "status": "verified",
+      "command": "node scripts/luc-1082-dashboard-cc-notice-proof.mjs",
+      "relatedNodeIds": [
+        "PAGE-00-GENERAL",
+        "COMP-GENERAL-DASHBOARD"
+      ],
+      "coveredChainIds": [
+        "CHAIN-DASHBOARD-COMMAND"
+      ],
+      "verificationStatus": "verified"
+    },
+    {
+      "id": "TEST-BROWSER-RESOURCE-SELECTOR",
+      "name": "node scripts/luc-1084-cc-resource-selector-proof.mjs",
+      "status": "verified",
+      "command": "node scripts/luc-1084-cc-resource-selector-proof.mjs",
+      "relatedNodeIds": [
+        "PAGE-04-OPERATIONS-TASKS",
+        "PAGE-08-ASSETS-FILES"
+      ],
+      "coveredChainIds": [
+        "CHAIN-OPERATIONS-WORK-ITEM",
+        "CHAIN-ASSETS-CONTEXT"
+      ],
+      "verificationStatus": "verified"
+    },
+    {
+      "id": "TEST-BROWSER-DASHBOARD-ROUTE-LOADING",
+      "name": "node scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+      "status": "verified",
+      "command": "node scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+      "relatedNodeIds": [
+        "PAGE-00-GENERAL",
+        "COMP-GENERAL-DASHBOARD"
+      ],
+      "coveredChainIds": [
+        "CHAIN-DASHBOARD-COMMAND"
+      ],
+      "verificationStatus": "verified"
+    },
+    {
+      "id": "TEST-BROWSER-ASSETS-OVERVIEW",
+      "name": "node scripts/luc-1090-assets-overview-proof.mjs",
+      "status": "verified",
+      "command": "node scripts/luc-1090-assets-overview-proof.mjs",
+      "relatedNodeIds": [
+        "PAGE-08-ASSETS-FILES",
+        "COMP-ASSETS-ROUTE"
+      ],
+      "coveredChainIds": [
+        "CHAIN-ASSETS-CONTEXT"
+      ],
+      "verificationStatus": "verified"
+    },
+    {
+      "id": "TEST-BROWSER-STRATEGY-ROUTE",
+      "name": "npm run owner-console:ux-smoke",
+      "status": "verified",
+      "command": "npm run owner-console:ux-smoke",
+      "relatedNodeIds": [],
+      "coveredChainIds": [],
+      "verificationStatus": "verified"
+    },
+    {
+      "id": "TEST-BROWSER-DASHBOARD-ALIAS",
+      "name": "node scripts/luc-998-dashboard-public-home-proof.mjs",
+      "status": "verified",
+      "command": "node scripts/luc-998-dashboard-public-home-proof.mjs",
+      "relatedNodeIds": [
+        "PAGE-AUTO-0005",
+        "PAGE-00-GENERAL",
+        "COMP-GENERAL-DASHBOARD"
+      ],
+      "coveredChainIds": [
+        "CHAIN-DASHBOARD-COMMAND"
       ],
       "verificationStatus": "verified"
     }

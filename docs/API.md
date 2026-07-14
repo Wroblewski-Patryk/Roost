@@ -174,6 +174,41 @@ include password hashes, raw API keys, integration tokens, or secret material.
 Integration settings such as ClickUp credentials must belong to the active
 workspace and must not be returned in API responses.
 
+Frontend auth-token storage remains session-scoped and fail-closed:
+
+- `web/src/api/auth-token.ts#ownerToken` reads the current bearer token from
+  `window.sessionStorage` key `companycoreOwnerToken`.
+- `web/src/api/auth-token.ts#setOwnerToken` stores the current bearer token in
+  that same session-only key after successful auth or workspace selection.
+- `web/src/api/auth-token.ts#clearOwnerToken` removes the session token on
+  sign-out or auth reset so later requests do not reuse stale bearer auth.
+- `web/src/api/auth-token.ts#isSignedIn` derives signed-in UI state from the
+  presence of that session token instead of caching a separate auth flag.
+
+Owner workspace switching stays bearer-user only:
+
+```http
+GET /v1/workspaces
+POST /v1/workspaces
+POST /v1/workspaces/:id/actions/select
+```
+
+These routes reuse the same fail-closed user guard:
+
+- only `req.auth.authType = "user"` with a resolved `req.auth.userId` may list,
+  create, or select workspaces;
+- service callers authenticated through `X-API-Key` always receive
+  `403 forbidden` on these routes;
+- `GET /v1/workspaces` returns only memberships for the authenticated owner and
+  marks the currently active workspace from auth context;
+- `POST /v1/workspaces` creates a new workspace plus owner membership, seeds
+  the operating model, and returns a fresh bearer token scoped to the created
+  workspace;
+- `POST /v1/workspaces/:id/actions/select` requires an existing membership and
+  returns a fresh bearer token scoped to the selected workspace;
+- protected APIs continue deriving the active `workspaceId` from bearer auth or
+  service-key auth context instead of trusting client-selected workspace IDs.
+
 ## Service API Keys
 
 `X-API-Key` remains the service-client auth mechanism for Paperclip, Jarvis,
@@ -244,6 +279,153 @@ Owner console support:
   page or dismissing the one-time panel leaves only the safe key prefix.
 - Rotation is performed by creating a replacement key with the same scopes,
   copying the new raw key once, and deactivating the previous key.
+
+## Dashboard Command Center
+
+```http
+GET /v1/dashboard/command
+GET /dashboard/command
+```
+
+Required capability:
+
+```text
+dashboard:read
+```
+
+`GET /v1/dashboard/command` returns the workspace-scoped, read-only owner
+command-center packet used by the General dashboard surface at
+`/areas?area=00-ogolny&view=overview`. The root-level `/dashboard/command`
+route is a compatibility alias and must return the same protected packet shape.
+
+Contract rules:
+
+- require authenticated workspace access through bearer-owner auth or a
+  service API key with `dashboard:read`;
+- derive `workspaceId` from the auth context instead of trusting client input;
+- aggregate only existing task, approval, risk, workforce, Drive, mapping, and
+  route-proposal records;
+- remain read-only by returning blocked actions for write workflows that belong
+  to area-specific routes;
+- normalize missing counts as `0` before summary totals are combined;
+- classify overdue tasks with `dueDate < startOfToday()` and due-today tasks
+  with `startOfToday() <= dueDate < startOfTomorrow()`;
+- treat only `high` and `critical` active risks as critical dashboard risks;
+- keep department health fail-closed: any non-zero watched or blocked count
+  keeps the requested health state, while `0` resolves to `ready`.
+
+Safe response shape:
+
+```json
+{
+  "data": {
+    "generatedAt": "2026-07-14T08:00:00.000Z",
+    "summary": {
+      "pendingAgentEvents": 1,
+      "failedProviderEvents": 0,
+      "pendingProviderEvents": 2,
+      "pendingApprovals": 1,
+      "activeRisks": 3,
+      "criticalRisks": 1,
+      "openTasks": 7,
+      "blockedTasks": 1,
+      "overdueTasks": 2,
+      "dueTodayTasks": 1,
+      "unscheduledOpenTasks": 3,
+      "taskLists": 4,
+      "workforceAgents": 6,
+      "autonomousAgents": 2,
+      "pendingWorkforceSyncs": 1,
+      "driveFiles": 18,
+      "driveFolders": 5,
+      "unmappedDriveFiles": 2,
+      "unmappedMappings": 3
+    },
+    "departmentSignals": [
+      {
+        "key": "operations",
+        "label": "Operations",
+        "health": "watch",
+        "count": 4,
+        "href": "/areas?area=04-operacje&view=tasks"
+      }
+    ],
+    "priorityItems": [],
+    "nextActions": [
+      {
+        "key": "review_approvals",
+        "label": "Review pending approvals",
+        "target": "/areas?area=00-ogolny&view=overview",
+        "count": 1,
+        "priority": "high"
+      }
+    ],
+    "agentPacket": {
+      "mode": "read_only_command_center",
+      "allowedActions": [
+        "read_dashboard_command",
+        "open_department_route"
+      ],
+      "blockedActions": [
+        {
+          "action": "change_business_data",
+          "reason": "Dashboard command stays read-only; mutations must use the owning area routes."
+        }
+      ]
+    }
+  }
+}
+```
+
+Signal semantics:
+
+- `departmentSignals` summarize pending approvals, operations backlog,
+  workforce sync pressure, and unmapped Drive or field-routing backlog.
+- `priorityItems` are capped to the most recent or severe actionable items
+  drawn from overdue tasks, active critical risks, and the latest
+  `companycore_intake` route proposals.
+- `nextActions` include only actionable non-zero counts and route the owner
+  into the existing area views that can resolve that pressure.
+- `agentPacket.mode` stays `read_only_command_center` so MCP and agent
+  consumers can inspect the packet without inferring write authority.
+
+## Workforce Directory And Authority Packet
+
+`GET /v1/workforce` is the read contract for the `06 People & Agents`
+directory. It returns a workspace-scoped workforce roster plus backend-owned
+management context that the UI must render without inferring permissions or
+authority rules in the browser.
+
+Implemented directory packet highlights:
+
+- `summary` exposes workspace totals for visible humans, agents, sync-enabled
+  records, and queued sync requests.
+- `entities[]` includes profile data, generated markdown previews, readiness,
+  inferred work context, and an `authority` object for each workforce row.
+- `dictionaries` provides canonical enum and department options for type,
+  status, runtime mode, personality profile, and the accepted `00`-`12`
+  department keys.
+
+`authority` is read-only guidance, not a permission-mutation surface:
+
+- Human workforce rows return
+  `authority.mode = "human_workspace_authority"` and expose the current
+  owner-style workspace authority posture through `visibleScopeSample`.
+- Agent workforce rows return `authority.mode = "profile_not_bound"` until a
+  dedicated assignment or RBAC model binds the agent to a stricter runtime
+  contract.
+- `recommendedProfiles` may suggest the safest matching Paperclip/API-key
+  profile for an agent row, but the response does not grant or mutate scopes.
+- `supportedCapabilities` is limited to representative workforce, operations,
+  tasks, and event capabilities so the owner can understand the intended work
+  surface.
+- `blockedActions` must explicitly keep unsafe actions fail-closed, including
+  direct assignment without an assignment model, permission expansion from the
+  directory, and autonomous HR decisions.
+
+This contract exists so the owner can inspect workforce authority boundaries
+and recommended agent posture through `/v1/workforce` without letting the
+directory bypass future RBAC, approval, or assignment-model work.
 
 ## Integration Settings
 
@@ -1331,6 +1513,20 @@ targets, metrics, risks, controls, decisions, decision logs, strategic
 knowledge, Drive files, and follow-up tasks without changing strategic
 direction, priorities, portfolio choices, goals, targets, documents, tasks, or
 provider state.
+
+Contract invariants:
+
+- `decisionLogs[].optionsConsidered` is always an array in the response. When
+  the stored JSON value is null, scalar, or another non-array shape, the route
+  normalizes it to `[]` before returning the packet.
+- `knowledgeItems[]` contains only the most recent strategy-tagged knowledge
+  rows whose title, summary, or item type matches Strategy keywords.
+- `driveFiles[]` contains only strategy-governance files, either through the
+  canonical operating-area mapping or the same keyword matching used for
+  strategy knowledge discovery.
+- `tasks[]` and `summary.strategicTasks` count only the recent follow-up tasks
+  whose title or description matches the Strategy keyword set used for the
+  read-only packet.
 
 Safe response shape:
 
@@ -2877,6 +3073,11 @@ Safe response shape:
 
 Idempotent replays with the same source, target department, classification, and
 idempotency key return the existing proposal with `idempotentReplay=true`.
+Bearer-owner requests record `actorType=user` with the owner user id in the
+matching `intake.route_proposed` audit and event evidence. Workspace-scoped
+service API-key requests record `actorType=agent` with the API key id in the
+same audit and event evidence, so route proposals stay attributable without
+mutating the source intake item.
 
 ## Agent Events
 

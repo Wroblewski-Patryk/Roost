@@ -1,0 +1,61 @@
+{
+  "issue": "LUC-1084",
+  "status": "passed",
+  "generatedAt": "2026-07-14T11:11:15.195Z",
+  "baseUrl": "http://127.0.0.1:65520",
+  "requestCounts": {
+    "authMe": 2,
+    "departments": 2,
+    "operations": 1,
+    "assets": 1
+  },
+  "authHeaders": {
+    "authMeHeaders": [
+      "Bearer luc-1084-proof-token",
+      "Bearer luc-1084-proof-token"
+    ],
+    "departmentsHeaders": [
+      "Bearer luc-1084-proof-token",
+      "Bearer luc-1084-proof-token"
+    ],
+    "operationsHeaders": [
+      "Bearer luc-1084-proof-token"
+    ],
+    "assetsHeaders": [
+      "Bearer luc-1084-proof-token"
+    ]
+  },
+  "operations": {
+    "filteredScreenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-1084-cc-resource-selector-proof\\operations-selector-filtered.png",
+    "emptyScreenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-1084-cc-resource-selector-proof\\operations-selector-empty.png",
+    "noHorizontalOverflow": true,
+    "initialCheckboxCount": 4,
+    "filteredCheckboxCount": 2,
+    "emptyCheckboxCount": 1,
+    "searchReducedVisibleItems": true,
+    "emptyStateVisible": true
+  },
+  "assets": {
+    "filteredScreenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-1084-cc-resource-selector-proof\\assets-selector-filtered.png",
+    "emptyScreenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-1084-cc-resource-selector-proof\\assets-selector-empty.png",
+    "noHorizontalOverflow": true,
+    "initialCheckboxCount": 3,
+    "filteredCheckboxCount": 2,
+    "emptyCheckboxCount": 1,
+    "searchReducedVisibleItems": true,
+    "emptyStateVisible": true
+  },
+  "assertions": {
+    "authMeUsedBearerToken": true,
+    "departmentsUsedBearerToken": true,
+    "operationsUsedBearerToken": true,
+    "assetsUsedBearerToken": true,
+    "selectorSearchFiltersOperations": true,
+    "selectorSearchFiltersAssets": true,
+    "selectorEmptyStateVisible": true,
+    "noHorizontalOverflow": true,
+    "runtimeErrors": true
+  },
+  "consoleIssues": [],
+  "pageErrors": []
+}

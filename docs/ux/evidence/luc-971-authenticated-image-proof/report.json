@@ -1,0 +1,50 @@
+{
+  "timestamp": "2026-07-13T18:14:04.443Z",
+  "route": "/areas?area=08-zasoby&view=files",
+  "previewRequestCount": 4,
+  "previewAuthHeaders": [
+    "Bearer proof-token",
+    "Bearer proof-token",
+    "Bearer proof-token",
+    "Bearer proof-token"
+  ],
+  "contextAuthHeaders": [
+    "Bearer proof-token",
+    "Bearer proof-token"
+  ],
+  "departmentAuthHeaders": [
+    "Bearer proof-token",
+    "Bearer proof-token"
+  ],
+  "authMeHeaders": [
+    "Bearer proof-token",
+    "Bearer proof-token"
+  ],
+  "previewRequestUrls": [
+    "http://127.0.0.1:3411/v1/assets/files/proof-image/preview",
+    "http://127.0.0.1:3411/v1/assets/files/proof-image/preview",
+    "http://127.0.0.1:3411/v1/assets/files/proof-image/preview",
+    "http://127.0.0.1:3411/v1/assets/files/proof-image/preview"
+  ],
+  "surfaces": [
+    {
+      "name": "desktop-assets-authenticated-image",
+      "overflow": true,
+      "screenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-971-authenticated-image-proof\\desktop-assets-authenticated-image.png"
+    },
+    {
+      "name": "mobile-assets-authenticated-image",
+      "overflow": true,
+      "screenshotPath": "C:\\Personal\\Projekty\\Aplikacje\\Roost\\docs\\ux\\evidence\\luc-971-authenticated-image-proof\\mobile-assets-authenticated-image.png"
+    }
+  ],
+  "errors": [],
+  "assertions": {
+    "previewRequestedWithBearerToken": true,
+    "assetsPacketRequestedWithBearerToken": true,
+    "shellRequestsRequestedWithBearerToken": true,
+    "desktopNoHorizontalOverflow": true,
+    "mobileNoHorizontalOverflow": true,
+    "runtimeErrors": true
+  }
+}

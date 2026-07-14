@@ -1,10 +1,10 @@
 # Architecture Registry Catalog
 
-Generated at: 2026-07-13T14:08:19.677Z
+Generated at: 2026-07-14T15:06:48.275Z
 
 - Total CSV files: 30
 - Missing files: 0
-- Total rows: 1767
+- Total rows: 1780
 
 | File | Exists | Rows | Headers |
 | --- | --- | ---: | ---: |
@@ -36,5 +36,5 @@ Generated at: 2026-07-13T14:08:19.677Z
 | `docs/architecture/nodes/workflows.csv` | yes | 2 | 26 |
 | `docs/architecture/relations/dependencies.csv` | yes | 765 | 10 |
 | `docs/architecture/chains/chains.csv` | yes | 35 | 15 |
-| `docs/testing/test-map.csv` | yes | 8 | 13 |
+| `docs/testing/test-map.csv` | yes | 21 | 13 |
 | `docs/status/evidence-status.csv` | yes | 454 | 11 |

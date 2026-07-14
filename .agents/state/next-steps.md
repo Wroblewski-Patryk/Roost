@@ -1,4 +1,470 @@
 # Next Steps
+- 2026-07-14: [LUC-1101](/LUC/issues/LUC-1101) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified root endpoint
+  `src/app.ts#/`. The durable packet is
+  `.codex/tasks/luc-1101-unclassified-root-get-proof-link.md`. Current fact:
+  refreshed architecture-awareness marks the exact root mount `verified`
+  through the existing API-host and public-home proof family, refreshed
+  app-completion no longer reports `api_endpoint:get:1998daec82`, and Project
+  Truth now routes `src/app.ts#/agent-events` as the first remaining proof
+  gap. Next action, only if selected by Project Truth routing, is a Test
+  Automation Engineer + QA Regression Lead proof-link lane for
+  `src/app.ts#/agent-events`. Do not reopen another QA proof lane for
+  `src/app.ts#/` unless a fresh generated regression removes the linked route
+  evidence.
+- 2026-07-14: [LUC-1099](/LUC/issues/LUC-1099) has no remaining 09 TAE
+  missing-test-link action for Trading operation
+  `web/src/features/departments/strategy-route.tsx`,
+  `web/src/features/departments/strategy-route.tsx#formatDate`, or
+  `web/src/features/departments/strategy-route.tsx#StrategyRoute`. The
+  durable packet is
+  `.codex/tasks/luc-1099-trading-operation-strategy-route-proof-link.md`.
+  Current fact: refreshed architecture-awareness marks the exact frontend file
+  and both function rows `verified` through the existing LUC-727 Strategy
+  browser proof, refreshed app-completion no longer reports that frontend
+  family in `priorityReviewItems`, and Project Truth now routes
+  `src/app.ts#/` as the first remaining proof gap. Next action, only if
+  selected by Project Truth routing, is a Test Automation Engineer + QA
+  Regression Lead proof-link lane for `src/app.ts#/`. Do not reopen another
+  QA proof lane for the Strategy frontend family unless a fresh generated
+  regression removes the linked browser evidence.
+- 2026-07-14: [LUC-1097](/LUC/issues/LUC-1097) has no remaining
+  Documentation Steward action for the curated Trading operation Strategy
+  helper-family `missing_doc_link` rows on
+  `src/modules/strategy/strategy.routes.ts#asJsonArray`,
+  `#textMatchesStrategy`, and `#taskLooksStrategic`. The durable packet is
+  `.codex/tasks/luc-1097-trading-operation-asjsonarray-doc-link.md`. Current
+  fact: refreshed app-completion marks those exact helpers with documentation
+  proof and no longer reports them as `missing_doc_link`, while Project Truth
+  now routes the first remaining Trading operation gap to
+  `web/src/features/departments/strategy-route.tsx`
+  `missing_test_link`. Next owner/action is Test Automation Engineer + QA
+  Regression Lead for focused frontend proof routing on `strategy-route.tsx`,
+  `formatDate`, and `StrategyRoute`. Do not reopen backend product code,
+  Strategy API docs, deploy, protected smoke, restart, production mutation,
+  credential, or secret work from this completed doc-link lane.
+
+- 2026-07-14: [LUC-1095](/LUC/issues/LUC-1095) has no remaining 09 TAE
+  missing-test-link action for the Trading operation backend family on
+  `src/modules/strategy`. The durable packet is
+  `.codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md`.
+  Current fact: refreshed architecture-awareness marks the backend Strategy
+  module, route file, and helper rows `verified` through the existing
+  Strategy API harness; refreshed app-completion no longer reports
+  `src/modules/strategy` or `strategy.routes.ts` as `missing_test_link`; and
+  Project Truth now routes the same Strategy helper family only as
+  `missing_doc_link` starting with
+  `src/modules/strategy/strategy.routes.ts#asJsonArray`. Next action for this
+  specific backend family belongs to Docs Memory Lead + Project Manager. Do
+  not reopen another QA proof lane for `src/modules/strategy` unless a fresh
+  generated regression removes the linked API-harness evidence.
+
+- 2026-07-14: [LUC-1093](/LUC/issues/LUC-1093) has no remaining 09 TAE
+  missing-test-link action for the exact Trading operation endpoint
+  `src/app.ts#/strategy`. The durable packet is
+  `.codex/tasks/luc-1093-trading-operation-use-strategy-proof-link.md`.
+  Current fact: refreshed architecture-awareness marks the mount `verified`
+  through existing Strategy API/browser proof, refreshed app-completion no
+  longer reports `api_endpoint:use-strategy:0ead398998`, and Project Truth now
+  routes Trading operation `src/modules/strategy` as the next first proof
+  gap. Next action, only if selected by Project Truth routing, is a Test
+  Automation Engineer + QA Regression Lead proof-link lane for
+  `src/modules/strategy`. Do not reopen another QA proof lane for
+  `src/app.ts#/strategy` unless a fresh generated regression removes the
+  linked proof.
+
+- 2026-07-14: [LUC-1090](/LUC/issues/LUC-1090) has no remaining 09 TAE
+  missing-test-link action for Dashboard overview
+  `web/src/features/departments/assets-route.tsx#AssetsOverview`. The durable
+  packet is `.codex/tasks/luc-1090-dashboard-overview-assetsoverview-proof-link.md`.
+  Current fact: refreshed architecture-awareness marks `AssetsOverview` and
+  the focused proof harness/helper family `verified`, refreshed app-completion
+  no longer reports `AssetsOverview` in `priorityReviewItems`, and Project
+  Truth now routes Trading operation `src/app.ts#/strategy` as the next first
+  proof gap. Next action, only if selected by Project Truth routing, is a Test
+  Automation Engineer + QA Regression Lead proof-link lane for
+  `src/app.ts#/strategy`. Do not reopen another QA proof lane for
+  `AssetsOverview` unless a fresh generated regression removes the linked
+  browser evidence.
+
+- 2026-07-14: [LUC-1088](/LUC/issues/LUC-1088) has no remaining 09 TAE
+  missing-test-link action for Dashboard overview
+  `web/src/components/cc-text-input.tsx`. The durable packet is
+  `.codex/tasks/luc-1088-dashboard-overview-cc-text-input-proof-link.md`.
+  Current fact: refreshed architecture-awareness marks `cc-text-input.tsx`
+  and `CcTextInput` `verified` through auth proof that actually renders the
+  shared input, refreshed app-completion no longer reports `cc-text-input.tsx`
+  as the first `missing_test_link`, and Project Truth now routes
+  `AssetsOverview` as the next Dashboard overview proof gap. Next action, only
+  if selected by Project Truth routing, is a Test Automation Engineer + QA
+  Regression Lead proof-link lane for
+  `web/src/features/departments/assets-route.tsx#AssetsOverview`. Do not
+  reopen another QA proof lane for `cc-text-input.tsx` unless a fresh
+  generated regression removes the linked browser evidence.
+
+- 2026-07-14: [LUC-1082](/LUC/issues/LUC-1082) has no remaining 09 TAE
+  missing-test-link action for Dashboard overview
+  `web/src/components/cc-notice.tsx`. The durable packet is
+  `.codex/tasks/luc-1082-dashboard-overview-cc-notice-proof-link.md`.
+  Current fact: refreshed architecture-awareness marks `cc-notice.tsx`,
+  `CcNotice`, and the focused dashboard proof script family `verified`,
+  refreshed app-completion no longer reports `cc-notice.tsx` as the first
+  `missing_test_link`, and Project Truth now routes
+  `cc-resource-selector.tsx` as the next shared Dashboard overview proof gap.
+  Next action, only if selected by Project Truth routing, is a Test Automation
+  Engineer + QA Regression Lead proof-link lane for `cc-resource-selector.tsx`.
+  Do not reopen another QA proof lane for `cc-notice.tsx` unless a fresh
+  generated regression removes the linked browser evidence.
+
+- 2026-07-14: [LUC-1080](/LUC/issues/LUC-1080) has no remaining 09 TAE
+  missing-test-link action for Dashboard overview
+  `web/src/components/cc-field.tsx`. The durable packet is
+  `.codex/tasks/luc-1080-dashboard-overview-cc-field-proof-link.md`.
+  Current fact: refreshed architecture-awareness marks `cc-field.tsx` and
+  `CcField` `verified` through auth proof that actually renders the shared
+  field, refreshed app-completion no longer reports `cc-field.tsx` as the
+  first `missing_test_link`, and Project Truth now routes `cc-notice.tsx` as
+  the next shared Dashboard overview proof gap. Next action, only if selected
+  by Project Truth routing, is a Test Automation Engineer + QA Regression
+  Lead proof-link lane for `cc-notice.tsx`. Do not reopen another QA proof
+  lane for `cc-field.tsx` unless a fresh generated regression removes the
+  linked browser evidence.
+
+- 2026-07-14: [LUC-1078](/LUC/issues/LUC-1078) has no remaining 09 TAE
+  missing-test-link action for Dashboard overview
+  `web/src/components/cc-data-table.tsx`. The durable packet is
+  `.codex/tasks/luc-1078-dashboard-overview-cc-data-table-proof-link.md`.
+  Current fact: refreshed architecture-awareness marks `cc-data-table.tsx`,
+  `CcDataTable`, and `filterBar` `verified` through the existing `LUC-998`
+  browser proof, refreshed app-completion no longer reports
+  `cc-data-table.tsx` as the first `missing_test_link`, and Project Truth now
+  routes `cc-field.tsx` as the next shared Dashboard overview proof gap. Next
+  action, only if selected by Project Truth routing, is a Test Automation
+  Engineer + QA Regression Lead proof-link lane for `cc-field.tsx`. Do not
+  reopen another QA proof lane for `cc-data-table.tsx` unless a fresh
+  generated regression removes the linked browser evidence.
+
+- 2026-07-14: [LUC-1074](/LUC/issues/LUC-1074) has no remaining Documentation
+  Steward action for Dashboard overview `src/modules/dashboard`. The durable
+  packet is
+  `.codex/tasks/luc-1074-dashboard-overview-src-modules-dashboard-doc-link.md`.
+  Current fact: `docs/API.md` and
+  `docs/architecture/relations/documentation-links.csv` now cover the exact
+  dashboard backend module family, refreshed app-completion no longer reports
+  those rows as `missing_doc_link`, and Project Truth now routes the first
+  remaining Dashboard overview gap to `web/src/components/cc-button.tsx`
+  `missing_test_link`. Next action for this flow belongs to Test Automation
+  Engineer + QA Regression Lead. Do not reopen another docs lane for
+  `src/modules/dashboard` unless a fresh generated regression removes the
+  accepted dashboard command contract or its exact documentation links.
+
+- 2026-07-14: [LUC-1072](/LUC/issues/LUC-1072) has no remaining 09 TAE
+  missing-test-link action for Dashboard overview `src/modules/dashboard`.
+  The durable packet is
+  `.codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md`.
+  Current fact: refreshed architecture-awareness and app-completion mark the
+  backend dashboard module, route file, and helper rows `verified`, and
+  Project Truth now routes the same family only as `missing_doc_link`.
+  Next action for this specific backend family belongs to Docs Memory Lead +
+  Project Manager. Do not reopen another QA proof lane for
+  `src/modules/dashboard` unless a fresh generated regression removes the
+  linked API-harness evidence.
+
+- 2026-07-14: [LUC-1070](/LUC/issues/LUC-1070) has no remaining 09 TAE
+  missing-test-link action for Dashboard overview
+  `scripts/check-architecture-health-dashboard-gate.mjs`. The durable packet
+  is `.codex/tasks/luc-1070-dashboard-architecture-health-dashboard-gate-proof.md`.
+  Current fact: refreshed architecture-awareness marks the exact gate script
+  plus `readJson` and `fail` `verified`, refreshed app-completion no longer
+  reports them as `missing_test_link`, and Project Truth now routes the first
+  remaining Dashboard overview gap to `src/modules/dashboard`
+  `missing_test_link`. Next action, only if selected by Project Truth
+  routing, is a Test Automation Engineer + QA Regression Lead proof-link lane
+  for that dashboard module surface. Do not reopen another QA proof lane for
+  `scripts/check-architecture-health-dashboard-gate.mjs` unless a fresh
+  generated regression removes the linked test evidence.
+
+- 2026-07-14: LUC-1070 board disposition is complete on the live Paperclip
+  issue control plane. The typed closeout evidence and terminal comment are
+  attached to the same issue, so no follow-up board mutation remains for this
+  lane.
+
+- 2026-07-14: [LUC-1068](/LUC/issues/LUC-1068) has no remaining 09 TAE
+  missing-test-link action for Dashboard overview
+  `scripts/build-architecture-health-dashboard.mjs`. The durable packet is
+  `.codex/tasks/luc-1068-dashboard-architecture-health-dashboard-proof.md`.
+  Current fact: refreshed architecture-awareness marks the script plus
+  `main`, `readJson`, and `toBoolIcon` `verified`; refreshed app-completion no
+  longer reports them as `missing_test_link`; and Project Truth now routes
+  the first remaining Dashboard overview gap to
+  `scripts/check-architecture-health-dashboard-gate.mjs`
+  `missing_test_link`. Next action, only if selected by Project Truth
+  routing, is a Test Automation Engineer + QA Regression Lead proof-link lane
+  for that gate script surface. Do not reopen another QA proof lane for
+  `scripts/build-architecture-health-dashboard.mjs` unless a fresh generated
+  regression removes the linked test evidence.
+
+- 2026-07-14: [LUC-1066](/LUC/issues/LUC-1066) has no remaining 09 TAE
+  missing-test-link action for Dashboard overview `src/app.ts#/dashboard`.
+  The durable packet is
+  `docs/planning/luc-1066-dashboard-overview-use-dashboard-proof-link.md`.
+  Current fact: refreshed architecture-awareness marks the exact route
+  `verified`, refreshed app-completion no longer reports it as
+  `missing_test_link`, and Project Truth now routes the first remaining
+  Dashboard overview gap to
+  `scripts/build-architecture-health-dashboard.mjs`
+  `missing_test_link`. Next action, only if selected by Project Truth
+  routing, is a Test Automation Engineer + QA Regression Lead proof-link lane
+  for that script-level dashboard health surface. Do not reopen another QA
+  proof lane for `src/app.ts#/dashboard` unless a fresh generated regression
+  removes the linked route evidence.
+
+- 2026-07-14: [LUC-1058](/LUC/issues/LUC-1058) has no remaining
+  Documentation Steward action for the curated Account access
+  `web/src/api/auth-token.ts#setOwnerToken` `missing_doc_link` row. The durable packet is
+  `.codex/tasks/luc-1058-account-access-set-owner-token-doc-link.md`. If the
+  current fact: refreshed app-completion marks the exact helper with
+  `hasDoc=true` and no longer reports it as `missing_doc_link`, while Project
+  Truth now classifies the same symbol as `implemented_needs_proof`. Next
+  owner/action is QA Regression Lead + Project Manager for focused proof
+  routing on that helper. Do not reopen product-code, auth-page, deploy,
+  protected smoke, restart, production mutation, credential, or secret work
+  from this documentation lane.
+
+- 2026-07-14: [LUC-1041](/LUC/issues/LUC-1041) has no remaining
+  Documentation Steward action for the curated Account access
+  `web/src/api/auth-token.ts#ownerToken` `missing_doc_link` row. The durable
+  packet is `.codex/tasks/luc-1041-account-access-owner-token-doc-link.md`.
+  Current fact: refreshed app-completion marks the exact helper with
+  `hasDoc=true` and no longer reports it as `missing_doc_link`, while Project
+  Truth now classifies the same symbol as `implemented_needs_proof`. Next
+  owner/action is QA Regression Lead + Project Manager for focused proof
+  routing on that helper. Do not reopen product-code, auth-page, deploy,
+  protected smoke, restart, production mutation, credential, or secret work
+  from this completed doc-link lane.
+
+- 2026-07-14: [LUC-1034](/LUC/issues/LUC-1034) has no remaining
+  Documentation Steward action for the curated Account access
+  `web/src/api/auth-token.ts#isSignedIn` `missing_doc_link` row. The durable
+  packet is `.codex/tasks/luc-1034-account-access-issignedin-doc-link.md`.
+  Current fact: refreshed app-completion marks the exact helper with
+  `hasDoc=true` and no longer reports it as `missing_doc_link`, while Project
+  Truth now classifies the same symbol as `implemented_needs_proof`. Next
+  owner/action is QA Regression Lead + Project Manager for focused proof
+  routing on that helper. Do not reopen product-code, auth-page, deploy,
+  protected smoke, restart, production mutation, credential, or secret work
+  from this completed doc-link lane.
+
+- 2026-07-14: [LUC-1028](/LUC/issues/LUC-1028) has no remaining 09 CBE action
+  for `GET /v1/projects`. The durable packet is
+  `.codex/tasks/luc-1028-projects-route-get-proof.md`. Current fact: refreshed
+  architecture-awareness materializes the `LUC-1028 GET /v1/projects local
+  proof` relation from `src/tests/api.test.ts` and the task packet to
+  `document:get-v1-projects:2db380359a`, while Project Truth now routes the
+  first remaining gap to `web/src/api/auth-token.ts#isSignedIn`
+  `missing_doc_link`. Next owner/action is Docs Memory Lead + Project Manager
+  for that frontend auth-token helper. Do not reopen project route logic,
+  deploy, protected smoke, restart, production mutation, credential, or secret
+  work from this completed proof lane unless a fresh generated regression
+  removes the route-level evidence.
+
+- 2026-07-14: [LUC-1022](/LUC/issues/LUC-1022) has no remaining QA proof
+  action for `web/src/api/auth-token.ts#clearOwnerToken`. The durable packet
+  is `docs/planning/luc-1022-account-access-clear-owner-token-proof.md`.
+  Current fact: refreshed architecture-awareness marks the exact helper
+  `verified`, refreshed app-completion no longer routes it, and Project Truth
+  now points the first remaining Account access gap to
+  `web/src/api/auth-token.ts#isSignedIn` `missing_doc_link`. Next owner/action
+  is Docs Memory Lead + Project Manager for that documentation-link row, with
+  residual same-file doc-link debt still on `ownerToken` and `setOwnerToken`.
+  Do not reopen frontend auth reset proof, deploy, push, restart, production
+  mutation, credential, or secret work from this completed verification lane.
+
+- 2026-07-14: [LUC-1018](/LUC/issues/LUC-1018) has no remaining
+  Documentation Steward action for the curated Account access
+  `web/src/api/auth-token.ts#clearOwnerToken` `missing_doc_link` row. The
+  durable packet is
+  `.codex/tasks/luc-1018-account-access-clear-owner-token-doc-link.md`.
+  Current fact: refreshed app-completion marks the exact helper with
+  `hasDoc=true` and no longer reports it as `missing_doc_link`, while Project
+  Truth now classifies the same symbol as `implemented_needs_proof`. Next
+  owner/action is QA Regression Lead + Project Manager for focused proof
+  routing on that helper. Do not reopen product-code, auth-page, deploy,
+  protected smoke, restart, production mutation, credential, or secret work
+  from this completed doc-link lane.
+
+- 2026-07-14: [LUC-1015](/LUC/issues/LUC-1015) has no remaining
+  Documentation Steward action for the curated Account access
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_doc_link` row. The durable packet is
+  `.codex/tasks/luc-1015-account-access-workspaces-requireuserauth-doc-link.md`.
+  Current fact: the exact helper is absent from refreshed app-completion, and
+  Project Truth now routes the first remaining Account access doc-link gap to
+  `web/src/api/auth-token.ts#clearOwnerToken`. Next owner/action is Docs
+  Memory Lead + Project Manager for that frontend auth-token helper. Do not
+  reopen product-code, auth-middleware, protected smoke, push/deploy, restart,
+  production mutation, credential, or secret work from this completed doc-link
+  lane.
+
+- 2026-07-14: [LUC-1010](/LUC/issues/LUC-1010) has no remaining 09 TAE
+  missing-test-link action for
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`. The durable
+  packet is
+  `.codex/tasks/luc-1010-account-access-workspaces-requireuserauth-proof.md`.
+  Current fact: refreshed app-completion marks the exact helper `verified`
+  with linked test evidence, and Project Truth now classifies the same symbol
+  only as `missing_doc_link`. Next owner/action is Docs Memory Lead + Project
+  Manager for the residual same-symbol doc-link gap. Do not reopen another QA
+  proof lane for `workspaces.routes.ts#requireUserAuth` unless a fresh
+  generated regression removes its linked test evidence.
+
+- 2026-07-14: [LUC-1007](/LUC/issues/LUC-1007) has no remaining Integration
+  Domain Engineer action after the focused Google Drive route proof and
+  readback closure. The dispatched `src/app.ts#/google-drive`
+  route-gap row is gone; app-completion now reports `1132` missing test links /
+  `28` missing doc links / `8` implemented-needs-proof / `0` blocked /
+  `1168` known risk items, and Project Truth first gap is
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link`. Next action, only if selected by Project Truth routing,
+  is a Test Automation Engineer + QA Regression Lead proof-link lane for that
+  symbol. Do not open product code, live Google provider, protected smoke,
+  push/deploy, restart, production mutation, credential, or secret work from
+  [LUC-1007](/LUC/issues/LUC-1007).
+
+- 2026-07-14: [LUC-1008](/LUC/issues/LUC-1008) has no remaining Runtime &
+  Adapter Engineer action after the focused chain-integrity proof and
+  generated Project Truth readback. The dispatched
+  `scripts/check-architecture-chain-integrity.mjs` `missing_test_link` row and
+  its inferred helper-function rows are gone; app-completion now reports
+  `1132` missing test links / `29` missing doc links /
+  `8` implemented-needs-proof / `0` blocked / `1169` known risk items, and
+  Project Truth first gap is
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link`. Next action, only if selected by Project Truth routing,
+  is a Test Automation Engineer + QA Regression Lead proof-link lane for that
+  symbol. Do not open runtime script changes, protected smoke, push/deploy,
+  restart, production mutation, credential, or secret work from
+  [LUC-1008](/LUC/issues/LUC-1008).
+
+- 2026-07-14: [LUC-1001](/LUC/issues/LUC-1001) has no remaining
+  Documentation Steward action after the curated workforce API contract and
+  generated Project Truth readback. The dispatched
+  `workforce.service.ts#entityAuthority` `missing_doc_link` row is gone;
+  app-completion missing doc links stay `28`, known risk items stay `1177`,
+  and Project Truth first gap is
+  `src/modules/workspaces/workspaces.routes.ts#requireUserAuth`
+  `missing_test_link`. Next action, only if selected by Project Truth routing,
+  is a Test Automation Engineer + QA Regression Lead proof-link lane for that
+  symbol. Do not open product code, protected smoke, push/deploy, restart,
+  production mutation, credential, or secret work from
+  [LUC-1001](/LUC/issues/LUC-1001).
+
+- 2026-07-14: [LUC-989](/LUC/issues/LUC-989) has no remaining PM
+  source-control action in this isolated sidecar. The durable packet is
+  `.codex/tasks/luc-989-source-control-closure-for-luc-982.md`, and the final
+  local decision is `do not commit` because the original
+  [LUC-982](/LUC/issues/LUC-982) proof surfaces now live inside a newer mixed
+  dirty packet with later LUC-988/LUC-990 doc-link work, LUC-971/LUC-998 UX
+  evidence, and newer workforce proof packets. Next owner/action is board
+  operator / Roost Project Manager sequencing for a fresh combined
+  source-control closure issue or explicit supersession. Do not reopen another
+  isolated [LUC-982](/LUC/issues/LUC-982) recount unless the worktree narrows
+  back to one coherent packet.
+- 2026-07-14: [LUC-998](/LUC/issues/LUC-998) has no remaining 09 FEW
+  frontend/browser proof action for Dashboard overview
+  `web/src/features/departments/general-dashboard.tsx` and public home
+  `web/src/features/public/public-home.tsx`. The durable packet is
+  `.codex/tasks/luc-998-dashboard-public-home-frontend-proof.md`. Current
+  fact: refreshed app-completion and Project Truth no longer report the target
+  route entities as `missing_test_link`. Do not open another FEW proof lane
+  for these symbols unless a fresh generated regression or concrete behavioral
+  failure appears. The first remaining Project Truth gap is the unrelated
+  production `api_health` probe failure, owned by Deployment Reliability
+  Engineer + Ops Release Lead.
+
+- 2026-07-14: [LUC-990](/LUC/issues/LUC-990) has no remaining Documentation
+  Steward action after the explicit API-contract clarification and generated
+  Project Truth readback. The dispatched `intake.routes.ts#authActor`
+  `missing_doc_link` row remains gone; app-completion missing doc links stay
+  `28`, known risk items stay `1178`, and Project Truth first gap is
+  `src/modules/workforce/workforce.service.ts#entityAuthority`
+  `missing_test_link`. Next action, only if selected by Project Truth routing,
+  is a Test Automation Engineer + QA Regression Lead proof-link lane for that
+  symbol. Do not open product code, protected smoke, push/deploy, restart,
+  production mutation, credential, or secret work from [LUC-990](/LUC/issues/LUC-990).
+
+- 2026-07-13: [LUC-988](/LUC/issues/LUC-988) has no remaining PM or docs
+  action after the curated doc-link and generated Project Truth readback. The
+  dispatched `intake.routes.ts#authActor` `missing_doc_link` row is gone;
+  app-completion missing doc links are now `28`, known risk items `1178`, and
+  Project Truth first gap is
+  `src/modules/workforce/workforce.service.ts#entityAuthority`
+  `missing_test_link`. Next action, only if selected by Project Truth routing,
+  is a Test Automation Engineer + QA Regression Lead proof-link lane for that
+  symbol. Do not open product code, protected smoke, push/deploy, restart,
+  production mutation, credential, or secret work from [LUC-988](/LUC/issues/LUC-988).
+
+- 2026-07-13: [LUC-982](/LUC/issues/LUC-982) has no remaining 09 TAE
+  missing-test-link action for `src/modules/intake/intake.routes.ts#authActor`.
+  The durable packet is
+  `.codex/tasks/luc-982-account-access-intake-authactor-proof.md`. Current
+  fact: refreshed app-completion marks the exact helper `status=verified` with
+  `hasTest=true`, and Project Truth now classifies the same symbol only as
+  `missing_doc_link`. Next owner/action is Docs Memory Lead + Project Manager
+  for the residual same-symbol doc-link gap. Do not reopen another QA proof
+  lane for `intake.routes.ts#authActor` unless a fresh generated regression
+  removes its linked test evidence. Separate note: a broader source-level API
+  smoke exposed an unrelated `/v1/auth/register` `Prisma P2028`
+  transaction-timeout risk.
+
+- 2026-07-13: [LUC-977](/LUC/issues/LUC-977) has no remaining Documentation
+  Steward action after the curated doc-link and generated Project Truth
+  readback. The dispatched `workflow-definition-drafts.routes.ts#authActor`
+  `missing_doc_link` row is gone; app-completion missing doc links are now
+  `28`, known risk items `1179`, and Project Truth first gap is
+  `src/modules/intake/intake.routes.ts#authActor` `missing_test_link`. Next
+  action, only if selected by Project Truth routing, is a Test Automation
+  Engineer + QA Regression Lead proof-link lane for that symbol. Do not open
+  product code, protected smoke, push/deploy, restart, production mutation,
+  credential, or secret work from [LUC-977](/LUC/issues/LUC-977).
+
+- 2026-07-13: [LUC-974](/LUC/issues/LUC-974) has no remaining 09 TAE
+  missing-test-link action for
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`.
+  The durable packet is
+  `.codex/tasks/luc-974-account-access-workflow-definition-drafts-authactor-proof.md`.
+  Current fact: refreshed app-completion marks the exact helper
+  `status=verified` with `hasTest=true`, and Project Truth now classifies the
+  same symbol only as `missing_doc_link`. Next owner/action is Docs Memory
+  Lead + Project Manager for the residual same-symbol doc-link gap. Do not
+  reopen another QA proof lane for
+  `workflow-definition-drafts.routes.ts#authActor` unless a fresh generated
+  regression removes its linked test evidence.
+
+- 2026-07-13: [LUC-971](/LUC/issues/LUC-971) has no remaining 09 FEW
+  frontend/browser proof action for
+  `web/src/features/departments/assets-route.tsx#AuthenticatedImage`. The
+  durable packet is
+  `.codex/tasks/luc-971-account-access-authenticated-image-frontend-proof.md`.
+  Current fact: the focused local browser proof plus scanner readback now mark
+  the exact function `verified`, and refreshed app-completion / Project Truth
+  no longer report the symbol as `missing_test_link`. Do not open another FEW
+  proof lane for this symbol unless a fresh generated regression or concrete
+  behavioral failure appears. The next routed gap is
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`
+  `missing_test_link`, owned by Test Automation Engineer + QA Regression Lead.
+
+- 2026-07-13: [LUC-962](/LUC/issues/LUC-962) has no remaining Documentation
+  Steward action after the curated doc-link and generated Project Truth
+  readback. The dispatched `company-os.routes.ts#authActor`
+  `missing_doc_link` row is gone; app-completion missing doc links are now
+  `28`, known risk items `1181`, and Project Truth first gap is
+  `src/modules/company-os/workflow-definition-drafts.routes.ts#authActor`
+  `missing_test_link`. Next action, only if selected by Project Truth routing,
+  is a Test Automation Engineer + QA Regression Lead proof-link lane for that
+  symbol. Do not open product code, protected smoke, push/deploy, restart,
+  production mutation, credential, or secret work from [LUC-962](/LUC/issues/LUC-962).
+
 - 2026-07-13: [LUC-961](/LUC/issues/LUC-961) has no remaining PM
   source-control action. The durable packet is
   `.codex/tasks/luc-961-source-control-closure-for-luc-959.md`, and the

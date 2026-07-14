@@ -62,6 +62,7 @@ React Assets workbench over files, folders, previews, filters, and context.
 ## Tests
 
 - `TEST-PLAYWRIGHT-ASSETS` Assets Playwright proof: `verified`
+- `TEST-BROWSER-ASSETS-OVERVIEW` node scripts/luc-1090-assets-overview-proof.mjs: `verified`
 
 ## Evidence
 
