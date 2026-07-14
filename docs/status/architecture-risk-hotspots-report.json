@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-14T22:17:33.840Z",
+  "generatedAt": "2026-07-14T22:36:32.895Z",
   "status": "passed",
   "summary": {
     "hotspotCount": 25,
-    "highestRiskScore": 732
+    "highestRiskScore": 477
   },
   "globalRiskSignals": {
     "evidenceQueue": 0,
@@ -15,30 +15,17 @@
   },
   "topHotspots": [
     {
-      "node_id": "TEST-BROWSER-ASSETS-OVERVIEW",
-      "node_name": "Browser rendered Assets overview proof",
-      "type": "test",
-      "module": "assets",
-      "feature": "assets-context",
-      "status": "verified",
-      "risk_score": 732,
-      "impact_score": 122,
-      "impact_delta": 122,
-      "transitive_out_count": 112,
-      "reasons": "impact_delta:122;high_transitive_impact;wide_change_surface"
-    },
-    {
       "node_id": "AGENT-COORDINATOR",
       "node_name": "Coordinator agent role",
       "type": "agent",
       "module": "agents",
       "feature": "agent-workflow",
       "status": "verified",
-      "risk_score": 492,
+      "risk_score": 477,
       "impact_score": 477,
-      "impact_delta": 3,
+      "impact_delta": 0,
       "transitive_out_count": 347,
-      "reasons": "impact_delta:3;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "FEAT-AUTO-0020",
@@ -47,11 +34,11 @@
       "module": "operating-model",
       "feature": "operating-model-coverage",
       "status": "implemented",
-      "risk_score": 213,
+      "risk_score": 208,
       "impact_score": 208,
-      "impact_delta": 1,
+      "impact_delta": 0,
       "transitive_out_count": 143,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "TEST-API-LOCAL",
@@ -60,24 +47,11 @@
       "module": "cross-app",
       "feature": "cross-app",
       "status": "verified",
-      "risk_score": 204,
+      "risk_score": 199,
       "impact_score": 199,
-      "impact_delta": 1,
+      "impact_delta": 0,
       "transitive_out_count": 112,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
-    },
-    {
-      "node_id": "FEAT-ASSETS-CONTEXT",
-      "node_name": "Assets Context Workbench",
-      "type": "feature",
-      "module": "assets",
-      "feature": "assets-context",
-      "status": "verified",
-      "risk_score": 194,
-      "impact_score": 179,
-      "impact_delta": 3,
-      "transitive_out_count": 112,
-      "reasons": "impact_delta:3;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "FEAT-AUTO-0006",
@@ -86,11 +60,24 @@
       "module": "company-os",
       "feature": "company-os-coverage",
       "status": "implemented",
-      "risk_score": 192,
+      "risk_score": 187,
       "impact_score": 187,
-      "impact_delta": 1,
+      "impact_delta": 0,
       "transitive_out_count": 136,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
+    },
+    {
+      "node_id": "FEAT-ASSETS-CONTEXT",
+      "node_name": "Assets Context Workbench",
+      "type": "feature",
+      "module": "assets",
+      "feature": "assets-context",
+      "status": "verified",
+      "risk_score": 179,
+      "impact_score": 179,
+      "impact_delta": 0,
+      "transitive_out_count": 112,
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "FEAT-AUTO-0015",
@@ -99,24 +86,11 @@
       "module": "integration-settings",
       "feature": "integration-settings-coverage",
       "status": "implemented",
-      "risk_score": 171,
-      "impact_score": 166,
-      "impact_delta": 1,
-      "transitive_out_count": 129,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
-    },
-    {
-      "node_id": "COMP-SHELL",
-      "node_name": "Authenticated Shell component",
-      "type": "component",
-      "module": "shell",
-      "feature": "cross-app",
-      "status": "verified",
       "risk_score": 166,
-      "impact_score": 161,
-      "impact_delta": 1,
-      "transitive_out_count": 112,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
+      "impact_score": 166,
+      "impact_delta": 0,
+      "transitive_out_count": 129,
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "FEAT-ARCH-EVIDENCE-SYSTEM",
@@ -132,17 +106,30 @@
       "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
+      "node_id": "COMP-SHELL",
+      "node_name": "Authenticated Shell component",
+      "type": "component",
+      "module": "shell",
+      "feature": "cross-app",
+      "status": "verified",
+      "risk_score": 161,
+      "impact_score": 161,
+      "impact_delta": 0,
+      "transitive_out_count": 112,
+      "reasons": "high_transitive_impact;wide_change_surface"
+    },
+    {
       "node_id": "FEAT-PEOPLE-AGENTS-DIRECTORY",
       "node_name": "People and Agents Directory",
       "type": "feature",
       "module": "workforce",
       "feature": "people-agents-directory",
       "status": "verified",
-      "risk_score": 156,
+      "risk_score": 151,
       "impact_score": 151,
-      "impact_delta": 1,
+      "impact_delta": 0,
       "transitive_out_count": 112,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "FEAT-OPERATIONS-WORK-ITEMS",
@@ -151,11 +138,11 @@
       "module": "operations",
       "feature": "operations-work-items",
       "status": "verified",
-      "risk_score": 150,
+      "risk_score": 145,
       "impact_score": 145,
-      "impact_delta": 1,
+      "impact_delta": 0,
       "transitive_out_count": 112,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "FEAT-AUTO-0013",
@@ -164,11 +151,11 @@
       "module": "google-drive",
       "feature": "google-drive-coverage",
       "status": "implemented",
-      "risk_score": 150,
+      "risk_score": 145,
       "impact_score": 145,
-      "impact_delta": 1,
+      "impact_delta": 0,
       "transitive_out_count": 122,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "DB-TASK",
@@ -177,11 +164,11 @@
       "module": "operations",
       "feature": "operations-work-items",
       "status": "verified",
-      "risk_score": 149,
+      "risk_score": 144,
       "impact_score": 144,
-      "impact_delta": 1,
+      "impact_delta": 0,
       "transitive_out_count": 112,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "FEAT-DASHBOARD-COMMAND",
@@ -190,11 +177,11 @@
       "module": "dashboard",
       "feature": "dashboard-command",
       "status": "verified",
-      "risk_score": 148,
+      "risk_score": 143,
       "impact_score": 143,
-      "impact_delta": 1,
+      "impact_delta": 0,
       "transitive_out_count": 112,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "FEAT-AUTO-0028",
@@ -203,24 +190,11 @@
       "module": "tasks",
       "feature": "tasks-coverage",
       "status": "implemented",
-      "risk_score": 147,
+      "risk_score": 142,
       "impact_score": 142,
-      "impact_delta": 1,
+      "impact_delta": 0,
       "transitive_out_count": 121,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
-    },
-    {
-      "node_id": "DB-GOOGLE-DRIVE-FILE",
-      "node_name": "google_drive_files model",
-      "type": "database_model",
-      "module": "assets",
-      "feature": "assets-context",
-      "status": "verified",
-      "risk_score": 146,
-      "impact_score": 136,
-      "impact_delta": 2,
-      "transitive_out_count": 112,
-      "reasons": "impact_delta:2;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "FEAT-MGMT-DEPT-CATALOG",
@@ -229,11 +203,11 @@
       "module": "management",
       "feature": "management-department-catalog",
       "status": "verified",
-      "risk_score": 144,
+      "risk_score": 139,
       "impact_score": 139,
-      "impact_delta": 1,
+      "impact_delta": 0,
       "transitive_out_count": 112,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "DB-WORKFORCE-ENTITY",
@@ -242,11 +216,11 @@
       "module": "workforce",
       "feature": "people-agents-directory",
       "status": "verified",
-      "risk_score": 144,
+      "risk_score": 139,
       "impact_score": 139,
-      "impact_delta": 1,
+      "impact_delta": 0,
       "transitive_out_count": 112,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "COMP-OPERATIONS-ROUTE",
@@ -255,11 +229,24 @@
       "module": "operations",
       "feature": "operations-work-items",
       "status": "verified",
-      "risk_score": 141,
+      "risk_score": 136,
       "impact_score": 136,
-      "impact_delta": 1,
+      "impact_delta": 0,
       "transitive_out_count": 112,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
+    },
+    {
+      "node_id": "DB-GOOGLE-DRIVE-FILE",
+      "node_name": "google_drive_files model",
+      "type": "database_model",
+      "module": "assets",
+      "feature": "assets-context",
+      "status": "verified",
+      "risk_score": 136,
+      "impact_score": 136,
+      "impact_delta": 0,
+      "transitive_out_count": 112,
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "COMP-MANAGEMENT-ROUTE",
@@ -268,11 +255,11 @@
       "module": "management",
       "feature": "management-department-catalog",
       "status": "verified",
-      "risk_score": 140,
+      "risk_score": 135,
       "impact_score": 135,
-      "impact_delta": 1,
+      "impact_delta": 0,
       "transitive_out_count": 112,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "DB-WORKSPACE-DEPARTMENTS",
@@ -281,11 +268,11 @@
       "module": "departments",
       "feature": "management-department-catalog",
       "status": "verified",
-      "risk_score": 139,
+      "risk_score": 134,
       "impact_score": 134,
-      "impact_delta": 1,
+      "impact_delta": 0,
       "transitive_out_count": 112,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "API-DASHBOARD-COMMAND",
@@ -294,11 +281,11 @@
       "module": "dashboard",
       "feature": "dashboard-command",
       "status": "verified",
-      "risk_score": 139,
+      "risk_score": 134,
       "impact_score": 134,
-      "impact_delta": 1,
+      "impact_delta": 0,
       "transitive_out_count": 112,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
       "node_id": "API-DEPARTMENTS-LIST",
@@ -307,37 +294,50 @@
       "module": "departments",
       "feature": "management-department-catalog",
       "status": "verified",
-      "risk_score": 138,
+      "risk_score": 133,
       "impact_score": 133,
-      "impact_delta": 1,
+      "impact_delta": 0,
       "transitive_out_count": 112,
-      "reasons": "impact_delta:1;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
-      "node_id": "COMP-ASSETS-ROUTE",
-      "node_name": "AssetsRoute component",
+      "node_id": "COMP-GENERAL-DASHBOARD",
+      "node_name": "GeneralDashboard component",
       "type": "component",
-      "module": "assets",
-      "feature": "assets-context",
+      "module": "dashboard",
+      "feature": "dashboard-command",
       "status": "verified",
-      "risk_score": 138,
-      "impact_score": 128,
-      "impact_delta": 2,
+      "risk_score": 133,
+      "impact_score": 133,
+      "impact_delta": 0,
       "transitive_out_count": 112,
-      "reasons": "impact_delta:2;high_transitive_impact;wide_change_surface"
+      "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
-      "node_id": "DOC-ASSETS-CONTEXT-CONTRACT",
-      "node_name": "Assets context task contract",
-      "type": "documentation",
-      "module": "assets",
-      "feature": "assets-context",
-      "status": "verified",
-      "risk_score": 137,
-      "impact_score": 127,
-      "impact_delta": 2,
-      "transitive_out_count": 112,
-      "reasons": "impact_delta:2;high_transitive_impact;wide_change_surface"
+      "node_id": "FEAT-AUTO-0003",
+      "node_name": "Agents Coverage Expansion",
+      "type": "feature",
+      "module": "agents",
+      "feature": "agents-coverage",
+      "status": "implemented",
+      "risk_score": 133,
+      "impact_score": 133,
+      "impact_delta": 0,
+      "transitive_out_count": 118,
+      "reasons": "high_transitive_impact;wide_change_surface"
+    },
+    {
+      "node_id": "FEAT-AUTO-0004",
+      "node_name": "Clients Coverage Expansion",
+      "type": "feature",
+      "module": "clients",
+      "feature": "clients-coverage",
+      "status": "implemented",
+      "risk_score": 133,
+      "impact_score": 133,
+      "impact_delta": 0,
+      "transitive_out_count": 118,
+      "reasons": "high_transitive_impact;wide_change_surface"
     }
   ]
 }

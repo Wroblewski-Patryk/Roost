@@ -1,4 +1,18 @@
 # Next Steps
+- 2026-07-15: [LUC-1169](/LUC/issues/LUC-1169) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/clients`. The durable packet is
+  `.codex/tasks/luc-1169-prove-unclassified-user-workflow-missing-test-link-for-use-clients.md`.
+  Current fact: refreshed architecture-awareness marks the exact Clients mount
+  `verified` through the existing API proof in `src/tests/api.test.ts` and
+  `src/modules/clients/clients.routes.ts`; refreshed app-completion now routes
+  the same symbol as `missing_doc_link`; and Project Truth keeps
+  `src/app.ts#/clients` as the first remaining docs-owned gap. Next action
+  belongs to Docs Memory Lead + Project Manager for documentation-link closure
+  on `src/app.ts#/clients`. Do not reopen another QA proof lane for
+  `src/app.ts#/clients` unless a fresh generated regression removes the linked
+  API evidence.
+
 - 2026-07-14: [LUC-1151](/LUC/issues/LUC-1151) has no remaining
   Documentation Steward action for the exact unclassified endpoint
   `src/app.ts#/api/build-info`. The durable packet is

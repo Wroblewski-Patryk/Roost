@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-14T21:58:00.467Z
+Generated: 2026-07-14T22:36:49.446Z
 
 ## Canonical Exports
 
@@ -66,9 +66,9 @@ Generated: 2026-07-14T21:58:00.467Z
 | api_endpoint | verified | USE /agents | src/app.ts#/agents | Engineering Delivery Lead |
 | api_endpoint | verified | USE /api-keys | src/app.ts#/api-keys | Engineering Delivery Lead |
 | api_endpoint | verified | USE /api/build-info | src/app.ts#/api/build-info | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /assets | src/app.ts#/assets | Engineering Delivery Lead |
+| api_endpoint | verified | USE /assets | src/app.ts#/assets | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /auth | src/app.ts#/auth | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /clients | src/app.ts#/clients | Engineering Delivery Lead |
+| api_endpoint | verified | USE /clients | src/app.ts#/clients | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /commercial-exceptions | src/app.ts#/commercial-exceptions | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /company-os | src/app.ts#/company-os | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /connection | src/app.ts#/connection | Engineering Delivery Lead |
@@ -603,6 +603,8 @@ Generated: 2026-07-14T21:58:00.467Z
 | connected_to | project:roost:122c92a083 | task:luc-1151-completion-evidence:3773ef3c2d | .codex/tasks/luc-1151-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:c9bb805c35 | .codex/tasks/luc-1151-prove-unclassified-user-workflow-missing-doc-link-for-use-api-build-info.md |
 | connected_to | project:roost:122c92a083 | task:task:612815b6ef | .codex/tasks/luc-1160-normalize-luc-1151-task-status-indexing.md |
+| connected_to | project:roost:122c92a083 | task:task:1d586e023e | .codex/tasks/luc-1168-source-control-closure-classify-project-docs-dirty-packet-from-luc-1167.md |
+| connected_to | project:roost:122c92a083 | task:task:7879ec3809 | .codex/tasks/luc-1169-prove-unclassified-user-workflow-missing-test-link-for-use-clients.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -827,6 +829,7 @@ Generated: 2026-07-14T21:58:00.467Z
 | documents | document:autonomous-engineering-loop:471c2db101 | module:docs:6784d83cb0 | docs/governance/autonomous-engineering-loop.md |
 | documents | document:background-and-decorative-asset-strategy:b4d245d374 | module:docs:6784d83cb0 | docs/ux/background-and-decorative-asset-strategy.md |
 | documents | document:brand-personality-tokens:5473524fe5 | module:docs:6784d83cb0 | docs/ux/brand-personality-tokens.md |
+| documents | document:browser-rendered-assets-overview-proof:c48814f824 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-BROWSER-ASSETS-OVERVIEW.md |
 | documents | document:browser-rendered-department-catalog-proof:983521a027 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/TEST-BROWSER-MGMT-DEPT.md |
 | documents | document:build-architecture-chain-hardening-worklist:6c78d54b25 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PIPE-AUTO-0003.md |
 | documents | document:build-architecture-dead-nodes-report:f7c2559c71 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PIPE-AUTO-0028.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-07-14T21:58:00.467Z
 | documents | document:luc-4778-source-control-closure-for-luc-4774-known-state-packet:65e2b792d6 | module:docs:6784d83cb0 | docs/planning/luc-4778-source-control-closure-for-luc-4774-evidence-packet.md |
 | documents | document:luc-4779-restore-local-api-test-database-path:3a6dada2e7 | module:docs:6784d83cb0 | docs/planning/luc-4779-restore-local-api-test-database-path.md |
 | documents | document:luc-4784-known-state-evidence-and-architecture-baseline:728369bd52 | module:docs:6784d83cb0 | docs/planning/luc-4784-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4787-source-control-closure-for-luc-4784-evidence-packet:2bc68483ba | module:docs:6784d83cb0 | docs/planning/luc-4787-source-control-closure-for-luc-4784-evidence-packet.md |
-| documents | document:luc-4795-known-state-evidence-and-architecture-baseline:4f8327b872 | module:docs:6784d83cb0 | docs/planning/luc-4795-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4798-source-control-closure-for-luc-4795-evidence-packet:031f1129f3 | module:docs:6784d83cb0 | docs/planning/luc-4798-source-control-closure-for-luc-4795-evidence-packet.md |

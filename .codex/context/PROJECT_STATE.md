@@ -1,5 +1,29 @@
 # PROJECT_STATE
 
+- 2026-07-15: [LUC-1169](/LUC/issues/LUC-1169) completed the local proof-link
+  closure for unclassified `src/app.ts#/clients`, and the routed gap advanced
+  from QA-owned `missing_test_link` to docs-owned `missing_doc_link`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1169-prove-unclassified-user-workflow-missing-test-link-for-use-clients.md`.
+  Current evidence: `docs/architecture/scanner-overrides.json` now marks the
+  exact `src/app.ts#/clients` mount `verified` through the existing protected
+  API suite in `src/tests/api.test.ts` plus `src/modules/clients/clients.routes.ts`;
+  `npm run architecture:refresh` PASS; external architecture-awareness rebuild
+  generated `2026-07-14T22:36:49.446Z` with `3034` entities / `7667`
+  relations / `16523` files and materialized the exact proof relation;
+  sequential app-completion refresh now reports `46` items / `4` flows /
+  `31` missing test links / `1` missing doc link / `0`
+  implemented-needs-proof / `0` blocked / `32` risk items and routes
+  `src/app.ts#/clients` as `missing_doc_link`; Project Truth apply generated
+  `2026-07-14T22:36:58.833Z` with public probes `pass`, runtime findings `0`,
+  incomplete event chains `0`, operational gate gaps `0`, and first gap kept
+  the same symbol under Docs Memory Lead + Project Manager ownership; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`,
+  chain worklist `0`). No runtime feature logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. The next owner/action is Docs Memory Lead + Project Manager for
+  the documentation-link closure on `src/app.ts#/clients`.
+
 - 2026-07-15: [LUC-1168](/LUC/issues/LUC-1168) completed source-control
   closure classification for the inherited `project-docs` dirty packet from
   [LUC-1167](/LUC/issues/LUC-1167). Source-of-truth task packet:

@@ -1,6 +1,26 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-15: [LUC-1169](/LUC/issues/LUC-1169) unclassified
+  `src/app.ts#/clients` missing-test-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1169-prove-unclassified-user-workflow-missing-test-link-for-use-clients.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  Clients mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/clients/clients.routes.ts`;
+  `npm run architecture:refresh` PASS; external architecture-awareness
+  refresh generated `2026-07-14T22:36:49.446Z` with `3034` entities / `7667`
+  relations / `16523` files and materialized the exact proof links;
+  sequential app-completion refresh now reports `missingTestLink=31`,
+  no longer treats `api_endpoint:use-clients:da4494ab5d` as
+  `missing_test_link`, and routes the same symbol as `missing_doc_link`;
+  Project Truth apply generated `2026-07-14T22:36:58.833Z` with public probes
+  `pass` and keeps `src/app.ts#/clients` as the first remaining docs-owned
+  gap. No runtime product logic, provider call, deploy, push, restart,
+  production mutation, credential access, or secret disclosure occurred. Next
+  owner: Docs Memory Lead + Project Manager for the routed documentation gap
+  on `src/app.ts#/clients`.
+
 - 2026-07-15: [LUC-1168](/LUC/issues/LUC-1168) source-control closure for the
   inherited `project-docs` dirty packet from [LUC-1167](/LUC/issues/LUC-1167)
   is complete locally. Task contract:

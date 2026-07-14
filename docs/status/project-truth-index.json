@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T22:18:17.180Z",
+  "generatedAt": "2026-07-14T22:36:58.833Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "gaps_require_routing",
@@ -9,54 +9,41 @@
     "incompleteEventChains": 0,
     "runtimeFindings": 0,
     "criticalRuntimeFindings": 0,
-    "appCompletionGaps": 33,
-    "indexedAppCompletionGaps": 33,
-    "knownAppCompletionRiskItems": 33,
-    "appCompletionPriorityReviewItems": 33,
+    "appCompletionGaps": 32,
+    "indexedAppCompletionGaps": 32,
+    "knownAppCompletionRiskItems": 32,
+    "appCompletionPriorityReviewItems": 32,
     "appCompletionPriorityReviewTruncated": false,
     "operationalGateGaps": 0,
-    "indexedGaps": 33,
-    "totalGaps": 33
+    "indexedGaps": 32,
+    "totalGaps": 32
   },
   "firstGap": {
     "kind": "app_completion_gap",
     "severity": "medium",
     "userFlow": "Unclassified user workflow",
-    "summary": "Unclassified user workflow: USE /assets has app-completion risk missing_test_link.",
-    "nextOwner": "Test Automation Engineer + QA Regression Lead",
-    "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+    "summary": "Unclassified user workflow: USE /clients has app-completion risk missing_doc_link.",
+    "nextOwner": "Docs Memory Lead + Project Manager",
+    "nextAction": "Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.",
     "evidence": [
-      "src/app.ts#/assets"
+      "src/app.ts#/clients"
     ],
-    "sourceItemId": "api_endpoint:use-assets:ac41eec16d",
-    "risk": "missing_test_link"
+    "sourceItemId": "api_endpoint:use-clients:da4494ab5d",
+    "risk": "missing_doc_link"
   },
   "gaps": [
     {
       "kind": "app_completion_gap",
       "severity": "medium",
       "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /assets has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/app.ts#/assets"
-      ],
-      "sourceItemId": "api_endpoint:use-assets:ac41eec16d",
-      "risk": "missing_test_link"
-    },
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /clients has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "summary": "Unclassified user workflow: USE /clients has app-completion risk missing_doc_link.",
+      "nextOwner": "Docs Memory Lead + Project Manager",
+      "nextAction": "Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.",
       "evidence": [
         "src/app.ts#/clients"
       ],
       "sourceItemId": "api_endpoint:use-clients:da4494ab5d",
-      "risk": "missing_test_link"
+      "risk": "missing_doc_link"
     },
     {
       "kind": "app_completion_gap",

@@ -1,3 +1,9 @@
+# 2026-07-15 LUC-1169 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Clients proof linkage | verified for dispatched missing-test-link gap | [LUC-1169](/LUC/issues/LUC-1169) focused proof-link packet `.codex/tasks/luc-1169-prove-unclassified-user-workflow-missing-test-link-for-use-clients.md`; `docs/architecture/scanner-overrides.json` marks `src/app.ts#/clients` `verified` through the existing protected API suite coverage in `src/tests/api.test.ts` plus `src/modules/clients/clients.routes.ts`; `npm run architecture:refresh` PASS; external architecture-awareness rebuild generated `2026-07-14T22:36:49.446Z` with `3034` entities / `7667` relations / `16523` files and materialized the exact proof relations; sequential app-completion refresh reduced `missing_test_link` debt for `api_endpoint:use-clients:da4494ab5d` and now routes the same symbol as `missing_doc_link`; sequential Project Truth apply generated `2026-07-14T22:36:58.833Z` with public probes `pass` and keeps `src/app.ts#/clients` as the first routed gap under docs ownership; `npm run architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`). | No further QA proof work is needed for `src/app.ts#/clients` unless a fresh generated regression removes the linked API evidence. The next routed gap is docs-owned `missing_doc_link` for `src/app.ts#/clients`, owned by Docs Memory Lead + Project Manager. |
+
 # 2026-07-14 LUC-1135 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

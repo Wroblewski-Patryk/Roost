@@ -1,5 +1,27 @@
 # Active Mission Packet
 
+## LUC-1169 Checkpoint
+
+- 2026-07-15: [LUC-1169](/LUC/issues/LUC-1169) closed the routed
+  unclassified endpoint `src/app.ts#/clients` `missing_test_link` row.
+  Packet:
+  `.codex/tasks/luc-1169-prove-unclassified-user-workflow-missing-test-link-for-use-clients.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Clients mount
+  `verified` through the existing protected API suite in `src/tests/api.test.ts`
+  plus `src/modules/clients/clients.routes.ts`; `npm run architecture:refresh`
+  PASS; external architecture-awareness rebuild generated
+  `2026-07-14T22:36:49.446Z` with `3034` entities / `7667` relations /
+  `16523` files and materialized the exact verification links; sequential
+  app-completion refresh now reports `31` missing test links and routes
+  `src/app.ts#/clients` as `missing_doc_link`; sequential Project Truth apply
+  generated `2026-07-14T22:36:58.833Z` with public probes `pass` and keeps the
+  same symbol as the first gap, now owned by Docs Memory Lead + Project
+  Manager; `npm run architecture:status` PASS (`GREEN`, `455/769/35`,
+  evidence queue `0`, chain worklist `0`). No runtime feature logic, provider
+  call, deploy, push, restart, production mutation, credential access, or
+  secret disclosure occurred. Next owner/action: Docs Memory Lead + Project
+  Manager for the routed `missing_doc_link` closure on `src/app.ts#/clients`.
+
 Last updated: 2026-07-14
 
 ## LUC-1151 Checkpoint

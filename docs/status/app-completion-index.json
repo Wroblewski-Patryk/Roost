@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T22:18:02.582Z",
+  "generatedAt": "2026-07-14T22:36:58.586Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -8,25 +8,25 @@
     "items": 46,
     "flows": 4,
     "needsBrowserReview": 0,
-    "missingTestLink": 33,
-    "missingDocLink": 0,
+    "missingTestLink": 31,
+    "missingDocLink": 1,
     "implementedNeedsProof": 0,
     "blocked": 0,
-    "riskItems": 33,
-    "appCompletionRiskItems": 33,
-    "priorityReviewItems": 33,
+    "riskItems": 32,
+    "appCompletionRiskItems": 32,
+    "priorityReviewItems": 32,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": false
   },
   "flows": [
     {
       "userFlow": "Account access",
-      "total": 5,
+      "total": 6,
       "risks": {
-        "ok": 5
+        "ok": 6
       },
       "gates": {
-        "auth": 5,
+        "auth": 6,
         "configuration": 1
       }
     },
@@ -40,13 +40,14 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "total": 39,
+      "total": 38,
       "risks": {
         "ok": 7,
-        "missing_test_link": 32
+        "missing_doc_link": 1,
+        "missing_test_link": 30
       },
       "gates": {
-        "auth": 4
+        "auth": 5
       }
     },
     {
@@ -62,42 +63,25 @@
   ],
   "priorityReviewItems": [
     {
-      "id": "api_endpoint:use-assets:ac41eec16d",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /assets",
-      "path": "src/app.ts#/assets",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Unclassified user workflow",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
-    {
       "id": "api_endpoint:use-clients:da4494ab5d",
       "type": "api_endpoint",
       "kind": "api_endpoint",
       "name": "USE /clients",
       "path": "src/app.ts#/clients",
       "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
+      "status": "verified",
       "userFlow": "Unclassified user workflow",
-      "gates": [],
+      "gates": [
+        "auth"
+      ],
       "evidence": {
-        "hasTest": false,
+        "hasTest": true,
         "hasDoc": false,
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
+      "relatedEntityCount": 5,
+      "risk": "missing_doc_link"
     },
     {
       "id": "api_endpoint:use-commercial-exceptions:18765c44f9",
