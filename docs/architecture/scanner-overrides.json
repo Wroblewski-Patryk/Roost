@@ -497,6 +497,15 @@
       ]
     },
     {
+      "path": "src/app.ts#/api/build-info",
+      "status": "verified",
+      "description": "Build metadata mount verified through existing public and protected API-host probe coverage for GET /api/build-info, which exercises the compatibility route alias through the mounted root app without changing runtime logic.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        ".codex/tasks/luc-1135-prove-unclassified-user-workflow-missing-test-link-for-use-api-build-info.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/strategy",
       "status": "verified",
       "description": "Protected Strategy route mount verified by the current local API harness for `GET /v1/strategy/context`, plus the existing Strategy route browser proof that consumes the same mounted packet from the authenticated 01 Strategy overview surface.",

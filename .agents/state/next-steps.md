@@ -1,17 +1,17 @@
 # Next Steps
-- 2026-07-14: [LUC-1131](/LUC/issues/LUC-1131) has no remaining 09 TAE
+- 2026-07-14: [LUC-1135](/LUC/issues/LUC-1135) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint
-  `src/app.ts#/api-keys`. The durable packet is
-  `.codex/tasks/luc-1131-prove-unclassified-user-workflow-missing-test-link-for-use-api-keys.md`.
-  Current fact: refreshed architecture-awareness marks the exact API-keys
-  mount `verified` through the existing API proof in `src/tests/api.test.ts`,
-  `src/modules/api-keys/api-keys.routes.ts`, and `docs/API.md`; refreshed
-  app-completion now reports `missingTestLink=34`; and Project Truth now
-  routes `src/app.ts#/api/build-info` as the first remaining gap. Next action
-  belongs to Test Automation Engineer + QA Regression Lead for the new first
-  routed proof gap on `src/app.ts#/api/build-info`. Do not reopen another QA
-  proof lane for `src/app.ts#/api-keys` unless a fresh generated regression
-  removes the linked API evidence.
+  `src/app.ts#/api/build-info`. The durable packet is
+  `.codex/tasks/luc-1135-prove-unclassified-user-workflow-missing-test-link-for-use-api-build-info.md`.
+  Current fact: refreshed architecture-awareness marks the exact
+  `src/app.ts#/api/build-info` mount `verified` through the existing API proof in
+  `src/tests/api.test.ts`;
+  refreshed app-completion now reports `missingTestLink=33`; and Project Truth
+  now routes `src/app.ts#/api/build-info` as `missing_doc_link`. Next action
+  belongs to Docs Memory Lead + Project Manager for the routed
+  documentation-linked gap on `src/app.ts#/api/build-info`. Do not reopen another
+  QA proof lane for `src/app.ts#/api/build-info` unless a fresh generated
+  regression removes the linked proof.
 
 - 2026-07-14: [LUC-1114](/LUC/issues/LUC-1114) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint

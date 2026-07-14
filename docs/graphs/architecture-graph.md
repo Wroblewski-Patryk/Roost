@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-14T18:56:51.968Z
+Generated: 2026-07-14T20:11:26.141Z
 
 ## Canonical Exports
 
@@ -42,14 +42,14 @@ Generated: 2026-07-14T18:56:51.968Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-14 LUC-1108 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-14 LUC-1131 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-14 LUC-1099 Strategy Frontend Proof-Link Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-14 LUC-1131 API Keys Proof-Link Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -65,7 +65,7 @@ Generated: 2026-07-14T18:56:51.968Z
 | api_endpoint | verified | USE /agent-logs | src/app.ts#/agent-logs | Engineering Delivery Lead |
 | api_endpoint | verified | USE /agents | src/app.ts#/agents | Engineering Delivery Lead |
 | api_endpoint | verified | USE /api-keys | src/app.ts#/api-keys | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /api/build-info | src/app.ts#/api/build-info | Engineering Delivery Lead |
+| api_endpoint | verified | USE /api/build-info | src/app.ts#/api/build-info | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /assets | src/app.ts#/assets | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /auth | src/app.ts#/auth | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /clients | src/app.ts#/clients | Engineering Delivery Lead |
@@ -598,6 +598,7 @@ Generated: 2026-07-14T18:56:51.968Z
 | connected_to | project:roost:122c92a083 | task:task:877880df05 | .codex/tasks/luc-1108-unclassified-user-workflow-use-agent-logs-proof-link.md |
 | connected_to | project:roost:122c92a083 | task:task:9d14f2d371 | .codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md |
 | connected_to | project:roost:122c92a083 | task:task:a5b42ad253 | .codex/tasks/luc-1131-prove-unclassified-user-workflow-missing-test-link-for-use-api-keys.md |
+| connected_to | project:roost:122c92a083 | task:task:1b9a59bb7c | .codex/tasks/luc-1135-prove-unclassified-user-workflow-missing-test-link-for-use-api-build-info.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -656,8 +657,8 @@ Generated: 2026-07-14T18:56:51.968Z
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
-| documents | agent:2026-07-14-luc-1099-strategy-frontend-proof-link-health-signal:317f83ab0d | module:agents:4ae71ba13a | .agents/state/system-health.md |
-| documents | agent:2026-07-14-luc-1108-module-confidence-update:3156146211 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
+| documents | agent:2026-07-14-luc-1131-api-keys-proof-link-health-signal:11a238807e | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-14-luc-1131-module-confidence-update:044a540dac | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -1217,4 +1218,3 @@ Generated: 2026-07-14T18:56:51.968Z
 | documents | document:luc-4812-source-control-closure-for-luc-4808-evidence-packet:876c60ce05 | module:docs:6784d83cb0 | docs/planning/luc-4812-source-control-closure-for-luc-4808-evidence-packet.md |
 | documents | document:luc-4813-assets-proof-ladder-target-from-implementation-without-tests:bee7b8946b | module:docs:6784d83cb0 | docs/planning/luc-4813-assets-proof-ladder-target-from-implementation-without-tests.md |
 | documents | document:luc-4821-assets-files-folders-proof-ladder:ebad0c5bf4 | module:docs:6784d83cb0 | docs/planning/luc-4821-assets-files-folders-proof-ladder.md |
-| documents | document:luc-4824-known-state-evidence-and-architecture-baseline:b81849e6ea | module:docs:6784d83cb0 | docs/planning/luc-4824-known-state-evidence-and-architecture-baseline.md |

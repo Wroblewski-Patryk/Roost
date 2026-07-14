@@ -2,23 +2,22 @@
 
 Last updated: 2026-07-14
 
-## LUC-1131 Checkpoint
+## LUC-1135 Checkpoint
 
-- 2026-07-14: [LUC-1131](/LUC/issues/LUC-1131) closed the routed
-  unclassified endpoint `src/app.ts#/api-keys` `missing_test_link` row and
-  advanced the first gap to `src/app.ts#/api/build-info`. Packet:
-  `.codex/tasks/luc-1131-prove-unclassified-user-workflow-missing-test-link-for-use-api-keys.md`.
-  `docs/architecture/scanner-overrides.json` now marks the exact API-keys
-  mount `verified` through the existing protected API suite in
-  `src/tests/api.test.ts` plus `src/modules/api-keys/api-keys.routes.ts` and
-  `docs/API.md`; `npm run architecture:refresh` PASS; external
-  architecture-awareness rebuild generated `2026-07-14T18:56:51.968Z` with
-  `3026` entities / `7604` relations / `16522` files and materialized the
-  exact verification links; sequential app-completion refresh now reports
-  `missingTestLink=34`; sequential Project Truth apply generated
-  `2026-07-14T18:57:50.091Z` with public probes `pass` and advanced the
-  first gap to `src/app.ts#/api/build-info`; `npm run architecture:status`
-  PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`).
+- 2026-07-14: [LUC-1135](/LUC/issues/LUC-1135) closed the routed unclassified
+  endpoint `src/app.ts#/api/build-info` `missing_test_link` row and advanced the
+  first gap to the same symbol as `missing_doc_link`. Packet:
+  `.codex/tasks/luc-1135-prove-unclassified-user-workflow-missing-test-link-for-use-api-build-info.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact route mount
+  `verified` through the existing protected API suite in `src/tests/api.test.ts`;
+  `npm run architecture:refresh` PASS; external architecture-awareness rebuild
+  passed; sequential app-completion refresh now reports
+  `missingTestLink=33`; sequential Project Truth apply generated `missing_doc_link`
+  for `src/app.ts#/api/build-info`; `npm run architecture:status` PASS
+  (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`). No runtime
+  product logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Next owner/action:
+  Docs Memory Lead + Project Manager.
 
 ## LUC-1114 Checkpoint
 

@@ -1,26 +1,23 @@
 # TASK_BOARD
 
 ## Now
-- 2026-07-14: [LUC-1131](/LUC/issues/LUC-1131) unclassified
-  `src/app.ts#/api-keys` missing-test-link verification is complete locally
-  and the routed gap has advanced to `src/app.ts#/api/build-info`. Task
-  contract:
-  `.codex/tasks/luc-1131-prove-unclassified-user-workflow-missing-test-link-for-use-api-keys.md`.
+- 2026-07-14: [LUC-1135](/LUC/issues/LUC-1135) unclassified
+  `src/app.ts#/api/build-info` missing-test-link verification is complete
+  locally and the routed gap has advanced to the same symbol as `missing_doc_link`
+  documentation-owned debt. Task contract:
+  `.codex/tasks/luc-1135-prove-unclassified-user-workflow-missing-test-link-for-use-api-build-info.md`.
   Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
-  API-keys mount `verified` through the existing protected API suite in
-  `src/tests/api.test.ts` plus `src/modules/api-keys/api-keys.routes.ts` and
-  `docs/API.md`; `npm run architecture:refresh` PASS; external
-  architecture-awareness rebuild generated `2026-07-14T18:56:51.968Z` with
-  `3026` entities / `7604` relations / `16522` files and materialized the
-  exact verification links; sequential app-completion refresh now reports
-  `missingTestLink=34`; Project Truth apply generated
-  `2026-07-14T18:57:50.091Z` with public probes `pass` and advanced the
-  first gap to `src/app.ts#/api/build-info`; `npm run architecture:status`
-  PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`). No
-  runtime product logic, provider call, protected smoke, deploy, push,
+  `api/build-info` mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`; `npm run architecture:refresh` PASS; external
+  architecture-awareness rebuild passed and materialized the exact verification
+  links; sequential app-completion refresh now reports
+  `missingTestLink=33`; Project Truth apply advanced the same first gap to
+  `missing_doc_link` for `src/app.ts#/api/build-info`; `npm run architecture:status`
+  PASS (`GREEN`, `454/765/35`, evidence queue `0`, chain worklist `0`).
+  No runtime product logic, provider call, protected smoke, deploy, push,
   restart, production mutation, credential access, or secret disclosure
-  occurred. Next owner: Test Automation Engineer + QA Regression Lead for the
-  new first routed proof gap on `src/app.ts#/api/build-info`.
+  occurred. Next owner: Docs Memory Lead + Project Manager for the
+  new first routed documentation gap on `src/app.ts#/api/build-info`.
 
 - 2026-07-14: [LUC-1114](/LUC/issues/LUC-1114) unclassified
   `src/app.ts#/agents` missing-test-link verification is complete locally and
