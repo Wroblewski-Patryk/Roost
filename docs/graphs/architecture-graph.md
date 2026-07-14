@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-14T21:05:27.299Z
+Generated: 2026-07-14T21:58:00.467Z
 
 ## Canonical Exports
 
@@ -600,7 +600,9 @@ Generated: 2026-07-14T21:05:27.299Z
 | connected_to | project:roost:122c92a083 | task:task:a5b42ad253 | .codex/tasks/luc-1131-prove-unclassified-user-workflow-missing-test-link-for-use-api-keys.md |
 | connected_to | project:roost:122c92a083 | task:luc-1135-completion-evidence:78293fc999 | .codex/tasks/luc-1135-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:1b9a59bb7c | .codex/tasks/luc-1135-prove-unclassified-user-workflow-missing-test-link-for-use-api-build-info.md |
+| connected_to | project:roost:122c92a083 | task:luc-1151-completion-evidence:3773ef3c2d | .codex/tasks/luc-1151-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:c9bb805c35 | .codex/tasks/luc-1151-prove-unclassified-user-workflow-missing-doc-link-for-use-api-build-info.md |
+| connected_to | project:roost:122c92a083 | task:task:612815b6ef | .codex/tasks/luc-1160-normalize-luc-1151-task-status-indexing.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-07-14T21:05:27.299Z
 | documents | document:luc-4787-source-control-closure-for-luc-4784-evidence-packet:2bc68483ba | module:docs:6784d83cb0 | docs/planning/luc-4787-source-control-closure-for-luc-4784-evidence-packet.md |
 | documents | document:luc-4795-known-state-evidence-and-architecture-baseline:4f8327b872 | module:docs:6784d83cb0 | docs/planning/luc-4795-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4798-source-control-closure-for-luc-4795-evidence-packet:031f1129f3 | module:docs:6784d83cb0 | docs/planning/luc-4798-source-control-closure-for-luc-4795-evidence-packet.md |
-| documents | document:luc-4804-roost-protected-recheck:f911a80f70 | module:docs:6784d83cb0 | docs/planning/luc-4804-roost-protected-recheck.md |
-| documents | document:luc-4808-known-state-evidence-and-architecture-baseline:1fa2874211 | module:docs:6784d83cb0 | docs/planning/luc-4808-known-state-evidence-and-architecture-baseline.md |

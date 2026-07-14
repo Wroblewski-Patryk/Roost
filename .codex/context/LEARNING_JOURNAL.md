@@ -26,6 +26,15 @@ fixes for this repository.
 
 ## Entries
 
+### 2026-07-14 - Architecture-Awareness Task Indexing Must Read Structured Header Status First
+- Context: LUC-1160 investigated why the completed `LUC-1151` doc-link packet still indexed as `in_progress` in `docs/graphs/architecture-proof-register.csv` and `docs/graphs/architecture-awareness.json`.
+- Symptom: re-running `build-architecture-awareness-index.mjs` left `task:task:c9bb805c35` active even though `.codex/tasks/luc-1151-prove-unclassified-user-workflow-missing-doc-link-for-use-api-build-info.md` already declared `Status: DONE`.
+- Root cause: the architecture-awareness task scanner relied on broad free-text status inference instead of preferring the packet's structured header status fields, so packet-shape drift could keep a completed closure artifact active.
+- Guardrail: when indexing `.codex/tasks` artifacts, read explicit `- Status:` first, then `- Mission Status:` or `- Reality status:`, and only then fall back to broad text heuristics.
+- Preferred pattern: keep closure packets on terminal `Status: DONE`, use terminal mission status when the lane is complete, and add a sibling completion-evidence artifact when the closure should remain separately inspectable.
+- Avoid: depending on incidental free-text matches alone to classify task state, or assuming a regenerated architecture-awareness export will correct a packet whose structured closeout shape drifted.
+- Evidence: `node C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse/scripts/build-architecture-awareness-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost` reproduced the stale `in_progress` row before the parser/task normalization and was then used again to verify the fix.
+
 ### 2026-07-14 - Paperclip Done-State Updates Need Inline Comment Text For Request-Comment Evidence
 - Context: LUC-1092 needed a terminal `done` transition on the live Paperclip control plane after local source-control closure evidence was recorded.
 - Symptom: a first `PATCH /api/issues/{issueId}` attempt failed validation because the typed `completionEvidence` bundle was shaped incorrectly, and `request_comment` refs were rejected until the update included the matching comment text.

@@ -17,7 +17,7 @@
 - Iteration: 1
 - Operation Mode: TESTER
 - Mission ID: LUC-1151-USE-API-BUILD-INFO-DOC-LINK
-- Mission Status: VERIFIED
+- Mission Status: DONE
 
 ## Process Self-Audit
 - [x] All seven autonomous loop steps are planned.
@@ -158,6 +158,12 @@ truth, and prove the `missing_doc_link` row is cleared.
   and this task packet.
 - Context updated: yes
 - Learning journal updated: not applicable
+
+## Completion Evidence
+- Completion artifact: `.codex/tasks/luc-1151-completion-evidence.md`
+- Closeout rule: the task packet now uses terminal `Status: DONE` and terminal
+  `Mission Status: DONE`, and the sibling completion-evidence artifact records
+  the durable closure evidence consumed by architecture-awareness indexing.
 
 ## Acceptance Criteria
 - [x] An accepted source-of-truth doc explicitly describes public
