@@ -5430,3 +5430,22 @@ Last updated: 2026-06-20
 - Runtime/deploy posture: unchanged. No live Google provider call, protected
   smoke, deploy, push, restart, production mutation, credential access, or
   secret disclosure occurred.
+# 2026-07-14 LUC-1114 Agents Doc-Link Health Signal
+
+- Status: routed Agents documentation follow-up is verified locally and the
+  first remaining Project Truth gap has advanced to `src/app.ts#/api-keys`.
+- Evidence: [LUC-1114](/LUC/issues/LUC-1114) task contract
+  `.codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md`;
+  `docs/architecture/scanner-overrides.json` marks `src/app.ts#/agents`
+  `verified` through the existing API proof in `src/tests/api.test.ts` plus
+  `src/modules/agents/agents.routes.ts`; `docs/architecture/relations/documentation-links.csv`
+  links `src/app.ts#/agents` to `docs/API.md`; `npm run architecture:refresh`
+  PASS; architecture-awareness rebuild generated `2026-07-14T17:45:21.137Z`
+  with `3025` entities / `7592` relations / `16522` files; app-completion
+  refresh now reports `missingDocLink=0`; Project Truth apply generated
+  `2026-07-14T17:46:53.496Z` with public probes `pass` and first gap advanced
+  to `src/app.ts#/api-keys`; `npm run architecture:status` PASS (`GREEN`,
+  `454/765/35`, evidence queue `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.

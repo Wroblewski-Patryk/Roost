@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T17:14:10.243Z",
+  "generatedAt": "2026-07-14T17:46:53.496Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -1018,7 +1018,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:157c1a1016",
@@ -4451,7 +4451,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "function:buildgoogledriveauthorizationurl:bab074bcc0",
@@ -6024,7 +6024,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:c2d0550ce1",
@@ -8013,7 +8013,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:a2f6573d7c",

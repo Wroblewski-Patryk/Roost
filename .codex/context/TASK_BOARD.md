@@ -3,23 +3,24 @@
 ## Now
 - 2026-07-14: [LUC-1114](/LUC/issues/LUC-1114) unclassified
   `src/app.ts#/agents` missing-test-link verification is complete locally and
-  the routed gap has advanced to a docs-owned follow-up. Task contract:
+  the routed gap has advanced past docs ownership. Task contract:
   `.codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md`.
   Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
   Agents mount `verified` through the existing protected API suite in
   `src/tests/api.test.ts` plus `src/modules/agents/agents.routes.ts`;
+  `docs/architecture/relations/documentation-links.csv` links
+  `src/app.ts#/agents` to `docs/API.md`;
   `npm run architecture:refresh` PASS; external architecture-awareness
-  rebuild generated `2026-07-14T16:41:14.237Z` with `3025` entities / `7592`
+  rebuild generated `2026-07-14T17:45:21.137Z` with `3025` entities / `7592`
   relations / `16522` files and materialized the exact verification links;
-  sequential app-completion refresh reduced `missingTestLink` from `1101` to
-  `1100` and now reports `src/app.ts#/agents` as `missing_doc_link`;
-  Project Truth apply generated `2026-07-14T16:41:27.287Z` with public probes
-  `pass` and advanced the first routed gap to docs-owned `src/app.ts#/agents`;
-  `npm run architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue
-  `0`, chain worklist `0`). No runtime product logic, provider call,
+  sequential app-completion refresh now reports `missingDocLink=0`;
+  Project Truth apply generated `2026-07-14T17:46:53.496Z` with public probes
+  `pass` and advanced the first routed gap to `src/app.ts#/api-keys`; `npm run
+  architecture:status` PASS (`GREEN`, `454/765/35`, evidence queue `0`,
+  chain worklist `0`). No runtime product logic, provider call,
   protected smoke, deploy, push, restart, production mutation, credential
-  access, or secret disclosure occurred. Next owner: Docs Memory Lead +
-  Project Manager for the new first routed proof gap on `src/app.ts#/agents`.
+  access, or secret disclosure occurred. Next owner: Test Automation Engineer +
+  QA Regression Lead for the new first routed proof gap on `src/app.ts#/api-keys`.
 
 - 2026-07-14: [LUC-1108](/LUC/issues/LUC-1108) unclassified
   `src/app.ts#/agent-logs` missing-test-link verification is complete

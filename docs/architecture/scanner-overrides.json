@@ -478,6 +478,7 @@
       "status": "verified",
       "description": "Agents mount verified through the existing protected API suite coverage for GET /agents and the workspace-scoped /v1/agents CRUD chain, which exercises the mounted root compatibility alias and agent registry behavior without changing runtime code.",
       "evidence": [
+        "docs/API.md",
         "src/tests/api.test.ts",
         "src/modules/agents/agents.routes.ts",
         ".codex/tasks/luc-1114-unclassified-user-workflow-use-agents-proof-link.md"

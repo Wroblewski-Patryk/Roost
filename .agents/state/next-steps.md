@@ -6,12 +6,13 @@
   Current fact: refreshed architecture-awareness marks the exact Agents mount
   `verified` through the existing API proof in `src/tests/api.test.ts` and
   `src/modules/agents/agents.routes.ts`, refreshed app-completion now reports
-  `missingTestLink=1100` and routes `src/app.ts#/agents` as
-  `missing_doc_link`, and Project Truth now routes the same endpoint as the
-  first remaining gap with docs ownership. Next action belongs to Docs Memory
-  Lead + Project Manager for the source-of-truth doc link on `src/app.ts#/agents`.
-  Do not reopen another QA proof lane for `src/app.ts#/agents` unless a fresh
-  generated regression removes the linked API evidence.
+  `missingDocLink=0`, and `docs/architecture/relations/documentation-links.csv`
+  links `src/app.ts#/agents` to `docs/API.md`; Project Truth now routes
+  `src/app.ts#/api-keys` as the first remaining gap. Next action belongs to
+  Test Automation Engineer + QA Regression Lead for the new first routed proof
+  gap on `src/app.ts#/api-keys`. Do not reopen another QA proof lane for
+  `src/app.ts#/agents` unless a fresh generated regression removes the linked
+  API or doc evidence.
 
 - 2026-07-14: [LUC-1108](/LUC/issues/LUC-1108) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint

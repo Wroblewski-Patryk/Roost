@@ -1,6 +1,6 @@
 # Event Chain Index
 
-Generated: 2026-07-14T17:14:10.243Z
+Generated: 2026-07-14T17:46:53.496Z
 Project: Roost
 
 This index maps user-facing flows to backend, frontend, worker, data, test, and docs entities.
