@@ -1,4 +1,18 @@
 # Next Steps
+- 2026-07-15: [LUC-1274](/LUC/issues/LUC-1274) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/health`. The durable packet is
+  `.codex/tasks/luc-1274-prove-unclassified-user-workflow-missing-test-link-for-use-health.md`.
+  Current fact: refreshed architecture-awareness marks the exact Health mount
+  `verified` through the existing public runtime proof in `src/tests/api.test.ts`
+  and `src/health/health.routes.ts`; refreshed app-completion no longer routes
+  `api_endpoint:use-health:8aa829ec00` as `missing_test_link` and keeps the
+  same symbol only as `missing_doc_link`; Project Truth now routes the same
+  symbol to Docs Memory Lead + Project Manager while the next QA-owned proof
+  gap is `src/app.ts#/intake`. Do not reopen another QA proof lane for
+  `src/app.ts#/health` unless a fresh generated regression removes the linked
+  runtime evidence.
+
 - 2026-07-15: [LUC-1270](/LUC/issues/LUC-1270) has no remaining documentation
   action for the exact unclassified endpoint `src/app.ts#/goals`. The durable
   packet is

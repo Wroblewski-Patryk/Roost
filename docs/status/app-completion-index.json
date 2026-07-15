@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-15T18:39:09.785Z",
+  "generatedAt": "2026-07-15T19:38:16.430Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -8,8 +8,8 @@
     "items": 46,
     "flows": 4,
     "needsBrowserReview": 0,
-    "missingTestLink": 23,
-    "missingDocLink": 1,
+    "missingTestLink": 22,
+    "missingDocLink": 2,
     "implementedNeedsProof": 0,
     "blocked": 0,
     "riskItems": 24,
@@ -43,10 +43,11 @@
       "total": 36,
       "risks": {
         "ok": 14,
-        "missing_test_link": 22
+        "missing_doc_link": 1,
+        "missing_test_link": 21
       },
       "gates": {
-        "auth": 11
+        "auth": 12
       }
     },
     {
@@ -70,17 +71,19 @@
       "name": "USE /health",
       "path": "src/app.ts#/health",
       "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
+      "status": "verified",
       "userFlow": "Unclassified user workflow",
-      "gates": [],
+      "gates": [
+        "auth"
+      ],
       "evidence": {
-        "hasTest": false,
+        "hasTest": true,
         "hasDoc": false,
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
+      "relatedEntityCount": 5,
+      "risk": "missing_doc_link"
     },
     {
       "id": "api_endpoint:use-intake:3c22276373",

@@ -1,6 +1,6 @@
 # Architecture Proof Bundle
 
-Generated at: 2026-07-15T18:35:52.629Z
+Generated at: 2026-07-15T19:38:33.510Z
 
 - Graph: `455` nodes / `769` relations / `35` chains
 - Evidence queue: `0`

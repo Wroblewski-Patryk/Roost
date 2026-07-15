@@ -1,6 +1,34 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-15: [LUC-1274](/LUC/issues/LUC-1274) unclassified
+  `src/app.ts#/health` missing-test-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1274-prove-unclassified-user-workflow-missing-test-link-for-use-health.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  Health mount `verified` through the existing public runtime proof in
+  `src/tests/api.test.ts` plus `src/health/health.routes.ts`; focused proof
+  PASS after `npm run build:server`, `npm run prisma:migrate:deploy`, `npm
+  run seed`, and `node --test --test-name-pattern "production health reports
+  safe Coolify build metadata" dist/tests/api.test.js` against local
+  PostgreSQL test container `companycore-test-postgres-luc1274` on port
+  `58001`, followed by cleanup; `npm run architecture:refresh` PASS; external
+  architecture-awareness refresh generated `2026-07-15T19:06:23.230Z` with
+  `3065` entities / `7956` relations / `16523` files and materialized the
+  exact proof relation; sequential app-completion refresh now reports
+  `missingTestLink=22`, no longer treats `api_endpoint:use-health:8aa829ec00`
+  as `missing_test_link`, and keeps the same symbol only as docs-owned
+  `missing_doc_link`; Project Truth apply generated `2026-07-15T19:06:32.132Z`
+  with public probes `pass` and advances the next QA-owned routed gap to
+  `src/app.ts#/intake` `missing_test_link`; `npm run architecture:status`
+  PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`). No
+  runtime product logic, provider call, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Source-control
+  closure completed in [LUC-1281](/LUC/issues/LUC-1281). Next owner: Docs
+  Memory Lead + Project Manager for the same-symbol docs gap on
+  `src/app.ts#/health` via [LUC-1277](/LUC/issues/LUC-1277); the next QA
+  proof lane is `src/app.ts#/intake`.
+
 - 2026-07-15: [LUC-1270](/LUC/issues/LUC-1270) unclassified
   `src/app.ts#/goals` missing-doc-link verification is complete locally.
   Task contract:

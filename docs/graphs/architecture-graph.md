@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-15T18:39:09.654Z
+Generated: 2026-07-15T19:38:16.439Z
 
 ## Canonical Exports
 
@@ -49,7 +49,7 @@ Generated: 2026-07-15T18:39:09.654Z
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-14 LUC-1131 API Keys Proof-Link Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-15 LUC-1274 Health Proof-Link Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -80,7 +80,7 @@ Generated: 2026-07-15T18:39:09.654Z
 | api_endpoint | implemented | USE /finance | src/app.ts#/finance | Engineering Delivery Lead |
 | api_endpoint | verified | USE /goals | src/app.ts#/goals | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /google-drive | src/app.ts#/google-drive | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /health | src/app.ts#/health | Engineering Delivery Lead |
+| api_endpoint | verified | USE /health | src/app.ts#/health | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /intake | src/app.ts#/intake | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /integration-settings | src/app.ts#/integration-settings | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /interactions | src/app.ts#/interactions | Engineering Delivery Lead |
@@ -634,6 +634,11 @@ Generated: 2026-07-15T18:39:09.654Z
 | connected_to | project:roost:122c92a083 | task:task:7b0a53df15 | .codex/tasks/luc-1269-source-control-closure-for-luc-1266-goals-proof-link-packet.md |
 | connected_to | project:roost:122c92a083 | task:luc-1270-completion-evidence:8790938b1a | .codex/tasks/luc-1270-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:a899cba104 | .codex/tasks/luc-1270-prove-unclassified-user-workflow-missing-doc-link-for-use-goals.md |
+| connected_to | project:roost:122c92a083 | task:task:1e499a208d | .codex/tasks/luc-1273-source-control-closure-for-luc-1270-goals-doc-link-packet.md |
+| connected_to | project:roost:122c92a083 | task:task:f34eb5702c | .codex/tasks/luc-1274-prove-unclassified-user-workflow-missing-test-link-for-use-health.md |
+| connected_to | project:roost:122c92a083 | task:luc-1277-completion-evidence:0d7e1b5688 | .codex/tasks/luc-1277-completion-evidence.md |
+| connected_to | project:roost:122c92a083 | task:task:e137113372 | .codex/tasks/luc-1277-prove-unclassified-user-workflow-missing-doc-link-for-use-health.md |
+| connected_to | project:roost:122c92a083 | task:task:d9f8ae7c84 | .codex/tasks/luc-1281-source-control-closure-for-luc-1274-health-proof-packet.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -692,8 +697,8 @@ Generated: 2026-07-15T18:39:09.654Z
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
-| documents | agent:2026-07-14-luc-1131-api-keys-proof-link-health-signal:11a238807e | module:agents:4ae71ba13a | .agents/state/system-health.md |
 | documents | agent:2026-07-15-luc-1226-module-confidence-update:bfb0b6d2f4 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
+| documents | agent:2026-07-15-luc-1274-health-proof-link-health-signal:8a22c6c565 | module:agents:4ae71ba13a | .agents/state/system-health.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -778,6 +783,7 @@ Generated: 2026-07-15T18:39:09.654Z
 | documents | document:api-keys-model:02bff86e2b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0005.md |
 | documents | document:api:a617d1cb61 | module:docs:6784d83cb0 | docs/API.md |
 | documents | document:api:a617d1cb61 | api_endpoint:use-api-build-info:36fe7c3255 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | api_endpoint:use-health:8aa829ec00 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-agents:1c136317c6 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-clients:da4494ab5d | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-deals:2ceaef3b27 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
@@ -1212,9 +1218,3 @@ Generated: 2026-07-15T18:39:09.654Z
 | documents | document:luc-3453-roost-companycore-readiness-and-milestone-review:2eb71399b5 | module:docs:6784d83cb0 | docs/planning/luc-3453-roost-companycore-readiness-and-milestone-review.md |
 | documents | document:luc-3533-known-state-repair-lanes:89e5281b2a | module:docs:6784d83cb0 | docs/planning/luc-3533-known-state-repair-lanes.md |
 | documents | document:luc-3543-scanner-artifact-hygiene-for-known-state-reports:fb93e14461 | module:docs:6784d83cb0 | docs/planning/luc-3543-scanner-artifact-hygiene-known-state-reports.md |
-| documents | document:luc-3544-task-link-classification-for-unlinked-implementation-rows:6a8b26047d | module:docs:6784d83cb0 | docs/planning/luc-3544-task-link-classification-for-unlinked-implementation-rows.md |
-| documents | document:luc-3545-first-proof-ladder-from-implementation-without-tests:a06e87395b | module:docs:6784d83cb0 | docs/planning/luc-3545-first-proof-ladder-from-implementation-without-tests.md |
-| documents | document:luc-3678-source-control-dirty-groups-from-control-tick:ed1d79788f | module:docs:6784d83cb0 | docs/planning/luc-3678-source-control-dirty-groups-from-control-tick.md |
-| documents | document:luc-3703-known-state-evidence-and-architecture-baseline:2828cd8225 | module:docs:6784d83cb0 | docs/planning/luc-3703-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-3713-process-core-integration-rung-with-local-api-test-database:14c655edb5 | module:docs:6784d83cb0 | docs/planning/luc-3713-process-core-integration-rung-local-api-test-database.md |
-| documents | document:luc-3716-local-api-test-operatingarea-fixture-repair:431f776563 | module:docs:6784d83cb0 | docs/planning/luc-3716-local-api-test-operating-area-fixture-repair.md |
