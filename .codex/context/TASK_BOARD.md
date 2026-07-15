@@ -1,6 +1,32 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-15: [LUC-1277](/LUC/issues/LUC-1277) unclassified
+  `src/app.ts#/health` missing-doc-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1277-prove-unclassified-user-workflow-missing-doc-link-for-use-health.md`.
+  Evidence: `docs/API.md` already documents the public `/health`,
+  `/v1/health`, `/ready`, `/v1/ready`, and `/api/build-info` aliases as safe
+  runtime metadata routes outside the API-key guard;
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  Health mount to that accepted API contract; `npm run architecture:refresh`
+  PASS; external architecture-awareness refresh generated
+  `2026-07-15T19:39:10.450Z` with `3068` entities / `7974` relations /
+  `16523` files and materialized the exact documentation relation; sequential
+  app-completion refresh now reports `missingDocLink=1`, no longer treats
+  `api_endpoint:use-health:8aa829ec00` as `missing_doc_link`, and keeps only
+  user-configuration `src/app.ts#/connection` as the remaining docs-owned
+  gap; Project Truth apply generated `2026-07-15T19:39:18.780Z` with public
+  probes `pass` and advances the first routed gap to `src/app.ts#/intake`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime product
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Next owner: Test
+  Automation Engineer + QA Regression Lead for the routed proof gap on
+  `src/app.ts#/intake`; separate docs follow-up remains
+  `src/app.ts#/connection`. Source-control closure completed in
+  [LUC-1283](/LUC/issues/LUC-1283).
+
 - 2026-07-15: [LUC-1274](/LUC/issues/LUC-1274) unclassified
   `src/app.ts#/health` missing-test-link verification is complete locally.
   Task contract:

@@ -1,5 +1,33 @@
 # PROJECT_STATE
 
+- 2026-07-15: [LUC-1277](/LUC/issues/LUC-1277) completed the local
+  documentation-link closure for unclassified `src/app.ts#/health`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1277-prove-unclassified-user-workflow-missing-doc-link-for-use-health.md`.
+  Current evidence: `docs/API.md` already documents the public `/health`,
+  `/v1/health`, `/ready`, `/v1/ready`, and `/api/build-info` aliases as safe
+  runtime metadata routes outside the API-key guard;
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  `src/app.ts#/health` mount to that contract; `npm run architecture:refresh`
+  PASS; external architecture-awareness refresh generated
+  `2026-07-15T19:39:10.450Z` with `3068` entities / `7974` relations /
+  `16523` files and materialized the exact documentation relation; sequential
+  app-completion refresh now reports `46` items / `4` flows / `22` missing
+  test links / `1` missing doc link / `0` implemented-needs-proof / `0`
+  blocked / `23` risk items and no longer routes
+  `api_endpoint:use-health:8aa829ec00` as `missing_doc_link`; Project Truth
+  apply generated `2026-07-15T19:39:18.780Z` with public probes `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and advances the first routed gap to `src/app.ts#/intake`
+  `missing_test_link` while keeping only user-configuration
+  `src/app.ts#/connection` as the remaining docs-owned gap; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). No runtime feature logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Source-control closure completed in
+  [LUC-1283](/LUC/issues/LUC-1283). Deploy impact: none. Push status: held
+  pending broader batching.
+
 - 2026-07-15: [LUC-1274](/LUC/issues/LUC-1274) completed the local
   missing-test-link closure for unclassified `src/app.ts#/health`.
   Source-of-truth task packet:

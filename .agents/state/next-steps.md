@@ -1,4 +1,28 @@
 # Next Steps
+- 2026-07-15: [LUC-1283](/LUC/issues/LUC-1283) has no remaining
+  source-control action for the LUC-1277 packet. The durable sidecar is
+  `.codex/tasks/luc-1283-source-control-closure-for-luc-1277-health-doc-link-packet.md`.
+  Current fact: bounded git review, representative generated readback,
+  `git diff --check`, JSON parse checks for the changed status indexes, and a
+  high-confidence redaction scan classified the packet as current/coherent
+  with no unrelated ownership drift. The `LUC-1277` task packet now records
+  that local source-control closure completed in [LUC-1283](/LUC/issues/LUC-1283).
+  Do not reopen another closure lane for this packet unless a fresh dirty-state
+  regression appears after new work.
+
+- 2026-07-15: [LUC-1277](/LUC/issues/LUC-1277) has no remaining documentation
+  action for the exact unclassified endpoint `src/app.ts#/health`. The durable
+  packet is
+  `.codex/tasks/luc-1277-prove-unclassified-user-workflow-missing-doc-link-for-use-health.md`.
+  Current fact: refreshed architecture-awareness and documentation-links now
+  link the exact Health mount to the accepted public API contract in
+  `docs/API.md`; refreshed app-completion no longer routes
+  `api_endpoint:use-health:8aa829ec00` as `missing_doc_link`; Project Truth
+  now routes the first overall gap to `src/app.ts#/intake` and leaves the only
+  remaining docs-owned gap on `src/app.ts#/connection`. Do not reopen another
+  docs lane for `src/app.ts#/health` unless a fresh generated regression
+  removes the linked contract evidence.
+
 - 2026-07-15: [LUC-1274](/LUC/issues/LUC-1274) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint
   `src/app.ts#/health`. The durable packet is

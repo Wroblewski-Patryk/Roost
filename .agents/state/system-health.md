@@ -1,3 +1,26 @@
+# 2026-07-15 LUC-1277 Health Doc-Link Health Signal
+
+- Status: routed unclassified health endpoint doc-link closure is verified
+  locally.
+- Evidence: [LUC-1277](/LUC/issues/LUC-1277) task packet
+  `.codex/tasks/luc-1277-prove-unclassified-user-workflow-missing-doc-link-for-use-health.md`;
+  `docs/API.md` already documents the public `/health`, `/v1/health`,
+  `/ready`, `/v1/ready`, and `/api/build-info` aliases as safe runtime
+  metadata routes outside the API-key guard; `docs/architecture/relations/documentation-links.csv`
+  now links `src/app.ts#/health` to that accepted API contract; `npm run
+  architecture:refresh` PASS; external architecture-awareness rebuild
+  generated `2026-07-15T19:39:10.450Z` with `3068` entities / `7974`
+  relations / `16523` files; app-completion refresh generated `22` missing
+  test links / `1` missing doc link and no longer routes `USE /health` as
+  `missing_doc_link`; Project Truth apply generated
+  `2026-07-15T19:39:18.780Z` with public probes `pass` and first gap advanced
+  to `src/app.ts#/intake` while the only remaining docs-owned gap stayed on
+  `src/app.ts#/connection`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
 # 2026-07-15 LUC-1274 Health Proof-Link Health Signal
 
 - Status: routed unclassified health endpoint proof-link closure is

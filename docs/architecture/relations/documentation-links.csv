@@ -1,6 +1,7 @@
 entity_path,doc_path,reason
 src/app.ts#/google-drive,docs/planning/luc-1007-google-drive-route-readback.md,The protected google-drive mount in app.ts and its mounted /v1/google-drive endpoint family are documented in the focused LUC-1007 route readback.
 src/app.ts#/api/build-info,docs/API.md,The public build metadata aliases document that /api/build-info reuses the safe health-style runtime metadata contract and stays outside the API-key guard on both compatibility hosts.
+src/app.ts#/health,docs/API.md,The public health aliases document that /health and /v1/health stay outside the API-key guard together with /ready /v1/ready and /api/build-info while exposing only safe runtime metadata on both API and web host compatibility surfaces.
 src/app.ts#/agents,docs/API.md,The agents mount in app.ts and its mounted /agents and /v1/agents endpoint family are documented in the API contract.
 src/app.ts#/clients,docs/API.md,The clients mount in app.ts and its mounted /clients and /v1/clients endpoint family are documented in the API contract.
 src/app.ts#/deals,docs/API.md,The deals mount in app.ts and its mounted /deals and /v1/deals endpoint family are documented in the API contract.

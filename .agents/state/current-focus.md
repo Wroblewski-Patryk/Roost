@@ -1,5 +1,24 @@
 # Current Focus
 
+## LUC-1277 Checkpoint
+
+- 2026-07-15: [LUC-1277](/LUC/issues/LUC-1277) closed the routed
+  unclassified endpoint `src/app.ts#/health` `missing_doc_link` row. Packet:
+  `.codex/tasks/luc-1277-prove-unclassified-user-workflow-missing-doc-link-for-use-health.md`.
+  `docs/API.md` already documents the public `/health`, `/v1/health`,
+  `/ready`, `/v1/ready`, and `/api/build-info` aliases as safe runtime
+  metadata routes outside the API-key guard; `docs/architecture/relations/documentation-links.csv`
+  now links the exact Health mount to that accepted API contract; external
+  architecture-awareness refresh generated `2026-07-15T19:39:10.450Z` with
+  `3068` entities / `7974` relations / `16523` files; sequential
+  app-completion refresh now reports `missingDocLink=1` and no longer routes
+  `src/app.ts#/health`; sequential Project Truth apply generated
+  `2026-07-15T19:39:18.780Z` with public probes `pass` and advanced the first
+  routed gap to `src/app.ts#/intake` `missing_test_link`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`). The remaining docs-owned
+  gap is `src/app.ts#/connection`, and the next QA-owned proof gap is
+  `src/app.ts#/intake`.
+
 ## LUC-1274 Checkpoint
 
 - 2026-07-15: [LUC-1274](/LUC/issues/LUC-1274) closed the routed
