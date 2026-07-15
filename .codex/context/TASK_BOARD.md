@@ -1,6 +1,35 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-15: [LUC-1197](/LUC/issues/LUC-1197) unclassified
+  `src/app.ts#/deals` missing-test-link verification is complete locally and
+  the routed gap has advanced to the same symbol as `missing_doc_link`
+  documentation-owned debt. Task contract:
+  `.codex/tasks/luc-1197-prove-unclassified-user-workflow-missing-test-link-for-use-deals.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  Deals mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/deals/deals.routes.ts`; focused
+  local protected API proof PASS after `npm run build`, `npm run
+  prisma:migrate:deploy`, `npm run seed`, and `node --test
+  --test-name-pattern "CompanyCore v1 protected API flow"
+  dist/tests/api.test.js` against local PostgreSQL test container
+  `companycore-test-postgres-luc1197` on port `55434`, followed by cleanup;
+  `npm run architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-15T01:06:46.441Z` with `3042` entities / `7750`
+  relations / `16523` files and materialized the exact proof links; sequential
+  app-completion refresh now reports `missingTestLink=27`, no longer treats
+  `api_endpoint:use-deals:2ceaef3b27` as `missing_test_link`, and keeps the
+  same symbol only as docs-owned `missing_doc_link`; Project Truth apply
+  generated `2026-07-15T01:06:51.062Z` with public probes `pass` and advances
+  the next QA-owned routed gap to `src/app.ts#/decisions`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). No runtime product logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Next owner: Docs Memory Lead + Project Manager for the same-symbol
+  doc-link closure on `src/app.ts#/deals`, while the next QA-owned proof gap
+  is `src/app.ts#/decisions`. Source-control closure completed in
+  [LUC-1200](/LUC/issues/LUC-1200) with the coherent packet committed locally.
+
 - 2026-07-15: [LUC-1196](/LUC/issues/LUC-1196) classified the LUC-1192 local
   dirty packet as current/coherent and closed it with a dedicated
   source-control sidecar:

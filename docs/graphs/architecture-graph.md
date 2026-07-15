@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-15T00:34:21.284Z
+Generated: 2026-07-15T01:06:46.441Z
 
 ## Canonical Exports
 
@@ -73,7 +73,7 @@ Generated: 2026-07-15T00:34:21.284Z
 | api_endpoint | verified | USE /company-os | src/app.ts#/company-os | Engineering Delivery Lead |
 | api_endpoint | verified | USE /connection | src/app.ts#/connection | Engineering Delivery Lead |
 | api_endpoint | verified | USE /dashboard | src/app.ts#/dashboard | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /deals | src/app.ts#/deals | Engineering Delivery Lead |
+| api_endpoint | verified | USE /deals | src/app.ts#/deals | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /decisions | src/app.ts#/decisions | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /departments | src/app.ts#/departments | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /events | src/app.ts#/events | Engineering Delivery Lead |
@@ -611,6 +611,8 @@ Generated: 2026-07-15T00:34:21.284Z
 | connected_to | project:roost:122c92a083 | task:task:6d90bf89a7 | .codex/tasks/luc-1183-prove-unclassified-user-workflow-missing-test-link-for-use-commercial-exceptions.md |
 | connected_to | project:roost:122c92a083 | task:task:a4043edcc7 | .codex/tasks/luc-1187-prove-unclassified-user-workflow-missing-test-link-for-use-company-os.md |
 | connected_to | project:roost:122c92a083 | task:task:a4602ebb73 | .codex/tasks/luc-1192-prove-unclassified-user-workflow-missing-test-link-for-use-connection.md |
+| connected_to | project:roost:122c92a083 | task:task:ddc3a8e8e4 | .codex/tasks/luc-1196-source-control-closure-for-luc-1192-proof-link-packet.md |
+| connected_to | project:roost:122c92a083 | task:task:3bd9e6a95e | .codex/tasks/luc-1197-prove-unclassified-user-workflow-missing-test-link-for-use-deals.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-07-15T00:34:21.284Z
 | documents | document:luc-4742-source-control-closure-for-luc-4739-evidence-packet:ec0821deae | module:docs:6784d83cb0 | docs/planning/luc-4742-source-control-closure-for-luc-4739-evidence-packet.md |
 | documents | document:luc-4748-known-state-evidence-and-architecture-baseline:e30d6fc7a6 | module:docs:6784d83cb0 | docs/planning/luc-4748-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4751-source-control-closure-for-luc-4748-known-state-packet:eaccad52d2 | module:docs:6784d83cb0 | docs/planning/luc-4751-source-control-closure-for-luc-4748-evidence-packet.md |
-| documents | document:luc-4754-residual-generated-drift-after-luc-4739:b15bdd8dab | module:docs:6784d83cb0 | docs/planning/luc-4754-residual-generated-drift-after-luc-4739.md |
-| documents | document:luc-4757-known-state-evidence-and-architecture-baseline:7f5d77caf7 | module:docs:6784d83cb0 | docs/planning/luc-4757-known-state-evidence-and-architecture-baseline.md |

@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-07-15T00:34:23.819Z
+Generated: 2026-07-15T01:06:50.880Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -16,8 +16,8 @@ Internal functions and modules are implementation details: they receive proof th
 - Items: 46
 - User flows: 4
 - Needs browser/screenshot review: 0
-- Missing test link: 28
-- Missing doc link: 1
+- Missing test link: 27
+- Missing doc link: 2
 - Implemented, needs proof: 0
 - Blocked: 0
 - Known non-ok risk items: 29
@@ -26,7 +26,7 @@ Internal functions and modules are implementation details: they receive proof th
 
 ## Flow Summary
 
-- Unclassified user workflow: 36 entities; risks {"ok":9,"missing_test_link":27}; gates {"auth":6}
+- Unclassified user workflow: 36 entities; risks {"ok":9,"missing_doc_link":1,"missing_test_link":26}; gates {"auth":7}
 - Account access: 7 entities; risks {"ok":7}; gates {"auth":7,"configuration":1}
 - User configuration: 2 entities; risks {"missing_doc_link":1,"missing_test_link":1}; gates {"auth":1,"configuration":2}
 - Dashboard overview: 1 entities; risks {"ok":1}; gates {}
@@ -35,7 +35,7 @@ Internal functions and modules are implementation details: they receive proof th
 
 | User flow | Risk | Kind | Entity | Owner | Path | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
-| Unclassified user workflow | missing_test_link | api_endpoint | USE /deals | Engineering Delivery Lead | src/app.ts#/deals | - |
+| Unclassified user workflow | missing_doc_link | api_endpoint | USE /deals | Engineering Delivery Lead | src/app.ts#/deals | auth |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /decisions | Engineering Delivery Lead | src/app.ts#/decisions | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /departments | Engineering Delivery Lead | src/app.ts#/departments | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /events | Engineering Delivery Lead | src/app.ts#/events | - |

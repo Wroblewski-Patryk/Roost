@@ -1,4 +1,19 @@
 # Next Steps
+- 2026-07-15: [LUC-1197](/LUC/issues/LUC-1197) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/deals`. The durable packet is
+  `.codex/tasks/luc-1197-prove-unclassified-user-workflow-missing-test-link-for-use-deals.md`.
+  Current fact: refreshed architecture-awareness marks the exact Deals mount
+  `verified` through the existing API proof in `src/tests/api.test.ts` and
+  `src/modules/deals/deals.routes.ts`; refreshed app-completion no longer
+  routes `api_endpoint:use-deals:2ceaef3b27` as `missing_test_link` and keeps
+  the same symbol only as `missing_doc_link`; Project Truth now routes the
+  same symbol to Docs Memory Lead + Project Manager while the next QA-owned
+  proof gap is `src/app.ts#/decisions`. Source-control closure completed in
+  [LUC-1200](/LUC/issues/LUC-1200). Do not reopen another QA proof lane for
+  `src/app.ts#/deals` unless a fresh generated regression removes the linked
+  API evidence.
+
 - 2026-07-15: [LUC-1187](/LUC/issues/LUC-1187) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint
   `src/app.ts#/company-os`. The durable packet is

@@ -1,5 +1,29 @@
 # Active Mission Packet
 
+## LUC-1197 Checkpoint
+
+- 2026-07-15: [LUC-1197](/LUC/issues/LUC-1197) closed the routed
+  unclassified endpoint `src/app.ts#/deals` `missing_test_link` row. Packet:
+  `.codex/tasks/luc-1197-prove-unclassified-user-workflow-missing-test-link-for-use-deals.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Deals mount
+  `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/deals/deals.routes.ts`; focused
+  local protected API proof PASS after `npm run build`, `npm run
+  prisma:migrate:deploy`, `npm run seed`, and `node --test --test-name-pattern
+  "CompanyCore v1 protected API flow" dist/tests/api.test.js` against local
+  PostgreSQL test container `companycore-test-postgres-luc1197` on port
+  `55434`, followed by cleanup; external architecture-awareness refresh
+  generated `2026-07-15T01:06:46.441Z` with `3042` entities / `7750`
+  relations / `16523` files; sequential app-completion refresh now reports
+  `missingTestLink=27` and keeps `src/app.ts#/deals` only as docs-owned
+  `missing_doc_link`; sequential Project Truth apply generated
+  `2026-07-15T01:06:51.062Z` with public probes `pass` and advanced the next
+  QA-owned routed gap to `src/app.ts#/decisions` `missing_test_link`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`). No runtime feature logic,
+  provider call, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Source-control closure completed in
+  [LUC-1200](/LUC/issues/LUC-1200) with the coherent packet committed locally.
+
 ## LUC-1192 Checkpoint
 
 - 2026-07-15: [LUC-1192](/LUC/issues/LUC-1192) closed the routed

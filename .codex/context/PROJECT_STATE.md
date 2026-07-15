@@ -1,5 +1,36 @@
 # PROJECT_STATE
 
+- 2026-07-15: [LUC-1197](/LUC/issues/LUC-1197) completed the local proof-link
+  closure for unclassified `src/app.ts#/deals`, and the routed gap advanced
+  from QA-owned `missing_test_link` to docs-owned `missing_doc_link`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1197-prove-unclassified-user-workflow-missing-test-link-for-use-deals.md`.
+  Current evidence: `src/tests/api.test.ts` and
+  `src/modules/deals/deals.routes.ts` already verify protected `/v1/deals`
+  create, read, update, archive, and foreign-workspace isolation behavior, and
+  `docs/architecture/scanner-overrides.json` now links that existing proof to
+  the exact `src/app.ts#/deals` mount; focused local protected API proof PASS
+  after `npm run build`, `npm run prisma:migrate:deploy`, `npm run seed`, and
+  `node --test --test-name-pattern "CompanyCore v1 protected API flow"
+  dist/tests/api.test.js` against local PostgreSQL test container
+  `companycore-test-postgres-luc1197` on port `55434`, followed by cleanup;
+  `npm run architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-15T01:06:46.441Z` with `3042` entities / `7750`
+  relations / `16523` files; sequential app-completion refresh now reports
+  `46` items / `4` flows / `27` missing test links / `2` missing doc links /
+  `0` implemented-needs-proof / `0` blocked / `29` risk items and no longer
+  routes `api_endpoint:use-deals:2ceaef3b27` as `missing_test_link`; Project
+  Truth apply generated `2026-07-15T01:06:51.062Z` with public probes `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and keeps the same symbol as docs-owned `missing_doc_link` while
+  advancing the next QA-owned routed gap to `src/app.ts#/decisions`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime product
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Source-control closure
+  completed in [LUC-1200](/LUC/issues/LUC-1200) with the coherent packet
+  committed locally.
+
 - 2026-07-15: [LUC-1196](/LUC/issues/LUC-1196) completed source-control
   closure for the [LUC-1192](/LUC/issues/LUC-1192) proof-link packet. Closure
   contract:

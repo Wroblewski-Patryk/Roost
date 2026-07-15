@@ -561,6 +561,16 @@
       ]
     },
     {
+      "path": "src/app.ts#/deals",
+      "status": "verified",
+      "description": "Deals mount verified through the existing protected API suite coverage for workspace-scoped POST, GET, PATCH, and DELETE /v1/deals flows, including foreign-workspace update denial and archived-status behavior without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/deals/deals.routes.ts",
+        ".codex/tasks/luc-1197-prove-unclassified-user-workflow-missing-test-link-for-use-deals.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/strategy",
       "status": "verified",
       "description": "Protected Strategy route mount verified by the current local API harness for `GET /v1/strategy/context`, plus the existing Strategy route browser proof that consumes the same mounted packet from the authenticated 01 Strategy overview surface.",
