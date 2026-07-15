@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-15T00:19:36.862Z",
+  "generatedAt": "2026-07-15T00:34:23.819Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -8,8 +8,8 @@
     "items": 46,
     "flows": 4,
     "needsBrowserReview": 0,
-    "missingTestLink": 29,
-    "missingDocLink": 0,
+    "missingTestLink": 28,
+    "missingDocLink": 1,
     "implementedNeedsProof": 0,
     "blocked": 0,
     "riskItems": 29,
@@ -40,10 +40,10 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "total": 37,
+      "total": 36,
       "risks": {
         "ok": 9,
-        "missing_test_link": 28
+        "missing_test_link": 27
       },
       "gates": {
         "auth": 6
@@ -51,35 +51,18 @@
     },
     {
       "userFlow": "User configuration",
-      "total": 1,
+      "total": 2,
       "risks": {
+        "missing_doc_link": 1,
         "missing_test_link": 1
       },
       "gates": {
-        "configuration": 1
+        "auth": 1,
+        "configuration": 2
       }
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "api_endpoint:use-connection:b52b509477",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /connection",
-      "path": "src/app.ts#/connection",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Unclassified user workflow",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
     {
       "id": "api_endpoint:use-deals:2ceaef3b27",
       "type": "api_endpoint",
@@ -592,6 +575,28 @@
       },
       "relatedEntityCount": 4,
       "risk": "missing_test_link"
+    },
+    {
+      "id": "api_endpoint:use-connection:b52b509477",
+      "type": "api_endpoint",
+      "kind": "api_endpoint",
+      "name": "USE /connection",
+      "path": "src/app.ts#/connection",
+      "owner": "Engineering Delivery Lead",
+      "status": "verified",
+      "userFlow": "User configuration",
+      "gates": [
+        "auth",
+        "configuration"
+      ],
+      "evidence": {
+        "hasTest": true,
+        "hasDoc": false,
+        "needsBrowserProof": false,
+        "needsScreenshotReview": false
+      },
+      "relatedEntityCount": 5,
+      "risk": "missing_doc_link"
     },
     {
       "id": "api_endpoint:use-integration-settings:7da089bd2f",

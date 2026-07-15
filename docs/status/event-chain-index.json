@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-15T00:19:40.201Z",
+  "generatedAt": "2026-07-15T00:34:23.924Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 336,
-      "linkedRelationCount": 1447,
+      "entityCount": 338,
+      "linkedRelationCount": 1462,
       "layers": {
         "frontend": {
           "count": 30,
@@ -260,7 +260,7 @@
           "truncated": false
         },
         "backend": {
-          "count": 102,
+          "count": 103,
           "sample": [
             {
               "id": "api_endpoint:use-agent-events:1b4c65ace9",
@@ -387,6 +387,14 @@
               "type": "api_endpoint",
               "name": "USE /company-os",
               "path": "src/app.ts#/company-os",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "api_endpoint:use-connection:b52b509477",
+              "type": "api_endpoint",
+              "name": "USE /connection",
+              "path": "src/app.ts#/connection",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -893,20 +901,12 @@
               "path": "src/modules/company-os/company-os.routes.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "function:authactor:8f0ce27a64",
-              "type": "function",
-              "name": "authActor",
-              "path": "src/modules/company-os/workflow-definition-drafts.routes.ts#authActor",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 156,
+          "count": 157,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -1065,6 +1065,14 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1187-prove-unclassified-user-workflow-missing-test-link-for-use-company-os.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:a4602ebb73",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1192-prove-unclassified-user-workflow-missing-test-link-for-use-connection.md",
               "owner": "Engineering Delivery Lead",
               "status": "in_progress"
             },
@@ -1539,14 +1547,6 @@
               "path": "src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
-            },
-            {
-              "id": "function:googledrivesecretstatus:b6b2c9a410",
-              "type": "function",
-              "name": "googleDriveSecretStatus",
-              "path": "src/integrations/integration-settings.service.ts#googleDriveSecretStatus",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
@@ -3321,9 +3321,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-15-luc-1183-module-confidence-update:18d758aa59",
+              "id": "agent:2026-07-15-luc-1187-module-confidence-update:9b2238d1be",
               "type": "agent",
-              "name": "2026-07-15 LUC-1183 Module Confidence Update",
+              "name": "2026-07-15 LUC-1187 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -3492,7 +3492,7 @@
     {
       "userFlow": "Subscription and entitlement",
       "entityCount": 1172,
-      "linkedRelationCount": 4104,
+      "linkedRelationCount": 4106,
       "layers": {
         "frontend": {
           "count": 48,
@@ -4429,7 +4429,7 @@
               "name": "USE /connection",
               "path": "src/app.ts#/connection",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "api_endpoint:use-departments:876f72fd71",
@@ -4907,7 +4907,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-1187-prove-unclassified-user-workflow-missing-test-link-for-use-company-os.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:6d90bf89a7",
@@ -6499,9 +6499,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-15-luc-1183-module-confidence-update:18d758aa59",
+              "id": "agent:2026-07-15-luc-1187-module-confidence-update:9b2238d1be",
               "type": "agent",
-              "name": "2026-07-15 LUC-1183 Module Confidence Update",
+              "name": "2026-07-15 LUC-1187 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -6613,8 +6613,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2899,
-      "linkedRelationCount": 7455,
+      "entityCount": 2900,
+      "linkedRelationCount": 7467,
       "layers": {
         "frontend": {
           "count": 85,
@@ -7290,10 +7290,10 @@
               "status": "verified"
             },
             {
-              "id": "api_endpoint:use-connection:b52b509477",
+              "id": "api_endpoint:use-deals:2ceaef3b27",
               "type": "api_endpoint",
-              "name": "USE /connection",
-              "path": "src/app.ts#/connection",
+              "name": "USE /deals",
+              "path": "src/app.ts#/deals",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -7304,14 +7304,6 @@
               "path": "src/app.ts",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-deals:2ceaef3b27",
-              "type": "api_endpoint",
-              "name": "USE /deals",
-              "path": "src/app.ts#/deals",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             },
             {
               "id": "api_endpoint:use-decisions:b29cd45684",
@@ -7904,12 +7896,20 @@
               "path": "scripts/backfill-architecture-nodes.mjs#routeFilePath",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "feature:check-route-capabilities-mjs:d574fd7464",
+              "type": "feature",
+              "name": "check-route-capabilities.mjs",
+              "path": "scripts/check-route-capabilities.mjs",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 851,
+          "count": 852,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -8140,6 +8140,14 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1187-prove-unclassified-user-workflow-missing-test-link-for-use-company-os.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:a4602ebb73",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1192-prove-unclassified-user-workflow-missing-test-link-for-use-connection.md",
               "owner": "Engineering Delivery Lead",
               "status": "in_progress"
             },
@@ -8540,14 +8548,6 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-926-source-control-closure-for-luc-895.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:c4a21764fb",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             }
@@ -9902,9 +9902,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-15-luc-1183-module-confidence-update:18d758aa59",
+              "id": "agent:2026-07-15-luc-1187-module-confidence-update:9b2238d1be",
               "type": "agent",
-              "name": "2026-07-15 LUC-1183 Module Confidence Update",
+              "name": "2026-07-15 LUC-1187 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"

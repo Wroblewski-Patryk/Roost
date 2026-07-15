@@ -1,5 +1,49 @@
 # PROJECT_STATE
 
+- 2026-07-15: [LUC-1196](/LUC/issues/LUC-1196) completed source-control
+  closure for the [LUC-1192](/LUC/issues/LUC-1192) proof-link packet. Closure
+  contract:
+  `.codex/tasks/luc-1196-source-control-closure-for-luc-1192-proof-link-packet.md`.
+  Current fact: the local dirty state was reviewed as a single coherent packet
+  made of the LUC-1192 task file, the exact `src/app.ts#/connection`
+  scanner-override proof link, refreshed `.agents/state/*` and
+  `.codex/context/*` notes, and the expected regenerated `docs/graphs/*` plus
+  `docs/status/*` artifacts. Bounded git inspection, representative generated
+  readback, and a high-confidence redaction scan found no unrelated ownership
+  drift or secret exposure. The packet is commit-ready as current project truth
+  and has no deploy or runtime-behavior impact.
+
+- 2026-07-15: [LUC-1192](/LUC/issues/LUC-1192) completed the local proof-link
+  closure for unclassified `src/app.ts#/connection`. Source-of-truth task
+  packet:
+  `.codex/tasks/luc-1192-prove-unclassified-user-workflow-missing-test-link-for-use-connection.md`.
+  Current evidence: `src/tests/api.test.ts` and
+  `src/modules/connection/connection.routes.ts` already verify the protected
+  `/v1/connection` packet through a direct service-key read that asserts
+  workspace identity, operating-model hydration, adapter manifest route
+  exposure, MCP manifest exposure, and integration configuration state, and
+  `docs/architecture/scanner-overrides.json` now links that existing proof to
+  the exact `src/app.ts#/connection` mount; focused local protected API proof
+  PASS after `npm run build`, `npm run prisma:migrate:deploy`, `npm run seed`,
+  and `node --test --test-name-pattern "CompanyCore v1 protected API flow"
+  dist/tests/api.test.js` against local PostgreSQL test container
+  `companycore-test-postgres-luc1192` on port `55433`, followed by cleanup;
+  `npm run architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-15T00:34:21.284Z` with `3040` entities / `7725`
+  relations / `16523` files; sequential app-completion refresh now reports
+  `46` items / `4` flows / `28` missing test links / `1` missing doc link /
+  `0` implemented-needs-proof / `0` blocked / `29` risk items and no longer
+  routes `api_endpoint:use-connection:b52b509477` as `missing_test_link`;
+  Project Truth apply generated `2026-07-15T00:34:23.924Z` with public probes
+  `pass`, runtime findings `0`, incomplete event chains `0`, operational gate
+  gaps `0`, and advances the next QA-owned routed gap to
+  `src/app.ts#/integration-settings` `missing_test_link` while the same
+  `src/app.ts#/connection` symbol remains docs-owned `missing_doc_link`; `npm
+  run architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`,
+  chain worklist `0`). No runtime product logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred.
+
 - 2026-07-15: [LUC-1187](/LUC/issues/LUC-1187) completed the local proof-link
   closure for unclassified `src/app.ts#/company-os`. Source-of-truth task
   packet:

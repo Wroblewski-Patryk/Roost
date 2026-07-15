@@ -9795,3 +9795,14 @@ Last updated: 2026-06-20
 | Priority | Item | Owner | Status | Evidence | Next Action |
 | --- | --- | --- | --- | --- | --- |
 | P1 | Complete Exchange connection/configuration frontend chain | [LUC-6905](/LUC/issues/LUC-6905) + [LUC-6911](/LUC/issues/LUC-6911) | done | [LUC-6902](/LUC/issues/LUC-6902) diagnosis packet `docs/planning/luc-6902-exchange-chain-diagnosis-and-handoff.md`; current `docs/status/event-chain-index.json` generated `2026-07-02T14:52:18.743Z` reports `incompleteChains=0` and `Exchange connection and configuration` as `chain_indexed` with `missingLayers=[]`. | No further Exchange event-chain action remains for [LUC-6902](/LUC/issues/LUC-6902). Remaining Project Truth gaps belong to the public runtime probe/Ops path. |
+- 2026-07-15: [LUC-1192](/LUC/issues/LUC-1192) has no remaining 09 TAE
+  missing-test-link action for `src/app.ts#/connection`. The durable packet is
+  `.codex/tasks/luc-1192-prove-unclassified-user-workflow-missing-test-link-for-use-connection.md`.
+  Current fact: refreshed app-completion marks the exact route `status=verified`
+  with linked API proof, and Project Truth no longer reports the symbol as
+  `missing_test_link`; the same symbol now remains only as docs-owned
+  `missing_doc_link`. Next owner/action for that same symbol is Docs Memory
+  Lead + Project Manager, while the next QA-owned routed proof gap is
+  `src/app.ts#/integration-settings` `missing_test_link`. Do not reopen
+  another QA proof lane for `src/app.ts#/connection` unless a fresh generated
+  regression removes its linked API evidence.

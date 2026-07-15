@@ -551,6 +551,16 @@
       ]
     },
     {
+      "path": "src/app.ts#/connection",
+      "status": "verified",
+      "description": "Connection mount verified through the existing protected API suite coverage for direct GET /v1/connection reads, workspace-scoped operating-model hydration, adapter manifest route exposure, MCP manifest exposure, and integration configuration readback without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/connection/connection.routes.ts",
+        ".codex/tasks/luc-1192-prove-unclassified-user-workflow-missing-test-link-for-use-connection.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/strategy",
       "status": "verified",
       "description": "Protected Strategy route mount verified by the current local API harness for `GET /v1/strategy/context`, plus the existing Strategy route browser proof that consumes the same mounted packet from the authenticated 01 Strategy overview surface.",

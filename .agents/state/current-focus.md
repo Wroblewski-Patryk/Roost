@@ -1,5 +1,29 @@
 # Current Focus
 
+## LUC-1192 Checkpoint
+
+- 2026-07-15: [LUC-1192](/LUC/issues/LUC-1192) closed the routed
+  unclassified endpoint `src/app.ts#/connection` `missing_test_link` row.
+  Packet:
+  `.codex/tasks/luc-1192-prove-unclassified-user-workflow-missing-test-link-for-use-connection.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Connection
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/connection/connection.routes.ts`;
+  focused local protected API proof PASS after `npm run build`, `npm run
+  prisma:migrate:deploy`, `npm run seed`, and `node --test
+  --test-name-pattern "CompanyCore v1 protected API flow"
+  dist/tests/api.test.js` against local PostgreSQL test container
+  `companycore-test-postgres-luc1192` on port `55433`, followed by cleanup;
+  `npm run architecture:refresh` PASS; external architecture-awareness rebuild
+  generated `2026-07-15T00:34:21.284Z` with `3040` entities / `7725`
+  relations / `16523` files; sequential app-completion refresh now reports
+  `missingTestLink=28` and keeps `src/app.ts#/connection` only as
+  docs-owned `missing_doc_link`; sequential Project Truth apply generated
+  `2026-07-15T00:34:23.924Z` with public probes `pass` and advanced the next
+  QA-owned routed gap to `src/app.ts#/integration-settings`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`).
+
 ## LUC-1187 Checkpoint
 
 - 2026-07-15: [LUC-1187](/LUC/issues/LUC-1187) closed the routed

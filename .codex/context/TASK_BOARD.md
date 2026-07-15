@@ -1,6 +1,45 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-15: [LUC-1196](/LUC/issues/LUC-1196) classified the LUC-1192 local
+  dirty packet as current/coherent and closed it with a dedicated
+  source-control sidecar:
+  `.codex/tasks/luc-1196-source-control-closure-for-luc-1192-proof-link-packet.md`.
+  Packet scope stayed inside `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; bounded git review, representative generated readback, and a
+  high-confidence redaction scan found no unrelated ownership drift or secret
+  exposure. Next owner remains Docs Memory Lead + Project Manager for the
+  `src/app.ts#/connection` `missing_doc_link`, while the next QA-owned routed
+  proof gap is `src/app.ts#/deals`.
+
+- 2026-07-15: [LUC-1192](/LUC/issues/LUC-1192) unclassified
+  `src/app.ts#/connection` missing-test-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1192-prove-unclassified-user-workflow-missing-test-link-for-use-connection.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  Connection mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/connection/connection.routes.ts`;
+  focused local protected API proof PASS after `npm run build`, `npm run
+  prisma:migrate:deploy`, `npm run seed`, and `node --test
+  --test-name-pattern "CompanyCore v1 protected API flow"
+  dist/tests/api.test.js` against local PostgreSQL test container
+  `companycore-test-postgres-luc1192` on port `55433`, followed by cleanup;
+  `npm run architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-15T00:34:21.284Z` with `3040` entities / `7725`
+  relations / `16523` files and materialized the exact proof links; sequential
+  app-completion refresh now reports `missingTestLink=28`, no longer treats
+  `api_endpoint:use-connection:b52b509477` as `missing_test_link`, and keeps
+  the same symbol only as docs-owned `missing_doc_link`; Project Truth apply
+  generated `2026-07-15T00:34:23.924Z` with public probes `pass` and advances
+  the next QA-owned routed gap to `src/app.ts#/integration-settings`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). No runtime product logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Next owner: Docs Memory Lead + Project Manager for the same-symbol
+  doc-link closure on `src/app.ts#/connection`, while the next QA-owned proof
+  gap is `src/app.ts#/integration-settings`.
+
 - 2026-07-15: [LUC-1187](/LUC/issues/LUC-1187) unclassified
   `src/app.ts#/company-os` missing-test-link verification is complete locally.
   Task contract:
