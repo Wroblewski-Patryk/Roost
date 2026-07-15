@@ -1,5 +1,54 @@
 # PROJECT_STATE
 
+- 2026-07-16: [LUC-1295](/LUC/issues/LUC-1295) completed source-control
+  closure for the [LUC-1285](/LUC/issues/LUC-1285) intake proof-link packet.
+  Closure contract:
+  `.codex/tasks/luc-1295-source-control-closure-for-luc-1285-intake-proof-link-packet.md`.
+  Current evidence: bounded git review classified the packet as current and
+  owner-coherent across `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept `USE /intake` clear
+  of `missing_test_link`, left `missingTestLink=21`, and kept Project Truth
+  routed to `src/app.ts#/interactions` `missing_test_link` while
+  `src/app.ts#/intake` remains docs-owned `missing_doc_link`; `git diff
+  --check` produced only CRLF normalization warnings and no content defects;
+  JSON parse checks passed for `docs/status/app-completion-index.json` and
+  `docs/status/project-truth-index.json`; a bounded high-confidence redaction
+  scan found no secret-shaped strings in the changed paths; the LUC-1285 task
+  packet was normalized from `Mission Status: VERIFIED` to `Mission Status:
+  DONE` so the closure bundle is internally consistent. Deploy impact: none.
+  Push status: held pending broader batching.
+
+- 2026-07-15: [LUC-1285](/LUC/issues/LUC-1285) completed the local
+  missing-test-link closure for unclassified `src/app.ts#/intake`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1285-prove-unclassified-user-workflow-missing-test-link-for-use-intake.md`.
+  Current evidence: `docs/architecture/scanner-overrides.json` now marks the
+  exact Intake mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/intake/intake.routes.ts`; focused
+  local protected API proof PASS after `npm run build`, `npm run
+  prisma:migrate:deploy`, `npm run seed`, and `node --test --test-name-pattern
+  "CompanyCore v1 protected API flow" dist/tests/api.test.js` against local
+  PostgreSQL test container `companycore-test-postgres-luc1285` on port
+  `58002`, followed by cleanup; `npm run architecture:refresh` PASS; external
+  architecture-awareness refresh generated `2026-07-15T20:08:12.206Z` with
+  `3070` entities / `7998` relations / `16523` files and materialized the
+  exact proof relation; sequential app-completion refresh now reports `46`
+  items / `4` flows / `21` missing test links / `2` missing doc links / `0`
+  implemented-needs-proof / `0` blocked / `23` risk items, no longer routes
+  `api_endpoint:use-intake:3c22276373` as `missing_test_link`, and keeps the
+  same symbol only as docs-owned `missing_doc_link`; Project Truth apply
+  generated `2026-07-15T20:08:12.197Z` with public probes `pass`, runtime
+  findings `0`, incomplete event chains `0`, operational gate gaps `0`, and
+  advances the next QA-owned routed proof gap to `src/app.ts#/interactions`
+  `missing_test_link` while the first overall routed gap stays docs-owned on
+  `src/app.ts#/intake`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime feature
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Deploy impact: none. Push
+  status: held pending broader batching. Source-control closure completed in
+  [LUC-1295](/LUC/issues/LUC-1295).
+
 - 2026-07-15: [LUC-1277](/LUC/issues/LUC-1277) completed the local
   documentation-link closure for unclassified `src/app.ts#/health`.
   Source-of-truth task packet:

@@ -1,3 +1,30 @@
+# 2026-07-15 LUC-1285 Intake Proof-Link Health Signal
+
+- Status: routed unclassified intake endpoint proof-link closure is verified
+  locally.
+- Evidence: [LUC-1285](/LUC/issues/LUC-1285) task packet
+  `.codex/tasks/luc-1285-prove-unclassified-user-workflow-missing-test-link-for-use-intake.md`;
+  `docs/architecture/scanner-overrides.json` now marks `src/app.ts#/intake`
+  `verified` through the existing protected API suite in `src/tests/api.test.ts`
+  plus `src/modules/intake/intake.routes.ts`; focused proof PASS after
+  `npm run build`, `npm run prisma:migrate:deploy`, `npm run seed`, and
+  `node --test --test-name-pattern "CompanyCore v1 protected API flow"
+  dist/tests/api.test.js` against local PostgreSQL test container
+  `companycore-test-postgres-luc1285` on port `58002`, followed by cleanup;
+  `npm run architecture:refresh` PASS; external architecture-awareness rebuild
+  generated `2026-07-15T20:08:12.206Z` with `3070` entities / `7998`
+  relations / `16523` files; app-completion refresh generated `21` missing
+  test links / `2` missing doc links and no longer routes `USE /intake` as
+  `missing_test_link`, keeping the same symbol only as docs-owned
+  `missing_doc_link`; Project Truth apply generated
+  `2026-07-15T20:08:12.197Z` with public probes `pass` and advanced the next
+  QA-owned routed gap to `src/app.ts#/interactions`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`,
+  chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
 # 2026-07-15 LUC-1277 Health Doc-Link Health Signal
 
 - Status: routed unclassified health endpoint doc-link closure is verified

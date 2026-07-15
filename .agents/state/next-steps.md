@@ -1,4 +1,30 @@
 # Next Steps
+- 2026-07-16: [LUC-1295](/LUC/issues/LUC-1295) has no remaining
+  source-control action for the LUC-1285 packet. The durable sidecar is
+  `.codex/tasks/luc-1295-source-control-closure-for-luc-1285-intake-proof-link-packet.md`.
+  Current fact: bounded git review, representative generated readback,
+  `git diff --check`, JSON parse checks for the changed status indexes, and a
+  high-confidence redaction scan classified the packet as current/coherent
+  with no unrelated ownership drift. The `LUC-1285` task packet now records
+  that local source-control closure completed in
+  [LUC-1295](/LUC/issues/LUC-1295). Do not reopen another closure lane for
+  this packet unless a fresh dirty-state regression appears after new work.
+
+- 2026-07-15: [LUC-1285](/LUC/issues/LUC-1285) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/intake`. The durable packet is
+  `.codex/tasks/luc-1285-prove-unclassified-user-workflow-missing-test-link-for-use-intake.md`.
+  Current fact: refreshed architecture-awareness marks the exact Intake mount
+  `verified` through the existing protected API suite in `src/tests/api.test.ts`
+  and `src/modules/intake/intake.routes.ts`; refreshed app-completion no
+  longer routes `api_endpoint:use-intake:3c22276373` as `missing_test_link`
+  and keeps the same symbol only as `missing_doc_link`; Project Truth now
+  routes the same symbol to Docs Memory Lead + Project Manager while the next
+  QA-owned proof gap is `src/app.ts#/interactions`. Do not reopen another QA
+  proof lane for `src/app.ts#/intake` unless a fresh generated regression
+  removes the linked runtime evidence. Source-control closure completed in
+  [LUC-1295](/LUC/issues/LUC-1295).
+
 - 2026-07-15: [LUC-1283](/LUC/issues/LUC-1283) has no remaining
   source-control action for the LUC-1277 packet. The durable sidecar is
   `.codex/tasks/luc-1283-source-control-closure-for-luc-1277-health-doc-link-packet.md`.

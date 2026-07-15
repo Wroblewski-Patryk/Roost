@@ -611,6 +611,16 @@
       ]
     },
     {
+      "path": "src/app.ts#/intake",
+      "status": "verified",
+      "description": "Intake mount verified through the existing protected API suite coverage for unauthenticated denial, authenticated aggregate readback, route-proposal lifecycle evidence, idempotent replay, foreign-source rejection, and API-key actor attribution across /v1/intake surfaces without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/intake/intake.routes.ts",
+        ".codex/tasks/luc-1285-prove-unclassified-user-workflow-missing-test-link-for-use-intake.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/decisions",
       "status": "verified",
       "description": "Decisions mount verified through the existing protected API suite coverage for workspace-scoped POST, GET, PATCH, and DELETE /v1/decisions flows, plus cross-workspace list isolation and emitted decision lifecycle events without changing runtime behavior.",

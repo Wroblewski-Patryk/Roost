@@ -1,5 +1,40 @@
 # Current Focus
 
+## LUC-1295 Checkpoint
+
+- 2026-07-16: [LUC-1295](/LUC/issues/LUC-1295) closed the local dirty packet
+  created by [LUC-1285](/LUC/issues/LUC-1285). Sidecar:
+  `.codex/tasks/luc-1295-source-control-closure-for-luc-1285-intake-proof-link-packet.md`.
+  Bounded git inspection classified the packet as current/coherent across
+  `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept `USE /intake` clear
+  of `missing_test_link`, left `missingTestLink=21`, and kept Project Truth
+  routed to `src/app.ts#/interactions` while `src/app.ts#/intake` stays
+  docs-owned `missing_doc_link`. The LUC-1285 packet mission-status line is
+  now normalized to `DONE`, and no further source-control action is needed for
+  that packet.
+
+## LUC-1285 Checkpoint
+
+- 2026-07-15: [LUC-1285](/LUC/issues/LUC-1285) closed the routed
+  unclassified endpoint `src/app.ts#/intake` `missing_test_link` row. Packet:
+  `.codex/tasks/luc-1285-prove-unclassified-user-workflow-missing-test-link-for-use-intake.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Intake mount
+  `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/intake/intake.routes.ts`;
+  external architecture-awareness refresh generated `2026-07-15T20:08:12.206Z`
+  with `3070` entities / `7998` relations / `16523` files; sequential
+  app-completion refresh now reports `missingTestLink=21` and keeps
+  `src/app.ts#/intake` only as docs-owned `missing_doc_link`; sequential
+  Project Truth apply generated `2026-07-15T20:08:12.197Z` with public probes
+  `pass` and advanced the next QA-owned routed proof gap to
+  `src/app.ts#/interactions` `missing_test_link`; `npm run architecture:status`
+  PASS (`GREEN`, `455/769/35`). The first overall routed gap is now
+  docs-owned on `src/app.ts#/intake`, and the next QA-owned proof gap is
+  `src/app.ts#/interactions`. Source-control closure completed in
+  [LUC-1295](/LUC/issues/LUC-1295).
+
 ## LUC-1277 Checkpoint
 
 - 2026-07-15: [LUC-1277](/LUC/issues/LUC-1277) closed the routed

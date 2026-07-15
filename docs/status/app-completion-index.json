@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-15T19:39:15.423Z",
+  "generatedAt": "2026-07-15T20:08:12.198Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -8,8 +8,8 @@
     "items": 46,
     "flows": 4,
     "needsBrowserReview": 0,
-    "missingTestLink": 22,
-    "missingDocLink": 1,
+    "missingTestLink": 21,
+    "missingDocLink": 2,
     "implementedNeedsProof": 0,
     "blocked": 0,
     "riskItems": 23,
@@ -21,12 +21,13 @@
   "flows": [
     {
       "userFlow": "Account access",
-      "total": 7,
+      "total": 8,
       "risks": {
-        "ok": 7
+        "ok": 7,
+        "missing_doc_link": 1
       },
       "gates": {
-        "auth": 7,
+        "auth": 8,
         "configuration": 1
       }
     },
@@ -40,10 +41,10 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "total": 36,
+      "total": 35,
       "risks": {
         "ok": 15,
-        "missing_test_link": 21
+        "missing_test_link": 20
       },
       "gates": {
         "auth": 12
@@ -70,17 +71,19 @@
       "name": "USE /intake",
       "path": "src/app.ts#/intake",
       "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Unclassified user workflow",
-      "gates": [],
+      "status": "verified",
+      "userFlow": "Account access",
+      "gates": [
+        "auth"
+      ],
       "evidence": {
-        "hasTest": false,
+        "hasTest": true,
         "hasDoc": false,
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
+      "relatedEntityCount": 5,
+      "risk": "missing_doc_link"
     },
     {
       "id": "api_endpoint:use-interactions:eb228af9f5",

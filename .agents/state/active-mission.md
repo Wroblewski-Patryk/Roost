@@ -1,5 +1,45 @@
 # Active Mission Packet
 
+## LUC-1295 Checkpoint
+
+- 2026-07-16: [LUC-1295](/LUC/issues/LUC-1295) classified the LUC-1285 local
+  dirty packet as current/coherent and closed it with a dedicated
+  source-control sidecar:
+  `.codex/tasks/luc-1295-source-control-closure-for-luc-1285-intake-proof-link-packet.md`.
+  Packet scope stayed inside `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; bounded git inspection, representative generated readback,
+  `git diff --check`, JSON parse checks, and a high-confidence redaction scan
+  found no unrelated ownership drift or secret exposure. The LUC-1285 task
+  packet was normalized from `Mission Status: VERIFIED` to `Mission Status:
+  DONE`. Final disposition: local commit prepared; no remaining source-control
+  closure work is needed for the intake proof-link packet.
+
+## LUC-1285 Checkpoint
+
+- 2026-07-15: [LUC-1285](/LUC/issues/LUC-1285) closed the routed
+  unclassified endpoint `src/app.ts#/intake` `missing_test_link` row. Packet:
+  `.codex/tasks/luc-1285-prove-unclassified-user-workflow-missing-test-link-for-use-intake.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Intake mount
+  `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/intake/intake.routes.ts`; focused
+  proof PASS after `npm run build`, `npm run prisma:migrate:deploy`, `npm run
+  seed`, and `node --test --test-name-pattern "CompanyCore v1 protected API
+  flow" dist/tests/api.test.js` against local PostgreSQL test container
+  `companycore-test-postgres-luc1285` on port `58002`, followed by cleanup;
+  external architecture-awareness refresh generated `2026-07-15T20:08:12.206Z`
+  with `3070` entities / `7998` relations / `16523` files; sequential
+  app-completion refresh now reports `missingTestLink=21` and keeps
+  `src/app.ts#/intake` only as docs-owned `missing_doc_link`; sequential
+  Project Truth apply generated `2026-07-15T20:08:12.197Z` with public probes
+  `pass` and advanced the next QA-owned routed proof gap to
+  `src/app.ts#/interactions` `missing_test_link`; `npm run architecture:status`
+  PASS (`GREEN`, `455/769/35`). No runtime feature logic, provider call,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred. Final disposition: `done`. Remaining docs-owned gaps:
+  `src/app.ts#/intake` and `src/app.ts#/connection`. Source-control closure
+  completed in [LUC-1295](/LUC/issues/LUC-1295).
+
 ## LUC-1277 Checkpoint
 
 - 2026-07-15: [LUC-1277](/LUC/issues/LUC-1277) closed the routed

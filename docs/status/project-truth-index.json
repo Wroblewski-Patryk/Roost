@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-15T19:39:18.780Z",
+  "generatedAt": "2026-07-15T20:08:12.197Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "gaps_require_routing",
@@ -21,29 +21,29 @@
   "firstGap": {
     "kind": "app_completion_gap",
     "severity": "medium",
-    "userFlow": "Unclassified user workflow",
-    "summary": "Unclassified user workflow: USE /intake has app-completion risk missing_test_link.",
-    "nextOwner": "Test Automation Engineer + QA Regression Lead",
-    "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+    "userFlow": "Account access",
+    "summary": "Account access: USE /intake has app-completion risk missing_doc_link.",
+    "nextOwner": "Docs Memory Lead + Project Manager",
+    "nextAction": "Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.",
     "evidence": [
       "src/app.ts#/intake"
     ],
     "sourceItemId": "api_endpoint:use-intake:3c22276373",
-    "risk": "missing_test_link"
+    "risk": "missing_doc_link"
   },
   "gaps": [
     {
       "kind": "app_completion_gap",
       "severity": "medium",
-      "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /intake has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "userFlow": "Account access",
+      "summary": "Account access: USE /intake has app-completion risk missing_doc_link.",
+      "nextOwner": "Docs Memory Lead + Project Manager",
+      "nextAction": "Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.",
       "evidence": [
         "src/app.ts#/intake"
       ],
       "sourceItemId": "api_endpoint:use-intake:3c22276373",
-      "risk": "missing_test_link"
+      "risk": "missing_doc_link"
     },
     {
       "kind": "app_completion_gap",
