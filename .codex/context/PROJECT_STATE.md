@@ -1,5 +1,34 @@
 # PROJECT_STATE
 
+- 2026-07-15: [LUC-1270](/LUC/issues/LUC-1270) completed the local
+  documentation-link closure for unclassified `src/app.ts#/goals`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1270-prove-unclassified-user-workflow-missing-doc-link-for-use-goals.md`.
+  Current evidence: `docs/API.md` now documents the protected `/v1/goals`
+  alias together with the compatibility `/goals` route, workspace-scoped
+  newest-first reads, related `process` hydration, workspace-visible
+  `projectId` and `processId` validation, archive-on-delete semantics, and
+  emitted lifecycle events; `docs/architecture/relations/documentation-links.csv`
+  links the exact `src/app.ts#/goals` mount to that contract; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-15T18:37:30.289Z` with `3063` entities / `7933`
+  relations / `16523` files and materialized the exact documentation
+  relation; sequential app-completion refresh now reports `46` items / `4`
+  flows / `23` missing test links / `1` missing doc link / `0`
+  implemented-needs-proof / `0` blocked / `24` risk items and no longer
+  routes `api_endpoint:use-goals:da30547c55` as `missing_doc_link`; Project
+  Truth apply generated `2026-07-15T18:38:08.524Z` with public probes `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and advances the first routed gap to `src/app.ts#/health`
+  `missing_test_link` while keeping only user-configuration
+  `src/app.ts#/connection` as the remaining docs-owned gap; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). No runtime feature logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Source-control closure completed in
+  [LUC-1273](/LUC/issues/LUC-1273). Deploy impact: none. Push status: held
+  pending broader batching.
+
 - 2026-07-15: [LUC-1266](/LUC/issues/LUC-1266) completed the local
   missing-test-link closure for unclassified `src/app.ts#/goals`.
   Source-of-truth task packet:

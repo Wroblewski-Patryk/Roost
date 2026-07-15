@@ -1,5 +1,27 @@
 # Active Mission Packet
 
+## LUC-1270 Checkpoint
+
+- 2026-07-15: [LUC-1270](/LUC/issues/LUC-1270) closed the routed
+  unclassified endpoint `src/app.ts#/goals` `missing_doc_link` row. Packet:
+  `.codex/tasks/luc-1270-prove-unclassified-user-workflow-missing-doc-link-for-use-goals.md`.
+  `docs/API.md` now documents the protected `/v1/goals` alias together with
+  compatibility `/goals`, workspace-scoped newest-first reads, related
+  `process` hydration, workspace-visible `projectId` and `processId`
+  validation, archive-on-delete semantics, and emitted lifecycle events;
+  `docs/architecture/relations/documentation-links.csv` links the exact Goals
+  mount to that accepted API contract; external architecture-awareness refresh
+  generated `2026-07-15T18:37:30.289Z` with `3063` entities / `7933`
+  relations / `16523` files; sequential app-completion refresh now reports
+  `missingDocLink=1` and no longer routes `src/app.ts#/goals`; sequential
+  Project Truth apply generated `2026-07-15T18:38:08.524Z` with public probes
+  `pass` and advanced the first routed gap to `src/app.ts#/health`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). No runtime feature logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Final disposition: `done`. Remaining docs-owned gap:
+  `src/app.ts#/connection`.
+
 ## LUC-1266 Checkpoint
 
 - 2026-07-15: [LUC-1266](/LUC/issues/LUC-1266) closed the routed

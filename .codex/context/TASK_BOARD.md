@@ -1,6 +1,34 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-15: [LUC-1270](/LUC/issues/LUC-1270) unclassified
+  `src/app.ts#/goals` missing-doc-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1270-prove-unclassified-user-workflow-missing-doc-link-for-use-goals.md`.
+  Evidence: `docs/API.md` now documents the protected `/v1/goals` alias
+  together with the compatibility `/goals` route, workspace-scoped
+  newest-first reads, related `process` hydration, workspace-visible
+  `projectId` and `processId` validation, archive-on-delete semantics, and
+  emitted lifecycle events; `docs/architecture/relations/documentation-links.csv`
+  links the exact Goals mount to that accepted API contract; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-15T18:37:30.289Z` with `3063` entities / `7933`
+  relations / `16523` files and materialized the exact documentation link;
+  sequential app-completion refresh now reports `missingDocLink=1`, no longer
+  treats `api_endpoint:use-goals:da30547c55` as `missing_doc_link`, and keeps
+  only user-configuration `src/app.ts#/connection` as the remaining docs-owned
+  gap; Project Truth apply generated `2026-07-15T18:36:05.795Z` with public
+  probes `pass` and advances the first routed gap to `src/app.ts#/health`
+  `missing_test_link`; a transient retry briefly produced failed public probes,
+  but the final serial reapply restored `pass` at `2026-07-15T18:38:08.524Z`;
+  `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime product
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Next owner: Test
+  Automation Engineer + QA Regression Lead for the routed proof gap on
+  `src/app.ts#/health`; separate docs follow-up remains `src/app.ts#/connection`.
+  Source-control closure completed in [LUC-1273](/LUC/issues/LUC-1273).
+
 - 2026-07-15: [LUC-1266](/LUC/issues/LUC-1266) unclassified
   `src/app.ts#/goals` missing-test-link verification is complete locally.
   Task contract:

@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-15T18:10:53.805Z
+Generated: 2026-07-15T18:39:09.654Z
 
 ## Canonical Exports
 
@@ -631,6 +631,9 @@ Generated: 2026-07-15T18:10:53.805Z
 | connected_to | project:roost:122c92a083 | task:task:f932d29e9c | .codex/tasks/luc-1258-prove-unclassified-user-workflow-missing-doc-link-for-use-events.md |
 | connected_to | project:roost:122c92a083 | task:task:374c03f32d | .codex/tasks/luc-1260-source-control-closure-for-luc-1258-use-events-doc-link-packet.md |
 | connected_to | project:roost:122c92a083 | task:task:cb123a5f7b | .codex/tasks/luc-1266-prove-unclassified-user-workflow-missing-test-link-for-use-goals.md |
+| connected_to | project:roost:122c92a083 | task:task:7b0a53df15 | .codex/tasks/luc-1269-source-control-closure-for-luc-1266-goals-proof-link-packet.md |
+| connected_to | project:roost:122c92a083 | task:luc-1270-completion-evidence:8790938b1a | .codex/tasks/luc-1270-completion-evidence.md |
+| connected_to | project:roost:122c92a083 | task:task:a899cba104 | .codex/tasks/luc-1270-prove-unclassified-user-workflow-missing-doc-link-for-use-goals.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -781,6 +784,7 @@ Generated: 2026-07-15T18:10:53.805Z
 | documents | document:api:a617d1cb61 | api_endpoint:use-decisions:b29cd45684 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-departments:876f72fd71 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-events:679c33c90e | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | api_endpoint:use-goals:da30547c55 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:b3f790a259 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:8f0ce27a64 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:requireuserauth:215e610fd9 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
@@ -1214,7 +1218,3 @@ Generated: 2026-07-15T18:10:53.805Z
 | documents | document:luc-3703-known-state-evidence-and-architecture-baseline:2828cd8225 | module:docs:6784d83cb0 | docs/planning/luc-3703-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-3713-process-core-integration-rung-with-local-api-test-database:14c655edb5 | module:docs:6784d83cb0 | docs/planning/luc-3713-process-core-integration-rung-local-api-test-database.md |
 | documents | document:luc-3716-local-api-test-operatingarea-fixture-repair:431f776563 | module:docs:6784d83cb0 | docs/planning/luc-3716-local-api-test-operating-area-fixture-repair.md |
-| documents | document:luc-3754-roost-companycore-readiness-and-milestone-review:351e85281f | module:docs:6784d83cb0 | docs/planning/luc-3754-roost-companycore-readiness-and-milestone-review.md |
-| documents | document:luc-3968-roost-companycore-readiness-and-milestone-review:6a5ddc4148 | module:docs:6784d83cb0 | docs/planning/luc-3968-roost-companycore-readiness-and-milestone-review.md |
-| documents | document:luc-4239-roost-companycore-readiness-and-milestone-review:5f6665c479 | module:docs:6784d83cb0 | docs/planning/luc-4239-roost-companycore-readiness-and-milestone-review.md |
-| documents | document:luc-4389-roost-companycore-readiness-and-milestone-review:85dcd2b341 | module:docs:6784d83cb0 | docs/planning/luc-4389-roost-companycore-readiness-and-milestone-review.md |

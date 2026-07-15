@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-15T18:10:53.809Z",
+  "generatedAt": "2026-07-15T18:39:09.786Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 359,
-      "linkedRelationCount": 1633,
+      "entityCount": 361,
+      "linkedRelationCount": 1647,
       "layers": {
         "frontend": {
           "count": 30,
@@ -906,7 +906,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 173,
+          "count": 175,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -1157,12 +1157,28 @@
               "status": "verified"
             },
             {
+              "id": "task:luc-1270-completion-evidence:8790938b1a",
+              "type": "task",
+              "name": "LUC-1270 Completion Evidence",
+              "path": ".codex/tasks/luc-1270-completion-evidence.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "in_progress"
+            },
+            {
+              "id": "task:task:a899cba104",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1270-prove-unclassified-user-workflow-missing-doc-link-for-use-goals.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:cb123a5f7b",
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1266-prove-unclassified-user-workflow-missing-test-link-for-use-goals.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:157c1a1016",
@@ -1529,22 +1545,6 @@
               "type": "function",
               "name": "mergeGoogleDriveConfig",
               "path": "src/integrations/google-drive/google-drive.auth.ts#mergeGoogleDriveConfig",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:hasfreshaccesstoken:beeb6487ae",
-              "type": "function",
-              "name": "hasFreshAccessToken",
-              "path": "src/integrations/google-drive/google-drive.auth.ts#hasFreshAccessToken",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:refreshgoogledriveoauth:04d8992f2d",
-              "type": "function",
-              "name": "refreshGoogleDriveOAuth",
-              "path": "src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             }
@@ -3492,7 +3492,7 @@
     {
       "userFlow": "Subscription and entitlement",
       "entityCount": 1172,
-      "linkedRelationCount": 4120,
+      "linkedRelationCount": 4123,
       "layers": {
         "frontend": {
           "count": 48,
@@ -6613,8 +6613,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2920,
-      "linkedRelationCount": 7654,
+      "entityCount": 2923,
+      "linkedRelationCount": 7675,
       "layers": {
         "frontend": {
           "count": 85,
@@ -7594,6 +7594,14 @@
               "status": "verified"
             },
             {
+              "id": "api_endpoint:use-goals:da30547c55",
+              "type": "api_endpoint",
+              "name": "USE /goals",
+              "path": "src/app.ts#/goals",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:authactor:b3f790a259",
               "type": "function",
               "name": "authActor",
@@ -7896,20 +7904,12 @@
               "path": "scripts/check-route-capabilities.mjs",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "function:walk:5bea6a2902",
-              "type": "function",
-              "name": "walk",
-              "path": "scripts/check-route-capabilities.mjs#walk",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 872,
+          "count": 875,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -8160,6 +8160,14 @@
               "status": "verified"
             },
             {
+              "id": "task:task:7b0a53df15",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1269-source-control-closure-for-luc-1266-goals-proof-link-packet.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:7eb0086c15",
               "type": "task",
               "name": "Task",
@@ -8248,6 +8256,14 @@
               "status": "verified"
             },
             {
+              "id": "task:task:a899cba104",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1270-prove-unclassified-user-workflow-missing-doc-link-for-use-goals.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:abc2f7c89a",
               "type": "task",
               "name": "Task",
@@ -8277,7 +8293,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-1266-prove-unclassified-user-workflow-missing-test-link-for-use-goals.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:d0b2850854",
@@ -8532,22 +8548,6 @@
               "type": "agent",
               "name": "db-migrations",
               "path": ".agents/prompts/db-migrations.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "agent:ops-release:1193a6d307",
-              "type": "agent",
-              "name": "ops-release",
-              "path": ".agents/prompts/ops-release.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "agent:product-docs:06b3b295a9",
-              "type": "agent",
-              "name": "product-docs",
-              "path": ".agents/prompts/product-docs.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             }

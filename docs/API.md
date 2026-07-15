@@ -2437,6 +2437,11 @@ DELETE /projects/:id
 ## Goals
 
 ```http
+GET /v1/goals
+GET /v1/goals/:id
+POST /v1/goals
+PATCH /v1/goals/:id
+DELETE /v1/goals/:id
 GET /goals
 GET /goals/:id
 POST /goals
@@ -2450,6 +2455,16 @@ DELETE /goals/:id
   "title": "Reach first paying customers"
 }
 ```
+
+Goals are workspace-scoped and return the related `process` record in list,
+read, create, update, and archive responses. `GET /v1/goals` and `GET /goals`
+return newest-first records for the authenticated workspace only. If
+`projectId` or `processId` is provided on create or update, the related record
+must belong to the active workspace or the route fails closed with `404
+not_found`. `DELETE /v1/goals/:id` and `DELETE /goals/:id` intentionally
+archive the goal by setting `status` to `archived` instead of hard-deleting it,
+and create, update, and archive commands emit `goal_created`, `goal_updated`,
+and `goal_archived` events for the same workspace.
 
 ## Targets
 

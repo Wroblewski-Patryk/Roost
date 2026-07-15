@@ -1,4 +1,17 @@
 # Next Steps
+- 2026-07-15: [LUC-1270](/LUC/issues/LUC-1270) has no remaining documentation
+  action for the exact unclassified endpoint `src/app.ts#/goals`. The durable
+  packet is
+  `.codex/tasks/luc-1270-prove-unclassified-user-workflow-missing-doc-link-for-use-goals.md`.
+  Current fact: refreshed architecture-awareness and documentation-links now
+  link the exact Goals mount to the accepted API contract in `docs/API.md`;
+  refreshed app-completion no longer routes
+  `api_endpoint:use-goals:da30547c55` as `missing_doc_link`; Project Truth now
+  routes the first overall gap to `src/app.ts#/health` and leaves the only
+  remaining docs-owned gap on `src/app.ts#/connection`. Do not reopen another
+  docs lane for `src/app.ts#/goals` unless a fresh generated regression
+  removes the linked contract evidence.
+
 - 2026-07-15: [LUC-1266](/LUC/issues/LUC-1266) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint
   `src/app.ts#/goals`. The durable packet is
