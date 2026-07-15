@@ -1,5 +1,38 @@
 # Current Focus
 
+## LUC-1253 Checkpoint
+
+- 2026-07-15: [LUC-1253](/LUC/issues/LUC-1253) closed the local dirty packet
+  left by the `src/app.ts#/departments` doc-link closure. The packet is
+  current/coherent, redact-safe, and scanner-aligned after the narrow
+  `Mission Status` normalization in
+  `.codex/tasks/luc-1252-prove-unclassified-user-workflow-missing-doc-link-for-use-departments.md`.
+  The refreshed proof register now marks the `LUC-1252` and `LUC-1253` task
+  packets `verified`. Next routed product gap remains `src/app.ts#/events`
+  `missing_test_link`, while the only remaining docs-owned gap is
+  `src/app.ts#/connection`.
+
+## LUC-1252 Checkpoint
+
+- 2026-07-15: [LUC-1252](/LUC/issues/LUC-1252) closed the routed
+  unclassified endpoint `src/app.ts#/departments` `missing_doc_link` row.
+  Packet:
+  `.codex/tasks/luc-1252-prove-unclassified-user-workflow-missing-doc-link-for-use-departments.md`.
+  `docs/API.md` now documents the protected `/v1/departments` aliases
+  together with compatibility `/departments` routes, default catalog
+  hydration, workspace scoping, approved linked-view validation, and shared
+  sidebar/catalog response semantics; `docs/architecture/relations/documentation-links.csv`
+  links the exact Departments mount to that contract; external
+  architecture-awareness refresh generated `2026-07-15T16:37:07.745Z` with
+  `3054` entities / `7859` relations / `16523` files; sequential
+  app-completion refresh now reports `missingDocLink=1` and no longer routes
+  `src/app.ts#/departments`; sequential Project Truth apply generated
+  `2026-07-15T16:37:35.736Z` with public probes `pass` and advanced the first
+  routed gap to `src/app.ts#/events` `missing_test_link`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`). The remaining docs-owned
+  gap is `src/app.ts#/connection`, and the next QA-owned proof gap is
+  `src/app.ts#/events`.
+
 ## LUC-1248 Checkpoint
 
 - 2026-07-15: [LUC-1248](/LUC/issues/LUC-1248) closed the local dirty packet

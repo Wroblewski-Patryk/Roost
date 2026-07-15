@@ -1,5 +1,46 @@
 # Active Mission Packet
 
+## LUC-1253 Checkpoint
+
+- 2026-07-15: [LUC-1253](/LUC/issues/LUC-1253) classified the LUC-1252 local
+  dirty packet as current/coherent and closed it with a dedicated
+  source-control sidecar:
+  `.codex/tasks/luc-1253-source-control-closure-for-luc-1252-departments-doc-link-packet.md`.
+  Packet scope stayed inside `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/API.md`, `docs/architecture/relations/documentation-links.csv`,
+  `docs/graphs/*`, and `docs/status/*`; bounded git inspection,
+  representative generated readback, `git diff --check`, a high-confidence
+  redaction scan, `npm run architecture:refresh`, and the external
+  architecture-awareness refresh found no unrelated ownership drift or secret
+  exposure. The LUC-1252 task packet was normalized from `Mission Status:
+  VERIFIED` to `Mission Status: DONE`, and the refreshed proof register now
+  marks both `LUC-1252` and `LUC-1253` task packets `verified`. Final
+  disposition: local commit prepared; no remaining source-control closure work
+  is needed for the departments doc-link packet.
+
+## LUC-1252 Checkpoint
+
+- 2026-07-15: [LUC-1252](/LUC/issues/LUC-1252) closed the routed
+  unclassified endpoint `src/app.ts#/departments` `missing_doc_link` row.
+  Packet:
+  `.codex/tasks/luc-1252-prove-unclassified-user-workflow-missing-doc-link-for-use-departments.md`.
+  `docs/API.md` now documents the protected `/v1/departments` aliases
+  together with compatibility `/departments` routes, default catalog
+  hydration, workspace-scoped ownership, approved linked-view validation, and
+  shared sidebar/catalog response semantics;
+  `docs/architecture/relations/documentation-links.csv` links the exact
+  Departments mount to that contract; external architecture-awareness refresh
+  generated `2026-07-15T16:37:07.745Z` with `3054` entities / `7859`
+  relations / `16523` files; sequential app-completion refresh now reports
+  `missingDocLink=1` and no longer routes `src/app.ts#/departments`;
+  sequential Project Truth apply generated `2026-07-15T16:37:35.736Z` with
+  public probes `pass` and advanced the first routed gap to
+  `src/app.ts#/events` `missing_test_link`; `npm run architecture:status`
+  PASS (`GREEN`, `455/769/35`). No runtime feature logic, provider call,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred. Final disposition: `done`. Remaining docs-owned gap:
+  `src/app.ts#/connection`.
+
 ## LUC-1248 Checkpoint
 
 - 2026-07-15: [LUC-1248](/LUC/issues/LUC-1248) classified the LUC-1239 local

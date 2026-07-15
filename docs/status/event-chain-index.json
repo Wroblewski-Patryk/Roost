@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-15T03:39:38.143Z",
+  "generatedAt": "2026-07-15T16:37:35.736Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 351,
-      "linkedRelationCount": 1578,
+      "entityCount": 352,
+      "linkedRelationCount": 1588,
       "layers": {
         "frontend": {
           "count": 30,
@@ -906,7 +906,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 167,
+          "count": 168,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -1114,7 +1114,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-1239-prove-unclassified-user-workflow-missing-test-link-for-use-departments.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:157c1a1016",
@@ -3492,7 +3492,7 @@
     {
       "userFlow": "Subscription and entitlement",
       "entityCount": 1172,
-      "linkedRelationCount": 4114,
+      "linkedRelationCount": 4117,
       "layers": {
         "frontend": {
           "count": 48,
@@ -6613,8 +6613,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2911,
-      "linkedRelationCount": 7582,
+      "entityCount": 2914,
+      "linkedRelationCount": 7601,
       "layers": {
         "frontend": {
           "count": 85,
@@ -7594,6 +7594,14 @@
               "status": "verified"
             },
             {
+              "id": "api_endpoint:use-departments:876f72fd71",
+              "type": "api_endpoint",
+              "name": "USE /departments",
+              "path": "src/app.ts#/departments",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:authactor:b3f790a259",
               "type": "function",
               "name": "authActor",
@@ -7896,20 +7904,12 @@
               "path": "scripts/check-route-capabilities.mjs",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "function:walk:5bea6a2902",
-              "type": "function",
-              "name": "walk",
-              "path": "scripts/check-route-capabilities.mjs#walk",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 863,
+          "count": 866,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -7976,6 +7976,14 @@
               "status": "verified"
             },
             {
+              "id": "task:task:114941343a",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1252-prove-unclassified-user-workflow-missing-doc-link-for-use-departments.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "in_progress"
+            },
+            {
               "id": "task:task:148fa638f5",
               "type": "task",
               "name": "Task",
@@ -8004,6 +8012,14 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1168-source-control-closure-classify-project-docs-dirty-packet-from-luc-1167.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:26fdd09e52",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1248-source-control-closure-for-luc-1239-departments-proof-link-packet.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -8165,7 +8181,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-1239-prove-unclassified-user-workflow-missing-test-link-for-use-departments.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:9998bf4030",
@@ -8532,22 +8548,6 @@
               "type": "agent",
               "name": "Capture Agent Learnings",
               "path": ".agents/skills/capture-agent-learnings/SKILL.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "agent:readme:051638d4c8",
-              "type": "agent",
-              "name": "README",
-              "path": ".agents/skills/README.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "agent:active-mission-packet:a0e3255194",
-              "type": "agent",
-              "name": "Active Mission Packet",
-              "path": ".agents/state/active-mission.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             }

@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-15T03:39:07.585Z
+Generated: 2026-07-15T16:44:32.894Z
 
 ## Canonical Exports
 
@@ -622,6 +622,10 @@ Generated: 2026-07-15T03:39:07.585Z
 | connected_to | project:roost:122c92a083 | task:luc-1234-completion-evidence:e71d774108 | .codex/tasks/luc-1234-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:7eb0086c15 | .codex/tasks/luc-1234-prove-unclassified-user-workflow-missing-doc-link-for-use-decisions.md |
 | connected_to | project:roost:122c92a083 | task:task:911c812404 | .codex/tasks/luc-1239-prove-unclassified-user-workflow-missing-test-link-for-use-departments.md |
+| connected_to | project:roost:122c92a083 | task:task:26fdd09e52 | .codex/tasks/luc-1248-source-control-closure-for-luc-1239-departments-proof-link-packet.md |
+| connected_to | project:roost:122c92a083 | task:luc-1252-completion-evidence:c000ca2f7f | .codex/tasks/luc-1252-completion-evidence.md |
+| connected_to | project:roost:122c92a083 | task:task:114941343a | .codex/tasks/luc-1252-prove-unclassified-user-workflow-missing-doc-link-for-use-departments.md |
+| connected_to | project:roost:122c92a083 | task:task:e7aac91c09 | .codex/tasks/luc-1253-source-control-closure-for-luc-1252-departments-doc-link-packet.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -770,6 +774,7 @@ Generated: 2026-07-15T03:39:07.585Z
 | documents | document:api:a617d1cb61 | api_endpoint:use-clients:da4494ab5d | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-deals:2ceaef3b27 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-decisions:b29cd45684 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | api_endpoint:use-departments:876f72fd71 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:b3f790a259 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:8f0ce27a64 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:requireuserauth:215e610fd9 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
@@ -1213,8 +1218,3 @@ Generated: 2026-07-15T03:39:07.585Z
 | documents | document:luc-4524-known-state-evidence-and-architecture-baseline:251d296b88 | module:docs:6784d83cb0 | docs/planning/luc-4524-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4528-source-control-closure-for-luc-4524-known-state-packet:024665bd8b | module:docs:6784d83cb0 | docs/planning/luc-4528-source-control-closure-for-luc-4524-known-state-packet.md |
 | documents | document:luc-4558-known-state-evidence-and-architecture-baseline:878e3521e1 | module:docs:6784d83cb0 | docs/planning/luc-4558-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4562-source-control-closure-for-luc-4558-known-state-packet:99619f89aa | module:docs:6784d83cb0 | docs/planning/luc-4562-source-control-closure-for-luc-4558-known-state-packet.md |
-| documents | document:luc-4568-roost-companycore-readiness-and-milestone-review:d22b3ea81d | module:docs:6784d83cb0 | docs/planning/luc-4568-roost-companycore-readiness-and-milestone-review.md |
-| documents | document:luc-4601-known-state-evidence-and-architecture-baseline:28a0517f61 | module:docs:6784d83cb0 | docs/planning/luc-4601-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4605-source-control-closure-for-luc-4601-known-state-packet:359cf1b086 | module:docs:6784d83cb0 | docs/planning/luc-4605-source-control-closure-for-luc-4601-known-state-packet.md |
-| documents | document:luc-4623-known-state-evidence-and-architecture-baseline:1569981831 | module:docs:6784d83cb0 | docs/planning/luc-4623-known-state-evidence-and-architecture-baseline.md |

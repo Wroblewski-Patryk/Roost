@@ -1,5 +1,51 @@
 # PROJECT_STATE
 
+- 2026-07-15: [LUC-1253](/LUC/issues/LUC-1253) completed source-control
+  closure for the [LUC-1252](/LUC/issues/LUC-1252) departments doc-link
+  packet. Closure contract:
+  `.codex/tasks/luc-1253-source-control-closure-for-luc-1252-departments-doc-link-packet.md`.
+  Current evidence: bounded git review classified the packet as current and
+  owner-coherent across `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/API.md`, `docs/architecture/relations/documentation-links.csv`,
+  `docs/graphs/*`, and `docs/status/*`; representative generated readback kept
+  `USE /departments` clear of `missing_doc_link`, left `missingDocLink=1`,
+  and kept Project Truth routed to `src/app.ts#/events` `missing_test_link`;
+  `git diff --check` produced only CRLF normalization warnings and no content
+  defects; a bounded high-confidence redaction scan found no secret-shaped
+  strings in the changed paths; `npm run architecture:refresh` PASS and the
+  external architecture-awareness refresh generated `2026-07-15T16:43:01.685Z`
+  with `3055` entities / `7869` relations / `16523` files, marking the
+  `LUC-1252` and `LUC-1253` task packets `verified` after normalizing the
+  LUC-1252 mission-status line to `DONE`. Deploy impact: none. Push status:
+  held pending broader batching.
+
+- 2026-07-15: [LUC-1252](/LUC/issues/LUC-1252) completed the local
+  documentation-link closure for unclassified `src/app.ts#/departments`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1252-prove-unclassified-user-workflow-missing-doc-link-for-use-departments.md`.
+  Current evidence: `docs/API.md` now documents the protected
+  `/v1/departments` endpoints together with the compatibility `/departments`
+  aliases, default catalog hydration, workspace scoping, approved linked-view
+  validation, and shared sidebar/catalog response semantics;
+  `docs/architecture/relations/documentation-links.csv` links the exact
+  `src/app.ts#/departments` mount to that contract;
+  `npm run architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-15T16:37:07.745Z` with `3054` entities / `7859`
+  relations / `16523` files and materialized the exact documentation relation;
+  sequential app-completion refresh now reports `46` items / `4` flows / `25`
+  missing test links / `1` missing doc link / `0` implemented-needs-proof /
+  `0` blocked / `26` risk items and no longer routes
+  `api_endpoint:use-departments:876f72fd71` as `missing_doc_link`; Project
+  Truth apply generated `2026-07-15T16:37:35.736Z` with public probes `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and advances the first routed gap to `src/app.ts#/events`
+  `missing_test_link` while keeping only user-configuration
+  `src/app.ts#/connection` as the remaining docs-owned gap;
+  `npm run architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue
+  `0`, chain worklist `0`). No runtime feature logic, provider call, deploy,
+  push, restart, production mutation, credential access, or secret disclosure
+  occurred.
+
 - 2026-07-15: [LUC-1248](/LUC/issues/LUC-1248) completed source-control
   closure for the [LUC-1239](/LUC/issues/LUC-1239) proof-link packet. Closure
   contract:

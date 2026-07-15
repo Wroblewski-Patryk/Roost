@@ -1,4 +1,29 @@
 # Next Steps
+- 2026-07-15: [LUC-1253](/LUC/issues/LUC-1253) has no remaining
+  source-control action for the LUC-1252 packet. The durable sidecar is
+  `.codex/tasks/luc-1253-source-control-closure-for-luc-1252-departments-doc-link-packet.md`.
+  Current fact: bounded git review, representative generated readback,
+  `git diff --check`, a high-confidence redaction scan, `npm run
+  architecture:refresh`, and the external architecture-awareness refresh
+  classified the packet as current/coherent with no unrelated ownership drift.
+  The `LUC-1252` task packet was normalized to `Mission Status: DONE`, and the
+  refreshed proof register now marks the `LUC-1252` and `LUC-1253` task
+  packets `verified`. Do not reopen another closure lane for this packet
+  unless a fresh dirty-state regression appears after new work.
+
+- 2026-07-15: [LUC-1252](/LUC/issues/LUC-1252) has no remaining documentation
+  action for the exact unclassified endpoint `src/app.ts#/departments`. The
+  durable packet is
+  `.codex/tasks/luc-1252-prove-unclassified-user-workflow-missing-doc-link-for-use-departments.md`.
+  Current fact: refreshed architecture-awareness and documentation-links now
+  link the exact Departments mount to the accepted API contract in `docs/API.md`;
+  refreshed app-completion no longer routes
+  `api_endpoint:use-departments:876f72fd71` as `missing_doc_link`; Project
+  Truth now routes the first overall gap to `src/app.ts#/events` and leaves
+  the only remaining docs-owned gap on `src/app.ts#/connection`. Do not reopen
+  another docs lane for `src/app.ts#/departments` unless a fresh generated
+  regression removes the linked contract evidence.
+
 - 2026-07-15: [LUC-1248](/LUC/issues/LUC-1248) has no remaining source-control
   action for the LUC-1239 packet. The durable sidecar is
   `.codex/tasks/luc-1248-source-control-closure-for-luc-1239-departments-proof-link-packet.md`.

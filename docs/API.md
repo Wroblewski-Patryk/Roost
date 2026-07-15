@@ -2625,6 +2625,48 @@ Safe native sync response:
 }
 ```
 
+## Departments
+
+```http
+GET /v1/departments
+POST /v1/departments
+PATCH /v1/departments/:id
+GET /departments
+POST /departments
+PATCH /departments/:id
+```
+
+```json
+{
+  "name": "13 Marketing Lab",
+  "description": "Campaign experiments and launch support",
+  "icon": "ph-megaphone",
+  "linkedViews": ["operations.tasks"]
+}
+```
+
+Departments are workspace-scoped catalog records for the authenticated shell,
+the Management department catalog, and external API or MCP readers.
+
+Rules:
+
+- `GET /v1/departments` and `GET /departments` hydrate the default `00` to `12`
+  system departments for the active workspace before reading, then return both
+  `data.departments` and the allowed `data.availableViews` catalog.
+- Create and update callers do not send `workspaceId`; the route derives
+  workspace ownership from bearer auth or `X-API-Key`.
+- `POST /v1/departments` and `POST /departments` create custom departments with
+  a normalized unique key, the requested name/description/icon, the next
+  position after the current workspace maximum, and only approved linked views.
+- `PATCH /v1/departments/:id` and `PATCH /departments/:id` update only
+  workspace-owned department rows and fail closed with `404 department_not_found`
+  when the target department is outside the active workspace.
+- `linkedViews` must come from the approved department-view catalog or the route
+  fails closed with `400 invalid_department_view`.
+- Responses expose `views` summaries plus the first enabled linked-view `href`
+  so the sidebar and Management catalog can render from one shared department
+  contract.
+
 ## Clients
 
 ```http

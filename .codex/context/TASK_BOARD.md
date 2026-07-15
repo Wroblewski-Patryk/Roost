@@ -1,6 +1,51 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-15: [LUC-1253](/LUC/issues/LUC-1253) source-control closure for the
+  LUC-1252 departments doc-link packet is complete locally. Task contract:
+  `.codex/tasks/luc-1253-source-control-closure-for-luc-1252-departments-doc-link-packet.md`.
+  Evidence: bounded git inspection classified the dirty packet as
+  current/coherent across `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/API.md`, `docs/architecture/relations/documentation-links.csv`,
+  `docs/graphs/*`, and `docs/status/*`; representative generated readback kept
+  `USE /departments` clear of `missing_doc_link`, left `missingDocLink=1`,
+  and kept Project Truth routed to `src/app.ts#/events` `missing_test_link`;
+  `git diff --check` produced only CRLF normalization warnings and no content
+  defects; a bounded high-confidence redaction scan found no secret-shaped
+  strings; `npm run architecture:refresh` PASS; external architecture-awareness
+  refresh generated `2026-07-15T16:43:01.685Z` with `3055` entities / `7869`
+  relations / `16523` files and now marks the `LUC-1252` and `LUC-1253` task
+  packets `verified` after normalizing the `LUC-1252` mission-status line to
+  `DONE`. No deploy, push, restart, or production mutation occurred. Next
+  owner remains Test Automation Engineer + QA Regression Lead for the routed
+  proof gap on `src/app.ts#/events`.
+
+- 2026-07-15: [LUC-1252](/LUC/issues/LUC-1252) unclassified
+  `src/app.ts#/departments` missing-doc-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1252-prove-unclassified-user-workflow-missing-doc-link-for-use-departments.md`.
+  Evidence: `docs/API.md` now documents the protected `/v1/departments`
+  endpoints together with the compatibility `/departments` aliases, default
+  catalog hydration, workspace scoping, approved linked-view validation, and
+  shared sidebar/catalog response semantics;
+  `docs/architecture/relations/documentation-links.csv` links the exact
+  Departments mount to that accepted API contract;
+  `npm run architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-15T16:37:07.745Z` with `3054` entities / `7859`
+  relations / `16523` files and materialized the exact documentation link;
+  sequential app-completion refresh now reports `missingDocLink=1`, no longer
+  treats `api_endpoint:use-departments:876f72fd71` as `missing_doc_link`, and
+  keeps only user-configuration `src/app.ts#/connection` as the remaining
+  docs-owned gap; Project Truth apply generated `2026-07-15T16:37:35.736Z`
+  with public probes `pass` and advances the first routed gap to
+  `src/app.ts#/events` `missing_test_link`; `npm run architecture:status`
+  PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`). No
+  runtime product logic, provider call, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Next owner: Test
+  Automation Engineer + QA Regression Lead for the routed proof gap on
+  `src/app.ts#/events`; separate docs follow-up, only if selected later,
+  remains `src/app.ts#/connection`.
+
 - 2026-07-15: [LUC-1248](/LUC/issues/LUC-1248) classified the LUC-1239 local
   dirty packet as current/coherent and closed it with a dedicated
   source-control sidecar:
