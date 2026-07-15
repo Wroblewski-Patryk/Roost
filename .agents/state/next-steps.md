@@ -1,4 +1,18 @@
 # Next Steps
+- 2026-07-15: [LUC-1254](/LUC/issues/LUC-1254) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/events`. The durable packet is
+  `.codex/tasks/luc-1254-prove-unclassified-user-workflow-missing-test-link-for-use-events.md`.
+  Current fact: refreshed architecture-awareness marks the exact Events mount
+  `verified` through the existing API proof in `src/tests/api.test.ts` and
+  `src/modules/events/events.routes.ts`; refreshed app-completion no longer
+  routes `api_endpoint:use-events:679c33c90e` as `missing_test_link` and keeps
+  the same symbol only as `missing_doc_link`; Project Truth now routes the
+  same symbol to Docs Memory Lead + Project Manager while the next QA-owned
+  proof gap is `src/app.ts#/goals`. Do not reopen another QA proof lane for
+  `src/app.ts#/events` unless a fresh generated regression removes the linked
+  API evidence.
+
 - 2026-07-15: [LUC-1253](/LUC/issues/LUC-1253) has no remaining
   source-control action for the LUC-1252 packet. The durable sidecar is
   `.codex/tasks/luc-1253-source-control-closure-for-luc-1252-departments-doc-link-packet.md`.

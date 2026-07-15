@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-15T16:44:32.894Z
+Generated: 2026-07-15T17:10:17.439Z
 
 ## Canonical Exports
 
@@ -76,7 +76,7 @@ Generated: 2026-07-15T16:44:32.894Z
 | api_endpoint | verified | USE /deals | src/app.ts#/deals | Engineering Delivery Lead |
 | api_endpoint | verified | USE /decisions | src/app.ts#/decisions | Engineering Delivery Lead |
 | api_endpoint | verified | USE /departments | src/app.ts#/departments | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /events | src/app.ts#/events | Engineering Delivery Lead |
+| api_endpoint | verified | USE /events | src/app.ts#/events | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /finance | src/app.ts#/finance | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /goals | src/app.ts#/goals | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /google-drive | src/app.ts#/google-drive | Engineering Delivery Lead |
@@ -626,6 +626,7 @@ Generated: 2026-07-15T16:44:32.894Z
 | connected_to | project:roost:122c92a083 | task:luc-1252-completion-evidence:c000ca2f7f | .codex/tasks/luc-1252-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:114941343a | .codex/tasks/luc-1252-prove-unclassified-user-workflow-missing-doc-link-for-use-departments.md |
 | connected_to | project:roost:122c92a083 | task:task:e7aac91c09 | .codex/tasks/luc-1253-source-control-closure-for-luc-1252-departments-doc-link-packet.md |
+| connected_to | project:roost:122c92a083 | task:task:a05666404b | .codex/tasks/luc-1254-prove-unclassified-user-workflow-missing-test-link-for-use-events.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -1217,4 +1218,3 @@ Generated: 2026-07-15T16:44:32.894Z
 | documents | document:luc-4490-known-state-evidence-and-architecture-baseline:591dee1e55 | module:docs:6784d83cb0 | docs/planning/luc-4490-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4524-known-state-evidence-and-architecture-baseline:251d296b88 | module:docs:6784d83cb0 | docs/planning/luc-4524-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4528-source-control-closure-for-luc-4524-known-state-packet:024665bd8b | module:docs:6784d83cb0 | docs/planning/luc-4528-source-control-closure-for-luc-4524-known-state-packet.md |
-| documents | document:luc-4558-known-state-evidence-and-architecture-baseline:878e3521e1 | module:docs:6784d83cb0 | docs/planning/luc-4558-known-state-evidence-and-architecture-baseline.md |

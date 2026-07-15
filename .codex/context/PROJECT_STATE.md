@@ -1,5 +1,32 @@
 # PROJECT_STATE
 
+- 2026-07-15: [LUC-1254](/LUC/issues/LUC-1254) completed the local
+  missing-test-link closure for unclassified `src/app.ts#/events`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1254-prove-unclassified-user-workflow-missing-test-link-for-use-events.md`.
+  Current evidence: `docs/architecture/scanner-overrides.json` now marks the
+  exact Events mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/events/events.routes.ts`; focused
+  local protected API proof PASS after `npm run build`, `npm run
+  prisma:migrate:deploy`, `npm run seed`, and `node --test --test-name-pattern
+  "CompanyCore v1 protected API flow" dist/tests/api.test.js` against local
+  PostgreSQL test container `companycore-test-postgres-luc1254` on port
+  `52493`, followed by cleanup; `npm run architecture:refresh` PASS; external
+  architecture-awareness refresh generated `2026-07-15T17:10:17.439Z` with
+  `3056` entities / `7879` relations / `16523` files and materialized the
+  exact proof relation; sequential app-completion refresh now reports `46`
+  items / `4` flows / `24` missing test links / `2` missing doc links / `0`
+  implemented-needs-proof / `0` blocked / `26` risk items and no longer routes
+  `api_endpoint:use-events:679c33c90e` as `missing_test_link`; Project Truth
+  apply generated `2026-07-15T17:10:29.646Z` with public probes `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and moved the same symbol to docs-owned `missing_doc_link` while the
+  next QA-owned routed proof gap advanced to `src/app.ts#/goals`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). Cleanup: Docker Desktop was started only to satisfy the local
+  validation-owned PostgreSQL run, then stopped after the proof completed.
+  Deploy impact: none. Push status: held pending broader batching.
+
 - 2026-07-15: [LUC-1253](/LUC/issues/LUC-1253) completed source-control
   closure for the [LUC-1252](/LUC/issues/LUC-1252) departments doc-link
   packet. Closure contract:

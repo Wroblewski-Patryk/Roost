@@ -1,6 +1,33 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-15: [LUC-1254](/LUC/issues/LUC-1254) unclassified
+  `src/app.ts#/events` missing-test-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1254-prove-unclassified-user-workflow-missing-test-link-for-use-events.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  Events mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/events/events.routes.ts`; focused
+  local protected API proof PASS after `npm run build`, `npm run
+  prisma:migrate:deploy`, `npm run seed`, and `node --test
+  --test-name-pattern "CompanyCore v1 protected API flow"
+  dist/tests/api.test.js` against local PostgreSQL test container
+  `companycore-test-postgres-luc1254` on port `52493`, followed by cleanup;
+  `npm run architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-15T17:10:17.439Z` with `3056` entities / `7879`
+  relations / `16523` files and materialized the exact proof links; sequential
+  app-completion refresh now reports `missingTestLink=24`, no longer treats
+  `api_endpoint:use-events:679c33c90e` as `missing_test_link`, and keeps the
+  same symbol only as docs-owned `missing_doc_link`; Project Truth apply
+  generated `2026-07-15T17:10:29.646Z` with public probes `pass` and advances
+  the next QA-owned routed proof gap to `src/app.ts#/goals`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). No runtime product logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Next owner: Docs Memory Lead + Project Manager for the same-symbol
+  doc-link closure on `src/app.ts#/events`, while the next QA-owned proof gap
+  is `src/app.ts#/goals`.
+
 - 2026-07-15: [LUC-1253](/LUC/issues/LUC-1253) source-control closure for the
   LUC-1252 departments doc-link packet is complete locally. Task contract:
   `.codex/tasks/luc-1253-source-control-closure-for-luc-1252-departments-doc-link-packet.md`.

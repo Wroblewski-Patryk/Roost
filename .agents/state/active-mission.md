@@ -1,5 +1,29 @@
 # Active Mission Packet
 
+## LUC-1254 Checkpoint
+
+- 2026-07-15: [LUC-1254](/LUC/issues/LUC-1254) closed the routed
+  unclassified endpoint `src/app.ts#/events` `missing_test_link` row.
+  Packet:
+  `.codex/tasks/luc-1254-prove-unclassified-user-workflow-missing-test-link-for-use-events.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Events mount
+  `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/events/events.routes.ts`; focused
+  local protected API proof PASS after `npm run build`, `npm run
+  prisma:migrate:deploy`, `npm run seed`, and `node --test --test-name-pattern
+  "CompanyCore v1 protected API flow" dist/tests/api.test.js` against local
+  PostgreSQL test container `companycore-test-postgres-luc1254` on port
+  `52493`, followed by cleanup; external architecture-awareness refresh
+  generated `2026-07-15T17:10:17.439Z` with `3056` entities / `7879`
+  relations / `16523` files; sequential app-completion refresh now reports
+  `missingTestLink=24` and keeps `src/app.ts#/events` only as docs-owned
+  `missing_doc_link`; sequential Project Truth apply generated
+  `2026-07-15T17:10:29.646Z` with public probes `pass` and advanced the next
+  QA-owned routed proof gap to `src/app.ts#/goals` `missing_test_link`; `npm
+  run architecture:status` PASS (`GREEN`, `455/769/35`). Cleanup completed:
+  validation-owned PostgreSQL container removed and Docker Desktop stopped
+  after the proof run.
+
 ## LUC-1253 Checkpoint
 
 - 2026-07-15: [LUC-1253](/LUC/issues/LUC-1253) classified the LUC-1252 local

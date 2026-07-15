@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-15T16:37:35.736Z",
+  "generatedAt": "2026-07-15T17:10:29.646Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "gaps_require_routing",
@@ -22,28 +22,28 @@
     "kind": "app_completion_gap",
     "severity": "medium",
     "userFlow": "Unclassified user workflow",
-    "summary": "Unclassified user workflow: USE /events has app-completion risk missing_test_link.",
-    "nextOwner": "Test Automation Engineer + QA Regression Lead",
-    "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+    "summary": "Unclassified user workflow: USE /events has app-completion risk missing_doc_link.",
+    "nextOwner": "Docs Memory Lead + Project Manager",
+    "nextAction": "Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.",
     "evidence": [
       "src/app.ts#/events"
     ],
     "sourceItemId": "api_endpoint:use-events:679c33c90e",
-    "risk": "missing_test_link"
+    "risk": "missing_doc_link"
   },
   "gaps": [
     {
       "kind": "app_completion_gap",
       "severity": "medium",
       "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /events has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
+      "summary": "Unclassified user workflow: USE /events has app-completion risk missing_doc_link.",
+      "nextOwner": "Docs Memory Lead + Project Manager",
+      "nextAction": "Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.",
       "evidence": [
         "src/app.ts#/events"
       ],
       "sourceItemId": "api_endpoint:use-events:679c33c90e",
-      "risk": "missing_test_link"
+      "risk": "missing_doc_link"
     },
     {
       "kind": "app_completion_gap",

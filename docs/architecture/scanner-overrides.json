@@ -581,6 +581,16 @@
       ]
     },
     {
+      "path": "src/app.ts#/events",
+      "status": "verified",
+      "description": "Events mount verified through the existing protected API suite coverage for direct GET /v1/events reads, workspace-scoped event isolation, and emitted lifecycle event visibility without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/events/events.routes.ts",
+        ".codex/tasks/luc-1254-prove-unclassified-user-workflow-missing-test-link-for-use-events.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/decisions",
       "status": "verified",
       "description": "Decisions mount verified through the existing protected API suite coverage for workspace-scoped POST, GET, PATCH, and DELETE /v1/decisions flows, plus cross-workspace list isolation and emitted decision lifecycle events without changing runtime behavior.",
