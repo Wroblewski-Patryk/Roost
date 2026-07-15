@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-15T17:35:23.664Z
+Generated: 2026-07-15T18:10:53.805Z
 
 ## Canonical Exports
 
@@ -78,7 +78,7 @@ Generated: 2026-07-15T17:35:23.664Z
 | api_endpoint | verified | USE /departments | src/app.ts#/departments | Engineering Delivery Lead |
 | api_endpoint | verified | USE /events | src/app.ts#/events | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /finance | src/app.ts#/finance | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /goals | src/app.ts#/goals | Engineering Delivery Lead |
+| api_endpoint | verified | USE /goals | src/app.ts#/goals | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /google-drive | src/app.ts#/google-drive | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /health | src/app.ts#/health | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /intake | src/app.ts#/intake | Engineering Delivery Lead |
@@ -629,6 +629,8 @@ Generated: 2026-07-15T17:35:23.664Z
 | connected_to | project:roost:122c92a083 | task:task:a05666404b | .codex/tasks/luc-1254-prove-unclassified-user-workflow-missing-test-link-for-use-events.md |
 | connected_to | project:roost:122c92a083 | task:luc-1258-completion-evidence:048944e711 | .codex/tasks/luc-1258-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:f932d29e9c | .codex/tasks/luc-1258-prove-unclassified-user-workflow-missing-doc-link-for-use-events.md |
+| connected_to | project:roost:122c92a083 | task:task:374c03f32d | .codex/tasks/luc-1260-source-control-closure-for-luc-1258-use-events-doc-link-packet.md |
+| connected_to | project:roost:122c92a083 | task:task:cb123a5f7b | .codex/tasks/luc-1266-prove-unclassified-user-workflow-missing-test-link-for-use-goals.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-07-15T17:35:23.664Z
 | documents | document:luc-3968-roost-companycore-readiness-and-milestone-review:6a5ddc4148 | module:docs:6784d83cb0 | docs/planning/luc-3968-roost-companycore-readiness-and-milestone-review.md |
 | documents | document:luc-4239-roost-companycore-readiness-and-milestone-review:5f6665c479 | module:docs:6784d83cb0 | docs/planning/luc-4239-roost-companycore-readiness-and-milestone-review.md |
 | documents | document:luc-4389-roost-companycore-readiness-and-milestone-review:85dcd2b341 | module:docs:6784d83cb0 | docs/planning/luc-4389-roost-companycore-readiness-and-milestone-review.md |
-| documents | document:luc-4438-roost-protected-gate-recheck:75e28b5fe0 | module:docs:6784d83cb0 | docs/planning/luc-4438-roost-protected-gate-recheck.md |
-| documents | document:luc-4459-known-state-evidence-and-architecture-baseline:5d6b5f1bc1 | module:docs:6784d83cb0 | docs/planning/luc-4459-known-state-evidence-and-architecture-baseline.md |

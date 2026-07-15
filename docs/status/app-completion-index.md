@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-07-15T17:35:52.119Z
+Generated: 2026-07-15T18:10:53.806Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -16,8 +16,8 @@ Internal functions and modules are implementation details: they receive proof th
 - Items: 46
 - User flows: 4
 - Needs browser/screenshot review: 0
-- Missing test link: 24
-- Missing doc link: 1
+- Missing test link: 23
+- Missing doc link: 2
 - Implemented, needs proof: 0
 - Blocked: 0
 - Known non-ok risk items: 25
@@ -26,7 +26,7 @@ Internal functions and modules are implementation details: they receive proof th
 
 ## Flow Summary
 
-- Unclassified user workflow: 36 entities; risks {"ok":13,"missing_test_link":23}; gates {"auth":10}
+- Unclassified user workflow: 36 entities; risks {"ok":13,"missing_doc_link":1,"missing_test_link":22}; gates {"auth":11}
 - Account access: 7 entities; risks {"ok":7}; gates {"auth":7,"configuration":1}
 - User configuration: 2 entities; risks {"missing_doc_link":1,"missing_test_link":1}; gates {"auth":1,"configuration":2}
 - Dashboard overview: 1 entities; risks {"ok":1}; gates {}
@@ -35,7 +35,7 @@ Internal functions and modules are implementation details: they receive proof th
 
 | User flow | Risk | Kind | Entity | Owner | Path | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
-| Unclassified user workflow | missing_test_link | api_endpoint | USE /goals | Engineering Delivery Lead | src/app.ts#/goals | - |
+| Unclassified user workflow | missing_doc_link | api_endpoint | USE /goals | Engineering Delivery Lead | src/app.ts#/goals | auth |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /health | Engineering Delivery Lead | src/app.ts#/health | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /intake | Engineering Delivery Lead | src/app.ts#/intake | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /interactions | Engineering Delivery Lead | src/app.ts#/interactions | - |

@@ -1,5 +1,35 @@
 # PROJECT_STATE
 
+- 2026-07-15: [LUC-1266](/LUC/issues/LUC-1266) completed the local
+  missing-test-link closure for unclassified `src/app.ts#/goals`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1266-prove-unclassified-user-workflow-missing-test-link-for-use-goals.md`.
+  Current evidence: `docs/architecture/scanner-overrides.json` now marks the
+  exact Goals mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/goals/goals.routes.ts`; focused
+  local protected API proof PASS after `npm run build`, `npm run
+  prisma:migrate:deploy`, `npm run seed`, and `node --test --test-name-pattern
+  "CompanyCore v1 protected API flow" dist/tests/api.test.js` against local
+  PostgreSQL test container `companycore-test-postgres-luc1266` on port
+  `58000`, followed by cleanup; `npm run architecture:refresh` PASS; external
+  architecture-awareness refresh generated `2026-07-15T18:09:04.878Z` with
+  `3060` entities / `7912` relations / `16523` files and materialized the
+  exact proof relations; sequential app-completion refresh now reports `46`
+  items / `4` flows / `23` missing test links / `2` missing doc links / `0`
+  implemented-needs-proof / `0` blocked / `25` risk items and no longer
+  routes `api_endpoint:use-goals:da30547c55` as `missing_test_link`, instead
+  keeping the same symbol as docs-owned `missing_doc_link`; Project Truth
+  apply generated `2026-07-15T18:09:22.034Z` with public probes `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and advances the next QA-owned routed proof gap to `src/app.ts#/health`
+  `missing_test_link` while keeping the docs-owned gaps on `src/app.ts#/goals`
+  and `src/app.ts#/connection`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime feature
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Source-control closure
+  completed in [LUC-1269](/LUC/issues/LUC-1269). Deploy impact: none. Push
+  status: held pending broader batching.
+
 - 2026-07-15: [LUC-1258](/LUC/issues/LUC-1258) completed the local
   documentation-link closure for unclassified `src/app.ts#/events`.
   Source-of-truth task packet:

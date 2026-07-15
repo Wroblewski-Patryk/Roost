@@ -1,4 +1,18 @@
 # Next Steps
+- 2026-07-15: [LUC-1266](/LUC/issues/LUC-1266) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/goals`. The durable packet is
+  `.codex/tasks/luc-1266-prove-unclassified-user-workflow-missing-test-link-for-use-goals.md`.
+  Current fact: refreshed architecture-awareness marks the exact Goals mount
+  `verified` through the existing API proof in `src/tests/api.test.ts` and
+  `src/modules/goals/goals.routes.ts`; refreshed app-completion no longer
+  routes `api_endpoint:use-goals:da30547c55` as `missing_test_link` and keeps
+  the same symbol only as `missing_doc_link`; Project Truth now routes the
+  same symbol to Docs Memory Lead + Project Manager while the next QA-owned
+  proof gap is `src/app.ts#/health`. Do not reopen another QA proof lane for
+  `src/app.ts#/goals` unless a fresh generated regression removes the linked
+  API evidence.
+
 - 2026-07-15: [LUC-1258](/LUC/issues/LUC-1258) has no remaining documentation
   action for the exact unclassified endpoint `src/app.ts#/events`. The durable
   packet is

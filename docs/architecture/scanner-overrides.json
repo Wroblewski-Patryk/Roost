@@ -591,6 +591,16 @@
       ]
     },
     {
+      "path": "src/app.ts#/goals",
+      "status": "verified",
+      "description": "Goals mount verified through the existing protected API suite coverage for foreign-workspace create denial plus same-workspace POST, GET, PATCH, and DELETE /v1/goals flows without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/goals/goals.routes.ts",
+        ".codex/tasks/luc-1266-prove-unclassified-user-workflow-missing-test-link-for-use-goals.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/decisions",
       "status": "verified",
       "description": "Decisions mount verified through the existing protected API suite coverage for workspace-scoped POST, GET, PATCH, and DELETE /v1/decisions flows, plus cross-workspace list isolation and emitted decision lifecycle events without changing runtime behavior.",
