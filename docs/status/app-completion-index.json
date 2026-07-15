@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-15T02:08:27.085Z",
+  "generatedAt": "2026-07-15T03:06:36.954Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -9,12 +9,12 @@
     "flows": 4,
     "needsBrowserReview": 0,
     "missingTestLink": 26,
-    "missingDocLink": 2,
+    "missingDocLink": 1,
     "implementedNeedsProof": 0,
     "blocked": 0,
-    "riskItems": 28,
-    "appCompletionRiskItems": 28,
-    "priorityReviewItems": 28,
+    "riskItems": 27,
+    "appCompletionRiskItems": 27,
+    "priorityReviewItems": 27,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": false
   },
@@ -42,8 +42,7 @@
       "userFlow": "Unclassified user workflow",
       "total": 36,
       "risks": {
-        "ok": 10,
-        "missing_doc_link": 1,
+        "ok": 11,
         "missing_test_link": 25
       },
       "gates": {
@@ -64,27 +63,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "api_endpoint:use-decisions:b29cd45684",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /decisions",
-      "path": "src/app.ts#/decisions",
-      "owner": "Engineering Delivery Lead",
-      "status": "verified",
-      "userFlow": "Unclassified user workflow",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 5,
-      "risk": "missing_doc_link"
-    },
     {
       "id": "api_endpoint:use-departments:876f72fd71",
       "type": "api_endpoint",

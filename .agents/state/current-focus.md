@@ -1,5 +1,25 @@
 # Current Focus
 
+## LUC-1234 Checkpoint
+
+- 2026-07-15: [LUC-1234](/LUC/issues/LUC-1234) closed the routed
+  unclassified endpoint `src/app.ts#/decisions` `missing_doc_link` row.
+  Packet:
+  `.codex/tasks/luc-1234-prove-unclassified-user-workflow-missing-doc-link-for-use-decisions.md`.
+  `docs/API.md` now documents the protected `/v1/decisions` aliases together
+  with compatibility `/decisions` routes, workspace-scoped visibility rules,
+  archive-on-delete semantics, and emitted lifecycle events;
+  `docs/architecture/relations/documentation-links.csv` links the exact
+  Decisions mount to that contract; external architecture-awareness refresh
+  generated `2026-07-15T03:06:06.307Z` with `3050` entities / `7830`
+  relations / `16523` files; sequential app-completion refresh now reports
+  `missingDocLink=1` and no longer routes `src/app.ts#/decisions`; sequential
+  Project Truth apply generated `2026-07-15T03:06:48.449Z` with public probes
+  `pass` and advanced the first routed gap to `src/app.ts#/departments`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). The remaining docs-owned gap is `src/app.ts#/connection`, and
+  the next QA-owned proof gap is `src/app.ts#/departments`.
+
 ## LUC-1226 Checkpoint
 
 - 2026-07-15: [LUC-1226](/LUC/issues/LUC-1226) closed the routed

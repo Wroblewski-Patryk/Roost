@@ -1,5 +1,31 @@
 # PROJECT_STATE
 
+- 2026-07-15: [LUC-1234](/LUC/issues/LUC-1234) completed the local
+  documentation-link closure for unclassified `src/app.ts#/decisions`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1234-prove-unclassified-user-workflow-missing-doc-link-for-use-decisions.md`.
+  Current evidence: `docs/API.md` now documents the protected `/v1/decisions`
+  endpoints together with the compatibility `/decisions` aliases,
+  workspace-scoped visibility rules, archive-on-delete behavior, and emitted
+  lifecycle events; `docs/architecture/relations/documentation-links.csv`
+  links the exact `src/app.ts#/decisions` mount to that contract;
+  `npm run architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-15T03:06:06.307Z` with `3050` entities / `7830`
+  relations / `16523` files and materialized the exact documentation relation;
+  sequential app-completion refresh now reports `46` items / `4` flows / `26`
+  missing test links / `1` missing doc link / `0` implemented-needs-proof /
+  `0` blocked / `27` risk items and no longer routes
+  `api_endpoint:use-decisions:b29cd45684` as `missing_doc_link`; Project Truth
+  apply generated `2026-07-15T03:06:48.449Z` with public probes `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and advances the first routed gap to `src/app.ts#/departments`
+  `missing_test_link` while keeping only user-configuration
+  `src/app.ts#/connection` as the remaining docs-owned gap;
+  `npm run architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue
+  `0`, chain worklist `0`). No runtime feature logic, provider call, deploy,
+  push, restart, production mutation, credential access, or secret disclosure
+  occurred.
+
 - 2026-07-15: [LUC-1226](/LUC/issues/LUC-1226) completed the local proof-link
   closure for unclassified `src/app.ts#/decisions`, and the routed gap
   advanced from QA-owned `missing_test_link` to docs-owned

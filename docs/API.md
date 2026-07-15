@@ -2792,6 +2792,21 @@ DELETE /decisions/:id
 }
 ```
 
+Decisions are workspace-scoped durable decision records. Both `/v1/decisions`
+and the compatibility `/decisions` aliases support list, read, create, update,
+and archive-on-delete behavior under the shared protected API contract.
+
+Rules:
+
+- `projectId` is optional on create and update, but when it is provided the
+  related project must belong to the active workspace or the route fails closed
+  with `404 not_found`.
+- List and read responses expose only decisions for the active workspace.
+- `DELETE /v1/decisions/:id` and `DELETE /decisions/:id` archive the decision by
+  setting `status = "archived"` instead of removing the record.
+- Create, update, and archive mutations emit lifecycle events
+  `decision_created`, `decision_updated`, and `decision_archived`.
+
 ## Agents
 
 ```http

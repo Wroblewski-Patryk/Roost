@@ -1,4 +1,17 @@
 # Next Steps
+- 2026-07-15: [LUC-1234](/LUC/issues/LUC-1234) has no remaining documentation
+  action for the exact unclassified endpoint `src/app.ts#/decisions`. The
+  durable packet is
+  `.codex/tasks/luc-1234-prove-unclassified-user-workflow-missing-doc-link-for-use-decisions.md`.
+  Current fact: refreshed architecture-awareness and documentation-links now
+  link the exact Decisions mount to the accepted API contract in `docs/API.md`;
+  refreshed app-completion no longer routes
+  `api_endpoint:use-decisions:b29cd45684` as `missing_doc_link`; Project Truth
+  now routes the first overall gap to `src/app.ts#/departments` and leaves the
+  only remaining docs-owned gap on `src/app.ts#/connection`. Do not reopen
+  another docs lane for `src/app.ts#/decisions` unless a fresh generated
+  regression removes the linked API contract evidence.
+
 - 2026-07-15: [LUC-1226](/LUC/issues/LUC-1226) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint
   `src/app.ts#/decisions`. The durable packet is
