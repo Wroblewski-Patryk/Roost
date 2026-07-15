@@ -1,4 +1,26 @@
 # Next Steps
+- 2026-07-15: [LUC-1248](/LUC/issues/LUC-1248) has no remaining source-control
+  action for the LUC-1239 packet. The durable sidecar is
+  `.codex/tasks/luc-1248-source-control-closure-for-luc-1239-departments-proof-link-packet.md`.
+  Current fact: bounded git review, representative generated readback, and a
+  high-confidence redaction scan classified the packet as current/coherent with
+  no unrelated ownership drift. Do not reopen another closure lane for this
+  packet unless a fresh dirty-state regression appears after new work.
+
+- 2026-07-15: [LUC-1239](/LUC/issues/LUC-1239) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/departments`. The durable packet is
+  `.codex/tasks/luc-1239-prove-unclassified-user-workflow-missing-test-link-for-use-departments.md`.
+  Current fact: refreshed architecture-awareness marks the exact Departments
+  mount `verified` through the existing API proof in `src/tests/api.test.ts`
+  and `src/modules/departments/departments.routes.ts`; refreshed
+  app-completion no longer routes `api_endpoint:use-departments:876f72fd71` as
+  `missing_test_link` and keeps the same symbol only as `missing_doc_link`;
+  Project Truth now routes the same symbol to Docs Memory Lead + Project
+  Manager while the next QA-owned proof gap is `src/app.ts#/events`. Do not
+  reopen another QA proof lane for `src/app.ts#/departments` unless a fresh
+  generated regression removes the linked API evidence.
+
 - 2026-07-15: [LUC-1234](/LUC/issues/LUC-1234) has no remaining documentation
   action for the exact unclassified endpoint `src/app.ts#/decisions`. The
   durable packet is

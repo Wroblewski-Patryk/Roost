@@ -1,6 +1,6 @@
 # Architecture Awareness Report
 
-Generated: 2026-07-15T03:06:06.307Z
+Generated: 2026-07-15T03:39:07.585Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 
@@ -18,7 +18,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | model | 5 |
 | module | 67 |
 | project | 1 |
-| task | 112 |
+| task | 113 |
 | test | 82 |
 
 ## Counts By Status
@@ -27,10 +27,10 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | --- | ---: |
 | blocked | 1 |
 | deprecated | 6 |
-| implemented | 2685 |
-| in_progress | 2 |
+| implemented | 2684 |
+| in_progress | 3 |
 | tested | 19 |
-| verified | 337 |
+| verified | 338 |
 
 ## Health Signals
 
@@ -124,6 +124,6 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 
 - This is an inferred baseline. CTO/Docs Memory must promote or correct important relations.
 - Curated graph coverage input: `C:/Personal/Projekty/Aplikacje/Roost/docs/graphs/architecture-graph.json` (covered paths: 0).
-- Override input: `C:/Personal/Projekty/Aplikacje/Roost/docs/architecture/scanner-overrides.json` (entity entries: 238, relation entries: 263).
-- Override summary: excluded files 0, entity overrides 230, relation overrides 229, critical entities tagged 0.
+- Override input: `C:/Personal/Projekty/Aplikacje/Roost/docs/architecture/scanner-overrides.json` (entity entries: 239, relation entries: 263).
+- Override summary: excluded files 0, entity overrides 231, relation overrides 229, critical entities tagged 0.
 - `verified` still requires fresh command/browser/deploy evidence, not only file presence.

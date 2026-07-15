@@ -561,6 +561,16 @@
       ]
     },
     {
+      "path": "src/app.ts#/departments",
+      "status": "verified",
+      "description": "Departments mount verified through the existing protected API suite coverage for workspace-scoped GET, POST, and PATCH /v1/departments flows, invalid linked-view rejection, and cross-workspace isolation without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/departments/departments.routes.ts",
+        ".codex/tasks/luc-1239-prove-unclassified-user-workflow-missing-test-link-for-use-departments.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/deals",
       "status": "verified",
       "description": "Deals mount verified through the existing protected API suite coverage for workspace-scoped POST, GET, PATCH, and DELETE /v1/deals flows, including foreign-workspace update denial and archived-status behavior without changing runtime behavior.",

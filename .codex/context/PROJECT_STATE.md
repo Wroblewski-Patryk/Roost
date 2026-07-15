@@ -1,5 +1,49 @@
 # PROJECT_STATE
 
+- 2026-07-15: [LUC-1248](/LUC/issues/LUC-1248) completed source-control
+  closure for the [LUC-1239](/LUC/issues/LUC-1239) proof-link packet. Closure
+  contract:
+  `.codex/tasks/luc-1248-source-control-closure-for-luc-1239-departments-proof-link-packet.md`.
+  Current fact: the local dirty state was reviewed as a single coherent packet
+  made of the LUC-1239 task file, the exact `src/app.ts#/departments`
+  scanner-override proof link, refreshed `.agents/state/*` and
+  `.codex/context/*` notes, and the expected regenerated `docs/graphs/*` plus
+  `docs/status/*` artifacts. Bounded git inspection, representative generated
+  readback, and a high-confidence redaction scan found no unrelated ownership
+  drift or secret exposure. The packet is commit-ready as current project
+  truth and has no deploy or runtime-behavior impact.
+
+- 2026-07-15: [LUC-1239](/LUC/issues/LUC-1239) completed the local proof-link
+  closure for unclassified `src/app.ts#/departments`, and the routed gap
+  advanced from QA-owned `missing_test_link` to docs-owned
+  `missing_doc_link`. Source-of-truth task packet:
+  `.codex/tasks/luc-1239-prove-unclassified-user-workflow-missing-test-link-for-use-departments.md`.
+  Current evidence: `src/tests/api.test.ts` and
+  `src/modules/departments/departments.routes.ts` already verify protected
+  `/v1/departments` list, create, update, available-view exposure, invalid
+  linked-view rejection, and workspace isolation behavior, and
+  `docs/architecture/scanner-overrides.json` now links that existing proof to
+  the exact `src/app.ts#/departments` mount; focused local protected API proof
+  PASS after `npm run build`, `npm run prisma:migrate:deploy`, `npm run
+  seed`, and `node --test --test-name-pattern "CompanyCore v1 protected API
+  flow" dist/tests/api.test.js` against local PostgreSQL test container
+  `companycore-test-postgres-luc1239` on port `55437`, followed by cleanup;
+  `npm run architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-15T03:39:07.585Z` with `3051` entities / `7840`
+  relations / `16523` files; sequential app-completion refresh now reports
+  `46` items / `4` flows / `25` missing test links / `2` missing doc links /
+  `0` implemented-needs-proof / `0` blocked / `27` risk items and no longer
+  routes `api_endpoint:use-departments:876f72fd71` as `missing_test_link`;
+  Project Truth apply generated `2026-07-15T03:39:38.143Z` with public probes
+  `pass`, runtime findings `0`, incomplete event chains `0`, operational gate
+  gaps `0`, and keeps the same symbol as docs-owned `missing_doc_link` while
+  advancing the next QA-owned routed gap to `src/app.ts#/events`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime product
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Source-control closure
+  completed in [LUC-1248](/LUC/issues/LUC-1248).
+
 - 2026-07-15: [LUC-1234](/LUC/issues/LUC-1234) completed the local
   documentation-link closure for unclassified `src/app.ts#/decisions`.
   Source-of-truth task packet:
