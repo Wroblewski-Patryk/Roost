@@ -1,6 +1,31 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-15: [LUC-1219](/LUC/issues/LUC-1219) unclassified
+  `src/app.ts#/deals` missing-doc-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1219-prove-unclassified-user-workflow-missing-doc-link-for-use-deals.md`.
+  Evidence: `docs/API.md` now documents the protected `/v1/deals`
+  endpoints together with the compatibility `/deals` aliases, workspace-scoped
+  relation checks, and archive-on-delete behavior;
+  `docs/architecture/relations/documentation-links.csv` links the exact Deals
+  mount to that accepted API contract; `npm run architecture:refresh` PASS;
+  external architecture-awareness refresh generated `2026-07-15T01:35:51.353Z`
+  with `3045` entities / `7775` relations / `16523` files and materialized
+  the exact documentation link; sequential app-completion refresh now reports
+  `missingDocLink=1`, no longer treats `api_endpoint:use-deals:2ceaef3b27` as
+  `missing_doc_link`, and keeps only user-configuration `src/app.ts#/connection`
+  as the remaining docs-owned gap; Project Truth apply generated
+  `2026-07-15T01:35:51.334Z` with public probes `pass` and advances the first
+  routed overall gap to `src/app.ts#/decisions`; `npm run architecture:status`
+  PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`). No
+  runtime product logic, provider call, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Next owner: Test
+  Automation Engineer + QA Regression Lead for the routed proof gap on
+  `src/app.ts#/decisions`; separate docs follow-up, only if selected later, is
+  `src/app.ts#/connection`. Source-control closure completed in
+  [LUC-1225](/LUC/issues/LUC-1225) with the coherent packet committed locally.
+
 - 2026-07-15: [LUC-1197](/LUC/issues/LUC-1197) unclassified
   `src/app.ts#/deals` missing-test-link verification is complete locally and
   the routed gap has advanced to the same symbol as `missing_doc_link`

@@ -1,5 +1,23 @@
 # Current Focus
 
+## LUC-1219 Checkpoint
+
+- 2026-07-15: [LUC-1219](/LUC/issues/LUC-1219) closed the routed
+  unclassified endpoint `src/app.ts#/deals` `missing_doc_link` row. Packet:
+  `.codex/tasks/luc-1219-prove-unclassified-user-workflow-missing-doc-link-for-use-deals.md`.
+  `docs/API.md` now documents the protected `/v1/deals` aliases together with
+  compatibility `/deals` routes, workspace-scoped relation checks, and
+  archive-on-delete behavior;
+  `docs/architecture/relations/documentation-links.csv` links the exact Deals
+  mount to that contract; external architecture-awareness refresh generated
+  `2026-07-15T01:35:51.353Z` with `3045` entities / `7775` relations /
+  `16523` files; sequential app-completion refresh now reports
+  `missingDocLink=1` and no longer routes `src/app.ts#/deals`; sequential
+  Project Truth apply generated `2026-07-15T01:35:51.334Z` with public probes
+  `pass` and advanced the first routed gap to `src/app.ts#/decisions`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). The remaining docs-owned gap is `src/app.ts#/connection`.
+
 ## LUC-1197 Checkpoint
 
 - 2026-07-15: [LUC-1197](/LUC/issues/LUC-1197) closed the routed

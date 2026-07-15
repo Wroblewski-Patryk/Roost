@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-15T01:06:51.062Z",
+  "generatedAt": "2026-07-15T01:35:51.334Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 341,
-      "linkedRelationCount": 1490,
+      "entityCount": 343,
+      "linkedRelationCount": 1514,
       "layers": {
         "frontend": {
           "count": 30,
@@ -906,7 +906,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 159,
+          "count": 161,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -1082,7 +1082,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-1197-prove-unclassified-user-workflow-missing-test-link-for-use-deals.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:157c1a1016",
@@ -1137,6 +1137,14 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1168-source-control-closure-classify-project-docs-dirty-packet-from-luc-1167.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:2ab0356051",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1200-source-control-closure-for-luc-1197-deals-proof-link-packet.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -1537,14 +1545,6 @@
               "type": "function",
               "name": "getIntegrationSettingForWorkspace",
               "path": "src/integrations/integration-settings.service.ts#getIntegrationSettingForWorkspace",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:getclickupsettingsforworkspace:6be6dd9903",
-              "type": "function",
-              "name": "getClickUpSettingsForWorkspace",
-              "path": "src/integrations/integration-settings.service.ts#getClickUpSettingsForWorkspace",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             }
@@ -3321,9 +3321,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-15-luc-1187-module-confidence-update:9b2238d1be",
+              "id": "agent:2026-07-15-luc-1197-module-confidence-update:757160db32",
               "type": "agent",
-              "name": "2026-07-15 LUC-1187 Module Confidence Update",
+              "name": "2026-07-15 LUC-1197 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -3492,7 +3492,7 @@
     {
       "userFlow": "Subscription and entitlement",
       "entityCount": 1172,
-      "linkedRelationCount": 4108,
+      "linkedRelationCount": 4111,
       "layers": {
         "frontend": {
           "count": 48,
@@ -6499,9 +6499,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-15-luc-1187-module-confidence-update:9b2238d1be",
+              "id": "agent:2026-07-15-luc-1197-module-confidence-update:757160db32",
               "type": "agent",
-              "name": "2026-07-15 LUC-1187 Module Confidence Update",
+              "name": "2026-07-15 LUC-1197 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -6613,8 +6613,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2902,
-      "linkedRelationCount": 7492,
+      "entityCount": 2905,
+      "linkedRelationCount": 7517,
       "layers": {
         "frontend": {
           "count": 85,
@@ -7594,6 +7594,14 @@
               "status": "verified"
             },
             {
+              "id": "api_endpoint:use-deals:2ceaef3b27",
+              "type": "api_endpoint",
+              "name": "USE /deals",
+              "path": "src/app.ts#/deals",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:authactor:b3f790a259",
               "type": "function",
               "name": "authActor",
@@ -7896,20 +7904,12 @@
               "path": "scripts/check-route-capabilities.mjs",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "function:walk:5bea6a2902",
-              "type": "function",
-              "name": "walk",
-              "path": "scripts/check-route-capabilities.mjs#walk",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 854,
+          "count": 857,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -8008,6 +8008,14 @@
               "status": "verified"
             },
             {
+              "id": "task:task:2ab0356051",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1200-source-control-closure-for-luc-1197-deals-proof-link-packet.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:2dc0937607",
               "type": "task",
               "name": "Task",
@@ -8016,12 +8024,20 @@
               "status": "verified"
             },
             {
+              "id": "task:task:38d6160edc",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1219-prove-unclassified-user-workflow-missing-doc-link-for-use-deals.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "in_progress"
+            },
+            {
               "id": "task:task:3bd9e6a95e",
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1197-prove-unclassified-user-workflow-missing-test-link-for-use-deals.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:431cec34c5",
@@ -8532,22 +8548,6 @@
               "type": "task",
               "name": "LUC-982 Account Access Intake authActor Proof",
               "path": ".codex/tasks/luc-982-account-access-intake-authactor-proof.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task-board:9aaadac0a2",
-              "type": "task",
-              "name": "TASK_BOARD",
-              "path": ".codex/context/TASK_BOARD.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:447271a3e0",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-989-source-control-closure-for-luc-982.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             }
@@ -9902,9 +9902,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-15-luc-1187-module-confidence-update:9b2238d1be",
+              "id": "agent:2026-07-15-luc-1197-module-confidence-update:757160db32",
               "type": "agent",
-              "name": "2026-07-15 LUC-1187 Module Confidence Update",
+              "name": "2026-07-15 LUC-1197 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"

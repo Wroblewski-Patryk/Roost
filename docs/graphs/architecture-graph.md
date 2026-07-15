@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-15T01:06:46.441Z
+Generated: 2026-07-15T01:35:51.353Z
 
 ## Canonical Exports
 
@@ -42,7 +42,7 @@ Generated: 2026-07-15T01:06:46.441Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-15 LUC-1187 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-15 LUC-1197 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
@@ -613,6 +613,9 @@ Generated: 2026-07-15T01:06:46.441Z
 | connected_to | project:roost:122c92a083 | task:task:a4602ebb73 | .codex/tasks/luc-1192-prove-unclassified-user-workflow-missing-test-link-for-use-connection.md |
 | connected_to | project:roost:122c92a083 | task:task:ddc3a8e8e4 | .codex/tasks/luc-1196-source-control-closure-for-luc-1192-proof-link-packet.md |
 | connected_to | project:roost:122c92a083 | task:task:3bd9e6a95e | .codex/tasks/luc-1197-prove-unclassified-user-workflow-missing-test-link-for-use-deals.md |
+| connected_to | project:roost:122c92a083 | task:task:2ab0356051 | .codex/tasks/luc-1200-source-control-closure-for-luc-1197-deals-proof-link-packet.md |
+| connected_to | project:roost:122c92a083 | task:luc-1219-completion-evidence:98848bd2c8 | .codex/tasks/luc-1219-completion-evidence.md |
+| connected_to | project:roost:122c92a083 | task:task:38d6160edc | .codex/tasks/luc-1219-prove-unclassified-user-workflow-missing-doc-link-for-use-deals.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -672,7 +675,7 @@ Generated: 2026-07-15T01:06:46.441Z
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
 | documents | agent:2026-07-14-luc-1131-api-keys-proof-link-health-signal:11a238807e | module:agents:4ae71ba13a | .agents/state/system-health.md |
-| documents | agent:2026-07-15-luc-1187-module-confidence-update:9b2238d1be | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
+| documents | agent:2026-07-15-luc-1197-module-confidence-update:757160db32 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -759,6 +762,7 @@ Generated: 2026-07-15T01:06:46.441Z
 | documents | document:api:a617d1cb61 | api_endpoint:use-api-build-info:36fe7c3255 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-agents:1c136317c6 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-clients:da4494ab5d | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | api_endpoint:use-deals:2ceaef3b27 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:b3f790a259 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:8f0ce27a64 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:requireuserauth:215e610fd9 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
@@ -1214,7 +1218,3 @@ Generated: 2026-07-15T01:06:46.441Z
 | documents | document:luc-4721-source-control-closure-for-luc-4718-evidence-packet:c3388565b6 | module:docs:6784d83cb0 | docs/planning/luc-4721-source-control-closure-for-luc-4718-evidence-packet.md |
 | documents | document:luc-4731-known-state-evidence-and-architecture-baseline:10ac92db06 | module:docs:6784d83cb0 | docs/planning/luc-4731-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4737-source-control-closure-for-luc-4731-evidence-packet:41356c8a86 | module:docs:6784d83cb0 | docs/planning/luc-4737-source-control-closure-for-luc-4731-evidence-packet.md |
-| documents | document:luc-4739-known-state-evidence-and-architecture-baseline:5151d770be | module:docs:6784d83cb0 | docs/planning/luc-4739-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4742-source-control-closure-for-luc-4739-evidence-packet:ec0821deae | module:docs:6784d83cb0 | docs/planning/luc-4742-source-control-closure-for-luc-4739-evidence-packet.md |
-| documents | document:luc-4748-known-state-evidence-and-architecture-baseline:e30d6fc7a6 | module:docs:6784d83cb0 | docs/planning/luc-4748-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4751-source-control-closure-for-luc-4748-known-state-packet:eaccad52d2 | module:docs:6784d83cb0 | docs/planning/luc-4751-source-control-closure-for-luc-4748-evidence-packet.md |

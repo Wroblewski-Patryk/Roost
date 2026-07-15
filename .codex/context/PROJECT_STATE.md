@@ -1,5 +1,32 @@
 # PROJECT_STATE
 
+- 2026-07-15: [LUC-1219](/LUC/issues/LUC-1219) completed the local
+  documentation-link closure for unclassified `src/app.ts#/deals`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1219-prove-unclassified-user-workflow-missing-doc-link-for-use-deals.md`.
+  Current evidence: `docs/API.md` now documents the protected `/v1/deals`
+  endpoints together with the compatibility `/deals` aliases, workspace-scoped
+  relation checks, and archive-on-delete behavior;
+  `docs/architecture/relations/documentation-links.csv` links the exact
+  `src/app.ts#/deals` mount to that contract; `npm run architecture:refresh`
+  PASS; external architecture-awareness rebuild generated
+  `2026-07-15T01:35:51.353Z` with `3045` entities / `7775` relations /
+  `16523` files and materialized the exact documentation relation; sequential
+  app-completion refresh now reports `46` items / `4` flows / `27` missing
+  test links / `1` missing doc link / `0` implemented-needs-proof / `0`
+  blocked / `28` risk items and no longer routes
+  `api_endpoint:use-deals:2ceaef3b27` as `missing_doc_link`; Project Truth
+  apply generated `2026-07-15T01:35:51.334Z` with public probes `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and advances the first routed gap to `src/app.ts#/decisions`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime feature
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. The remaining docs-owned
+  gap is user-configuration `src/app.ts#/connection`. Source-control closure
+  completed in [LUC-1225](/LUC/issues/LUC-1225) with the coherent packet
+  committed locally.
+
 - 2026-07-15: [LUC-1197](/LUC/issues/LUC-1197) completed the local proof-link
   closure for unclassified `src/app.ts#/deals`, and the routed gap advanced
   from QA-owned `missing_test_link` to docs-owned `missing_doc_link`.

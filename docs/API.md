@@ -2682,6 +2682,11 @@ list/create/update and intentionally does not delete stages yet.
 ## Deals
 
 ```http
+GET /v1/deals
+GET /v1/deals/:id
+POST /v1/deals
+PATCH /v1/deals/:id
+DELETE /v1/deals/:id
 GET /deals
 GET /deals/:id
 POST /deals
@@ -2692,11 +2697,21 @@ DELETE /deals/:id
 ```json
 {
   "clientId": "uuid",
+  "pipelineStageId": "uuid",
   "title": "Pilot contract",
   "value": 5000,
-  "currency": "PLN"
+  "currency": "PLN",
+  "status": "open"
 }
 ```
+
+Deals are workspace-scoped CRM records. The protected `/v1/deals` routes and
+their compatibility `/deals` aliases support list, read, create, update, and
+safe archive behavior without letting callers override workspace ownership.
+`clientId` and `pipelineStageId`, when provided, must already belong to the
+active workspace or the request fails closed with `not_found`. `DELETE` is an
+archive action that marks the deal status as `archived` instead of removing the
+record permanently.
 
 ## Interactions
 

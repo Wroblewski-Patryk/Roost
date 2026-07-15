@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-15T01:06:50.880Z",
+  "generatedAt": "2026-07-15T01:35:51.341Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -9,12 +9,12 @@
     "flows": 4,
     "needsBrowserReview": 0,
     "missingTestLink": 27,
-    "missingDocLink": 2,
+    "missingDocLink": 1,
     "implementedNeedsProof": 0,
     "blocked": 0,
-    "riskItems": 29,
-    "appCompletionRiskItems": 29,
-    "priorityReviewItems": 29,
+    "riskItems": 28,
+    "appCompletionRiskItems": 28,
+    "priorityReviewItems": 28,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": false
   },
@@ -42,8 +42,7 @@
       "userFlow": "Unclassified user workflow",
       "total": 36,
       "risks": {
-        "ok": 9,
-        "missing_doc_link": 1,
+        "ok": 10,
         "missing_test_link": 26
       },
       "gates": {
@@ -64,27 +63,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "api_endpoint:use-deals:2ceaef3b27",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /deals",
-      "path": "src/app.ts#/deals",
-      "owner": "Engineering Delivery Lead",
-      "status": "verified",
-      "userFlow": "Unclassified user workflow",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 5,
-      "risk": "missing_doc_link"
-    },
     {
       "id": "api_endpoint:use-decisions:b29cd45684",
       "type": "api_endpoint",
