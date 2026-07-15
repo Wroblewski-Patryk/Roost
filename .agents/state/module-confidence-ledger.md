@@ -1,3 +1,9 @@
+# 2026-07-15 LUC-1187 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Company OS proof linkage | verified for dispatched missing-test-link gap | [LUC-1187](/LUC/issues/LUC-1187) focused proof-link packet `.codex/tasks/luc-1187-prove-unclassified-user-workflow-missing-test-link-for-use-company-os.md`; `docs/architecture/scanner-overrides.json` marks `src/app.ts#/company-os` `verified` through the existing protected API suite coverage in `src/tests/api.test.ts`, `src/modules/company-os/company-os.routes.ts`, `src/modules/company-os/workflow-definition-drafts.routes.ts`, and `docs/planning/luc-5240-company-os-api-journey-proof.md`; `npm run architecture:refresh` PASS; external architecture-awareness rebuild generated `2026-07-15T00:19:28.543Z` with `3039` entities / `7713` relations / `16523` files and materialized the exact proof relations; sequential app-completion refresh reduced `missingTestLink` from `30` to `29` and no longer routes `api_endpoint:use-company-os:fb1b853293`; sequential Project Truth apply generated `2026-07-15T00:19:40.201Z` with public probes `pass` and advanced the first routed gap to `src/app.ts#/connection`; `npm run architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`). | No further QA proof work is needed for `src/app.ts#/company-os` unless a fresh generated regression removes the linked API evidence. The next routed gap is unclassified `src/app.ts#/connection`, owned by Test Automation Engineer + QA Regression Lead. |
+
 # 2026-07-15 LUC-1183 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

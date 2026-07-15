@@ -539,6 +539,18 @@
       ]
     },
     {
+      "path": "src/app.ts#/company-os",
+      "status": "verified",
+      "description": "Company OS mount verified through the existing protected API suite coverage for workspace-scoped snapshot reads, collection reads, approvals, stage lifecycle commands, workflow-definition draft flows, automation evaluation, scoped capability denial, and MCP manifest exposure without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/company-os/company-os.routes.ts",
+        "src/modules/company-os/workflow-definition-drafts.routes.ts",
+        "docs/planning/luc-5240-company-os-api-journey-proof.md",
+        ".codex/tasks/luc-1187-prove-unclassified-user-workflow-missing-test-link-for-use-company-os.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/strategy",
       "status": "verified",
       "description": "Protected Strategy route mount verified by the current local API harness for `GET /v1/strategy/context`, plus the existing Strategy route browser proof that consumes the same mounted packet from the authenticated 01 Strategy overview surface.",

@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-14T23:35:59.921Z
+Generated: 2026-07-15T00:19:28.543Z
 
 ## Canonical Exports
 
@@ -42,7 +42,7 @@ Generated: 2026-07-14T23:35:59.921Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-15 LUC-1169 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-15 LUC-1183 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
@@ -70,7 +70,7 @@ Generated: 2026-07-14T23:35:59.921Z
 | api_endpoint | implemented | USE /auth | src/app.ts#/auth | Engineering Delivery Lead |
 | api_endpoint | verified | USE /clients | src/app.ts#/clients | Engineering Delivery Lead |
 | api_endpoint | verified | USE /commercial-exceptions | src/app.ts#/commercial-exceptions | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /company-os | src/app.ts#/company-os | Engineering Delivery Lead |
+| api_endpoint | verified | USE /company-os | src/app.ts#/company-os | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /connection | src/app.ts#/connection | Engineering Delivery Lead |
 | api_endpoint | verified | USE /dashboard | src/app.ts#/dashboard | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /deals | src/app.ts#/deals | Engineering Delivery Lead |
@@ -609,6 +609,7 @@ Generated: 2026-07-14T23:35:59.921Z
 | connected_to | project:roost:122c92a083 | task:luc-1174-completion-evidence:65eeab039e | .codex/tasks/luc-1174-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:2dc0937607 | .codex/tasks/luc-1174-prove-unclassified-user-workflow-missing-doc-link-for-use-clients.md |
 | connected_to | project:roost:122c92a083 | task:task:6d90bf89a7 | .codex/tasks/luc-1183-prove-unclassified-user-workflow-missing-test-link-for-use-commercial-exceptions.md |
+| connected_to | project:roost:122c92a083 | task:task:a4043edcc7 | .codex/tasks/luc-1187-prove-unclassified-user-workflow-missing-test-link-for-use-company-os.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -668,7 +669,7 @@ Generated: 2026-07-14T23:35:59.921Z
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
 | documents | agent:2026-07-14-luc-1131-api-keys-proof-link-health-signal:11a238807e | module:agents:4ae71ba13a | .agents/state/system-health.md |
-| documents | agent:2026-07-15-luc-1169-module-confidence-update:0a456dee60 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
+| documents | agent:2026-07-15-luc-1183-module-confidence-update:18d758aa59 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -1217,4 +1218,3 @@ Generated: 2026-07-14T23:35:59.921Z
 | documents | document:luc-4754-residual-generated-drift-after-luc-4739:b15bdd8dab | module:docs:6784d83cb0 | docs/planning/luc-4754-residual-generated-drift-after-luc-4739.md |
 | documents | document:luc-4757-known-state-evidence-and-architecture-baseline:7f5d77caf7 | module:docs:6784d83cb0 | docs/planning/luc-4757-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-4762-source-control-closure-for-luc-4757-known-state-packet:c1691eed7b | module:docs:6784d83cb0 | docs/planning/luc-4762-source-control-closure-for-luc-4757-evidence-packet.md |
-| documents | document:luc-4763-first-proof-ladder-target-from-implementation-without-tests:b8667470a3 | module:docs:6784d83cb0 | docs/planning/luc-4763-first-proof-ladder-target-from-implementation-without-tests.md |

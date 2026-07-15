@@ -1,5 +1,25 @@
 # MVP Next Commits
 
+- 2026-07-15: [LUC-1187](/LUC/issues/LUC-1187) completed focused proof-link
+  closure for unclassified `src/app.ts#/company-os`. Evidence packet:
+  `.codex/tasks/luc-1187-prove-unclassified-user-workflow-missing-test-link-for-use-company-os.md`.
+  Proof linkage: `docs/architecture/scanner-overrides.json` now marks the
+  exact Company OS mount `verified` with direct evidence from
+  `src/tests/api.test.ts`,
+  `src/modules/company-os/company-os.routes.ts`,
+  `src/modules/company-os/workflow-definition-drafts.routes.ts`, and
+  `docs/planning/luc-5240-company-os-api-journey-proof.md`; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-15T00:19:28.543Z` with `3039` entities / `7713`
+  relations / `16523` files; sequential app-completion refresh dropped
+  `missingTestLink` from `30` to `29` and no longer reports
+  `api_endpoint:use-company-os:fb1b853293`; Project Truth apply generated
+  `2026-07-15T00:19:40.201Z` with public probes `pass` and advanced the first
+  routed gap to unclassified `src/app.ts#/connection`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). Next owner: Test Automation Engineer + QA Regression Lead for
+  the routed proof gap on `src/app.ts#/connection`.
+
 - 2026-07-15: [LUC-1183](/LUC/issues/LUC-1183) completed focused proof-link
   closure for unclassified `src/app.ts#/commercial-exceptions`. Evidence
   packet:

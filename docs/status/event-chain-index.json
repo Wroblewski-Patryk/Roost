@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-14T23:37:29.886Z",
+  "generatedAt": "2026-07-15T00:19:40.201Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 333,
-      "linkedRelationCount": 1428,
+      "entityCount": 336,
+      "linkedRelationCount": 1447,
       "layers": {
         "frontend": {
           "count": 30,
@@ -260,7 +260,7 @@
           "truncated": false
         },
         "backend": {
-          "count": 101,
+          "count": 102,
           "sample": [
             {
               "id": "api_endpoint:use-agent-events:1b4c65ace9",
@@ -379,6 +379,14 @@
               "type": "api_endpoint",
               "name": "USE /commercial-exceptions",
               "path": "src/app.ts#/commercial-exceptions",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "api_endpoint:use-company-os:fb1b853293",
+              "type": "api_endpoint",
+              "name": "USE /company-os",
+              "path": "src/app.ts#/company-os",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -893,20 +901,12 @@
               "path": "src/modules/company-os/workflow-definition-drafts.routes.ts#authActor",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
-            },
-            {
-              "id": "feature:workflow-definition-drafts-routes-ts:88debdc871",
-              "type": "feature",
-              "name": "workflow-definition-drafts.routes.ts",
-              "path": "src/modules/company-os/workflow-definition-drafts.routes.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "deprecated"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 155,
+          "count": 156,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -1057,6 +1057,14 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1183-prove-unclassified-user-workflow-missing-test-link-for-use-commercial-exceptions.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:a4043edcc7",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1187-prove-unclassified-user-workflow-missing-test-link-for-use-company-os.md",
               "owner": "Engineering Delivery Lead",
               "status": "in_progress"
             },
@@ -1539,14 +1547,6 @@
               "path": "src/integrations/integration-settings.service.ts#googleDriveSecretStatus",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "function:tojsoninput:ac03d891ff",
-              "type": "function",
-              "name": "toJsonInput",
-              "path": "src/integrations/integration-settings.service.ts#toJsonInput",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
@@ -1595,7 +1595,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 42,
+          "count": 43,
           "sample": [
             {
               "id": "document:api:a617d1cb61",
@@ -1898,6 +1898,14 @@
               "type": "document",
               "name": "LUC-5246 Commercial Exceptions API Journey Proof",
               "path": "docs/planning/luc-5246-commercial-exceptions-api-journey-proof.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:luc-5240-company-os-api-journey-proof:ea3a0dde11",
+              "type": "document",
+              "name": "LUC-5240 Company OS API Journey Proof",
+              "path": "docs/planning/luc-5240-company-os-api-journey-proof.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
             },
@@ -3313,9 +3321,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-15-luc-1169-module-confidence-update:0a456dee60",
+              "id": "agent:2026-07-15-luc-1183-module-confidence-update:18d758aa59",
               "type": "agent",
-              "name": "2026-07-15 LUC-1169 Module Confidence Update",
+              "name": "2026-07-15 LUC-1183 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -3483,8 +3491,8 @@
     },
     {
       "userFlow": "Subscription and entitlement",
-      "entityCount": 1171,
-      "linkedRelationCount": 4100,
+      "entityCount": 1172,
+      "linkedRelationCount": 4104,
       "layers": {
         "frontend": {
           "count": 48,
@@ -4405,7 +4413,7 @@
               "name": "USE /company-os",
               "path": "src/app.ts#/company-os",
               "owner": "Engineering Delivery Lead",
-              "status": "implemented"
+              "status": "verified"
             },
             {
               "id": "api_endpoint:use-commercial-exceptions:18765c44f9",
@@ -4523,7 +4531,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 148,
+          "count": 149,
           "sample": [
             {
               "id": "agent:planner:5b56a0bd47",
@@ -4894,12 +4902,20 @@
               "status": "implemented"
             },
             {
+              "id": "task:task:a4043edcc7",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1187-prove-unclassified-user-workflow-missing-test-link-for-use-company-os.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "in_progress"
+            },
+            {
               "id": "task:task:6d90bf89a7",
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1183-prove-unclassified-user-workflow-missing-test-link-for-use-commercial-exceptions.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:0fcef1b6c4",
@@ -5154,14 +5170,6 @@
               "type": "function",
               "name": "publicUrlsForHost",
               "path": "src/app.ts#publicUrlsForHost",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:createcorsmiddleware:7de3d0bb60",
-              "type": "function",
-              "name": "createCorsMiddleware",
-              "path": "src/app.ts#createCorsMiddleware",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             }
@@ -6491,9 +6499,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-15-luc-1169-module-confidence-update:0a456dee60",
+              "id": "agent:2026-07-15-luc-1183-module-confidence-update:18d758aa59",
               "type": "agent",
-              "name": "2026-07-15 LUC-1169 Module Confidence Update",
+              "name": "2026-07-15 LUC-1183 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -6605,8 +6613,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2898,
-      "linkedRelationCount": 7443,
+      "entityCount": 2899,
+      "linkedRelationCount": 7455,
       "layers": {
         "frontend": {
           "count": 85,
@@ -7282,10 +7290,10 @@
               "status": "verified"
             },
             {
-              "id": "api_endpoint:use-company-os:fb1b853293",
+              "id": "api_endpoint:use-connection:b52b509477",
               "type": "api_endpoint",
-              "name": "USE /company-os",
-              "path": "src/app.ts#/company-os",
+              "name": "USE /connection",
+              "path": "src/app.ts#/connection",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -7296,14 +7304,6 @@
               "path": "src/app.ts",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-connection:b52b509477",
-              "type": "api_endpoint",
-              "name": "USE /connection",
-              "path": "src/app.ts#/connection",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             },
             {
               "id": "api_endpoint:use-deals:2ceaef3b27",
@@ -7896,12 +7896,20 @@
               "path": "scripts/backfill-architecture-nodes.mjs#routeModule",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "function:routefilepath:35cd6446ad",
+              "type": "function",
+              "name": "routeFilePath",
+              "path": "scripts/backfill-architecture-nodes.mjs#routeFilePath",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 850,
+          "count": 851,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -8069,7 +8077,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-1183-prove-unclassified-user-workflow-missing-test-link-for-use-commercial-exceptions.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:6dfadbc975",
@@ -8126,6 +8134,14 @@
               "path": ".codex/tasks/luc-939-account-access-non-production-oauth-secret-proof-closure.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
+            },
+            {
+              "id": "task:task:a4043edcc7",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1187-prove-unclassified-user-workflow-missing-test-link-for-use-company-os.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "in_progress"
             },
             {
               "id": "task:task:a5b42ad253",
@@ -8534,14 +8550,6 @@
               "path": ".codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
-            },
-            {
-              "id": "agent:agent-process-evals:143b49414c",
-              "type": "agent",
-              "name": "Agent Process Evals",
-              "path": ".agents/state/agent-evals.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
@@ -9894,9 +9902,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-15-luc-1169-module-confidence-update:0a456dee60",
+              "id": "agent:2026-07-15-luc-1183-module-confidence-update:18d758aa59",
               "type": "agent",
-              "name": "2026-07-15 LUC-1169 Module Confidence Update",
+              "name": "2026-07-15 LUC-1183 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"

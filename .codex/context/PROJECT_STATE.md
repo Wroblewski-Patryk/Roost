@@ -1,5 +1,30 @@
 # PROJECT_STATE
 
+- 2026-07-15: [LUC-1187](/LUC/issues/LUC-1187) completed the local proof-link
+  closure for unclassified `src/app.ts#/company-os`. Source-of-truth task
+  packet:
+  `.codex/tasks/luc-1187-prove-unclassified-user-workflow-missing-test-link-for-use-company-os.md`.
+  Current evidence: `src/tests/api.test.ts`,
+  `src/modules/company-os/company-os.routes.ts`,
+  `src/modules/company-os/workflow-definition-drafts.routes.ts`, and
+  `docs/planning/luc-5240-company-os-api-journey-proof.md` already verify
+  workspace-scoped snapshot reads, collection reads, approvals, task links,
+  knowledge links, stage lifecycle commands, workflow-definition draft flows,
+  automation evaluation, scoped capability denial, and MCP manifest exposure
+  for the protected `/v1/company-os` packet. `docs/architecture/scanner-overrides.json`
+  now marks the exact `src/app.ts#/company-os` mount `verified`; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-15T00:19:28.543Z` with `3039` entities / `7713`
+  relations / `16523` files; sequential app-completion refresh now reports
+  `missingTestLink=29` and no longer routes
+  `api_endpoint:use-company-os:fb1b853293`; sequential Project Truth apply
+  generated `2026-07-15T00:19:40.201Z` with public probes `pass` and advances
+  the first routed gap to `src/app.ts#/connection`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). No runtime product logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred.
+
 - 2026-07-15: [LUC-1183](/LUC/issues/LUC-1183) completed the local proof-link
   closure for unclassified `src/app.ts#/commercial-exceptions`.
   Source-of-truth task packet:

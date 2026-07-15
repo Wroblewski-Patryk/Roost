@@ -1,4 +1,22 @@
 # Next Steps
+- 2026-07-15: [LUC-1187](/LUC/issues/LUC-1187) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/company-os`. The durable packet is
+  `.codex/tasks/luc-1187-prove-unclassified-user-workflow-missing-test-link-for-use-company-os.md`.
+  Current fact: refreshed architecture-awareness marks the exact Company OS
+  mount `verified` through the existing API proof in
+  `src/tests/api.test.ts`,
+  `src/modules/company-os/company-os.routes.ts`,
+  `src/modules/company-os/workflow-definition-drafts.routes.ts`, and
+  `docs/planning/luc-5240-company-os-api-journey-proof.md`; refreshed
+  app-completion no longer routes
+  `api_endpoint:use-company-os:fb1b853293` as `missing_test_link`; and Project
+  Truth now advances the first routed gap to `src/app.ts#/connection`. Next
+  action belongs to Test Automation Engineer + QA Regression Lead for focused
+  proof-link work on `src/app.ts#/connection`. Do not reopen another QA proof
+  lane for `src/app.ts#/company-os` unless a fresh generated regression
+  removes the linked API evidence.
+
 - 2026-07-15: [LUC-1183](/LUC/issues/LUC-1183) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint
   `src/app.ts#/commercial-exceptions`. The durable packet is

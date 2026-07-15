@@ -1,5 +1,27 @@
 # Active Mission Packet
 
+## LUC-1187 Checkpoint
+
+- 2026-07-15: [LUC-1187](/LUC/issues/LUC-1187) closed the routed
+  unclassified endpoint `src/app.ts#/company-os` `missing_test_link` row.
+  Packet:
+  `.codex/tasks/luc-1187-prove-unclassified-user-workflow-missing-test-link-for-use-company-os.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Company OS
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`,
+  `src/modules/company-os/company-os.routes.ts`,
+  `src/modules/company-os/workflow-definition-drafts.routes.ts`, and
+  `docs/planning/luc-5240-company-os-api-journey-proof.md`; `npm run
+  architecture:refresh` PASS; external architecture-awareness rebuild
+  generated `2026-07-15T00:19:28.543Z` with `3039` entities / `7713`
+  relations / `16523` files; sequential app-completion refresh now reports
+  `missingTestLink=29`; sequential Project Truth apply generated
+  `2026-07-15T00:19:40.201Z` with public probes `pass` and advanced the first
+  gap to `src/app.ts#/connection` `missing_test_link`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`). No runtime feature
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred.
+
 ## LUC-1183 Checkpoint
 
 - 2026-07-15: [LUC-1183](/LUC/issues/LUC-1183) closed the routed
