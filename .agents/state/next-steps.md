@@ -1,4 +1,19 @@
 # Next Steps
+- 2026-07-15: [LUC-1226](/LUC/issues/LUC-1226) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/decisions`. The durable packet is
+  `.codex/tasks/luc-1226-prove-unclassified-user-workflow-missing-test-link-for-use-decisions.md`.
+  Current fact: refreshed architecture-awareness marks the exact Decisions
+  mount `verified` through the existing API proof in `src/tests/api.test.ts`
+  and `src/modules/decisions/decisions.routes.ts`; refreshed app-completion no
+  longer routes `api_endpoint:use-decisions:b29cd45684` as `missing_test_link`
+  and keeps the same symbol only as `missing_doc_link`; Project Truth now
+  routes the same symbol to Docs Memory Lead + Project Manager while the next
+  QA-owned proof gap is `src/app.ts#/departments`. Source-control closure
+  completed in [LUC-1233](/LUC/issues/LUC-1233). Do not reopen another QA
+  proof lane for `src/app.ts#/decisions` unless a fresh generated regression
+  removes the linked API evidence.
+
 - 2026-07-15: [LUC-1219](/LUC/issues/LUC-1219) has no remaining documentation
   action for the exact unclassified endpoint `src/app.ts#/deals`. The durable
   packet is

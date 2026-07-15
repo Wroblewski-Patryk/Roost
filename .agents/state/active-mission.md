@@ -1,5 +1,45 @@
 # Active Mission Packet
 
+## LUC-1233 Checkpoint
+
+- 2026-07-15: [LUC-1233](/LUC/issues/LUC-1233) classified the LUC-1226 local
+  dirty packet as current/coherent and closed it with a dedicated
+  source-control sidecar:
+  `.codex/tasks/luc-1233-source-control-closure-for-luc-1226-decisions-proof-link-packet.md`.
+  Packet scope stayed inside `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; bounded git inspection, representative generated readback,
+  and a high-confidence redaction scan found no unrelated ownership drift or
+  secret exposure. Next owner remains Docs Memory Lead + Project Manager for
+  the `src/app.ts#/decisions` `missing_doc_link`, while the next QA-owned
+  routed proof gap is `src/app.ts#/departments`.
+
+## LUC-1226 Checkpoint
+
+- 2026-07-15: [LUC-1226](/LUC/issues/LUC-1226) closed the routed
+  unclassified endpoint `src/app.ts#/decisions` `missing_test_link` row.
+  Packet:
+  `.codex/tasks/luc-1226-prove-unclassified-user-workflow-missing-test-link-for-use-decisions.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Decisions
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/decisions/decisions.routes.ts`;
+  focused local protected API proof PASS after `npm run build`, `npm run
+  prisma:migrate:deploy`, `npm run seed`, and `node --test --test-name-pattern
+  "CompanyCore v1 protected API flow" dist/tests/api.test.js` against local
+  PostgreSQL test container `companycore-test-postgres-luc1226` on port
+  `55436`, followed by cleanup; external architecture-awareness refresh
+  generated `2026-07-15T02:08:19.570Z` with `3047` entities / `7803`
+  relations / `16523` files; sequential app-completion refresh now reports
+  `missingTestLink=26` and keeps `src/app.ts#/decisions` only as docs-owned
+  `missing_doc_link`; sequential Project Truth apply generated
+  `2026-07-15T02:08:32.401Z` with public probes `pass` and advanced the next
+  QA-owned routed gap to `src/app.ts#/departments` `missing_test_link`; `npm
+  run architecture:status` PASS (`GREEN`, `455/769/35`). No runtime feature
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Source-control closure
+  completed in [LUC-1233](/LUC/issues/LUC-1233). Final disposition: `done`.
+  Remaining docs-owned gap: `src/app.ts#/decisions`.
+
 ## LUC-1219 Checkpoint
 
 - 2026-07-15: [LUC-1219](/LUC/issues/LUC-1219) closed the routed

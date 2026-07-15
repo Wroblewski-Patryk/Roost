@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-07-15T01:35:51.353Z",
+  "generated_at": "2026-07-15T02:08:19.570Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 3045,
-    "relations": 7775,
+    "entities": 3047,
+    "relations": 7803,
     "by_type": {
       "agent": 47,
       "api_endpoint": 46,
@@ -18,16 +18,16 @@
       "model": 5,
       "module": 67,
       "project": 1,
-      "task": 107,
+      "task": 109,
       "test": 82
     },
     "by_status": {
       "blocked": 1,
       "deprecated": 6,
-      "implemented": 2686,
-      "in_progress": 3,
+      "implemented": 2685,
+      "in_progress": 2,
       "tested": 19,
-      "verified": 330
+      "verified": 334
     }
   },
   "signals": {
@@ -103,7 +103,7 @@
           "type": "api_endpoint",
           "name": "USE /decisions",
           "path": "src/app.ts#/decisions",
-          "status": "implemented",
+          "status": "verified",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -1712,7 +1712,7 @@
           "type": "api_endpoint",
           "name": "USE /decisions",
           "path": "src/app.ts#/decisions",
-          "status": "implemented",
+          "status": "verified",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -3384,7 +3384,7 @@
       "items": []
     },
     "tasks_without_architecture": {
-      "count": 13,
+      "count": 12,
       "items": [
         {
           "id": "task:task:57e15dbd18",
@@ -3392,14 +3392,6 @@
           "name": "Task",
           "path": ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
           "status": "verified",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "task:luc-1219-completion-evidence:98848bd2c8",
-          "type": "task",
-          "name": "luc-1219-completion-evidence",
-          "path": ".codex/tasks/luc-1219-completion-evidence.md",
-          "status": "in_progress",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -3493,7 +3485,7 @@
       ]
     },
     "raw_tasks_without_architecture": {
-      "count": 13,
+      "count": 12,
       "items": [
         {
           "id": "task:task:57e15dbd18",
@@ -3501,14 +3493,6 @@
           "name": "Task",
           "path": ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
           "status": "verified",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "task:luc-1219-completion-evidence:98848bd2c8",
-          "type": "task",
-          "name": "luc-1219-completion-evidence",
-          "path": ".codex/tasks/luc-1219-completion-evidence.md",
-          "status": "in_progress",
           "owner": "Engineering Delivery Lead"
         },
         {

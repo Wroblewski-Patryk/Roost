@@ -571,6 +571,16 @@
       ]
     },
     {
+      "path": "src/app.ts#/decisions",
+      "status": "verified",
+      "description": "Decisions mount verified through the existing protected API suite coverage for workspace-scoped POST, GET, PATCH, and DELETE /v1/decisions flows, plus cross-workspace list isolation and emitted decision lifecycle events without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/decisions/decisions.routes.ts",
+        ".codex/tasks/luc-1226-prove-unclassified-user-workflow-missing-test-link-for-use-decisions.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/strategy",
       "status": "verified",
       "description": "Protected Strategy route mount verified by the current local API harness for `GET /v1/strategy/context`, plus the existing Strategy route browser proof that consumes the same mounted packet from the authenticated 01 Strategy overview surface.",

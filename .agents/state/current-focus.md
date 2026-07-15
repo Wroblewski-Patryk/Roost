@@ -1,5 +1,30 @@
 # Current Focus
 
+## LUC-1226 Checkpoint
+
+- 2026-07-15: [LUC-1226](/LUC/issues/LUC-1226) closed the routed
+  unclassified endpoint `src/app.ts#/decisions` `missing_test_link` row.
+  Packet:
+  `.codex/tasks/luc-1226-prove-unclassified-user-workflow-missing-test-link-for-use-decisions.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Decisions
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/decisions/decisions.routes.ts`;
+  focused local protected API proof PASS after `npm run build`, `npm run
+  prisma:migrate:deploy`, `npm run seed`, and `node --test --test-name-pattern
+  "CompanyCore v1 protected API flow" dist/tests/api.test.js` against local
+  PostgreSQL test container `companycore-test-postgres-luc1226` on port
+  `55436`, followed by cleanup; external architecture-awareness refresh
+  generated `2026-07-15T02:08:19.570Z` with `3047` entities / `7803`
+  relations / `16523` files; sequential app-completion refresh now reports
+  `missingTestLink=26` and keeps `src/app.ts#/decisions` only as docs-owned
+  `missing_doc_link`; sequential Project Truth apply generated
+  `2026-07-15T02:08:32.401Z` with public probes `pass` and advanced the next
+  QA-owned routed gap to `src/app.ts#/departments` `missing_test_link`; `npm
+  run architecture:status` PASS (`GREEN`, `455/769/35`). Source-control
+  closure completed in [LUC-1233](/LUC/issues/LUC-1233). The remaining
+  docs-owned gap is `src/app.ts#/decisions`, and the next QA-owned proof gap
+  is `src/app.ts#/departments`.
+
 ## LUC-1219 Checkpoint
 
 - 2026-07-15: [LUC-1219](/LUC/issues/LUC-1219) closed the routed
