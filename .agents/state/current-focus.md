@@ -1,5 +1,24 @@
 # Current Focus
 
+## LUC-1258 Checkpoint
+
+- 2026-07-15: [LUC-1258](/LUC/issues/LUC-1258) closed the routed
+  unclassified endpoint `src/app.ts#/events` `missing_doc_link` row. Packet:
+  `.codex/tasks/luc-1258-prove-unclassified-user-workflow-missing-doc-link-for-use-events.md`.
+  `docs/API.md` now documents the protected `/v1/events` alias together with
+  compatibility `/events`, auth-derived workspace scoping, read-only access,
+  and newest-first ordering; `docs/architecture/relations/documentation-links.csv`
+  links the exact Events mount to that accepted API contract; external
+  architecture-awareness refresh generated `2026-07-15T17:35:23.664Z` with
+  `3058` entities / `7892` relations / `16523` files; sequential
+  app-completion refresh now reports `missingDocLink=1` and no longer routes
+  `src/app.ts#/events`; sequential Project Truth apply generated
+  `2026-07-15T17:35:52.121Z` with public probes `pass` and advanced the first
+  routed gap to `src/app.ts#/goals` `missing_test_link`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`). The remaining docs-owned
+  gap is `src/app.ts#/connection`, and the next QA-owned proof gap is
+  `src/app.ts#/goals`.
+
 ## LUC-1254 Checkpoint
 
 - 2026-07-15: [LUC-1254](/LUC/issues/LUC-1254) closed the routed

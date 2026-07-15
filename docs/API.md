@@ -3195,6 +3195,15 @@ GET /v1/events
 GET /events
 ```
 
+Authenticated workspace callers use `GET /v1/events` to read the generated
+event stream for the active workspace. The compatibility alias `GET /events`
+returns the same protected response envelope. Contract rules:
+
+- derive `workspaceId` from bearer-owner auth or a scoped service API key;
+- return only events that belong to the active workspace;
+- keep the route read-only and fail closed for unauthorized callers;
+- order events by newest first using event creation time.
+
 Generated v1 events:
 
 - `project_created`

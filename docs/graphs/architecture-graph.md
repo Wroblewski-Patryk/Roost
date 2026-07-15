@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-15T17:10:17.439Z
+Generated: 2026-07-15T17:35:23.664Z
 
 ## Canonical Exports
 
@@ -627,6 +627,8 @@ Generated: 2026-07-15T17:10:17.439Z
 | connected_to | project:roost:122c92a083 | task:task:114941343a | .codex/tasks/luc-1252-prove-unclassified-user-workflow-missing-doc-link-for-use-departments.md |
 | connected_to | project:roost:122c92a083 | task:task:e7aac91c09 | .codex/tasks/luc-1253-source-control-closure-for-luc-1252-departments-doc-link-packet.md |
 | connected_to | project:roost:122c92a083 | task:task:a05666404b | .codex/tasks/luc-1254-prove-unclassified-user-workflow-missing-test-link-for-use-events.md |
+| connected_to | project:roost:122c92a083 | task:luc-1258-completion-evidence:048944e711 | .codex/tasks/luc-1258-completion-evidence.md |
+| connected_to | project:roost:122c92a083 | task:task:f932d29e9c | .codex/tasks/luc-1258-prove-unclassified-user-workflow-missing-doc-link-for-use-events.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -776,6 +778,7 @@ Generated: 2026-07-15T17:10:17.439Z
 | documents | document:api:a617d1cb61 | api_endpoint:use-deals:2ceaef3b27 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-decisions:b29cd45684 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-departments:876f72fd71 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | api_endpoint:use-events:679c33c90e | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:b3f790a259 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:8f0ce27a64 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:requireuserauth:215e610fd9 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
@@ -1215,6 +1218,3 @@ Generated: 2026-07-15T17:10:17.439Z
 | documents | document:luc-4389-roost-companycore-readiness-and-milestone-review:85dcd2b341 | module:docs:6784d83cb0 | docs/planning/luc-4389-roost-companycore-readiness-and-milestone-review.md |
 | documents | document:luc-4438-roost-protected-gate-recheck:75e28b5fe0 | module:docs:6784d83cb0 | docs/planning/luc-4438-roost-protected-gate-recheck.md |
 | documents | document:luc-4459-known-state-evidence-and-architecture-baseline:5d6b5f1bc1 | module:docs:6784d83cb0 | docs/planning/luc-4459-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4490-known-state-evidence-and-architecture-baseline:591dee1e55 | module:docs:6784d83cb0 | docs/planning/luc-4490-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4524-known-state-evidence-and-architecture-baseline:251d296b88 | module:docs:6784d83cb0 | docs/planning/luc-4524-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-4528-source-control-closure-for-luc-4524-known-state-packet:024665bd8b | module:docs:6784d83cb0 | docs/planning/luc-4528-source-control-closure-for-luc-4524-known-state-packet.md |

@@ -1,4 +1,17 @@
 # Next Steps
+- 2026-07-15: [LUC-1258](/LUC/issues/LUC-1258) has no remaining documentation
+  action for the exact unclassified endpoint `src/app.ts#/events`. The durable
+  packet is
+  `.codex/tasks/luc-1258-prove-unclassified-user-workflow-missing-doc-link-for-use-events.md`.
+  Current fact: refreshed architecture-awareness and documentation-links now
+  link the exact Events mount to the accepted API contract in `docs/API.md`;
+  refreshed app-completion no longer routes `api_endpoint:use-events:679c33c90e`
+  as `missing_doc_link`; Project Truth now routes the first overall gap to
+  `src/app.ts#/goals` and leaves the only remaining docs-owned gap on
+  `src/app.ts#/connection`. Do not reopen another docs lane for
+  `src/app.ts#/events` unless a fresh generated regression removes the linked
+  contract evidence.
+
 - 2026-07-15: [LUC-1254](/LUC/issues/LUC-1254) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint
   `src/app.ts#/events`. The durable packet is

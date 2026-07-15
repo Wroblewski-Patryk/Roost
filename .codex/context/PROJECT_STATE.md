@@ -1,5 +1,31 @@
 # PROJECT_STATE
 
+- 2026-07-15: [LUC-1258](/LUC/issues/LUC-1258) completed the local
+  documentation-link closure for unclassified `src/app.ts#/events`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1258-prove-unclassified-user-workflow-missing-doc-link-for-use-events.md`.
+  Current evidence: `docs/API.md` now documents the protected `/v1/events`
+  alias together with the compatibility `/events` route, auth-derived
+  workspace scoping, read-only access, and newest-first ordering;
+  `docs/architecture/relations/documentation-links.csv` links the exact
+  `src/app.ts#/events` mount to that contract; `npm run architecture:refresh`
+  PASS; external architecture-awareness refresh generated
+  `2026-07-15T17:35:23.664Z` with `3058` entities / `7892` relations /
+  `16523` files and materialized the exact documentation relation; sequential
+  app-completion refresh now reports `46` items / `4` flows / `24` missing
+  test links / `1` missing doc link / `0` implemented-needs-proof / `0`
+  blocked / `25` risk items and no longer routes
+  `api_endpoint:use-events:679c33c90e` as `missing_doc_link`; Project Truth
+  apply generated `2026-07-15T17:35:52.121Z` with public probes `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and advances the first routed gap to `src/app.ts#/goals`
+  `missing_test_link` while keeping only user-configuration
+  `src/app.ts#/connection` as the remaining docs-owned gap; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). No runtime feature logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Deploy impact: none. Push status: held pending broader batching.
+
 - 2026-07-15: [LUC-1254](/LUC/issues/LUC-1254) completed the local
   missing-test-link closure for unclassified `src/app.ts#/events`.
   Source-of-truth task packet:

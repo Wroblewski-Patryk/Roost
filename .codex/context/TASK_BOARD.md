@@ -1,6 +1,30 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-15: [LUC-1258](/LUC/issues/LUC-1258) unclassified
+  `src/app.ts#/events` missing-doc-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1258-prove-unclassified-user-workflow-missing-doc-link-for-use-events.md`.
+  Evidence: `docs/API.md` now documents the protected `/v1/events` alias
+  together with the compatibility `/events` route, auth-derived workspace
+  scoping, read-only access, and newest-first ordering;
+  `docs/architecture/relations/documentation-links.csv` links the exact Events
+  mount to that accepted API contract; `npm run architecture:refresh` PASS;
+  external architecture-awareness refresh generated
+  `2026-07-15T17:35:23.664Z` with `3058` entities / `7892` relations /
+  `16523` files and materialized the exact documentation link; sequential
+  app-completion refresh now reports `missingDocLink=1`, no longer treats
+  `api_endpoint:use-events:679c33c90e` as `missing_doc_link`, and keeps only
+  user-configuration `src/app.ts#/connection` as the remaining docs-owned gap;
+  Project Truth apply generated `2026-07-15T17:35:52.121Z` with public probes
+  `pass` and advances the first routed gap to `src/app.ts#/goals`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime product
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Next owner: Test
+  Automation Engineer + QA Regression Lead for the routed proof gap on
+  `src/app.ts#/goals`; separate docs follow-up remains `src/app.ts#/connection`.
+
 - 2026-07-15: [LUC-1254](/LUC/issues/LUC-1254) unclassified
   `src/app.ts#/events` missing-test-link verification is complete locally.
   Task contract:
