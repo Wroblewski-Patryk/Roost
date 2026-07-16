@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-07-16T15:30:01.355Z
+Generated: 2026-07-16T16:10:09.645Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -16,8 +16,8 @@ Internal functions and modules are implementation details: they receive proof th
 - Items: 46
 - User flows: 4
 - Needs browser/screenshot review: 0
-- Missing test link: 19
-- Missing doc link: 1
+- Missing test link: 18
+- Missing doc link: 2
 - Implemented, needs proof: 0
 - Blocked: 0
 - Known non-ok risk items: 20
@@ -26,7 +26,7 @@ Internal functions and modules are implementation details: they receive proof th
 
 ## Flow Summary
 
-- Unclassified user workflow: 34 entities; risks {"ok":16,"missing_test_link":18}; gates {"auth":13}
+- Unclassified user workflow: 34 entities; risks {"ok":16,"missing_doc_link":1,"missing_test_link":17}; gates {"auth":14}
 - Account access: 9 entities; risks {"ok":9}; gates {"auth":9,"configuration":1}
 - User configuration: 2 entities; risks {"missing_doc_link":1,"missing_test_link":1}; gates {"auth":1,"configuration":2}
 - Dashboard overview: 1 entities; risks {"ok":1}; gates {}
@@ -35,7 +35,7 @@ Internal functions and modules are implementation details: they receive proof th
 
 | User flow | Risk | Kind | Entity | Owner | Path | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
-| Unclassified user workflow | missing_test_link | api_endpoint | USE /notes | Engineering Delivery Lead | src/app.ts#/notes | - |
+| Unclassified user workflow | missing_doc_link | api_endpoint | USE /notes | Engineering Delivery Lead | src/app.ts#/notes | auth |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /operating-graph | Engineering Delivery Lead | src/app.ts#/operating-graph | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /operating-model | Engineering Delivery Lead | src/app.ts#/operating-model | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /operations | Engineering Delivery Lead | src/app.ts#/operations | - |

@@ -1,5 +1,99 @@
 # PROJECT_STATE
 
+- 2026-07-16: [LUC-1345](/LUC/issues/LUC-1345) completed terminal local
+  source-control closure for the combined
+  [LUC-1331](/LUC/issues/LUC-1331),
+  [LUC-1333](/LUC/issues/LUC-1333),
+  [LUC-1339](/LUC/issues/LUC-1339), and
+  [LUC-1344](/LUC/issues/LUC-1344) `USE /notes` packet. Source-of-truth task
+  packet:
+  `.codex/tasks/luc-1345-source-control-closure-commit-for-luc-1331-luc-1333-luc-1339-luc-1344.md`.
+  Current evidence: bounded git review kept the remaining dirty set
+  attributable to `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept
+  `src/app.ts#/notes` clear of `missing_test_link`, retained the same symbol
+  only as docs-owned `missing_doc_link`, and kept the next QA-owned routed
+  proof gap on `src/app.ts#/operating-graph`; `git diff --check` reported only
+  CRLF normalization warnings and no content defects; JSON parse checks
+  passed; and bounded redaction scan found no secret-shaped strings. Local
+  commit was the correct terminal closure action because repeated no-commit
+  sidecars were reopening the same lane. Deploy impact: none. Push status:
+  not needed.
+
+- 2026-07-16: [LUC-1344](/LUC/issues/LUC-1344) completed local
+  source-control closure for the combined
+  [LUC-1331](/LUC/issues/LUC-1331),
+  [LUC-1333](/LUC/issues/LUC-1333), and
+  [LUC-1339](/LUC/issues/LUC-1339) `USE /notes` packet. Source-of-truth task
+  packet:
+  `.codex/tasks/luc-1344-classify-and-close-local-dirty-state-for-luc-1331-luc-1333-luc-1339.md`.
+  Current evidence: bounded git review kept the remaining dirty set
+  attributable to `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept
+  `src/app.ts#/notes` clear of `missing_test_link`, retained the same symbol
+  only as docs-owned `missing_doc_link`, and kept the next QA-owned routed
+  proof gap on `src/app.ts#/operating-graph`; `git diff --check` reported only
+  CRLF normalization warnings and no content defects; JSON parse checks
+  passed; and bounded redaction scan found no secret-shaped strings. No
+  runtime feature logic, provider call, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Deploy impact:
+  none. Push status: held pending broader batching. Commit status: not
+  committed by this review lane.
+
+- 2026-07-16: [LUC-1339](/LUC/issues/LUC-1339) completed local
+  source-control closure for the combined
+  [LUC-1331](/LUC/issues/LUC-1331) plus
+  [LUC-1333](/LUC/issues/LUC-1333) `USE /notes` packet. Source-of-truth task
+  packet:
+  `.codex/tasks/luc-1339-classify-and-close-local-dirty-state-for-luc-1331-luc-1333.md`.
+  Current evidence: bounded git review kept the remaining dirty set
+  attributable to `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept
+  `src/app.ts#/notes` clear of `missing_test_link`, retained the same symbol
+  only as docs-owned `missing_doc_link`, and kept the next QA-owned routed
+  proof gap on `src/app.ts#/operating-graph`; `git diff --check` reported only
+  CRLF normalization warnings and no content defects; JSON parse checks
+  passed; and bounded redaction scan found no secret-shaped strings. No
+  runtime feature logic, provider call, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Deploy impact:
+  none. Push status: held pending broader batching. Commit status: not
+  committed by this review lane.
+
+- 2026-07-16: [LUC-1331](/LUC/issues/LUC-1331) completed the local
+  missing-test-link closure for unclassified `src/app.ts#/notes`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1331-prove-unclassified-user-workflow-missing-test-link-for-use-notes.md`.
+  Current evidence: `docs/architecture/scanner-overrides.json` now marks the
+  exact Notes mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/notes/notes.routes.ts`; focused
+  local protected API proof PASS after `npm run build`,
+  `npm run prisma:migrate:deploy`, `npm run seed`, and
+  `node --test --test-name-pattern "CompanyCore v1 protected API flow"
+  dist/tests/api.test.js` against local PostgreSQL test container
+  `companycore-test-postgres-luc1331` on port `58009`, followed by cleanup;
+  `npm run architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-16T16:05:51.772Z` with `3086` entities / `8120`
+  relations / `16524` files and materialized the exact proof relation;
+  sequential app-completion refresh now reports `46` items / `4` flows / `18`
+  missing test links / `2` missing doc links / `0`
+  implemented-needs-proof / `0` blocked / `20` risk items, no longer routes
+  `api_endpoint:use-notes:c833b4443f` as `missing_test_link`, and keeps the
+  same symbol only as docs-owned `missing_doc_link`; Project Truth apply
+  generated `2026-07-16T16:05:54.256Z` with public probes `pass`, runtime
+  findings `0`, incomplete event chains `0`, operational gate gaps `0`, and
+  advances the next QA-owned routed proof queue to
+  `src/app.ts#/operating-graph` while the first overall routed gap stays
+  docs-owned on `src/app.ts#/notes`; `npm run architecture:status` PASS
+  (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime
+  feature logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Deploy impact: none. Push
+  status: held pending broader batching. Source-control closure completed in
+  [LUC-1333](/LUC/issues/LUC-1333). Combined dirty-state closure completed in
+  [LUC-1339](/LUC/issues/LUC-1339).
+
 - 2026-07-16: [LUC-1326](/LUC/issues/LUC-1326) completed the local
   missing-doc-link closure for Account access `src/app.ts#/mcp`.
   Source-of-truth task packet:

@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-07-16T15:30:01.227Z",
+  "generated_at": "2026-07-16T16:10:07.273Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 3084,
-    "relations": 8103,
+    "entities": 3086,
+    "relations": 8122,
     "by_type": {
       "agent": 47,
       "api_endpoint": 46,
@@ -18,16 +18,16 @@
       "model": 5,
       "module": 67,
       "project": 1,
-      "task": 145,
+      "task": 147,
       "test": 82
     },
     "by_status": {
       "blocked": 1,
       "deprecated": 6,
-      "implemented": 2679,
+      "implemented": 2678,
       "in_progress": 8,
       "tested": 19,
-      "verified": 371
+      "verified": 374
     }
   },
   "signals": {
@@ -175,7 +175,7 @@
           "type": "api_endpoint",
           "name": "USE /notes",
           "path": "src/app.ts#/notes",
-          "status": "implemented",
+          "status": "verified",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -1784,7 +1784,7 @@
           "type": "api_endpoint",
           "name": "USE /notes",
           "path": "src/app.ts#/notes",
-          "status": "implemented",
+          "status": "verified",
           "owner": "Engineering Delivery Lead"
         },
         {

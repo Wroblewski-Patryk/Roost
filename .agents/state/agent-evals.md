@@ -7,6 +7,7 @@ process, not only the code.
 
 | ID | Date | Mission/task | Coordinator score | Lane split score | Brief clarity score | Proof score | Memory score | Main failure mode | Improvement for next mission | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| AEV-002 | 2026-07-16 | LUC-1345 source-control closure loop | 2 | 2 | 2 | 5 | 3 | Prior closure lanes proved packet coherence correctly but stopped before the terminal local preservation step, so each heartbeat created one more sidecar and reopened the same lane. | Source-control closure missions must score `done` only after either clean-state proof or a scoped local commit. When the worktree is still dirty after validation and the packet is coherent, label it `verified_ready_for_local_commit` and keep commit ownership explicit in the task contract. | closed |
 | AEV-001 | 2026-05-20 | FULL-FUNCTION-ARCH-AUDIT-001 | 4 | 5 | 4 | 5 | 4 | Initial parent validation ran before all lane findings were integrated, so one validation pass had to be repeated after fixes. | For broad audits, run quick safe gates early, but reserve the final full gate until all lane findings have either been fixed or explicitly rejected. | closed |
 
 ## Scoring

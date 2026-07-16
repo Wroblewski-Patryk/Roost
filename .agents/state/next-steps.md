@@ -1,4 +1,60 @@
 # Next Steps
+- 2026-07-16: [LUC-1345](/LUC/issues/LUC-1345) completed the terminal
+  source-control action for the combined
+  [LUC-1331](/LUC/issues/LUC-1331),
+  [LUC-1333](/LUC/issues/LUC-1333),
+  [LUC-1339](/LUC/issues/LUC-1339), and
+  [LUC-1344](/LUC/issues/LUC-1344) `USE /notes` packet. The durable packet is
+  `.codex/tasks/luc-1345-source-control-closure-commit-for-luc-1331-luc-1333-luc-1339-luc-1344.md`.
+  Current fact: bounded git review, representative generated readback,
+  `git diff --check`, JSON parse checks, and a bounded redaction scan still
+  classified the packet as current/coherent, so this issue preserved it with
+  one scoped local commit instead of creating another no-commit sidecar. Do
+  not reopen another closure lane for this packet unless a fresh dirty-state
+  regression appears after new work.
+
+- 2026-07-16: [LUC-1344](/LUC/issues/LUC-1344) has no remaining
+  source-control action for the combined
+  [LUC-1331](/LUC/issues/LUC-1331),
+  [LUC-1333](/LUC/issues/LUC-1333), and
+  [LUC-1339](/LUC/issues/LUC-1339) `USE /notes` packet. The durable sidecar
+  is
+  `.codex/tasks/luc-1344-classify-and-close-local-dirty-state-for-luc-1331-luc-1333-luc-1339.md`.
+  Current fact: bounded git review, representative generated readback,
+  `git diff --check`, JSON parse checks, and a bounded redaction scan
+  classified the remaining packet as current/coherent with no unrelated
+  ownership drift. Do not reopen another closure lane for this packet unless a
+  fresh dirty-state regression appears after new work.
+
+- 2026-07-16: [LUC-1339](/LUC/issues/LUC-1339) has no remaining
+  source-control action for the combined
+  [LUC-1331](/LUC/issues/LUC-1331) plus
+  [LUC-1333](/LUC/issues/LUC-1333) `USE /notes` packet. The durable sidecar
+  is
+  `.codex/tasks/luc-1339-classify-and-close-local-dirty-state-for-luc-1331-luc-1333.md`.
+  Current fact: bounded git review, representative generated readback,
+  `git diff --check`, JSON parse checks, and a bounded redaction scan
+  classified the remaining packet as current/coherent with no unrelated
+  ownership drift. Do not reopen another closure lane for this packet unless a
+  fresh dirty-state regression appears after new work.
+
+- 2026-07-16: [LUC-1331](/LUC/issues/LUC-1331) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/notes`. The durable packet is
+  `.codex/tasks/luc-1331-prove-unclassified-user-workflow-missing-test-link-for-use-notes.md`.
+  Current fact: refreshed architecture-awareness marks the exact Notes mount
+  `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` and `src/modules/notes/notes.routes.ts`; refreshed
+  app-completion no longer routes `api_endpoint:use-notes:c833b4443f` as
+  `missing_test_link` and keeps the same symbol only as docs-owned
+  `missing_doc_link`; Project Truth now routes the same symbol to Docs Memory
+  Lead + Project Manager while the next QA-owned proof queue starts at
+  `src/app.ts#/operating-graph`. Do not reopen another QA proof lane for
+  `src/app.ts#/notes` unless a fresh generated regression removes the linked
+  runtime evidence. Source-control closure completed in
+  [LUC-1333](/LUC/issues/LUC-1333) and the combined dirty-state closure
+  completed in [LUC-1339](/LUC/issues/LUC-1339).
+
 - 2026-07-16: [LUC-1326](/LUC/issues/LUC-1326) has no remaining
   documentation action for the exact Account access endpoint
   `src/app.ts#/mcp`. The durable packet is

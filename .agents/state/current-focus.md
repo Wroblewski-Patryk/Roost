@@ -1,5 +1,84 @@
 # Current Focus
 
+## LUC-1345 Checkpoint
+
+- 2026-07-16: [LUC-1345](/LUC/issues/LUC-1345) completed the terminal local
+  source-control closure for the combined
+  [LUC-1331](/LUC/issues/LUC-1331),
+  [LUC-1333](/LUC/issues/LUC-1333),
+  [LUC-1339](/LUC/issues/LUC-1339), and
+  [LUC-1344](/LUC/issues/LUC-1344) `USE /notes` packet. The coherent packet
+  spans `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept `src/app.ts#/notes`
+  clear of `missing_test_link`, retained the same symbol only as docs-owned
+  `missing_doc_link`, and kept the next QA-owned proof gap on
+  `src/app.ts#/operating-graph`; `git diff --check` reported only CRLF
+  normalization warnings and no content defects; JSON parse checks passed; and
+  bounded redaction scan found no secret-shaped strings. Final closure action
+  was one scoped local commit because repeated no-commit sidecars were
+  recreating the same dirty-state lane. No further source-control lane is
+  needed for this packet unless a fresh dirty-state regression appears after
+  new work.
+
+## LUC-1344 Checkpoint
+
+- 2026-07-16: [LUC-1344](/LUC/issues/LUC-1344) completed local
+  source-control closure for the combined
+  [LUC-1331](/LUC/issues/LUC-1331),
+  [LUC-1333](/LUC/issues/LUC-1333), and
+  [LUC-1339](/LUC/issues/LUC-1339) `USE /notes` packet. The coherent packet
+  spans `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept `src/app.ts#/notes`
+  clear of `missing_test_link`, retained the same symbol only as docs-owned
+  `missing_doc_link`, and kept the next QA-owned proof gap on
+  `src/app.ts#/operating-graph`; `git diff --check` reported only CRLF
+  normalization warnings and no content defects; JSON parse checks passed; and
+  bounded redaction scan found no secret-shaped strings. No further
+  source-control lane is needed for this packet unless a fresh dirty-state
+  regression appears.
+
+## LUC-1339 Checkpoint
+
+- 2026-07-16: [LUC-1339](/LUC/issues/LUC-1339) completed local
+  source-control closure for the combined [LUC-1331](/LUC/issues/LUC-1331)
+  plus [LUC-1333](/LUC/issues/LUC-1333) `USE /notes` packet. The coherent
+  packet spans `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept `src/app.ts#/notes`
+  clear of `missing_test_link`, retained the same symbol only as docs-owned
+  `missing_doc_link`, and kept the next QA-owned proof gap on
+  `src/app.ts#/operating-graph`; `git diff --check` reported only CRLF
+  normalization warnings and no content defects; JSON parse checks passed; and
+  bounded redaction scan found no secret-shaped strings. No further
+  source-control lane is needed for this packet unless a fresh dirty-state
+  regression appears.
+
+## LUC-1331 Checkpoint
+
+- 2026-07-16: [LUC-1331](/LUC/issues/LUC-1331) closed the routed
+  unclassified endpoint `src/app.ts#/notes` `missing_test_link` row. Packet:
+  `.codex/tasks/luc-1331-prove-unclassified-user-workflow-missing-test-link-for-use-notes.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Notes mount
+  `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/notes/notes.routes.ts`; focused
+  proof PASS after `npm run build`, `npm run prisma:migrate:deploy`, `npm
+  run seed`, and `node --test --test-name-pattern "CompanyCore v1 protected
+  API flow" dist/tests/api.test.js` against local PostgreSQL test container
+  `companycore-test-postgres-luc1331` on port `58009`, followed by cleanup;
+  external architecture-awareness refresh generated
+  `2026-07-16T16:05:51.772Z` with `3086` entities / `8120` relations /
+  `16524` files; sequential app-completion refresh now reports
+  `missingTestLink=18` and keeps `src/app.ts#/notes` only as docs-owned
+  `missing_doc_link`; sequential Project Truth apply generated
+  `2026-07-16T16:05:54.256Z` with public probes `pass` and advanced the next
+  QA-owned routed proof queue to `src/app.ts#/operating-graph`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). Remaining docs-owned route gaps: `src/app.ts#/notes` and
+  `src/app.ts#/connection`. Source-control closure completed in
+  [LUC-1333](/LUC/issues/LUC-1333).
+
 ## LUC-1321 Checkpoint
 
 - 2026-07-16: [LUC-1321](/LUC/issues/LUC-1321) closed the routed

@@ -1,3 +1,92 @@
+# 2026-07-16 LUC-1345 Notes Packet Source-Control Health Signal
+
+- Status: terminal source-control closure for the `LUC-1331` plus `LUC-1333`
+  plus `LUC-1339` plus `LUC-1344` `USE /notes` packet completed locally with
+  commit-backed preservation.
+- Evidence: [LUC-1345](/LUC/issues/LUC-1345) task packet
+  `.codex/tasks/luc-1345-source-control-closure-commit-for-luc-1331-luc-1333-luc-1339-luc-1344.md`;
+  bounded git review kept the remaining dirty packet attributable to
+  `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept `src/app.ts#/notes`
+  clear of `missing_test_link`, retained the same symbol only as docs-owned
+  `missing_doc_link`, and kept the next QA-owned proof gap on
+  `src/app.ts#/operating-graph`; `git diff --check` reported only CRLF
+  normalization warnings and no content defects; JSON parse checks passed; and
+  bounded redaction scan found no secret-shaped strings. Terminal closure
+  action was a scoped local commit because repeated no-commit sidecars were
+  reopening the same lane.
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-16 LUC-1344 Notes Packet Source-Control Health Signal
+
+- Status: combined source-control closure for the `LUC-1331` plus `LUC-1333`
+  plus `LUC-1339` `USE /notes` packet is complete locally.
+- Evidence: [LUC-1344](/LUC/issues/LUC-1344) task packet
+  `.codex/tasks/luc-1344-classify-and-close-local-dirty-state-for-luc-1331-luc-1333-luc-1339.md`;
+  bounded git review kept the remaining dirty packet attributable to
+  `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept `src/app.ts#/notes`
+  clear of `missing_test_link`, retained the same symbol only as docs-owned
+  `missing_doc_link`, and kept the next QA-owned proof gap on
+  `src/app.ts#/operating-graph`; `git diff --check` reported only CRLF
+  normalization warnings and no content defects; JSON parse checks passed; and
+  bounded redaction scan found no secret-shaped strings.
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-16 LUC-1339 Notes Packet Source-Control Health Signal
+
+- Status: combined source-control closure for the `LUC-1331` plus `LUC-1333`
+  `USE /notes` packet is complete locally.
+- Evidence: [LUC-1339](/LUC/issues/LUC-1339) task packet
+  `.codex/tasks/luc-1339-classify-and-close-local-dirty-state-for-luc-1331-luc-1333.md`;
+  bounded git review kept the remaining dirty packet attributable to
+  `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept `src/app.ts#/notes`
+  clear of `missing_test_link`, retained the same symbol only as docs-owned
+  `missing_doc_link`, and kept the next QA-owned proof gap on
+  `src/app.ts#/operating-graph`; `git diff --check` reported only CRLF
+  normalization warnings and no content defects; JSON parse checks passed; and
+  bounded redaction scan found no secret-shaped strings.
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-16 LUC-1331 Notes Proof-Link Health Signal
+
+- Status: routed unclassified Notes endpoint proof-link closure is verified
+  locally.
+- Evidence: [LUC-1331](/LUC/issues/LUC-1331) task packet
+  `.codex/tasks/luc-1331-prove-unclassified-user-workflow-missing-test-link-for-use-notes.md`;
+  `docs/architecture/scanner-overrides.json` now marks `src/app.ts#/notes`
+  `verified` through the existing protected API suite in `src/tests/api.test.ts`
+  plus `src/modules/notes/notes.routes.ts`; focused proof PASS after
+  `npm run build`, `npm run prisma:migrate:deploy`, `npm run seed`, and
+  `node --test --test-name-pattern "CompanyCore v1 protected API flow"
+  dist/tests/api.test.js` against local PostgreSQL test container
+  `companycore-test-postgres-luc1331` on port `58009`, followed by cleanup;
+  `npm run architecture:refresh` PASS; external architecture-awareness rebuild
+  generated `2026-07-16T16:05:51.772Z` with `3086` entities / `8120`
+  relations / `16524` files; app-completion refresh generated `18` missing
+  test links / `2` missing doc links and no longer routes `USE /notes` as
+  `missing_test_link`, keeping the same symbol only as docs-owned
+  `missing_doc_link`; Project Truth apply generated
+  `2026-07-16T16:05:54.256Z` with public probes `pass` and advanced the next
+  QA-owned routed proof queue to `src/app.ts#/operating-graph`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). Source-control closure completed in
+  [LUC-1333](/LUC/issues/LUC-1333) and the combined packet review completed in
+  [LUC-1339](/LUC/issues/LUC-1339).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
 # 2026-07-16 LUC-1321 MCP Proof-Link Health Signal
 
 - Status: routed unclassified MCP endpoint proof-link closure is verified
