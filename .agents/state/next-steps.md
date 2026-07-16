@@ -1,4 +1,20 @@
 # Next Steps
+- 2026-07-16: [LUC-1321](/LUC/issues/LUC-1321) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/mcp`. The durable packet is
+  `.codex/tasks/luc-1321-prove-unclassified-user-workflow-missing-test-link-for-use-mcp.md`.
+  Current fact: refreshed architecture-awareness marks the exact MCP mount
+  `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` and `src/modules/mcp/mcp.routes.ts`; refreshed
+  app-completion no longer routes `api_endpoint:use-mcp:3055a10566` as
+  `missing_test_link` and keeps the same symbol only as docs-owned
+  `missing_doc_link`; Project Truth now routes the same symbol to Docs Memory
+  Lead + Project Manager while the next QA-owned proof gap is
+  `src/app.ts#/notes`. Do not reopen another QA proof lane for
+  `src/app.ts#/mcp` unless a fresh generated regression removes the linked
+  runtime evidence. Source-control closure completed in
+  [LUC-1324](/LUC/issues/LUC-1324).
+
 - 2026-07-16: [LUC-1312](/LUC/issues/LUC-1312) has no remaining
   documentation action for the exact unclassified endpoint
   `src/app.ts#/interactions`. The durable packet is

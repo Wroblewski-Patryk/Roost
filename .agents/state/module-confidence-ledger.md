@@ -1,3 +1,9 @@
+# 2026-07-16 LUC-1321 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| MCP proof linkage | verified for dispatched missing-test-link gap | [LUC-1321](/LUC/issues/LUC-1321) focused proof-link packet `.codex/tasks/luc-1321-prove-unclassified-user-workflow-missing-test-link-for-use-mcp.md`; `docs/architecture/scanner-overrides.json` marks `src/app.ts#/mcp` `verified` through the existing protected API suite in `src/tests/api.test.ts` plus `src/modules/mcp/mcp.routes.ts`; focused local protected API proof PASS after `npm run build`, `npm run prisma:migrate:deploy`, `npm run seed`, and `node --test --test-name-pattern "CompanyCore v1 protected API flow" dist/tests/api.test.js` against local PostgreSQL test container `companycore-test-postgres-luc1321` on port `58008`, followed by cleanup; `npm run architecture:refresh` PASS; external architecture-awareness rebuild generated `2026-07-16T15:07:53.859Z` with `3081` entities / `8079` relations / `16524` files and materialized the exact proof relation; sequential app-completion refresh reduced `missingTestLink` from `20` to `19` and no longer routes `api_endpoint:use-mcp:3055a10566` as `missing_test_link`, instead keeping the same symbol as docs-owned `missing_doc_link`; sequential Project Truth apply generated `2026-07-16T15:07:56.385Z` with public probes `pass` and advanced the next QA-owned routed proof gap to `src/app.ts#/notes`; `npm run architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`). | No further QA proof work is needed for `src/app.ts#/mcp` unless a fresh generated regression removes the linked API evidence. The same symbol now has a docs-owned `missing_doc_link` gap for Docs Memory Lead + Project Manager, and the next QA-owned routed gap is unclassified `src/app.ts#/notes`. |
+
 # 2026-07-15 LUC-1226 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

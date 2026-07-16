@@ -1,6 +1,33 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-16: [LUC-1321](/LUC/issues/LUC-1321) unclassified `src/app.ts#/mcp`
+  missing-test-link verification is complete locally. Task contract:
+  `.codex/tasks/luc-1321-prove-unclassified-user-workflow-missing-test-link-for-use-mcp.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact MCP
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/mcp/mcp.routes.ts`; focused proof
+  PASS after `npm run build`, `npm run prisma:migrate:deploy`, `npm run seed`,
+  and `node --test --test-name-pattern "CompanyCore v1 protected API flow"
+  dist/tests/api.test.js` against local PostgreSQL test container
+  `companycore-test-postgres-luc1321` on port `58008`, followed by cleanup;
+  `npm run architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-16T15:07:53.859Z` with `3081` entities / `8079`
+  relations / `16524` files and materialized the exact proof relation;
+  sequential app-completion refresh now reports `missingTestLink=19`, no
+  longer treats `api_endpoint:use-mcp:3055a10566` as `missing_test_link`, and
+  keeps the same symbol only as docs-owned `missing_doc_link`; Project Truth
+  apply generated `2026-07-16T15:07:56.385Z` with public probes `pass` and
+  advances the next QA-owned routed gap to `src/app.ts#/notes`
+  `missing_test_link` while the first overall routed gap stays on
+  `src/app.ts#/mcp` for Docs Memory Lead + Project Manager. `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). No runtime product logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Next owner: Docs Memory Lead + Project Manager for the same-symbol
+  docs gap on `src/app.ts#/mcp`; the next QA proof lane is `src/app.ts#/notes`.
+  Source-control closure completed in [LUC-1324](/LUC/issues/LUC-1324).
+
 - 2026-07-16: [LUC-1312](/LUC/issues/LUC-1312) unclassified
   `src/app.ts#/interactions` missing-doc-link verification is complete
   locally. Task contract:

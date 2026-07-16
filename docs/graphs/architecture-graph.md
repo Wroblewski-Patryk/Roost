@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-16T14:26:52.452Z
+Generated: 2026-07-16T15:07:53.859Z
 
 ## Canonical Exports
 
@@ -84,7 +84,7 @@ Generated: 2026-07-16T14:26:52.452Z
 | api_endpoint | verified | USE /intake | src/app.ts#/intake | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /integration-settings | src/app.ts#/integration-settings | Engineering Delivery Lead |
 | api_endpoint | verified | USE /interactions | src/app.ts#/interactions | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /mcp | src/app.ts#/mcp | Engineering Delivery Lead |
+| api_endpoint | verified | USE /mcp | src/app.ts#/mcp | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /notes | src/app.ts#/notes | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /operating-graph | src/app.ts#/operating-graph | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /operating-model | src/app.ts#/operating-model | Engineering Delivery Lead |
@@ -650,6 +650,7 @@ Generated: 2026-07-16T14:26:52.452Z
 | connected_to | project:roost:122c92a083 | task:task:78030d7e0e | .codex/tasks/luc-1309-source-control-closure-for-luc-1307-interactions-proof-link-packet.md |
 | connected_to | project:roost:122c92a083 | task:luc-1312-completion-evidence:cf52da37f0 | .codex/tasks/luc-1312-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:b7673d1487 | .codex/tasks/luc-1312-prove-unclassified-user-workflow-missing-doc-link-for-use-interactions.md |
+| connected_to | project:roost:122c92a083 | task:task:4eb999ffe9 | .codex/tasks/luc-1321-prove-unclassified-user-workflow-missing-test-link-for-use-mcp.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -1217,4 +1218,3 @@ Generated: 2026-07-16T14:26:52.452Z
 | documents | document:luc-187-canonical-docs-root-pin-and-takeover-handoff-preparation:96aa64c52d | module:docs:6784d83cb0 | docs/planning/luc-187-canonical-docs-root-and-takeover-handoff.md |
 | documents | document:luc-190-activation-readiness-review-after-scm-cleanup:72fd11995b | module:docs:6784d83cb0 | docs/planning/luc-190-activation-readiness-review-after-scm-cleanup.md |
 | documents | document:luc-22-roost-local-architecture-and-repo-preflight:4a5f2e74a4 | module:docs:6784d83cb0 | docs/planning/luc-22-roost-local-architecture-and-repo-preflight.md |
-| documents | document:luc-2362-dirty-state-context-docs-classification:45e28d0a3a | module:docs:6784d83cb0 | docs/planning/luc-2362-dirty-state-context-docs-classification.md |
