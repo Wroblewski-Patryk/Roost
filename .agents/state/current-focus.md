@@ -1,5 +1,16 @@
 # Current Focus
 
+## LUC-1347 Checkpoint
+
+- 2026-07-16: [LUC-1347](/LUC/issues/LUC-1347) completed the exact
+  documentation-link closure for unclassified `src/app.ts#/notes`. The Notes
+  mount is now linked from `docs/architecture/relations/documentation-links.csv`
+  to the accepted Notes contract in `docs/API.md`; refreshed app-completion
+  removed `USE /notes` from the priority review queue and refreshed Project
+  Truth moved the first routed gap to `src/app.ts#/operating-graph`
+  `missing_test_link`. No further Notes documentation lane is needed unless a
+  fresh scanner/doc-link regression appears.
+
 ## LUC-1345 Checkpoint
 
 - 2026-07-16: [LUC-1345](/LUC/issues/LUC-1345) completed the terminal local

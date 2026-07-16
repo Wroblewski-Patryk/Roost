@@ -1,6 +1,19 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-16: [LUC-1347](/LUC/issues/LUC-1347) completed the exact
+  documentation-link closure for unclassified `src/app.ts#/notes`. Task
+  contract:
+  `.codex/tasks/luc-1347-prove-unclassified-user-workflow-missing-doc-link-for-use-notes.md`.
+  Evidence: `docs/architecture/relations/documentation-links.csv` now links
+  `src/app.ts#/notes` to the accepted Notes contract in `docs/API.md`;
+  refreshed app-completion generated `2026-07-16T17:29:34.511Z` and removed
+  `api_endpoint:use-notes:c833b4443f` from the priority review queue, leaving
+  only `USE /connection` as the docs-owned app-completion gap; refreshed
+  Project Truth generated `2026-07-16T17:29:34.523Z` and advanced the first
+  routed gap to `src/app.ts#/operating-graph` `missing_test_link`. Deploy
+  impact: none.
+
 - 2026-07-16: [LUC-1345](/LUC/issues/LUC-1345) completed terminal local
   source-control closure for the combined
   [LUC-1331](/LUC/issues/LUC-1331),

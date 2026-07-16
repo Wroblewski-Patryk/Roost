@@ -1,5 +1,20 @@
 # Active Mission Packet
 
+## LUC-1347 Checkpoint
+
+- 2026-07-16: [LUC-1347](/LUC/issues/LUC-1347) closed the documentation lane
+  for exact unclassified `src/app.ts#/notes` doc-link drift. Packet:
+  `.codex/tasks/luc-1347-prove-unclassified-user-workflow-missing-doc-link-for-use-notes.md`.
+  `docs/architecture/relations/documentation-links.csv` now links the Notes
+  mount to the accepted Notes contract in `docs/API.md`; refreshed
+  app-completion generated `2026-07-16T17:29:34.511Z` and removed
+  `api_endpoint:use-notes:c833b4443f` from the priority review queue; refreshed
+  Project Truth generated `2026-07-16T17:29:34.523Z` and advanced the first
+  routed gap to QA-owned `src/app.ts#/operating-graph` while leaving only
+  product/docs-owned `src/app.ts#/connection`. Final disposition: `done` for
+  the Notes doc-link lane. Remaining follow-up is Docs/Product on
+  `src/app.ts#/connection` and QA on `src/app.ts#/operating-graph`.
+
 ## LUC-1345 Checkpoint
 
 - 2026-07-16: [LUC-1345](/LUC/issues/LUC-1345) closed the terminal

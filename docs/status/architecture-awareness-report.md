@@ -1,6 +1,6 @@
 # Architecture Awareness Report
 
-Generated: 2026-07-16T16:10:07.273Z
+Generated: 2026-07-16T17:29:09.713Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 
@@ -18,7 +18,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | model | 5 |
 | module | 67 |
 | project | 1 |
-| task | 147 |
+| task | 153 |
 | test | 82 |
 
 ## Counts By Status
@@ -28,9 +28,9 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | blocked | 1 |
 | deprecated | 6 |
 | implemented | 2678 |
-| in_progress | 8 |
+| in_progress | 10 |
 | tested | 19 |
-| verified | 374 |
+| verified | 378 |
 
 ## Health Signals
 

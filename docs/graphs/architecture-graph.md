@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-16T16:10:07.273Z
+Generated: 2026-07-16T17:29:09.713Z
 
 ## Canonical Exports
 
@@ -49,7 +49,7 @@ Generated: 2026-07-16T16:10:07.273Z
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-16 LUC-1331 Notes Proof-Link Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-16 LUC-1345 Notes Packet Source-Control Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -656,6 +656,12 @@ Generated: 2026-07-16T16:10:07.273Z
 | connected_to | project:roost:122c92a083 | task:task:689aaedcdf | .codex/tasks/luc-1326-prove-account-access-missing-doc-link-for-use-mcp.md |
 | connected_to | project:roost:122c92a083 | task:task:9a1f050127 | .codex/tasks/luc-1328-source-control-closure-for-luc-1326-mcp-doc-link-packet.md |
 | connected_to | project:roost:122c92a083 | task:task:371375ddf4 | .codex/tasks/luc-1331-prove-unclassified-user-workflow-missing-test-link-for-use-notes.md |
+| connected_to | project:roost:122c92a083 | task:task:af7e52de0d | .codex/tasks/luc-1333-source-control-closure-for-luc-1331-use-notes-packet.md |
+| connected_to | project:roost:122c92a083 | task:task:09f7884c16 | .codex/tasks/luc-1339-classify-and-close-local-dirty-state-for-luc-1331-luc-1333.md |
+| connected_to | project:roost:122c92a083 | task:task:6a5d255122 | .codex/tasks/luc-1344-classify-and-close-local-dirty-state-for-luc-1331-luc-1333-luc-1339.md |
+| connected_to | project:roost:122c92a083 | task:task:98df478e4f | .codex/tasks/luc-1345-source-control-closure-commit-for-luc-1331-luc-1333-luc-1339-luc-1344.md |
+| connected_to | project:roost:122c92a083 | task:luc-1347-completion-evidence:0cb7a1d1c3 | .codex/tasks/luc-1347-completion-evidence.md |
+| connected_to | project:roost:122c92a083 | task:task:4f33f2ade9 | .codex/tasks/luc-1347-prove-unclassified-user-workflow-missing-doc-link-for-use-notes.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -715,7 +721,7 @@ Generated: 2026-07-16T16:10:07.273Z
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
 | documents | agent:2026-07-16-luc-1331-module-confidence-update:5626b27e14 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
-| documents | agent:2026-07-16-luc-1331-notes-proof-link-health-signal:c8d24285fb | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-16-luc-1345-notes-packet-source-control-health-signal:32fa801938 | module:agents:4ae71ba13a | .agents/state/system-health.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -811,6 +817,7 @@ Generated: 2026-07-16T16:10:07.273Z
 | documents | document:api:a617d1cb61 | api_endpoint:use-goals:da30547c55 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-interactions:eb228af9f5 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-mcp:3055a10566 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | api_endpoint:use-notes:c833b4443f | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:b3f790a259 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:8f0ce27a64 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:requireuserauth:215e610fd9 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
@@ -1211,10 +1218,3 @@ Generated: 2026-07-16T16:10:07.273Z
 | documents | document:luc-110-account-access-auth-headers-function-row-classification:33a5d98774 | module:docs:6784d83cb0 | docs/planning/luc-110-account-access-authheaders-function-row-classification.md |
 | documents | document:luc-1106-source-control-closure-for-luc-962-luc-971-luc-974-luc-977-plus-40-dirty-state:50fc4a4201 | module:docs:6784d83cb0 | docs/planning/luc-1106-source-control-closure-for-luc-962-luc-971-luc-974-luc-977-plus-40.md |
 | documents | document:luc-111-function-level-classification-overrides-for-auth-headers:2ca947ab7a | module:docs:6784d83cb0 | docs/planning/luc-111-function-level-classification-overrides-authheaders.md |
-| documents | document:luc-137-account-access-registerowner-proof-link:66e93ff64a | module:docs:6784d83cb0 | docs/planning/luc-137-account-access-registerowner-proof-link.md |
-| documents | document:luc-1392-source-control-closure-for-luc-261-luc-1214-luc-1215-luc-1216-plus-3:fddab300bd | module:docs:6784d83cb0 | docs/planning/luc-1392-source-control-closure-luc-261-1214-1218-plus.md |
-| documents | document:luc-1680-api-route-confidence-matrix:678ea79f24 | module:docs:6784d83cb0 | docs/planning/luc-1680-api-route-confidence-matrix.md |
-| documents | document:luc-1681-test-surface-reconciliation-from-known-state-baseline:438b57cb70 | module:docs:6784d83cb0 | docs/planning/luc-1681-test-surface-reconciliation.md |
-| documents | document:luc-1682-docs-and-architecture-graph-synchronization-hygiene-review:a75227756e | module:docs:6784d83cb0 | docs/planning/luc-1682-docs-and-architecture-graph-synchronization-hygiene-review.md |
-| documents | document:luc-1719-source-control-closure-for-2026-06-03-dirty-docs-state-context-packet:616515911f | module:docs:6784d83cb0 | docs/planning/luc-1719-source-control-closure-for-2026-06-03-dirty-docs-state-context-packet.md |
-| documents | document:luc-1808-known-state-evidence-and-architecture-baseline:0ca23d812b | module:docs:6784d83cb0 | docs/planning/luc-1808-known-state-evidence-and-architecture-baseline.md |

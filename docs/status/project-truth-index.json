@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-16T16:10:09.745Z",
+  "generatedAt": "2026-07-16T17:29:34.523Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "gaps_require_routing",
@@ -9,42 +9,29 @@
     "incompleteEventChains": 0,
     "runtimeFindings": 0,
     "criticalRuntimeFindings": 0,
-    "appCompletionGaps": 20,
-    "indexedAppCompletionGaps": 20,
-    "knownAppCompletionRiskItems": 20,
-    "appCompletionPriorityReviewItems": 20,
+    "appCompletionGaps": 19,
+    "indexedAppCompletionGaps": 19,
+    "knownAppCompletionRiskItems": 19,
+    "appCompletionPriorityReviewItems": 19,
     "appCompletionPriorityReviewTruncated": false,
     "operationalGateGaps": 0,
-    "indexedGaps": 20,
-    "totalGaps": 20
+    "indexedGaps": 19,
+    "totalGaps": 19
   },
   "firstGap": {
     "kind": "app_completion_gap",
     "severity": "medium",
     "userFlow": "Unclassified user workflow",
-    "summary": "Unclassified user workflow: USE /notes has app-completion risk missing_doc_link.",
-    "nextOwner": "Docs Memory Lead + Project Manager",
-    "nextAction": "Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.",
+    "summary": "Unclassified user workflow: USE /operating-graph has app-completion risk missing_test_link.",
+    "nextOwner": "Test Automation Engineer + QA Regression Lead",
+    "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
     "evidence": [
-      "src/app.ts#/notes"
+      "src/app.ts#/operating-graph"
     ],
-    "sourceItemId": "api_endpoint:use-notes:c833b4443f",
-    "risk": "missing_doc_link"
+    "sourceItemId": "api_endpoint:use-operating-graph:90c17b9387",
+    "risk": "missing_test_link"
   },
   "gaps": [
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /notes has app-completion risk missing_doc_link.",
-      "nextOwner": "Docs Memory Lead + Project Manager",
-      "nextAction": "Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.",
-      "evidence": [
-        "src/app.ts#/notes"
-      ],
-      "sourceItemId": "api_endpoint:use-notes:c833b4443f",
-      "risk": "missing_doc_link"
-    },
     {
       "kind": "app_completion_gap",
       "severity": "medium",

@@ -1,4 +1,14 @@
 # Next Steps
+- 2026-07-16: [LUC-1347](/LUC/issues/LUC-1347) has no remaining documentation
+  action for exact unclassified `src/app.ts#/notes`. The durable packet is
+  `.codex/tasks/luc-1347-prove-unclassified-user-workflow-missing-doc-link-for-use-notes.md`.
+  Current fact: `docs/architecture/relations/documentation-links.csv` links
+  the Notes mount to `docs/API.md`; refreshed app-completion removed
+  `api_endpoint:use-notes:c833b4443f` from the queue; refreshed Project Truth
+  now routes QA to `src/app.ts#/operating-graph` and leaves Docs/Product only
+  on `src/app.ts#/connection`. Do not reopen a Notes docs lane unless a fresh
+  generated `missing_doc_link` regression appears.
+
 - 2026-07-16: [LUC-1345](/LUC/issues/LUC-1345) completed the terminal
   source-control action for the combined
   [LUC-1331](/LUC/issues/LUC-1331),
