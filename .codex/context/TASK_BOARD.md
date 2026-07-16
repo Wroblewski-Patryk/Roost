@@ -1,6 +1,50 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-16: [LUC-1309](/LUC/issues/LUC-1309) completed source-control
+  closure for the [LUC-1307](/LUC/issues/LUC-1307) interactions proof-link
+  packet. Task contract:
+  `.codex/tasks/luc-1309-source-control-closure-for-luc-1307-interactions-proof-link-packet.md`.
+  Evidence: bounded git review kept the dirty set attributable to
+  `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept
+  `src/app.ts#/interactions` clear of `missing_test_link`, moved the same
+  symbol to docs-owned `missing_doc_link`, and kept the next QA-owned routed
+  proof gap on `src/app.ts#/mcp`; `git diff --check` reported only CRLF
+  normalization warnings and no content defects; JSON parse checks passed; and
+  bounded redaction scan found no secret-shaped strings. No deploy, push,
+  restart, or production mutation occurred.
+
+- 2026-07-16: [LUC-1307](/LUC/issues/LUC-1307) unclassified
+  `src/app.ts#/interactions` missing-test-link verification is complete
+  locally. Task contract:
+  `.codex/tasks/luc-1307-prove-unclassified-user-workflow-missing-test-link-for-use-interactions.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  Interactions mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/interactions/interactions.routes.ts`;
+  focused proof PASS after `npm run build`, `npm run prisma:migrate:deploy`,
+  `npm run seed`, and `node --test --test-name-pattern "CompanyCore v1
+  protected API flow" dist/tests/api.test.js` against local PostgreSQL test
+  container `companycore-test-postgres-luc1307` on port `58007`, followed by
+  cleanup; `npm run architecture:refresh` PASS; external architecture-awareness
+  refresh generated `2026-07-16T12:26:20.715Z` with `3076` entities / `8044`
+  relations / `16523` files and materialized the exact proof relation;
+  sequential app-completion refresh now reports `missingTestLink=20`, no
+  longer treats `api_endpoint:use-interactions:eb228af9f5` as
+  `missing_test_link`, and keeps the same symbol only as docs-owned
+  `missing_doc_link`; Project Truth apply generated `2026-07-16T12:26:31.735Z`
+  with public probes `pass` and advances the next QA-owned routed gap to
+  `src/app.ts#/mcp` `missing_test_link` while the first overall routed gap
+  stays on `src/app.ts#/interactions` for Docs Memory Lead + Project Manager.
+  `npm run architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue
+  `0`, chain worklist `0`). No runtime product logic, provider call, deploy,
+  push, restart, production mutation, credential access, or secret disclosure
+  occurred. Next owner: Docs Memory Lead + Project Manager for the same-symbol
+  docs gap on `src/app.ts#/interactions`; the next QA proof lane is
+  `src/app.ts#/mcp`. Source-control closure completed in
+  [LUC-1309](/LUC/issues/LUC-1309).
+
 - 2026-07-16: [LUC-1304](/LUC/issues/LUC-1304) completed source-control
   closure for the [LUC-1296](/LUC/issues/LUC-1296) intake doc-link packet.
   Evidence: bounded git review kept the dirty set attributable to

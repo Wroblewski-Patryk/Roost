@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-16T11:35:41.675Z",
+  "generatedAt": "2026-07-16T12:26:27.488Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -8,8 +8,8 @@
     "items": 46,
     "flows": 4,
     "needsBrowserReview": 0,
-    "missingTestLink": 21,
-    "missingDocLink": 1,
+    "missingTestLink": 20,
+    "missingDocLink": 2,
     "implementedNeedsProof": 0,
     "blocked": 0,
     "riskItems": 22,
@@ -43,10 +43,11 @@
       "total": 35,
       "risks": {
         "ok": 15,
-        "missing_test_link": 20
+        "missing_doc_link": 1,
+        "missing_test_link": 19
       },
       "gates": {
-        "auth": 12
+        "auth": 13
       }
     },
     {
@@ -70,17 +71,19 @@
       "name": "USE /interactions",
       "path": "src/app.ts#/interactions",
       "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
+      "status": "verified",
       "userFlow": "Unclassified user workflow",
-      "gates": [],
+      "gates": [
+        "auth"
+      ],
       "evidence": {
-        "hasTest": false,
+        "hasTest": true,
         "hasDoc": false,
         "needsBrowserProof": false,
         "needsScreenshotReview": false
       },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
+      "relatedEntityCount": 5,
+      "risk": "missing_doc_link"
     },
     {
       "id": "api_endpoint:use-mcp:3055a10566",

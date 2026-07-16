@@ -1,3 +1,49 @@
+# 2026-07-16 LUC-1309 Interactions Proof-Link Closure Health Signal
+
+- Status: source-control closure for the routed interactions proof-link packet
+  is complete locally.
+- Evidence: [LUC-1309](/LUC/issues/LUC-1309) task packet
+  `.codex/tasks/luc-1309-source-control-closure-for-luc-1307-interactions-proof-link-packet.md`;
+  bounded git review kept the packet attributable to `.codex/tasks`,
+  `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept
+  `src/app.ts#/interactions` clear of `missing_test_link` and routed the next
+  QA-owned proof gap to `src/app.ts#/mcp`; `git diff --check` reported only
+  CRLF normalization warnings and no content defects; JSON parse checks
+  passed; bounded redaction scan found no secret-shaped strings.
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+# 2026-07-16 LUC-1307 Interactions Proof-Link Health Signal
+
+- Status: routed unclassified interactions endpoint proof-link closure is
+  verified locally.
+- Evidence: [LUC-1307](/LUC/issues/LUC-1307) task packet
+  `.codex/tasks/luc-1307-prove-unclassified-user-workflow-missing-test-link-for-use-interactions.md`;
+  `docs/architecture/scanner-overrides.json` now marks
+  `src/app.ts#/interactions` `verified` through the existing protected API suite
+  in `src/tests/api.test.ts` plus
+  `src/modules/interactions/interactions.routes.ts`; focused proof PASS after
+  `npm run build`, `npm run prisma:migrate:deploy`, `npm run seed`, and
+  `node --test --test-name-pattern "CompanyCore v1 protected API flow"
+  dist/tests/api.test.js` against local PostgreSQL test container
+  `companycore-test-postgres-luc1307` on port `58007`, followed by cleanup;
+  `npm run architecture:refresh` PASS; external architecture-awareness rebuild
+  generated `2026-07-16T12:26:20.715Z` with `3076` entities / `8044`
+  relations / `16523` files; app-completion refresh generated `20` missing
+  test links / `2` missing doc links and no longer routes `USE /interactions`
+  as `missing_test_link`, keeping the same symbol only as docs-owned
+  `missing_doc_link`; Project Truth apply generated
+  `2026-07-16T12:26:31.735Z` with public probes `pass` and advanced the next
+  QA-owned routed gap to `src/app.ts#/mcp`; `npm run architecture:status`
+  PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Source-control closure completed in
+  [LUC-1309](/LUC/issues/LUC-1309).
+
 # 2026-07-16 LUC-1296 Intake Doc-Link Health Signal
 
 - Status: routed Account access intake endpoint doc-link closure is verified

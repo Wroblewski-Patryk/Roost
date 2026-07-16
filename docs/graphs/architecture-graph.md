@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-16T11:35:41.653Z
+Generated: 2026-07-16T12:26:20.715Z
 
 ## Canonical Exports
 
@@ -83,7 +83,7 @@ Generated: 2026-07-16T11:35:41.653Z
 | api_endpoint | verified | USE /health | src/app.ts#/health | Engineering Delivery Lead |
 | api_endpoint | verified | USE /intake | src/app.ts#/intake | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /integration-settings | src/app.ts#/integration-settings | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /interactions | src/app.ts#/interactions | Engineering Delivery Lead |
+| api_endpoint | verified | USE /interactions | src/app.ts#/interactions | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /mcp | src/app.ts#/mcp | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /notes | src/app.ts#/notes | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /operating-graph | src/app.ts#/operating-graph | Engineering Delivery Lead |
@@ -645,6 +645,8 @@ Generated: 2026-07-16T11:35:41.653Z
 | connected_to | project:roost:122c92a083 | task:luc-1296-completion-evidence:5eb8811167 | .codex/tasks/luc-1296-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:77784c1c77 | .codex/tasks/luc-1296-prove-account-access-missing-doc-link-for-use-intake.md |
 | connected_to | project:roost:122c92a083 | task:task:0284a99c50 | .codex/tasks/luc-1304-source-control-closure-for-luc-1296-intake-doc-link-packet.md |
+| connected_to | project:roost:122c92a083 | task:luc-1305-closeout:fd93d8fba1 | .codex/tasks/luc-1305-closeout.md |
+| connected_to | project:roost:122c92a083 | task:task:28cea16a09 | .codex/tasks/luc-1307-prove-unclassified-user-workflow-missing-test-link-for-use-interactions.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-07-16T11:35:41.653Z
 | documents | document:luc-2401-source-control-classification-for-luc-261-dirty-docs-state-packet:6d04a28fc2 | module:docs:6784d83cb0 | docs/planning/luc-2401-source-control-classification-for-luc-261-dirty-docs-state-packet.md |
 | documents | document:luc-262-known-state-evidence-and-architecture-baseline:55300c6981 | module:docs:6784d83cb0 | docs/planning/luc-262-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-266-generated-evidence-source-control-closure:16db982bdf | module:docs:6784d83cb0 | docs/planning/luc-266-generated-evidence-source-control-closure.md |
-| documents | document:luc-271-deployment-mode-acceptance-criteria-clarification:f101ba18a7 | module:docs:6784d83cb0 | docs/planning/luc-271-deployment-mode-acceptance-criteria.md |
-| documents | document:luc-2830-known-state-evidence-and-architecture-baseline:5a89e4d6b7 | module:docs:6784d83cb0 | docs/planning/luc-2830-known-state-evidence-and-architecture-baseline.md |

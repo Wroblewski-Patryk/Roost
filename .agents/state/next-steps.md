@@ -1,4 +1,30 @@
 # Next Steps
+- 2026-07-16: [LUC-1309](/LUC/issues/LUC-1309) has no remaining
+  source-control action for the [LUC-1307](/LUC/issues/LUC-1307)
+  interactions proof-link packet. The durable sidecar is
+  `.codex/tasks/luc-1309-source-control-closure-for-luc-1307-interactions-proof-link-packet.md`.
+  Current fact: bounded git review, representative generated readback,
+  `git diff --check`, JSON parse checks, and a bounded redaction scan
+  classified the packet as current/coherent with no unrelated ownership drift.
+  Do not reopen another closure lane for this packet unless a fresh dirty-state
+  regression appears after new work.
+
+- 2026-07-16: [LUC-1307](/LUC/issues/LUC-1307) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/interactions`. The durable packet is
+  `.codex/tasks/luc-1307-prove-unclassified-user-workflow-missing-test-link-for-use-interactions.md`.
+  Current fact: refreshed architecture-awareness marks the exact Interactions
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` and `src/modules/interactions/interactions.routes.ts`;
+  refreshed app-completion no longer routes
+  `api_endpoint:use-interactions:eb228af9f5` as `missing_test_link` and keeps
+  the same symbol only as docs-owned `missing_doc_link`; Project Truth now
+  routes the same symbol to Docs Memory Lead + Project Manager while the next
+  QA-owned proof gap is `src/app.ts#/mcp`. Do not reopen another QA proof lane
+  for `src/app.ts#/interactions` unless a fresh generated regression removes
+  the linked runtime evidence. Source-control closure completed in
+  [LUC-1309](/LUC/issues/LUC-1309).
+
 - 2026-07-16: [LUC-1304](/LUC/issues/LUC-1304) has no remaining
   source-control action for the [LUC-1296](/LUC/issues/LUC-1296) intake
   doc-link packet. The durable sidecar is

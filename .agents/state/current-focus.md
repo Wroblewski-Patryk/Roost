@@ -1,5 +1,44 @@
 # Current Focus
 
+## LUC-1309 Checkpoint
+
+- 2026-07-16: [LUC-1309](/LUC/issues/LUC-1309) completed local
+  source-control closure for the [LUC-1307](/LUC/issues/LUC-1307)
+  interactions proof-link packet. The coherent packet spans `.codex/tasks`,
+  `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; `git diff --check` reported only CRLF normalization
+  warnings and no content defects; JSON parse checks passed; bounded redaction
+  scan found no secret-shaped strings; and the packet no longer needs a
+  closure follow-up. Remaining docs-owned route gaps:
+  `src/app.ts#/interactions` and `src/app.ts#/connection`. Next QA-owned proof
+  gap: `src/app.ts#/mcp`.
+
+## LUC-1307 Checkpoint
+
+- 2026-07-16: [LUC-1307](/LUC/issues/LUC-1307) closed the routed
+  unclassified endpoint `src/app.ts#/interactions` `missing_test_link` row.
+  Packet:
+  `.codex/tasks/luc-1307-prove-unclassified-user-workflow-missing-test-link-for-use-interactions.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Interactions
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/interactions/interactions.routes.ts`;
+  focused proof PASS after `npm run build`, `npm run prisma:migrate:deploy`,
+  `npm run seed`, and `node --test --test-name-pattern "CompanyCore v1
+  protected API flow" dist/tests/api.test.js` against local PostgreSQL test
+  container `companycore-test-postgres-luc1307` on port `58007`, followed by
+  cleanup; external architecture-awareness refresh generated
+  `2026-07-16T12:26:20.715Z` with `3076` entities / `8044` relations /
+  `16523` files; sequential app-completion refresh now reports
+  `missingTestLink=20` and keeps `src/app.ts#/interactions` only as
+  docs-owned `missing_doc_link`; sequential Project Truth apply generated
+  `2026-07-16T12:26:31.735Z` with public probes `pass` and advanced the next
+  QA-owned routed proof gap to `src/app.ts#/mcp` `missing_test_link`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`). Source-control closure
+  completed in [LUC-1309](/LUC/issues/LUC-1309). Remaining docs-owned route
+  gaps: `src/app.ts#/interactions` and `src/app.ts#/connection`. Next QA-owned
+  proof gap: `src/app.ts#/mcp`.
+
 ## LUC-1304 Checkpoint
 
 - 2026-07-16: [LUC-1304](/LUC/issues/LUC-1304) completed local

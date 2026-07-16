@@ -621,6 +621,16 @@
       ]
     },
     {
+      "path": "src/app.ts#/interactions",
+      "status": "verified",
+      "description": "Interactions mount verified through the existing protected API suite coverage for same-workspace POST, GET, PATCH, and DELETE /v1/interactions flows plus foreign-workspace attach denial and list isolation without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/interactions/interactions.routes.ts",
+        ".codex/tasks/luc-1307-prove-unclassified-user-workflow-missing-test-link-for-use-interactions.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/decisions",
       "status": "verified",
       "description": "Decisions mount verified through the existing protected API suite coverage for workspace-scoped POST, GET, PATCH, and DELETE /v1/decisions flows, plus cross-workspace list isolation and emitted decision lifecycle events without changing runtime behavior.",

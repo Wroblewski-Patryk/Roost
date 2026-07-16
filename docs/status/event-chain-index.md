@@ -1,6 +1,6 @@
 # Event Chain Index
 
-Generated: 2026-07-16T11:35:41.708Z
+Generated: 2026-07-16T12:26:31.735Z
 Project: Roost
 
 This index maps user-facing flows to backend, frontend, worker, data, test, and docs entities.
@@ -9,10 +9,10 @@ Incomplete chains: 0/7
 
 | Flow | Status | Frontend | Backend | Worker | Missing | Next owner |
 | --- | --- | ---: | ---: | ---: | --- | --- |
-| Account access | chain_indexed | 30 | 110 | 179 | - | Project Manager |
+| Account access | chain_indexed | 30 | 111 | 182 | - | Project Manager |
 | Dashboard overview | chain_indexed | 15 | 39 | 40 | - | Project Manager |
 | Exchange connection and configuration | chain_indexed | 2 | 4 | 26 | - | Project Manager |
-| Subscription and entitlement | chain_indexed | 48 | 174 | 149 | - | Project Manager |
+| Subscription and entitlement | chain_indexed | 48 | 174 | 150 | - | Project Manager |
 | Trading operation | chain_indexed | 3 | 28 | 53 | - | Project Manager |
-| Unclassified user workflow | chain_indexed | 85 | 566 | 884 | - | Project Manager |
+| Unclassified user workflow | chain_indexed | 85 | 566 | 888 | - | Project Manager |
 | User configuration | chain_indexed | 8 | 24 | 45 | - | Project Manager |
