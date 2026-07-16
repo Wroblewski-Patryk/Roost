@@ -1436,6 +1436,17 @@
       ]
     },
     {
+      "path": ".codex/tasks/luc-1296-prove-account-access-missing-doc-link-for-use-intake.md",
+      "type": "task",
+      "status": "verified",
+      "description": "Verified focused documentation-link closure packet for the Intake route mount, covering the accepted /intake and /v1/intake API contract linkage from app.ts to docs/API.md without runtime behavior changes.",
+      "evidence": [
+        ".codex/tasks/luc-1296-prove-account-access-missing-doc-link-for-use-intake.md",
+        "docs/API.md",
+        "docs/architecture/relations/documentation-links.csv"
+      ]
+    },
+    {
       "path": "src/modules/events/event.service.ts",
       "description": "Event service infrastructure used by audited domain actions; behavior proof belongs to the consuming command routes and event evidence contracts.",
       "evidence": [

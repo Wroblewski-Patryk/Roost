@@ -1,3 +1,26 @@
+# 2026-07-16 LUC-1296 Intake Doc-Link Health Signal
+
+- Status: routed Account access intake endpoint doc-link closure is verified
+  locally.
+- Evidence: [LUC-1296](/LUC/issues/LUC-1296) task packet
+  `.codex/tasks/luc-1296-prove-account-access-missing-doc-link-for-use-intake.md`;
+  `docs/API.md` already documents the protected `/v1/intake` and compatibility
+  `/intake` route family including read-only queue aggregation, route-proposal
+  evidence readback, and proposal-only write boundaries;
+  `docs/architecture/relations/documentation-links.csv` now links
+  `src/app.ts#/intake` to that accepted API contract; `npm run
+  architecture:refresh` PASS; external architecture-awareness rebuild
+  generated `2026-07-15T23:03:16.351Z` with `3072` entities / `8012`
+  relations / `16523` files; app-completion refresh generated
+  `missingTestLink=21` / `missingDocLink=1` and no longer routes `USE /intake`
+  as `missing_doc_link`; Project Truth apply generated
+  `2026-07-15T23:05:05.266Z` with public probes `pass` and advanced the first
+  routed gap to `src/app.ts#/interactions`; `npm run architecture:status`
+  PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`).
+- Runtime/deploy posture: unchanged for this lane. No provider call,
+  protected smoke, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
 # 2026-07-15 LUC-1285 Intake Proof-Link Health Signal
 
 - Status: routed unclassified intake endpoint proof-link closure is verified

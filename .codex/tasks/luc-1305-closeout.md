@@ -1,0 +1,25 @@
+# LUC-1305 Closeout
+
+- Scope: repair the false architecture-scanner `in_progress` classification for `.codex/tasks/luc-1296-prove-account-access-missing-doc-link-for-use-intake.md`.
+- Repo-side fix: expanded the LUC-1296 task packet to the same evidence-rich task-contract shape already recognized by neighboring verified packets, then refreshed the generated architecture/status outputs.
+- Verification:
+  - `npm run architecture:refresh` PASS
+  - `node C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse/scripts/build-architecture-awareness-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost` PASS at `2026-07-16T11:35:41.653Z` with `3074` entities / `8027` relations / `16523` files
+  - `node C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse/scripts/build-app-completion-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost` PASS
+  - `ROOST_PUBLIC_URL=https://roost.luckysparrow.ch ROOST_API_PUBLIC_URL=https://api.roost.luckysparrow.ch node C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse/scripts/build-project-truth-indexes.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost --apply` PASS
+  - `npm run architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`)
+  - `git diff --check -- <changed-scope>` reported only existing CRLF normalization warnings and no content defects
+- Generated proof:
+  - `docs/graphs/architecture-awareness.csv` now classifies `task:task:77784c1c77` as `verified`
+  - `docs/graphs/architecture-proof-register.csv` now classifies `task:task:77784c1c77` as `verified`
+  - `docs/status/project-truth-index.json` still routes the next gap to `src/app.ts#/interactions` `missing_test_link`
+- Docs/state updated:
+  - `.codex/tasks/luc-1296-prove-account-access-missing-doc-link-for-use-intake.md`
+  - `.agents/state/active-mission.md`
+  - `.agents/state/current-focus.md`
+  - `.agents/state/module-confidence-ledger.md`
+  - `.agents/state/next-steps.md`
+  - `.codex/context/PROJECT_STATE.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `docs/planning/mvp-next-commits.md`
+- Residual risk: no remaining scanner-status exception for the LUC-1296 packet. Product follow-up remains on `src/app.ts#/connection` (docs) and `src/app.ts#/interactions` (QA proof).

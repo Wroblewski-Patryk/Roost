@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-15T20:08:12.206Z
+Generated: 2026-07-16T11:35:41.653Z
 
 ## Canonical Exports
 
@@ -49,7 +49,7 @@ Generated: 2026-07-15T20:08:12.206Z
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-15 LUC-1277 Health Doc-Link Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-16 LUC-1296 Intake Doc-Link Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -641,6 +641,10 @@ Generated: 2026-07-15T20:08:12.206Z
 | connected_to | project:roost:122c92a083 | task:task:d9f8ae7c84 | .codex/tasks/luc-1281-source-control-closure-for-luc-1274-health-proof-packet.md |
 | connected_to | project:roost:122c92a083 | task:task:a36fad4d13 | .codex/tasks/luc-1283-source-control-closure-for-luc-1277-health-doc-link-packet.md |
 | connected_to | project:roost:122c92a083 | task:task:50eb4549aa | .codex/tasks/luc-1285-prove-unclassified-user-workflow-missing-test-link-for-use-intake.md |
+| connected_to | project:roost:122c92a083 | task:task:6229f32690 | .codex/tasks/luc-1295-source-control-closure-for-luc-1285-intake-proof-link-packet.md |
+| connected_to | project:roost:122c92a083 | task:luc-1296-completion-evidence:5eb8811167 | .codex/tasks/luc-1296-completion-evidence.md |
+| connected_to | project:roost:122c92a083 | task:task:77784c1c77 | .codex/tasks/luc-1296-prove-account-access-missing-doc-link-for-use-intake.md |
+| connected_to | project:roost:122c92a083 | task:task:0284a99c50 | .codex/tasks/luc-1304-source-control-closure-for-luc-1296-intake-doc-link-packet.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -700,7 +704,7 @@ Generated: 2026-07-15T20:08:12.206Z
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
 | documents | agent:2026-07-15-luc-1226-module-confidence-update:bfb0b6d2f4 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
-| documents | agent:2026-07-15-luc-1277-health-doc-link-health-signal:6c9158c7bf | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-16-luc-1296-intake-doc-link-health-signal:ce0cbee4f8 | module:agents:4ae71ba13a | .agents/state/system-health.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -786,6 +790,7 @@ Generated: 2026-07-15T20:08:12.206Z
 | documents | document:api:a617d1cb61 | module:docs:6784d83cb0 | docs/API.md |
 | documents | document:api:a617d1cb61 | api_endpoint:use-api-build-info:36fe7c3255 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-health:8aa829ec00 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | api_endpoint:use-intake:3c22276373 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-agents:1c136317c6 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-clients:da4494ab5d | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-deals:2ceaef3b27 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
@@ -1213,8 +1218,3 @@ Generated: 2026-07-15T20:08:12.206Z
 | documents | document:luc-266-generated-evidence-source-control-closure:16db982bdf | module:docs:6784d83cb0 | docs/planning/luc-266-generated-evidence-source-control-closure.md |
 | documents | document:luc-271-deployment-mode-acceptance-criteria-clarification:f101ba18a7 | module:docs:6784d83cb0 | docs/planning/luc-271-deployment-mode-acceptance-criteria.md |
 | documents | document:luc-2830-known-state-evidence-and-architecture-baseline:5a89e4d6b7 | module:docs:6784d83cb0 | docs/planning/luc-2830-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-2833-source-control-closure-for-luc-2830-known-state-baseline:d20ac0467d | module:docs:6784d83cb0 | docs/planning/luc-2833-source-control-closure-for-luc-2830-known-state-baseline.md |
-| documents | document:luc-2923-known-state-evidence-and-architecture-baseline:33609075fb | module:docs:6784d83cb0 | docs/planning/luc-2923-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-2927-source-control-closure-for-luc-2923-known-state-baseline:99398b9fe6 | module:docs:6784d83cb0 | docs/planning/luc-2927-source-control-closure-for-luc-2923-known-state-baseline.md |
-| documents | document:luc-3371-roost-companycore-readiness-and-milestone-review:2665af4576 | module:docs:6784d83cb0 | docs/planning/luc-3371-roost-companycore-readiness-and-milestone-review.md |
-| documents | document:luc-3453-roost-companycore-readiness-and-milestone-review:2eb71399b5 | module:docs:6784d83cb0 | docs/planning/luc-3453-roost-companycore-readiness-and-milestone-review.md |

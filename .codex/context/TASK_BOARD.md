@@ -1,6 +1,58 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-16: [LUC-1304](/LUC/issues/LUC-1304) completed source-control
+  closure for the [LUC-1296](/LUC/issues/LUC-1296) intake doc-link packet.
+  Evidence: bounded git review kept the dirty set attributable to
+  `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/relations/documentation-links.csv`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; `git diff --check` reported only CRLF normalization
+  warnings and no content defects; JSON parse checks passed for the changed
+  architecture-awareness, app-completion, and Project Truth indexes; bounded
+  redaction scan found no secret-shaped strings; and the `LUC-1305` scanner
+  repair left `task:task:77784c1c77` classified `verified`, removing the last
+  commit blocker. No deploy, push, restart, or production mutation occurred.
+
+- 2026-07-16: [LUC-1305](/LUC/issues/LUC-1305) repaired the false
+  architecture-scanner `in_progress` classification for the LUC-1296 intake
+  doc-link packet. Evidence: `.codex/tasks/luc-1296-prove-account-access-missing-doc-link-for-use-intake.md`
+  was expanded to the verified task-contract shape already recognized by
+  neighboring packets; `npm run architecture:refresh` PASS; external
+  architecture-awareness rebuild PASS at `2026-07-16T11:35:41.653Z`
+  (`3074` entities / `8027` relations / `16523` files); app-completion rebuild
+  PASS; Project Truth apply PASS; `npm run architecture:status` PASS
+  (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`); refreshed
+  `docs/graphs/architecture-awareness.csv` and
+  `docs/graphs/architecture-proof-register.csv` now classify
+  `task:task:77784c1c77` as `verified`. No deploy, push, restart, or
+  production mutation occurred.
+
+- 2026-07-16: [LUC-1296](/LUC/issues/LUC-1296) Account access
+  `src/app.ts#/intake` missing-doc-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1296-prove-account-access-missing-doc-link-for-use-intake.md`.
+  Evidence: `docs/API.md` already documents the protected `/v1/intake` and
+  compatibility `/intake` route family including read-only queue aggregation,
+  route-proposal evidence readback, and proposal-only write boundaries;
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  Intake mount to that accepted API contract; `npm run architecture:refresh`
+  PASS; external architecture-awareness refresh generated
+  `2026-07-15T23:03:16.351Z` with `3072` entities / `8012` relations /
+  `16523` files and materialized the exact documentation relation; sequential
+  app-completion refresh now reports `missingDocLink=1`, no longer treats
+  `api_endpoint:use-intake:3c22276373` as `missing_doc_link`, and leaves only
+  user-configuration `src/app.ts#/connection` as the remaining docs-owned
+  route gap; Project Truth apply generated `2026-07-15T23:05:05.266Z` with
+  public probes `pass` and advanced the first routed gap to
+  `src/app.ts#/interactions` `missing_test_link`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). No runtime product logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Next owner: Test Automation Engineer + QA Regression Lead for the
+  routed proof gap on `src/app.ts#/interactions`; separate docs follow-up
+  remains `src/app.ts#/connection`.
+
 - 2026-07-16: [LUC-1295](/LUC/issues/LUC-1295) source-control closure for the
   LUC-1285 intake proof-link packet is complete locally. Task contract:
   `.codex/tasks/luc-1295-source-control-closure-for-luc-1285-intake-proof-link-packet.md`.

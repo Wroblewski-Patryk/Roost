@@ -1,5 +1,36 @@
 # MVP Next Commits
 
+- 2026-07-16: [LUC-1305](/LUC/issues/LUC-1305) repaired the false
+  architecture-scanner `in_progress` classification for the LUC-1296 intake
+  doc-link packet. Evidence packet:
+  `.codex/tasks/luc-1296-prove-account-access-missing-doc-link-for-use-intake.md`.
+  Repair result: after normalizing the LUC-1296 task contract shape and
+  rerunning the refresh chain, regenerated architecture outputs now classify
+  `task:task:77784c1c77` as `verified`; `USE /intake` remains clear of
+  `missing_doc_link`, and Project Truth still routes unclassified
+  `src/app.ts#/interactions` as the next proof gap. No provider call,
+  protected smoke, push, deploy, restart, production mutation, credential
+  access, or secret disclosure occurred.
+
+- 2026-07-16: [LUC-1296](/LUC/issues/LUC-1296) completed focused doc-link
+  closure for Account access `src/app.ts#/intake`. Evidence packet:
+  `.codex/tasks/luc-1296-prove-account-access-missing-doc-link-for-use-intake.md`.
+  Documentation linkage: `docs/architecture/relations/documentation-links.csv`
+  now links the exact Intake mount to `docs/API.md`, which already documents
+  the protected `/v1/intake` and compatibility `/intake` route family,
+  read-only queue aggregation, route-proposal evidence readback, and
+  proposal-only write boundaries; `npm run architecture:refresh` PASS;
+  sequential external architecture-awareness refresh generated
+  `2026-07-15T23:03:16.351Z` with `3072` entities / `8012` relations /
+  `16523` files and materialized the exact documentation relation; refreshed
+  app-completion dropped `missingDocLink` from `2` to `1` and no longer
+  reports `api_endpoint:use-intake:3c22276373`; Project Truth apply generated
+  `2026-07-15T23:05:05.266Z` and advanced the first gap to unclassified
+  `src/app.ts#/interactions`; no provider call, protected smoke, push,
+  deploy, restart, production mutation, credential access, or secret
+  disclosure occurred. Next owner: Test Automation Engineer + QA Regression
+  Lead for the routed proof gap on `src/app.ts#/interactions`.
+
 - 2026-07-15: [LUC-1187](/LUC/issues/LUC-1187) completed focused proof-link
   closure for unclassified `src/app.ts#/company-os`. Evidence packet:
   `.codex/tasks/luc-1187-prove-unclassified-user-workflow-missing-test-link-for-use-company-os.md`.

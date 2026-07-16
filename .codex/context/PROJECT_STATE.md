@@ -1,5 +1,64 @@
 # PROJECT_STATE
 
+- 2026-07-16: [LUC-1304](/LUC/issues/LUC-1304) completed source-control
+  closure for the [LUC-1296](/LUC/issues/LUC-1296) intake doc-link packet.
+  Current evidence: the local dirty set stayed current/coherent across
+  `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/relations/documentation-links.csv`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; `git diff --check` reported only CRLF normalization
+  warnings and no content defects; JSON parse checks passed for the changed
+  architecture-awareness, app-completion, and Project Truth indexes; bounded
+  redaction scan found no secret-shaped strings; and the scanner repair from
+  [LUC-1305](/LUC/issues/LUC-1305) moved `task:task:77784c1c77` to
+  `verified`, removing the prior no-commit blocker. No runtime feature logic,
+  provider call, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Deploy impact: none. Push status:
+  not performed in this lane.
+
+- 2026-07-16: [LUC-1305](/LUC/issues/LUC-1305) repaired the false scanner
+  classification for the [LUC-1296](/LUC/issues/LUC-1296) intake doc-link
+  packet. Current evidence: the LUC-1296 task contract was normalized to the
+  same evidence-rich structure used by adjacent verified packets; rerunning
+  `npm run architecture:refresh` plus the external architecture-awareness,
+  app-completion, and Project Truth rebuild chain produced
+  `task:task:77784c1c77` as `verified` in both
+  `docs/graphs/architecture-awareness.csv` and
+  `docs/graphs/architecture-proof-register.csv`; `git diff --check` reported
+  only CRLF normalization warnings and no content defects; JSON parse checks
+  passed for the changed architecture-awareness, app-completion, and Project
+  Truth indexes; bounded redaction scan found no secret-shaped strings. No
+  runtime feature logic, provider call, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Deploy impact:
+  none. Push status: not performed in this lane.
+
+- 2026-07-16: [LUC-1296](/LUC/issues/LUC-1296) completed the local
+  documentation-link closure for Account access `src/app.ts#/intake`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1296-prove-account-access-missing-doc-link-for-use-intake.md`.
+  Current evidence: `docs/API.md` already documents the protected `/v1/intake`
+  alias together with the compatibility `/intake` route family, read-only
+  queue aggregation, route-proposal evidence readback, and proposal-only write
+  boundaries; `docs/architecture/relations/documentation-links.csv` now links
+  the exact `src/app.ts#/intake` mount to that contract; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-15T23:03:16.351Z` with `3072` entities / `8012`
+  relations / `16523` files and materialized the exact documentation
+  relation; sequential app-completion refresh generated
+  `2026-07-15T23:04:56.676Z` with `46` items / `4` flows / `21` missing test
+  links / `1` missing doc link / `0` implemented-needs-proof / `0` blocked /
+  `22` risk items and no longer routes `api_endpoint:use-intake:3c22276373`
+  as `missing_doc_link`; Project Truth apply generated
+  `2026-07-15T23:05:05.266Z` with public probes `pass`, runtime findings `0`,
+  incomplete event chains `0`, operational gate gaps `0`, and advances the
+  first routed gap to `src/app.ts#/interactions` `missing_test_link` while
+  leaving only user-configuration `src/app.ts#/connection` as the remaining
+  docs-owned route gap; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime feature
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Deploy impact: none. Push
+  status: held pending broader batching.
+
 - 2026-07-16: [LUC-1295](/LUC/issues/LUC-1295) completed source-control
   closure for the [LUC-1285](/LUC/issues/LUC-1285) intake proof-link packet.
   Closure contract:

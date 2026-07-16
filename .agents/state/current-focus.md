@@ -1,5 +1,49 @@
 # Current Focus
 
+## LUC-1304 Checkpoint
+
+- 2026-07-16: [LUC-1304](/LUC/issues/LUC-1304) completed local
+  source-control closure for the [LUC-1296](/LUC/issues/LUC-1296) intake
+  doc-link packet. The coherent packet spans `.codex/tasks`,
+  `.codex/context`, `.agents/state`,
+  `docs/architecture/relations/documentation-links.csv`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; `git diff --check` reported only CRLF normalization
+  warnings and no content defects; JSON parse checks passed; bounded redaction
+  scan found no secret-shaped strings; and the `LUC-1305` scanner repair left
+  `task:task:77784c1c77` `verified`, so the packet no longer needs a closure
+  exception. Remaining docs-owned route gap: `src/app.ts#/connection`. Next
+  QA-owned proof gap: `src/app.ts#/interactions`.
+
+## LUC-1305 Checkpoint
+
+- 2026-07-16: [LUC-1305](/LUC/issues/LUC-1305) resolved the scanner-visible
+  task-status drift for the [LUC-1296](/LUC/issues/LUC-1296) intake doc-link
+  packet. After normalizing the LUC-1296 task contract shape and rerunning the
+  architecture/app-completion/Project Truth refresh chain, the generated
+  architecture task entity `task:task:77784c1c77` now scans `verified` rather
+  than `in_progress`. Remaining docs-owned route gap: `src/app.ts#/connection`.
+  Next QA-owned proof gap: `src/app.ts#/interactions`.
+
+## LUC-1296 Checkpoint
+
+- 2026-07-16: [LUC-1296](/LUC/issues/LUC-1296) closed the routed Account
+  access endpoint `src/app.ts#/intake` `missing_doc_link` row. Packet:
+  `.codex/tasks/luc-1296-prove-account-access-missing-doc-link-for-use-intake.md`.
+  `docs/API.md` already documents the protected `/v1/intake`, compatibility
+  `/intake`, route-proposal readback, and proposal-only write boundaries for
+  the Intake route family; `docs/architecture/relations/documentation-links.csv`
+  now links the exact Intake mount to that accepted API contract; external
+  architecture-awareness refresh generated `2026-07-15T23:03:16.351Z` with
+  `3072` entities / `8012` relations / `16523` files; sequential
+  app-completion refresh now reports `missingDocLink=1` and no longer routes
+  `src/app.ts#/intake`; sequential Project Truth apply generated
+  `2026-07-15T23:05:05.266Z` with public probes `pass` and advanced the first
+  routed gap to `src/app.ts#/interactions` `missing_test_link`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`). The remaining docs-owned
+  route gap is `src/app.ts#/connection`, and the next QA-owned proof gap is
+  `src/app.ts#/interactions`.
+
 ## LUC-1295 Checkpoint
 
 - 2026-07-16: [LUC-1295](/LUC/issues/LUC-1295) closed the local dirty packet

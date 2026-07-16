@@ -1,6 +1,6 @@
 flowchart TD
   agent_2026_07_15_luc_1226_module_confidence_update_bfb0b6d2f4["agent: 2026-07-15 LUC-1226 Module Confidence Update"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
-  agent_2026_07_15_luc_1277_health_doc_link_health_signal_6c9158c7bf["agent: 2026-07-15 LUC-1277 Health Doc-Link Health Signal"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
+  agent_2026_07_16_luc_1296_intake_doc_link_health_signal_ce0cbee4f8["agent: 2026-07-16 LUC-1296 Intake Doc-Link Health Signal"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
   agent_active_mission_packet_a0e3255194["agent: Active Mission Packet"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
   agent_agent_checklists_0b1e39f5f6["agent: Agent Checklists"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
   agent_agent_hierarchy_4835752b62["agent: Agent Hierarchy"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
@@ -86,6 +86,7 @@ flowchart TD
   document_api_a617d1cb61["document: API"] -->|documents| module_docs_6784d83cb0["module: docs"]
   document_api_a617d1cb61["document: API"] -->|documents| api_endpoint_use_api_build_info_36fe7c3255["api_endpoint: USE /api/build-info"]
   document_api_a617d1cb61["document: API"] -->|documents| api_endpoint_use_health_8aa829ec00["api_endpoint: USE /health"]
+  document_api_a617d1cb61["document: API"] -->|documents| api_endpoint_use_intake_3c22276373["api_endpoint: USE /intake"]
   document_api_a617d1cb61["document: API"] -->|documents| api_endpoint_use_agents_1c136317c6["api_endpoint: USE /agents"]
   document_api_a617d1cb61["document: API"] -->|documents| api_endpoint_use_clients_da4494ab5d["api_endpoint: USE /clients"]
   document_api_a617d1cb61["document: API"] -->|documents| api_endpoint_use_deals_2ceaef3b27["api_endpoint: USE /deals"]
@@ -218,4 +219,3 @@ flowchart TD
   document_clickup_production_bootstrap_896398f070["document: Clickup Production Bootstrap"] -->|documents| module_docs_6784d83cb0["module: docs"]
   document_clickup_production_bootstrap_e10971a69a["document: ClickUp Production Bootstrap"] -->|documents| module_docs_6784d83cb0["module: docs"]
   document_clickup_shaped_operating_model_plan_fff07f0326["document: ClickUp-Shaped Operating Model Plan"] -->|documents| module_docs_6784d83cb0["module: docs"]
-  document_clickup_sync_d557b99177["document: Clickup.Sync"] -->|documents| module_docs_6784d83cb0["module: docs"]

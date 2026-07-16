@@ -1,4 +1,35 @@
 # Next Steps
+- 2026-07-16: [LUC-1304](/LUC/issues/LUC-1304) has no remaining
+  source-control action for the [LUC-1296](/LUC/issues/LUC-1296) intake
+  doc-link packet. The durable sidecar is
+  `.codex/tasks/luc-1304-source-control-closure-for-luc-1296-intake-doc-link-packet.md`.
+  Current fact: bounded git review, `git diff --check`, JSON parse checks,
+  bounded redaction scan, and the `LUC-1305` scanner repair classified the
+  packet as current/coherent with no remaining commit blocker. Do not reopen
+  another closure lane for this packet unless a fresh dirty-state regression
+  appears after new work.
+
+- 2026-07-16: [LUC-1305](/LUC/issues/LUC-1305) completed the scanner-status
+  repair for the LUC-1296 packet. Current fact: refreshed generated
+  architecture outputs now classify `task:task:77784c1c77` as `verified`, so
+  no further repair lane or closure exception is needed for that packet.
+  Next action: keep follow-up work on the remaining product gaps only:
+  `src/app.ts#/interactions` for QA proof and `src/app.ts#/connection` for
+  docs.
+
+- 2026-07-16: [LUC-1296](/LUC/issues/LUC-1296) has no remaining documentation
+  action for the exact Account access endpoint `src/app.ts#/intake`. The
+  durable packet is
+  `.codex/tasks/luc-1296-prove-account-access-missing-doc-link-for-use-intake.md`.
+  Current fact: refreshed architecture-awareness and documentation-links now
+  link the exact Intake mount to the accepted API contract in `docs/API.md`;
+  refreshed app-completion no longer routes
+  `api_endpoint:use-intake:3c22276373` as `missing_doc_link`; Project Truth
+  now routes the first overall gap to `src/app.ts#/interactions` and leaves
+  the only remaining docs-owned route gap on `src/app.ts#/connection`. Do not
+  reopen another docs lane for `src/app.ts#/intake` unless a fresh generated
+  regression removes the linked contract evidence.
+
 - 2026-07-16: [LUC-1295](/LUC/issues/LUC-1295) has no remaining
   source-control action for the LUC-1285 packet. The durable sidecar is
   `.codex/tasks/luc-1295-source-control-closure-for-luc-1285-intake-proof-link-packet.md`.

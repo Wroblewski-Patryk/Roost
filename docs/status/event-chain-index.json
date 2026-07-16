@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-15T20:08:12.197Z",
+  "generatedAt": "2026-07-16T11:35:41.708Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -11,7 +11,7 @@
     {
       "userFlow": "Account access",
       "entityCount": 367,
-      "linkedRelationCount": 1689,
+      "linkedRelationCount": 1692,
       "layers": {
         "frontend": {
           "count": 30,
@@ -1210,7 +1210,7 @@
               "name": "Task",
               "path": ".codex/tasks/luc-1285-prove-unclassified-user-workflow-missing-test-link-for-use-intake.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:157c1a1016",
@@ -3284,7 +3284,7 @@
     {
       "userFlow": "Subscription and entitlement",
       "entityCount": 1172,
-      "linkedRelationCount": 4126,
+      "linkedRelationCount": 4129,
       "layers": {
         "frontend": {
           "count": 48,
@@ -6307,9 +6307,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-15-luc-1277-health-doc-link-health-signal:6c9158c7bf",
+              "id": "agent:2026-07-15-luc-1285-intake-proof-link-health-signal:7fe2e4d1d4",
               "type": "agent",
-              "name": "2026-07-15 LUC-1277 Health Doc-Link Health Signal",
+              "name": "2026-07-15 LUC-1285 Intake Proof-Link Health Signal",
               "path": ".agents/state/system-health.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -6405,8 +6405,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2930,
-      "linkedRelationCount": 7740,
+      "entityCount": 2932,
+      "linkedRelationCount": 7754,
       "layers": {
         "frontend": {
           "count": 85,
@@ -7330,6 +7330,14 @@
               "status": "verified"
             },
             {
+              "id": "api_endpoint:use-intake:3c22276373",
+              "type": "api_endpoint",
+              "name": "USE /intake",
+              "path": "src/app.ts#/intake",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "api_endpoint:use-agents:1c136317c6",
               "type": "api_endpoint",
               "name": "USE /agents",
@@ -7688,20 +7696,12 @@
               "path": "scripts/check-route-capabilities.mjs",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "function:walk:5bea6a2902",
-              "type": "function",
-              "name": "walk",
-              "path": "scripts/check-route-capabilities.mjs#walk",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 882,
+          "count": 884,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -7893,13 +7893,21 @@
               "name": "Task",
               "path": ".codex/tasks/luc-1285-prove-unclassified-user-workflow-missing-test-link-for-use-intake.md",
               "owner": "Engineering Delivery Lead",
-              "status": "in_progress"
+              "status": "verified"
             },
             {
               "id": "task:task:612815b6ef",
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1160-normalize-luc-1151-task-status-indexing.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:6229f32690",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1295-source-control-closure-for-luc-1285-intake-proof-link-packet.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -8304,6 +8312,14 @@
               "status": "verified"
             },
             {
+              "id": "task:task:77784c1c77",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1296-prove-account-access-missing-doc-link-for-use-intake.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "in_progress"
+            },
+            {
               "id": "task:task:83795f24a5",
               "type": "task",
               "name": "Task",
@@ -8324,22 +8340,6 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-742-account-access-stored-google-drive-secret-doc-link.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:db7795a324",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-617-account-access-google-oauth-client-proof.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:e460cf345a",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-961-source-control-closure-for-luc-959.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             }

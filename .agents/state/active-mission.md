@@ -1,5 +1,59 @@
 # Active Mission Packet
 
+## LUC-1304 Checkpoint
+
+- 2026-07-16: [LUC-1304](/LUC/issues/LUC-1304) completed source-control
+  closure for the [LUC-1296](/LUC/issues/LUC-1296) intake doc-link packet
+  after [LUC-1305](/LUC/issues/LUC-1305) resolved the scanner drift. Bounded
+  git review kept the packet attributable to `.codex/tasks`,
+  `.codex/context`, `.agents/state`,
+  `docs/architecture/relations/documentation-links.csv`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; `git diff --check` reported only CRLF normalization
+  warnings and no content defects; JSON parse checks passed; bounded redaction
+  scan found no secret-shaped strings; and refreshed generated outputs kept
+  `task:task:77784c1c77` at `verified`. Final disposition: done for
+  source-control closure. Remaining product follow-up stays on
+  `src/app.ts#/connection` for docs and `src/app.ts#/interactions` for QA
+  proof.
+
+## LUC-1305 Checkpoint
+
+- 2026-07-16: [LUC-1305](/LUC/issues/LUC-1305) repaired the false scanner
+  classification for the [LUC-1296](/LUC/issues/LUC-1296) intake doc-link
+  packet. The LUC-1296 task contract was expanded to the same evidence-rich
+  structure used by adjacent verified packets, then the refresh chain was
+  rerun: `npm run architecture:refresh` PASS, external architecture-awareness
+  rebuild PASS at `2026-07-16T11:35:41.653Z` (`3074` entities / `8027`
+  relations / `16523` files), app-completion rebuild PASS, Project Truth apply
+  PASS, and `npm run architecture:status` PASS (`GREEN`, `455/769/35`).
+  Generated outputs now classify `task:task:77784c1c77` as `verified` in both
+  `docs/graphs/architecture-awareness.csv` and
+  `docs/graphs/architecture-proof-register.csv`. Final disposition: scanner
+  drift resolved; no closure exception is needed.
+
+## LUC-1296 Checkpoint
+
+- 2026-07-16: [LUC-1296](/LUC/issues/LUC-1296) closed the routed Account
+  access endpoint `src/app.ts#/intake` `missing_doc_link` row. Packet:
+  `.codex/tasks/luc-1296-prove-account-access-missing-doc-link-for-use-intake.md`.
+  `docs/API.md` already documents the protected `/v1/intake` and compatibility
+  `/intake` route family, read-only queue aggregation, route-proposal
+  evidence readback, and proposal-only write boundaries;
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  Intake mount to that accepted API contract; external architecture-awareness
+  refresh generated `2026-07-15T23:03:16.351Z` with `3072` entities / `8012`
+  relations / `16523` files; sequential app-completion refresh generated
+  `2026-07-15T23:04:56.676Z` with `missingDocLink=1` and no longer routes
+  `src/app.ts#/intake`; sequential Project Truth apply generated
+  `2026-07-15T23:05:05.266Z` with public probes `pass` and advanced the first
+  routed gap to `src/app.ts#/interactions` `missing_test_link`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`). No runtime feature logic,
+  provider call, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Final disposition: `done`. Remaining
+  docs-owned route gap: `src/app.ts#/connection`. Next QA-owned proof gap:
+  `src/app.ts#/interactions`.
+
 ## LUC-1295 Checkpoint
 
 - 2026-07-16: [LUC-1295](/LUC/issues/LUC-1295) classified the LUC-1285 local

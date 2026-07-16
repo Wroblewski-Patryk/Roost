@@ -1,0 +1,22 @@
+{
+  "summary": "Repaired the false architecture-scanner in_progress classification for the LUC-1296 intake doc-link packet and verified regenerated outputs now mark task:task:77784c1c77 as verified.",
+  "riskLevel": "standard",
+  "testEvidence": {
+    "summary": "Architecture refresh, external architecture-awareness rebuild, app-completion rebuild, Project Truth apply, architecture status, and diff-check all passed for the scoped repair.",
+    "refs": [
+      { "kind": "request_comment", "label": "LUC-1305 closeout" }
+    ]
+  },
+  "reviewEvidence": {
+    "summary": "Reviewed regenerated architecture-awareness and proof-register outputs to confirm task:task:77784c1c77 now scans verified instead of in_progress.",
+    "refs": [
+      { "kind": "request_comment", "label": "LUC-1305 closeout" }
+    ]
+  },
+  "documentationEvidence": {
+    "summary": "Updated the LUC-1296 task packet and the relevant repo source-of-truth state files to remove the stale blocked narrative and record the repaired scanner status.",
+    "refs": [
+      { "kind": "request_comment", "label": "LUC-1305 closeout" }
+    ]
+  }
+}

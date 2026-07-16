@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-15T20:08:12.198Z",
+  "generatedAt": "2026-07-16T11:35:41.675Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -9,12 +9,12 @@
     "flows": 4,
     "needsBrowserReview": 0,
     "missingTestLink": 21,
-    "missingDocLink": 2,
+    "missingDocLink": 1,
     "implementedNeedsProof": 0,
     "blocked": 0,
-    "riskItems": 23,
-    "appCompletionRiskItems": 23,
-    "priorityReviewItems": 23,
+    "riskItems": 22,
+    "appCompletionRiskItems": 22,
+    "priorityReviewItems": 22,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": false
   },
@@ -23,8 +23,7 @@
       "userFlow": "Account access",
       "total": 8,
       "risks": {
-        "ok": 7,
-        "missing_doc_link": 1
+        "ok": 8
       },
       "gates": {
         "auth": 8,
@@ -64,27 +63,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "api_endpoint:use-intake:3c22276373",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /intake",
-      "path": "src/app.ts#/intake",
-      "owner": "Engineering Delivery Lead",
-      "status": "verified",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 5,
-      "risk": "missing_doc_link"
-    },
     {
       "id": "api_endpoint:use-interactions:eb228af9f5",
       "type": "api_endpoint",
