@@ -1,4 +1,17 @@
 # Next Steps
+- 2026-07-16: [LUC-1326](/LUC/issues/LUC-1326) has no remaining
+  documentation action for the exact Account access endpoint
+  `src/app.ts#/mcp`. The durable packet is
+  `.codex/tasks/luc-1326-prove-account-access-missing-doc-link-for-use-mcp.md`.
+  Current fact: refreshed architecture-awareness and documentation-links now
+  link the exact MCP mount to the accepted `docs/API.md` MCP manifest
+  contract; refreshed app-completion no longer routes
+  `api_endpoint:use-mcp:3055a10566` as `missing_doc_link`; Project Truth now
+  routes the first overall gap to `src/app.ts#/notes` and leaves the only
+  remaining docs-owned route gap on `src/app.ts#/connection`. Do not reopen
+  another docs lane for `src/app.ts#/mcp` unless a fresh generated regression
+  removes the linked contract evidence.
+
 - 2026-07-16: [LUC-1321](/LUC/issues/LUC-1321) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint
   `src/app.ts#/mcp`. The durable packet is

@@ -1,5 +1,27 @@
 # Active Mission Packet
 
+## LUC-1326 Checkpoint
+
+- 2026-07-16: [LUC-1326](/LUC/issues/LUC-1326) closed the routed Account
+  access endpoint `src/app.ts#/mcp` `missing_doc_link` row. Packet:
+  `.codex/tasks/luc-1326-prove-account-access-missing-doc-link-for-use-mcp.md`.
+  `docs/architecture/relations/documentation-links.csv` now links the exact
+  MCP mount to `docs/API.md`, and `docs/API.md` now explicitly states that
+  `/v1/mcp/manifest` and `/mcp/manifest` are protected workspace-scoped
+  `mcp:read` bridge metadata routes with capability filtering and CompanyCore
+  HTTP-only access; external architecture-awareness refresh generated
+  `2026-07-16T15:30:01.227Z` with `3084` entities / `8103` relations /
+  `16524` files; sequential app-completion refresh generated `missingTestLink=19`
+  and `missingDocLink=1`, no longer routes `src/app.ts#/mcp`, and leaves the
+  only remaining docs-owned route gap on `src/app.ts#/connection`; sequential
+  Project Truth apply generated `2026-07-16T15:30:01.362Z` with public probes
+  `pass` and advanced the first routed gap to `src/app.ts#/notes`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). No runtime feature logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Final disposition: `done` for the docs proof lane. Source-control
+  closure is delegated to [LUC-1328](/LUC/issues/LUC-1328).
+
 ## LUC-1321 Checkpoint
 
 - 2026-07-16: [LUC-1321](/LUC/issues/LUC-1321) closed the routed

@@ -1,6 +1,30 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-16: [LUC-1326](/LUC/issues/LUC-1326) Account access
+  `src/app.ts#/mcp` missing-doc-link verification is complete locally. Task
+  contract:
+  `.codex/tasks/luc-1326-prove-account-access-missing-doc-link-for-use-mcp.md`.
+  Evidence: `docs/architecture/relations/documentation-links.csv` now links
+  the exact MCP mount to `docs/API.md`; `docs/API.md` explicitly documents the
+  protected `/v1/mcp/manifest` and compatibility `/mcp/manifest` route family
+  as workspace-scoped `mcp:read` bridge metadata routes with capability
+  filtering and CompanyCore HTTP-only access; `npm run architecture:refresh`
+  PASS; external architecture-awareness rebuild generated
+  `2026-07-16T15:30:01.227Z` with `3084` entities / `8103` relations /
+  `16524` files and materialized the exact documentation relation; sequential
+  app-completion refresh now reports `missingDocLink=1`, no longer treats
+  `api_endpoint:use-mcp:3055a10566` as `missing_doc_link`, and leaves
+  `src/app.ts#/connection` as the only remaining docs-owned route gap; Project
+  Truth apply generated `2026-07-16T15:30:01.362Z` with public probes `pass`
+  and advances the first routed gap to `src/app.ts#/notes`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime product
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Next owner: Test
+  Automation Engineer + QA Regression Lead for the routed proof gap on
+  `src/app.ts#/notes`; separate docs follow-up remains `src/app.ts#/connection`.
+
 - 2026-07-16: [LUC-1321](/LUC/issues/LUC-1321) unclassified `src/app.ts#/mcp`
   missing-test-link verification is complete locally. Task contract:
   `.codex/tasks/luc-1321-prove-unclassified-user-workflow-missing-test-link-for-use-mcp.md`.

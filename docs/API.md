@@ -795,6 +795,13 @@ GET /v1/mcp/manifest
 GET /mcp/manifest
 ```
 
+The MCP manifest is a protected workspace-scoped read route. Both
+`/v1/mcp/manifest` and the compatibility `/mcp/manifest` alias require an API
+key with `mcp:read`, return only the tools allowed by the caller's effective
+capabilities, and expose bridge metadata only. MCP clients and bridge servers
+must call the advertised CompanyCore HTTP routes instead of reading PostgreSQL,
+provider tokens, or other backend internals directly.
+
 ## Commercial Exceptions
 
 `GET /v1/commercial-exceptions` is the protected read-only Sales/Finance

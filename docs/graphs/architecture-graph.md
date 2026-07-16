@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-16T15:07:53.859Z
+Generated: 2026-07-16T15:30:01.227Z
 
 ## Canonical Exports
 
@@ -42,14 +42,14 @@ Generated: 2026-07-16T15:07:53.859Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-15 LUC-1226 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-16 LUC-1321 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-16 LUC-1309 Interactions Proof-Link Closure Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-16 LUC-1321 MCP Proof-Link Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -651,6 +651,9 @@ Generated: 2026-07-16T15:07:53.859Z
 | connected_to | project:roost:122c92a083 | task:luc-1312-completion-evidence:cf52da37f0 | .codex/tasks/luc-1312-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:b7673d1487 | .codex/tasks/luc-1312-prove-unclassified-user-workflow-missing-doc-link-for-use-interactions.md |
 | connected_to | project:roost:122c92a083 | task:task:4eb999ffe9 | .codex/tasks/luc-1321-prove-unclassified-user-workflow-missing-test-link-for-use-mcp.md |
+| connected_to | project:roost:122c92a083 | task:task:d6ae16976f | .codex/tasks/luc-1324-source-control-closure-for-luc-1321-mcp-proof-link-packet.md |
+| connected_to | project:roost:122c92a083 | task:luc-1326-completion-evidence:a044857f4e | .codex/tasks/luc-1326-completion-evidence.md |
+| connected_to | project:roost:122c92a083 | task:task:689aaedcdf | .codex/tasks/luc-1326-prove-account-access-missing-doc-link-for-use-mcp.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -709,8 +712,8 @@ Generated: 2026-07-16T15:07:53.859Z
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
-| documents | agent:2026-07-15-luc-1226-module-confidence-update:bfb0b6d2f4 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
-| documents | agent:2026-07-16-luc-1309-interactions-proof-link-closure-health-signal:a5d16f6cb8 | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-16-luc-1321-mcp-proof-link-health-signal:8e2db9b60f | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-16-luc-1321-module-confidence-update:0ff6af4386 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -805,6 +808,7 @@ Generated: 2026-07-16T15:07:53.859Z
 | documents | document:api:a617d1cb61 | api_endpoint:use-events:679c33c90e | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-goals:da30547c55 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-interactions:eb228af9f5 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | api_endpoint:use-mcp:3055a10566 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:b3f790a259 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:8f0ce27a64 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:requireuserauth:215e610fd9 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
@@ -1214,7 +1218,3 @@ Generated: 2026-07-16T15:07:53.859Z
 | documents | document:luc-1808-known-state-evidence-and-architecture-baseline:0ca23d812b | module:docs:6784d83cb0 | docs/planning/luc-1808-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-1815-known-state-evidence-and-architecture-baseline:12fde20414 | module:docs:6784d83cb0 | docs/planning/luc-1815-known-state-evidence-and-architecture-baseline.md |
 | documents | document:luc-183-readiness-scan-note-preparation-only-non-mutating:f06e6aa7cb | module:docs:6784d83cb0 | docs/planning/luc-183-intake-readiness-scan-note.md |
-| documents | document:luc-186-legacy-docs-deletion-churn-triage-read-only:ecf1c8a2cd | module:docs:6784d83cb0 | docs/planning/luc-186-legacy-docs-deletion-churn-triage.md |
-| documents | document:luc-187-canonical-docs-root-pin-and-takeover-handoff-preparation:96aa64c52d | module:docs:6784d83cb0 | docs/planning/luc-187-canonical-docs-root-and-takeover-handoff.md |
-| documents | document:luc-190-activation-readiness-review-after-scm-cleanup:72fd11995b | module:docs:6784d83cb0 | docs/planning/luc-190-activation-readiness-review-after-scm-cleanup.md |
-| documents | document:luc-22-roost-local-architecture-and-repo-preflight:4a5f2e74a4 | module:docs:6784d83cb0 | docs/planning/luc-22-roost-local-architecture-and-repo-preflight.md |

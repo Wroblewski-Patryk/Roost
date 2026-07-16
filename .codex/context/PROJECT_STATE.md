@@ -1,5 +1,31 @@
 # PROJECT_STATE
 
+- 2026-07-16: [LUC-1326](/LUC/issues/LUC-1326) completed the local
+  missing-doc-link closure for Account access `src/app.ts#/mcp`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1326-prove-account-access-missing-doc-link-for-use-mcp.md`.
+  Current evidence: `docs/architecture/relations/documentation-links.csv` now
+  links the exact MCP mount to `docs/API.md`; `docs/API.md` explicitly
+  documents the protected `/v1/mcp/manifest` plus compatibility
+  `/mcp/manifest` route family as workspace-scoped `mcp:read` bridge metadata
+  routes with capability filtering and CompanyCore HTTP-only access; `npm run
+  architecture:refresh` PASS; external architecture-awareness rebuild
+  generated `2026-07-16T15:30:01.227Z` with `3084` entities / `8103`
+  relations / `16524` files and materialized the exact documentation
+  relation; sequential app-completion refresh now reports `46` items / `4`
+  flows / `19` missing test links / `1` missing doc link / `0`
+  implemented-needs-proof / `0` blocked / `20` risk items, no longer routes
+  `api_endpoint:use-mcp:3055a10566` as `missing_doc_link`, and leaves the
+  only docs-owned route gap on `src/app.ts#/connection`; Project Truth apply
+  generated `2026-07-16T15:30:01.362Z` with public probes `pass`, runtime
+  findings `0`, incomplete event chains `0`, operational gate gaps `0`, and
+  advances the first routed gap to `src/app.ts#/notes` `missing_test_link`;
+  `npm run architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue
+  `0`, chain worklist `0`). No runtime feature logic, provider call, deploy,
+  push, restart, production mutation, credential access, or secret disclosure
+  occurred. Deploy impact: none. Push status: held pending source-control
+  closure in [LUC-1328](/LUC/issues/LUC-1328).
+
 - 2026-07-16: [LUC-1321](/LUC/issues/LUC-1321) completed the local
   missing-test-link closure for unclassified `src/app.ts#/mcp`.
   Source-of-truth task packet:

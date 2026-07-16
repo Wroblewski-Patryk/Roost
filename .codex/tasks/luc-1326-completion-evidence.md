@@ -1,0 +1,36 @@
+# LUC-1326 Completion Evidence
+
+- Issue: [LUC-1326](/LUC/issues/LUC-1326)
+- Scope: close the Account access `src/app.ts#/mcp` `missing_doc_link` gap by linking the exact route mount to the accepted MCP API contract.
+- Files changed:
+  - `docs/API.md`
+  - `docs/architecture/relations/documentation-links.csv`
+  - `.codex/tasks/luc-1326-prove-account-access-missing-doc-link-for-use-mcp.md`
+  - `.codex/tasks/luc-1326-completion-evidence.md`
+  - generated `docs/graphs/*`
+  - generated `docs/status/*`
+  - `.agents/state/active-mission.md`
+  - `.agents/state/next-steps.md`
+  - `.agents/state/module-confidence-ledger.md`
+  - `.codex/context/TASK_BOARD.md`
+  - `.codex/context/PROJECT_STATE.md`
+- Documentation evidence:
+  - `docs/API.md` now explicitly documents that `GET /v1/mcp/manifest` and `GET /mcp/manifest` are protected workspace-scoped capability-filtered bridge metadata routes gated by `mcp:read`.
+  - `docs/architecture/relations/documentation-links.csv` now links `src/app.ts#/mcp` directly to that accepted API contract.
+- Validation commands:
+  - `npm run architecture:refresh`
+  - `node C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse/scripts/build-architecture-awareness-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost`
+  - `node C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse/scripts/build-app-completion-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost`
+  - `ROOST_PUBLIC_URL=https://roost.luckysparrow.ch ROOST_API_PUBLIC_URL=https://api.roost.luckysparrow.ch node C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse/scripts/build-project-truth-indexes.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost --apply`
+  - `npm run architecture:status`
+- Expected verified outcome:
+  - architecture-awareness materializes the exact `documents` relation for `src/app.ts#/mcp`
+  - app-completion no longer reports `api_endpoint:use-mcp:3055a10566` as `missing_doc_link`
+  - Project Truth advances the first routed gap to `src/app.ts#/notes` `missing_test_link`
+  - `src/app.ts#/connection` remains the only docs-owned route gap
+- Runtime/deploy impact: none
+- Residual risk:
+  - no runtime behavior was changed
+  - missing-test-link debt remains broad and continues with `src/app.ts#/notes`
+  - Documentation Steward follow-up remains only for `src/app.ts#/connection`
+  - source-control closure remains open in [LUC-1328](/LUC/issues/LUC-1328)

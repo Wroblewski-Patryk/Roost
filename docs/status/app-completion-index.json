@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-16T15:07:56.282Z",
+  "generatedAt": "2026-07-16T15:30:01.355Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -9,12 +9,12 @@
     "flows": 4,
     "needsBrowserReview": 0,
     "missingTestLink": 19,
-    "missingDocLink": 2,
+    "missingDocLink": 1,
     "implementedNeedsProof": 0,
     "blocked": 0,
-    "riskItems": 21,
-    "appCompletionRiskItems": 21,
-    "priorityReviewItems": 21,
+    "riskItems": 20,
+    "appCompletionRiskItems": 20,
+    "priorityReviewItems": 20,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": false
   },
@@ -23,8 +23,7 @@
       "userFlow": "Account access",
       "total": 9,
       "risks": {
-        "ok": 8,
-        "missing_doc_link": 1
+        "ok": 9
       },
       "gates": {
         "auth": 9,
@@ -64,27 +63,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "api_endpoint:use-mcp:3055a10566",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /mcp",
-      "path": "src/app.ts#/mcp",
-      "owner": "Engineering Delivery Lead",
-      "status": "verified",
-      "userFlow": "Account access",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 5,
-      "risk": "missing_doc_link"
-    },
     {
       "id": "api_endpoint:use-notes:c833b4443f",
       "type": "api_endpoint",
