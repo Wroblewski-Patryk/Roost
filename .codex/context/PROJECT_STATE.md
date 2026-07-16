@@ -1,5 +1,30 @@
 # PROJECT_STATE
 
+- 2026-07-16: [LUC-1312](/LUC/issues/LUC-1312) completed the local
+  missing-doc-link closure for unclassified `src/app.ts#/interactions`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1312-prove-unclassified-user-workflow-missing-doc-link-for-use-interactions.md`.
+  Current evidence: `docs/architecture/relations/documentation-links.csv` now
+  links the exact Interactions mount to `docs/API.md`; the accepted API
+  contract already documents the protected `/v1/interactions` plus
+  compatibility `/interactions` route family; `npm run architecture:refresh`
+  PASS; external architecture-awareness rebuild generated
+  `2026-07-16T14:23:39.591Z` with `3079` entities / `8065` relations /
+  `16523` files and materialized the exact documentation relation; sequential
+  app-completion refresh now reports `46` items / `4` flows / `20` missing
+  test links / `1` missing doc link / `0` implemented-needs-proof / `0`
+  blocked / `21` risk items, no longer routes
+  `api_endpoint:use-interactions:eb228af9f5` as `missing_doc_link`, and leaves
+  the first overall routed gap on `src/app.ts#/mcp` `missing_test_link`;
+  Project Truth apply generated `2026-07-16T14:24:07.447Z` with public probes
+  `pass`, runtime findings `0`, incomplete event chains `0`, operational gate
+  gaps `0`, and leaves `src/app.ts#/connection` as the only remaining
+  docs-owned route gap; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime feature
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Deploy impact: none. Push
+  status: held pending broader batching.
+
 - 2026-07-16: [LUC-1309](/LUC/issues/LUC-1309) completed source-control
   closure for the [LUC-1307](/LUC/issues/LUC-1307) interactions proof-link
   packet. Closure contract:

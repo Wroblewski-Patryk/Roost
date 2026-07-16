@@ -1,4 +1,17 @@
 # Next Steps
+- 2026-07-16: [LUC-1312](/LUC/issues/LUC-1312) has no remaining
+  documentation action for the exact unclassified endpoint
+  `src/app.ts#/interactions`. The durable packet is
+  `.codex/tasks/luc-1312-prove-unclassified-user-workflow-missing-doc-link-for-use-interactions.md`.
+  Current fact: refreshed architecture-awareness and documentation-links now
+  link the exact Interactions mount to the accepted API contract in
+  `docs/API.md`; refreshed app-completion no longer routes
+  `api_endpoint:use-interactions:eb228af9f5` as `missing_doc_link`; Project
+  Truth now routes the first overall gap to `src/app.ts#/mcp` and leaves the
+  only remaining docs-owned route gap on `src/app.ts#/connection`. Do not
+  reopen another docs lane for `src/app.ts#/interactions` unless a fresh
+  generated regression removes the linked contract evidence.
+
 - 2026-07-16: [LUC-1309](/LUC/issues/LUC-1309) has no remaining
   source-control action for the [LUC-1307](/LUC/issues/LUC-1307)
   interactions proof-link packet. The durable sidecar is

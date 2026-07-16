@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-16T12:26:20.715Z
+Generated: 2026-07-16T14:26:52.452Z
 
 ## Canonical Exports
 
@@ -49,7 +49,7 @@ Generated: 2026-07-16T12:26:20.715Z
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-16 LUC-1296 Intake Doc-Link Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-16 LUC-1309 Interactions Proof-Link Closure Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -647,6 +647,9 @@ Generated: 2026-07-16T12:26:20.715Z
 | connected_to | project:roost:122c92a083 | task:task:0284a99c50 | .codex/tasks/luc-1304-source-control-closure-for-luc-1296-intake-doc-link-packet.md |
 | connected_to | project:roost:122c92a083 | task:luc-1305-closeout:fd93d8fba1 | .codex/tasks/luc-1305-closeout.md |
 | connected_to | project:roost:122c92a083 | task:task:28cea16a09 | .codex/tasks/luc-1307-prove-unclassified-user-workflow-missing-test-link-for-use-interactions.md |
+| connected_to | project:roost:122c92a083 | task:task:78030d7e0e | .codex/tasks/luc-1309-source-control-closure-for-luc-1307-interactions-proof-link-packet.md |
+| connected_to | project:roost:122c92a083 | task:luc-1312-completion-evidence:cf52da37f0 | .codex/tasks/luc-1312-completion-evidence.md |
+| connected_to | project:roost:122c92a083 | task:task:b7673d1487 | .codex/tasks/luc-1312-prove-unclassified-user-workflow-missing-doc-link-for-use-interactions.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -706,7 +709,7 @@ Generated: 2026-07-16T12:26:20.715Z
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
 | documents | agent:2026-07-15-luc-1226-module-confidence-update:bfb0b6d2f4 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
-| documents | agent:2026-07-16-luc-1296-intake-doc-link-health-signal:ce0cbee4f8 | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-16-luc-1309-interactions-proof-link-closure-health-signal:a5d16f6cb8 | module:agents:4ae71ba13a | .agents/state/system-health.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -800,6 +803,7 @@ Generated: 2026-07-16T12:26:20.715Z
 | documents | document:api:a617d1cb61 | api_endpoint:use-departments:876f72fd71 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-events:679c33c90e | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-goals:da30547c55 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | api_endpoint:use-interactions:eb228af9f5 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:b3f790a259 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:8f0ce27a64 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:requireuserauth:215e610fd9 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
@@ -1214,7 +1218,3 @@ Generated: 2026-07-16T12:26:20.715Z
 | documents | document:luc-190-activation-readiness-review-after-scm-cleanup:72fd11995b | module:docs:6784d83cb0 | docs/planning/luc-190-activation-readiness-review-after-scm-cleanup.md |
 | documents | document:luc-22-roost-local-architecture-and-repo-preflight:4a5f2e74a4 | module:docs:6784d83cb0 | docs/planning/luc-22-roost-local-architecture-and-repo-preflight.md |
 | documents | document:luc-2362-dirty-state-context-docs-classification:45e28d0a3a | module:docs:6784d83cb0 | docs/planning/luc-2362-dirty-state-context-docs-classification.md |
-| documents | document:luc-24-roost-bounded-local-route-api-evidence-slice:0984f9f859 | module:docs:6784d83cb0 | docs/planning/luc-24-roost-bounded-local-route-api-evidence-slice.md |
-| documents | document:luc-2401-source-control-classification-for-luc-261-dirty-docs-state-packet:6d04a28fc2 | module:docs:6784d83cb0 | docs/planning/luc-2401-source-control-classification-for-luc-261-dirty-docs-state-packet.md |
-| documents | document:luc-262-known-state-evidence-and-architecture-baseline:55300c6981 | module:docs:6784d83cb0 | docs/planning/luc-262-known-state-evidence-and-architecture-baseline.md |
-| documents | document:luc-266-generated-evidence-source-control-closure:16db982bdf | module:docs:6784d83cb0 | docs/planning/luc-266-generated-evidence-source-control-closure.md |

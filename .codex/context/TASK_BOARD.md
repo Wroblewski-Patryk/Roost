@@ -1,6 +1,29 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-16: [LUC-1312](/LUC/issues/LUC-1312) unclassified
+  `src/app.ts#/interactions` missing-doc-link verification is complete
+  locally. Task contract:
+  `.codex/tasks/luc-1312-prove-unclassified-user-workflow-missing-doc-link-for-use-interactions.md`.
+  Evidence: `docs/architecture/relations/documentation-links.csv` now links
+  the exact Interactions mount to `docs/API.md`; the accepted API contract
+  already covers the protected `/v1/interactions` route family and the
+  compatibility `/interactions` aliases; `npm run architecture:refresh` PASS;
+  external architecture-awareness rebuild generated `2026-07-16T14:23:39.591Z`
+  with `3079` entities / `8065` relations / `16523` files and materialized the
+  exact documentation relation; sequential app-completion refresh now reports
+  `missingDocLink=1`, no longer treats
+  `api_endpoint:use-interactions:eb228af9f5` as `missing_doc_link`, and keeps
+  the first overall routed gap on `src/app.ts#/mcp` as QA-owned
+  `missing_test_link`; Project Truth apply generated `2026-07-16T14:24:07.447Z`
+  with public probes `pass` and leaves `src/app.ts#/connection` as the only
+  remaining docs-owned route gap. `npm run architecture:status` PASS
+  (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime
+  product logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Next owner: Test
+  Automation Engineer + QA Regression Lead for the routed proof gap on
+  `src/app.ts#/mcp`; separate docs follow-up remains `src/app.ts#/connection`.
+
 - 2026-07-16: [LUC-1309](/LUC/issues/LUC-1309) completed source-control
   closure for the [LUC-1307](/LUC/issues/LUC-1307) interactions proof-link
   packet. Task contract:

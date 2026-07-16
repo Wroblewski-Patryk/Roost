@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-16T12:26:27.488Z",
+  "generatedAt": "2026-07-16T14:26:52.446Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -9,12 +9,12 @@
     "flows": 4,
     "needsBrowserReview": 0,
     "missingTestLink": 20,
-    "missingDocLink": 2,
+    "missingDocLink": 1,
     "implementedNeedsProof": 0,
     "blocked": 0,
-    "riskItems": 22,
-    "appCompletionRiskItems": 22,
-    "priorityReviewItems": 22,
+    "riskItems": 21,
+    "appCompletionRiskItems": 21,
+    "priorityReviewItems": 21,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": false
   },
@@ -42,8 +42,7 @@
       "userFlow": "Unclassified user workflow",
       "total": 35,
       "risks": {
-        "ok": 15,
-        "missing_doc_link": 1,
+        "ok": 16,
         "missing_test_link": 19
       },
       "gates": {
@@ -64,27 +63,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "api_endpoint:use-interactions:eb228af9f5",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /interactions",
-      "path": "src/app.ts#/interactions",
-      "owner": "Engineering Delivery Lead",
-      "status": "verified",
-      "userFlow": "Unclassified user workflow",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 5,
-      "risk": "missing_doc_link"
-    },
     {
       "id": "api_endpoint:use-mcp:3055a10566",
       "type": "api_endpoint",

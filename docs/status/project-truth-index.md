@@ -1,6 +1,6 @@
 # Project Truth Index
 
-Generated: 2026-07-16T12:26:31.735Z
+Generated: 2026-07-16T14:26:52.458Z
 Project: Roost
 Status: gaps_require_routing
 
@@ -13,26 +13,25 @@ This is the routing surface agents should use before guessing whether an app wor
 | incompleteEventChains | 0 |
 | runtimeFindings | 0 |
 | criticalRuntimeFindings | 0 |
-| appCompletionGaps | 22 |
-| indexedAppCompletionGaps | 22 |
-| knownAppCompletionRiskItems | 22 |
-| appCompletionPriorityReviewItems | 22 |
+| appCompletionGaps | 21 |
+| indexedAppCompletionGaps | 21 |
+| knownAppCompletionRiskItems | 21 |
+| appCompletionPriorityReviewItems | 21 |
 | appCompletionPriorityReviewTruncated | false |
 | operationalGateGaps | 0 |
-| indexedGaps | 22 |
-| totalGaps | 22 |
+| indexedGaps | 21 |
+| totalGaps | 21 |
 
 ## First Gap
 
-- medium: Unclassified user workflow: USE /interactions has app-completion risk missing_doc_link.
-- Owner: Docs Memory Lead + Project Manager
-- Next action: Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.
+- medium: Unclassified user workflow: USE /mcp has app-completion risk missing_test_link.
+- Owner: Test Automation Engineer + QA Regression Lead
+- Next action: Add or link the smallest relevant automated/manual verification for this flow before claiming it works.
 
 ## Gaps
 
 | Severity | Kind | Flow | Summary | Next owner |
 | --- | --- | --- | --- | --- |
-| medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /interactions has app-completion risk missing_doc_link. | Docs Memory Lead + Project Manager |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /mcp has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /notes has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /operating-graph has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
