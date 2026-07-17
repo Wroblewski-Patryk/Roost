@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-17T19:56:37.777Z",
+  "generatedAt": "2026-07-17T21:08:52.375Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 396,
-      "linkedRelationCount": 1891,
+      "entityCount": 398,
+      "linkedRelationCount": 1908,
       "layers": {
         "frontend": {
           "count": 30,
@@ -260,7 +260,7 @@
           "truncated": false
         },
         "backend": {
-          "count": 116,
+          "count": 117,
           "sample": [
             {
               "id": "api_endpoint:use-agent-events:1b4c65ace9",
@@ -515,6 +515,14 @@
               "type": "api_endpoint",
               "name": "USE /operations",
               "path": "src/app.ts#/operations",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "api_endpoint:use-pipeline-stages:d21ba6038b",
+              "type": "api_endpoint",
+              "name": "USE /pipeline-stages",
+              "path": "src/app.ts#/pipeline-stages",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -893,20 +901,12 @@
               "path": "web/src/api/errors.ts",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
-            },
-            {
-              "id": "function:errorcode:1097d8941d",
-              "type": "function",
-              "name": "errorCode",
-              "path": "web/src/api/errors.ts#errorCode",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 199,
+          "count": 200,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -1333,6 +1333,14 @@
               "status": "verified"
             },
             {
+              "id": "task:task:32691a8433",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1401-prove-unclassified-user-workflow-missing-test-link-for-use-pipeline-stages.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:157c1a1016",
               "type": "task",
               "name": "Task",
@@ -1539,14 +1547,6 @@
               "path": "src/modules/workforce/workforce.service.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "feature:api-key-middleware-ts:b3416cccca",
-              "type": "feature",
-              "name": "api-key.middleware.ts",
-              "path": "src/auth/api-key.middleware.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
             }
           ],
           "truncated": true
@@ -3137,9 +3137,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-17-luc-1392-module-confidence-update:bf1ca9d56e",
+              "id": "agent:2026-07-17-luc-1398-module-confidence-update:5e50b1ef5f",
               "type": "agent",
-              "name": "2026-07-17 LUC-1392 Module Confidence Update",
+              "name": "2026-07-17 LUC-1398 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -3307,8 +3307,8 @@
     },
     {
       "userFlow": "Subscription and entitlement",
-      "entityCount": 1178,
-      "linkedRelationCount": 4158,
+      "entityCount": 1179,
+      "linkedRelationCount": 4165,
       "layers": {
         "frontend": {
           "count": 48,
@@ -4347,7 +4347,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 154,
+          "count": 155,
           "sample": [
             {
               "id": "agent:planner:5b56a0bd47",
@@ -4862,6 +4862,14 @@
               "status": "verified"
             },
             {
+              "id": "task:task:32691a8433",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1401-prove-unclassified-user-workflow-missing-test-link-for-use-pipeline-stages.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:39692675ee",
               "type": "task",
               "name": "Task",
@@ -4978,14 +4986,6 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-893-account-access-refresh-google-drive-oauth-proof-link.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:e460cf345a",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-961-source-control-closure-for-luc-959.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             }
@@ -6315,9 +6315,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-17-luc-1392-module-confidence-update:bf1ca9d56e",
+              "id": "agent:2026-07-17-luc-1398-module-confidence-update:5e50b1ef5f",
               "type": "agent",
-              "name": "2026-07-17 LUC-1392 Module Confidence Update",
+              "name": "2026-07-17 LUC-1398 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -6429,8 +6429,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2963,
-      "linkedRelationCount": 8007,
+      "entityCount": 2965,
+      "linkedRelationCount": 8030,
       "layers": {
         "frontend": {
           "count": 85,
@@ -7154,14 +7154,6 @@
               "status": "verified"
             },
             {
-              "id": "api_endpoint:use-pipeline-stages:d21ba6038b",
-              "type": "api_endpoint",
-              "name": "USE /pipeline-stages",
-              "path": "src/app.ts#/pipeline-stages",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "api_endpoint:use-process-core:ccf2131793",
               "type": "api_endpoint",
               "name": "USE /process-core",
@@ -7720,12 +7712,20 @@
               "path": "scripts/check-route-capabilities.mjs#normalizeRoute",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "function:routepattern:2ca91040d4",
+              "type": "function",
+              "name": "routePattern",
+              "path": "scripts/check-route-capabilities.mjs#routePattern",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 914,
+          "count": 916,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -7900,6 +7900,14 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1174-prove-unclassified-user-workflow-missing-doc-link-for-use-clients.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:32691a8433",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1401-prove-unclassified-user-workflow-missing-test-link-for-use-pipeline-stages.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -8344,28 +8352,20 @@
               "status": "verified"
             },
             {
+              "id": "task:task:f3fe506692",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1399-close-local-dirty-state-for-luc-1392-use-operating-model-packet.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:f932d29e9c",
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1258-prove-unclassified-user-workflow-missing-doc-link-for-use-events.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
-            },
-            {
-              "id": "task:task:fa04be220c",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-721-account-access-stored-google-drive-secret-proof.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "agent:agent-operating-system:2f229839b5",
-              "type": "agent",
-              "name": "Agent Operating System",
-              "path": ".agents/core/operating-system.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
@@ -9718,9 +9718,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-17-luc-1392-module-confidence-update:bf1ca9d56e",
+              "id": "agent:2026-07-17-luc-1398-module-confidence-update:5e50b1ef5f",
               "type": "agent",
-              "name": "2026-07-17 LUC-1392 Module Confidence Update",
+              "name": "2026-07-17 LUC-1398 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"

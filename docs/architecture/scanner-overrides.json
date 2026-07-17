@@ -672,6 +672,17 @@
       ]
     },
     {
+      "path": "src/app.ts#/pipeline-stages",
+      "status": "verified",
+      "description": "Pipeline stages mount verified through the existing protected API suite coverage for workspace-scoped POST, GET, PATCH, list, cross-workspace isolation, and DELETE /v1/pipeline-stages flows without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/pipeline-stages/pipeline-stages.routes.ts",
+        "src/modules/pipeline-stages/README.md",
+        ".codex/tasks/luc-1401-prove-unclassified-user-workflow-missing-test-link-for-use-pipeline-stages.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/operations",
       "status": "verified",
       "description": "Operations mount verified through the existing protected API suite coverage for unauthenticated denial plus workspace-scoped GET /v1/operations/context and GET /v1/operations/work-items reads, no-mutation guarantees, foreign-workspace isolation, and MCP manifest exposure without changing runtime behavior.",
@@ -3911,6 +3922,30 @@
       "toPath": "src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret",
       "toType": "function",
       "evidence": "LUC-895 Account access parseGoogleDriveOAuthSecret proof"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/pipeline-stages",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1401 pipeline stages route API proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1401-prove-unclassified-user-workflow-missing-test-link-for-use-pipeline-stages.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/pipeline-stages",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1401 pipeline stages proof-link packet"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/pipeline-stages",
+      "fromType": "api_endpoint",
+      "toPath": "src/modules/pipeline-stages/README.md",
+      "toType": "document",
+      "evidence": "LUC-1401 pipeline stages route documentation proof-link closure"
     },
     {
       "type": "tests",

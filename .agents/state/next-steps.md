@@ -1,4 +1,32 @@
 # Next Steps
+- 2026-07-17: [LUC-1411](/LUC/issues/LUC-1411) completed terminal local
+  source-control closure for the `LUC-1401` Pipeline Stages proof-link packet.
+  The durable packet is
+  `.codex/tasks/luc-1411-classify-and-close-local-dirty-state-for-luc-1401.md`.
+  Current fact: bounded git review, representative generated readback,
+  `git diff --check`, JSON parse checks, and a bounded redaction scan
+  classified the remaining packet as current/coherent, and one scoped local
+  commit preserved it. Do not reopen another source-control closure lane for
+  the `LUC-1401` packet unless a fresh dirty-state regression appears after
+  new work.
+
+- 2026-07-17: [LUC-1401](/LUC/issues/LUC-1401) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/pipeline-stages`. The durable packet is
+  `.codex/tasks/luc-1401-prove-unclassified-user-workflow-missing-test-link-for-use-pipeline-stages.md`.
+  Current fact: refreshed architecture-awareness marks the exact Pipeline
+  Stages mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/pipeline-stages/pipeline-stages.routes.ts`,
+  and `src/modules/pipeline-stages/README.md`, plus explicit route-to-test and
+  route-to-document relation overrides; refreshed app-completion no longer
+  routes `api_endpoint:use-pipeline-stages:d21ba6038b` as `missing_test_link`;
+  Project Truth now routes the next QA-owned proof queue to
+  `src/app.ts#/process-core` while the remaining docs-owned route gap stays on
+  `src/app.ts#/connection`. Do not reopen another QA proof lane for
+  `src/app.ts#/pipeline-stages` unless a fresh generated regression removes the
+  linked runtime evidence. Source-control closure completed in
+  [LUC-1411](/LUC/issues/LUC-1411).
+
 - 2026-07-17: [LUC-1399](/LUC/issues/LUC-1399) completed terminal local
   source-control closure for the combined
   [LUC-1392](/LUC/issues/LUC-1392) plus

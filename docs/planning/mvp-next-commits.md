@@ -1,5 +1,41 @@
 # MVP Next Commits
 
+- 2026-07-17: [LUC-1411](/LUC/issues/LUC-1411) completed terminal local
+  source-control closure for the `LUC-1401` Pipeline Stages proof-link packet.
+  Evidence packet:
+  `.codex/tasks/luc-1411-classify-and-close-local-dirty-state-for-luc-1401.md`.
+  Closure result: bounded git review kept the remaining dirty set attributable
+  to the new `LUC-1401` task packet plus expected state/generated artifacts;
+  representative generated readback kept `src/app.ts#/pipeline-stages` clear
+  of `missing_test_link`, left the remaining docs-owned route gap on
+  `src/app.ts#/connection`, and kept the next QA-owned routed proof gap on
+  `src/app.ts#/process-core`; `git diff --check` reported only CRLF
+  normalization warnings and no content defects; JSON parse checks passed; a
+  bounded redaction scan found no secret-shaped strings; and one scoped local
+  commit preserved the packet. Next owner: Test Automation Engineer + QA
+  Regression Lead for the routed proof gap on `src/app.ts#/process-core`.
+
+- 2026-07-17: [LUC-1401](/LUC/issues/LUC-1401) completed focused proof-link
+  closure for unclassified `src/app.ts#/pipeline-stages`. Evidence packet:
+  `.codex/tasks/luc-1401-prove-unclassified-user-workflow-missing-test-link-for-use-pipeline-stages.md`.
+  Proof linkage: `docs/architecture/scanner-overrides.json` now marks the
+  exact Pipeline Stages mount `verified` with direct evidence from
+  `src/tests/api.test.ts`,
+  `src/modules/pipeline-stages/pipeline-stages.routes.ts`, and
+  `src/modules/pipeline-stages/README.md`, plus explicit route-to-test and
+  route-to-document relation overrides; `npm run test:api:local` PASS (`8/8`);
+  `npm run architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-17T21:08:52.364Z` with `3105` entities / `8290`
+  relations / `16524` files and materialized the exact proof relations;
+  refreshed app-completion dropped `missingTestLink` from `15` to `14` and no
+  longer reports `api_endpoint:use-pipeline-stages:d21ba6038b`; Project Truth
+  apply generated `2026-07-17T21:08:52.375Z` and advanced the first gap to
+  unclassified `src/app.ts#/process-core`; `npm run architecture:status` PASS
+  (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`). Next owner:
+  Test Automation Engineer + QA Regression Lead for the routed proof gap on
+  `src/app.ts#/process-core`. Source-control closure completed in
+  [LUC-1411](/LUC/issues/LUC-1411).
+
 - 2026-07-16: [LUC-1305](/LUC/issues/LUC-1305) repaired the false
   architecture-scanner `in_progress` classification for the LUC-1296 intake
   doc-link packet. Evidence packet:
