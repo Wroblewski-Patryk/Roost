@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-07-17T22:25:39.613Z",
+  "generated_at": "2026-07-17T23:05:46.914Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 3107,
-    "relations": 8316,
+    "entities": 3108,
+    "relations": 8332,
     "by_type": {
       "agent": 47,
       "api_endpoint": 46,
@@ -18,21 +18,21 @@
       "model": 5,
       "module": 67,
       "project": 1,
-      "task": 168,
+      "task": 169,
       "test": 82
     },
     "by_status": {
       "blocked": 1,
       "deprecated": 6,
-      "implemented": 2673,
+      "implemented": 2672,
       "in_progress": 11,
       "tested": 19,
-      "verified": 397
+      "verified": 399
     }
   },
   "signals": {
     "implementation_without_tests": {
-      "count": 1070,
+      "count": 1069,
       "items": [
         {
           "id": "api_endpoint:use-agent-events:1b4c65ace9",
@@ -200,14 +200,6 @@
           "name": "USE /operations",
           "path": "src/app.ts#/operations",
           "status": "verified",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "api_endpoint:use-projects:2ab7f26357",
-          "type": "api_endpoint",
-          "name": "USE /projects",
-          "path": "src/app.ts#/projects",
-          "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -1633,6 +1625,14 @@
           "path": "scripts/backfill-architecture-nodes.mjs#loadCsv",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "function:main:64fdb3c98c",
+          "type": "function",
+          "name": "main",
+          "path": "scripts/backfill-architecture-nodes.mjs#main",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
         }
       ]
     },
@@ -1641,7 +1641,7 @@
       "items": []
     },
     "actionable_implementation_without_tests": {
-      "count": 1057,
+      "count": 1056,
       "items": [
         {
           "id": "api_endpoint:use-agent-events:1b4c65ace9",
@@ -1809,14 +1809,6 @@
           "name": "USE /operations",
           "path": "src/app.ts#/operations",
           "status": "verified",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "api_endpoint:use-projects:2ab7f26357",
-          "type": "api_endpoint",
-          "name": "USE /projects",
-          "path": "src/app.ts#/projects",
-          "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -3240,6 +3232,14 @@
           "type": "function",
           "name": "pageModule",
           "path": "scripts/backfill-architecture-nodes.mjs#pageModule",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "function:parsecsv:01a781a6c7",
+          "type": "function",
+          "name": "parseCsv",
+          "path": "scripts/backfill-architecture-nodes.mjs#parseCsv",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         }

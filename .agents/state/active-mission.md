@@ -1,5 +1,31 @@
 # Active Mission Packet
 
+## LUC-1430 Checkpoint
+
+- 2026-07-17: [LUC-1430](/LUC/issues/LUC-1430) closed the routed
+  unclassified endpoint `src/app.ts#/projects` `missing_test_link` row.
+  Packet:
+  `.codex/tasks/luc-1430-prove-unclassified-user-workflow-missing-test-link-for-use-projects.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Projects
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/projects/projects.routes.ts`, and
+  `docs/API.md`, plus explicit route-to-test and route-to-document relation
+  overrides; focused proof PASS via `npm run test:api:local`, which built
+  server/web, applied all `31` migrations to disposable PostgreSQL on
+  `127.0.0.1:55432`, seeded data, and passed `8/8` subtests; external
+  architecture-awareness refresh generated `2026-07-17T23:05:46.914Z` with
+  `3108` entities / `8332` relations / `16524` files; sequential
+  app-completion refresh generated `missingTestLink=12` and removed
+  `src/app.ts#/projects` from the QA proof queue; sequential Project Truth
+  apply generated `2026-07-17T23:07:02.875Z` with public probes `pass` and
+  advanced the next QA-owned routed proof queue to `src/app.ts#/ready`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). No runtime feature logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Final disposition: local proof lane complete. Remaining follow-up
+  is Docs/Product on `src/app.ts#/connection`, QA on `src/app.ts#/ready`, and
+  source-control closure through [LUC-1439](/LUC/issues/LUC-1439).
+
 ## LUC-1416 Checkpoint
 
 - 2026-07-17: [LUC-1416](/LUC/issues/LUC-1416) closed the routed

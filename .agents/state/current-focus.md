@@ -1,5 +1,20 @@
 # Current Focus
 
+## LUC-1439 Checkpoint
+
+- 2026-07-17: [LUC-1439](/LUC/issues/LUC-1439) completed terminal local
+  source-control closure for the `LUC-1430` Projects proof-link packet. The
+  coherent packet spans `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/planning/mvp-next-commits.md`,
+  `docs/graphs/*`, and `docs/status/*`; representative generated readback kept
+  `src/app.ts#/projects` clear of `missing_test_link`, left the remaining
+  docs-owned route gap on `src/app.ts#/connection`, and kept the next
+  QA-owned proof gap on `src/app.ts#/ready`; `git diff --check` reported only
+  CRLF normalization warnings and no content defects; JSON parse checks
+  passed; and bounded redaction scan found no secret-shaped strings. Final
+  closure action was one scoped local commit so the repo does not carry a
+  repeated anonymous dirty-state sidecar for this packet.
+
 ## LUC-1347 Checkpoint
 
 - 2026-07-16: [LUC-1347](/LUC/issues/LUC-1347) completed the exact

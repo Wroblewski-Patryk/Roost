@@ -38,6 +38,14 @@ fixes for this repository.
   written.
 - Guardrail: run the chain in order when documentation or proof links changed:
   `npm run architecture:refresh` (and architecture-awareness rebuild) first,
+  then `build-app-completion-index`, then `build-project-truth-indexes`.
+- Preferred pattern: treat architecture-awareness as the write producer and
+  app-completion plus Project Truth as read-after-write consumers.
+- Avoid: parallelizing graph rebuild, app-completion refresh, and Project Truth
+  refresh in the same heartbeat when any proof-link or doc-link metadata changed.
+- Evidence: `LUC-1174`; `LUC-1430` initially left `USE /projects` routed as
+  `missing_test_link` until the dependent generators were rerun sequentially
+  after the refreshed graph write completed.
   then `build-app-completion-index.mjs`, then
   `build-project-truth-indexes.mjs`.
 - Preferred pattern: parallelize only independent reads; keep generated-truth

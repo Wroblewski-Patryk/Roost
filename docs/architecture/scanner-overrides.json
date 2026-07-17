@@ -694,6 +694,17 @@
       ]
     },
     {
+      "path": "src/app.ts#/projects",
+      "status": "verified",
+      "description": "Projects mount verified through the existing protected API suite coverage for unauthenticated denial plus workspace-scoped POST, GET list, GET by id, PATCH, archive-on-delete, cross-workspace isolation, and scoped API-key write behavior without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/projects/projects.routes.ts",
+        "docs/API.md",
+        ".codex/tasks/luc-1430-prove-unclassified-user-workflow-missing-test-link-for-use-projects.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/operations",
       "status": "verified",
       "description": "Operations mount verified through the existing protected API suite coverage for unauthenticated denial plus workspace-scoped GET /v1/operations/context and GET /v1/operations/work-items reads, no-mutation guarantees, foreign-workspace isolation, and MCP manifest exposure without changing runtime behavior.",
@@ -3957,6 +3968,30 @@
       "toPath": "src/modules/pipeline-stages/README.md",
       "toType": "document",
       "evidence": "LUC-1401 pipeline stages route documentation proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/projects",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1430 projects route API proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1430-prove-unclassified-user-workflow-missing-test-link-for-use-projects.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/projects",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1430 projects proof-link packet"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/projects",
+      "fromType": "api_endpoint",
+      "toPath": "docs/API.md",
+      "toType": "document",
+      "evidence": "LUC-1430 projects route documentation proof-link closure"
     },
     {
       "type": "tests",

@@ -1,4 +1,31 @@
 # Next Steps
+- 2026-07-17: [LUC-1439](/LUC/issues/LUC-1439) completed terminal local
+  source-control closure for the `LUC-1430` Projects proof-link packet. The
+  durable packet is
+  `.codex/tasks/luc-1439-close-local-dirty-state-for-luc-1430-projects-proof-link-packet.md`.
+  Current fact: bounded git review, representative generated readback,
+  `git diff --check`, JSON parse checks, and a bounded redaction scan
+  classified the remaining packet as current/coherent; one scoped local
+  commit preserved the packet and returned the worktree to clean state. Do not
+  reopen another source-control closure lane for the `LUC-1430` packet unless
+  fresh work makes the repo dirty again.
+
+- 2026-07-17: [LUC-1430](/LUC/issues/LUC-1430) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/projects`. The durable packet is
+  `.codex/tasks/luc-1430-prove-unclassified-user-workflow-missing-test-link-for-use-projects.md`.
+  Current fact: refreshed architecture-awareness marks the exact Projects
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/projects/projects.routes.ts`, and
+  `docs/API.md`, plus explicit route-to-test and route-to-document relation
+  overrides; refreshed app-completion no longer routes
+  `api_endpoint:use-projects:2ab7f26357` as `missing_test_link`; Project Truth
+  now routes the next QA-owned proof queue to `src/app.ts#/ready` while the
+  remaining docs-owned route gap stays on `src/app.ts#/connection`. Do not
+  reopen another QA proof lane for `src/app.ts#/projects` unless a fresh
+  generated regression removes the linked runtime evidence. Source-control
+  closure completed in [LUC-1439](/LUC/issues/LUC-1439).
+
 - 2026-07-17: [LUC-1416](/LUC/issues/LUC-1416) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint
   `src/app.ts#/process-core`. The durable packet is

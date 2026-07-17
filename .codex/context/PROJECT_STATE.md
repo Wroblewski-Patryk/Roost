@@ -1,5 +1,49 @@
 # PROJECT_STATE
 
+- 2026-07-17: [LUC-1439](/LUC/issues/LUC-1439) completed terminal local
+  source-control closure for the `LUC-1430` Projects proof-link packet.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1439-close-local-dirty-state-for-luc-1430-projects-proof-link-packet.md`.
+  Current evidence: bounded git review kept the remaining dirty set
+  attributable to `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/planning/mvp-next-commits.md`,
+  `docs/graphs/*`, and `docs/status/*`; representative generated readback kept
+  `src/app.ts#/projects` clear of `missing_test_link`, left the remaining
+  docs-owned route gap on `src/app.ts#/connection`, and kept the next
+  QA-owned routed proof gap on `src/app.ts#/ready`; `git diff --check`
+  reported only CRLF normalization warnings and no content defects; JSON parse
+  checks passed; and a bounded redaction scan found no secret-shaped strings.
+  One scoped local commit preserved the packet and returned the worktree to
+  clean state. Deploy impact: none. Push status: not needed.
+
+- 2026-07-17: [LUC-1430](/LUC/issues/LUC-1430) completed the local
+  missing-test-link closure for unclassified `src/app.ts#/projects`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1430-prove-unclassified-user-workflow-missing-test-link-for-use-projects.md`.
+  Current evidence: `docs/architecture/scanner-overrides.json` now marks the
+  exact Projects mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/projects/projects.routes.ts`, and
+  `docs/API.md`, plus explicit route-to-test and route-to-document relation
+  overrides; focused local protected API proof PASS via `npm run
+  test:api:local`, which built server/web, applied all `31` migrations to
+  disposable PostgreSQL on `127.0.0.1:55432`, seeded data, and passed `8/8`
+  subtests; `npm run architecture:refresh` PASS; external
+  architecture-awareness refresh generated `2026-07-17T23:05:46.914Z` with
+  `3108` entities / `8332` relations / `16524` files and materialized the
+  exact proof relations; sequential app-completion refresh now reports `46`
+  items / `4` flows / `12` missing test links / `1` missing doc link / `0`
+  implemented-needs-proof / `0` blocked / `13` risk items, no longer routes
+  `api_endpoint:use-projects:2ab7f26357` as `missing_test_link`, and leaves
+  only `src/app.ts#/connection` as the docs-owned route gap; Project Truth
+  apply generated `2026-07-17T23:07:02.875Z` with public probes `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and advances the next QA-owned routed proof queue to `src/app.ts#/ready`;
+  `npm run architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue
+  `0`, chain worklist `0`). No runtime feature logic, provider call, deploy,
+  push, restart, production mutation, credential access, or secret disclosure
+  occurred. Deploy impact: none. Push status: not needed. Source-control
+  closure completed in [LUC-1439](/LUC/issues/LUC-1439).
+
 - 2026-07-17: [LUC-1416](/LUC/issues/LUC-1416) completed the local
   missing-test-link closure for unclassified `src/app.ts#/process-core`.
   Source-of-truth task packet:

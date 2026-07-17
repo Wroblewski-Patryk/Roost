@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-17T22:25:39.613Z
+Generated: 2026-07-17T23:05:46.914Z
 
 ## Canonical Exports
 
@@ -42,7 +42,7 @@ Generated: 2026-07-17T22:25:39.613Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-17 LUC-1401 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-17 LUC-1416 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
@@ -91,7 +91,7 @@ Generated: 2026-07-17T22:25:39.613Z
 | api_endpoint | verified | USE /operations | src/app.ts#/operations | Engineering Delivery Lead |
 | api_endpoint | verified | USE /pipeline-stages | src/app.ts#/pipeline-stages | Engineering Delivery Lead |
 | api_endpoint | verified | USE /process-core | src/app.ts#/process-core | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /projects | src/app.ts#/projects | Engineering Delivery Lead |
+| api_endpoint | verified | USE /projects | src/app.ts#/projects | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /ready | src/app.ts#/ready | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /relationships | src/app.ts#/relationships | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /sales | src/app.ts#/sales | Engineering Delivery Lead |
@@ -677,6 +677,7 @@ Generated: 2026-07-17T22:25:39.613Z
 | connected_to | project:roost:122c92a083 | task:task:32691a8433 | .codex/tasks/luc-1401-prove-unclassified-user-workflow-missing-test-link-for-use-pipeline-stages.md |
 | connected_to | project:roost:122c92a083 | task:task:4eb0b00428 | .codex/tasks/luc-1411-classify-and-close-local-dirty-state-for-luc-1401.md |
 | connected_to | project:roost:122c92a083 | task:task:4e239f4f9b | .codex/tasks/luc-1416-prove-unclassified-user-workflow-missing-test-link-for-use-process-core.md |
+| connected_to | project:roost:122c92a083 | task:task:2cdef4141c | .codex/tasks/luc-1430-prove-unclassified-user-workflow-missing-test-link-for-use-projects.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -736,7 +737,7 @@ Generated: 2026-07-17T22:25:39.613Z
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
 | documents | agent:2026-07-16-luc-1345-notes-packet-source-control-health-signal:32fa801938 | module:agents:4ae71ba13a | .agents/state/system-health.md |
-| documents | agent:2026-07-17-luc-1401-module-confidence-update:691a79afcb | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
+| documents | agent:2026-07-17-luc-1416-module-confidence-update:9625088f78 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -786,6 +787,7 @@ Generated: 2026-07-17T22:25:39.613Z
 | documents | api_endpoint:use-finance:b8821dee32 | document:get-v1-finance-context:db0b7f023e | LUC-6696 app-completion proof-link association |
 | documents | api_endpoint:use-pipeline-stages:d21ba6038b | document:pipeline-stages-module:f43b558577 | LUC-1401 pipeline stages route documentation proof-link closure |
 | documents | api_endpoint:use-process-core:ccf2131793 | document:luc-5220-process-core-api-journey-proof:fbb338f2c1 | LUC-1416 process core route documentation proof-link closure |
+| documents | api_endpoint:use-projects:2ab7f26357 | document:api:a617d1cb61 | LUC-1430 projects route documentation proof-link closure |
 | documents | api_endpoint:use-sales:0c7ec2cf8b | document:get-v1-sales-context:078045055f | LUC-6696 app-completion proof-link association |
 | documents | api_endpoint:use-v1-auth:02d088cd05 | document:system-architecture:1149ef3528 | LUC-6696 app-completion proof-link association |
 | documents | document:acceptance-criteria-model:13886f82fd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0001.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-07-17T22:25:39.613Z
 | documents | document:knowledge-roots-model:f21881b86f | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0031.md |
 | documents | document:language-policy:d7981ada8f | module:docs:6784d83cb0 | docs/governance/language-policy.md |
 | documents | document:legacy-archive-policy:36668ee5e4 | module:docs:6784d83cb0 | docs/governance/legacy-archive-policy.md |
-| documents | document:local-development:a611abe27f | module:docs:6784d83cb0 | docs/engineering/local-development.md |
-| documents | document:luc-1006-trading-operation-app-ts-proof:ce4d488666 | module:docs:6784d83cb0 | docs/planning/luc-1006-trading-operation-app-ts-proof.md |
