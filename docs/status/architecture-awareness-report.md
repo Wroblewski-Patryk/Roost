@@ -1,6 +1,6 @@
 # Architecture Awareness Report
 
-Generated: 2026-07-16T18:08:03.651Z
+Generated: 2026-07-17T18:29:39.089Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 
@@ -18,7 +18,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | model | 5 |
 | module | 67 |
 | project | 1 |
-| task | 155 |
+| task | 160 |
 | test | 82 |
 
 ## Counts By Status
@@ -28,9 +28,9 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | blocked | 1 |
 | deprecated | 6 |
 | implemented | 2677 |
-| in_progress | 10 |
+| in_progress | 11 |
 | tested | 19 |
-| verified | 381 |
+| verified | 385 |
 
 ## Health Signals
 
@@ -39,8 +39,8 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - Raw implementation entities without inferred docs: 0
 - Actionable implementation entities without inferred docs: 0
 - Classified inferred-link noise: 13
-- Raw tasks without architecture links: 12
-- Actionable tasks without architecture links: 12
+- Raw tasks without architecture links: 13
+- Actionable tasks without architecture links: 13
 - Raw implementation entities without task links: 0
 - Actionable implementation entities without task links: 0
 - Classified task-linkage noise: 0

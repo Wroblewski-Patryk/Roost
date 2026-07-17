@@ -1,5 +1,25 @@
 # Active Mission Packet
 
+## LUC-1378 Checkpoint
+
+- 2026-07-17: [LUC-1378](/LUC/issues/LUC-1378) closed the documentation lane
+  for exact unclassified `src/app.ts#/operating-graph` doc-link drift. Packet:
+  `.codex/tasks/luc-1378-prove-unclassified-user-workflow-missing-doc-link-for-use-operating-graph.md`.
+  `docs/architecture/relations/documentation-links.csv` now links the
+  Operating Graph mount to the accepted Operating Graph contract in
+  `docs/API.md`; refreshed app-completion generated from the refreshed graph no
+  longer routes `api_endpoint:use-operating-graph:90c17b9387` as
+  `missing_doc_link` and reduced docs-owned gaps from `2` to `1`;
+  refreshed Project Truth generated `2026-07-17T18:31:36.587Z` and advanced
+  the first routed gap to QA-owned `src/app.ts#/operating-model`
+  `missing_test_link` while leaving only user-configuration
+  `src/app.ts#/connection` as the remaining docs-owned route gap; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`). No runtime feature
+  logic, provider call, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Final disposition: documentation lane
+  complete. Remaining follow-up is Docs/Product on `src/app.ts#/connection`
+  and QA on `src/app.ts#/operating-model`.
+
 ## LUC-1373 Checkpoint
 
 - 2026-07-17: [LUC-1373](/LUC/issues/LUC-1373) closed the terminal

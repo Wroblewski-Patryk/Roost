@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-07-16T18:08:03.651Z",
+  "generated_at": "2026-07-17T18:29:39.089Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 3094,
-    "relations": 8195,
+    "entities": 3099,
+    "relations": 8227,
     "by_type": {
       "agent": 47,
       "api_endpoint": 46,
@@ -18,16 +18,16 @@
       "model": 5,
       "module": 67,
       "project": 1,
-      "task": 155,
+      "task": 160,
       "test": 82
     },
     "by_status": {
       "blocked": 1,
       "deprecated": 6,
       "implemented": 2677,
-      "in_progress": 10,
+      "in_progress": 11,
       "tested": 19,
-      "verified": 381
+      "verified": 385
     }
   },
   "signals": {
@@ -3384,7 +3384,7 @@
       "items": []
     },
     "tasks_without_architecture": {
-      "count": 12,
+      "count": 13,
       "items": [
         {
           "id": "task:task:57e15dbd18",
@@ -3392,6 +3392,14 @@
           "name": "Task",
           "path": ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
           "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "task:luc-1378-completion-evidence:d206c8492f",
+          "type": "task",
+          "name": "LUC-1378 Completion Evidence",
+          "path": ".codex/tasks/luc-1378-completion-evidence.md",
+          "status": "in_progress",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -3485,7 +3493,7 @@
       ]
     },
     "raw_tasks_without_architecture": {
-      "count": 12,
+      "count": 13,
       "items": [
         {
           "id": "task:task:57e15dbd18",
@@ -3493,6 +3501,14 @@
           "name": "Task",
           "path": ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
           "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "task:luc-1378-completion-evidence:d206c8492f",
+          "type": "task",
+          "name": "LUC-1378 Completion Evidence",
+          "path": ".codex/tasks/luc-1378-completion-evidence.md",
+          "status": "in_progress",
           "owner": "Engineering Delivery Lead"
         },
         {

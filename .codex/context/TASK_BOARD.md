@@ -1,6 +1,28 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-17: [LUC-1378](/LUC/issues/LUC-1378) completed the exact
+  documentation-link closure for unclassified `src/app.ts#/operating-graph`.
+  Task contract:
+  `.codex/tasks/luc-1378-prove-unclassified-user-workflow-missing-doc-link-for-use-operating-graph.md`.
+  Evidence: `docs/architecture/relations/documentation-links.csv` now links
+  the exact Operating Graph mount to the accepted `docs/API.md` contract;
+  `npm run architecture:refresh` PASS; external architecture-awareness
+  refresh generated `2026-07-17T18:29:39.089Z` with `3099` entities / `8227`
+  relations / `16524` files and materialized the exact `documents` relation;
+  sequential app-completion refresh now reports `missingDocLink=1`, no longer
+  routes `api_endpoint:use-operating-graph:90c17b9387` as `missing_doc_link`,
+  and leaves only `src/app.ts#/connection` as the docs-owned route gap;
+  Project Truth apply generated `2026-07-17T18:31:36.587Z` with public probes
+  `pass` and advanced the first routed overall gap to
+  `src/app.ts#/operating-model` `missing_test_link`. `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). No runtime product logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Next owner: Test Automation Engineer + QA Regression Lead for
+  `src/app.ts#/operating-model`; Docs/Product remains only on
+  `src/app.ts#/connection`.
+
 - 2026-07-17: [LUC-1373](/LUC/issues/LUC-1373) completed terminal local
   source-control closure for the combined
   [LUC-1352](/LUC/issues/LUC-1352) plus

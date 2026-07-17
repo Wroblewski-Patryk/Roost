@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-16T18:08:18.372Z",
+  "generatedAt": "2026-07-17T18:31:36.587Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "gaps_require_routing",
@@ -9,42 +9,29 @@
     "incompleteEventChains": 0,
     "runtimeFindings": 0,
     "criticalRuntimeFindings": 0,
-    "appCompletionGaps": 19,
-    "indexedAppCompletionGaps": 19,
-    "knownAppCompletionRiskItems": 19,
-    "appCompletionPriorityReviewItems": 19,
+    "appCompletionGaps": 18,
+    "indexedAppCompletionGaps": 18,
+    "knownAppCompletionRiskItems": 18,
+    "appCompletionPriorityReviewItems": 18,
     "appCompletionPriorityReviewTruncated": false,
     "operationalGateGaps": 0,
-    "indexedGaps": 19,
-    "totalGaps": 19
+    "indexedGaps": 18,
+    "totalGaps": 18
   },
   "firstGap": {
     "kind": "app_completion_gap",
     "severity": "medium",
     "userFlow": "Unclassified user workflow",
-    "summary": "Unclassified user workflow: USE /operating-graph has app-completion risk missing_doc_link.",
-    "nextOwner": "Docs Memory Lead + Project Manager",
-    "nextAction": "Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.",
+    "summary": "Unclassified user workflow: USE /operating-model has app-completion risk missing_test_link.",
+    "nextOwner": "Test Automation Engineer + QA Regression Lead",
+    "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
     "evidence": [
-      "src/app.ts#/operating-graph"
+      "src/app.ts#/operating-model"
     ],
-    "sourceItemId": "api_endpoint:use-operating-graph:90c17b9387",
-    "risk": "missing_doc_link"
+    "sourceItemId": "api_endpoint:use-operating-model:dcc5e71b5f",
+    "risk": "missing_test_link"
   },
   "gaps": [
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /operating-graph has app-completion risk missing_doc_link.",
-      "nextOwner": "Docs Memory Lead + Project Manager",
-      "nextAction": "Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.",
-      "evidence": [
-        "src/app.ts#/operating-graph"
-      ],
-      "sourceItemId": "api_endpoint:use-operating-graph:90c17b9387",
-      "risk": "missing_doc_link"
-    },
     {
       "kind": "app_completion_gap",
       "severity": "medium",

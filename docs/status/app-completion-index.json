@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-16T18:08:13.582Z",
+  "generatedAt": "2026-07-17T18:31:36.408Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -9,12 +9,12 @@
     "flows": 4,
     "needsBrowserReview": 0,
     "missingTestLink": 17,
-    "missingDocLink": 2,
+    "missingDocLink": 1,
     "implementedNeedsProof": 0,
     "blocked": 0,
-    "riskItems": 19,
-    "appCompletionRiskItems": 19,
-    "priorityReviewItems": 19,
+    "riskItems": 18,
+    "appCompletionRiskItems": 18,
+    "priorityReviewItems": 18,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": false
   },
@@ -42,8 +42,7 @@
       "userFlow": "Unclassified user workflow",
       "total": 34,
       "risks": {
-        "ok": 17,
-        "missing_doc_link": 1,
+        "ok": 18,
         "missing_test_link": 16
       },
       "gates": {
@@ -64,27 +63,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "api_endpoint:use-operating-graph:90c17b9387",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /operating-graph",
-      "path": "src/app.ts#/operating-graph",
-      "owner": "Engineering Delivery Lead",
-      "status": "verified",
-      "userFlow": "Unclassified user workflow",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 5,
-      "risk": "missing_doc_link"
-    },
     {
       "id": "api_endpoint:use-operating-model:dcc5e71b5f",
       "type": "api_endpoint",

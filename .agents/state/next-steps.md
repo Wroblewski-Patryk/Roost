@@ -1,4 +1,16 @@
 # Next Steps
+- 2026-07-17: [LUC-1378](/LUC/issues/LUC-1378) has no remaining documentation
+  action for exact unclassified `src/app.ts#/operating-graph`. The durable
+  packet is
+  `.codex/tasks/luc-1378-prove-unclassified-user-workflow-missing-doc-link-for-use-operating-graph.md`.
+  Current fact: `docs/architecture/relations/documentation-links.csv` links
+  the Operating Graph mount to `docs/API.md`; refreshed app-completion removed
+  `api_endpoint:use-operating-graph:90c17b9387` from the queue; refreshed
+  Project Truth now routes QA to `src/app.ts#/operating-model` and leaves
+  Docs/Product only on `src/app.ts#/connection`. Do not reopen an Operating
+  Graph docs lane unless a fresh generated `missing_doc_link` regression
+  appears.
+
 - 2026-07-17: [LUC-1373](/LUC/issues/LUC-1373) completed the terminal local
   source-control closure for the
   [LUC-1352](/LUC/issues/LUC-1352) plus

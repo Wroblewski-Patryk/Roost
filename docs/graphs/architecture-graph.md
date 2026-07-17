@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-16T18:08:03.651Z
+Generated: 2026-07-17T18:29:39.089Z
 
 ## Canonical Exports
 
@@ -42,7 +42,7 @@ Generated: 2026-07-16T18:08:03.651Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-16 LUC-1331 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-16 LUC-1352 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
@@ -663,7 +663,12 @@ Generated: 2026-07-16T18:08:03.651Z
 | connected_to | project:roost:122c92a083 | task:luc-1347-closeout:d520ded342 | .codex/tasks/luc-1347-closeout.md |
 | connected_to | project:roost:122c92a083 | task:luc-1347-completion-evidence:0cb7a1d1c3 | .codex/tasks/luc-1347-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:4f33f2ade9 | .codex/tasks/luc-1347-prove-unclassified-user-workflow-missing-doc-link-for-use-notes.md |
+| connected_to | project:roost:122c92a083 | task:luc-1352-closeout:d0a30725cf | .codex/tasks/luc-1352-closeout.md |
 | connected_to | project:roost:122c92a083 | task:task:272a8962ca | .codex/tasks/luc-1352-prove-unclassified-user-workflow-missing-test-link-for-use-operating-graph.md |
+| connected_to | project:roost:122c92a083 | task:task:75a4d8a255 | .codex/tasks/luc-1360-classify-and-close-local-dirty-state-for-luc-1352.md |
+| connected_to | project:roost:122c92a083 | task:task:c9bf465e72 | .codex/tasks/luc-1373-classify-and-close-local-dirty-state-for-luc-1352-luc-1360.md |
+| connected_to | project:roost:122c92a083 | task:luc-1378-completion-evidence:d206c8492f | .codex/tasks/luc-1378-completion-evidence.md |
+| connected_to | project:roost:122c92a083 | task:task:3e7deaf3b8 | .codex/tasks/luc-1378-prove-unclassified-user-workflow-missing-doc-link-for-use-operating-graph.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -722,8 +727,8 @@ Generated: 2026-07-16T18:08:03.651Z
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
-| documents | agent:2026-07-16-luc-1331-module-confidence-update:5626b27e14 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
 | documents | agent:2026-07-16-luc-1345-notes-packet-source-control-health-signal:32fa801938 | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-16-luc-1352-module-confidence-update:bd0037e0c8 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -819,6 +824,7 @@ Generated: 2026-07-16T18:08:03.651Z
 | documents | document:api:a617d1cb61 | api_endpoint:use-goals:da30547c55 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-interactions:eb228af9f5 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-mcp:3055a10566 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | api_endpoint:use-operating-graph:90c17b9387 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-notes:c833b4443f | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:b3f790a259 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:8f0ce27a64 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
@@ -1212,9 +1218,3 @@ Generated: 2026-07-16T18:08:03.651Z
 | documents | document:luc-1063-account-access-setownertoken-proof:d71d832ff2 | module:docs:6784d83cb0 | docs/planning/luc-1063-account-access-set-owner-token-proof.md |
 | documents | document:luc-1066-dashboard-overview-use-dashboard-proof-link:8363b6e9c5 | module:docs:6784d83cb0 | docs/planning/luc-1066-dashboard-overview-use-dashboard-proof-link.md |
 | documents | document:luc-107-account-access-auth-headers-fresh-proof:153bf13d90 | module:docs:6784d83cb0 | docs/planning/luc-107-account-access-authheaders-fresh-proof.md |
-| documents | document:luc-1082-dashboard-overview-ccnotice-proof:b49bfff04e | module:docs:6784d83cb0 | docs/planning/luc-1082-dashboard-overview-cc-notice-proof.md |
-| documents | document:luc-1084-dashboard-overview-ccresourceselector-proof:2ab3b0768f | module:docs:6784d83cb0 | docs/planning/luc-1084-dashboard-overview-cc-resource-selector-proof.md |
-| documents | document:luc-1086-dashboard-overview-ccrouteloading-proof:23e8251d06 | module:docs:6784d83cb0 | docs/planning/luc-1086-dashboard-overview-cc-route-loading-proof.md |
-| documents | document:luc-1090-dashboard-overview-assetsoverview-proof:7cabd23652 | module:docs:6784d83cb0 | docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md |
-| documents | document:luc-1099-source-control-closure-for-luc-261-dirty-state:c349f0ce07 | module:docs:6784d83cb0 | docs/planning/luc-1099-source-control-closure-for-luc-261-dirty-state.md |
-| documents | document:luc-110-account-access-auth-headers-function-row-classification:33a5d98774 | module:docs:6784d83cb0 | docs/planning/luc-110-account-access-authheaders-function-row-classification.md |
