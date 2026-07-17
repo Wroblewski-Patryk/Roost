@@ -1,4 +1,42 @@
 # Next Steps
+- 2026-07-17: [LUC-1373](/LUC/issues/LUC-1373) completed the terminal local
+  source-control closure for the
+  [LUC-1352](/LUC/issues/LUC-1352) plus
+  [LUC-1360](/LUC/issues/LUC-1360) `USE /operating-graph` packet. The durable
+  packet is
+  `.codex/tasks/luc-1373-classify-and-close-local-dirty-state-for-luc-1352-luc-1360.md`.
+  Current fact: the coherent proof-link and generated-status bundle was
+  preserved in one local commit, so do not reopen another source-control lane
+  for this packet unless fresh work makes the repo dirty again.
+
+- 2026-07-17: [LUC-1360](/LUC/issues/LUC-1360) completed the local
+  source-control review lane for the
+  [LUC-1352](/LUC/issues/LUC-1352) `USE /operating-graph` packet. The durable
+  packet is
+  `.codex/tasks/luc-1360-classify-and-close-local-dirty-state-for-luc-1352.md`.
+  Current fact: bounded git review, representative generated readback,
+  `git diff --check`, JSON parse checks, and the authored packet redaction scan
+  still classify the packet as current/coherent, so this issue closed the
+  review lane without a commit. Do not reopen another source-control review
+  lane for this packet unless a fresh dirty-state regression appears after new
+  work.
+
+- 2026-07-16: [LUC-1352](/LUC/issues/LUC-1352) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/operating-graph`. The durable packet is
+  `.codex/tasks/luc-1352-prove-unclassified-user-workflow-missing-test-link-for-use-operating-graph.md`.
+  Current fact: refreshed architecture-awareness marks the exact Operating
+  Graph mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` and
+  `src/modules/operating-graph/operating-graph.routes.ts`; refreshed
+  app-completion no longer routes `api_endpoint:use-operating-graph:90c17b9387`
+  as `missing_test_link` and keeps the same symbol only as docs-owned
+  `missing_doc_link`; Project Truth now routes the same symbol to Docs Memory
+  Lead + Project Manager while the next QA-owned proof queue starts at
+  `src/app.ts#/operating-model`. Do not reopen another QA proof lane for
+  `src/app.ts#/operating-graph` unless a fresh generated regression removes
+  the linked runtime evidence.
+
 - 2026-07-16: [LUC-1347](/LUC/issues/LUC-1347) has no remaining documentation
   action for exact unclassified `src/app.ts#/notes`. The durable packet is
   `.codex/tasks/luc-1347-prove-unclassified-user-workflow-missing-doc-link-for-use-notes.md`.

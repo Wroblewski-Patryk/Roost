@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-16T17:29:09.713Z
+Generated: 2026-07-16T18:08:03.651Z
 
 ## Canonical Exports
 
@@ -86,7 +86,7 @@ Generated: 2026-07-16T17:29:09.713Z
 | api_endpoint | verified | USE /interactions | src/app.ts#/interactions | Engineering Delivery Lead |
 | api_endpoint | verified | USE /mcp | src/app.ts#/mcp | Engineering Delivery Lead |
 | api_endpoint | verified | USE /notes | src/app.ts#/notes | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /operating-graph | src/app.ts#/operating-graph | Engineering Delivery Lead |
+| api_endpoint | verified | USE /operating-graph | src/app.ts#/operating-graph | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /operating-model | src/app.ts#/operating-model | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /operations | src/app.ts#/operations | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /pipeline-stages | src/app.ts#/pipeline-stages | Engineering Delivery Lead |
@@ -660,8 +660,10 @@ Generated: 2026-07-16T17:29:09.713Z
 | connected_to | project:roost:122c92a083 | task:task:09f7884c16 | .codex/tasks/luc-1339-classify-and-close-local-dirty-state-for-luc-1331-luc-1333.md |
 | connected_to | project:roost:122c92a083 | task:task:6a5d255122 | .codex/tasks/luc-1344-classify-and-close-local-dirty-state-for-luc-1331-luc-1333-luc-1339.md |
 | connected_to | project:roost:122c92a083 | task:task:98df478e4f | .codex/tasks/luc-1345-source-control-closure-commit-for-luc-1331-luc-1333-luc-1339-luc-1344.md |
+| connected_to | project:roost:122c92a083 | task:luc-1347-closeout:d520ded342 | .codex/tasks/luc-1347-closeout.md |
 | connected_to | project:roost:122c92a083 | task:luc-1347-completion-evidence:0cb7a1d1c3 | .codex/tasks/luc-1347-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:4f33f2ade9 | .codex/tasks/luc-1347-prove-unclassified-user-workflow-missing-doc-link-for-use-notes.md |
+| connected_to | project:roost:122c92a083 | task:task:272a8962ca | .codex/tasks/luc-1352-prove-unclassified-user-workflow-missing-test-link-for-use-operating-graph.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -1216,5 +1218,3 @@ Generated: 2026-07-16T17:29:09.713Z
 | documents | document:luc-1090-dashboard-overview-assetsoverview-proof:7cabd23652 | module:docs:6784d83cb0 | docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md |
 | documents | document:luc-1099-source-control-closure-for-luc-261-dirty-state:c349f0ce07 | module:docs:6784d83cb0 | docs/planning/luc-1099-source-control-closure-for-luc-261-dirty-state.md |
 | documents | document:luc-110-account-access-auth-headers-function-row-classification:33a5d98774 | module:docs:6784d83cb0 | docs/planning/luc-110-account-access-authheaders-function-row-classification.md |
-| documents | document:luc-1106-source-control-closure-for-luc-962-luc-971-luc-974-luc-977-plus-40-dirty-state:50fc4a4201 | module:docs:6784d83cb0 | docs/planning/luc-1106-source-control-closure-for-luc-962-luc-971-luc-974-luc-977-plus-40.md |
-| documents | document:luc-111-function-level-classification-overrides-for-auth-headers:2ca947ab7a | module:docs:6784d83cb0 | docs/planning/luc-111-function-level-classification-overrides-authheaders.md |

@@ -1,6 +1,73 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-17: [LUC-1373](/LUC/issues/LUC-1373) completed terminal local
+  source-control closure for the combined
+  [LUC-1352](/LUC/issues/LUC-1352) plus
+  [LUC-1360](/LUC/issues/LUC-1360) `USE /operating-graph` packet. Task
+  contract:
+  `.codex/tasks/luc-1373-classify-and-close-local-dirty-state-for-luc-1352-luc-1360.md`.
+  Evidence: bounded git review kept the remaining dirty set attributable to
+  `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept
+  `src/app.ts#/operating-graph` clear of `missing_test_link`, retained the
+  same symbol only as docs-owned `missing_doc_link`, and kept the next QA-owned
+  routed proof gap on `src/app.ts#/operating-model`; `git diff --check`
+  reported only CRLF normalization warnings and no content defects; JSON parse
+  checks passed; and a narrow high-confidence redaction scan found no
+  secret-shaped strings in the authored packet. One scoped local commit
+  preserved the packet and returned the worktree to clean state. No runtime
+  feature logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Push status: not needed;
+  deploy impact: none.
+
+- 2026-07-17: [LUC-1360](/LUC/issues/LUC-1360) completed local
+  source-control closure for the
+  [LUC-1352](/LUC/issues/LUC-1352) `USE /operating-graph` packet. Task
+  contract:
+  `.codex/tasks/luc-1360-classify-and-close-local-dirty-state-for-luc-1352.md`.
+  Evidence: bounded git review kept the remaining dirty set attributable to
+  `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept
+  `src/app.ts#/operating-graph` clear of `missing_test_link`, retained the
+  same symbol only as docs-owned `missing_doc_link`, and kept the next QA-owned
+  routed proof gap on `src/app.ts#/operating-model`; `git diff --check`
+  reported only CRLF normalization warnings and no content defects; JSON parse
+  checks passed; and a narrow high-confidence redaction scan found no
+  secret-shaped strings in the authored `LUC-1352` packet. No runtime feature
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Commit status: not
+  committed by this review lane; push status: not needed; deploy impact: none.
+
+- 2026-07-16: [LUC-1352](/LUC/issues/LUC-1352) unclassified
+  `src/app.ts#/operating-graph` missing-test-link verification is complete
+  locally. Task contract:
+  `.codex/tasks/luc-1352-prove-unclassified-user-workflow-missing-test-link-for-use-operating-graph.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  Operating Graph mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus `src/modules/operating-graph/operating-graph.routes.ts`;
+  focused proof PASS after `npm run build`, `npm run prisma:migrate:deploy`,
+  `npm run seed`, and `node --test --test-name-pattern "CompanyCore v1
+  protected API flow" dist/tests/api.test.js` against local PostgreSQL test
+  container `companycore-test-postgres-luc1352` on port `58010`, followed by
+  cleanup; external architecture-awareness refresh generated
+  `2026-07-16T18:08:03.651Z` with `3094` entities / `8195` relations /
+  `16524` files and materialized the exact proof relation; sequential
+  app-completion refresh now reports `missingTestLink=17`, no longer treats
+  `api_endpoint:use-operating-graph:90c17b9387` as `missing_test_link`, and
+  keeps the same symbol only as docs-owned `missing_doc_link`; Project Truth
+  apply generated `2026-07-16T18:08:18.372Z` with public probes `pass` and
+  advances the next QA-owned routed proof queue to `src/app.ts#/operating-model`
+  while the first overall routed gap stays on `src/app.ts#/operating-graph`
+  for Docs Memory Lead + Project Manager. `npm run architecture:status` PASS
+  (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime
+  product logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Next owner: Docs Memory
+  Lead + Project Manager for the same-symbol docs gap on
+  `src/app.ts#/operating-graph`; source-control closure remains separate.
+
 - 2026-07-16: [LUC-1347](/LUC/issues/LUC-1347) completed the exact
   documentation-link closure for unclassified `src/app.ts#/notes`. Task
   contract:

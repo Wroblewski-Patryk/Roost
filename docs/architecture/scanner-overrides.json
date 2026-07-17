@@ -651,6 +651,16 @@
       ]
     },
     {
+      "path": "src/app.ts#/operating-graph",
+      "status": "verified",
+      "description": "Operating Graph mount verified through the existing protected API suite coverage for same-workspace GET /v1/operating-graph/areas/:areaKey reads, canonical and resolved area-key handling, foreign-workspace isolation, missing-area 404 behavior, and MCP manifest exposure without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/operating-graph/operating-graph.routes.ts",
+        ".codex/tasks/luc-1352-prove-unclassified-user-workflow-missing-test-link-for-use-operating-graph.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/decisions",
       "status": "verified",
       "description": "Decisions mount verified through the existing protected API suite coverage for workspace-scoped POST, GET, PATCH, and DELETE /v1/decisions flows, plus cross-workspace list isolation and emitted decision lifecycle events without changing runtime behavior.",

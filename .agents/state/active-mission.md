@@ -1,5 +1,73 @@
 # Active Mission Packet
 
+## LUC-1373 Checkpoint
+
+- 2026-07-17: [LUC-1373](/LUC/issues/LUC-1373) closed the terminal
+  source-control lane for the [LUC-1352](/LUC/issues/LUC-1352) plus
+  [LUC-1360](/LUC/issues/LUC-1360) `USE /operating-graph` packet. Packet:
+  `.codex/tasks/luc-1373-classify-and-close-local-dirty-state-for-luc-1352-luc-1360.md`.
+  Bounded git review kept the remaining dirty set attributable to
+  `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept
+  `src/app.ts#/operating-graph` clear of `missing_test_link`, retained the
+  same symbol only as docs-owned `missing_doc_link`, and kept the next QA-owned
+  routed proof gap on `src/app.ts#/operating-model`; `git diff --check`
+  reported only CRLF normalization warnings and no content defects; JSON parse
+  checks passed; and the authored packet redaction scan found no
+  secret-shaped strings. Final disposition: one scoped local commit preserved
+  the packet and returned the worktree to clean state. Remaining follow-up is
+  Docs/Product on `src/app.ts#/operating-graph` and QA on
+  `src/app.ts#/operating-model`.
+
+## LUC-1360 Checkpoint
+
+- 2026-07-17: [LUC-1360](/LUC/issues/LUC-1360) closed the source-control
+  review lane for the [LUC-1352](/LUC/issues/LUC-1352)
+  `USE /operating-graph` packet. Packet:
+  `.codex/tasks/luc-1360-classify-and-close-local-dirty-state-for-luc-1352.md`.
+  Bounded git review kept the remaining dirty set attributable to
+  `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept
+  `src/app.ts#/operating-graph` clear of `missing_test_link`, retained the
+  same symbol only as docs-owned `missing_doc_link`, and kept the next QA-owned
+  routed proof gap on `src/app.ts#/operating-model`; `git diff --check`
+  reported only CRLF normalization warnings and no content defects; JSON parse
+  checks passed; and the authored packet redaction scan found no
+  secret-shaped strings. Final disposition: source-control closure verified
+  locally with no commit by this review lane. Remaining follow-up is
+  Docs/Product on `src/app.ts#/operating-graph` and QA on
+  `src/app.ts#/operating-model`.
+
+## LUC-1352 Checkpoint
+
+- 2026-07-16: [LUC-1352](/LUC/issues/LUC-1352) closed the routed
+  unclassified endpoint `src/app.ts#/operating-graph` `missing_test_link`
+  row. Packet:
+  `.codex/tasks/luc-1352-prove-unclassified-user-workflow-missing-test-link-for-use-operating-graph.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Operating
+  Graph mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts` plus
+  `src/modules/operating-graph/operating-graph.routes.ts`; focused proof PASS
+  after `npm run build`, `npm run prisma:migrate:deploy`, `npm run seed`, and
+  `node --test --test-name-pattern "CompanyCore v1 protected API flow"
+  dist/tests/api.test.js` against local PostgreSQL test container
+  `companycore-test-postgres-luc1352` on port `58010`, followed by cleanup;
+  external architecture-awareness refresh generated
+  `2026-07-16T18:08:03.651Z` with `3094` entities / `8195` relations /
+  `16524` files; sequential app-completion refresh generated
+  `missingTestLink=17` and keeps `src/app.ts#/operating-graph` only as
+  docs-owned `missing_doc_link`; sequential Project Truth apply generated
+  `2026-07-16T18:08:18.372Z` with public probes `pass` and advanced the next
+  QA-owned routed proof queue to `src/app.ts#/operating-model`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). No runtime feature logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Final disposition: local proof lane complete. Remaining follow-up
+  is Docs/Product on `src/app.ts#/operating-graph`, plus QA on
+  `src/app.ts#/operating-model`.
+
 ## LUC-1347 Checkpoint
 
 - 2026-07-16: [LUC-1347](/LUC/issues/LUC-1347) closed the documentation lane
