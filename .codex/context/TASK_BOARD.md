@@ -1,6 +1,29 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-17: [LUC-1416](/LUC/issues/LUC-1416) unclassified
+  `src/app.ts#/process-core` missing-test-link verification is complete
+  locally. Task contract:
+  `.codex/tasks/luc-1416-prove-unclassified-user-workflow-missing-test-link-for-use-process-core.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  Process Core mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/process-core/process-core.routes.ts`,
+  and `docs/planning/luc-5220-process-core-api-journey-proof.md`, plus
+  explicit route-to-test and route-to-document relation overrides; `npm run
+  test:api:local` PASS after server/web build, `31` migrations, seed, and
+  `8/8` protected API subtests; external architecture-awareness refresh
+  generated `2026-07-17T22:25:39.613Z` with `3107` entities / `8316`
+  relations / `16524` files; refreshed app-completion reports `13` missing
+  test links and no longer routes `api_endpoint:use-process-core:ccf2131793`
+  as `missing_test_link`; refreshed Project Truth generated
+  `2026-07-17T22:25:59.223Z` with public probes `pass` and advances the next
+  QA-owned routed proof queue to `src/app.ts#/projects` while the first
+  docs-owned route gap stays on `src/app.ts#/connection`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`). No runtime product
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Push status: not needed;
+  deploy impact: none.
+
 - 2026-07-17: [LUC-1411](/LUC/issues/LUC-1411) terminal local source-control
   closure for the `LUC-1401` Pipeline Stages proof-link packet is complete
   locally. Task contract:

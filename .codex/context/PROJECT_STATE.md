@@ -1,5 +1,34 @@
 # PROJECT_STATE
 
+- 2026-07-17: [LUC-1416](/LUC/issues/LUC-1416) completed the local
+  missing-test-link closure for unclassified `src/app.ts#/process-core`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1416-prove-unclassified-user-workflow-missing-test-link-for-use-process-core.md`.
+  Current evidence: `docs/architecture/scanner-overrides.json` now marks the
+  exact Process Core mount `verified` through the existing protected API suite
+  in `src/tests/api.test.ts`, `src/modules/process-core/process-core.routes.ts`,
+  and `docs/planning/luc-5220-process-core-api-journey-proof.md`, plus
+  explicit route-to-test and route-to-document relation overrides; focused
+  local protected API proof PASS via `npm run test:api:local`, which built
+  server/web, applied all `31` migrations to disposable PostgreSQL on
+  `127.0.0.1:55432`, seeded data, and passed `8/8` subtests; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-17T22:25:39.613Z` with `3107` entities / `8316`
+  relations / `16524` files and materialized the exact proof relations;
+  sequential app-completion refresh now reports `46` items / `4` flows / `13`
+  missing test links / `1` missing doc link / `0` implemented-needs-proof /
+  `0` blocked / `14` risk items, no longer routes
+  `api_endpoint:use-process-core:ccf2131793` as `missing_test_link`, and
+  leaves only `src/app.ts#/connection` as the docs-owned route gap; Project
+  Truth apply generated `2026-07-17T22:25:59.223Z` with public probes `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and advances the next QA-owned routed proof queue to
+  `src/app.ts#/projects`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime feature
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Deploy impact: none. Push
+  status: not needed.
+
 - 2026-07-17: [LUC-1411](/LUC/issues/LUC-1411) completed terminal local
   source-control closure for the `LUC-1401` Pipeline Stages proof-link packet.
   Source-of-truth task packet:

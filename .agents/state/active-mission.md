@@ -1,5 +1,32 @@
 # Active Mission Packet
 
+## LUC-1416 Checkpoint
+
+- 2026-07-17: [LUC-1416](/LUC/issues/LUC-1416) closed the routed
+  unclassified endpoint `src/app.ts#/process-core` `missing_test_link` row.
+  Packet:
+  `.codex/tasks/luc-1416-prove-unclassified-user-workflow-missing-test-link-for-use-process-core.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Process Core
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/process-core/process-core.routes.ts`,
+  and `docs/planning/luc-5220-process-core-api-journey-proof.md`, plus
+  explicit route-to-test and route-to-document relation overrides; focused
+  proof PASS via `npm run test:api:local`, which built server/web, applied all
+  `31` migrations to disposable PostgreSQL on `127.0.0.1:55432`, seeded data,
+  and passed `8/8` subtests; external architecture-awareness refresh
+  generated `2026-07-17T22:25:39.613Z` with `3107` entities / `8316`
+  relations / `16524` files; sequential app-completion refresh generated
+  `missingTestLink=13` and removed `src/app.ts#/process-core` from the QA
+  proof queue; sequential Project Truth apply generated
+  `2026-07-17T22:25:59.223Z` with public probes `pass` and advanced the next
+  QA-owned routed proof queue to `src/app.ts#/projects`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). No runtime feature logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Final disposition: local proof lane complete. Remaining follow-up
+  is Docs/Product on `src/app.ts#/connection` and QA on
+  `src/app.ts#/projects`.
+
 ## LUC-1411 Checkpoint
 
 - 2026-07-17: [LUC-1411](/LUC/issues/LUC-1411) closed the terminal local

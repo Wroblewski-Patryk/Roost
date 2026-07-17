@@ -1,4 +1,20 @@
 # Next Steps
+- 2026-07-17: [LUC-1416](/LUC/issues/LUC-1416) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/process-core`. The durable packet is
+  `.codex/tasks/luc-1416-prove-unclassified-user-workflow-missing-test-link-for-use-process-core.md`.
+  Current fact: refreshed architecture-awareness marks the exact Process Core
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/process-core/process-core.routes.ts`,
+  and `docs/planning/luc-5220-process-core-api-journey-proof.md`, plus
+  explicit route-to-test and route-to-document relation overrides; refreshed
+  app-completion no longer routes `api_endpoint:use-process-core:ccf2131793`
+  as `missing_test_link`; Project Truth now routes the next QA-owned proof
+  queue to `src/app.ts#/projects` while the remaining docs-owned route gap
+  stays on `src/app.ts#/connection`. Do not reopen another QA proof lane for
+  `src/app.ts#/process-core` unless a fresh generated regression removes the
+  linked runtime evidence.
+
 - 2026-07-17: [LUC-1411](/LUC/issues/LUC-1411) completed terminal local
   source-control closure for the `LUC-1401` Pipeline Stages proof-link packet.
   The durable packet is

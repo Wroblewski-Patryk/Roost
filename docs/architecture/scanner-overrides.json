@@ -683,6 +683,17 @@
       ]
     },
     {
+      "path": "src/app.ts#/process-core",
+      "status": "verified",
+      "description": "Process Core mount verified through the existing protected API suite coverage for unauthenticated denial plus workspace-scoped GET /v1/process-core/coverage reads, route capability exposure, MCP/profile visibility, no-mutation read posture, and scoped credential denial without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/process-core/process-core.routes.ts",
+        "docs/planning/luc-5220-process-core-api-journey-proof.md",
+        ".codex/tasks/luc-1416-prove-unclassified-user-workflow-missing-test-link-for-use-process-core.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/operations",
       "status": "verified",
       "description": "Operations mount verified through the existing protected API suite coverage for unauthenticated denial plus workspace-scoped GET /v1/operations/context and GET /v1/operations/work-items reads, no-mutation guarantees, foreign-workspace isolation, and MCP manifest exposure without changing runtime behavior.",
@@ -3946,6 +3957,30 @@
       "toPath": "src/modules/pipeline-stages/README.md",
       "toType": "document",
       "evidence": "LUC-1401 pipeline stages route documentation proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/process-core",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1416 process core route API proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1416-prove-unclassified-user-workflow-missing-test-link-for-use-process-core.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/process-core",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1416 process core proof-link packet"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/process-core",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-5220-process-core-api-journey-proof.md",
+      "toType": "document",
+      "evidence": "LUC-1416 process core route documentation proof-link closure"
     },
     {
       "type": "tests",

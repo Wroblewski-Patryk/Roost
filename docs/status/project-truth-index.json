@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-17T21:08:52.375Z",
+  "generatedAt": "2026-07-17T22:25:59.223Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "gaps_require_routing",
@@ -9,42 +9,29 @@
     "incompleteEventChains": 0,
     "runtimeFindings": 0,
     "criticalRuntimeFindings": 0,
-    "appCompletionGaps": 15,
-    "indexedAppCompletionGaps": 15,
-    "knownAppCompletionRiskItems": 15,
-    "appCompletionPriorityReviewItems": 15,
+    "appCompletionGaps": 14,
+    "indexedAppCompletionGaps": 14,
+    "knownAppCompletionRiskItems": 14,
+    "appCompletionPriorityReviewItems": 14,
     "appCompletionPriorityReviewTruncated": false,
     "operationalGateGaps": 0,
-    "indexedGaps": 15,
-    "totalGaps": 15
+    "indexedGaps": 14,
+    "totalGaps": 14
   },
   "firstGap": {
     "kind": "app_completion_gap",
     "severity": "medium",
     "userFlow": "Unclassified user workflow",
-    "summary": "Unclassified user workflow: USE /process-core has app-completion risk missing_test_link.",
+    "summary": "Unclassified user workflow: USE /projects has app-completion risk missing_test_link.",
     "nextOwner": "Test Automation Engineer + QA Regression Lead",
     "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
     "evidence": [
-      "src/app.ts#/process-core"
+      "src/app.ts#/projects"
     ],
-    "sourceItemId": "api_endpoint:use-process-core:ccf2131793",
+    "sourceItemId": "api_endpoint:use-projects:2ab7f26357",
     "risk": "missing_test_link"
   },
   "gaps": [
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /process-core has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/app.ts#/process-core"
-      ],
-      "sourceItemId": "api_endpoint:use-process-core:ccf2131793",
-      "risk": "missing_test_link"
-    },
     {
       "kind": "app_completion_gap",
       "severity": "medium",
