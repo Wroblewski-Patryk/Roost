@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-17T18:31:36.408Z",
+  "generatedAt": "2026-07-17T19:56:37.771Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -8,25 +8,25 @@
     "items": 46,
     "flows": 4,
     "needsBrowserReview": 0,
-    "missingTestLink": 17,
+    "missingTestLink": 15,
     "missingDocLink": 1,
     "implementedNeedsProof": 0,
     "blocked": 0,
-    "riskItems": 18,
-    "appCompletionRiskItems": 18,
-    "priorityReviewItems": 18,
+    "riskItems": 16,
+    "appCompletionRiskItems": 16,
+    "priorityReviewItems": 16,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": false
   },
   "flows": [
     {
       "userFlow": "Account access",
-      "total": 9,
+      "total": 10,
       "risks": {
-        "ok": 9
+        "ok": 10
       },
       "gates": {
-        "auth": 9,
+        "auth": 10,
         "configuration": 1
       }
     },
@@ -40,13 +40,13 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "total": 34,
+      "total": 33,
       "risks": {
-        "ok": 18,
-        "missing_test_link": 16
+        "ok": 19,
+        "missing_test_link": 14
       },
       "gates": {
-        "auth": 15
+        "auth": 16
       }
     },
     {
@@ -63,44 +63,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "api_endpoint:use-operating-model:dcc5e71b5f",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /operating-model",
-      "path": "src/app.ts#/operating-model",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Unclassified user workflow",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "api_endpoint:use-operations:f4ce71f687",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /operations",
-      "path": "src/app.ts#/operations",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Unclassified user workflow",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
     {
       "id": "api_endpoint:use-pipeline-stages:d21ba6038b",
       "type": "api_endpoint",

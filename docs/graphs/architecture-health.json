@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-07-17T18:29:39.089Z",
+  "generated_at": "2026-07-17T19:54:45.654Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 3099,
-    "relations": 8227,
+    "entities": 3103,
+    "relations": 8265,
     "by_type": {
       "agent": 47,
       "api_endpoint": 46,
@@ -18,16 +18,16 @@
       "model": 5,
       "module": 67,
       "project": 1,
-      "task": 160,
+      "task": 164,
       "test": 82
     },
     "by_status": {
       "blocked": 1,
       "deprecated": 6,
-      "implemented": 2677,
-      "in_progress": 11,
+      "implemented": 2675,
+      "in_progress": 10,
       "tested": 19,
-      "verified": 385
+      "verified": 392
     }
   },
   "signals": {
@@ -191,7 +191,7 @@
           "type": "api_endpoint",
           "name": "USE /operating-model",
           "path": "src/app.ts#/operating-model",
-          "status": "implemented",
+          "status": "verified",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -199,7 +199,7 @@
           "type": "api_endpoint",
           "name": "USE /operations",
           "path": "src/app.ts#/operations",
-          "status": "implemented",
+          "status": "verified",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -1800,7 +1800,7 @@
           "type": "api_endpoint",
           "name": "USE /operating-model",
           "path": "src/app.ts#/operating-model",
-          "status": "implemented",
+          "status": "verified",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -1808,7 +1808,7 @@
           "type": "api_endpoint",
           "name": "USE /operations",
           "path": "src/app.ts#/operations",
-          "status": "implemented",
+          "status": "verified",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -3384,7 +3384,7 @@
       "items": []
     },
     "tasks_without_architecture": {
-      "count": 13,
+      "count": 12,
       "items": [
         {
           "id": "task:task:57e15dbd18",
@@ -3392,14 +3392,6 @@
           "name": "Task",
           "path": ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
           "status": "verified",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "task:luc-1378-completion-evidence:d206c8492f",
-          "type": "task",
-          "name": "LUC-1378 Completion Evidence",
-          "path": ".codex/tasks/luc-1378-completion-evidence.md",
-          "status": "in_progress",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -3493,7 +3485,7 @@
       ]
     },
     "raw_tasks_without_architecture": {
-      "count": 13,
+      "count": 12,
       "items": [
         {
           "id": "task:task:57e15dbd18",
@@ -3501,14 +3493,6 @@
           "name": "Task",
           "path": ".codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md",
           "status": "verified",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "task:luc-1378-completion-evidence:d206c8492f",
-          "type": "task",
-          "name": "LUC-1378 Completion Evidence",
-          "path": ".codex/tasks/luc-1378-completion-evidence.md",
-          "status": "in_progress",
           "owner": "Engineering Delivery Lead"
         },
         {

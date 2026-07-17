@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-17T18:31:36.587Z",
+  "generatedAt": "2026-07-17T19:56:37.777Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "gaps_require_routing",
@@ -9,55 +9,29 @@
     "incompleteEventChains": 0,
     "runtimeFindings": 0,
     "criticalRuntimeFindings": 0,
-    "appCompletionGaps": 18,
-    "indexedAppCompletionGaps": 18,
-    "knownAppCompletionRiskItems": 18,
-    "appCompletionPriorityReviewItems": 18,
+    "appCompletionGaps": 16,
+    "indexedAppCompletionGaps": 16,
+    "knownAppCompletionRiskItems": 16,
+    "appCompletionPriorityReviewItems": 16,
     "appCompletionPriorityReviewTruncated": false,
     "operationalGateGaps": 0,
-    "indexedGaps": 18,
-    "totalGaps": 18
+    "indexedGaps": 16,
+    "totalGaps": 16
   },
   "firstGap": {
     "kind": "app_completion_gap",
     "severity": "medium",
     "userFlow": "Unclassified user workflow",
-    "summary": "Unclassified user workflow: USE /operating-model has app-completion risk missing_test_link.",
+    "summary": "Unclassified user workflow: USE /pipeline-stages has app-completion risk missing_test_link.",
     "nextOwner": "Test Automation Engineer + QA Regression Lead",
     "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
     "evidence": [
-      "src/app.ts#/operating-model"
+      "src/app.ts#/pipeline-stages"
     ],
-    "sourceItemId": "api_endpoint:use-operating-model:dcc5e71b5f",
+    "sourceItemId": "api_endpoint:use-pipeline-stages:d21ba6038b",
     "risk": "missing_test_link"
   },
   "gaps": [
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /operating-model has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/app.ts#/operating-model"
-      ],
-      "sourceItemId": "api_endpoint:use-operating-model:dcc5e71b5f",
-      "risk": "missing_test_link"
-    },
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /operations has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/app.ts#/operations"
-      ],
-      "sourceItemId": "api_endpoint:use-operations:f4ce71f687",
-      "risk": "missing_test_link"
-    },
     {
       "kind": "app_completion_gap",
       "severity": "medium",

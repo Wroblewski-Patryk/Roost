@@ -1,5 +1,79 @@
 # Active Mission Packet
 
+## LUC-1399 Checkpoint
+
+- 2026-07-17: [LUC-1399](/LUC/issues/LUC-1399) closed the terminal local
+  source-control lane for the combined
+  [LUC-1392](/LUC/issues/LUC-1392) plus
+  [LUC-1398](/LUC/issues/LUC-1398) proof-link packet. Packet:
+  `.codex/tasks/luc-1399-close-local-dirty-state-for-luc-1392-use-operating-model-packet.md`.
+  Bounded git review kept the remaining dirty set attributable to
+  `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept
+  `src/app.ts#/operating-model` and `src/app.ts#/operations` clear of
+  `missing_test_link`, left the remaining docs-owned route gap on
+  `src/app.ts#/connection`, and kept the next QA-owned routed proof gap on
+  `src/app.ts#/pipeline-stages`; `git diff --check` reported only CRLF
+  normalization warnings and no content defects; JSON parse checks passed; and
+  a bounded redaction scan found no secret-shaped strings. Final disposition:
+  one scoped local commit preserved the packet and returned the worktree to
+  clean state. Remaining follow-up is Docs/Product on `src/app.ts#/connection`
+  and QA on `src/app.ts#/pipeline-stages`.
+
+## LUC-1398 Checkpoint
+
+- 2026-07-17: [LUC-1398](/LUC/issues/LUC-1398) closed the routed
+  unclassified endpoint `src/app.ts#/operations` `missing_test_link` row.
+  Packet:
+  `.codex/tasks/luc-1398-prove-unclassified-user-workflow-missing-test-link-for-use-operations.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Operations
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/operations/operations.routes.ts`,
+  `docs/planning/cc-04-002-operations-work-item-read-model-task-contract.md`,
+  and `docs/planning/v1-operations-context-read-api-task-contract.md`;
+  focused proof PASS via `npm run test:api:local`, which built server/web,
+  applied all `31` migrations to disposable PostgreSQL on `127.0.0.1:55432`,
+  seeded data, and passed `8/8` subtests; external architecture-awareness
+  refresh generated `2026-07-17T19:54:45.654Z` with `3103` entities / `8265`
+  relations / `16524` files; sequential app-completion refresh generated
+  `missingTestLink=15` and removed `src/app.ts#/operations` from the QA proof
+  queue; sequential Project Truth apply generated `2026-07-17T19:56:37.777Z`
+  with public probes `pass` and advanced the next QA-owned routed proof queue
+  to `src/app.ts#/pipeline-stages` `missing_test_link`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`). No runtime feature
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Final disposition: local
+  proof lane complete. Remaining follow-up is Docs/Product on
+  `src/app.ts#/connection`, QA on `src/app.ts#/pipeline-stages`, and
+  source-control closure through [LUC-1399](/LUC/issues/LUC-1399).
+
+## LUC-1392 Checkpoint
+
+- 2026-07-17: [LUC-1392](/LUC/issues/LUC-1392) closed the routed
+  unclassified endpoint `src/app.ts#/operating-model` `missing_test_link`
+  row. Packet:
+  `.codex/tasks/luc-1392-prove-unclassified-user-workflow-missing-test-link-for-use-operating-model.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Operating
+  Model mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/operating-model/operating-model.routes.ts`,
+  and `docs/planning/luc-5226-operating-model-api-journey-proof.md`; focused
+  proof PASS via `npm run test:api:local`, which built server/web, applied all
+  `31` migrations to disposable PostgreSQL on `127.0.0.1:55432`, seeded data,
+  and passed `8/8` subtests; external architecture-awareness refresh
+  generated `2026-07-17T19:40:37.350Z` with `3102` entities / `8252`
+  relations / `16524` files; sequential app-completion refresh generated
+  `missingTestLink=16` and removed `src/app.ts#/operating-model` from the QA
+  proof queue; sequential Project Truth apply generated
+  `2026-07-17T19:41:39.861Z` with public probes `pass` and advanced the next
+  QA-owned routed proof queue to `src/app.ts#/operations`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). No runtime feature logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Final disposition: local proof lane complete. Remaining follow-up
+  is Docs/Product on `src/app.ts#/connection`, QA on `src/app.ts#/operations`,
+  and source-control closure through [LUC-1399](/LUC/issues/LUC-1399).
+
 ## LUC-1378 Checkpoint
 
 - 2026-07-17: [LUC-1378](/LUC/issues/LUC-1378) closed the documentation lane

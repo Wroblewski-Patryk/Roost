@@ -1,6 +1,6 @@
 # Task Synchronization Report
 
-Generated: 2026-07-17T18:29:39.089Z
+Generated: 2026-07-17T19:54:45.654Z
 
 ## Contract
 
@@ -8,8 +8,8 @@ Every task should identify the feature/module it changes, dependency expectation
 
 ## Signals
 
-- Actionable tasks without architecture links: 13
-- Raw tasks without architecture links: 13
+- Actionable tasks without architecture links: 12
+- Raw tasks without architecture links: 12
 - Actionable implementation entities without task links: 0
 - Raw implementation entities without task links: 0
 - Classified task-linkage noise: 0
@@ -21,7 +21,6 @@ Every task should identify the feature/module it changes, dependency expectation
 ## Actionable Tasks Without Architecture Links
 
 - Task (.codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md)
-- LUC-1378 Completion Evidence (.codex/tasks/luc-1378-completion-evidence.md)
 - LUC-527 Account Access Missing-Test-Link Proof (.codex/tasks/luc-527-account-access-missing-test-link-proof.md)
 - LUC-538 Account Access Google Drive Auth Proof (.codex/tasks/luc-538-account-access-google-drive-auth-proof.md)
 - LUC-546 Account Access Google Drive Authorization URL Proof (.codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md)
@@ -42,7 +41,6 @@ Every task should identify the feature/module it changes, dependency expectation
 ### Raw Tasks Without Architecture Links
 
 - Task (.codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md)
-- LUC-1378 Completion Evidence (.codex/tasks/luc-1378-completion-evidence.md)
 - LUC-527 Account Access Missing-Test-Link Proof (.codex/tasks/luc-527-account-access-missing-test-link-proof.md)
 - LUC-538 Account Access Google Drive Auth Proof (.codex/tasks/luc-538-account-access-google-drive-auth-proof.md)
 - LUC-546 Account Access Google Drive Authorization URL Proof (.codex/tasks/luc-546-account-access-google-drive-authorization-url-proof.md)

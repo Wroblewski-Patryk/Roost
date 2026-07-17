@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-17T18:29:39.089Z
+Generated: 2026-07-17T19:54:45.654Z
 
 ## Canonical Exports
 
@@ -42,7 +42,7 @@ Generated: 2026-07-17T18:29:39.089Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-16 LUC-1352 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-17 LUC-1392 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
@@ -87,8 +87,8 @@ Generated: 2026-07-17T18:29:39.089Z
 | api_endpoint | verified | USE /mcp | src/app.ts#/mcp | Engineering Delivery Lead |
 | api_endpoint | verified | USE /notes | src/app.ts#/notes | Engineering Delivery Lead |
 | api_endpoint | verified | USE /operating-graph | src/app.ts#/operating-graph | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /operating-model | src/app.ts#/operating-model | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /operations | src/app.ts#/operations | Engineering Delivery Lead |
+| api_endpoint | verified | USE /operating-model | src/app.ts#/operating-model | Engineering Delivery Lead |
+| api_endpoint | verified | USE /operations | src/app.ts#/operations | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /pipeline-stages | src/app.ts#/pipeline-stages | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /process-core | src/app.ts#/process-core | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /projects | src/app.ts#/projects | Engineering Delivery Lead |
@@ -667,8 +667,12 @@ Generated: 2026-07-17T18:29:39.089Z
 | connected_to | project:roost:122c92a083 | task:task:272a8962ca | .codex/tasks/luc-1352-prove-unclassified-user-workflow-missing-test-link-for-use-operating-graph.md |
 | connected_to | project:roost:122c92a083 | task:task:75a4d8a255 | .codex/tasks/luc-1360-classify-and-close-local-dirty-state-for-luc-1352.md |
 | connected_to | project:roost:122c92a083 | task:task:c9bf465e72 | .codex/tasks/luc-1373-classify-and-close-local-dirty-state-for-luc-1352-luc-1360.md |
+| connected_to | project:roost:122c92a083 | task:luc-1378-closeout:4e98222998 | .codex/tasks/luc-1378-closeout.md |
 | connected_to | project:roost:122c92a083 | task:luc-1378-completion-evidence:d206c8492f | .codex/tasks/luc-1378-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:3e7deaf3b8 | .codex/tasks/luc-1378-prove-unclassified-user-workflow-missing-doc-link-for-use-operating-graph.md |
+| connected_to | project:roost:122c92a083 | task:task:08cb3d15bf | .codex/tasks/luc-1390-classify-and-close-local-dirty-state-for-luc-1378.md |
+| connected_to | project:roost:122c92a083 | task:task:eec1aa4bd0 | .codex/tasks/luc-1392-prove-unclassified-user-workflow-missing-test-link-for-use-operating-model.md |
+| connected_to | project:roost:122c92a083 | task:task:73b70c3048 | .codex/tasks/luc-1398-prove-unclassified-user-workflow-missing-test-link-for-use-operations.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -728,7 +732,7 @@ Generated: 2026-07-17T18:29:39.089Z
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
 | documents | agent:2026-07-16-luc-1345-notes-packet-source-control-health-signal:32fa801938 | module:agents:4ae71ba13a | .agents/state/system-health.md |
-| documents | agent:2026-07-16-luc-1352-module-confidence-update:bd0037e0c8 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
+| documents | agent:2026-07-17-luc-1392-module-confidence-update:bf1ca9d56e | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -1214,7 +1218,3 @@ Generated: 2026-07-17T18:29:39.089Z
 | documents | document:luc-1022-account-access-clearownertoken-proof:2f4702a717 | module:docs:6784d83cb0 | docs/planning/luc-1022-account-access-clear-owner-token-proof.md |
 | documents | document:luc-1038-account-access-issignedin-proof:dc0bf99ae1 | module:docs:6784d83cb0 | docs/planning/luc-1038-account-access-is-signed-in-proof.md |
 | documents | document:luc-1043-account-access-ownertoken-proof:9b5c9a14ff | module:docs:6784d83cb0 | docs/planning/luc-1043-account-access-owner-token-proof.md |
-| documents | document:luc-1055-known-state-evidence-collection-and-architecture-baseline-md:edfe33628f | module:docs:6784d83cb0 | docs/planning/luc-1055-known-state-evidence-collection-and-architecture-baseline.md |
-| documents | document:luc-1063-account-access-setownertoken-proof:d71d832ff2 | module:docs:6784d83cb0 | docs/planning/luc-1063-account-access-set-owner-token-proof.md |
-| documents | document:luc-1066-dashboard-overview-use-dashboard-proof-link:8363b6e9c5 | module:docs:6784d83cb0 | docs/planning/luc-1066-dashboard-overview-use-dashboard-proof-link.md |
-| documents | document:luc-107-account-access-auth-headers-fresh-proof:153bf13d90 | module:docs:6784d83cb0 | docs/planning/luc-107-account-access-authheaders-fresh-proof.md |

@@ -1,5 +1,83 @@
 # PROJECT_STATE
 
+- 2026-07-17: [LUC-1399](/LUC/issues/LUC-1399) completed terminal local
+  source-control closure for the combined
+  [LUC-1392](/LUC/issues/LUC-1392) plus
+  [LUC-1398](/LUC/issues/LUC-1398) proof-link packet. Source-of-truth task
+  packet:
+  `.codex/tasks/luc-1399-close-local-dirty-state-for-luc-1392-use-operating-model-packet.md`.
+  Current evidence: bounded git review kept the remaining dirty set
+  attributable to `.codex/tasks`, `.codex/context`, `.agents/state`,
+  `docs/architecture/scanner-overrides.json`, `docs/graphs/*`, and
+  `docs/status/*`; representative generated readback kept
+  `src/app.ts#/operating-model` and `src/app.ts#/operations` clear of
+  `missing_test_link`, left the remaining docs-owned route gap on
+  `src/app.ts#/connection`, and kept the next QA-owned routed proof gap on
+  `src/app.ts#/pipeline-stages`; `git diff --check` reported only CRLF
+  normalization warnings and no content defects; JSON parse checks passed; and
+  a bounded redaction scan found no secret-shaped strings. One scoped local
+  commit preserved the packet and returned the worktree to clean state. No
+  runtime feature logic, provider call, deploy, push, restart, production
+  mutation, credential access, or secret disclosure occurred. Deploy impact:
+  none. Push status: not needed.
+
+- 2026-07-17: [LUC-1398](/LUC/issues/LUC-1398) completed the local
+  missing-test-link closure for unclassified `src/app.ts#/operations`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1398-prove-unclassified-user-workflow-missing-test-link-for-use-operations.md`.
+  Current evidence: `docs/architecture/scanner-overrides.json` now marks the
+  exact Operations mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/operations/operations.routes.ts`,
+  `docs/planning/cc-04-002-operations-work-item-read-model-task-contract.md`,
+  and `docs/planning/v1-operations-context-read-api-task-contract.md`;
+  focused proof PASS via `npm run test:api:local`, which built server/web,
+  applied all `31` migrations to disposable PostgreSQL on `127.0.0.1:55432`,
+  seeded data, and passed `8/8` subtests; `npm run architecture:refresh`
+  PASS; external architecture-awareness refresh generated
+  `2026-07-17T19:54:45.654Z` with `3103` entities / `8265` relations /
+  `16524` files and materialized the exact proof relation; sequential
+  app-completion refresh now reports `46` items / `4` flows / `15` missing
+  test links / `1` missing doc link / `0` implemented-needs-proof / `0`
+  blocked / `16` risk items, no longer routes
+  `api_endpoint:use-operations:f4ce71f687` as `missing_test_link`, and leaves
+  only `src/app.ts#/connection` as the docs-owned route gap; Project Truth
+  apply generated `2026-07-17T19:56:37.777Z` with public probes `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and advances the next QA-owned routed proof queue to
+  `src/app.ts#/pipeline-stages`; `npm run architecture:status` PASS
+  (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime
+  feature logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Deploy impact: none. Push
+  status: local packet preserved through [LUC-1399](/LUC/issues/LUC-1399).
+
+- 2026-07-17: [LUC-1392](/LUC/issues/LUC-1392) completed the local
+  missing-test-link closure for unclassified `src/app.ts#/operating-model`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1392-prove-unclassified-user-workflow-missing-test-link-for-use-operating-model.md`.
+  Current evidence: `docs/architecture/scanner-overrides.json` now marks the
+  exact Operating Model mount `verified` through the existing protected API
+  suite in `src/tests/api.test.ts`, `src/modules/operating-model/operating-model.routes.ts`,
+  and `docs/planning/luc-5226-operating-model-api-journey-proof.md`; focused
+  local protected API proof PASS via `npm run test:api:local`, which built
+  server/web, applied all `31` migrations to disposable PostgreSQL on
+  `127.0.0.1:55432`, seeded data, and passed `8/8` subtests; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  generated `2026-07-17T19:40:37.350Z` with `3102` entities / `8252`
+  relations / `16524` files and materialized the exact proof relation;
+  sequential app-completion refresh now reports `46` items / `4` flows / `16`
+  missing test links / `1` missing doc link / `0`
+  implemented-needs-proof / `0` blocked / `17` risk items, no longer routes
+  `api_endpoint:use-operating-model:dcc5e71b5f` as `missing_test_link`, and
+  leaves only `src/app.ts#/connection` as the docs-owned route gap; Project
+  Truth apply generated `2026-07-17T19:41:39.861Z` with public probes `pass`,
+  runtime findings `0`, incomplete event chains `0`, operational gate gaps
+  `0`, and advances the next QA-owned routed proof queue to
+  `src/app.ts#/operations`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime feature
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Deploy impact: none. Push
+  status: local packet preserved through [LUC-1399](/LUC/issues/LUC-1399).
+
 - 2026-07-17: [LUC-1378](/LUC/issues/LUC-1378) completed the local
   documentation-link closure for unclassified `src/app.ts#/operating-graph`.
   Source-of-truth task packet:

@@ -1,4 +1,50 @@
 # Next Steps
+- 2026-07-17: [LUC-1399](/LUC/issues/LUC-1399) completed terminal local
+  source-control closure for the combined
+  [LUC-1392](/LUC/issues/LUC-1392) plus
+  [LUC-1398](/LUC/issues/LUC-1398) proof-link packet. The durable packet is
+  `.codex/tasks/luc-1399-close-local-dirty-state-for-luc-1392-use-operating-model-packet.md`.
+  Current fact: bounded git review, representative generated readback,
+  `git diff --check`, JSON parse checks, and a bounded redaction scan
+  classified the packet as current/coherent; one scoped local commit preserved
+  the packet and returned the worktree to clean state. Do not reopen another
+  closure lane for this packet unless fresh work makes the repo dirty again.
+
+- 2026-07-17: [LUC-1398](/LUC/issues/LUC-1398) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/operations`. The durable packet is
+  `.codex/tasks/luc-1398-prove-unclassified-user-workflow-missing-test-link-for-use-operations.md`.
+  Current fact: refreshed architecture-awareness marks the exact Operations
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/operations/operations.routes.ts`,
+  `docs/planning/cc-04-002-operations-work-item-read-model-task-contract.md`,
+  and `docs/planning/v1-operations-context-read-api-task-contract.md`;
+  refreshed app-completion no longer routes
+  `api_endpoint:use-operations:f4ce71f687` as `missing_test_link`; Project
+  Truth now routes the next QA-owned proof queue to
+  `src/app.ts#/pipeline-stages` while the remaining docs-owned route gap stays
+  on `src/app.ts#/connection`. Do not reopen another QA proof lane for
+  `src/app.ts#/operations` unless a fresh generated regression removes the
+  linked runtime evidence. Source-control closure completed in
+  [LUC-1399](/LUC/issues/LUC-1399).
+
+- 2026-07-17: [LUC-1392](/LUC/issues/LUC-1392) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/operating-model`. The durable packet is
+  `.codex/tasks/luc-1392-prove-unclassified-user-workflow-missing-test-link-for-use-operating-model.md`.
+  Current fact: refreshed architecture-awareness marks the exact Operating
+  Model mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/operating-model/operating-model.routes.ts`,
+  and `docs/planning/luc-5226-operating-model-api-journey-proof.md`;
+  refreshed app-completion no longer routes
+  `api_endpoint:use-operating-model:dcc5e71b5f` as `missing_test_link`;
+  Project Truth now routes the next QA-owned proof queue to
+  `src/app.ts#/operations` while the remaining docs-owned route gap stays on
+  `src/app.ts#/connection`. Do not reopen another QA proof lane for
+  `src/app.ts#/operating-model` unless a fresh generated regression removes
+  the linked runtime evidence. Source-control closure completed in
+  [LUC-1399](/LUC/issues/LUC-1399).
+
 - 2026-07-17: [LUC-1378](/LUC/issues/LUC-1378) has no remaining documentation
   action for exact unclassified `src/app.ts#/operating-graph`. The durable
   packet is

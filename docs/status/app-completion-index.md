@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-07-17T18:31:36.408Z
+Generated: 2026-07-17T19:56:37.771Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -16,18 +16,18 @@ Internal functions and modules are implementation details: they receive proof th
 - Items: 46
 - User flows: 4
 - Needs browser/screenshot review: 0
-- Missing test link: 17
+- Missing test link: 15
 - Missing doc link: 1
 - Implemented, needs proof: 0
 - Blocked: 0
-- Known non-ok risk items: 18
-- Priority review items indexed: 18/18
+- Known non-ok risk items: 16
+- Priority review items indexed: 16/16
 - Priority review truncated: false
 
 ## Flow Summary
 
-- Unclassified user workflow: 34 entities; risks {"ok":18,"missing_test_link":16}; gates {"auth":15}
-- Account access: 9 entities; risks {"ok":9}; gates {"auth":9,"configuration":1}
+- Unclassified user workflow: 33 entities; risks {"ok":19,"missing_test_link":14}; gates {"auth":16}
+- Account access: 10 entities; risks {"ok":10}; gates {"auth":10,"configuration":1}
 - User configuration: 2 entities; risks {"missing_doc_link":1,"missing_test_link":1}; gates {"auth":1,"configuration":2}
 - Dashboard overview: 1 entities; risks {"ok":1}; gates {}
 
@@ -35,8 +35,6 @@ Internal functions and modules are implementation details: they receive proof th
 
 | User flow | Risk | Kind | Entity | Owner | Path | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
-| Unclassified user workflow | missing_test_link | api_endpoint | USE /operating-model | Engineering Delivery Lead | src/app.ts#/operating-model | - |
-| Unclassified user workflow | missing_test_link | api_endpoint | USE /operations | Engineering Delivery Lead | src/app.ts#/operations | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /pipeline-stages | Engineering Delivery Lead | src/app.ts#/pipeline-stages | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /process-core | Engineering Delivery Lead | src/app.ts#/process-core | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /projects | Engineering Delivery Lead | src/app.ts#/projects | - |

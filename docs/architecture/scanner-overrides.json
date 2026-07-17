@@ -661,6 +661,29 @@
       ]
     },
     {
+      "path": "src/app.ts#/operating-model",
+      "status": "verified",
+      "description": "Operating Model mount verified through the existing protected API suite coverage for workspace-scoped GET /v1/operating-model aggregate reads, canonical system-area restoration, guarded system-area deletion, owner-scoped operating resource lifecycle commands, cross-workspace scoped-resource denial, and route capability exposure without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/operating-model/operating-model.routes.ts",
+        "docs/planning/luc-5226-operating-model-api-journey-proof.md",
+        ".codex/tasks/luc-1392-prove-unclassified-user-workflow-missing-test-link-for-use-operating-model.md"
+      ]
+    },
+    {
+      "path": "src/app.ts#/operations",
+      "status": "verified",
+      "description": "Operations mount verified through the existing protected API suite coverage for unauthenticated denial plus workspace-scoped GET /v1/operations/context and GET /v1/operations/work-items reads, no-mutation guarantees, foreign-workspace isolation, and MCP manifest exposure without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/operations/operations.routes.ts",
+        "docs/planning/cc-04-002-operations-work-item-read-model-task-contract.md",
+        "docs/planning/v1-operations-context-read-api-task-contract.md",
+        ".codex/tasks/luc-1398-prove-unclassified-user-workflow-missing-test-link-for-use-operations.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/decisions",
       "status": "verified",
       "description": "Decisions mount verified through the existing protected API suite coverage for workspace-scoped POST, GET, PATCH, and DELETE /v1/decisions flows, plus cross-workspace list isolation and emitted decision lifecycle events without changing runtime behavior.",
