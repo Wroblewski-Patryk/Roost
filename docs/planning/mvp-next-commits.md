@@ -1,5 +1,38 @@
 # MVP Next Commits
 
+- 2026-07-18: [LUC-1462](/LUC/issues/LUC-1462) completed terminal
+  source-control closure for the `LUC-1459` Relationships proof-link packet.
+  Evidence packet:
+  `.codex/tasks/luc-1462-classify-and-close-local-dirty-state-for-luc-1459.md`.
+  Closure result: bounded git review kept the remaining dirty set attributable
+  to the new `LUC-1459` task packet plus expected state/generated artifacts;
+  representative generated readback kept `src/app.ts#/relationships` clear of
+  `missing_test_link` and kept the next QA-owned routed proof gap on
+  `src/app.ts#/targets`; `git diff --check` reported only CRLF normalization
+  warnings and no content defects; JSON parse checks passed; a diff-scoped
+  high-confidence redaction scan found no credential-shaped strings; and one
+  scoped local commit preserved the packet. Next owner: Test Automation
+  Engineer + QA Regression Lead for the routed proof gap on `src/app.ts#/targets`.
+
+- 2026-07-18: [LUC-1459](/LUC/issues/LUC-1459) completed focused proof-link
+  closure for unclassified `src/app.ts#/relationships`. Evidence packet:
+  `.codex/tasks/luc-1459-prove-unclassified-user-workflow-missing-test-link-for-use-relationships.md`.
+  Proof linkage: `docs/architecture/scanner-overrides.json` now marks the
+  exact Relationships mount `verified` with direct evidence from
+  `src/tests/api.test.ts`, `src/modules/relationships/relationships.routes.ts`,
+  and `docs/planning/luc-5208-relationships-api-journey-proof.md`, plus
+  explicit route-to-test and route-to-document relation overrides; `npm run
+  test:api:local` PASS (`8/8`); `npm run architecture:refresh` PASS;
+  external architecture-awareness refresh completed in this run with `3114`
+  entities / `8395` relations / `16524` files and materialized the exact
+  proof relations; refreshed app-completion dropped `missingTestLink` from
+  `11` to `10` and no longer reports
+  `api_endpoint:use-relationships:acd9b6327c`; Project Truth apply completed
+  and advanced the first gap to unclassified `src/app.ts#/targets`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). Next owner: Test Automation Engineer + QA Regression Lead for
+  the routed proof gap on `src/app.ts#/targets`.
+
 - 2026-07-17: [LUC-1442](/LUC/issues/LUC-1442) completed focused proof-link
   closure for unclassified `src/app.ts#/ready`. Evidence packet:
   `.codex/tasks/luc-1442-prove-unclassified-user-workflow-missing-test-link-for-use-ready.md`.

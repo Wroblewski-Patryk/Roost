@@ -1,6 +1,6 @@
 # Project Truth Index
 
-Generated: 2026-07-18T00:14:37.013Z
+Generated: 2026-07-18T01:10:51.825Z
 Project: Roost
 Status: gaps_require_routing
 
@@ -13,18 +13,18 @@ This is the routing surface agents should use before guessing whether an app wor
 | incompleteEventChains | 0 |
 | runtimeFindings | 0 |
 | criticalRuntimeFindings | 0 |
-| appCompletionGaps | 11 |
-| indexedAppCompletionGaps | 11 |
-| knownAppCompletionRiskItems | 11 |
-| appCompletionPriorityReviewItems | 11 |
+| appCompletionGaps | 10 |
+| indexedAppCompletionGaps | 10 |
+| knownAppCompletionRiskItems | 10 |
+| appCompletionPriorityReviewItems | 10 |
 | appCompletionPriorityReviewTruncated | false |
 | operationalGateGaps | 0 |
-| indexedGaps | 11 |
-| totalGaps | 11 |
+| indexedGaps | 10 |
+| totalGaps | 10 |
 
 ## First Gap
 
-- medium: Unclassified user workflow: USE /relationships has app-completion risk missing_test_link.
+- medium: Unclassified user workflow: USE /targets has app-completion risk missing_test_link.
 - Owner: Test Automation Engineer + QA Regression Lead
 - Next action: Add or link the smallest relevant automated/manual verification for this flow before claiming it works.
 
@@ -32,7 +32,6 @@ This is the routing surface agents should use before guessing whether an app wor
 
 | Severity | Kind | Flow | Summary | Next owner |
 | --- | --- | --- | --- | --- |
-| medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /relationships has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /targets has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /task-lists has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /tasks has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |

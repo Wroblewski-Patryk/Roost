@@ -1,5 +1,48 @@
 # Active Mission Packet
 
+## LUC-1462 Checkpoint
+
+- 2026-07-18: [LUC-1462](/LUC/issues/LUC-1462) closed the terminal local
+  source-control lane for the `LUC-1459` Relationships proof-link packet.
+  Packet:
+  `.codex/tasks/luc-1462-classify-and-close-local-dirty-state-for-luc-1459.md`.
+  Bounded git review kept the remaining dirty set attributable to the new
+  `.codex/tasks/luc-1459-prove-unclassified-user-workflow-missing-test-link-for-use-relationships.md`
+  packet, `.agents/state/*`, `.codex/context/*`,
+  `docs/architecture/scanner-overrides.json`, `docs/planning/mvp-next-commits.md`,
+  `docs/graphs/*`, and `docs/status/*`; representative generated readback kept
+  `src/app.ts#/relationships` clear of `missing_test_link` and kept the next
+  QA-owned routed proof gap on `src/app.ts#/targets`; `git diff --check`
+  reported only CRLF normalization warnings and no content defects; JSON parse
+  checks passed; and a diff-scoped redaction scan found no
+  credential-shaped strings. Final disposition: one scoped local commit
+  preserved the packet and returned the worktree to clean state. Remaining
+  follow-up is QA on `src/app.ts#/targets`.
+
+## LUC-1459 Checkpoint
+
+- 2026-07-18: [LUC-1459](/LUC/issues/LUC-1459) closed the routed
+  unclassified endpoint `src/app.ts#/relationships` `missing_test_link` row.
+  Packet:
+  `.codex/tasks/luc-1459-prove-unclassified-user-workflow-missing-test-link-for-use-relationships.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact Relationships
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/relationships/relationships.routes.ts`,
+  and `docs/planning/luc-5208-relationships-api-journey-proof.md`, plus
+  explicit route-to-test and route-to-document relation overrides; focused
+  proof PASS via `npm run test:api:local`, which built server/web, applied all
+  `31` migrations to disposable PostgreSQL on `127.0.0.1:55432`, seeded data,
+  and passed `8/8` subtests; sequential app-completion refresh generated
+  `missingTestLink=10` and removed `src/app.ts#/relationships` from the QA
+  proof queue; sequential Project Truth apply generated public probes `pass`
+  and advanced the next QA-owned routed proof queue to `src/app.ts#/targets`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). No runtime feature logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Final disposition: local proof lane complete. Remaining follow-up
+  is QA on `src/app.ts#/targets`, and source-control closure completed in
+  [LUC-1462](/LUC/issues/LUC-1462).
+
 ## LUC-1442 Checkpoint
 
 - 2026-07-17: [LUC-1442](/LUC/issues/LUC-1442) closed the routed

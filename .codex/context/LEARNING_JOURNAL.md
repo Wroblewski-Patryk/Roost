@@ -45,16 +45,9 @@ fixes for this repository.
   refresh in the same heartbeat when any proof-link or doc-link metadata changed.
 - Evidence: `LUC-1174`; `LUC-1430` initially left `USE /projects` routed as
   `missing_test_link` until the dependent generators were rerun sequentially
-  after the refreshed graph write completed.
-  then `build-app-completion-index.mjs`, then
-  `build-project-truth-indexes.mjs`.
-- Preferred pattern: parallelize only independent reads; keep generated-truth
-  steps sequential when later outputs depend on earlier artifacts.
-- Avoid: treating a stale first post-refresh index as evidence that the new
-  relation failed.
-- Evidence: `.codex/tasks/luc-1174-prove-unclassified-user-workflow-missing-doc-link-for-use-clients.md`
-  plus the sequential rerun that reduced `missingDocLink` from `1` to `0` and
-  advanced Project Truth to `src/app.ts#/commercial-exceptions`.
+  after the refreshed graph write completed, and `LUC-1459` repeated the same
+  stale-index symptom for `USE /relationships` until the dependent generators
+  were rerun sequentially.
 
 ### 2026-07-14 - Architecture-Awareness Task Indexing Must Read Structured Header Status First
 - Context: LUC-1160 investigated why the completed `LUC-1151` doc-link packet still indexed as `in_progress` in `docs/graphs/architecture-proof-register.csv` and `docs/graphs/architecture-awareness.json`.

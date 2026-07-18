@@ -1,9 +1,37 @@
 # Next Steps
+- 2026-07-18: [LUC-1462](/LUC/issues/LUC-1462) completed terminal local
+  source-control closure for the `LUC-1459` Relationships proof-link packet.
+  The durable packet is
+  `.codex/tasks/luc-1462-classify-and-close-local-dirty-state-for-luc-1459.md`.
+  Current fact: bounded git review, representative generated readback,
+  `git diff --check`, JSON parse checks, and a diff-scoped redaction scan
+  classified the remaining packet as current/coherent; one scoped local
+  commit preserved it and returned the worktree to clean state. Do not reopen
+  another source-control closure lane for the `LUC-1459` packet unless fresh
+  work makes the repo dirty again.
+
+- 2026-07-18: [LUC-1459](/LUC/issues/LUC-1459) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/relationships`. The durable packet is
+  `.codex/tasks/luc-1459-prove-unclassified-user-workflow-missing-test-link-for-use-relationships.md`.
+  Current fact: refreshed architecture-awareness marks the exact Relationships
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/relationships/relationships.routes.ts`,
+  and `docs/planning/luc-5208-relationships-api-journey-proof.md`, plus
+  explicit route-to-test and route-to-document relation overrides; refreshed
+  app-completion no longer routes
+  `api_endpoint:use-relationships:acd9b6327c` as `missing_test_link`; Project
+  Truth now routes the next QA-owned proof queue to `src/app.ts#/targets`.
+  Do not reopen another QA proof lane for `src/app.ts#/relationships` unless a
+  fresh generated regression removes the linked runtime evidence. Source-control
+  closure completed in [LUC-1462](/LUC/issues/LUC-1462).
+
 - 2026-07-18: [LUC-1450](/LUC/issues/LUC-1450) is complete. The durable packet
   is `.codex/tasks/luc-1450-prove-user-configuration-missing-doc-link-for-use-connection.md`.
   Current fact: the exact `src/app.ts#/connection` docs gap is cleared, the
-  handshake contract lives in `docs/API.md`, and Project Truth now routes the
-  next QA-owned gap to `src/app.ts#/relationships`. Do not reopen another docs
+  handshake contract lives in `docs/API.md`, and Project Truth then routed the
+  next QA-owned gap to `src/app.ts#/relationships`, which [LUC-1459](/LUC/issues/LUC-1459)
+  has now cleared. Do not reopen another docs
   lane for `src/app.ts#/connection` unless a fresh generated regression
   returns.
 

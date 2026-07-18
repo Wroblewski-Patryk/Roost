@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-18T00:13:20.255Z
+Generated: 2026-07-18T01:10:42.431Z
 
 ## Canonical Exports
 
@@ -42,14 +42,14 @@ Generated: 2026-07-18T00:13:20.255Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-18 LUC-1450 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-18 LUC-1459 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-17 LUC-1439 Projects Packet Source-Control Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-18 LUC-1459 Relationships Proof Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -93,7 +93,7 @@ Generated: 2026-07-18T00:13:20.255Z
 | api_endpoint | verified | USE /process-core | src/app.ts#/process-core | Engineering Delivery Lead |
 | api_endpoint | verified | USE /projects | src/app.ts#/projects | Engineering Delivery Lead |
 | api_endpoint | verified | USE /ready | src/app.ts#/ready | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /relationships | src/app.ts#/relationships | Engineering Delivery Lead |
+| api_endpoint | verified | USE /relationships | src/app.ts#/relationships | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /sales | src/app.ts#/sales | Engineering Delivery Lead |
 | api_endpoint | verified | USE /strategy | src/app.ts#/strategy | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /targets | src/app.ts#/targets | Engineering Delivery Lead |
@@ -682,6 +682,8 @@ Generated: 2026-07-18T00:13:20.255Z
 | connected_to | project:roost:122c92a083 | task:task:7f3cb89713 | .codex/tasks/luc-1442-prove-unclassified-user-workflow-missing-test-link-for-use-ready.md |
 | connected_to | project:roost:122c92a083 | task:luc-1450-completion-evidence:59439e16e1 | .codex/tasks/luc-1450-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:task:f270fa190d | .codex/tasks/luc-1450-prove-user-configuration-missing-doc-link-for-use-connection.md |
+| connected_to | project:roost:122c92a083 | task:task:fdab369c50 | .codex/tasks/luc-1455-source-control-closure-for-luc-1442-luc-1450.md |
+| connected_to | project:roost:122c92a083 | task:task:ba12a9ca2b | .codex/tasks/luc-1459-prove-unclassified-user-workflow-missing-test-link-for-use-relationships.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -740,8 +742,8 @@ Generated: 2026-07-18T00:13:20.255Z
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
-| documents | agent:2026-07-17-luc-1439-projects-packet-source-control-health-signal:184278f562 | module:agents:4ae71ba13a | .agents/state/system-health.md |
-| documents | agent:2026-07-18-luc-1450-module-confidence-update:efac255cb9 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
+| documents | agent:2026-07-18-luc-1459-module-confidence-update:ad8518459c | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
+| documents | agent:2026-07-18-luc-1459-relationships-proof-health-signal:5da52bd83d | module:agents:4ae71ba13a | .agents/state/system-health.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -793,6 +795,7 @@ Generated: 2026-07-18T00:13:20.255Z
 | documents | api_endpoint:use-process-core:ccf2131793 | document:luc-5220-process-core-api-journey-proof:fbb338f2c1 | LUC-1416 process core route documentation proof-link closure |
 | documents | api_endpoint:use-projects:2ab7f26357 | document:api:a617d1cb61 | LUC-1430 projects route documentation proof-link closure |
 | documents | api_endpoint:use-ready:cd82f6ee50 | document:api:a617d1cb61 | LUC-1442 ready route documentation proof-link closure |
+| documents | api_endpoint:use-relationships:acd9b6327c | document:luc-5208-relationships-api-journey-proof:002b1cab4c | LUC-1459 relationships route documentation proof-link closure |
 | documents | api_endpoint:use-sales:0c7ec2cf8b | document:get-v1-sales-context:078045055f | LUC-6696 app-completion proof-link association |
 | documents | api_endpoint:use-v1-auth:02d088cd05 | document:system-architecture:1149ef3528 | LUC-6696 app-completion proof-link association |
 | documents | document:acceptance-criteria-model:13886f82fd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0001.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-07-18T00:13:20.255Z
 | documents | document:integrations:ec6d120857 | module:src-integrations:5ddfa7c31f | src/integrations/README.md |
 | documents | document:integrations:f7626c47da | module:docs:6784d83cb0 | docs/INTEGRATIONS.md |
 | documents | document:interactions-coverage-expansion:50040c7a2a | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-AUTO-0016.md |
-| documents | document:interactions-model:680b41b50c | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0029.md |
-| documents | document:interactions-module:74b2248b77 | module:src-modules-interactions:c7487e3810 | src/modules/interactions/README.md |
-| documents | document:jarvis-companycore-update-runbook:bf1d3197a1 | module:docs:6784d83cb0 | docs/operations/jarvis-companycore-update-runbook.md |

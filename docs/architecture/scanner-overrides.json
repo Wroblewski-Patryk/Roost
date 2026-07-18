@@ -683,6 +683,17 @@
       ]
     },
     {
+      "path": "src/app.ts#/relationships",
+      "status": "verified",
+      "description": "Relationships mount verified through the existing protected API suite coverage for unauthenticated denial plus workspace-scoped GET /v1/relationships/context and GET /v1/relationships/graph reads, canonical department mapping, linked entity packet composition, review-item graph evidence, route capability exposure, and read-only agent posture without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/relationships/relationships.routes.ts",
+        "docs/planning/luc-5208-relationships-api-journey-proof.md",
+        ".codex/tasks/luc-1459-prove-unclassified-user-workflow-missing-test-link-for-use-relationships.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/ready",
       "status": "verified",
       "description": "Readiness mount verified through the existing protected API suite coverage for production-safe GET /ready build metadata, unauthenticated local GET /ready and GET /v1/ready success, and shared readiness-router mount behavior without changing runtime behavior.",
@@ -3979,6 +3990,30 @@
       "toPath": "src/modules/pipeline-stages/README.md",
       "toType": "document",
       "evidence": "LUC-1401 pipeline stages route documentation proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/relationships",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1459 relationships route API proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1459-prove-unclassified-user-workflow-missing-test-link-for-use-relationships.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/relationships",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1459 relationships proof-link packet"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/relationships",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-5208-relationships-api-journey-proof.md",
+      "toType": "document",
+      "evidence": "LUC-1459 relationships route documentation proof-link closure"
     },
     {
       "type": "tests",

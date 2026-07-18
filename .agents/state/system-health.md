@@ -1,3 +1,45 @@
+# 2026-07-18 LUC-1462 Relationships Packet Source-Control Health Signal
+
+- Status: terminal source-control closure for the `LUC-1459` Relationships
+  proof-link packet completed locally.
+- Evidence: [LUC-1462](/LUC/issues/LUC-1462) task packet
+  `.codex/tasks/luc-1462-classify-and-close-local-dirty-state-for-luc-1459.md`;
+  bounded git review kept the dirty tree attributable to the exact
+  `LUC-1459` packet plus expected generated/state artifacts; representative
+  readback kept `src/app.ts#/relationships` clear of `missing_test_link` and
+  the next routed QA gap on `src/app.ts#/targets`; `git diff --check` PASS
+  with CRLF normalization warnings only; JSON parse checks PASS for sampled
+  changed JSON artifacts; diff-scoped high-confidence redaction scan found no
+  credential-shaped strings; and one scoped local commit preserved the packet
+  and returned the worktree to clean state.
+- Runtime/deploy posture: unchanged for this lane. No provider call, protected
+  smoke, deploy, push, restart, production mutation, credential access, or
+  secret disclosure occurred.
+
+# 2026-07-18 LUC-1459 Relationships Proof Health Signal
+
+- Status: routed QA proof-link closure for the `LUC-1459` `USE /relationships`
+  packet completed locally.
+- Evidence: [LUC-1459](/LUC/issues/LUC-1459) task packet
+  `.codex/tasks/luc-1459-prove-unclassified-user-workflow-missing-test-link-for-use-relationships.md`;
+  `npm run test:api:local` PASS after server/web build, `31` migrations, seed,
+  and `8/8` protected API subtests; `npm run architecture:refresh` PASS;
+  `node C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse/scripts/build-architecture-awareness-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost`
+  PASS with `3114` entities / `8395` relations / `16524` files and exact
+  route-to-test plus route-to-document proof relations for
+  `src/app.ts#/relationships`; sequential app-completion refresh reduced
+  `missingTestLink` to `10` and no longer lists
+  `api_endpoint:use-relationships:acd9b6327c`; sequential Project Truth apply
+  passed public probes and advanced the first QA-owned gap to
+  `src/app.ts#/targets`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). Guardrail re-confirmed: app-completion and Project Truth must
+  rerun sequentially after the architecture-awareness export when proof-link
+  metadata changes.
+- Runtime/deploy posture: unchanged for this lane. No provider call, protected
+  smoke, deploy, push, restart, production mutation, credential access, or
+  secret disclosure occurred. Source-control closure completed separately in
+  [LUC-1462](/LUC/issues/LUC-1462).
+
 # 2026-07-17 LUC-1439 Projects Packet Source-Control Health Signal
 
 - Status: terminal source-control closure for the `LUC-1430` `USE /projects`

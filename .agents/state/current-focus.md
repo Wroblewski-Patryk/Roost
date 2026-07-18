@@ -1,5 +1,34 @@
 # Current Focus
 
+## LUC-1462 Checkpoint
+
+- 2026-07-18: [LUC-1462](/LUC/issues/LUC-1462) completed the review-owned
+  source-control closure for the `LUC-1459` Relationships packet. The durable
+  packet is
+  `.codex/tasks/luc-1462-classify-and-close-local-dirty-state-for-luc-1459.md`.
+  Current fact: bounded git review kept the dirty tree attributable to the
+  exact `LUC-1459` proof-link packet plus expected generated/state artifacts;
+  representative readback kept `src/app.ts#/relationships` clear of
+  `missing_test_link` and confirmed the next routed QA gap on
+  `src/app.ts#/targets`; `git diff --check` reported only CRLF normalization
+  warnings, JSON parse checks passed, and a diff-scoped high-confidence
+  redaction scan found no credential-shaped strings. One scoped local commit
+  preserved the packet and returned the worktree to clean state.
+
+## LUC-1459 Checkpoint
+
+- 2026-07-18: [LUC-1459](/LUC/issues/LUC-1459) completed the QA-owned
+  closure for the `src/app.ts#/relationships` `missing_test_link` row. The durable
+  packet is
+  `.codex/tasks/luc-1459-prove-unclassified-user-workflow-missing-test-link-for-use-relationships.md`.
+  Current fact: `docs/architecture/scanner-overrides.json` now links the exact
+  Relationships mount to the existing protected API proof in
+  `src/tests/api.test.ts` and `docs/planning/luc-5208-relationships-api-journey-proof.md`;
+  sequential truth refresh removed `api_endpoint:use-relationships:acd9b6327c`
+  from app-completion risk, reduced `missingTestLink` to `10`, and moved the
+  next routed QA gap to `src/app.ts#/targets`. Source-control closure is now
+  complete in [LUC-1462](/LUC/issues/LUC-1462).
+
 ## LUC-1450 Checkpoint
 
 - 2026-07-18: [LUC-1450](/LUC/issues/LUC-1450) completed the docs-owned

@@ -1,5 +1,54 @@
 # PROJECT_STATE
 
+- 2026-07-18: [LUC-1462](/LUC/issues/LUC-1462) completed local source-control
+  closure for the `LUC-1459` Relationships proof-link packet. Source-of-truth
+  task packet:
+  `.codex/tasks/luc-1462-classify-and-close-local-dirty-state-for-luc-1459.md`.
+  Current evidence: bounded git inspection classified the worktree as `86`
+  tracked modified paths plus `1` untracked task artifact before the closure
+  packet itself was added; focused diff review confirmed the authored
+  non-generated files map directly to the exact `LUC-1459` relationships
+  proof-link packet, while the large `docs/graphs/*` and `docs/status/*`
+  deltas are attributable to the recorded architecture refresh /
+  architecture-awareness / app-completion / Project Truth rebuild chain;
+  representative generated readback kept `src/app.ts#/relationships` clear of
+  `missing_test_link` and the next routed QA proof gap on `src/app.ts#/targets`;
+  `git diff --check` PASS with CRLF normalization warnings only; JSON parse
+  checks passed; and a diff-scoped high-confidence redaction scan returned no
+  credential-shaped matches. No runtime feature logic, deploy, push, restart,
+  production mutation, credential access, or cross-repo write occurred.
+  Commit status: local source-control closure commit created in this heartbeat.
+  Push status: not needed. Deploy impact: none.
+
+- 2026-07-18: [LUC-1459](/LUC/issues/LUC-1459) completed the local
+  missing-test-link closure for unclassified `src/app.ts#/relationships`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1459-prove-unclassified-user-workflow-missing-test-link-for-use-relationships.md`.
+  Current evidence: `docs/architecture/scanner-overrides.json` now marks the
+  exact Relationships mount `verified` through the existing protected API
+  suite in `src/tests/api.test.ts`,
+  `src/modules/relationships/relationships.routes.ts`, and
+  `docs/planning/luc-5208-relationships-api-journey-proof.md`, plus explicit
+  route-to-test and route-to-document relation overrides; focused local
+  protected API proof PASS via `npm run test:api:local`, which built
+  server/web, applied all `31` migrations to disposable PostgreSQL on
+  `127.0.0.1:55432`, seeded data, and passed `8/8` subtests; `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  completed in this run with `3114` entities / `8395` relations / `16524`
+  files and materialized the exact proof relations; sequential app-completion
+  refresh now reports `46` items / `4` flows / `10` missing test links / `0`
+  missing doc links / `0` implemented-needs-proof / `0` blocked / `10` risk
+  items, no longer routes `api_endpoint:use-relationships:acd9b6327c` as
+  `missing_test_link`, and Project Truth apply completed with public probes
+  `pass`, runtime findings `0`, incomplete event chains `0`, operational gate
+  gaps `0`, and advances the next QA-owned routed proof queue to
+  `src/app.ts#/targets`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime feature
+  logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Deploy impact: none. Push
+  status: not needed. Source-control closure completed in
+  [LUC-1462](/LUC/issues/LUC-1462).
+
 - 2026-07-18: [LUC-1455](/LUC/issues/LUC-1455) completed local source-control
   closure for the combined `LUC-1442` and `LUC-1450` packet. Source-of-truth
   task packet:

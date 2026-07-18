@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-18T00:14:37.013Z",
+  "generatedAt": "2026-07-18T01:10:51.825Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "gaps_require_routing",
@@ -9,42 +9,29 @@
     "incompleteEventChains": 0,
     "runtimeFindings": 0,
     "criticalRuntimeFindings": 0,
-    "appCompletionGaps": 11,
-    "indexedAppCompletionGaps": 11,
-    "knownAppCompletionRiskItems": 11,
-    "appCompletionPriorityReviewItems": 11,
+    "appCompletionGaps": 10,
+    "indexedAppCompletionGaps": 10,
+    "knownAppCompletionRiskItems": 10,
+    "appCompletionPriorityReviewItems": 10,
     "appCompletionPriorityReviewTruncated": false,
     "operationalGateGaps": 0,
-    "indexedGaps": 11,
-    "totalGaps": 11
+    "indexedGaps": 10,
+    "totalGaps": 10
   },
   "firstGap": {
     "kind": "app_completion_gap",
     "severity": "medium",
     "userFlow": "Unclassified user workflow",
-    "summary": "Unclassified user workflow: USE /relationships has app-completion risk missing_test_link.",
+    "summary": "Unclassified user workflow: USE /targets has app-completion risk missing_test_link.",
     "nextOwner": "Test Automation Engineer + QA Regression Lead",
     "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
     "evidence": [
-      "src/app.ts#/relationships"
+      "src/app.ts#/targets"
     ],
-    "sourceItemId": "api_endpoint:use-relationships:acd9b6327c",
+    "sourceItemId": "api_endpoint:use-targets:7ea27c60ae",
     "risk": "missing_test_link"
   },
   "gaps": [
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /relationships has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/app.ts#/relationships"
-      ],
-      "sourceItemId": "api_endpoint:use-relationships:acd9b6327c",
-      "risk": "missing_test_link"
-    },
     {
       "kind": "app_completion_gap",
       "severity": "medium",
