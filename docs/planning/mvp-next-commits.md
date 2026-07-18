@@ -1,5 +1,23 @@
 # MVP Next Commits
 
+- 2026-07-18: [LUC-1475](/LUC/issues/LUC-1475) completed focused proof-link
+  closure for unclassified `src/app.ts#/task-lists`. Evidence packet:
+  `.codex/tasks/luc-1475-prove-unclassified-user-workflow-missing-test-link-for-use-task-lists.md`.
+  Proof linkage: `docs/architecture/scanner-overrides.json` now marks the
+  exact Task Lists mount `verified` with direct evidence from
+  `src/tests/api.test.ts`, `src/modules/task-lists/task-lists.routes.ts`, and
+  `docs/API.md`, plus explicit route-to-test and route-to-document relation
+  overrides; `npm run test:api:local` PASS (`8/8`); `npm run
+  architecture:refresh` PASS; external architecture-awareness refresh
+  completed in this run with `3118` entities / `8457` relations / `16524`
+  files and materialized the exact proof relations; refreshed app-completion
+  dropped `missingTestLink` from `9` to `8` and no longer reports
+  `api_endpoint:use-task-lists:7770c51ee4`; Project Truth apply completed and
+  advanced the first gap to unclassified `src/app.ts#/tasks`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). Next owner: Test Automation Engineer + QA Regression Lead for
+  the routed proof gap on `src/app.ts#/tasks`.
+
 - 2026-07-18: [LUC-1474](/LUC/issues/LUC-1474) completed terminal
   source-control closure for the `LUC-1473` Targets proof-link packet.
   Evidence packet:

@@ -1,5 +1,31 @@
 # PROJECT_STATE
 
+- 2026-07-18: [LUC-1475](/LUC/issues/LUC-1475) completed the local
+  missing-test-link closure for unclassified `src/app.ts#/task-lists`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1475-prove-unclassified-user-workflow-missing-test-link-for-use-task-lists.md`.
+  Current evidence: `docs/architecture/scanner-overrides.json` now marks the
+  exact Task Lists mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/task-lists/task-lists.routes.ts`, and
+  `docs/API.md`, plus explicit route-to-test and route-to-document relation
+  overrides; focused local protected API proof PASS via `npm run
+  test:api:local`, which built server/web, applied all `31` migrations to
+  disposable PostgreSQL on `127.0.0.1:55432`, seeded data, and passed `8/8`
+  subtests; `npm run architecture:refresh` PASS; external
+  architecture-awareness refresh completed in this run with `3118` entities /
+  `8457` relations / `16524` files and materialized the exact proof relations;
+  sequential app-completion refresh now reports `46` items / `4` flows / `8`
+  missing test links / `0` missing doc links / `0` implemented-needs-proof /
+  `0` blocked / `8` risk items, no longer routes
+  `api_endpoint:use-task-lists:7770c51ee4` as `missing_test_link`, and Project
+  Truth apply completed with public probes `pass`, runtime findings `0`,
+  incomplete event chains `0`, operational gate gaps `0`, and advances the
+  next QA-owned routed proof queue to `src/app.ts#/tasks`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). No runtime feature logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Deploy impact: none. Push status: not needed.
+
 - 2026-07-18: [LUC-1474](/LUC/issues/LUC-1474) completed local source-control
   closure for the `LUC-1473` Targets proof-link packet. Source-of-truth task
   packet:

@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-18T19:47:07.820Z
+Generated: 2026-07-18T20:09:59.620Z
 
 ## Canonical Exports
 
@@ -42,14 +42,14 @@ Generated: 2026-07-18T19:47:07.820Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-18 LUC-1459 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-18 LUC-1475 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-18 LUC-1462 Relationships Packet Source-Control Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-18 LUC-1475 Task Lists Proof Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -97,7 +97,7 @@ Generated: 2026-07-18T19:47:07.820Z
 | api_endpoint | implemented | USE /sales | src/app.ts#/sales | Engineering Delivery Lead |
 | api_endpoint | verified | USE /strategy | src/app.ts#/strategy | Engineering Delivery Lead |
 | api_endpoint | verified | USE /targets | src/app.ts#/targets | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /task-lists | src/app.ts#/task-lists | Engineering Delivery Lead |
+| api_endpoint | verified | USE /task-lists | src/app.ts#/task-lists | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /tasks | src/app.ts#/tasks | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /v1 | src/app.ts#/v1 | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /v1/auth | src/app.ts#/v1/auth | Engineering Delivery Lead |
@@ -686,6 +686,8 @@ Generated: 2026-07-18T19:47:07.820Z
 | connected_to | project:roost:122c92a083 | task:task:ba12a9ca2b | .codex/tasks/luc-1459-prove-unclassified-user-workflow-missing-test-link-for-use-relationships.md |
 | connected_to | project:roost:122c92a083 | task:task:5a214a9bca | .codex/tasks/luc-1462-classify-and-close-local-dirty-state-for-luc-1459.md |
 | connected_to | project:roost:122c92a083 | task:task:e262fa66b4 | .codex/tasks/luc-1473-prove-unclassified-user-workflow-missing-test-link-for-use-targets.md |
+| connected_to | project:roost:122c92a083 | task:task:fa147029d0 | .codex/tasks/luc-1474-classify-and-close-local-dirty-state-for-luc-1473.md |
+| connected_to | project:roost:122c92a083 | task:task:16e1ad06a5 | .codex/tasks/luc-1475-prove-unclassified-user-workflow-missing-test-link-for-use-task-lists.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -744,8 +746,8 @@ Generated: 2026-07-18T19:47:07.820Z
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
-| documents | agent:2026-07-18-luc-1459-module-confidence-update:ad8518459c | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
-| documents | agent:2026-07-18-luc-1462-relationships-packet-source-control-health-signal:162fa75468 | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-18-luc-1475-module-confidence-update:ecf8fc0f75 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
+| documents | agent:2026-07-18-luc-1475-task-lists-proof-health-signal:e4d1e00d66 | module:agents:4ae71ba13a | .agents/state/system-health.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -800,6 +802,7 @@ Generated: 2026-07-18T19:47:07.820Z
 | documents | api_endpoint:use-relationships:acd9b6327c | document:luc-5208-relationships-api-journey-proof:002b1cab4c | LUC-1459 relationships route documentation proof-link closure |
 | documents | api_endpoint:use-sales:0c7ec2cf8b | document:get-v1-sales-context:078045055f | LUC-6696 app-completion proof-link association |
 | documents | api_endpoint:use-targets:7ea27c60ae | document:api:a617d1cb61 | LUC-1473 targets route documentation proof-link closure |
+| documents | api_endpoint:use-task-lists:7770c51ee4 | document:api:a617d1cb61 | LUC-1475 task-lists route documentation proof-link closure |
 | documents | api_endpoint:use-v1-auth:02d088cd05 | document:system-architecture:1149ef3528 | LUC-6696 app-completion proof-link association |
 | documents | document:acceptance-criteria-model:13886f82fd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0001.md |
 | documents | document:account-settings:d3a7a298ae | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PAGE-AUTO-0001.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-07-18T19:47:07.820Z
 | documents | document:integration-capabilities-model:af41cef9e0 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0027.md |
 | documents | document:integration-checklist:721c1de001 | module:item:884f3f28db | INTEGRATION_CHECKLIST.md |
 | documents | document:integration-settings-coverage-expansion:4cecd2cb5b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-AUTO-0015.md |
-| documents | document:integration-settings-model:064e4fc640 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0028.md |
-| documents | document:integration-settings-service:961a85f1fd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/SVC-AUTO-0001.md |
-| documents | document:integration-settings-service:a19c08b680 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/INT-AUTO-0012.md |

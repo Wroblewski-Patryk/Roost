@@ -1,3 +1,25 @@
+# 2026-07-18 LUC-1475 Task Lists Proof Health Signal
+
+- Status: routed QA proof-link closure for the `LUC-1475` `USE /task-lists`
+  packet completed locally.
+- Evidence: [LUC-1475](/LUC/issues/LUC-1475) task packet
+  `.codex/tasks/luc-1475-prove-unclassified-user-workflow-missing-test-link-for-use-task-lists.md`;
+  `npm run test:api:local` PASS after server/web build, `31` migrations, seed,
+  and `8/8` protected API subtests; `npm run architecture:refresh` PASS;
+  `node C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse/scripts/build-architecture-awareness-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost`
+  PASS with `3118` entities / `8457` relations / `16524` files and exact
+  route-to-test plus route-to-document proof relations for
+  `src/app.ts#/task-lists`; sequential app-completion refresh reduced
+  `missingTestLink` to `8` and no longer lists
+  `api_endpoint:use-task-lists:7770c51ee4`; sequential Project Truth apply passed
+  public probes and advanced the first QA-owned gap to
+  `src/app.ts#/tasks`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). Cleanup check: `docker ps -a --format "{{.Names}} {{.Ports}}"`
+  showed no lingering `companycore-test-postgres` container on port `55432`.
+- Guardrail re-confirmed: app-completion and Project Truth must rerun
+  sequentially after the architecture-awareness export when proof-link
+  metadata changes, or stale routed gaps persist.
+
 # 2026-07-18 LUC-1474 Targets Packet Source-Control Health Signal
 
 - Status: terminal source-control closure for the `LUC-1473` Targets packet is

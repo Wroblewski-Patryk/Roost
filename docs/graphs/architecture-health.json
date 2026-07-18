@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-07-18T19:47:07.820Z",
+  "generated_at": "2026-07-18T20:09:59.620Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 3116,
-    "relations": 8426,
+    "entities": 3118,
+    "relations": 8459,
     "by_type": {
       "agent": 47,
       "api_endpoint": 46,
@@ -18,21 +18,21 @@
       "model": 5,
       "module": 67,
       "project": 1,
-      "task": 177,
+      "task": 179,
       "test": 82
     },
     "by_status": {
       "blocked": 1,
       "deprecated": 6,
-      "implemented": 2669,
-      "in_progress": 11,
+      "implemented": 2668,
+      "in_progress": 10,
       "tested": 19,
-      "verified": 410
+      "verified": 414
     }
   },
   "signals": {
     "implementation_without_tests": {
-      "count": 1066,
+      "count": 1065,
       "items": [
         {
           "id": "api_endpoint:use-agent-events:1b4c65ace9",
@@ -200,14 +200,6 @@
           "name": "USE /operations",
           "path": "src/app.ts#/operations",
           "status": "verified",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "api_endpoint:use-task-lists:7770c51ee4",
-          "type": "api_endpoint",
-          "name": "USE /task-lists",
-          "path": "src/app.ts#/task-lists",
-          "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -1633,6 +1625,14 @@
           "path": "scripts/backfill-architecture-nodes.mjs#readText",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "function:routefilepath:35cd6446ad",
+          "type": "function",
+          "name": "routeFilePath",
+          "path": "scripts/backfill-architecture-nodes.mjs#routeFilePath",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
         }
       ]
     },
@@ -1641,7 +1641,7 @@
       "items": []
     },
     "actionable_implementation_without_tests": {
-      "count": 1053,
+      "count": 1052,
       "items": [
         {
           "id": "api_endpoint:use-agent-events:1b4c65ace9",
@@ -1809,14 +1809,6 @@
           "name": "USE /operations",
           "path": "src/app.ts#/operations",
           "status": "verified",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "api_endpoint:use-task-lists:7770c51ee4",
-          "type": "api_endpoint",
-          "name": "USE /task-lists",
-          "path": "src/app.ts#/task-lists",
-          "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -3240,6 +3232,14 @@
           "type": "function",
           "name": "routeModule",
           "path": "scripts/backfill-architecture-nodes.mjs#routeModule",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "function:tocsv:e0c736e8fc",
+          "type": "function",
+          "name": "toCsv",
+          "path": "scripts/backfill-architecture-nodes.mjs#toCsv",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         }

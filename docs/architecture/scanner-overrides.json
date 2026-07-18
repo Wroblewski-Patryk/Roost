@@ -705,6 +705,17 @@
       ]
     },
     {
+      "path": "src/app.ts#/task-lists",
+      "status": "verified",
+      "description": "Task Lists mount verified through the existing protected API suite coverage for workspace-scoped POST, GET by id, PATCH, foreign-project denial, foreign-workspace empty-list isolation, and documented root/v1 CRUD route contract without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/task-lists/task-lists.routes.ts",
+        "docs/API.md",
+        ".codex/tasks/luc-1475-prove-unclassified-user-workflow-missing-test-link-for-use-task-lists.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/ready",
       "status": "verified",
       "description": "Readiness mount verified through the existing protected API suite coverage for production-safe GET /ready build metadata, unauthenticated local GET /ready and GET /v1/ready success, and shared readiness-router mount behavior without changing runtime behavior.",
@@ -4049,6 +4060,30 @@
       "toPath": "docs/API.md",
       "toType": "document",
       "evidence": "LUC-1473 targets route documentation proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/task-lists",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1475 task-lists route API proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1475-prove-unclassified-user-workflow-missing-test-link-for-use-task-lists.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/task-lists",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1475 task-lists proof-link packet"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/task-lists",
+      "fromType": "api_endpoint",
+      "toPath": "docs/API.md",
+      "toType": "document",
+      "evidence": "LUC-1475 task-lists route documentation proof-link closure"
     },
     {
       "type": "tests",
