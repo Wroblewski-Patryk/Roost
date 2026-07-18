@@ -1,4 +1,12 @@
 # Next Steps
+- 2026-07-18: [LUC-1492](/LUC/issues/LUC-1492) attempted to promote the
+  existing reserve lane [LUC-1385](/LUC/issues/LUC-1385) from `backlog` to
+  `todo` after confirming local source-control was clean. The direct tracker
+  mutation failed with `403 Agent cannot mutate another agent's issue` because
+  `LUC-1385` is owned by agent `3170bf95-c65a-4982-8eb2-630aad9114fd`.
+  Current action: keep the lane parked until the owning agent performs the
+  status change or reassigns the lane to a permitted owner.
+
 - 2026-07-18: [LUC-1491](/LUC/issues/LUC-1491) completed terminal local
   source-control closure for the coherent `LUC-1486` v1 health packet. The
   durable packet is
