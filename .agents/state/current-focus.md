@@ -1,5 +1,17 @@
 # Current Focus
 
+## LUC-1450 Checkpoint
+
+- 2026-07-18: [LUC-1450](/LUC/issues/LUC-1450) completed the docs-owned
+  closure for the `src/app.ts#/connection` `missing_doc_link` row. The durable
+  packet is
+  `.codex/tasks/luc-1450-prove-user-configuration-missing-doc-link-for-use-connection.md`.
+  Current fact: `docs/API.md` now explicitly documents the protected
+  `/v1/connection` and `/connection` handshake route family, the exact mount is
+  linked from `docs/architecture/relations/documentation-links.csv`, and the
+  refreshed generated truth moved the next routed gap to
+  `src/app.ts#/relationships` `missing_test_link`.
+
 ## LUC-1439 Checkpoint
 
 - 2026-07-17: [LUC-1439](/LUC/issues/LUC-1439) completed terminal local

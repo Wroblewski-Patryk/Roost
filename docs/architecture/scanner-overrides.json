@@ -683,6 +683,17 @@
       ]
     },
     {
+      "path": "src/app.ts#/ready",
+      "status": "verified",
+      "description": "Readiness mount verified through the existing protected API suite coverage for production-safe GET /ready build metadata, unauthenticated local GET /ready and GET /v1/ready success, and shared readiness-router mount behavior without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/health/health.routes.ts",
+        "docs/API.md",
+        ".codex/tasks/luc-1442-prove-unclassified-user-workflow-missing-test-link-for-use-ready.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/process-core",
       "status": "verified",
       "description": "Process Core mount verified through the existing protected API suite coverage for unauthenticated denial plus workspace-scoped GET /v1/process-core/coverage reads, route capability exposure, MCP/profile visibility, no-mutation read posture, and scoped credential denial without changing runtime behavior.",
@@ -3968,6 +3979,30 @@
       "toPath": "src/modules/pipeline-stages/README.md",
       "toType": "document",
       "evidence": "LUC-1401 pipeline stages route documentation proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/ready",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1442 ready route API proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1442-prove-unclassified-user-workflow-missing-test-link-for-use-ready.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/ready",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1442 ready proof-link packet"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/ready",
+      "fromType": "api_endpoint",
+      "toPath": "docs/API.md",
+      "toType": "document",
+      "evidence": "LUC-1442 ready route documentation proof-link closure"
     },
     {
       "type": "tests",

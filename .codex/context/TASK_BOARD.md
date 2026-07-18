@@ -1,6 +1,41 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-18: [LUC-1455](/LUC/issues/LUC-1455) terminal local source-control
+  closure for the `LUC-1442` / `LUC-1450` packet is complete locally. Task
+  contract:
+  `.codex/tasks/luc-1455-source-control-closure-for-luc-1442-luc-1450.md`.
+  Evidence: bounded git inspection classified the worktree as `87` tracked
+  modified paths plus `3` untracked task artifacts; focused diff review found
+  the authored non-generated files map exactly to the `LUC-1442` readiness
+  proof-link packet and the `LUC-1450` connection doc-link packet; all
+  `docs/graphs/*` and `docs/status/*` churn is attributable to the recorded
+  architecture refresh / architecture-awareness / app-completion / Project
+  Truth rebuild chain; `git diff --check` PASS with CRLF normalization
+  warnings only; bounded secret-pattern scan returned no matches; branch
+  divergence remains `0 54`. Commit status: local source-control closure
+  commit created in this heartbeat. Push status: not needed. Deploy impact:
+  none.
+
+- 2026-07-17: [LUC-1442](/LUC/issues/LUC-1442) unclassified
+  `src/app.ts#/ready` missing-test-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1442-prove-unclassified-user-workflow-missing-test-link-for-use-ready.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  Readiness mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/health/health.routes.ts`, and `docs/API.md`,
+  plus explicit route-to-test and route-to-document relation overrides; `npm
+  run test:api:local` PASS after server/web build, `31` migrations, seed, and
+  `8/8` protected API subtests; refreshed app-completion reports `11` missing
+  test links and no longer routes `api_endpoint:use-ready:cd82f6ee50` as
+  `missing_test_link`; refreshed Project Truth generated public probes `pass`
+  and advances the next QA-owned routed proof queue to
+  `src/app.ts#/relationships` while the first docs-owned route gap stays on
+  `src/app.ts#/connection`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). No runtime product logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Push status: not needed; deploy impact: none.
+
 - 2026-07-17: [LUC-1439](/LUC/issues/LUC-1439) terminal local source-control
   closure for the `LUC-1430` Projects proof-link packet is complete locally.
   Task contract:

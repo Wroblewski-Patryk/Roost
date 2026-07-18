@@ -637,8 +637,13 @@ to `requireApiKey`, and must not expose secrets or workspace-scoped data.
 
 ## Connection Handshake
 
-Adapters should call this endpoint first to verify that their workspace API key
-is valid and to discover safe v1 capabilities.
+Adapters and user-configuration clients should call this protected handshake
+route family first to verify that their workspace API key is valid, to discover
+safe v1 capabilities, and to read the fail-closed connection summary before
+continuing into any other workspace-scoped API flow.
+
+The accepted connection contract covers the compatibility aliases below and is
+the canonical readback for `src/app.ts#/connection`.
 
 ```http
 GET /v1/connection

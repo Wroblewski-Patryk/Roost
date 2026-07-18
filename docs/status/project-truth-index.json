@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-17T23:07:02.875Z",
+  "generatedAt": "2026-07-18T00:14:37.013Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "gaps_require_routing",
@@ -9,42 +9,29 @@
     "incompleteEventChains": 0,
     "runtimeFindings": 0,
     "criticalRuntimeFindings": 0,
-    "appCompletionGaps": 13,
-    "indexedAppCompletionGaps": 13,
-    "knownAppCompletionRiskItems": 13,
-    "appCompletionPriorityReviewItems": 13,
+    "appCompletionGaps": 11,
+    "indexedAppCompletionGaps": 11,
+    "knownAppCompletionRiskItems": 11,
+    "appCompletionPriorityReviewItems": 11,
     "appCompletionPriorityReviewTruncated": false,
     "operationalGateGaps": 0,
-    "indexedGaps": 13,
-    "totalGaps": 13
+    "indexedGaps": 11,
+    "totalGaps": 11
   },
   "firstGap": {
     "kind": "app_completion_gap",
     "severity": "medium",
     "userFlow": "Unclassified user workflow",
-    "summary": "Unclassified user workflow: USE /ready has app-completion risk missing_test_link.",
+    "summary": "Unclassified user workflow: USE /relationships has app-completion risk missing_test_link.",
     "nextOwner": "Test Automation Engineer + QA Regression Lead",
     "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
     "evidence": [
-      "src/app.ts#/ready"
+      "src/app.ts#/relationships"
     ],
-    "sourceItemId": "api_endpoint:use-ready:cd82f6ee50",
+    "sourceItemId": "api_endpoint:use-relationships:acd9b6327c",
     "risk": "missing_test_link"
   },
   "gaps": [
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /ready has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/app.ts#/ready"
-      ],
-      "sourceItemId": "api_endpoint:use-ready:cd82f6ee50",
-      "risk": "missing_test_link"
-    },
     {
       "kind": "app_completion_gap",
       "severity": "medium",
@@ -174,19 +161,6 @@
       ],
       "sourceItemId": "api_endpoint:use-workspaces:8d243549bd",
       "risk": "missing_test_link"
-    },
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "User configuration",
-      "summary": "User configuration: USE /connection has app-completion risk missing_doc_link.",
-      "nextOwner": "Docs Memory Lead + Project Manager",
-      "nextAction": "Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.",
-      "evidence": [
-        "src/app.ts#/connection"
-      ],
-      "sourceItemId": "api_endpoint:use-connection:b52b509477",
-      "risk": "missing_doc_link"
     },
     {
       "kind": "app_completion_gap",

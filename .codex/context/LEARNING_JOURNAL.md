@@ -74,6 +74,14 @@ fixes for this repository.
 - Avoid: inventing ad hoc completionEvidence keys, using plain strings in refs, or assuming `request_comment` refs work without the same-update comment text.
 - Evidence: `GET /api/issues/49b9c1ef-9159-4e5b-9d0c-ed385e694645/heartbeat-context` and `GET /api/issues/49b9c1ef-9159-4e5b-9d0c-ed385e694645` exposed the live schema; final `PATCH /api/issues/49b9c1ef-9159-4e5b-9d0c-ed385e694645` with a `comment` plus typed completion evidence succeeded and returned `status: done`, `completedAt: 2026-07-14T12:52:50.850Z`, and persisted `completionEvidence`.
 
+### 2026-07-18 - Paperclip Done-State Refs Must Follow The Supported Closeout Schema Exactly
+- Context: LUC-1450 needed a terminal `done` transition after a docs-only closeout, and the first typed completion-evidence PATCH attempts failed before the correct evidence shape was used.
+- Symptom: the issue API rejected evidence refs that used the wrong object shape or included unsupported keys.
+- Root cause: the closeout schema accepts typed `completionEvidence` plus same-update `request_comment` evidence refs using `label` only; ad hoc `id` fields or document-shaped refs were rejected for this closeout path.
+- Guardrail: when closing a Paperclip issue, keep the refs on the supported same-comment `request_comment` shape unless the API docs for the specific evidence kind require a different schema, and confirm the done-state readback immediately after the PATCH.
+- Avoid: adding unsupported `id` keys to `request_comment` refs, assuming document-shaped evidence refs are interchangeable, or treating a validation failure as a terminal blocker before retrying with the documented schema.
+- Evidence: final `PATCH /api/issues/cfa095ef-8448-4030-8874-36c9e998b44f` succeeded with `status: done`, a persisted closeout comment, typed completion evidence, and `completedAt: 2026-07-18T00:19:18.752Z`.
+
 ### 2026-07-14 - Use the Live Issue Control Plane When the Wake Exposes It
 - Context: LUC-1070 first appeared blocked behind GitHub/ClickUp lookup
   failures, but the heartbeat context exposed the live Paperclip API URL,

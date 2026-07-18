@@ -1,4 +1,27 @@
 # Next Steps
+- 2026-07-18: [LUC-1450](/LUC/issues/LUC-1450) is complete. The durable packet
+  is `.codex/tasks/luc-1450-prove-user-configuration-missing-doc-link-for-use-connection.md`.
+  Current fact: the exact `src/app.ts#/connection` docs gap is cleared, the
+  handshake contract lives in `docs/API.md`, and Project Truth now routes the
+  next QA-owned gap to `src/app.ts#/relationships`. Do not reopen another docs
+  lane for `src/app.ts#/connection` unless a fresh generated regression
+  returns.
+
+- 2026-07-17: [LUC-1442](/LUC/issues/LUC-1442) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/ready`. The durable packet is
+  `.codex/tasks/luc-1442-prove-unclassified-user-workflow-missing-test-link-for-use-ready.md`.
+  Current fact: refreshed architecture-awareness marks the exact Readiness
+  mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/health/health.routes.ts`, and `docs/API.md`,
+  plus explicit route-to-test and route-to-document relation overrides;
+  refreshed app-completion no longer routes
+  `api_endpoint:use-ready:cd82f6ee50` as `missing_test_link`; Project Truth
+  now routes the next QA-owned proof queue to `src/app.ts#/relationships`
+  while the remaining docs-owned route gap stays on `src/app.ts#/connection`.
+  Do not reopen another QA proof lane for `src/app.ts#/ready` unless a fresh
+  generated regression removes the linked runtime evidence.
+
 - 2026-07-17: [LUC-1439](/LUC/issues/LUC-1439) completed terminal local
   source-control closure for the `LUC-1430` Projects proof-link packet. The
   durable packet is

@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-07-17T23:07:02.854Z
+Generated: 2026-07-18T00:14:27.825Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -16,26 +16,25 @@ Internal functions and modules are implementation details: they receive proof th
 - Items: 46
 - User flows: 4
 - Needs browser/screenshot review: 0
-- Missing test link: 12
-- Missing doc link: 1
+- Missing test link: 11
+- Missing doc link: 0
 - Implemented, needs proof: 0
 - Blocked: 0
-- Known non-ok risk items: 13
-- Priority review items indexed: 13/13
+- Known non-ok risk items: 11
+- Priority review items indexed: 11/11
 - Priority review truncated: false
 
 ## Flow Summary
 
-- Unclassified user workflow: 31 entities; risks {"ok":20,"missing_test_link":11}; gates {"auth":17}
-- Account access: 12 entities; risks {"ok":12}; gates {"auth":12,"configuration":2}
-- User configuration: 2 entities; risks {"missing_doc_link":1,"missing_test_link":1}; gates {"auth":1,"configuration":2}
+- Unclassified user workflow: 30 entities; risks {"ok":20,"missing_test_link":10}; gates {"auth":17}
+- Account access: 13 entities; risks {"ok":13}; gates {"auth":13,"configuration":2}
+- User configuration: 2 entities; risks {"ok":1,"missing_test_link":1}; gates {"auth":1,"configuration":2}
 - Dashboard overview: 1 entities; risks {"ok":1}; gates {}
 
 ## Priority Review Queue
 
 | User flow | Risk | Kind | Entity | Owner | Path | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
-| Unclassified user workflow | missing_test_link | api_endpoint | USE /ready | Engineering Delivery Lead | src/app.ts#/ready | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /relationships | Engineering Delivery Lead | src/app.ts#/relationships | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /targets | Engineering Delivery Lead | src/app.ts#/targets | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /task-lists | Engineering Delivery Lead | src/app.ts#/task-lists | - |
@@ -46,7 +45,6 @@ Internal functions and modules are implementation details: they receive proof th
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /v1/webhooks/clickup | Engineering Delivery Lead | src/app.ts#/v1/webhooks/clickup | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /workforce | Engineering Delivery Lead | src/app.ts#/workforce | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /workspaces | Engineering Delivery Lead | src/app.ts#/workspaces | - |
-| User configuration | missing_doc_link | api_endpoint | USE /connection | Engineering Delivery Lead | src/app.ts#/connection | auth, configuration |
 | User configuration | missing_test_link | api_endpoint | USE /integration-settings | Engineering Delivery Lead | src/app.ts#/integration-settings | configuration |
 
 ## Agent Rule

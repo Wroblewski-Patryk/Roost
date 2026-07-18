@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-17T23:07:02.854Z",
+  "generatedAt": "2026-07-18T00:14:27.825Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -8,25 +8,25 @@
     "items": 46,
     "flows": 4,
     "needsBrowserReview": 0,
-    "missingTestLink": 12,
-    "missingDocLink": 1,
+    "missingTestLink": 11,
+    "missingDocLink": 0,
     "implementedNeedsProof": 0,
     "blocked": 0,
-    "riskItems": 13,
-    "appCompletionRiskItems": 13,
-    "priorityReviewItems": 13,
+    "riskItems": 11,
+    "appCompletionRiskItems": 11,
+    "priorityReviewItems": 11,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": false
   },
   "flows": [
     {
       "userFlow": "Account access",
-      "total": 12,
+      "total": 13,
       "risks": {
-        "ok": 12
+        "ok": 13
       },
       "gates": {
-        "auth": 12,
+        "auth": 13,
         "configuration": 2
       }
     },
@@ -40,10 +40,10 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "total": 31,
+      "total": 30,
       "risks": {
         "ok": 20,
-        "missing_test_link": 11
+        "missing_test_link": 10
       },
       "gates": {
         "auth": 17
@@ -53,7 +53,7 @@
       "userFlow": "User configuration",
       "total": 2,
       "risks": {
-        "missing_doc_link": 1,
+        "ok": 1,
         "missing_test_link": 1
       },
       "gates": {
@@ -63,25 +63,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "api_endpoint:use-ready:cd82f6ee50",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /ready",
-      "path": "src/app.ts#/ready",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Unclassified user workflow",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
     {
       "id": "api_endpoint:use-relationships:acd9b6327c",
       "type": "api_endpoint",
@@ -271,28 +252,6 @@
       },
       "relatedEntityCount": 4,
       "risk": "missing_test_link"
-    },
-    {
-      "id": "api_endpoint:use-connection:b52b509477",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /connection",
-      "path": "src/app.ts#/connection",
-      "owner": "Engineering Delivery Lead",
-      "status": "verified",
-      "userFlow": "User configuration",
-      "gates": [
-        "auth",
-        "configuration"
-      ],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 7,
-      "risk": "missing_doc_link"
     },
     {
       "id": "api_endpoint:use-integration-settings:7da089bd2f",
