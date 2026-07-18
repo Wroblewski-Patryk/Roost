@@ -1,5 +1,44 @@
 # MVP Next Commits
 
+- 2026-07-18: [LUC-1484](/LUC/issues/LUC-1484) completed terminal
+  source-control closure for the `LUC-1482` v1 proof-link packet. Evidence
+  packet:
+  `.codex/tasks/luc-1484-classify-and-close-local-dirty-state-for-luc-1482.md`.
+  Closure evidence: bounded git review classified the worktree as `85`
+  tracked modified paths plus `1` untracked task artifact before the closure
+  packet itself was added; focused diff review found the authored
+  non-generated files map exactly to the `LUC-1482` packet; all
+  `docs/graphs/*` and `docs/status/*` churn is attributable to the recorded
+  architecture refresh / architecture-awareness / app-completion / Project
+  Truth rebuild chain; representative generated readback kept
+  `src/app.ts#/v1` clear of `missing_test_link`, app-completion at
+  `missingTestLink=6`, and the next routed QA gap on `src/app.ts#/v1/health`;
+  `git diff --check` PASS with CRLF normalization warnings only; JSON parse
+  checks PASS; diff-scoped credential scan found no newly introduced
+  credential-shaped material. Commit status: local closure commit created.
+  Push status: not needed. Deploy impact: none. Next owner: Test Automation
+  Engineer + QA Regression Lead for the routed proof gap on
+  `src/app.ts#/v1/health`.
+
+- 2026-07-18: [LUC-1482](/LUC/issues/LUC-1482) completed focused proof-link
+  closure for unclassified `src/app.ts#/v1`. Evidence packet:
+  `.codex/tasks/luc-1482-prove-unclassified-user-workflow-missing-test-link-for-use-v1.md`.
+  Proof linkage: `docs/architecture/scanner-overrides.json` now marks the
+  exact protected `/v1` mount `verified` with direct evidence from
+  `src/tests/api.test.ts`, `src/app.ts`, and `docs/API.md`, plus explicit
+  route-to-test and route-to-document relation overrides; `npm run
+  test:api:local` PASS (`8/8`); `npm run architecture:refresh` PASS; external
+  architecture-awareness refresh completed in this run with `3120` entities /
+  `8489` relations / `16524` files and materialized the exact proof
+  relations; refreshed app-completion dropped `missingTestLink` from `7` to
+  `6` and no longer reports `api_endpoint:use-v1:347b48829e`; Project Truth
+  apply completed and advanced the first gap to unclassified
+  `src/app.ts#/v1/health`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). Source-control
+  closure completed in [LUC-1484](/LUC/issues/LUC-1484). Next owner: Test
+  Automation Engineer + QA Regression Lead for the routed proof gap on
+  `src/app.ts#/v1/health`.
+
 - 2026-07-18: [LUC-1477](/LUC/issues/LUC-1477) completed focused proof-link
   closure for unclassified `src/app.ts#/tasks`. Evidence packet:
   `.codex/tasks/luc-1477-prove-unclassified-user-workflow-missing-test-link-for-use-tasks.md`.

@@ -1,5 +1,40 @@
 # Active Mission Packet
 
+## LUC-1484 Checkpoint
+
+- 2026-07-18: [LUC-1484](/LUC/issues/LUC-1484) completed terminal local
+  source-control closure for the `LUC-1482` v1 proof-link packet. The durable
+  packet is
+  `.codex/tasks/luc-1484-classify-and-close-local-dirty-state-for-luc-1482.md`.
+  Current fact: bounded git review, representative generated readback,
+  `git diff --check`, JSON parse checks, and a diff-scoped credential scan
+  classified the remaining packet as current/coherent with no newly introduced
+  credential-shaped material. One scoped local commit preserved it and
+  returned the worktree to clean state. The next routed QA proof gap remains
+  `src/app.ts#/v1/health`.
+
+## LUC-1482 Checkpoint
+
+- 2026-07-18: [LUC-1482](/LUC/issues/LUC-1482) closed the routed
+  unclassified endpoint `src/app.ts#/v1` `missing_test_link` row. Packet:
+  `.codex/tasks/luc-1482-prove-unclassified-user-workflow-missing-test-link-for-use-v1.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact protected
+  `/v1` mount `verified` through the existing CompanyCore protected API suite
+  in `src/tests/api.test.ts`, `src/app.ts`, and `docs/API.md`, plus explicit
+  route-to-test and route-to-document relation overrides; focused proof PASS
+  via `npm run test:api:local`, which built server/web, applied all `31`
+  migrations to disposable PostgreSQL on `127.0.0.1:55432`, seeded data, and
+  passed `8/8` subtests; sequential app-completion refresh generated
+  `missingTestLink=6` and removed `src/app.ts#/v1` from the QA proof queue;
+  sequential Project Truth apply generated public probes `pass` and advanced
+  the next QA-owned routed proof queue to `src/app.ts#/v1/health`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). No runtime feature logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Final disposition: local proof lane complete. Remaining follow-up
+  is QA on `src/app.ts#/v1/health`, with source-control closure completed in
+  [LUC-1484](/LUC/issues/LUC-1484).
+
 ## LUC-1477 Checkpoint
 
 - 2026-07-18: [LUC-1477](/LUC/issues/LUC-1477) closed the routed

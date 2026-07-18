@@ -1,4 +1,27 @@
 # Next Steps
+- 2026-07-18: [LUC-1484](/LUC/issues/LUC-1484) completed terminal local
+  source-control closure for the coherent `LUC-1482` v1 packet. The durable
+  packet is
+  `.codex/tasks/luc-1484-classify-and-close-local-dirty-state-for-luc-1482.md`.
+  Current fact: bounded git review classified the packet as attributable to
+  `LUC-1482`, and one scoped local commit preserved it without push or deploy
+  impact. The next routed QA-owned proof gap remains `src/app.ts#/v1/health`.
+
+- 2026-07-18: [LUC-1482](/LUC/issues/LUC-1482) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/v1`. The durable packet is
+  `.codex/tasks/luc-1482-prove-unclassified-user-workflow-missing-test-link-for-use-v1.md`.
+  Current fact: refreshed architecture-awareness marks the exact protected
+  `/v1` mount `verified` through the existing CompanyCore protected API suite
+  in `src/tests/api.test.ts`, `src/app.ts`, and `docs/API.md`, plus explicit
+  route-to-test and route-to-document relation overrides; refreshed
+  app-completion no longer routes `api_endpoint:use-v1:347b48829e` as
+  `missing_test_link`; Project Truth now routes the next QA-owned proof queue
+  to `src/app.ts#/v1/health`. Source-control closure completed in
+  [LUC-1484](/LUC/issues/LUC-1484). Do not reopen another QA proof lane for
+  `src/app.ts#/v1` unless a fresh generated regression removes the linked
+  runtime evidence.
+
 - 2026-07-18: [LUC-1477](/LUC/issues/LUC-1477) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint
   `src/app.ts#/tasks`. The durable packet is

@@ -1,6 +1,6 @@
 flowchart TD
-  agent_2026_07_18_luc_1475_module_confidence_update_ecf8fc0f75["agent: 2026-07-18 LUC-1475 Module Confidence Update"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
-  agent_2026_07_18_luc_1475_task_lists_proof_health_signal_e4d1e00d66["agent: 2026-07-18 LUC-1475 Task Lists Proof Health Signal"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
+  agent_2026_07_18_luc_1477_module_confidence_update_361e2cde7b["agent: 2026-07-18 LUC-1477 Module Confidence Update"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
+  agent_2026_07_18_luc_1477_tasks_proof_health_signal_077a4cc717["agent: 2026-07-18 LUC-1477 Tasks Proof Health Signal"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
   agent_active_mission_packet_a0e3255194["agent: Active Mission Packet"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
   agent_agent_checklists_0b1e39f5f6["agent: Agent Checklists"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
   agent_agent_hierarchy_4835752b62["agent: Agent Hierarchy"] -->|documents| module_agents_4ae71ba13a["module: .agents"]
@@ -57,6 +57,7 @@ flowchart TD
   api_endpoint_use_targets_7ea27c60ae["api_endpoint: USE /targets"] -->|documents| document_api_a617d1cb61["document: API"]
   api_endpoint_use_task_lists_7770c51ee4["api_endpoint: USE /task-lists"] -->|documents| document_api_a617d1cb61["document: API"]
   api_endpoint_use_v1_auth_02d088cd05["api_endpoint: USE /v1/auth"] -->|documents| document_system_architecture_1149ef3528["document: System Architecture"]
+  api_endpoint_use_v1_347b48829e["api_endpoint: USE /v1"] -->|documents| document_api_a617d1cb61["document: API"]
   document_acceptance_criteria_model_13886f82fd["document: acceptance_criteria model"] -->|documents| module_docs_6784d83cb0["module: docs"]
   document_account_settings_d3a7a298ae["document: /account/settings"] -->|documents| module_docs_6784d83cb0["module: docs"]
   document_acf_maint_001_large_file_modularization_17a3f6c8ae["document: ACF-MAINT-001 - Large File Modularization"] -->|documents| module_docs_6784d83cb0["module: docs"]
@@ -218,4 +219,3 @@ flowchart TD
   document_check_architecture_node_links_b9c1bfc942["document: Check Architecture Node Links"] -->|documents| module_docs_6784d83cb0["module: docs"]
   document_check_architecture_relation_integrity_cbc2c5b1a2["document: Check Architecture Relation Integrity"] -->|documents| module_docs_6784d83cb0["module: docs"]
   document_check_architecture_report_presence_fd4c336b36["document: Check Architecture Report Presence"] -->|documents| module_docs_6784d83cb0["module: docs"]
-  document_check_route_capabilities_50d1d99598["document: Check Route Capabilities"] -->|documents| module_docs_6784d83cb0["module: docs"]

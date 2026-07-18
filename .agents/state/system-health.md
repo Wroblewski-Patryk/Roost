@@ -1,3 +1,45 @@
+# 2026-07-18 LUC-1484 v1 Packet Source-Control Health Signal
+
+- Status: terminal source-control closure for the `LUC-1482` v1 packet is
+  complete locally.
+- Evidence: [LUC-1484](/LUC/issues/LUC-1484) task packet
+  `.codex/tasks/luc-1484-classify-and-close-local-dirty-state-for-luc-1482.md`;
+  bounded git review classified the worktree as `85` tracked modified paths
+  plus `1` untracked task artifact before the closure packet itself was added;
+  focused diff review found the authored non-generated files map exactly to
+  the `LUC-1482` packet; all `docs/graphs/*` and `docs/status/*` churn is
+  attributable to the recorded architecture refresh / architecture-awareness /
+  app-completion / Project Truth rebuild chain; representative generated
+  readback kept `src/app.ts#/v1` clear of `missing_test_link`, app-completion
+  at `missingTestLink=6`, and the next routed QA gap on
+  `src/app.ts#/v1/health`; `git diff --check` PASS with CRLF normalization
+  warnings only; JSON parse checks PASS; diff-scoped credential scan found no
+  newly introduced credential-shaped material. One scoped local commit
+  preserved the packet and returned the worktree to clean state. Push status:
+  not needed. Deploy impact: none.
+
+# 2026-07-18 LUC-1482 v1 Proof Health Signal
+
+- Status: routed QA proof-link closure for the `LUC-1482` `USE /v1` packet
+  completed locally.
+- Evidence: [LUC-1482](/LUC/issues/LUC-1482) task packet
+  `.codex/tasks/luc-1482-prove-unclassified-user-workflow-missing-test-link-for-use-v1.md`;
+  `npm run test:api:local` PASS after server/web build, `31` migrations, seed,
+  and `8/8` protected API subtests; `npm run architecture:refresh` PASS;
+  `node C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse/scripts/build-architecture-awareness-index.mjs --project Roost --root C:/Personal/Projekty/Aplikacje/Roost`
+  PASS with `3120` entities / `8489` relations / `16524` files and exact
+  route-to-test plus route-to-document proof relations for `src/app.ts#/v1`;
+  sequential app-completion refresh reduced `missingTestLink` to `6` and no
+  longer lists `api_endpoint:use-v1:347b48829e`; sequential Project Truth
+  apply passed public probes and advanced the first QA-owned gap to
+  `src/app.ts#/v1/health`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). Cleanup check: `docker ps -a --format "{{.Names}} {{.Ports}}"`
+  showed no lingering `companycore-test-postgres` container on port `55432`;
+  `roost-backend-1` and `roost-postgres-1` were pre-existing project services.
+- Guardrail re-confirmed: app-completion requires explicit route-to-test and
+  route-to-document relations in addition to entity-level evidence when a
+  routed `api_endpoint` mount is closed through proof-link metadata.
+
 # 2026-07-18 LUC-1477 Tasks Proof Health Signal
 
 - Status: routed QA proof-link closure for the `LUC-1477` `USE /tasks`

@@ -1,6 +1,6 @@
 # Project Truth Index
 
-Generated: 2026-07-18T20:36:27.751Z
+Generated: 2026-07-18T21:36:16.379Z
 Project: Roost
 Status: gaps_require_routing
 
@@ -13,18 +13,18 @@ This is the routing surface agents should use before guessing whether an app wor
 | incompleteEventChains | 0 |
 | runtimeFindings | 0 |
 | criticalRuntimeFindings | 0 |
-| appCompletionGaps | 7 |
-| indexedAppCompletionGaps | 7 |
-| knownAppCompletionRiskItems | 7 |
-| appCompletionPriorityReviewItems | 7 |
+| appCompletionGaps | 6 |
+| indexedAppCompletionGaps | 6 |
+| knownAppCompletionRiskItems | 6 |
+| appCompletionPriorityReviewItems | 6 |
 | appCompletionPriorityReviewTruncated | false |
 | operationalGateGaps | 0 |
-| indexedGaps | 7 |
-| totalGaps | 7 |
+| indexedGaps | 6 |
+| totalGaps | 6 |
 
 ## First Gap
 
-- medium: Unclassified user workflow: USE /v1 has app-completion risk missing_test_link.
+- medium: Unclassified user workflow: USE /v1/health has app-completion risk missing_test_link.
 - Owner: Test Automation Engineer + QA Regression Lead
 - Next action: Add or link the smallest relevant automated/manual verification for this flow before claiming it works.
 
@@ -32,7 +32,6 @@ This is the routing surface agents should use before guessing whether an app wor
 
 | Severity | Kind | Flow | Summary | Next owner |
 | --- | --- | --- | --- | --- |
-| medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /v1 has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /v1/health has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /v1/ready has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |
 | medium | app_completion_gap | Unclassified user workflow | Unclassified user workflow: USE /v1/webhooks/clickup has app-completion risk missing_test_link. | Test Automation Engineer + QA Regression Lead |

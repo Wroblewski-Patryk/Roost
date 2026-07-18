@@ -1,6 +1,40 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-18: [LUC-1484](/LUC/issues/LUC-1484) terminal local source-control
+  closure for the `LUC-1482` v1 proof-link packet is complete locally. Task
+  contract:
+  `.codex/tasks/luc-1484-classify-and-close-local-dirty-state-for-luc-1482.md`.
+  Evidence: bounded git review classified the worktree as `85` tracked
+  modified paths plus `1` untracked task artifact before the closure packet
+  itself was added; focused diff review found the authored non-generated files
+  map exactly to the `LUC-1482` v1 proof-link packet; all `docs/graphs/*` and
+  `docs/status/*` churn is attributable to the recorded architecture refresh /
+  architecture-awareness / app-completion / Project Truth rebuild chain;
+  representative generated readback kept `src/app.ts#/v1` clear of
+  `missing_test_link` and advanced the next QA-owned proof queue to
+  `src/app.ts#/v1/health`; `git diff --check` PASS with CRLF normalization
+  warnings only; JSON parse checks PASS; diff-scoped credential scan found no
+  newly introduced credential-shaped material. Commit status: local
+  source-control closure commit created in this heartbeat. Push status: not
+  needed; deploy impact: none.
+- 2026-07-18: [LUC-1482](/LUC/issues/LUC-1482) unclassified `src/app.ts#/v1`
+  missing-test-link verification is complete locally. Task contract:
+  `.codex/tasks/luc-1482-prove-unclassified-user-workflow-missing-test-link-for-use-v1.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  protected `/v1` mount `verified` through the existing CompanyCore protected
+  API suite in `src/tests/api.test.ts`, `src/app.ts`, and `docs/API.md`, plus
+  explicit route-to-test and route-to-document relation overrides; `npm run
+  test:api:local` PASS after server/web build, `31` migrations, seed, and
+  `8/8` protected API subtests; refreshed app-completion reports `6` missing
+  test links and no longer routes `api_endpoint:use-v1:347b48829e` as
+  `missing_test_link`; refreshed Project Truth generated public probes `pass`
+  and advances the next QA-owned routed proof queue to `src/app.ts#/v1/health`;
+  `npm run architecture:status` PASS (`GREEN`, `455/769/35`). No runtime
+  product logic, provider call, deploy, push, restart, production mutation,
+  credential access, or secret disclosure occurred. Push status: not needed;
+  deploy impact: none. Source-control closure completed in
+  [LUC-1484](/LUC/issues/LUC-1484).
 - 2026-07-18: [LUC-1477](/LUC/issues/LUC-1477) unclassified
   `src/app.ts#/tasks` missing-test-link verification is complete locally.
   Task contract:

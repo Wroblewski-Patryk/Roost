@@ -1,6 +1,6 @@
 # Architecture Awareness Report
 
-Generated: 2026-07-18T20:36:14.217Z
+Generated: 2026-07-18T21:36:16.395Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 
@@ -18,7 +18,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | model | 5 |
 | module | 67 |
 | project | 1 |
-| task | 180 |
+| task | 181 |
 | test | 82 |
 
 ## Counts By Status
@@ -27,15 +27,15 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | --- | ---: |
 | blocked | 1 |
 | deprecated | 6 |
-| implemented | 2667 |
+| implemented | 2666 |
 | in_progress | 11 |
 | tested | 19 |
-| verified | 415 |
+| verified | 417 |
 
 ## Health Signals
 
-- Raw implementation entities without inferred tests: 1065
-- Actionable implementation entities without inferred tests: 1052
+- Raw implementation entities without inferred tests: 1064
+- Actionable implementation entities without inferred tests: 1051
 - Raw implementation entities without inferred docs: 0
 - Actionable implementation entities without inferred docs: 0
 - Classified inferred-link noise: 13
@@ -71,7 +71,6 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - api_endpoint: USE /operating-model (src/app.ts#/operating-model)
 - api_endpoint: USE /operations (src/app.ts#/operations)
 - api_endpoint: USE /tasks (src/app.ts#/tasks)
-- api_endpoint: USE /v1 (src/app.ts#/v1)
 - api_endpoint: USE /v1/health (src/app.ts#/v1/health)
 - api_endpoint: USE /v1/ready (src/app.ts#/v1/ready)
 - api_endpoint: USE /v1/webhooks/clickup (src/app.ts#/v1/webhooks/clickup)
@@ -89,6 +88,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - feature: build-architecture-evidence-worklist.mjs (scripts/build-architecture-evidence-worklist.mjs)
 - feature: build-architecture-impact-delta-report.mjs (scripts/build-architecture-impact-delta-report.mjs)
 - feature: build-architecture-impact-index.mjs (scripts/build-architecture-impact-index.mjs)
+- feature: build-architecture-proof-bundle.mjs (scripts/build-architecture-proof-bundle.mjs)
 
 ## Top Actionable Missing Doc Links
 
@@ -124,6 +124,6 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 
 - This is an inferred baseline. CTO/Docs Memory must promote or correct important relations.
 - Curated graph coverage input: `C:/Personal/Projekty/Aplikacje/Roost/docs/graphs/architecture-graph.json` (covered paths: 0).
-- Override input: `C:/Personal/Projekty/Aplikacje/Roost/docs/architecture/scanner-overrides.json` (entity entries: 258, relation entries: 284).
-- Override summary: excluded files 0, entity overrides 249, relation overrides 243, critical entities tagged 0.
+- Override input: `C:/Personal/Projekty/Aplikacje/Roost/docs/architecture/scanner-overrides.json` (entity entries: 259, relation entries: 287).
+- Override summary: excluded files 0, entity overrides 250, relation overrides 245, critical entities tagged 0.
 - `verified` still requires fresh command/browser/deploy evidence, not only file presence.
