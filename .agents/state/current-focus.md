@@ -1,5 +1,31 @@
 # Current Focus
 
+## LUC-1491 Checkpoint
+
+- 2026-07-18: [LUC-1491](/LUC/issues/LUC-1491) completed the review-owned
+  source-control closure for the coherent `LUC-1486` packet. The durable
+  packet is
+  `.codex/tasks/luc-1491-classify-and-close-dirty-state-for-luc-1486.md`.
+  Current fact: bounded git review classified the remaining authored/state and
+  generated graph/status churn as attributable to the `/v1/health` proof-link
+  closure; one scoped local commit preserves the packet without push or deploy
+  impact. The next routed QA gap remains `src/app.ts#/v1/ready`, and the same
+  `/v1/health` symbol now belongs to Docs/PM for `missing_doc_link`.
+
+## LUC-1486 Checkpoint
+
+- 2026-07-18: [LUC-1486](/LUC/issues/LUC-1486) completed the QA-owned
+  closure for the `src/app.ts#/v1/health` `missing_test_link` row. The durable
+  packet is
+  `.codex/tasks/luc-1486-prove-unclassified-user-workflow-missing-test-link-for-use-v1-health.md`.
+  Current fact: `docs/architecture/scanner-overrides.json` now links the exact
+  `/v1/health` alias mount to the existing CompanyCore API proof in
+  `src/tests/api.test.ts` and `src/health/health.routes.ts`; sequential truth
+  refresh removed `api_endpoint:use-v1-health:145d12bca3` from app-completion
+  `missing_test_link`, reduced `missingTestLink` to `5`, reclassified the same
+  symbol to docs-owned `missing_doc_link`, and moved the next routed QA gap to
+  `src/app.ts#/v1/ready`.
+
 ## LUC-1484 Checkpoint
 
 - 2026-07-18: [LUC-1484](/LUC/issues/LUC-1484) completed the review-owned

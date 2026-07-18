@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-07-18T21:36:16.395Z",
+  "generated_at": "2026-07-18T22:13:54.441Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 3120,
-    "relations": 8489,
+    "entities": 3122,
+    "relations": 8520,
     "by_type": {
       "agent": 47,
       "api_endpoint": 46,
@@ -18,21 +18,21 @@
       "model": 5,
       "module": 67,
       "project": 1,
-      "task": 181,
+      "task": 183,
       "test": 82
     },
     "by_status": {
       "blocked": 1,
       "deprecated": 6,
-      "implemented": 2666,
-      "in_progress": 11,
+      "implemented": 2665,
+      "in_progress": 10,
       "tested": 19,
-      "verified": 417
+      "verified": 421
     }
   },
   "signals": {
     "implementation_without_tests": {
-      "count": 1064,
+      "count": 1063,
       "items": [
         {
           "id": "api_endpoint:use-agent-events:1b4c65ace9",
@@ -208,14 +208,6 @@
           "name": "USE /tasks",
           "path": "src/app.ts#/tasks",
           "status": "verified",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "api_endpoint:use-v1-health:145d12bca3",
-          "type": "api_endpoint",
-          "name": "USE /v1/health",
-          "path": "src/app.ts#/v1/health",
-          "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -1633,6 +1625,14 @@
           "path": "scripts/backfill-architecture-nodes.mjs#routeModule",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "function:tocsv:e0c736e8fc",
+          "type": "function",
+          "name": "toCsv",
+          "path": "scripts/backfill-architecture-nodes.mjs#toCsv",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
         }
       ]
     },
@@ -1641,7 +1641,7 @@
       "items": []
     },
     "actionable_implementation_without_tests": {
-      "count": 1051,
+      "count": 1050,
       "items": [
         {
           "id": "api_endpoint:use-agent-events:1b4c65ace9",
@@ -1817,14 +1817,6 @@
           "name": "USE /tasks",
           "path": "src/app.ts#/tasks",
           "status": "verified",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "api_endpoint:use-v1-health:145d12bca3",
-          "type": "api_endpoint",
-          "name": "USE /v1/health",
-          "path": "src/app.ts#/v1/health",
-          "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -3240,6 +3232,14 @@
           "type": "function",
           "name": "writeText",
           "path": "scripts/backfill-architecture-nodes.mjs#writeText",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "function:csvescape:d275e3e098",
+          "type": "function",
+          "name": "csvEscape",
+          "path": "scripts/build-architecture-chain-hardening-worklist.mjs#csvEscape",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         }

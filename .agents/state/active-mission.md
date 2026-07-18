@@ -1,5 +1,49 @@
 # Active Mission Packet
 
+## LUC-1491 Checkpoint
+
+- 2026-07-18: [LUC-1491](/LUC/issues/LUC-1491) completed terminal local
+  source-control closure for the `LUC-1486` v1 health proof-link packet.
+  Packet:
+  `.codex/tasks/luc-1491-classify-and-close-dirty-state-for-luc-1486.md`.
+  Evidence: bounded git review classified the worktree as `85` tracked
+  modified paths plus `1` untracked task artifact before the closure packet
+  itself was added; focused diff review found the authored non-generated files
+  map exactly to the `LUC-1486` v1 health proof-link packet; all
+  `docs/graphs/*` and `docs/status/*` churn is attributable to the recorded
+  architecture refresh / architecture-awareness / app-completion / Project
+  Truth rebuild chain; representative generated readback kept
+  `src/app.ts#/v1/health` clear of `missing_test_link`, reclassified the same
+  symbol to docs-owned `missing_doc_link`, and advanced the next QA-owned
+  proof queue to `src/app.ts#/v1/ready`; `git diff --check` PASS with CRLF
+  normalization warnings only; JSON parse checks PASS; diff-scoped credential
+  scan found no newly introduced credential-shaped material. Commit status:
+  local source-control closure commit created in this heartbeat. Push status:
+  not needed. Deploy impact: none.
+
+## LUC-1486 Checkpoint
+
+- 2026-07-18: [LUC-1486](/LUC/issues/LUC-1486) closed the routed
+  unclassified endpoint `src/app.ts#/v1/health` `missing_test_link` row.
+  Packet:
+  `.codex/tasks/luc-1486-prove-unclassified-user-workflow-missing-test-link-for-use-v1-health.md`.
+  `docs/architecture/scanner-overrides.json` now marks the exact `/v1/health`
+  alias mount `verified` through the existing CompanyCore API suite in
+  `src/tests/api.test.ts`, `src/health/health.routes.ts`, and the task packet,
+  plus explicit route-to-test relation overrides; focused proof PASS via
+  `npm run test:api:local`, which built server/web, applied all `31`
+  migrations to disposable PostgreSQL on `127.0.0.1:55432`, seeded data, and
+  passed `8/8` subtests; sequential app-completion refresh generated
+  `missingTestLink=5` and removed `src/app.ts#/v1/health` from the QA proof
+  queue; sequential Project Truth apply generated public probes `pass`,
+  reclassified the same symbol to docs-owned `missing_doc_link`, and advanced
+  the next QA-owned routed proof queue to `src/app.ts#/v1/ready`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`). No runtime feature logic,
+  provider call, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Final disposition: local QA proof
+  lane complete. Remaining follow-up is docs-owned linkage on the same symbol,
+  with the next QA-owned proof gap on `src/app.ts#/v1/ready`.
+
 ## LUC-1484 Checkpoint
 
 - 2026-07-18: [LUC-1484](/LUC/issues/LUC-1484) completed terminal local

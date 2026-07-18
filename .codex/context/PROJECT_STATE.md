@@ -1,5 +1,56 @@
 # PROJECT_STATE
 
+- 2026-07-18: [LUC-1491](/LUC/issues/LUC-1491) completed local source-control
+  closure for the `LUC-1486` v1 health proof-link packet. Source-of-truth task
+  packet:
+  `.codex/tasks/luc-1491-classify-and-close-dirty-state-for-luc-1486.md`.
+  Current evidence: bounded git inspection classified the worktree as `85`
+  tracked modified paths plus `1` untracked task artifact before the closure
+  packet itself was added; focused diff review confirmed the authored
+  non-generated files map directly to the exact `LUC-1486` `/v1/health`
+  proof-link packet, while the large `docs/graphs/*` and `docs/status/*`
+  deltas are attributable to the recorded architecture refresh /
+  architecture-awareness / app-completion / Project Truth rebuild chain;
+  representative generated readback kept `src/app.ts#/v1/health` clear of
+  `missing_test_link`, showed `missingTestLink=5`, reclassified the same
+  symbol to docs-owned `missing_doc_link`, and advanced the next routed QA
+  proof gap to `src/app.ts#/v1/ready`; `git diff --check` PASS with CRLF
+  normalization warnings only; `git rev-list --left-right --count
+  origin/main...HEAD` returned `0 60` before the local closure commit; JSON
+  parse checks passed; and a diff-scoped high-confidence redaction scan
+  returned no newly introduced credential-shaped material. No runtime feature
+  logic, deploy, push, restart, production mutation, credential access, or
+  cross-repo write occurred. Commit status: local source-control closure
+  commit created in this heartbeat. Push status: not needed. Deploy impact:
+  none.
+
+- 2026-07-18: [LUC-1486](/LUC/issues/LUC-1486) completed the local
+  missing-test-link closure for unclassified `src/app.ts#/v1/health`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1486-prove-unclassified-user-workflow-missing-test-link-for-use-v1-health.md`.
+  Current evidence: `docs/architecture/scanner-overrides.json` now marks the
+  exact `/v1/health` alias mount `verified` through the existing CompanyCore
+  API suite in `src/tests/api.test.ts`, `src/health/health.routes.ts`, and the
+  task packet, plus explicit route-to-test relation overrides; focused local
+  API proof PASS via `npm run test:api:local`, which built server/web, applied
+  all `31` migrations to disposable PostgreSQL on `127.0.0.1:55432`, seeded
+  data, and passed `8/8` subtests; `npm run architecture:refresh` PASS;
+  external architecture-awareness refresh completed in this run with `3122`
+  entities / `8518` relations / `16524` files and materialized the exact proof
+  relations; sequential app-completion refresh now reports `46` items / `4`
+  flows / `5` missing test links / `1` missing doc link / `0`
+  implemented-needs-proof / `0` blocked / `6` risk items, no longer routes
+  `api_endpoint:use-v1-health:145d12bca3` as `missing_test_link`, and Project
+  Truth apply completed with public probes `pass`, runtime findings `0`,
+  incomplete event chains `0`, operational gate gaps `0`, and reclassifies the
+  same symbol to docs-owned `missing_doc_link` while advancing the next
+  QA-owned routed proof queue to `src/app.ts#/v1/ready`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`). No runtime product logic, schema, provider config, deploy, or
+  production mutation changed. Residual QA proof queue now starts at
+  `src/app.ts#/v1/ready`; docs-owned follow-up now starts at
+  `src/app.ts#/v1/health`.
+
 - 2026-07-18: [LUC-1484](/LUC/issues/LUC-1484) completed local source-control
   closure for the `LUC-1482` v1 proof-link packet. Source-of-truth task
   packet:

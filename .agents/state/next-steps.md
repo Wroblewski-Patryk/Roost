@@ -1,4 +1,29 @@
 # Next Steps
+- 2026-07-18: [LUC-1491](/LUC/issues/LUC-1491) completed terminal local
+  source-control closure for the coherent `LUC-1486` v1 health packet. The
+  durable packet is
+  `.codex/tasks/luc-1491-classify-and-close-dirty-state-for-luc-1486.md`.
+  Current fact: bounded git review, representative generated readback,
+  `git diff --check`, JSON parse checks, and a diff-scoped credential scan
+  classified the packet as current/coherent. One scoped local commit preserved
+  it and returned the worktree to clean state. Do not reopen another
+  source-control closure lane for the `LUC-1486` packet unless fresh work
+  makes the repo dirty again.
+
+- 2026-07-18: [LUC-1486](/LUC/issues/LUC-1486) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/v1/health`. The durable packet is
+  `.codex/tasks/luc-1486-prove-unclassified-user-workflow-missing-test-link-for-use-v1-health.md`.
+  Current fact: refreshed architecture-awareness marks the exact `/v1/health`
+  alias mount `verified` through the existing CompanyCore API suite in
+  `src/tests/api.test.ts` and `src/health/health.routes.ts`; refreshed
+  app-completion no longer routes `api_endpoint:use-v1-health:145d12bca3` as
+  `missing_test_link`; Project Truth now routes the same symbol to Docs Memory
+  Lead + Project Manager as `missing_doc_link` and advances the next QA-owned
+  proof queue to `src/app.ts#/v1/ready`. Do not reopen another QA proof lane
+  for `src/app.ts#/v1/health` unless a fresh generated regression removes the
+  linked runtime evidence.
+
 - 2026-07-18: [LUC-1484](/LUC/issues/LUC-1484) completed terminal local
   source-control closure for the coherent `LUC-1482` v1 packet. The durable
   packet is

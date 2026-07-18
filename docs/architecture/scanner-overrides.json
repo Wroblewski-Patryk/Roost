@@ -716,6 +716,16 @@
       ]
     },
     {
+      "path": "src/app.ts#/v1/health",
+      "status": "verified",
+      "description": "v1 health alias verified through the existing CompanyCore protected API suite coverage for public GET `/v1/health` parity with `/health`, safe runtime metadata exposure, and fail-closed public-health semantics without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/health/health.routes.ts",
+        ".codex/tasks/luc-1486-prove-unclassified-user-workflow-missing-test-link-for-use-v1-health.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/tasks",
       "status": "verified",
       "description": "Tasks mount verified through the existing protected API suite coverage for workspace-scoped POST, GET by id, PATCH, list isolation, ClickUp-backed write-back and archive flows, native sync ingestion, custom-field write-through, and documented root/v1 CRUD plus sync route contract without changing runtime behavior.",
@@ -2730,6 +2740,22 @@
       "toPath": "docs/API.md",
       "toType": "document",
       "evidence": "LUC-1482 v1 route documentation proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/v1/health",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1486 v1 health alias API proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1486-prove-unclassified-user-workflow-missing-test-link-for-use-v1-health.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/v1/health",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1486 v1 health proof-link packet"
     },
     {
       "type": "tests",

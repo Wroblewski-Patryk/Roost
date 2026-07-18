@@ -1,6 +1,36 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-18: [LUC-1491](/LUC/issues/LUC-1491) terminal local source-control
+  closure for the `LUC-1486` `/v1/health` proof-link packet is complete
+  locally. Task contract:
+  `.codex/tasks/luc-1491-classify-and-close-dirty-state-for-luc-1486.md`.
+  Evidence: bounded git review classified the packet as attributable to
+  `LUC-1486`; representative generated readback confirms `src/app.ts#/v1/health`
+  is no longer routed as `missing_test_link`, app-completion now reports
+  `missingTestLink=5`, the same symbol is now docs-owned `missing_doc_link`,
+  and Project Truth advances the next QA-owned proof queue to
+  `src/app.ts#/v1/ready`; `git diff --check` PASS with CRLF normalization
+  warnings only; sampled changed JSON artifacts parse cleanly; diff-scoped
+  credential scan found no newly introduced secret-shaped material. One local
+  commit preserves the packet. Push status: not needed; deploy impact: none.
+- 2026-07-18: [LUC-1486](/LUC/issues/LUC-1486) unclassified
+  `src/app.ts#/v1/health` missing-test-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1486-prove-unclassified-user-workflow-missing-test-link-for-use-v1-health.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  `/v1/health` alias mount `verified` through the existing CompanyCore API
+  suite in `src/tests/api.test.ts`, `src/health/health.routes.ts`, and the
+  task packet, plus explicit route-to-test relation overrides; `npm run
+  test:api:local` PASS after server/web build, `31` migrations, seed, and
+  `8/8` API subtests; refreshed app-completion reports `5` missing test links
+  and no longer routes `api_endpoint:use-v1-health:145d12bca3` as
+  `missing_test_link`; refreshed Project Truth generated public probes `pass`,
+  reclassified the same symbol to docs-owned `missing_doc_link`, and advances
+  the next QA-owned proof queue to `src/app.ts#/v1/ready`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`). No runtime product logic,
+  provider call, deploy, push, restart, production mutation, credential access,
+  or secret disclosure occurred. Push status: not needed; deploy impact: none.
 - 2026-07-18: [LUC-1484](/LUC/issues/LUC-1484) terminal local source-control
   closure for the `LUC-1482` v1 proof-link packet is complete locally. Task
   contract:

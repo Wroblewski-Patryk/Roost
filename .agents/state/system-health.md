@@ -1,3 +1,53 @@
+# 2026-07-18 LUC-1491 v1 Health Packet Source-Control Health Signal
+
+- Status: terminal source-control closure for the `LUC-1486` `/v1/health`
+  packet is complete locally.
+- Evidence: [LUC-1491](/LUC/issues/LUC-1491) task packet
+  `.codex/tasks/luc-1491-classify-and-close-dirty-state-for-luc-1486.md`;
+  bounded git review classified the packet as `85` tracked modified paths plus
+  `1` untracked task artifact before the closure packet itself was added;
+  focused authored diff review mapped the non-generated set directly to the
+  `LUC-1486` closure; representative generated readback kept
+  `src/app.ts#/v1/health` clear of `missing_test_link`, showed
+  `missingTestLink=5`, reclassified the same symbol to docs-owned
+  `missing_doc_link`, and kept the next QA-owned routed proof gap on
+  `src/app.ts#/v1/ready`; `git diff --check` PASS with CRLF normalization
+  warnings only; `git rev-parse --abbrev-ref --symbolic-full-name
+  "@{upstream}"` returned `origin/main`; `git rev-list --left-right --count
+  "@{upstream}...HEAD"` returned `0 60` before the closure commit; JSON parse
+  checks PASS for sampled changed JSON artifacts; diff-scoped high-confidence
+  credential scan returned no newly introduced secret-shaped matches.
+- Guardrail re-confirmed: source-control closure for these generated proof
+  packets must stay bounded to authored surfaces plus representative generated
+  readback and hygiene checks; no generator rerun is needed when the packet
+  already contains proven artifacts.
+
+# 2026-07-18 LUC-1486 v1 Health Proof Health Signal
+
+- Status: routed QA proof-link closure for the `LUC-1486` `USE /v1/health`
+  packet completed locally.
+- Evidence: [LUC-1486](/LUC/issues/LUC-1486) task packet
+  `.codex/tasks/luc-1486-prove-unclassified-user-workflow-missing-test-link-for-use-v1-health.md`;
+  `npm run test:api:local` PASS after server/web build, `31` migrations, seed,
+  and `8/8` API subtests including `CompanyCore v1 protected API flow`;
+  `npm run architecture:refresh` PASS; `node
+  C:/Personal/Projekty/Aplikacje/Paperclip_Softwarehouse/scripts/build-architecture-awareness-index.mjs
+  --project Roost --root C:/Personal/Projekty/Aplikacje/Roost` PASS with
+  `3122` entities / `8518` relations / `16524` files and exact route-to-test
+  proof relations for `src/app.ts#/v1/health`; sequential app-completion
+  refresh reduced `missingTestLink` to `5` and no longer lists
+  `api_endpoint:use-v1-health:145d12bca3` as `missing_test_link`; sequential
+  Project Truth apply passed public probes and reclassified the same symbol as
+  docs-owned `missing_doc_link` while advancing the next QA-owned proof gap to
+  `src/app.ts#/v1/ready`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). Cleanup check: `docker ps -a --format "{{.Names}} {{.Ports}}"`
+  showed no lingering `companycore-test-postgres` container on port `55432`;
+  listed `roost-backend-1`, `roost-postgres-1`, `soar-redis-1`, and
+  `soar-postgres-1` services were pre-existing runtime containers.
+- Guardrail re-confirmed: app-completion and Project Truth must rerun
+  sequentially after the architecture-awareness export when proof-link
+  metadata changes, or stale routed gaps persist.
+
 # 2026-07-18 LUC-1484 v1 Packet Source-Control Health Signal
 
 - Status: terminal source-control closure for the `LUC-1482` v1 packet is

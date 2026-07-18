@@ -1,5 +1,47 @@
 # MVP Next Commits
 
+- 2026-07-18: [LUC-1491](/LUC/issues/LUC-1491) completed terminal
+  source-control closure for the coherent `LUC-1486` `/v1/health` proof-link
+  packet. Evidence packet:
+  `.codex/tasks/luc-1491-classify-and-close-dirty-state-for-luc-1486.md`.
+  Current evidence: bounded git review classified the packet as attributable
+  to `LUC-1486`, with the authored non-generated files limited to
+  `.agents/state/*`, `.codex/context/*`, `docs/architecture/scanner-overrides.json`,
+  `docs/planning/mvp-next-commits.md`, and the `LUC-1486` task packet; the
+  remaining `docs/graphs/*` and `docs/status/*` churn is the expected
+  architecture-awareness / app-completion / Project Truth rebuild chain;
+  representative generated readback kept `src/app.ts#/v1/health` clear of
+  `missing_test_link`, reclassified the same symbol to docs-owned
+  `missing_doc_link`, and advanced the first QA-owned routed gap to
+  `src/app.ts#/v1/ready`; `git diff --check` PASS with CRLF normalization
+  warnings only; `git rev-list --left-right --count origin/main...HEAD`
+  returned `0 60` before the closure commit; sampled changed JSON artifacts
+  parse cleanly; diff-scoped credential scan found no newly introduced
+  secret-shaped material. One scoped local commit preserved the packet.
+  Next owner: Docs Memory Lead + Project Manager for the same-symbol doc-link
+  gap, and Test Automation Engineer + QA Regression Lead for the routed proof
+  gap on `src/app.ts#/v1/ready`.
+
+- 2026-07-18: [LUC-1486](/LUC/issues/LUC-1486) completed focused proof-link
+  closure for unclassified `src/app.ts#/v1/health`. Evidence packet:
+  `.codex/tasks/luc-1486-prove-unclassified-user-workflow-missing-test-link-for-use-v1-health.md`.
+  Proof linkage: `docs/architecture/scanner-overrides.json` now marks the
+  exact `/v1/health` alias mount `verified` with direct evidence from
+  `src/tests/api.test.ts`, `src/health/health.routes.ts`, and the task packet,
+  plus explicit route-to-test relation overrides; `npm run test:api:local`
+  PASS (`8/8`); `npm run architecture:refresh` PASS; external
+  architecture-awareness refresh completed in this run with `3122` entities /
+  `8518` relations / `16524` files and materialized the exact proof relations;
+  refreshed app-completion dropped `missingTestLink` from `6` to `5` and no
+  longer reports `api_endpoint:use-v1-health:145d12bca3`; Project Truth apply
+  completed and reclassified the same symbol to docs-owned
+  `missing_doc_link` while advancing the first QA-owned gap to unclassified
+  `src/app.ts#/v1/ready`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). Next owner: Docs
+  Memory Lead + Project Manager for the same-symbol doc-link gap, and Test
+  Automation Engineer + QA Regression Lead for the routed proof gap on
+  `src/app.ts#/v1/ready`.
+
 - 2026-07-18: [LUC-1484](/LUC/issues/LUC-1484) completed terminal
   source-control closure for the `LUC-1482` v1 proof-link packet. Evidence
   packet:
