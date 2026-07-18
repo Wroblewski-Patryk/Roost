@@ -1,3 +1,9 @@
+# 2026-07-18 LUC-1473 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Targets proof linkage | verified for dispatched missing-test-link gap | [LUC-1473](/LUC/issues/LUC-1473) focused proof-link packet `.codex/tasks/luc-1473-prove-unclassified-user-workflow-missing-test-link-for-use-targets.md`; `docs/architecture/scanner-overrides.json` marks `src/app.ts#/targets` `verified` through the existing protected API suite in `src/tests/api.test.ts`, `src/modules/targets/targets.routes.ts`, and `docs/API.md`, plus explicit route-to-test and route-to-document relation overrides; focused local protected API proof PASS via `npm run test:api:local`, which built server/web, applied all `31` migrations to disposable PostgreSQL on `127.0.0.1:55432`, seeded data, and passed `8/8` subtests; `npm run architecture:refresh` PASS; external architecture-awareness rebuild generated `2026-07-18T19:47:07.820Z` with `3116` entities / `8426` relations / `16524` files and materialized the exact proof relations; sequential app-completion refresh reduced `missingTestLink` from `10` to `9` and no longer routes `api_endpoint:use-targets:7ea27c60ae` as `missing_test_link`; sequential Project Truth apply completed with public probes `pass` and advanced the next QA-owned routed proof gap to `src/app.ts#/task-lists`; `npm run architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`). | No further QA proof work is needed for `src/app.ts#/targets` unless a fresh generated regression removes the linked API evidence. The next QA-owned routed proof gap is unclassified `src/app.ts#/task-lists`, and local dirty-state closure is still pending for this packet. |
+
 # 2026-07-18 LUC-1459 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

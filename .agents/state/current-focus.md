@@ -1,5 +1,33 @@
 # Current Focus
 
+## LUC-1474 Checkpoint
+
+- 2026-07-18: [LUC-1474](/LUC/issues/LUC-1474) completed the review-owned
+  source-control closure for the `LUC-1473` Targets packet. The durable packet
+  is
+  `.codex/tasks/luc-1474-classify-and-close-local-dirty-state-for-luc-1473.md`.
+  Current fact: bounded git review, representative generated readback,
+  `git diff --check`, JSON parse checks, and a diff-scoped credential scan
+  classified the remaining packet as current/coherent; the only matches were
+  pre-existing historical proof-token fixture strings in older state entries,
+  not newly introduced material. One scoped local commit preserved it and
+  returned the worktree to clean state. The next routed QA
+  proof gap remains `src/app.ts#/task-lists`.
+
+## LUC-1473 Checkpoint
+
+- 2026-07-18: [LUC-1473](/LUC/issues/LUC-1473) completed the QA-owned
+  closure for the `src/app.ts#/targets` `missing_test_link` row. The durable
+  packet is
+  `.codex/tasks/luc-1473-prove-unclassified-user-workflow-missing-test-link-for-use-targets.md`.
+  Current fact: `docs/architecture/scanner-overrides.json` now links the
+  exact Targets mount to the existing protected API proof in
+  `src/tests/api.test.ts` and `docs/API.md`; sequential truth refresh removed
+  `api_endpoint:use-targets:7ea27c60ae` from app-completion risk, reduced
+  `missingTestLink` to `9`, and moved the next routed QA gap to
+  `src/app.ts#/task-lists`. Source-control closure is still pending for the
+  local generated packet.
+
 ## LUC-1462 Checkpoint
 
 - 2026-07-18: [LUC-1462](/LUC/issues/LUC-1462) completed the review-owned

@@ -1,4 +1,32 @@
 # Next Steps
+- 2026-07-18: [LUC-1474](/LUC/issues/LUC-1474) completed terminal local
+  source-control closure for the `LUC-1473` Targets proof-link packet. The
+  durable packet is
+  `.codex/tasks/luc-1474-classify-and-close-local-dirty-state-for-luc-1473.md`.
+  Current fact: bounded git review, representative generated readback,
+  `git diff --check`, JSON parse checks, and a diff-scoped credential scan
+  classified the packet as current/coherent; the only matches were
+  pre-existing historical proof-token fixture strings in older state entries,
+  not newly introduced material. One scoped local commit preserved it and
+  returned the worktree to clean state. Do not reopen another
+  source-control closure lane for the `LUC-1473` packet unless fresh work
+  makes the repo dirty again.
+
+- 2026-07-18: [LUC-1473](/LUC/issues/LUC-1473) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/targets`. The durable packet is
+  `.codex/tasks/luc-1473-prove-unclassified-user-workflow-missing-test-link-for-use-targets.md`.
+  Current fact: refreshed architecture-awareness marks the exact Targets mount
+  `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/targets/targets.routes.ts`, and
+  `docs/API.md`, plus explicit route-to-test and route-to-document relation
+  overrides; refreshed app-completion no longer routes
+  `api_endpoint:use-targets:7ea27c60ae` as `missing_test_link`; Project Truth
+  now routes the next QA-owned proof queue to `src/app.ts#/task-lists`.
+  Do not reopen another QA proof lane for `src/app.ts#/targets` unless a
+  fresh generated regression removes the linked runtime evidence.
+  Source-control closure completed in [LUC-1474](/LUC/issues/LUC-1474).
+
 - 2026-07-18: [LUC-1462](/LUC/issues/LUC-1462) completed terminal local
   source-control closure for the `LUC-1459` Relationships proof-link packet.
   The durable packet is

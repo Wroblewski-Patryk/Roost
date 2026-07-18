@@ -1,6 +1,45 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-18: [LUC-1474](/LUC/issues/LUC-1474) terminal local source-control
+  closure for the `LUC-1473` Targets proof-link packet is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1474-classify-and-close-local-dirty-state-for-luc-1473.md`.
+  Evidence: bounded git review classified the worktree as `85` tracked
+  modified paths plus `1` untracked task artifact before the closure packet
+  itself was added; focused diff review found the authored non-generated files
+  map exactly to the `LUC-1473` targets proof-link packet; all
+  `docs/graphs/*` and `docs/status/*` churn is attributable to the recorded
+  architecture refresh / architecture-awareness / app-completion / Project
+  Truth rebuild chain; representative generated readback kept
+  `src/app.ts#/targets` clear of `missing_test_link` and advanced the next
+  QA-owned proof queue to `src/app.ts#/task-lists`; `git diff --check` PASS
+  with CRLF normalization warnings only; JSON parse checks PASS; diff-scoped
+  credential scan only matched pre-existing historical proof-token fixture
+  strings in older state entries and no newly introduced credential-shaped
+  material. Commit status: local
+  source-control closure commit created in this heartbeat. Push status: not
+  needed; deploy impact: none.
+
+- 2026-07-18: [LUC-1473](/LUC/issues/LUC-1473) unclassified
+  `src/app.ts#/targets` missing-test-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1473-prove-unclassified-user-workflow-missing-test-link-for-use-targets.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  Targets mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/targets/targets.routes.ts`, and
+  `docs/API.md`, plus explicit route-to-test and route-to-document relation
+  overrides; `npm run test:api:local` PASS after server/web build, `31`
+  migrations, seed, and `8/8` protected API subtests; refreshed
+  app-completion reports `9` missing test links and no longer routes
+  `api_endpoint:use-targets:7ea27c60ae` as `missing_test_link`; refreshed
+  Project Truth generated public probes `pass` and advances the next QA-owned
+  routed proof queue to `src/app.ts#/task-lists`; `npm run architecture:status`
+  PASS (`GREEN`, `455/769/35`). No runtime product logic, provider call,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred. Push status: not needed; deploy impact: none.
+  Source-control closure completed in [LUC-1474](/LUC/issues/LUC-1474).
+
 - 2026-07-18: [LUC-1462](/LUC/issues/LUC-1462) terminal local source-control
   closure for the `LUC-1459` Relationships proof-link packet is complete
   locally. Task contract:
