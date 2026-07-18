@@ -1,6 +1,24 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-18: [LUC-1477](/LUC/issues/LUC-1477) unclassified
+  `src/app.ts#/tasks` missing-test-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1477-prove-unclassified-user-workflow-missing-test-link-for-use-tasks.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now marks the exact
+  Tasks mount `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/tasks/tasks.routes.ts`, and
+  `docs/API.md`, plus explicit route-to-test and route-to-document relation
+  overrides; `npm run test:api:local` PASS after server/web build, `31`
+  migrations, seed, and `8/8` protected API subtests; refreshed
+  app-completion reports `7` missing test links and no longer routes
+  `api_endpoint:use-tasks:de5ac00ee8` as `missing_test_link`; refreshed
+  Project Truth generated public probes `pass` and advances the next QA-owned
+  routed proof queue to `src/app.ts#/v1`; `npm run architecture:status`
+  PASS (`GREEN`, `455/769/35`). No runtime product logic, provider call,
+  deploy, push, restart, production mutation, credential access, or secret
+  disclosure occurred. Push status: not needed; deploy impact: none.
+
 - 2026-07-18: [LUC-1475](/LUC/issues/LUC-1475) unclassified
   `src/app.ts#/task-lists` missing-test-link verification is complete locally.
   Task contract:

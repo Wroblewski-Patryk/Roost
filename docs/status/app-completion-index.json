@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-18T20:10:36.803Z",
+  "generatedAt": "2026-07-18T20:36:23.388Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -8,13 +8,13 @@
     "items": 46,
     "flows": 4,
     "needsBrowserReview": 0,
-    "missingTestLink": 8,
+    "missingTestLink": 7,
     "missingDocLink": 0,
     "implementedNeedsProof": 0,
     "blocked": 0,
-    "riskItems": 8,
-    "appCompletionRiskItems": 8,
-    "priorityReviewItems": 8,
+    "riskItems": 7,
+    "appCompletionRiskItems": 7,
+    "priorityReviewItems": 7,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": false
   },
@@ -42,11 +42,11 @@
       "userFlow": "Unclassified user workflow",
       "total": 29,
       "risks": {
-        "ok": 22,
-        "missing_test_link": 7
+        "ok": 23,
+        "missing_test_link": 6
       },
       "gates": {
-        "auth": 19
+        "auth": 20
       }
     },
     {
@@ -63,25 +63,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "api_endpoint:use-tasks:de5ac00ee8",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /tasks",
-      "path": "src/app.ts#/tasks",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Unclassified user workflow",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
     {
       "id": "api_endpoint:use-v1:347b48829e",
       "type": "api_endpoint",

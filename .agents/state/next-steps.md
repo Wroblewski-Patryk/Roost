@@ -1,4 +1,18 @@
 # Next Steps
+- 2026-07-18: [LUC-1477](/LUC/issues/LUC-1477) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/tasks`. The durable packet is
+  `.codex/tasks/luc-1477-prove-unclassified-user-workflow-missing-test-link-for-use-tasks.md`.
+  Current fact: refreshed architecture-awareness marks the exact Tasks mount
+  `verified` through the existing protected API suite in
+  `src/tests/api.test.ts`, `src/modules/tasks/tasks.routes.ts`, and
+  `docs/API.md`, plus explicit route-to-test and route-to-document relation
+  overrides; refreshed app-completion no longer routes
+  `api_endpoint:use-tasks:de5ac00ee8` as `missing_test_link`; Project Truth
+  now routes the next QA-owned proof queue to `src/app.ts#/v1`. Do not reopen
+  another QA proof lane for `src/app.ts#/tasks` unless a fresh generated
+  regression removes the linked runtime evidence.
+
 - 2026-07-18: [LUC-1475](/LUC/issues/LUC-1475) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint
   `src/app.ts#/task-lists`. The durable packet is

@@ -705,6 +705,17 @@
       ]
     },
     {
+      "path": "src/app.ts#/tasks",
+      "status": "verified",
+      "description": "Tasks mount verified through the existing protected API suite coverage for workspace-scoped POST, GET by id, PATCH, list isolation, ClickUp-backed write-back and archive flows, native sync ingestion, custom-field write-through, and documented root/v1 CRUD plus sync route contract without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/tasks/tasks.routes.ts",
+        "docs/API.md",
+        ".codex/tasks/luc-1477-prove-unclassified-user-workflow-missing-test-link-for-use-tasks.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/task-lists",
       "status": "verified",
       "description": "Task Lists mount verified through the existing protected API suite coverage for workspace-scoped POST, GET by id, PATCH, foreign-project denial, foreign-workspace empty-list isolation, and documented root/v1 CRUD route contract without changing runtime behavior.",

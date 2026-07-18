@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-18T20:10:36.813Z",
+  "generatedAt": "2026-07-18T20:36:27.751Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "gaps_require_routing",
@@ -9,42 +9,29 @@
     "incompleteEventChains": 0,
     "runtimeFindings": 0,
     "criticalRuntimeFindings": 0,
-    "appCompletionGaps": 8,
-    "indexedAppCompletionGaps": 8,
-    "knownAppCompletionRiskItems": 8,
-    "appCompletionPriorityReviewItems": 8,
+    "appCompletionGaps": 7,
+    "indexedAppCompletionGaps": 7,
+    "knownAppCompletionRiskItems": 7,
+    "appCompletionPriorityReviewItems": 7,
     "appCompletionPriorityReviewTruncated": false,
     "operationalGateGaps": 0,
-    "indexedGaps": 8,
-    "totalGaps": 8
+    "indexedGaps": 7,
+    "totalGaps": 7
   },
   "firstGap": {
     "kind": "app_completion_gap",
     "severity": "medium",
     "userFlow": "Unclassified user workflow",
-    "summary": "Unclassified user workflow: USE /tasks has app-completion risk missing_test_link.",
+    "summary": "Unclassified user workflow: USE /v1 has app-completion risk missing_test_link.",
     "nextOwner": "Test Automation Engineer + QA Regression Lead",
     "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
     "evidence": [
-      "src/app.ts#/tasks"
+      "src/app.ts#/v1"
     ],
-    "sourceItemId": "api_endpoint:use-tasks:de5ac00ee8",
+    "sourceItemId": "api_endpoint:use-v1:347b48829e",
     "risk": "missing_test_link"
   },
   "gaps": [
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /tasks has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/app.ts#/tasks"
-      ],
-      "sourceItemId": "api_endpoint:use-tasks:de5ac00ee8",
-      "risk": "missing_test_link"
-    },
     {
       "kind": "app_completion_gap",
       "severity": "medium",

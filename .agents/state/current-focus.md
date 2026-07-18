@@ -1,5 +1,20 @@
 # Current Focus
 
+## LUC-1477 Checkpoint
+
+- 2026-07-18: [LUC-1477](/LUC/issues/LUC-1477) completed the QA-owned
+  closure for the `src/app.ts#/tasks` `missing_test_link` row. The durable
+  packet is
+  `.codex/tasks/luc-1477-prove-unclassified-user-workflow-missing-test-link-for-use-tasks.md`.
+  Current fact: `docs/architecture/scanner-overrides.json` now links the
+  exact Tasks mount to the existing protected API proof in
+  `src/tests/api.test.ts`, `src/modules/tasks/tasks.routes.ts`, and
+  `docs/API.md`; sequential truth refresh removed
+  `api_endpoint:use-tasks:de5ac00ee8` from app-completion risk, reduced
+  `missingTestLink` to `7`, and moved the next routed QA gap to
+  `src/app.ts#/v1`. Source-control closure is still pending for the local
+  generated packet.
+
 ## LUC-1475 Checkpoint
 
 - 2026-07-18: [LUC-1475](/LUC/issues/LUC-1475) completed the QA-owned

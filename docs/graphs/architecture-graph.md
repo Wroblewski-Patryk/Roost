@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-18T20:09:59.620Z
+Generated: 2026-07-18T20:36:14.217Z
 
 ## Canonical Exports
 
@@ -98,7 +98,7 @@ Generated: 2026-07-18T20:09:59.620Z
 | api_endpoint | verified | USE /strategy | src/app.ts#/strategy | Engineering Delivery Lead |
 | api_endpoint | verified | USE /targets | src/app.ts#/targets | Engineering Delivery Lead |
 | api_endpoint | verified | USE /task-lists | src/app.ts#/task-lists | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /tasks | src/app.ts#/tasks | Engineering Delivery Lead |
+| api_endpoint | verified | USE /tasks | src/app.ts#/tasks | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /v1 | src/app.ts#/v1 | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /v1/auth | src/app.ts#/v1/auth | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /v1/health | src/app.ts#/v1/health | Engineering Delivery Lead |
@@ -688,6 +688,7 @@ Generated: 2026-07-18T20:09:59.620Z
 | connected_to | project:roost:122c92a083 | task:task:e262fa66b4 | .codex/tasks/luc-1473-prove-unclassified-user-workflow-missing-test-link-for-use-targets.md |
 | connected_to | project:roost:122c92a083 | task:task:fa147029d0 | .codex/tasks/luc-1474-classify-and-close-local-dirty-state-for-luc-1473.md |
 | connected_to | project:roost:122c92a083 | task:task:16e1ad06a5 | .codex/tasks/luc-1475-prove-unclassified-user-workflow-missing-test-link-for-use-task-lists.md |
+| connected_to | project:roost:122c92a083 | task:task:815d15a5d8 | .codex/tasks/luc-1477-prove-unclassified-user-workflow-missing-test-link-for-use-tasks.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -1217,4 +1218,3 @@ Generated: 2026-07-18T20:09:59.620Z
 | documents | document:intake-coverage-expansion:b8a37d4e36 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-AUTO-0014.md |
 | documents | document:integration-capabilities-model:af41cef9e0 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0027.md |
 | documents | document:integration-checklist:721c1de001 | module:item:884f3f28db | INTEGRATION_CHECKLIST.md |
-| documents | document:integration-settings-coverage-expansion:4cecd2cb5b | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-AUTO-0015.md |
