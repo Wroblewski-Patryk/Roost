@@ -2742,6 +2742,14 @@
       "evidence": "LUC-1482 v1 route documentation proof-link closure"
     },
     {
+      "type": "documents",
+      "fromPath": "src/app.ts#/v1/health",
+      "fromType": "api_endpoint",
+      "toPath": "docs/API.md",
+      "toType": "document",
+      "evidence": "LUC-1516 v1 health route documentation proof-link closure"
+    },
+    {
       "type": "tests",
       "fromPath": "src/tests/api.test.ts",
       "fromType": "test",

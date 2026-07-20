@@ -1,6 +1,23 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-20: [LUC-1516](/LUC/issues/LUC-1516) unclassified
+  `src/app.ts#/v1/health` missing-doc-link verification is complete locally.
+  Task contract:
+  `.codex/tasks/luc-1516-prove-unclassified-user-workflow-missing-doc-link-for-use-v1-health.md`.
+  Evidence: `docs/architecture/relations/documentation-links.csv` now links the
+  exact `/v1/health` alias mount to `docs/API.md`, and
+  `docs/architecture/scanner-overrides.json` adds the explicit route-to-document
+  override required for the alias mount to materialize `hasDoc=true`; refreshed
+  architecture-awareness generated `2026-07-20T14:36:20.330Z` with `3125`
+  entities / `8548` relations / `16525` files; refreshed app-completion
+  reports `5` missing test links and `0` missing doc links, no longer routes
+  `api_endpoint:use-v1-health:145d12bca3` as `missing_doc_link`, and Project
+  Truth advances the first routed gap to `src/app.ts#/v1/ready`
+  `missing_test_link`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`). No runtime product logic, provider call, deploy, push,
+  restart, production mutation, credential access, or secret disclosure
+  occurred. Push status: not needed; deploy impact: none.
 - 2026-07-18: [LUC-1491](/LUC/issues/LUC-1491) terminal local source-control
   closure for the `LUC-1486` `/v1/health` proof-link packet is complete
   locally. Task contract:

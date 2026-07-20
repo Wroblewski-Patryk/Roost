@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-18T22:14:10.597Z",
+  "generatedAt": "2026-07-20T14:36:20.323Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 421,
-      "linkedRelationCount": 2110,
+      "entityCount": 422,
+      "linkedRelationCount": 2121,
       "layers": {
         "frontend": {
           "count": 30,
@@ -906,7 +906,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 212,
+          "count": 213,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -3323,8 +3323,8 @@
     },
     {
       "userFlow": "Subscription and entitlement",
-      "entityCount": 1194,
-      "linkedRelationCount": 4251,
+      "entityCount": 1196,
+      "linkedRelationCount": 4256,
       "layers": {
         "frontend": {
           "count": 48,
@@ -4363,7 +4363,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 170,
+          "count": 172,
           "sample": [
             {
               "id": "agent:planner:5b56a0bd47",
@@ -4718,6 +4718,14 @@
               "status": "verified"
             },
             {
+              "id": "document:task:00ba94bd67",
+              "type": "document",
+              "name": "Task",
+              "path": "docs/planning/luc-1493-source-control-closure-for-luc-1492-queue-control-packet.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
               "id": "document:task:0e616fae32",
               "type": "document",
               "name": "Task",
@@ -4878,6 +4886,14 @@
               "status": "verified"
             },
             {
+              "id": "task:task:0feca20fff",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1491-classify-and-close-dirty-state-for-luc-1486.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:157c1a1016",
               "type": "task",
               "name": "Task",
@@ -4986,22 +5002,6 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1486-prove-unclassified-user-workflow-missing-test-link-for-use-v1-health.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:5f06d262c9",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-1439-close-local-dirty-state-for-luc-1430-projects-proof-link-packet.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:638b05362c",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-949-account-access-secrets-proof.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             }
@@ -6347,9 +6347,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-18-luc-1486-v1-health-proof-health-signal:524ffc73dc",
+              "id": "agent:2026-07-18-luc-1491-v1-health-packet-source-control-health-signal:fcb440278b",
               "type": "agent",
-              "name": "2026-07-18 LUC-1486 v1 Health Proof Health Signal",
+              "name": "2026-07-18 LUC-1491 v1 Health Packet Source-Control Health Signal",
               "path": ".agents/state/system-health.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -6445,8 +6445,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2982,
-      "linkedRelationCount": 8262,
+      "entityCount": 2985,
+      "linkedRelationCount": 8289,
       "layers": {
         "frontend": {
           "count": 85,
@@ -7242,6 +7242,14 @@
               "status": "verified"
             },
             {
+              "id": "api_endpoint:use-v1-health:145d12bca3",
+              "type": "api_endpoint",
+              "name": "USE /v1/health",
+              "path": "src/app.ts#/v1/health",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "api_endpoint:use-connection:b52b509477",
               "type": "api_endpoint",
               "name": "USE /connection",
@@ -7728,20 +7736,12 @@
               "path": "scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
-            },
-            {
-              "id": "feature:companycore-mcp-server-mjs:0c499f7f8f",
-              "type": "feature",
-              "name": "companycore-mcp-server.mjs",
-              "path": "scripts/companycore-mcp-server.mjs",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 933,
+          "count": 936,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -7828,6 +7828,14 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1107-unclassified-user-workflow-use-agent-events-proof-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:0feca20fff",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1491-classify-and-close-dirty-state-for-luc-1486.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -8372,14 +8380,6 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1373-classify-and-close-local-dirty-state-for-luc-1352-luc-1360.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:cb123a5f7b",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-1266-prove-unclassified-user-workflow-missing-test-link-for-use-goals.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             }

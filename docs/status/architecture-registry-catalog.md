@@ -1,6 +1,6 @@
 # Architecture Registry Catalog
 
-Generated at: 2026-07-18T22:11:26.599Z
+Generated at: 2026-07-20T14:35:22.109Z
 
 - Total CSV files: 30
 - Missing files: 0

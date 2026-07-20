@@ -1,6 +1,6 @@
 # App Completion Index
 
-Generated: 2026-07-18T22:14:05.636Z
+Generated: 2026-07-20T14:36:20.321Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 Source graph: docs/graphs/architecture-awareness.json
@@ -17,16 +17,16 @@ Internal functions and modules are implementation details: they receive proof th
 - User flows: 4
 - Needs browser/screenshot review: 0
 - Missing test link: 5
-- Missing doc link: 1
+- Missing doc link: 0
 - Implemented, needs proof: 0
 - Blocked: 0
-- Known non-ok risk items: 6
-- Priority review items indexed: 6/6
+- Known non-ok risk items: 5
+- Priority review items indexed: 5/5
 - Priority review truncated: false
 
 ## Flow Summary
 
-- Unclassified user workflow: 28 entities; risks {"ok":23,"missing_doc_link":1,"missing_test_link":4}; gates {"auth":21}
+- Unclassified user workflow: 28 entities; risks {"ok":24,"missing_test_link":4}; gates {"auth":21}
 - Account access: 15 entities; risks {"ok":15}; gates {"auth":15,"configuration":3}
 - User configuration: 2 entities; risks {"ok":1,"missing_test_link":1}; gates {"auth":1,"configuration":2}
 - Dashboard overview: 1 entities; risks {"ok":1}; gates {}
@@ -35,7 +35,6 @@ Internal functions and modules are implementation details: they receive proof th
 
 | User flow | Risk | Kind | Entity | Owner | Path | Gates |
 | --- | --- | --- | --- | --- | --- | --- |
-| Unclassified user workflow | missing_doc_link | api_endpoint | USE /v1/health | Engineering Delivery Lead | src/app.ts#/v1/health | auth |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /v1/ready | Engineering Delivery Lead | src/app.ts#/v1/ready | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /v1/webhooks/clickup | Engineering Delivery Lead | src/app.ts#/v1/webhooks/clickup | - |
 | Unclassified user workflow | missing_test_link | api_endpoint | USE /workforce | Engineering Delivery Lead | src/app.ts#/workforce | - |

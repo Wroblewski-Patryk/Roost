@@ -1,4 +1,16 @@
 # Next Steps
+- 2026-07-20: [LUC-1516](/LUC/issues/LUC-1516) has no remaining documentation
+  action for the exact unclassified endpoint `src/app.ts#/v1/health`. The
+  durable packet is
+  `.codex/tasks/luc-1516-prove-unclassified-user-workflow-missing-doc-link-for-use-v1-health.md`.
+  Current fact: refreshed architecture-awareness materializes the exact
+  `/v1/health` alias mount `documents` relation to `docs/API.md`; refreshed
+  app-completion no longer routes `api_endpoint:use-v1-health:145d12bca3` as
+  `missing_doc_link`; Project Truth now advances the first routed gap to
+  `src/app.ts#/v1/ready` `missing_test_link`. Do not reopen another docs lane
+  for `src/app.ts#/v1/health` unless a fresh generated regression removes the
+  linked documentation evidence.
+
 - 2026-07-18: [LUC-1492](/LUC/issues/LUC-1492) attempted to promote the
   existing reserve lane [LUC-1385](/LUC/issues/LUC-1385) from `backlog` to
   `todo` after confirming local source-control was clean. The direct tracker

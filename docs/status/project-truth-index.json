@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-18T22:14:10.597Z",
+  "generatedAt": "2026-07-20T14:36:20.323Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "status": "gaps_require_routing",
@@ -9,42 +9,29 @@
     "incompleteEventChains": 0,
     "runtimeFindings": 0,
     "criticalRuntimeFindings": 0,
-    "appCompletionGaps": 6,
-    "indexedAppCompletionGaps": 6,
-    "knownAppCompletionRiskItems": 6,
-    "appCompletionPriorityReviewItems": 6,
+    "appCompletionGaps": 5,
+    "indexedAppCompletionGaps": 5,
+    "knownAppCompletionRiskItems": 5,
+    "appCompletionPriorityReviewItems": 5,
     "appCompletionPriorityReviewTruncated": false,
     "operationalGateGaps": 0,
-    "indexedGaps": 6,
-    "totalGaps": 6
+    "indexedGaps": 5,
+    "totalGaps": 5
   },
   "firstGap": {
     "kind": "app_completion_gap",
     "severity": "medium",
     "userFlow": "Unclassified user workflow",
-    "summary": "Unclassified user workflow: USE /v1/health has app-completion risk missing_doc_link.",
-    "nextOwner": "Docs Memory Lead + Project Manager",
-    "nextAction": "Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.",
+    "summary": "Unclassified user workflow: USE /v1/ready has app-completion risk missing_test_link.",
+    "nextOwner": "Test Automation Engineer + QA Regression Lead",
+    "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
     "evidence": [
-      "src/app.ts#/v1/health"
+      "src/app.ts#/v1/ready"
     ],
-    "sourceItemId": "api_endpoint:use-v1-health:145d12bca3",
-    "risk": "missing_doc_link"
+    "sourceItemId": "api_endpoint:use-v1-ready:035c4febde",
+    "risk": "missing_test_link"
   },
   "gaps": [
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /v1/health has app-completion risk missing_doc_link.",
-      "nextOwner": "Docs Memory Lead + Project Manager",
-      "nextAction": "Link or update the source-of-truth docs/status entry for this flow so future agents can reason from evidence.",
-      "evidence": [
-        "src/app.ts#/v1/health"
-      ],
-      "sourceItemId": "api_endpoint:use-v1-health:145d12bca3",
-      "risk": "missing_doc_link"
-    },
     {
       "kind": "app_completion_gap",
       "severity": "medium",

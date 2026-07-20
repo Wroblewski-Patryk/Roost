@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-18T22:14:05.636Z",
+  "generatedAt": "2026-07-20T14:36:20.321Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -9,12 +9,12 @@
     "flows": 4,
     "needsBrowserReview": 0,
     "missingTestLink": 5,
-    "missingDocLink": 1,
+    "missingDocLink": 0,
     "implementedNeedsProof": 0,
     "blocked": 0,
-    "riskItems": 6,
-    "appCompletionRiskItems": 6,
-    "priorityReviewItems": 6,
+    "riskItems": 5,
+    "appCompletionRiskItems": 5,
+    "priorityReviewItems": 5,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": false
   },
@@ -42,8 +42,7 @@
       "userFlow": "Unclassified user workflow",
       "total": 28,
       "risks": {
-        "ok": 23,
-        "missing_doc_link": 1,
+        "ok": 24,
         "missing_test_link": 4
       },
       "gates": {
@@ -64,27 +63,6 @@
     }
   ],
   "priorityReviewItems": [
-    {
-      "id": "api_endpoint:use-v1-health:145d12bca3",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /v1/health",
-      "path": "src/app.ts#/v1/health",
-      "owner": "Engineering Delivery Lead",
-      "status": "verified",
-      "userFlow": "Unclassified user workflow",
-      "gates": [
-        "auth"
-      ],
-      "evidence": {
-        "hasTest": true,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 8,
-      "risk": "missing_doc_link"
-    },
     {
       "id": "api_endpoint:use-v1-ready:035c4febde",
       "type": "api_endpoint",
