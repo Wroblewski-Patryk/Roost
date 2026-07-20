@@ -1,3 +1,9 @@
+# 2026-07-20 LUC-1527 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| v1 readiness alias mount proof linkage | verified for dispatched missing-test-link gap | [LUC-1527](/LUC/issues/LUC-1527) focused proof-link packet `.codex/tasks/luc-1527-prove-unclassified-user-workflow-missing-test-link-for-use-v1-ready.md`; `docs/architecture/scanner-overrides.json` marks `src/app.ts#/v1/ready` `verified` through the existing CompanyCore protected API suite in `src/tests/api.test.ts`, `src/health/health.routes.ts`, and `docs/API.md`, plus explicit route-to-test and route-to-document relation overrides; focused local API proof PASS via `npm run test:api:local`, which built server/web, applied all `31` migrations to disposable PostgreSQL on `127.0.0.1:55432`, seeded data, and passed `8/8` subtests; `npm run architecture:refresh` PASS; external architecture-awareness refresh generated `2026-07-20T21:39:16.682Z` with `3126` entities / `8565` relations / `16525` files and materialized the exact proof relations; sequential app-completion refresh reduced `missingTestLink` from `5` to `4` and no longer routes `api_endpoint:use-v1-ready:035c4febde` as `missing_test_link`; sequential Project Truth apply completed with public probes `pass` and advanced the next QA-owned routed proof gap to `src/app.ts#/v1/webhooks/clickup`; `npm run architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`). | No further QA proof work is needed for `src/app.ts#/v1/ready` unless a fresh generated regression removes the linked API evidence. The next QA-owned routed proof gap is unclassified `src/app.ts#/v1/webhooks/clickup`. |
+
 # 2026-07-18 LUC-1486 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

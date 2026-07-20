@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20T14:36:20.323Z",
+  "generatedAt": "2026-07-20T21:43:34.581Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 422,
-      "linkedRelationCount": 2121,
+      "entityCount": 424,
+      "linkedRelationCount": 2142,
       "layers": {
         "frontend": {
           "count": 30,
@@ -260,7 +260,7 @@
           "truncated": false
         },
         "backend": {
-          "count": 126,
+          "count": 127,
           "sample": [
             {
               "id": "api_endpoint:use-agent-events:1b4c65ace9",
@@ -623,6 +623,14 @@
               "status": "verified"
             },
             {
+              "id": "api_endpoint:use-v1-ready:035c4febde",
+              "type": "api_endpoint",
+              "name": "USE /v1/ready",
+              "path": "src/app.ts#/v1/ready",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "component:cc-field-tsx:8702870575",
               "type": "component",
               "name": "cc-field.tsx",
@@ -893,20 +901,12 @@
               "path": "web/src/api/auth-token.ts#setOwnerToken",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
-            },
-            {
-              "id": "function:clearownertoken:2ccc56ad47",
-              "type": "function",
-              "name": "clearOwnerToken",
-              "path": "web/src/api/auth-token.ts#clearOwnerToken",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 213,
+          "count": 214,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -1429,6 +1429,22 @@
               "status": "verified"
             },
             {
+              "id": "task:task:e00b97a12f",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1516-prove-unclassified-user-workflow-missing-doc-link-for-use-v1-health.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:e72f48378c",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1527-prove-unclassified-user-workflow-missing-test-link-for-use-v1-ready.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "in_progress"
+            },
+            {
               "id": "task:task:ee81433627",
               "type": "task",
               "name": "Task",
@@ -1529,22 +1545,6 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-602-source-control-closure-classification-before-deploy-readiness.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:9998bf4030",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-1225-source-control-closure-for-luc-1219-doc-link-packet.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:9a1f050127",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-1328-source-control-closure-for-luc-1326-mcp-doc-link-packet.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             }
@@ -3323,8 +3323,8 @@
     },
     {
       "userFlow": "Subscription and entitlement",
-      "entityCount": 1196,
-      "linkedRelationCount": 4256,
+      "entityCount": 1197,
+      "linkedRelationCount": 4264,
       "layers": {
         "frontend": {
           "count": 48,
@@ -4363,7 +4363,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 172,
+          "count": 173,
           "sample": [
             {
               "id": "agent:planner:5b56a0bd47",
@@ -6445,8 +6445,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2985,
-      "linkedRelationCount": 8289,
+      "entityCount": 2986,
+      "linkedRelationCount": 8307,
       "layers": {
         "frontend": {
           "count": 85,
@@ -7186,22 +7186,6 @@
               "status": "verified"
             },
             {
-              "id": "api_endpoint:use-v1-ready:035c4febde",
-              "type": "api_endpoint",
-              "name": "USE /v1/ready",
-              "path": "src/app.ts#/v1/ready",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba",
-              "type": "task",
-              "name": "LUC-267 Roost Public Route Alias Task-Link Curation",
-              "path": ".codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
               "id": "api_endpoint:use-v1-webhooks-clickup:61d965c5ad",
               "type": "api_endpoint",
               "name": "USE /v1/webhooks/clickup",
@@ -7246,6 +7230,14 @@
               "type": "api_endpoint",
               "name": "USE /v1/health",
               "path": "src/app.ts#/v1/health",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "api_endpoint:use-v1-ready:035c4febde",
+              "type": "api_endpoint",
+              "name": "USE /v1/ready",
+              "path": "src/app.ts#/v1/ready",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -7736,12 +7728,20 @@
               "path": "scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
+            },
+            {
+              "id": "feature:companycore-mcp-server-mjs:0c499f7f8f",
+              "type": "feature",
+              "name": "companycore-mcp-server.mjs",
+              "path": "scripts/companycore-mcp-server.mjs",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 936,
+          "count": 937,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",

@@ -1,5 +1,29 @@
 # Active Mission Packet
 
+## LUC-1527 Checkpoint
+
+- 2026-07-20: [LUC-1527](/LUC/issues/LUC-1527) completed terminal local
+  proof-link closure for the `LUC-1527` v1 ready packet.
+  Packet:
+  `.codex/tasks/luc-1527-prove-unclassified-user-workflow-missing-test-link-for-use-v1-ready.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` marks
+  `src/app.ts#/v1/ready` `verified` through the existing CompanyCore
+  protected API suite in `src/tests/api.test.ts`, `src/health/health.routes.ts`,
+  `docs/API.md`, and the task packet, plus explicit route-to-test and
+  route-to-document relation overrides; focused local API proof PASS via
+  `npm run test:api:local`, which built server/web, applied all `31`
+  migrations to disposable PostgreSQL on `127.0.0.1:55432`, seeded data, and
+  passed `8/8` subtests; `npm run architecture:refresh` PASS; external
+  architecture-awareness refresh generated `2026-07-20T21:39:16.682Z` with
+  `3126` entities / `8565` relations / `16525` files and materialized the
+  exact proof relations; sequential app-completion refresh reduced
+  `missingTestLink` from `5` to `4` and no longer routes
+  `api_endpoint:use-v1-ready:035c4febde` as `missing_test_link`; sequential
+  Project Truth apply advanced the first routed QA gap to
+  `src/app.ts#/v1/webhooks/clickup`; `npm run architecture:status` PASS
+  (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`). Commit
+  status: not needed. Push status: not needed. Deploy impact: none.
+
 ## LUC-1491 Checkpoint
 
 - 2026-07-18: [LUC-1491](/LUC/issues/LUC-1491) completed terminal local

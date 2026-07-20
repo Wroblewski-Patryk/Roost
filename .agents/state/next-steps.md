@@ -1,4 +1,18 @@
 # Next Steps
+- 2026-07-20: [LUC-1527](/LUC/issues/LUC-1527) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/v1/ready`. The durable packet is
+  `.codex/tasks/luc-1527-prove-unclassified-user-workflow-missing-test-link-for-use-v1-ready.md`.
+  Current fact: refreshed architecture-awareness materializes the exact
+  `/v1/ready` alias mount `verified` through the existing CompanyCore API
+  suite in `src/tests/api.test.ts`, `src/health/health.routes.ts`, and
+  `docs/API.md`; refreshed app-completion no longer routes
+  `api_endpoint:use-v1-ready:035c4febde` as `missing_test_link`; Project
+  Truth now advances the first routed gap to
+  `src/app.ts#/v1/webhooks/clickup` `missing_test_link`. Do not reopen
+  another QA proof lane for `src/app.ts#/v1/ready` unless a fresh generated
+  regression removes the linked runtime evidence.
+
 - 2026-07-20: [LUC-1516](/LUC/issues/LUC-1516) has no remaining documentation
   action for the exact unclassified endpoint `src/app.ts#/v1/health`. The
   durable packet is

@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-20T14:36:20.330Z
+Generated: 2026-07-20T21:39:16.682Z
 
 ## Canonical Exports
 
@@ -102,7 +102,7 @@ Generated: 2026-07-20T14:36:20.330Z
 | api_endpoint | verified | USE /v1 | src/app.ts#/v1 | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /v1/auth | src/app.ts#/v1/auth | Engineering Delivery Lead |
 | api_endpoint | verified | USE /v1/health | src/app.ts#/v1/health | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /v1/ready | src/app.ts#/v1/ready | Engineering Delivery Lead |
+| api_endpoint | verified | USE /v1/ready | src/app.ts#/v1/ready | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /v1/webhooks/clickup | src/app.ts#/v1/webhooks/clickup | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /workforce | src/app.ts#/workforce | Engineering Delivery Lead |
 | api_endpoint | implemented | USE /workspaces | src/app.ts#/workspaces | Engineering Delivery Lead |
@@ -694,6 +694,7 @@ Generated: 2026-07-20T14:36:20.330Z
 | connected_to | project:roost:122c92a083 | task:task:5a442f0492 | .codex/tasks/luc-1486-prove-unclassified-user-workflow-missing-test-link-for-use-v1-health.md |
 | connected_to | project:roost:122c92a083 | task:task:0feca20fff | .codex/tasks/luc-1491-classify-and-close-dirty-state-for-luc-1486.md |
 | connected_to | project:roost:122c92a083 | task:task:e00b97a12f | .codex/tasks/luc-1516-prove-unclassified-user-workflow-missing-doc-link-for-use-v1-health.md |
+| connected_to | project:roost:122c92a083 | task:task:e72f48378c | .codex/tasks/luc-1527-prove-unclassified-user-workflow-missing-test-link-for-use-v1-ready.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -811,6 +812,7 @@ Generated: 2026-07-20T14:36:20.330Z
 | documents | api_endpoint:use-task-lists:7770c51ee4 | document:api:a617d1cb61 | LUC-1475 task-lists route documentation proof-link closure |
 | documents | api_endpoint:use-v1-auth:02d088cd05 | document:system-architecture:1149ef3528 | LUC-6696 app-completion proof-link association |
 | documents | api_endpoint:use-v1-health:145d12bca3 | document:api:a617d1cb61 | LUC-1516 v1 health route documentation proof-link closure |
+| documents | api_endpoint:use-v1-ready:035c4febde | document:api:a617d1cb61 | LUC-1527 v1 ready route documentation proof-link closure |
 | documents | api_endpoint:use-v1:347b48829e | document:api:a617d1cb61 | LUC-1482 v1 route documentation proof-link closure |
 | documents | document:acceptance-criteria-model:13886f82fd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0001.md |
 | documents | document:account-settings:d3a7a298ae | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PAGE-AUTO-0001.md |
@@ -849,6 +851,7 @@ Generated: 2026-07-20T14:36:20.330Z
 | documents | document:api:a617d1cb61 | api_endpoint:use-api-build-info:36fe7c3255 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-health:8aa829ec00 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-v1-health:145d12bca3 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | api_endpoint:use-v1-ready:035c4febde | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-connection:b52b509477 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-intake:3c22276373 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-agents:1c136317c6 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
@@ -1215,6 +1218,3 @@ Generated: 2026-07-20T14:36:20.330Z
 | documents | document:google-drive-v2-task-contracts:9974023e7e | function:getgoogleoauthclient:f132646466 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:google-drive-v2-task-contracts:9974023e7e | function:getstoredgoogledrivesecret:2763c40172 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:google-drive-v2-task-contracts:9974023e7e | function:mergegoogledriveconfig:814153a3bb | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
-| documents | document:google-drive-v2-task-contracts:9974023e7e | function:normalizetokenresponse:b4d666013c | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
-| documents | document:google-drive-v2-task-contracts:9974023e7e | function:postgoogleoauthtoken:aed8d79cd2 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
-| documents | document:google-drive-v2-task-contracts:9974023e7e | function:refreshgoogledriveoauth:04d8992f2d | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
