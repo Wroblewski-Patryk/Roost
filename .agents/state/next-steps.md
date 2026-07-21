@@ -1,4 +1,42 @@
 # Next Steps
+- 2026-07-21: [LUC-1585](/LUC/issues/LUC-1585) recovered the missing
+  next-step disposition for [LUC-1584](/LUC/issues/LUC-1584). Continue from
+  the live path already in state: [LUC-1545](/LUC/issues/LUC-1545) active
+  coordination, then [LUC-1548](/LUC/issues/LUC-1548) dirty-packet
+  classification. Do not open a duplicate repair lane from this recovery.
+- 2026-07-20: [LUC-1545](/LUC/issues/LUC-1545) now has three live QVE
+  verification children:
+  [LUC-1550](/LUC/issues/LUC-1550) `/integration-settings`,
+  [LUC-1551](/LUC/issues/LUC-1551) `/workspaces`, and
+  [LUC-1552](/LUC/issues/LUC-1552) `/workforce`. The stale queue-control lane
+  [LUC-1492](/LUC/issues/LUC-1492) remains blocked because
+  [LUC-1385](/LUC/issues/LUC-1385) is owned by another agent; do not promote
+  it blindly. Next PM action after the child returns: integrate the child
+  evidence and decide whether any proof gap still needs routing.
+- 2026-07-20: [LUC-1545](/LUC/issues/LUC-1545) now routes the current Roost
+  repair chain through [LUC-1548](/LUC/issues/LUC-1548), which must classify
+  the dirty packet before any commit/release decision. The local worktree is
+  still dirty (`85` modified tracked paths plus `1` untracked task artifact).
+  After `LUC-1548` returns, reconcile stale `[LUC-1492](/LUC/issues/LUC-1492)`
+  / `[LUC-1385](/LUC/issues/LUC-1385)`, then route any surviving
+  `/workspaces` or `/integration-settings` proof gaps.
+- 2026-07-21: [LUC-1551](/LUC/issues/LUC-1551) closed the `src/app.ts#/workforce`
+  proof-link gap. The remaining routed QA proof work is centered on
+  `src/app.ts#/workspaces` and `src/app.ts#/integration-settings`.
+- 2026-07-20: [LUC-1536](/LUC/issues/LUC-1536) has no remaining 09 TAE
+  missing-test-link action for the exact unclassified endpoint
+  `src/app.ts#/v1/webhooks/clickup`. The durable packet is
+  `.codex/tasks/luc-1536-prove-unclassified-user-workflow-missing-test-link-for-use-v1-webhooks-clickup.md`.
+  Current fact: refreshed architecture-awareness materializes the exact
+  `/v1/webhooks/clickup` alias mount `verified` through the existing
+  CompanyCore API suite in `src/tests/api.test.ts`, `src/app.ts`,
+  `src/integrations/clickup/clickup.webhooks.ts`, `docs/API.md`, and
+  `docs/operations/post-deploy-smoke.md`; refreshed app-completion no longer
+  routes `api_endpoint:use-v1-webhooks-clickup:61d965c5ad` as
+  `missing_test_link`; Project Truth now advances the first routed gap to
+  `src/app.ts#/workforce` `missing_test_link`. Do not reopen another QA
+  proof lane for `src/app.ts#/v1/webhooks/clickup` unless a fresh generated
+  regression removes the linked runtime evidence.
 - 2026-07-20: [LUC-1527](/LUC/issues/LUC-1527) has no remaining 09 TAE
   missing-test-link action for the exact unclassified endpoint
   `src/app.ts#/v1/ready`. The durable packet is

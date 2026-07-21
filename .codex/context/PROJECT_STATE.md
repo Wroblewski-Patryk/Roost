@@ -1,5 +1,48 @@
 # PROJECT_STATE
 
+- 2026-07-21: [LUC-1592](/LUC/issues/LUC-1592) classified the current dirty
+  packet as a coherent docs/state/generated bundle attributable to the
+  completed [LUC-1536](/LUC/issues/LUC-1536),
+  [LUC-1527](/LUC/issues/LUC-1527),
+  [LUC-1550](/LUC/issues/LUC-1550), and
+  [LUC-1551](/LUC/issues/LUC-1551) proof packets plus the
+  [LUC-1585](/LUC/issues/LUC-1585) recovery note. No unrelated runtime code,
+  schema, deploy, or secret-bearing files were introduced, so no separate
+  repair lane is required.
+
+- 2026-07-21: [LUC-1585](/LUC/issues/LUC-1585) recovered the missing
+  next-step disposition for [LUC-1584](/LUC/issues/LUC-1584). The durable
+  repo-side recovery record is
+  `.codex/tasks/luc-1585-recover-missing-next-step-luc-1584.md`; no new lane
+  was opened. The live path remains [LUC-1545](/LUC/issues/LUC-1545)
+  coordination with [LUC-1548](/LUC/issues/LUC-1548) as the next runnable
+  delegated classification step.
+
+- 2026-07-20: [LUC-1536](/LUC/issues/LUC-1536) completed local
+  missing-test-link closure for unclassified `src/app.ts#/v1/webhooks/clickup`.
+  Source-of-truth task packet:
+  `.codex/tasks/luc-1536-prove-unclassified-user-workflow-missing-test-link-for-use-v1-webhooks-clickup.md`.
+  Current evidence: `docs/architecture/scanner-overrides.json` now marks the
+  exact `/v1/webhooks/clickup` alias mount `verified` through the existing
+  CompanyCore API suite in `src/tests/api.test.ts`, `src/app.ts`,
+  `src/integrations/clickup/clickup.webhooks.ts`, `docs/API.md`, and
+  `docs/operations/post-deploy-smoke.md`, plus explicit route-to-test and
+  route-to-document relation overrides; focused local API proof PASS via
+  `npm run test:api:local`, which built server/web, applied all `31`
+  migrations to disposable PostgreSQL on `127.0.0.1:55432`, seeded data, and
+  passed `8/8` subtests; `npm run architecture:refresh` PASS; external
+  architecture-awareness refresh generated `3127` entities / `8584`
+  relations / `16525` files and materialized the exact proof relations;
+  sequential app-completion refresh reduced `missingTestLink` from `4` to `3`
+  and no longer routes `api_endpoint:use-v1-webhooks-clickup:61d965c5ad` as
+  `missing_test_link`; sequential Project Truth apply completed with public
+  probes `pass`, runtime findings `0`, incomplete event chains `0`,
+  operational gate gaps `0`, and advances the next QA-owned routed proof gap
+  to `src/app.ts#/workforce`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`). No runtime feature
+  logic, schema, provider config, deploy, push, restart, production mutation,
+  credential access, or secret disclosure changed. Deploy impact: none.
+
 - 2026-07-20: [LUC-1527](/LUC/issues/LUC-1527) completed local
   missing-test-link closure for unclassified `src/app.ts#/v1/ready`.
   Source-of-truth task packet:

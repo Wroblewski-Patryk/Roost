@@ -1,6 +1,6 @@
 # Operational Readiness Index
 
-Generated: 2026-07-20T21:43:34.581Z
+Generated: 2026-07-21T00:19:39.344Z
 Project: Roost
 Status: ready_for_repair_flow
 
@@ -10,5 +10,5 @@ Status: ready_for_repair_flow
 | app_completion_index | present | user-flow works/fails/unknown classification |
 | event_chain_index | covered | backend/frontend/worker impact analysis |
 | runtime_error_index | covered | agent-owned bug discovery and repair routing |
-| app_completion_risk_index | gaps_indexed | user-facing flow verification across frontend, backend, tests, docs, auth/config, and browser proof |
+| app_completion_risk_index | covered | user-facing flow verification across frontend, backend, tests, docs, auth/config, and browser proof |
 | public_runtime_probe | pass | production parity with local behavior |

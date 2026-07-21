@@ -1,5 +1,52 @@
 # Current Focus
 
+## LUC-1585 Recovery Note
+
+- 2026-07-21: [LUC-1585](/LUC/issues/LUC-1585) recovered the missing next-step
+  disposition for [LUC-1584](/LUC/issues/LUC-1584). The live Roost path is
+  unchanged: [LUC-1545](/LUC/issues/LUC-1545) remains the active coordination
+  packet, and the next runnable delegated lane is
+  [LUC-1548](/LUC/issues/LUC-1548) classification. No new product lane was
+  opened.
+
+## LUC-1545 Routing Checkpoint
+
+- 2026-07-20: [LUC-1545](/LUC/issues/LUC-1545) resumed after
+  [LUC-1548](/LUC/issues/LUC-1548) completed the dirty-packet classification
+  as coherent and attributable to the `LUC-1536` generated artifact bundle.
+  The stale queue-control lane [LUC-1492](/LUC/issues/LUC-1492) remains
+  blocked by the ownership boundary on [LUC-1385](/LUC/issues/LUC-1385); the
+  source-control gate is already clear. The next live work is the three
+  verification children:
+  [LUC-1550](/LUC/issues/LUC-1550), [LUC-1551](/LUC/issues/LUC-1551), and
+  [LUC-1552](/LUC/issues/LUC-1552).
+- 2026-07-21: [LUC-1551](/LUC/issues/LUC-1551) closed the `src/app.ts#/workforce`
+  proof-link gap. The next routed QA gap is `src/app.ts#/workspaces`.
+
+## LUC-1545 Coordination Checkpoint
+
+- 2026-07-20: [LUC-1545](/LUC/issues/LUC-1545) is the active Roost PM
+  coordination lane after [LUC-1536](/LUC/issues/LUC-1536) completed. The
+  current worktree remains dirty with `85` modified tracked paths plus `1`
+  untracked packet artifact, so the next runnable step is the delegated
+  [LUC-1548](/LUC/issues/LUC-1548) CRS classification pass before any commit or
+  release decision.
+
+## LUC-1536 Checkpoint
+
+- 2026-07-20: [LUC-1536](/LUC/issues/LUC-1536) completed the QA-owned
+  closure for the `src/app.ts#/v1/webhooks/clickup` `missing_test_link` row.
+  The durable packet is
+  `.codex/tasks/luc-1536-prove-unclassified-user-workflow-missing-test-link-for-use-v1-webhooks-clickup.md`.
+  Current fact: `docs/architecture/scanner-overrides.json` now links the exact
+  `/v1/webhooks/clickup` alias mount to the existing CompanyCore API proof in
+  `src/tests/api.test.ts`, `src/app.ts`,
+  `src/integrations/clickup/clickup.webhooks.ts`, `docs/API.md`, and
+  `docs/operations/post-deploy-smoke.md`; sequential truth refresh removed
+  `api_endpoint:use-v1-webhooks-clickup:61d965c5ad` from app-completion
+  `missing_test_link` and moved the next routed QA gap to
+  `src/app.ts#/workforce`.
+
 ## LUC-1491 Checkpoint
 
 - 2026-07-18: [LUC-1491](/LUC/issues/LUC-1491) completed the review-owned

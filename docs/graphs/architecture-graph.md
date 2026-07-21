@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-20T21:39:16.682Z
+Generated: 2026-07-21T00:19:25.133Z
 
 ## Canonical Exports
 
@@ -42,14 +42,14 @@ Generated: 2026-07-20T21:39:16.682Z
 | agent | implemented | Decision Register | .agents/state/decision-register.md | Engineering Delivery Lead |
 | agent | implemented | Delivery Map | .agents/state/delivery-map.md | Engineering Delivery Lead |
 | agent | implemented | Known Issues | .agents/state/known-issues.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-18 LUC-1486 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-20 LUC-1527 Module Confidence Update | .agents/state/module-confidence-ledger.md | Engineering Delivery Lead |
 | agent | implemented | Next Steps | .agents/state/next-steps.md | Engineering Delivery Lead |
 | agent | implemented | Quality Attribute Scenarios | .agents/state/quality-attribute-scenarios.md | Engineering Delivery Lead |
 | agent | implemented | Regression Log | .agents/state/regression-log.md | Engineering Delivery Lead |
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-18 LUC-1491 v1 Health Packet Source-Control Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-20 LUC-1536 ClickUp Webhooks Packet Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -82,7 +82,7 @@ Generated: 2026-07-20T21:39:16.682Z
 | api_endpoint | implemented | USE /google-drive | src/app.ts#/google-drive | Engineering Delivery Lead |
 | api_endpoint | verified | USE /health | src/app.ts#/health | Engineering Delivery Lead |
 | api_endpoint | verified | USE /intake | src/app.ts#/intake | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /integration-settings | src/app.ts#/integration-settings | Engineering Delivery Lead |
+| api_endpoint | verified | USE /integration-settings | src/app.ts#/integration-settings | Engineering Delivery Lead |
 | api_endpoint | verified | USE /interactions | src/app.ts#/interactions | Engineering Delivery Lead |
 | api_endpoint | verified | USE /mcp | src/app.ts#/mcp | Engineering Delivery Lead |
 | api_endpoint | verified | USE /notes | src/app.ts#/notes | Engineering Delivery Lead |
@@ -103,9 +103,9 @@ Generated: 2026-07-20T21:39:16.682Z
 | api_endpoint | implemented | USE /v1/auth | src/app.ts#/v1/auth | Engineering Delivery Lead |
 | api_endpoint | verified | USE /v1/health | src/app.ts#/v1/health | Engineering Delivery Lead |
 | api_endpoint | verified | USE /v1/ready | src/app.ts#/v1/ready | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /v1/webhooks/clickup | src/app.ts#/v1/webhooks/clickup | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /workforce | src/app.ts#/workforce | Engineering Delivery Lead |
-| api_endpoint | implemented | USE /workspaces | src/app.ts#/workspaces | Engineering Delivery Lead |
+| api_endpoint | verified | USE /v1/webhooks/clickup | src/app.ts#/v1/webhooks/clickup | Engineering Delivery Lead |
+| api_endpoint | verified | USE /workforce | src/app.ts#/workforce | Engineering Delivery Lead |
+| api_endpoint | verified | USE /workspaces | src/app.ts#/workspaces | Engineering Delivery Lead |
 | component | verified | cc-button.tsx | web/src/components/cc-button.tsx | Engineering Delivery Lead |
 | component | verified | cc-data-table.tsx | web/src/components/cc-data-table.tsx | Engineering Delivery Lead |
 | component | verified | cc-field.tsx | web/src/components/cc-field.tsx | Engineering Delivery Lead |
@@ -695,6 +695,9 @@ Generated: 2026-07-20T21:39:16.682Z
 | connected_to | project:roost:122c92a083 | task:task:0feca20fff | .codex/tasks/luc-1491-classify-and-close-dirty-state-for-luc-1486.md |
 | connected_to | project:roost:122c92a083 | task:task:e00b97a12f | .codex/tasks/luc-1516-prove-unclassified-user-workflow-missing-doc-link-for-use-v1-health.md |
 | connected_to | project:roost:122c92a083 | task:task:e72f48378c | .codex/tasks/luc-1527-prove-unclassified-user-workflow-missing-test-link-for-use-v1-ready.md |
+| connected_to | project:roost:122c92a083 | task:task:e58d1ca550 | .codex/tasks/luc-1536-prove-unclassified-user-workflow-missing-test-link-for-use-v1-webhooks-clickup.md |
+| connected_to | project:roost:122c92a083 | task:luc-1550-integration-settings-missing-test-link-verification:df647fa4c0 | .codex/tasks/luc-1550-verify-integration-settings-missing-test-link.md |
+| connected_to | project:roost:122c92a083 | task:task:e266de75ac | .codex/tasks/luc-1551-prove-unclassified-user-workflow-missing-test-link-for-use-workforce.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -753,8 +756,8 @@ Generated: 2026-07-20T21:39:16.682Z
 | connected_to | project:roost:122c92a083 | task:learning-journal:2ea07ed275 | .codex/context/LEARNING_JOURNAL.md |
 | connected_to | project:roost:122c92a083 | task:project-state:c9626d46bd | .codex/context/PROJECT_STATE.md |
 | connected_to | project:roost:122c92a083 | task:task-board:9aaadac0a2 | .codex/context/TASK_BOARD.md |
-| documents | agent:2026-07-18-luc-1486-module-confidence-update:6977a9f361 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
-| documents | agent:2026-07-18-luc-1491-v1-health-packet-source-control-health-signal:fcb440278b | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-20-luc-1527-module-confidence-update:0bb5cf3d41 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
+| documents | agent:2026-07-20-luc-1536-clickup-webhooks-packet-health-signal:5ba4a8552b | module:agents:4ae71ba13a | .agents/state/system-health.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -802,6 +805,7 @@ Generated: 2026-07-20T21:39:16.682Z
 | documents | agent:world-class-delivery-workflow:8464f9dcd7 | module:agents:4ae71ba13a | .agents/workflows/world-class-delivery.md |
 | documents | api_endpoint:use-auth:d272d61067 | document:system-architecture:1149ef3528 | LUC-6696 app-completion proof-link association |
 | documents | api_endpoint:use-finance:b8821dee32 | document:get-v1-finance-context:db0b7f023e | LUC-6696 app-completion proof-link association |
+| documents | api_endpoint:use-integration-settings:7da089bd2f | document:api:a617d1cb61 | LUC-1550 integration-settings route documentation proof-link closure |
 | documents | api_endpoint:use-pipeline-stages:d21ba6038b | document:pipeline-stages-module:f43b558577 | LUC-1401 pipeline stages route documentation proof-link closure |
 | documents | api_endpoint:use-process-core:ccf2131793 | document:luc-5220-process-core-api-journey-proof:fbb338f2c1 | LUC-1416 process core route documentation proof-link closure |
 | documents | api_endpoint:use-projects:2ab7f26357 | document:api:a617d1cb61 | LUC-1430 projects route documentation proof-link closure |
@@ -813,6 +817,7 @@ Generated: 2026-07-20T21:39:16.682Z
 | documents | api_endpoint:use-v1-auth:02d088cd05 | document:system-architecture:1149ef3528 | LUC-6696 app-completion proof-link association |
 | documents | api_endpoint:use-v1-health:145d12bca3 | document:api:a617d1cb61 | LUC-1516 v1 health route documentation proof-link closure |
 | documents | api_endpoint:use-v1-ready:035c4febde | document:api:a617d1cb61 | LUC-1527 v1 ready route documentation proof-link closure |
+| documents | api_endpoint:use-v1-webhooks-clickup:61d965c5ad | document:api:a617d1cb61 | LUC-1536 ClickUp webhook route documentation proof-link closure |
 | documents | api_endpoint:use-v1:347b48829e | document:api:a617d1cb61 | LUC-1482 v1 route documentation proof-link closure |
 | documents | document:acceptance-criteria-model:13886f82fd | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0001.md |
 | documents | document:account-settings:d3a7a298ae | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PAGE-AUTO-0001.md |
@@ -852,8 +857,11 @@ Generated: 2026-07-20T21:39:16.682Z
 | documents | document:api:a617d1cb61 | api_endpoint:use-health:8aa829ec00 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-v1-health:145d12bca3 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-v1-ready:035c4febde | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | api_endpoint:use-v1-webhooks-clickup:61d965c5ad | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-connection:b52b509477 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-intake:3c22276373 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | api_endpoint:use-integration-settings:7da089bd2f | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | api_endpoint:use-workforce:a03aa869cd | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-agents:1c136317c6 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-clients:da4494ab5d | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | api_endpoint:use-deals:2ceaef3b27 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
@@ -868,6 +876,7 @@ Generated: 2026-07-20T21:39:16.682Z
 | documents | document:api:a617d1cb61 | function:authactor:b3f790a259 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:authactor:8f0ce27a64 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:requireuserauth:215e610fd9 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
+| documents | document:api:a617d1cb61 | api_endpoint:use-workspaces:8d243549bd | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:entityauthority:b0421607e6 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:ownertoken:cff9bd9e05 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
 | documents | document:api:a617d1cb61 | function:setownertoken:7303fbe684 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
@@ -1209,12 +1218,3 @@ Generated: 2026-07-20T21:39:16.682Z
 | documents | document:google-drive-owner-setup:9c6bc70541 | module:docs:6784d83cb0 | docs/operations/google-drive-owner-setup.md |
 | documents | document:google-drive-production-smoke:fc9bb13362 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PIPE-AUTO-0016.md |
 | documents | document:google-drive-sync:c5c94bd078 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/INT-AUTO-0011.md |
-| documents | document:google-drive-v2-task-contracts:9974023e7e | module:docs:6784d83cb0 | docs/planning/google-drive-v2-task-contracts.md |
-| documents | document:google-drive-v2-task-contracts:9974023e7e | function:buildgoogledriveauthorizationurl:bab074bcc0 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
-| documents | document:google-drive-v2-task-contracts:9974023e7e | function:exchangegoogledriveauthorizationcode:7cbd2d2e54 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
-| documents | document:google-drive-v2-task-contracts:9974023e7e | function:getfreshgoogledriveoauthforworkspace:86a58962cc | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
-| documents | document:google-drive-v2-task-contracts:9974023e7e | function:hasfreshaccesstoken:beeb6487ae | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
-| documents | document:google-drive-v2-task-contracts:9974023e7e | function:getgoogledriveclientforworkspace:1d1d0eae6f | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
-| documents | document:google-drive-v2-task-contracts:9974023e7e | function:getgoogleoauthclient:f132646466 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
-| documents | document:google-drive-v2-task-contracts:9974023e7e | function:getstoredgoogledrivesecret:2763c40172 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |
-| documents | document:google-drive-v2-task-contracts:9974023e7e | function:mergegoogledriveconfig:814153a3bb | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |

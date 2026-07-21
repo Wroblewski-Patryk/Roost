@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20T21:42:34.135Z",
+  "generatedAt": "2026-07-21T00:19:32.716Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -8,26 +8,26 @@
     "items": 46,
     "flows": 4,
     "needsBrowserReview": 0,
-    "missingTestLink": 4,
+    "missingTestLink": 0,
     "missingDocLink": 0,
     "implementedNeedsProof": 0,
     "blocked": 0,
-    "riskItems": 4,
-    "appCompletionRiskItems": 4,
-    "priorityReviewItems": 4,
+    "riskItems": 0,
+    "appCompletionRiskItems": 0,
+    "priorityReviewItems": 0,
     "priorityReviewLimit": 200,
     "priorityReviewTruncated": false
   },
   "flows": [
     {
       "userFlow": "Account access",
-      "total": 16,
+      "total": 19,
       "risks": {
-        "ok": 16
+        "ok": 19
       },
       "gates": {
-        "auth": 16,
-        "configuration": 3
+        "auth": 19,
+        "configuration": 4
       }
     },
     {
@@ -40,10 +40,9 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "total": 27,
+      "total": 25,
       "risks": {
-        "ok": 24,
-        "missing_test_link": 3
+        "ok": 25
       },
       "gates": {
         "auth": 21
@@ -51,95 +50,15 @@
     },
     {
       "userFlow": "User configuration",
-      "total": 2,
+      "total": 1,
       "risks": {
-        "ok": 1,
-        "missing_test_link": 1
+        "ok": 1
       },
       "gates": {
         "auth": 1,
-        "configuration": 2
+        "configuration": 1
       }
     }
   ],
-  "priorityReviewItems": [
-    {
-      "id": "api_endpoint:use-v1-webhooks-clickup:61d965c5ad",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /v1/webhooks/clickup",
-      "path": "src/app.ts#/v1/webhooks/clickup",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Unclassified user workflow",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "api_endpoint:use-workforce:a03aa869cd",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /workforce",
-      "path": "src/app.ts#/workforce",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Unclassified user workflow",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "api_endpoint:use-workspaces:8d243549bd",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /workspaces",
-      "path": "src/app.ts#/workspaces",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "Unclassified user workflow",
-      "gates": [],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    },
-    {
-      "id": "api_endpoint:use-integration-settings:7da089bd2f",
-      "type": "api_endpoint",
-      "kind": "api_endpoint",
-      "name": "USE /integration-settings",
-      "path": "src/app.ts#/integration-settings",
-      "owner": "Engineering Delivery Lead",
-      "status": "implemented_needs_proof",
-      "userFlow": "User configuration",
-      "gates": [
-        "configuration"
-      ],
-      "evidence": {
-        "hasTest": false,
-        "hasDoc": false,
-        "needsBrowserProof": false,
-        "needsScreenshotReview": false
-      },
-      "relatedEntityCount": 4,
-      "risk": "missing_test_link"
-    }
-  ]
+  "priorityReviewItems": []
 }

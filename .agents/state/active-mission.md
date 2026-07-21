@@ -1,5 +1,44 @@
 # Active Mission Packet
 
+## LUC-1545 Routing Packet
+
+- 2026-07-20: [LUC-1545](/LUC/issues/LUC-1545) resumed after the delegated
+  [LUC-1548](/LUC/issues/LUC-1548) CRS lane returned a clean classification:
+  the dirty packet is coherent and attributable to the `LUC-1536` generated
+  artifact bundle, with no source-control defect found. I created three QVE
+  verification children for the surviving proof gaps:
+  [LUC-1550](/LUC/issues/LUC-1550) `/integration-settings`,
+  [LUC-1551](/LUC/issues/LUC-1551) `/workspaces`, and
+  [LUC-1552](/LUC/issues/LUC-1552) `/workforce`. The stale queue-control lane
+  [LUC-1492](/LUC/issues/LUC-1492) remains blocked on the ownership boundary
+  of [LUC-1385](/LUC/issues/LUC-1385); no blind promotion is legal.
+- 2026-07-21: [LUC-1551](/LUC/issues/LUC-1551) closed the `src/app.ts#/workforce`
+  proof-link gap. The next routed QA gap is now `src/app.ts#/workspaces`.
+
+## LUC-1545 Coordination Packet
+
+- 2026-07-20: [LUC-1545](/LUC/issues/LUC-1545) is the current Roost PM
+  coordination packet. The worktree is still dirty (`85` modified tracked
+  paths plus `1` untracked task artifact), so the active next step is the
+  delegated [LUC-1548](/LUC/issues/LUC-1548) CRS classification lane that will
+  decide whether a scoped commit is justified. No push, deploy, or release is
+  approved from this packet yet.
+
+## LUC-1536 Checkpoint
+
+- 2026-07-20: [LUC-1536](/LUC/issues/LUC-1536) completed the QA-owned
+  closure for the `src/app.ts#/v1/webhooks/clickup` `missing_test_link` row.
+  The durable packet is
+  `.codex/tasks/luc-1536-prove-unclassified-user-workflow-missing-test-link-for-use-v1-webhooks-clickup.md`.
+  Current fact: `docs/architecture/scanner-overrides.json` now links the exact
+  `/v1/webhooks/clickup` alias mount to the existing CompanyCore API proof in
+  `src/tests/api.test.ts`, `src/app.ts`,
+  `src/integrations/clickup/clickup.webhooks.ts`, `docs/API.md`, and
+  `docs/operations/post-deploy-smoke.md`; sequential truth refresh removed
+  `api_endpoint:use-v1-webhooks-clickup:61d965c5ad` from app-completion
+  `missing_test_link`, reduced `missingTestLink` to `3`, and moved the next
+  routed QA gap to `src/app.ts#/workforce`.
+
 ## LUC-1527 Checkpoint
 
 - 2026-07-20: [LUC-1527](/LUC/issues/LUC-1527) completed terminal local

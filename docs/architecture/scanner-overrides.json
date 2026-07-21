@@ -737,6 +737,38 @@
       ]
     },
     {
+      "path": "src/app.ts#/integration-settings",
+      "status": "verified",
+      "description": "Integration settings mount verified through the existing protected API suite coverage for owner-authenticated ClickUp and Google Drive configuration flows, provider event and maintenance operations, and the documented integration-settings API contract without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/integration-settings/integration-settings.routes.ts",
+        "docs/API.md",
+        ".codex/tasks/luc-1550-verify-integration-settings-missing-test-link.md"
+      ]
+    },
+    {
+      "path": "src/app.ts#/workforce",
+      "status": "verified",
+      "description": "Workforce mount verified through the existing protected API suite coverage for the workspace-scoped workforce roster packet, authority readback, and the documented workforce directory contract without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/workforce/workforce.routes.ts",
+        "docs/API.md",
+        ".codex/tasks/luc-1551-prove-unclassified-user-workflow-missing-test-link-for-use-workforce.md"
+      ]
+    },
+    {
+      "path": "src/app.ts#/workspaces",
+      "status": "verified",
+      "description": "Workspaces mount verified through the existing protected API suite coverage for owner workspace list, create, and select behavior, API-key denial, and the documented workspace API contract without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/modules/workspaces/workspaces.routes.ts",
+        "docs/API.md"
+      ]
+    },
+    {
       "path": "src/app.ts#/task-lists",
       "status": "verified",
       "description": "Task Lists mount verified through the existing protected API suite coverage for workspace-scoped POST, GET by id, PATCH, foreign-project denial, foreign-workspace empty-list isolation, and documented root/v1 CRUD route contract without changing runtime behavior.",
@@ -767,6 +799,19 @@
         "src/health/health.routes.ts",
         "docs/API.md",
         ".codex/tasks/luc-1527-prove-unclassified-user-workflow-missing-test-link-for-use-v1-ready.md"
+      ]
+    },
+    {
+      "path": "src/app.ts#/v1/webhooks/clickup",
+      "status": "verified",
+      "description": "ClickUp webhook mount verified through the existing CompanyCore API suite coverage for public POST /v1/webhooks/clickup signature validation, registered-webhook rejection, live signed event ingestion, and fail-closed raw-body webhook behavior without changing runtime behavior.",
+      "evidence": [
+        "src/tests/api.test.ts",
+        "src/app.ts",
+        "src/integrations/clickup/clickup.webhooks.ts",
+        "docs/API.md",
+        "docs/operations/post-deploy-smoke.md",
+        ".codex/tasks/luc-1536-prove-unclassified-user-workflow-missing-test-link-for-use-v1-webhooks-clickup.md"
       ]
     },
     {
@@ -4194,6 +4239,22 @@
     },
     {
       "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/integration-settings",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1550 integration-settings route API proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/workforce",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1551 workforce route API proof-link closure"
+    },
+    {
+      "type": "tests",
       "fromPath": ".codex/tasks/luc-1442-prove-unclassified-user-workflow-missing-test-link-for-use-ready.md",
       "fromType": "test",
       "toPath": "src/app.ts#/ready",
@@ -4209,6 +4270,14 @@
       "evidence": "LUC-1527 v1 ready proof-link packet"
     },
     {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1550-verify-integration-settings-missing-test-link.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/integration-settings",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1550 integration-settings proof-link packet"
+    },
+    {
       "type": "documents",
       "fromPath": "src/app.ts#/ready",
       "fromType": "api_endpoint",
@@ -4218,11 +4287,43 @@
     },
     {
       "type": "documents",
+      "fromPath": "src/app.ts#/integration-settings",
+      "fromType": "api_endpoint",
+      "toPath": "docs/API.md",
+      "toType": "document",
+      "evidence": "LUC-1550 integration-settings route documentation proof-link closure"
+    },
+    {
+      "type": "documents",
       "fromPath": "src/app.ts#/v1/ready",
       "fromType": "api_endpoint",
       "toPath": "docs/API.md",
       "toType": "document",
       "evidence": "LUC-1527 v1 ready route documentation proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/v1/webhooks/clickup",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1536 ClickUp webhook route API proof-link closure"
+    },
+    {
+      "type": "tests",
+      "fromPath": ".codex/tasks/luc-1536-prove-unclassified-user-workflow-missing-test-link-for-use-v1-webhooks-clickup.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/v1/webhooks/clickup",
+      "toType": "api_endpoint",
+      "evidence": "LUC-1536 ClickUp webhook proof-link packet"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/v1/webhooks/clickup",
+      "fromType": "api_endpoint",
+      "toPath": "docs/API.md",
+      "toType": "document",
+      "evidence": "LUC-1536 ClickUp webhook route documentation proof-link closure"
     },
     {
       "type": "tests",

@@ -1,3 +1,28 @@
+# 2026-07-20 LUC-1536 ClickUp Webhooks Packet Health Signal
+
+- Status: routed QA proof-link closure for the `LUC-1536`
+  `USE /v1/webhooks/clickup` packet completed locally.
+- Evidence: [LUC-1536](/LUC/issues/LUC-1536) task packet
+  `.codex/tasks/luc-1536-prove-unclassified-user-workflow-missing-test-link-for-use-v1-webhooks-clickup.md`;
+  `docs/architecture/scanner-overrides.json` marks
+  `src/app.ts#/v1/webhooks/clickup` `verified` through the existing
+  CompanyCore API suite in `src/tests/api.test.ts`, `src/app.ts`,
+  `src/integrations/clickup/clickup.webhooks.ts`, `docs/API.md`, and
+  `docs/operations/post-deploy-smoke.md`, plus explicit route-to-test and
+  route-to-document relation overrides; focused local API proof PASS via
+  `npm run test:api:local`; `npm run architecture:refresh` PASS; architecture
+  awareness refresh generated `3127` entities / `8584` relations / `16525`
+  files; app-completion refresh reduced `missingTestLink` to `3` and no longer
+  routes `api_endpoint:use-v1-webhooks-clickup:61d965c5ad` as
+  `missing_test_link`; Project Truth apply completed with public probes
+  `pass`, runtime findings `0`, incomplete event chains `0`, operational gate
+  gaps `0`, and advanced the next QA-owned routed proof gap to
+  `src/app.ts#/workspaces`; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`).
+- Guardrail re-confirmed: this packet closes the ClickUp webhook proof-link
+  lane without runtime changes, deploy impact, or production mutation; the
+  next QA-owned gap is `src/app.ts#/workspaces`.
+
 # 2026-07-18 LUC-1491 v1 Health Packet Source-Control Health Signal
 
 - Status: terminal source-control closure for the `LUC-1486` `/v1/health`

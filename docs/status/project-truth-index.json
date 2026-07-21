@@ -1,88 +1,23 @@
 {
-  "generatedAt": "2026-07-20T21:43:34.581Z",
+  "generatedAt": "2026-07-21T00:19:39.344Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
-  "status": "gaps_require_routing",
+  "status": "known_and_routable",
   "counts": {
     "appCompletionItems": 46,
     "eventChains": 7,
     "incompleteEventChains": 0,
     "runtimeFindings": 0,
     "criticalRuntimeFindings": 0,
-    "appCompletionGaps": 4,
-    "indexedAppCompletionGaps": 4,
-    "knownAppCompletionRiskItems": 4,
-    "appCompletionPriorityReviewItems": 4,
+    "appCompletionGaps": 0,
+    "indexedAppCompletionGaps": 0,
+    "knownAppCompletionRiskItems": 0,
+    "appCompletionPriorityReviewItems": 0,
     "appCompletionPriorityReviewTruncated": false,
     "operationalGateGaps": 0,
-    "indexedGaps": 4,
-    "totalGaps": 4
+    "indexedGaps": 0,
+    "totalGaps": 0
   },
-  "firstGap": {
-    "kind": "app_completion_gap",
-    "severity": "medium",
-    "userFlow": "Unclassified user workflow",
-    "summary": "Unclassified user workflow: USE /v1/webhooks/clickup has app-completion risk missing_test_link.",
-    "nextOwner": "Test Automation Engineer + QA Regression Lead",
-    "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-    "evidence": [
-      "src/app.ts#/v1/webhooks/clickup"
-    ],
-    "sourceItemId": "api_endpoint:use-v1-webhooks-clickup:61d965c5ad",
-    "risk": "missing_test_link"
-  },
-  "gaps": [
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /v1/webhooks/clickup has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/app.ts#/v1/webhooks/clickup"
-      ],
-      "sourceItemId": "api_endpoint:use-v1-webhooks-clickup:61d965c5ad",
-      "risk": "missing_test_link"
-    },
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /workforce has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/app.ts#/workforce"
-      ],
-      "sourceItemId": "api_endpoint:use-workforce:a03aa869cd",
-      "risk": "missing_test_link"
-    },
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "Unclassified user workflow",
-      "summary": "Unclassified user workflow: USE /workspaces has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/app.ts#/workspaces"
-      ],
-      "sourceItemId": "api_endpoint:use-workspaces:8d243549bd",
-      "risk": "missing_test_link"
-    },
-    {
-      "kind": "app_completion_gap",
-      "severity": "medium",
-      "userFlow": "User configuration",
-      "summary": "User configuration: USE /integration-settings has app-completion risk missing_test_link.",
-      "nextOwner": "Test Automation Engineer + QA Regression Lead",
-      "nextAction": "Add or link the smallest relevant automated/manual verification for this flow before claiming it works.",
-      "evidence": [
-        "src/app.ts#/integration-settings"
-      ],
-      "sourceItemId": "api_endpoint:use-integration-settings:7da089bd2f",
-      "risk": "missing_test_link"
-    }
-  ]
+  "firstGap": null,
+  "gaps": []
 }

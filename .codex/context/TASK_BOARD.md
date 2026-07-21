@@ -1,6 +1,23 @@
 # TASK_BOARD
 
 ## Now
+- 2026-07-20: [LUC-1536](/LUC/issues/LUC-1536) unclassified
+  `src/app.ts#/v1/webhooks/clickup` missing-test-link verification is
+  complete locally. Task contract:
+  `.codex/tasks/luc-1536-prove-unclassified-user-workflow-missing-test-link-for-use-v1-webhooks-clickup.md`.
+  Evidence: `docs/architecture/scanner-overrides.json` now links the exact
+  `/v1/webhooks/clickup` mount to `src/tests/api.test.ts`, `src/app.ts`,
+  `src/integrations/clickup/clickup.webhooks.ts`, `docs/API.md`, and
+  `docs/operations/post-deploy-smoke.md`; refreshed app-completion reports
+  `3` missing test links and no longer routes
+  `api_endpoint:use-v1-webhooks-clickup:61d965c5ad` as `missing_test_link`;
+  refreshed Project Truth generated public probes `pass`, runtime findings
+  `0`, incomplete event chains `0`, operational gate gaps `0`, and advances
+  the next QA-owned routed proof queue to `src/app.ts#/workforce`; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`). No runtime product
+  logic, provider call, deploy, push, restart, production mutation, credential
+  access, or secret disclosure occurred. Push status: not needed; deploy
+  impact: none.
 - 2026-07-20: [LUC-1527](/LUC/issues/LUC-1527) unclassified
   `src/app.ts#/v1/ready` missing-test-link verification is complete locally.
   Task contract:
