@@ -1,5 +1,11 @@
 # PROJECT_STATE
 
+- 2026-07-23: [LUC-1584](/LUC/issues/LUC-1584) recovery/productivity
+  disposition was superseded by the board operator. [LUC-1545](/LUC/issues/LUC-1545)
+  is done, Roost truth is zero-gap, and no recovery child remains necessary.
+  The repo-side mission and next-step memory were updated to remove the stale
+  continuation path.
+
 - 2026-07-21: [LUC-1592](/LUC/issues/LUC-1592) classified the current dirty
   packet as a coherent docs/state/generated bundle attributable to the
   completed [LUC-1536](/LUC/issues/LUC-1536),

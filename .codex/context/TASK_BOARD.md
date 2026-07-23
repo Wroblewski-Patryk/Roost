@@ -1,5 +1,10 @@
 # TASK_BOARD
 
+## Disposition Note
+- 2026-07-23: [LUC-1584](/LUC/issues/LUC-1584) was superseded by the board
+  operator. Keep [LUC-1545](/LUC/issues/LUC-1545) closed and do not reopen
+  [LUC-1585](/LUC/issues/LUC-1585) as a recovery lane.
+
 ## Now
 - 2026-07-20: [LUC-1536](/LUC/issues/LUC-1536) unclassified
   `src/app.ts#/v1/webhooks/clickup` missing-test-link verification is
