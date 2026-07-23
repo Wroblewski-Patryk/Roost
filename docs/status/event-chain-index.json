@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-21T00:19:39.344Z",
+  "generatedAt": "2026-07-21T08:55:43.164Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,8 +10,8 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 430,
-      "linkedRelationCount": 2190,
+      "entityCount": 429,
+      "linkedRelationCount": 2103,
       "layers": {
         "frontend": {
           "count": 30,
@@ -105,6 +105,14 @@
               "status": "verified"
             },
             {
+              "id": "feature:auth-validation-ts:b6a8f40196",
+              "type": "feature",
+              "name": "auth-validation.ts",
+              "path": "web/src/features/auth/auth-validation.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "feature:public-layout-tsx:348c47081e",
               "type": "feature",
               "name": "public-layout.tsx",
@@ -121,10 +129,10 @@
               "status": "implemented"
             },
             {
-              "id": "feature:auth-validation-ts:b6a8f40196",
-              "type": "feature",
-              "name": "auth-validation.ts",
-              "path": "web/src/features/auth/auth-validation.ts",
+              "id": "function:hasautherrors:87f05043a4",
+              "type": "function",
+              "name": "hasAuthErrors",
+              "path": "web/src/features/auth/auth-validation.ts#hasAuthErrors",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -133,14 +141,6 @@
               "type": "function",
               "name": "validateAuthForm",
               "path": "web/src/features/auth/auth-validation.ts#validateAuthForm",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:hasautherrors:87f05043a4",
-              "type": "function",
-              "name": "hasAuthErrors",
-              "path": "web/src/features/auth/auth-validation.ts#hasAuthErrors",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -193,6 +193,14 @@
               "status": "verified"
             },
             {
+              "id": "function:filterbar:167e26a020",
+              "type": "function",
+              "name": "filterBar",
+              "path": "web/src/components/cc-data-table.tsx#filterBar",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:generaldashboard:267cfd0d18",
               "type": "function",
               "name": "GeneralDashboard",
@@ -205,6 +213,14 @@
               "type": "function",
               "name": "HeroTopology",
               "path": "web/src/features/public/public-home.tsx#HeroTopology",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:iconclass:e1458be526",
+              "type": "function",
+              "name": "iconClass",
+              "path": "web/src/components/cc-button.tsx#iconClass",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -229,22 +245,6 @@
               "type": "function",
               "name": "tx",
               "path": "web/src/features/public/public-home.tsx#tx",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:iconclass:e1458be526",
-              "type": "function",
-              "name": "iconClass",
-              "path": "web/src/components/cc-button.tsx#iconClass",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:filterbar:167e26a020",
-              "type": "function",
-              "name": "filterBar",
-              "path": "web/src/components/cc-data-table.tsx#filterBar",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -791,26 +791,10 @@
               "status": "verified"
             },
             {
-              "id": "function:routepattern:23e2a07448",
+              "id": "function:capabilityforrequest:bc33f6bb86",
               "type": "function",
-              "name": "routePattern",
-              "path": "src/auth/capabilities.ts#routePattern",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:normalizedrequestpaths:573d38689b",
-              "type": "function",
-              "name": "normalizedRequestPaths",
-              "path": "src/auth/capabilities.ts#normalizedRequestPaths",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:scopesarebroad:8744860a85",
-              "type": "function",
-              "name": "scopesAreBroad",
-              "path": "src/auth/capabilities.ts#scopesAreBroad",
+              "name": "capabilityForRequest",
+              "path": "src/auth/capabilities.ts#capabilityForRequest",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -831,10 +815,26 @@
               "status": "verified"
             },
             {
-              "id": "function:capabilityforrequest:bc33f6bb86",
+              "id": "function:normalizedrequestpaths:573d38689b",
               "type": "function",
-              "name": "capabilityForRequest",
-              "path": "src/auth/capabilities.ts#capabilityForRequest",
+              "name": "normalizedRequestPaths",
+              "path": "src/auth/capabilities.ts#normalizedRequestPaths",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:routepattern:23e2a07448",
+              "type": "function",
+              "name": "routePattern",
+              "path": "src/auth/capabilities.ts#routePattern",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:scopesarebroad:8744860a85",
+              "type": "function",
+              "name": "scopesAreBroad",
+              "path": "src/auth/capabilities.ts#scopesAreBroad",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -906,7 +906,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 216,
+          "count": 217,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -1595,7 +1595,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 49,
+          "count": 47,
           "sample": [
             {
               "id": "document:api:a617d1cb61",
@@ -1894,22 +1894,6 @@
               "status": "implemented"
             },
             {
-              "id": "document:app-completion-index:2db9905a4e",
-              "type": "document",
-              "name": "App Completion Index",
-              "path": "docs/status/app-completion-index.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:project-truth-index:effbf3bcee",
-              "type": "document",
-              "name": "Project Truth Index",
-              "path": "docs/status/project-truth-index.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
               "id": "document:luc-5246-commercial-exceptions-api-journey-proof:dd92f5fd30",
               "type": "document",
               "name": "LUC-5246 Commercial Exceptions API Journey Proof",
@@ -1958,18 +1942,18 @@
               "status": "implemented"
             },
             {
-              "id": "document:service-reliability-and-observability:886f9bd027",
-              "type": "document",
-              "name": "Service Reliability And Observability",
-              "path": "docs/operations/service-reliability-and-observability.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
               "id": "document:secure-development-lifecycle:2414479969",
               "type": "document",
               "name": "Secure Development Lifecycle",
               "path": "docs/security/secure-development-lifecycle.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:service-reliability-and-observability:886f9bd027",
+              "type": "document",
+              "name": "Service Reliability And Observability",
+              "path": "docs/operations/service-reliability-and-observability.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
             },
@@ -2000,8 +1984,8 @@
     },
     {
       "userFlow": "Dashboard overview",
-      "entityCount": 115,
-      "linkedRelationCount": 357,
+      "entityCount": 113,
+      "linkedRelationCount": 348,
       "layers": {
         "frontend": {
           "count": 15,
@@ -2141,6 +2125,30 @@
               "status": "verified"
             },
             {
+              "id": "function:coercecount:f105944c04",
+              "type": "function",
+              "name": "coerceCount",
+              "path": "src/modules/dashboard/dashboard.routes.ts#coerceCount",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:pickhealth:97c44d9ddb",
+              "type": "function",
+              "name": "pickHealth",
+              "path": "src/modules/dashboard/dashboard.routes.ts#pickHealth",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:riskrank:b7e74a6224",
+              "type": "function",
+              "name": "riskRank",
+              "path": "src/modules/dashboard/dashboard.routes.ts#riskRank",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:startoftoday:6c9c4ddbb2",
               "type": "function",
               "name": "startOfToday",
@@ -2157,34 +2165,10 @@
               "status": "verified"
             },
             {
-              "id": "function:coercecount:f105944c04",
-              "type": "function",
-              "name": "coerceCount",
-              "path": "src/modules/dashboard/dashboard.routes.ts#coerceCount",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
               "id": "function:sumcounts:369b91fee6",
               "type": "function",
               "name": "sumCounts",
               "path": "src/modules/dashboard/dashboard.routes.ts#sumCounts",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:riskrank:b7e74a6224",
-              "type": "function",
-              "name": "riskRank",
-              "path": "src/modules/dashboard/dashboard.routes.ts#riskRank",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:pickhealth:97c44d9ddb",
-              "type": "function",
-              "name": "pickHealth",
-              "path": "src/modules/dashboard/dashboard.routes.ts#pickHealth",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -2237,10 +2221,10 @@
               "status": "verified"
             },
             {
-              "id": "function:ccfield:902776aa95",
-              "type": "function",
-              "name": "CcField",
-              "path": "web/src/components/cc-field.tsx#CcField",
+              "id": "component:cc-notice-tsx:9eefa3dd0b",
+              "type": "component",
+              "name": "cc-notice.tsx",
+              "path": "web/src/components/cc-notice.tsx",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -2253,10 +2237,10 @@
               "status": "verified"
             },
             {
-              "id": "component:cc-notice-tsx:9eefa3dd0b",
-              "type": "component",
-              "name": "cc-notice.tsx",
-              "path": "web/src/components/cc-notice.tsx",
+              "id": "function:ccfield:902776aa95",
+              "type": "function",
+              "name": "CcField",
+              "path": "web/src/components/cc-field.tsx#CcField",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -2265,6 +2249,22 @@
               "type": "component",
               "name": "cc-resource-selector.tsx",
               "path": "web/src/components/cc-resource-selector.tsx",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "component:cc-route-loading-tsx:920cadd9c7",
+              "type": "component",
+              "name": "cc-route-loading.tsx",
+              "path": "web/src/components/cc-route-loading.tsx",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "feature:luc-1084-cc-resource-selector-proof-mjs:e14dbb7137",
+              "type": "test",
+              "name": "luc-1084-cc-resource-selector-proof.mjs",
+              "path": "scripts/luc-1084-cc-resource-selector-proof.mjs",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -2301,22 +2301,6 @@
               "status": "verified"
             },
             {
-              "id": "feature:luc-1084-cc-resource-selector-proof-mjs:e14dbb7137",
-              "type": "test",
-              "name": "luc-1084-cc-resource-selector-proof.mjs",
-              "path": "scripts/luc-1084-cc-resource-selector-proof.mjs",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "component:cc-route-loading-tsx:920cadd9c7",
-              "type": "component",
-              "name": "cc-route-loading.tsx",
-              "path": "web/src/components/cc-route-loading.tsx",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
               "id": "task:task:56da1c12f2",
               "type": "task",
               "name": "Task",
@@ -2325,10 +2309,10 @@
               "status": "verified"
             },
             {
-              "id": "feature:luc-1086-dashboard-cc-route-loading-proof-mjs:2931228b32",
-              "type": "test",
-              "name": "luc-1086-dashboard-cc-route-loading-proof.mjs",
-              "path": "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
+              "id": "component:cc-text-input-tsx:8a4c63b1b4",
+              "type": "component",
+              "name": "cc-text-input.tsx",
+              "path": "web/src/components/cc-text-input.tsx",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -2341,26 +2325,10 @@
               "status": "implemented"
             },
             {
-              "id": "component:cc-text-input-tsx:8a4c63b1b4",
-              "type": "component",
-              "name": "cc-text-input.tsx",
-              "path": "web/src/components/cc-text-input.tsx",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:cctextinput:8fdaa694fa",
-              "type": "function",
-              "name": "CcTextInput",
-              "path": "web/src/components/cc-text-input.tsx#CcTextInput",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:assetsoverview:4a3ad32923",
-              "type": "function",
-              "name": "AssetsOverview",
-              "path": "web/src/features/departments/assets-route.tsx#AssetsOverview",
+              "id": "feature:luc-1086-dashboard-cc-route-loading-proof-mjs:2931228b32",
+              "type": "test",
+              "name": "luc-1086-dashboard-cc-route-loading-proof.mjs",
+              "path": "scripts/luc-1086-dashboard-cc-route-loading-proof.mjs",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -2373,10 +2341,18 @@
               "status": "implemented"
             },
             {
-              "id": "feature:luc-1090-assets-overview-proof-mjs:defdaad588",
-              "type": "test",
-              "name": "luc-1090-assets-overview-proof.mjs",
-              "path": "scripts/luc-1090-assets-overview-proof.mjs",
+              "id": "function:assetsoverview:4a3ad32923",
+              "type": "function",
+              "name": "AssetsOverview",
+              "path": "web/src/features/departments/assets-route.tsx#AssetsOverview",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:cctextinput:8fdaa694fa",
+              "type": "function",
+              "name": "CcTextInput",
+              "path": "web/src/components/cc-text-input.tsx#CcTextInput",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -2386,6 +2362,14 @@
               "name": "LUC-1090 Dashboard Overview AssetsOverview Proof",
               "path": "docs/planning/luc-1090-dashboard-overview-assetsoverview-proof.md",
               "owner": "Docs Memory Lead",
+              "status": "verified"
+            },
+            {
+              "id": "feature:luc-1090-assets-overview-proof-mjs:defdaad588",
+              "type": "test",
+              "name": "luc-1090-assets-overview-proof.mjs",
+              "path": "scripts/luc-1090-assets-overview-proof.mjs",
+              "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
             {
@@ -2413,6 +2397,14 @@
               "status": "verified"
             },
             {
+              "id": "feature:public-home-tsx:649fe0a227",
+              "type": "feature",
+              "name": "public-home.tsx",
+              "path": "web/src/features/public/public-home.tsx",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:healthtone:6892cbb287",
               "type": "function",
               "name": "healthTone",
@@ -2425,14 +2417,6 @@
               "type": "function",
               "name": "itemMeta",
               "path": "web/src/features/departments/general-dashboard.tsx#itemMeta",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "feature:public-home-tsx:649fe0a227",
-              "type": "feature",
-              "name": "public-home.tsx",
-              "path": "web/src/features/public/public-home.tsx",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -2515,6 +2499,14 @@
               "status": "verified"
             },
             {
+              "id": "function:main:eb73960da2",
+              "type": "function",
+              "name": "main",
+              "path": "scripts/build-architecture-health-dashboard.mjs#main",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:readjson:f3fdb64025",
               "type": "function",
               "name": "readJson",
@@ -2527,14 +2519,6 @@
               "type": "function",
               "name": "toBoolIcon",
               "path": "scripts/build-architecture-health-dashboard.mjs#toBoolIcon",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:main:eb73960da2",
-              "type": "function",
-              "name": "main",
-              "path": "scripts/build-architecture-health-dashboard.mjs#main",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -2563,18 +2547,18 @@
               "status": "verified"
             },
             {
-              "id": "function:readjson:dc33699db3",
-              "type": "function",
-              "name": "readJson",
-              "path": "scripts/check-architecture-health-dashboard-gate.mjs#readJson",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
               "id": "function:fail:7ea16a3fea",
               "type": "function",
               "name": "fail",
               "path": "scripts/check-architecture-health-dashboard-gate.mjs#fail",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:readjson:dc33699db3",
+              "type": "function",
+              "name": "readJson",
+              "path": "scripts/check-architecture-health-dashboard-gate.mjs#readJson",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -2595,18 +2579,18 @@
               "status": "tested"
             },
             {
-              "id": "feature:prisma-ts:dafac5460d",
-              "type": "feature",
-              "name": "prisma.ts",
-              "path": "src/db/prisma.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "feature:async-handler-ts:d4ef00961e",
               "type": "feature",
               "name": "async-handler.ts",
               "path": "src/middleware/async-handler.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "feature:prisma-ts:dafac5460d",
+              "type": "feature",
+              "name": "prisma.ts",
+              "path": "src/db/prisma.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -2793,7 +2777,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 19,
+          "count": 17,
           "sample": [
             {
               "id": "document:get-v1-dashboard-command:b32b11e451",
@@ -2930,22 +2914,6 @@
               "path": "docs/planning/luc-1084-dashboard-overview-cc-resource-selector-proof.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
-            },
-            {
-              "id": "document:app-completion-index:2db9905a4e",
-              "type": "document",
-              "name": "App Completion Index",
-              "path": "docs/status/app-completion-index.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:project-truth-index:effbf3bcee",
-              "type": "document",
-              "name": "Project Truth Index",
-              "path": "docs/status/project-truth-index.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
             }
           ],
           "truncated": false
@@ -2958,25 +2926,25 @@
     },
     {
       "userFlow": "Exchange connection and configuration",
-      "entityCount": 42,
-      "linkedRelationCount": 91,
+      "entityCount": 40,
+      "linkedRelationCount": 85,
       "layers": {
         "frontend": {
           "count": 2,
           "sample": [
             {
-              "id": "model:types-ts:1fce583d96",
-              "type": "model",
-              "name": "types.ts",
-              "path": "web/src/types.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "feature:messages-ts:2ff8f72a93",
               "type": "feature",
               "name": "messages.ts",
               "path": "web/src/i18n/messages.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "model:types-ts:1fce583d96",
+              "type": "model",
+              "name": "types.ts",
+              "path": "web/src/types.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             }
@@ -3041,6 +3009,14 @@
               "status": "verified"
             },
             {
+              "id": "function:decryptsecret:65d393d288",
+              "type": "function",
+              "name": "decryptSecret",
+              "path": "src/integrations/secrets.ts#decryptSecret",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
               "id": "function:encryptionkey:28d9d8f923",
               "type": "function",
               "name": "encryptionKey",
@@ -3053,14 +3029,6 @@
               "type": "function",
               "name": "encryptSecret",
               "path": "src/integrations/secrets.ts#encryptSecret",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:decryptsecret:65d393d288",
-              "type": "function",
-              "name": "decryptSecret",
-              "path": "src/integrations/secrets.ts#decryptSecret",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -3153,14 +3121,6 @@
               "status": "verified"
             },
             {
-              "id": "agent:project-memory-index:8428fccaed",
-              "type": "agent",
-              "name": "Project Memory Index",
-              "path": ".agents/core/project-memory-index.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "agent:2026-07-20-luc-1527-module-confidence-update:0bb5cf3d41",
               "type": "agent",
               "name": "2026-07-20 LUC-1527 Module Confidence Update",
@@ -3173,6 +3133,14 @@
               "type": "agent",
               "name": "Mission Control",
               "path": ".agents/core/mission-control.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "agent:project-memory-index:8428fccaed",
+              "type": "agent",
+              "name": "Project Memory Index",
+              "path": ".agents/core/project-memory-index.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -3201,6 +3169,14 @@
               "status": "implemented"
             },
             {
+              "id": "agent:agent-process-evals:143b49414c",
+              "type": "agent",
+              "name": "Agent Process Evals",
+              "path": ".agents/state/agent-evals.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
               "id": "agent:responsibility-lanes:5223e4bc50",
               "type": "agent",
               "name": "Responsibility Lanes",
@@ -3213,14 +3189,6 @@
               "type": "agent",
               "name": "Responsibility Learning",
               "path": ".agents/state/responsibility-learning.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "agent:agent-process-evals:143b49414c",
-              "type": "agent",
-              "name": "Agent Process Evals",
-              "path": ".agents/state/agent-evals.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -3246,7 +3214,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 9,
+          "count": 7,
           "sample": [
             {
               "id": "document:secrets:6d9c5eb0e8",
@@ -3273,22 +3241,6 @@
               "status": "implemented"
             },
             {
-              "id": "document:app-completion-index:2db9905a4e",
-              "type": "document",
-              "name": "App Completion Index",
-              "path": "docs/status/app-completion-index.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:project-truth-index:effbf3bcee",
-              "type": "document",
-              "name": "Project Truth Index",
-              "path": "docs/status/project-truth-index.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
               "id": "document:mvp-next-commits:ccc83152eb",
               "type": "document",
               "name": "MVP Next Commits",
@@ -3297,10 +3249,10 @@
               "status": "implemented"
             },
             {
-              "id": "document:user-feedback-loop:84e8338074",
+              "id": "document:secure-development-lifecycle:2414479969",
               "type": "document",
-              "name": "User Feedback Loop",
-              "path": "docs/governance/user-feedback-loop.md",
+              "name": "Secure Development Lifecycle",
+              "path": "docs/security/secure-development-lifecycle.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
             },
@@ -3313,10 +3265,10 @@
               "status": "implemented"
             },
             {
-              "id": "document:secure-development-lifecycle:2414479969",
+              "id": "document:user-feedback-loop:84e8338074",
               "type": "document",
-              "name": "Secure Development Lifecycle",
-              "path": "docs/security/secure-development-lifecycle.md",
+              "name": "User Feedback Loop",
+              "path": "docs/governance/user-feedback-loop.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
             }
@@ -3346,18 +3298,18 @@
               "status": "verified"
             },
             {
-              "id": "function:iconclass:e1458be526",
-              "type": "function",
-              "name": "iconClass",
-              "path": "web/src/components/cc-button.tsx#iconClass",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
               "id": "function:ccbutton:e997376bd3",
               "type": "function",
               "name": "CcButton",
               "path": "web/src/components/cc-button.tsx#CcButton",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:iconclass:e1458be526",
+              "type": "function",
+              "name": "iconClass",
+              "path": "web/src/components/cc-button.tsx#iconClass",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -3394,30 +3346,6 @@
               "status": "implemented"
             },
             {
-              "id": "function:paginationstate:3fcdee4e3b",
-              "type": "function",
-              "name": "paginationState",
-              "path": "web/src/components/cc-data-table.tsx#paginationState",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:normalized:2ca6f8ebe9",
-              "type": "function",
-              "name": "normalized",
-              "path": "web/src/components/cc-data-table.tsx#normalized",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:sortprimitive:0ba0ed4dbe",
-              "type": "function",
-              "name": "sortPrimitive",
-              "path": "web/src/components/cc-data-table.tsx#sortPrimitive",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "function:actiontoneclass:ffdd82a884",
               "type": "function",
               "name": "actionToneClass",
@@ -3426,18 +3354,10 @@
               "status": "implemented"
             },
             {
-              "id": "function:sorticon:1e72b5a531",
+              "id": "function:clearfilters:1ce9ba482d",
               "type": "function",
-              "name": "sortIcon",
-              "path": "web/src/components/cc-data-table.tsx#sortIcon",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:uniqueoptions:973c8b56e4",
-              "type": "function",
-              "name": "uniqueOptions",
-              "path": "web/src/components/cc-data-table.tsx#uniqueOptions",
+              "name": "clearFilters",
+              "path": "web/src/components/cc-data-table.tsx#clearFilters",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -3450,10 +3370,42 @@
               "status": "implemented"
             },
             {
-              "id": "function:usevisiblecolumns:1db12f9281",
+              "id": "function:filterbar:167e26a020",
               "type": "function",
-              "name": "useVisibleColumns",
-              "path": "web/src/components/cc-data-table.tsx#useVisibleColumns",
+              "name": "filterBar",
+              "path": "web/src/components/cc-data-table.tsx#filterBar",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:normalized:2ca6f8ebe9",
+              "type": "function",
+              "name": "normalized",
+              "path": "web/src/components/cc-data-table.tsx#normalized",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:paginationstate:3fcdee4e3b",
+              "type": "function",
+              "name": "paginationState",
+              "path": "web/src/components/cc-data-table.tsx#paginationState",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:sorticon:1e72b5a531",
+              "type": "function",
+              "name": "sortIcon",
+              "path": "web/src/components/cc-data-table.tsx#sortIcon",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:sortprimitive:0ba0ed4dbe",
+              "type": "function",
+              "name": "sortPrimitive",
+              "path": "web/src/components/cc-data-table.tsx#sortPrimitive",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -3474,10 +3426,10 @@
               "status": "implemented"
             },
             {
-              "id": "function:clearfilters:1ce9ba482d",
+              "id": "function:uniqueoptions:973c8b56e4",
               "type": "function",
-              "name": "clearFilters",
-              "path": "web/src/components/cc-data-table.tsx#clearFilters",
+              "name": "uniqueOptions",
+              "path": "web/src/components/cc-data-table.tsx#uniqueOptions",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -3490,12 +3442,12 @@
               "status": "implemented"
             },
             {
-              "id": "function:filterbar:167e26a020",
+              "id": "function:usevisiblecolumns:1db12f9281",
               "type": "function",
-              "name": "filterBar",
-              "path": "web/src/components/cc-data-table.tsx#filterBar",
+              "name": "useVisibleColumns",
+              "path": "web/src/components/cc-data-table.tsx#useVisibleColumns",
               "owner": "Engineering Delivery Lead",
-              "status": "verified"
+              "status": "implemented"
             },
             {
               "id": "feature:shared-tsx:fa310986ee",
@@ -3562,10 +3514,10 @@
               "status": "verified"
             },
             {
-              "id": "feature:use-owner-packet-ts:c11e3fd58c",
+              "id": "feature:core-area-data-ts:6641a7b845",
               "type": "feature",
-              "name": "use-owner-packet.ts",
-              "path": "web/src/hooks/use-owner-packet.ts",
+              "name": "core-area-data.ts",
+              "path": "web/src/features/departments/core-area-data.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -3578,18 +3530,18 @@
               "status": "implemented"
             },
             {
-              "id": "model:types-ts:1fce583d96",
-              "type": "model",
-              "name": "types.ts",
-              "path": "web/src/types.ts",
+              "id": "feature:use-owner-packet-ts:c11e3fd58c",
+              "type": "feature",
+              "name": "use-owner-packet.ts",
+              "path": "web/src/hooks/use-owner-packet.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
             {
-              "id": "feature:core-area-data-ts:6641a7b845",
-              "type": "feature",
-              "name": "core-area-data.ts",
-              "path": "web/src/features/departments/core-area-data.ts",
+              "id": "model:types-ts:1fce583d96",
+              "type": "model",
+              "name": "types.ts",
+              "path": "web/src/types.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -3602,10 +3554,10 @@
               "status": "verified"
             },
             {
-              "id": "function:tx:b82a9c769a",
+              "id": "function:herotopology:2abb6b4c04",
               "type": "function",
-              "name": "tx",
-              "path": "web/src/features/public/public-home.tsx#tx",
+              "name": "HeroTopology",
+              "path": "web/src/features/public/public-home.tsx#HeroTopology",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -3618,18 +3570,18 @@
               "status": "verified"
             },
             {
-              "id": "function:herotopology:2abb6b4c04",
-              "type": "function",
-              "name": "HeroTopology",
-              "path": "web/src/features/public/public-home.tsx#HeroTopology",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
               "id": "function:statusrail:76dbacfde4",
               "type": "function",
               "name": "StatusRail",
               "path": "web/src/features/public/public-home.tsx#StatusRail",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:tx:b82a9c769a",
+              "type": "function",
+              "name": "tx",
+              "path": "web/src/features/public/public-home.tsx#tx",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -3642,6 +3594,14 @@
               "status": "implemented"
             },
             {
+              "id": "function:recordpageerrors:53ebf51eb1",
+              "type": "test",
+              "name": "recordPageErrors",
+              "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#recordPageErrors",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:screenshot:9d3b11c315",
               "type": "test",
               "name": "screenshot",
@@ -3650,10 +3610,10 @@
               "status": "verified"
             },
             {
-              "id": "function:recordpageerrors:53ebf51eb1",
+              "id": "function:assertwithinroot:8c074d0178",
               "type": "test",
-              "name": "recordPageErrors",
-              "path": "scripts/luc-1063-account-access-set-owner-token-proof.mjs#recordPageErrors",
+              "name": "assertWithinRoot",
+              "path": "scripts/luc-998-dashboard-public-home-proof.mjs#assertWithinRoot",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -3674,6 +3634,14 @@
               "status": "verified"
             },
             {
+              "id": "function:nohorizontaloverflow:3e53ebf16c",
+              "type": "test",
+              "name": "noHorizontalOverflow",
+              "path": "scripts/luc-998-dashboard-public-home-proof.mjs#noHorizontalOverflow",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:recordheader:cd09d06762",
               "type": "test",
               "name": "recordHeader",
@@ -3682,26 +3650,10 @@
               "status": "verified"
             },
             {
-              "id": "function:assertwithinroot:8c074d0178",
+              "id": "function:run:7a019956e7",
               "type": "test",
-              "name": "assertWithinRoot",
-              "path": "scripts/luc-998-dashboard-public-home-proof.mjs#assertWithinRoot",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:servestatic:1e5ba4aa66",
-              "type": "test",
-              "name": "serveStatic",
-              "path": "scripts/luc-998-dashboard-public-home-proof.mjs#serveStatic",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:nohorizontaloverflow:3e53ebf16c",
-              "type": "test",
-              "name": "noHorizontalOverflow",
-              "path": "scripts/luc-998-dashboard-public-home-proof.mjs#noHorizontalOverflow",
+              "name": "run",
+              "path": "scripts/luc-998-dashboard-public-home-proof.mjs#run",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -3714,10 +3666,10 @@
               "status": "verified"
             },
             {
-              "id": "function:run:7a019956e7",
+              "id": "function:servestatic:1e5ba4aa66",
               "type": "test",
-              "name": "run",
-              "path": "scripts/luc-998-dashboard-public-home-proof.mjs#run",
+              "name": "serveStatic",
+              "path": "scripts/luc-998-dashboard-public-home-proof.mjs#serveStatic",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             }
@@ -3928,6 +3880,14 @@
               "status": "verified"
             },
             {
+              "id": "function:renderitem:b165a9df8a",
+              "type": "function",
+              "name": "renderItem",
+              "path": "web/src/components/cc-resource-selector.tsx#renderItem",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:toggleall:abdfbacd79",
               "type": "function",
               "name": "toggleAll",
@@ -3940,14 +3900,6 @@
               "type": "function",
               "name": "toggleItem",
               "path": "web/src/components/cc-resource-selector.tsx#toggleItem",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:renderitem:b165a9df8a",
-              "type": "function",
-              "name": "renderItem",
-              "path": "web/src/components/cc-resource-selector.tsx#renderItem",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -4096,18 +4048,18 @@
               "status": "verified"
             },
             {
-              "id": "function:ccfield:902776aa95",
-              "type": "function",
-              "name": "CcField",
-              "path": "web/src/components/cc-field.tsx#CcField",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
               "id": "component:cc-text-input-tsx:8a4c63b1b4",
               "type": "component",
               "name": "cc-text-input.tsx",
               "path": "web/src/components/cc-text-input.tsx",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:ccfield:902776aa95",
+              "type": "function",
+              "name": "CcField",
+              "path": "web/src/components/cc-field.tsx#CcField",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -4248,10 +4200,42 @@
               "status": "implemented"
             },
             {
-              "id": "api_endpoint:use-projects:2ab7f26357",
+              "id": "api_endpoint:use-agent-events:1b4c65ace9",
               "type": "api_endpoint",
-              "name": "USE /projects",
-              "path": "src/app.ts#/projects",
+              "name": "USE /agent-events",
+              "path": "src/app.ts#/agent-events",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "api_endpoint:use-agent-logs:fe1d6cbaa9",
+              "type": "api_endpoint",
+              "name": "USE /agent-logs",
+              "path": "src/app.ts#/agent-logs",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "api_endpoint:use-agents:1c136317c6",
+              "type": "api_endpoint",
+              "name": "USE /agents",
+              "path": "src/app.ts#/agents",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "api_endpoint:use-api-build-info:36fe7c3255",
+              "type": "api_endpoint",
+              "name": "USE /api/build-info",
+              "path": "src/app.ts#/api/build-info",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "api_endpoint:use-api-keys:d7553f1e44",
+              "type": "api_endpoint",
+              "name": "USE /api-keys",
+              "path": "src/app.ts#/api-keys",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -4264,10 +4248,18 @@
               "status": "verified"
             },
             {
-              "id": "api_endpoint:use-company-os:fb1b853293",
+              "id": "api_endpoint:use-auth:d272d61067",
               "type": "api_endpoint",
-              "name": "USE /company-os",
-              "path": "src/app.ts#/company-os",
+              "name": "USE /auth",
+              "path": "src/app.ts#/auth",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "api_endpoint:use-clients:da4494ab5d",
+              "type": "api_endpoint",
+              "name": "USE /clients",
+              "path": "src/app.ts#/clients",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -4280,10 +4272,34 @@
               "status": "verified"
             },
             {
+              "id": "api_endpoint:use-company-os:fb1b853293",
+              "type": "api_endpoint",
+              "name": "USE /company-os",
+              "path": "src/app.ts#/company-os",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "api_endpoint:use-connection:b52b509477",
               "type": "api_endpoint",
               "name": "USE /connection",
               "path": "src/app.ts#/connection",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "api_endpoint:use-deals:2ceaef3b27",
+              "type": "api_endpoint",
+              "name": "USE /deals",
+              "path": "src/app.ts#/deals",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "api_endpoint:use-decisions:b29cd45684",
+              "type": "api_endpoint",
+              "name": "USE /decisions",
+              "path": "src/app.ts#/decisions",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -4296,74 +4312,10 @@
               "status": "verified"
             },
             {
-              "id": "api_endpoint:use-workspaces:8d243549bd",
+              "id": "api_endpoint:use-events:679c33c90e",
               "type": "api_endpoint",
-              "name": "USE /workspaces",
-              "path": "src/app.ts#/workspaces",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-mcp:3055a10566",
-              "type": "api_endpoint",
-              "name": "USE /mcp",
-              "path": "src/app.ts#/mcp",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-operating-graph:90c17b9387",
-              "type": "api_endpoint",
-              "name": "USE /operating-graph",
-              "path": "src/app.ts#/operating-graph",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-operating-model:dcc5e71b5f",
-              "type": "api_endpoint",
-              "name": "USE /operating-model",
-              "path": "src/app.ts#/operating-model",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-operations:f4ce71f687",
-              "type": "api_endpoint",
-              "name": "USE /operations",
-              "path": "src/app.ts#/operations",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-workforce:a03aa869cd",
-              "type": "api_endpoint",
-              "name": "USE /workforce",
-              "path": "src/app.ts#/workforce",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-sales:0c7ec2cf8b",
-              "type": "api_endpoint",
-              "name": "USE /sales",
-              "path": "src/app.ts#/sales",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "api_endpoint:use-strategy:0ead398998",
-              "type": "api_endpoint",
-              "name": "USE /strategy",
-              "path": "src/app.ts#/strategy",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-goals:da30547c55",
-              "type": "api_endpoint",
-              "name": "USE /goals",
-              "path": "src/app.ts#/goals",
+              "name": "USE /events",
+              "path": "src/app.ts#/events",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             }
@@ -4558,14 +4510,6 @@
               "status": "verified"
             },
             {
-              "id": "function:hasfreshaccesstoken:beeb6487ae",
-              "type": "function",
-              "name": "hasFreshAccessToken",
-              "path": "src/integrations/google-drive/google-drive.auth.ts#hasFreshAccessToken",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
               "id": "function:getgoogledriveclientforworkspace:1d1d0eae6f",
               "type": "function",
               "name": "getGoogleDriveClientForWorkspace",
@@ -4590,6 +4534,14 @@
               "status": "verified"
             },
             {
+              "id": "function:hasfreshaccesstoken:beeb6487ae",
+              "type": "function",
+              "name": "hasFreshAccessToken",
+              "path": "src/integrations/google-drive/google-drive.auth.ts#hasFreshAccessToken",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:mergegoogledriveconfig:814153a3bb",
               "type": "function",
               "name": "mergeGoogleDriveConfig",
@@ -4606,6 +4558,14 @@
               "status": "verified"
             },
             {
+              "id": "function:parsegoogledriveoauthsecret:de301200ef",
+              "type": "function",
+              "name": "parseGoogleDriveOAuthSecret",
+              "path": "src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:postgoogleoauthtoken:aed8d79cd2",
               "type": "function",
               "name": "postGoogleOAuthToken",
@@ -4618,14 +4578,6 @@
               "type": "function",
               "name": "refreshGoogleDriveOAuth",
               "path": "src/integrations/google-drive/google-drive.auth.ts#refreshGoogleDriveOAuth",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:parsegoogledriveoauthsecret:de301200ef",
-              "type": "function",
-              "name": "parseGoogleDriveOAuthSecret",
-              "path": "src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -5680,8 +5632,8 @@
     },
     {
       "userFlow": "Trading operation",
-      "entityCount": 96,
-      "linkedRelationCount": 244,
+      "entityCount": 95,
+      "linkedRelationCount": 242,
       "layers": {
         "frontend": {
           "count": 3,
@@ -5960,7 +5912,7 @@
           "truncated": false
         },
         "worker": {
-          "count": 55,
+          "count": 54,
           "sample": [
             {
               "id": "module:src:13b5974e74",
@@ -6195,50 +6147,10 @@
               "status": "implemented"
             },
             {
-              "id": "document:runtime-error-index:d933cd85e9",
-              "type": "document",
-              "name": "Runtime Error Index",
-              "path": "docs/status/runtime-error-index.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
               "id": "feature:check-architecture-chain-integrity-mjs:6b9a42b230",
               "type": "feature",
               "name": "check-architecture-chain-integrity.mjs",
               "path": "scripts/check-architecture-chain-integrity.mjs",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:readtext:dbd59e708f",
-              "type": "function",
-              "name": "readText",
-              "path": "scripts/check-architecture-chain-integrity.mjs#readText",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:writetext:2c3fb19596",
-              "type": "function",
-              "name": "writeText",
-              "path": "scripts/check-architecture-chain-integrity.mjs#writeText",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:parsecsv:b25e401c01",
-              "type": "function",
-              "name": "parseCsv",
-              "path": "scripts/check-architecture-chain-integrity.mjs#parseCsv",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:splitids:7533974e11",
-              "type": "function",
-              "name": "splitIds",
-              "path": "scripts/check-architecture-chain-integrity.mjs#splitIds",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -6255,6 +6167,38 @@
               "type": "function",
               "name": "main",
               "path": "scripts/check-architecture-chain-integrity.mjs#main",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:parsecsv:b25e401c01",
+              "type": "function",
+              "name": "parseCsv",
+              "path": "scripts/check-architecture-chain-integrity.mjs#parseCsv",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:readtext:dbd59e708f",
+              "type": "function",
+              "name": "readText",
+              "path": "scripts/check-architecture-chain-integrity.mjs#readText",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:splitids:7533974e11",
+              "type": "function",
+              "name": "splitIds",
+              "path": "scripts/check-architecture-chain-integrity.mjs#splitIds",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:writetext:2c3fb19596",
+              "type": "function",
+              "name": "writeText",
+              "path": "scripts/check-architecture-chain-integrity.mjs#writeText",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -6339,18 +6283,18 @@
               "status": "verified"
             },
             {
-              "id": "agent:project-memory-index:8428fccaed",
+              "id": "agent:2026-07-20-luc-1527-module-confidence-update:0bb5cf3d41",
               "type": "agent",
-              "name": "Project Memory Index",
-              "path": ".agents/core/project-memory-index.md",
+              "name": "2026-07-20 LUC-1527 Module Confidence Update",
+              "path": ".agents/state/module-confidence-ledger.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
             {
-              "id": "agent:mission-control:86ecd445b8",
+              "id": "agent:2026-07-20-luc-1536-clickup-webhooks-packet-health-signal:5ba4a8552b",
               "type": "agent",
-              "name": "Mission Control",
-              "path": ".agents/core/mission-control.md",
+              "name": "2026-07-20 LUC-1536 ClickUp Webhooks Packet Health Signal",
+              "path": ".agents/state/system-health.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -6371,10 +6315,10 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-20-luc-1527-module-confidence-update:0bb5cf3d41",
+              "id": "agent:mission-control:86ecd445b8",
               "type": "agent",
-              "name": "2026-07-20 LUC-1527 Module Confidence Update",
-              "path": ".agents/state/module-confidence-ledger.md",
+              "name": "Mission Control",
+              "path": ".agents/core/mission-control.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -6387,10 +6331,10 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-20-luc-1536-clickup-webhooks-packet-health-signal:5ba4a8552b",
+              "id": "agent:project-memory-index:8428fccaed",
               "type": "agent",
-              "name": "2026-07-20 LUC-1536 ClickUp Webhooks Packet Health Signal",
-              "path": ".agents/state/system-health.md",
+              "name": "Project Memory Index",
+              "path": ".agents/core/project-memory-index.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -6485,8 +6429,8 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2989,
-      "linkedRelationCount": 8345,
+      "entityCount": 2985,
+      "linkedRelationCount": 8212,
       "layers": {
         "frontend": {
           "count": 85,
@@ -6578,14 +6522,6 @@
               "path": "docs/architecture/nodes/generated/PAGE-AUTO-0009.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
-            },
-            {
-              "id": "task:luc-998-dashboard-and-public-home-frontend-proof:d13d2bb165",
-              "type": "task",
-              "name": "LUC-998 Dashboard And Public Home Frontend Proof",
-              "path": ".codex/tasks/luc-998-dashboard-public-home-frontend-proof.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
             },
             {
               "id": "document:screen-quality-checklist:b71a2745a8",
@@ -6684,10 +6620,10 @@
               "status": "verified"
             },
             {
-              "id": "feature:use-owner-packet-ts:c11e3fd58c",
+              "id": "feature:department-labels-ts:a3930bf5aa",
               "type": "feature",
-              "name": "use-owner-packet.ts",
-              "path": "web/src/hooks/use-owner-packet.ts",
+              "name": "department-labels.ts",
+              "path": "web/src/features/departments/department-labels.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -6700,14 +6636,6 @@
               "status": "implemented"
             },
             {
-              "id": "model:types-ts:1fce583d96",
-              "type": "model",
-              "name": "types.ts",
-              "path": "web/src/types.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "feature:shared-tsx:fa310986ee",
               "type": "feature",
               "name": "shared.tsx",
@@ -6716,26 +6644,18 @@
               "status": "implemented"
             },
             {
-              "id": "feature:department-labels-ts:a3930bf5aa",
+              "id": "feature:use-owner-packet-ts:c11e3fd58c",
               "type": "feature",
-              "name": "department-labels.ts",
-              "path": "web/src/features/departments/department-labels.ts",
+              "name": "use-owner-packet.ts",
+              "path": "web/src/hooks/use-owner-packet.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
             {
-              "id": "function:departmentlabelkey:36e291c5c8",
-              "type": "function",
-              "name": "departmentLabelKey",
-              "path": "web/src/features/departments/department-labels.ts#departmentLabelKey",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:departmentlabel:d7a2347a4c",
-              "type": "function",
-              "name": "departmentLabel",
-              "path": "web/src/features/departments/department-labels.ts#departmentLabel",
+              "id": "model:types-ts:1fce583d96",
+              "type": "model",
+              "name": "types.ts",
+              "path": "web/src/types.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -6748,6 +6668,22 @@
               "status": "implemented"
             },
             {
+              "id": "function:departmentlabel:d7a2347a4c",
+              "type": "function",
+              "name": "departmentLabel",
+              "path": "web/src/features/departments/department-labels.ts#departmentLabel",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:departmentlabelkey:36e291c5c8",
+              "type": "function",
+              "name": "departmentLabelKey",
+              "path": "web/src/features/departments/department-labels.ts#departmentLabelKey",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
               "id": "component:cc-data-table-tsx:b40c218327",
               "type": "component",
               "name": "cc-data-table.tsx",
@@ -6756,26 +6692,10 @@
               "status": "verified"
             },
             {
-              "id": "function:summarygrid:6439e96e4b",
-              "type": "function",
-              "name": "SummaryGrid",
-              "path": "web/src/features/departments/shared.tsx#SummaryGrid",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "function:blockedactions:f70b3e170a",
               "type": "function",
               "name": "BlockedActions",
               "path": "web/src/features/departments/shared.tsx#BlockedActions",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:usetranslatedtablelabels:514d1daedd",
-              "type": "function",
-              "name": "useTranslatedTableLabels",
-              "path": "web/src/features/departments/shared.tsx#useTranslatedTableLabels",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -6788,18 +6708,26 @@
               "status": "implemented"
             },
             {
-              "id": "function:useownerpacket:8602fdd2a1",
+              "id": "function:summarygrid:6439e96e4b",
               "type": "function",
-              "name": "useOwnerPacket",
-              "path": "web/src/hooks/use-owner-packet.ts#useOwnerPacket",
+              "name": "SummaryGrid",
+              "path": "web/src/features/departments/shared.tsx#SummaryGrid",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
             {
-              "id": "function:readinitiallocale:06ac42685b",
+              "id": "function:usetranslatedtablelabels:514d1daedd",
               "type": "function",
-              "name": "readInitialLocale",
-              "path": "web/src/i18n/i18n.tsx#readInitialLocale",
+              "name": "useTranslatedTableLabels",
+              "path": "web/src/features/departments/shared.tsx#useTranslatedTableLabels",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:useownerpacket:8602fdd2a1",
+              "type": "function",
+              "name": "useOwnerPacket",
+              "path": "web/src/hooks/use-owner-packet.ts#useOwnerPacket",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -6812,6 +6740,14 @@
               "status": "implemented"
             },
             {
+              "id": "function:islocale:445940afa9",
+              "type": "function",
+              "name": "isLocale",
+              "path": "web/src/i18n/i18n.tsx#isLocale",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
               "id": "function:languageprovider:0ddddc0a3b",
               "type": "function",
               "name": "LanguageProvider",
@@ -6820,18 +6756,18 @@
               "status": "implemented"
             },
             {
-              "id": "function:uselanguage:a0595cd49c",
+              "id": "function:readinitiallocale:06ac42685b",
               "type": "function",
-              "name": "useLanguage",
-              "path": "web/src/i18n/i18n.tsx#useLanguage",
+              "name": "readInitialLocale",
+              "path": "web/src/i18n/i18n.tsx#readInitialLocale",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
             {
-              "id": "function:islocale:445940afa9",
+              "id": "function:uselanguage:a0595cd49c",
               "type": "function",
-              "name": "isLocale",
-              "path": "web/src/i18n/i18n.tsx#isLocale",
+              "name": "useLanguage",
+              "path": "web/src/i18n/i18n.tsx#useLanguage",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -6884,14 +6820,6 @@
               "status": "implemented"
             },
             {
-              "id": "function:tx:72fbe68ca9",
-              "type": "function",
-              "name": "tx",
-              "path": "web/src/layout/public-layout.tsx#tx",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "function:logomark:1257e8f51d",
               "type": "function",
               "name": "LogoMark",
@@ -6908,10 +6836,10 @@
               "status": "implemented"
             },
             {
-              "id": "function:displaydepartmentlabel:0450f1f76c",
+              "id": "function:tx:72fbe68ca9",
               "type": "function",
-              "name": "displayDepartmentLabel",
-              "path": "web/src/layout/shell.tsx#displayDepartmentLabel",
+              "name": "tx",
+              "path": "web/src/layout/public-layout.tsx#tx",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -6932,10 +6860,10 @@
               "status": "implemented"
             },
             {
-              "id": "function:shell:2ad99cbf04",
+              "id": "function:displaydepartmentlabel:0450f1f76c",
               "type": "function",
-              "name": "Shell",
-              "path": "web/src/layout/shell.tsx#Shell",
+              "name": "displayDepartmentLabel",
+              "path": "web/src/layout/shell.tsx#displayDepartmentLabel",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -6948,10 +6876,10 @@
               "status": "implemented"
             },
             {
-              "id": "function:currentareakey:19def3c5dd",
+              "id": "function:shell:2ad99cbf04",
               "type": "function",
-              "name": "currentAreaKey",
-              "path": "web/src/main.tsx#currentAreaKey",
+              "name": "Shell",
+              "path": "web/src/layout/shell.tsx#Shell",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -6960,6 +6888,14 @@
               "type": "function",
               "name": "App",
               "path": "web/src/main.tsx#App",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:currentareakey:19def3c5dd",
+              "type": "function",
+              "name": "currentAreaKey",
+              "path": "web/src/main.tsx#currentAreaKey",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -7060,18 +6996,10 @@
               "status": "implemented"
             },
             {
-              "id": "document:generaldashboard-component:8d09180e87",
+              "id": "document:account-settings:d3a7a298ae",
               "type": "document",
-              "name": "GeneralDashboard component",
-              "path": "docs/architecture/nodes/generated/COMP-GENERAL-DASHBOARD.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:authenticated-shell-component:a65936ca97",
-              "type": "document",
-              "name": "Authenticated Shell component",
-              "path": "docs/architecture/nodes/generated/COMP-SHELL.md",
+              "name": "/account/settings",
+              "path": "docs/architecture/nodes/generated/PAGE-AUTO-0001.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
             },
@@ -7080,14 +7008,6 @@
               "type": "document",
               "name": "/areas?area=00-ogolny&view=overview",
               "path": "docs/architecture/nodes/generated/PAGE-00-GENERAL.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:account-settings:d3a7a298ae",
-              "type": "document",
-              "name": "/account/settings",
-              "path": "docs/architecture/nodes/generated/PAGE-AUTO-0001.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
             },
@@ -7108,6 +7028,22 @@
               "status": "implemented"
             },
             {
+              "id": "document:authenticated-shell-component:a65936ca97",
+              "type": "document",
+              "name": "Authenticated Shell component",
+              "path": "docs/architecture/nodes/generated/COMP-SHELL.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:cc-ui-001-shared-component-inventory:6cb375d48f",
+              "type": "document",
+              "name": "CC-UI-001 Shared Component Inventory",
+              "path": "docs/planning/cc-ui-001-shared-component-inventory.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
               "id": "document:dashboard:af351ec215",
               "type": "document",
               "name": "/dashboard",
@@ -7116,18 +7052,26 @@
               "status": "implemented"
             },
             {
-              "id": "document:react-dashboard:6897249b22",
+              "id": "document:generaldashboard-component:8d09180e87",
               "type": "document",
-              "name": "/react-dashboard",
-              "path": "docs/architecture/nodes/generated/PAGE-AUTO-0008.md",
+              "name": "GeneralDashboard component",
+              "path": "docs/architecture/nodes/generated/COMP-GENERAL-DASHBOARD.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
             },
             {
-              "id": "document:workspace-settings:a000b47011",
+              "id": "document:luc-6156-frontend-browser-evidence-link-curation:7a94c7caf7",
               "type": "document",
-              "name": "/workspace/settings",
-              "path": "docs/architecture/nodes/generated/PAGE-AUTO-0010.md",
+              "name": "LUC-6156 Frontend Browser Evidence Link Curation",
+              "path": "docs/planning/luc-6156-frontend-browser-evidence-link-curation.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "document:react-dashboard:6897249b22",
+              "type": "document",
+              "name": "/react-dashboard",
+              "path": "docs/architecture/nodes/generated/PAGE-AUTO-0008.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
             }
@@ -7226,78 +7170,6 @@
               "status": "verified"
             },
             {
-              "id": "api_endpoint:use-api-build-info:36fe7c3255",
-              "type": "api_endpoint",
-              "name": "USE /api/build-info",
-              "path": "src/app.ts#/api/build-info",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-health:8aa829ec00",
-              "type": "api_endpoint",
-              "name": "USE /health",
-              "path": "src/app.ts#/health",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-v1-health:145d12bca3",
-              "type": "api_endpoint",
-              "name": "USE /v1/health",
-              "path": "src/app.ts#/v1/health",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-v1-ready:035c4febde",
-              "type": "api_endpoint",
-              "name": "USE /v1/ready",
-              "path": "src/app.ts#/v1/ready",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-v1-webhooks-clickup:61d965c5ad",
-              "type": "api_endpoint",
-              "name": "USE /v1/webhooks/clickup",
-              "path": "src/app.ts#/v1/webhooks/clickup",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-connection:b52b509477",
-              "type": "api_endpoint",
-              "name": "USE /connection",
-              "path": "src/app.ts#/connection",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-intake:3c22276373",
-              "type": "api_endpoint",
-              "name": "USE /intake",
-              "path": "src/app.ts#/intake",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-integration-settings:7da089bd2f",
-              "type": "api_endpoint",
-              "name": "USE /integration-settings",
-              "path": "src/app.ts#/integration-settings",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-workforce:a03aa869cd",
-              "type": "api_endpoint",
-              "name": "USE /workforce",
-              "path": "src/app.ts#/workforce",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
               "id": "api_endpoint:use-agents:1c136317c6",
               "type": "api_endpoint",
               "name": "USE /agents",
@@ -7306,10 +7178,26 @@
               "status": "verified"
             },
             {
+              "id": "api_endpoint:use-api-build-info:36fe7c3255",
+              "type": "api_endpoint",
+              "name": "USE /api/build-info",
+              "path": "src/app.ts#/api/build-info",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "api_endpoint:use-clients:da4494ab5d",
               "type": "api_endpoint",
               "name": "USE /clients",
               "path": "src/app.ts#/clients",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "api_endpoint:use-connection:b52b509477",
+              "type": "api_endpoint",
+              "name": "USE /connection",
+              "path": "src/app.ts#/connection",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -7354,6 +7242,30 @@
               "status": "verified"
             },
             {
+              "id": "api_endpoint:use-health:8aa829ec00",
+              "type": "api_endpoint",
+              "name": "USE /health",
+              "path": "src/app.ts#/health",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "api_endpoint:use-intake:3c22276373",
+              "type": "api_endpoint",
+              "name": "USE /intake",
+              "path": "src/app.ts#/intake",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "api_endpoint:use-integration-settings:7da089bd2f",
+              "type": "api_endpoint",
+              "name": "USE /integration-settings",
+              "path": "src/app.ts#/integration-settings",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "api_endpoint:use-interactions:eb228af9f5",
               "type": "api_endpoint",
               "name": "USE /interactions",
@@ -7370,14 +7282,6 @@
               "status": "verified"
             },
             {
-              "id": "api_endpoint:use-operating-graph:90c17b9387",
-              "type": "api_endpoint",
-              "name": "USE /operating-graph",
-              "path": "src/app.ts#/operating-graph",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
               "id": "api_endpoint:use-notes:c833b4443f",
               "type": "api_endpoint",
               "name": "USE /notes",
@@ -7386,26 +7290,42 @@
               "status": "verified"
             },
             {
-              "id": "function:authactor:b3f790a259",
-              "type": "function",
-              "name": "authActor",
-              "path": "src/modules/intake/intake.routes.ts#authActor",
+              "id": "api_endpoint:use-operating-graph:90c17b9387",
+              "type": "api_endpoint",
+              "name": "USE /operating-graph",
+              "path": "src/app.ts#/operating-graph",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
             {
-              "id": "function:authactor:8f0ce27a64",
-              "type": "function",
-              "name": "authActor",
-              "path": "src/modules/company-os/workflow-definition-drafts.routes.ts#authActor",
+              "id": "api_endpoint:use-v1-health:145d12bca3",
+              "type": "api_endpoint",
+              "name": "USE /v1/health",
+              "path": "src/app.ts#/v1/health",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
             {
-              "id": "function:requireuserauth:215e610fd9",
-              "type": "function",
-              "name": "requireUserAuth",
-              "path": "src/modules/workspaces/workspaces.routes.ts#requireUserAuth",
+              "id": "api_endpoint:use-v1-ready:035c4febde",
+              "type": "api_endpoint",
+              "name": "USE /v1/ready",
+              "path": "src/app.ts#/v1/ready",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "api_endpoint:use-v1-webhooks-clickup:61d965c5ad",
+              "type": "api_endpoint",
+              "name": "USE /v1/webhooks/clickup",
+              "path": "src/app.ts#/v1/webhooks/clickup",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "api_endpoint:use-workforce:a03aa869cd",
+              "type": "api_endpoint",
+              "name": "USE /workforce",
+              "path": "src/app.ts#/workforce",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -7418,18 +7338,42 @@
               "status": "verified"
             },
             {
-              "id": "function:ownertoken:cff9bd9e05",
-              "type": "function",
-              "name": "ownerToken",
-              "path": "web/src/api/auth-token.ts#ownerToken",
+              "id": "feature:dashboard-routes-ts:cb24115ec5",
+              "type": "feature",
+              "name": "dashboard.routes.ts",
+              "path": "src/modules/dashboard/dashboard.routes.ts",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
             {
-              "id": "function:setownertoken:7303fbe684",
+              "id": "feature:strategy-routes-ts:cedc4e61d8",
+              "type": "feature",
+              "name": "strategy.routes.ts",
+              "path": "src/modules/strategy/strategy.routes.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:asjsonarray:b4688e6d13",
               "type": "function",
-              "name": "setOwnerToken",
-              "path": "web/src/api/auth-token.ts#setOwnerToken",
+              "name": "asJsonArray",
+              "path": "src/modules/strategy/strategy.routes.ts#asJsonArray",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:authactor:8f0ce27a64",
+              "type": "function",
+              "name": "authActor",
+              "path": "src/modules/company-os/workflow-definition-drafts.routes.ts#authActor",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:authactor:b3f790a259",
+              "type": "function",
+              "name": "authActor",
+              "path": "src/modules/intake/intake.routes.ts#authActor",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -7442,6 +7386,14 @@
               "status": "verified"
             },
             {
+              "id": "function:coercecount:f105944c04",
+              "type": "function",
+              "name": "coerceCount",
+              "path": "src/modules/dashboard/dashboard.routes.ts#coerceCount",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:issignedin:ca7bd93172",
               "type": "function",
               "name": "isSignedIn",
@@ -7450,26 +7402,10 @@
               "status": "verified"
             },
             {
-              "id": "module:src-modules-dashboard:371b871372",
-              "type": "module",
-              "name": "src/modules/dashboard",
-              "path": "src/modules/dashboard",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "feature:dashboard-routes-ts:cb24115ec5",
-              "type": "feature",
-              "name": "dashboard.routes.ts",
-              "path": "src/modules/dashboard/dashboard.routes.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:coercecount:f105944c04",
+              "id": "function:ownertoken:cff9bd9e05",
               "type": "function",
-              "name": "coerceCount",
-              "path": "src/modules/dashboard/dashboard.routes.ts#coerceCount",
+              "name": "ownerToken",
+              "path": "web/src/api/auth-token.ts#ownerToken",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -7482,10 +7418,26 @@
               "status": "verified"
             },
             {
+              "id": "function:requireuserauth:215e610fd9",
+              "type": "function",
+              "name": "requireUserAuth",
+              "path": "src/modules/workspaces/workspaces.routes.ts#requireUserAuth",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "function:riskrank:b7e74a6224",
               "type": "function",
               "name": "riskRank",
               "path": "src/modules/dashboard/dashboard.routes.ts#riskRank",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "function:setownertoken:7303fbe684",
+              "type": "function",
+              "name": "setOwnerToken",
+              "path": "web/src/api/auth-token.ts#setOwnerToken",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -7514,18 +7466,10 @@
               "status": "verified"
             },
             {
-              "id": "feature:strategy-routes-ts:cedc4e61d8",
-              "type": "feature",
-              "name": "strategy.routes.ts",
-              "path": "src/modules/strategy/strategy.routes.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:asjsonarray:b4688e6d13",
+              "id": "function:tasklooksstrategic:830e2f3cd4",
               "type": "function",
-              "name": "asJsonArray",
-              "path": "src/modules/strategy/strategy.routes.ts#asJsonArray",
+              "name": "taskLooksStrategic",
+              "path": "src/modules/strategy/strategy.routes.ts#taskLooksStrategic",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -7538,10 +7482,10 @@
               "status": "verified"
             },
             {
-              "id": "function:tasklooksstrategic:830e2f3cd4",
-              "type": "function",
-              "name": "taskLooksStrategic",
-              "path": "src/modules/strategy/strategy.routes.ts#taskLooksStrategic",
+              "id": "module:src-modules-dashboard:371b871372",
+              "type": "module",
+              "name": "src/modules/dashboard",
+              "path": "src/modules/dashboard",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -7722,14 +7666,6 @@
               "status": "verified"
             },
             {
-              "id": "function:routemodule:a757884098",
-              "type": "function",
-              "name": "routeModule",
-              "path": "scripts/backfill-architecture-nodes.mjs#routeModule",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "function:routefilepath:35cd6446ad",
               "type": "function",
               "name": "routeFilePath",
@@ -7738,18 +7674,18 @@
               "status": "implemented"
             },
             {
-              "id": "feature:check-route-capabilities-mjs:d574fd7464",
-              "type": "feature",
-              "name": "check-route-capabilities.mjs",
-              "path": "scripts/check-route-capabilities.mjs",
+              "id": "function:routemodule:a757884098",
+              "type": "function",
+              "name": "routeModule",
+              "path": "scripts/backfill-architecture-nodes.mjs#routeModule",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
             {
-              "id": "function:walk:5bea6a2902",
-              "type": "function",
-              "name": "walk",
-              "path": "scripts/check-route-capabilities.mjs#walk",
+              "id": "feature:check-route-capabilities-mjs:d574fd7464",
+              "type": "feature",
+              "name": "check-route-capabilities.mjs",
+              "path": "scripts/check-route-capabilities.mjs",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -7766,6 +7702,14 @@
               "type": "function",
               "name": "routePattern",
               "path": "scripts/check-route-capabilities.mjs#routePattern",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:walk:5bea6a2902",
+              "type": "function",
+              "name": "walk",
+              "path": "scripts/check-route-capabilities.mjs#walk",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -8459,14 +8403,6 @@
               "status": "implemented"
             },
             {
-              "id": "document:playwright-dashboard-render-proof:ae54215ed1",
-              "type": "document",
-              "name": "Playwright dashboard render proof",
-              "path": "docs/architecture/nodes/generated/TEST-PLAYWRIGHT-DASHBOARD.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
               "id": "document:luc-137-account-access-registerowner-proof-link:66e93ff64a",
               "type": "test",
               "name": "LUC-137 Account Access RegisterOwner Proof Link",
@@ -8497,12 +8433,20 @@
               "path": "docs/planning/luc-85-account-access-authheaders-proof-link.md",
               "owner": "Docs Memory Lead",
               "status": "verified"
+            },
+            {
+              "id": "document:playwright-dashboard-render-proof:ae54215ed1",
+              "type": "document",
+              "name": "Playwright dashboard render proof",
+              "path": "docs/architecture/nodes/generated/TEST-PLAYWRIGHT-DASHBOARD.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
             }
           ],
           "truncated": false
         },
         "docs": {
-          "count": 1389,
+          "count": 1385,
           "sample": [
             {
               "id": "document:get-v1-finance-context:db0b7f023e",
@@ -9194,14 +9138,6 @@
               "status": "verified"
             },
             {
-              "id": "feature:use-owner-packet-ts:c11e3fd58c",
-              "type": "feature",
-              "name": "use-owner-packet.ts",
-              "path": "web/src/hooks/use-owner-packet.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "feature:i18n-tsx:5f76f3f99d",
               "type": "feature",
               "name": "i18n.tsx",
@@ -9214,6 +9150,14 @@
               "type": "feature",
               "name": "shell.tsx",
               "path": "web/src/layout/shell.tsx",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "feature:use-owner-packet-ts:c11e3fd58c",
+              "type": "feature",
+              "name": "use-owner-packet.ts",
+              "path": "web/src/hooks/use-owner-packet.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -9288,10 +9232,10 @@
               "status": "implemented"
             },
             {
-              "id": "function:safeintegrationsetting:b59e0a179f",
+              "id": "function:comparefolders:a07008fa99",
               "type": "function",
-              "name": "safeIntegrationSetting",
-              "path": "src/modules/integration-settings/integration-settings.routes.ts#safeIntegrationSetting",
+              "name": "compareFolders",
+              "path": "src/modules/integration-settings/integration-settings.routes.ts#compareFolders",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -9304,10 +9248,10 @@
               "status": "implemented"
             },
             {
-              "id": "function:comparefolders:a07008fa99",
+              "id": "function:safeintegrationsetting:b59e0a179f",
               "type": "function",
-              "name": "compareFolders",
-              "path": "src/modules/integration-settings/integration-settings.routes.ts#compareFolders",
+              "name": "safeIntegrationSetting",
+              "path": "src/modules/integration-settings/integration-settings.routes.ts#safeIntegrationSetting",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -9328,34 +9272,10 @@
               "status": "implemented"
             },
             {
-              "id": "function:settingrow:3ccfe93462",
+              "id": "function:accountsettingsroute:c66143e842",
               "type": "function",
-              "name": "SettingRow",
-              "path": "web/src/features/settings/settings-routes.tsx#SettingRow",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:safeconfigkeys:d6716121f9",
-              "type": "function",
-              "name": "safeConfigKeys",
-              "path": "web/src/features/settings/settings-routes.tsx#safeConfigKeys",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:useintegrationsetting:e151b27570",
-              "type": "function",
-              "name": "useIntegrationSetting",
-              "path": "web/src/features/settings/settings-routes.tsx#useIntegrationSetting",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:statusbadge:be7577db8d",
-              "type": "function",
-              "name": "StatusBadge",
-              "path": "web/src/features/settings/settings-routes.tsx#StatusBadge",
+              "name": "AccountSettingsRoute",
+              "path": "web/src/features/settings/settings-routes.tsx#AccountSettingsRoute",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -9368,10 +9288,34 @@
               "status": "implemented"
             },
             {
-              "id": "function:accountsettingsroute:c66143e842",
+              "id": "function:safeconfigkeys:d6716121f9",
               "type": "function",
-              "name": "AccountSettingsRoute",
-              "path": "web/src/features/settings/settings-routes.tsx#AccountSettingsRoute",
+              "name": "safeConfigKeys",
+              "path": "web/src/features/settings/settings-routes.tsx#safeConfigKeys",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:settingrow:3ccfe93462",
+              "type": "function",
+              "name": "SettingRow",
+              "path": "web/src/features/settings/settings-routes.tsx#SettingRow",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:statusbadge:be7577db8d",
+              "type": "function",
+              "name": "StatusBadge",
+              "path": "web/src/features/settings/settings-routes.tsx#StatusBadge",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:useintegrationsetting:e151b27570",
+              "type": "function",
+              "name": "useIntegrationSetting",
+              "path": "web/src/features/settings/settings-routes.tsx#useIntegrationSetting",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -9384,18 +9328,18 @@
               "status": "implemented"
             },
             {
-              "id": "route:client-ts:3849b0a7cf",
-              "type": "feature",
-              "name": "client.ts",
-              "path": "web/src/api/client.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
               "id": "component:cc-notice-tsx:9eefa3dd0b",
               "type": "component",
               "name": "cc-notice.tsx",
               "path": "web/src/components/cc-notice.tsx",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "route:client-ts:3849b0a7cf",
+              "type": "feature",
+              "name": "client.ts",
+              "path": "web/src/api/client.ts",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -9454,14 +9398,6 @@
               "status": "implemented"
             },
             {
-              "id": "function:splitcsv:84e77da247",
-              "type": "function",
-              "name": "splitCsv",
-              "path": "src/config/env.ts#splitCsv",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "function:firstenv:cf8dd453c4",
               "type": "function",
               "name": "firstEnv",
@@ -9470,18 +9406,10 @@
               "status": "implemented"
             },
             {
-              "id": "function:requireproductionvalue:1218658c38",
+              "id": "function:getapihostnames:bafbdbb46c",
               "type": "function",
-              "name": "requireProductionValue",
-              "path": "src/config/env.ts#requireProductionValue",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:requireproductionsecret:528acec142",
-              "type": "function",
-              "name": "requireProductionSecret",
-              "path": "src/config/env.ts#requireProductionSecret",
+              "name": "getApiHostnames",
+              "path": "src/config/env.ts#getApiHostnames",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -9494,10 +9422,26 @@
               "status": "implemented"
             },
             {
-              "id": "function:getapihostnames:bafbdbb46c",
+              "id": "function:requireproductionsecret:528acec142",
               "type": "function",
-              "name": "getApiHostnames",
-              "path": "src/config/env.ts#getApiHostnames",
+              "name": "requireProductionSecret",
+              "path": "src/config/env.ts#requireProductionSecret",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:requireproductionvalue:1218658c38",
+              "type": "function",
+              "name": "requireProductionValue",
+              "path": "src/config/env.ts#requireProductionValue",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:splitcsv:84e77da247",
+              "type": "function",
+              "name": "splitCsv",
+              "path": "src/config/env.ts#splitCsv",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -9558,10 +9502,10 @@
               "status": "verified"
             },
             {
-              "id": "feature:prisma-ts:dafac5460d",
+              "id": "feature:async-handler-ts:d4ef00961e",
               "type": "feature",
-              "name": "prisma.ts",
-              "path": "src/db/prisma.ts",
+              "name": "async-handler.ts",
+              "path": "src/middleware/async-handler.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -9570,6 +9514,14 @@
               "type": "feature",
               "name": "clickup.client.ts",
               "path": "src/integrations/clickup/clickup.client.ts",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "feature:clickup-structure-ts:6e1fb65c0f",
+              "type": "feature",
+              "name": "clickup-structure.ts",
+              "path": "src/operating-model/clickup-structure.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -9598,18 +9550,10 @@
               "status": "verified"
             },
             {
-              "id": "feature:async-handler-ts:d4ef00961e",
+              "id": "feature:prisma-ts:dafac5460d",
               "type": "feature",
-              "name": "async-handler.ts",
-              "path": "src/middleware/async-handler.ts",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "feature:clickup-structure-ts:6e1fb65c0f",
-              "type": "feature",
-              "name": "clickup-structure.ts",
-              "path": "src/operating-model/clickup-structure.ts",
+              "name": "prisma.ts",
+              "path": "src/db/prisma.ts",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -9758,18 +9702,18 @@
               "status": "verified"
             },
             {
-              "id": "agent:project-memory-index:8428fccaed",
-              "type": "agent",
-              "name": "Project Memory Index",
-              "path": ".agents/core/project-memory-index.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "agent:2026-07-20-luc-1527-module-confidence-update:0bb5cf3d41",
               "type": "agent",
               "name": "2026-07-20 LUC-1527 Module Confidence Update",
               "path": ".agents/state/module-confidence-ledger.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "agent:project-memory-index:8428fccaed",
+              "type": "agent",
+              "name": "Project Memory Index",
+              "path": ".agents/core/project-memory-index.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
