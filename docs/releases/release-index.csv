@@ -1,2 +1,2 @@
 Release,Status,Target environment,SHA,Scope,Validation evidence,Release evidence,Risks,Owner,Date,Notes
-v0.1,planned,stage,,Example scope,,,,Owner,YYYY-MM-DD,Example only.
+v1.0,conditional_guided_sale_ready,manual_vps_and_local_guided_runtime,,Guided owner-operated sale or pilot with supervised or read-only agent boundaries,docs/status/app-completion-index.md; docs/security/security-baseline.md,docs/releases/roost-v1-0-sale-readiness-contract.md; docs/releases/roost-v1-0-gap-register.md,Hosted canary still open; auto-deploy still accepted deferral,Roost Product Manager,2026-07-23,Do not market as self-serve SaaS or hosted Paperclip V1.

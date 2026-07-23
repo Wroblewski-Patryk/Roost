@@ -1,5 +1,15 @@
 # Current Focus
 
+## LUC-1788 Sale-Readiness Contract
+
+- 2026-07-23: [LUC-1788](/LUC/issues/LUC-1788) is now the active Roost PM
+  coordination lane. Roost generated truth is currently zero-gap, so the work
+  is not another implementation proof wave. The live objective is to keep one
+  canonical v1.0 readiness answer in
+  `docs/releases/roost-v1-0-sale-readiness-contract.md` and one small active
+  follow-up list in `docs/releases/roost-v1-0-gap-register.md`, then route
+  only the remaining cross-role proof lanes.
+
 ## LUC-1585 Recovery Note
 
 - 2026-07-21: [LUC-1585](/LUC/issues/LUC-1585) recovered the missing next-step

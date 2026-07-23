@@ -1,5 +1,25 @@
 # Active Mission Packet
 
+## LUC-1788 Mission Packet
+
+- 2026-07-23: [LUC-1788](/LUC/issues/LUC-1788) supersedes the stale recovery
+  posture as the active Roost PM mission. Current fact: generated app
+  completion is already zero-gap, so this mission is documentation/release
+  governance, not another generic implementation proof wave.
+- Mission objective: publish the versioned Roost v1.0 sale-readiness and
+  knowledge-plane contract from current evidence, then delegate only the real
+  remaining cross-role follow-up lanes.
+- Current canonical outputs:
+  `docs/releases/roost-v1-0-sale-readiness-contract.md`,
+  `docs/releases/roost-v1-0-gap-register.md`, and the task packet
+  `.codex/tasks/luc-1788-roost-v1-sale-readiness-and-knowledge-plane-contract.md`.
+- Included scope: product/release baseline, readiness classification,
+  gap-register publication, state-memory refresh, and child issue creation for
+  any remaining hosted/ops proof lane.
+- Explicit exclusions: runtime feature changes, provider-write expansion,
+  hosted Paperclip V1 activation, self-serve commercialization, and broad
+  autonomous company operations.
+
 ## LUC-1545 Routing Packet
 
 - 2026-07-20: [LUC-1545](/LUC/issues/LUC-1545) resumed after the delegated

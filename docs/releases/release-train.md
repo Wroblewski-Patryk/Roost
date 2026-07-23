@@ -1,6 +1,6 @@
 # Release Train
 
-Last updated: YYYY-MM-DD
+Last updated: 2026-07-23
 
 ## Purpose
 
@@ -14,7 +14,7 @@ scope -> freeze -> validation -> release -> smoke -> evidence -> follow-up
 
 | Release | Scope status | Freeze date | Target date | Status | Evidence |
 | --- | --- | --- | --- | --- | --- |
-| v0.1 | draft |  |  | planned |  |
+| v1.0 | explicit | 2026-07-23 | 2026-07-23 | conditional_guided_sale_ready | `docs/releases/roost-v1-0-sale-readiness-contract.md`; `docs/releases/roost-v1-0-gap-register.md`; `docs/status/app-completion-index.md` |
 
 ## Gates
 

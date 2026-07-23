@@ -1,5 +1,17 @@
 # PROJECT_STATE
 
+- 2026-07-23: [LUC-1788](/LUC/issues/LUC-1788) established the canonical
+  Roost v1.0 sale-readiness and knowledge-plane contract. Source-of-truth
+  outputs: `docs/releases/roost-v1-0-sale-readiness-contract.md`,
+  `docs/releases/roost-v1-0-gap-register.md`, and
+  `.codex/tasks/luc-1788-roost-v1-sale-readiness-and-knowledge-plane-contract.md`.
+  Current fact: generated app-completion is zero-gap as of 2026-07-21, so
+  Roost is classified as `conditional_guided_sale_ready` for guided
+  owner-operated rollout with scoped API/MCP access and a read-oriented
+  knowledge-plane boundary. Hosted read-only canary proof remains separately
+  gated; auto-deploy remains an accepted ops deferral; external upstream agent
+  source merge remains a non-blocking external issue.
+
 - 2026-07-23: [LUC-1584](/LUC/issues/LUC-1584) recovery/productivity
   disposition was superseded by the board operator. [LUC-1545](/LUC/issues/LUC-1545)
   is done, Roost truth is zero-gap, and no recovery child remains necessary.

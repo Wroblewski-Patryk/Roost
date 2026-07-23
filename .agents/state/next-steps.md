@@ -1,4 +1,12 @@
 # Next Steps
+- 2026-07-23: [LUC-1788](/LUC/issues/LUC-1788) established the canonical
+  Roost v1.0 readiness answer in
+  `docs/releases/roost-v1-0-sale-readiness-contract.md`. The next live step is
+  not another generic proof-link lane. It is the separately gated hosted
+  read-only canary recorded as `SR-001` in
+  `docs/releases/roost-v1-0-gap-register.md` and delegated to
+  [LUC-1799](/LUC/issues/LUC-1799), plus any later ops-only auto-deploy proof
+  if the release path changes.
 - 2026-07-23: [LUC-1584](/LUC/issues/LUC-1584) was superseded by the board
   operator. [LUC-1545](/LUC/issues/LUC-1545) is already done, Roost truth is
   zero-gap, and no recovery child remains necessary. Do not reopen

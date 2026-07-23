@@ -1,3 +1,4 @@
+| ROOST-REL-001 | Roost release readiness | v1.0 sale-readiness and knowledge-plane contract | P1 | VERIFIED | High | `docs/releases/roost-v1-0-sale-readiness-contract.md` now provides the canonical Roost v1.0 readiness answer: app-completion is zero-gap as of 2026-07-21, the workspace/API/MCP/knowledge-plane boundary is explicitly bounded, manual rollout is proven, and hosted/autonomous expansion paths are separately gated. `docs/releases/roost-v1-0-gap-register.md` keeps only three evidence-backed follow-ups. | Hosted read-only canary and auto-deploy proof remain outside this issue; they are not needed to keep the contract itself truthful. | Revisit this row only when the hosted read-only canary or a broader commercialization decision materially changes the sale boundary. | Product Manager + Ops/QA | 2026-07-23 |
 # 2026-07-20 LUC-1527 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

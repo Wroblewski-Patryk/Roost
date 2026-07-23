@@ -1,11 +1,29 @@
 # TASK_BOARD
 
 ## Disposition Note
+- 2026-07-23: [LUC-1788](/LUC/issues/LUC-1788) establishes the canonical
+  Roost v1.0 sale-readiness and knowledge-plane contract. Use
+  `docs/releases/roost-v1-0-sale-readiness-contract.md` and
+  `docs/releases/roost-v1-0-gap-register.md` before reopening any generic
+  "is Roost ready?" or "what is left?" lane.
 - 2026-07-23: [LUC-1584](/LUC/issues/LUC-1584) was superseded by the board
   operator. Keep [LUC-1545](/LUC/issues/LUC-1545) closed and do not reopen
   [LUC-1585](/LUC/issues/LUC-1585) as a recovery lane.
 
 ## Now
+- 2026-07-23: [LUC-1788](/LUC/issues/LUC-1788) Roost v1.0 sale-readiness and
+  knowledge-plane contract publication is in progress. Task contract:
+  `.codex/tasks/luc-1788-roost-v1-sale-readiness-and-knowledge-plane-contract.md`.
+  Current evidence: `docs/releases/roost-v1-0-sale-readiness-contract.md`
+  classifies Roost as `conditional_guided_sale_ready`, anchored to the
+  zero-gap `docs/status/app-completion-index.md` generated 2026-07-21 plus the
+  current architecture, security, MCP, Drive-import, and manual rollout
+  contracts; `docs/releases/roost-v1-0-gap-register.md` keeps only three
+  evidence-backed follow-ups (`SR-001` hosted read-only canary open as
+  [LUC-1799](/LUC/issues/LUC-1799),
+  `SR-002` auto-deploy accepted deferral, `SR-003` upstream source merge
+  external/non-blocking); release/product baseline docs now point to the same
+  boundary. Remaining step: close the parent issue with evidence.
 - 2026-07-20: [LUC-1536](/LUC/issues/LUC-1536) unclassified
   `src/app.ts#/v1/webhooks/clickup` missing-test-link verification is
   complete locally. Task contract:
