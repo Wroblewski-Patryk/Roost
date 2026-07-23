@@ -1,9 +1,9 @@
 # Next Steps
-- 2026-07-21: [LUC-1585](/LUC/issues/LUC-1585) recovered the missing
-  next-step disposition for [LUC-1584](/LUC/issues/LUC-1584). Continue from
-  the live path already in state: [LUC-1545](/LUC/issues/LUC-1545) active
-  coordination, then [LUC-1548](/LUC/issues/LUC-1548) dirty-packet
-  classification. Do not open a duplicate repair lane from this recovery.
+- 2026-07-23: [LUC-1584](/LUC/issues/LUC-1584) was superseded by the board
+  operator. [LUC-1545](/LUC/issues/LUC-1545) is already done, Roost truth is
+  zero-gap, and no recovery child remains necessary. Do not reopen
+  [LUC-1585](/LUC/issues/LUC-1585) or create a duplicate repair lane from
+  this disposition.
 - 2026-07-20: [LUC-1545](/LUC/issues/LUC-1545) now has three live QVE
   verification children:
   [LUC-1550](/LUC/issues/LUC-1550) `/integration-settings`,

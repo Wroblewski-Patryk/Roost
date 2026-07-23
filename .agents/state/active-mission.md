@@ -14,6 +14,10 @@
   of [LUC-1385](/LUC/issues/LUC-1385); no blind promotion is legal.
 - 2026-07-21: [LUC-1551](/LUC/issues/LUC-1551) closed the `src/app.ts#/workforce`
   proof-link gap. The next routed QA gap is now `src/app.ts#/workspaces`.
+- 2026-07-23: Board-operator disposition superseded the recovery/productivity
+  chain for [LUC-1584](/LUC/issues/LUC-1584). [LUC-1545](/LUC/issues/LUC-1545)
+  is already done, Roost truth is zero-gap, and no recovery child remains
+  necessary. Keep this packet closed and do not reopen the stale recovery lane.
 
 ## LUC-1545 Coordination Packet
 
@@ -23,6 +27,10 @@
   delegated [LUC-1548](/LUC/issues/LUC-1548) CRS classification lane that will
   decide whether a scoped commit is justified. No push, deploy, or release is
   approved from this packet yet.
+- 2026-07-23: This coordination packet is historical context only. The board
+  disposition for [LUC-1584](/LUC/issues/LUC-1584) says the source chain is
+  superseded and complete, so there is no live continuation path from this
+  packet.
 
 ## LUC-1536 Checkpoint
 
