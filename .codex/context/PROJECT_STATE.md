@@ -1,5 +1,30 @@
 # PROJECT_STATE
 
+- 2026-07-24: [LUC-1825](/LUC/issues/LUC-1825) refreshed the Roost
+  architecture-awareness baseline. The generated exports are current in
+  `docs/graphs/architecture-health.json`,
+  `docs/graphs/architecture-proof-register.csv`,
+  `docs/status/architecture-dependency-report.md`,
+  `docs/status/architecture-ownership-report.md`, and
+  `docs/status/task-synchronization-report.md`. Current baseline facts:
+  3129 entities, 8501 relations, 67 modules, 46 API endpoints, 82 tests, 191
+  tasks, 1059 implementation items without test coverage, 12 actionable tasks
+  without architecture links, 1 blocked issue, and 1 active budget incident.
+
+- 2026-07-24: [LUC-1799](/LUC/issues/LUC-1799) closed the separately gated
+  hosted read-only canary follow-up. The exact scoped `X-API-Key` handshake is
+  now evidenced along with hosted health, owner login, bearer-token
+  `/v1/connection`, bearer-token `/v1/mcp/manifest`, and unauthenticated `401`
+  negative controls. `SR-001` is resolved for the bounded read-only canary
+  gate and does not remain an open blocker.
+
+- 2026-07-24: [LUC-1808](/LUC/issues/LUC-1808) classified the separately gated
+  hosted read-only canary follow-up [LUC-1799](/LUC/issues/LUC-1799). The
+  hosted target already proved public health, owner login, bearer-token
+  `/v1/connection`, bearer-token `/v1/mcp/manifest`, scoped `X-API-Key`
+  handshake, and unauthenticated `401` negative controls. `SR-001` is closed
+  for the bounded read-only canary gate and does not remain a blocker.
+
 - 2026-07-23: [LUC-1788](/LUC/issues/LUC-1788) established the canonical
   Roost v1.0 sale-readiness and knowledge-plane contract. Source-of-truth
   outputs: `docs/releases/roost-v1-0-sale-readiness-contract.md`,

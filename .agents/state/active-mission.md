@@ -1,11 +1,47 @@
 # Active Mission Packet
 
+## LUC-1825 Architecture Baseline Packet
+
+- 2026-07-24: [LUC-1825](/LUC/issues/LUC-1825) completed the Roost
+  architecture-awareness refresh and evidence harvest. The generated exports in
+  `docs/graphs/architecture-health.json`,
+  `docs/graphs/architecture-proof-register.csv`,
+  `docs/status/architecture-dependency-report.md`,
+  `docs/status/architecture-ownership-report.md`, and
+  `docs/status/task-synchronization-report.md` are now the current baseline.
+- Current fact: Roost now has a fresh architecture map with 3129 entities, 8501
+  relations, 67 modules, 46 API endpoints, 82 tests, and 191 tracked tasks in
+  the generated graph.
+- Top gaps: 1059 implementation items still lack test coverage, 12 actionable
+  tasks are still missing architecture links, and the control-plane state still
+  carries one blocked issue plus one active budget incident.
+- Next legal step: convert the gap set into owner-scoped follow-ups for
+  architecture, QA, docs, or ops. [LUC-1827](/LUC/issues/LUC-1827) carries the
+  first gap-triage follow-up. Do not treat this packet as a feature
+  implementation lane.
+- Explicit exclusions: no runtime mutation, deploy, protected smoke, push, or
+  secret access from this packet.
+
+## LUC-1808 Closure Packet
+
+- 2026-07-24: [LUC-1808](/LUC/issues/LUC-1808) closed the hosted read-only
+  canary triage for [LUC-1799](/LUC/issues/LUC-1799).
+- Current fact: the hosted read-only canary is now proven through the scoped
+  `X-API-Key` handshake, the bearer-token read path, and the unauthenticated
+  negative controls recorded in the issue evidence.
+- Closure result: `SR-001` is resolved for the bounded read-only canary gate,
+  with no write traffic observed.
+- Explicit exclusions: do not reopen this packet unless a fresh regression
+  removes the scoped handshake evidence or changes the hosted target.
+- Historical note: the earlier blocked-triage posture for [LUC-1808](/LUC/issues/LUC-1808)
+  is superseded by the closure packet above and retained only as audit history.
+
 ## LUC-1788 Mission Packet
 
-- 2026-07-23: [LUC-1788](/LUC/issues/LUC-1788) supersedes the stale recovery
-  posture as the active Roost PM mission. Current fact: generated app
-  completion is already zero-gap, so this mission is documentation/release
-  governance, not another generic implementation proof wave.
+- 2026-07-23: [LUC-1788](/LUC/issues/LUC-1788) published the canonical Roost
+  v1.0 sale-readiness and knowledge-plane contract. Current fact: generated
+  app completion is already zero-gap, so this record is terminal coordination
+  evidence rather than an active implementation wave.
 - Mission objective: publish the versioned Roost v1.0 sale-readiness and
   knowledge-plane contract from current evidence, then delegate only the real
   remaining cross-role follow-up lanes.

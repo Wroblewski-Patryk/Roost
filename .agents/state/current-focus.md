@@ -1,12 +1,30 @@
 # Current Focus
 
+## LUC-1825 Architecture Baseline Refresh
+
+- 2026-07-24: [LUC-1825](/LUC/issues/LUC-1825) refreshed the Roost
+  architecture-awareness baseline. The repo now has a current graph export and
+  status reports, so the focus shifts to closing proof gaps rather than
+  rediscovering the stack. The highest-value follow-up is to triage the 1059
+  implementation items still lacking test coverage and the 12 actionable tasks
+  still lacking architecture links into owner-scoped lanes. [LUC-1827](/LUC/issues/LUC-1827)
+  is the first gap-triage follow-up.
+
+## LUC-1808 / LUC-1799 Hosted Canary Gate
+
+- 2026-07-24: [LUC-1808](/LUC/issues/LUC-1808) closed the hosted read-only
+  canary follow-up [LUC-1799](/LUC/issues/LUC-1799). Hosted health, owner
+  login, bearer-token `/v1/connection`, bearer-token `/v1/mcp/manifest`, the
+  scoped `X-API-Key` handshake, and unauthenticated `401` negative controls are
+  now all evidenced in the issue record.
+
 ## LUC-1788 Sale-Readiness Contract
 
-- 2026-07-23: [LUC-1788](/LUC/issues/LUC-1788) is now the active Roost PM
-  coordination lane. Roost generated truth is currently zero-gap, so the work
-  is not another implementation proof wave. The live objective is to keep one
-  canonical v1.0 readiness answer in
-  `docs/releases/roost-v1-0-sale-readiness-contract.md` and one small active
+- 2026-07-23: [LUC-1788](/LUC/issues/LUC-1788) published the canonical Roost
+  v1.0 sale-readiness and knowledge-plane contract. Roost generated truth is
+  currently zero-gap, so this record is terminal coordination evidence rather
+  than an active implementation lane. Keep one canonical v1.0 readiness answer
+  in `docs/releases/roost-v1-0-sale-readiness-contract.md` and one small
   follow-up list in `docs/releases/roost-v1-0-gap-register.md`, then route
   only the remaining cross-role proof lanes.
 

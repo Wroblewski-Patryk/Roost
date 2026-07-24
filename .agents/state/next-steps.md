@@ -1,4 +1,14 @@
 # Next Steps
+- 2026-07-24: [LUC-1825](/LUC/issues/LUC-1825) completed the Roost
+  architecture baseline harvest. Next execution should create bounded follow-up
+  work for the 1059 implementation-without-tests items and the 12 actionable
+  tasks without architecture links, with owners chosen by the relevant module or
+  proof gap.
+- 2026-07-24: [LUC-1799](/LUC/issues/LUC-1799) is closed. The hosted
+  read-only canary is fully evidenced, including the scoped `X-API-Key`
+  handshake, hosted health, bearer-token `/v1/connection`, bearer-token
+  `/v1/mcp/manifest`, and unauthenticated `401` controls. No further action is
+  required unless a regression reopens the gate.
 - 2026-07-23: [LUC-1788](/LUC/issues/LUC-1788) established the canonical
   Roost v1.0 readiness answer in
   `docs/releases/roost-v1-0-sale-readiness-contract.md`. The next live step is

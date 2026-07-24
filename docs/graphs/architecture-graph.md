@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-21T08:55:43.164Z
+Generated: 2026-07-24T17:57:48.628Z
 
 ## Canonical Exports
 
@@ -695,6 +695,7 @@ Generated: 2026-07-21T08:55:43.164Z
 | connected_to | project:roost:122c92a083 | task:task:7b0a53df15 | .codex/tasks/luc-1269-source-control-closure-for-luc-1266-goals-proof-link-packet.md |
 | connected_to | project:roost:122c92a083 | task:task:7eb0086c15 | .codex/tasks/luc-1234-prove-unclassified-user-workflow-missing-doc-link-for-use-decisions.md |
 | connected_to | project:roost:122c92a083 | task:task:7f3cb89713 | .codex/tasks/luc-1442-prove-unclassified-user-workflow-missing-test-link-for-use-ready.md |
+| connected_to | project:roost:122c92a083 | task:task:81149717ae | .codex/tasks/luc-1788-roost-v1-sale-readiness-and-knowledge-plane-contract.md |
 | connected_to | project:roost:122c92a083 | task:task:815d15a5d8 | .codex/tasks/luc-1477-prove-unclassified-user-workflow-missing-test-link-for-use-tasks.md |
 | connected_to | project:roost:122c92a083 | task:task:83795f24a5 | .codex/tasks/luc-990-account-access-intake-authactor-doc-link.md |
 | connected_to | project:roost:122c92a083 | task:task:877880df05 | .codex/tasks/luc-1108-unclassified-user-workflow-use-agent-logs-proof-link.md |
@@ -1217,4 +1218,3 @@ Generated: 2026-07-21T08:55:43.164Z
 | documents | document:google-drive-owner-setup:9c6bc70541 | module:docs:6784d83cb0 | docs/operations/google-drive-owner-setup.md |
 | documents | document:google-drive-production-smoke:fc9bb13362 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PIPE-AUTO-0016.md |
 | documents | document:google-drive-sync:c5c94bd078 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/INT-AUTO-0011.md |
-| documents | document:google-drive-v2-task-contracts:9974023e7e | function:buildgoogledriveauthorizationurl:bab074bcc0 | C:\Personal\Projekty\Aplikacje\Roost\docs\architecture\relations\documentation-links.csv |

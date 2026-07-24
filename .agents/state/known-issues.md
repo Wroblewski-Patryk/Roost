@@ -1,6 +1,6 @@
 # Known Issues
 
-Last updated: 2026-07-13
+Last updated: 2026-07-24
 
 ## Open Issues
 
@@ -31,6 +31,11 @@ Last updated: 2026-07-13
 
 ## Recently Closed Issues
 
+- 2026-07-24: KI-015 Hosted read-only canary credential gate closed by
+  `LUC-1799` completion evidence. The scoped hosted `X-API-Key` handshake is
+  now proven alongside hosted health, owner login, bearer-token
+  `/v1/connection`, bearer-token `/v1/mcp/manifest`, and unauthenticated `401`
+  controls. No write traffic was used.
 - KI-013 App-completion evidence model mismatch: closed on 2026-07-13 after
   fresh generated readback resolved
   `src/integrations/integration-settings.service.ts#parseGoogleDriveOAuthSecret`

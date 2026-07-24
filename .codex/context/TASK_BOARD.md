@@ -1,6 +1,20 @@
 # TASK_BOARD
 
 ## Disposition Note
+- 2026-07-24: [LUC-1825](/LUC/issues/LUC-1825) refreshed the Roost
+  architecture baseline and exported the current graph, health, dependency,
+  ownership, and task-synchronization reports. Use the new baseline to route
+  owner-scoped follow-ups for proof gaps instead of rediscovering the repo
+  shape.
+- 2026-07-24: [LUC-1799](/LUC/issues/LUC-1799) closed with scoped-hosted
+  read-only canary evidence. The exact `X-API-Key` handshake is now proven
+  alongside hosted health, owner login, bearer-token `/v1/connection`,
+  bearer-token `/v1/mcp/manifest`, and unauthenticated `401` denials.
+- 2026-07-24: [LUC-1808](/LUC/issues/LUC-1808) classified the real remaining
+  blocker on the hosted read-only canary lane
+  [LUC-1799](/LUC/issues/LUC-1799). That blocker was superseded by the
+  evidenced LUC-1799 closure, so the canary is now a closed audit record
+  rather than an open Ops/Release gating lane.
 - 2026-07-23: [LUC-1788](/LUC/issues/LUC-1788) establishes the canonical
   Roost v1.0 sale-readiness and knowledge-plane contract. Use
   `docs/releases/roost-v1-0-sale-readiness-contract.md` and
@@ -11,8 +25,12 @@
   [LUC-1585](/LUC/issues/LUC-1585) as a recovery lane.
 
 ## Now
+- 2026-07-24: [LUC-1799](/LUC/issues/LUC-1799) is closed and no longer needs
+  active board time. The hosted read-only canary is now fully evidenced, so
+  keep the record for audit traceability and move on to the next Roost
+  readiness lane.
 - 2026-07-23: [LUC-1788](/LUC/issues/LUC-1788) Roost v1.0 sale-readiness and
-  knowledge-plane contract publication is in progress. Task contract:
+  knowledge-plane contract publication is complete. Task contract:
   `.codex/tasks/luc-1788-roost-v1-sale-readiness-and-knowledge-plane-contract.md`.
   Current evidence: `docs/releases/roost-v1-0-sale-readiness-contract.md`
   classifies Roost as `conditional_guided_sale_ready`, anchored to the
@@ -23,7 +41,7 @@
   [LUC-1799](/LUC/issues/LUC-1799),
   `SR-002` auto-deploy accepted deferral, `SR-003` upstream source merge
   external/non-blocking); release/product baseline docs now point to the same
-  boundary. Remaining step: close the parent issue with evidence.
+  boundary. The parent issue is terminal and should be closed with evidence.
 - 2026-07-20: [LUC-1536](/LUC/issues/LUC-1536) unclassified
   `src/app.ts#/v1/webhooks/clickup` missing-test-link verification is
   complete locally. Task contract:
