@@ -1,5 +1,27 @@
 # PROJECT_STATE
 
+- 2026-07-25: [LUC-1862](/LUC/issues/LUC-1862) classified and closed the local
+  dirty state for the completed [LUC-1861](/LUC/issues/LUC-1861) canonical-logo
+  packet. Closure evidence lives in
+  `docs/planning/luc-1862-source-control-closure-for-luc-1861-dirty-state.md`.
+  The reviewed tree was coherent across the shared logo component, canonical
+  SVG assets, favicon update, screenshot evidence, and the matching
+  source-of-truth updates, so the packet was preserved in one local commit with
+  deploy still explicitly out of scope.
+
+- 2026-07-25: [LUC-1861](/LUC/issues/LUC-1861) replaced active frontend logo
+  occurrences with the canonical owner-supplied Roost mark. Current evidence:
+  `.codex/tasks/luc-1861-replace-logo-occurrences-with-canonical-roost-mark.md`,
+  `docs/ux/evidence/luc-1861-public-home-desktop.png`, and
+  `docs/ux/evidence/luc-1861-public-home-mobile.png`. The shared web brand mark
+  now lives in `web/src/components/roost-logo-mark.tsx` backed by
+  `web/src/assets/roost-logo.svg`, and the same canonical asset is wired into
+  the public home hero, public layout header/footer, authenticated shell
+  desktop/mobile headers, route-loading shell, and `web/index.html` favicon.
+  Local validation passed with `npm run build:web`, `npm run build:server`, and
+  Playwright desktop/mobile proof on local Express `/`; push and deploy remain
+  out of scope.
+
 - 2026-07-25: [LUC-1843](/LUC/issues/LUC-1843) closed local source control for
   the completed [LUC-1839](/LUC/issues/LUC-1839) PM known-state baseline
   packet. Source-control evidence lives in

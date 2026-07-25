@@ -1,6 +1,16 @@
 # TASK_BOARD
 
 ## Disposition Note
+- 2026-07-25: [LUC-1862](/LUC/issues/LUC-1862) closed local source control for
+  the completed [LUC-1861](/LUC/issues/LUC-1861) canonical-logo packet. Use
+  `docs/planning/luc-1862-source-control-closure-for-luc-1861-dirty-state.md`
+  for the per-file classification, review findings, verification commands, and
+  commit/push/deploy disposition.
+- 2026-07-25: [LUC-1861](/LUC/issues/LUC-1861) completed the local frontend
+  canonical-logo replacement lane. Use
+  `.codex/tasks/luc-1861-replace-logo-occurrences-with-canonical-roost-mark.md`
+  for the pre-change inventory, changed file list, build proof, screenshot
+  evidence, and the explicit non-deploy boundary.
 - 2026-07-25: [LUC-1843](/LUC/issues/LUC-1843) closed local source control for
   the [LUC-1839](/LUC/issues/LUC-1839) PM known-state packet. Use
   `docs/planning/luc-1843-source-control-closure-for-luc-1839-evidence-packet.md`
@@ -40,6 +50,16 @@
   [LUC-1585](/LUC/issues/LUC-1585) as a recovery lane.
 
 ## Now
+- 2026-07-25: [LUC-1862](/LUC/issues/LUC-1862) is complete. The local dirty
+  tree left by [LUC-1861](/LUC/issues/LUC-1861) was classified as one coherent
+  canonical-logo packet and closed through a preservation commit with no
+  deploy/push action.
+- 2026-07-25: [LUC-1861](/LUC/issues/LUC-1861) is ready for review. The
+  canonical owner-supplied `roost-logo.svg` now replaces the real frontend
+  placeholder/logo occurrences in the public home, public layout, authenticated
+  shell, route loader, and favicon path; local desktop/mobile screenshots and
+  build proof are recorded in
+  `.codex/tasks/luc-1861-replace-logo-occurrences-with-canonical-roost-mark.md`.
 - 2026-07-25: [LUC-1843](/LUC/issues/LUC-1843) is complete. The local
   source-control disposition for the [LUC-1839](/LUC/issues/LUC-1839)
   planning/state/generated packet is now documented and no duplicate

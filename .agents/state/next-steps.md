@@ -10217,8 +10217,8 @@ Last updated: 2026-06-20
      backend deploy-smoke verification, QA regression conversion, ops release
      evidence, docs-memory normalization) as the activation kickoff pack.
 
-1. PUBLIC-HOME-ROOST-001 follow-up: replace placeholder mark with owner
-   final SVG logo without changing the approved brand system contract.
+1. Deploy and smoke the canonical Roost logo bundle on
+   `https://roost.luckysparrow.ch/` in the next approved release window.
 
 1. Deploy and smoke `DMS-06-WORKFORCE-001` when the next release window opens.
    - Source:

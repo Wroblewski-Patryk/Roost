@@ -1,5 +1,22 @@
 # Active Mission Packet
 
+## LUC-1861 Canonical Roost Logo Replacement Packet
+
+- 2026-07-25: [LUC-1861](/LUC/issues/LUC-1861) completed the scoped frontend
+  logo-replacement mission.
+- Current fact: the owner-supplied canonical `roost-logo.svg` now replaces the
+  active placeholder/logo variants in the public hero, public layout,
+  authenticated shell desktop/mobile headers, route-loading shell, and favicon
+  entry point through one shared component at
+  `web/src/components/roost-logo-mark.tsx`.
+- Validation: `npm run build:web` PASS; `npm run build:server` PASS; Playwright
+  desktop/mobile proof PASS on local Express `/` with screenshots
+  `docs/ux/evidence/luc-1861-public-home-desktop.png` and
+  `docs/ux/evidence/luc-1861-public-home-mobile.png`, no console warnings, and
+  no failed network responses.
+- Explicit exclusions: no push, deploy, production smoke, architecture change,
+  or cross-repo mutation from this packet.
+
 ## LUC-1843 Source-Control Closure Packet
 
 - 2026-07-25: [LUC-1843](/LUC/issues/LUC-1843) classified and closed local

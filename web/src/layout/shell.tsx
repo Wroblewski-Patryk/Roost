@@ -3,6 +3,7 @@ import { canonicalGeneralDashboardPath } from "../app-route-registry";
 import { api } from "../api/client";
 import { clearOwnerToken, setOwnerToken } from "../api/auth-token";
 import { CcButton } from "../components/cc-button";
+import { RoostLogoMark } from "../components/roost-logo-mark";
 import { LanguageSelector } from "../i18n/language-selector";
 import { useLanguage } from "../i18n/i18n";
 import { AuthMe, CoreArea, DepartmentCatalogPacket } from "../types";
@@ -216,7 +217,7 @@ export function Shell({
       <div className="grid min-h-screen lg:grid-cols-[16.5rem_minmax(0,1fr)]">
         <aside className="sticky top-0 hidden h-screen overflow-y-auto border-r border-base-300 bg-neutral/96 px-3 py-4 text-neutral-content lg:block">
           <a className="flex items-center gap-3 no-underline text-neutral-content" href={canonicalGeneralDashboardPath}>
-            <span className="grid h-9 w-9 place-items-center rounded-company bg-primary font-black shadow-[0_0_22px_rgb(99_102_241_/_0.22)]">R</span>
+            <RoostLogoMark className="h-9 w-9" />
             <span>
               <strong className="block text-sm leading-5">{t("app.name")}</strong>
               <small className="text-xs text-neutral-content/62">{t("app.operatingSystem")}</small>
@@ -259,7 +260,7 @@ export function Shell({
                   <i className="ph-bold ph-list text-xl" aria-hidden="true"></i>
                 </button>
                 <a className="flex min-w-0 items-center gap-2 font-black no-underline text-company-ink" href={canonicalGeneralDashboardPath}>
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-company bg-neutral text-sm text-neutral-content">R</span>
+                  <RoostLogoMark className="h-8 w-8" />
                   <span className="truncate">{t("app.name")}</span>
                 </a>
               </div>
@@ -313,7 +314,7 @@ export function Shell({
               <aside className="relative grid h-full w-[min(23rem,92vw)] grid-rows-[auto_auto_minmax(0,1fr)] overflow-hidden border-r border-neutral-content/10 bg-neutral px-3 py-4 text-neutral-content shadow-2xl">
                 <div className="flex items-center justify-between gap-3">
                   <a className="flex min-w-0 items-center gap-3 no-underline text-neutral-content" href={canonicalGeneralDashboardPath} onClick={() => setMobileNavOpen(false)}>
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-company bg-primary font-black shadow-[0_0_22px_rgb(99_102_241_/_0.22)]">R</span>
+                    <RoostLogoMark className="h-9 w-9" />
                     <span className="min-w-0">
                       <strong className="block truncate text-sm leading-5">{t("app.name")}</strong>
                       <small className="block truncate text-xs text-neutral-content/62">{t("app.operatingSystem")}</small>
