@@ -48,9 +48,9 @@ The worktree was already dirty at lane start, but the observed dirty files were 
 
 ## Source-Control Decision
 
-Commit planned after the closure packet and source-of-truth entries are written.
+Commit created.
 
-Reason: the current dirty tree is coherent, attributable to one completed PM evidence lane, and does not include unrelated runtime files. A local preservation commit is the cleanest way to stop future closure churn on the July 25, 2026 `LUC-1839` packet.
+Reason: the dirty tree was coherent, attributable to one completed PM evidence lane, and did not include unrelated runtime files. A local preservation commit was the cleanest way to stop future closure churn on the July 25, 2026 `LUC-1839` packet.
 
 Push status: held for batch unless a later release lane explicitly requires this docs/evidence commit on the remote branch.
 
@@ -67,7 +67,7 @@ Deploy impact: none. No runtime, protected smoke, production mutation, restart, 
 
 ## Result Report
 
-Accepted pending final local commit and issue closeout.
+Accepted.
 
 Files changed by this lane:
 
@@ -92,8 +92,10 @@ Verification:
 - `git rev-list --left-right --count origin/main...HEAD`
 - focused generated readback for the architecture and app-completion outputs
 - bounded high-confidence secret-pattern scan across dirty paths
+- post-commit `git status --short --branch -uall` => clean worktree on `main...origin/main [ahead 76]`
+- post-commit `git rev-parse HEAD` => `b208e4e5982b5b864da8ed528a94ff037586c0c4`
 
-Commit: local preservation commit created in this lane; exact SHA is recorded in the issue closeout.
+Commit: `b208e4e5982b5b864da8ed528a94ff037586c0c4` (`docs: close LUC-1843 source control for LUC-1839`).
 
 Push status: held for batch.
 
