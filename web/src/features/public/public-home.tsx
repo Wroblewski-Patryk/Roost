@@ -1,4 +1,5 @@
 import { CcButton } from "../../components/cc-button";
+import { RoostLogoMark } from "../../components/roost-logo-mark";
 import { useLanguage } from "../../i18n/i18n";
 import type { MessageKey } from "../../i18n/messages";
 import { PublicLayout } from "../../layout/public-layout";
@@ -20,22 +21,6 @@ function tx(t: (key: MessageKey) => string, key: string) {
   return t(key as MessageKey);
 }
 
-function RoostGlyph({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
-  const sizeClass = size === "lg" ? "h-24 w-24" : size === "sm" ? "h-12 w-12" : "h-16 w-16";
-
-  return (
-    <span
-      aria-hidden="true"
-      className={`relative grid shrink-0 place-items-center rounded-full border border-primary/45 bg-base-100/80 text-primary shadow-[0_0_42px_rgb(99_102_241_/_0.22)] ${sizeClass}`}
-    >
-      <span className="absolute inset-[18%] rounded-full border border-accent/55"></span>
-      <span className="absolute h-[1px] w-[66%] rotate-[-26deg] bg-gradient-to-r from-primary to-accent"></span>
-      <span className="absolute bottom-[25%] h-[30%] w-[58%] rounded-[90%_90%_90%_30%] border border-primary/80"></span>
-      <span className="absolute right-[25%] top-[28%] h-1.5 w-1.5 rounded-full bg-accent"></span>
-    </span>
-  );
-}
-
 function HeroTopology() {
   const { t } = useLanguage();
 
@@ -50,7 +35,7 @@ function HeroTopology() {
 
       <div className="absolute left-1/2 top-[47%] grid h-36 w-36 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/12 bg-base-100/72 shadow-[0_0_70px_rgb(6_182_212_/_0.22)] backdrop-blur">
         <div className="absolute inset-3 rounded-full border border-primary/40"></div>
-        <RoostGlyph size="md" />
+        <RoostLogoMark alt="" className="h-16 w-16 drop-shadow-[0_0_32px_rgb(99_102_241_/_0.24)]" />
       </div>
 
       {orbitNodes.map((node) => (
