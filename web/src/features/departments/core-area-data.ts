@@ -2,6 +2,7 @@ import {
   canonicalManagementDepartmentsPath,
   canonicalAssetsPath,
   canonicalGeneralDashboardPath,
+  canonicalProductMapPath,
   canonicalStrategyPath,
   canonicalProductDeliveryPath,
   canonicalSalesPath,
@@ -27,7 +28,7 @@ export const coreAreas: CoreArea[] = [
     views: [
       { key: "overview", labelKey: "views.00.overview", href: canonicalGeneralDashboardPath, icon: "ph-gauge", enabled: true },
       { key: "routing", labelKey: "views.00.routing", icon: "ph-git-branch", enabled: false },
-      { key: "department-map", labelKey: "views.00.departmentMap", icon: "ph-squares-four", enabled: false }
+      { key: "product-map", labelKey: "views.00.productMap", href: canonicalProductMapPath, icon: "ph-map-trifold", enabled: true }
     ]
   },
   {

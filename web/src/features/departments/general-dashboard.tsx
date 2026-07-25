@@ -1,4 +1,5 @@
 import { CcDataTable, type CcTableColumn } from "../../components/cc-data-table";
+import { CcButton } from "../../components/cc-button";
 import { CcNotice } from "../../components/cc-notice";
 import { Shell } from "../../layout/shell";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
@@ -46,6 +47,15 @@ export function GeneralDashboard() {
             <span className="block font-black text-company-ink">Command packet</span>
             <span className="text-company-muted">{command.data?.generatedAt ? new Date(command.data.generatedAt).toLocaleString() : t("state.loading")}</span>
           </div>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-company border border-base-300 bg-base-200/45 p-4">
+          <div className="min-w-0">
+            <p className="text-xs font-black uppercase text-company-muted">Versioned product map</p>
+            <p className="mt-1 text-sm text-company-muted">Compare source SHA, deployed SHA, and freshness before treating a release as usable.</p>
+          </div>
+          <CcButton href="/areas?area=00-ogolny&view=product-map" iconRight="ph-arrow-right" variant="primary">
+            Open product map
+          </CcButton>
         </div>
       </section>
 

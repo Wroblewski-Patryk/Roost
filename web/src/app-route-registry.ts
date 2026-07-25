@@ -17,6 +17,7 @@ export type AppRouteGroup = {
 };
 
 export const canonicalGeneralDashboardPath = "/areas?area=00-ogolny&view=overview";
+export const canonicalProductMapPath = "/areas?area=00-ogolny&view=product-map";
 export const canonicalStrategyPath = "/areas?area=01-strategia&view=overview";
 export const canonicalProductDeliveryPath = "/areas?area=02-produkt&view=overview";
 export const canonicalSalesPath = "/areas?area=03-sprzedaz&view=overview";
@@ -76,6 +77,15 @@ export const appRouteGroups: AppRouteGroup[] = [
         aliases: ["/dashboard", "/react-dashboard", "/areas"],
         private: true,
         canonicalSource: "docs/architecture/autonomous-company-operating-system.md"
+      },
+      {
+        id: "product-map",
+        href: canonicalProductMapPath,
+        label: "00 Product Map",
+        title: "00 Product Map",
+        icon: "ph-map-trifold",
+        private: true,
+        canonicalSource: "docs/maps/product-map.md"
       },
       {
         id: "strategy",
@@ -239,6 +249,10 @@ export function resolveRouteMeta(pathname: string) {
   if (normalizeRoutePath(rawPath) === "/areas") {
     const params = new URLSearchParams(rawQuery);
     const area = params.get("area");
+    const view = params.get("view");
+    if (area === "00-ogolny" && view === "product-map") {
+      return appRoutes.find((route) => route.id === "product-map");
+    }
     if (area === "03-sprzedaz") {
       return appRoutes.find((route) => route.id === "sales");
     }
@@ -291,6 +305,10 @@ export function canonicalPostAuthPath(pathname?: string | null) {
   if (normalizeRoutePath(rawPath) === "/areas") {
     const params = new URLSearchParams(rawQuery);
     const area = params.get("area");
+    const view = params.get("view");
+    if (area === "00-ogolny" && view === "product-map") {
+      return canonicalProductMapPath;
+    }
     if (area === "01-strategia") {
       return canonicalStrategyPath;
     }
@@ -339,6 +357,9 @@ export function canonicalPostAuthPath(pathname?: string | null) {
 
   if (route.id === "strategy") {
     return canonicalStrategyPath;
+  }
+  if (route.id === "product-map") {
+    return canonicalProductMapPath;
   }
 
   if (route.id === "sales") {

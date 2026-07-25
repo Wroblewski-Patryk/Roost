@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useMemo } from "react";
 import { createRoot } from "react-dom/client";
 import {
   canonicalGeneralDashboardPath,
+  canonicalProductMapPath,
   canonicalStrategyPath,
   canonicalProductDeliveryPath,
   canonicalSalesPath,
@@ -24,6 +25,7 @@ import "./styles.css";
 
 const AssetsRoute = lazy(() => import("./features/departments/assets-route").then((module) => ({ default: module.AssetsRoute })));
 const GeneralDashboard = lazy(() => import("./features/departments/general-dashboard").then((module) => ({ default: module.GeneralDashboard })));
+const ProductMapRoute = lazy(() => import("./features/departments/product-map-route").then((module) => ({ default: module.ProductMapRoute })));
 const StrategyRoute = lazy(() => import("./features/departments/strategy-route").then((module) => ({ default: module.StrategyRoute })));
 const ProductDeliveryRoute = lazy(() => import("./features/departments/product-delivery-route").then((module) => ({ default: module.ProductDeliveryRoute })));
 const SalesRoute = lazy(() => import("./features/departments/sales-route").then((module) => ({ default: module.SalesRoute })));
@@ -51,6 +53,10 @@ function currentAreaKey() {
   return "00-ogolny";
 }
 
+function currentAreaView() {
+  return new URLSearchParams(window.location.search).get("view") || "overview";
+}
+
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const routeKey = window.location.pathname + window.location.search;
   if (!isSignedIn()) {
@@ -74,6 +80,13 @@ function App() {
 
   if (pathname === "/auth/register") {
     return <AuthRoute mode="register" />;
+  }
+
+  if (pathname === "/areas" && currentAreaKey() === "00-ogolny" && currentAreaView() === "product-map") {
+    if (window.location.search !== "?area=00-ogolny&view=product-map") {
+      window.history.replaceState(null, "", canonicalProductMapPath);
+    }
+    return <PrivateRoute><LazyRoute><ProductMapRoute /></LazyRoute></PrivateRoute>;
   }
 
   if (pathname === "/dashboard" || pathname === "/react-dashboard" || (pathname === "/areas" && currentAreaKey() === "00-ogolny")) {
