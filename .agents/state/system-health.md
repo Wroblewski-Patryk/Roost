@@ -1,3 +1,39 @@
+# 2026-07-25 LUC-1843 Source-Control Closure Health Signal
+
+- Status: local source-control closure for the completed
+  [LUC-1839](/LUC/issues/LUC-1839) PM baseline packet is complete locally.
+- Evidence: `docs/planning/luc-1843-source-control-closure-for-luc-1839-evidence-packet.md`;
+  `git status --short --branch -uall` recorded `main...origin/main [ahead 75]`
+  with the coherent `LUC-1839` planning/state/generated packet; `git diff
+  --check` PASS with LF-to-CRLF warnings only; bounded generated readback for
+  `docs/status/architecture-health-dashboard.json`,
+  `docs/status/architecture-proof-bundle.json`, and
+  `docs/status/app-completion-index.json` still matches the July 25, 2026
+  green/zero-gap parent baseline.
+- Guardrail re-confirmed: this packet is source-control closure only. No
+  runtime feature logic, deploy, push, protected smoke, provider mutation,
+  production mutation, credential access, or secret disclosure occurred.
+
+# 2026-07-25 LUC-1839 Known-State Baseline Health Signal
+
+- Status: Roost PM known-state and architecture baseline refresh completed
+  locally.
+- Evidence: [LUC-1839](/LUC/issues/LUC-1839) task packet
+  `docs/planning/luc-1839-known-state-evidence-and-architecture-baseline.md`;
+  `npm run architecture:refresh` PASS with architecture graph regenerated at
+  `455` nodes / `769` relations / `35` chains and no evidence queue or chain
+  worklist items; `npm run architecture:status` PASS (`GREEN`,
+  `455/769/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`);
+  regenerated `docs/status/app-completion-index.md` remains zero-gap at
+  `46` items / `4` flows / `0` missing test links / `0` missing doc links /
+  `0` implemented-needs-proof / `0` blocked / `0` risk items; repo memory
+  files now point to the refreshed baseline instead of the older
+  `LUC-1825` architecture-only gap-count framing.
+- Guardrail re-confirmed: this packet is evidence collection and memory sync
+  only. No runtime feature logic, deploy, push, protected smoke, provider
+  mutation, production mutation, credential access, or secret disclosure
+  occurred.
+
 # 2026-07-20 LUC-1536 ClickUp Webhooks Packet Health Signal
 
 - Status: routed QA proof-link closure for the `LUC-1536`

@@ -1,5 +1,41 @@
 # Active Mission Packet
 
+## LUC-1843 Source-Control Closure Packet
+
+- 2026-07-25: [LUC-1843](/LUC/issues/LUC-1843) classified and closed local
+  source control for the completed [LUC-1839](/LUC/issues/LUC-1839) PM
+  known-state packet.
+- Current fact: the dirty tree is coherent to the July 25, 2026
+  `LUC-1839` planning/state/generated outputs on `main...origin/main [ahead
+  75]`; `git diff --check` passed with LF-to-CRLF warnings only, and bounded
+  generated readback still matches the green/zero-gap parent evidence.
+- Closure result: this packet records the local source-control disposition for
+  the current PM baseline so future lanes do not re-audit whether the
+  `LUC-1839` packet is safe to preserve.
+- Explicit exclusions: no runtime mutation, deploy, protected smoke, push, or
+  secret access from this packet.
+
+## LUC-1839 Known-State Baseline Packet
+
+- 2026-07-25: [LUC-1839](/LUC/issues/LUC-1839) completed the Roost PM
+  known-state baseline refresh. The live architecture gate is still `GREEN`
+  after a full `npm run architecture:refresh`, and the regenerated
+  app-completion index remains zero-gap at `46` items / `4` flows / `0`
+  missing test links / `0` missing doc links / `0`
+  implemented-needs-proof / `0` blocked / `0` risk items.
+- Current fact: `docs/status/architecture-health-dashboard.md` generated
+  `2026-07-25T15:56:42.014Z` and
+  `docs/status/architecture-proof-bundle.md` generated
+  `2026-07-25T15:56:44.765Z` both keep the graph at `455/769/35` with evidence
+  queue `0`, chain worklist `0`, delta `0/0/0`, and all gates passing; the
+  regenerated app-completion index is current at `2026-07-24T17:57:48.628Z`.
+- Closure result: this packet supersedes the stale PM framing that treated the
+  older `LUC-1825` architecture-only implementation counts as the next product
+  queue. Future lanes must start from the sale-readiness contract, a fresh
+  generated regression, or a newly approved product slice.
+- Explicit exclusions: no runtime mutation, deploy, protected smoke, push, or
+  secret access from this packet.
+
 ## LUC-1833 Product Map UI Mission
 
 - 2026-07-25: [LUC-1833](/LUC/issues/LUC-1833) completed the active heartbeat
@@ -29,13 +65,10 @@
 - Current fact: Roost now has a fresh architecture map with 3129 entities, 8501
   relations, 67 modules, 46 API endpoints, 82 tests, and 191 tracked tasks in
   the generated graph.
-- Top gaps: 1059 implementation items still lack test coverage, 12 actionable
-  tasks are still missing architecture links, and the control-plane state still
-  carries one blocked issue plus one active budget incident.
-- Next legal step: convert the gap set into owner-scoped follow-ups for
-  architecture, QA, docs, or ops. [LUC-1827](/LUC/issues/LUC-1827) carries the
-  first gap-triage follow-up. Do not treat this packet as a feature
-  implementation lane.
+- Historical note: those architecture export counts are inventory from the
+  graph layer, not the live PM known-state answer. `LUC-1839` later confirmed
+  the user-flow/app-completion layer remains zero-gap, so do not reopen generic
+  product proof work from this packet alone.
 - Explicit exclusions: no runtime mutation, deploy, protected smoke, push, or
   secret access from this packet.
 

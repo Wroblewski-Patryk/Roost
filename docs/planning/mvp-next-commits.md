@@ -1,5 +1,28 @@
 # MVP Next Commits
 
+- 2026-07-25: [LUC-1843](/LUC/issues/LUC-1843) closed local source control for
+  the completed [LUC-1839](/LUC/issues/LUC-1839) PM known-state packet.
+  Evidence packet:
+  `docs/planning/luc-1843-source-control-closure-for-luc-1839-evidence-packet.md`.
+  Current evidence: `git status --short --branch -uall` recorded
+  `main...origin/main [ahead 75]`; `git diff --check` PASS with LF-to-CRLF
+  warnings only; generated architecture/app-completion readback still matches
+  the July 25, 2026 green/zero-gap baseline. Next owner: none for this packet;
+  do not reopen the same dirty-tree audit unless a fresh generated regression
+  or a new mixed-dirty conflict appears.
+
+- 2026-07-25: [LUC-1839](/LUC/issues/LUC-1839) refreshed the Roost PM
+  known-state and architecture baseline. Evidence packet:
+  `docs/planning/luc-1839-known-state-evidence-and-architecture-baseline.md`.
+  Current evidence: `npm run architecture:refresh` PASS; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`, delta `0/0/0`); regenerated
+  `docs/status/app-completion-index.md` remains zero-gap at `46` items /
+  `4` flows / `0` missing test links / `0` missing doc links / `0`
+  implemented-needs-proof / `0` blocked / `0` risk items. Next owner: none
+  for this packet; use it to prevent reopening generic proof-gap work from the
+  superseded `LUC-1825` architecture-only count framing.
+
 - 2026-07-25: [LUC-1833](/LUC/issues/LUC-1833) opened the versioned
   owner-facing product map UI slice. Evidence packet:
   `.codex/tasks/luc-1833-versioned-owner-facing-product-map-ui.md`.

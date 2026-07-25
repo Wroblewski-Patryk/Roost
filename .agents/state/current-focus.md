@@ -1,5 +1,25 @@
 # Current Focus
 
+## LUC-1843 Source-Control Closure
+
+- 2026-07-25: [LUC-1843](/LUC/issues/LUC-1843) closed local source control for
+  the completed [LUC-1839](/LUC/issues/LUC-1839) PM baseline packet. The July
+  25, 2026 dirty tree is coherent to the parent planning/state/generated
+  outputs, `git diff --check` passed with LF-to-CRLF warnings only, and deploy
+  impact remains none.
+
+## LUC-1839 Known-State Baseline Refresh
+
+- 2026-07-25: [LUC-1839](/LUC/issues/LUC-1839) refreshed the Roost PM
+  known-state baseline after the latest UI and architecture churn. The live
+  architecture gate is still `GREEN` after `npm run architecture:refresh` and
+  `npm run architecture:status`, and generated app-completion remains zero-gap
+  at `46` items / `4` flows / `0` missing test links / `0` missing doc links /
+  `0` implemented-needs-proof / `0` blocked / `0` risk items. Use
+  `docs/planning/luc-1839-known-state-evidence-and-architecture-baseline.md`
+  as the current baseline packet and do not reopen generic proof-gap work from
+  the superseded `LUC-1825` implementation-count framing alone.
+
 ## LUC-1833 Product Map UI
 
 - 2026-07-25: [LUC-1833](/LUC/issues/LUC-1833) is verified and ready for
@@ -11,11 +31,11 @@
 
 - 2026-07-24: [LUC-1825](/LUC/issues/LUC-1825) refreshed the Roost
   architecture-awareness baseline. The repo now has a current graph export and
-  status reports, so the focus shifts to closing proof gaps rather than
-  rediscovering the stack. The highest-value follow-up is to triage the 1059
-  implementation items still lacking test coverage and the 12 actionable tasks
-  still lacking architecture links into owner-scoped lanes. [LUC-1827](/LUC/issues/LUC-1827)
-  is the first gap-triage follow-up.
+  status reports. That packet remains useful as architecture evidence, but it
+  is no longer the live PM known-state narrative: `LUC-1839` confirmed the
+  current user-flow baseline is zero-gap, so architecture-only implementation
+  counts must not be treated as active product proof debt without a fresh
+  routed regression or an approved new slice.
 
 ## LUC-1808 / LUC-1799 Hosted Canary Gate
 

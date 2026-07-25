@@ -1,12 +1,21 @@
 # Next Steps
+- 2026-07-25: [LUC-1843](/LUC/issues/LUC-1843) closed source control for the
+  [LUC-1839](/LUC/issues/LUC-1839) PM known-state packet. No further closure
+  follow-up is needed; start future Roost work from the closed
+  `LUC-1839` baseline or a fresh generated regression instead of reopening the
+  same dirty-tree audit.
 - 2026-07-25: [LUC-1833](/LUC/issues/LUC-1833) is complete. The versioned
   owner-facing product map UI in 00 General is verified on the canonical
   route, dashboard CTA, and shell label.
+- 2026-07-25: [LUC-1839](/LUC/issues/LUC-1839) completed the Roost PM
+  known-state baseline refresh. The next execution step is not a generic
+  proof-gap sweep from old architecture-only implementation counts. Future
+  work should start only from the canonical sale-readiness contract, a fresh
+  generated regression, or a newly approved product slice.
 - 2026-07-24: [LUC-1825](/LUC/issues/LUC-1825) completed the Roost
-  architecture baseline harvest. Next execution should create bounded follow-up
-  work for the 1059 implementation-without-tests items and the 12 actionable
-  tasks without architecture links, with owners chosen by the relevant module or
-  proof gap.
+  architecture baseline harvest. Treat its graph/export counts as architecture
+  inventory evidence, not as the active PM queue. `LUC-1839` is the newer
+  known-state baseline and confirms generated app-completion remains zero-gap.
 - 2026-07-24: [LUC-1799](/LUC/issues/LUC-1799) is closed. The hosted
   read-only canary is fully evidenced, including the scoped `X-API-Key`
   handshake, hosted health, bearer-token `/v1/connection`, bearer-token

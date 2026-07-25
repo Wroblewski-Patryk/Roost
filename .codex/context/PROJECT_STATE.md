@@ -1,5 +1,28 @@
 # PROJECT_STATE
 
+- 2026-07-25: [LUC-1843](/LUC/issues/LUC-1843) closed local source control for
+  the completed [LUC-1839](/LUC/issues/LUC-1839) PM known-state baseline
+  packet. Source-control evidence lives in
+  `docs/planning/luc-1843-source-control-closure-for-luc-1839-evidence-packet.md`.
+  The dirty tree was coherent to the current planning/state/generated outputs,
+  `git diff --check` passed with LF-to-CRLF warnings only, push is held for
+  batch, and deploy impact is none.
+
+- 2026-07-25: [LUC-1839](/LUC/issues/LUC-1839) refreshed the Roost PM
+  known-state and architecture baseline. Current source-of-truth outputs:
+  `docs/planning/luc-1839-known-state-evidence-and-architecture-baseline.md`,
+  `docs/status/architecture-health-dashboard.md`,
+  `docs/status/architecture-proof-bundle.md`, and
+  `docs/status/app-completion-index.md`. Current baseline facts: `npm run
+  architecture:refresh` and `npm run architecture:status` both PASS on
+  2026-07-25 with architecture `GREEN` (`455` nodes / `769` relations / `35`
+  chains, evidence queue `0`, chain worklist `0`, delta `0/0/0`), and the
+  regenerated app-completion index remains zero-gap at `46` items / `4` flows /
+  `0` missing test links / `0` missing doc links / `0`
+  implemented-needs-proof / `0` blocked / `0` risk items. This packet
+  supersedes the stale PM framing that treated `LUC-1825` architecture-only
+  implementation counts as the next product queue.
+
 - 2026-07-25: [LUC-1833](/LUC/issues/LUC-1833) completed the active Roost UI
   heartbeat. The versioned owner-facing product map is published as a private
   00 General React view at `/areas?area=00-ogolny&view=product-map`, with
@@ -12,10 +35,10 @@
   `docs/graphs/architecture-proof-register.csv`,
   `docs/status/architecture-dependency-report.md`,
   `docs/status/architecture-ownership-report.md`, and
-  `docs/status/task-synchronization-report.md`. Current baseline facts:
-  3129 entities, 8501 relations, 67 modules, 46 API endpoints, 82 tests, 191
-  tasks, 1059 implementation items without test coverage, 12 actionable tasks
-  without architecture links, 1 blocked issue, and 1 active budget incident.
+  `docs/status/task-synchronization-report.md`. This remains valid architecture
+  inventory evidence, but `LUC-1839` is the newer PM known-state baseline for
+  product readiness and should be used before opening any new generic proof-gap
+  lane.
 
 - 2026-07-24: [LUC-1799](/LUC/issues/LUC-1799) closed the separately gated
   hosted read-only canary follow-up. The exact scoped `X-API-Key` handshake is

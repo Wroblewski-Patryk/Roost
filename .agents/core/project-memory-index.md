@@ -11,6 +11,28 @@ state, architecture intent, module confidence, and the next release objective.
 
 ## Latest Generated Truth
 
+- 2026-07-25: [LUC-1843](/LUC/issues/LUC-1843) closed local source control for
+  the completed [LUC-1839](/LUC/issues/LUC-1839) PM known-state packet. Use
+  `docs/planning/luc-1843-source-control-closure-for-luc-1839-evidence-packet.md`
+  for the source-control posture: the July 25, 2026 dirty tree is coherent to
+  the `LUC-1839` planning/state/generated outputs, `git diff --check` passed
+  with LF-to-CRLF warnings only, and deploy impact remains none.
+
+- 2026-07-25: [LUC-1839](/LUC/issues/LUC-1839) refreshed the current Roost
+  known-state evidence and architecture baseline after the latest UI and
+  architecture churn. Use
+  `docs/planning/luc-1839-known-state-evidence-and-architecture-baseline.md`
+  for the current proof: `npm run architecture:refresh` PASS and
+  `npm run architecture:status` PASS with architecture still `GREEN`
+  (`455` nodes / `769` relations / `35` chains, evidence queue `0`, chain
+  worklist `0`, delta `0/0/0`); regenerated
+  `docs/status/app-completion-index.md` is current at
+  `2026-07-24T17:57:48.628Z` with `46` items / `4` flows / `0` missing test
+  links / `0` missing doc links / `0` implemented-needs-proof / `0` blocked /
+  `0` risk items. Do not open a duplicate proof lane from the older
+  `LUC-1825` architecture-only count framing; the live PM baseline is zero-gap
+  unless a fresh generated regression says otherwise.
+
 - 2026-07-13: [LUC-961](/LUC/issues/LUC-961) closed the current
   [LUC-959](/LUC/issues/LUC-959) local dirty-state packet. Use
   `.codex/tasks/luc-961-source-control-closure-for-luc-959.md` for current

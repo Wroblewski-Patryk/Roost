@@ -1,6 +1,17 @@
 # TASK_BOARD
 
 ## Disposition Note
+- 2026-07-25: [LUC-1843](/LUC/issues/LUC-1843) closed local source control for
+  the [LUC-1839](/LUC/issues/LUC-1839) PM known-state packet. Use
+  `docs/planning/luc-1843-source-control-closure-for-luc-1839-evidence-packet.md`
+  for the branch/dirty-tree/commit posture before reopening any question about
+  whether the July 25, 2026 PM baseline is still only local state.
+- 2026-07-25: [LUC-1839](/LUC/issues/LUC-1839) refreshed the Roost PM
+  known-state baseline. Use
+  `docs/planning/luc-1839-known-state-evidence-and-architecture-baseline.md`
+  before reopening any generic "what is left?" or proof-gap lane: architecture
+  remains green and generated app-completion remains zero-gap, so architecture
+  export counts alone are not a runnable product queue.
 - 2026-07-25: [LUC-1833](/LUC/issues/LUC-1833) opened the versioned
   owner-facing product map UI slice. The canonical private route is
   `/areas?area=00-ogolny&view=product-map`; keep source SHA, deployed SHA, and
@@ -29,6 +40,14 @@
   [LUC-1585](/LUC/issues/LUC-1585) as a recovery lane.
 
 ## Now
+- 2026-07-25: [LUC-1843](/LUC/issues/LUC-1843) is complete. The local
+  source-control disposition for the [LUC-1839](/LUC/issues/LUC-1839)
+  planning/state/generated packet is now documented and no duplicate
+  dirty-tree audit is needed.
+- 2026-07-25: [LUC-1839](/LUC/issues/LUC-1839) is complete. The PM known-state
+  baseline is refreshed and the repo memory now points at the current
+  architecture/app-completion evidence packet instead of the older
+  `LUC-1825` architecture-only gap counts.
 - 2026-07-25: [LUC-1833](/LUC/issues/LUC-1833) is complete. The versioned
   owner-facing product map UI in 00 General is published and verified on the
   canonical route, dashboard CTA, and shell label.
@@ -41,7 +60,7 @@
   `.codex/tasks/luc-1788-roost-v1-sale-readiness-and-knowledge-plane-contract.md`.
   Current evidence: `docs/releases/roost-v1-0-sale-readiness-contract.md`
   classifies Roost as `conditional_guided_sale_ready`, anchored to the
-  zero-gap `docs/status/app-completion-index.md` generated 2026-07-21 plus the
+  zero-gap `docs/status/app-completion-index.md` generated 2026-07-24 plus the
   current architecture, security, MCP, Drive-import, and manual rollout
   contracts; `docs/releases/roost-v1-0-gap-register.md` keeps only three
   evidence-backed follow-ups (`SR-001` hosted read-only canary open as

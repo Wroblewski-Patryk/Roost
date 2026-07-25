@@ -1,3 +1,9 @@
+## 2026-07-25 LUC-1839 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost known-state baseline | verified | `docs/planning/luc-1839-known-state-evidence-and-architecture-baseline.md`; `docs/status/architecture-health-dashboard.md` generated `2026-07-25T15:56:42.014Z`; `docs/status/architecture-proof-bundle.md` generated `2026-07-25T15:56:44.765Z`; `docs/status/app-completion-index.md` generated `2026-07-24T17:57:48.628Z`; `npm run architecture:refresh` PASS; `npm run architecture:status` PASS; regenerated app-completion remains zero-gap at `46` items / `4` flows / `0` missing test links / `0` missing doc links / `0` implemented-needs-proof / `0` blocked / `0` risk items. | No further PM baseline repair is needed unless a fresh generated regression changes the architecture gate or reintroduces app-completion debt. |
+
 ## 2026-07-25 LUC-1833 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |
