@@ -1,5 +1,20 @@
 # PROJECT_STATE
 
+- 2026-07-25: [LUC-1863](/LUC/issues/LUC-1863) refreshed the Roost PM
+  known-state delta on top of the closed [LUC-1839](/LUC/issues/LUC-1839)
+  baseline and found no fresh product-facing regression. Current evidence
+  lives in
+  `docs/planning/luc-1863-known-state-refresh-evidence-delta-and-next-repair-lanes.md`.
+  The architecture gate is still green after `npm run architecture:refresh`
+  and `npm run architecture:status`; architecture-awareness refresh generated
+  `2026-07-25T19:55:28.602Z` with `3141` entities / `8563` relations /
+  `16533` files; task sync at the same timestamp keeps `0` actionable
+  implementation entities without task links and `0` verified entities without
+  proof evidence while still carrying `12` task-artifact linkage gaps; app
+  completion remains zero-gap. The only fresh follow-up justified by this
+  heartbeat is [LUC-1866](/LUC/issues/LUC-1866) source-control closure for the
+  generated docs/graphs/status/state packet.
+
 - 2026-07-25: [LUC-1862](/LUC/issues/LUC-1862) classified and closed the local
   dirty state for the completed [LUC-1861](/LUC/issues/LUC-1861) canonical-logo
   packet. Closure evidence lives in

@@ -1,3 +1,34 @@
+# 2026-07-25 LUC-1863 Known-State Delta Health Signal
+
+- Status: Roost PM known-state delta refresh completed locally with no fresh
+  product-facing regression detected.
+- Evidence: `docs/planning/luc-1863-known-state-refresh-evidence-delta-and-next-repair-lanes.md`;
+  `npm run architecture:refresh` PASS; `npm run architecture:status` PASS
+  (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`); `docs/status/architecture-awareness-report.md` and
+  `docs/status/task-synchronization-report.md` generated
+  `2026-07-25T19:55:28.602Z`; app-completion remains zero-gap at `46` items /
+  `4` flows / `0` missing test links / `0` missing doc links / `0`
+  implemented-needs-proof / `0` blocked / `0` risk items.
+- Guardrail re-confirmed: this packet is evidence refresh and memory sync only.
+  No runtime feature logic, deploy, push, protected smoke, provider mutation,
+  production mutation, credential access, or secret disclosure occurred.
+
+# 2026-07-25 LUC-1866 Source-Control Closure Health Signal
+
+- Status: local source-control closure for the completed
+  [LUC-1863](/LUC/issues/LUC-1863) PM delta packet is in verification with the
+  dirty tree still classified as coherent.
+- Evidence: `docs/planning/luc-1866-source-control-closure-for-luc-1863-evidence-packet.md`;
+  `git status --short --branch -uall` recorded `main...origin/main [ahead 78]`
+  with the coherent `LUC-1863` planning/state/generated packet; `git diff
+  --check` PASS with LF-to-CRLF warnings only; bounded pointer scan found the
+  stale `LUC-1865` closure-sidecar references and this lane corrects them to
+  [LUC-1866](/LUC/issues/LUC-1866).
+- Guardrail re-confirmed: this packet is source-control closure only. No
+  runtime feature logic, deploy, push, protected smoke, provider mutation,
+  production mutation, credential access, or secret disclosure occurred.
+
 # 2026-07-25 LUC-1843 Source-Control Closure Health Signal
 
 - Status: local source-control closure for the completed

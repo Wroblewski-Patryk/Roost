@@ -1,3 +1,9 @@
+## 2026-07-25 LUC-1863 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost known-state delta baseline | verified | `docs/planning/luc-1863-known-state-refresh-evidence-delta-and-next-repair-lanes.md`; `docs/status/architecture-health-dashboard.md` generated `2026-07-25T19:55:26.173Z`; `docs/status/architecture-proof-bundle.md` generated `2026-07-25T19:55:28.599Z`; `docs/status/architecture-awareness-report.md` and `docs/status/task-synchronization-report.md` generated `2026-07-25T19:55:28.602Z`; `docs/status/app-completion-index.md` generated `2026-07-24T17:57:48.628Z`; `npm run architecture:refresh` PASS; `npm run architecture:status` PASS; architecture-awareness refresh PASS (`3141` entities / `8563` relations / `16533` files); app-completion remains zero-gap at `46` items / `4` flows / `0` missing test links / `0` missing doc links / `0` implemented-needs-proof / `0` blocked / `0` risk items; task sync keeps `0` actionable implementation entities without task links and `0` verified entities without proof evidence while carrying `12` actionable task-link gaps. | No PM product repair is justified from this delta alone. [LUC-1866](/LUC/issues/LUC-1866) owns source control for the generated packet; reopen PM follow-up only on a fresh generated regression or an approved new product slice. |
+
 ## 2026-07-25 LUC-1839 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

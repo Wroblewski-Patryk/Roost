@@ -1,6 +1,6 @@
 # Project Memory Index
 
-Last updated: 2026-07-13
+Last updated: 2026-07-25
 
 ## Purpose
 
@@ -10,6 +10,22 @@ Every non-trivial task must connect local code changes to the current product
 state, architecture intent, module confidence, and the next release objective.
 
 ## Latest Generated Truth
+
+- 2026-07-25: [LUC-1863](/LUC/issues/LUC-1863) refreshed the Roost PM
+  known-state delta on top of the closed [LUC-1839](/LUC/issues/LUC-1839)
+  baseline. Use
+  `docs/planning/luc-1863-known-state-refresh-evidence-delta-and-next-repair-lanes.md`
+  for the current delta proof: `npm run architecture:refresh` PASS, `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`, delta `0/0/0`), external architecture-awareness refresh PASS
+  generated `2026-07-25T19:55:28.602Z` (`3141` entities / `8563` relations /
+  `16533` files), and task-sync remains clean on implementation linkage
+  (`0` actionable implementation entities without task links, `0` verified
+  entities without proof evidence) while still carrying `12` task-artifact
+  linkage gaps. App-completion remains zero-gap. Do not treat the awareness
+  inventory alone as a new PM product queue; the only immediate follow-up from
+  this heartbeat is [LUC-1866](/LUC/issues/LUC-1866) source-control closure
+  for the generated packet.
 
 - 2026-07-25: [LUC-1843](/LUC/issues/LUC-1843) closed local source control for
   the completed [LUC-1839](/LUC/issues/LUC-1839) PM known-state packet. Use

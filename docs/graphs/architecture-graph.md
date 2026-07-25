@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-24T17:57:48.628Z
+Generated: 2026-07-25T19:55:28.602Z
 
 ## Canonical Exports
 
@@ -49,7 +49,7 @@ Generated: 2026-07-24T17:57:48.628Z
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-20 LUC-1536 ClickUp Webhooks Packet Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-25 LUC-1843 Source-Control Closure Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -113,6 +113,7 @@ Generated: 2026-07-24T17:57:48.628Z
 | component | verified | cc-resource-selector.tsx | web/src/components/cc-resource-selector.tsx | Engineering Delivery Lead |
 | component | verified | cc-route-loading.tsx | web/src/components/cc-route-loading.tsx | Engineering Delivery Lead |
 | component | verified | cc-text-input.tsx | web/src/components/cc-text-input.tsx | Engineering Delivery Lead |
+| component | implemented | roost-logo-mark.tsx | web/src/components/roost-logo-mark.tsx | Engineering Delivery Lead |
 | document | implemented | pull_request_template.md | .github/pull_request_template.md | Engineering Delivery Lead |
 | document | implemented | Workflow Guidance | .github/workflows/README.md | Engineering Delivery Lead |
 | document | implemented | Architecture Graph | .tmp/luc-5770-architecture-baseline/graphs/architecture-graph.md | Engineering Delivery Lead |
@@ -512,7 +513,6 @@ Generated: 2026-07-24T17:57:48.628Z
 | document | implemented | Api Key.Middleware | docs/architecture/nodes/generated/MW-AUTO-0001.md | Docs Memory Lead |
 | document | implemented | Api Error | docs/architecture/nodes/generated/MW-AUTO-0002.md | Docs Memory Lead |
 | document | implemented | Async Handler | docs/architecture/nodes/generated/MW-AUTO-0003.md | Docs Memory Lead |
-| document | implemented | Error Handler | docs/architecture/nodes/generated/MW-AUTO-0004.md | Docs Memory Lead |
 
 ## Relation Index
 
@@ -693,12 +693,14 @@ Generated: 2026-07-24T17:57:48.628Z
 | connected_to | project:roost:122c92a083 | task:task:780e0f6c76 | .codex/tasks/luc-822-roost-source-control-classify-dirty-project-state.md |
 | connected_to | project:roost:122c92a083 | task:task:7879ec3809 | .codex/tasks/luc-1169-prove-unclassified-user-workflow-missing-test-link-for-use-clients.md |
 | connected_to | project:roost:122c92a083 | task:task:7b0a53df15 | .codex/tasks/luc-1269-source-control-closure-for-luc-1266-goals-proof-link-packet.md |
+| connected_to | project:roost:122c92a083 | task:task:7d0632394e | .codex/tasks/luc-1862-classify-and-close-local-dirty-state-for-luc-1861.md |
 | connected_to | project:roost:122c92a083 | task:task:7eb0086c15 | .codex/tasks/luc-1234-prove-unclassified-user-workflow-missing-doc-link-for-use-decisions.md |
 | connected_to | project:roost:122c92a083 | task:task:7f3cb89713 | .codex/tasks/luc-1442-prove-unclassified-user-workflow-missing-test-link-for-use-ready.md |
 | connected_to | project:roost:122c92a083 | task:task:81149717ae | .codex/tasks/luc-1788-roost-v1-sale-readiness-and-knowledge-plane-contract.md |
 | connected_to | project:roost:122c92a083 | task:task:815d15a5d8 | .codex/tasks/luc-1477-prove-unclassified-user-workflow-missing-test-link-for-use-tasks.md |
 | connected_to | project:roost:122c92a083 | task:task:83795f24a5 | .codex/tasks/luc-990-account-access-intake-authactor-doc-link.md |
 | connected_to | project:roost:122c92a083 | task:task:877880df05 | .codex/tasks/luc-1108-unclassified-user-workflow-use-agent-logs-proof-link.md |
+| connected_to | project:roost:122c92a083 | task:task:8b82a26e5c | .codex/tasks/luc-1861-replace-logo-occurrences-with-canonical-roost-mark.md |
 | connected_to | project:roost:122c92a083 | task:task:8cf71581bf | .codex/tasks/luc-1099-trading-operation-strategy-route-proof-link.md |
 | connected_to | project:roost:122c92a083 | task:task:8d9a7cbaa9 | .codex/tasks/luc-959-account-access-company-os-authactor-proof.md |
 | connected_to | project:roost:122c92a083 | task:task:8f65f8da2d | .codex/tasks/luc-787-account-access-normalize-token-response-doc-link.md |
@@ -723,7 +725,9 @@ Generated: 2026-07-24T17:57:48.628Z
 | connected_to | project:roost:122c92a083 | task:task:b5c3bb06fb | .codex/tasks/luc-1070-dashboard-architecture-health-dashboard-gate-proof.md |
 | connected_to | project:roost:122c92a083 | task:task:b7673d1487 | .codex/tasks/luc-1312-prove-unclassified-user-workflow-missing-doc-link-for-use-interactions.md |
 | connected_to | project:roost:122c92a083 | task:task:b7bc2d8179 | .codex/tasks/luc-726-dashboard-overview-route-gaps-local-proof.md |
+| connected_to | project:roost:122c92a083 | task:task:b8c98d844e | .codex/tasks/luc-1843-classify-and-close-local-dirty-state-for-luc-1839.md |
 | connected_to | project:roost:122c92a083 | task:task:ba12a9ca2b | .codex/tasks/luc-1459-prove-unclassified-user-workflow-missing-test-link-for-use-relationships.md |
+| connected_to | project:roost:122c92a083 | task:task:bc17a35ecd | .codex/tasks/luc-1833-versioned-owner-facing-product-map-ui.md |
 | connected_to | project:roost:122c92a083 | task:task:bfa3c4d5b9 | .codex/tasks/luc-904-source-control-closure-local-dirty-state-sidecar.md |
 | connected_to | project:roost:122c92a083 | task:task:c2d0550ce1 | .codex/tasks/luc-926-source-control-closure-for-luc-895.md |
 | connected_to | project:roost:122c92a083 | task:task:c4a21764fb | .codex/tasks/luc-1095-trading-operation-src-modules-strategy-proof-link.md |
@@ -759,7 +763,7 @@ Generated: 2026-07-24T17:57:48.628Z
 | connected_to | project:roost:122c92a083 | task:task:fa147029d0 | .codex/tasks/luc-1474-classify-and-close-local-dirty-state-for-luc-1473.md |
 | connected_to | project:roost:122c92a083 | task:task:fdab369c50 | .codex/tasks/luc-1455-source-control-closure-for-luc-1442-luc-1450.md |
 | documents | agent:2026-07-20-luc-1527-module-confidence-update:0bb5cf3d41 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
-| documents | agent:2026-07-20-luc-1536-clickup-webhooks-packet-health-signal:5ba4a8552b | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-25-luc-1843-source-control-closure-health-signal:cbeada7302 | module:agents:4ae71ba13a | .agents/state/system-health.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -1214,7 +1218,3 @@ Generated: 2026-07-24T17:57:48.628Z
 | documents | document:google-drive-content-snapshots-model:9af6b5d255 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0026.md |
 | documents | document:google-drive-content:f07acd9cea | module:docs:6784d83cb0 | docs/architecture/nodes/generated/INT-AUTO-0010.md |
 | documents | document:google-drive-coverage-expansion:78b439c41a | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-AUTO-0013.md |
-| documents | document:google-drive-files-model:9a1fea058f | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-GOOGLE-DRIVE-FILE.md |
-| documents | document:google-drive-owner-setup:9c6bc70541 | module:docs:6784d83cb0 | docs/operations/google-drive-owner-setup.md |
-| documents | document:google-drive-production-smoke:fc9bb13362 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/PIPE-AUTO-0016.md |
-| documents | document:google-drive-sync:c5c94bd078 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/INT-AUTO-0011.md |

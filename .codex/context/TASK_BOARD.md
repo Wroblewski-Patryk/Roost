@@ -1,6 +1,14 @@
 # TASK_BOARD
 
 ## Disposition Note
+- 2026-07-25: [LUC-1863](/LUC/issues/LUC-1863) refreshed the Roost PM
+  known-state delta. Use
+  `docs/planning/luc-1863-known-state-refresh-evidence-delta-and-next-repair-lanes.md`
+  before opening another broad PM repair lane: architecture stayed green,
+  app-completion stayed zero-gap, and the refreshed awareness/task-sync layer
+  only justifies [LUC-1866](/LUC/issues/LUC-1866) source-control closure for
+  the generated packet, not a new product follow-up from inventory counts
+  alone.
 - 2026-07-25: [LUC-1862](/LUC/issues/LUC-1862) closed local source control for
   the completed [LUC-1861](/LUC/issues/LUC-1861) canonical-logo packet. Use
   `docs/planning/luc-1862-source-control-closure-for-luc-1861-dirty-state.md`

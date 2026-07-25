@@ -1,6 +1,6 @@
 # Architecture Evidence Summary
 
-Generated at: 2026-07-25T15:56:26.273Z
+Generated at: 2026-07-25T19:55:14.906Z
 
 ## Counts
 

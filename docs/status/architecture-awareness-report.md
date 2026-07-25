@@ -1,6 +1,6 @@
 # Architecture Awareness Report
 
-Generated: 2026-07-24T17:57:48.628Z
+Generated: 2026-07-25T19:55:28.602Z
 Project: Roost
 Root: C:/Personal/Projekty/Aplikacje/Roost
 
@@ -10,15 +10,15 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | --- | ---: |
 | agent | 47 |
 | api_endpoint | 46 |
-| component | 7 |
-| document | 1489 |
-| feature | 173 |
-| function | 990 |
+| component | 8 |
+| document | 1492 |
+| feature | 174 |
+| function | 993 |
 | migration | 31 |
 | model | 5 |
 | module | 67 |
 | project | 1 |
-| task | 191 |
+| task | 195 |
 | test | 82 |
 
 ## Counts By Status
@@ -27,15 +27,15 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 | --- | ---: |
 | blocked | 1 |
 | deprecated | 6 |
-| implemented | 2659 |
-| in_progress | 10 |
+| implemented | 2668 |
+| in_progress | 11 |
 | tested | 19 |
-| verified | 434 |
+| verified | 436 |
 
 ## Health Signals
 
-- Raw implementation entities without inferred tests: 1059
-- Actionable implementation entities without inferred tests: 1046
+- Raw implementation entities without inferred tests: 1065
+- Actionable implementation entities without inferred tests: 1052
 - Raw implementation entities without inferred docs: 0
 - Actionable implementation entities without inferred docs: 0
 - Classified inferred-link noise: 13
@@ -72,6 +72,7 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - api_endpoint: USE /tasks (src/app.ts#/tasks)
 - api_endpoint: USE /workspaces (src/app.ts#/workspaces)
 - component: cc-notice.tsx (web/src/components/cc-notice.tsx)
+- component: roost-logo-mark.tsx (web/src/components/roost-logo-mark.tsx)
 - feature: seed.ts (prisma/seed.ts)
 - feature: adapter-smoke.mjs (scripts/adapter-smoke.mjs)
 - feature: agent-training-smoke.mjs (scripts/agent-training-smoke.mjs)
@@ -88,7 +89,6 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - feature: build-architecture-risk-hotspots-report.mjs (scripts/build-architecture-risk-hotspots-report.mjs)
 - feature: build-architecture-roadmap.mjs (scripts/build-architecture-roadmap.mjs)
 - feature: check-architecture-chain-coverage.mjs (scripts/check-architecture-chain-coverage.mjs)
-- feature: check-architecture-command-contract.mjs (scripts/check-architecture-command-contract.mjs)
 
 ## Top Actionable Missing Doc Links
 
@@ -125,5 +125,5 @@ Root: C:/Personal/Projekty/Aplikacje/Roost
 - This is an inferred baseline. CTO/Docs Memory must promote or correct important relations.
 - Curated graph coverage input: `C:/Personal/Projekty/Aplikacje/Roost/docs/graphs/architecture-graph.json` (covered paths: 0).
 - Override input: `C:/Personal/Projekty/Aplikacje/Roost/docs/architecture/scanner-overrides.json` (entity entries: 265, relation entries: 300).
-- Override summary: excluded files 0, entity overrides 256, relation overrides 254, critical entities tagged 0.
+- Override summary: excluded files 0, entity overrides 255, relation overrides 253, critical entities tagged 0.
 - `verified` still requires fresh command/browser/deploy evidence, not only file presence.

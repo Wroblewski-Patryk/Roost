@@ -1,38 +1,38 @@
 {
-  "generated_at": "2026-07-24T17:57:48.628Z",
+  "generated_at": "2026-07-25T19:55:28.602Z",
   "project": {
     "name": "Roost",
     "root": "C:/Personal/Projekty/Aplikacje/Roost"
   },
   "counts": {
-    "entities": 3129,
-    "relations": 8501,
+    "entities": 3141,
+    "relations": 8563,
     "by_type": {
       "agent": 47,
       "api_endpoint": 46,
-      "component": 7,
-      "document": 1489,
-      "feature": 173,
-      "function": 990,
+      "component": 8,
+      "document": 1492,
+      "feature": 174,
+      "function": 993,
       "migration": 31,
       "model": 5,
       "module": 67,
       "project": 1,
-      "task": 191,
+      "task": 195,
       "test": 82
     },
     "by_status": {
       "blocked": 1,
       "deprecated": 6,
-      "implemented": 2659,
-      "in_progress": 10,
+      "implemented": 2668,
+      "in_progress": 11,
       "tested": 19,
-      "verified": 434
+      "verified": 436
     }
   },
   "signals": {
     "implementation_without_tests": {
-      "count": 1059,
+      "count": 1065,
       "items": [
         {
           "id": "api_endpoint:use-agent-events:1b4c65ace9",
@@ -216,6 +216,14 @@
           "name": "cc-notice.tsx",
           "path": "web/src/components/cc-notice.tsx",
           "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "component:roost-logo-mark-tsx:fad71eece9",
+          "type": "component",
+          "name": "roost-logo-mark.tsx",
+          "path": "web/src/components/roost-logo-mark.tsx",
+          "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -1299,6 +1307,14 @@
           "owner": "Engineering Delivery Lead"
         },
         {
+          "id": "feature:product-map-route-tsx:1211f0e9a6",
+          "type": "feature",
+          "name": "product-map-route.tsx",
+          "path": "web/src/features/departments/product-map-route.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
           "id": "feature:relationships-route-tsx:28cd4ddddd",
           "type": "feature",
           "name": "relationships-route.tsx",
@@ -1617,22 +1633,6 @@
           "path": "scripts/build-architecture-chain-hardening-worklist.mjs#csvEscape",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "function:loadcsv:3b3f081242",
-          "type": "function",
-          "name": "loadCsv",
-          "path": "scripts/build-architecture-chain-hardening-worklist.mjs#loadCsv",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "function:main:64705d1bee",
-          "type": "function",
-          "name": "main",
-          "path": "scripts/build-architecture-chain-hardening-worklist.mjs#main",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
         }
       ]
     },
@@ -1641,7 +1641,7 @@
       "items": []
     },
     "actionable_implementation_without_tests": {
-      "count": 1046,
+      "count": 1052,
       "items": [
         {
           "id": "api_endpoint:use-agent-events:1b4c65ace9",
@@ -1825,6 +1825,14 @@
           "name": "cc-notice.tsx",
           "path": "web/src/components/cc-notice.tsx",
           "status": "verified",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
+          "id": "component:roost-logo-mark-tsx:fad71eece9",
+          "type": "component",
+          "name": "roost-logo-mark.tsx",
+          "path": "web/src/components/roost-logo-mark.tsx",
+          "status": "implemented",
           "owner": "Engineering Delivery Lead"
         },
         {
@@ -2892,6 +2900,14 @@
           "owner": "Engineering Delivery Lead"
         },
         {
+          "id": "feature:product-map-route-tsx:1211f0e9a6",
+          "type": "feature",
+          "name": "product-map-route.tsx",
+          "path": "web/src/features/departments/product-map-route.tsx",
+          "status": "implemented",
+          "owner": "Engineering Delivery Lead"
+        },
+        {
           "id": "feature:relationships-route-tsx:28cd4ddddd",
           "type": "feature",
           "name": "relationships-route.tsx",
@@ -3224,22 +3240,6 @@
           "type": "function",
           "name": "main",
           "path": "scripts/build-architecture-chain-hardening-worklist.mjs#main",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "function:parsecsv:3a148fffe4",
-          "type": "function",
-          "name": "parseCsv",
-          "path": "scripts/build-architecture-chain-hardening-worklist.mjs#parseCsv",
-          "status": "implemented",
-          "owner": "Engineering Delivery Lead"
-        },
-        {
-          "id": "function:readtext:653a15725b",
-          "type": "function",
-          "name": "readText",
-          "path": "scripts/build-architecture-chain-hardening-worklist.mjs#readText",
           "status": "implemented",
           "owner": "Engineering Delivery Lead"
         }

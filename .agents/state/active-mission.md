@@ -1,5 +1,26 @@
 # Active Mission Packet
 
+## LUC-1863 Known-State Delta Packet
+
+- 2026-07-25: [LUC-1863](/LUC/issues/LUC-1863) completed the scoped PM
+  known-state delta refresh.
+- Current fact: the post-[LUC-1839](/LUC/issues/LUC-1839) baseline still holds
+  after a fresh architecture gate rerun and architecture-awareness refresh:
+  `npm run architecture:status` stayed `GREEN` at `455/769/35`, app-completion
+  stayed zero-gap, and task synchronization still reports `0` actionable
+  implementation entities without task links plus `0` verified entities without
+  proof evidence.
+- Delta result: the only fresh actionable lane from this heartbeat is
+  source-control closure for the generated docs/graphs/status/state packet.
+  The live closure sidecar is [LUC-1866](/LUC/issues/LUC-1866), which
+  supersedes the stale `LUC-1865` placeholder references recorded in the first
+  draft of this packet.
+  The awareness layer still contains `12` task-link inventory gaps and broad
+  inferred missing-test inventory, but no new PM product repair issue is
+  justified from those counts alone.
+- Explicit exclusions: no push, deploy, protected smoke, runtime mutation, or
+  cross-repo mutation from this packet.
+
 ## LUC-1861 Canonical Roost Logo Replacement Packet
 
 - 2026-07-25: [LUC-1861](/LUC/issues/LUC-1861) completed the scoped frontend

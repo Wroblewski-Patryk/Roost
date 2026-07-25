@@ -1,11 +1,11 @@
 # Dependency Report
 
-Generated: 2026-07-24T17:57:48.628Z
+Generated: 2026-07-25T19:55:28.602Z
 
 ## Summary
 
-- Dependency relations: 440
-- Entities with dependencies: 97
+- Dependency relations: 449
+- Entities with dependencies: 99
 
 ## Dependency Edges
 
@@ -14,6 +14,8 @@ Generated: 2026-07-24T17:57:48.628Z
 | cc-data-table.tsx | uses | cc-button.tsx | web/src/components/cc-button |
 | cc-data-table.tsx | uses | cc-notice.tsx | web/src/components/cc-notice |
 | cc-resource-selector.tsx | uses | cc-button.tsx | web/src/components/cc-button |
+| cc-route-loading.tsx | uses | roost-logo-mark.tsx | web/src/components/roost-logo-mark |
+| cc-route-loading.tsx | uses | i18n.tsx | web/src/i18n/i18n |
 | agent-events.routes.ts | uses | async-handler.ts | src/middleware/async-handler |
 | agent-events.routes.ts | uses | prisma.ts | src/db/prisma |
 | agent-key-profiles.ts | uses | capabilities.ts | src/auth/capabilities |
@@ -190,6 +192,7 @@ Generated: 2026-07-24T17:57:48.628Z
 | finance.routes.ts | uses | async-handler.ts | src/middleware/async-handler |
 | finance.routes.ts | uses | commercial-exceptions.routes.ts | src/modules/commercial-exceptions/commercial-exceptions.routes |
 | finance.routes.ts | uses | prisma.ts | src/db/prisma |
+| general-dashboard.tsx | uses | cc-button.tsx | web/src/components/cc-button |
 | general-dashboard.tsx | uses | cc-data-table.tsx | web/src/components/cc-data-table |
 | general-dashboard.tsx | uses | cc-notice.tsx | web/src/components/cc-notice |
 | general-dashboard.tsx | uses | core-area-data.ts | web/src/features/departments/core-area-data |
@@ -335,14 +338,19 @@ Generated: 2026-07-24T17:57:48.628Z
 | product-delivery-route.tsx | uses | shell.tsx | web/src/layout/shell |
 | product-delivery-route.tsx | uses | use-owner-packet.ts | web/src/hooks/use-owner-packet |
 | product-delivery-route.tsx | uses | types.ts | web/src/types |
+| product-map-route.tsx | uses | cc-button.tsx | web/src/components/cc-button |
+| product-map-route.tsx | uses | cc-notice.tsx | web/src/components/cc-notice |
+| product-map-route.tsx | uses | shell.tsx | web/src/layout/shell |
 | projects.routes.ts | uses | async-handler.ts | src/middleware/async-handler |
 | projects.routes.ts | uses | event.service.ts | src/modules/events/event.service |
 | projects.routes.ts | uses | prisma.ts | src/db/prisma |
 | public-home.tsx | uses | cc-button.tsx | web/src/components/cc-button |
+| public-home.tsx | uses | roost-logo-mark.tsx | web/src/components/roost-logo-mark |
 | public-home.tsx | uses | i18n.tsx | web/src/i18n/i18n |
 | public-home.tsx | uses | messages.ts | web/src/i18n/messages |
 | public-home.tsx | uses | public-layout.tsx | web/src/layout/public-layout |
 | public-layout.tsx | uses | cc-button.tsx | web/src/components/cc-button |
+| public-layout.tsx | uses | roost-logo-mark.tsx | web/src/components/roost-logo-mark |
 | public-layout.tsx | uses | i18n.tsx | web/src/i18n/i18n |
 | public-layout.tsx | uses | language-selector.tsx | web/src/i18n/language-selector |
 | public-layout.tsx | uses | messages.ts | web/src/i18n/messages |
@@ -383,6 +391,7 @@ Generated: 2026-07-24T17:57:48.628Z
 | shared.tsx | uses | cc-notice.tsx | web/src/components/cc-notice |
 | shared.tsx | uses | i18n.tsx | web/src/i18n/i18n |
 | shell.tsx | uses | cc-button.tsx | web/src/components/cc-button |
+| shell.tsx | uses | roost-logo-mark.tsx | web/src/components/roost-logo-mark |
 | shell.tsx | uses | app-route-registry.ts | web/src/app-route-registry |
 | shell.tsx | uses | core-area-data.ts | web/src/features/departments/core-area-data |
 | shell.tsx | uses | i18n.tsx | web/src/i18n/i18n |
