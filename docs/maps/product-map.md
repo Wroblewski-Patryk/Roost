@@ -17,6 +17,9 @@ execution and evidence gate. Soar and Roost repositories remain the source of
 truth for product intent, architecture, journeys, release contracts, and
 deployment truth.
 
+The canonical UI for this map lives in the authenticated React shell at
+`/areas?area=00-ogolny&view=product-map`.
+
 ## Authority Rules
 
 - Never merge local HEAD, origin/main, and deployed SHA into one truth.
@@ -107,3 +110,5 @@ When Roost, Soar, Paperclip, or production disagree:
   stale projection;
 - deciding whether the next action is product work, evidence work, or a
   blocker handoff.
+- opening the versioned owner-facing UI when the map must be reviewed without
+  collapsing source truth, deployed truth, or freshness boundaries.

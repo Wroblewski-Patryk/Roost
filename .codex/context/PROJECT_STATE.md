@@ -1,5 +1,11 @@
 # PROJECT_STATE
 
+- 2026-07-25: [LUC-1833](/LUC/issues/LUC-1833) completed the active Roost UI
+  heartbeat. The versioned owner-facing product map is published as a private
+  00 General React view at `/areas?area=00-ogolny&view=product-map`, with
+  source SHA, deployed SHA, freshness boundary, and conflict rules kept
+  separate.
+
 - 2026-07-24: [LUC-1825](/LUC/issues/LUC-1825) refreshed the Roost
   architecture-awareness baseline. The generated exports are current in
   `docs/graphs/architecture-health.json`,

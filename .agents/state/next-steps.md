@@ -1,4 +1,7 @@
 # Next Steps
+- 2026-07-25: [LUC-1833](/LUC/issues/LUC-1833) is complete. The versioned
+  owner-facing product map UI in 00 General is verified on the canonical
+  route, dashboard CTA, and shell label.
 - 2026-07-24: [LUC-1825](/LUC/issues/LUC-1825) completed the Roost
   architecture baseline harvest. Next execution should create bounded follow-up
   work for the 1059 implementation-without-tests items and the 12 actionable

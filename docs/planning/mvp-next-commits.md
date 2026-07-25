@@ -1,5 +1,16 @@
 # MVP Next Commits
 
+- 2026-07-25: [LUC-1833](/LUC/issues/LUC-1833) opened the versioned
+  owner-facing product map UI slice. Evidence packet:
+  `.codex/tasks/luc-1833-versioned-owner-facing-product-map-ui.md`.
+  Current implementation: the 00 General React shell is wired to the new
+  canonical product-map view at `/areas?area=00-ogolny&view=product-map`,
+  with the dashboard CTA and navigation labels updated to keep source truth,
+  deployed truth, and freshness boundary separate. Verification completed with
+  `npm run build` PASS and browser proof PASS on the canonical dashboard ->
+  product-map navigation path. Next owner: none for this packet; close the
+  issue with the recorded completion evidence.
+
 - 2026-07-18: [LUC-1491](/LUC/issues/LUC-1491) completed terminal
   source-control closure for the coherent `LUC-1486` `/v1/health` proof-link
   packet. Evidence packet:

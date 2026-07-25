@@ -1,5 +1,22 @@
 # Active Mission Packet
 
+## LUC-1833 Product Map UI Mission
+
+- 2026-07-25: [LUC-1833](/LUC/issues/LUC-1833) completed the active heartbeat
+  mission. The versioned owner-facing product map UI is published in the 00
+  General React shell, source truth and deployed truth remain separate, and the
+  canonical route is `/areas?area=00-ogolny&view=product-map`.
+- Current fact: the product-map route component, shell wiring, dashboard CTA,
+  build, and browser reload proof all passed; no backend/API changes were
+  needed for this slice.
+- Included scope: route registry, shell dispatch, 00 General nav labels,
+  product-map route UI, product-map doc note, task packet, and local state
+  refresh.
+- Explicit exclusions: deploy, push, production mutation, hidden fallbacks,
+  and any attempt to merge source/deployed truth into a single status badge.
+- Closure note: the issue can move to `done` after the issue tracker update and
+  completion evidence bundle are recorded.
+
 ## LUC-1825 Architecture Baseline Packet
 
 - 2026-07-24: [LUC-1825](/LUC/issues/LUC-1825) completed the Roost

@@ -1,5 +1,12 @@
 # Current Focus
 
+## LUC-1833 Product Map UI
+
+- 2026-07-25: [LUC-1833](/LUC/issues/LUC-1833) is verified and ready for
+  closeout. The 00 General product-map route now renders the separate source
+  SHA, deployed SHA, freshness boundary, and readiness verdict views, and the
+  dashboard CTA lands on the canonical path.
+
 ## LUC-1825 Architecture Baseline Refresh
 
 - 2026-07-24: [LUC-1825](/LUC/issues/LUC-1825) refreshed the Roost

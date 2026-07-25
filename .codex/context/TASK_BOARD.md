@@ -1,6 +1,10 @@
 # TASK_BOARD
 
 ## Disposition Note
+- 2026-07-25: [LUC-1833](/LUC/issues/LUC-1833) opened the versioned
+  owner-facing product map UI slice. The canonical private route is
+  `/areas?area=00-ogolny&view=product-map`; keep source SHA, deployed SHA, and
+  freshness boundaries separate in the UI and issue evidence.
 - 2026-07-24: [LUC-1825](/LUC/issues/LUC-1825) refreshed the Roost
   architecture baseline and exported the current graph, health, dependency,
   ownership, and task-synchronization reports. Use the new baseline to route
@@ -25,6 +29,9 @@
   [LUC-1585](/LUC/issues/LUC-1585) as a recovery lane.
 
 ## Now
+- 2026-07-25: [LUC-1833](/LUC/issues/LUC-1833) is complete. The versioned
+  owner-facing product map UI in 00 General is published and verified on the
+  canonical route, dashboard CTA, and shell label.
 - 2026-07-24: [LUC-1799](/LUC/issues/LUC-1799) is closed and no longer needs
   active board time. The hosted read-only canary is now fully evidenced, so
   keep the record for audit traceability and move on to the next Roost
