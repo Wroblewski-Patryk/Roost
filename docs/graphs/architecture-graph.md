@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-25T19:55:28.602Z
+Generated: 2026-07-26T00:37:49.511Z
 
 ## Canonical Exports
 
@@ -49,7 +49,7 @@ Generated: 2026-07-25T19:55:28.602Z
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-25 LUC-1843 Source-Control Closure Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-25 LUC-1863 Known-State Delta Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -637,6 +637,7 @@ Generated: 2026-07-25T19:55:28.602Z
 | connected_to | project:roost:122c92a083 | task:task:1d586e023e | .codex/tasks/luc-1168-source-control-closure-classify-project-docs-dirty-packet-from-luc-1167.md |
 | connected_to | project:roost:122c92a083 | task:task:1e499a208d | .codex/tasks/luc-1273-source-control-closure-for-luc-1270-goals-doc-link-packet.md |
 | connected_to | project:roost:122c92a083 | task:task:23d2637e83 | .codex/tasks/luc-786-account-access-merge-google-drive-config-doc-link.md |
+| connected_to | project:roost:122c92a083 | task:task:2427fa3118 | .codex/tasks/luc-1866-classify-and-close-local-dirty-state-for-luc-1863.md |
 | connected_to | project:roost:122c92a083 | task:task:26fdd09e52 | .codex/tasks/luc-1248-source-control-closure-for-luc-1239-departments-proof-link-packet.md |
 | connected_to | project:roost:122c92a083 | task:task:272a8962ca | .codex/tasks/luc-1352-prove-unclassified-user-workflow-missing-test-link-for-use-operating-graph.md |
 | connected_to | project:roost:122c92a083 | task:task:28cea16a09 | .codex/tasks/luc-1307-prove-unclassified-user-workflow-missing-test-link-for-use-interactions.md |
@@ -763,7 +764,7 @@ Generated: 2026-07-25T19:55:28.602Z
 | connected_to | project:roost:122c92a083 | task:task:fa147029d0 | .codex/tasks/luc-1474-classify-and-close-local-dirty-state-for-luc-1473.md |
 | connected_to | project:roost:122c92a083 | task:task:fdab369c50 | .codex/tasks/luc-1455-source-control-closure-for-luc-1442-luc-1450.md |
 | documents | agent:2026-07-20-luc-1527-module-confidence-update:0bb5cf3d41 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
-| documents | agent:2026-07-25-luc-1843-source-control-closure-health-signal:cbeada7302 | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-25-luc-1863-known-state-delta-health-signal:b563f389a1 | module:agents:4ae71ba13a | .agents/state/system-health.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -1217,4 +1218,3 @@ Generated: 2026-07-25T19:55:28.602Z
 | documents | document:google-drive-client:99b9b60f85 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/CLS-AUTO-0003.md |
 | documents | document:google-drive-content-snapshots-model:9af6b5d255 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0026.md |
 | documents | document:google-drive-content:f07acd9cea | module:docs:6784d83cb0 | docs/architecture/nodes/generated/INT-AUTO-0010.md |
-| documents | document:google-drive-coverage-expansion:78b439c41a | module:docs:6784d83cb0 | docs/architecture/nodes/generated/FEAT-AUTO-0013.md |

@@ -1,6 +1,14 @@
 # TASK_BOARD
 
 ## Disposition Note
+- 2026-07-26: [LUC-1885](/LUC/issues/LUC-1885) refreshed the Roost PM
+  known-state delta. Use
+  `docs/planning/luc-1885-known-state-refresh-evidence-delta-and-next-repair-lanes.md`
+  before opening another broad PM repair lane: architecture stayed green,
+  app-completion stayed zero-gap, and the refreshed awareness/task-sync layer
+  did not justify a new product follow-up from inventory counts alone.
+  Source-control closure is complete through
+  `docs/planning/luc-1886-source-control-closure-for-luc-1885-evidence-packet.md`.
 - 2026-07-25: [LUC-1863](/LUC/issues/LUC-1863) refreshed the Roost PM
   known-state delta. Use
   `docs/planning/luc-1863-known-state-refresh-evidence-delta-and-next-repair-lanes.md`
@@ -58,6 +66,10 @@
   [LUC-1585](/LUC/issues/LUC-1585) as a recovery lane.
 
 ## Now
+- 2026-07-26: [LUC-1885](/LUC/issues/LUC-1885) is complete. The July 26 known-
+  state delta kept architecture `GREEN`, kept app-completion zero-gap, and
+  found no fresh user-facing or product-proof regression. Source-control
+  closure is complete through [LUC-1886](/LUC/issues/LUC-1886).
 - 2026-07-25: [LUC-1862](/LUC/issues/LUC-1862) is complete. The local dirty
   tree left by [LUC-1861](/LUC/issues/LUC-1861) was classified as one coherent
   canonical-logo packet and closed through a preservation commit with no

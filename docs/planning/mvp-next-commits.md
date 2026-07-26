@@ -1,5 +1,21 @@
 # MVP Next Commits
 
+- 2026-07-26: [LUC-1885](/LUC/issues/LUC-1885) refreshed the Roost PM
+  known-state delta. Evidence packet:
+  `docs/planning/luc-1885-known-state-refresh-evidence-delta-and-next-repair-lanes.md`.
+  Current evidence: `npm run architecture:refresh` PASS; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`, delta `0/0/0`); architecture-awareness refresh generated
+  `2026-07-26T00:37:49.511Z` with `3144` entities / `8579` relations / `16535`
+  files; task synchronization at the same timestamp reports `12` actionable
+  tasks without architecture links but `0` actionable implementation entities
+  without task links and `0` verified entities without proof evidence;
+  app-completion remains zero-gap. Source-control closure is complete through
+  [LUC-1886](/LUC/issues/LUC-1886) and recorded in
+  `docs/planning/luc-1886-source-control-closure-for-luc-1885-evidence-packet.md`.
+  Do not open a duplicate PM product repair wave from awareness inventory
+  counts alone.
+
 - 2026-07-25: [LUC-1863](/LUC/issues/LUC-1863) refreshed the Roost PM
   known-state delta. Evidence packet:
   `docs/planning/luc-1863-known-state-refresh-evidence-delta-and-next-repair-lanes.md`.

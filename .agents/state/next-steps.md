@@ -1,4 +1,9 @@
 # Next Steps
+- 2026-07-26: [LUC-1885](/LUC/issues/LUC-1885) refreshed the Roost PM
+  known-state delta and [LUC-1886](/LUC/issues/LUC-1886) closed the generated
+  docs/graphs/status/state packet. Do not open a duplicate PM repair lane from
+  the `12` actionable task-link gaps in architecture awareness alone; reopen
+  only on a fresh generated regression or an approved new product slice.
 - 2026-07-25: [LUC-1863](/LUC/issues/LUC-1863) refreshed the Roost PM
   known-state delta and found no fresh product/user-flow regression. The next
   legal step is [LUC-1866](/LUC/issues/LUC-1866) source-control closure for

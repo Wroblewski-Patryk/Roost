@@ -1,5 +1,38 @@
 # Active Mission Packet
 
+## LUC-1886 Source-Control Closure Packet
+
+- 2026-07-26: [LUC-1886](/LUC/issues/LUC-1886) completed source-control
+  closure for the [LUC-1885](/LUC/issues/LUC-1885) known-state delta packet.
+- Current fact: the July 26 PM known-state refresh is now complete through a
+  scoped local preservation closure. The dirty tree was coherent to one
+  planning/state/generated packet, bounded diff hygiene passed with LF-to-CRLF
+  warnings only, and no runtime, deploy, credential, or cross-repo mutation
+  occurred in this lane.
+- Closure result: the live packet is
+  `docs/planning/luc-1886-source-control-closure-for-luc-1885-evidence-packet.md`.
+  Push remains held for a future release batch or explicit source-ref need.
+- Explicit exclusions: no scanner rerun, protected smoke, deploy, runtime
+  mutation, or cross-repo mutation from this packet.
+
+## LUC-1885 Known-State Delta Packet
+
+- 2026-07-26: [LUC-1885](/LUC/issues/LUC-1885) completed the scoped PM
+  known-state delta refresh.
+- Current fact: the post-[LUC-1863](/LUC/issues/LUC-1863) baseline still holds
+  after a fresh architecture gate rerun and architecture-awareness refresh:
+  `npm run architecture:status` stayed `GREEN` at `455/769/35`,
+  app-completion stayed zero-gap, and task synchronization still reports `12`
+  actionable task-link gaps but `0` actionable implementation entities without
+  task links plus `0` verified entities without proof evidence.
+- Delta result: the only fresh actionable lane from this heartbeat is
+  source-control closure for the generated docs/graphs/status/state packet.
+  The live closure sidecar is [LUC-1886](/LUC/issues/LUC-1886). The awareness
+  layer grew to `3144` entities / `8579` relations / `16535` files, but no new
+  PM product repair issue is justified from that inventory delta alone.
+- Explicit exclusions: no push, deploy, protected smoke, runtime mutation, or
+  cross-repo mutation from this packet.
+
 ## LUC-1863 Known-State Delta Packet
 
 - 2026-07-25: [LUC-1863](/LUC/issues/LUC-1863) completed the scoped PM

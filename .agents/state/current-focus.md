@@ -1,20 +1,19 @@
 # Current Focus
 
-## LUC-1863 Known-State Delta Refresh
+## LUC-1885 Known-State Delta Refresh
 
-- 2026-07-25: [LUC-1863](/LUC/issues/LUC-1863) refreshed the Roost PM
-  known-state delta after the closed [LUC-1839](/LUC/issues/LUC-1839) /
-  [LUC-1843](/LUC/issues/LUC-1843) baseline pair and the
-  [LUC-1861](/LUC/issues/LUC-1861) / [LUC-1862](/LUC/issues/LUC-1862) logo
-  lane. Architecture is still `GREEN` after a fresh `npm run
-  architecture:refresh` and `npm run architecture:status`, app-completion is
-  still zero-gap, and the newly refreshed architecture-awareness/task-sync
-  layer shows `12` actionable task-link gaps but `0` actionable implementation
-  entities without task links and `0` verified entities without proof.
+- 2026-07-26: [LUC-1885](/LUC/issues/LUC-1885) refreshed the Roost PM
+  known-state delta after the closed [LUC-1863](/LUC/issues/LUC-1863) /
+  [LUC-1866](/LUC/issues/LUC-1866) baseline pair. Architecture is still
+  `GREEN` after a fresh `npm run architecture:refresh` and `npm run
+  architecture:status`, app-completion is still zero-gap, and the newly
+  refreshed architecture-awareness/task-sync layer shows `12` actionable
+  task-link gaps but `0` actionable implementation entities without task links
+  and `0` verified entities without proof.
 - Current rule: do not open a new PM product repair wave from the awareness
-  inventory alone. The only fresh follow-up justified by this heartbeat is
-  [LUC-1866](/LUC/issues/LUC-1866) source-control closure for the generated
-  `LUC-1863` evidence packet.
+  inventory alone. Source-control closure is complete through
+  [LUC-1886](/LUC/issues/LUC-1886); do not reopen this packet unless a fresh
+  generated regression or approved new product slice changes the baseline.
 
 ## LUC-1843 Source-Control Closure
 
