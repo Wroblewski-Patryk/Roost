@@ -21,6 +21,7 @@ audits, proof artifacts, release packets, and raw generated outputs belong in
 | System shape, contracts, modules, architecture truth | `docs/maps/architecture-map.md` |
 | End-to-end user/system flows across layers | `docs/pipelines/pipeline-registry.md` |
 | Deploy, smoke, rollback, release gates, operator proof | `docs/maps/release-ops-map.md` |
+| End-to-end application/business lifecycle, ownership, gates, and Roost projection | `docs/governance/autonomous-application-business-lifecycle.md` |
 | Coordinator startup, active state, validation, proof lookup | `docs/maps/agent-work-map.md` |
 | Documentation structure and graph navigation | `docs/maps/documentation-maps.md` |
 

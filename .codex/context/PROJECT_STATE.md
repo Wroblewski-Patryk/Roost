@@ -1,5 +1,15 @@
 # PROJECT_STATE
 
+- 2026-07-26: [LUC-1895](/LUC/issues/LUC-1895) records the governed follow-up
+  for publishing `PROC-SH-APPLICATION-LIFECYCLE` version 1.0 as an
+  authenticated owner-facing Roost procedure. The repository projection is
+  now defined in
+  `docs/governance/autonomous-application-business-lifecycle.md`, indexed by
+  the documentation map and pipeline registry, but remains explicitly
+  `source_only`. Paperclip remains the live execution/evidence authority and
+  the active integration remains read-only; hosted UI/API publication,
+  deployment, and production browser proof are future LUC-1895 work.
+
 - 2026-07-26: [LUC-1885](/LUC/issues/LUC-1885) refreshed the Roost PM
   known-state delta on top of the closed [LUC-1863](/LUC/issues/LUC-1863)
   packet and found no fresh product-facing regression. Current evidence lives

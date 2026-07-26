@@ -1,6 +1,12 @@
 # TASK_BOARD
 
 ## Disposition Note
+- 2026-07-26: [LUC-1895](/LUC/issues/LUC-1895) is the single governed backlog
+  lane for making the autonomous application/business lifecycle live on an
+  authenticated Roost owner surface. Use
+  `.codex/tasks/luc-1895-publish-autonomous-application-lifecycle.md`; do not
+  create duplicate procedure/publication work or treat the current
+  repository-only contract as deployed.
 - 2026-07-26: [LUC-1885](/LUC/issues/LUC-1885) refreshed the Roost PM
   known-state delta. Use
   `docs/planning/luc-1885-known-state-refresh-evidence-delta-and-next-repair-lanes.md`
@@ -66,6 +72,10 @@
   [LUC-1585](/LUC/issues/LUC-1585) as a recovery lane.
 
 ## Now
+- 2026-07-26: The Roost projection source for
+  `PROC-SH-APPLICATION-LIFECYCLE` v1.0 is present and indexed. Publication
+  state is `source_only`; LUC-1895 remains backlog until selected after clean
+  source-control closure.
 - 2026-07-26: [LUC-1885](/LUC/issues/LUC-1885) is complete. The July 26 known-
   state delta kept architecture `GREEN`, kept app-completion zero-gap, and
   found no fresh user-facing or product-proof regression. Source-control

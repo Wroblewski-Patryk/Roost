@@ -1,6 +1,6 @@
 # Pipeline Registry
 
-Last updated: YYYY-MM-DD
+Last updated: 2026-07-26
 
 ## Purpose
 
@@ -15,6 +15,11 @@ sources. They do not redefine architecture.
 | Pipeline | Trigger | Primary Frontend | Primary Backend | Data Read/Write | Tests | Doc |
 | --- | --- | --- | --- | --- | --- | --- |
 | Example flow | User or system trigger | `path/to/frontend` | `path/to/backend` | Data model or store | test path | `docs/pipelines/pipeline-template.md` |
+| Autonomous application and business lifecycle | Activated offering, release objective, verified defect, incident, or improvement opportunity | Owner-facing Product Map / future procedure view | Paperclip and product APIs through governed integration | Offering, procedure, release, KPI, decision, dependency, and evidence projections | Contract/e2e proof required before live publication | `docs/governance/autonomous-application-business-lifecycle.md` |
+
+The lifecycle pipeline composes the narrower delivery, QA, release, operation,
+and learning flows. Paperclip remains the live execution/evidence authority;
+this registry records the Roost company-facing projection.
 
 ## Pipeline Document Contract
 

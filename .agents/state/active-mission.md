@@ -1,5 +1,21 @@
 # Active Mission Packet
 
+## LUC-1895 Autonomous Application Lifecycle Publication Packet
+
+- 2026-07-26: the company-facing procedure projection is defined at
+  `docs/governance/autonomous-application-business-lifecycle.md` and indexed in
+  the Roost documentation and pipeline maps.
+- Current fact: the procedure is `source_only`. Paperclip owns live execution
+  and evidence; Roost owns the future authenticated owner projection; product
+  repositories own versioned implementation and release truth.
+- LUC-1895 is the one backlog implementation lane for a real owner UI/API,
+  stale/conflict/access/audit handling, and production browser/deployed-SHA
+  proof. Do not duplicate or start it merely because the source document now
+  exists.
+- Explicit exclusions: no direct database integration, provider write,
+  authority expansion, commercial activation, push, deploy, or secret access
+  from this documentation packet.
+
 ## LUC-1886 Source-Control Closure Packet
 
 - 2026-07-26: [LUC-1886](/LUC/issues/LUC-1886) completed source-control
