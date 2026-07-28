@@ -18,7 +18,24 @@ truth for product intent, architecture, journeys, release contracts, and
 deployment truth.
 
 The canonical UI for this map lives in the authenticated React shell at
-`/areas?area=00-ogolny&view=product-map`.
+`/areas?area=00-ogolny&view=product-map`. It reads only Roost's authenticated
+`GET /v1/product-map/projection` read model. The browser never contacts
+Paperclip, localhost, or the projection ingress path.
+
+## Read-Model Presentation Contract
+
+The view renders each accepted projection offering with its lifecycle stage,
+source/deployed SHA, version alignment, readiness/evidence status, open issue
+count, next gate, and conflict state. The accepted V1 packet does not include a
+person-level owner field; the UI therefore identifies the mapped Paperclip
+project and does not invent an owner.
+
+- `current` may be presented as current only when the source is available and
+  no stale or conflict flag is set.
+- `stale` is labelled last-known-good evidence and cannot promote readiness.
+- `conflict`, `empty`, and `unavailable` remain explicit recovery states.
+- `NO-GO`, conflict, and `zeroGapButNoGo` always receive the negative visual
+  state; a zero gap count never overrides a negative decision.
 
 The future live-projection release is protected by
 `docs/operations/product-map-protected-release-preflight.md`. The existence of

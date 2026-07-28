@@ -80,6 +80,7 @@
     "test:api": "npm run build && npm run prisma:migrate:deploy && node --test \"dist/tests/api.test.js\"",
     "test:api:local": "node scripts/test-api-local.mjs",
     "test": "npm run test:api",
+    "test:web:product-map": "node --import tsx --test web/src/features/departments/product-map-projection.test.ts",
     "validate": "npm run architecture:refresh && npm run check:public-js && npm run check:route-capabilities && npm run build"
   },
   "dependencies": {
