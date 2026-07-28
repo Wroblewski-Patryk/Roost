@@ -32,6 +32,7 @@ import { operatingModelRouter } from "./modules/operating-model/operating-model.
 import { operationsRouter } from "./modules/operations/operations.routes";
 import { pipelineStagesRouter } from "./modules/pipeline-stages/pipeline-stages.routes";
 import { processCoreRouter } from "./modules/process-core/process-core.routes";
+import { productMapIngressRouter, productMapReadRouter } from "./modules/product-map/product-map-projection.routes";
 import { projectsRouter } from "./modules/projects/projects.routes";
 import { relationshipsRouter } from "./modules/relationships/relationships.routes";
 import { salesRouter } from "./modules/sales/sales.routes";
@@ -71,6 +72,7 @@ function mountProtectedRoutes(router: Router) {
   router.use("/clients", clientsRouter);
   router.use("/pipeline-stages", pipelineStagesRouter);
   router.use("/process-core", processCoreRouter);
+  router.use("/product-map", productMapReadRouter);
   router.use("/deals", dealsRouter);
   router.use("/interactions", interactionsRouter);
   router.use("/notes", notesRouter);
@@ -150,7 +152,9 @@ export function createApp() {
 
   app.use(requestContext);
   app.use(securityHeaders);
-  app.use(createCorsMiddleware());
+  const corsMiddleware = createCorsMiddleware();
+  app.use((req, res, next) => req.path === "/v1/product-map/projection/ingest" ? next() : corsMiddleware(req, res, next));
+  app.use("/v1/product-map/projection/ingest", productMapIngressRouter);
   app.use("/v1/webhooks/clickup", express.raw({ type: "application/json", limit: "1mb" }), clickUpWebhooksRouter);
   app.use(express.json({ limit: "1mb" }));
   app.get("/", (req, res, next) => {
