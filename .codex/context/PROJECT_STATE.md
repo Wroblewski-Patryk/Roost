@@ -1,5 +1,14 @@
 # PROJECT_STATE
 
+- 2026-07-28: [LUC-2133](/LUC/issues/LUC-2133) independently approved commit
+  `635c4943ffe2d4e4c8e3fc872f95efdc2badb092` for the local durable ingress
+  implementation gate. A disposable PostgreSQL logical backup/restore kept
+  both Product Map migration records and representative snapshot, receipt,
+  active-pointer, and admission rows. This proves local recoverability only;
+  the protected Product Map release remains `NO-GO` pending Security review,
+  candidate-specific deployment/restore smoke, and monitoring. See
+  `docs/operations/luc-2133-durable-ingress-operations-review.md`.
+
 - 2026-07-28: [LUC-2127](/LUC/issues/LUC-2127) made the Product Map ingress
   operational controls durable: PostgreSQL now owns the `(ingest key,
   workspace)` six-per-minute token bucket with burst three and an xact-scoped
