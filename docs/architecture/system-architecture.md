@@ -97,6 +97,18 @@ Architectural invariants:
 - Integrity, idempotency, replay, source `observedAt`, schema compatibility,
   bounded size/timeouts, stale/LKG, conflict, quarantine, audit, and recovery
   behavior are server-owned and fail closed.
+- A fresh `observedAt` or publisher `publishedAt` for an unchanged semantic
+  snapshot is a re-observation, not a conflict. A conflict requires a different
+  semantic-packet digest for the same company, schema, source snapshot, and
+  `observedAt`.
+- Before parsing, ingress rejects all content encodings and raw bodies over
+  `256 KiB`; it permits one in-flight ingest per workspace with no queue and
+  rate-limits `(ingest key, workspace)` to six requests per minute, burst three.
+  Denials are generic and cache-bypassed (`Cache-Control: private, no-store`,
+  `Vary: Authorization`) so neither projection nor tenant facts are disclosed.
+- The named Paperclip source route rejects board, session, agent/run, and broad
+  credentials before a source loader executes; only its route-scoped,
+  owner-company-bound read credential is eligible.
 - Transport success cannot override `NO-GO`, missing evidence, stale source,
   SHA mismatch, conflict, or supersession in the accepted packet.
 - Any ingress, receipt, acknowledgement, or write direction requires separate
