@@ -9843,9 +9843,9 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(broadProductMapKey.status, 201);
   const oversizedIngressBody = "x".repeat(256 * 1024 + 1);
   const preParseHeaders: Array<Record<string, string>> = [
-    {},
-    { "X-API-Key": "cc_v1_invalid_product_map_key" },
-    { "X-API-Key": (broadProductMapKey.body as { data: { key: string } }).data.key }
+    { "Content-Type": "application/json" },
+    { "Content-Type": "application/json", "X-API-Key": "cc_v1_invalid_product_map_key" },
+    { "Content-Type": "application/json", "X-API-Key": (broadProductMapKey.body as { data: { key: string } }).data.key }
   ];
   for (const headers of preParseHeaders) {
     const deniedBeforeRawBodyParsing = await request("/v1/product-map/projection/ingest", {
