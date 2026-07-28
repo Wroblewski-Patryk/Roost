@@ -2,6 +2,7 @@
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |
 | --- | --- | --- | --- |
+| Product Map projection retention and non-promoting quarantine read model | verified locally | `docs/planning/luc-2145-product-map-retention-and-quarantine-repair.md`; focused server/UI tests; `npm run test:api:local` PASS (33 migrations, seed, 8 API tests) | Protected publisher activation, candidate-specific Security/Ops review, deploy/restore smoke, and monitoring remain under the release preflight. |
 | Product Map projection ingress admission, persistence, and isolated read | verified locally | `docs/planning/luc-2127-durable-ingress-operational-controls.md`; `docs/operations/luc-2133-durable-ingress-operations-review.md`; `npm run test:api:local` PASS after empty-database migration deploy and seed; real HTTP proof covers server-owned binding, accepted persistence, isolated empty read, exact retry, and generic durable burst denial; disposable PostgreSQL backup/restore preserved both Product Map migration records plus representative snapshot, receipt, active-pointer, and admission records | Independent DRE review and local recovery proof passed. Independent Security review, protected publisher activation, candidate-specific deployment/restore smoke, and deployed monitoring remain release gates under the Product Map preflight. |
 
 ## 2026-07-28 LUC-2092 Module Confidence Update

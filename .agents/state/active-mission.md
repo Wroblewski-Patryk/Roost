@@ -1,5 +1,18 @@
 # Active Mission Packet
 
+## LUC-2145 Product Map Retention and Quarantine Repair
+
+- Mission status: `VERIFIED` locally.
+- Outcome: snapshot/audit evidence is retained for 365 days while receipt and
+  admission records retain the existing 30-day window and quarantines retain
+  90 days; the read contract now separates `quarantined`, `out_of_order`, and
+  accepted-packet conflict without permitting readiness promotion.
+- Evidence: `docs/planning/luc-2145-product-map-retention-and-quarantine-repair.md`;
+  focused server/UI tests and `npm run test:api:local` passed.
+- Exclusions: publisher activation, credentials, deploy, protected smoke, and
+  production mutation. Release-parent Security/Ops/deploy/monitoring gates
+  remain open.
+
 ## LUC-2117 Product Map Projection Ingress And Read Model
 
 - Mission status: `IN_PROGRESS`

@@ -1,5 +1,20 @@
 # TASK_BOARD
 
+## LUC-2145 - Product Map Retention and Quarantine Repair
+
+- Task Type: backend/frontend corrective implementation
+- Current Stage: verification complete
+- Result: Product Map audit snapshot retention is 365 days; receipt/admission
+  retention is 30 days; quarantine retention is 90 days; cleanup remains
+  bounded and protects active snapshots. The owner read model shows
+  `quarantined`, `out_of_order`, and accepted-packet conflicts separately with
+  no readiness promotion.
+- Evidence: `docs/planning/luc-2145-product-map-retention-and-quarantine-repair.md`;
+  focused server/UI tests and `npm run test:api:local` PASS.
+- Exclusions: publisher activation, credentials, push, deploy, production
+  mutation, and protected smoke. Release-parent gates remain with
+  [LUC-1910](/LUC/issues/LUC-1910).
+
 ## LUC-2133 - Durable Product Map Ingress Operations Review
 
 - Task Type: independent reliability/operations review

@@ -10193,7 +10193,7 @@ test("CompanyCore v1 protected API flow", async () => {
     assert.equal(deniedBeforeRawBodyParsing.status, 403);
     assert.deepEqual(deniedBeforeRawBodyParsing.body, { error: "projection_ingress_denied" });
   }
-  const productPacket = { readiness: "GO", release: "candidate-a" };
+  const productPacket = { schemaVersion: productMapSchemaVersion, readiness: "GO", release: "candidate-a" };
   const productDigest = packetDigest(productPacket);
   const productEnvelopeBase = {
     transportVersion: productMapTransportVersion,
@@ -10242,7 +10242,7 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(durabilityKey.status, 201);
   const durabilityHeaders = { "X-API-Key": (durabilityKey.body as { data: { key: string } }).data.key };
-  const durabilityPacket = { readiness: "GO", release: "durability-candidate" };
+  const durabilityPacket = { schemaVersion: productMapSchemaVersion, readiness: "GO", release: "durability-candidate" };
   const durabilityEnvelopeBase = {
     ...productEnvelopeBase,
     sourceSnapshotId: "portfolio-snapshot-durability",

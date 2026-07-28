@@ -1,5 +1,14 @@
 # PROJECT_STATE
 
+- 2026-07-28: [LUC-2145](/LUC/issues/LUC-2145) repaired Product Map projection
+  retention and owner-visible quarantine semantics. Accepted snapshots carrying
+  audit correlation retain for one year; receipts/admissions retain 30 days and
+  quarantines 90 days in existing bounded cleanup. The read contract now keeps
+  quarantined, out-of-order, and accepted-packet conflict states distinct and
+  non-promoting. Local proof: focused server/UI tests plus `npm run
+  test:api:local` (33 migrations, seed, 8 API tests) passed. No protected
+  operation occurred; release preflight gates remain unchanged.
+
 - 2026-07-28: [LUC-2133](/LUC/issues/LUC-2133) independently approved commit
   `635c4943ffe2d4e4c8e3fc872f95efdc2badb092` for the local durable ingress
   implementation gate. A disposable PostgreSQL logical backup/restore kept
