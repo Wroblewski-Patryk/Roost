@@ -1,5 +1,13 @@
 # TASK_BOARD
 
+- 2026-07-28: [LUC-1923](/LUC/issues/LUC-1923) completed the protected
+  preflight packet for the Product Map release parent
+  [LUC-1910](/LUC/issues/LUC-1910). The canonical packet is
+  `docs/operations/product-map-protected-release-preflight.md`; current verdict
+  is `NO-GO`; [LUC-1910](/LUC/issues/LUC-1910) owns the next action: exact
+  candidate and independent acceptance, followed by DRE capacity,
+  rollback image, strict-3200 owner binding, deployment, smoke, and monitoring.
+
 ## Disposition Note
 - 2026-07-28: [LUC-2024](/LUC/issues/LUC-2024) refreshed the Roost known-state
   and corrected stale canonical map/release pointers. Use

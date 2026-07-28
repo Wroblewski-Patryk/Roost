@@ -11,6 +11,17 @@ state, architecture intent, module confidence, and the next release objective.
 
 ## Latest Generated Truth
 
+- 2026-07-28: [LUC-1923](/LUC/issues/LUC-1923) published the protected
+  Product Map release preflight at
+  `docs/operations/product-map-protected-release-preflight.md`. Current
+  read-only baseline: local Roost `main` was clean at `0c2b5e79`, live
+  `origin/main` and production were `070b150f`, the Coolify target is project
+  `Roost` / environment `production` / application
+  `rnqqkhl3o3dut4qv56mlxly2`, and the accepted Paperclip projection source is
+  `1f8950aa`. Release remains `NO-GO`: the exact Roost candidate, independent
+  gates, capacity, rollback image, strict-3200 owner binding, deployment,
+  smoke, and monitoring evidence are not yet complete.
+
 - 2026-07-28: [LUC-2024](/LUC/issues/LUC-2024) refreshed Roost known-state
   and reconciled canonical map drift on top of the closed
   [LUC-1885](/LUC/issues/LUC-1885) / [LUC-1886](/LUC/issues/LUC-1886)

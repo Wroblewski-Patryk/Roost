@@ -2,7 +2,17 @@
 
 Document the safe rollback path for production deploys.
 
-## Current V1 Rollback Pointer
+## Historical V1 Rollback Evidence
+
+The container and image references below are verified historical evidence from
+the 2026-05-16 manual rollover. They are not a current production rollback
+pointer. On 2026-07-28 public Roost health reported deployed commit
+`070b150f5477d701d462485aad8b91450d0c3d71` and image `unknown`.
+
+Before the Product Map release, follow
+`docs/operations/product-map-protected-release-preflight.md`: capture the actual
+running container/image and prove it can be relaunched. If that current target
+cannot be identified, the release is `NO-GO`.
 
 - Current exposed production backend image from public `/health`:
   `rnqqkhl3o3dut4qv56mlxly2_backend:d2c9b9460a5db63703ca28f98988a2fa35d3a651`.

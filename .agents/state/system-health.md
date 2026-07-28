@@ -1,3 +1,17 @@
+# 2026-07-28 LUC-1923 Product Map Release Preflight Signal
+
+- Status: preflight contract implemented; release remains `NO-GO`.
+- Read-only source/runtime evidence: local Roost `0c2b5e79` was clean and `82`
+  commits ahead of live `origin/main`; production health, web, and API returned
+  `200` at deployed commit `070b150f`; public image remains `unknown`.
+- Coolify evidence: project `Roost`, environment `production`, application
+  `rnqqkhl3o3dut4qv56mlxly2`, and server `g9wxtiwh5k1rebqww89gt9nd` resolve;
+  app state is `running:unknown`, resource limits are unset, and capacity
+  headroom was not measured.
+- Protected gap: Paperclip projection source at `1f8950aa` is accepted, but
+  strict-3200 owner-binding acceptance, current rollback image, exact Roost
+  candidate, deployment, smoke, and monitoring remain outstanding.
+
 # 2026-07-28 LUC-2024 Known-State And Map Drift Health Signal
 
 - Status: Roost remains locally and publicly known-and-routable; no fresh

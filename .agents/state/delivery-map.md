@@ -25,6 +25,12 @@ Last updated: 2026-07-28
   Roost surface. Keep the repository procedure projection `source_only` until
   that lane completes automated, security, deployment, monitoring, and
   production-browser proof.
+- Concurrent approved release lane: [LUC-1910](/LUC/issues/LUC-1910) owns the
+  live Product Map projection and production promotion. It remains blocked by
+  the [LUC-1923](/LUC/issues/LUC-1923) protected preflight. Use
+  `docs/operations/product-map-protected-release-preflight.md`; no push,
+  deploy, restart, or acceptance is allowed until its exact-candidate gates
+  pass.
 - Closure handoff: `docs/releases/roost-v1-0-sale-readiness-contract.md`,
   `docs/releases/roost-v1-0-gap-register.md`, and
   `docs/planning/luc-2024-known-state-and-map-drift-sweep.md`.

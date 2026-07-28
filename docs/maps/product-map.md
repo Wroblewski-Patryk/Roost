@@ -1,6 +1,6 @@
 # Product Map
 
-Last updated: 2026-07-25
+Last updated: 2026-07-28
 
 ## Purpose
 
@@ -19,6 +19,11 @@ deployment truth.
 
 The canonical UI for this map lives in the authenticated React shell at
 `/areas?area=00-ogolny&view=product-map`.
+
+The future live-projection release is protected by
+`docs/operations/product-map-protected-release-preflight.md`. The existence of
+the local UI or the accepted Paperclip source contract does not authorize a
+push, deploy, restart, or production-readiness claim.
 
 ## Authority Rules
 
@@ -91,6 +96,21 @@ sellable product release in this map.
 5. Keep stale or conflicting data visible instead of normalizing it away.
 6. Add coverage for stale data, SHA mismatch, zero-gap-but-no-go, missing
    evidence, and supersession before treating the projection as stable.
+7. Pass the protected release preflight for one exact candidate before
+   production promotion or live acceptance.
+
+## Release State
+
+- Paperclip source contract: accepted at commit
+  `1f8950aa818c2762a1694cae42bf35f9ab7984ca`; strict-3200 runtime acceptance
+  remains protected.
+- Roost deployed source: `070b150f5477d701d462485aad8b91450d0c3d71`
+  as observed from public health on 2026-07-28.
+- Roost local source: ahead of deployed/live `origin/main`; no exact Product
+  Map release candidate is selected.
+- Release verdict: `NO-GO` until the candidate, independent acceptance,
+  capacity, rollback image, owner binding, deployment, smoke, and monitoring
+  gates in the protected preflight all pass.
 
 ## Conflict Handling
 

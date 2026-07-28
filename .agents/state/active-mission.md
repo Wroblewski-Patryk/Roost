@@ -1,5 +1,24 @@
 # Active Mission Packet
 
+## LUC-1923 Product Map Protected Release Preflight
+
+- Mission status: `VERIFIED`; focused validation passed and source-control
+  closure is recorded in the Paperclip issue closeout.
+- Objective: bind the future Product Map promotion to one reproducible,
+  fail-closed deployment, rollback, smoke, monitoring, and owner-binding packet.
+- Owned scope: canonical operations preflight, Product Map/release maps, task
+  contract, and directly affected release state pointers.
+- Exclusions: code implementation, push, deploy, restart, configuration
+  mutation, protected smoke, secret handling, and production writes.
+- Lane model: single DRE read-only/docs lane. Existing implementation, QA, and
+  security owners remain external prerequisites under
+  [LUC-1910](/LUC/issues/LUC-1910); no subagent delegation is needed or allowed
+  to cross those responsibility boundaries.
+- Validation gates: focused git/diff/docs checks, source/remote/public-health
+  readback, redacted Coolify identity readback, and clean local commit.
+- Stop conditions: target or rollback ambiguity, secret exposure, unrelated
+  dirty state, failed docs checks, or any protected mutation.
+
 ## LUC-2024 Known-State And Map Drift Sweep
 
 - Mission status: `VERIFIED`.

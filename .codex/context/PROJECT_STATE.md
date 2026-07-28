@@ -1,5 +1,15 @@
 # PROJECT_STATE
 
+- 2026-07-28: [LUC-1923](/LUC/issues/LUC-1923) added the canonical Product Map
+  protected release preflight at
+  `docs/operations/product-map-protected-release-preflight.md`. Read-only
+  evidence binds the owner remote/branch, deployed SHA, exact Coolify target,
+  accepted Paperclip source endpoint, owner-binding denial matrix, rollback,
+  smoke, monitoring, stop conditions, and DRE/CTO ownership. Release remains
+  `NO-GO` until [LUC-1910](/LUC/issues/LUC-1910) supplies the exact accepted
+  candidate and all protected gates pass. No push, deploy, restart, protected
+  smoke, configuration mutation, or secret access occurred.
+
 - 2026-07-28: [LUC-2024](/LUC/issues/LUC-2024) completed the current Roost
   known-state and map-drift sweep. Evidence packet:
   `docs/planning/luc-2024-known-state-and-map-drift-sweep.md`. Native

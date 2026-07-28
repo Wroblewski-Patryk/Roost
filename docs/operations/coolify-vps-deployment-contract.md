@@ -88,6 +88,11 @@ ClickUp configuration:
 
 ## Release Requirements
 
+The Product Map live-projection release has an additional fail-closed entry
+gate in `docs/operations/product-map-protected-release-preflight.md`. That gate
+must pass for one exact candidate before any push, deployment, restart, or live
+acceptance. The general requirements below remain applicable.
+
 Required checks before deploy:
 
 - `npm run build`

@@ -1,5 +1,12 @@
 # MVP Next Commits
 
+- 2026-07-28: [LUC-1923](/LUC/issues/LUC-1923) binds the future Product Map
+  promotion to `docs/operations/product-map-protected-release-preflight.md`.
+  This is a protected release gate, not authorization to push the current local
+  backlog. Next release input: one exact candidate and independent acceptance
+  from [LUC-1910](/LUC/issues/LUC-1910), followed by DRE capacity, rollback,
+  owner-binding, deploy, smoke, and monitoring proof.
+
 - 2026-07-28: [LUC-2024](/LUC/issues/LUC-2024) refreshed Roost known-state and
   map drift. Evidence packet:
   `docs/planning/luc-2024-known-state-and-map-drift-sweep.md`. Current proof:

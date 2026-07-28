@@ -1,6 +1,6 @@
 # Release And Operations Map
 
-Last updated: YYYY-MM-DD
+Last updated: 2026-07-28
 
 ## Purpose
 
@@ -15,6 +15,7 @@ operator-facing runtime status.
 | Testing strategy | `docs/engineering/testing.md` |
 | Local/stage/prod promotion | `docs/operations/deployment-template-local-stage-production.md` |
 | VPS/Coolify contract | `docs/operations/coolify-vps-deployment-contract.md` |
+| Product Map protected release preflight | `docs/operations/product-map-protected-release-preflight.md` |
 | Post-deploy smoke | `docs/operations/post-deploy-smoke.md` |
 | Rollback | `docs/operations/rollback-and-recovery.md` |
 | Reliability and observability | `docs/operations/service-reliability-and-observability.md` |

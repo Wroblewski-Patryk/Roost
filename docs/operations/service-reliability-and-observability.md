@@ -73,6 +73,13 @@ Before v1 is considered stable, observability must cover:
 - Workspace owner can configure ClickUp settings without secret leakage.
 - Native ClickUp sync creates or updates tasks and emits events.
 
+## Product Map Release Profile
+
+The live Product Map projection uses the release-specific SLI, smoke, manual
+acceptance window, stop conditions, and DRE-to-CTO escalation route in
+`docs/operations/product-map-protected-release-preflight.md`. Until that packet
+passes for one exact candidate, the Product Map release posture is `NO-GO`.
+
 ## Suggested SLIs
 
 - API availability for protected core routes.

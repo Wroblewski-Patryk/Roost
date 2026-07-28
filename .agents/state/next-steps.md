@@ -1,4 +1,10 @@
 # Next Steps
+- 2026-07-28: [LUC-1923](/LUC/issues/LUC-1923) publishes the Product Map
+  protected release preflight. Next owner is the
+  [LUC-1910](/LUC/issues/LUC-1910) release parent: supply one exact accepted
+  Roost candidate and independent QA/security/docs/review evidence. DRE then
+  executes the strict-3200 owner binding, capacity, rollback-image, deploy,
+  smoke, and monitoring gates; until then the release is `NO-GO`.
 - 2026-07-28: [LUC-2024](/LUC/issues/LUC-2024) refreshed Roost known-state and
   reconciled map drift. Architecture, app completion, Project Truth, event
   chains, runtime findings, and public read-only probes are all green/zero-gap.
