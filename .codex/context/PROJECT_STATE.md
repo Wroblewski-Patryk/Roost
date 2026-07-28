@@ -1,5 +1,18 @@
 # PROJECT_STATE
 
+- 2026-07-28: [LUC-2127](/LUC/issues/LUC-2127) made the Product Map ingress
+  operational controls durable: PostgreSQL now owns the `(ingest key,
+  workspace)` six-per-minute token bucket with burst three and an xact-scoped
+  per-workspace admission lock; the existing scheduler performs bounded daily
+  cleanup and writes the named `product_map_projection_cleanup_failed` signal
+  on failure. The projection migration index names were corrected for
+  PostgreSQL's identifier limit. Local evidence: `npm run test:api:local`
+  passed (empty database migration deploy, seed, and 8 API tests), including
+  binding, persistence, isolated read, exact retry, and generic burst denial.
+  See `docs/planning/luc-2127-durable-ingress-operational-controls.md`.
+  Protected deploy, runtime activation, and independent Security/Ops/restore
+  gates remain outside this packet.
+
 - 2026-07-28: [LUC-2092](/LUC/issues/LUC-2092) selected the V1 Product Map
   projection transport: a supervised one-way outbound publisher reads only the
   accepted Paperclip v1 projection over loopback and sends the validated packet

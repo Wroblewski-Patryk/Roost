@@ -1,5 +1,10 @@
 # MVP Next Commits
 
+- 2026-07-28: [LUC-2127](/LUC/issues/LUC-2127) completed the local durable
+  ingress-controls packet. The next Product Map dependency is independent
+  Security/Ops and backup/restore review under the protected release preflight;
+  no deployment or runtime activation is implied by the local commit.
+
 - 2026-07-28: [LUC-1923](/LUC/issues/LUC-1923) binds the future Product Map
   promotion to `docs/operations/product-map-protected-release-preflight.md`.
   This is a protected release gate, not authorization to push the current local

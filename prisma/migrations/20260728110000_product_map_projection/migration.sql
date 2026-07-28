@@ -17,11 +17,11 @@ CREATE TABLE "product_map_projection_snapshots" (
   CONSTRAINT "product_map_projection_snapshots_pkey" PRIMARY KEY ("id")
 );
 
-CREATE UNIQUE INDEX "product_map_projection_snapshots_workspace_id_company_id_schema_version_source_snapshot_id_packet_digest_key"
+CREATE UNIQUE INDEX "pmap_snapshot_identity_uq"
 ON "product_map_projection_snapshots"("workspace_id", "company_id", "schema_version", "source_snapshot_id", "packet_digest");
-CREATE INDEX "product_map_projection_snapshots_workspace_id_company_id_schema_version_source_snapshot_id_observed_at_idx"
+CREATE INDEX "pmap_snapshot_observation_idx"
 ON "product_map_projection_snapshots"("workspace_id", "company_id", "schema_version", "source_snapshot_id", "observed_at");
-CREATE INDEX "product_map_projection_snapshots_workspace_id_observed_at_idx"
+CREATE INDEX "pmap_snapshot_workspace_observed_idx"
 ON "product_map_projection_snapshots"("workspace_id", "observed_at");
 
 CREATE TABLE "product_map_projection_receipts" (
@@ -34,7 +34,7 @@ CREATE TABLE "product_map_projection_receipts" (
   "received_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT "product_map_projection_receipts_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX "product_map_projection_receipts_workspace_id_company_id_schema_version_source_snapshot_id_packet_digest_key"
+CREATE UNIQUE INDEX "pmap_receipt_identity_uq"
 ON "product_map_projection_receipts"("workspace_id", "company_id", "schema_version", "source_snapshot_id", "packet_digest");
 
 CREATE TABLE "product_map_projection_quarantines" (
@@ -50,7 +50,7 @@ CREATE TABLE "product_map_projection_quarantines" (
   "audit_correlation" TEXT,
   CONSTRAINT "product_map_projection_quarantines_pkey" PRIMARY KEY ("id")
 );
-CREATE INDEX "product_map_projection_quarantines_workspace_id_received_at_idx"
+CREATE INDEX "pmap_quarantine_workspace_received_idx"
 ON "product_map_projection_quarantines"("workspace_id", "received_at");
 
 CREATE TABLE "product_map_projection_states" (

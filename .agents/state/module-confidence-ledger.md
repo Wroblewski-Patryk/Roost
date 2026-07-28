@@ -1,3 +1,9 @@
+## 2026-07-28 LUC-2127 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Product Map projection ingress admission, persistence, and isolated read | verified locally | `docs/planning/luc-2127-durable-ingress-operational-controls.md`; `npm run test:api:local` PASS after empty-database migration deploy and seed; real HTTP proof covers server-owned binding, accepted persistence, isolated empty read, exact retry, and generic durable burst denial; `npm run build:server` and focused envelope tests PASS | Independent Security/Ops review, backup/restore exercise, protected publisher activation, and deployed monitoring remain release gates under the Product Map preflight. |
+
 ## 2026-07-28 LUC-2092 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

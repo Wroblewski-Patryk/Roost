@@ -1,5 +1,17 @@
 # TASK_BOARD
 
+## LUC-2127 - Durable Product Map Ingress Operational Controls
+
+- Task Type: backend/data implementation
+- Current Stage: verification complete; source-control closure pending
+- Result: PostgreSQL-backed burst admission and xact-scoped workspace locks
+  replace process-local ingress state; daily bounded cleanup runs in the
+  existing scheduler. Migration compatibility and API journey proof passed.
+- Evidence: `docs/planning/luc-2127-durable-ingress-operational-controls.md`;
+  `npm run test:api:local` PASS on 2026-07-28.
+- Excluded release gates: protected deployment, runtime/publisher activation,
+  independent Security/Ops review, and backup/restore exercise.
+
 ## LUC-2092 - Product Map Projection Transport Decision
 
 - Task Type: architecture and integration decision

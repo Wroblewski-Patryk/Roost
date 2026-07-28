@@ -1,17 +1,38 @@
 import { env } from "../../config/env";
 import { prisma } from "../../db/prisma";
 import { runClickUpMaintenanceForWorkspace } from "./clickup.webhooks";
+import { cleanupExpiredProjectionRecords } from "../../modules/product-map/product-map-projection.service";
 
 let schedulerStarted = false;
 let sweepRunning = false;
+let lastProjectionCleanupAt = 0;
+const projectionCleanupIntervalMs = 24 * 60 * 60 * 1000;
 
-export async function runClickUpMaintenanceSweep() {
+export async function runProductMapProjectionCleanupIfDue(now = Date.now()) {
+  if (now - lastProjectionCleanupAt < projectionCleanupIntervalMs) return { skipped: true as const };
+  try {
+    const result = await cleanupExpiredProjectionRecords(new Date(now));
+    lastProjectionCleanupAt = now;
+    console.log("product map projection cleanup completed", JSON.stringify(result));
+    return { skipped: false as const, ...result };
+  } catch (error) {
+    // The canonical supervisor captures stderr as the cleanup-failure signal.
+    console.error("product_map_projection_cleanup_failed", error);
+    throw error;
+  }
+}
+
+export async function runClickUpMaintenanceSweep(options: { clickUpEnabled?: boolean } = {}) {
   if (sweepRunning) {
     return { skipped: true, reason: "already_running" };
   }
 
   sweepRunning = true;
   try {
+    const projectionCleanup = await runProductMapProjectionCleanupIfDue();
+    if (options.clickUpEnabled === false) {
+      return { skipped: false, workspaceCount: 0, results: [], projectionCleanup };
+    }
     const settings = await prisma.integrationSetting.findMany({
       where: {
         provider: "clickup",
@@ -46,7 +67,8 @@ export async function runClickUpMaintenanceSweep() {
     return {
       skipped: false,
       workspaceCount: settings.length,
-      results
+      results,
+      projectionCleanup
     };
   } finally {
     sweepRunning = false;
@@ -64,18 +86,15 @@ export function startClickUpMaintenanceScheduler() {
     return;
   }
 
-  if (!env.publicApiBaseUrl) {
-    console.warn("clickup maintenance scheduler disabled: COMPANYCORE_PUBLIC_API_BASE_URL is required");
-    return;
-  }
-
   schedulerStarted = true;
   const intervalMs = Math.max(intervalMinutes, 5) * 60 * 1000;
-  console.log(`clickup maintenance scheduler enabled every ${Math.round(intervalMs / 60000)} minutes`);
+  const clickUpEnabled = Boolean(env.publicApiBaseUrl);
+  console.log(`projection maintenance scheduler enabled every ${Math.round(intervalMs / 60000)} minutes`);
+  if (!clickUpEnabled) console.warn("clickup maintenance scheduler disabled: COMPANYCORE_PUBLIC_API_BASE_URL is required");
 
   const run = async () => {
     try {
-      const result = await runClickUpMaintenanceSweep();
+      const result = await runClickUpMaintenanceSweep({ clickUpEnabled });
       console.log("clickup maintenance sweep completed", JSON.stringify(result));
     } catch (error) {
       console.error("clickup maintenance sweep failed", error);
