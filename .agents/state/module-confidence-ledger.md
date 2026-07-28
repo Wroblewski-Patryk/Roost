@@ -1,3 +1,9 @@
+## 2026-07-28 LUC-2147 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Disposable API suite workspace registration and Product Map HTTP journey | verified locally | [LUC-2147](/LUC/issues/LUC-2147); exclusive `npm run test:api:local` PASS after server/web build, 33 migrations, seed, and 8 API subtests; preflight confirmed the previous singleton fixture owner was terminal and `55432`/Docker published-port inventory were clear | Reopen only on a fresh isolated failure. Do not treat the discarded concurrent run as a provisioning regression. |
+
 ## 2026-07-28 LUC-2127 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

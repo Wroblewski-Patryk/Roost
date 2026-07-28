@@ -1,3 +1,13 @@
+# 2026-07-28 LUC-2147 Disposable API Suite Health Signal
+
+- Status: healthy under exclusive fixture ownership.
+- Evidence: port `55432` and Docker's published-port inventory were clear after
+  LUC-2145 completed; `npm run test:api:local` then passed server/web build,
+  33 migrations, seed, and all 8 API subtests including the Product Map HTTP
+  journey.
+- Residual risk: the fixture remains a singleton workstation resource; future
+  suite runs must not overlap a lane that owns it.
+
 # 2026-07-28 LUC-1923 Product Map Release Preflight Signal
 
 - Status: preflight contract implemented; release remains `NO-GO`.

@@ -1,5 +1,17 @@
 # TASK_BOARD
 
+## LUC-2147 - Disposable API Suite Workspace Provisioning
+
+- Task Type: test-infrastructure/backend repair verification
+- Current Stage: verification complete
+- Result: the earlier workspace-registration foreign-key failure did not
+  reproduce after the concurrent singleton-fixture owner completed. No product
+  or provisioning implementation change was required.
+- Evidence: exclusive `npm run test:api:local` run passed server/web build,
+  33 migrations, seed, and `8/8` API tests including the Product Map HTTP flow;
+  preflight confirmed `55432` and Docker's published-port inventory were clear.
+- Exclusions: credentials, protected smoke, deployment, and production mutation.
+
 ## LUC-2145 - Product Map Retention and Quarantine Repair
 
 - Task Type: backend/frontend corrective implementation

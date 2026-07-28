@@ -1,5 +1,14 @@
 # PROJECT_STATE
 
+- 2026-07-28: [LUC-2147](/LUC/issues/LUC-2147) cleared the disposable API-suite
+  scheduling hold after [LUC-2145](/LUC/issues/LUC-2145) became terminal and
+  port `55432` plus Docker's published-port inventory were clear. The isolated
+  `npm run test:api:local` run passed server/web build, 33 migrations, seed,
+  and all 8 API subtests including the Product Map HTTP journey. The earlier
+  `operating_tables_area_id_fkey` result did not reproduce under exclusive
+  fixture ownership; no provisioning code change was needed. No deploy,
+  credential, production, or protected-smoke action occurred.
+
 - 2026-07-28: [LUC-2145](/LUC/issues/LUC-2145) repaired Product Map projection
   retention and owner-visible quarantine semantics. Accepted snapshots carrying
   audit correlation retain for one year; receipts/admissions retain 30 days and
