@@ -1,5 +1,21 @@
 # Active Mission Packet
 
+## LUC-2117 Product Map Projection Ingress And Read Model
+
+- Mission status: `IN_PROGRESS`
+- Task Type: backend/data vertical implementation
+- Current Stage: implementation
+- Deliverable for this stage: a Roost-only, workspace-partitioned Product Map projection ingress/read model with focused proof; no deployment or browser integration.
+- Current state: the architecture has an approved outbound-only Product Map transport; Roost has the static Product Map UI, but no accepted ingress/read implementation.
+- Target outcome: exact ingest and separate read capabilities, durable active/LKG/quarantine/receipt records, and authenticated state semantics compatible with the later UI adapter.
+- Owned scope: Roost server modules, existing service-key/capability/error/route/migration/scheduler/test conventions, API/architecture documentation, and the evidence state for this issue.
+- Exclusions: Paperclip source/publisher work, browser UI, secrets, production configuration, push, deploy, restart, and protected smoke.
+- Responsibility lanes: backend/data implementation and focused tests are delegated to `/root/projection_backend`; coordination, architecture alignment, source-control review, state/evidence updates, and Paperclip closeout remain with the coordinator.
+- Validation gates: focused migration/server tests; capability/error/route convention review; cache/CORS/tenant-boundary checks; diff/secret/durable-document review; clean worktree and commit closure before issue completion.
+- Checkpoints: initial contract captured; implementation handoff; focused verification; integration and source-control closure.
+- Stop conditions: architecture mismatch, missing existing convention needed for a safe implementation, failing focused validation without a bounded repair, or any need for protected/external action.
+- Handoff: record the exact read route/schema, verification output, residual release/security/ops gates, and return evidence to [LUC-1910](/LUC/issues/LUC-1910).
+
 ## LUC-2092 Product Map Projection Transport Decision
 
 - Mission status: `VERIFIED`; the V1 transport is selected and recorded,

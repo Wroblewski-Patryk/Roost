@@ -386,6 +386,16 @@ rollback artifact is an immediate `NO-GO` and stops promotion.
 - The owner-facing read route uses a separate
   `product-map:projection:read` capability or owner-session permission and can
   never expose the ingest key or receipt metadata needed only by operators.
+- The Roost ingress route is `POST /v1/product-map/projection/ingest`; the
+  separate owner/read route is `GET /v1/product-map/projection`. Both set
+  `Cache-Control: private, no-store` and vary on authentication. The ingress
+  is mounted before ordinary JSON parsing and browser CORS handling, while the
+  read route stays within the existing protected API router.
+- A Roost workspace must carry a server-owned Paperclip company binding before
+  it can accept an ingress envelope. The authenticated service key resolves
+  the workspace; the server compares its binding with the envelope company ID
+  and fails closed when it is missing or mismatched. The client cannot select
+  a workspace or bind a company.
 - Both company ID and Roost workspace ID are derived from authenticated server
   context. Client-supplied scope cannot select or override another company or
   workspace.
