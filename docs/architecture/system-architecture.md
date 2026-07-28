@@ -73,6 +73,40 @@ boundary that CompanyCore itself is infrastructure, not AI.
 - Significant state changes should emit events.
 - Schema changes must use migrations before production data becomes valuable.
 
+## Product Map Projection Boundary
+
+The V1 Product Map live projection uses a one-way outbound server-side
+publisher from the canonical local Softwarehouse host to a dedicated Roost API
+ingestion route. The complete accepted decision, limits, failure semantics,
+and review gates are recorded in
+`docs/architecture/architecture-source-of-truth.md#product-map-projection-transport`.
+
+Architectural invariants:
+
+- Paperclip remains local-only on strict port 3200 and remains authoritative
+  for execution and evidence facts.
+- The publisher reads only the accepted company-scoped Paperclip projection
+  over loopback and sends only that validated packet to Roost over HTTPS.
+- Roost stores a workspace-scoped read projection with active,
+  last-known-good, and quarantine states; it does not become the authority for
+  Paperclip issues, runs, approvals, budgets, or execution.
+- The browser reads only from Roost. It never reaches localhost, Paperclip, or
+  the ingestion route and never contains either service credential.
+- Ingestion and Product Map reads use separate exact capabilities. Broad or
+  legacy compatibility scopes are not permitted for the publisher.
+- Integrity, idempotency, replay, source `observedAt`, schema compatibility,
+  bounded size/timeouts, stale/LKG, conflict, quarantine, audit, and recovery
+  behavior are server-owned and fail closed.
+- Transport success cannot override `NO-GO`, missing evidence, stale source,
+  SHA mismatch, conflict, or supersession in the accepted packet.
+- Any ingress, receipt, acknowledgement, or write direction requires separate
+  Security and Ops approval before implementation or deployment.
+
+Generated deploy-time snapshots remain explicitly static artifacts and cannot
+be treated as the live transport. Reverse tunnels, public Paperclip endpoints,
+browser-to-Paperclip access, shared databases, and direct PostgreSQL access are
+not valid alternatives.
+
 ## Workspace Ownership Boundary
 
 CompanyCore v1 must include a workspace ownership boundary before integration

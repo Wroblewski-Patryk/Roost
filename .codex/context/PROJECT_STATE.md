@@ -1,5 +1,23 @@
 # PROJECT_STATE
 
+- 2026-07-28: [LUC-2092](/LUC/issues/LUC-2092) selected the V1 Product Map
+  projection transport: a supervised one-way outbound publisher reads only the
+  accepted Paperclip v1 projection over loopback and sends the validated packet
+  over HTTPS to a dedicated Roost backend ingress. Roost keeps a
+  workspace-scoped active/LKG/quarantine projection; the browser reads only
+  Roost. Canonical architecture now defines exact capability separation,
+  envelope/provenance, 256 KiB size limit, 3/10-second timeouts, bounded retry,
+  5-minute publication target, 15-minute source-based TTL, 24-hour visibly
+  stale LKG window, replay/idempotency, conflict quarantine, audit, failure,
+  and rollback. Generated deploy snapshots and reverse tunnels are rejected as
+  the live V1 path. Implementation remains gated on independent Security
+  [LUC-2093](/LUC/issues/LUC-2093), Ops [LUC-2094](/LUC/issues/LUC-2094), and
+  the protected [LUC-1910](/LUC/issues/LUC-1910) release path. No code,
+  runtime, secret, push, deploy, restart, production, or live-probe action
+  occurred. Focused contract, path, diff, and redaction checks passed, and the
+  canonical architecture refresh remained `GREEN` at `455/769/35` with zero
+  evidence queue, chain worklist, or delta.
+
 - 2026-07-28: [LUC-1923](/LUC/issues/LUC-1923) added the canonical Product Map
   protected release preflight at
   `docs/operations/product-map-protected-release-preflight.md`. Read-only

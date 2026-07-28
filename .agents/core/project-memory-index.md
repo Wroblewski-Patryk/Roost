@@ -11,6 +11,20 @@ state, architecture intent, module confidence, and the next release objective.
 
 ## Latest Generated Truth
 
+- 2026-07-28: [LUC-2092](/LUC/issues/LUC-2092) selected and recorded the
+  minimal V1 Product Map projection transport in
+  `docs/architecture/architecture-source-of-truth.md#product-map-projection-transport`.
+  The accepted direction is a one-way outbound server-side publisher from the
+  canonical local host to a dedicated Roost backend ingress; the browser reads
+  only Roost, and Paperclip remains local-only and authoritative. The contract
+  includes exact capability separation, source-based TTL/LKG, bounded
+  size/timeouts/retries, digest/provenance, replay/idempotency, quarantine and
+  conflict behavior, safe audit/monitoring, and rollback. Generated deploy
+  snapshots are static only; reverse tunnels/public Paperclip pulls are
+  rejected. Implementation remains blocked on independent Security
+  [LUC-2093](/LUC/issues/LUC-2093), Ops [LUC-2094](/LUC/issues/LUC-2094), and
+  the protected release parent [LUC-1910](/LUC/issues/LUC-1910).
+
 - 2026-07-28: [LUC-1923](/LUC/issues/LUC-1923) published the protected
   Product Map release preflight at
   `docs/operations/product-map-protected-release-preflight.md`. Current

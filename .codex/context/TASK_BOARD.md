@@ -1,5 +1,96 @@
 # TASK_BOARD
 
+## LUC-2092 - Product Map Projection Transport Decision
+
+- Task Type: architecture and integration decision
+- Current Stage: verification and source-control closure
+- Deliverable For This Stage: committed canonical Roost architecture decision
+  ready for independent Security and Ops review
+- Iteration: architecture issue [LUC-2092](/LUC/issues/LUC-2092)
+- Operation Mode: `ARCHITECT`
+- Process: delivery gap loop -> architecture design -> independent
+  Security/Ops gates -> implementation/release owner
+
+### Process Self-Audit
+
+- Seven-step loop represented: yes (current-state analysis, one mission,
+  scoped design, docs execution, focused verification, self-review, state
+  update).
+- One objective selected: yes, select and record the V1 transport.
+- Architecture source reviewed: yes, including the binding transport boundary,
+  accepted Paperclip source contract, Roost Product Map, and protected release
+  preflight.
+- Lane classification: single-lane TSA architecture/docs packet. Existing
+  Security and Ops child reviews own independent judgments.
+- Protected actions: excluded; no code, secret, runtime, push, deploy, restart,
+  production, or live-probe work is authorized.
+
+### Goal
+
+Select and record the smallest secure transport by which production Roost can
+consume the accepted versioned read-only portfolio packet without exposing the
+local Paperclip control plane or leaking its authority into the browser.
+
+### Scope
+
+- Canonical architecture: `docs/architecture/architecture-source-of-truth.md`,
+  `docs/architecture/system-architecture.md`.
+- Durable state: project memory, decision register, requirements matrix, risk
+  register, active mission, module confidence, task board, and project state.
+- Read-only sources: Product Map, protected release preflight, Paperclip
+  transport-boundary document, and accepted source/review evidence.
+- Excluded: source code, frontend code, Paperclip source, runtime config,
+  secrets, deployment state, and production.
+
+### Implementation Plan
+
+1. Compare generated snapshot, outbound publisher, and reverse-tunnel/public
+   pull paths against the binding trust boundary.
+2. Select one transport and define producer/consumer/direction, credentials,
+   envelope, integrity, schema, size/timeouts, TTL/LKG, replay/idempotency,
+   quarantine/conflict, audit, failure, and recovery.
+3. Record prohibitions, rejected options, downstream boundary, rollback, and
+   exact Security/Ops review questions in canonical architecture.
+4. Update affected ledgers and project memory.
+5. Run focused docs/link/architecture/redaction checks, inspect the scoped
+   diff, commit only this packet, and report the exact SHA.
+
+### Acceptance Criteria
+
+- One transport is selected, not merely proposed.
+- Only the accepted packet crosses the boundary; Paperclip remains local and
+  the browser contains no Paperclip or ingest credential.
+- Freshness and conflict semantics cannot silently promote stale or `NO-GO`
+  truth.
+- Any ingress/write/receipt is gated on independent Security and Ops review.
+- Canonical architecture, mission, decision, requirement, risk, confidence,
+  task, and project state agree.
+- Focused validation, clean handoff, and exact commit SHA are recorded.
+
+### Definition Of Done
+
+An evidence-backed architecture commit exists; the worktree is clean; no
+protected action occurred; review questions are explicit; [LUC-2093](/LUC/issues/LUC-2093)
+and [LUC-2094](/LUC/issues/LUC-2094) can begin independently; the release
+parent remains `NO-GO`.
+
+### Result Report
+
+- Selected: one-way outbound server-side publisher from the local canonical
+  host to a dedicated Roost backend projection ingress.
+- Rejected: deploy-time snapshot as live transport; reverse tunnel/public
+  Paperclip pull; browser/shared-DB/direct-file paths.
+- Verification: focused contract assertion PASS (`12` required clauses,
+  `0` missing); `npm run architecture:status` PASS; `npm run
+  architecture:refresh` PASS (`455/769/35`, evidence queue `0`, chain
+  worklist `0`, delta `0/0/0`, all gates pass); exact-path/diff/redaction check
+  PASS (`10` authored paths, `0` unexpected, `0` high-confidence secret
+  markers); `git diff --check` PASS.
+- Runtime/UI/build tests: not applicable because this packet changes no code,
+  route, schema, runtime, or UI behavior.
+- Commit and clean-worktree evidence: recorded in the Paperclip closeout so the
+  commit does not need to contain a self-referential SHA.
+
 - 2026-07-28: [LUC-1923](/LUC/issues/LUC-1923) completed the protected
   preflight packet for the Product Map release parent
   [LUC-1910](/LUC/issues/LUC-1910). The canonical packet is

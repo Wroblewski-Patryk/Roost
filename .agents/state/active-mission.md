@@ -1,5 +1,44 @@
 # Active Mission Packet
 
+## LUC-2092 Product Map Projection Transport Decision
+
+- Mission status: `VERIFIED`; the V1 transport is selected and recorded,
+  focused contract/redaction/diff checks pass, and the canonical architecture
+  refresh remains `GREEN` with zero evidence queue, chain worklist, or delta.
+- Lifecycle stage: architecture and integration design. Accountable owner:
+  09 TSA (Technical Solution Architect).
+- Objective: select the smallest secure transport that lets production Roost
+  consume the accepted versioned Paperclip portfolio packet without exposing
+  local Paperclip or moving its authority into the browser.
+- Current state: Paperclip source contract is accepted at `1f8950aa`; Roost has
+  a local Product Map UI and protected release preflight; no transport contract
+  previously existed in canonical Roost architecture.
+- Selected outcome: one-way outbound server-side publisher into a dedicated
+  Roost backend ingress with workspace-scoped active/LKG/quarantine storage.
+- Owned scope: architecture source of truth, system architecture, project
+  memory, decision/requirement/risk state, mission/task/project state, and the
+  required module-confidence row.
+- Exclusions: application/frontend/Paperclip code, runtime configuration,
+  secrets, push, deploy, restart, production mutation, live probe, or protected
+  smoke.
+- Lane model: single TSA architecture/docs lane. Security and Ops are already
+  separate first-class review issues; no subagent delegation is used because
+  the current write scope and decision are tightly coupled.
+- Validation gates: option comparison and binding-source traceability pass;
+  `npm run architecture:status` and `npm run architecture:refresh` pass
+  (`455/769/35`, evidence queue `0`, chain worklist `0`, delta `0/0/0`);
+  focused content, path, `git diff --check`, and high-confidence redaction
+  checks pass. Source-control closure is recorded in the issue result.
+- Stop conditions: inability to preserve local-only Paperclip, need for broad
+  credentials, missing explicit replay/idempotency or recovery semantics,
+  unrelated dirty state, or any protected runtime action.
+- Rollback/no-change: revert the architecture packet before implementation;
+  keep [LUC-1910](/LUC/issues/LUC-1910) `NO-GO` and the current Product Map
+  explicitly static. No runtime state changes in this mission.
+- Handoff: [LUC-2093](/LUC/issues/LUC-2093) answers the Security questions;
+  [LUC-2094](/LUC/issues/LUC-2094) answers the Ops questions; only then may the
+  release owner route implementation.
+
 ## LUC-1923 Product Map Protected Release Preflight
 
 - Mission status: `VERIFIED`; focused validation passed and source-control
