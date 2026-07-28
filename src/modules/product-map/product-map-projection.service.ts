@@ -6,11 +6,15 @@ import { prisma } from "../../db/prisma";
 type ProjectionDb = Prisma.TransactionClient | typeof prisma;
 
 export const productMapTransportVersion = "product-map-projection-transport/v1";
-export const productMapSchemaVersion = "product-map/v1";
+export const productMapSchemaVersion = "1.0";
 const replayWindowMs = 10 * 60 * 1000;
 const futureSkewMs = 120 * 1000;
 const freshnessTtlMs = 15 * 60 * 1000;
 const lastKnownGoodWindowMs = 24 * 60 * 60 * 1000;
+const dayMs = 24 * 60 * 60 * 1000;
+export const projectionAuditRetentionDays = 365;
+export const projectionReceiptRetentionDays = 30;
+export const projectionQuarantineRetentionDays = 90;
 
 const envelopeSchema = z.object({
   transportVersion: z.literal(productMapTransportVersion),
@@ -49,6 +53,7 @@ export function parseProjectionEnvelope(value: unknown, now = new Date()): Produ
   const parsed = envelopeSchema.safeParse(value);
   if (!parsed.success) return null;
   const envelope = parsed.data;
+  if (envelope.packet.schemaVersion !== envelope.schemaVersion) return null;
   const observedAt = new Date(envelope.observedAt);
   const publishedAt = new Date(envelope.publishedAt);
   if (observedAt.getTime() > now.getTime() + futureSkewMs || publishedAt.getTime() > now.getTime() + futureSkewMs) return null;
@@ -164,25 +169,39 @@ export async function readProjection(workspaceId: string, now = new Date()) {
   return { status, packet: status === "unavailable" ? null : snapshot.packet, observedAt: snapshot.observedAt };
 }
 
+/**
+ * Computes retention boundaries for the projection persistence surfaces.
+ *
+ * Snapshots carry the accepted packet and audit correlation, so they remain
+ * available for a full year. Idempotency receipts are operational records and
+ * quarantined ingress is intentionally retained for 90 days.
+ */
+export function projectionRetentionCutoffs(now = new Date()) {
+  return {
+    auditBefore: new Date(now.getTime() - projectionAuditRetentionDays * dayMs),
+    receiptBefore: new Date(now.getTime() - projectionReceiptRetentionDays * dayMs),
+    quarantineBefore: new Date(now.getTime() - projectionQuarantineRetentionDays * dayMs)
+  };
+}
+
 /** Bounded maintenance hook for the existing application scheduler. */
 export async function cleanupExpiredProjectionRecords(now = new Date(), batchSize = 100) {
-  const acceptedBefore = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const quarantineBefore = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+  const { auditBefore, receiptBefore, quarantineBefore } = projectionRetentionCutoffs(now);
   const activeStates = await prisma.productMapProjectionState.findMany({
     where: { activeSnapshotId: { not: null } }, select: { activeSnapshotId: true }
   });
   const activeSnapshotIds = activeStates.flatMap((state) => state.activeSnapshotId ? [state.activeSnapshotId] : []);
   const snapshotIds = await prisma.productMapProjectionSnapshot.findMany({
-    where: { receivedAt: { lt: acceptedBefore }, id: { notIn: activeSnapshotIds } }, select: { id: true }, take: batchSize
+    where: { receivedAt: { lt: auditBefore }, id: { notIn: activeSnapshotIds } }, select: { id: true }, take: batchSize
   });
   const receiptIds = await prisma.productMapProjectionReceipt.findMany({
-    where: { receivedAt: { lt: acceptedBefore } }, select: { id: true }, take: batchSize
+    where: { receivedAt: { lt: receiptBefore } }, select: { id: true }, take: batchSize
   });
   const quarantineIds = await prisma.productMapProjectionQuarantine.findMany({
     where: { receivedAt: { lt: quarantineBefore } }, select: { id: true }, take: batchSize
   });
   const admissionIds = await prisma.productMapProjectionAdmission.findMany({
-    where: { lastSeenAt: { lt: acceptedBefore } },
+    where: { lastSeenAt: { lt: receiptBefore } },
     select: { apiKeyId: true, workspaceId: true }, take: batchSize
   });
   const [snapshots, receipts, quarantines, admissions] = await prisma.$transaction([

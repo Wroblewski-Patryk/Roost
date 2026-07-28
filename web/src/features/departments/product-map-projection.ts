@@ -1,4 +1,4 @@
-export type ProductMapReadStatus = "current" | "stale" | "conflict" | "empty" | "unavailable";
+export type ProductMapReadStatus = "current" | "stale" | "quarantined" | "out_of_order" | "empty" | "unavailable";
 
 export type ProductMapProjectionItem = {
   offeringId: string;
@@ -45,14 +45,16 @@ export function itemTone(item: ProductMapProjectionItem) {
 
 export function projectionTone(status: ProductMapReadStatus, packet: ProductMapProjection | null) {
   if (status === "current" && packet?.sourceState === "available" && !packet.stale && packet.conflictState === "none") return "success" as const;
-  if (status === "stale" || status === "conflict") return "warning" as const;
+  if (status === "stale" || status === "quarantined" || status === "out_of_order") return "warning" as const;
   return "error" as const;
 }
 
 export function projectionMessage(status: ProductMapReadStatus, packet: ProductMapProjection | null) {
   if (status === "empty") return { title: "No Product Map projection yet", detail: "No accepted owner projection is available for this workspace. Check the release evidence before making a readiness decision." };
   if (status === "unavailable") return { title: "Product Map projection unavailable", detail: "The last accepted projection is no longer safe to present as current. Retry after the workspace service recovers." };
-  if (status === "conflict") return { title: "Product Map conflict needs review", detail: "A newer projection was quarantined. This view keeps the stricter state visible and cannot promote readiness." };
+  if (status === "quarantined") return { title: "Product Map update quarantined", detail: "A conflicting update was retained for audit, while this view keeps the last accepted state visible. It cannot promote readiness." };
+  if (status === "out_of_order") return { title: "Out-of-order Product Map update retained", detail: "An older update was retained for audit and did not replace the accepted state. Verify the next gate before relying on readiness." };
   if (status === "stale" || packet?.stale) return { title: "Showing last known good Product Map", detail: "This projection is stale. Treat it as historical evidence and verify the next gate before relying on it." };
+  if (packet?.conflictState !== "none") return { title: "Product Map conflict needs review", detail: "The accepted projection contains a source conflict. It remains visible for evidence but cannot promote readiness." };
   return { title: "Current Product Map projection", detail: "This is a Roost read model. Paperclip remains the authority for execution and evidence." };
 }
