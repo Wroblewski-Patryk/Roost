@@ -254,6 +254,120 @@ to infer authority that the packet does not carry.
   does not call, acknowledge into, or mutate Paperclip. The HTTP response is a
   bounded receipt for this delivery only.
 
+### Operational boundary and ownership contract
+
+The publisher is owned by the existing canonical Paperclip local-service
+supervisor (`server/src/services/local-service-supervisor.ts`) on the
+Softwarehouse host. It is a supervised child service of that runtime,
+not a second Paperclip/Roost instance, listener, fallback-port process, or
+unmanaged watcher. The implementation must register one named service,
+`roost-product-map-publisher`, with the publisher package and exact source
+commit recorded in the release packet. Its working directory is the checked-in
+publisher package directory in the canonical Softwarehouse workspace; its
+runtime identity is the least-privilege local service identity already used by
+the canonical supervisor. The supervisor owns start, restart, stop, exit-code,
+and bounded stdout/stderr collection; it must not inherit an interactive user
+session.
+
+The registered service invokes one supervisor-owned scheduled tick every five
+minutes. A per-service
+single-run lock is acquired before the Paperclip read; a tick that finds the
+lock held is recorded as `coalesced` and exits without queueing or parallel
+delivery. Each run uses the existing contract of a three-second connect timeout,
+ten-second total timeout, and at most three attempts (initial, +1 second, +2
+seconds). Restart is limited to supervisor health recovery and uses bounded
+backoff; it never creates a second process or changes a port. Health is the
+supervisor-reported process state plus the last successful receipt age and
+consecutive failure count. Logs go to the supervisor's bounded, rotated log
+sink and contain only the safe signals listed below. Upgrade replaces the
+versioned package atomically, records the old package as the rollback target,
+and requires a clean stop/start readback. Graceful stop cancels before a new
+HTTP attempt, waits for the bounded request timeout, releases the lock, and
+returns a non-success result if cancellation is incomplete. DRE owns acceptance
+of this boundary; TSA owns the contract.
+
+No implementation may introduce a new local service manager, scheduled-task
+family, port, reverse tunnel, or fallback runtime. The exact supervisor service
+identifier and package commit are populated only when the implementation lane
+exists and are then immutable release-provenance fields.
+
+### Network, bindings, and key lifecycle contract
+
+The only outbound destination is the approved Roost HTTPS origin at port 443
+and the exact versioned ingest path. The URL is constructed from a names-only
+binding and must contain no userinfo, query, or fragment. The client disables
+redirects and ambient proxy inheritance, validates the certificate and
+hostname, and rejects loopback, private, link-local, multicast, and reserved
+DNS answers on every connection. The loopback Paperclip source client remains a
+separate pinned client on strict port 3200; credentials are never forwarded
+between the two clients.
+
+The named bindings are `PRODUCT_MAP_PAPERCLIP_SOURCE_URL`,
+`PRODUCT_MAP_PAPERCLIP_READ_KEY`, `PRODUCT_MAP_ROOST_INGEST_URL`,
+`PRODUCT_MAP_ROOST_INGEST_KEY`, and (only if Security later requires it)
+`PRODUCT_MAP_ROOST_INGEST_SIGNING_KEY`. Paperclip owns the source URL and
+route-scoped read key in its approved secret store; Roost owns the ingest URL
+and hashed ingest-key record in its server secret/config store; Security owns
+the decision and storage policy for a separate signing key. Values never enter
+source, arguments, logs, artifacts, or issue evidence.
+
+Bootstrap order is: create the workspace-bound hashed Roost key, configure the
+names-only binding, prove one authorized delivery, then enable the publisher.
+Rotation permits exactly two keys only during the bounded rotation window,
+proves one successful delivery with the new key, and revokes the old key before
+closing the window. Compromise handling disables the publisher first and
+revokes only the affected key; history and the active pointer remain intact.
+TLS plus one dedicated high-entropy hashed bearer is sufficient for V1 only
+after this contract and all preceding security controls pass. A separate
+raw-body signature is mandatory if TLS terminates outside trusted Roost,
+pinning fails, a broad credential is reused, or authenticity must survive an
+untrusted proxy. The bearer is never reused as a signing key. Security owns
+the final decision; DRE verifies network reachability and allowlist ownership.
+
+### Projection-state lifecycle and recovery contract
+
+Roost stores projection state in durable workspace-partitioned tables through a
+versioned migration: one active pointer, immutable accepted/LKG snapshots,
+immutable quarantine/conflict records, and idempotency receipts keyed by
+`(workspaceId, companyId, schemaVersion, sourceSnapshotId, packetDigest)`.
+Every row carries source `observedAt`, receipt time, transport/schema versions,
+and a redacted audit correlation. A later valid observation of the same
+semantic `sourceSnapshotId` is a re-observation; an exact retry is idempotent.
+Only a different digest for the same `(companyId, schemaVersion,
+sourceSnapshotId, observedAt)` is a conflict. Older observations are rejected.
+`observedAt` and `publishedAt` more than 120 seconds in the future are rejected;
+`publishedAt` must remain inside the ten-minute replay window. Equal timestamps
+are ordered by accepted receipt sequence, never by wall-clock reversal.
+
+Accepted snapshots and receipts are retained for 30 days; quarantine and
+conflict records for 90 days; audit metadata for one year; the active/LKG
+pointer is retained while its snapshot exists. Cleanup runs daily under the
+existing application scheduler, in bounded batches, and emits a cleanup-failed
+metric/alert without deleting audit records. Backup includes the projection
+tables and migration version; restore replays the active pointer only after
+integrity and workspace-boundary checks. Rollback never deletes history or
+moves the active pointer backward. Reappearance of a superseded snapshot is
+quarantined as `projection_rollback` and can be reset only by an explicit,
+audited operator action. Lower schema versions are rejected after a higher
+version is accepted unless an approved migration/reset explicitly authorizes
+them. DB Engineering owns the migration and restore proof; DRE verifies
+cleanup and recovery signals.
+
+### Multi-artifact release provenance packet
+
+Each candidate has one immutable provenance packet containing: the accepted
+Paperclip source commit and route/schema contract; the exact publisher package
+commit, package digest, supervisor service definition, and rollback package;
+the exact Roost candidate SHA and migration list; transport/schema versions;
+the names-only binding inventory; and the previous known-good Roost
+commit/image plus rollback procedure. The packet records owner, target branch,
+candidate range, and acceptance evidence without credential values.
+
+No gate may infer publisher provenance from a clean Roost SHA. G01/G06/G08
+must read back the same packet identifier and all artifact digests. A mismatch
+between source, publisher, Roost candidate, schema/transport version, or
+rollback artifact is an immediate `NO-GO` and stops promotion.
+
 ### Trust and authorization boundaries
 
 - The Paperclip leg stays on loopback and must use an owner-company-bound,
