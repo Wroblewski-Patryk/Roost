@@ -11,7 +11,7 @@ import { createEvent } from "../modules/events/event.service";
 import { classifyOperatingAreaKey } from "../operating-model/catalog";
 import { encryptSecret } from "../integrations/secrets";
 import { runProductMapProjectionCleanupIfDue } from "../integrations/clickup/clickup.maintenance-scheduler";
-import { expectedIdempotencyKey, packetDigest, productMapSchemaVersion, productMapTransportVersion } from "../modules/product-map/product-map-projection.service";
+import { consumeProjectionAdmission, expectedIdempotencyKey, packetDigest, productMapSchemaVersion, productMapTransportVersion, tryAcquireProjectionWorkspaceLock } from "../modules/product-map/product-map-projection.service";
 
 const realFetch = globalThis.fetch.bind(globalThis);
 let baseUrl = "";
@@ -10172,6 +10172,27 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(productMapKey.status, 201);
   const productMapKeyValue = (productMapKey.body as { data: { key: string } }).data.key;
+  const broadProductMapKey = await request("/v1/api-keys", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({ name: "Broad Product Map publisher", scopes: ["*"], fullAccessConfirmed: true })
+  });
+  assert.equal(broadProductMapKey.status, 201);
+  const oversizedIngressBody = "x".repeat(256 * 1024 + 1);
+  const preParseHeaders: Array<Record<string, string>> = [
+    {},
+    { "X-API-Key": "cc_v1_invalid_product_map_key" },
+    { "X-API-Key": (broadProductMapKey.body as { data: { key: string } }).data.key }
+  ];
+  for (const headers of preParseHeaders) {
+    const deniedBeforeRawBodyParsing = await request("/v1/product-map/projection/ingest", {
+      method: "POST",
+      headers,
+      body: oversizedIngressBody
+    });
+    assert.equal(deniedBeforeRawBodyParsing.status, 403);
+    assert.deepEqual(deniedBeforeRawBodyParsing.body, { error: "projection_ingress_denied" });
+  }
   const productPacket = { readiness: "GO", release: "candidate-a" };
   const productDigest = packetDigest(productPacket);
   const productEnvelopeBase = {
@@ -10208,14 +10229,125 @@ test("CompanyCore v1 protected API flow", async () => {
   const crossWorkspaceProjectionRead = await request("/v1/product-map/projection", { headers: authB });
   assert.equal(crossWorkspaceProjectionRead.status, 200);
   assert.equal((crossWorkspaceProjectionRead.body as { data: { status: string } }).data.status, "empty");
+
+  // The following fixture uses the same disposable PostgreSQL database as the
+  // API suite. It checks that a logical restore retains the active pointer,
+  // then recreates the app and uses two HTTP listeners against the same DB to
+  // prove that idempotency, the durable admission bucket, and advisory lock
+  // remain database-owned rather than process-local.
+  const durabilityKey = await request("/v1/api-keys", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({ name: "Product Map durability publisher", scopes: ["product-map:projection:ingest"] })
+  });
+  assert.equal(durabilityKey.status, 201);
+  const durabilityHeaders = { "X-API-Key": (durabilityKey.body as { data: { key: string } }).data.key };
+  const durabilityPacket = { readiness: "GO", release: "durability-candidate" };
+  const durabilityEnvelopeBase = {
+    ...productEnvelopeBase,
+    sourceSnapshotId: "portfolio-snapshot-durability",
+    observedAt: new Date(Date.now() + 1_000).toISOString(),
+    publishedAt: new Date().toISOString(),
+    packetDigest: packetDigest(durabilityPacket),
+    packet: durabilityPacket
+  };
+  const durabilityEnvelope = {
+    ...durabilityEnvelopeBase,
+    idempotencyKey: expectedIdempotencyKey(durabilityEnvelopeBase)
+  };
+  const durabilityAccepted = await request("/v1/product-map/projection/ingest", {
+    method: "POST", headers: durabilityHeaders, body: JSON.stringify(durabilityEnvelope)
+  });
+  assert.equal(durabilityAccepted.status, 200);
+
+  const restoreSnapshot = await prisma.productMapProjectionSnapshot.findMany({
+    where: { workspaceId: ownerA.workspace.id }, orderBy: { receivedAt: "asc" }
+  });
+  const restoreReceipts = await prisma.productMapProjectionReceipt.findMany({
+    where: { workspaceId: ownerA.workspace.id }, orderBy: { receivedAt: "asc" }
+  });
+  const restoreState = await prisma.productMapProjectionState.findUnique({ where: { workspaceId: ownerA.workspace.id } });
+  assert.ok(restoreState?.activeSnapshotId);
+  await prisma.productMapProjectionState.deleteMany({ where: { workspaceId: ownerA.workspace.id } });
+  await prisma.productMapProjectionReceipt.deleteMany({ where: { workspaceId: ownerA.workspace.id } });
+  await prisma.productMapProjectionSnapshot.deleteMany({ where: { workspaceId: ownerA.workspace.id } });
+  await prisma.$transaction([
+    prisma.productMapProjectionSnapshot.createMany({
+      data: restoreSnapshot.map(({ packet, ...snapshot }) => ({ ...snapshot, packet: packet as Prisma.InputJsonValue }))
+    }),
+    prisma.productMapProjectionReceipt.createMany({ data: restoreReceipts }),
+    prisma.productMapProjectionState.create({ data: restoreState! })
+  ]);
+  const restoredProjection = await request("/v1/product-map/projection", { headers: { "X-API-Key": projectionReadKeyValue } });
+  assert.equal(restoredProjection.status, 200);
+  assert.deepEqual((restoredProjection.body as { data: { packet: unknown } }).data.packet, durabilityPacket);
+
+  await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+  server = createApp().listen(0);
+  await new Promise<void>((resolve) => server.once("listening", resolve));
+  baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  const restartedDuplicate = await request("/v1/product-map/projection/ingest", {
+    method: "POST", headers: durabilityHeaders, body: JSON.stringify(durabilityEnvelope)
+  });
+  assert.equal(restartedDuplicate.status, 200);
+  assert.equal((restartedDuplicate.body as { data: { status: string } }).data.status, "duplicate");
+
+  const peerServer = createApp().listen(0);
+  await new Promise<void>((resolve) => peerServer.once("listening", resolve));
+  const peerBaseUrl = `http://127.0.0.1:${(peerServer.address() as AddressInfo).port}`;
+  try {
+    const independentAdmissionKey = await request("/v1/api-keys", {
+      method: "POST", headers: authA,
+      body: JSON.stringify({ name: "Independent instance publisher", scopes: ["product-map:projection:ingest"] })
+    });
+    assert.equal(independentAdmissionKey.status, 201);
+    const independentAdmissionKeyData = independentAdmissionKey.body as { data: { id: string; key: string } };
+    const durableAdmissionDecisions = await Promise.all(
+      Array.from({ length: 4 }, () => consumeProjectionAdmission(independentAdmissionKeyData.data.id, ownerA.workspace.id))
+    );
+    assert.equal(durableAdmissionDecisions.filter(Boolean).length, 3);
+    const independentRouteKey = await request("/v1/api-keys", {
+      method: "POST", headers: authA,
+      body: JSON.stringify({ name: "Independent instance HTTP publisher", scopes: ["product-map:projection:ingest"] })
+    });
+    assert.equal(independentRouteKey.status, 201);
+    const independentHeaders = { "Content-Type": "application/json", "X-API-Key": (independentRouteKey.body as { data: { key: string } }).data.key };
+    const independentRequest = (base: string) => realFetch(`${base}/v1/product-map/projection/ingest`, {
+      method: "POST", headers: independentHeaders, body: JSON.stringify(durabilityEnvelope)
+    });
+    const admissionResponses = await Promise.all([
+      independentRequest(baseUrl), independentRequest(peerBaseUrl), independentRequest(peerBaseUrl), independentRequest(baseUrl)
+    ]);
+    const admissionStatuses = await Promise.all(admissionResponses.map(async (response) => response.status));
+    assert.ok(admissionStatuses.includes(200));
+    assert.ok(admissionStatuses.includes(429));
+
+    const lockKey = await request("/v1/api-keys", {
+      method: "POST", headers: authA,
+      body: JSON.stringify({ name: "Independent instance lock publisher", scopes: ["product-map:projection:ingest"] })
+    });
+    assert.equal(lockKey.status, 201);
+    const lockHeaders = { "Content-Type": "application/json", "X-API-Key": (lockKey.body as { data: { key: string } }).data.key };
+    await prisma.$transaction(async (tx) => {
+      assert.equal(await tryAcquireProjectionWorkspaceLock(ownerA.workspace.id, tx), true);
+      const lockedResponse = await realFetch(`${peerBaseUrl}/v1/product-map/projection/ingest`, {
+        method: "POST", headers: lockHeaders, body: JSON.stringify(durabilityEnvelope)
+      });
+      assert.equal(lockedResponse.status, 429);
+      assert.deepEqual(await lockedResponse.json(), { error: "projection_ingress_denied" });
+    });
+  } finally {
+    await new Promise<void>((resolve, reject) => peerServer.close((error) => error ? reject(error) : resolve()));
+  }
   assert.equal((await ingestProjection()).status, 200);
   assert.equal((await ingestProjection()).status, 200);
   const burstDenied = await ingestProjection();
   assert.equal(burstDenied.status, 429);
   assert.deepEqual(burstDenied.body, { error: "projection_ingress_denied" });
+  const admissionsBeforeCleanup = await prisma.productMapProjectionAdmission.count();
   const scheduledProjectionCleanup = await runProductMapProjectionCleanupIfDue(Date.now() + 31 * 24 * 60 * 60 * 1000);
   assert.equal(scheduledProjectionCleanup.skipped, false);
-  assert.equal(scheduledProjectionCleanup.admissions, 1);
+  assert.equal(scheduledProjectionCleanup.admissions, admissionsBeforeCleanup);
   assert.equal(await prisma.productMapProjectionAdmission.count(), 0);
 
   const v1AliasRegister = await request("/v1/auth/register", {
