@@ -24,6 +24,7 @@ const protectedMounts = new Map([
   ["operating-graph.routes.ts", "/operating-graph"],
   ["operating-model.routes.ts", "/operating-model"],
   ["operations.routes.ts", "/operations"],
+  ["product-map-projection.routes.ts", "/product-map"],
   ["relationships.routes.ts", "/relationships"],
   ["sales.routes.ts", "/sales"],
   ["strategy.routes.ts", "/strategy"],
@@ -50,7 +51,9 @@ const protectedMounts = new Map([
 
 const routerMountOverrides = new Map([
   ["workflowDefinitionDraftsRouter", "/company-os/workflow-definitions/drafts"],
-  ["workflowDefinitionRecoveryRouter", "/company-os/workflow-definitions"]
+  ["workflowDefinitionRecoveryRouter", "/company-os/workflow-definitions"],
+  ["productMapIngressRouter", "/product-map/projection/ingest"],
+  ["productMapReadRouter", "/product-map"]
 ]);
 
 const routePathExpansions = new Map([
