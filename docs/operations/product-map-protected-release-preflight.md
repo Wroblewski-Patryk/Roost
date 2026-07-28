@@ -41,17 +41,42 @@ issue evidence.
 
 | Gate | Required evidence | Owner | Current state |
 | --- | --- | --- | --- |
-| PMAP-REL-G01 Candidate provenance | Clean Roost worktree; exact 40-character candidate SHA; owner remote; `main` target; live remote ref readback; approved commit range; candidate contains the accepted Product Map consumer and no unrelated packet | Engineering Delivery + DRE | blocked: future candidate not selected |
+| PMAP-REL-G01 Candidate provenance | Clean Roost worktree; exact 40-character Roost candidate SHA; owner remote; `main` target; live remote ref readback; approved commit range; exact publisher implementation commit/artifact and supervised-service definition; accepted Paperclip source commit; candidate contains the accepted Product Map consumer and no unrelated packet | Engineering Delivery + TSA + DRE | blocked: future Roost candidate and publisher artifact are not selected |
 | PMAP-REL-G02 Independent acceptance | [LUC-1910](/LUC/issues/LUC-1910) implementation evidence plus independent QA, security/privacy, review, documentation, and release approvals tied to the same candidate SHA | EDL, QVE/TAE, SPA/CLO, Docs, DRE | blocked: release parent not implemented/accepted |
-| PMAP-REL-G03 Coolify identity and capacity | Re-read exact project/environment/application/server UUIDs; no unexpected deployment in progress; server reachable/usable; disk has room for build plus current and rollback images; memory/CPU have headroom for build and canary; no high-disk or capacity alert | DRE | partially verified: identity known; headroom not measured |
-| PMAP-REL-G04 Config and migration | Names-only required config inventory; `docker-compose.coolify.yml` contract check; migration diff and data-impact classification; backup/restore requirement; `SOURCE_COMMIT` propagation; no secret values in output | DRE + DB/Security when applicable | pending exact candidate |
-| PMAP-REL-G05 Paperclip strict-3200 acceptance | Zero active Paperclip runs; exact owner binding; controlled canonical restart; route and denial matrix; health and topology audit; rollback note | DRE | blocked: protected restart not authorized/performed |
+| PMAP-REL-G03 Coolify and publisher-host identity/capacity | Re-read exact project/environment/application/server UUIDs; no unexpected deployment in progress; server reachable/usable; disk has room for build plus current and rollback images; memory/CPU have headroom for build and canary; no high-disk or capacity alert; canonical local publisher host and supervisor identity; no new listener, fallback port, second Paperclip/Roost instance, or unmanaged watcher | DRE | partially verified: Coolify identity known; remote and local headroom plus publisher supervisor remain unverified |
+| PMAP-REL-G04 Config, persistence, migration, and retention | Names-only inventory for target URL, owner-company/workspace binding, Paperclip route-read credential, Roost ingest credential, and optional signing-key binding; owning secret stores and rotation/revocation order; `docker-compose.coolify.yml` and publisher-service contract checks; migration diff and data-impact classification; active/LKG/quarantine/idempotency retention and cleanup policy; backup/restore requirement; `SOURCE_COMMIT` propagation; no secret values in output | TSA + DRE + DB/Security when applicable | blocked: binding names, publisher service contract, and projection-state retention/cleanup policy are not selected |
+| PMAP-REL-G05 Paperclip and publisher runtime acceptance | Zero active Paperclip runs; exact owner binding; controlled canonical restart; source route and denial matrix; publisher supervisor start/restart/stop and safe cancellation; five-minute scheduling, overlap coalescence, 3/10-second timeouts, bounded retry, replay/idempotency, and network reachability/allowlist proof; health and topology audit; rollback note | TSA + DRE | blocked: publisher runtime/supervisor and allowlist ownership are not selected; protected restart is not authorized/performed |
 | PMAP-REL-G06 Promotion authorization | Explicit DRE `GO` record naming candidate, target, checks, rollback target, smoke owner, stop conditions, and protected-action authority; push must be treated as a Coolify production trigger | DRE + release owner | blocked |
-| PMAP-REL-G07 Post-deploy smoke | Public health and SHA, API metadata, authenticated Product Map browser journey, projection states, authorization denials, responsive/accessibility checks, logs, and data/migration verification | DRE + QA/Security | blocked until deployment |
-| PMAP-REL-G08 Monitoring and recovery | Coolify deployment/source readback, repeated health samples, restart/error/migration/auth log review, alert/escalation route, rollback or forward-fix decision, and final acceptance | DRE | blocked until deployment |
+| PMAP-REL-G07 Post-deploy transport smoke | Public health and SHA, API metadata, authenticated Product Map browser journey, separate ingest/read authorization denials, accepted/duplicate/out-of-order/conflict/quarantine paths, source-based stale/LKG/unavailable labeling, five-minute publisher delivery, responsive/accessibility checks, redacted logs, and data/migration verification | DRE + QA/Security | blocked until implementation and deployment |
+| PMAP-REL-G08 Monitoring, disablement, and recovery | Coolify deployment/source readback; publisher service/schedule health; delivery age from source `observedAt`; attempt/success/failure/retry, authorization-denial, duplicate, conflict, quarantine, and unsupported-schema signals; at least three public health samples across a minimum 15-minute window; restart/error/migration/auth log review; alert/escalation route; publisher disable plus dedicated-key revocation rehearsal; rollback or forward-fix decision; final acceptance | DRE | blocked until implementation and deployment |
 
 No gate may inherit evidence from another SHA. A stale, missing, `unknown`, or
 conflicting fact is a failed gate, not permission to infer readiness.
+
+## Independent Projection Transport Operations Review
+
+Review source: [LUC-2094](/LUC/issues/LUC-2094). Architecture reviewed at
+Roost commit `a9334d8529c2196fcd62e3b5331ec8b72273e062`; preflight baseline
+reviewed from commit `f1db9fdfd7f8dafd38404bc1bb3545219c8a3f79`.
+
+Verdict: **`changes_required`**. The one-way outbound transport is operationally
+viable in principle, and its bounded payload, source-based freshness,
+idempotency, quarantine, explicit stale/LKG behavior, and no-reverse-access
+rules are suitable foundations. It is not yet an implementable or releasable
+operations contract because the following owner-controlled details are absent:
+
+| Finding | Required correction | Accountable owner | Gate impact |
+| --- | --- | --- | --- |
+| PMAP-OPS-01 Publisher runtime ownership | Select the exact existing local service supervisor, service name, executable/package and source commit, working directory, runtime identity, schedule mechanism, single-run/coalescing lock, restart policy, health signal, bounded log sink, upgrade path, and graceful stop/cancellation behavior. The solution must not create a second Paperclip/Roost instance, listener, fallback port, or unmanaged watcher. | TSA defines the runtime boundary; DRE accepts it | G01, G03, G05, G08 |
+| PMAP-OPS-02 Network and binding ownership | Record the exact non-secret target host/path contract, DNS/TLS verification posture, outbound TCP/443 and ingress proxy/firewall allowlist owners, names-only config bindings and owning secret stores, bootstrap/rotation/revocation sequence, and whether Security requires a separate raw-body signature. Source-route approval cannot authorize the new Roost ingress. | TSA + Security define; DRE verifies | G04, G05, G06, G07 |
+| PMAP-OPS-03 Projection-state lifecycle | Define durable storage and migrations for active, LKG, quarantine, conflict, and idempotency/replay records; choose finite retention windows; define cleanup scheduling, audit preservation, cleanup-failure alerting, backup/restore behavior, and the rule that rollback never deletes history or moves the active pointer backward. | TSA + DB Engineering define; DRE verifies recovery | G04, G07, G08 |
+| PMAP-OPS-04 Multi-artifact provenance | Bind one release packet to the exact Paperclip source commit, exact local publisher implementation/service definition, exact Roost candidate, schema/transport versions, and rollback artifacts. A clean Roost SHA alone cannot prove the local transport being operated. | Engineering Delivery + TSA + DRE | G01, G06, G08 |
+
+Until these corrections are accepted, the protected Product Map release stays
+`NO-GO`. This verdict does not authorize implementation, push, deploy, restart,
+configuration mutation, protected probes, secret access, or production
+mutation. The existing static Product Map may remain available only under its
+explicit static or stale labeling; it must not be presented as live.
 
 ## Paperclip Owner-Binding Acceptance
 
