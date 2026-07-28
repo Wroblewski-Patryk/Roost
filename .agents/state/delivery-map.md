@@ -1,29 +1,33 @@
 # Delivery Map
 
-Last updated: 2026-06-01
+Last updated: 2026-07-28
 
 ## Current Product Target
 
 - Product: companycore
-- Current release or milestone: the V1OPS group and the first Strategy backend
-  packet are deployed and verified in production. Locally, `03 Sales` has a
-  verified read-only context packet and selected-area board. The
-  owner-approved `00 Main -> 04 Operations -> 08 Assets` company operating
-  loop is now complete through architecture, API read packets, shared
-  primitives, selected-area UI adoption, and the first editable Operations
-  list board.
+- Current release or milestone: Roost v1.0 is
+  `conditional_guided_sale_ready` for one workspace-scoped owner/operator with
+  manual onboarding, a proven manual deployment/smoke path, supervised or
+  read-only MCP/API use, and governed knowledge-plane access. It is not
+  self-serve SaaS, broad hosted Paperclip execution, or an unsupervised
+  provider-write environment.
 - Primary user: owner/operator and policy-bound AI agents
 - Primary outcome: CompanyCore becomes a production-quality human and agent
   Company OS control plane where the owner can supervise clients, tasks,
   evidence, files, and AI-agent handoff from V1 routes backed by real APIs.
-- Top blockers: deeper per-department read models and safe command contracts
-  remain incomplete; upstream Paperclip/OpenJarvis write access remains
-  external.
-- Next mission: deploy/smoke the latest Operations board if needed, then
-  continue V1 department systems with `05 Relationships`. `CC-UI-002`,
-  `CC-UI-003`, `CC-00-002`, `CC-04-002`, `CC-08-002`, `CC-UI-004`, and
-  `OPS-BOARD-001` are complete and verified.
-- Closure handoff: `docs/operations/application-completion-audit-2026-05-14.md`.
+- Top blockers and deferrals: release auto-deploy proof remains an accepted
+  deferral; external upstream agent-source merge remains blocked and
+  non-blocking for Roost runtime readiness; broad provider writes and hosted
+  Paperclip authority remain policy-deferred. The hosted read-only canary is
+  verified and closed through [LUC-1799](/LUC/issues/LUC-1799).
+- Next mission: [LUC-1895](/LUC/issues/LUC-1895) is the existing blocked owner
+  lane for publishing `PROC-SH-APPLICATION-LIFECYCLE` v1.0 on an authenticated
+  Roost surface. Keep the repository procedure projection `source_only` until
+  that lane completes automated, security, deployment, monitoring, and
+  production-browser proof.
+- Closure handoff: `docs/releases/roost-v1-0-sale-readiness-contract.md`,
+  `docs/releases/roost-v1-0-gap-register.md`, and
+  `docs/planning/luc-2024-known-state-and-map-drift-sweep.md`.
 
 ## Source Inputs
 

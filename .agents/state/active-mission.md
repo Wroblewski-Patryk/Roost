@@ -1,5 +1,35 @@
 # Active Mission Packet
 
+## LUC-2024 Known-State And Map Drift Sweep
+
+- Mission status: `VERIFIED`.
+- Objective: refresh Roost works/fails/unknown/blocked evidence and correct only
+  proven drift between repository shape, generated architecture/test maps,
+  canonical PM pointers, and the conditional guided-sale v1.0 target.
+- Current baseline: LUC-1885/LUC-1886 are the latest closed PM evidence packet;
+  initial readback found stale project-memory, architecture-map-status, and
+  hosted-canary gap-register pointers that require fresh generator evidence
+  before correction.
+- Owned scope: `docs/planning/luc-2024-known-state-and-map-drift-sweep.md`,
+  generated architecture/app-completion/Project Truth outputs, the named PM
+  state pointers, `docs/status/architecture-map-status.md`, and the v1.0 release
+  contract/register.
+- Exclusions: runtime implementation, provider writes, production smoke, push,
+  deploy, secrets, or architecture redesign.
+- Lane model: single-writer PM/docs integration. Shared state, graph, status,
+  and planning surfaces are intentionally serialized; specialist follow-ups
+  will be separate Paperclip issues only when fresh evidence finds a real gap.
+- Validation gates: `npm run architecture:refresh`, `npm run
+  architecture:status`, architecture-awareness/app-completion/Project Truth
+  generator readback, focused diff review, `git diff --check`, and clean or
+  explicitly preserved source-control disposition.
+- Stop conditions: architecture gate failure, protected-action requirement,
+  conflict between approved product sources, or unrelated dirty-tree conflict.
+- Result: architecture remained green and Project Truth zero-gap; stale PM,
+  architecture-map, delivery-map, and release-canary pointers were corrected;
+  no product repair lane was created. The task-owned packet is ready for one
+  scoped local preservation commit with push held.
+
 ## LUC-1895 Autonomous Application Lifecycle Publication Packet
 
 - 2026-07-26: the company-facing procedure projection is defined at
@@ -8,10 +38,12 @@
 - Current fact: the procedure is `source_only`. Paperclip owns live execution
   and evidence; Roost owns the future authenticated owner projection; product
   repositories own versioned implementation and release truth.
-- LUC-1895 is the one backlog implementation lane for a real owner UI/API,
+- Live Paperclip readback on 2026-07-28 reports LUC-1895 as the one blocked
+  implementation lane for a real owner UI/API,
   stale/conflict/access/audit handling, and production browser/deployed-SHA
-  proof. Do not duplicate or start it merely because the source document now
-  exists.
+  proof. Its issue description requires a clean reviewed source-control
+  boundary before push/deploy. Do not duplicate it or treat the source document
+  as deployed merely because it exists.
 - Explicit exclusions: no direct database integration, provider write,
   authority expansion, commercial activation, push, deploy, or secret access
   from this documentation packet.

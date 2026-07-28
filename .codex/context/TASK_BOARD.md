@@ -1,9 +1,17 @@
 # TASK_BOARD
 
 ## Disposition Note
-- 2026-07-26: [LUC-1895](/LUC/issues/LUC-1895) is the single governed backlog
+- 2026-07-28: [LUC-2024](/LUC/issues/LUC-2024) refreshed the Roost known-state
+  and corrected stale canonical map/release pointers. Use
+  `docs/planning/luc-2024-known-state-and-map-drift-sweep.md`: architecture is
+  `GREEN`, app completion and Project Truth are zero-gap, the hosted read-only
+  canary is closed, and no new PM product repair wave is justified. Keep
+  [LUC-1895](/LUC/issues/LUC-1895) as the existing blocked lifecycle-
+  publication owner lane rather than creating a duplicate.
+- 2026-07-26: [LUC-1895](/LUC/issues/LUC-1895) is the single governed owner
   lane for making the autonomous application/business lifecycle live on an
-  authenticated Roost owner surface. Use
+  authenticated Roost owner surface; live Paperclip state on 2026-07-28 is
+  `blocked` pending its documented source-control precondition. Use
   `.codex/tasks/luc-1895-publish-autonomous-application-lifecycle.md`; do not
   create duplicate procedure/publication work or treat the current
   repository-only contract as deployed.
@@ -72,9 +80,13 @@
   [LUC-1585](/LUC/issues/LUC-1585) as a recovery lane.
 
 ## Now
+- 2026-07-28: [LUC-2024](/LUC/issues/LUC-2024) is verified for the PM/docs
+  scope. The current known-state is green and routable; only canonical
+  documentation drift was corrected. [LUC-1895](/LUC/issues/LUC-1895) remains
+  blocked in live Paperclip state and owns the next approved product slice.
 - 2026-07-26: The Roost projection source for
   `PROC-SH-APPLICATION-LIFECYCLE` v1.0 is present and indexed. Publication
-  state is `source_only`; LUC-1895 remains backlog until selected after clean
+  state is `source_only`; LUC-1895 is the blocked owner lane pending clean
   source-control closure.
 - 2026-07-26: [LUC-1885](/LUC/issues/LUC-1885) is complete. The July 26 known-
   state delta kept architecture `GREEN`, kept app-completion zero-gap, and

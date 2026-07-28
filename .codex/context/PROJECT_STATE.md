@@ -1,5 +1,19 @@
 # PROJECT_STATE
 
+- 2026-07-28: [LUC-2024](/LUC/issues/LUC-2024) completed the current Roost
+  known-state and map-drift sweep. Evidence packet:
+  `docs/planning/luc-2024-known-state-and-map-drift-sweep.md`. Native
+  architecture refresh/status remain `GREEN` at `455/769/35` with zero queue,
+  worklist, or delta; architecture awareness generated
+  `2026-07-28T04:34:31.651Z` with `3150` entities / `8604` relations /
+  `16539` files; app completion remains zero-gap at `46` items / `4` flows;
+  Project Truth is `known_and_routable` with `0` gaps and four passing public
+  read-only probes. Canonical drift was corrected in the project-memory index,
+  architecture-map status, delivery map, and v1.0 release contract/register.
+  No new product repair lane is required; [LUC-1895](/LUC/issues/LUC-1895)
+  remains the existing blocked owner lane for authenticated lifecycle
+  publication.
+
 - 2026-07-26: [LUC-1895](/LUC/issues/LUC-1895) records the governed follow-up
   for publishing `PROC-SH-APPLICATION-LIFECYCLE` version 1.0 as an
   authenticated owner-facing Roost procedure. The repository projection is

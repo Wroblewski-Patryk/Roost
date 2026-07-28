@@ -1,4 +1,11 @@
 # Next Steps
+- 2026-07-28: [LUC-2024](/LUC/issues/LUC-2024) refreshed Roost known-state and
+  reconciled map drift. Architecture, app completion, Project Truth, event
+  chains, runtime findings, and public read-only probes are all green/zero-gap.
+  Do not create a generic PM repair lane from the `12` historical task-artifact
+  linkage gaps. The hosted read-only canary is closed; the existing later
+  owner lane is [LUC-1895](/LUC/issues/LUC-1895), which remains blocked in
+  Paperclip and must not be duplicated.
 - 2026-07-26: [LUC-1885](/LUC/issues/LUC-1885) refreshed the Roost PM
   known-state delta and [LUC-1886](/LUC/issues/LUC-1886) closed the generated
   docs/graphs/status/state packet. Do not open a duplicate PM repair lane from

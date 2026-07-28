@@ -1,6 +1,6 @@
 # Architecture Graph
 
-Generated: 2026-07-26T00:37:49.511Z
+Generated: 2026-07-28T04:34:31.651Z
 
 ## Canonical Exports
 
@@ -49,7 +49,7 @@ Generated: 2026-07-26T00:37:49.511Z
 | agent | implemented | Requirements Verification Matrix | .agents/state/requirements-verification-matrix.md | Engineering Delivery Lead |
 | agent | implemented | Responsibility Learning | .agents/state/responsibility-learning.md | Engineering Delivery Lead |
 | agent | implemented | Risk Register | .agents/state/risk-register.md | Engineering Delivery Lead |
-| agent | implemented | 2026-07-25 LUC-1863 Known-State Delta Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
+| agent | implemented | 2026-07-28 LUC-2024 Known-State And Map Drift Health Signal | .agents/state/system-health.md | Engineering Delivery Lead |
 | agent | implemented | Agent Tasks | .agents/tasks/README.md | Engineering Delivery Lead |
 | agent | implemented | Agent Hierarchy | .agents/workflows/agent-hierarchy.md | Engineering Delivery Lead |
 | agent | implemented | Codex Power Use Workflow | .agents/workflows/codex-power-use.md | Engineering Delivery Lead |
@@ -600,6 +600,7 @@ Generated: 2026-07-26T00:37:49.511Z
 | connected_to | project:roost:122c92a083 | task:luc-1378-completion-evidence:d206c8492f | .codex/tasks/luc-1378-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:luc-1450-completion-evidence:59439e16e1 | .codex/tasks/luc-1450-completion-evidence.md |
 | connected_to | project:roost:122c92a083 | task:luc-1550-integration-settings-missing-test-link-verification:df647fa4c0 | .codex/tasks/luc-1550-verify-integration-settings-missing-test-link.md |
+| connected_to | project:roost:122c92a083 | task:luc-1895-publish-autonomous-application-lifecycle:6e38a9aa43 | .codex/tasks/luc-1895-publish-autonomous-application-lifecycle.md |
 | connected_to | project:roost:122c92a083 | task:luc-267-roost-public-route-alias-task-link-curation:fbf174e3ba | .codex/tasks/luc-267-roost-public-route-alias-task-link-curation.md |
 | connected_to | project:roost:122c92a083 | task:luc-268-roost-app-completion-proof-link-curation-after-luc-262:9e2f15239f | .codex/tasks/luc-268-roost-app-completion-proof-link-curation-after-luc-262.md |
 | connected_to | project:roost:122c92a083 | task:luc-321-source-control-closure-for-luc-262-luc-267-luc-268:d550d2aafb | .codex/tasks/luc-321-source-control-closure-for-luc-262-267-268.md |
@@ -667,6 +668,7 @@ Generated: 2026-07-26T00:37:49.511Z
 | connected_to | project:roost:122c92a083 | task:task:4f33f2ade9 | .codex/tasks/luc-1347-prove-unclassified-user-workflow-missing-doc-link-for-use-notes.md |
 | connected_to | project:roost:122c92a083 | task:task:506a5a0842 | .codex/tasks/luc-788-account-access-post-google-oauth-token-doc-link.md |
 | connected_to | project:roost:122c92a083 | task:task:50eb4549aa | .codex/tasks/luc-1285-prove-unclassified-user-workflow-missing-test-link-for-use-intake.md |
+| connected_to | project:roost:122c92a083 | task:task:5288dfeb3b | .codex/tasks/luc-1886-close-luc-1885-known-state-evidence-packet.md |
 | connected_to | project:roost:122c92a083 | task:task:546ca92f5c | .codex/tasks/luc-948-source-control-closure-for-luc-943.md |
 | connected_to | project:roost:122c92a083 | task:task:56da1c12f2 | .codex/tasks/luc-1086-dashboard-overview-cc-route-loading-proof-link.md |
 | connected_to | project:roost:122c92a083 | task:task:57e15dbd18 | .codex/tasks/luc-1072-dashboard-overview-src-modules-dashboard-proof-link.md |
@@ -764,7 +766,7 @@ Generated: 2026-07-26T00:37:49.511Z
 | connected_to | project:roost:122c92a083 | task:task:fa147029d0 | .codex/tasks/luc-1474-classify-and-close-local-dirty-state-for-luc-1473.md |
 | connected_to | project:roost:122c92a083 | task:task:fdab369c50 | .codex/tasks/luc-1455-source-control-closure-for-luc-1442-luc-1450.md |
 | documents | agent:2026-07-20-luc-1527-module-confidence-update:0bb5cf3d41 | module:agents:4ae71ba13a | .agents/state/module-confidence-ledger.md |
-| documents | agent:2026-07-25-luc-1863-known-state-delta-health-signal:b563f389a1 | module:agents:4ae71ba13a | .agents/state/system-health.md |
+| documents | agent:2026-07-28-luc-2024-known-state-and-map-drift-health-signal:354cb6ce81 | module:agents:4ae71ba13a | .agents/state/system-health.md |
 | documents | agent:active-mission-packet:a0e3255194 | module:agents:4ae71ba13a | .agents/state/active-mission.md |
 | documents | agent:agent-checklists:0b1e39f5f6 | module:agents:4ae71ba13a | .agents/checklists/README.md |
 | documents | agent:agent-hierarchy:4835752b62 | module:agents:4ae71ba13a | .agents/workflows/agent-hierarchy.md |
@@ -955,6 +957,7 @@ Generated: 2026-07-26T00:37:49.511Z
 | documents | document:authenticated-shell-layout-audit:7f0c0d0e83 | module:docs:6784d83cb0 | docs/ux/authenticated-shell-layout-audit-2026-05-14.md |
 | documents | document:automation-definitions-model:15b4171168 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0009.md |
 | documents | document:automation-rules-model:513ac21582 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0010.md |
+| documents | document:autonomous-application-and-business-lifecycle-projection:11f76814f0 | module:docs:6784d83cb0 | docs/governance/autonomous-application-business-lifecycle.md |
 | documents | document:autonomous-company-operating-system-architecture:8cf88d25f1 | module:docs:6784d83cb0 | docs/architecture/autonomous-company-operating-system.md |
 | documents | document:autonomous-engineering-loop:471c2db101 | module:docs:6784d83cb0 | docs/governance/autonomous-engineering-loop.md |
 | documents | document:background-and-decorative-asset-strategy:b4d245d374 | module:docs:6784d83cb0 | docs/ux/background-and-decorative-asset-strategy.md |
@@ -1215,6 +1218,3 @@ Generated: 2026-07-26T00:37:49.511Z
 | documents | document:goals-model:229e0b8194 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0025.md |
 | documents | document:google-drive-auth:0ead918d86 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/INT-AUTO-0008.md |
 | documents | document:google-drive-client:897ca59766 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/INT-AUTO-0009.md |
-| documents | document:google-drive-client:99b9b60f85 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/CLS-AUTO-0003.md |
-| documents | document:google-drive-content-snapshots-model:9af6b5d255 | module:docs:6784d83cb0 | docs/architecture/nodes/generated/DB-AUTO-0026.md |
-| documents | document:google-drive-content:f07acd9cea | module:docs:6784d83cb0 | docs/architecture/nodes/generated/INT-AUTO-0010.md |

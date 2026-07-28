@@ -1,6 +1,6 @@
 # Project Memory Index
 
-Last updated: 2026-07-25
+Last updated: 2026-07-28
 
 ## Purpose
 
@@ -10,6 +10,23 @@ Every non-trivial task must connect local code changes to the current product
 state, architecture intent, module confidence, and the next release objective.
 
 ## Latest Generated Truth
+
+- 2026-07-28: [LUC-2024](/LUC/issues/LUC-2024) refreshed Roost known-state
+  and reconciled canonical map drift on top of the closed
+  [LUC-1885](/LUC/issues/LUC-1885) / [LUC-1886](/LUC/issues/LUC-1886)
+  baseline. Use
+  `docs/planning/luc-2024-known-state-and-map-drift-sweep.md` for the current
+  proof: `npm run architecture:refresh` and `npm run architecture:status`
+  PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain worklist `0`, delta
+  `0/0/0`); architecture awareness generated
+  `2026-07-28T04:34:31.651Z` with `3150` entities / `8604` relations /
+  `16539` files; task sync remains at `12` task-artifact linkage gaps while
+  actionable implementation-without-task and verified-without-proof both stay
+  `0`; app completion remains zero-gap at `46` items / `4` flows; Project
+  Truth is `known_and_routable` with `0` gaps and four passing public read-only
+  probes. The hosted read-only canary is closed through
+  [LUC-1799](/LUC/issues/LUC-1799); do not reopen it or create a generic PM
+  repair lane from awareness inventory alone.
 
 - 2026-07-25: [LUC-1863](/LUC/issues/LUC-1863) refreshed the Roost PM
   known-state delta on top of the closed [LUC-1839](/LUC/issues/LUC-1839)

@@ -1,5 +1,18 @@
 # MVP Next Commits
 
+- 2026-07-28: [LUC-2024](/LUC/issues/LUC-2024) refreshed Roost known-state and
+  map drift. Evidence packet:
+  `docs/planning/luc-2024-known-state-and-map-drift-sweep.md`. Current proof:
+  architecture refresh/status PASS (`GREEN`, `455/769/35`, queues `0`, delta
+  `0/0/0`); architecture awareness `3150` entities / `8604` relations /
+  `16539` files; task sync retains `12` task-artifact linkage gaps but `0`
+  actionable implementation-without-task and `0` verified-without-proof;
+  app completion and Project Truth remain zero-gap; four public read-only
+  probes returned `200`. The hosted canary is closed through
+  [LUC-1799](/LUC/issues/LUC-1799). No new PM repair commit follows from this
+  sweep; [LUC-1895](/LUC/issues/LUC-1895) is the existing blocked owner lane
+  for authenticated lifecycle publication.
+
 - 2026-07-26: [LUC-1885](/LUC/issues/LUC-1885) refreshed the Roost PM
   known-state delta. Evidence packet:
   `docs/planning/luc-1885-known-state-refresh-evidence-delta-and-next-repair-lanes.md`.

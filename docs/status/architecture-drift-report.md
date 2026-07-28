@@ -1,6 +1,6 @@
 # Architecture Drift Report
 
-Generated at: 2026-07-26T00:37:57.798Z
+Generated at: 2026-07-28T04:24:57.461Z
 
 This report compares live code surfaces against architecture registry CSV entries.
 

@@ -1,3 +1,9 @@
+## 2026-07-28 LUC-2024 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Roost known-state and map consistency | verified | `docs/planning/luc-2024-known-state-and-map-drift-sweep.md`; `npm run architecture:refresh` PASS; `npm run architecture:status` PASS (`GREEN`, `455/769/35`, queues `0`, delta `0/0/0`); architecture awareness generated `2026-07-28T04:34:31.651Z` with `3150` entities / `8604` relations / `16539` files; app completion reports `46` items / `4` flows / `0` proof, blocker, browser, or risk gaps; Project Truth reports `known_and_routable`, `7` complete event chains, `0` runtime findings, `0` operational gaps, and four passing public read-only probes. | No product repair follows from this sweep. Keep [LUC-1895](/LUC/issues/LUC-1895) as the existing blocked owner lane for authenticated lifecycle publication; reopen PM repair only on a fresh generated regression or approved product slice. |
+
 ## 2026-07-26 LUC-1885 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

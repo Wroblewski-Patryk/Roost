@@ -1,15 +1,15 @@
 # Roost v1.0 Gap Register
 
-Last updated: 2026-07-23
+Last updated: 2026-07-28
 Related contract: `docs/releases/roost-v1-0-sale-readiness-contract.md`
 
-This register is intentionally small. Roost's generated app-completion index is
-already zero-gap as of 2026-07-21, so only evidence-backed release or
+This register is intentionally small. Roost's generated app-completion and
+Project Truth indexes are zero-gap as of 2026-07-28, so only evidence-backed release or
 commercialization follow-ups belong here.
 
 | ID | Domain | Status | Blocking scope | Evidence | Next owner / action |
 | --- | --- | --- | --- | --- | --- |
-| SR-001 | Hosted read-only canary | open | Blocks any claim that local Paperclip to hosted Roost read-only canary has already been proven. Does not block the guided local/manual v1.0 sale boundary. | `LUC-1788` issue description explicitly keeps the later local-Paperclip-to-hosted-Roost canary read-only and separately gated. Current canonical ops evidence in `docs/operations/post-deploy-smoke.md` proves manual rollout and protected smoke, not this canary. | [LUC-1799](/LUC/issues/LUC-1799) owns the Ops/QA follow-up to execute and document the read-only canary against hosted Roost with scoped key, health checks, MCP/API handshake, and cleanup evidence. |
+| SR-001 | Hosted read-only canary | closed | The scoped read-only canary is proven. This does not authorize writes, broader provider permissions, or hosted Paperclip execution authority. | [LUC-1799](/LUC/issues/LUC-1799) is `done` with hosted health, owner login, bearer-token `/v1/connection`, bearer-token `/v1/mcp/manifest`, scoped `X-API-Key` handshake, and unauthenticated `401` controls; no write traffic was used. [LUC-2024](/LUC/issues/LUC-2024) reconciled this row against live Paperclip state. | Reopen only if a fresh hosted read-only regression appears. |
 | SR-002 | Release automation | accepted_deferral | Does not block guided v1.0 sale; blocks any claim that push-to-running-image auto-deploy is already a proven standard path. | `docs/operations/agent-runtime-coverage-ledger.csv` row `AGRUN-COV-008` keeps manual rollover approved and auto-deploy unverified. | Keep manual rollout as the approved path until an Ops lane records push-to-running-image proof. |
 | SR-003 | Upstream agent-source merge | blocked_external_non_blocking | Does not block Roost runtime sale-readiness; blocks claims that all external agent repos already carry the validated connector changes. | `docs/operations/agent-runtime-coverage-ledger.csv` row `AGRUN-COV-009` remains `BLOCKED` on missing GitHub write access. | Retry through the owning external repo path only after access exists; do not treat as a Roost runtime blocker. |
 
@@ -21,6 +21,12 @@ commercialization follow-ups belong here.
   file
 - Template-only release/product baseline for this topic: closed by the updated
   product and release source-of-truth files linked below
+
+## Closed after LUC-1788
+
+- Hosted read-only canary: closed by [LUC-1799](/LUC/issues/LUC-1799) and
+  reconciled into the release source of truth by
+  [LUC-2024](/LUC/issues/LUC-2024).
 
 ## Discovery Links
 

@@ -1,5 +1,22 @@
 # Current Focus
 
+## LUC-2024 Known-State And Map Drift Sweep
+
+- 2026-07-28: [LUC-2024](/LUC/issues/LUC-2024) refreshed the live Roost
+  known-state after the LUC-1885/LUC-1886 baseline. Architecture remains
+  `GREEN` at `455/769/35`, app completion remains zero-gap at `46` items /
+  `4` flows, Project Truth is `known_and_routable` with `0` gaps, and the
+  public web/build-info/API health/readiness probes all returned `200`.
+- Current rule: treat the `12` task-artifact linkage gaps and broad inferred
+  missing-test inventory as architecture curation signals, not broken user
+  journeys. The real drift in this sweep was canonical documentation state:
+  the project-memory pointer, template architecture-map status, and hosted
+  canary release row were stale and are now reconciled.
+- The one later product lane, [LUC-1895](/LUC/issues/LUC-1895), remains
+  `blocked` in live Paperclip state and owns authenticated lifecycle-procedure
+  publication. Do not duplicate it or reinterpret its source-only projection
+  as deployed behavior.
+
 ## LUC-1885 Known-State Delta Refresh
 
 - 2026-07-26: [LUC-1885](/LUC/issues/LUC-1885) refreshed the Roost PM

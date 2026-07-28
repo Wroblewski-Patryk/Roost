@@ -1,3 +1,22 @@
+# 2026-07-28 LUC-2024 Known-State And Map Drift Health Signal
+
+- Status: Roost remains locally and publicly known-and-routable; no fresh
+  product-facing, runtime, or architecture regression was detected.
+- Architecture evidence: `npm run architecture:refresh` PASS; `npm run
+  architecture:status` PASS (`GREEN`, `455/769/35`, evidence queue `0`, chain
+  worklist `0`, delta `0/0/0`, all gates pass).
+- Generated truth: architecture awareness `3150` entities / `8604` relations /
+  `16539` files; app completion `46` items / `4` flows / `0` proof, blocker,
+  browser, or risk gaps; Project Truth `known_and_routable`, `7` complete event
+  chains, `0` runtime findings, `0` operational gaps.
+- Read-only public evidence: Roost web home, web build-info, API health, and API
+  readiness all returned `200` through the Project Truth generator. No
+  authenticated, write, provider, or deployment mutation was performed.
+- Residual status: `12` historical task-artifact linkage gaps remain a curation
+  signal only; auto-deploy proof and external upstream merge stay separately
+  deferred/blocked; [LUC-1895](/LUC/issues/LUC-1895) remains the existing
+  blocked lifecycle-publication owner lane.
+
 # 2026-07-25 LUC-1863 Known-State Delta Health Signal
 
 - Status: Roost PM known-state delta refresh completed locally with no fresh

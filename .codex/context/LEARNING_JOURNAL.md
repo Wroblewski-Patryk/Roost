@@ -26,6 +26,27 @@ fixes for this repository.
 
 ## Entries
 
+### 2026-07-28 - Known-State Sweeps Must Reconcile Generated Truth And Manual Projections Together
+- Context: LUC-2024 refreshed Roost architecture, completion, release, and live
+  Paperclip issue state after the LUC-1885/LUC-1886 evidence packet.
+- Symptom: generated architecture and Project Truth evidence was green, while
+  canonical PM and release projections still named an older baseline, retained
+  template seed rows, or described completed and blocked issues incorrectly.
+- Root cause: generator outputs and live issue status had advanced without one
+  bounded reconciliation pass across the manually maintained planning, state,
+  release, and map projections that summarize them.
+- Guardrail: after a known-state or release-evidence refresh, compare the final
+  generated reports and live owner-issue statuses against every canonical
+  projection in the task scope before closing the source-control packet.
+- Preferred pattern: run truth generators in dependency order, read back the
+  current owner issues, update the scoped manual projections together, then
+  repeat the generated proof and focused stale-pointer check before commit.
+- Avoid: treating a green generated graph as proof that task boards, release
+  registers, status maps, and PM memory already describe the same current state.
+- Evidence: LUC-2024 found and corrected stale baseline, template, canary, and
+  lifecycle-owner projections while native architecture, app completion, and
+  Project Truth remained green.
+
 ### 2026-07-15 - Truth Generators Must Run Sequentially After Graph Refresh
 - Context: `LUC-1174` closed the `src/app.ts#/clients` missing-doc-link lane.
 - Symptom: running architecture-awareness, app-completion, and Project Truth in

@@ -1,6 +1,6 @@
 # Roost v1.0 Sale-Readiness Contract
 
-Last updated: 2026-07-23
+Last updated: 2026-07-28
 Version: `v1.0`
 Status: `conditional_guided_sale_ready`
 Canonical gap register: `docs/releases/roost-v1-0-gap-register.md`
@@ -45,7 +45,7 @@ documented deployment/smoke procedures.
 
 | Domain | Current status | Evidence |
 | --- | --- | --- |
-| Product truth | Verified | `docs/status/app-completion-index.md` generated 2026-07-21 shows `46` items, `4` user flows, `0` missing test links, `0` missing doc links, `0` implemented-needs-proof, `0` blocked, `0` known non-ok risk items. |
+| Product truth | Verified | `docs/status/app-completion-index.md` and `docs/status/project-truth-index.md` generated 2026-07-28 show `46` items, `4` user flows, `0` proof/browser/blocker/risk gaps, `7` complete event chains, `0` runtime findings, and `0` operational gaps. |
 | Architecture | Verified | `docs/architecture/system-architecture.md`, `docs/architecture/autonomous-company-operating-system.md`, and `docs/architecture/organizational-architecture-bridge.md` keep Roost API/MCP-first, workspace-scoped, and AI-as-client. |
 | Users and workspaces | Verified | `docs/security/security-baseline.md`, `docs/engineering/testing.md`, and `docs/architecture/web-and-mcp-foundation-before-v2.md` require auth-derived `workspaceId`, owner membership boundary, scoped service keys, and fail-closed cross-workspace access. |
 | API and MCP | Verified with supervision boundary | `docs/operations/companycore-mcp-bridge.md` documents manifest-driven MCP, least-privilege profiles, `requiresApproval` fail-closed behavior, and supervised operator mode. `docs/operations/agent-companycore-api-playbook.md` keeps agents on HTTP/API contracts rather than direct DB access. |
@@ -103,7 +103,7 @@ context layer, not as a free-form autonomous agent substrate.
 
 - broad Docs/Sheets write or generalized content mutation
 - autonomous provider-side company operations
-- hosted Paperclip-to-Roost canary beyond read-only proof
+- hosted Paperclip-to-Roost behavior beyond the verified read-only canary
 - direct provider token exposure to agents or web clients
 
 ## Readiness Classification
@@ -114,7 +114,7 @@ context layer, not as a free-form autonomous agent substrate.
 | Product/API/MCP boundary clarity | PASS | Architecture and ops docs consistently keep Roost as source of truth and agents as external clients. |
 | Security boundary | PASS | Workspace scoping, scoped API keys, secret handling, and supervised MCP posture are documented and previously proven. |
 | Manual deploy and smoke | PASS | Manual VPS/Coolify rollout is a proven operator path. |
-| Hosted read-only canary | OPEN | Later local-Paperclip-to-hosted-Roost canary remains separately gated. |
+| Hosted read-only canary | PASS | [LUC-1799](/LUC/issues/LUC-1799) verified hosted health, owner login, bearer-token connection/manifest reads, the scoped API-key handshake, and unauthenticated `401` controls without write traffic. |
 | Broad autonomous/provider-write expansion | DEFERRED BY POLICY | Not part of the v1.0 sale boundary. |
 
 ## Commercial Positioning Rule

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-21T08:55:43.164Z",
+  "generatedAt": "2026-07-28T04:34:31.651Z",
   "project": "Roost",
   "root": "C:/Personal/Projekty/Aplikacje/Roost",
   "sourceGraph": "docs/graphs/architecture-awareness.json",
@@ -10,11 +10,11 @@
   "chains": [
     {
       "userFlow": "Account access",
-      "entityCount": 429,
-      "linkedRelationCount": 2103,
+      "entityCount": 430,
+      "linkedRelationCount": 2119,
       "layers": {
         "frontend": {
-          "count": 30,
+          "count": 29,
           "sample": [
             {
               "id": "module:src-components:2cf74679ff",
@@ -221,14 +221,6 @@
               "type": "function",
               "name": "iconClass",
               "path": "web/src/components/cc-button.tsx#iconClass",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:roostglyph:149d4571ea",
-              "type": "function",
-              "name": "RoostGlyph",
-              "path": "web/src/features/public/public-home.tsx#RoostGlyph",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -906,7 +898,7 @@
           "truncated": true
         },
         "worker": {
-          "count": 217,
+          "count": 218,
           "sample": [
             {
               "id": "agent:decision-register:73d1cd6fc8",
@@ -923,6 +915,14 @@
               "path": ".agents",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
+            },
+            {
+              "id": "task:task:81149717ae",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1788-roost-v1-sale-readiness-and-knowledge-plane-contract.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
             },
             {
               "id": "agent:risk-register:a357934902",
@@ -1539,14 +1539,6 @@
               "path": ".codex/tasks/luc-949-account-access-secrets-proof.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
-            },
-            {
-              "id": "task:task:6a5d255122",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-1344-classify-and-close-local-dirty-state-for-luc-1331-luc-1333-luc-1339.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
             }
           ],
           "truncated": true
@@ -1595,7 +1587,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 47,
+          "count": 48,
           "sample": [
             {
               "id": "document:api:a617d1cb61",
@@ -1806,6 +1798,14 @@
               "status": "implemented"
             },
             {
+              "id": "document:roost-v1-0-gap-register:8c21474b9d",
+              "type": "document",
+              "name": "Roost v1.0 Gap Register",
+              "path": "docs/releases/roost-v1-0-gap-register.md",
+              "owner": "Docs Memory Lead",
+              "status": "implemented"
+            },
+            {
               "id": "document:authenticated-shell-layout-audit:7f0c0d0e83",
               "type": "document",
               "name": "Authenticated Shell Layout Audit",
@@ -1985,10 +1985,10 @@
     {
       "userFlow": "Dashboard overview",
       "entityCount": 113,
-      "linkedRelationCount": 348,
+      "linkedRelationCount": 350,
       "layers": {
         "frontend": {
-          "count": 15,
+          "count": 14,
           "sample": [
             {
               "id": "document:generaldashboard-component:8d09180e87",
@@ -2083,14 +2083,6 @@
               "type": "function",
               "name": "HeroTopology",
               "path": "web/src/features/public/public-home.tsx#HeroTopology",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:roostglyph:149d4571ea",
-              "type": "function",
-              "name": "RoostGlyph",
-              "path": "web/src/features/public/public-home.tsx#RoostGlyph",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -2432,7 +2424,7 @@
           "truncated": false
         },
         "worker": {
-          "count": 40,
+          "count": 41,
           "sample": [
             {
               "id": "module:docs:6784d83cb0",
@@ -2455,6 +2447,14 @@
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1168-source-control-closure-classify-project-docs-dirty-packet-from-luc-1167.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:81149717ae",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1788-roost-v1-sale-readiness-and-knowledge-plane-contract.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -3283,8 +3283,8 @@
     },
     {
       "userFlow": "Subscription and entitlement",
-      "entityCount": 1198,
-      "linkedRelationCount": 4281,
+      "entityCount": 1234,
+      "linkedRelationCount": 4768,
       "layers": {
         "frontend": {
           "count": 48,
@@ -3458,6 +3458,22 @@
               "status": "implemented"
             },
             {
+              "id": "component:roost-logo-mark-tsx:fad71eece9",
+              "type": "component",
+              "name": "roost-logo-mark.tsx",
+              "path": "web/src/components/roost-logo-mark.tsx",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "feature:i18n-tsx:5f76f3f99d",
+              "type": "feature",
+              "name": "i18n.tsx",
+              "path": "web/src/i18n/i18n.tsx",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
               "id": "feature:main-tsx:674b8fd24b",
               "type": "feature",
               "name": "main.tsx",
@@ -3522,14 +3538,6 @@
               "status": "implemented"
             },
             {
-              "id": "feature:i18n-tsx:5f76f3f99d",
-              "type": "feature",
-              "name": "i18n.tsx",
-              "path": "web/src/i18n/i18n.tsx",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "feature:use-owner-packet-ts:c11e3fd58c",
               "type": "feature",
               "name": "use-owner-packet.ts",
@@ -3558,14 +3566,6 @@
               "type": "function",
               "name": "HeroTopology",
               "path": "web/src/features/public/public-home.tsx#HeroTopology",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "function:roostglyph:149d4571ea",
-              "type": "function",
-              "name": "RoostGlyph",
-              "path": "web/src/features/public/public-home.tsx#RoostGlyph",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -3677,7 +3677,7 @@
           "truncated": false
         },
         "backend": {
-          "count": 174,
+          "count": 175,
           "sample": [
             {
               "id": "api_endpoint:get:1998daec82",
@@ -3736,6 +3736,14 @@
               "status": "verified"
             },
             {
+              "id": "feature:general-dashboard-tsx:1e44e7a581",
+              "type": "feature",
+              "name": "general-dashboard.tsx",
+              "path": "web/src/features/departments/general-dashboard.tsx",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "feature:management-route-tsx:465001c13c",
               "type": "feature",
               "name": "management-route.tsx",
@@ -3756,6 +3764,14 @@
               "type": "feature",
               "name": "people-agents-route.tsx",
               "path": "web/src/features/departments/people-agents-route.tsx",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "feature:product-map-route-tsx:1211f0e9a6",
+              "type": "feature",
+              "name": "product-map-route.tsx",
+              "path": "web/src/features/departments/product-map-route.tsx",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -3798,14 +3814,6 @@
               "path": "web/src/features/departments/finance-route.tsx",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "feature:general-dashboard-tsx:1e44e7a581",
-              "type": "feature",
-              "name": "general-dashboard.tsx",
-              "path": "web/src/features/departments/general-dashboard.tsx",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
             },
             {
               "id": "feature:innovation-route-tsx:5038923502",
@@ -4310,20 +4318,12 @@
               "path": "src/app.ts#/departments",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
-            },
-            {
-              "id": "api_endpoint:use-events:679c33c90e",
-              "type": "api_endpoint",
-              "name": "USE /events",
-              "path": "src/app.ts#/events",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 174,
+          "count": 194,
           "sample": [
             {
               "id": "agent:planner:5b56a0bd47",
@@ -4434,6 +4434,14 @@
               "type": "task",
               "name": "luc-1084-dashboard-overview-cc-resource-selector-proof-link",
               "path": ".codex/tasks/luc-1084-dashboard-overview-cc-resource-selector-proof-link.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:8b82a26e5c",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1861-replace-logo-occurrences-with-canonical-roost-mark.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
@@ -4686,6 +4694,38 @@
               "status": "implemented"
             },
             {
+              "id": "task:task:b8c98d844e",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1843-classify-and-close-local-dirty-state-for-luc-1839.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:7d0632394e",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1862-classify-and-close-local-dirty-state-for-luc-1861.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:2427fa3118",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1866-classify-and-close-local-dirty-state-for-luc-1863.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "task:task:5288dfeb3b",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1886-close-luc-1885-known-state-evidence-packet.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "document:task:0e616fae32",
               "type": "document",
               "name": "Task",
@@ -4924,46 +4964,6 @@
               "path": ".codex/tasks/luc-989-source-control-closure-for-luc-982.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
-            },
-            {
-              "id": "task:task:4e382263fe",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-997-account-access-workforce-entityauthority-proof.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:4eb0b00428",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-1411-classify-and-close-local-dirty-state-for-luc-1401.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:546ca92f5c",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-948-source-control-closure-for-luc-943.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:5a214a9bca",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-1462-classify-and-close-local-dirty-state-for-luc-1459.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:5a442f0492",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-1486-prove-unclassified-user-workflow-missing-test-link-for-use-v1-health.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
             }
           ],
           "truncated": true
@@ -4979,7 +4979,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 801,
+          "count": 816,
           "sample": [
             {
               "id": "document:task:93ac653bad",
@@ -6291,9 +6291,9 @@
               "status": "implemented"
             },
             {
-              "id": "agent:2026-07-20-luc-1536-clickup-webhooks-packet-health-signal:5ba4a8552b",
+              "id": "agent:2026-07-28-luc-2024-known-state-and-map-drift-health-signal:354cb6ce81",
               "type": "agent",
-              "name": "2026-07-20 LUC-1536 ClickUp Webhooks Packet Health Signal",
+              "name": "2026-07-28 LUC-2024 Known-State And Map Drift Health Signal",
               "path": ".agents/state/system-health.md",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
@@ -6429,11 +6429,11 @@
     },
     {
       "userFlow": "Unclassified user workflow",
-      "entityCount": 2985,
-      "linkedRelationCount": 8212,
+      "entityCount": 3011,
+      "linkedRelationCount": 8349,
       "layers": {
         "frontend": {
-          "count": 85,
+          "count": 87,
           "sample": [
             {
               "id": "task:task:29cc94d553",
@@ -6448,6 +6448,46 @@
               "type": "agent",
               "name": "frontend-builder",
               "path": ".agents/prompts/frontend-builder.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "component:roost-logo-mark-tsx:fad71eece9",
+              "type": "component",
+              "name": "roost-logo-mark.tsx",
+              "path": "web/src/components/roost-logo-mark.tsx",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:roostlogomark:15758cd2c9",
+              "type": "function",
+              "name": "RoostLogoMark",
+              "path": "web/src/components/roost-logo-mark.tsx#RoostLogoMark",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "module:src-components:2cf74679ff",
+              "type": "module",
+              "name": "src/components",
+              "path": "src/components",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "feature:public-layout-tsx:348c47081e",
+              "type": "feature",
+              "name": "public-layout.tsx",
+              "path": "web/src/layout/public-layout.tsx",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "feature:shell-tsx:93958929ba",
+              "type": "feature",
+              "name": "shell.tsx",
+              "path": "web/src/layout/shell.tsx",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -6600,14 +6640,6 @@
               "type": "feature",
               "name": "main.tsx",
               "path": "web/src/main.tsx",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "feature:shell-tsx:93958929ba",
-              "type": "feature",
-              "name": "shell.tsx",
-              "path": "web/src/layout/shell.tsx",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -6804,26 +6836,10 @@
               "status": "implemented"
             },
             {
-              "id": "feature:public-layout-tsx:348c47081e",
-              "type": "feature",
-              "name": "public-layout.tsx",
-              "path": "web/src/layout/public-layout.tsx",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
               "id": "function:languageselector:4dde7de28e",
               "type": "function",
               "name": "LanguageSelector",
               "path": "web/src/i18n/language-selector.tsx#LanguageSelector",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:logomark:1257e8f51d",
-              "type": "function",
-              "name": "LogoMark",
-              "path": "web/src/layout/public-layout.tsx#LogoMark",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -6896,6 +6912,14 @@
               "type": "function",
               "name": "currentAreaKey",
               "path": "web/src/main.tsx#currentAreaKey",
+              "owner": "Engineering Delivery Lead",
+              "status": "implemented"
+            },
+            {
+              "id": "function:currentareaview:aed68b13bd",
+              "type": "function",
+              "name": "currentAreaView",
+              "path": "web/src/main.tsx#currentAreaView",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
             },
@@ -7050,36 +7074,12 @@
               "path": "docs/architecture/nodes/generated/PAGE-AUTO-0005.md",
               "owner": "Docs Memory Lead",
               "status": "implemented"
-            },
-            {
-              "id": "document:generaldashboard-component:8d09180e87",
-              "type": "document",
-              "name": "GeneralDashboard component",
-              "path": "docs/architecture/nodes/generated/COMP-GENERAL-DASHBOARD.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:luc-6156-frontend-browser-evidence-link-curation:7a94c7caf7",
-              "type": "document",
-              "name": "LUC-6156 Frontend Browser Evidence Link Curation",
-              "path": "docs/planning/luc-6156-frontend-browser-evidence-link-curation.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "document:react-dashboard:6897249b22",
-              "type": "document",
-              "name": "/react-dashboard",
-              "path": "docs/architecture/nodes/generated/PAGE-AUTO-0008.md",
-              "owner": "Docs Memory Lead",
-              "status": "implemented"
             }
           ],
           "truncated": true
         },
         "backend": {
-          "count": 566,
+          "count": 570,
           "sample": [
             {
               "id": "task:task:8cf71581bf",
@@ -7167,6 +7167,22 @@
               "name": "LUC-5624 Sales Context And Board Proof",
               "path": "docs/planning/luc-5624-sales-context-and-board-proof.md",
               "owner": "Docs Memory Lead",
+              "status": "verified"
+            },
+            {
+              "id": "component:cc-route-loading-tsx:920cadd9c7",
+              "type": "component",
+              "name": "cc-route-loading.tsx",
+              "path": "web/src/components/cc-route-loading.tsx",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
+              "id": "feature:public-home-tsx:649fe0a227",
+              "type": "feature",
+              "name": "public-home.tsx",
+              "path": "web/src/features/public/public-home.tsx",
+              "owner": "Engineering Delivery Lead",
               "status": "verified"
             },
             {
@@ -7704,28 +7720,12 @@
               "path": "scripts/check-route-capabilities.mjs#routePattern",
               "owner": "Engineering Delivery Lead",
               "status": "implemented"
-            },
-            {
-              "id": "function:walk:5bea6a2902",
-              "type": "function",
-              "name": "walk",
-              "path": "scripts/check-route-capabilities.mjs#walk",
-              "owner": "Engineering Delivery Lead",
-              "status": "implemented"
-            },
-            {
-              "id": "function:authheaders:ed04499fb2",
-              "type": "function",
-              "name": "authHeaders",
-              "path": "scripts/company-os-lifecycle-trace-smoke.mjs#authHeaders",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
             }
           ],
           "truncated": true
         },
         "worker": {
-          "count": 940,
+          "count": 949,
           "sample": [
             {
               "id": "agent:agent-checklists:0b1e39f5f6",
@@ -8208,6 +8208,14 @@
               "status": "verified"
             },
             {
+              "id": "task:task:81149717ae",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1788-roost-v1-sale-readiness-and-knowledge-plane-contract.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:815d15a5d8",
               "type": "task",
               "name": "Task",
@@ -8344,26 +8352,18 @@
               "status": "verified"
             },
             {
+              "id": "task:task:b8c98d844e",
+              "type": "task",
+              "name": "Task",
+              "path": ".codex/tasks/luc-1843-classify-and-close-local-dirty-state-for-luc-1839.md",
+              "owner": "Engineering Delivery Lead",
+              "status": "verified"
+            },
+            {
               "id": "task:task:ba12a9ca2b",
               "type": "task",
               "name": "Task",
               "path": ".codex/tasks/luc-1459-prove-unclassified-user-workflow-missing-test-link-for-use-relationships.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:c9bb805c35",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-1151-prove-unclassified-user-workflow-missing-doc-link-for-use-api-build-info.md",
-              "owner": "Engineering Delivery Lead",
-              "status": "verified"
-            },
-            {
-              "id": "task:task:c9bf465e72",
-              "type": "task",
-              "name": "Task",
-              "path": ".codex/tasks/luc-1373-classify-and-close-local-dirty-state-for-luc-1352-luc-1360.md",
               "owner": "Engineering Delivery Lead",
               "status": "verified"
             }
@@ -8446,7 +8446,7 @@
           "truncated": false
         },
         "docs": {
-          "count": 1385,
+          "count": 1396,
           "sample": [
             {
               "id": "document:get-v1-finance-context:db0b7f023e",
