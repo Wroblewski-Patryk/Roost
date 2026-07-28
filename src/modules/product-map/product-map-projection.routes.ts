@@ -17,7 +17,9 @@ function denyIngress(res: Response, status = 403) {
   return res.status(status).json({ error: "projection_ingress_denied" });
 }
 
-async function requireProjectionIngestKey(req: Request, res: Response): Promise<{ workspaceId: string; apiKeyId: string } | null> {
+type ProjectionIngressAuth = { workspaceId: string; apiKeyId: string };
+
+async function resolveProjectionIngressAuth(req: Request): Promise<ProjectionIngressAuth | null> {
   if (req.header("Authorization") || req.header("Content-Encoding") || !req.header("X-API-Key")) return null;
   const record = await prisma.apiKey.findFirst({ where: { keyHash: hashApiKey(req.header("X-API-Key")!) } });
   const scopes = Array.isArray(record?.scopes) ? record!.scopes.filter((scope): scope is string => typeof scope === "string") : [];
@@ -26,9 +28,15 @@ async function requireProjectionIngestKey(req: Request, res: Response): Promise<
 }
 
 export const productMapIngressRouter = Router();
-productMapIngressRouter.use((req, res, next) => {
-  if (req.header("Content-Encoding")) return denyIngress(res);
-  next();
+productMapIngressRouter.use(async (req, res, next) => {
+  try {
+    const auth = await resolveProjectionIngressAuth(req);
+    if (!auth) return denyIngress(res);
+    res.locals.projectionIngressAuth = auth;
+    next();
+  } catch {
+    return denyIngress(res);
+  }
 });
 productMapIngressRouter.use(express.raw({ type: "application/json", limit: maxBodyBytes }));
 productMapIngressRouter.use((error: Error & { type?: string }, _req: Request, res: Response, next: NextFunction) => {
@@ -36,7 +44,7 @@ productMapIngressRouter.use((error: Error & { type?: string }, _req: Request, re
   next(error);
 });
 productMapIngressRouter.post("/", async (req, res) => {
-  const auth = await requireProjectionIngestKey(req, res);
+  const auth = res.locals.projectionIngressAuth as ProjectionIngressAuth | undefined;
   if (!auth) return denyIngress(res);
   let rawBody: unknown;
   try {
