@@ -10,6 +10,8 @@ import { getGoogleDriveSettingsForWorkspace } from "../integrations/integration-
 import { createEvent } from "../modules/events/event.service";
 import { classifyOperatingAreaKey } from "../operating-model/catalog";
 import { encryptSecret } from "../integrations/secrets";
+import { runProductMapProjectionCleanupIfDue } from "../integrations/clickup/clickup.maintenance-scheduler";
+import { expectedIdempotencyKey, packetDigest, productMapSchemaVersion, productMapTransportVersion } from "../modules/product-map/product-map-projection.service";
 
 const realFetch = globalThis.fetch.bind(globalThis);
 let baseUrl = "";
@@ -43,6 +45,11 @@ function assertSafeTestDatabase() {
 
 async function resetDatabase() {
   assertSafeTestDatabase();
+  await prisma.productMapProjectionAdmission.deleteMany();
+  await prisma.productMapProjectionQuarantine.deleteMany();
+  await prisma.productMapProjectionReceipt.deleteMany();
+  await prisma.productMapProjectionState.deleteMany();
+  await prisma.productMapProjectionSnapshot.deleteMany();
   await prisma.event.deleteMany();
   await prisma.knowledgeLink.deleteMany();
   await prisma.googleDriveContentSnapshot.deleteMany();
@@ -9812,6 +9819,67 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(eventTypes.includes("workforce_entity_sync_requested"));
   assert.ok(eventTypes.includes("task_synced_from_clickup"));
   assert.ok(eventTypes.includes("sync_succeeded"));
+
+  // Product Map ingress is intentionally outside normal API-key middleware so
+  // that it can reject malformed raw bodies before JSON parsing. Bind the
+  // workspace server-side and prove persistence, isolated reads, and the
+  // shared durable burst limiter through the real HTTP route.
+  await prisma.workspace.update({
+    where: { id: ownerA.workspace.id },
+    data: { productMapCompanyId: "paperclip-company-a" }
+  });
+  const productMapKey = await request("/v1/api-keys", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({ name: "Product Map publisher", scopes: ["product-map:projection:ingest"] })
+  });
+  assert.equal(productMapKey.status, 201);
+  const productMapKeyValue = (productMapKey.body as { data: { key: string } }).data.key;
+  const productPacket = { readiness: "GO", release: "candidate-a" };
+  const productDigest = packetDigest(productPacket);
+  const productEnvelopeBase = {
+    transportVersion: productMapTransportVersion,
+    schemaVersion: productMapSchemaVersion,
+    companyId: "paperclip-company-a",
+    sourceSnapshotId: "portfolio-snapshot-a",
+    observedAt: new Date().toISOString(),
+    publishedAt: new Date().toISOString(),
+    packetDigest: productDigest,
+    packet: productPacket
+  };
+  const productEnvelope = {
+    ...productEnvelopeBase,
+    idempotencyKey: expectedIdempotencyKey(productEnvelopeBase)
+  };
+  const ingestProjection = () => request("/v1/product-map/projection/ingest", {
+    method: "POST",
+    headers: { "X-API-Key": productMapKeyValue },
+    body: JSON.stringify(productEnvelope)
+  });
+  const acceptedProjection = await ingestProjection();
+  assert.equal(acceptedProjection.status, 200);
+  assert.equal((acceptedProjection.body as { data: { status: string } }).data.status, "accepted");
+  const projectionReadKey = await request("/v1/api-keys", {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({ name: "Product Map reader", scopes: ["product-map:projection:read"] })
+  });
+  const projectionReadKeyValue = (projectionReadKey.body as { data: { key: string } }).data.key;
+  const projectionRead = await request("/v1/product-map/projection", { headers: { "X-API-Key": projectionReadKeyValue } });
+  assert.equal(projectionRead.status, 200);
+  assert.deepEqual((projectionRead.body as { data: { packet: unknown } }).data.packet, productPacket);
+  const crossWorkspaceProjectionRead = await request("/v1/product-map/projection", { headers: authB });
+  assert.equal(crossWorkspaceProjectionRead.status, 200);
+  assert.equal((crossWorkspaceProjectionRead.body as { data: { status: string } }).data.status, "empty");
+  assert.equal((await ingestProjection()).status, 200);
+  assert.equal((await ingestProjection()).status, 200);
+  const burstDenied = await ingestProjection();
+  assert.equal(burstDenied.status, 429);
+  assert.deepEqual(burstDenied.body, { error: "projection_ingress_denied" });
+  const scheduledProjectionCleanup = await runProductMapProjectionCleanupIfDue(Date.now() + 31 * 24 * 60 * 60 * 1000);
+  assert.equal(scheduledProjectionCleanup.skipped, false);
+  assert.equal(scheduledProjectionCleanup.admissions, 1);
+  assert.equal(await prisma.productMapProjectionAdmission.count(), 0);
 
   const v1AliasRegister = await request("/v1/auth/register", {
     method: "POST",

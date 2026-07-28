@@ -3,6 +3,8 @@ import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
 
+type ProjectionDb = Prisma.TransactionClient | typeof prisma;
+
 export const productMapTransportVersion = "product-map-projection-transport/v1";
 export const productMapSchemaVersion = "product-map/v1";
 const replayWindowMs = 10 * 60 * 1000;
@@ -63,7 +65,7 @@ export type ProjectionAcceptance = {
   receivedAt: Date;
 };
 
-export async function acceptProjection(workspaceId: string, envelope: ProductMapEnvelope, auditCorrelation?: string): Promise<ProjectionAcceptance> {
+export async function acceptProjection(workspaceId: string, envelope: ProductMapEnvelope, auditCorrelation?: string, db: ProjectionDb = prisma): Promise<ProjectionAcceptance> {
   const now = new Date();
   const observedAt = new Date(envelope.observedAt);
   const receiptWhere = {
@@ -73,24 +75,24 @@ export async function acceptProjection(workspaceId: string, envelope: ProductMap
     }
   };
 
-  const existingReceipt = await prisma.productMapProjectionReceipt.findUnique({ where: receiptWhere });
+  const existingReceipt = await db.productMapProjectionReceipt.findUnique({ where: receiptWhere });
   if (existingReceipt) {
     return { status: "duplicate", sourceSnapshotId: envelope.sourceSnapshotId, packetDigest: envelope.packetDigest, receivedAt: existingReceipt.receivedAt };
   }
 
-  const state = await prisma.productMapProjectionState.findUnique({ where: { workspaceId } });
-  const conflictingSnapshot = await prisma.productMapProjectionSnapshot.findFirst({
+  const state = await db.productMapProjectionState.findUnique({ where: { workspaceId } });
+  const conflictingSnapshot = await db.productMapProjectionSnapshot.findFirst({
     where: { workspaceId, companyId: envelope.companyId, schemaVersion: envelope.schemaVersion, sourceSnapshotId: envelope.sourceSnapshotId, observedAt, packetDigest: { not: envelope.packetDigest } }
   });
   const isOutOfOrder = !!state?.activeObservedAt && observedAt < state.activeObservedAt;
   if (conflictingSnapshot || isOutOfOrder) {
-    await prisma.productMapProjectionQuarantine.create({
+    await db.productMapProjectionQuarantine.create({
       data: { workspaceId, companyId: envelope.companyId, schemaVersion: envelope.schemaVersion, sourceSnapshotId: envelope.sourceSnapshotId, observedAt, packetDigest: envelope.packetDigest, reason: conflictingSnapshot ? "projection_conflict" : "projection_out_of_order", auditCorrelation }
     });
     return { status: conflictingSnapshot ? "quarantined" : "rejected", sourceSnapshotId: envelope.sourceSnapshotId, packetDigest: envelope.packetDigest, receivedAt: now };
   }
 
-  return prisma.$transaction(async (tx) => {
+  const persist = async (tx: ProjectionDb) => {
     const snapshot = await tx.productMapProjectionSnapshot.upsert({
       where: { workspaceId_companyId_schemaVersion_sourceSnapshotId_packetDigest: receiptWhere.workspaceId_companyId_schemaVersion_sourceSnapshotId_packetDigest },
       create: { workspaceId, companyId: envelope.companyId, transportVersion: envelope.transportVersion, schemaVersion: envelope.schemaVersion, sourceSnapshotId: envelope.sourceSnapshotId, observedAt, packetDigest: envelope.packetDigest, packet: envelope.packet as Prisma.InputJsonValue, auditCorrelation },
@@ -107,7 +109,44 @@ export async function acceptProjection(workspaceId: string, envelope: ProductMap
       update: { activeSnapshotId: snapshot.id, activeObservedAt: observedAt }
     });
     return { status: "accepted" as const, sourceSnapshotId: envelope.sourceSnapshotId, packetDigest: envelope.packetDigest, receivedAt: receipt.receivedAt };
-  });
+  };
+  return db === prisma ? prisma.$transaction(persist) : persist(db);
+}
+
+/**
+ * Atomically consumes one token from a six-per-minute token bucket with a
+ * burst capacity of three. The row lives in PostgreSQL, so every app instance
+ * observes the same admission decision.
+ */
+export async function consumeProjectionAdmission(apiKeyId: string, workspaceId: string, db: ProjectionDb = prisma) {
+  const rows = await db.$queryRaw<Array<{ tokens: number }>>`
+    INSERT INTO "product_map_projection_admissions"
+      ("api_key_id", "workspace_id", "tokens", "last_refilled_at", "last_seen_at")
+    VALUES (${apiKeyId}::uuid, ${workspaceId}::uuid, 2, NOW(), NOW())
+    ON CONFLICT ("api_key_id", "workspace_id") DO UPDATE
+    SET "tokens" = LEAST(
+          3::numeric,
+          "product_map_projection_admissions"."tokens" +
+          EXTRACT(EPOCH FROM (NOW() - "product_map_projection_admissions"."last_refilled_at")) / 10
+        ) - 1,
+        "last_refilled_at" = NOW(),
+        "last_seen_at" = NOW()
+    WHERE LEAST(
+          3::numeric,
+          "product_map_projection_admissions"."tokens" +
+          EXTRACT(EPOCH FROM (NOW() - "product_map_projection_admissions"."last_refilled_at")) / 10
+        ) >= 1
+    RETURNING "tokens"
+  `;
+  return rows.length === 1;
+}
+
+/** Acquires an xact-scoped workspace lock, released automatically on commit/rollback. */
+export async function tryAcquireProjectionWorkspaceLock(workspaceId: string, db: ProjectionDb) {
+  const rows = await db.$queryRaw<Array<{ locked: boolean }>>`
+    SELECT pg_try_advisory_xact_lock(hashtext('product-map-projection'), hashtext(${workspaceId})) AS "locked"
+  `;
+  return rows[0]?.locked === true;
 }
 
 export async function readProjection(workspaceId: string, now = new Date()) {
@@ -142,10 +181,15 @@ export async function cleanupExpiredProjectionRecords(now = new Date(), batchSiz
   const quarantineIds = await prisma.productMapProjectionQuarantine.findMany({
     where: { receivedAt: { lt: quarantineBefore } }, select: { id: true }, take: batchSize
   });
-  const [snapshots, receipts, quarantines] = await prisma.$transaction([
+  const admissionIds = await prisma.productMapProjectionAdmission.findMany({
+    where: { lastSeenAt: { lt: acceptedBefore } },
+    select: { apiKeyId: true, workspaceId: true }, take: batchSize
+  });
+  const [snapshots, receipts, quarantines, admissions] = await prisma.$transaction([
     prisma.productMapProjectionSnapshot.deleteMany({ where: { id: { in: snapshotIds.map((row) => row.id) } } }),
     prisma.productMapProjectionReceipt.deleteMany({ where: { id: { in: receiptIds.map((row) => row.id) } } }),
-    prisma.productMapProjectionQuarantine.deleteMany({ where: { id: { in: quarantineIds.map((row) => row.id) } } })
+    prisma.productMapProjectionQuarantine.deleteMany({ where: { id: { in: quarantineIds.map((row) => row.id) } } }),
+    prisma.productMapProjectionAdmission.deleteMany({ where: { OR: admissionIds.map((row) => ({ apiKeyId: row.apiKeyId, workspaceId: row.workspaceId })) } })
   ]);
-  return { snapshots: snapshots.count, receipts: receipts.count, quarantines: quarantines.count };
+  return { snapshots: snapshots.count, receipts: receipts.count, quarantines: quarantines.count, admissions: admissions.count };
 }
