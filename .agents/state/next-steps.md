@@ -1,4 +1,19 @@
 # Next Steps
+- 2026-07-30: [LUC-2076](/LUC/issues/LUC-2076) reconciled the live Roost
+  project board with repository evidence. Roost v1.0 remains
+  `conditional_guided_sale_ready`; Product Map promotion remains `NO-GO`.
+  The exact owner order is [LUC-2156](/LUC/issues/LUC-2156) protected Sentinel
+  rotation -> [LUC-2155](/LUC/issues/LUC-2155) Security incident closure ->
+  [LUC-2154](/LUC/issues/LUC-2154) isolated QA app ->
+  [LUC-2153](/LUC/issues/LUC-2153) managed QA candidate ->
+  [LUC-2126](/LUC/issues/LUC-2126) owner-journey QA ->
+  [LUC-1910](/LUC/issues/LUC-1910) release acceptance ->
+  [LUC-1833](/LUC/issues/LUC-1833) parent closure.
+- No new runnable Product Map issue should be created while LUC-2156 is
+  blocked. Existing first-class dependencies already cover every specialist
+  step. [LUC-1895](/LUC/issues/LUC-1895) remains an independent
+  lifecycle-publication recovery lane; LUC-1902, LUC-1905, and LUC-2024 need
+  CINO recovery cleanup rather than product implementation.
 - 2026-07-28: [LUC-1923](/LUC/issues/LUC-1923) publishes the Product Map
   protected release preflight. Next owner is the
   [LUC-1910](/LUC/issues/LUC-1910) release parent: supply one exact accepted

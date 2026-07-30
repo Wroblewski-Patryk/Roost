@@ -1,6 +1,6 @@
 # Delivery Map
 
-Last updated: 2026-07-28
+Last updated: 2026-07-30
 
 ## Current Product Target
 
@@ -20,17 +20,19 @@ Last updated: 2026-07-28
   non-blocking for Roost runtime readiness; broad provider writes and hosted
   Paperclip authority remain policy-deferred. The hosted read-only canary is
   verified and closed through [LUC-1799](/LUC/issues/LUC-1799).
-- Next mission: [LUC-1895](/LUC/issues/LUC-1895) is the existing blocked owner
-  lane for publishing `PROC-SH-APPLICATION-LIFECYCLE` v1.0 on an authenticated
-  Roost surface. Keep the repository procedure projection `source_only` until
-  that lane completes automated, security, deployment, monitoring, and
+- Independent product lane: [LUC-1895](/LUC/issues/LUC-1895) is the existing
+  blocked owner lane for publishing `PROC-SH-APPLICATION-LIFECYCLE` v1.0 on an
+  authenticated Roost surface. Keep the repository projection `source_only`
+  until the existing owner chain restores a legal execution/browser path and
+  completes automated, security, deployment, monitoring, and
   production-browser proof.
-- Concurrent approved release lane: [LUC-1910](/LUC/issues/LUC-1910) owns the
-  live Product Map projection and production promotion. It remains blocked by
-  the [LUC-1923](/LUC/issues/LUC-1923) protected preflight. Use
-  `docs/operations/product-map-protected-release-preflight.md`; no push,
-  deploy, restart, or acceptance is allowed until its exact-candidate gates
-  pass.
+- Active expansion/release lane: [LUC-1910](/LUC/issues/LUC-1910) owns the
+  live Product Map projection and production promotion. The protected preflight
+  is complete as a contract, and the release now remains blocked by managed QA
+  environment plus owner-journey proof. Current root is protected console
+  action [LUC-2156](/LUC/issues/LUC-2156); use the ordered chain in
+  `docs/planning/luc-2076-daily-project-status-refresh.md`. No push, deploy,
+  restart, or acceptance is allowed until every exact-candidate gate passes.
 - Closure handoff: `docs/releases/roost-v1-0-sale-readiness-contract.md`,
   `docs/releases/roost-v1-0-gap-register.md`, and
   `docs/planning/luc-2024-known-state-and-map-drift-sweep.md`.

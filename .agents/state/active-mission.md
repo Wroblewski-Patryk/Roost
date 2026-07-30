@@ -1,5 +1,34 @@
 # Active Mission Packet
 
+## LUC-2076 Daily Project Status Refresh
+
+- Mission status: `VERIFIED`.
+- Lifecycle stage: project no-stall / verification. Accountable owner: Roost
+  Product Manager.
+- Objective: reconcile the target version, evidence, blockers, recovery drift,
+  and specialist order against live Paperclip state without crossing protected
+  gates.
+- Current state: Roost v1.0 remains `conditional_guided_sale_ready`; local
+  `main` is clean at `b9f0866c` and `97` commits ahead of `origin/main`;
+  architecture is `GREEN` at `455/769/35`; app completion remains zero-gap.
+- Active expansion: Product Map release parent
+  [LUC-1910](/LUC/issues/LUC-1910) remains `NO-GO`. The live root blocker is
+  protected Coolify Sentinel rotation [LUC-2156](/LUC/issues/LUC-2156), which
+  gates Security incident closure, isolated QA provisioning, browser QA, and
+  final release acceptance.
+- Owned scope: PM planning/state projections and the evidence packet
+  `docs/planning/luc-2076-daily-project-status-refresh.md`.
+- Exclusions: code, credential handling, protected console use, issue takeover,
+  push, deploy, restart, production mutation, and live-account mutation.
+- Lane model: single-writer PM reconciliation. Existing Security, Coolify
+  Admin, Deployment, QA, and release owners retain their first-class issues;
+  no duplicate delegation is created.
+- Validation gates: live Paperclip issue/blocker/comment readback, branch/HEAD
+  readback, `npm run architecture:status`, app-completion readback, focused
+  diff/link/status review, and clean commit closure.
+- Handoff order: LUC-2156 -> LUC-2155 -> LUC-2154 -> LUC-2153 -> LUC-2126 ->
+  LUC-1910 -> LUC-1833.
+
 ## LUC-2145 Product Map Retention and Quarantine Repair
 
 - Mission status: `VERIFIED` locally.

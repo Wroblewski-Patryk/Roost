@@ -1,5 +1,26 @@
 # Current Focus
 
+## LUC-2076 Daily Roost Status
+
+- 2026-07-30: Roost v1.0 remains `conditional_guided_sale_ready` within the
+  guided/manual/supervised boundary. Local `main` is clean at `b9f0866c`,
+  `97` commits ahead of `origin/main`; `npm run architecture:status` remains
+  `GREEN` at `455/769/35` with zero queues and delta; generated app completion
+  remains zero-gap at `46` items / `4` flows.
+- The active expansion target is the versioned Product Map release under
+  [LUC-1910](/LUC/issues/LUC-1910). Local implementation and independent
+  review evidence are complete, but promotion remains `NO-GO`.
+- Current release root: [LUC-2156](/LUC/issues/LUC-2156) protected Sentinel
+  token regeneration. Legal order is LUC-2156 -> LUC-2155 -> LUC-2154 ->
+  LUC-2153 -> LUC-2126 -> LUC-1910 -> LUC-1833.
+- [LUC-1895](/LUC/issues/LUC-1895) remains the separate `source_only`
+  lifecycle-publication lane. LUC-1902, LUC-1905, and LUC-2024 are
+  recovery-only controller drift after adapter quota failures, not fresh Roost
+  product defects.
+- No new worker issue is justified: every release-critical step already has
+  one owner and a first-class blocker. Preserve protected gates and wait for a
+  legal controlled-browser owner path on LUC-2156.
+
 ## LUC-1923 Product Map Protected Release Preflight
 
 - 2026-07-28: [LUC-1923](/LUC/issues/LUC-1923) published and verified the

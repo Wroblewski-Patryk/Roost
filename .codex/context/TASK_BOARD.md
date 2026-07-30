@@ -1,5 +1,20 @@
 # TASK_BOARD
 
+## LUC-2076 - Daily Project Status Refresh
+
+- Task Type: PM verification and no-stall reconciliation
+- Current Stage: verification complete
+- Result: Roost v1.0 remains `conditional_guided_sale_ready`; local source and
+  architecture remain healthy; Product Map promotion remains `NO-GO`.
+- Evidence: `docs/planning/luc-2076-daily-project-status-refresh.md`; clean
+  `main` at `b9f0866c`, ahead `97`; architecture status `GREEN 455/769/35`;
+  live Paperclip project and blocker readback.
+- Critical order: LUC-2156 -> LUC-2155 -> LUC-2154 -> LUC-2153 -> LUC-2126 ->
+  LUC-1910 -> LUC-1833.
+- Decision: no new issue. Every specialist step already has one owner and a
+  first-class blocker; protected console, credential, push, deploy, restart,
+  and production actions remain excluded.
+
 ## LUC-2147 - Disposable API Suite Workspace Provisioning
 
 - Task Type: test-infrastructure/backend repair verification
@@ -150,6 +165,11 @@ parent remains `NO-GO`.
   rollback image, strict-3200 owner binding, deployment, smoke, and monitoring.
 
 ## Disposition Note
+- 2026-07-30: [LUC-2076](/LUC/issues/LUC-2076) reconciled the daily Roost
+  target, evidence, blocker graph, and specialist order. The guided v1.0
+  boundary remains verified. Product Map promotion remains blocked at the
+  protected Sentinel root [LUC-2156](/LUC/issues/LUC-2156); do not create a
+  parallel implementation or release lane.
 - 2026-07-28: [LUC-2024](/LUC/issues/LUC-2024) refreshed the Roost known-state
   and corrected stale canonical map/release pointers. Use
   `docs/planning/luc-2024-known-state-and-map-drift-sweep.md`: architecture is

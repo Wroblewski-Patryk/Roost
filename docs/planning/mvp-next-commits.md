@@ -3223,6 +3223,17 @@ synchronized with `.codex/context/TASK_BOARD.md`.
 
 ### NOW
 
+- [x] LUC-2076 daily Roost project status refresh:
+      completed for the 2026-07-30 PM/no-stall checkpoint. Output:
+      `docs/planning/luc-2076-daily-project-status-refresh.md`. Evidence:
+      clean `main` at `b9f0866c`, ahead `97`; `npm run
+      architecture:status` PASS (`GREEN`, `455/769/35`, queues and delta
+      `0`); app completion remains `46` items / `4` flows / zero gaps; live
+      Paperclip readback identified protected LUC-2156 as the release root.
+      Existing order is LUC-2156 -> LUC-2155 -> LUC-2154 -> LUC-2153 ->
+      LUC-2126 -> LUC-1910 -> LUC-1833. No duplicate issue, push, deploy,
+      restart, credential access, or production mutation is authorized.
+
 - [x] LUC-5235 Dashboard command API journey proof:
       completed for the next focused Roost QA proof-ladder selection after
       [LUC-5230](/LUC/issues/LUC-5230). Output:

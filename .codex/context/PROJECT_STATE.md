@@ -1,5 +1,14 @@
 # PROJECT_STATE
 
+- 2026-07-30: [LUC-2076](/LUC/issues/LUC-2076) reconciled the daily Roost
+  project state. Guided v1.0 remains verified within its manual/supervised
+  boundary; local `main` is clean at `b9f0866c`, ahead `97`; architecture is
+  `GREEN 455/769/35`; app completion remains zero-gap. Product Map promotion
+  remains `NO-GO` with protected [LUC-2156](/LUC/issues/LUC-2156) as the root
+  of the existing Security -> Coolify Admin -> Deployment -> QA -> Release
+  chain. Evidence:
+  `docs/planning/luc-2076-daily-project-status-refresh.md`.
+
 - 2026-07-28: [LUC-2147](/LUC/issues/LUC-2147) cleared the disposable API-suite
   scheduling hold after [LUC-2145](/LUC/issues/LUC-2145) became terminal and
   port `55432` plus Docker's published-port inventory were clear. The isolated
@@ -17773,31 +17782,42 @@ Last updated: 2026-06-21
   Postgres volume.
 
 ## Current Focus
-- Main active objective: close audit-derived finish blockers in priority order
-  so the web and agent Company OS can reach product-quality v1 without hiding
-  UX, security, data, documentation, or deployment gaps.
-- Top blockers: remaining maintainability hotspots, broader route-frame
-  convergence, upstream Paperclip/OpenJarvis source merge permissions, and
-  GitHub-to-Coolify auto-deploy proof.
-- Success criteria for this phase: APP-AUDIT-001 findings are represented in
-  the canonical queue, ACF-UX-001 and ACF-SEC-001 have evidence-backed closure,
-  stale Drive blockers are removed from active ledgers, and new product work
-  does not start before the P1 audit blockers are either fixed or explicitly
-  deferred.
+- Main active objective: preserve the verified guided Roost v1.0 boundary while
+  moving the versioned Product Map through its protected QA and release chain.
+- Top blocker: protected Coolify Sentinel rotation
+  [LUC-2156](/LUC/issues/LUC-2156). It gates Security incident closure,
+  isolated QA provisioning, managed candidate proof, owner-journey QA, and
+  final release acceptance.
+- Success criteria for this phase: the existing chain LUC-2156 -> LUC-2155 ->
+  LUC-2154 -> LUC-2153 -> LUC-2126 -> LUC-1910 -> LUC-1833 closes with
+  exact-candidate, authorization, browser, deploy, rollback, smoke, and
+  monitoring evidence. No protected gate may be inferred from local green
+  status.
 
 ## Autonomous Iteration State
-- Current iteration: V2VIS-001 Shared CompanyShell And Dashboard Frame completed.
-- Current operation mode: BUILDER
-- Last completed iteration: V2VIS-001 Shared CompanyShell And Dashboard Frame.
-- Last completed task: dashboard Company map frame from real workspace,
-  operating-area, relationship, integration, task, and MCP state.
-- Current task status: PROD-HOTFIX-001 verified locally and pushed for
-  production recovery; next task returns to ACF-MAINT-002 Additional Hotspot
-  Modularization unless route-frame convergence is explicitly prioritized.
-- Next required mode: BUILDER; execute ACF-MAINT-002 or a bounded route-frame
-  convergence audit before unrelated broad product work.
+- Current iteration: 2076 daily project status refresh.
+- Current operation mode: ARCHITECT.
+- Last completed iteration: LUC-2076 Roost daily project status refresh.
+- Last completed task: reconcile target version, evidence, live blockers,
+  recovery drift, and specialist order without protected mutation.
+- Current task status: verified for PM status scope; Product Map production
+  promotion remains blocked at LUC-2156.
+- Next required mode: existing specialist owners resume only after the
+  protected root gains a legal controlled-browser execution path.
 
 ## Recent Progress
+
+- 2026-07-30: [LUC-2076](/LUC/issues/LUC-2076) completed the daily Roost PM
+  reconciliation. Roost v1.0 remains `conditional_guided_sale_ready`; local
+  `main` was clean at `b9f0866c` and `97` commits ahead of `origin/main`;
+  `npm run architecture:status` remained `GREEN` at `455/769/35` with zero
+  queues and delta; generated app completion remained zero-gap. Product Map
+  promotion under [LUC-1910](/LUC/issues/LUC-1910) remains `NO-GO`. The
+  current release root is protected Sentinel rotation
+  [LUC-2156](/LUC/issues/LUC-2156), followed by LUC-2155, LUC-2154, LUC-2153,
+  LUC-2126, LUC-1910, and LUC-1833. No duplicate issue, protected action,
+  push, deploy, restart, credential access, or production mutation occurred.
+  Evidence: `docs/planning/luc-2076-daily-project-status-refresh.md`.
 
 - 2026-05-14: Completed ACF-DOC-001 Coverage Ledger Reconciliation. Stale
   source-of-truth wording that still treated Google Drive owner consent and
