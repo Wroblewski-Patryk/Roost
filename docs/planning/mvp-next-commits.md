@@ -1,5 +1,13 @@
 # MVP Next Commits
 
+- 2026-07-31: do not promote `e6fa42a` as [LUC-1895](/LUC/issues/LUC-1895)
+  proof. The next product commit must strictly map
+  `PROC-SH-APPLICATION-LIFECYCLE` v1.0 through an approved existing Roost
+  procedure/read-model path, reject unknown/private packet fields, align
+  conflict/audit semantics, and add exact API/UI/security proof. Rebuild the
+  release candidate only after that slice; production remains owned by
+  [LUC-1910](/LUC/issues/LUC-1910).
+
 - 2026-07-28: [LUC-2127](/LUC/issues/LUC-2127) completed the local durable
   ingress-controls packet. The next Product Map dependency is independent
   Security/Ops and backup/restore review under the protected release preflight;

@@ -249,6 +249,12 @@ parent remains `NO-GO`.
   [LUC-1585](/LUC/issues/LUC-1585) as a recovery lane.
 
 ## Now
+- 2026-07-31: [LUC-1895](/LUC/issues/LUC-1895) is `BLOCKED / NO-GO`.
+  Repository write access is restored and Product Map tests/build pass, but the
+  current API/UI does not publish `PROC-SH-APPLICATION-LIFECYCLE` v1.0 and the
+  ingress accepts arbitrary object fields. Resolve the delegated strict
+  procedure-contract lane first, then the existing
+  [LUC-1910](/LUC/issues/LUC-1910) protected release gate.
 - 2026-07-28: [LUC-2024](/LUC/issues/LUC-2024) is verified for the PM/docs
   scope. The current known-state is green and routable; only canonical
   documentation drift was corrected. [LUC-1895](/LUC/issues/LUC-1895) remains

@@ -1,5 +1,17 @@
 # Current Focus
 
+## LUC-1895 Authenticated Lifecycle Publication
+
+- 2026-07-31: the obsolete repository-write blocker is cleared. Local `main` is
+  clean at `e6fa42a`, `98` commits ahead of the deployed/source remote.
+- The Product Map route and workspace-scoped API are implemented, but they do
+  not publish the required stable procedure ID/version. The current arbitrary
+  JSON packet also does not prove no-private-data acceptance.
+- Current disposition is `BLOCKED / NO-GO`: resolve the typed procedure
+  contract through the architecture/implementation child, then use the existing
+  [LUC-1910](/LUC/issues/LUC-1910) protected release chain. Do not deploy the
+  current batch as proof of [LUC-1895](/LUC/issues/LUC-1895).
+
 ## LUC-2076 Daily Roost Status
 
 - 2026-07-30: Roost v1.0 remains `conditional_guided_sale_ready` within the

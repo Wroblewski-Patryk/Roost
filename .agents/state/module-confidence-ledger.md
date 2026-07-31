@@ -24,6 +24,12 @@
 | --- | --- | --- | --- |
 | Product Map live projection transport architecture | verified | [LUC-2092](/LUC/issues/LUC-2092); `docs/architecture/architecture-source-of-truth.md#product-map-projection-transport`; `docs/architecture/system-architecture.md#product-map-projection-boundary`; DEC-052; focused architecture/docs checks and scoped commit | [LUC-2093](/LUC/issues/LUC-2093) and [LUC-2094](/LUC/issues/LUC-2094) independently review Security and Ops; [LUC-1910](/LUC/issues/LUC-1910) owns implementation, protected release, browser proof, and monitoring. Runtime transport remains not implemented. |
 
+## 2026-07-31 LUC-1895 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Authenticated lifecycle procedure publication | blocked | `docs/planning/luc-1895-resume-release-and-contract-audit.md`; Product Map focused tests `3/3`; envelope/retention tests `4/4`; source/API/UI contract inspection; public health on deployed `070b150f...` with image `unknown` | Architecture/implementation child must add the strict stable procedure record and complete owner/security/responsive proof; then [LUC-1910](/LUC/issues/LUC-1910) performs governed release, rollback, smoke, and monitoring. |
+
 ## 2026-07-28 LUC-1923 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

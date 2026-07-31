@@ -1,3 +1,19 @@
+# 2026-07-31 LUC-1895 Lifecycle Publication Health Signal
+
+- Status: local Product Map tests/build are healthy; lifecycle procedure
+  publication and production release remain blocked.
+- Candidate: clean `e6fa42a`, ahead `98`, with two additive Product Map
+  migrations.
+- Public health: `status=ok` at deployed commit `070b150f...`; image remains
+  `unknown`.
+- Contract finding: the owner Product Map does not return
+  `PROC-SH-APPLICATION-LIFECYCLE` version `1.0`; the ingress accepts arbitrary
+  JSON object fields and the owner read does not expose audit correlation.
+- Release finding: no current capacity, production backup, relaunchable rollback
+  image, protected owner smoke, or monitoring evidence exists.
+- No push, deploy, restart, credential use, protected browser, database write,
+  or production mutation occurred.
+
 # 2026-07-30 LUC-2076 Daily Project Health Signal
 
 - Status: local Roost and the guided v1.0 boundary remain healthy; Product Map

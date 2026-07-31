@@ -146,7 +146,28 @@
   no product repair lane was created. The task-owned packet is ready for one
   scoped local preservation commit with push held.
 
-## LUC-1895 Autonomous Application Lifecycle Publication Packet
+## Current Mission: LUC-1895 Authenticated Lifecycle Publication
+
+- Status: `BLOCKED / NO-GO`.
+- Current state: repository write access is restored and the clean candidate is
+  `e6fa42a871af92f9206972e0202e6297cd9a4337`, but the implemented Product Map
+  does not return `PROC-SH-APPLICATION-LIFECYCLE` or procedure version `1.0`.
+- Blocking contract gaps: no typed stable procedure record; arbitrary projection
+  packet fields can be persisted; audit correlation is not owner-visible; the
+  backend/frontend conflict-state vocabulary drifts; durable responsive proof is
+  missing.
+- Release gaps: local `main` is `98` commits ahead across `448` files and two
+  migrations; public health remains on `070b150f...` with image `unknown`;
+  capacity, current rollback image, production backup, protected smoke, and the
+  monitoring window are not proven.
+- Lanes: coordinator integrated the wake; QA/Security and Ops/Release completed
+  read-only audits; architecture/implementation is delegated as a blocking
+  child; [LUC-1910](/LUC/issues/LUC-1910) remains the protected release owner.
+- Exclusions: no push, deploy, restart, credential use, protected browser,
+  database mutation, or Paperclip write-boundary expansion.
+- Output: `docs/planning/luc-1895-resume-release-and-contract-audit.md`.
+
+## Previous Mission: LUC-1895 Autonomous Application Lifecycle Publication Packet
 
 - 2026-07-26: the company-facing procedure projection is defined at
   `docs/governance/autonomous-application-business-lifecycle.md` and indexed in

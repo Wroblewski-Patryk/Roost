@@ -1,5 +1,16 @@
 # PROJECT_STATE
 
+- 2026-07-31: [LUC-1895](/LUC/issues/LUC-1895) resumed after the repository
+  became writable. The Product Map route/API is locally implemented and focused
+  tests pass, but it does not return the canonical procedure ID/version and its
+  ingress accepts arbitrary JSON object fields. Candidate `e6fa42a` is clean and
+  `98` commits ahead with two migrations; production remains on `070b150f` with
+  image `unknown`. The issue is `NO-GO` pending the architecture/implementation
+  repair and [LUC-1910](/LUC/issues/LUC-1910)'s protected release chain. No push,
+  deploy, restart, credential use, protected browser, database write, or
+  production mutation occurred. Evidence:
+  `docs/planning/luc-1895-resume-release-and-contract-audit.md`.
+
 - 2026-07-30: [LUC-2076](/LUC/issues/LUC-2076) reconciled the daily Roost
   project state. Guided v1.0 remains verified within its manual/supervised
   boundary; local `main` is clean at `b9f0866c`, ahead `97`; architecture is
