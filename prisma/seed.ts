@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { createHmac, randomBytes, scrypt as scryptCallback } from "crypto";
 import { promisify } from "util";
+import { ensureLifecycleProcedureForWorkspace } from "../src/modules/company-os/lifecycle-procedure-definition";
 
 const prisma = new PrismaClient();
 const scrypt = promisify(scryptCallback);
@@ -1532,6 +1533,7 @@ async function main() {
 
   await ensureSeedOperatingModel(workspace.id);
   await ensureCompanyOsFoundation(workspace.id);
+  await ensureLifecycleProcedureForWorkspace(prisma, workspace.id);
   await ensureWorkforceFoundation(workspace.id, owner);
 
   const keyHash = hashApiKey(key);

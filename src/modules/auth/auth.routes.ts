@@ -7,6 +7,7 @@ import { hashPassword, verifyPassword } from "../../auth/password";
 import { createAuthToken } from "../../auth/token";
 import { asyncHandler } from "../../middleware/async-handler";
 import { ensureOperatingModelForWorkspace } from "../../operating-model/catalog";
+import { ensureLifecycleProcedureForWorkspace } from "../company-os/lifecycle-procedure-definition";
 import { createWorkforceEntity } from "../workforce/workforce.service";
 
 const registerSchema = z.object({
@@ -53,9 +54,10 @@ authRouter.post("/register", asyncHandler(async (req, res) => {
       });
 
       await ensureOperatingModelForWorkspace(tx, workspace.id);
+      await ensureLifecycleProcedureForWorkspace(tx, workspace.id);
 
       return { user, workspace };
-    });
+    }, { maxWait: 5_000, timeout: 15_000 });
 
     const token = createAuthToken({
       userId: result.user.id,

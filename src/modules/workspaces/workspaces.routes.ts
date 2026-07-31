@@ -5,6 +5,7 @@ import { prisma } from "../../db/prisma";
 import { createAuthToken } from "../../auth/token";
 import { asyncHandler } from "../../middleware/async-handler";
 import { ensureOperatingModelForWorkspace } from "../../operating-model/catalog";
+import { ensureLifecycleProcedureForWorkspace } from "../company-os/lifecycle-procedure-definition";
 
 const workspaceSchema = z.object({
   name: z.string().min(1)
@@ -82,8 +83,9 @@ workspacesRouter.post("/", asyncHandler(async (req, res) => {
     });
 
     await ensureOperatingModelForWorkspace(tx, created.id);
+    await ensureLifecycleProcedureForWorkspace(tx, created.id);
     return created;
-  });
+  }, { maxWait: 5_000, timeout: 15_000 });
 
   const token = createAuthToken({
     userId,

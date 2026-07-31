@@ -12,6 +12,7 @@ import { classifyOperatingAreaKey } from "../operating-model/catalog";
 import { encryptSecret } from "../integrations/secrets";
 import { runProductMapProjectionCleanupIfDue } from "../integrations/clickup/clickup.maintenance-scheduler";
 import { consumeProjectionAdmission, expectedIdempotencyKey, packetDigest, productMapSchemaVersion, productMapTransportVersion, tryAcquireProjectionWorkspaceLock } from "../modules/product-map/product-map-projection.service";
+import { canonicalLifecycleStages, lifecycleOperatingContractSource } from "../modules/company-os/lifecycle-procedure-definition";
 
 const realFetch = globalThis.fetch.bind(globalThis);
 let baseUrl = "";
@@ -26,6 +27,60 @@ type RegisteredOwner = {
   token: string;
   workspace: { id: string };
 };
+
+function productMapPacket(observedAt: string, offeringId = "roost") {
+  return {
+    schemaVersion: productMapSchemaVersion,
+    observedAt,
+    sourceState: "available" as const,
+    stale: false,
+    conflictState: "none" as const,
+    lifecycleProcedure: {
+      procedureId: "PROC-SH-APPLICATION-LIFECYCLE" as const,
+      procedureVersion: "1.0" as const,
+      executionAuthority: "paperclip" as const,
+      observedAt,
+      verifiedAt: observedAt,
+      freshness: "current" as const,
+      gateResults: canonicalLifecycleStages.map((stage) => ({
+        stageKey: stage.stageKey,
+        status: "verified" as const,
+        summary: `${stage.title} verified.`,
+        ownerRole: stage.accountableSourceOwner,
+        verifiedAt: observedAt,
+        evidenceRefs: [{ kind: "issue" as const, issueIdentifier: "LUC-2193", label: `${stage.title} evidence` }]
+      })),
+      evidenceRefs: [{ kind: "issue" as const, issueIdentifier: "LUC-2193", label: "Lifecycle evidence" }],
+      supersession: { status: "active" as const, supersedesVersion: null, supersededByVersion: null },
+      source: lifecycleOperatingContractSource
+    },
+    items: [{
+      offeringId,
+      paperclipProjectName: "Roost",
+      lifecycleStage: "implementation",
+      conflictState: "none" as const,
+      sourceControl: {
+        branch: "main",
+        sourceSha: "a".repeat(40),
+        deployedSha: "a".repeat(40),
+        versionAlignment: "aligned" as const
+      },
+      readiness: {
+        status: "GO" as const,
+        evidenceState: "complete" as const,
+        zeroGapButNoGo: false,
+        totalGaps: 0,
+        nextGate: null
+      },
+      aggregates: {
+        issues: {
+          total: 1,
+          byStatus: { backlog: 0, todo: 0, inProgress: 0, inReview: 0, blocked: 0, done: 1, cancelled: 0 }
+        }
+      }
+    }]
+  };
+}
 
 function assertSafeTestDatabase() {
   if (process.env.COMPANYCORE_ALLOW_DESTRUCTIVE_TEST_DB === "1") {
@@ -3891,16 +3946,15 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(foreignWorkspaceSelect.status, 404);
   assert.equal((foreignWorkspaceSelect.body as { error: string }).error, "not_found");
 
-  const humanOwnerRole = await prisma.companyRole.create({
-    data: {
-      workspaceId: ownerA.workspace.id,
-      name: "Human Owner",
-      type: "human",
-      responsibilities: ["approve high-risk work"],
-      permissions: ["approval:decide"],
-      allowedTools: ["companycore"]
+  const humanOwnerRole = await prisma.companyRole.findUnique({
+    where: {
+      workspaceId_name: {
+        workspaceId: ownerA.workspace.id,
+        name: "Human Owner"
+      }
     }
   });
+  assert.ok(humanOwnerRole);
   const pmAgentRole = await prisma.companyRole.create({
     data: {
       workspaceId: ownerA.workspace.id,
@@ -4335,9 +4389,9 @@ test("CompanyCore v1 protected API flow", async () => {
     };
   };
   assert.equal(companyOsSnapshotBody.data.service, "company-os");
-  assert.equal(companyOsSnapshotBody.data.counts.definitions.processes, 1);
+  assert.equal(companyOsSnapshotBody.data.counts.definitions.processes, 2);
   assert.equal(companyOsSnapshotBody.data.counts.definitions.pipelines, 1);
-  assert.equal(companyOsSnapshotBody.data.counts.definitions.procedures, 1);
+  assert.equal(companyOsSnapshotBody.data.counts.definitions.procedures, 2);
   assert.equal(companyOsSnapshotBody.data.counts.definitions.toolAdapters, 1);
   assert.equal(companyOsSnapshotBody.data.counts.runtime.pipelineRuns, 1);
   assert.equal(companyOsSnapshotBody.data.counts.runtime.stageRuns, 1);
@@ -4398,11 +4452,11 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(processCoreCoverageBody.data.service, "process-core");
   assert.equal(processCoreCoverageBody.data.packet, "coverage");
   assert.equal(processCoreCoverageBody.data.mode, "read_only");
-  assert.equal(processCoreCoverageBody.data.counts.workflowDefinitions.processes, 1);
+  assert.equal(processCoreCoverageBody.data.counts.workflowDefinitions.processes, 2);
   assert.equal(processCoreCoverageBody.data.counts.workflowDefinitions.pipelines, 1);
   assert.equal(processCoreCoverageBody.data.counts.workflowDefinitions.pipelineStages, 1);
-  assert.equal(processCoreCoverageBody.data.counts.workflowDefinitions.procedures, 1);
-  assert.equal(processCoreCoverageBody.data.counts.workflowDefinitions.procedureSteps, 1);
+  assert.equal(processCoreCoverageBody.data.counts.workflowDefinitions.procedures, 2);
+  assert.equal(processCoreCoverageBody.data.counts.workflowDefinitions.procedureSteps, 19);
   assert.equal(processCoreCoverageBody.data.counts.workflowRuntime.pipelineRuns, 1);
   assert.equal(processCoreCoverageBody.data.counts.workflowRuntime.pipelineRunTaskLinks, 0);
   assert.equal(processCoreCoverageBody.data.counts.workflowRuntime.stageRuns, 1);
@@ -4441,7 +4495,7 @@ test("CompanyCore v1 protected API flow", async () => {
   const foreignProcessCoreCoverageBody = foreignProcessCoreCoverage.body as {
     data: { counts: { workflowDefinitions: { processes: number; pipelines: number }; assetsAndKnowledge: { resources: number } } };
   };
-  assert.equal(foreignProcessCoreCoverageBody.data.counts.workflowDefinitions.processes, 0);
+  assert.equal(foreignProcessCoreCoverageBody.data.counts.workflowDefinitions.processes, 1);
   assert.equal(foreignProcessCoreCoverageBody.data.counts.workflowDefinitions.pipelines, 0);
   assert.equal(foreignProcessCoreCoverageBody.data.counts.assetsAndKnowledge.resources, 0);
 
@@ -9856,14 +9910,24 @@ test("CompanyCore v1 protected API flow", async () => {
     assert.equal(deniedBeforeRawBodyParsing.status, 403);
     assert.deepEqual(deniedBeforeRawBodyParsing.body, { error: "projection_ingress_denied" });
   }
-  const productPacket = { schemaVersion: productMapSchemaVersion, readiness: "GO", release: "candidate-a" };
+  const sourceOnlyProjectionRead = await request("/v1/product-map/projection", { headers: authA });
+  assert.equal(sourceOnlyProjectionRead.status, 200);
+  assert.equal((sourceOnlyProjectionRead.body as { data: { status: string; packet: unknown; procedure: { identity: { procedureId: string; procedureVersion: string }; definition: { stages: unknown[] } } } }).data.status, "source_only");
+  assert.equal((sourceOnlyProjectionRead.body as { data: { packet: unknown } }).data.packet, null);
+  assert.equal((sourceOnlyProjectionRead.body as { data: { procedure: { identity: { procedureId: string; procedureVersion: string }; definition: { stages: unknown[] } } } }).data.procedure.identity.procedureId, "PROC-SH-APPLICATION-LIFECYCLE");
+  assert.equal((sourceOnlyProjectionRead.body as { data: { procedure: { definition: { stages: unknown[] } } } }).data.procedure.definition.stages.length, 18);
+  const unauthenticatedProjectionRead = await request("/v1/product-map/projection");
+  assert.equal(unauthenticatedProjectionRead.status, 401);
+
+  const productObservedAt = new Date().toISOString();
+  const productPacket = productMapPacket(productObservedAt);
   const productDigest = packetDigest(productPacket);
   const productEnvelopeBase = {
     transportVersion: productMapTransportVersion,
     schemaVersion: productMapSchemaVersion,
     companyId: "paperclip-company-a",
     sourceSnapshotId: "portfolio-snapshot-a",
-    observedAt: new Date().toISOString(),
+    observedAt: productObservedAt,
     publishedAt: new Date().toISOString(),
     packetDigest: productDigest,
     packet: productPacket
@@ -9872,6 +9936,56 @@ test("CompanyCore v1 protected API flow", async () => {
     ...productEnvelopeBase,
     idempotencyKey: expectedIdempotencyKey(productEnvelopeBase)
   };
+
+  const privatePacket = { ...productPacket, prompt: "private-payload" };
+  const privateEnvelopeBase = {
+    ...productEnvelopeBase,
+    sourceSnapshotId: "portfolio-snapshot-private",
+    packetDigest: packetDigest(privatePacket),
+    packet: privatePacket
+  };
+  const privateEnvelope = {
+    ...privateEnvelopeBase,
+    idempotencyKey: expectedIdempotencyKey(privateEnvelopeBase)
+  };
+  const persistenceBeforePrivateRejection = {
+    snapshots: await prisma.productMapProjectionSnapshot.count({ where: { workspaceId: ownerA.workspace.id } }),
+    receipts: await prisma.productMapProjectionReceipt.count({ where: { workspaceId: ownerA.workspace.id } }),
+    quarantines: await prisma.productMapProjectionQuarantine.count({ where: { workspaceId: ownerA.workspace.id } }),
+    states: await prisma.productMapProjectionState.count({ where: { workspaceId: ownerA.workspace.id } }),
+    admissions: await prisma.productMapProjectionAdmission.count({ where: { workspaceId: ownerA.workspace.id } })
+  };
+  const privateProjectionDenied = await request("/v1/product-map/projection/ingest", {
+    method: "POST",
+    headers: { "X-API-Key": productMapKeyValue, "X-Request-ID": "attacker-controlled-correlation" },
+    body: JSON.stringify(privateEnvelope)
+  });
+  assert.equal(privateProjectionDenied.status, 400);
+  assert.deepEqual({
+    snapshots: await prisma.productMapProjectionSnapshot.count({ where: { workspaceId: ownerA.workspace.id } }),
+    receipts: await prisma.productMapProjectionReceipt.count({ where: { workspaceId: ownerA.workspace.id } }),
+    quarantines: await prisma.productMapProjectionQuarantine.count({ where: { workspaceId: ownerA.workspace.id } }),
+    states: await prisma.productMapProjectionState.count({ where: { workspaceId: ownerA.workspace.id } }),
+    admissions: await prisma.productMapProjectionAdmission.count({ where: { workspaceId: ownerA.workspace.id } })
+  }, persistenceBeforePrivateRejection);
+  const correlationOverrideDenied = await request("/v1/product-map/projection/ingest", {
+    method: "POST",
+    headers: { "X-API-Key": productMapKeyValue },
+    body: JSON.stringify({ ...productEnvelope, auditCorrelation: "attacker-controlled-correlation" })
+  });
+  assert.equal(correlationOverrideDenied.status, 400);
+  assert.deepEqual({
+    snapshots: await prisma.productMapProjectionSnapshot.count({ where: { workspaceId: ownerA.workspace.id } }),
+    receipts: await prisma.productMapProjectionReceipt.count({ where: { workspaceId: ownerA.workspace.id } }),
+    quarantines: await prisma.productMapProjectionQuarantine.count({ where: { workspaceId: ownerA.workspace.id } }),
+    states: await prisma.productMapProjectionState.count({ where: { workspaceId: ownerA.workspace.id } })
+  }, {
+    snapshots: persistenceBeforePrivateRejection.snapshots,
+    receipts: persistenceBeforePrivateRejection.receipts,
+    quarantines: persistenceBeforePrivateRejection.quarantines,
+    states: persistenceBeforePrivateRejection.states
+  });
+
   const ingestProjection = () => request("/v1/product-map/projection/ingest", {
     method: "POST",
     headers: { "X-API-Key": productMapKeyValue },
@@ -9880,18 +9994,81 @@ test("CompanyCore v1 protected API flow", async () => {
   const acceptedProjection = await ingestProjection();
   assert.equal(acceptedProjection.status, 200);
   assert.equal((acceptedProjection.body as { data: { status: string } }).data.status, "accepted");
+  const firstAcceptedSnapshot = await prisma.productMapProjectionSnapshot.findFirstOrThrow({
+    where: { workspaceId: ownerA.workspace.id, sourceSnapshotId: productEnvelope.sourceSnapshotId }
+  });
+  assert.ok(firstAcceptedSnapshot.auditCorrelation);
   const projectionReadKey = await request("/v1/api-keys", {
     method: "POST",
     headers: authA,
     body: JSON.stringify({ name: "Product Map reader", scopes: ["product-map:projection:read"] })
   });
   const projectionReadKeyValue = (projectionReadKey.body as { data: { key: string } }).data.key;
-  const projectionRead = await request("/v1/product-map/projection", { headers: { "X-API-Key": projectionReadKeyValue } });
+  const projectionRead = await request("/v1/product-map/projection", {
+    headers: { "X-API-Key": projectionReadKeyValue, "X-Request-ID": "attacker-controlled-correlation" }
+  });
   assert.equal(projectionRead.status, 200);
   assert.deepEqual((projectionRead.body as { data: { packet: unknown } }).data.packet, productPacket);
+  const projectionProcedure = (projectionRead.body as {
+    data: {
+      status: string;
+      procedure: {
+        identity: { procedureId: string; procedureVersion: string };
+        gates: unknown[];
+        audit: { correlationId: string; packetDigestPrefix: string };
+        authority: { readOnly: boolean; canMutatePaperclip: boolean; canPromoteReadiness: boolean };
+      };
+    };
+  }).data;
+  assert.equal(projectionProcedure.status, "current");
+  assert.equal(projectionProcedure.procedure.identity.procedureId, "PROC-SH-APPLICATION-LIFECYCLE");
+  assert.equal(projectionProcedure.procedure.identity.procedureVersion, "1.0");
+  assert.equal(projectionProcedure.procedure.gates.length, 18);
+  assert.notEqual(projectionProcedure.procedure.audit.correlationId, "attacker-controlled-correlation");
+  assert.equal(projectionProcedure.procedure.audit.correlationId, firstAcceptedSnapshot.auditCorrelation);
+  assert.match(projectionProcedure.procedure.audit.correlationId, /^[0-9a-f-]{36}$/);
+  assert.equal(projectionProcedure.procedure.audit.packetDigestPrefix, productDigest.slice(0, 12));
+  assert.equal(projectionProcedure.procedure.authority.readOnly, true);
+  assert.equal(projectionProcedure.procedure.authority.canMutatePaperclip, false);
+  assert.equal(projectionProcedure.procedure.authority.canPromoteReadiness, false);
+  const repeatedProjectionRead = await request("/v1/product-map/projection", {
+    headers: { "X-API-Key": projectionReadKeyValue, "X-Request-ID": "different-request-correlation" }
+  });
+  assert.equal(repeatedProjectionRead.status, 200);
+  assert.equal(
+    (repeatedProjectionRead.body as { data: { procedure: { audit: { correlationId: string } } } }).data.procedure.audit.correlationId,
+    projectionProcedure.procedure.audit.correlationId
+  );
+  const serializedProjectionRead = JSON.stringify(repeatedProjectionRead.body);
+  assert.ok(!serializedProjectionRead.includes(productMapKeyValue));
+  assert.ok(!serializedProjectionRead.includes("private-payload"));
+  assert.ok(!serializedProjectionRead.includes("attacker-controlled-correlation"));
+
+  const ingestOnlyRead = await request("/v1/product-map/projection", { headers: { "X-API-Key": productMapKeyValue } });
+  assert.equal(ingestOnlyRead.status, 403);
+  const broadProjectionRead = await request("/v1/product-map/projection", {
+    headers: { "X-API-Key": (broadProductMapKey.body as { data: { key: string } }).data.key }
+  });
+  assert.equal(broadProjectionRead.status, 403);
   const crossWorkspaceProjectionRead = await request("/v1/product-map/projection", { headers: authB });
   assert.equal(crossWorkspaceProjectionRead.status, 200);
-  assert.equal((crossWorkspaceProjectionRead.body as { data: { status: string } }).data.status, "empty");
+  assert.equal((crossWorkspaceProjectionRead.body as { data: { status: string; packet: unknown } }).data.status, "source_only");
+  assert.equal((crossWorkspaceProjectionRead.body as { data: { packet: unknown } }).data.packet, null);
+
+  const ownerASnapshot = await prisma.productMapProjectionSnapshot.findFirstOrThrow({
+    where: { workspaceId: ownerA.workspace.id },
+    orderBy: { receivedAt: "desc" }
+  });
+  await prisma.productMapProjectionState.upsert({
+    where: { workspaceId: ownerB.workspace.id },
+    create: { workspaceId: ownerB.workspace.id, activeSnapshotId: ownerASnapshot.id, activeObservedAt: ownerASnapshot.observedAt },
+    update: { activeSnapshotId: ownerASnapshot.id, activeObservedAt: ownerASnapshot.observedAt }
+  });
+  const poisonedPointerRead = await request("/v1/product-map/projection", { headers: authB });
+  assert.equal(poisonedPointerRead.status, 200);
+  assert.equal((poisonedPointerRead.body as { data: { status: string; packet: unknown } }).data.status, "unavailable");
+  assert.equal((poisonedPointerRead.body as { data: { packet: unknown } }).data.packet, null);
+  await prisma.productMapProjectionState.delete({ where: { workspaceId: ownerB.workspace.id } });
 
   // The following fixture uses the same disposable PostgreSQL database as the
   // API suite. It checks that a logical restore retains the active pointer,
@@ -9905,11 +10082,12 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(durabilityKey.status, 201);
   const durabilityHeaders = { "X-API-Key": (durabilityKey.body as { data: { key: string } }).data.key };
-  const durabilityPacket = { schemaVersion: productMapSchemaVersion, readiness: "GO", release: "durability-candidate" };
+  const durabilityObservedAt = new Date(Date.now() + 1_000).toISOString();
+  const durabilityPacket = productMapPacket(durabilityObservedAt, "roost-durability");
   const durabilityEnvelopeBase = {
     ...productEnvelopeBase,
     sourceSnapshotId: "portfolio-snapshot-durability",
-    observedAt: new Date(Date.now() + 1_000).toISOString(),
+    observedAt: durabilityObservedAt,
     publishedAt: new Date().toISOString(),
     packetDigest: packetDigest(durabilityPacket),
     packet: durabilityPacket
@@ -9922,6 +10100,17 @@ test("CompanyCore v1 protected API flow", async () => {
     method: "POST", headers: durabilityHeaders, body: JSON.stringify(durabilityEnvelope)
   });
   assert.equal(durabilityAccepted.status, 200);
+  const durabilitySnapshot = await prisma.productMapProjectionSnapshot.findFirstOrThrow({
+    where: { workspaceId: ownerA.workspace.id, sourceSnapshotId: durabilityEnvelope.sourceSnapshotId }
+  });
+  assert.ok(durabilitySnapshot.auditCorrelation);
+  assert.notEqual(durabilitySnapshot.auditCorrelation, firstAcceptedSnapshot.auditCorrelation);
+  const durabilityProjection = await request("/v1/product-map/projection", { headers: { "X-API-Key": projectionReadKeyValue } });
+  assert.equal(durabilityProjection.status, 200);
+  assert.equal(
+    (durabilityProjection.body as { data: { procedure: { audit: { correlationId: string } } } }).data.procedure.audit.correlationId,
+    durabilitySnapshot.auditCorrelation
+  );
 
   const restoreSnapshot = await prisma.productMapProjectionSnapshot.findMany({
     where: { workspaceId: ownerA.workspace.id }, orderBy: { receivedAt: "asc" }
@@ -9944,6 +10133,10 @@ test("CompanyCore v1 protected API flow", async () => {
   const restoredProjection = await request("/v1/product-map/projection", { headers: { "X-API-Key": projectionReadKeyValue } });
   assert.equal(restoredProjection.status, 200);
   assert.deepEqual((restoredProjection.body as { data: { packet: unknown } }).data.packet, durabilityPacket);
+  assert.equal(
+    (restoredProjection.body as { data: { procedure: { audit: { correlationId: string } } } }).data.procedure.audit.correlationId,
+    durabilitySnapshot.auditCorrelation
+  );
 
   await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
   server = createApp().listen(0);
