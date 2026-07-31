@@ -26,6 +26,28 @@ fixes for this repository.
 
 ## Entries
 
+### 2026-07-31 - Verify Auto-Scaffolded Registry Paths After Architecture Refresh
+- Context: LUC-2192 added the Product Map lifecycle-publication contract and ran
+  the deterministic architecture refresh.
+- Symptom: the refresh added feature and API registry rows that named a generic
+  `product-map.routes.ts` file even though the implemented route lives in
+  `product-map-projection.routes.ts`; all architecture gates still passed.
+- Root cause: the auto-scaffolder inferred a conventional source path from the
+  route name, while registry integrity gates validated graph consistency rather
+  than physical existence for that inferred path.
+- Guardrail: after a refresh adds auto-scaffolded feature or API rows, inspect
+  only the newly added registry rows and verify every source path exists before
+  accepting the green gate result.
+- Preferred pattern: review the bounded registry diff, correct inferred paths
+  to the actual implementation, then rebuild the graph and rerun node,
+  relation, connectivity, consistency, and status gates.
+- Avoid: treating a green generated architecture status as proof that every
+  newly inferred source path resolves to a real file.
+- Evidence: LUC-2192 corrected all three inferred Product Map registry rows to
+  `src/modules/product-map/product-map-projection.routes.ts` and the focused
+  architecture gate suite remained green at 467 nodes, 775 relations, and 36
+  chains.
+
 ### 2026-07-28 - Known-State Sweeps Must Reconcile Generated Truth And Manual Projections Together
 - Context: LUC-2024 refreshed Roost architecture, completion, release, and live
   Paperclip issue state after the LUC-1885/LUC-1886 evidence packet.

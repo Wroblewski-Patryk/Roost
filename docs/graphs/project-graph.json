@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-28T04:24:57.461Z",
+  "generatedAt": "2026-07-31T03:44:27.176Z",
   "nodes": [
     {
       "id": "FEAT-ARCH-EVIDENCE-SYSTEM",
@@ -1382,6 +1382,21 @@
       ]
     },
     {
+      "id": "FEAT-AUTO-0030",
+      "name": "Product Map Coverage Expansion",
+      "type": "feature",
+      "status": "implemented",
+      "layer": "full-stack",
+      "module": "product-map",
+      "feature": "product-map-coverage",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "docs/architecture/architecture-evidence-system.md",
+      "tags": [
+        "#feature #auto-scaffold #coverage-expansion"
+      ]
+    },
+    {
       "id": "FUNC-ENSURE-DEFAULT-DEPARTMENTS",
       "name": "ensureDefaultDepartments",
       "type": "function",
@@ -1497,6 +1512,21 @@
       "verificationStatus": "tested",
       "riskLevel": "medium",
       "filePath": "src/modules/workforce/workforce.service.ts",
+      "tags": [
+        "#service #auto"
+      ]
+    },
+    {
+      "id": "SVC-AUTO-0004",
+      "name": "Product Map Projection.Service",
+      "type": "service",
+      "status": "implemented",
+      "layer": "backend",
+      "module": "product-map",
+      "feature": "coverage-expansion",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "src/modules/product-map/product-map-projection.service.ts",
       "tags": [
         "#service #auto"
       ]
@@ -4112,6 +4142,36 @@
       ]
     },
     {
+      "id": "API-AUTO-0171",
+      "name": "GET /v1/product-map/projection",
+      "type": "api_route",
+      "status": "implemented",
+      "layer": "backend",
+      "module": "product-map",
+      "feature": "product-map-coverage",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "src/modules/product-map/product-map-projection.routes.ts",
+      "tags": [
+        "#api #auto-scaffold #missing"
+      ]
+    },
+    {
+      "id": "API-AUTO-0172",
+      "name": "POST /v1/product-map/projection/ingest",
+      "type": "api_route",
+      "status": "implemented",
+      "layer": "backend",
+      "module": "product-map",
+      "feature": "product-map-coverage",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "src/modules/product-map/product-map-projection.routes.ts",
+      "tags": [
+        "#api #auto-scaffold #missing"
+      ]
+    },
+    {
       "id": "PAGE-00-GENERAL",
       "name": "/areas?area=00-ogolny&view=overview",
       "type": "page",
@@ -5297,6 +5357,81 @@
       ]
     },
     {
+      "id": "DB-AUTO-0061",
+      "name": "product_map_projection_admissions model",
+      "type": "database_model",
+      "status": "implemented",
+      "layer": "database",
+      "module": "core",
+      "feature": "coverage-expansion",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "prisma/schema.prisma",
+      "tags": [
+        "#database #auto-scaffold #missing"
+      ]
+    },
+    {
+      "id": "DB-AUTO-0062",
+      "name": "product_map_projection_quarantines model",
+      "type": "database_model",
+      "status": "implemented",
+      "layer": "database",
+      "module": "core",
+      "feature": "coverage-expansion",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "prisma/schema.prisma",
+      "tags": [
+        "#database #auto-scaffold #missing"
+      ]
+    },
+    {
+      "id": "DB-AUTO-0063",
+      "name": "product_map_projection_receipts model",
+      "type": "database_model",
+      "status": "implemented",
+      "layer": "database",
+      "module": "core",
+      "feature": "coverage-expansion",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "prisma/schema.prisma",
+      "tags": [
+        "#database #auto-scaffold #missing"
+      ]
+    },
+    {
+      "id": "DB-AUTO-0064",
+      "name": "product_map_projection_snapshots model",
+      "type": "database_model",
+      "status": "implemented",
+      "layer": "database",
+      "module": "core",
+      "feature": "coverage-expansion",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "prisma/schema.prisma",
+      "tags": [
+        "#database #auto-scaffold #missing"
+      ]
+    },
+    {
+      "id": "DB-AUTO-0065",
+      "name": "product_map_projection_states model",
+      "type": "database_model",
+      "status": "implemented",
+      "layer": "database",
+      "module": "core",
+      "feature": "coverage-expansion",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "prisma/schema.prisma",
+      "tags": [
+        "#database #auto-scaffold #missing"
+      ]
+    },
+    {
       "id": "MIG-AUTO-0001",
       "name": "Migration",
       "type": "migration",
@@ -5757,6 +5892,36 @@
       "verificationStatus": "tested",
       "riskLevel": "medium",
       "filePath": "prisma/migrations/202605254_aog_be_005_knowledge_links/migration.sql",
+      "tags": [
+        "#migration #auto"
+      ]
+    },
+    {
+      "id": "MIG-AUTO-0032",
+      "name": "Migration",
+      "type": "migration",
+      "status": "implemented",
+      "layer": "database",
+      "module": "database",
+      "feature": "coverage-expansion",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "prisma/migrations/20260728110000_product_map_projection/migration.sql",
+      "tags": [
+        "#migration #auto"
+      ]
+    },
+    {
+      "id": "MIG-AUTO-0033",
+      "name": "Migration",
+      "type": "migration",
+      "status": "implemented",
+      "layer": "database",
+      "module": "database",
+      "feature": "coverage-expansion",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
+      "filePath": "prisma/migrations/20260728120000_product_map_ingress_controls/migration.sql",
       "tags": [
         "#migration #auto"
       ]
@@ -6731,6 +6896,21 @@
       "feature": "coverage-expansion",
       "verificationStatus": "tested",
       "riskLevel": "",
+      "filePath": "package.json",
+      "tags": [
+        "#test #auto-scaffold #missing"
+      ]
+    },
+    {
+      "id": "TEST-AUTO-0005",
+      "name": "npm run test:web:product-map",
+      "type": "test",
+      "status": "implemented",
+      "layer": "testing",
+      "module": "cross-app",
+      "feature": "coverage-expansion",
+      "verificationStatus": "tested",
+      "riskLevel": "medium",
       "filePath": "package.json",
       "tags": [
         "#test #auto-scaffold #missing"
@@ -12210,6 +12390,48 @@
       "target": "TEST-BROWSER-ASSETS-OVERVIEW",
       "type": "depends_on",
       "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0736",
+      "source": "FEAT-AUTO-0030",
+      "target": "API-AUTO-0171",
+      "type": "owns",
+      "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0737",
+      "source": "FEAT-AUTO-0030",
+      "target": "API-AUTO-0172",
+      "type": "owns",
+      "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0738",
+      "source": "FEAT-AUTO-0030",
+      "target": "DOC-ARCH-EVIDENCE-SYSTEM",
+      "type": "depends_on",
+      "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0739",
+      "source": "AGENT-COORDINATOR",
+      "target": "FEAT-AUTO-0030",
+      "type": "depends_on",
+      "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0740",
+      "source": "FEAT-AUTO-0030",
+      "target": "API-AUTO-0171",
+      "type": "contains",
+      "status": "partial"
+    },
+    {
+      "id": "REL-AUTO-0741",
+      "source": "FEAT-AUTO-0030",
+      "target": "API-AUTO-0172",
+      "type": "contains",
+      "status": "partial"
     }
   ],
   "chains": [
@@ -12791,6 +13013,18 @@
       "status": "implemented",
       "nodeSequence": [
         "API-AUTO-0170"
+      ],
+      "missingNodes": [],
+      "verificationStatus": "tested"
+    },
+    {
+      "id": "CHAIN-AUTO-0030",
+      "name": "Product Map Coverage Expansion auto chain",
+      "featureId": "FEAT-AUTO-0030",
+      "status": "implemented",
+      "nodeSequence": [
+        "API-AUTO-0171",
+        "API-AUTO-0172"
       ],
       "missingNodes": [],
       "verificationStatus": "tested"

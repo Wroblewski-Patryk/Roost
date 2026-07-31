@@ -42,6 +42,15 @@ The future live-projection release is protected by
 the local UI or the accepted Paperclip source contract does not authorize a
 push, deploy, restart, or production-readiness claim.
 
+The lifecycle-procedure publication is governed by
+`docs/architecture/lifecycle-procedure-publication-contract.md`. Product Map
+reuses the Company OS `Procedure`/`ProcedureStep` definition for
+`PROC-SH-APPLICATION-LIFECYCLE` v1.0 and composes it with a strict Paperclip
+execution-state projection. Packet schema `2.0` replaces arbitrary packet
+acceptance; retained v1 packets cannot be promoted as current. The shared public
+state vocabulary is `current`, `stale`, `conflict`, `source_only`, and
+`unavailable`.
+
 ## Authority Rules
 
 - Never merge local HEAD, origin/main, and deployed SHA into one truth.

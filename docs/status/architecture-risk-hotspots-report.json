@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-28T04:25:06.935Z",
+  "generatedAt": "2026-07-31T03:42:19.686Z",
   "status": "passed",
   "summary": {
     "hotspotCount": 25,
-    "highestRiskScore": 477
+    "highestRiskScore": 482
   },
   "globalRiskSignals": {
     "evidenceQueue": 0,
@@ -21,10 +21,10 @@
       "module": "agents",
       "feature": "agent-workflow",
       "status": "verified",
-      "risk_score": 477,
-      "impact_score": 477,
+      "risk_score": 482,
+      "impact_score": 482,
       "impact_delta": 0,
-      "transitive_out_count": 347,
+      "transitive_out_count": 350,
       "reasons": "high_transitive_impact;wide_change_surface"
     },
     {
@@ -47,8 +47,8 @@
       "module": "cross-app",
       "feature": "cross-app",
       "status": "verified",
-      "risk_score": 199,
-      "impact_score": 199,
+      "risk_score": 200,
+      "impact_score": 200,
       "impact_delta": 0,
       "transitive_out_count": 112,
       "reasons": "high_transitive_impact;wide_change_surface"

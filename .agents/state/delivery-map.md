@@ -1,6 +1,6 @@
 # Delivery Map
 
-Last updated: 2026-07-30
+Last updated: 2026-07-31
 
 ## Current Product Target
 
@@ -22,9 +22,11 @@ Last updated: 2026-07-30
   verified and closed through [LUC-1799](/LUC/issues/LUC-1799).
 - Independent product lane: [LUC-1895](/LUC/issues/LUC-1895) is the existing
   blocked owner lane for publishing `PROC-SH-APPLICATION-LIFECYCLE` v1.0 on an
-  authenticated Roost surface. Keep the repository projection `source_only`
-  until the existing owner chain restores a legal execution/browser path and
-  completes automated, security, deployment, monitoring, and
+  authenticated Roost surface. [LUC-2192](/LUC/issues/LUC-2192) selected the
+  Company OS Procedure/Step plus Product Map composition contract;
+  [LUC-2193](/LUC/issues/LUC-2193) owns implementation. Keep the repository
+  projection `source_only` until that implementation and the existing owner
+  chain complete automated, security, deployment, monitoring, and
   production-browser proof.
 - Active expansion/release lane: [LUC-1910](/LUC/issues/LUC-1910) owns the
   live Product Map projection and production promotion. The protected preflight

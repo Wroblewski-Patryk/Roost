@@ -1,3 +1,23 @@
+# 2026-07-31 LUC-2192 Lifecycle Publication Architecture Signal
+
+- Status: architecture contract verified; runtime remains implemented, not
+  verified for lifecycle publication.
+- Selected foundation: Company OS `Procedure`/`ProcedureStep` plus the existing
+  authenticated Product Map read route.
+- Protocol: transport v1 remains; strict packet schema `2.0` replaces
+  arbitrary packet schema `1.0`, and retained v1 packets cannot become current.
+- State contract: `current`, `stale`, `conflict`, `source_only`,
+  `unavailable`; client-only `loading`/`error`.
+- Data decision: no Prisma migration; implementation needs an idempotent
+  Procedure/18-step seed/backfill and stored-packet read validation.
+- Architecture verification: `GREEN`, graph `467/775/36`, evidence queue `0`,
+  chain worklist `0`, delta `0/0/0`, chain coverage `35/35`.
+- Runtime, API, seed, browser, producer, deployment, and monitoring proof remain
+  with [LUC-2193](/LUC/issues/LUC-2193) and
+  [LUC-1910](/LUC/issues/LUC-1910).
+- No push, deploy, restart, credential use, protected browser, database write,
+  or production mutation occurred.
+
 # 2026-07-31 LUC-1895 Lifecycle Publication Health Signal
 
 - Status: local Product Map tests/build are healthy; lifecycle procedure

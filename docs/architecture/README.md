@@ -48,7 +48,8 @@ Those belong elsewhere:
 13. `department-management-systems-v1-blueprint.md`
 14. `company-os-definition-editing-contract.md`
 15. `company-os-workflow-definition-command-contract.md`
-16. any project-specific architecture or ADR files added later
+16. `lifecycle-procedure-publication-contract.md`
+17. any project-specific architecture or ADR files added later
 
 ## Maturity-Aware Reading
 

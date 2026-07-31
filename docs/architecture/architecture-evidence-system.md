@@ -363,10 +363,10 @@ gates.
 
 Current validated baseline:
 
-- graph: `455` nodes, `769` relations, `35` chains
+- graph: `467` nodes, `775` relations, `36` chains
 - evidence queue: `0`
 - chain hardening worklist: `0`
-- chain coverage gate: `34/34` features (`100%`)
+- chain coverage gate: `35/35` features (`100%`)
 - chain integrity issues: `0`
 - node integrity issues: `0`
 - architecture health dashboard: `allGreen=true`

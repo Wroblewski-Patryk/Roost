@@ -1,3 +1,10 @@
+## 2026-07-31 LUC-2192 Module Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Lifecycle procedure publication architecture | verified | [LUC-2192](/LUC/issues/LUC-2192); `docs/architecture/lifecycle-procedure-publication-contract.md`; DEC-053; exact Company OS mapping, 18-stage definition, strict packet/read schemas, state contract, no-migration decision, rollout/recovery, and ownership handoff | [LUC-2193](/LUC/issues/LUC-2193) implements and proves the local Roost vertical slice. |
+| Authenticated lifecycle procedure owner journey | implemented, not verified | Architecture contract is complete; current runtime still has arbitrary packet acceptance and no composed Procedure v1.0 owner read | Implementation, focused API/security/browser proof, and protected release remain required under [LUC-2193](/LUC/issues/LUC-2193) and [LUC-1910](/LUC/issues/LUC-1910). |
+
 ## 2026-07-30 LUC-2076 Module Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

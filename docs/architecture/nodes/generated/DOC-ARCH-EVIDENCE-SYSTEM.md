@@ -78,6 +78,7 @@ Canonical rules for the architecture evidence system.
 - [[FEAT-AUTO-0028|Tasks Coverage Expansion]] -> depends_on (partial)
 - [[AGENT-DOCUMENTATION-MEMORY|Documentation and memory lane]] -> depends_on (partial)
 - [[FEAT-AUTO-0029|Process Core Coverage Expansion]] -> depends_on (partial)
+- [[FEAT-AUTO-0030|Product Map Coverage Expansion]] -> depends_on (partial)
 
 ## Chains
 

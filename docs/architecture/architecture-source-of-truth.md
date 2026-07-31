@@ -200,6 +200,26 @@ The approved v1 direction is:
   must update those records and run `npm run architecture:graph` before it can
   be treated as officially mapped.
 
+## Lifecycle Procedure Publication
+
+Decision source: [LUC-2192](/LUC/issues/LUC-2192).
+
+`PROC-SH-APPLICATION-LIFECYCLE` version `1.0` reuses the workspace-scoped
+Company OS `Procedure`/`ProcedureStep` and workflow-definition versioning
+foundation. The authenticated Product Map read route composes that durable
+definition with a strict read-only Paperclip execution-state projection.
+Paperclip remains authoritative for live execution and evidence; Roost does not
+gain a second workflow engine or any Paperclip write authority.
+
+The exact model mapping, 18-stage set, packet schema `2.0`, owner read model,
+allowlisted evidence references, fail-closed states, authorization rules,
+no-migration decision, rollout, and recovery contract are canonical in
+`docs/architecture/lifecycle-procedure-publication-contract.md`.
+
+An arbitrary packet, stored v1 packet promotion, direct Paperclip database
+read, reverse tunnel, provider write, read-time definition bootstrap, or
+dedicated lifecycle store/route is prohibited.
+
 ## Product Map Projection Transport
 
 Decision source: [LUC-2092](/LUC/issues/LUC-2092), the binding

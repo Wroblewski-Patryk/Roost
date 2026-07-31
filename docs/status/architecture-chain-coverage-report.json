@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-07-28T04:24:50.930Z",
-  "totalRequiredFeatures": 34,
-  "coveredFeatures": 34,
+  "checkedAt": "2026-07-31T03:41:54.338Z",
+  "totalRequiredFeatures": 35,
+  "coveredFeatures": 35,
   "missingFeatures": 0,
   "coveragePercent": 100,
   "covered": [
@@ -241,6 +241,13 @@
       "feature_name": "Process Core Coverage Expansion",
       "module": "process-core",
       "chain_id": "CHAIN-AUTO-0029",
+      "chain_status": "tested"
+    },
+    {
+      "feature_id": "FEAT-AUTO-0030",
+      "feature_name": "Product Map Coverage Expansion",
+      "module": "product-map",
+      "chain_id": "CHAIN-AUTO-0030",
       "chain_status": "tested"
     }
   ],

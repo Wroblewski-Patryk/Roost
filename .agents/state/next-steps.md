@@ -1,10 +1,11 @@
 # Next Steps
-- 2026-07-31: [LUC-1895](/LUC/issues/LUC-1895) is blocked on two real paths:
-  first, [LUC-2192](/LUC/issues/LUC-2192) selects the strict stable
-  lifecycle-procedure mapping and unblocks [LUC-2193](/LUC/issues/LUC-2193) to
-  implement it; second, [LUC-1910](/LUC/issues/LUC-1910) completes the protected
-  release chain. Rebuild the exact candidate after the contract repair; do not
-  deploy `e6fa42a` as lifecycle-procedure proof.
+- 2026-07-31: [LUC-2192](/LUC/issues/LUC-2192) selected the strict stable
+  lifecycle-procedure mapping. [LUC-2193](/LUC/issues/LUC-2193) is now the
+  next implementation owner for the Company OS seed, packet schema `2.0`, read
+  assembler, aligned states, API/UI, and focused proof. After that,
+  [LUC-1910](/LUC/issues/LUC-1910) completes the protected producer/release
+  chain. Rebuild the exact candidate after implementation; do not deploy
+  `e6fa42a` as lifecycle-procedure proof.
 - 2026-07-30: [LUC-2076](/LUC/issues/LUC-2076) reconciled the live Roost
   project board with repository evidence. Roost v1.0 remains
   `conditional_guided_sale_ready`; Product Map promotion remains `NO-GO`.

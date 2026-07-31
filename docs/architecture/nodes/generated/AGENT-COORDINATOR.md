@@ -110,6 +110,7 @@ Default coordinator role that owns mission framing, lanes, integration, validati
 - depends_on -> [[WORKFLOW-NEW-FEATURE-REGISTRY-GATE|New feature registry gate]] (partial)
 - depends_on -> [[FEAT-AUTO-0029|Process Core Coverage Expansion]] (partial)
 - depends_on -> [[TEST-BROWSER-ASSETS-OVERVIEW|Browser rendered Assets overview proof]] (partial)
+- depends_on -> [[FEAT-AUTO-0030|Product Map Coverage Expansion]] (partial)
 - [[AGENT-COORDINATOR|Coordinator agent role]] -> depends_on (partial)
 
 ## Chains

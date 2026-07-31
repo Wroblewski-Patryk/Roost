@@ -1,5 +1,18 @@
 # Current Focus
 
+## LUC-2192 Lifecycle Publication Architecture
+
+- 2026-07-31: selected Company OS `Procedure`/`ProcedureStep` plus Product Map
+  composition for `PROC-SH-APPLICATION-LIFECYCLE` v1.0.
+- Canonical contract:
+  `docs/architecture/lifecycle-procedure-publication-contract.md`.
+- Packet schema `2.0` replaces arbitrary packet acceptance; the transport
+  version remains v1 and retained packet v1 records cannot become current.
+- No Prisma migration or dedicated lifecycle engine/route is approved.
+  [LUC-2193](/LUC/issues/LUC-2193) owns the idempotent seed, strict schema,
+  read assembler, UI, and proof. [LUC-1910](/LUC/issues/LUC-1910) remains the
+  protected producer/release owner.
+
 ## LUC-1895 Authenticated Lifecycle Publication
 
 - 2026-07-31: the obsolete repository-write blocker is cleared. Local `main` is

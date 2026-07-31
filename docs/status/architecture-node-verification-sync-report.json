@@ -1,6 +1,6 @@
 {
-  "synchronizedAt": "2026-07-28T04:24:46.636Z",
-  "updated": 0,
+  "synchronizedAt": "2026-07-31T03:41:48.518Z",
+  "updated": 11,
   "files": [
     {
       "file": "docs/architecture/nodes/nodes.csv",
@@ -10,7 +10,7 @@
     {
       "file": "docs/architecture/nodes/features.csv",
       "updated": 0,
-      "total": 35
+      "total": 36
     },
     {
       "file": "docs/architecture/nodes/functions.csv",
@@ -24,8 +24,8 @@
     },
     {
       "file": "docs/architecture/nodes/services.csv",
-      "updated": 0,
-      "total": 3
+      "updated": 1,
+      "total": 4
     },
     {
       "file": "docs/architecture/nodes/classes.csv",
@@ -34,8 +34,8 @@
     },
     {
       "file": "docs/architecture/nodes/api_routes.csv",
-      "updated": 0,
-      "total": 179
+      "updated": 2,
+      "total": 181
     },
     {
       "file": "docs/architecture/nodes/pages.csv",
@@ -69,13 +69,13 @@
     },
     {
       "file": "docs/architecture/nodes/database_models.csv",
-      "updated": 0,
-      "total": 64
+      "updated": 5,
+      "total": 69
     },
     {
       "file": "docs/architecture/nodes/migrations.csv",
-      "updated": 0,
-      "total": 31
+      "updated": 2,
+      "total": 33
     },
     {
       "file": "docs/architecture/nodes/integrations.csv",
@@ -99,8 +99,8 @@
     },
     {
       "file": "docs/architecture/nodes/tests.csv",
-      "updated": 0,
-      "total": 14
+      "updated": 1,
+      "total": 15
     },
     {
       "file": "docs/architecture/nodes/docs.csv",

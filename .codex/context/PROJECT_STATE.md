@@ -1,5 +1,20 @@
 # PROJECT_STATE
 
+- 2026-07-31: [LUC-2192](/LUC/issues/LUC-2192) selected the canonical
+  publication contract for `PROC-SH-APPLICATION-LIFECYCLE` v1.0. Roost reuses
+  Company OS `Procedure`/`ProcedureStep` and workflow-definition versioning,
+  then composes the definition with a strict read-only Paperclip execution
+  projection on the existing Product Map route. Packet schema `2.0` replaces
+  arbitrary packet acceptance; public states align to
+  `current/stale/conflict/source_only/unavailable`; retained v1 packets cannot
+  become current. No Prisma migration or second workflow engine/route is
+  approved. Evidence:
+  `docs/architecture/lifecycle-procedure-publication-contract.md`. Architecture
+  refresh is `GREEN` at `467/775/36`, with evidence queue `0`, chain worklist
+  `0`, delta `0/0/0`, and `35/35` chain coverage. Runtime implementation
+  remains with [LUC-2193](/LUC/issues/LUC-2193), and protected producer/release
+  proof remains with [LUC-1910](/LUC/issues/LUC-1910).
+
 - 2026-07-31: [LUC-1895](/LUC/issues/LUC-1895) resumed after the repository
   became writable. The Product Map route/API is locally implemented and focused
   tests pass, but it does not return the canonical procedure ID/version and its

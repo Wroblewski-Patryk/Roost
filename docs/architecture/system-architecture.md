@@ -119,6 +119,30 @@ be treated as the live transport. Reverse tunnels, public Paperclip endpoints,
 browser-to-Paperclip access, shared databases, and direct PostgreSQL access are
 not valid alternatives.
 
+## Lifecycle Procedure Publication Boundary
+
+The owner-facing lifecycle procedure reuses Company OS definition state and the
+Product Map projection boundary:
+
+```text
+Company OS Procedure/ProcedureStep v1 definition
+  + strict Paperclip Product Map execution projection v2
+  -> workspace-scoped Roost read assembler
+  -> authenticated Product Map owner route
+```
+
+`Procedure` and its 18 ordered `ProcedureStep` records own the durable
+definition and version family. Paperclip remains the live authority for gate
+results and evidence. Roost decisions and KPIs are joined only through the
+procedure's workspace-scoped process relation. The read route is a projection,
+not a workflow executor.
+
+The exact contract is
+`docs/architecture/lifecycle-procedure-publication-contract.md`. It requires
+closed schemas, structured Paperclip evidence identifiers with server-derived
+links, aligned server/client states, and no legacy v1 packet promotion. No new
+database model or dedicated lifecycle route is approved.
+
 ## Workspace Ownership Boundary
 
 CompanyCore v1 must include a workspace ownership boundary before integration

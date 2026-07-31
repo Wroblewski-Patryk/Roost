@@ -1,6 +1,6 @@
 # Project Memory Index
 
-Last updated: 2026-07-28
+Last updated: 2026-07-31
 
 ## Purpose
 
@@ -10,6 +10,20 @@ Every non-trivial task must connect local code changes to the current product
 state, architecture intent, module confidence, and the next release objective.
 
 ## Latest Generated Truth
+
+- 2026-07-31: [LUC-2192](/LUC/issues/LUC-2192) selected the lifecycle
+  publication contract in
+  `docs/architecture/lifecycle-procedure-publication-contract.md`.
+  `PROC-SH-APPLICATION-LIFECYCLE` v1.0 reuses the workspace Company OS
+  `Procedure`/`ProcedureStep` and workflow-definition family/version
+  foundation; the existing authenticated Product Map route composes that
+  definition with a strict read-only Paperclip execution projection. The
+  arbitrary packet is replaced by breaking packet schema `2.0`, public states
+  become `current/stale/conflict/source_only/unavailable`, and retained v1
+  packets cannot be promoted. No Prisma migration or parallel lifecycle engine
+  is approved; [LUC-2193](/LUC/issues/LUC-2193) owns the seed/schema/API/UI/test
+  implementation and [LUC-1910](/LUC/issues/LUC-1910) retains protected
+  producer/release proof.
 
 - 2026-07-28: [LUC-2092](/LUC/issues/LUC-2092) selected and recorded the
   minimal V1 Product Map projection transport in

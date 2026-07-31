@@ -146,7 +146,30 @@
   no product repair lane was created. The task-owned packet is ready for one
   scoped local preservation commit with push held.
 
-## Current Mission: LUC-1895 Authenticated Lifecycle Publication
+## Current Mission: LUC-2192 Lifecycle Publication Contract
+
+- Status: `VERIFIED`; architecture decision and required generated indexes are
+  complete.
+- Objective: remove the product/authority ambiguity blocking
+  [LUC-2193](/LUC/issues/LUC-2193).
+- Selected path: Company OS `Procedure`/`ProcedureStep` owns the versioned
+  definition; the existing Product Map route composes it with strict read-only
+  Paperclip execution state.
+- Contract: `docs/architecture/lifecycle-procedure-publication-contract.md`;
+  exact 18 stages, packet schema `2.0`, owner read model, evidence-link
+  allowlist, audit correlation, aligned fail-closed states, no-migration
+  decision, rollout, and recovery are specified.
+- Exclusions: no runtime code, seed execution, database mutation, producer
+  change, push, deploy, restart, credential use, protected browser, or
+  production action.
+- Verification: `npm run architecture:refresh` and the focused post-correction
+  registry gate suite pass at `467` nodes, `775` relations, `36` chains,
+  `35/35` chain coverage, zero evidence/worklist/delta gaps, and `GREEN`
+  status. The reusable auto-scaffold path guardrail is recorded in
+  `.codex/context/LEARNING_JOURNAL.md`.
+- Next gate: Paperclip completion unblocks the implementation child.
+
+## Parent Mission: LUC-1895 Authenticated Lifecycle Publication
 
 - Status: `BLOCKED / NO-GO`.
 - Current state: repository write access is restored and the clean candidate is

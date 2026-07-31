@@ -1,12 +1,12 @@
 # Architecture Health Dashboard
 
-Generated at: 2026-07-28T04:25:11.885Z
+Generated at: 2026-07-31T03:42:27.888Z
 
 ## Gate Status
 
 - Overall: PASS
 - Evidence Queue Empty: PASS (queueCount=0)
-- Chain Coverage Complete: PASS (34/34)
+- Chain Coverage Complete: PASS (35/35)
 - Chain Integrity: PASS (issues=0)
 - Node Integrity: PASS (issues=0)
 - Relation Integrity: PASS (issues=0)
@@ -17,9 +17,9 @@ Generated at: 2026-07-28T04:25:11.885Z
 
 ## Graph Snapshot
 
-- Nodes: 455
-- Relations: 769
-- Chains: 35
+- Nodes: 467
+- Relations: 775
+- Chains: 36
 
 ## Refresh Delta
 

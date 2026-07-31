@@ -1,5 +1,23 @@
 # TASK_BOARD
 
+## LUC-2192 - Lifecycle Procedure Publication Contract
+
+- Task Type: architecture / contract decision
+- Current Stage: verification complete
+- Result: selected Company OS `Procedure`/`ProcedureStep` plus Product Map
+  composition for `PROC-SH-APPLICATION-LIFECYCLE` v1.0.
+- Contract:
+  `docs/architecture/lifecycle-procedure-publication-contract.md`.
+- Key decisions: exact 18-stage definition; strict breaking packet schema
+  `2.0`; server-derived Paperclip evidence links; aligned
+  `current/stale/conflict/source_only/unavailable` states; no Prisma migration,
+  dedicated lifecycle store, parallel workflow engine, or Paperclip write-back.
+- Verification: architecture `GREEN 467/775/36`, zero evidence/chain/delta
+  queues, and `35/35` feature-chain coverage.
+- Next owner: [LUC-2193](/LUC/issues/LUC-2193) implements and proves the Roost
+  vertical slice; [LUC-1910](/LUC/issues/LUC-1910) retains protected producer
+  and release proof.
+
 ## LUC-2076 - Daily Project Status Refresh
 
 - Task Type: PM verification and no-stall reconciliation
@@ -249,13 +267,13 @@ parent remains `NO-GO`.
   [LUC-1585](/LUC/issues/LUC-1585) as a recovery lane.
 
 ## Now
-- 2026-07-31: [LUC-1895](/LUC/issues/LUC-1895) is `BLOCKED / NO-GO`.
-  Repository write access is restored and Product Map tests/build pass, but the
-  current API/UI does not publish `PROC-SH-APPLICATION-LIFECYCLE` v1.0 and the
-  ingress accepts arbitrary object fields. Resolve
-  [LUC-2192](/LUC/issues/LUC-2192), then its blocked implementation child
-  [LUC-2193](/LUC/issues/LUC-2193), and finally the existing
-  [LUC-1910](/LUC/issues/LUC-1910) protected release gate.
+- 2026-07-31: [LUC-2192](/LUC/issues/LUC-2192) selected the architecture
+  contract. The next executable lane is [LUC-2193](/LUC/issues/LUC-2193):
+  implement the Company OS Procedure/Step seed, strict packet schema `2.0`,
+  composed Product Map read model, aligned fail-closed states, and proof. The
+  parent [LUC-1895](/LUC/issues/LUC-1895) remains `BLOCKED / NO-GO` until that
+  child and the existing [LUC-1910](/LUC/issues/LUC-1910) protected release
+  gate complete.
 - 2026-07-28: [LUC-2024](/LUC/issues/LUC-2024) is verified for the PM/docs
   scope. The current known-state is green and routable; only canonical
   documentation drift was corrected. [LUC-1895](/LUC/issues/LUC-1895) remains
