@@ -57,8 +57,8 @@ not acceptable.
 
 The parent issue must not close or deploy as lifecycle-procedure proof until:
 
-1. the architecture/implementation child selects and delivers the exact
-   procedure contract; and
+1. [LUC-2192](/LUC/issues/LUC-2192) selects the exact procedure contract and
+   [LUC-2193](/LUC/issues/LUC-2193) delivers the vertical slice; and
 2. [LUC-1910](/LUC/issues/LUC-1910) completes its existing protected chain,
    including the Sentinel credential incident, managed QA candidate,
    authenticated owner QA, rollback, deployment, and monitoring.

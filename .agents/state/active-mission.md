@@ -161,8 +161,9 @@
   capacity, current rollback image, production backup, protected smoke, and the
   monitoring window are not proven.
 - Lanes: coordinator integrated the wake; QA/Security and Ops/Release completed
-  read-only audits; architecture/implementation is delegated as a blocking
-  child; [LUC-1910](/LUC/issues/LUC-1910) remains the protected release owner.
+  read-only audits; [LUC-2192](/LUC/issues/LUC-2192) owns the architecture
+  decision and blocks the [LUC-2193](/LUC/issues/LUC-2193) vertical slice;
+  [LUC-1910](/LUC/issues/LUC-1910) remains the protected release owner.
 - Exclusions: no push, deploy, restart, credential use, protected browser,
   database mutation, or Paperclip write-boundary expansion.
 - Output: `docs/planning/luc-1895-resume-release-and-contract-audit.md`.

@@ -8,7 +8,9 @@
 - Current Stage: verification / release
 - Status: BLOCKED
 - Owner: Coordinator, then Technical Solution Architect and Release owners
-- Depends on: the procedure-contract repair lane and [LUC-1910](/LUC/issues/LUC-1910)
+- Depends on: [LUC-2192](/LUC/issues/LUC-2192),
+  [LUC-2193](/LUC/issues/LUC-2193), and
+  [LUC-1910](/LUC/issues/LUC-1910)
 - Priority: P1
 - Module Confidence Rows: Lifecycle procedure publication; Product Map protected release preflight
 - Requirement Rows: REQ-LUC-1895-001; REQ-LUC-1923-001
@@ -54,7 +56,8 @@
 | Lane | Owner | Output | Validation / Proof | Status |
 | --- | --- | --- | --- | --- |
 | Coordinator | Active chat | Integrated audit, source-of-truth updates, blocker graph | Parent evidence review | complete |
-| Architecture | Technical Solution Architect | Select the stable procedure mapping without a second workflow engine | Architecture and authority-boundary review | delegated / blocking |
+| Architecture | [LUC-2192](/LUC/issues/LUC-2192), Technical Solution Architect | Select the stable procedure mapping without a second workflow engine | Architecture and authority-boundary review | delegated / blocking |
+| Implementation | [LUC-2193](/LUC/issues/LUC-2193), Integration Domain Engineer | Deliver the typed API/UI vertical slice after architecture approval | Focused API/UI/security/browser proof | delegated / blocked by [LUC-2192](/LUC/issues/LUC-2192) |
 | QA and Security | Read-only audit lane | Acceptance and disclosure-gap report | Focused web and server tests | complete |
 | Ops and Release | Read-only audit lane | Candidate, migration, rollback, capacity, and authorization report | Public health and repository provenance | complete |
 | Documentation and Memory | Coordinator | This task contract and state updates | Link/path and diff checks | complete |
@@ -183,8 +186,8 @@ freshness, evidence, gate, conflict, supersession, audit, and authority facts.
 - What is incomplete: stable procedure ID/version contract, exact allowlisted
   packet, owner procedure UI/API proof, responsive/audit evidence, protected
   release, rollback, and monitoring.
-- Next steps: resolve the architecture/implementation child first; then rebuild
-  the exact candidate and let [LUC-1910](/LUC/issues/LUC-1910) execute the
-  protected release chain.
+- Next steps: resolve [LUC-2192](/LUC/issues/LUC-2192), then
+  [LUC-2193](/LUC/issues/LUC-2193); rebuild the exact candidate and let
+  [LUC-1910](/LUC/issues/LUC-1910) execute the protected release chain.
 - Decisions made: `NO-GO`; keep Paperclip-to-Roost read-only; do not deploy the
   current 98-commit candidate as proof of this procedure issue.
