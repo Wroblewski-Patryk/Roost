@@ -1,5 +1,31 @@
 # TASK_BOARD
 
+## LUC-2193 - Lifecycle Procedure Owner Slice
+
+- Task Type: vertical-slice implementation
+- Current Stage: implementation
+- Status: IN_REVIEW
+- Goal: publish `PROC-SH-APPLICATION-LIFECYCLE` v1.0 through the existing
+  authenticated Product Map surface using the approved Company OS and strict
+  read-only Paperclip projection boundaries.
+- Scope: idempotent Procedure/18-step seed, closed packet schema `2.0`, stored
+  packet validation, workspace-scoped read assembler, aligned API/UI states,
+  focused auth/isolation/audit/responsive/accessibility proof, and canonical
+  state updates.
+- Lane model: coordinator owns integration and shared writes; read-only
+  Frontend/UX and QA/Security subagents return bounded findings for serialized
+  integration.
+- Exclusions: no migration, Paperclip write/producer change, duplicate engine,
+  push, deploy, restart, protected credential, or production action.
+- Task contract:
+  `.codex/tasks/luc-2193-lifecycle-procedure-owner-slice.md`.
+- Review checkpoint: the stored server-owned snapshot correlation is now
+  returned unchanged on repeat reads; distinct accepted snapshots return
+  distinct correlations; ingress override is rejected before persistence; the
+  focused disposable API journey and server build pass.
+- Next gate: one locally verified exact candidate handed to
+  [LUC-1910](/LUC/issues/LUC-1910).
+
 ## LUC-2192 - Lifecycle Procedure Publication Contract
 
 - Task Type: architecture / contract decision

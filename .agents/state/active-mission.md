@@ -146,7 +146,38 @@
   no product repair lane was created. The task-owned packet is ready for one
   scoped local preservation commit with push held.
 
-## Current Mission: LUC-2192 Lifecycle Publication Contract
+## Current Mission: LUC-2193 Lifecycle Procedure Owner Slice
+
+- Status: `IN_REVIEW`; architecture blocker LUC-2192 is verified and the
+  durable audit-correlation review finding is fixed with API proof.
+- Objective: implement the approved Company OS Procedure/Step seed, strict
+  Product Map packet schema `2.0`, workspace-scoped owner read assembler,
+  aligned UI states, and focused local/API/browser proof.
+- Critical path owner: active coordinator/Integration Domain Engineer.
+- Read-only support lanes: Frontend/UX contract analysis and QA/Security
+  verification analysis. Shared source/state writes and parent validation stay
+  serialized in the coordinator lane.
+- Contract:
+  `docs/architecture/lifecycle-procedure-publication-contract.md`.
+- Exclusions: no Prisma migration, Paperclip producer change/write-back,
+  duplicate workflow engine, push, deploy, restart, protected credentials, or
+  production smoke.
+- Validation gates: strict schema/unit tests, real API authorization/isolation
+  proof, focused web tests/build, responsive keyboard/accessibility browser
+  proof, architecture refresh/status, bounded diff/redaction review, and clean
+  exact-candidate source-control closure.
+- 2026-07-31 review checkpoint: the owner read now returns the active
+  snapshot's stored server-owned `auditCorrelation`; caller/request
+  correlations cannot enter `acceptProjection`. `npm run build:server` and
+  `npm run test:api:local` passed, proving stable repeat reads, distinct
+  snapshot correlations, strict override rejection before persistence,
+  restore durability, and no tested credential/private-payload disclosure.
+- Handoff: implementation evidence returns to LUC-1910 for independent
+  Security/Ops/QA release gates.
+- Task contract:
+  `.codex/tasks/luc-2193-lifecycle-procedure-owner-slice.md`.
+
+## Previous Mission: LUC-2192 Lifecycle Publication Contract
 
 - Status: `VERIFIED`; architecture decision and required generated indexes are
   complete.

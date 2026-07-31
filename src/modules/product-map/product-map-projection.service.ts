@@ -1,12 +1,29 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
+import {
+  canonicalLifecycleStages,
+  lifecycleEntryCriteria,
+  lifecycleExitCriteria,
+  lifecycleOperatingContractSource,
+  lifecyclePrimaryOutput,
+  lifecycleProcedureId,
+  lifecycleProcedureTitle,
+  lifecycleProcedureVersion,
+  lifecyclePurpose,
+  lifecycleRoostSource,
+  lifecycleScope,
+  lifecycleStageKeySchema,
+  lifecycleStepExpectedOutputSchema,
+  lifecycleStepValidationRuleSchema,
+  lifecycleTrigger
+} from "../company-os/lifecycle-procedure-definition";
 
 type ProjectionDb = Prisma.TransactionClient | typeof prisma;
 
 export const productMapTransportVersion = "product-map-projection-transport/v1";
-export const productMapSchemaVersion = "1.0";
+export const productMapSchemaVersion = "2.0";
 const replayWindowMs = 10 * 60 * 1000;
 const futureSkewMs = 120 * 1000;
 const freshnessTtlMs = 15 * 60 * 1000;
@@ -16,16 +33,218 @@ export const projectionAuditRetentionDays = 365;
 export const projectionReceiptRetentionDays = 30;
 export const projectionQuarantineRetentionDays = 90;
 
+const nonBlank = (max: number) => z.string().min(1).max(max).refine((value) => value.trim().length > 0);
+const isoDateTimeSchema = z.string().datetime({ offset: true });
+const gitShaSchema = z.string().regex(/^[a-f0-9]{40}$/).nullable();
+const stableIdSchema = z.string().min(1).max(128).regex(/^[A-Za-z0-9._:-]+$/);
+const issueIdentifierSchema = z.string().regex(/^LUC-[1-9][0-9]*$/);
+const uuidSchema = z.string().uuid();
+const documentKeySchema = z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/);
+
+const issueEvidenceSchema = z.object({
+  kind: z.literal("issue"),
+  issueIdentifier: issueIdentifierSchema,
+  label: nonBlank(120)
+}).strict();
+const commentEvidenceSchema = z.object({
+  kind: z.literal("comment"),
+  issueIdentifier: issueIdentifierSchema,
+  commentId: uuidSchema,
+  label: nonBlank(120)
+}).strict();
+const documentEvidenceSchema = z.object({
+  kind: z.literal("document"),
+  issueIdentifier: issueIdentifierSchema,
+  documentKey: documentKeySchema,
+  label: nonBlank(120)
+}).strict();
+const attachmentEvidenceSchema = z.object({
+  kind: z.literal("attachment"),
+  issueIdentifier: issueIdentifierSchema,
+  objectId: uuidSchema,
+  label: nonBlank(120)
+}).strict();
+const workProductEvidenceSchema = z.object({
+  kind: z.literal("work_product"),
+  issueIdentifier: issueIdentifierSchema,
+  objectId: uuidSchema,
+  label: nonBlank(120)
+}).strict();
+export const paperclipEvidenceRefSchema = z.union([
+  issueEvidenceSchema,
+  commentEvidenceSchema,
+  documentEvidenceSchema,
+  attachmentEvidenceSchema,
+  workProductEvidenceSchema
+]);
+export type PaperclipEvidenceRef = z.infer<typeof paperclipEvidenceRefSchema>;
+
+export const lifecycleGateResultSchema = z.object({
+  stageKey: lifecycleStageKeySchema,
+  status: z.enum(["verified", "not_applicable", "blocked", "stale", "failed"]),
+  summary: nonBlank(500),
+  ownerRole: nonBlank(120),
+  verifiedAt: isoDateTimeSchema.nullable(),
+  evidenceRefs: z.array(paperclipEvidenceRefSchema).max(10)
+}).strict().superRefine((gate, ctx) => {
+  if (gate.status === "verified" && (!gate.verifiedAt || gate.evidenceRefs.length === 0)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "verified_gate_requires_evidence" });
+  }
+  if (gate.status !== "verified" && gate.verifiedAt) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "non_verified_gate_cannot_have_verified_time" });
+  }
+});
+
+const lifecycleSourceSchema = z.object({
+  repository: z.literal(lifecycleOperatingContractSource.repository),
+  path: z.literal(lifecycleOperatingContractSource.path),
+  documentVersion: z.literal(lifecycleOperatingContractSource.documentVersion),
+  commitSha: z.string().regex(/^[a-f0-9]{40}$/)
+}).strict();
+
+export const lifecycleExecutionProjectionSchema = z.object({
+  procedureId: z.literal(lifecycleProcedureId),
+  procedureVersion: z.literal(lifecycleProcedureVersion),
+  executionAuthority: z.literal("paperclip"),
+  observedAt: isoDateTimeSchema,
+  verifiedAt: isoDateTimeSchema.nullable(),
+  freshness: z.enum(["current", "stale", "unavailable"]),
+  gateResults: z.array(lifecycleGateResultSchema).length(canonicalLifecycleStages.length),
+  evidenceRefs: z.array(paperclipEvidenceRefSchema).max(50),
+  supersession: z.object({
+    status: z.enum(["active", "superseded"]),
+    supersedesVersion: nonBlank(40).nullable(),
+    supersededByVersion: nonBlank(40).nullable()
+  }).strict(),
+  source: lifecycleSourceSchema
+}).strict().superRefine((projection, ctx) => {
+  for (const [index, stage] of canonicalLifecycleStages.entries()) {
+    if (projection.gateResults[index]?.stageKey !== stage.stageKey) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["gateResults", index, "stageKey"],
+        message: "gate_results_must_match_canonical_order"
+      });
+    }
+  }
+  const uniqueKeys = new Set(projection.gateResults.map((gate) => gate.stageKey));
+  if (uniqueKeys.size !== canonicalLifecycleStages.length) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["gateResults"], message: "gate_results_must_be_unique" });
+  }
+  if (projection.supersession.status === "active" && projection.supersession.supersededByVersion) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["supersession"], message: "active_procedure_cannot_be_superseded" });
+  }
+  if (projection.supersession.status === "superseded" && !projection.supersession.supersededByVersion) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["supersession"], message: "superseded_procedure_requires_successor" });
+  }
+});
+
+const issueStatusCountsSchema = z.object({
+  backlog: z.number().int().nonnegative(),
+  todo: z.number().int().nonnegative(),
+  inProgress: z.number().int().nonnegative(),
+  inReview: z.number().int().nonnegative(),
+  blocked: z.number().int().nonnegative(),
+  done: z.number().int().nonnegative(),
+  cancelled: z.number().int().nonnegative()
+}).strict();
+
+export const productMapOfferingSchema = z.object({
+  offeringId: stableIdSchema,
+  paperclipProjectName: nonBlank(120),
+  lifecycleStage: nonBlank(120),
+  conflictState: z.enum(["none", "project_mapping_conflict", "owner_surface_unavailable"]),
+  sourceControl: z.object({
+    branch: nonBlank(120).nullable(),
+    sourceSha: gitShaSchema,
+    deployedSha: gitShaSchema,
+    versionAlignment: z.enum(["aligned", "different", "unknown"])
+  }).strict(),
+  readiness: z.object({
+    status: z.enum(["GO", "NO-GO", "UNKNOWN"]),
+    evidenceState: z.enum(["complete", "missing", "unknown"]),
+    zeroGapButNoGo: z.boolean(),
+    totalGaps: z.number().int().nonnegative(),
+    nextGate: nonBlank(500).nullable()
+  }).strict(),
+  aggregates: z.object({
+    issues: z.object({
+      total: z.number().int().nonnegative(),
+      byStatus: issueStatusCountsSchema
+    }).strict()
+  }).strict()
+}).strict().superRefine((item, ctx) => {
+  const statusTotal = Object.values(item.aggregates.issues.byStatus).reduce((sum, count) => sum + count, 0);
+  if (statusTotal !== item.aggregates.issues.total) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["aggregates", "issues"], message: "issue_status_count_mismatch" });
+  }
+  if (item.sourceControl.versionAlignment === "aligned"
+    && (!item.sourceControl.sourceSha || item.sourceControl.sourceSha !== item.sourceControl.deployedSha)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["sourceControl"], message: "aligned_sha_mismatch" });
+  }
+});
+
+export const productMapProjectionPacketSchema = z.object({
+  schemaVersion: z.literal(productMapSchemaVersion),
+  observedAt: isoDateTimeSchema,
+  sourceState: z.enum(["available", "unavailable", "timed_out"]),
+  stale: z.boolean(),
+  conflictState: z.enum(["none", "source_unavailable", "project_mapping_conflict", "owner_surface_unavailable"]),
+  lifecycleProcedure: lifecycleExecutionProjectionSchema,
+  items: z.array(productMapOfferingSchema).max(50)
+}).strict().superRefine((packet, ctx) => {
+  if (packet.observedAt !== packet.lifecycleProcedure.observedAt) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["observedAt"], message: "observed_at_mismatch" });
+  }
+  if (packet.stale !== (packet.lifecycleProcedure.freshness !== "current")) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["stale"], message: "freshness_stale_mismatch" });
+  }
+  if (packet.sourceState !== "available" && packet.conflictState !== "source_unavailable") {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["conflictState"], message: "source_state_conflict_mismatch" });
+  }
+  if (packet.sourceState === "available" && packet.conflictState === "source_unavailable") {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["conflictState"], message: "available_source_cannot_be_unavailable" });
+  }
+  const offeringIds = packet.items.map((item) => item.offeringId);
+  if (new Set(offeringIds).size !== offeringIds.length) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["items"], message: "duplicate_offering_id" });
+  }
+  const totalEvidence = packet.lifecycleProcedure.evidenceRefs.length
+    + packet.lifecycleProcedure.gateResults.reduce((sum, gate) => sum + gate.evidenceRefs.length, 0);
+  if (totalEvidence > 150) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["lifecycleProcedure"], message: "evidence_limit_exceeded" });
+  }
+  const allGatesGreen = packet.lifecycleProcedure.gateResults.every((gate) => (
+    gate.status === "verified" || gate.status === "not_applicable"
+  ));
+  for (const [index, item] of packet.items.entries()) {
+    if (item.readiness.status !== "GO") continue;
+    const invalidGo = !allGatesGreen
+      || packet.stale
+      || packet.sourceState !== "available"
+      || packet.conflictState !== "none"
+      || packet.lifecycleProcedure.supersession.status !== "active"
+      || item.conflictState !== "none"
+      || item.sourceControl.versionAlignment === "different"
+      || item.readiness.evidenceState !== "complete"
+      || item.readiness.zeroGapButNoGo;
+    if (invalidGo) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["items", index, "readiness", "status"], message: "go_requires_all_gates" });
+    }
+  }
+});
+export type ProductMapProjectionPacket = z.infer<typeof productMapProjectionPacketSchema>;
+
 const envelopeSchema = z.object({
   transportVersion: z.literal(productMapTransportVersion),
   schemaVersion: z.literal(productMapSchemaVersion),
-  companyId: z.string().min(1).max(200),
-  sourceSnapshotId: z.string().min(1).max(200),
-  observedAt: z.string().datetime({ offset: true }),
-  publishedAt: z.string().datetime({ offset: true }),
+  companyId: nonBlank(200),
+  sourceSnapshotId: stableIdSchema,
+  observedAt: isoDateTimeSchema,
+  publishedAt: isoDateTimeSchema,
   packetDigest: z.string().regex(/^[a-f0-9]{64}$/),
-  idempotencyKey: z.string().min(1).max(300),
-  packet: z.record(z.unknown()).refine((packet) => Object.keys(packet).length > 0)
+  idempotencyKey: z.string().regex(/^[a-f0-9]{64}$/),
+  packet: productMapProjectionPacketSchema
 }).strict();
 
 export type ProductMapEnvelope = z.infer<typeof envelopeSchema>;
@@ -49,11 +268,16 @@ export function expectedIdempotencyKey(envelope: Pick<ProductMapEnvelope, "compa
     .digest("hex");
 }
 
+export function parseProductMapProjectionPacket(value: unknown): ProductMapProjectionPacket | null {
+  const parsed = productMapProjectionPacketSchema.safeParse(value);
+  return parsed.success ? parsed.data : null;
+}
+
 export function parseProjectionEnvelope(value: unknown, now = new Date()): ProductMapEnvelope | null {
   const parsed = envelopeSchema.safeParse(value);
   if (!parsed.success) return null;
   const envelope = parsed.data;
-  if (envelope.packet.schemaVersion !== envelope.schemaVersion) return null;
+  if (envelope.observedAt !== envelope.packet.observedAt) return null;
   const observedAt = new Date(envelope.observedAt);
   const publishedAt = new Date(envelope.publishedAt);
   if (observedAt.getTime() > now.getTime() + futureSkewMs || publishedAt.getTime() > now.getTime() + futureSkewMs) return null;
@@ -70,8 +294,9 @@ export type ProjectionAcceptance = {
   receivedAt: Date;
 };
 
-export async function acceptProjection(workspaceId: string, envelope: ProductMapEnvelope, auditCorrelation?: string, db: ProjectionDb = prisma): Promise<ProjectionAcceptance> {
+export async function acceptProjection(workspaceId: string, envelope: ProductMapEnvelope, db: ProjectionDb = prisma): Promise<ProjectionAcceptance> {
   const now = new Date();
+  const auditCorrelation = randomUUID();
   const observedAt = new Date(envelope.observedAt);
   const receiptWhere = {
     workspaceId_companyId_schemaVersion_sourceSnapshotId_packetDigest: {
@@ -154,19 +379,312 @@ export async function tryAcquireProjectionWorkspaceLock(workspaceId: string, db:
   return rows[0]?.locked === true;
 }
 
-export async function readProjection(workspaceId: string, now = new Date()) {
-  const state = await prisma.productMapProjectionState.findUnique({ where: { workspaceId } });
-  if (!state?.activeSnapshotId || !state.activeObservedAt) return { status: "empty" as const, packet: null, observedAt: null };
-  const snapshot = await prisma.productMapProjectionSnapshot.findUnique({ where: { id: state.activeSnapshotId } });
-  if (!snapshot) return { status: "unavailable" as const, packet: null, observedAt: state.activeObservedAt };
-  const age = now.getTime() - snapshot.observedAt.getTime();
-  const latestQuarantine = await prisma.productMapProjectionQuarantine.findFirst({
-    where: { workspaceId, receivedAt: { gt: snapshot.receivedAt } },
-    orderBy: { receivedAt: "desc" },
-    select: { reason: true }
+type PublicLifecycleStatus = "active" | "review" | "superseded" | "archived";
+type LifecycleConflict = {
+  code:
+    | "unsupported_schema"
+    | "definition_missing"
+    | "definition_version_mismatch"
+    | "definition_shape_mismatch"
+    | "source_unavailable"
+    | "source_deployed_sha_mismatch"
+    | "projection_conflict"
+    | "projection_out_of_order"
+    | "superseded";
+  summary: string;
+};
+
+function publicLifecycleStatus(status: string): PublicLifecycleStatus | null {
+  if (status === "active") return "active";
+  if (status === "draft") return "review";
+  if (status === "deprecated") return "superseded";
+  if (status === "archived") return "archived";
+  return null;
+}
+
+function evidenceKey(ref: PaperclipEvidenceRef) {
+  if (ref.kind === "comment") return `${ref.kind}:${ref.issueIdentifier}:${ref.commentId}`;
+  if (ref.kind === "document") return `${ref.kind}:${ref.issueIdentifier}:${ref.documentKey}`;
+  if (ref.kind === "attachment" || ref.kind === "work_product") return `${ref.kind}:${ref.issueIdentifier}:${ref.objectId}`;
+  return `${ref.kind}:${ref.issueIdentifier}`;
+}
+
+function evidenceHref(ref: PaperclipEvidenceRef) {
+  const base = `/LUC/issues/${ref.issueIdentifier}`;
+  if (ref.kind === "comment") return `${base}#comment-${ref.commentId}`;
+  if (ref.kind === "document") return `${base}#document-${ref.documentKey}`;
+  if (ref.kind === "attachment") return `${base}#attachment-${ref.objectId}`;
+  if (ref.kind === "work_product") return `${base}#work-product-${ref.objectId}`;
+  return base;
+}
+
+async function loadLifecycleDefinition(workspaceId: string) {
+  const procedure = await prisma.procedure.findUnique({
+    where: {
+      workspaceId_name_version: {
+        workspaceId,
+        name: lifecycleProcedureId,
+        version: 1
+      }
+    },
+    include: {
+      ownerRole: { select: { id: true, name: true } },
+      qualityStandard: { select: { id: true } },
+      steps: { orderBy: { stepOrder: "asc" } }
+    }
   });
-  const status = latestQuarantine ? "conflict" : age <= freshnessTtlMs ? "current" : age <= lastKnownGoodWindowMs ? "stale" : "unavailable";
-  return { status, packet: status === "unavailable" ? null : snapshot.packet, observedAt: snapshot.observedAt };
+  if (!procedure) return { kind: "missing" as const };
+
+  const lifecycleStatus = publicLifecycleStatus(procedure.status);
+  const shapeMatches = !!procedure.ownerRole
+    && !!procedure.processId
+    && !!procedure.qualityStandard
+    && lifecycleStatus !== null
+    && procedure.purpose === lifecyclePurpose
+    && procedure.scope === lifecycleScope
+    && procedure.expectedResult === lifecyclePrimaryOutput
+    && procedure.steps.length === canonicalLifecycleStages.length;
+  if (!shapeMatches) return { kind: "invalid" as const };
+
+  const participatingRoles = new Set<string>([procedure.ownerRole!.name]);
+  const stages = [];
+  for (const [index, expectedStage] of canonicalLifecycleStages.entries()) {
+    const step = procedure.steps[index];
+    const expectedOutput = lifecycleStepExpectedOutputSchema.safeParse(step?.expectedOutput);
+    const validationRule = lifecycleStepValidationRuleSchema.safeParse(step?.validationRule);
+    if (!step
+      || step.stepOrder !== index + 1
+      || step.stepType !== "manual"
+      || !expectedOutput.success
+      || !validationRule.success
+      || expectedOutput.data.stageKey !== expectedStage.stageKey
+      || expectedOutput.data.requiredOutput !== expectedStage.requiredOutput
+      || validationRule.data.stageKey !== expectedStage.stageKey
+      || validationRule.data.exitGate !== expectedStage.exitGate) {
+      return { kind: "invalid" as const };
+    }
+    validationRule.data.accountableSourceOwners.forEach((owner) => participatingRoles.add(owner));
+    stages.push({
+      stageKey: expectedStage.stageKey,
+      order: index + 1,
+      title: expectedStage.title,
+      accountableSourceOwner: expectedStage.accountableSourceOwner,
+      requiredOutput: expectedOutput.data.requiredOutput,
+      exitGate: validationRule.data.exitGate,
+      rollbackInstruction: step.rollbackInstruction
+    });
+  }
+
+  const versions = await prisma.procedure.findMany({
+    where: { workspaceId, familyId: procedure.familyId },
+    orderBy: { version: "asc" },
+    select: { version: true, status: true }
+  });
+  const newerVersion = versions.find((version) => version.version > procedure.version && version.status === "active");
+  const olderVersion = [...versions].reverse().find((version) => version.version < procedure.version);
+  return {
+    kind: "valid" as const,
+    procedure,
+    lifecycleStatus,
+    stages,
+    participatingRoles: [...participatingRoles],
+    supersession: {
+      status: newerVersion || lifecycleStatus === "superseded" ? "superseded" as const : "active" as const,
+      supersedesVersion: olderVersion ? `${olderVersion.version}.0` : null,
+      supersededByVersion: newerVersion ? `${newerVersion.version}.0` : null,
+      nextReviewAt: null
+    }
+  };
+}
+
+function conflict(code: LifecycleConflict["code"], summary: string): LifecycleConflict {
+  return { code, summary };
+}
+
+export async function readProjection(workspaceId: string, now = new Date()) {
+  const definition = await loadLifecycleDefinition(workspaceId);
+  if (definition.kind === "missing") {
+    return { status: "unavailable" as const, packet: null, procedure: null, observedAt: null };
+  }
+  if (definition.kind === "invalid") {
+    return { status: "unavailable" as const, packet: null, procedure: null, observedAt: null };
+  }
+
+  const state = await prisma.productMapProjectionState.findUnique({ where: { workspaceId } });
+  const snapshot = state?.activeSnapshotId
+    ? await prisma.productMapProjectionSnapshot.findFirst({
+      where: { id: state.activeSnapshotId, workspaceId }
+    })
+    : null;
+  const storedPacket = snapshot
+    && snapshot.schemaVersion === productMapSchemaVersion
+    && snapshot.auditCorrelation
+    ? parseProductMapProjectionPacket(snapshot.packet)
+    : null;
+  const age = snapshot ? now.getTime() - snapshot.observedAt.getTime() : null;
+  const latestQuarantine = snapshot
+    ? await prisma.productMapProjectionQuarantine.findFirst({
+      where: { workspaceId, receivedAt: { gt: snapshot.receivedAt } },
+      orderBy: { receivedAt: "desc" },
+      select: { reason: true }
+    })
+    : null;
+
+  const conflicts: LifecycleConflict[] = [];
+  let status: "current" | "stale" | "conflict" | "source_only" | "unavailable";
+  let packet: ProductMapProjectionPacket | null = storedPacket;
+  if (!state?.activeSnapshotId) {
+    status = "source_only";
+  } else if (!snapshot || !storedPacket) {
+    status = "unavailable";
+    packet = null;
+    conflicts.push(conflict("unsupported_schema", "The active Product Map snapshot does not satisfy the supported closed schema."));
+  } else if (age === null || age > lastKnownGoodWindowMs) {
+    status = "unavailable";
+    packet = null;
+    conflicts.push(conflict("source_unavailable", "The last known good execution projection has expired."));
+  } else {
+    if (latestQuarantine?.reason === "projection_conflict") {
+      conflicts.push(conflict("projection_conflict", "A conflicting projection is retained for audit and cannot replace the last known good state."));
+    }
+    if (latestQuarantine?.reason === "projection_out_of_order") {
+      conflicts.push(conflict("projection_out_of_order", "An out-of-order projection is retained for audit and cannot replace the last known good state."));
+    }
+    if (storedPacket.sourceState !== "available" || storedPacket.conflictState === "source_unavailable") {
+      conflicts.push(conflict("source_unavailable", "The Paperclip execution projection source is unavailable."));
+    }
+    if (storedPacket.conflictState === "project_mapping_conflict" || storedPacket.conflictState === "owner_surface_unavailable") {
+      conflicts.push(conflict("projection_conflict", "The Product Map projection contains an unresolved mapping or owner-surface conflict."));
+    }
+    if (storedPacket.items.some((item) => item.sourceControl.versionAlignment === "different")) {
+      conflicts.push(conflict("source_deployed_sha_mismatch", "At least one offering source SHA differs from its deployed SHA."));
+    }
+    if (storedPacket.lifecycleProcedure.supersession.status === "superseded" || definition.supersession.status === "superseded") {
+      conflicts.push(conflict("superseded", "The lifecycle procedure or its execution projection is superseded."));
+    }
+    if (definition.lifecycleStatus !== "active") {
+      conflicts.push(conflict("superseded", "The local lifecycle procedure definition is not active."));
+    }
+    if (conflicts.length > 0) status = "conflict";
+    else if (age > freshnessTtlMs || storedPacket.stale || storedPacket.lifecycleProcedure.freshness !== "current") status = "stale";
+    else status = "current";
+  }
+
+  const processId = definition.procedure.processId!;
+  const [decisions, metrics] = await Promise.all([
+    prisma.decisionLog.findMany({
+      where: { workspaceId, processId },
+      orderBy: { decidedAt: "desc" },
+      take: 50,
+      select: { id: true, context: true, chosenOption: true, decidedAt: true, reviewDate: true }
+    }),
+    prisma.metric.findMany({
+      where: { workspaceId, processId },
+      orderBy: { name: "asc" },
+      take: 50,
+      select: {
+        id: true, name: true, category: true, measurementType: true, unit: true,
+        targetValue: true, currentValue: true, status: true
+      }
+    })
+  ]);
+  const evidenceRefs = packet
+    ? [...packet.lifecycleProcedure.evidenceRefs, ...packet.lifecycleProcedure.gateResults.flatMap((gate) => gate.evidenceRefs)]
+    : [];
+  const uniqueEvidence = [...new Map(evidenceRefs.map((ref) => [evidenceKey(ref), ref])).values()];
+  const lifecycleFreshness = status === "current"
+    ? "current"
+    : status === "stale" || status === "conflict"
+      ? "stale"
+      : "unavailable";
+  const procedure = {
+    identity: {
+      procedureId: lifecycleProcedureId,
+      procedureVersion: lifecycleProcedureVersion,
+      familyId: definition.procedure.familyId,
+      lifecycleStatus: definition.lifecycleStatus,
+      title: lifecycleProcedureTitle
+    },
+    definition: {
+      accountableOwner: {
+        roleId: definition.procedure.ownerRole!.id,
+        roleName: definition.procedure.ownerRole!.name
+      },
+      participatingRoles: definition.participatingRoles,
+      purpose: definition.procedure.purpose,
+      scope: definition.procedure.scope!,
+      trigger: lifecycleTrigger,
+      entryCriteria: lifecycleEntryCriteria,
+      primaryOutput: definition.procedure.expectedResult!,
+      exitCriteria: lifecycleExitCriteria,
+      stages: definition.stages
+    },
+    provenance: {
+      definitionAuthority: "roost" as const,
+      executionAuthority: "paperclip" as const,
+      roostSource: lifecycleRoostSource,
+      operatingContractSource: packet?.lifecycleProcedure.source ?? lifecycleOperatingContractSource,
+      observedAt: packet?.lifecycleProcedure.observedAt ?? null,
+      verifiedAt: packet?.lifecycleProcedure.verifiedAt ?? null,
+      freshness: lifecycleFreshness
+    },
+    gates: packet?.lifecycleProcedure.gateResults ?? [],
+    conflicts,
+    supersession: definition.supersession,
+    relations: {
+      offerings: packet?.items.map((item) => ({
+        offeringId: item.offeringId,
+        name: item.paperclipProjectName,
+        lifecycleStage: item.lifecycleStage,
+        readiness: item.readiness.status
+      })) ?? [],
+      releases: packet?.items.map((item) => ({
+        offeringId: item.offeringId,
+        sourceSha: item.sourceControl.sourceSha,
+        deployedSha: item.sourceControl.deployedSha,
+        versionAlignment: item.sourceControl.versionAlignment,
+        readiness: item.readiness.status
+      })) ?? [],
+      decisions: decisions.map((decision) => ({
+        id: decision.id,
+        context: decision.context,
+        chosenOption: decision.chosenOption,
+        decidedAt: decision.decidedAt.toISOString(),
+        reviewAt: decision.reviewDate?.toISOString() ?? null
+      })),
+      kpis: metrics.map((metric) => ({
+        id: metric.id,
+        name: metric.name,
+        category: metric.category,
+        measurementType: metric.measurementType,
+        unit: metric.unit,
+        targetValue: metric.targetValue,
+        currentValue: metric.currentValue,
+        status: metric.status
+      })),
+      evidence: uniqueEvidence.map((ref) => ({ ...ref, href: evidenceHref(ref) }))
+    },
+    audit: snapshot?.auditCorrelation ? {
+      correlationId: snapshot.auditCorrelation,
+      sourceSnapshotId: snapshot.sourceSnapshotId,
+      packetDigestPrefix: snapshot.packetDigest.slice(0, 12),
+      receivedAt: snapshot.receivedAt.toISOString()
+    } : null,
+    authority: {
+      readOnly: true as const,
+      executionSystem: "paperclip" as const,
+      definitionSystem: "roost" as const,
+      canMutatePaperclip: false as const,
+      canPromoteReadiness: false as const
+    }
+  };
+
+  return {
+    status,
+    packet,
+    procedure,
+    observedAt: packet?.observedAt ?? snapshot?.observedAt.toISOString() ?? null
+  };
 }
 
 /**

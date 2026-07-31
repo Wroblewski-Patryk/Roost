@@ -52,15 +52,16 @@ productMapIngressRouter.post("/", async (req, res) => {
   } catch {
     return denyIngress(res, 400);
   }
+  const envelope = parseProjectionEnvelope(rawBody);
+  if (!envelope) return denyIngress(res, 400);
   const workspace = await prisma.workspace.findUnique({ where: { id: auth.workspaceId }, select: { productMapCompanyId: true } });
   if (!workspace?.productMapCompanyId) return denyIngress(res);
+  if (workspace.productMapCompanyId !== envelope.companyId) return denyIngress(res);
   if (!await consumeProjectionAdmission(auth.apiKeyId, auth.workspaceId)) return denyIngress(res, 429);
   try {
     const receipt = await prisma.$transaction(async (tx) => {
       if (!await tryAcquireProjectionWorkspaceLock(auth.workspaceId, tx)) return null;
-      const envelope = parseProjectionEnvelope(rawBody);
-      if (!envelope || workspace.productMapCompanyId !== envelope.companyId) return null;
-      return acceptProjection(auth.workspaceId, envelope, req.requestId, tx);
+      return acceptProjection(auth.workspaceId, envelope, tx);
     });
     if (!receipt) return denyIngress(res, 429);
     privateResponse(res);
@@ -72,6 +73,13 @@ productMapIngressRouter.post("/", async (req, res) => {
 
 export const productMapReadRouter = Router();
 productMapReadRouter.get("/projection", async (req, res) => {
+  if (req.auth?.authType === "api_key") {
+    const scopes = req.auth.scopes ?? [];
+    if (scopesAreBroad(scopes) || scopes.length !== 1 || scopes[0] !== "product-map:projection:read") {
+      privateResponse(res);
+      return res.status(403).json({ error: "forbidden" });
+    }
+  }
   const result = await readProjection(req.auth!.workspaceId);
   privateResponse(res);
   res.json({ data: result });
