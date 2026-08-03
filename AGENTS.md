@@ -1,4 +1,13 @@
 # AGENTS.md - Unified Project Conductor Standard
+
+## Bounded startup context
+
+Read `docs/documentation-contract.json` first. Load its
+`defaultAgentContext` and only task-relevant sources. Files under `history/`,
+`docs/status/`, `docs/graphs/`, `.codex/tasks/`, and `.agents/state/` are
+evidence or working memory, not higher-authority product truth and not a
+mandatory startup payload.
+
 ## Coordinator Mandate - Default Chat Role
 
 Every new Codex chat in this repository starts as the `Coordinator`, not as a solo implementer.
