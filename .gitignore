@@ -37,3 +37,25 @@ docs/.obsidian/hotkeys.json
 docs/.obsidian/templates.json
 docs/.obsidian/types.json
 docs/.obsidian/workspace.json
++
+# Rebuildable Softwarehouse evidence (local investigation input, not source truth)
+/docs/graphs/architecture-awareness.csv
+/docs/graphs/architecture-awareness.json
+/docs/graphs/architecture-graph.md
+/docs/graphs/architecture-graph.mmd
+/docs/graphs/architecture-health.json
+/docs/graphs/architecture-proof-register.csv
+/docs/status/app-completion-index.json
+/docs/status/app-completion-index.md
+/docs/status/architecture-awareness-report.md
+/docs/status/architecture-dependency-report.md
+/docs/status/architecture-ownership-report.md
+/docs/status/event-chain-index.json
+/docs/status/event-chain-index.md
+/docs/status/operational-readiness-index.json
+/docs/status/operational-readiness-index.md
+/docs/status/project-truth-index.json
+/docs/status/project-truth-index.md
+/docs/status/runtime-error-index.json
+/docs/status/runtime-error-index.md
+/docs/status/task-synchronization-report.md
