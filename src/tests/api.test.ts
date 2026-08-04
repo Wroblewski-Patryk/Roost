@@ -9878,10 +9878,26 @@ test("CompanyCore v1 protected API flow", async () => {
   // that it can reject malformed raw bodies before JSON parsing. Bind the
   // workspace server-side and prove persistence, isolated reads, and the
   // shared durable burst limiter through the real HTTP route.
-  await prisma.workspace.update({
-    where: { id: ownerA.workspace.id },
-    data: { productMapCompanyId: "paperclip-company-a" }
+  const projectionSourceBinding = await request("/v1/product-map/projection/source", {
+    method: "PUT",
+    headers: authA,
+    body: JSON.stringify({ companyId: "paperclip-company-a" })
   });
+  assert.equal(projectionSourceBinding.status, 200);
+  assert.deepEqual(projectionSourceBinding.body, { data: { companyId: "paperclip-company-a", state: "bound" } });
+  const projectionSourceIdempotent = await request("/v1/product-map/projection/source", {
+    method: "PUT",
+    headers: authA,
+    body: JSON.stringify({ companyId: "paperclip-company-a" })
+  });
+  assert.equal(projectionSourceIdempotent.status, 200);
+  assert.deepEqual(projectionSourceIdempotent.body, { data: { companyId: "paperclip-company-a", state: "unchanged" } });
+  const projectionSourceRemapDenied = await request("/v1/product-map/projection/source", {
+    method: "PUT",
+    headers: authA,
+    body: JSON.stringify({ companyId: "paperclip-company-b" })
+  });
+  assert.equal(projectionSourceRemapDenied.status, 409);
   const productMapKey = await request("/v1/api-keys", {
     method: "POST",
     headers: authA,

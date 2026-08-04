@@ -1,11 +1,13 @@
 import express, { Router } from "express";
 import type { NextFunction, Request, Response } from "express";
+import { z } from "zod";
 import { prisma } from "../../db/prisma";
 import { hashApiKey } from "../../auth/api-key";
 import { hasCapability, scopesAreBroad } from "../../auth/capabilities";
 import { acceptProjection, consumeProjectionAdmission, parseProjectionEnvelope, readProjection, tryAcquireProjectionWorkspaceLock } from "./product-map-projection.service";
 
 const maxBodyBytes = 256 * 1024;
+const projectionSourceBindingSchema = z.object({ companyId: z.string().min(1).max(128) }).strict();
 
 function privateResponse(res: Response) {
   res.setHeader("Cache-Control", "private, no-store");
@@ -72,6 +74,32 @@ productMapIngressRouter.post("/", async (req, res) => {
 });
 
 export const productMapReadRouter = Router();
+productMapReadRouter.put("/projection/source", async (req, res) => {
+  if (req.auth?.authType !== "user" || !req.auth.userId) {
+    privateResponse(res);
+    return res.status(403).json({ error: "forbidden" });
+  }
+  const parsed = projectionSourceBindingSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: "invalid_projection_source_binding" });
+  const workspace = await prisma.workspace.findUnique({
+    where: { id: req.auth.workspaceId },
+    select: { id: true, ownerUserId: true, productMapCompanyId: true },
+  });
+  if (!workspace || workspace.ownerUserId !== req.auth.userId) {
+    privateResponse(res);
+    return res.status(403).json({ error: "forbidden" });
+  }
+  if (workspace.productMapCompanyId && workspace.productMapCompanyId !== parsed.data.companyId) {
+    privateResponse(res);
+    return res.status(409).json({ error: "projection_source_already_bound" });
+  }
+  if (!workspace.productMapCompanyId) {
+    await prisma.workspace.update({ where: { id: workspace.id }, data: { productMapCompanyId: parsed.data.companyId } });
+  }
+  privateResponse(res);
+  return res.json({ data: { companyId: parsed.data.companyId, state: workspace.productMapCompanyId ? "unchanged" : "bound" } });
+});
+
 productMapReadRouter.get("/projection", async (req, res) => {
   if (req.auth?.authType === "api_key") {
     const scopes = req.auth.scopes ?? [];
