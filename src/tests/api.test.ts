@@ -10037,6 +10037,16 @@ test("CompanyCore v1 protected API flow", async () => {
     };
   }).data;
   assert.equal(projectionProcedure.status, "current");
+  const projectionFreshness = (projectionRead.body as { data: { freshness: {
+    checkedAt: string; observedAt: string; ageMs: number; lagMs: number;
+    ttlMs: number; lastKnownGoodWindowMs: number; status: string;
+  } } }).data.freshness;
+  assert.equal(projectionFreshness.status, "current");
+  assert.equal(projectionFreshness.observedAt, productObservedAt);
+  assert.equal(projectionFreshness.ageMs, projectionFreshness.lagMs);
+  assert.equal(projectionFreshness.ttlMs, 15 * 60 * 1000);
+  assert.equal(projectionFreshness.lastKnownGoodWindowMs, 24 * 60 * 60 * 1000);
+  assert.match(projectionFreshness.checkedAt, /^20[0-9]{2}-[0-9]{2}-[0-9]{2}T/);
   assert.equal(projectionProcedure.procedure.identity.procedureId, "PROC-SH-APPLICATION-LIFECYCLE");
   assert.equal(projectionProcedure.procedure.identity.procedureVersion, "1.0");
   assert.equal(projectionProcedure.procedure.gates.length, 18);

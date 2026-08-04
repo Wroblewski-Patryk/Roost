@@ -502,12 +502,19 @@ function conflict(code: LifecycleConflict["code"], summary: string): LifecycleCo
 }
 
 export async function readProjection(workspaceId: string, now = new Date()) {
+  const checkedAt = now.toISOString();
   const definition = await loadLifecycleDefinition(workspaceId);
   if (definition.kind === "missing") {
-    return { status: "unavailable" as const, packet: null, procedure: null, observedAt: null };
+    return { status: "unavailable" as const, packet: null, procedure: null, observedAt: null, freshness: {
+      checkedAt, observedAt: null, ageMs: null, lagMs: null, ttlMs: freshnessTtlMs,
+      lastKnownGoodWindowMs, status: "unavailable" as const
+    } };
   }
   if (definition.kind === "invalid") {
-    return { status: "unavailable" as const, packet: null, procedure: null, observedAt: null };
+    return { status: "unavailable" as const, packet: null, procedure: null, observedAt: null, freshness: {
+      checkedAt, observedAt: null, ageMs: null, lagMs: null, ttlMs: freshnessTtlMs,
+      lastKnownGoodWindowMs, status: "unavailable" as const
+    } };
   }
 
   const state = await prisma.productMapProjectionState.findUnique({ where: { workspaceId } });
@@ -679,11 +686,23 @@ export async function readProjection(workspaceId: string, now = new Date()) {
     }
   };
 
+  const freshnessObservedAt = packet?.observedAt ?? snapshot?.observedAt.toISOString() ?? null;
+  const freshnessAgeMs = freshnessObservedAt ? Math.max(0, now.getTime() - new Date(freshnessObservedAt).getTime()) : null;
+
   return {
     status,
     packet,
     procedure,
-    observedAt: packet?.observedAt ?? snapshot?.observedAt.toISOString() ?? null
+    observedAt: freshnessObservedAt,
+    freshness: {
+      checkedAt,
+      observedAt: freshnessObservedAt,
+      ageMs: freshnessAgeMs,
+      lagMs: freshnessAgeMs,
+      ttlMs: freshnessTtlMs,
+      lastKnownGoodWindowMs,
+      status: lifecycleFreshness
+    }
   };
 }
 

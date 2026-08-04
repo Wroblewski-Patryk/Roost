@@ -2,6 +2,10 @@
 
 Updated: 2026-05-26
 
+The protected Product Map projection response contract, including deterministic
+freshness and lag metadata, is documented in
+[`maps/product-map.md`](maps/product-map.md).
+
 This is the main entrypoint for current project documentation.
 
 Canonical root rule: use `docs/` as the repository source-of-truth path in all
