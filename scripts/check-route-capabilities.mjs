@@ -45,12 +45,14 @@ const protectedMounts = new Map([
   ["agent-events.routes.ts", "/agent-events"],
   ["events.routes.ts", "/events"],
   ["integration-settings.routes.ts", "/integration-settings"],
-  ["google-drive.routes.ts", "/google-drive"]
+  ["google-drive.routes.ts", "/google-drive"],
+  ["product-map-projection.routes.ts", "/product-map"]
 ]);
 
 const routerMountOverrides = new Map([
   ["workflowDefinitionDraftsRouter", "/company-os/workflow-definitions/drafts"],
-  ["workflowDefinitionRecoveryRouter", "/company-os/workflow-definitions"]
+  ["workflowDefinitionRecoveryRouter", "/company-os/workflow-definitions"],
+  ["productMapIngressRouter", "/product-map/projection/ingest"]
 ]);
 
 const routePathExpansions = new Map([

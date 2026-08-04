@@ -7,6 +7,26 @@
   "excludePaths": [],
   "entityOverrides": [
     {
+      "path": "docs/planning/luc-5235-dashboard-command-api-journey-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified dashboard command API journey proof used to satisfy the mounted dashboard route test-link contract.",
+      "evidence": [
+        "docs/planning/luc-5235-dashboard-command-api-journey-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
+      "path": "docs/planning/luc-5156-strategy-api-journey-proof.md",
+      "type": "test",
+      "status": "verified",
+      "description": "Verified strategy context API journey proof used to satisfy the mounted strategy route test-link contract.",
+      "evidence": [
+        "docs/planning/luc-5156-strategy-api-journey-proof.md",
+        "src/tests/api.test.ts"
+      ]
+    },
+    {
       "path": "web/src/api/client.ts",
       "type": "feature",
       "description": "Web API client utility for authenticated account access and dashboard data journeys; not a standalone browser route.",
@@ -349,6 +369,54 @@
     }
   ],
   "relationOverrides": [
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5235-dashboard-command-api-journey-proof.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/dashboard",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2495 app-completion route test-link reconciliation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-5156-strategy-api-journey-proof.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/strategy",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2495 app-completion route test-link reconciliation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "docs/planning/luc-6155-auth-config-api-proof-lane.md",
+      "fromType": "test",
+      "toPath": "src/app.ts#/integration-settings",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2495 app-completion route test-link reconciliation"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/dashboard",
+      "fromType": "api_endpoint",
+      "toPath": "docs/architecture/system-architecture.md",
+      "toType": "document",
+      "evidence": "LUC-2495 app-completion route documentation association"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/strategy",
+      "fromType": "api_endpoint",
+      "toPath": "docs/architecture/system-architecture.md",
+      "toType": "document",
+      "evidence": "LUC-2495 app-completion route documentation association"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/integration-settings",
+      "fromType": "api_endpoint",
+      "toPath": "docs/architecture/system-architecture.md",
+      "toType": "document",
+      "evidence": "LUC-2495 app-completion route documentation association"
+    },
     {
       "type": "tests",
       "fromPath": "docs/planning/luc-5561-auth-account-access-local-smoke-proof.md",

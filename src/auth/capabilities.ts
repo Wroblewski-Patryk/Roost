@@ -35,6 +35,7 @@ export const capabilities = [
   "process-core:read",
   "product-map:projection:ingest",
   "product-map:projection:read",
+  "product-map:projection:write",
   "projects:read",
   "projects:write",
   "goals:read",
@@ -223,6 +224,7 @@ export const adapterManifest = {
     ],
     productMap: [
       { method: "POST", path: "/v1/product-map/projection/ingest", capability: "product-map:projection:ingest" },
+      { method: "PUT", path: "/v1/product-map/projection/source", capability: "product-map:projection:write" },
       { method: "GET", path: "/v1/product-map/projection", capability: "product-map:projection:read" }
     ],
     projects: [
