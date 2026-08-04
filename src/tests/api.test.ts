@@ -82,6 +82,23 @@ function productMapPacket(observedAt: string, offeringId = "roost") {
   };
 }
 
+async function withFixedDate<T>(fixedAt: Date, operation: () => Promise<T>) {
+  const realDate = globalThis.Date;
+  const fixedTime = fixedAt.getTime();
+  globalThis.Date = new Proxy(realDate, {
+    construct(target, argumentsList, newTarget) {
+      return argumentsList.length === 0
+        ? new realDate(fixedTime)
+        : Reflect.construct(target, argumentsList, newTarget);
+    }
+  });
+  try {
+    return await operation();
+  } finally {
+    globalThis.Date = realDate;
+  }
+}
+
 function assertSafeTestDatabase() {
   if (process.env.COMPANYCORE_ALLOW_DESTRUCTIVE_TEST_DB === "1") {
     return;
@@ -10047,6 +10064,45 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(projectionFreshness.ttlMs, 15 * 60 * 1000);
   assert.equal(projectionFreshness.lastKnownGoodWindowMs, 24 * 60 * 60 * 1000);
   assert.match(projectionFreshness.checkedAt, /^20[0-9]{2}-[0-9]{2}-[0-9]{2}T/);
+  const fixedProjectionReadAt = new Date("2030-01-02T00:00:00.000Z");
+  const assertFixedProjectionFreshness = async (
+    ageMs: number,
+    expectedStatus: "current" | "stale" | "unavailable"
+  ) => {
+    const observedAt = new Date(fixedProjectionReadAt.getTime() - ageMs).toISOString();
+    await prisma.productMapProjectionSnapshot.update({
+      where: { id: firstAcceptedSnapshot.id },
+      data: {
+        observedAt: new Date(observedAt),
+        packet: productMapPacket(observedAt) as Prisma.InputJsonValue
+      }
+    });
+    const fixedProjectionRead = await withFixedDate(fixedProjectionReadAt, () => request("/v1/product-map/projection", {
+      headers: { "X-API-Key": projectionReadKeyValue }
+    }));
+    assert.equal(fixedProjectionRead.status, 200);
+    const fixedFreshness = (fixedProjectionRead.body as { data: {
+      status: string;
+      freshness: {
+        checkedAt: string; observedAt: string | null; ageMs: number | null; lagMs: number | null;
+        ttlMs: number; lastKnownGoodWindowMs: number; status: string;
+      };
+    } }).data;
+    assert.equal(fixedFreshness.status, expectedStatus);
+    assert.deepEqual(fixedFreshness.freshness, {
+      checkedAt: fixedProjectionReadAt.toISOString(),
+      observedAt,
+      ageMs,
+      lagMs: ageMs,
+      ttlMs: 15 * 60 * 1000,
+      lastKnownGoodWindowMs: 24 * 60 * 60 * 1000,
+      status: expectedStatus
+    });
+  };
+  await assertFixedProjectionFreshness(15 * 60 * 1000, "current");
+  await assertFixedProjectionFreshness(15 * 60 * 1000 + 1, "stale");
+  await assertFixedProjectionFreshness(24 * 60 * 60 * 1000, "stale");
+  await assertFixedProjectionFreshness(24 * 60 * 60 * 1000 + 1, "unavailable");
   assert.equal(projectionProcedure.procedure.identity.procedureId, "PROC-SH-APPLICATION-LIFECYCLE");
   assert.equal(projectionProcedure.procedure.identity.procedureVersion, "1.0");
   assert.equal(projectionProcedure.procedure.gates.length, 18);
