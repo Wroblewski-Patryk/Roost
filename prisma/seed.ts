@@ -1533,7 +1533,14 @@ async function main() {
 
   await ensureSeedOperatingModel(workspace.id);
   await ensureCompanyOsFoundation(workspace.id);
-  await ensureLifecycleProcedureForWorkspace(prisma, workspace.id);
+  // Product Map is workspace-scoped and existing installations can predate the
+  // lifecycle definition. Backfill every workspace on each idempotent deploy,
+  // not only the deterministic seed workspace, so an older owner membership
+  // cannot remain permanently `unavailable` after the feature ships.
+  const lifecycleWorkspaces = await prisma.workspace.findMany({ select: { id: true } });
+  for (const lifecycleWorkspace of lifecycleWorkspaces) {
+    await ensureLifecycleProcedureForWorkspace(prisma, lifecycleWorkspace.id);
+  }
   await ensureWorkforceFoundation(workspace.id, owner);
 
   const keyHash = hashApiKey(key);
