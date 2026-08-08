@@ -371,7 +371,7 @@
   "relationOverrides": [
     {
       "type": "tests",
-      "fromPath": "docs/planning/luc-5235-dashboard-command-api-journey-proof.md",
+      "fromPath": "src/tests/api.test.ts",
       "fromType": "test",
       "toPath": "src/app.ts#/dashboard",
       "toType": "api_endpoint",
@@ -379,7 +379,7 @@
     },
     {
       "type": "tests",
-      "fromPath": "docs/planning/luc-5156-strategy-api-journey-proof.md",
+      "fromPath": "src/tests/api.test.ts",
       "fromType": "test",
       "toPath": "src/app.ts#/strategy",
       "toType": "api_endpoint",
@@ -387,11 +387,27 @@
     },
     {
       "type": "tests",
-      "fromPath": "docs/planning/luc-6155-auth-config-api-proof-lane.md",
+      "fromPath": "src/tests/api.test.ts",
       "fromType": "test",
       "toPath": "src/app.ts#/integration-settings",
       "toType": "api_endpoint",
       "evidence": "LUC-2495 app-completion route test-link reconciliation"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/product-map",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2510 mounted-route test-link reconciliation"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/product-map",
+      "fromType": "api_endpoint",
+      "toPath": "docs/architecture/system-architecture.md",
+      "toType": "document",
+      "evidence": "LUC-2510 mounted-route documentation association"
     },
     {
       "type": "documents",
