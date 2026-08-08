@@ -6,7 +6,9 @@
   promoted into a public conflict against the unchanged active snapshot.
   The ingress remains fail-closed and audited; public conflict derivation now
   reserves that state for an actual `projection_conflict`. Targeted projection
-  tests PASS (7/7) and `npm run build:server` PASS. Protected deployed
+  tests PASS (8/8) and `npm run build:server` PASS. A second reproduced scope
+  defect was also corrected: one offering's source/deployed SHA mismatch stays
+  on that item and no longer poisons unrelated offerings. Protected deployed
   readback and exact production SHA evidence remain pending, so this is not
   recorded as production-verified.
 

@@ -387,7 +387,6 @@ type LifecycleConflict = {
     | "definition_version_mismatch"
     | "definition_shape_mismatch"
     | "source_unavailable"
-    | "source_deployed_sha_mismatch"
     | "projection_conflict"
     | "projection_out_of_order"
     | "superseded";
@@ -401,6 +400,20 @@ type LifecycleConflict = {
  */
 export function quarantineInvalidatesActiveProjection(reason: string | null | undefined) {
   return reason === "projection_conflict";
+}
+
+export function packetWideLifecycleConflicts(packet: ProductMapProjectionPacket): LifecycleConflict[] {
+  const conflicts: LifecycleConflict[] = [];
+  if (packet.sourceState !== "available" || packet.conflictState === "source_unavailable") {
+    conflicts.push(conflict("source_unavailable", "The Paperclip execution projection source is unavailable."));
+  }
+  if (packet.conflictState === "project_mapping_conflict" || packet.conflictState === "owner_surface_unavailable") {
+    conflicts.push(conflict("projection_conflict", "The Product Map projection contains an unresolved mapping or owner-surface conflict."));
+  }
+  if (packet.lifecycleProcedure.supersession.status === "superseded") {
+    conflicts.push(conflict("superseded", "The lifecycle procedure or its execution projection is superseded."));
+  }
+  return conflicts;
 }
 
 function publicLifecycleStatus(status: string): PublicLifecycleStatus | null {
@@ -563,16 +576,8 @@ export async function readProjection(workspaceId: string, now = new Date()) {
     if (quarantineInvalidatesActiveProjection(latestQuarantine?.reason)) {
       conflicts.push(conflict("projection_conflict", "A conflicting projection is retained for audit and cannot replace the last known good state."));
     }
-    if (storedPacket.sourceState !== "available" || storedPacket.conflictState === "source_unavailable") {
-      conflicts.push(conflict("source_unavailable", "The Paperclip execution projection source is unavailable."));
-    }
-    if (storedPacket.conflictState === "project_mapping_conflict" || storedPacket.conflictState === "owner_surface_unavailable") {
-      conflicts.push(conflict("projection_conflict", "The Product Map projection contains an unresolved mapping or owner-surface conflict."));
-    }
-    if (storedPacket.items.some((item) => item.sourceControl.versionAlignment === "different")) {
-      conflicts.push(conflict("source_deployed_sha_mismatch", "At least one offering source SHA differs from its deployed SHA."));
-    }
-    if (storedPacket.lifecycleProcedure.supersession.status === "superseded" || definition.supersession.status === "superseded") {
+    conflicts.push(...packetWideLifecycleConflicts(storedPacket));
+    if (definition.supersession.status === "superseded") {
       conflicts.push(conflict("superseded", "The lifecycle procedure or its execution projection is superseded."));
     }
     if (definition.lifecycleStatus !== "active") {

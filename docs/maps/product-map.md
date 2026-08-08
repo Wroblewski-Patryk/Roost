@@ -51,3 +51,7 @@ quarantine for audit. Because it never becomes active state, that expected
 out-of-order replay does not change a healthy last-known-good projection to
 `conflict`. A same-snapshot/different-digest quarantine remains a real
 `projection_conflict` and continues to fail the protected read closed.
+
+Source/deployed SHA mismatch is offering-scoped. The affected item remains
+`NO-GO` with `versionAlignment=different`, but it does not change unrelated,
+aligned offerings or the shared lifecycle projection to `conflict`.

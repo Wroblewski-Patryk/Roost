@@ -43,10 +43,11 @@ still fail closed.
 - [x] Out-of-order packets remain rejected and quarantined.
 - [x] Out-of-order quarantine does not invalidate active LKG readback.
 - [x] Same-snapshot/different-digest quarantine still causes conflict.
+- [x] A source/deployed mismatch remains scoped to the affected offering.
 - [ ] Protected target readback proves current/fresh exact projection after deployment.
 
 ## Validation Evidence
-- Tests: `node --test --import tsx src/tests/product-map-projection.test.ts` PASS (7/7); `npm run build:server` PASS.
+- Tests: `node --test --import tsx src/tests/product-map-projection.test.ts` PASS (8/8); `npm run build:server`, architecture chain gate (34/34), and architecture evidence gate PASS.
 - Manual checks: protected readback pending deployment
 - Module confidence ledger updated: yes; protected deployment remains pending.
 - Reality status: verified locally

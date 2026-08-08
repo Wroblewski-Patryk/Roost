@@ -4,6 +4,7 @@ import { canonicalLifecycleStages, lifecycleOperatingContractSource } from "../m
 import {
   expectedIdempotencyKey,
   packetDigest,
+  packetWideLifecycleConflicts,
   parseProductMapProjectionPacket,
   parseProjectionEnvelope,
   projectionAuditRetentionDays,
@@ -209,4 +210,25 @@ test("an out-of-order replay stays audited without poisoning the active last-kno
   assert.equal(quarantineInvalidatesActiveProjection("projection_out_of_order"), false);
   assert.equal(quarantineInvalidatesActiveProjection("projection_conflict"), true);
   assert.equal(quarantineInvalidatesActiveProjection(null), false);
+});
+
+test("one offering version mismatch stays item-scoped and does not poison unrelated offerings", () => {
+  const packet = parseProductMapProjectionPacket({
+    ...validPacket(),
+    items: [{
+      ...validPacket().items[0],
+      sourceControl: {
+        ...validPacket().items[0].sourceControl,
+        deployedSha: "b".repeat(40),
+        versionAlignment: "different",
+      },
+      readiness: {
+        ...validPacket().items[0].readiness,
+        status: "NO-GO",
+        nextGate: "Deploy the exact source SHA.",
+      },
+    }],
+  });
+  assert.ok(packet);
+  assert.deepEqual(packetWideLifecycleConflicts(packet), []);
 });
