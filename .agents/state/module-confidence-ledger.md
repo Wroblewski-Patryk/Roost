@@ -1,3 +1,9 @@
+# 2026-08-08 Product Map Projection Replay Confidence Update
+
+| Module / Journey | Status | Evidence | Next Proof Or Fix |
+| --- | --- | --- | --- |
+| Protected Product Map projection read after rejected old replay | verified locally, protected deployment pending | `.codex/tasks/2026-08-08-product-map-out-of-order-readback.md`; targeted Node test PASS (7/7); `npm run build:server` PASS. Out-of-order ingress remains rejected/audited while only a real same-snapshot/different-digest quarantine invalidates active LKG state. | Deploy the exact Roost SHA, publish a fresh Paperclip projection, and run the protected fail-closed readback. |
+
 # 2026-07-10 LUC-321 Source-Control Confidence Update
 
 | Module / Journey | Status | Evidence | Next Proof Or Fix |

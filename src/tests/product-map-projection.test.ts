@@ -11,7 +11,8 @@ import {
   projectionReceiptRetentionDays,
   projectionRetentionCutoffs,
   productMapSchemaVersion,
-  productMapTransportVersion
+  productMapTransportVersion,
+  quarantineInvalidatesActiveProjection
 } from "../modules/product-map/product-map-projection.service";
 
 const observedAt = "2026-07-28T10:00:00.000Z";
@@ -202,4 +203,10 @@ test("projection retention keeps audit packets for one year while expiring opera
   assert.equal(cutoffs.auditBefore.toISOString(), "2025-07-28T12:00:00.000Z");
   assert.equal(cutoffs.receiptBefore.toISOString(), "2026-06-28T12:00:00.000Z");
   assert.equal(cutoffs.quarantineBefore.toISOString(), "2026-04-29T12:00:00.000Z");
+});
+
+test("an out-of-order replay stays audited without poisoning the active last-known-good projection", () => {
+  assert.equal(quarantineInvalidatesActiveProjection("projection_out_of_order"), false);
+  assert.equal(quarantineInvalidatesActiveProjection("projection_conflict"), true);
+  assert.equal(quarantineInvalidatesActiveProjection(null), false);
 });

@@ -1,6 +1,6 @@
 # Product Map
 
-Last updated: YYYY-MM-DD
+Last updated: 2026-08-08
 
 ## Purpose
 
@@ -45,3 +45,9 @@ alongside the projection. It contains only owner-facing timing metadata:
 
 The metadata does not expose database, audit, or provider internals. Existing
 `status`, `packet`, `procedure`, and error responses remain compatible.
+
+An ingress packet older than the active snapshot is rejected and retained in
+quarantine for audit. Because it never becomes active state, that expected
+out-of-order replay does not change a healthy last-known-good projection to
+`conflict`. A same-snapshot/different-digest quarantine remains a real
+`projection_conflict` and continues to fail the protected read closed.

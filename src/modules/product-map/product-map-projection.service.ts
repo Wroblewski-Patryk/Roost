@@ -394,6 +394,15 @@ type LifecycleConflict = {
   summary: string;
 };
 
+/**
+ * Only a same-snapshot/different-digest quarantine invalidates the active
+ * last-known-good projection. An older replay is rejected and audited, but it
+ * never became active state and therefore cannot make that state conflicting.
+ */
+export function quarantineInvalidatesActiveProjection(reason: string | null | undefined) {
+  return reason === "projection_conflict";
+}
+
 function publicLifecycleStatus(status: string): PublicLifecycleStatus | null {
   if (status === "active") return "active";
   if (status === "draft") return "review";
@@ -551,11 +560,8 @@ export async function readProjection(workspaceId: string, now = new Date()) {
     packet = null;
     conflicts.push(conflict("source_unavailable", "The last known good execution projection has expired."));
   } else {
-    if (latestQuarantine?.reason === "projection_conflict") {
+    if (quarantineInvalidatesActiveProjection(latestQuarantine?.reason)) {
       conflicts.push(conflict("projection_conflict", "A conflicting projection is retained for audit and cannot replace the last known good state."));
-    }
-    if (latestQuarantine?.reason === "projection_out_of_order") {
-      conflicts.push(conflict("projection_out_of_order", "An out-of-order projection is retained for audit and cannot replace the last known good state."));
     }
     if (storedPacket.sourceState !== "available" || storedPacket.conflictState === "source_unavailable") {
       conflicts.push(conflict("source_unavailable", "The Paperclip execution projection source is unavailable."));

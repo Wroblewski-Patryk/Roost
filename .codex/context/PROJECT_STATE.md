@@ -1,5 +1,15 @@
 # PROJECT_STATE
 
+- 2026-08-08: Product Map replay/readback defect fixed locally under
+  `.codex/tasks/2026-08-08-product-map-out-of-order-readback.md`. Root cause:
+  an expected rejected `projection_out_of_order` quarantine was incorrectly
+  promoted into a public conflict against the unchanged active snapshot.
+  The ingress remains fail-closed and audited; public conflict derivation now
+  reserves that state for an actual `projection_conflict`. Targeted projection
+  tests PASS (7/7) and `npm run build:server` PASS. Protected deployed
+  readback and exact production SHA evidence remain pending, so this is not
+  recorded as production-verified.
+
 - 2026-07-10: [LUC-321](/LUC/issues/LUC-321) completed Roost local
   source-control closure for the [LUC-262](/LUC/issues/LUC-262),
   [LUC-267](/LUC/issues/LUC-267), and [LUC-268](/LUC/issues/LUC-268)
