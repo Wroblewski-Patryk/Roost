@@ -69,20 +69,11 @@ operations, planning, UX, security, and evidence notes across the whole vault.
 - Prefer repository-relative links.
 - Keep project docs in English.
 
-## Agent Operating Docs
+## Agent execution state
 
-These files live outside `docs/` because they are execution state, not product
-or architecture truth:
-
-- `.agents/core/operating-system.md`
-- `.agents/core/execution-loop.md`
-- `.agents/core/anti-regression.md`
-- `.agents/core/quality-gates.md`
-- `.agents/state/current-focus.md`
-- `.agents/state/known-issues.md`
-- `.agents/state/regression-log.md`
-- `.agents/state/system-health.md`
-- `.agents/state/next-steps.md`
+Paperclip owns agent roles, assignments, coordination, execution state, and
+handoffs. Repository documentation contains Roost product and technical truth,
+not a parallel agent operating system.
 
 ## Canonical Docs
 
@@ -161,9 +152,7 @@ or architecture truth:
 
 - `governance/app-creation-playbook.md`
 - `governance/user-feedback-loop.md`
-- `../.codex/templates/app-blueprint-template.md`
-- `../.codex/templates/user-feedback-item-template.md`
-- `../.codex/templates/handoff-packet-template.md`
+- Paperclip issues and work products hold active plans, feedback, and handoffs.
 
 ## Obsidian Vault Layer
 

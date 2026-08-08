@@ -14,16 +14,13 @@
     "operations": ["docs/operations/"],
     "activePlanning": ["docs/planning/open-decisions.md", "docs/planning/mvp-next-commits.md"],
     "derivedStatus": ["docs/status/"],
-    "historical": ["history/"],
-    "ephemeral": [".codex/tasks/"]
+    "historical": ["history/"]
   },
   "excludedFromDefaultContext": [
     "history/",
     "docs/graphs/",
     "docs/obsidian/",
-    "docs/maps/",
-    ".codex/tasks/",
-    ".agents/state/"
+    "docs/maps/"
   ],
   "budgets": {
     "maxDefaultContextBytes": 150000,

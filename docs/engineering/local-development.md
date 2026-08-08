@@ -32,6 +32,6 @@ Recommended minimum sections:
 ## Pair With
 
 - `docs/engineering/testing.md`
-- `.codex/context/PROJECT_STATE.md`
+- the package scripts in the repository root
 
 These three should agree on real commands and local runtime expectations.

@@ -40,15 +40,14 @@ curl http://localhost:3102/health
 See `docs/` for architecture, database, API, integrations, deployment, and
 next-step handoff notes.
 
-## Agent Operating System
+## Agent execution
 
-Agent continuation state lives in `.agents/core/` and `.agents/state/`. These
-files define the startup order, execution loop, anti-regression checks, quality
-gates, current focus, known issues, regression log, system health, and next
-steps for future Codex sessions.
+Paperclip owns agent roles, assignments, coordination, execution state, and
+handoffs. This repository supplies Roost code and project-specific technical
+truth; it does not maintain a second agent operating system.
 
 ## Agent App-Building Helpers
 
 - `docs/governance/app-creation-playbook.md` turns loose app ideas into architecture and first slices.
 - `docs/governance/user-feedback-loop.md` keeps user notes and visual corrections durable.
-- `.codex/templates/handoff-packet-template.md` captures closeout context for the next agent.
+- Paperclip issues, comments, and work products carry execution handoffs.
