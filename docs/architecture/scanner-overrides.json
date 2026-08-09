@@ -373,6 +373,646 @@
       "type": "tests",
       "fromPath": "src/tests/api.test.ts",
       "fromType": "test",
+      "toPath": "src/app.ts#/",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/agent-events",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/agent-events",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/agent-logs",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/agent-logs",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/agents",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/agents",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/api-keys",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/api-keys",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/api/build-info",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/api/build-info",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/assets",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/assets",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/clients",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/clients",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/commercial-exceptions",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/commercial-exceptions",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/company-os",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/company-os",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/connection",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/connection",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/deals",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/deals",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/decisions",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/decisions",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/departments",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/departments",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/events",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/events",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/goals",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/goals",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/google-drive",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/google-drive",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/health",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/health",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/intake",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/intake",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/interactions",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/interactions",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/mcp",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/mcp",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/notes",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/notes",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/operating-graph",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/operating-graph",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/operating-model",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/operating-model",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/operations",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/operations",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/pipeline-stages",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/pipeline-stages",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/process-core",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/process-core",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/projects",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/projects",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/ready",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/ready",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/relationships",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/relationships",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/targets",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/targets",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/task-lists",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/task-lists",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/tasks",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/tasks",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/v1",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/v1",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/v1/health",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/v1/health",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/v1/product-map/projection/ingest",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/v1/product-map/projection/ingest",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/v1/ready",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/v1/ready",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/v1/webhooks/clickup",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/v1/webhooks/clickup",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/workforce",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/workforce",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
+      "toPath": "src/app.ts#/workspaces",
+      "toType": "api_endpoint",
+      "evidence": "LUC-2597 mounted-route integration proof"
+    },
+    {
+      "type": "documents",
+      "fromPath": "src/app.ts#/workspaces",
+      "fromType": "api_endpoint",
+      "toPath": "docs/planning/luc-2597-app-composition-route-proof.md",
+      "toType": "document",
+      "evidence": "LUC-2597 app-composition route proof matrix"
+    },
+    {
+      "type": "tests",
+      "fromPath": "src/tests/api.test.ts",
+      "fromType": "test",
       "toPath": "src/app.ts#/dashboard",
       "toType": "api_endpoint",
       "evidence": "LUC-2495 app-completion route test-link reconciliation"
