@@ -1,13 +1,15 @@
-# LuckySparrow Company Core v1
+# Roost (CompanyCore runtime) v1
 
-Company Core is the central backend for LuckySparrow operations. It stores the
+Roost is the central operating system for LuckySparrow operations. It stores the
 company's projects, goals, targets, tasks, clients, CRM pipeline, notes,
 decisions, AI agents, agent logs, system events, and API keys.
 
-This repository is intentionally a v1 foundation. It does not include a GUI and
-does not try to implement every business workflow. The goal is to provide a
-stable database, API boundary, Docker runtime, and documentation that a
-dedicated development agent can extend.
+This repository is intentionally a v1 foundation. It includes a backend-served
+owner console, with vanilla routes retained alongside incrementally migrated
+React workbenches; it does not try to implement every business workflow. The
+goal is to provide a stable database, API/MCP boundary, Docker runtime, and
+documentation that a dedicated development agent can extend. `CompanyCore`
+remains the legacy technical identifier used by existing runtime contracts.
 
 ## Quick Start
 

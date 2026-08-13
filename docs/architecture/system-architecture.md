@@ -1,10 +1,12 @@
 # System Architecture
 
-CompanyCore is the operational core for LuckySparrow. It stores company
+Roost is the operational core for LuckySparrow. It stores company
 projects, goals, targets, tasks, CRM context, decisions, notes, AI agent
 metadata, agent logs, integration state, and system events. PostgreSQL is the
 source of truth, and the HTTP API is the supported integration access layer.
-CompanyCore is the company operating system, not an embedded AI system. Humans
+`CompanyCore` is retained as a legacy/runtime identifier in existing contracts;
+it does not identify a second product. Roost is the company operating system,
+not an embedded AI system. Humans
 use it through the web UI, while AI agents use it through API/MCP as external
 clients. The accepted boundary is documented in
 `docs/architecture/autonomous-company-operating-system.md`.
@@ -43,12 +45,13 @@ boundary that CompanyCore itself is infrastructure, not AI.
 ## Main Runtime Surfaces
 
 - API or backend: Node.js 22, Express, TypeScript, Prisma.
-- Web: owner-only console for workspace setup, operating model visibility,
-  integrations, data workbenches, relationship review, Company OS surfaces, and
-  MCP/API key management. Before V2 visuals, the web console must become the
-  reliable human control plane for the backend and MCP tools. Web UI work must
-  stay responsive across mobile, tablet, and desktop while reusing the shared
-  Tailwind/DaisyUI component system.
+- Web: backend-served owner-only console for workspace setup, operating model
+  visibility, integrations, data workbenches, relationship review, Company OS
+  surfaces, and MCP/API key management. It is a mixed migration surface:
+  existing vanilla routes remain supported while React/Tailwind/DaisyUI
+  workbenches are introduced incrementally (`/areas` is the canonical React
+  areas route). Before V2 visuals, the web console must become the reliable
+  human control plane for the backend and MCP tools.
 - Mobile: no native app before V2. Mobile web must remain usable for owner
   checks and core actions, but native mobile product work is deferred.
 - Jobs or workers: the backend owns a lightweight in-process ClickUp

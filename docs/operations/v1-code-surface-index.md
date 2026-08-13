@@ -25,8 +25,8 @@ Use it with:
 | Seed data | `prisma/seed.ts` | LuckySparrow baseline data, operating model, Company OS seeds. |
 | React app source | `web/src/main.tsx` | React dashboards and workbenches. |
 | React shared route kit | `web/src/react-route-kit.tsx` | Shared API clients, state hooks, shell, notices, metrics, table primitives. |
-| Vanilla owner console | `public/app.js` | Existing owner setup/editor console retained for routes not yet moved to React. |
-| Generated React build | `public/react/` | Build output created by `npm run build:web`. |
+| Vanilla owner console | `public/app.js` | Existing owner setup/editor routes retained during incremental React migration. |
+| Generated React build | `public/react/` | Implemented React owner-console workbenches; build output created by `npm run build:web`. |
 | MCP bridge | `scripts/companycore-mcp-server.mjs` | Thin stdio bridge over `/v1/mcp/manifest`. |
 | MCP smoke | `scripts/companycore-mcp-smoke.mjs` | Bridge smoke for initialize, tools/list, and a safe Company OS tool call. |
 
@@ -120,4 +120,3 @@ Use it with:
 - Do not add aspirational rows without code evidence.
 - Use the function coverage ledger for confidence/evidence status; use this
   file for code-surface orientation.
-

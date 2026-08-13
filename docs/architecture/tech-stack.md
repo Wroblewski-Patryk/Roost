@@ -6,10 +6,12 @@ replace these choices without an explicit architecture decision.
 ## Runtime Stack
 
 - Backend: Node.js 22, Express 4, TypeScript.
-- Frontend: backend-served owner console. The current production surface is
-  still the static HTML/CSS/JavaScript console, and UXA-009 adds an explicit
-  React + Vite + Tailwind CSS + DaisyUI build foundation under
-  `web/` -> `public/react/` for incremental component migration.
+- Frontend: backend-served owner console with a mixed migration surface.
+  Existing setup/editor routes remain static HTML/CSS/JavaScript, while React
+  + Vite + Tailwind CSS + DaisyUI workbenches build from `web/` to
+  `public/react/`. React is therefore an implemented owner-console surface,
+  not merely a future foundation; route-level ownership is canonical in
+  `docs/operations/v1-code-surface-index.md`.
   The accepted web surface now includes auth, settings, API-key management,
   ClickUp setup, Google Drive setup, operating areas, relationships, data
   operations, typed business editors, and a framework-backed
