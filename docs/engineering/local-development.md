@@ -35,3 +35,12 @@ Recommended minimum sections:
 - the package scripts in the repository root
 
 These three should agree on real commands and local runtime expectations.
+
+## Ignored local evidence retention
+
+Local evidence producers must use the exact ignored `.tmp` or `tmp` roots and
+follow the bundle metadata contract in the
+[ignored evidence retention guardrail](../operations/ignored-evidence-retention-guardrail.md).
+Run `npm run evidence:retention:check` for the bounded metadata-only inventory;
+run `npm run test:evidence-retention` for its isolated fixture suite. Neither
+command authorizes evidence cleanup.

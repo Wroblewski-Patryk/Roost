@@ -26,6 +26,8 @@
     "aog:deploy-smoke": "node scripts/aog-deploy-smoke.mjs",
     "google-drive:smoke": "node scripts/google-drive-production-smoke.mjs",
     "clickup:bootstrap": "node scripts/clickup-production-bootstrap.mjs",
+    "evidence:retention:check": "node scripts/ignored-evidence-retention-guardrail.mjs",
+    "test:evidence-retention": "node scripts/ignored-evidence-retention-guardrail.test.mjs",
     "architecture:graph": "node scripts/generate-architecture-graph.mjs",
     "architecture:ensure-docs-root": "node scripts/ensure-architecture-docs-root.mjs",
     "architecture:sync": "node scripts/sync-architecture-registry.mjs",

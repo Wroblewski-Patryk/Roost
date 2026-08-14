@@ -131,6 +131,7 @@ not a parallel agent operating system.
   - `operations/v1-operator-handoff.md`
   - `operations/jarvis-companycore-update-runbook.md`
   - `operations/paperclip-companycore-adapter-runbook.md`
+  - `operations/ignored-evidence-retention-guardrail.md`
   - `operations/v1-source-handoff-package.md`
   - `operations/v1-release-readiness.md`
 - Security:
