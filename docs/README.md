@@ -9,7 +9,7 @@ need one consistent place to read and write operational data. Without Roost,
 project state, tasks, sales context, notes, decisions, and AI activity
 would drift across tools.
 
-Company Core v1 provides:
+Roost v1 provides:
 
 - PostgreSQL data model with Prisma.
 - Express API protected by owner auth and workspace service API keys.
@@ -21,10 +21,11 @@ Company Core v1 provides:
   folder discovery, selected-folder configuration, Docs/Sheets APIs, file
   metadata/content snapshots, and freshness routes. Real owner consent and the
   first production import remain externally blocked.
-- Backend-served owner console surfaces for API keys, ClickUp setup, Google
-  Drive setup, operating areas, relationships, data operations, and typed
-  business editors. The console is a mixed migration surface: legacy vanilla
-  routes coexist with React workbenches; see `operations/v1-code-surface-index.md`.
+- A backend-served React owner console for public/auth routes, account and
+  workspace settings, and the active `00`-`12` department workbenches. Legacy
+  vanilla owner-console routes are not active; protected backend capabilities
+  without a current React view remain accessible through API/MCP contracts.
+  See `operations/v1-code-surface-index.md`.
 - OpenJarvis read integration through the CompanyCore connector.
 - Paperclip agent-event consumption through the CompanyCore adapter.
 - Docker Compose runtime for local and Coolify-style deployment.
@@ -34,7 +35,7 @@ analytics, and mobile app scope beyond the accepted v1/v2 web-console slice.
 
 ## Documentation Index
 
-Use `docs/` as the canonical home for CompanyCore documentation and as the
+Use `docs/` as the canonical home for Roost documentation and as the
 project's Obsidian vault. Every subfolder should remain browsable from
 Obsidian through Markdown-first files, stable relative links, and clear index
 notes.

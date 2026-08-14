@@ -45,13 +45,12 @@ boundary that CompanyCore itself is infrastructure, not AI.
 ## Main Runtime Surfaces
 
 - API or backend: Node.js 22, Express, TypeScript, Prisma.
-- Web: backend-served owner-only console for workspace setup, operating model
-  visibility, integrations, data workbenches, relationship review, Company OS
-  surfaces, and MCP/API key management. It is a mixed migration surface:
-  existing vanilla routes remain supported while React/Tailwind/DaisyUI
-  workbenches are introduced incrementally (`/areas` is the canonical React
-  areas route). Before V2 visuals, the web console must become the reliable
-  human control plane for the backend and MCP tools.
+- Web: backend-served React/Tailwind/DaisyUI owner console. Active routes cover
+  public/auth flows, account and workspace settings, the `00 General`
+  dashboard and product map, and department workbenches `01`-`12`; `/areas`
+  with `area` and `view` query parameters is the canonical department surface.
+  Legacy vanilla owner-console files are not active. Backend capabilities that
+  do not yet have a React view remain available through the API/MCP boundary.
 - Mobile: no native app before V2. Mobile web must remain usable for owner
   checks and core actions, but native mobile product work is deferred.
 - Jobs or workers: the backend owns a lightweight in-process ClickUp
@@ -645,8 +644,10 @@ metadata.
 - `src/modules/*`: domain route modules and business behavior.
 - `src/integrations/<provider>/`: provider-specific API clients, mappers, sync
   services, and safe error mapping.
-- `public/`: minimal static owner console served by the backend for setup
-  workflows only.
+- `web/`: React owner-console source, route registry, and department/settings
+  workbenches.
+- `public/react/`: generated React build served by the backend; it is build
+  output, not the source of route ownership.
 
 Route modules should not call external provider APIs directly. They should call
 integration services that read workspace-owned settings and normalize provider

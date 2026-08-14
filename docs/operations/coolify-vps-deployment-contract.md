@@ -13,14 +13,14 @@ PostgreSQL data.
   - Web UI: `roost.luckysparrow.ch`
   - API: `api.roost.luckysparrow.ch`
 - Public service: `backend` on container port `3000`.
-- Public web surface: owner console served by `backend` at `/`, retaining
-  legacy vanilla routes alongside generated React workbenches.
+- Public web surface: React owner console served by `backend` from the generated
+  `public/react/` bundle; legacy vanilla owner-console routes are not active.
 - Private services: `postgres`.
 
 ## Runtime Inventory
 
 - Main app services:
-- `backend`: Node.js/Express API plus the mixed owner-console surface.
+  - `backend`: Node.js/Express API plus the backend-served React owner console.
   - `postgres`: PostgreSQL database.
 - Worker or cron services: none in v1.
 - Databases: PostgreSQL 16.

@@ -3,8 +3,11 @@
 ## In Scope
 
 - Owner/workspace authentication and workspace-scoped service API keys.
-- Owner-console control of operating data, API keys, integration settings,
-  operating areas, relationships, and accepted typed business editors.
+- React owner-console views for authentication, account/workspace settings,
+  the `00`-`12` department surfaces, and their accepted dashboard/workbench
+  slices.
+- API/MCP control of workspace-scoped operating data, service keys,
+  integrations, relationships, and accepted typed business records.
 - HTTP API and MCP access to the same governed operational source of truth.
 - Workspace-scoped ClickUp sync/webhooks and Google Drive connection, selected
   folder, metadata/content, Docs, and Sheets foundation.
@@ -13,7 +16,8 @@
 
 - Native mobile, Company City, and gamification.
 - Invitations, advanced RBAC, billing, and a full CRM suite.
-- A requirement to migrate every vanilla owner-console route to React in V1.
+- React UI parity for every backend capability or restoration of retired
+  legacy owner-console routes.
 
 ## MVP Quality Bar
 

@@ -5,11 +5,11 @@ company's projects, goals, targets, tasks, clients, CRM pipeline, notes,
 decisions, AI agents, agent logs, system events, and API keys.
 
 This repository is intentionally a v1 foundation. It includes a backend-served
-owner console, with vanilla routes retained alongside incrementally migrated
-React workbenches; it does not try to implement every business workflow. The
-goal is to provide a stable database, API/MCP boundary, Docker runtime, and
-documentation that a dedicated development agent can extend. `CompanyCore`
-remains the legacy technical identifier used by existing runtime contracts.
+React owner console for the active product routes; it does not try to expose
+every backend business workflow in the web UI. The goal is to provide a stable
+database, API/MCP boundary, Docker runtime, and documentation that a dedicated
+development agent can extend. `CompanyCore` remains the legacy technical
+identifier used by existing runtime contracts.
 
 ## Quick Start
 

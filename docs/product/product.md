@@ -42,14 +42,15 @@ not authorize new product scope or change existing API/database identifiers.
 
 ## Current Product Surface
 
-- A backend-served owner console provides authentication, settings, API-key
-  management, integrations, operating areas, relationships, data editors, and
-  Company OS workbenches.
-- The web surface is intentionally mixed during migration: existing setup and
-  editor routes use the vanilla console, while React routes provide the
-  framework-backed dashboard and workbench foundation. `/areas` is the
-  canonical React areas workbench; the remaining route ownership is recorded
-  in `docs/operations/v1-code-surface-index.md`.
+- A backend-served React owner console provides the public and authentication
+  routes, account and workspace settings, the `00 General` dashboard and
+  product map, and active workbenches for departments `01`-`12`.
+- All active user-facing web routes render through the React bundle. `/areas`
+  with an `area` and `view` query is the canonical department surface, with a
+  small set of compatibility aliases normalized by the route registry. The
+  retired vanilla console is not an active runtime path; backend capabilities
+  without a current React view remain available through API/MCP contracts.
+  Route ownership is recorded in `docs/operations/v1-code-surface-index.md`.
 - PostgreSQL is the canonical operational data store. Human web clients and
   agent clients use the HTTP API; MCP is the preferred agent interface above
   that API.
@@ -67,8 +68,8 @@ not authorize new product scope or change existing API/database identifiers.
 - Data sensitivity notes: owner credentials, service API keys, and integration
   tokens are secret material and must not be returned in API responses or logs.
 - UX complexity policy: the web console is the reliable human control plane;
-  responsive, reusable React components should be used for migrated screens
-  without implying that all legacy routes have migrated.
+  active screens use responsive, reusable React components, and retired legacy
+  workbenches must not be described as available until rebuilt in React.
 
 ## Success Signals
 

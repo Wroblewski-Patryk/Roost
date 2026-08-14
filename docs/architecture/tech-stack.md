@@ -6,16 +6,14 @@ replace these choices without an explicit architecture decision.
 ## Runtime Stack
 
 - Backend: Node.js 22, Express 4, TypeScript.
-- Frontend: backend-served owner console with a mixed migration surface.
-  Existing setup/editor routes remain static HTML/CSS/JavaScript, while React
-  + Vite + Tailwind CSS + DaisyUI workbenches build from `web/` to
-  `public/react/`. React is therefore an implemented owner-console surface,
-  not merely a future foundation; route-level ownership is canonical in
-  `docs/operations/v1-code-surface-index.md`.
-  The accepted web surface now includes auth, settings, API-key management,
-  ClickUp setup, Google Drive setup, operating areas, relationships, data
-  operations, typed business editors, and a framework-backed
-  `/react-dashboard` foundation route.
+- Frontend: backend-served React + Vite + Tailwind CSS + DaisyUI owner console.
+  Source builds from `web/` to `public/react/`; all active user-facing routes
+  render through that bundle. Route metadata is defined in
+  `web/src/app-route-registry.ts` and summarized in
+  `docs/operations/v1-code-surface-index.md`. The active surface includes
+  public/auth flows, account and workspace settings, the `00 General`
+  dashboard and product map, and department workbenches `01`-`12`. Retired
+  static setup/editor routes are not active runtime surfaces.
 - Mobile: none in v1; v2 mobile should follow the web product experience.
 - Database: PostgreSQL 16 with Prisma.
 - Cache or queue: none in v1.
