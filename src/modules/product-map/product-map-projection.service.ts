@@ -153,6 +153,14 @@ export const productMapOfferingSchema = z.object({
   offeringId: stableIdSchema,
   paperclipProjectName: nonBlank(120),
   lifecycleStage: nonBlank(120),
+  applicationVersion: z.object({
+    namespace: z.literal("application_release"),
+    currentVersion: z.string().regex(/^v\d+$/),
+    currentStatus: z.enum(["in_progress", "accepted"]),
+    nextVersion: z.string().regex(/^v\d+$/).nullable(),
+    nextVersionStatus: z.enum(["locked", "unlocked"]).nullable(),
+    policySourcePath: nonBlank(240)
+  }).strict().optional(),
   conflictState: z.enum(["none", "project_mapping_conflict", "owner_surface_unavailable"]),
   sourceControl: z.object({
     branch: nonBlank(120).nullable(),

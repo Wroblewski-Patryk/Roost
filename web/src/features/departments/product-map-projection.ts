@@ -68,6 +68,21 @@ const itemSchema = z.object({
   offeringId: z.string().min(1).max(128),
   paperclipProjectName: z.string().min(1).max(120),
   lifecycleStage: z.string().min(1).max(120),
+  applicationVersion: z.object({
+    namespace: z.literal("application_release"),
+    currentVersion: z.string().regex(/^v\d+$/),
+    currentStatus: z.enum(["in_progress", "accepted"]),
+    nextVersion: z.string().regex(/^v\d+$/).nullable(),
+    nextVersionStatus: z.enum(["locked", "unlocked"]).nullable(),
+    policySourcePath: z.string().min(1).max(240)
+  }).strict().optional().default({
+    namespace: "application_release",
+    currentVersion: "v0",
+    currentStatus: "in_progress",
+    nextVersion: null,
+    nextVersionStatus: null,
+    policySourcePath: "softwarehouse/portfolio/application-version-policy.json"
+  }),
   conflictState: z.enum(["none", "project_mapping_conflict", "owner_surface_unavailable"]),
   sourceControl: z.object({
     branch: z.string().min(1).max(120).nullable(),

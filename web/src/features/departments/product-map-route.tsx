@@ -324,13 +324,14 @@ export function ProductMapRoute() {
           {packet.items.map((item) => (
             <article className="min-w-0 rounded-company border border-base-300 bg-base-100 p-4" key={item.offeringId}>
               <div className="flex flex-wrap items-start justify-between gap-2">
-                <div className="min-w-0"><h2 className="break-words text-lg font-black text-company-ink">{item.paperclipProjectName}</h2><p className="mt-1 text-sm text-company-muted">Lifecycle: {item.lifecycleStage}</p></div>
+                <div className="min-w-0"><h2 className="break-words text-lg font-black text-company-ink">{item.paperclipProjectName}</h2><p className="mt-1 text-sm text-company-muted">Application {item.applicationVersion.currentVersion} · {item.applicationVersion.currentStatus.replace("_", " ")}</p><p className="mt-1 text-xs text-company-muted">Lifecycle: {item.lifecycleStage}</p></div>
                 <span className={`badge badge-outline shrink-0 font-black ${itemTone(result.status, item)}`}>{item.readiness.status}</span>
               </div>
               <dl className="mt-4 grid gap-3 text-sm">
                 <div className="grid gap-3 sm:grid-cols-2"><div><dt className="text-xs font-black uppercase text-company-muted">Source SHA</dt><dd className="mt-1 break-all font-mono font-bold text-company-ink">{item.sourceControl.sourceSha ?? "Unknown"}</dd></div><div><dt className="text-xs font-black uppercase text-company-muted">Deployed SHA</dt><dd className="mt-1 break-all font-mono font-bold text-company-ink">{item.sourceControl.deployedSha ?? "Unknown"}</dd></div></div>
                 <div><dt className="text-xs font-black uppercase text-company-muted">Alignment / conflict</dt><dd className="mt-1 break-words text-company-ink">{item.sourceControl.versionAlignment} / {item.conflictState}</dd></div>
                 <div><dt className="text-xs font-black uppercase text-company-muted">Evidence / open blockers</dt><dd className="mt-1 text-company-ink">{item.readiness.evidenceState} / {item.aggregates.issues.byStatus.blocked}</dd></div>
+                <div><dt className="text-xs font-black uppercase text-company-muted">Next application release</dt><dd className="mt-1 text-company-ink">{item.applicationVersion.nextVersion ? `${item.applicationVersion.nextVersion} · ${item.applicationVersion.nextVersionStatus ?? "unlocked"}` : "No next release declared"}</dd></div>
                 <div><dt className="text-xs font-black uppercase text-company-muted">Next evidence</dt><dd className="mt-1 leading-6 text-company-ink">{item.readiness.nextGate ?? "No next gate was provided."}</dd></div>
               </dl>
             </article>
