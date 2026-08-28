@@ -198,9 +198,10 @@ procedure merely by submitting a patch.
 
 ## UI surfaces
 
-- `11 Innovation`: portfolio, calculated readiness, application cockpit,
-  capability matrix and detail, gaps, architecture, interfaces, evidence,
-  capability library, packs, and blueprints.
+- `11 Innovation`: portfolio, calculated readiness, editable application
+  profile, application cockpit, capability matrix and detail, gaps,
+  architecture, interfaces, evidence, capability library, packs, and
+  blueprints.
 - `02 Products & Services`: offerings linked to the same applications,
   commercial lifecycle, sales/support readiness, and application
   productization blockers.

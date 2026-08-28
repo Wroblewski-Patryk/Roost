@@ -671,7 +671,7 @@ productEngineeringRouter.post("/applications/:id/dependencies", asyncHandler(asy
 productEngineeringRouter.get("/catalog", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
   const [domains, dimensions, packs, blueprints, technologies] = await Promise.all([
-    prisma.capabilityDomain.findMany({ where: { workspaceId }, include: { capabilities: { include: { readinessDimension: true, features: true } } }, orderBy: { position: "asc" } }),
+    prisma.capabilityDomain.findMany({ where: { workspaceId }, include: { capabilities: { include: { domain: true, readinessDimension: true, features: true } } }, orderBy: { position: "asc" } }),
     prisma.readinessDimensionDefinition.findMany({ where: { workspaceId }, orderBy: { position: "asc" } }),
     prisma.capabilityPack.findMany({ where: { workspaceId }, include: { items: { include: { capabilityDefinition: true } } }, orderBy: { name: "asc" } }),
     prisma.applicationBlueprint.findMany({ where: { workspaceId }, include: { capabilities: { include: { capabilityDefinition: true } } }, orderBy: { name: "asc" } }),
