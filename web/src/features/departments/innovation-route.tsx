@@ -605,7 +605,8 @@ function CapabilityMatrix({
 
   async function assign(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     await api(
       `/v1/product-engineering/applications/${application.id}/capabilities`,
       {
@@ -617,7 +618,7 @@ function CapabilityMatrix({
         }),
       },
     );
-    event.currentTarget.reset();
+    formElement.reset();
     await onRefresh();
   }
 
@@ -643,7 +644,8 @@ function CapabilityMatrix({
   async function addEvidence(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selected) return;
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     await api(
       `/v1/product-engineering/applications/${application.id}/evidence`,
       {
@@ -657,7 +659,7 @@ function CapabilityMatrix({
         }),
       },
     );
-    event.currentTarget.reset();
+    formElement.reset();
     await onRefresh();
   }
 
@@ -921,7 +923,8 @@ function CatalogView({
   const [error, setError] = useState<string | null>(null);
   async function createDefinition(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     try {
       await api("/v1/product-engineering/capability-definitions", {
         method: "POST",
@@ -935,7 +938,7 @@ function CatalogView({
           defaultApplicability: form.get("defaultApplicability"),
         }),
       });
-      event.currentTarget.reset();
+      formElement.reset();
       await onRefresh();
     } catch (caught) {
       setError(
@@ -1150,7 +1153,8 @@ export function InnovationRoute() {
   async function addArchitecture(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selected) return;
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     await api(
       `/v1/product-engineering/applications/${selected.id}/architecture`,
       {
@@ -1162,14 +1166,15 @@ export function InnovationRoute() {
         }),
       },
     );
-    event.currentTarget.reset();
+    formElement.reset();
     await loadCockpit(selected.id);
   }
 
   async function addInterface(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selected) return;
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     await api(
       `/v1/product-engineering/applications/${selected.id}/interfaces`,
       {
@@ -1184,7 +1189,7 @@ export function InnovationRoute() {
         }),
       },
     );
-    event.currentTarget.reset();
+    formElement.reset();
     await loadCockpit(selected.id);
   }
 
