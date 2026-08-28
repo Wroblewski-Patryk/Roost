@@ -1,6 +1,8 @@
 services:
   postgres:
     image: postgres:16-alpine
+    ports:
+      - "${ROOST_POSTGRES_PORT:-55432}:5432"
     environment:
       POSTGRES_DB: companycore
       POSTGRES_USER: companycore
@@ -25,7 +27,7 @@ services:
       SEED_API_KEY: ${SERVICE_PASSWORD_API_KEY:-dev-companycore-key}
       SERVICE_URL_BACKEND_3000: ${SERVICE_URL_BACKEND_3000:-http://localhost:3102}
     ports:
-      - "${BACKEND_PORT:-3102}:3000"
+      - "${ROOST_BACKEND_PORT:-3102}:3000"
 
 volumes:
   companycore_postgres:

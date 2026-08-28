@@ -1,2 +1,0 @@
-id,method,path,status,module,feature,handler_file,service_related,data_related,auth_required,tests_related,docs_related,evidence,risk_level,last_verified_at,notes
-API-000,GET,/example,planned,example,example,src/README.md,,,no,,,,medium,YYYY-MM-DD,Example only.

@@ -73,7 +73,6 @@ architecture may be insufficient. The agent must not self-approve the change.
 At minimum, keep these files aligned:
 
 - `docs/architecture/system-architecture.md`
-- `docs/architecture/architecture-evidence-system.md`
 - `docs/architecture/autonomous-company-operating-system.md`
 - `docs/architecture/tech-stack.md`
 - `docs/architecture/organizational-architecture-bridge.md`
@@ -92,8 +91,6 @@ At minimum, keep these files aligned:
 - `docs/DATABASE.md`
 - `docs/API.md`
 - `docs/INTEGRATIONS.md`
-- `docs/planning/auth-workspace-integration-plan.md`
-- `docs/planning/regression-prevention-plan.md`
 
 Projects may add more architecture docs or ADRs, but these baseline files
 should always stay current.
@@ -190,15 +187,6 @@ The approved v1 direction is:
   department web/backend work should use that document to define each
   department's purpose, subsystems, shared backend reuse, backend gaps, agent
   packet, safe actions, and recommended implementation order before coding.
-- CompanyCore now has an Obsidian-first architecture evidence system recorded
-  in `docs/architecture/architecture-evidence-system.md`. CSV registries under
-  `docs/architecture/nodes/`, `docs/architecture/relations/`,
-  `docs/architecture/chains/`, `docs/testing/test-map.csv`, and
-  `docs/status/evidence-status.csv` are the source of truth for mapped
-  features, routes, components, data models, tests, docs, agents, prompts,
-  workflows, events, dependencies, and proof. Future meaningful feature work
-  must update those records and run `npm run architecture:graph` before it can
-  be treated as officially mapped.
 
 ## Implementation Contract
 

@@ -1,2 +1,0 @@
-id,name,status,module,feature,file_path,route_or_surface,depends_on,api_related,tests_related,docs_related,evidence,risk_level,last_verified_at,notes
-COMP-000,Example component,planned,example,example,src/README.md,,,,,,,medium,YYYY-MM-DD,Example only.

@@ -12,7 +12,6 @@ Keep the repository predictable, searchable, and automation-friendly.
     `CHANGELOG.md`
   - runtime, package-manager, and build config files
   - infrastructure entry files such as compose files or CI config
-  - agent and context folders such as `.agents/`, `.claude/`, `.codex/`
   - source directories such as `apps/`, `packages/`, `scripts/`, `docs/`
 - Do not add ad-hoc project documentation files directly in root.
 
@@ -34,22 +33,11 @@ Keep the repository predictable, searchable, and automation-friendly.
   - `AGENTS.md` canonical list if relevant
   - planning or context files that referenced the old path
 
-## Evidence and Artifact Naming
+## Generated artifacts
 
-Use consistent, searchable names for evidence and generated artifacts so
-operators and agents can find the right proof quickly.
-
-- Prefer `kebab-case` for markdown docs.
-- For historical evidence docs, suffix with an ISO date: `-YYYY-MM-DD`.
-- When evidence ties to a specific deploy boundary, include a short commit SHA
-  in the filename: `-<sha7>` (or the shortest unambiguous SHA used by the
-  project).
-- Store generated outputs (JSON, logs, screenshots, exports) under the
-  appropriate domain folder (usually `docs/operations/` or `docs/planning/`).
-- Prefix generated artifacts with `_artifacts-` to keep them visibly
-  non-canonical and easy to filter.
-- Include enough context to disambiguate environment and command intent (for
-  example: `prod`, `staging`, `local`, `vps`).
+Generated reports, screenshots, logs, task histories and agent memory are not
+repository truth. Keep them in ignored temporary directories or external task
+systems. Never commit secrets or production data.
 
 ## Cross-Project Isolation
 
@@ -64,7 +52,6 @@ When moving or renaming docs in `docs/`:
 - Update internal links in the same change set.
 - Update `docs/README.md` if the canonical reading path changed.
 - Update `AGENTS.md` if the canonical file list changed.
-- Update `.codex/context/PROJECT_STATE.md` if canonical doc paths changed.
 - Search for stale paths with `rg` before closing the change.
 
 ## Enforcement

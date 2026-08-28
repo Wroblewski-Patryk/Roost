@@ -1,25 +1,30 @@
-# LuckySparrow Company Core v1
+# Roost (CompanyCore runtime) v1
 
-Company Core is the central backend for LuckySparrow operations. It stores the
+Roost is the central operating system for LuckySparrow operations. It stores the
 company's projects, goals, targets, tasks, clients, CRM pipeline, notes,
 decisions, AI agents, agent logs, system events, and API keys.
 
-This repository is intentionally a v1 foundation. It does not include a GUI and
-does not try to implement every business workflow. The goal is to provide a
-stable database, API boundary, Docker runtime, and documentation that a
-dedicated development agent can extend.
+This repository is intentionally a v1 foundation. It includes a backend-served
+React owner console for the active product routes; it does not try to expose
+every backend business workflow in the web UI. The goal is to provide a stable
+database, API/MCP boundary, Docker runtime, and documentation that a dedicated
+development agent can extend. `CompanyCore` remains the legacy technical
+identifier used by existing runtime contracts.
 
 ## Quick Start
 
 ```bash
 cp .env.example .env
-npm install
+npm ci
 npm run prisma:generate
-docker compose up -d
 ```
 
-The Docker path starts Postgres and the backend, pushes the Prisma schema, seeds
-the local API key, and exposes the API on `http://localhost:3102`.
+Continue with the executable [local development contract](docs/engineering/local-development.md).
+It covers the host watch-mode database, migrations and seed, backend-served
+React build, local PROD-like startup, Compose image readback, verification, and
+safe cleanup. The production-mode backend requires explicit non-placeholder
+local secrets, so a bare `docker compose up backend` is not the local quick
+start.
 
 Coolify uses `docker-compose.coolify.yml`, which keeps Postgres private and
 routes traffic through the Coolify proxy.
@@ -40,15 +45,14 @@ curl http://localhost:3102/health
 See `docs/` for architecture, database, API, integrations, deployment, and
 next-step handoff notes.
 
-## Agent Operating System
+## Agent execution
 
-Agent continuation state lives in `.agents/core/` and `.agents/state/`. These
-files define the startup order, execution loop, anti-regression checks, quality
-gates, current focus, known issues, regression log, system health, and next
-steps for future Codex sessions.
+Paperclip owns agent roles, assignments, coordination, execution state, and
+handoffs. This repository supplies Roost code and project-specific technical
+truth; it does not maintain a second agent operating system.
 
 ## Agent App-Building Helpers
 
 - `docs/governance/app-creation-playbook.md` turns loose app ideas into architecture and first slices.
 - `docs/governance/user-feedback-loop.md` keeps user notes and visual corrections durable.
-- `.codex/templates/handoff-packet-template.md` captures closeout context for the next agent.
+- Paperclip issues, comments, and work products carry execution handoffs.

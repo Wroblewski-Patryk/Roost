@@ -8,42 +8,40 @@ is not enough.
 
 - Static public JS check: `npm run check:public-js`
 - Route/capability drift check: `npm run check:route-capabilities`
-- Typecheck/build: `npm run build`
+- Typecheck: `npm run typecheck`
+- Structural lint: `npm run lint`
+- Build: `npm run build`
 - Combined local validation: `npm run validate`
 - Integration tests: `npm test`, `npm run test:api`, or
   `npm run test:api:local`
-- Docker smoke: `docker compose up -d --build`
+- Container build: `docker compose build backend`; use the PROD-like path in
+  [Local Development](local-development.md) for runtime smoke
 
-Keep this file aligned with `.codex/context/PROJECT_STATE.md`.
+Keep this file aligned with the package scripts and implemented runtime.
 
 `npm test` delegates to `npm run test:api` and expects `DATABASE_URL` to point
 at a disposable PostgreSQL database. `npm run test:api:local` is the preferred
 local entrypoint: it reuses `DATABASE_URL` when it is already set, or starts a
-validation-owned Docker PostgreSQL on port `55432`, applies migrations, runs
-the API tests, and removes the validation container unless
-`COMPANYCORE_TEST_DB_KEEP=1` is set. The underlying API test script builds
+temporary `companycore_test` database inside the existing Roost Compose
+PostgreSQL service on host port `55432`, applies migrations, runs the API
+tests, and drops only that test database afterward. It never creates a second
+PostgreSQL container. The underlying API test script builds
 TypeScript, applies migrations with `prisma migrate deploy`, and runs Node's
 built-in test runner against the compiled API integration tests.
 
 On Windows, if `docker` is installed but Docker Desktop's Linux engine is not
 running, `npm run test:api:local` attempts to launch Docker Desktop from
 `C:\Program Files\Docker\Docker\Docker Desktop.exe`, waits for `docker info`,
-then creates the disposable PostgreSQL container. Set
+then starts the Roost PostgreSQL Compose service. Set
 `COMPANYCORE_TEST_DB_START_DOCKER_DESKTOP=0` to disable this recovery path, or
 set `COMPANYCORE_DOCKER_DESKTOP_PATH` if Docker Desktop is installed in a
 different location. The runner still requires a safe local `companycore_test`
-database URL and removes the validation-owned container unless
-`COMPANYCORE_TEST_DB_KEEP=1` is set.
+database URL. If the Roost PostgreSQL service was stopped before the test, the
+runner stops it again after cleanup.
 
-Example local disposable database:
+Preferred local integration test:
 
 ```powershell
-docker run -d --name companycore-test-postgres `
-  -e POSTGRES_DB=companycore_test `
-  -e POSTGRES_USER=companycore `
-  -e POSTGRES_PASSWORD=companycore `
-  -p 55432:5432 postgres:16-alpine
-
 npm run test:api:local
 ```
 

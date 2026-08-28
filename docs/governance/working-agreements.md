@@ -2,8 +2,7 @@
 
 - Keep changes tiny, single-purpose, and reversible.
 - Keep docs and implementation in sync.
-- Use `.agents/workflows/documentation-governance.md` when deciding where new
-  repository truth should live.
+- Use `docs/README.md` when deciding where durable repository truth belongs.
 - Treat `docs/architecture/` as implementation law unless the user explicitly
   approves an architectural change.
 - If a better solution would require changing architecture, propose it in
@@ -12,7 +11,6 @@
 - Do not mark work done without validation evidence.
 - Keep repository artifacts in English.
 - Keep AI/user communication in the user's language.
-- Delegate via subagents only with explicit ownership and non-overlapping scope.
 - Keep root minimal. Project docs belong in `docs/`.
 - Do not reference files from sibling repositories.
 - Scope lock is mandatory: implement only explicitly requested behavior unless a
@@ -38,10 +36,7 @@
 - Treat every change as potentially cross-module until consumers are checked.
 - Do not remove shared code without verifying runtime, test, and doc references.
 - When runtime behavior changes, review deployment docs, smoke steps, and rollback notes in the same task.
-- Keep planning docs, task board, and project state synchronized.
+- Keep current planning documents synchronized with product and architecture
+  truth.
 - Treat docs parity as a release-quality requirement for structural changes:
   update affected architecture, module, route, and index docs in the same task.
-- Before reporting that no work is planned, cross-check active canonical queues
-  and non-canonical historical checklists separately.
-- When publishing a new execution plan, activate `NOW` and `NEXT` in canonical
-  queue files in the same turn.

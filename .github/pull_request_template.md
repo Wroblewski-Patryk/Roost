@@ -50,8 +50,7 @@ Journeys executed:
 - Logs:
 
 ## Context Updated
-- [ ] `.codex/context/TASK_BOARD.md`
-- [ ] `.codex/context/PROJECT_STATE.md`
+- [ ] Paperclip issue, comments, and work products updated where relevant
 - [ ] `docs/planning/*` if priorities or sequencing changed
 - [ ] Project docs or ADRs (if used):
 

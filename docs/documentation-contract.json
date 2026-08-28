@@ -5,31 +5,17 @@
   "defaultAgentContext": [
     "docs/README.md",
     "docs/product/product.md",
-    "docs/architecture/architecture-source-of-truth.md",
-    "docs/status/project-truth-index.json"
+    "docs/architecture/architecture-source-of-truth.md"
   ],
   "authority": {
     "product": ["docs/product/"],
     "architecture": ["docs/architecture/", "docs/decisions/"],
     "operations": ["docs/operations/"],
-    "activePlanning": ["docs/planning/open-decisions.md", "docs/planning/mvp-next-commits.md"],
-    "derivedStatus": ["docs/status/"],
-    "historical": ["history/"],
-    "ephemeral": [".codex/tasks/"]
+    "activePlanning": ["docs/planning/open-decisions.md", "docs/planning/mvp-next-commits.md"]
   },
-  "excludedFromDefaultContext": [
-    "history/",
-    "docs/graphs/",
-    "docs/obsidian/",
-    "docs/maps/",
-    ".codex/tasks/",
-    ".agents/state/"
-  ],
   "budgets": {
     "maxDefaultContextBytes": 150000,
-    "maxActiveStateFileBytes": 256000,
     "maxActivePlanningFileBytes": 256000,
-    "maxActivePlanningFiles": 40,
-    "maxTruthAgeHours": 24
+    "maxActivePlanningFiles": 10
   }
 }

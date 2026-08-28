@@ -1,2 +1,0 @@
-id,name,type,status,layer,module,feature,description,file_path,related_files,parent_id,child_ids,depends_on,used_by,ui_related,api_related,database_related,tests_related,docs_related,agent_related,risk_level,completion_percent,last_verified_at,verification_status,notes
-NODE-000,Example node,documentation,planned,documentation,example,example,Replace this sample row with real graph nodes.,docs/architecture/architecture-evidence-graph-system.md,,,,,,,,,,,low,0,YYYY-MM-DD,missing,Example only.

@@ -1,6 +1,6 @@
 # Web Layer React Ownership
 
-Last updated: 2026-05-20
+Last updated: 2026-08-14
 
 ## Decision
 
@@ -14,15 +14,14 @@ post-login landing route. `/dashboard` and `/react-dashboard` remain temporary
 compatibility aliases that redirect to the `00 Ogolny` selected-area
 dashboard.
 
-As of WEB-CORE-001 on 2026-05-16, the active React web product was
-intentionally narrowed. As of the 2026-05-20 function audit, the active web
-views are public home, login, registration, `00 General`, `04 Operations`,
-`06 People / Agents`, `08 Assets`, account settings, and workspace settings.
-Historical v0/v1 workbenches such as data, relationships, tasks, pipeline,
-Company OS cockpit, MCP catalog, and provider-specific setup consoles are not
-active web screens unless they have been rebuilt through the React route
-registry. Their backend APIs remain in place for future department-system
-rebuilds.
+WEB-CORE-001 narrowed the active web product in May 2026 and removed the legacy
+console. Subsequent accepted department work expanded the React route registry:
+the active web product now includes public home, login, registration, `00
+General`, the owner-facing product map, department views `01`-`12`, account
+settings, and workspace settings. Historical v0/v1 workbenches such as data,
+pipeline, Company OS cockpit, MCP catalog, and provider-specific setup consoles
+are not active web screens unless rebuilt through the React route registry.
+Their backend APIs remain in place for scoped department or settings rebuilds.
 
 React route metadata now lives in `web/src/app-route-registry.ts`. That file is
 the source of truth for the current active route set, compatibility aliases,
@@ -58,17 +57,15 @@ The Express web host serves the React bundle for:
 Active private route behavior:
 
 - `/areas?area=00-ogolny&view=overview`: canonical `00 General` dashboard.
-- `/areas?area=04-operacje&view=tasks`: `04 Operations` task board.
-- `/areas?area=04-operacje&view=calendar`: `04 Operations` calendar.
-- `/areas?area=06-kadry&view=directory`: `06 People / Agents` directory.
-- `/areas?area=08-zasoby&view=overview`: `08 Assets` overview.
-- `/areas?area=08-zasoby&view=files`: `08 Assets` files and folders.
+- `/areas?area=00-ogolny&view=product-map`: owner-facing product map.
+- `/areas?area=<department>&view=<view>`: canonical surface for department
+  workbenches `01`-`12`; accepted keys and default views live in
+  `web/src/app-route-registry.ts`.
 - `/dashboard`, `/react-dashboard`, and bare `/areas`: compatibility entries
   that normalize to the `00 General` dashboard.
-- `/operations`: compatibility entry that normalizes to the `04 Operations`
-  selected-area view.
+- `/operations`: compatibility entry that normalizes to `04 Operations`.
 - `/people-agents` and `/workforce`: compatibility entries that normalize to
-  the `06 People / Agents` directory.
+  `06 People / Agents`.
 - `/account/settings` and `/workspace/settings`: lightweight authenticated
   settings surfaces for account/workspace context.
 
@@ -100,16 +97,12 @@ remain under `/v1/*` and root protected compatibility routes.
 
 The current active React coverage is:
 
-- public home;
-- owner login;
-- owner registration;
-- `00 General` post-login dashboard;
-- `04 Operations` task board and calendar;
-- `06 People / Agents` directory;
-- `08 Assets` management read view and files/folders workbench;
-- account settings;
-- workspace settings.
-No old private workbench component remains in the active `web/src` bundle.
+- public home, owner login, and owner registration;
+- `00 General` post-login dashboard and owner-facing product map;
+- department workbenches for `01 Strategy` through `12 Management`;
+- account settings and workspace settings.
+
+No old private vanilla workbench remains in the active `web/src` bundle.
 
 These views consume existing backend contracts where applicable. The removed
 web views are not deleted from backend architecture; they are simply not active
@@ -118,20 +111,26 @@ as user-facing screens until rebuilt as department-specific management systems.
 ## Area Detail Routing
 
 The active area-first surface uses `/areas?area=:areaKey&view=:viewKey` for
-the approved management systems. Only these department keys are active in web:
+the approved management systems. These department keys are active in web:
 
 - `00-ogolny`
+- `01-strategia`
+- `02-produkt`
+- `03-sprzedaz`
 - `04-operacje`
+- `05-relacje`
 - `06-kadry`
+- `07-finanse`
 - `08-zasoby`
-
-Other `00`-`12` departments may be displayed as planned architecture context
-inside `00 General`, but they must not open unfinished web screens before a
-new scoped implementation task rebuilds them.
+- `09-technologia`
+- `10-prawo`
+- `11-innowacje`
+- `12-zarzadzanie`
 
 ## Known Follow-Up
 
-Settings, data, relationship review, tasks, pipeline, Company OS cockpit, MCP
-catalog, and connector workbenches are future rebuild candidates, not active
-web surfaces. Reintroduce them only through a department-specific management
+Deeper settings, generic data editing, pipeline, Company OS cockpit, MCP
+catalog, and provider-specific connector workbenches remain future rebuild
+candidates where their capabilities are not already represented by a current
+department view. Reintroduce them only through a department-specific management
 system or explicit admin/settings task contract.

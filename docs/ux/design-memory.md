@@ -260,8 +260,8 @@ of rediscovering them.
 - Evidence:
   `docs/planning/operations-management-board-implementation-task-contract.md`,
   `docs/planning/operations-management-board-ux-polish-task-contract.md`,
-  `web/src/features/departments/operations-route.tsx`, and API regression plus
-  Playwright proof recorded in `.agents/state/system-health.md`.
+  `web/src/features/departments/operations-route.tsx`, plus the relevant API
+  regression and browser checks.
 
 ### 2026-05-15 - V1 Unified Settings Module
 - Type: reusable_pattern

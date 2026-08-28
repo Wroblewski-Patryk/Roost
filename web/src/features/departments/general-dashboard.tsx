@@ -50,11 +50,11 @@ export function GeneralDashboard() {
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-3 rounded-company border border-base-300 bg-base-200/45 p-4">
           <div className="min-w-0">
-            <p className="text-xs font-black uppercase text-company-muted">Versioned product map</p>
-            <p className="mt-1 text-sm text-company-muted">Compare source SHA, deployed SHA, and freshness before treating a release as usable.</p>
+            <p className="text-xs font-black uppercase text-company-muted">{t("productMap.dashboardLabel")}</p>
+            <p className="mt-1 text-sm text-company-muted">{t("productMap.dashboardDescription")}</p>
           </div>
           <CcButton href="/areas?area=00-ogolny&view=product-map" iconRight="ph-arrow-right" variant="primary">
-            Open product map
+            {t("productMap.open")}
           </CcButton>
         </div>
       </section>

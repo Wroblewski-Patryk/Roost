@@ -55,11 +55,7 @@ context.
 - `web/src/react-route-kit.tsx`
 - `docs/architecture/system-architecture.md`
 - `docs/ux/design-system-contract.md`
-- `docs/ux/web-app-ux100-audit-and-execution-plan-2026-05-15.md`
 - `docs/ux/visual-direction-brief.md`
-- `.codex/context/PROJECT_STATE.md`
-- `.codex/context/TASK_BOARD.md`
-- `.agents/state/module-confidence-ledger.md`
 
 ## Current UI Audit
 

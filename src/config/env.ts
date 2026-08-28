@@ -1,4 +1,8 @@
-import "dotenv/config";
+import { config as loadDotenv } from "dotenv";
+
+if (process.env.NODE_ENV !== "test" && process.env.COMPANYCORE_SKIP_DOTENV !== "1") {
+  loadDotenv();
+}
 
 const productionCorsFallbackOrigins = [
   "https://roost.luckysparrow.ch",

@@ -1,6 +1,6 @@
 # V1 Code Surface Index
 
-Last updated: 2026-05-10
+Last updated: 2026-08-14
 
 ## Purpose
 
@@ -19,14 +19,14 @@ Use it with:
 
 | Surface | Path | Notes |
 | --- | --- | --- |
-| Backend app composition | `src/app.ts` | Express app, public/static route split, React route allowlist, protected `/v1` routes. |
+| Backend app composition | `src/app.ts` | Express app, static asset host, React route allowlist, protected `/v1` routes. |
 | Server entrypoint | `src/server.ts` | Runtime startup. |
 | Database schema | `prisma/schema.prisma` | PostgreSQL source-of-truth schema. |
 | Seed data | `prisma/seed.ts` | LuckySparrow baseline data, operating model, Company OS seeds. |
 | React app source | `web/src/main.tsx` | React dashboards and workbenches. |
+| React route registry | `web/src/app-route-registry.ts` | Canonical active routes, compatibility aliases, navigation metadata, and post-auth normalization. |
 | React shared route kit | `web/src/react-route-kit.tsx` | Shared API clients, state hooks, shell, notices, metrics, table primitives. |
-| Vanilla owner console | `public/app.js` | Existing owner setup/editor console retained for routes not yet moved to React. |
-| Generated React build | `public/react/` | Build output created by `npm run build:web`. |
+| Generated React build | `public/react/` | Active owner-console bundle created by `npm run build:web`; generated output is not route source truth. |
 | MCP bridge | `scripts/companycore-mcp-server.mjs` | Thin stdio bridge over `/v1/mcp/manifest`. |
 | MCP smoke | `scripts/companycore-mcp-smoke.mjs` | Bridge smoke for initialize, tools/list, and a safe Company OS tool call. |
 
@@ -77,19 +77,14 @@ Use it with:
 
 | Route | Current owner | Status |
 | --- | --- | --- |
-| `/areas` | React | Canonical React areas workbench after UXA-030. |
-| `/react-areas` | React | Alias for comparison and rollback. |
-| `/react-company-os` | React | Company OS cockpit. |
-| `/react-dashboard` | React | React dashboard preview. |
-| `/react-tasks` | React | React task workbench preview. |
-| `/react-integrations` | React | React integration map preview. |
-| `/dashboard` | Vanilla | Existing owner command center route. |
-| `/data`, `/data/:table` | Vanilla | Data index and table/editor workbenches. |
-| `/relationships` | Vanilla | Relationship review center. |
-| `/tasks-adapter` | Vanilla | Existing task adapter workbench. |
-| `/pipeline` | Vanilla | Pipeline/CRM workbench. |
-| `/settings`, `/settings/account`, `/settings/integrations`, `/settings/drive`, `/settings/api` | Vanilla | Owner setup and settings surfaces. |
-| `/auth/login`, `/auth/register` | Vanilla | Public auth surfaces. |
+| `/` | React | Public home. |
+| `/auth/login`, `/auth/register` | React | Public owner authentication routes. |
+| `/areas?area=00-ogolny&view=overview` | React | Canonical post-login `00 General` dashboard. |
+| `/areas?area=00-ogolny&view=product-map` | React | Canonical owner-facing product map. |
+| `/areas?area=01-strategia` through `/areas?area=12-zarzadzanie` | React | Active department workbenches; canonical query and view values are defined by the route registry. |
+| `/dashboard`, `/react-dashboard`, `/operations`, `/people-agents`, `/workforce` | React | Compatibility aliases normalized to canonical `/areas` routes. |
+| `/account/settings`, `/workspace/settings` | React | Authenticated account and workspace settings. |
+| Retired private paths such as `/data`, `/relationships`, `/pipeline`, and provider-specific setup routes | None | Not active web routes; protected backend contracts remain available for scoped React rebuilds and API/MCP use. |
 
 ## Integration Services
 
@@ -109,7 +104,7 @@ Use it with:
 | `npm test` | Build, migrations, and Node integration test suite against a database. |
 | `npm run owner-console:ux-smoke` | Authenticated owner-console screenshots and route checks. |
 | `npm run mcp:smoke` | MCP bridge initialize, tools/list, and safe Company OS tool call. |
-| `docker compose up -d --build` | Local container build/runtime shape. |
+| `docker compose build backend` | Local container image build; runtime smoke follows `docs/engineering/local-development.md`. |
 | `docker compose exec -T backend sh -lc "npm run prisma:migrate:deploy && npm run seed"` | Container migration and seed gate. |
 | `git diff --check` | Whitespace/conflict marker guard. |
 
@@ -120,4 +115,3 @@ Use it with:
 - Do not add aspirational rows without code evidence.
 - Use the function coverage ledger for confidence/evidence status; use this
   file for code-surface orientation.
-

@@ -1,2 +1,0 @@
-id,name,status,layer,module,feature,file_path,signature_or_entrypoint,depends_on,used_by,tests_related,docs_related,evidence,risk_level,last_verified_at,notes
-FUNC-000,Example function,planned,backend,example,example,src/README.md,example(),,,,,,medium,YYYY-MM-DD,Example only.

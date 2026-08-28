@@ -1,6 +1,6 @@
 # Coolify VPS Deployment Contract
 
-CompanyCore v1 deploys as a single backend Docker Compose application on a
+Roost (the CompanyCore runtime) deploys as a single backend Docker Compose application on a
 Coolify-compatible VPS. The same backend serves a minimal owner web console on
 the web domain and the JSON API on the API domain. The deployment must preserve
 PostgreSQL data.
@@ -13,13 +13,14 @@ PostgreSQL data.
   - Web UI: `roost.luckysparrow.ch`
   - API: `api.roost.luckysparrow.ch`
 - Public service: `backend` on container port `3000`.
-- Public web surface: minimal owner console served by `backend` at `/`.
+- Public web surface: React owner console served by `backend` from the generated
+  `public/react/` bundle; legacy vanilla owner-console routes are not active.
 - Private services: `postgres`.
 
 ## Runtime Inventory
 
 - Main app services:
-  - `backend`: Node.js/Express API plus minimal static owner console.
+  - `backend`: Node.js/Express API plus the backend-served React owner console.
   - `postgres`: PostgreSQL database.
 - Worker or cron services: none in v1.
 - Databases: PostgreSQL 16.

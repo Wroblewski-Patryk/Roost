@@ -23,12 +23,9 @@ CompanyCore repository:
 - `tests/connectors/test_companycore.py`
 - `tests/server/test_companycore_context.py`
 
-CompanyCore tracks the deployment state and evidence here:
-
-- `.codex/context/PROJECT_STATE.md`
-- `.codex/context/TASK_BOARD.md`
-- `docs/planning/mvp-next-commits.md`
-- `docs/operations/post-deploy-smoke.md`
+CompanyCore tracks durable deployment guidance in
+`docs/operations/post-deploy-smoke.md`, with current development priorities in
+`docs/planning/mvp-next-commits.md`.
 
 ## Required Runtime Environment
 
@@ -235,12 +232,9 @@ Confirm that the chat context injector is deployed:
 
 ## Documentation Updates After Deployment
 
-After a successful update, refresh these files:
-
-- `.codex/context/PROJECT_STATE.md`
-- `.codex/context/TASK_BOARD.md`
-- `docs/planning/mvp-next-commits.md`
-- `docs/operations/post-deploy-smoke.md` when new smoke evidence is material
+After a successful update, refresh `docs/planning/mvp-next-commits.md` when the
+development queue changes and update `docs/operations/post-deploy-smoke.md`
+when the smoke contract itself changes.
 
 Record only key prefixes or IDs when needed. Never record raw API keys,
 session cookies, database passwords, or login passwords.
