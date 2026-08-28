@@ -3,17 +3,28 @@ import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
 import { CcNotice } from "../../components/cc-notice";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
+import { formatAppDate } from "../../i18n/date-format";
 import { useLanguage } from "../../i18n/i18n";
 import { Shell } from "../../layout/shell";
 import { AuthMe, ConnectionPacket, IntegrationStatus, LoadState } from "../../types";
 
-function SettingRow({ label, value }: { label: string; value?: string | null }) {
+function SettingRow({ icon, label, value }: { icon?: string; label: string; value?: string | null }) {
   return (
-    <div className="rounded-company border border-base-300 bg-base-100 p-4">
-      <p className="text-xs font-black uppercase text-company-muted">{label}</p>
-      <strong className="mt-1 block break-words text-company-ink">{value || "—"}</strong>
+    <div className="roost-settings-fact">
+      {icon ? <i className={`ph-bold ${icon}`} aria-hidden="true"></i> : null}
+      <span><small>{label}</small><strong>{value || "—"}</strong></span>
     </div>
   );
+}
+
+function roleLabel(role: string | undefined, t: ReturnType<typeof useLanguage>["t"]) {
+  return role === "owner" ? t("account.role.owner") : role || "—";
+}
+
+function authLabel(authType: AuthMe["authType"] | undefined, t: ReturnType<typeof useLanguage>["t"]) {
+  if (authType === "user") return t("account.auth.user");
+  if (authType === "api_key") return t("account.auth.api_key");
+  return "—";
 }
 
 function safeConfigKeys(config?: Record<string, unknown>) {
@@ -91,10 +102,10 @@ function IntegrationCard({
   const configured = Boolean(status?.secretConfigured ?? status?.configured);
   const active = Boolean(status?.active);
   const configKeys = safeConfigKeys(status?.config);
-  const updatedAt = status?.updatedAt ? new Date(status.updatedAt).toLocaleString() : null;
+  const updatedAt = status?.updatedAt ? formatAppDate(status.updatedAt, { dateStyle: "medium", timeStyle: "short" }) : null;
 
   return (
-    <article className="rounded-company border border-base-300 bg-base-100 p-4">
+    <article className="roost-integration-card">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <span className="grid size-10 shrink-0 place-items-center rounded-company bg-primary/10 text-primary">
@@ -144,18 +155,32 @@ export function AccountSettingsRoute() {
 
   return (
     <Shell>
-      <section className="rounded-company border border-base-300 bg-base-100 p-5">
-        <p className="text-sm font-black uppercase text-primary">{t("user.myAccount")}</p>
-        <h1 className="mt-2 text-3xl font-black text-company-ink">{t("account.title")}</h1>
-        <p className="mt-3 max-w-3xl leading-7 text-company-muted">{t("account.description")}</p>
-      </section>
-      {profile.status === "error" ? <CcNotice tone="error" title={profile.error || t("errors.request_failed")} live /> : null}
-      <section className="grid gap-3 md:grid-cols-2">
-        <SettingRow label={t("account.userId")} value={profile.data?.userId} />
-        <SettingRow label={t("account.authType")} value={profile.data?.authType} />
-        <SettingRow label={t("workspace.label")} value={activeWorkspace?.name} />
-        <SettingRow label={t("account.role")} value={activeWorkspace?.role} />
-      </section>
+      <div className="roost-settings-page">
+        <header className="roost-settings-header">
+          <span>{t("user.myAccount")}</span>
+          <h1>{t("account.title")}</h1>
+          <p>{t("account.description")}</p>
+        </header>
+        {profile.status === "error" ? <CcNotice tone="error" title={profile.error || t("errors.request_failed")} live /> : null}
+        <section className="roost-settings-panel" aria-labelledby="account-session-heading">
+          <header>
+            <span className="roost-settings-panel-icon"><i className="ph-bold ph-user-circle" aria-hidden="true"></i></span>
+            <div><h2 id="account-session-heading">{t("account.session")}</h2><p>{t("account.sessionDescription")}</p></div>
+            <span className="roost-settings-status is-ready"><i aria-hidden="true"></i>{t("state.ready")}</span>
+          </header>
+          <div className="roost-settings-facts">
+            <SettingRow icon="ph-buildings" label={t("workspace.label")} value={activeWorkspace?.name} />
+            <SettingRow icon="ph-crown" label={t("account.role")} value={roleLabel(activeWorkspace?.role, t)} />
+            <SettingRow icon="ph-fingerprint" label={t("account.authType")} value={authLabel(profile.data?.authType, t)} />
+            <SettingRow icon="ph-shield-check" label={t("account.accessScope")} value={t("account.workspaceBound")} />
+          </div>
+          <details className="roost-settings-technical">
+            <summary>{t("account.technicalDetails")}</summary>
+            <p>{t("account.technicalDescription")}</p>
+            <dl><div><dt>{t("account.userId")}</dt><dd>{profile.data?.userId || "—"}</dd></div><div><dt>{t("workspaceSettings.id")}</dt><dd>{activeWorkspace?.id || profile.data?.workspaceId || "—"}</dd></div></dl>
+          </details>
+        </section>
+      </div>
     </Shell>
   );
 }
@@ -169,7 +194,6 @@ export function WorkspaceSettingsRoute() {
   const clickUpSetting = useIntegrationSetting("clickup", connection.status === "ready" && Boolean(clickUpConnectionStatus?.configured || clickUpConnectionStatus?.secretConfigured));
   const googleDriveSetting = useIntegrationSetting("google_drive", connection.status === "ready" && Boolean(googleDriveConnectionStatus?.configured || googleDriveConnectionStatus?.secretConfigured));
   const activeWorkspace = profile.data?.workspaces?.find((workspace) => workspace.active);
-  const connectionReady = connection.status === "ready" && connection.data?.status === "ok";
   const configuredCount = [
     clickUpSetting.data ?? clickUpConnectionStatus,
     googleDriveSetting.data ?? googleDriveConnectionStatus
@@ -177,36 +201,40 @@ export function WorkspaceSettingsRoute() {
 
   return (
     <Shell>
-      <section className="rounded-company border border-base-300 bg-base-100 p-5">
-        <p className="text-sm font-black uppercase text-primary">{t("workspace.settings")}</p>
-        <h1 className="mt-2 text-3xl font-black text-company-ink">{t("workspaceSettings.title")}</h1>
-        <p className="mt-3 max-w-3xl leading-7 text-company-muted">{t("workspaceSettings.description")}</p>
-      </section>
-      {profile.status === "error" ? <CcNotice tone="error" title={profile.error || t("errors.request_failed")} live /> : null}
-      {connection.status === "loading" ? <CcNotice tone="loading" title={t("workspaceSettings.connectionLoading")} detail={t("workspaceSettings.connectionLoadingDetail")} /> : null}
-      {connection.status === "error" ? <CcNotice tone="error" title={t("workspaceSettings.connectionError")} detail={connection.error || t("errors.request_failed")} live /> : null}
-      <section className="grid gap-3 md:grid-cols-2">
-        <SettingRow label={t("workspaceSettings.name")} value={activeWorkspace?.name} />
-        <SettingRow label={t("workspaceSettings.id")} value={activeWorkspace?.id || profile.data?.workspaceId} />
-        <SettingRow label={t("account.role")} value={activeWorkspace?.role} />
-        <SettingRow label={t("workspaceSettings.availableWorkspaces")} value={String(profile.data?.workspaces?.length || 0)} />
-      </section>
-      <section className="rounded-company border border-base-300 bg-base-100 p-5">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-black text-company-ink">{t("workspaceSettings.integrations")}</h2>
-            <p className="mt-2 max-w-3xl text-company-muted">{t("workspaceSettings.integrationsDescription")}</p>
+      <div className="roost-settings-page">
+        <header className="roost-settings-header">
+          <span>{t("workspace.settings")}</span>
+          <h1>{t("workspaceSettings.title")}</h1>
+          <p>{t("workspaceSettings.description")}</p>
+        </header>
+        {profile.status === "error" ? <CcNotice tone="error" title={profile.error || t("errors.request_failed")} live /> : null}
+        {connection.status === "loading" ? <CcNotice tone="loading" title={t("workspaceSettings.connectionLoading")} detail={t("workspaceSettings.connectionLoadingDetail")} /> : null}
+        {connection.status === "error" ? <CcNotice tone="error" title={t("workspaceSettings.connectionError")} detail={connection.error || t("errors.request_failed")} live /> : null}
+        <section className="roost-settings-panel" aria-labelledby="workspace-summary-heading">
+          <header>
+            <span className="roost-settings-panel-icon"><i className="ph-bold ph-buildings" aria-hidden="true"></i></span>
+            <div><h2 id="workspace-summary-heading">{activeWorkspace?.name || t("workspace.current")}</h2><p>{t("shell.workspaceSafe")}</p></div>
+            <span className="roost-settings-status is-ready"><i aria-hidden="true"></i>{t("state.ready")}</span>
+          </header>
+          <div className="roost-settings-facts">
+            <SettingRow icon="ph-buildings" label={t("workspaceSettings.name")} value={activeWorkspace?.name} />
+            <SettingRow icon="ph-crown" label={t("account.role")} value={roleLabel(activeWorkspace?.role, t)} />
+            <SettingRow icon="ph-stack" label={t("workspaceSettings.availableWorkspaces")} value={String(profile.data?.workspaces?.length || 0)} />
+            <SettingRow icon="ph-shield-check" label={t("workspaceSettings.scopeMode")} value={connection.data?.scopeMode === "scoped" ? t("workspaceSettings.scope.scoped") : t("workspaceSettings.scope.broad")} />
           </div>
-          <span className={`badge ${connectionReady ? "badge-success" : "badge-warning"} badge-outline font-black`}>
-            {connectionReady ? t("workspaceSettings.connectionReady") : t("workspaceSettings.connectionNeedsAttention")}
-          </span>
-        </div>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <SettingRow label={t("workspaceSettings.service")} value={connection.data?.service} />
-          <SettingRow label={t("workspaceSettings.scopeMode")} value={connection.data?.scopeMode} />
-          <SettingRow label={t("workspaceSettings.configuredProviders")} value={`${configuredCount}/2`} />
-        </div>
-        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <details className="roost-settings-technical">
+            <summary>{t("account.technicalDetails")}</summary>
+            <p>{t("account.technicalDescription")}</p>
+            <dl><div><dt>{t("workspaceSettings.id")}</dt><dd>{activeWorkspace?.id || profile.data?.workspaceId || "—"}</dd></div><div><dt>{t("workspaceSettings.service")}</dt><dd>{connection.data?.service ? t("workspaceSettings.service.roost") : "—"}</dd></div></dl>
+          </details>
+        </section>
+        <section className="roost-settings-panel" aria-labelledby="workspace-integrations-heading">
+          <header>
+            <span className="roost-settings-panel-icon"><i className="ph-bold ph-plugs-connected" aria-hidden="true"></i></span>
+            <div><h2 id="workspace-integrations-heading">{t("workspaceSettings.integrations")}</h2><p>{t("workspaceSettings.integrationsDescription")}</p></div>
+            <span className={`roost-settings-status${configuredCount === 2 ? " is-ready" : " is-warning"}`}><i aria-hidden="true"></i>{t("workspaceSettings.integrationsStatus", { count: configuredCount, total: 2 })}</span>
+          </header>
+          <div className="roost-integration-grid">
           <IntegrationCard
             connectionStatus={clickUpConnectionStatus}
             icon="ph-kanban"
@@ -219,19 +247,20 @@ export function WorkspaceSettingsRoute() {
             settingStatus={googleDriveSetting}
             title={t("workspaceSettings.googleDrive")}
           />
-        </div>
-        <div className="mt-4">
+          </div>
+          <div className="roost-settings-notice">
           <CcNotice
             detail={t("workspaceSettings.noSecretsDetail")}
             title={t("workspaceSettings.noSecretsTitle")}
             tone="info"
           />
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
+          </div>
+          <div className="roost-settings-actions">
           <CcButton href="/areas?area=09-technologia&view=overview" iconLeft="ph-plugs-connected" variant="outline">{t("workspaceSettings.technologyBoard")}</CcButton>
           <CcButton href="/areas?area=08-zasoby&view=files" iconLeft="ph-folder-open" variant="outline">{t("workspaceSettings.assetFiles")}</CcButton>
-        </div>
-      </section>
+          </div>
+        </section>
+      </div>
     </Shell>
   );
 }

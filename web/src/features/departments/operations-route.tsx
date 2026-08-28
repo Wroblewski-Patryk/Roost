@@ -9,6 +9,7 @@ import { CcTextInput } from "../../components/cc-text-input";
 import { Shell } from "../../layout/shell";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
+import { formatAppDate } from "../../i18n/date-format";
 import { CoreAreaKey, OperationsDepartment, OperationsPacket, OperationsStatusColumn, OperationsTaskList, OperationsWorkItem } from "../../types";
 import { departmentLabel } from "./department-labels";
 import { ProceduresWorkbench } from "./procedures-workbench";
@@ -35,15 +36,15 @@ function currentOperationsView(): OperationsView {
 
 function formatDate(value?: string | null) {
   if (!value) return "-";
-  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(new Date(value));
+  return formatAppDate(value, { month: "short", day: "numeric" });
 }
 
 function formatLongDate(value: Date) {
-  return new Intl.DateTimeFormat(undefined, { weekday: "long", month: "short", day: "numeric", year: "numeric" }).format(value);
+  return formatAppDate(value, { weekday: "long", month: "short", day: "numeric", year: "numeric" });
 }
 
 function formatWeekday(value: Date) {
-  return new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric" }).format(value);
+  return formatAppDate(value, { weekday: "short", day: "numeric" });
 }
 
 function inputDate(value?: string | null) {
@@ -1165,8 +1166,8 @@ function OperationsCalendar({
   const rangeLabel = mode === "day"
     ? formatLongDate(anchorDate)
     : mode === "week"
-      ? `${new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(weekDays[0])} - ${new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(weekDays[6])}`
-      : new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" }).format(anchorDate);
+      ? `${formatAppDate(weekDays[0], { month: "short", day: "numeric" })} - ${formatAppDate(weekDays[6], { month: "short", day: "numeric", year: "numeric" })}`
+      : formatAppDate(anchorDate, { month: "long", year: "numeric" });
   const hasActiveTaskFilter = taskQuery.trim().length > 0 || priorityFilter !== "all" || dateFilter !== "all";
 
   function moveRange(direction: -1 | 1) {

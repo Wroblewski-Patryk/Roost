@@ -239,6 +239,48 @@ Overview -> Area -> Capability -> Record -> Evidence -> AI action
 This is the V1 progressive-disclosure model. It keeps the surface calm for a
 CEO while still exposing backend capability when the user drills into an area.
 
+### 2026-08-28 Authenticated Console Refinement
+
+The accepted private-web direction is the **Liquid Command Deck**. It refines
+the V1 area-first model without changing route, backend, or data ownership:
+
+- authenticated pages use one deep graphite Roost shell with a restrained
+  liquid-glass material for persistent chrome, transient overlays, and the
+  contextual decision surface;
+- data-heavy work surfaces remain calm, dark, and highly legible instead of
+  turning every record into a glowing glass card;
+- the ambient aurora asset may add depth behind the shell and Company Pulse,
+  but it must never reduce text contrast or compete with operational content;
+- the sidebar is the single home for workspace switching, account settings,
+  workspace settings, and sign-out; these actions must not be duplicated in
+  the top command bar;
+- workspace menus, mobile navigation, command search, and contextual inspectors
+  open as layers over the current workbench. Opening them must never resize,
+  shift, or create empty space in the dashboard;
+- every workspace switcher exposes an explicit `Workspace` label, workspace
+  name, safety state, and clear expanded state;
+- transparency is progressive enhancement: reduced-transparency preferences
+  and browsers without backdrop filtering receive an opaque, equally legible
+  fallback;
+- the top command bar contains only current location, command search,
+  workspace safety, and language selection;
+- authenticated pages use one coherent shell with a narrow company-area
+  sidebar and a compact context command bar;
+- the sidebar shows the 13 areas as the stable primary structure and exposes
+  subviews only for the selected area;
+- page headers are compact and separate from the main work surface;
+- `00 General` is an owner decision surface ordered by attention, next action,
+  operating health, routing, guardrails, and agent handoff;
+- repeated records use rows, tables, boards, timelines, and split views before
+  cards; cards remain reserved for genuinely independent objects;
+- badges are reserved for concise operational status or risk and must not be
+  used as general metadata decoration;
+- the Company Atlas and future Company City remain orientation and exploration
+  views, not mandatory chrome around daily workbenches.
+
+The authenticated console should answer within three seconds: where am I,
+what matters now, what is blocked, and what can I do next.
+
 ## Authenticated Shell Contract
 
 All private web routes should converge on one CompanyCore shell rather than

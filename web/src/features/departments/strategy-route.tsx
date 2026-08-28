@@ -2,13 +2,14 @@ import { CcDataTable, type CcTableColumn } from "../../components/cc-data-table"
 import { CcNotice } from "../../components/cc-notice";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
+import { formatAppDate } from "../../i18n/date-format";
 import { Shell } from "../../layout/shell";
 import { StrategyPacket } from "../../types";
 import { BlockedActions, SummaryGrid, useTranslatedTableLabels } from "./shared";
 
 function formatDate(value?: string | null) {
   if (!value) return "-";
-  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(new Date(value));
+  return formatAppDate(value, { month: "short", day: "numeric" });
 }
 
 export function StrategyRoute() {

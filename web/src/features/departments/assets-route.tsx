@@ -10,6 +10,7 @@ import { CcTextInput } from "../../components/cc-text-input";
 import { Shell } from "../../layout/shell";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage, type Translate } from "../../i18n/i18n";
+import { formatAppDate } from "../../i18n/date-format";
 import { AssetResource, AssetsPacket, CoreAreaKey } from "../../types";
 import { SummaryGrid } from "./shared";
 import { coreAreas } from "./core-area-data";
@@ -84,7 +85,7 @@ function resourceSummary(resource: AssetResource) {
 
 function formatDate(value?: string | null) {
   if (!value) return "-";
-  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(new Date(value));
+  return formatAppDate(value, { month: "short", day: "numeric" });
 }
 
 function departmentForResource(resource: AssetResource): CoreAreaKey | "unassigned" {
