@@ -36,6 +36,7 @@ const protectedMounts = new Map([
   ["clients.routes.ts", "/clients"],
   ["pipeline-stages.routes.ts", "/pipeline-stages"],
   ["process-core.routes.ts", "/process-core"],
+  ["product-engineering.routes.ts", "/product-engineering"],
   ["deals.routes.ts", "/deals"],
   ["interactions.routes.ts", "/interactions"],
   ["notes.routes.ts", "/notes"],

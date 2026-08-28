@@ -17,26 +17,29 @@ type ViewDefinition = {
 const DEFAULT_DEPARTMENTS = [
   { key: "00-ogolny", name: "00 General", description: "Company orchestration, routing, and cross-department command.", icon: "ph-map-trifold", position: 0, linkedViews: ["general.overview"] },
   { key: "01-strategia", name: "01 Strategy", description: "Strategic goals, decisions, priorities, and roadmap governance.", icon: "ph-target", position: 1, linkedViews: [] },
-  { key: "02-produkt", name: "02 Product", description: "Product and service definition, delivery scope, and improvement loops.", icon: "ph-package", position: 2, linkedViews: [] },
+  { key: "02-produkt", name: "02 Product", description: "Product and service definition, delivery scope, and improvement loops.", icon: "ph-package", position: 2, linkedViews: ["product.overview"] },
   { key: "03-sprzedaz", name: "03 Sales", description: "Lead, offer, deal, and commercial follow-up management.", icon: "ph-handshake", position: 3, linkedViews: [] },
-  { key: "04-operacje", name: "04 Operations", description: "Procedures, task boards, calendars, routines, and operational controls.", icon: "ph-list-checks", position: 4, linkedViews: ["operations.tasks", "operations.calendar"] },
+  { key: "04-operacje", name: "04 Operations", description: "Procedures, task boards, calendars, routines, and operational controls.", icon: "ph-list-checks", position: 4, linkedViews: ["operations.tasks", "operations.calendar", "operations.procedures"] },
   { key: "05-relacje", name: "05 Relationships", description: "Clients, partners, support, feedback, and relationship evidence.", icon: "ph-address-book", position: 5, linkedViews: [] },
   { key: "06-kadry", name: "06 People / Agents", description: "People, AI agents, roles, responsibilities, and workload context.", icon: "ph-users-three", position: 6, linkedViews: ["people.directory"] },
   { key: "07-finanse", name: "07 Finance", description: "Revenue, costs, budgets, invoices, and commercial exceptions.", icon: "ph-bank", position: 7, linkedViews: [] },
   { key: "08-zasoby", name: "08 Assets", description: "Files, folders, resources, repositories, prompts, and knowledge roots.", icon: "ph-folder-open", position: 8, linkedViews: ["assets.overview", "assets.files"] },
   { key: "09-technologia", name: "09 Technology", description: "Code, infrastructure, deployments, integrations, and technical health.", icon: "ph-cpu", position: 9, linkedViews: [] },
   { key: "10-prawo", name: "10 Legal", description: "Contracts, compliance, approvals, and legal risk control.", icon: "ph-scales", position: 10, linkedViews: [] },
-  { key: "11-innowacje", name: "11 Innovation", description: "Research, experiments, discovery, and improvement portfolio.", icon: "ph-lightbulb", position: 11, linkedViews: [] },
+  { key: "11-innowacje", name: "11 Innovation", description: "Research, experiments, discovery, and improvement portfolio.", icon: "ph-lightbulb", position: 11, linkedViews: ["innovation.overview"] },
   { key: "12-zarzadzanie", name: "12 Management", description: "Executive control, department administration, approvals, and portfolio steering.", icon: "ph-chart-line-up", position: 12, linkedViews: ["management.departments", "management.approvals", "management.portfolio", "management.kpis", "management.escalations", "management.reviews"] }
 ] as const;
 
 const AVAILABLE_VIEWS: ViewDefinition[] = [
   { id: "general.overview", label: "Company dashboard", href: "/areas?area=00-ogolny&view=overview", icon: "ph-gauge", sourceDepartmentKey: "00-ogolny", enabled: true },
+  { id: "product.overview", label: "Products and services", href: "/areas?area=02-produkt&view=overview", icon: "ph-package", sourceDepartmentKey: "02-produkt", enabled: true },
   { id: "operations.tasks", label: "Operations tasks", href: "/areas?area=04-operacje&view=tasks", icon: "ph-list-checks", sourceDepartmentKey: "04-operacje", enabled: true },
   { id: "operations.calendar", label: "Operations calendar", href: "/areas?area=04-operacje&view=calendar", icon: "ph-calendar-blank", sourceDepartmentKey: "04-operacje", enabled: true },
+  { id: "operations.procedures", label: "Operations procedures", href: "/areas?area=04-operacje&view=procedures", icon: "ph-list-numbers", sourceDepartmentKey: "04-operacje", enabled: true },
   { id: "people.directory", label: "People and agents directory", href: "/areas?area=06-kadry&view=directory", icon: "ph-users-three", sourceDepartmentKey: "06-kadry", enabled: true },
   { id: "assets.overview", label: "Assets overview", href: "/areas?area=08-zasoby&view=overview", icon: "ph-gauge", sourceDepartmentKey: "08-zasoby", enabled: true },
   { id: "assets.files", label: "Assets files and folders", href: "/areas?area=08-zasoby&view=files", icon: "ph-folders", sourceDepartmentKey: "08-zasoby", enabled: true },
+  { id: "innovation.overview", label: "Product engineering", href: "/areas?area=11-innowacje&view=overview", icon: "ph-lightbulb", sourceDepartmentKey: "11-innowacje", enabled: true },
   { id: "management.departments", label: "Department management", href: "/areas?area=12-zarzadzanie&view=departments", icon: "ph-buildings", sourceDepartmentKey: "12-zarzadzanie", enabled: true },
   { id: "management.approvals", label: "Approvals and decisions", href: null, icon: "ph-seal-check", sourceDepartmentKey: "12-zarzadzanie", enabled: false },
   { id: "management.portfolio", label: "Portfolio steering", href: null, icon: "ph-briefcase", sourceDepartmentKey: "12-zarzadzanie", enabled: false },
@@ -104,22 +107,29 @@ function serializeDepartment(department: {
 }
 
 async function ensureDefaultDepartments(workspaceId: string) {
-  await Promise.all(DEFAULT_DEPARTMENTS.map((department) => prisma.workspaceDepartment.upsert({
-    where: { workspaceId_key: { workspaceId, key: department.key } },
-    update: department.key === "12-zarzadzanie" ? {
-      linkedViews: [...department.linkedViews]
-    } : {},
-    create: {
-      workspaceId,
-      key: department.key,
-      name: department.name,
-      description: department.description,
-      icon: department.icon,
-      position: department.position,
-      isSystem: true,
-      linkedViews: [...department.linkedViews]
-    }
-  })));
+  await Promise.all(DEFAULT_DEPARTMENTS.map(async (department) => {
+    const existing = await prisma.workspaceDepartment.findUnique({
+      where: { workspaceId_key: { workspaceId, key: department.key } }
+    });
+    const mergedViews = [...new Set([
+      ...linkedViews(existing?.linkedViews),
+      ...department.linkedViews
+    ])];
+    await prisma.workspaceDepartment.upsert({
+      where: { workspaceId_key: { workspaceId, key: department.key } },
+      update: { linkedViews: mergedViews },
+      create: {
+        workspaceId,
+        key: department.key,
+        name: department.name,
+        description: department.description,
+        icon: department.icon,
+        position: department.position,
+        isSystem: true,
+        linkedViews: [...department.linkedViews]
+      }
+    });
+  }));
 }
 
 async function uniqueDepartmentKey(workspaceId: string, name: string) {

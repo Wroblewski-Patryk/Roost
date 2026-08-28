@@ -32,6 +32,7 @@ import { operatingModelRouter } from "./modules/operating-model/operating-model.
 import { operationsRouter } from "./modules/operations/operations.routes";
 import { pipelineStagesRouter } from "./modules/pipeline-stages/pipeline-stages.routes";
 import { processCoreRouter } from "./modules/process-core/process-core.routes";
+import { productEngineeringRouter } from "./modules/product-engineering/product-engineering.routes";
 import { productMapIngressRouter, productMapReadRouter } from "./modules/product-map/product-map-projection.routes";
 import { projectsRouter } from "./modules/projects/projects.routes";
 import { relationshipsRouter } from "./modules/relationships/relationships.routes";
@@ -72,6 +73,7 @@ function mountProtectedRoutes(router: Router) {
   router.use("/clients", clientsRouter);
   router.use("/pipeline-stages", pipelineStagesRouter);
   router.use("/process-core", processCoreRouter);
+  router.use("/product-engineering", productEngineeringRouter);
   router.use("/product-map", productMapReadRouter);
   router.use("/deals", dealsRouter);
   router.use("/interactions", interactionsRouter);

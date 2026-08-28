@@ -181,6 +181,26 @@ function routeDescription(route: ManifestRoute) {
     return "Read the Process Core coverage packet for current workflow, approval, evidence, asset, workforce, capability, and MCP model coverage without mutating definitions or runtime state.";
   }
 
+  if (route.capability === "process-core:write") {
+    return "Create procedure drafts or propose a new version of an active procedure. AI improvements remain drafts until explicitly activated.";
+  }
+
+  if (route.capability === "process-core:activate") {
+    return "Activate or archive a versioned procedure through an audited lifecycle command.";
+  }
+
+  if (route.capability === "product-engineering:read") {
+    return "Read application definitions, capability maps, target and observed state, evidence, gaps, dependencies, architecture, interfaces, product readiness, and agent context from Roost's product source of truth.";
+  }
+
+  if (route.capability === "product-engineering:write") {
+    return "Manage workspace-scoped application and product-engineering definitions or record explicit observations and evidence without treating declarations as verified implementation facts.";
+  }
+
+  if (route.capability === "product-engineering:evidence:verify") {
+    return "Verify or reject application evidence through an audited command without automatically changing observed capability state.";
+  }
+
   if (route.capability.startsWith("integration-settings:")) {
     return "Inspect or operate workspace integration settings through controlled lifecycle actions.";
   }
@@ -211,6 +231,7 @@ export function createMcpManifest(scopes: string[] | undefined) {
           || route.capability === "company-os:approval:decide"
           || route.capability === "company-os:automation:execute"
           || route.capability === "company-os:workflow-definition:activate"
+          || route.capability === "process-core:activate"
           || route.capability.startsWith("company-os:stage-run:")
           || route.capability.startsWith("company-os:pipeline-run:"),
         inputSchema: inputSchemaForRoute(route)

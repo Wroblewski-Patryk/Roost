@@ -13,6 +13,7 @@ import { encryptSecret } from "../integrations/secrets";
 import { runProductMapProjectionCleanupIfDue } from "../integrations/clickup/clickup.maintenance-scheduler";
 import { consumeProjectionAdmission, expectedIdempotencyKey, packetDigest, productMapSchemaVersion, productMapTransportVersion, tryAcquireProjectionWorkspaceLock } from "../modules/product-map/product-map-projection.service";
 import { canonicalLifecycleStages, lifecycleOperatingContractSource } from "../modules/company-os/lifecycle-procedure-definition";
+import { calculateApplicationReadiness } from "../modules/product-engineering/readiness";
 
 const realFetch = globalThis.fetch.bind(globalThis);
 let baseUrl = "";
@@ -117,6 +118,28 @@ function assertSafeTestDatabase() {
 
 async function resetDatabase() {
   assertSafeTestDatabase();
+  await prisma.applicationEvidence.deleteMany();
+  await prisma.capabilityObservation.deleteMany();
+  await prisma.applicationInterface.deleteMany();
+  await prisma.applicationCapabilityDependency.deleteMany();
+  await prisma.applicationCapabilityDimension.deleteMany();
+  await prisma.applicationFeature.deleteMany();
+  await prisma.applicationCapability.deleteMany();
+  await prisma.applicationArchitectureComponent.deleteMany();
+  await prisma.applicationTechnology.deleteMany();
+  await prisma.applicationRepository.deleteMany();
+  await prisma.applicationProject.deleteMany();
+  await prisma.productOffering.deleteMany();
+  await prisma.application.deleteMany();
+  await prisma.applicationBlueprintCapability.deleteMany();
+  await prisma.applicationBlueprint.deleteMany();
+  await prisma.capabilityPackItem.deleteMany();
+  await prisma.capabilityPack.deleteMany();
+  await prisma.featureDefinition.deleteMany();
+  await prisma.capabilityDefinition.deleteMany();
+  await prisma.capabilityDomain.deleteMany();
+  await prisma.readinessDimensionDefinition.deleteMany();
+  await prisma.technologyDefinition.deleteMany();
   await prisma.productMapProjectionAdmission.deleteMany();
   await prisma.productMapProjectionQuarantine.deleteMany();
   await prisma.productMapProjectionReceipt.deleteMany();
@@ -654,6 +677,151 @@ test("account and workspace settings profile contract exposes active owner works
   assert.deepEqual(legacyProfileBody.data.workspaces, profileBody.data.workspaces);
 });
 
+test("product engineering keeps definitions shared, observations explicit, and procedures versioned", async () => {
+  const readinessInput = [
+    {
+      id: "required-capability",
+      applicability: "required" as const,
+      observedState: "partial" as const,
+      dimensionKey: "engineering",
+      dimensionName: "Engineering",
+      dimensionWeight: 100,
+      dimensions: [{ applicability: "required" as const, observedState: "complete" as const }],
+      evidence: [{ verificationStatus: "verified" as const }],
+      blockedBy: [{ id: "missing-dependency", observedState: "missing" as const, required: true }]
+    },
+    {
+      id: "excluded-capability",
+      applicability: "not_applicable" as const,
+      observedState: "missing" as const,
+      dimensionKey: "engineering",
+      dimensionName: "Engineering",
+      dimensionWeight: 100,
+      dimensions: [],
+      evidence: [],
+      blockedBy: []
+    }
+  ];
+  const deterministicReadiness = calculateApplicationReadiness(readinessInput);
+  assert.deepEqual(deterministicReadiness, calculateApplicationReadiness(readinessInput));
+  assert.equal(deterministicReadiness.dimensions[0]?.applicableCapabilities, 1);
+  assert.equal(deterministicReadiness.blockers[0]?.blockedByCapabilityId, "missing-dependency");
+  assert.ok(deterministicReadiness.overall > 0 && deterministicReadiness.overall < 100);
+
+  const owner = await registerOwner("product-engineering-owner@example.com", "Product Engineering Workspace");
+  const otherOwner = await registerOwner("product-engineering-other@example.com", "Other Product Workspace");
+  const auth = { Authorization: `Bearer ${owner.token}` };
+
+  const dimensionResponse = await request("/v1/product-engineering/readiness-dimensions", {
+    method: "POST", headers: auth, body: JSON.stringify({ key: "security", name: "Security" })
+  });
+  assert.equal(dimensionResponse.status, 201);
+  const dimensionId = (dimensionResponse.body as { data: { id: string } }).data.id;
+  const domainResponse = await request("/v1/product-engineering/capability-domains", {
+    method: "POST", headers: auth, body: JSON.stringify({ key: "identity", name: "Identity" })
+  });
+  assert.equal(domainResponse.status, 201);
+  const domainId = (domainResponse.body as { data: { id: string } }).data.id;
+  const definitionResponse = await request("/v1/product-engineering/capability-definitions", {
+    method: "POST", headers: auth, body: JSON.stringify({ domainId, readinessDimensionId: dimensionId, key: "authentication", name: "Authentication", universal: true, defaultApplicability: "required" })
+  });
+  assert.equal(definitionResponse.status, 201);
+  const definitionId = (definitionResponse.body as { data: { id: string } }).data.id;
+  const featureDefinitionResponse = await request(`/v1/product-engineering/capability-definitions/${definitionId}/features`, {
+    method: "POST",
+    headers: auth,
+    body: JSON.stringify({ key: "email-password", name: "Email and password" })
+  });
+  assert.equal(featureDefinitionResponse.status, 201);
+  const featureDefinitionId = (featureDefinitionResponse.body as { data: { id: string } }).data.id;
+
+  async function createApplication(name: string, slug: string) {
+    const response = await request("/v1/product-engineering/applications", { method: "POST", headers: auth, body: JSON.stringify({ name, slug, targetPlatforms: ["web", "api"] }) });
+    assert.equal(response.status, 201);
+    return (response.body as { data: { id: string } }).data.id;
+  }
+  const roostId = await createApplication("Roost Test", "roost-test");
+  const soarId = await createApplication("Soar Test", "soar-test");
+  const assignments: string[] = [];
+  for (const applicationId of [roostId, soarId]) {
+    const response = await request(`/v1/product-engineering/applications/${applicationId}/capabilities`, { method: "POST", headers: auth, body: JSON.stringify({ capabilityDefinitionId: definitionId, applicability: "required", targetState: "complete" }) });
+    assert.equal(response.status, 201);
+    assignments.push((response.body as { data: { id: string } }).data.id);
+  }
+  assert.notEqual(assignments[0], assignments[1]);
+  assert.equal(await prisma.capabilityDefinition.count({ where: { id: definitionId } }), 1);
+
+  const featureAssignment = await request(`/v1/product-engineering/applications/${roostId}/features`, {
+    method: "POST",
+    headers: auth,
+    body: JSON.stringify({
+      applicationCapabilityId: assignments[0],
+      featureDefinitionId,
+      applicability: "required",
+      targetState: "complete"
+    })
+  });
+  assert.equal(featureAssignment.status, 201);
+  const invalidDependency = await request(`/v1/product-engineering/applications/${roostId}/dependencies`, {
+    method: "POST",
+    headers: auth,
+    body: JSON.stringify({ fromCapabilityId: assignments[0], toCapabilityId: assignments[1], required: true })
+  });
+  assert.equal(invalidDependency.status, 404, "dependencies may not cross application boundaries");
+
+  const evidenceResponse = await request(`/v1/product-engineering/applications/${roostId}/evidence`, { method: "POST", headers: auth, body: JSON.stringify({ applicationCapabilityId: assignments[0], type: "test", reference: "tests/auth.e2e.spec.ts", source: "human" }) });
+  assert.equal(evidenceResponse.status, 201);
+  const evidenceId = (evidenceResponse.body as { data: { id: string } }).data.id;
+  const verifyResponse = await request(`/v1/product-engineering/evidence/${evidenceId}/actions/verify`, { method: "POST", headers: auth, body: JSON.stringify({ status: "verified" }) });
+  assert.equal(verifyResponse.status, 200);
+  assert.equal((await prisma.applicationCapability.findUnique({ where: { id: assignments[0] } }))?.observedState, "unknown", "evidence verification must not silently promote observed state");
+
+  const observationResponse = await request(`/v1/product-engineering/applications/${roostId}/observations`, { method: "POST", headers: auth, body: JSON.stringify({ applicationCapabilityId: assignments[0], observedState: "partial", summary: "Backend exists; MFA is missing.", source: "human" }) });
+  assert.equal(observationResponse.status, 201);
+  const readinessResponse = await request(`/v1/product-engineering/applications/${roostId}/readiness`, { headers: auth });
+  assert.equal(readinessResponse.status, 200);
+  const readiness = (readinessResponse.body as { data: { readiness: { overall: number; algorithm: { version: string } } } }).data.readiness;
+  assert.equal(readiness.algorithm.version, "product-readiness-v1");
+  assert.ok(readiness.overall > 0 && readiness.overall < 100);
+  const agentContextResponse = await request(`/v1/product-engineering/applications/${roostId}/agent-context`, { headers: auth });
+  assert.equal(agentContextResponse.status, 200);
+  assert.equal((agentContextResponse.body as { data: { authority: { declarationIsNotObservation: boolean } } }).data.authority.declarationIsNotObservation, true);
+  const crossWorkspace = await request(`/v1/product-engineering/applications/${roostId}`, { headers: { Authorization: `Bearer ${otherOwner.token}` } });
+  assert.equal(crossWorkspace.status, 404);
+
+  const offeringResponse = await request("/v1/product-engineering/offerings", {
+    method: "POST",
+    headers: auth,
+    body: JSON.stringify({
+      applicationId: roostId,
+      key: "roost-test-product",
+      name: "Roost Test Product",
+      type: "product",
+      lifecycleStage: "candidate"
+    })
+  });
+  assert.equal(offeringResponse.status, 201);
+  assert.equal(
+    (offeringResponse.body as { data: { applicationId: string } }).data.applicationId,
+    roostId,
+    "productization must reference the application instead of copying it"
+  );
+
+  const procedureCreate = await request("/v1/process-core/procedures", { method: "POST", headers: auth, body: JSON.stringify({ name: "Release application", purpose: "Release a verified application safely.", expectedResult: "A verified release with rollback evidence.", steps: [{ instruction: "Run the release validation suite." }, { instruction: "Record deployment and rollback evidence." }] }) });
+  assert.equal(procedureCreate.status, 201);
+  const procedure = (procedureCreate.body as { data: { id: string; familyId: string; version: number; status: string } }).data;
+  assert.equal(procedure.status, "draft");
+  const activate = await request(`/v1/process-core/procedures/${procedure.id}/actions/activate`, { method: "POST", headers: auth, body: "{}" });
+  assert.equal(activate.status, 200);
+  const revision = await request(`/v1/process-core/procedures/${procedure.id}`, { method: "PATCH", headers: auth, body: JSON.stringify({ purpose: "Release safely with an improved AI-readable evidence packet." }) });
+  assert.equal(revision.status, 200);
+  const revisionBody = (revision.body as { data: { id: string; familyId: string; version: number; status: string } }).data;
+  assert.notEqual(revisionBody.id, procedure.id);
+  assert.equal(revisionBody.familyId, procedure.familyId);
+  assert.equal(revisionBody.version, 2);
+  assert.equal(revisionBody.status, "draft");
+});
+
 test("CompanyCore v1 protected API flow", async () => {
   const health = await request("/health");
   assert.equal(health.status, 200);
@@ -730,6 +898,21 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(initialDepartmentsBody.data.availableViews.some((view) => (
     view.id === "management.departments"
     && view.href === "/areas?area=12-zarzadzanie&view=departments"
+    && view.enabled === true
+  )));
+  assert.ok(initialDepartmentsBody.data.availableViews.some((view) => (
+    view.id === "product.overview"
+    && view.href === "/areas?area=02-produkt&view=overview"
+    && view.enabled === true
+  )));
+  assert.ok(initialDepartmentsBody.data.availableViews.some((view) => (
+    view.id === "innovation.overview"
+    && view.href === "/areas?area=11-innowacje&view=overview"
+    && view.enabled === true
+  )));
+  assert.ok(initialDepartmentsBody.data.availableViews.some((view) => (
+    view.id === "operations.procedures"
+    && view.href === "/areas?area=04-operacje&view=procedures"
     && view.enabled === true
   )));
   const managementDepartment = initialDepartmentsBody.data.departments.find((department) => department.key === "12-zarzadzanie");
@@ -4488,8 +4671,11 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(processCoreCoverageBody.data.counts.assetsAndKnowledge.googleDriveFiles >= 0);
   assert.equal(processCoreCoverageBody.data.apiExposure.route, "/v1/process-core/coverage");
   assert.equal(processCoreCoverageBody.data.apiExposure.capability, "process-core:read");
-  assert.deepEqual(processCoreCoverageBody.data.apiExposure.methods, ["GET"]);
-  assert.deepEqual(processCoreCoverageBody.data.apiExposure.writableCapabilities, []);
+  assert.deepEqual(processCoreCoverageBody.data.apiExposure.methods, ["GET", "POST", "PATCH"]);
+  assert.deepEqual(processCoreCoverageBody.data.apiExposure.writableCapabilities, [
+    "process-core:write",
+    "process-core:activate"
+  ]);
   assert.equal(processCoreCoverageBody.data.mcpExposure.expectedToolName, "companycore_get_process_core_coverage");
   assert.equal(processCoreCoverageBody.data.mcpExposure.requiresApproval, false);
   assert.ok(processCoreCoverageBody.data.targetCoverage.some((row) => (

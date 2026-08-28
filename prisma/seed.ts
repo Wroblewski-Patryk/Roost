@@ -1482,6 +1482,96 @@ async function ensureWorkforceFoundation(workspaceId: string, owner: { id: strin
   }
 }
 
+const readinessDimensionSeed = [
+  ["product-definition", "Product Definition"], ["engineering", "Engineering"], ["quality", "Quality"],
+  ["security", "Security"], ["operations", "Operations"], ["ai-agent-readiness", "AI / Agent Readiness"],
+  ["documentation", "Documentation"], ["legal", "Legal"], ["commercial", "Commercial"], ["support", "Support"]
+] as const;
+
+const capabilityDomainSeed = [
+  ["identity-access", "Identity & Access"], ["experience", "Experience"], ["data", "Data"],
+  ["interfaces", "Interfaces"], ["ai-agent", "AI / Agent Readiness"], ["infrastructure", "Infrastructure"],
+  ["security", "Security"], ["quality", "Quality"], ["operations", "Operations"],
+  ["commercial", "Commercial"], ["trading", "Trading"], ["company-os", "Company Operating System"]
+] as const;
+
+const capabilitySeed = [
+  ["users", "Users", "identity-access", "engineering"], ["authentication", "Authentication", "identity-access", "security"],
+  ["authorization", "Authorization", "identity-access", "security"], ["roles-permissions", "Roles and Permissions", "identity-access", "security"],
+  ["sessions", "Sessions", "identity-access", "security"], ["api-keys", "API Keys", "identity-access", "ai-agent-readiness"],
+  ["responsive-ui", "Responsive UI", "experience", "engineering"], ["accessibility", "Accessibility", "experience", "quality"],
+  ["localization", "Localization", "experience", "product-definition"], ["notifications", "Notifications", "experience", "engineering"],
+  ["onboarding", "Onboarding", "experience", "commercial"], ["search", "Search", "experience", "engineering"],
+  ["database", "Database", "data", "engineering"], ["migrations", "Database Migrations", "data", "operations"],
+  ["backups", "Backups", "data", "operations"], ["import-export", "Import and Export", "data", "engineering"],
+  ["audit-history", "Audit History", "data", "security"], ["rest-api", "REST API", "interfaces", "engineering"],
+  ["events", "Events", "interfaces", "ai-agent-readiness"], ["webhooks", "Webhooks", "interfaces", "engineering"],
+  ["mcp", "MCP", "interfaces", "ai-agent-readiness"], ["structured-api", "Structured API", "ai-agent", "ai-agent-readiness"],
+  ["typed-schemas", "Typed Schemas", "ai-agent", "ai-agent-readiness"], ["agent-identity", "Agent Identity", "ai-agent", "ai-agent-readiness"],
+  ["agent-permissions", "Agent Permissions", "ai-agent", "ai-agent-readiness"], ["human-in-loop", "Human in the Loop", "ai-agent", "ai-agent-readiness"],
+  ["agent-readable-docs", "Agent-readable Documentation", "ai-agent", "documentation"], ["development-environment", "Development Environment", "infrastructure", "engineering"],
+  ["ci-cd", "CI/CD", "infrastructure", "operations"], ["secrets-management", "Secrets Management", "infrastructure", "security"],
+  ["monitoring", "Monitoring", "infrastructure", "operations"], ["logging", "Logging", "infrastructure", "operations"],
+  ["health-checks", "Health Checks", "infrastructure", "operations"], ["input-validation", "Input Validation", "security", "security"],
+  ["rate-limiting", "Rate Limiting", "security", "security"], ["vulnerability-management", "Vulnerability Management", "security", "security"],
+  ["unit-tests", "Unit Tests", "quality", "quality"], ["integration-tests", "Integration Tests", "quality", "quality"],
+  ["e2e-tests", "End-to-end Tests", "quality", "quality"], ["technical-documentation", "Technical Documentation", "quality", "documentation"],
+  ["incident-management", "Incident Management", "operations", "support"], ["product-analytics", "Product Analytics", "operations", "commercial"],
+  ["pricing", "Pricing", "commercial", "commercial"], ["billing", "Billing", "commercial", "commercial"],
+  ["terms-privacy", "Terms and Privacy", "commercial", "legal"], ["support-readiness", "Support Readiness", "commercial", "support"],
+  ["trading-engine", "Trading Engine", "trading", "engineering"], ["market-data", "Market Data", "trading", "engineering"],
+  ["position-management", "Position Management", "trading", "engineering"], ["risk-management", "Risk Management", "trading", "security"],
+  ["organization-management", "Organization Management", "company-os", "product-definition"], ["department-management", "Department Management", "company-os", "product-definition"],
+  ["process-core", "Process Core", "company-os", "engineering"], ["workforce-agents", "Workforce and Agents", "company-os", "ai-agent-readiness"]
+] as const;
+
+async function ensureProductEngineeringFoundation(workspaceId: string) {
+  const readinessByKey = new Map<string, { id: string }>();
+  for (const [position, [key, name]] of readinessDimensionSeed.entries()) {
+    const dimension = await prisma.readinessDimensionDefinition.upsert({ where: { workspaceId_key: { workspaceId, key } }, update: { name, position }, create: { workspaceId, key, name, position } });
+    readinessByKey.set(key, dimension);
+  }
+  const domainByKey = new Map<string, { id: string }>();
+  for (const [position, [key, name]] of capabilityDomainSeed.entries()) {
+    const domain = await prisma.capabilityDomain.upsert({ where: { workspaceId_key: { workspaceId, key } }, update: { name, position }, create: { workspaceId, key, name, position } });
+    domainByKey.set(key, domain);
+  }
+  const capabilityByKey = new Map<string, { id: string }>();
+  for (const [key, name, domainKey, readinessKey] of capabilitySeed) {
+    const definition = await prisma.capabilityDefinition.upsert({
+      where: { workspaceId_key: { workspaceId, key } },
+      update: { name, domainId: domainByKey.get(domainKey)!.id, readinessDimensionId: readinessByKey.get(readinessKey)!.id },
+      create: { workspaceId, key, name, description: `${name} capability definition shared across application implementations.`, domainId: domainByKey.get(domainKey)!.id, readinessDimensionId: readinessByKey.get(readinessKey)!.id, universal: !["trading", "company-os"].includes(domainKey), defaultApplicability: "recommended" }
+    });
+    capabilityByKey.set(key, definition);
+  }
+  const coreSaasKeys = ["users", "authentication", "authorization", "roles-permissions", "responsive-ui", "database", "migrations", "rest-api", "logging", "monitoring", "health-checks", "unit-tests", "integration-tests", "technical-documentation"];
+  const aiReadyKeys = ["structured-api", "typed-schemas", "mcp", "events", "agent-identity", "agent-permissions", "human-in-loop", "audit-history", "agent-readable-docs"];
+  for (const [key, name, capabilityKeys] of [["core-saas", "Core SaaS", coreSaasKeys], ["ai-ready", "AI Ready", aiReadyKeys]] as const) {
+    const pack = await prisma.capabilityPack.upsert({ where: { workspaceId_key: { workspaceId, key } }, update: { name }, create: { workspaceId, key, name } });
+    for (const capabilityKey of capabilityKeys) await prisma.capabilityPackItem.upsert({ where: { packId_capabilityDefinitionId: { packId: pack.id, capabilityDefinitionId: capabilityByKey.get(capabilityKey)!.id } }, update: { applicability: "required" }, create: { packId: pack.id, capabilityDefinitionId: capabilityByKey.get(capabilityKey)!.id, applicability: "required" } });
+  }
+  const blueprint = await prisma.applicationBlueprint.upsert({ where: { workspaceId_key: { workspaceId, key: "saas-web-application" } }, update: { name: "SaaS Web Application" }, create: { workspaceId, key: "saas-web-application", name: "SaaS Web Application", description: "Editable baseline for a secure, observable, API-first SaaS application." } });
+  for (const capabilityKey of [...coreSaasKeys, ...aiReadyKeys]) await prisma.applicationBlueprintCapability.upsert({ where: { blueprintId_capabilityDefinitionId: { blueprintId: blueprint.id, capabilityDefinitionId: capabilityByKey.get(capabilityKey)!.id } }, update: { applicability: "required" }, create: { blueprintId: blueprint.id, capabilityDefinitionId: capabilityByKey.get(capabilityKey)!.id, applicability: "required" } });
+  for (const [key, name, category] of [["react", "React", "frontend"], ["express", "Express", "backend"], ["postgresql", "PostgreSQL", "database"], ["prisma", "Prisma", "orm"], ["docker", "Docker", "deployment"], ["mcp", "Model Context Protocol", "interface"]] as const) await prisma.technologyDefinition.upsert({ where: { workspaceId_key: { workspaceId, key } }, update: { name, category }, create: { workspaceId, key, name, category } });
+  const applications = [
+    { slug: "roost", name: "Roost", description: "LuckySparrow company operating system and source of truth for products, work, evidence and supervised agents.", stage: "development" as const, path: "C:/Personal/Projekty/Aplikacje/Roost/docs/README.md" },
+    { slug: "soar", name: "Soar", description: "Trading automation platform.", stage: "development" as const, path: "C:/Personal/Projekty/Aplikacje/Soar/docs/README.md" },
+    { slug: "featherly", name: "Featherly", description: "Content management and application delivery system.", stage: "development" as const, path: "C:/Personal/Projekty/Aplikacje/Featherly/docs/README.md" },
+    { slug: "nest", name: "Nest", description: "Application record awaiting source documentation.", stage: "idea" as const, path: null },
+    { slug: "aviary", name: "Aviary", description: "Application record awaiting source documentation.", stage: "idea" as const, path: null }
+  ];
+  for (const item of applications) {
+    const application = await prisma.application.upsert({ where: { workspaceId_slug: { workspaceId, slug: item.slug } }, update: { name: item.name }, create: { workspaceId, slug: item.slug, name: item.name, description: item.description, innovationStage: item.stage, targetPlatforms: ["web", "api", "agent_facing"], source: "import", metadata: { documentationImport: item.path ? "source_registered" : "source_missing" } } });
+    if (item.path) {
+      const reference = `documentation-root:${item.path}`;
+      if (!await prisma.applicationEvidence.findFirst({ where: { applicationId: application.id, reference } })) await prisma.applicationEvidence.create({ data: { workspaceId, applicationId: application.id, type: "documentation", source: "import", reference, description: "Registered documentation root. This proves documentation provenance, not runtime implementation.", verificationStatus: "unverified" } });
+    }
+    const specific = item.slug === "roost" ? ["organization-management", "department-management", "process-core", "workforce-agents"] : item.slug === "soar" ? ["trading-engine", "market-data", "position-management", "risk-management"] : [];
+    for (const capabilityKey of [...coreSaasKeys, ...aiReadyKeys, ...specific]) await prisma.applicationCapability.upsert({ where: { applicationId_capabilityDefinitionId: { applicationId: application.id, capabilityDefinitionId: capabilityByKey.get(capabilityKey)!.id } }, update: {}, create: { applicationId: application.id, capabilityDefinitionId: capabilityByKey.get(capabilityKey)!.id, applicability: "required", targetState: "complete", observedState: "unknown" } });
+  }
+}
+
 async function main() {
   const key = process.env.SEED_API_KEY ?? "dev-companycore-key";
   const ownerEmail = process.env.SEED_OWNER_EMAIL ?? "owner@example.com";
@@ -1533,6 +1623,7 @@ async function main() {
 
   await ensureSeedOperatingModel(workspace.id);
   await ensureCompanyOsFoundation(workspace.id);
+  await ensureProductEngineeringFoundation(workspace.id);
   // Product Map is workspace-scoped and existing installations can predate the
   // lifecycle definition. Backfill every workspace on each idempotent deploy,
   // not only the deterministic seed workspace, so an older owner membership

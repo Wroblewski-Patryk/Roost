@@ -11,7 +11,8 @@ Codex and other execution tools keep their task state outside the repository.
 
 - Product: `product/product.md`, `product/overview.md`, `product/mvp_scope.md`
 - Architecture: `architecture/architecture-source-of-truth.md`,
-  `architecture/system-architecture.md`, `architecture/tech-stack.md`
+  `architecture/system-architecture.md`, `architecture/tech-stack.md`,
+  `architecture/innovation-product-engineering.md`
 - Engineering: `engineering/local-development.md`, `engineering/testing.md`
 - Operations: `DEPLOYMENT.md`, `operations/coolify-vps-deployment-contract.md`,
   `operations/rollback-and-recovery.md`, `operations/post-deploy-smoke.md`

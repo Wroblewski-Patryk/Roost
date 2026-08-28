@@ -11,8 +11,9 @@ import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import { CoreAreaKey, OperationsDepartment, OperationsPacket, OperationsStatusColumn, OperationsTaskList, OperationsWorkItem } from "../../types";
 import { departmentLabel } from "./department-labels";
+import { ProceduresWorkbench } from "./procedures-workbench";
 
-type OperationsView = "tasks" | "calendar";
+type OperationsView = "tasks" | "calendar" | "procedures";
 type CalendarMode = "day" | "week" | "month";
 type TaskPriorityFilter = "all" | string;
 type TaskDateFilter = "all" | "overdue" | "today" | "week" | "unscheduled";
@@ -28,7 +29,8 @@ const fallbackStatuses: OperationsStatusColumn[] = [
 const priorityOptions = ["urgent", "critical", "high", "normal", "medium", "low", "someday"];
 
 function currentOperationsView(): OperationsView {
-  return new URLSearchParams(window.location.search).get("view") === "calendar" ? "calendar" : "tasks";
+  const view = new URLSearchParams(window.location.search).get("view");
+  return view === "calendar" || view === "procedures" ? view : "tasks";
 }
 
 function formatDate(value?: string | null) {
@@ -1341,7 +1343,7 @@ export function OperationsRoute() {
   const [taskQuery, setTaskQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState<TaskPriorityFilter>("all");
   const [dateFilter, setDateFilter] = useState<TaskDateFilter>("all");
-  const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200&refresh=${refreshKey}`, true, t);
+  const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200&refresh=${refreshKey}`, activeView !== "procedures", t);
   const rows = useMemo(() => (packet.data?.workItems || []).map((item) => ({ ...item, id: item.task.id })), [packet.data?.workItems]);
   const taskLists = packet.data?.taskLists || [];
   const departments = packet.data?.departments || [];
@@ -1382,6 +1384,10 @@ export function OperationsRoute() {
     setTaskQuery("");
     setPriorityFilter("all");
     setDateFilter("all");
+  }
+
+  if (activeView === "procedures") {
+    return <Shell activeArea="04-operacje"><ProceduresWorkbench /></Shell>;
   }
 
   return (

@@ -1,5 +1,47 @@
 # API
 
+## Product Engineering
+
+Protected routes under `/v1/product-engineering` expose workspace-scoped
+application CRUD, the capability catalog, application capabilities,
+observations, evidence verification, dependencies, packs, blueprints,
+technologies, architecture, interfaces, project links, and product/service
+offerings.
+
+Primary read models:
+
+```http
+GET /v1/product-engineering/portfolio
+GET /v1/product-engineering/applications/:id/capability-map
+GET /v1/product-engineering/applications/:id/gaps
+GET /v1/product-engineering/applications/:id/readiness
+GET /v1/product-engineering/applications/:id/agent-context
+```
+
+Writes require `product-engineering:write`. Evidence verification uses the
+separate `product-engineering:evidence:verify` capability. Read access uses
+`product-engineering:read`.
+
+The `agent-context` response is a machine-readable aggregate with lifecycle,
+target and observed capabilities, evidence, gaps, dependencies, architecture,
+interfaces, and readiness. It is a derived packet; PostgreSQL domain records
+remain the source of truth.
+
+## Procedure management
+
+```http
+GET /v1/process-core/procedures
+GET /v1/process-core/procedures/:id
+POST /v1/process-core/procedures
+PATCH /v1/process-core/procedures/:id
+POST /v1/process-core/procedures/:id/actions/activate
+POST /v1/process-core/procedures/:id/actions/archive
+```
+
+Procedure creates and AI/human improvements are drafts. Patching an active
+procedure creates a new family version. Activation and archive use the
+`process-core:activate` lifecycle capability and emit audit/event evidence.
+
 All endpoints except `GET /health`, `POST /auth/register`, and
 `POST /auth/login` require one supported auth mechanism:
 

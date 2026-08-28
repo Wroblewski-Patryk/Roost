@@ -320,7 +320,9 @@ export function canonicalPostAuthPath(pathname?: string | null) {
     }
     if (area === "04-operacje") {
       const view = params.get("view");
-      return view === "calendar" ? "/areas?area=04-operacje&view=calendar" : canonicalOperationsPath;
+      if (view === "calendar") return "/areas?area=04-operacje&view=calendar";
+      if (view === "procedures") return "/areas?area=04-operacje&view=procedures";
+      return canonicalOperationsPath;
     }
     if (area === "05-relacje") {
       return canonicalRelationshipsPath;

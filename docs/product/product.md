@@ -45,6 +45,12 @@ not authorize new product scope or change existing API/database identifiers.
 - A backend-served React owner console provides the public and authentication
   routes, account and workspace settings, the `00 General` dashboard and
   product map, and active workbenches for departments `01`-`12`.
+- `11 Innovation` provides the Product Engineering source of truth for
+  applications, capability definitions and application-specific target versus
+  observed state, evidence, gaps, architecture, interfaces, and calculated
+  readiness. `02 Products & Services` commercializes the same application
+  records through product/service offerings. `04 Operations` provides a
+  versioned procedure workbench for shared human and supervised-agent work.
 - All active user-facing web routes render through the React bundle. `/areas`
   with an `area` and `view` query is the canonical department surface, with a
   small set of compatibility aliases normalized by the route registry. The

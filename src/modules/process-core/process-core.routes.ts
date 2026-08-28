@@ -1,7 +1,11 @@
 import { Router } from "express";
+import { ActorType, OperatingStatus, Prisma, ProcedureStepType } from "@prisma/client";
+import { z } from "zod";
 import { adapterManifest } from "../../auth/capabilities";
 import { prisma } from "../../db/prisma";
+import { sendApiError } from "../../middleware/api-error";
 import { asyncHandler } from "../../middleware/async-handler";
+import { createEvent } from "../events/event.service";
 
 type CoverageStatus = "covered" | "partial" | "missing" | "deferred";
 
@@ -95,6 +99,55 @@ const targetCoverage: CoverageRow[] = [
 
 export const processCoreRouter = Router();
 
+const optionalText = z.string().trim().min(1).optional().nullable();
+const procedureStepSchema = z.object({
+  instruction: z.string().trim().min(1),
+  stepType: z.nativeEnum(ProcedureStepType).optional(),
+  requiredToolAdapterId: z.string().uuid().optional().nullable(),
+  expectedInput: z.record(z.unknown()).optional(),
+  expectedOutput: z.record(z.unknown()).optional(),
+  validationRule: z.record(z.unknown()).optional(),
+  rollbackInstruction: optionalText
+});
+const procedureCommandSchema = z.object({
+  name: z.string().trim().min(1),
+  purpose: z.string().trim().min(1),
+  scope: optionalText,
+  processId: z.string().uuid().optional().nullable(),
+  ownerRoleId: z.string().uuid().optional().nullable(),
+  expectedResult: optionalText,
+  requiredTools: z.array(z.string().trim().min(1)).optional(),
+  requiredPermissions: z.array(z.string().trim().min(1)).optional(),
+  steps: z.array(procedureStepSchema).min(1)
+});
+const procedureUpdateSchema = procedureCommandSchema.partial().extend({ steps: z.array(procedureStepSchema).min(1).optional() });
+
+function requestActor(req: Express.Request) {
+  return req.auth!.authType === "user"
+    ? { actorType: ActorType.user, actorId: req.auth!.userId ?? null }
+    : { actorType: ActorType.agent, actorId: req.auth!.apiKeyId ?? null };
+}
+
+async function auditProcedure(req: Express.Request, action: string, procedureId: string, input: Record<string, unknown>) {
+  await prisma.auditLog.create({ data: {
+    workspaceId: req.auth!.workspaceId,
+    ...requestActor(req),
+    action,
+    resourceType: "Procedure",
+    resourceId: procedureId,
+    correlationId: `process-core:procedure:${procedureId}:${Date.now()}`,
+    inputPayload: input as Prisma.InputJsonValue
+  } });
+}
+
+async function validateProcedureRelations(workspaceId: string, input: { processId?: string | null; ownerRoleId?: string | null; steps?: Array<{ requiredToolAdapterId?: string | null }> }) {
+  if (input.processId && !await prisma.process.findFirst({ where: { id: input.processId, workspaceId } })) return "process_not_found";
+  if (input.ownerRoleId && !await prisma.companyRole.findFirst({ where: { id: input.ownerRoleId, workspaceId } })) return "owner_role_not_found";
+  const adapterIds = input.steps?.map((step) => step.requiredToolAdapterId).filter((id): id is string => Boolean(id)) ?? [];
+  if (adapterIds.length && await prisma.toolAdapter.count({ where: { id: { in: adapterIds }, workspaceId } }) !== new Set(adapterIds).size) return "tool_adapter_not_found";
+  return null;
+}
+
 function byWorkspace(workspaceId: string) {
   return { workspaceId };
 }
@@ -152,9 +205,10 @@ processCoreRouter.get("/coverage", asyncHandler(async (req, res) => {
   ]);
 
   const processCoreRoutes = adapterManifest.routes.processCore;
-  const writableCapabilities = processCoreRoutes
+  const processCoreMethods = [...new Set(processCoreRoutes.map((route) => route.method))];
+  const writableCapabilities = [...new Set(processCoreRoutes
     .filter((route) => route.method !== "GET")
-    .map((route) => route.capability);
+    .map((route) => route.capability))];
 
   res.json({
     data: {
@@ -209,7 +263,7 @@ processCoreRouter.get("/coverage", asyncHandler(async (req, res) => {
       apiExposure: {
         route: "/v1/process-core/coverage",
         capability: "process-core:read",
-        methods: processCoreRoutes.map((route) => route.method),
+        methods: processCoreMethods,
         writableCapabilities
       },
       mcpExposure: {
@@ -219,4 +273,158 @@ processCoreRouter.get("/coverage", asyncHandler(async (req, res) => {
       }
     }
   });
+}));
+
+processCoreRouter.get("/procedures", asyncHandler(async (req, res) => {
+  const status = typeof req.query.status === "string" ? req.query.status : undefined;
+  const procedures = await prisma.procedure.findMany({
+    where: {
+      workspaceId: req.auth!.workspaceId,
+      ...(status && Object.values(OperatingStatus).includes(status as OperatingStatus) ? { status: status as OperatingStatus } : {})
+    },
+    include: { process: true, ownerRole: true, qualityStandard: true, steps: { orderBy: { stepOrder: "asc" } }, stages: true },
+    orderBy: [{ status: "asc" }, { name: "asc" }, { version: "desc" }]
+  });
+  res.json({ data: procedures });
+}));
+
+processCoreRouter.get("/procedures/:id", asyncHandler(async (req, res) => {
+  const procedure = await prisma.procedure.findFirst({
+    where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId },
+    include: { process: true, ownerRole: true, qualityStandard: true, steps: { orderBy: { stepOrder: "asc" }, include: { requiredToolAdapter: true } }, stages: true, policies: true }
+  });
+  if (!procedure) return sendApiError(res, 404, "procedure_not_found");
+  res.json({ data: procedure });
+}));
+
+processCoreRouter.post("/procedures", asyncHandler(async (req, res) => {
+  const input = procedureCommandSchema.parse(req.body);
+  const workspaceId = req.auth!.workspaceId;
+  const relationError = await validateProcedureRelations(workspaceId, input);
+  if (relationError) return sendApiError(res, 404, relationError);
+  const procedure = await prisma.procedure.create({
+    data: {
+      workspaceId,
+      name: input.name,
+      purpose: input.purpose,
+      scope: input.scope,
+      processId: input.processId,
+      ownerRoleId: input.ownerRoleId,
+      expectedResult: input.expectedResult,
+      requiredTools: (input.requiredTools ?? []) as Prisma.InputJsonValue,
+      requiredPermissions: (input.requiredPermissions ?? []) as Prisma.InputJsonValue,
+      status: OperatingStatus.draft,
+      steps: { create: input.steps.map((step, index) => ({
+        ...step,
+        stepOrder: index + 1,
+        expectedInput: (step.expectedInput ?? {}) as Prisma.InputJsonValue,
+        expectedOutput: (step.expectedOutput ?? {}) as Prisma.InputJsonValue,
+        validationRule: (step.validationRule ?? {}) as Prisma.InputJsonValue
+      })) }
+    },
+    include: { process: true, ownerRole: true, steps: { orderBy: { stepOrder: "asc" } } }
+  });
+  await auditProcedure(req, "procedure.create_draft", procedure.id, { name: procedure.name, version: procedure.version });
+  await createEvent({ type: "procedure_draft_created", workspaceId, ...requestActor(req), resourceType: "Procedure", resourceId: procedure.id, payload: { familyId: procedure.familyId, version: procedure.version } });
+  res.status(201).json({ data: procedure });
+}));
+
+processCoreRouter.patch("/procedures/:id", asyncHandler(async (req, res) => {
+  const input = procedureUpdateSchema.parse(req.body);
+  const workspaceId = req.auth!.workspaceId;
+  const existing = await prisma.procedure.findFirst({ where: { id: String(req.params.id), workspaceId }, include: { steps: { orderBy: { stepOrder: "asc" } } } });
+  if (!existing) return sendApiError(res, 404, "procedure_not_found");
+  const relationError = await validateProcedureRelations(workspaceId, input);
+  if (relationError) return sendApiError(res, 404, relationError);
+
+  const steps = input.steps ?? existing.steps.map((step) => ({
+    instruction: step.instruction,
+    stepType: step.stepType,
+    requiredToolAdapterId: step.requiredToolAdapterId,
+    expectedInput: step.expectedInput as Record<string, unknown>,
+    expectedOutput: step.expectedOutput as Record<string, unknown>,
+    validationRule: step.validationRule as Record<string, unknown>,
+    rollbackInstruction: step.rollbackInstruction
+  }));
+  const data = {
+    name: input.name ?? existing.name,
+    purpose: input.purpose ?? existing.purpose,
+    scope: input.scope === undefined ? existing.scope : input.scope,
+    processId: input.processId === undefined ? existing.processId : input.processId,
+    ownerRoleId: input.ownerRoleId === undefined ? existing.ownerRoleId : input.ownerRoleId,
+    expectedResult: input.expectedResult === undefined ? existing.expectedResult : input.expectedResult,
+    requiredTools: (input.requiredTools ?? existing.requiredTools) as Prisma.InputJsonValue,
+    requiredPermissions: (input.requiredPermissions ?? existing.requiredPermissions) as Prisma.InputJsonValue
+  };
+
+  const procedure = await prisma.$transaction(async (tx) => {
+    if (existing.status === OperatingStatus.draft) {
+      const updated = await tx.procedure.update({ where: { id: existing.id }, data });
+      if (input.steps) {
+        await tx.procedureStep.deleteMany({ where: { procedureId: existing.id } });
+        await tx.procedureStep.createMany({ data: steps.map((step, index) => ({
+          procedureId: existing.id,
+          stepOrder: index + 1,
+          instruction: step.instruction,
+          stepType: step.stepType,
+          requiredToolAdapterId: step.requiredToolAdapterId,
+          expectedInput: (step.expectedInput ?? {}) as Prisma.InputJsonValue,
+          expectedOutput: (step.expectedOutput ?? {}) as Prisma.InputJsonValue,
+          validationRule: (step.validationRule ?? {}) as Prisma.InputJsonValue,
+          rollbackInstruction: step.rollbackInstruction
+        })) });
+      }
+      return updated;
+    }
+
+    const latest = await tx.procedure.aggregate({ where: { workspaceId, familyId: existing.familyId }, _max: { version: true } });
+    return tx.procedure.create({
+      data: {
+        ...data,
+        workspaceId,
+        familyId: existing.familyId,
+        version: (latest._max.version ?? existing.version) + 1,
+        status: OperatingStatus.draft,
+        qualityStandardId: existing.qualityStandardId,
+        steps: { create: steps.map((step, index) => ({
+          instruction: step.instruction,
+          stepOrder: index + 1,
+          stepType: step.stepType,
+          requiredToolAdapterId: step.requiredToolAdapterId,
+          expectedInput: (step.expectedInput ?? {}) as Prisma.InputJsonValue,
+          expectedOutput: (step.expectedOutput ?? {}) as Prisma.InputJsonValue,
+          validationRule: (step.validationRule ?? {}) as Prisma.InputJsonValue,
+          rollbackInstruction: step.rollbackInstruction
+        })) }
+      }
+    });
+  });
+  await auditProcedure(req, existing.status === OperatingStatus.draft ? "procedure.update_draft" : "procedure.propose_revision", procedure.id, { sourceProcedureId: existing.id, changed: Object.keys(input) });
+  await createEvent({ type: existing.status === OperatingStatus.draft ? "procedure_draft_updated" : "procedure_revision_proposed", workspaceId, ...requestActor(req), resourceType: "Procedure", resourceId: procedure.id, payload: { familyId: procedure.familyId, version: procedure.version, sourceProcedureId: existing.id } });
+  const response = await prisma.procedure.findUnique({ where: { id: procedure.id }, include: { process: true, ownerRole: true, steps: { orderBy: { stepOrder: "asc" } } } });
+  res.json({ data: response });
+}));
+
+processCoreRouter.post("/procedures/:id/actions/activate", asyncHandler(async (req, res) => {
+  const workspaceId = req.auth!.workspaceId;
+  const existing = await prisma.procedure.findFirst({ where: { id: String(req.params.id), workspaceId }, include: { steps: true } });
+  if (!existing) return sendApiError(res, 404, "procedure_not_found");
+  if (existing.status !== OperatingStatus.draft) return sendApiError(res, 409, "only_draft_procedure_can_be_activated");
+  if (!existing.steps.length || !existing.expectedResult) return sendApiError(res, 409, "procedure_activation_requirements_missing");
+  const procedure = await prisma.$transaction(async (tx) => {
+    await tx.procedure.updateMany({ where: { workspaceId, familyId: existing.familyId, status: OperatingStatus.active }, data: { status: OperatingStatus.retired } });
+    return tx.procedure.update({ where: { id: existing.id }, data: { status: OperatingStatus.active }, include: { steps: { orderBy: { stepOrder: "asc" } }, process: true, ownerRole: true } });
+  });
+  await auditProcedure(req, "procedure.activate", procedure.id, { familyId: procedure.familyId, version: procedure.version });
+  await createEvent({ type: "procedure_activated", workspaceId, ...requestActor(req), resourceType: "Procedure", resourceId: procedure.id, payload: { familyId: procedure.familyId, version: procedure.version } });
+  res.json({ data: procedure });
+}));
+
+processCoreRouter.post("/procedures/:id/actions/archive", asyncHandler(async (req, res) => {
+  const existing = await prisma.procedure.findFirst({ where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId } });
+  if (!existing) return sendApiError(res, 404, "procedure_not_found");
+  const procedure = await prisma.procedure.update({ where: { id: existing.id }, data: { status: OperatingStatus.archived } });
+  await auditProcedure(req, "procedure.archive", procedure.id, { previousStatus: existing.status });
+  await createEvent({ type: "procedure_archived", workspaceId: req.auth!.workspaceId, ...requestActor(req), resourceType: "Procedure", resourceId: procedure.id, payload: { familyId: procedure.familyId, version: procedure.version } });
+  res.json({ data: procedure });
 }));

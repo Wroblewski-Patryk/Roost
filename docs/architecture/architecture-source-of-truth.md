@@ -85,6 +85,7 @@ At minimum, keep these files aligned:
 - `docs/architecture/department-management-systems-v1-blueprint.md`
 - `docs/architecture/company-os-definition-editing-contract.md`
 - `docs/architecture/company-os-workflow-definition-command-contract.md`
+- `docs/architecture/innovation-product-engineering.md`
 - `docs/architecture/web-and-mcp-foundation-before-v2.md`
 - `docs/architecture/relationship-graph-audit-2026-05-14.md`
 - `docs/ARCHITECTURE.md`
@@ -175,6 +176,11 @@ The approved v1 direction is:
   marketing, product/service delivery, finance, support, feedback, and
   improvement work should derive from the 13-stage value pipeline before
   adding runtime surfaces.
+- Roost's application definition, Product Engineering, productization,
+  capability, evidence, readiness, and agent-context domain is recorded in
+  `docs/architecture/innovation-product-engineering.md`. `Application` is the
+  shared product identity across Innovation and Products & Services; projects,
+  tasks, processes, and procedures remain shared execution mechanisms.
 - CompanyCore V1 department views should become department management systems
   as recorded in
   `docs/architecture/department-management-systems-architecture.md`. Each of

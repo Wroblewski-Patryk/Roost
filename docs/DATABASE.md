@@ -1,5 +1,24 @@
 # Database
 
+## Product Engineering foundation
+
+Migration `20260828120000_product_engineering_foundation` adds the normalized
+application and productization domain. The principal tables are
+`applications`, `capability_domains`, `capability_definitions`,
+`feature_definitions`, `application_capabilities`, `application_features`,
+`application_capability_dimensions`, `capability_observations`,
+`application_evidence`, `application_capability_dependencies`,
+`capability_packs`, `application_blueprints`, `technology_definitions`,
+`application_architecture_components`, `application_interfaces`,
+`application_projects`, and `product_offerings`.
+
+Definitions are workspace-scoped and reusable. Application configuration and
+observations are separate records. Evidence verification cannot update an
+observed state through a database trigger; an explicit observation command is
+required. Products & Services references `applications` rather than copying
+them. See `architecture/innovation-product-engineering.md` for the canonical
+relationship and readiness contract.
+
 Primary keys are UUIDs. Tables include `created_at`, `updated_at`, and
 integration fields such as `external_id` and `source` where relevant.
 

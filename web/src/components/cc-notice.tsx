@@ -1,13 +1,14 @@
 import React from "react";
 
-type CcNoticeTone = "info" | "success" | "warning" | "error" | "loading";
+type CcNoticeTone = "info" | "success" | "warning" | "error" | "loading" | "empty";
 
 const toneClasses: Record<CcNoticeTone, string> = {
   info: "border-info/30 bg-info/10",
   success: "border-success/30 bg-success/10",
   warning: "border-warning/35 bg-warning/10",
   error: "border-error/35 bg-error/10",
-  loading: "border-base-300 bg-base-200/55"
+  loading: "border-base-300 bg-base-200/55",
+  empty: "border-base-300 bg-base-100"
 };
 
 const toneIcons: Record<CcNoticeTone, string> = {
@@ -15,7 +16,8 @@ const toneIcons: Record<CcNoticeTone, string> = {
   success: "ph-check-circle",
   warning: "ph-warning",
   error: "ph-warning-diamond",
-  loading: "ph-circle-notch"
+  loading: "ph-circle-notch",
+  empty: "ph-tray"
 };
 
 export function CcNotice({

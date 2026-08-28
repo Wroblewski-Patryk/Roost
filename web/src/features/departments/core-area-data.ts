@@ -72,6 +72,7 @@ export const coreAreas: CoreArea[] = [
     views: [
       { key: "tasks", labelKey: "views.04.tasks", href: canonicalOperationsPath, icon: "ph-list-checks", enabled: true },
       { key: "calendar", labelKey: "views.04.calendar", href: "/areas?area=04-operacje&view=calendar", icon: "ph-calendar-blank", enabled: true },
+      { key: "procedures", labelKey: "views.04.procedures", href: "/areas?area=04-operacje&view=procedures", icon: "ph-list-numbers", enabled: true },
       { key: "pipelines", labelKey: "views.04.pipelines", icon: "ph-kanban", enabled: false },
       { key: "workload", labelKey: "views.04.workload", icon: "ph-users-three", enabled: false }
     ]
