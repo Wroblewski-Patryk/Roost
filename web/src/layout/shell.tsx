@@ -235,7 +235,6 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
             <i className="ph-bold ph-magnifying-glass" aria-hidden="true"></i><span>{t("shell.commandSearch")}</span><kbd>⌘K</kbd>
           </button>
           <div className="roost-command-actions">
-            <span className="roost-command-health"><i className="ph-bold ph-shield-check" aria-hidden="true"></i><span>{t("shell.workspaceSafe")}</span></span>
             <LanguageSelector compact />
           </div>
         </header>
