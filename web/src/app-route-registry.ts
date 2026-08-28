@@ -27,6 +27,8 @@ export const canonicalPeopleAgentsPath = "/areas?area=06-kadry&view=directory";
 export const canonicalFinancePath = "/areas?area=07-finanse&view=overview";
 export const canonicalAssetsPath = "/areas?area=08-zasoby&view=overview";
 export const canonicalTechnologyPath = "/areas?area=09-technologia&view=overview";
+export const canonicalTechnologyIntegrationsPath = "/areas?area=09-technologia&view=integrations";
+export const canonicalTechnologyAutomationsPath = "/areas?area=09-technologia&view=automations";
 export const canonicalLegalPath = "/areas?area=10-prawo&view=overview";
 export const canonicalInnovationPath = "/areas?area=11-innowacje&view=overview";
 export const canonicalManagementDepartmentsPath = "/areas?area=12-zarzadzanie&view=departments";
@@ -338,6 +340,9 @@ export function canonicalPostAuthPath(pathname?: string | null) {
       return view === "files" ? "/areas?area=08-zasoby&view=files" : canonicalAssetsPath;
     }
     if (area === "09-technologia") {
+      const view = params.get("view");
+      if (view === "integrations") return canonicalTechnologyIntegrationsPath;
+      if (view === "automations") return canonicalTechnologyAutomationsPath;
       return canonicalTechnologyPath;
     }
     if (area === "10-prawo") {

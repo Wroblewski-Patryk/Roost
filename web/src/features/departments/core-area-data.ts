@@ -11,6 +11,8 @@ import {
   canonicalPeopleAgentsPath,
   canonicalFinancePath,
   canonicalTechnologyPath,
+  canonicalTechnologyIntegrationsPath,
+  canonicalTechnologyAutomationsPath,
   canonicalLegalPath,
   canonicalInnovationPath
 } from "../../app-route-registry";
@@ -134,7 +136,11 @@ export const coreAreas: CoreArea[] = [
     descriptionKey: "departments.09.description",
     icon: "ph-cpu",
     enabled: true,
-    views: [{ key: "overview", labelKey: "views.default.overview", href: canonicalTechnologyPath, icon: "ph-gauge", enabled: true }]
+    views: [
+      { key: "overview", labelKey: "views.09.overview", href: canonicalTechnologyPath, icon: "ph-gauge", enabled: true },
+      { key: "integrations", labelKey: "views.09.integrations", href: canonicalTechnologyIntegrationsPath, icon: "ph-plugs-connected", enabled: true },
+      { key: "automations", labelKey: "views.09.automations", href: canonicalTechnologyAutomationsPath, icon: "ph-lightning", enabled: true }
+    ]
   },
   {
     key: "10-prawo",

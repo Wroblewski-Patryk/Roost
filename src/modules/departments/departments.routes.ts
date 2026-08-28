@@ -24,7 +24,7 @@ const DEFAULT_DEPARTMENTS = [
   { key: "06-kadry", name: "06 People / Agents", description: "People, AI agents, roles, responsibilities, and workload context.", icon: "ph-users-three", position: 6, linkedViews: ["people.directory"] },
   { key: "07-finanse", name: "07 Finance", description: "Revenue, costs, budgets, invoices, and commercial exceptions.", icon: "ph-bank", position: 7, linkedViews: [] },
   { key: "08-zasoby", name: "08 Assets", description: "Files, folders, resources, repositories, prompts, and knowledge roots.", icon: "ph-folder-open", position: 8, linkedViews: ["assets.overview", "assets.files"] },
-  { key: "09-technologia", name: "09 Technology", description: "Code, infrastructure, deployments, integrations, and technical health.", icon: "ph-cpu", position: 9, linkedViews: [] },
+  { key: "09-technologia", name: "09 Technology", description: "Code, infrastructure, deployments, integrations, and technical health.", icon: "ph-cpu", position: 9, linkedViews: ["technology.overview", "technology.integrations", "technology.automations"] },
   { key: "10-prawo", name: "10 Legal", description: "Contracts, compliance, approvals, and legal risk control.", icon: "ph-scales", position: 10, linkedViews: [] },
   { key: "11-innowacje", name: "11 Innovation", description: "Research, experiments, discovery, and improvement portfolio.", icon: "ph-lightbulb", position: 11, linkedViews: ["innovation.overview"] },
   { key: "12-zarzadzanie", name: "12 Management", description: "Executive control, department administration, approvals, and portfolio steering.", icon: "ph-chart-line-up", position: 12, linkedViews: ["management.departments", "management.approvals", "management.portfolio", "management.kpis", "management.escalations", "management.reviews"] }
@@ -39,6 +39,9 @@ const AVAILABLE_VIEWS: ViewDefinition[] = [
   { id: "people.directory", label: "People and agents directory", href: "/areas?area=06-kadry&view=directory", icon: "ph-users-three", sourceDepartmentKey: "06-kadry", enabled: true },
   { id: "assets.overview", label: "Assets overview", href: "/areas?area=08-zasoby&view=overview", icon: "ph-gauge", sourceDepartmentKey: "08-zasoby", enabled: true },
   { id: "assets.files", label: "Assets files and folders", href: "/areas?area=08-zasoby&view=files", icon: "ph-folders", sourceDepartmentKey: "08-zasoby", enabled: true },
+  { id: "technology.overview", label: "Technology overview", href: "/areas?area=09-technologia&view=overview", icon: "ph-gauge", sourceDepartmentKey: "09-technologia", enabled: true },
+  { id: "technology.integrations", label: "Integrations", href: "/areas?area=09-technologia&view=integrations", icon: "ph-plugs-connected", sourceDepartmentKey: "09-technologia", enabled: true },
+  { id: "technology.automations", label: "Automations", href: "/areas?area=09-technologia&view=automations", icon: "ph-lightning", sourceDepartmentKey: "09-technologia", enabled: true },
   { id: "innovation.overview", label: "Product engineering", href: "/areas?area=11-innowacje&view=overview", icon: "ph-lightbulb", sourceDepartmentKey: "11-innowacje", enabled: true },
   { id: "management.departments", label: "Department management", href: "/areas?area=12-zarzadzanie&view=departments", icon: "ph-buildings", sourceDepartmentKey: "12-zarzadzanie", enabled: true },
   { id: "management.approvals", label: "Approvals and decisions", href: null, icon: "ph-seal-check", sourceDepartmentKey: "12-zarzadzanie", enabled: false },

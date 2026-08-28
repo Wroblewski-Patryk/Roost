@@ -1,5 +1,4 @@
 import { CcButton } from "../../components/cc-button";
-import { Shell } from "../../layout/shell";
 import { useLanguage } from "../../i18n/i18n";
 import { coreAreas } from "./core-area-data";
 
@@ -52,7 +51,7 @@ export function ProductMapRoute() {
   const departments = coreAreas.slice(1);
 
   return (
-    <Shell activeArea="00-ogolny">
+    <>
       <section className="overflow-hidden rounded-company border border-base-300 bg-base-100 shadow-sm">
         <div className="grid gap-5 border-b border-base-300 bg-gradient-to-br from-primary/10 via-base-100 to-accent/10 p-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
           <div>
@@ -106,6 +105,6 @@ export function ProductMapRoute() {
           <p className="mt-2 text-sm leading-6 text-company-muted">{t("productMap.boundaryDescription")}</p>
         </article>
       </section>
-    </Shell>
+    </>
   );
 }

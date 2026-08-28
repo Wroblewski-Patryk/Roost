@@ -268,7 +268,11 @@ the V1 area-first model without changing route, backend, or data ownership:
   sidebar and a compact context command bar;
 - the sidebar shows the 13 areas as the stable primary structure and exposes
   subviews only for the selected area;
-- page headers are compact and separate from the main work surface;
+- every authenticated view exposes a stable, compact page introduction before
+  its main work surface: area eyebrow, one page title, one-sentence purpose,
+  and an optional primary action. It remains visible during loading, error,
+  empty, and ready states; selected lists, folders, and records use lower-level
+  headings instead of becoming a second page title;
 - `00 General` is an owner decision surface ordered by attention, next action,
   operating health, routing, guardrails, and agent handoff;
 - repeated records use rows, tables, boards, timelines, and split views before
@@ -316,12 +320,23 @@ Responsive behavior:
 - Mobile: compact topbar, drawer for full IA, optional bottom shortcuts for
   core destinations, command brief before broad stats, and map as overview or
   district switcher instead of a tiny full canvas.
+- Browser chrome, safe-area gaps, overscroll, and scrollbar tracks must inherit
+  the graphite shell color; no light document canvas may appear around private
+  routes on mobile.
 
 The sidebar should not remain a generic route directory. For V1 it should
 express the operating model as a company area list. Workflows, Knowledge,
 Agents, and other capabilities should appear inside the selected area, not as
 competing global destinations. Badges and readiness signals must come from real
 product state. Do not introduce a second route-local shell for React surfaces.
+
+Authenticated navigation is client-side and shell-persistent. Internal route
+changes update browser history and replace only the selected view below the
+command bar; they must not recreate the sidebar, command bar, workspace/profile
+state, or ambient shell. Back and Forward remain first-class navigation.
+External destinations, OAuth handoffs, sign-out, and workspace-token changes
+may perform full document navigation because they cross or replace the active
+security context.
 
 ## Iconography
 
@@ -418,3 +433,121 @@ For UI tasks, record:
 - whether the result should be added to `docs/ux/design-memory.md`
 - whether decorative and background elements were implemented with the correct
   asset strategy
+
+## Authenticated Liquid Workbench Surfaces
+
+Authenticated department, asset, people, operations, management, and settings
+routes reuse the dashboard's Liquid Command Deck direction as one continuous
+operating environment. The shell owns the ambient background. Page content must
+not repeat that image or cover it with large opaque gray containers.
+
+- Use one dominant translucent work surface with internal dividers or quieter
+  nested panels. Do not represent every fact as an independent floating card.
+- Use `roost-work-surface`, `roost-work-panel`, and `roost-work-panel-muted` for
+  the three shared material levels. Dense data should use the shared table shell.
+- Present small collections of KPIs as a continuous summary strip. Large metric
+  tiles are reserved for a genuinely primary decision or outcome.
+- Do not render object totals or zero-value counters as overview decoration.
+  Counts belong beside the workflow they change: active filters, selection,
+  scheduling, risk, blockers, or required owner decisions. If the underlying
+  collection is empty, show the recovery state without an inert filter bar,
+  empty table chrome, or `0 of 0` pagination.
+- Reserve green, amber, red, and blue accents for semantic state, selection, or
+  a primary action. Neutral labels and metadata use restrained border and text
+  contrast.
+- Shared tables use a continuous workbench surface: the column header is
+  separated by a rule and typography, not a contrasting opaque band. Status
+  markers remain compact, outlined, and semantic. Row actions form one quiet
+  icon-tool group; warning and destructive color becomes prominent on hover or
+  focus instead of rendering persistent solid amber and red buttons in every
+  row.
+- Table chrome is earned by a real workflow. Selection appears only with a
+  bulk action, column visibility appears only when optional columns exist, and
+  internal pagination stays hidden until the result set exceeds the active
+  page size. Small datasets must not carry inert checkboxes, column menus, or
+  `1-3 of 3` navigation.
+- Standard department workbenches use `CcPageHeader` for the eyebrow, title,
+  operating description, and page-level actions. Specialized briefing and map
+  surfaces may keep a bespoke orientation header when that hierarchy performs
+  a distinct job.
+- Backend identifiers are never the primary user-facing label. Convert
+  snake-case, kebab-case, status keys, and command identifiers to concise
+  business language while preserving the raw key only where technical context
+  explicitly needs it.
+- Desktop layouts may expose multiple operational regions. Tablet and mobile
+  must restructure them into readable columns or rows without horizontal page
+  overflow; tables may switch to the established mobile record treatment.
+- Interactive glass controls must retain a visible focus ring, sufficient text
+  contrast, reduced-transparency fallback, and reduced-motion behavior.
+- Every active department route must be reachable from that department's
+  contextual sidebar navigation. The API-backed department catalog and the
+  static navigation fallback must expose the same active view set; a route must
+  not exist as an undiscoverable deep link.
+- Technology separates `Overview`, `Integrations`, and `Automations`.
+  Integrations compare external adapters, connection/health, capabilities, and
+  sync state. Automations compare execution definitions, triggers, enabled/run
+  state, and failures. Do not merge these records merely because both can
+  participate in technical workflows.
+
+## Unified Record Editing Contract
+
+Authenticated record editors must feel like one system even when they edit
+different business objects. Use the shared record-editor and confirmation
+primitives before adding a route-local modal recipe.
+
+- Open create and edit flows as a stable overlay over the current workbench;
+  editing must not resize or replace the underlying list.
+- Use the same three-part anatomy: context/title header, scrollable field
+  sections, and a persistent action footer.
+- Record version and similar read-only metadata belong in the header's context
+  line beside the eyebrow. The top-right corner is reserved for the close
+  control; metadata must not float beside it or resemble an action.
+- The footer order is always `Cancel` followed by the primary save action.
+  Destructive or lifecycle actions belong in the record detail or a separate
+  confirmation dialog, never beside Save as an equal action.
+- Use `CcField` for labels, hints, validation, and accessible relationships.
+  Group fields by user intent such as Definition, Execution, Access, or
+  Delivery rather than mirroring database columns.
+- Use the shared `CcSelect` for native single-value choices in record editors.
+  A select may share the input surface language, but it must retain an explicit
+  trailing chevron, sufficient right padding, and distinct focus, disabled, and
+  invalid states so it cannot be mistaken for editable text.
+- In multi-column field rows, every field aligns its label and control to the
+  top of its grid cell. Hint or error copy belongs below its own control and
+  must not vertically center, stretch, or push down the sibling field.
+- Fields that reference tools, permissions, departments, roles, or other
+  system entities must use catalog-backed selectors. Do not ask users to type
+  comma-separated identifiers that can drift from the source-of-truth value.
+- Icon fields use the shared visual icon picker backed by the approved local
+  icon catalog. Show the rendered symbol and a human label; never require users
+  to type or understand implementation tokens such as `ph-map-trifold`.
+- Catalog multiselects use the shared anchored popover. Opening options must
+  not resize a form section, shift an adjacent column, or be clipped by the
+  editor's scroll region. The popover follows its trigger during scrolling,
+  fits above or below within the viewport, provides a full-width search field,
+  and closes on Escape or an outside click.
+- Ordered definitions such as procedure steps use explicit record rows with
+  add, remove, and move controls. A multiline textarea is not an editor for an
+  ordered object collection. Reordering must preserve the step's execution
+  type, tool relation, validation metadata, rollback instruction, and other
+  fields not currently exposed by the compact editor.
+- Configuration editors follow the same sectioned record-editor anatomy as
+  operational records. Group identity/definition, navigation/presentation, and
+  linked capabilities into separate sections instead of distributing inputs
+  and textareas across one page-width row.
+- Product and application create/edit flows use the same shared record editor
+  as procedures, workforce records, and departments. Keep identity, product
+  intent, lifecycle, access, and delivery surfaces in explicit sections rather
+  than route-local bordered forms.
+- Active versioned definitions are never mutated silently. Editing an active
+  procedure creates an improvement draft; version is plain metadata and status
+  is the only badge.
+- Repeated records use the same shared data-table/list treatment as other
+  directories. Version numbers, object totals, and categories are not rendered
+  as decorative badges or counters.
+- Department scope is a filterable operating lens. A shared procedure may be
+  visible in every department named by its related process; the interface must
+  not imply exclusive ownership by one department when the source record is
+  cross-department.
+- Archive and delete commands always use the shared confirmation dialog with a
+  plain-language consequence and enough record context to prevent mistakes.

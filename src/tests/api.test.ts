@@ -657,6 +657,8 @@ test("account and workspace settings profile contract exposes active owner works
   assert.equal(profileBody.data.authType, "user");
   assert.ok(profileBody.data.userId);
   assert.equal(profileBody.data.workspaceId, owner.workspace.id);
+  assert.equal((profile.body as { data: { user: { email: string; name: string } } }).data.user.email, "settings-profile-owner@example.com");
+  assert.equal((profile.body as { data: { user: { email: string; name: string } } }).data.user.name, "Test Owner");
   assert.equal(profileBody.data.workspaces.length, 1);
   assert.deepEqual(profileBody.data.workspaces[0], {
     id: owner.workspace.id,
@@ -675,6 +677,64 @@ test("account and workspace settings profile contract exposes active owner works
   };
   assert.equal(legacyProfileBody.data.workspaceId, profileBody.data.workspaceId);
   assert.deepEqual(legacyProfileBody.data.workspaces, profileBody.data.workspaces);
+});
+
+test("owner can update account identity and password with current-password verification", async () => {
+  const owner = await registerOwner("account-actions-owner@example.com", "Account Actions Workspace");
+  const headers = { Authorization: `Bearer ${owner.token}` };
+
+  const wrongEmailConfirmation = await request("/v1/auth/me", {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify({ email: "account-actions-updated@example.com", currentPassword: "wrong-password" })
+  });
+  assert.equal(wrongEmailConfirmation.status, 400);
+  assert.equal((wrongEmailConfirmation.body as { error: string }).error, "current_password_invalid");
+
+  const updatedProfile = await request("/v1/auth/me", {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify({
+      name: "Updated Owner",
+      email: "account-actions-updated@example.com",
+      currentPassword: "very-strong-password"
+    })
+  });
+  assert.equal(updatedProfile.status, 200);
+  assert.equal((updatedProfile.body as { data: { name: string; email: string } }).data.name, "Updated Owner");
+  assert.equal((updatedProfile.body as { data: { name: string; email: string } }).data.email, "account-actions-updated@example.com");
+
+  const workforceIdentity = await prisma.workforceEntity.findFirst({
+    where: { workspaceId: owner.workspace.id, source: "user" }
+  });
+  assert.equal(workforceIdentity?.name, "Updated Owner");
+
+  const wrongPassword = await request("/v1/auth/password", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ currentPassword: "wrong-password", newPassword: "another-strong-password" })
+  });
+  assert.equal(wrongPassword.status, 400);
+  assert.equal((wrongPassword.body as { error: string }).error, "current_password_invalid");
+
+  const changedPassword = await request("/v1/auth/password", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ currentPassword: "very-strong-password", newPassword: "another-strong-password" })
+  });
+  assert.equal(changedPassword.status, 200);
+
+  const oldLogin = await request("/v1/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email: "account-actions-updated@example.com", password: "very-strong-password" })
+  });
+  assert.equal(oldLogin.status, 401);
+
+  const newLogin = await request("/v1/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email: "account-actions-updated@example.com", password: "another-strong-password" })
+  });
+  assert.equal(newLogin.status, 200);
 });
 
 test("product engineering keeps definitions shared, observations explicit, and procedures versioned", async () => {

@@ -816,7 +816,11 @@ Current backend foundation:
 V1 web target:
 
 - technology command brief;
-- integration health board;
+- technology overview for cross-system dependency context;
+- integration health board for external providers, connection state, exposed
+  capabilities, and synchronization health;
+- separate automation definitions board for scheduled and event-driven
+  execution, triggers, enabled state, and last-run failure context;
 - MCP/agent authority board;
 - deployment and runtime health rail;
 - technical risk queue.

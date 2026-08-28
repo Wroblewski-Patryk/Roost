@@ -26,28 +26,56 @@ function translatedViewLabel(value: string, t: ReturnType<typeof useLanguage>["t
   return value.startsWith("views.") ? t(value) : value;
 }
 
+function contextualViewLabel(viewLabel: string, areaLabel: string) {
+  const escapedArea = areaLabel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const withoutRepeatedArea = viewLabel.replace(new RegExp(`^${escapedArea}(?:\\s*[-–—:>/]\\s*|\\s+)`, "i"), "").trim();
+  return withoutRepeatedArea || viewLabel;
+}
+
 function DepartmentSidebar({ activeArea, onNavigate }: { activeArea?: string; onNavigate?: () => void }) {
   const { t } = useLanguage();
   const activeView = currentAreaView();
   const departmentCatalog = useOwnerPacket<DepartmentCatalogPacket>("/v1/departments", true, t);
   const navigationAreas: CoreArea[] = departmentCatalog.data?.departments
     .filter((department) => department.status !== "archived")
-    .map((department) => ({
-      key: department.key,
-      labelKey: department.name,
-      eyebrowKey: department.description || "Workspace department",
-      descriptionKey: department.description || "",
-      href: department.href || undefined,
-      icon: department.icon,
-      enabled: Boolean(department.href),
-      views: department.views.map((view) => ({
+    .map((department) => {
+      const fallbackArea = coreAreas.find((area) => area.key === department.key);
+      const catalogViews = department.views.map((view) => ({
         key: view.id,
         labelKey: view.label,
         href: view.href || undefined,
         icon: view.icon,
         enabled: view.enabled !== false && Boolean(view.href)
-      }))
-    })) || coreAreas;
+      }));
+      const fallbackViews = fallbackArea?.views || [];
+      const combinedViews = [
+        ...fallbackViews.map((fallbackView) => {
+          const catalogView = catalogViews.find((view) => view.key === fallbackView.key);
+          if (!catalogView) return fallbackView;
+          const viewHref = catalogView.href || fallbackView.href;
+          return { ...fallbackView, ...catalogView, href: viewHref, enabled: catalogView.enabled !== false && Boolean(viewHref) };
+        }),
+        ...catalogViews.filter((view) => !fallbackViews.some((fallbackView) => fallbackView.key === view.key))
+      ];
+      const seenViewDestinations = new Set<string>();
+      const linkedViews = combinedViews.filter((view) => {
+        const destination = view.href || view.key;
+        if (seenViewDestinations.has(destination)) return false;
+        seenViewDestinations.add(destination);
+        return true;
+      });
+      const href = department.href || fallbackArea?.href;
+      return {
+        key: department.key,
+        labelKey: department.name,
+        eyebrowKey: department.description || fallbackArea?.eyebrowKey || "Workspace department",
+        descriptionKey: department.description || fallbackArea?.descriptionKey || "",
+        href,
+        icon: department.icon || fallbackArea?.icon,
+        enabled: Boolean(href),
+        views: linkedViews
+      };
+    }) || coreAreas;
 
   return (
     <nav className="roost-sidebar-navigation" aria-label={t("sidebar.departments")}>
@@ -77,7 +105,7 @@ function DepartmentSidebar({ activeArea, onNavigate }: { activeArea?: string; on
                 <div className="roost-sidebar-context-nav" aria-label={t("sidebar.currentAreaViews")}>
                   {activeViews.map((view) => (
                     <a aria-current={view.key === activeView ? "page" : undefined} className={view.key === activeView ? "is-active" : ""} href={view.href} key={view.key} onClick={onNavigate}>
-                      {translatedViewLabel(view.labelKey, t)}
+                      {contextualViewLabel(translatedViewLabel(view.labelKey, t), label)}
                     </a>
                   ))}
                 </div>
@@ -149,7 +177,8 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
   const profile = useOwnerPacket<AuthMe>("/v1/auth/me", true, t);
   const workspaces = profile.data?.workspaces || [];
   const activeWorkspace = workspaces.find((workspace) => workspace.active) || workspaces[0];
-  const userLabel = activeWorkspace?.role === "owner" ? t("user.admin") : t("user.account");
+  const [profileName, setProfileName] = useState<string | null>(null);
+  const userLabel = profileName || profile.data?.user?.name || (activeWorkspace?.role === "owner" ? t("user.admin") : t("user.account"));
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [commandQuery, setCommandQuery] = useState("");
@@ -172,6 +201,15 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
       return area.enabled !== false && area.href && (!query || `${label} ${t(area.eyebrowKey)}`.toLocaleLowerCase().includes(query));
     }).slice(0, 8);
   }, [commandQuery, t]);
+
+  useEffect(() => {
+    function handleProfileUpdated(event: Event) {
+      const name = (event as CustomEvent<{ name?: string | null }>).detail?.name;
+      setProfileName(name || null);
+    }
+    window.addEventListener("roost:profile-updated", handleProfileUpdated);
+    return () => window.removeEventListener("roost:profile-updated", handleProfileUpdated);
+  }, []);
 
   useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
@@ -266,7 +304,7 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
           </div>
         ) : null}
 
-        <div className="roost-page-content">
+        <div className="roost-page-content" data-active-area={settingsRoute ? "settings" : activeArea}>
           {children}
           <footer className="roost-app-footer">
             <span>{t("footer.copy")} {t("footer.madeWith")} <a href="https://luckysparrow.ch" rel="noreferrer" target="_blank">LuckySparrow.ch</a></span>

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CcButton } from "./cc-button";
 import { CcNotice } from "./cc-notice";
+import { CcSelect } from "./cc-select";
 
 type SortDirection = "asc" | "desc";
 
@@ -22,7 +23,7 @@ export type CcTableColumn<Row> = {
   sortValue?: (row: Row) => string | number | Date | null | undefined;
   filterable?: boolean;
   filterLabel?: string;
-  filterValue?: (row: Row) => string | null | undefined;
+  filterValue?: (row: Row) => string | string[] | null | undefined;
   filterOptions?: CcTableFilterOption[];
   searchValue?: (row: Row) => string | null | undefined;
 };
@@ -160,9 +161,9 @@ function uniqueOptions<Row>(rows: Row[], column: CcTableColumn<Row>) {
   if (column.filterOptions) return column.filterOptions;
   const values = new Map<string, string>();
   rows.forEach((row) => {
-    const value = column.filterValue?.(row);
-    if (!value) return;
-    values.set(value, value);
+    const rawValue = column.filterValue?.(row);
+    const rowValues = Array.isArray(rawValue) ? rawValue : [rawValue];
+    rowValues.filter(Boolean).forEach((value) => values.set(String(value), String(value)));
   });
   return Array.from(values.entries())
     .sort((a, b) => a[1].localeCompare(b[1]))
@@ -227,7 +228,7 @@ export function CcDataTable<Row extends { id: string }>({
   searchPlaceholder,
   enableSearch = true,
   enableColumnVisibility = true,
-  enableSelection = true,
+  enableSelection = false,
   enablePagination = true,
   initialPageSize = 25,
   initialSort,
@@ -249,6 +250,9 @@ export function CcDataTable<Row extends { id: string }>({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [visibleColumns, setVisibleColumns] = useVisibleColumns(columns);
   const headerCheckboxRef = useRef<HTMLInputElement | null>(null);
+  const selectionEnabled = enableSelection && bulkActions.length > 0;
+  const columnVisibilityEnabled = enableColumnVisibility
+    && columns.some((column, index) => index > 0 && column.hideable !== false && column.visibleByDefault === false);
 
   const filterableColumns = useMemo(() => columns.filter((column) => column.filterable && column.filterValue), [columns]);
   const renderedColumns = useMemo(
@@ -263,7 +267,9 @@ export function CcDataTable<Row extends { id: string }>({
       const hasColumnMismatch = filterableColumns.some((column) => {
         const activeValue = columnFilters[column.key];
         if (!activeValue || activeValue === "all") return false;
-        return String(column.filterValue?.(row) || "") !== activeValue;
+        const rawValue = column.filterValue?.(row);
+        const rowValues = Array.isArray(rawValue) ? rawValue : [rawValue];
+        return !rowValues.some((value) => String(value || "") === activeValue);
       });
       if (hasColumnMismatch) return false;
       if (!query.trim()) return true;
@@ -344,9 +350,9 @@ export function CcDataTable<Row extends { id: string }>({
   }
 
   const filterBar = (
-    <div className="roost-work-panel grid gap-3 rounded-company p-3">
+    <div className="roost-work-panel cc-table-toolbar rounded-company p-3">
       {quickFilters.length ? (
-        <div className="flex flex-wrap gap-2" aria-label="Quick filters">
+        <div className="cc-table-quick-filters" aria-label="Quick filters">
           {quickFilters.map((filter) => (
             <button
               className={`btn btn-sm whitespace-nowrap ${activeQuickFilter === filter.key ? "btn-primary" : "btn-outline"}`}
@@ -360,10 +366,10 @@ export function CcDataTable<Row extends { id: string }>({
         </div>
       ) : null}
 
-      <div className="grid gap-2 md:grid-cols-[minmax(14rem,1fr)_auto] md:items-start">
-        <div className="grid gap-2 md:grid-cols-[minmax(12rem,1fr)_repeat(auto-fit,minmax(10rem,12rem))]">
+      <div className="cc-table-filter-row">
+        <div className="cc-table-filter-fields">
           {enableSearch ? (
-            <label className="form-control min-w-0">
+            <label className="form-control cc-table-search min-w-0">
               <span className="label py-0 pb-1">
                 <span className="label-text text-xs font-black uppercase tracking-wide text-company-muted">{tableLabels.search}</span>
               </span>
@@ -381,29 +387,29 @@ export function CcDataTable<Row extends { id: string }>({
           ) : null}
           {filterableColumns.map((column) => {
             const options = uniqueOptions(rows, column);
-            if (!options.length) return null;
+            if (options.length < 2) return null;
             const label = column.filterLabel || column.header;
             return (
-              <label className="form-control min-w-0" key={column.key}>
+              <label className="form-control cc-table-column-filter min-w-0" key={column.key}>
                 <span className="label py-0 pb-1">
                   <span className="label-text text-xs font-black uppercase tracking-wide text-company-muted">{label}</span>
                 </span>
-                <select
+                <CcSelect
                   aria-label={label}
-                  className="select select-bordered bg-base-100/65"
+                  className="bg-base-100/65"
                   onChange={(event) => setColumnFilters((current) => ({ ...current, [column.key]: event.target.value }))}
                   value={columnFilters[column.key] || "all"}
                 >
                   <option value="all">All {label.toLowerCase()}</option>
                   {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                </select>
+                </CcSelect>
               </label>
             );
           })}
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          {enableColumnVisibility ? (
+        <div className="cc-table-toolbar-actions">
+          {columnVisibilityEnabled ? (
             <div className="dropdown dropdown-end">
               <button className="btn btn-sm btn-outline" tabIndex={0} type="button">
                 <i className="ph-bold ph-columns" aria-hidden="true"></i>
@@ -430,14 +436,14 @@ export function CcDataTable<Row extends { id: string }>({
               </div>
             </div>
           ) : null}
-          <CcButton disabled={!hasFilters} iconLeft="ph-x-circle" onClick={clearFilters} size="sm" variant="ghost">
+          {hasFilters ? <CcButton iconLeft="ph-x-circle" onClick={clearFilters} size="sm" variant="ghost">
             {tableLabels.clear}
-          </CcButton>
+          </CcButton> : null}
         </div>
       </div>
 
       {selectedRows.length ? (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-company border border-primary/25 bg-primary/10 px-3 py-2 text-sm">
+        <div className="cc-table-selection-bar flex flex-wrap items-center justify-between gap-2 rounded-company border border-primary/25 bg-primary/10 px-3 py-2 text-sm">
           <strong>{tableLabels.selected?.(selectedRows.length)}</strong>
           {bulkActions.length ? (
             <div className="flex flex-wrap gap-2">
@@ -463,7 +469,7 @@ export function CcDataTable<Row extends { id: string }>({
   if (loading) {
     return (
       <div className="grid gap-3">
-        {filterBar}
+        {rows.length ? filterBar : null}
         <div className="rounded-company border border-base-300 bg-base-100 p-4">
           <CcNotice tone="loading" title={tableLabels.loadingTitle} detail={tableLabels.loadingDetail} />
         </div>
@@ -474,7 +480,7 @@ export function CcDataTable<Row extends { id: string }>({
   if (error) {
     return (
       <div className="grid gap-3">
-        {filterBar}
+        {rows.length ? filterBar : null}
         <div className="rounded-company border border-base-300 bg-base-100 p-4">
           <CcNotice tone="error" title={tableLabels.errorTitle} detail={error} action={errorAction} live />
         </div>
@@ -482,12 +488,16 @@ export function CcDataTable<Row extends { id: string }>({
     );
   }
 
+  if (!rows.length) {
+    return <CcNotice tone="empty" title={emptyTitle} detail={emptyDetail} />;
+  }
+
   const table = (
     <div className="react-table-shell max-w-full overflow-x-auto rounded-company border border-base-300 bg-base-100">
       <table className={["table table-zebra table-pin-rows min-w-full", tableDensityClass, tableMinWidthClassName].filter(Boolean).join(" ")}>
         <thead>
           <tr>
-            {enableSelection ? (
+            {selectionEnabled ? (
               <th className={selectColumnClass}>
                 <input
                   aria-label={allVisibleSelected ? "Deselect all visible rows" : "Select all visible rows"}
@@ -523,7 +533,7 @@ export function CcDataTable<Row extends { id: string }>({
         <tbody>
           {displayedRows.length ? displayedRows.map((row) => (
             <tr className={["hover transition-colors", getRowClassName?.(row)].filter(Boolean).join(" ")} key={row.id}>
-              {enableSelection ? (
+              {selectionEnabled ? (
                 <td className={selectColumnClass}>
                   <input
                     aria-label={`Select ${getRowLabel?.(row) || row.id}`}
@@ -544,14 +554,14 @@ export function CcDataTable<Row extends { id: string }>({
               ))}
               {(rowActions || rowActionItems.length) ? (
                 <td className={actionColumnClass}>
-                  <div className="flex items-center gap-1">
+                  <div className="roost-table-actions flex items-center gap-1">
                     {rowActionItems.filter((action) => !action.hidden?.(row)).map((action) => {
                       const disabled = action.disabled?.(row);
                       const label = disabled ? action.disabledLabel?.(row) || action.label : action.label;
                       return (
                         <button
                           aria-label={label}
-                          className={`btn btn-xs btn-square ${actionToneClass(action.tone)}`}
+                          className={`roost-table-action btn btn-xs btn-square ${actionToneClass(action.tone)}`}
                           disabled={disabled}
                           key={action.key}
                           onClick={() => action.onClick(row)}
@@ -569,7 +579,7 @@ export function CcDataTable<Row extends { id: string }>({
             </tr>
           )) : (
             <tr>
-              <td className="p-5" colSpan={renderedColumns.length + (enableSelection ? 1 : 0) + ((rowActions || rowActionItems.length) ? 1 : 0)}>
+              <td className="p-5" colSpan={renderedColumns.length + (selectionEnabled ? 1 : 0) + ((rowActions || rowActionItems.length) ? 1 : 0)}>
                 <CcNotice tone="info" title={emptyTitle} detail={emptyDetail} />
               </td>
             </tr>
@@ -586,8 +596,8 @@ export function CcDataTable<Row extends { id: string }>({
   };
 
   return (
-    <div className="grid gap-3">
-      {filterBar}
+    <div className="cc-data-table grid gap-3">
+      {rows.length ? filterBar : null}
       {mobileMode === "cards" ? (
         <>
           <div className="sm:hidden">
@@ -596,7 +606,7 @@ export function CcDataTable<Row extends { id: string }>({
                 <article className={["rounded-company border border-base-300 bg-base-100 p-4", getRowClassName?.(row)].filter(Boolean).join(" ")} key={row.id}>
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <label className="flex min-w-0 items-center gap-2">
-                      {enableSelection ? (
+                      {selectionEnabled ? (
                         <input
                           checked={selectedIds.has(row.id)}
                           className="checkbox checkbox-sm checkbox-primary"
@@ -612,11 +622,11 @@ export function CcDataTable<Row extends { id: string }>({
                       <strong className="break-words text-sm">{getRowLabel?.(row) ?? row.id}</strong>
                     </label>
                     {(rowActions || rowActionItems.length) ? (
-                      <div className="flex flex-wrap justify-end gap-2">
+                      <div className="roost-table-actions flex flex-wrap justify-end gap-2">
                         {rowActionItems.filter((action) => !action.hidden?.(row)).map((action) => (
                           <button
                             aria-label={action.label}
-                            className={`btn btn-xs btn-square ${actionToneClass(action.tone)}`}
+                            className={`roost-table-action btn btn-xs btn-square ${actionToneClass(action.tone)}`}
                             disabled={action.disabled?.(row)}
                             key={action.key}
                             onClick={() => action.onClick(row)}
@@ -631,7 +641,7 @@ export function CcDataTable<Row extends { id: string }>({
                     ) : null}
                   </div>
                   <dl className="grid gap-3">
-                    {renderedColumns.map((column) => (
+                    {renderedColumns.slice(getRowLabel ? 1 : 0).map((column) => (
                       <div className="grid gap-1" key={column.key}>
                         <dt className="text-[0.68rem] font-black uppercase text-company-muted">{column.mobileLabel ?? column.header}</dt>
                         <dd className="min-w-0 text-sm">{column.cell(row)}</dd>
@@ -650,15 +660,15 @@ export function CcDataTable<Row extends { id: string }>({
           <div className="hidden sm:block">{table}</div>
         </>
       ) : table}
-      {enablePagination || pagination ? (
+      {pagination || (enablePagination && sortedRows.length > pageSize) ? (
         <div className="grid gap-2 rounded-company border border-base-300 bg-base-100 px-3 py-2 text-sm md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-center">
           <span className="font-black text-company-muted">{tableLabels.pagination(effectivePagination)}</span>
           {!pagination ? (
             <label className="flex items-center gap-2">
               <span className="text-company-muted">{tableLabels.rowsPerPage}</span>
-              <select className="select select-bordered select-sm w-24" onChange={(event) => setPageSize(Number(event.target.value))} value={pageSize}>
+              <CcSelect className="select-sm" onChange={(event) => setPageSize(Number(event.target.value))} value={pageSize} wrapperClassName="w-24">
                 {pageSizeOptions.map((size) => <option key={size} value={size}>{size}</option>)}
-              </select>
+              </CcSelect>
             </label>
           ) : null}
           <div className="join">

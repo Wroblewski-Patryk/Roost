@@ -4,9 +4,11 @@ import { userErrorMessage } from "../../api/errors";
 import { CcButton } from "../../components/cc-button";
 import { CcField } from "../../components/cc-field";
 import { CcNotice } from "../../components/cc-notice";
+import { CcPageHeader } from "../../components/cc-page-header";
+import { CcRecordEditorModal } from "../../components/cc-record-editor";
 import { CcResourceSelector, type CcResourceSelectorGroup } from "../../components/cc-resource-selector";
+import { CcSelect } from "../../components/cc-select";
 import { CcTextInput } from "../../components/cc-text-input";
-import { Shell } from "../../layout/shell";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import { formatAppDate } from "../../i18n/date-format";
@@ -278,23 +280,25 @@ function OperationsTaskFilterBar({
   const { t } = useLanguage();
   const hasActiveFilter = query.trim().length > 0 || priorityFilter !== "all" || dateFilter !== "all";
   return (
-    <div className="roost-work-panel grid gap-2 rounded-company p-2.5 md:grid-cols-[minmax(0,1fr)_12rem_12rem_auto_auto] md:items-center">
+    <div className="roost-work-panel grid gap-2 rounded-company p-2.5 md:grid-cols-[minmax(0,1fr)_12rem_12rem_auto] md:items-center">
       <label className="input input-bordered input-sm flex min-w-0 items-center gap-2 bg-base-200/40">
         <i className="ph-bold ph-magnifying-glass text-company-muted" aria-hidden="true"></i>
         <span className="sr-only">{t("operations.searchTasks")}</span>
         <input className="grow" onChange={(event) => onQueryChange(event.target.value)} placeholder={t("operations.searchTasks")} type="search" value={query} />
       </label>
-      <select aria-label={t("operations.priorityFilter")} className="select select-bordered select-sm" onChange={(event) => onPriorityFilterChange(event.target.value)} value={priorityFilter}>
+      <CcSelect aria-label={t("operations.priorityFilter")} className="select-sm" onChange={(event) => onPriorityFilterChange(event.target.value)} value={priorityFilter}>
         <option value="all">{t("operations.allPriorities")}</option>
         {priorityOptions.map((priority) => <option key={priority} value={priority}>{priority}</option>)}
-      </select>
-      <select aria-label={t("operations.dateFilter")} className="select select-bordered select-sm" onChange={(event) => onDateFilterChange(event.target.value as TaskDateFilter)} value={dateFilter}>
+      </CcSelect>
+      <CcSelect aria-label={t("operations.dateFilter")} className="select-sm" onChange={(event) => onDateFilterChange(event.target.value as TaskDateFilter)} value={dateFilter}>
         {(["all", "overdue", "today", "week", "unscheduled"] as TaskDateFilter[]).map((option) => (
           <option key={option} value={option}>{t(`operations.dateFilter.${option}`)}</option>
         ))}
-      </select>
-      <span className="justify-self-start whitespace-nowrap text-xs font-bold text-company-muted md:justify-self-end">{t("operations.matchingTasks", { count: visibleCount })}</span>
-      <button className="btn btn-ghost btn-sm" disabled={!hasActiveFilter} onClick={onClear} type="button">{t("operations.clearTaskFilters")}</button>
+      </CcSelect>
+      <div className="flex flex-wrap items-center gap-2 md:justify-self-end">
+        <span className="whitespace-nowrap text-xs font-bold text-company-muted">{t("operations.matchingTasks", { count: visibleCount })}</span>
+        {hasActiveFilter ? <button className="btn btn-ghost btn-sm" onClick={onClear} type="button">{t("operations.clearTaskFilters")}</button> : null}
+      </div>
     </div>
   );
 }
@@ -346,24 +350,24 @@ function TaskFields({
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <label className="form-control">
           <span className="label"><span className="label-text font-bold">{t("operations.taskListField")}</span></span>
-          <select className="select select-bordered w-full" name="taskListId" defaultValue={defaultList}>
+           <CcSelect name="taskListId" defaultValue={defaultList}>
             <option value="">{t("operations.unassigned")}</option>
             {lists.map((list) => <option key={list.id} value={list.id}>{list.name}</option>)}
-          </select>
+           </CcSelect>
         </label>
 
         <label className="form-control">
           <span className="label"><span className="label-text font-bold">{t("table.status")}</span></span>
-          <select className="select select-bordered w-full" name="status" defaultValue={item?.task.status || statuses[0]?.key || "todo"}>
+           <CcSelect name="status" defaultValue={item?.task.status || statuses[0]?.key || "todo"}>
             {statuses.map((status) => <option key={status.key} value={status.key}>{status.label}</option>)}
-          </select>
+           </CcSelect>
         </label>
 
         <label className="form-control">
           <span className="label"><span className="label-text font-bold">{t("table.priority")}</span></span>
-          <select className="select select-bordered w-full" name="priority" defaultValue={item?.task.priority || "medium"}>
+           <CcSelect name="priority" defaultValue={item?.task.priority || "medium"}>
             {priorityOptions.map((priority) => <option key={priority} value={priority}>{priority}</option>)}
-          </select>
+           </CcSelect>
         </label>
 
         <CcField label={t("table.dueDate")}>
@@ -397,24 +401,24 @@ function TaskFields({
       <div className="grid gap-4 md:grid-cols-3">
         <label className="form-control">
           <span className="label"><span className="label-text font-bold">Owner</span></span>
-          <select className="select select-bordered w-full" name="ownerUserId" defaultValue={item?.responsibility?.ownerUserId || ""}>
+           <CcSelect name="ownerUserId" defaultValue={item?.responsibility?.ownerUserId || ""}>
             <option value="">Unassigned owner</option>
             {users.map((user) => <option key={user.id} value={user.id}>{user.name || user.email || user.id}</option>)}
-          </select>
+           </CcSelect>
         </label>
         <label className="form-control">
           <span className="label"><span className="label-text font-bold">Assigned person/agent</span></span>
-          <select className="select select-bordered w-full" name="assignedWorkforceEntityId" defaultValue={item?.responsibility?.assignedWorkforceEntityId || ""}>
+           <CcSelect name="assignedWorkforceEntityId" defaultValue={item?.responsibility?.assignedWorkforceEntityId || ""}>
             <option value="">Unassigned execution</option>
             {workforceEntities.map((entity) => <option key={entity.id} value={entity.id}>{entity.name} ({entity.type || "entity"})</option>)}
-          </select>
+           </CcSelect>
         </label>
         <label className="form-control">
           <span className="label"><span className="label-text font-bold">Reviewer</span></span>
-          <select className="select select-bordered w-full" name="reviewerUserId" defaultValue={item?.responsibility?.reviewerUserId || ""}>
+           <CcSelect name="reviewerUserId" defaultValue={item?.responsibility?.reviewerUserId || ""}>
             <option value="">No reviewer</option>
             {users.map((user) => <option key={user.id} value={user.id}>{user.name || user.email || user.id}</option>)}
-          </select>
+           </CcSelect>
         </label>
       </div>
     </section>
@@ -482,24 +486,17 @@ function TaskPreviewModal({
   }
 
   return (
-    <div className="fixed inset-0 z-30 grid place-items-center bg-neutral/55 p-4" role="dialog" aria-modal="true" aria-labelledby="operations-task-modal-title">
-      <form className="grid max-h-[92vh] w-full max-w-5xl gap-5 overflow-y-auto rounded-company border border-base-300 bg-base-100 p-5 shadow-2xl" onSubmit={onSubmit}>
-        <div className="flex items-start justify-between gap-3">
-          <div className="grid gap-1">
-            <div className="flex flex-wrap gap-2">
-              <PriorityBadge priority={item.task.priority} />
-              <DueBadge dueDate={item.task.dueDate} overdue={item.readiness?.overdue} />
-              <span className="badge badge-outline badge-sm">{item.task.source || t("state.native")}</span>
-            </div>
-            <h2 className="text-2xl font-black text-company-ink" id="operations-task-modal-title">{t("operations.taskPreview")}</h2>
-            <p className="text-sm text-company-muted">{item.hierarchy?.taskList?.name || t("operations.unassigned")}</p>
-          </div>
-          <CcButton ariaLabel={t("operations.closeTask")} onClick={onClose} size="sm" variant="ghost">
-            <i className="ph-bold ph-x" aria-hidden="true"></i>
-            <span className="sr-only">{t("operations.closeTask")}</span>
-          </CcButton>
-        </div>
-
+    <CcRecordEditorModal
+      actions={<><CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton><CcButton loading={saveState === "saving"} type="submit" variant="primary">{t("operations.saveTask")}</CcButton></>}
+      description={item.hierarchy?.taskList?.name || t("operations.unassigned")}
+      eyebrow="04 Operations · Task"
+      maxWidthClassName="max-w-5xl"
+      meta={<span>{item.task.status}</span>}
+      onClose={onClose}
+      onSubmit={onSubmit}
+      title={item.task.title || t("operations.taskPreview")}
+      titleId="operations-task-modal-title"
+    >
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_18rem]">
           <section className="grid gap-4">
             <TaskFields assignmentOptions={assignmentOptions} item={item} mode="edit" statuses={statuses} taskLists={taskLists} />
@@ -522,13 +519,7 @@ function TaskPreviewModal({
             </section>
           </aside>
         </div>
-
-        <div className="flex flex-wrap justify-end gap-2 border-t border-base-300 pt-4">
-          <CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton>
-          <CcButton loading={saveState === "saving"} type="submit" variant="primary">{t("operations.saveTask")}</CcButton>
-        </div>
-      </form>
-    </div>
+    </CcRecordEditorModal>
   );
 }
 
@@ -594,29 +585,19 @@ function TaskCreateModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-neutral/35 p-4" role="dialog" aria-modal="true" aria-labelledby="operations-create-task-title">
-      <form className="grid max-h-[92vh] w-full max-w-2xl gap-4 overflow-y-auto rounded-company border border-base-300 bg-base-100 p-5 shadow-2xl" onSubmit={onSubmit}>
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-sm font-black uppercase text-primary">{t("operations.newTask")}</p>
-            <h2 className="text-2xl font-black text-company-ink" id="operations-create-task-title">{t("operations.createTask")}</h2>
-          </div>
-          <CcButton ariaLabel={t("operations.closeTask")} onClick={onClose} size="sm" variant="ghost">
-            <i className="ph-bold ph-x" aria-hidden="true"></i>
-            <span className="sr-only">{t("operations.closeTask")}</span>
-          </CcButton>
-        </div>
-
+    <CcRecordEditorModal
+      actions={<><CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton><CcButton loading={saveState === "saving"} type="submit" variant="primary">{t("operations.createTask")}</CcButton></>}
+      description="Define the work, ownership, timing, and review path in one consistent editor."
+      eyebrow="04 Operations · Task"
+      maxWidthClassName="max-w-3xl"
+      onClose={onClose}
+      onSubmit={onSubmit}
+      title={t("operations.createTask")}
+      titleId="operations-create-task-title"
+    >
         <TaskFields assignmentOptions={assignmentOptions} defaultTaskListId={defaultTaskListId} mode="create" statuses={statuses} taskLists={taskLists} />
-
         {error ? <CcNotice tone="error" title={error} live /> : null}
-
-        <div className="flex flex-wrap justify-end gap-2">
-          <CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton>
-          <CcButton loading={saveState === "saving"} type="submit" variant="primary">{t("operations.createTask")}</CcButton>
-        </div>
-      </form>
-    </div>
+    </CcRecordEditorModal>
   );
 }
 
@@ -640,16 +621,16 @@ function TaskListFields({
       <div className="grid gap-4 md:grid-cols-2">
         <label className="form-control">
           <span className="label"><span className="label-text font-bold">{t("table.status")}</span></span>
-          <select className="select select-bordered w-full" name="status" defaultValue={list?.status || "active"}>
+           <CcSelect name="status" defaultValue={list?.status || "active"}>
             {["active", "paused", "archived"].map((status) => <option key={status} value={status}>{status}</option>)}
-          </select>
+           </CcSelect>
         </label>
         <label className="form-control">
           <span className="label"><span className="label-text font-bold">{t("operations.departmentAssignment")}</span></span>
-          <select className="select select-bordered w-full" name="departmentKey" defaultValue={list?.areaAssignment?.department?.key || ""}>
+           <CcSelect name="departmentKey" defaultValue={list?.areaAssignment?.department?.key || ""}>
             <option value="">{t("operations.noDepartment")}</option>
             {departments.map((department) => <option key={department.key} value={department.key}>{departmentLabel(department.key, t)}</option>)}
-          </select>
+           </CcSelect>
         </label>
       </div>
     </>
@@ -711,26 +692,20 @@ function TaskListModal({
   }
 
   return (
-    <div className="fixed inset-0 z-30 grid place-items-center bg-neutral/55 p-4" role="dialog" aria-modal="true" aria-labelledby="operations-list-modal-title">
-      <form className="grid w-full max-w-2xl gap-4 rounded-company border border-base-300 bg-base-100 p-5 shadow-2xl" onSubmit={onSubmit}>
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-black uppercase text-primary">{list?.source || t("state.native")}</p>
-            <h2 className="text-2xl font-black text-company-ink" id="operations-list-modal-title">{t(isCreate ? "operations.createList" : "operations.editList")}</h2>
-          </div>
-          <CcButton ariaLabel={t("operations.closeTask")} onClick={onClose} size="sm" variant="ghost">
-            <i className="ph-bold ph-x" aria-hidden="true"></i>
-            <span className="sr-only">{t("operations.closeTask")}</span>
-          </CcButton>
-        </div>
+    <CcRecordEditorModal
+      actions={<><CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton><CcButton loading={saveState === "saving"} type="submit" variant="primary">{t(isCreate ? "operations.createList" : "operations.saveList")}</CcButton></>}
+      description="Keep execution lists scoped, named, and easy to find across the company."
+      eyebrow="04 Operations · List"
+      maxWidthClassName="max-w-2xl"
+      meta={list?.source ? <span>{list.source}</span> : undefined}
+      onClose={onClose}
+      onSubmit={onSubmit}
+      title={t(isCreate ? "operations.createList" : "operations.editList")}
+      titleId="operations-list-modal-title"
+    >
         <TaskListFields departments={departments} list={list} />
         {error ? <CcNotice tone="error" title={error} live /> : null}
-        <div className="flex flex-wrap justify-end gap-2 border-t border-base-300 pt-4">
-          <CcButton onClick={onClose} variant="ghost">{t("operations.cancel")}</CcButton>
-          <CcButton loading={saveState === "saving"} type="submit" variant="primary">{t(isCreate ? "operations.createList" : "operations.saveList")}</CcButton>
-        </div>
-      </form>
-    </div>
+    </CcRecordEditorModal>
   );
 }
 
@@ -945,11 +920,11 @@ function OperationsBoard({
   }
 
   return (
-    <div className="roost-work-surface grid h-full min-h-0 min-w-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-3 rounded-company p-3">
+    <div className="roost-work-surface grid min-h-[32rem] min-w-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-3 rounded-company p-3 xl:h-full xl:min-h-0">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <h2 className="truncate text-xl font-black text-company-ink">{selectedLabel}</h2>
-            <p className="line-clamp-1 text-sm text-company-muted">{t("operations.boardDescription")}</p>
+            <p className="text-sm leading-5 text-company-muted sm:line-clamp-1">{t("operations.boardDescription")}</p>
           </div>
           <div className="flex gap-2">
             <CcButton onClick={onOpenWorkflowSettings} iconLeft="ph-sliders-horizontal" size="sm" variant="outline">{t("operations.workflowSettings.short")}</CcButton>
@@ -1388,16 +1363,21 @@ export function OperationsRoute() {
   }
 
   if (activeView === "procedures") {
-    return <Shell activeArea="04-operacje"><ProceduresWorkbench /></Shell>;
+    return <ProceduresWorkbench />;
   }
 
   return (
-    <Shell activeArea="04-operacje">
+    <>
+      <CcPageHeader
+        description={t(activeView === "calendar" ? "operations.calendarDescription" : "operations.description")}
+        eyebrow={t("areas.04.label")}
+        title={t(activeView === "calendar" ? "operations.calendarTitle" : "operations.title")}
+      />
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
       {packet.status === "error" ? <CcNotice tone="error" title={packet.error || t("operations.packetError")} live /> : null}
 
       {packet.status === "ready" ? (
-        <section className="grid h-[calc(100vh-12.5rem)] min-h-[34rem] gap-4 xl:grid-cols-[17rem_minmax(0,1fr)]">
+        <section className="grid min-h-0 gap-4 xl:h-[calc(100vh-17rem)] xl:min-h-[34rem] xl:grid-cols-[17rem_minmax(0,1fr)]">
           <OperationsListSelector
             departments={departments}
             onCreateList={() => setIsCreateListOpen(true)}
@@ -1449,6 +1429,6 @@ export function OperationsRoute() {
       {isCreateListOpen ? <TaskListModal departments={departments} onClose={() => setIsCreateListOpen(false)} onSaved={refresh} /> : null}
       {selectedList ? <TaskListModal list={selectedList} departments={departments} onClose={() => setSelectedList(null)} onSaved={refresh} /> : null}
       {isWorkflowSettingsOpen ? <WorkflowSettingsModal statuses={statuses} onClose={() => setIsWorkflowSettingsOpen(false)} /> : null}
-    </Shell>
+    </>
   );
 }

@@ -103,6 +103,23 @@ Workspace switching must be explicit and fail closed:
 | `POST /v1/workspaces/:id/actions/select` | Mint an auth token scoped to a visible workspace. | Returns safe user + workspace envelope; preserves fail-closed membership check. |
 | `GET /auth/me` | Include active workspace and available workspace summary. | Keep safe, no secrets. |
 
+## Account Settings Contract
+
+The authenticated account surface is an action surface, not a session
+diagnostics page:
+
+| Endpoint | Purpose | Guardrail |
+| --- | --- | --- |
+| `GET /v1/auth/me` | Return safe account identity plus workspace memberships. | User-auth context only; never return password material. |
+| `PATCH /v1/auth/me` | Update display name and email. | Changing email requires the current password; duplicate email fails closed. |
+| `POST /v1/auth/password` | Replace the owner password. | Verify the current password, require at least 12 characters, and reject reuse of the current password. |
+
+Display-name changes also update the linked `workforce_entities` user identity
+so owner attribution and the People / Agents directory do not drift apart.
+Account settings may show workspace membership and auth context through
+progressive disclosure, but those facts must remain secondary to editable
+profile and security actions.
+
 The current token model can stay. Do not move workspace selection into mutable
 client state or query parameters.
 
@@ -111,6 +128,15 @@ client state or query parameters.
 The sidebar should become a company operating navigator, not a generic route
 list. For the foundation phase, it should prioritize clarity over cinematic
 visuals.
+
+The authenticated React console owns one persistent application shell. Same-
+origin application links use the browser History API and replace only the
+route work surface; `popstate` restores the matching view for Back and Forward.
+The sidebar, command bar, active workspace/profile packet, and shell-local UI
+state are not remounted between department, capability, account, and workspace
+settings routes. Full document navigation remains intentional for external
+links, OAuth authorization, sign-out, and workspace selection because those
+flows leave or replace the current authentication context.
 
 Canonical sidebar order:
 

@@ -1,8 +1,12 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
+import { CcField } from "../../components/cc-field";
 import { CcNotice } from "../../components/cc-notice";
-import { Shell } from "../../layout/shell";
+import { CcPageHeader } from "../../components/cc-page-header";
+import { CcRecordEditorModal, CcRecordEditorSection } from "../../components/cc-record-editor";
+import { CcSelect } from "../../components/cc-select";
+import { CcTextInput } from "../../components/cc-text-input";
 import {
   ApplicationCapability,
   ProductApplication,
@@ -175,17 +179,8 @@ function ApplicationCard({
         ) : null}
       </div>
       <div className="mt-5 flex flex-wrap items-center gap-2 text-xs font-bold">
-        <span className="badge badge-neutral">
-          Overall {application.readiness?.overall || 0}%
-        </span>
-        <span
-          className={`badge ${application.gapSummary?.blockers ? "badge-error" : "badge-outline"}`}
-        >
-          {application.gapSummary?.blockers || 0} blockers
-        </span>
-        <span className="badge badge-outline">
-          {application.gapSummary?.total || 0} gaps
-        </span>
+        {application.readiness?.dimensions.length ? <span className="text-company-muted">Overall readiness {application.readiness.overall || 0}%</span> : null}
+        {application.gapSummary?.blockers ? <span className="badge badge-error">{application.gapSummary.blockers} blockers</span> : null}
       </div>
     </button>
   );
@@ -243,80 +238,42 @@ function CreateApplicationPanel({
 
   if (!open)
     return (
-      <CcButton onClick={() => setOpen(true)}>
-        <i className="ph-bold ph-plus" aria-hidden="true"></i> New application
-      </CcButton>
+      <CcButton iconLeft="ph-plus" onClick={() => setOpen(true)} size="sm" variant="primary">New application</CcButton>
     );
   return (
-    <section className="rounded-company border border-primary/30 bg-base-100 p-5 lg:col-span-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-black">Define an application</h2>
-        <button className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>
-          Close
-        </button>
-      </div>
+    <CcRecordEditorModal actions={<><CcButton onClick={() => setOpen(false)} type="button" variant="ghost">Cancel</CcButton><CcButton disabled={saving} iconLeft="ph-plus" type="submit" variant="primary">{saving ? "Creating…" : "Create application"}</CcButton></>} description="Create the source record used by innovation, delivery and productization." eyebrow="11 Innovation · Product Engineering" onClose={() => setOpen(false)} onSubmit={submit} title="New application" titleId="application-create-title">
       {error ? <CcNotice tone="error" title={error} /> : null}
-      <form className="mt-4 grid gap-4 md:grid-cols-2" onSubmit={submit}>
-        <label className="form-control">
-          <span className="label-text font-bold">Name</span>
-          <input className="input input-bordered" name="name" required />
-        </label>
-        <label className="form-control">
-          <span className="label-text font-bold">Stable slug</span>
-          <input
-            className="input input-bordered"
-            name="slug"
-            pattern="[a-z0-9._-]+"
-            placeholder="soar"
-            required
-          />
-        </label>
-        <label className="form-control md:col-span-2">
-          <span className="label-text font-bold">Description</span>
-          <textarea
-            className="textarea textarea-bordered"
-            name="description"
-          ></textarea>
-        </label>
-        <label className="form-control">
-          <span className="label-text font-bold">Problem statement</span>
-          <textarea
-            className="textarea textarea-bordered"
-            name="problemStatement"
-          ></textarea>
-        </label>
-        <label className="form-control">
-          <span className="label-text font-bold">Value proposition</span>
-          <textarea
-            className="textarea textarea-bordered"
-            name="valueProposition"
-          ></textarea>
-        </label>
-        <label className="form-control">
-          <span className="label-text font-bold">Application type</span>
-          <select className="select select-bordered" name="applicationType">
+      <CcRecordEditorSection title="Identity" description="Give the application a durable name, identifier and concise definition.">
+        <div className="grid items-start gap-4 md:grid-cols-2">
+          <CcField label="Name" required>{({ id }) => <CcTextInput autoFocus id={id} name="name" required />}</CcField>
+          <CcField label="Stable slug" hint="Lowercase letters, numbers, dots and hyphens.">{({ id, describedBy }) => <CcTextInput aria-describedby={describedBy} id={id} name="slug" pattern="[a-z0-9._-]+" placeholder="soar" required />}</CcField>
+          <div className="md:col-span-2"><CcField label="Description">{({ id }) => <textarea className="textarea textarea-bordered min-h-24 w-full" id={id} name="description" />}</CcField></div>
+        </div>
+      </CcRecordEditorSection>
+      <CcRecordEditorSection title="Product intent" description="Connect the problem, value and reusable blueprint before development starts.">
+        <div className="grid items-start gap-4 md:grid-cols-2">
+          <CcField label="Problem statement">{({ id }) => <textarea className="textarea textarea-bordered min-h-24 w-full" id={id} name="problemStatement" />}</CcField>
+          <CcField label="Value proposition">{({ id }) => <textarea className="textarea textarea-bordered min-h-24 w-full" id={id} name="valueProposition" />}</CcField>
+          <CcField label="Application type">{({ id }) => <CcSelect id={id} name="applicationType">
             <option value="web_application">Web application</option>
             <option value="api_service">API service</option>
             <option value="mobile_application">Mobile application</option>
             <option value="desktop_application">Desktop application</option>
             <option value="ai_native_application">AI-native application</option>
             <option value="internal_tool">Internal tool</option>
-          </select>
-        </label>
-        <label className="form-control">
-          <span className="label-text font-bold">Blueprint</span>
-          <select className="select select-bordered" name="blueprintId">
+          </CcSelect>}</CcField>
+          <CcField label="Blueprint" hint="Optional starting contract.">{({ id, describedBy }) => <CcSelect aria-describedby={describedBy} id={id} name="blueprintId">
             <option value="">No blueprint</option>
             {catalog?.blueprints.map((blueprint) => (
               <option key={blueprint.id} value={blueprint.id}>
                 {blueprint.name}
               </option>
             ))}
-          </select>
-        </label>
-        <fieldset className="md:col-span-2">
-          <legend className="font-bold">Target platforms</legend>
-          <div className="mt-2 flex flex-wrap gap-4">
+          </CcSelect>}</CcField>
+        </div>
+      </CcRecordEditorSection>
+      <CcRecordEditorSection title="Target platforms" description="Select every surface the application is expected to support.">
+        <fieldset><legend className="sr-only">Target platforms</legend><div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {[
               "web",
               "mobile",
@@ -326,7 +283,7 @@ function CreateApplicationPanel({
               "cli",
               "agent_facing",
             ].map((platform) => (
-              <label className="label cursor-pointer gap-2" key={platform}>
+              <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-company border border-base-300 bg-base-100/20 px-3 py-2 text-sm font-bold hover:bg-base-200/45" key={platform}>
                 <input
                   className="checkbox checkbox-sm"
                   type="checkbox"
@@ -336,15 +293,9 @@ function CreateApplicationPanel({
                 <span>{humanize(platform)}</span>
               </label>
             ))}
-          </div>
-        </fieldset>
-        <div className="md:col-span-2">
-          <CcButton disabled={saving} type="submit">
-            {saving ? "Creating…" : "Create application"}
-          </CcButton>
-        </div>
-      </form>
-    </section>
+        </div></fieldset>
+      </CcRecordEditorSection>
+    </CcRecordEditorModal>
   );
 }
 
@@ -401,150 +352,60 @@ function EditApplicationProfile({
 
   if (!open)
     return (
-      <CcButton onClick={() => setOpen(true)}>
-        Edit application profile
-      </CcButton>
+      <CcButton iconLeft="ph-pencil-simple" onClick={() => setOpen(true)} variant="outline">Edit application profile</CcButton>
     );
   return (
-    <section className="rounded-company border border-primary/30 bg-base-100 p-5 md:col-span-2">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xl font-black">Application profile</h3>
-        <button className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>
-          Close
-        </button>
-      </div>
+    <CcRecordEditorModal actions={<><CcButton onClick={() => setOpen(false)} type="button" variant="ghost">Cancel</CcButton><CcButton disabled={saving} iconLeft="ph-floppy-disk" type="submit" variant="primary">{saving ? "Saving…" : "Save application"}</CcButton></>} description="Update the shared application source record used across innovation and productization." eyebrow="11 Innovation · Application" onClose={() => setOpen(false)} onSubmit={submit} title={`Edit ${application.name}`} titleId="application-profile-title">
       {error ? <CcNotice tone="error" title={error} /> : null}
-      <form className="mt-4 grid gap-4 md:grid-cols-2" onSubmit={submit}>
-        <label className="form-control">
-          <span className="label-text font-bold">Name</span>
-          <input
-            className="input input-bordered"
-            name="name"
-            defaultValue={application.name}
-            required
-          />
-        </label>
-        <label className="form-control">
-          <span className="label-text font-bold">Application type</span>
-          <select
-            className="select select-bordered"
-            name="applicationType"
-            defaultValue={application.applicationType}
-          >
+      <CcRecordEditorSection title="Identity" description="The application name, type and operating definition seen throughout Roost.">
+        <div className="grid items-start gap-4 md:grid-cols-2">
+          <CcField label="Name" required>{({ id }) => <CcTextInput autoFocus defaultValue={application.name} id={id} name="name" required />}</CcField>
+          <CcField label="Application type">{({ id }) => <CcSelect defaultValue={application.applicationType} id={id} name="applicationType">
             {applicationTypes.map((type) => (
               <option key={type} value={type}>
                 {humanize(type)}
               </option>
             ))}
-          </select>
-        </label>
-        <label className="form-control md:col-span-2">
-          <span className="label-text font-bold">Description</span>
-          <textarea
-            className="textarea textarea-bordered"
-            name="description"
-            defaultValue={application.description || ""}
-          ></textarea>
-        </label>
-        <label className="form-control">
-          <span className="label-text font-bold">Problem statement</span>
-          <textarea
-            className="textarea textarea-bordered"
-            name="problemStatement"
-            defaultValue={application.problemStatement || ""}
-          ></textarea>
-        </label>
-        <label className="form-control">
-          <span className="label-text font-bold">Value proposition</span>
-          <textarea
-            className="textarea textarea-bordered"
-            name="valueProposition"
-            defaultValue={application.valueProposition || ""}
-          ></textarea>
-        </label>
-        <label className="form-control">
-          <span className="label-text font-bold">Target users</span>
-          <textarea
-            className="textarea textarea-bordered"
-            name="targetUsers"
-            defaultValue={application.targetUsers || ""}
-          ></textarea>
-        </label>
-        <label className="form-control">
-          <span className="label-text font-bold">Owner</span>
-          <input
-            className="input input-bordered"
-            name="owner"
-            defaultValue={application.owner || ""}
-          />
-        </label>
-        <label className="form-control">
-          <span className="label-text font-bold">Product lifecycle</span>
-          <select
-            className="select select-bordered"
-            name="productStage"
-            defaultValue={application.productStage}
-          >
+          </CcSelect>}</CcField>
+          <div className="md:col-span-2"><CcField label="Description">{({ id }) => <textarea className="textarea textarea-bordered min-h-24 w-full" defaultValue={application.description || ""} id={id} name="description" />}</CcField></div>
+        </div>
+      </CcRecordEditorSection>
+      <CcRecordEditorSection title="Product intent" description="Keep the problem, value and audience together so decisions retain their context.">
+        <div className="grid items-start gap-4 md:grid-cols-2">
+          <CcField label="Problem statement">{({ id }) => <textarea className="textarea textarea-bordered min-h-24 w-full" defaultValue={application.problemStatement || ""} id={id} name="problemStatement" />}</CcField>
+          <CcField label="Value proposition">{({ id }) => <textarea className="textarea textarea-bordered min-h-24 w-full" defaultValue={application.valueProposition || ""} id={id} name="valueProposition" />}</CcField>
+          <CcField label="Target users">{({ id }) => <textarea className="textarea textarea-bordered min-h-24 w-full" defaultValue={application.targetUsers || ""} id={id} name="targetUsers" />}</CcField>
+          <CcField label="Business model">{({ id }) => <CcTextInput defaultValue={application.businessModel || ""} id={id} name="businessModel" />}</CcField>
+        </div>
+      </CcRecordEditorSection>
+      <CcRecordEditorSection title="Ownership and lifecycle" description="Assign operational ownership and the current product state.">
+        <div className="grid items-start gap-4 md:grid-cols-3">
+          <CcField label="Owner">{({ id }) => <CcTextInput defaultValue={application.owner || ""} id={id} name="owner" />}</CcField>
+          <CcField label="Product lifecycle">{({ id }) => <CcSelect defaultValue={application.productStage} id={id} name="productStage">
             {productStages.map((stage) => (
               <option key={stage} value={stage}>
                 {humanize(stage)}
               </option>
             ))}
-          </select>
-        </label>
-        <label className="form-control">
-          <span className="label-text font-bold">Operating status</span>
-          <select
-            className="select select-bordered"
-            name="status"
-            defaultValue={application.status}
-          >
+          </CcSelect>}</CcField>
+          <CcField label="Operating status">{({ id }) => <CcSelect defaultValue={application.status} id={id} name="status">
             {applicationStatuses.map((status) => (
               <option key={status} value={status}>
                 {humanize(status)}
               </option>
             ))}
-          </select>
-        </label>
-        <label className="form-control md:col-span-2">
-          <span className="label-text font-bold">Business model</span>
-          <input
-            className="input input-bordered"
-            name="businessModel"
-            defaultValue={application.businessModel || ""}
-          />
-        </label>
-        <label className="form-control">
-          <span className="label-text font-bold">Frontend URL</span>
-          <input
-            className="input input-bordered"
-            name="frontendUrl"
-            type="url"
-            defaultValue={application.frontendUrl || ""}
-          />
-        </label>
-        <label className="form-control">
-          <span className="label-text font-bold">Backend URL</span>
-          <input
-            className="input input-bordered"
-            name="backendUrl"
-            type="url"
-            defaultValue={application.backendUrl || ""}
-          />
-        </label>
-        <label className="form-control md:col-span-2">
-          <span className="label-text font-bold">Documentation URL</span>
-          <input
-            className="input input-bordered"
-            name="documentationUrl"
-            defaultValue={application.documentationUrl || ""}
-          />
-        </label>
-        <fieldset className="md:col-span-2">
-          <legend className="font-bold">Target platforms</legend>
-          <div className="mt-2 flex flex-wrap gap-4">
+          </CcSelect>}</CcField>
+        </div>
+      </CcRecordEditorSection>
+      <CcRecordEditorSection title="Delivery surfaces" description="Link the places where the application runs and where its documentation lives.">
+        <div className="grid items-start gap-4 md:grid-cols-2">
+          <CcField label="Frontend URL">{({ id }) => <CcTextInput defaultValue={application.frontendUrl || ""} id={id} name="frontendUrl" type="url" />}</CcField>
+          <CcField label="Backend URL">{({ id }) => <CcTextInput defaultValue={application.backendUrl || ""} id={id} name="backendUrl" type="url" />}</CcField>
+          <div className="md:col-span-2"><CcField label="Documentation URL">{({ id }) => <CcTextInput defaultValue={application.documentationUrl || ""} id={id} name="documentationUrl" type="url" />}</CcField></div>
+        </div>
+        <fieldset className="mt-4"><legend className="text-sm font-bold text-company-ink">Target platforms</legend><div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {applicationPlatforms.map((platform) => (
-              <label className="label cursor-pointer gap-2" key={platform}>
+              <label className="flex min-h-11 cursor-pointer items-center gap-3 rounded-company border border-base-300 bg-base-100/20 px-3 py-2 text-sm font-bold hover:bg-base-200/45" key={platform}>
                 <input
                   className="checkbox checkbox-sm"
                   type="checkbox"
@@ -557,15 +418,9 @@ function EditApplicationProfile({
                 <span>{humanize(platform)}</span>
               </label>
             ))}
-          </div>
-        </fieldset>
-        <div className="md:col-span-2">
-          <CcButton disabled={saving} type="submit">
-            {saving ? "Saving…" : "Save application profile"}
-          </CcButton>
-        </div>
-      </form>
-    </section>
+        </div></fieldset>
+      </CcRecordEditorSection>
+    </CcRecordEditorModal>
   );
 }
 
@@ -1194,32 +1049,18 @@ export function InnovationRoute() {
   }
 
   return (
-    <Shell activeArea="11-innowacje">
-      <section className="rounded-company border border-base-300 bg-base-100 p-5">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-black uppercase text-primary">
-              11 Innovation · Product Engineering
-            </p>
-            <h1 className="mt-2 text-3xl font-black text-company-ink">
-              Application portfolio and product source of truth
-            </h1>
-            <p className="mt-3 max-w-3xl leading-7 text-company-muted">
-              Define what an application should become, record what was actually
-              observed, attach proof, expose gaps, and productize the same
-              record without copying it.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              className="btn btn-outline"
+    <>
+      <CcPageHeader
+        actions={<>
+            <CcButton
+              variant="outline"
               onClick={() => {
                 setCatalogOpen(!catalogOpen);
                 setSelected(null);
               }}
             >
               {catalogOpen ? "Portfolio" : "Capability Library"}
-            </button>
+            </CcButton>
             {!catalogOpen ? (
               <CreateApplicationPanel
                 catalog={catalog}
@@ -1229,9 +1070,11 @@ export function InnovationRoute() {
                 }}
               />
             ) : null}
-          </div>
-        </div>
-      </section>
+          </>}
+        description="Define what an application should become, record what was actually observed, attach proof, expose gaps, and productize the same record without copying it."
+        eyebrow="11 Innovation · Product Engineering"
+        title="Application portfolio and product source of truth"
+      />
       {status === "loading" ? (
         <CcNotice tone="loading" title="Loading application portfolio" />
       ) : null}
@@ -1571,30 +1414,6 @@ export function InnovationRoute() {
         </section>
       ) : (
         <>
-          <section className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-            {portfolio
-              ? Object.entries({
-                  Applications: portfolio.summary.applications,
-                  "Active development": portfolio.summary.activeDevelopment,
-                  Prototypes: portfolio.summary.prototypes,
-                  Productization: portfolio.summary.productization,
-                  Products: portfolio.summary.products,
-                  "Average readiness": `${portfolio.summary.averageReadiness}%`,
-                }).map(([label, value]) => (
-                  <article
-                    className="rounded-company border border-base-300 bg-base-100 p-4"
-                    key={label}
-                  >
-                    <p className="text-2xl font-black text-company-ink">
-                      {value}
-                    </p>
-                    <p className="mt-1 text-xs font-bold text-company-muted">
-                      {label}
-                    </p>
-                  </article>
-                ))
-              : null}
-          </section>
           <section className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
             {portfolio?.applications.map((application) => (
               <ApplicationCard
@@ -1619,6 +1438,6 @@ export function InnovationRoute() {
           </section>
         </>
       )}
-    </Shell>
+    </>
   );
 }

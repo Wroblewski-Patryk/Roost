@@ -5,14 +5,13 @@ import { userErrorMessage } from "../../api/errors";
 import { CcButton } from "../../components/cc-button";
 import { CcField } from "../../components/cc-field";
 import { CcNotice } from "../../components/cc-notice";
+import { CcPageHeader } from "../../components/cc-page-header";
 import { CcResourceSelector, type CcResourceSelectorGroup } from "../../components/cc-resource-selector";
 import { CcTextInput } from "../../components/cc-text-input";
-import { Shell } from "../../layout/shell";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage, type Translate } from "../../i18n/i18n";
 import { formatAppDate } from "../../i18n/date-format";
 import { AssetResource, AssetsPacket, CoreAreaKey } from "../../types";
-import { SummaryGrid } from "./shared";
 import { coreAreas } from "./core-area-data";
 import { backendAreaToDepartmentKey, departmentLabel } from "./department-labels";
 
@@ -327,23 +326,23 @@ function resourcePath(resource: AssetResource, folderByExternalId: Map<string, A
 
 function AssetsOverview({ packet }: { packet: AssetsPacket | null }) {
   const { t } = useLanguage();
+  const recentResources = [...(packet?.resources || [])]
+    .filter((resource) => !isFolder(resource))
+    .sort((left, right) => String(right.freshness?.modifiedTime || "").localeCompare(String(left.freshness?.modifiedTime || "")))
+    .slice(0, 5);
   return (
     <section className="grid gap-4">
-      <section className="rounded-company border border-base-300 bg-base-100 p-5">
-        <p className="text-sm font-black uppercase text-primary">{t("areas.08.label")}</p>
-        <h1 className="mt-2 text-3xl font-black text-company-ink">{t("assets.title")}</h1>
-        <p className="mt-3 max-w-3xl leading-7 text-company-muted">{t("assets.description")}</p>
-      </section>
-      <SummaryGrid summary={packet?.summary} />
-      <section className="rounded-company border border-base-300 bg-base-100 p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-black text-company-ink">{t("assets.filesFoldersTitle")}</h2>
-            <p className="mt-1 text-sm text-company-muted">{t("assets.filesFoldersDescription")}</p>
-          </div>
-          <CcButton href="/areas?area=08-zasoby&view=files" iconLeft="ph-folders" variant="primary">{t("assets.openFiles")}</CcButton>
+      <CcPageHeader actions={<CcButton href="/areas?area=08-zasoby&view=files" iconLeft="ph-folders" size="sm" variant="primary">{t("assets.openFiles")}</CcButton>} description={t("assets.description")} eyebrow={t("areas.08.label")} title={t("assets.title")} />
+      {recentResources.length ? <section className="roost-work-panel rounded-company p-4">
+        <div className="mb-3 flex items-center justify-between gap-3"><div><h2 className="font-black text-company-ink">Recently updated</h2><p className="text-sm text-company-muted">Continue from the latest synced workspace files.</p></div></div>
+        <div className="divide-y divide-base-300">
+          {recentResources.map((resource) => <a className="flex min-h-12 items-center gap-3 py-2 transition-colors hover:text-primary" href={sourceLink(resource) || "/areas?area=08-zasoby&view=files"} key={resource.id} rel={sourceLink(resource) ? "noreferrer" : undefined} target={sourceLink(resource) ? "_blank" : undefined}>
+            <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-company bg-base-200/70 ${resourceIconTone(resource)}`}><i className={`ph-bold ${resourceIcon(resource)}`} aria-hidden="true"></i></span>
+            <span className="min-w-0 flex-1"><strong className="block truncate text-sm text-company-ink">{resource.name}</strong><small className="block truncate text-company-muted">{resourceKindLabel(resource, t)} · {formatDate(resource.freshness?.modifiedTime)}</small></span>
+            <i className="ph-bold ph-arrow-up-right shrink-0 text-company-muted" aria-hidden="true"></i>
+          </a>)}
         </div>
-      </section>
+      </section> : <CcNotice tone="empty" title="No workspace files yet" detail="Open Files to connect or create the first durable workspace resource." />}
     </section>
   );
 }
@@ -437,7 +436,6 @@ function AssetTypeFilterRail({
             >
               <i className={`ph-bold ${filter.icon}`} aria-hidden="true"></i>
               <span>{t(`assets.typeFilter.${filter.id}`)}</span>
-              <span className={`badge badge-sm ${active ? "border-primary-content/40 bg-primary-content/20 text-primary-content" : "badge-outline"}`}>{count}</span>
             </button>
           );
         })}
@@ -1067,7 +1065,7 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
   }
 
   return (
-    <section className="grid gap-4 xl:h-[calc(100vh-12.5rem)] xl:min-h-[34rem] xl:grid-cols-[17rem_minmax(0,1fr)]">
+    <section className="grid gap-4 xl:h-[calc(100vh-17rem)] xl:min-h-[34rem] xl:grid-cols-[17rem_minmax(0,1fr)]">
       <RootFolderSelector roots={roots} selectedRootIds={selectedRootIds} setSelectedRootIds={setSelectedRootIds} onEditFolder={setEditingFolder} />
       <div className="grid gap-4 xl:min-h-0 xl:grid-cols-[18rem_minmax(0,1fr)] 2xl:grid-cols-[18rem_minmax(0,0.9fr)_minmax(24rem,0.8fr)]">
         <FolderTree
@@ -1090,7 +1088,7 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
           <div className="grid gap-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
-                <h1 className="text-xl font-black text-company-ink">{selectedFolder ? selectedFolder.name : t("assets.filesFoldersTitle")}</h1>
+                <h2 className="text-xl font-black text-company-ink">{selectedFolder ? selectedFolder.name : t("assets.filesFoldersTitle")}</h2>
                 <p className="text-sm text-company-muted">{t("assets.visibleItemsDetailed", { visible: filteredResources.length, total: scopedResources.length })}</p>
                 {selectedFolder ? (
                   <div className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-company border border-base-300 bg-base-200/45 px-2 py-1 text-xs text-company-muted">
@@ -1166,12 +1164,19 @@ export function AssetsRoute() {
   const packet = useOwnerPacket<AssetsPacket>(`/v1/assets/context?areaKey=all&limit=1000&refresh=${refreshKey}`, true, t);
 
   return (
-    <Shell activeArea="08-zasoby">
+    <>
+      {activeView === "files" ? (
+        <CcPageHeader
+          description={t("assets.filesFoldersDescription")}
+          eyebrow={t("areas.08.label")}
+          title={t("assets.filesFoldersTitle")}
+        />
+      ) : null}
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
       {packet.status === "error" ? <CcNotice tone="error" title={packet.error || t("assets.packetError")} live /> : null}
 
       {packet.status === "ready" && activeView === "files" && packet.data ? <AssetsFilesView packet={packet.data} onRefresh={() => setRefreshKey((current) => current + 1)} /> : null}
       {packet.status === "ready" && activeView === "overview" ? <AssetsOverview packet={packet.data} /> : null}
-    </Shell>
+    </>
   );
 }

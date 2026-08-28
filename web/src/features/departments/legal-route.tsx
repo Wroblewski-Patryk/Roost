@@ -1,10 +1,10 @@
 import { CcDataTable, type CcTableColumn } from "../../components/cc-data-table";
 import { CcNotice } from "../../components/cc-notice";
+import { CcPageHeader } from "../../components/cc-page-header";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
-import { Shell } from "../../layout/shell";
 import { OperatingGraphPacket } from "../../types";
-import { SummaryGrid, useTranslatedTableLabels } from "./shared";
+import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 
 export function LegalRoute() {
   const { t } = useLanguage();
@@ -20,7 +20,7 @@ export function LegalRoute() {
       cell: (row) => (
         <div className="grid">
           <strong>{row.label}</strong>
-          <span className="text-xs text-company-muted">{row.type}</span>
+          <span className="text-xs text-company-muted">{humanizeBusinessValue(row.type, "Record")}</span>
         </div>
       )
     },
@@ -32,19 +32,11 @@ export function LegalRoute() {
   ];
 
   return (
-    <Shell activeArea="10-prawo">
-      <section className="rounded-company border border-base-300 bg-base-100 p-5">
-        <p className="text-sm font-black uppercase text-primary">10 Legal</p>
-        <h1 className="mt-2 text-3xl font-black text-company-ink">{packet.data?.area?.name || "Legal and Standards Management"}</h1>
-        <p className="mt-3 max-w-3xl leading-7 text-company-muted">
-          Read-only operating graph for compliance context, policy dependencies, governance workflows, and legal evidence.
-        </p>
-      </section>
+    <>
+      <CcPageHeader eyebrow="10 Legal" title="Legal and standards" description={packet.data?.area?.name ? `${packet.data.area.name}. Read-only operating graph for compliance context, policy dependencies, governance workflows, and legal evidence.` : "Read-only operating graph for compliance context, policy dependencies, governance workflows, and legal evidence."} />
 
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
       {packet.status === "error" ? <CcNotice tone="error" title={packet.error || "Legal context could not load."} live /> : null}
-
-      <SummaryGrid summary={packet.data?.summary} />
 
       <CcDataTable
         columns={columns}
@@ -57,6 +49,6 @@ export function LegalRoute() {
         loading={packet.status === "loading"}
         mobileMode="cards"
       />
-    </Shell>
+    </>
   );
 }

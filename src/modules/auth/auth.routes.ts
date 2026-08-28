@@ -22,6 +22,19 @@ const loginSchema = z.object({
   password: z.string().min(1)
 });
 
+const updateProfileSchema = z.object({
+  name: z.string().trim().min(1).max(120).optional(),
+  email: z.string().email().transform((value) => value.toLowerCase()).optional(),
+  currentPassword: z.string().min(1).optional()
+}).strict().refine((input) => input.name !== undefined || input.email !== undefined, {
+  message: "profile_field_required"
+});
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(12)
+}).strict();
+
 export const authRouter = Router();
 
 authRouter.post("/register", asyncHandler(async (req, res) => {
@@ -153,10 +166,15 @@ authRouter.get("/me", requireAuthContext, asyncHandler(async (req, res) => {
     orderBy: { createdAt: "asc" },
     include: { workspace: true }
   });
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: req.auth!.userId },
+    select: { email: true, name: true, updatedAt: true }
+  });
 
   res.json({
     data: {
       ...req.auth,
+      user,
       workspaces: memberships.map((membership) => ({
         id: membership.workspace.id,
         name: membership.workspace.name,
@@ -165,4 +183,57 @@ authRouter.get("/me", requireAuthContext, asyncHandler(async (req, res) => {
       }))
     }
   });
+}));
+
+authRouter.patch("/me", requireAuthContext, asyncHandler(async (req, res) => {
+  if (req.auth!.authType !== "user" || !req.auth!.userId) {
+    return res.status(403).json({ error: "forbidden" });
+  }
+
+  const input = updateProfileSchema.parse(req.body);
+  try {
+    const existing = await prisma.user.findUniqueOrThrow({ where: { id: req.auth!.userId } });
+    if (input.email && input.email !== existing.email && (!input.currentPassword || !(await verifyPassword(input.currentPassword, existing.passwordHash)))) {
+      return res.status(400).json({ error: "current_password_invalid" });
+    }
+    const user = await prisma.$transaction(async (tx) => {
+      const updated = await tx.user.update({
+        where: { id: req.auth!.userId },
+        data: { name: input.name, email: input.email },
+        select: { id: true, email: true, name: true, updatedAt: true }
+      });
+      await tx.workforceEntity.updateMany({
+        where: { source: "user", externalId: updated.id },
+        data: { name: updated.name || updated.email }
+      });
+      return updated;
+    });
+    return res.json({ data: user });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return res.status(409).json({ error: "email_already_registered" });
+    }
+    throw error;
+  }
+}));
+
+authRouter.post("/password", requireAuthContext, asyncHandler(async (req, res) => {
+  if (req.auth!.authType !== "user" || !req.auth!.userId) {
+    return res.status(403).json({ error: "forbidden" });
+  }
+
+  const input = changePasswordSchema.parse(req.body);
+  const user = await prisma.user.findUnique({ where: { id: req.auth!.userId } });
+  if (!user || !(await verifyPassword(input.currentPassword, user.passwordHash))) {
+    return res.status(400).json({ error: "current_password_invalid" });
+  }
+  if (await verifyPassword(input.newPassword, user.passwordHash)) {
+    return res.status(400).json({ error: "new_password_must_differ" });
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash: await hashPassword(input.newPassword) }
+  });
+  return res.json({ data: { changed: true } });
 }));

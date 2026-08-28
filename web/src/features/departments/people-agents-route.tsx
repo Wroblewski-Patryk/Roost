@@ -2,14 +2,18 @@ import { FormEvent, useId, useMemo, useState } from "react";
 import { api } from "../../api/client";
 import { userErrorMessage } from "../../api/errors";
 import { CcButton } from "../../components/cc-button";
+import { CcConfirmDialog } from "../../components/cc-confirm-dialog";
 import { CcDataTable, type CcTableColumn, type CcTableRowAction } from "../../components/cc-data-table";
 import { CcField } from "../../components/cc-field";
 import { CcNotice } from "../../components/cc-notice";
+import { CcPageHeader } from "../../components/cc-page-header";
+import { CcRecordEditorModal } from "../../components/cc-record-editor";
+import { CcSelect } from "../../components/cc-select";
 import { CcTextInput } from "../../components/cc-text-input";
-import { Shell } from "../../layout/shell";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import { WorkforceEntity, WorkforcePacket } from "../../types";
+import { humanizeBusinessValue } from "./shared";
 
 type DetailTab = "profile" | "access" | "work" | "authority" | "files";
 type RouteNotice = { tone: "success" | "error"; title: string };
@@ -250,7 +254,6 @@ function splitIndex(value: FormDataEntryValue | null) {
     .filter(Boolean);
 }
 
-const selectClassName = "select select-bordered w-full bg-base-100";
 const textareaClassName = "textarea textarea-bordered w-full";
 
 function WorkforceForm({
@@ -338,36 +341,23 @@ function WorkforceForm({
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-neutral/60 p-3 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="workforce-form-title">
-      <form className="roost-work-surface grid max-h-[92vh] w-full max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] gap-4 overflow-hidden rounded-company shadow-2xl" onSubmit={submit}>
-        <div className="flex flex-wrap items-start justify-between gap-3 border-b border-base-300 bg-base-100/45 p-4 sm:p-5">
-          <div className="min-w-0">
-            <p className="text-sm font-black uppercase text-primary">06 People / Agents</p>
-            <h2 className="mt-1 text-2xl font-black text-company-ink" id="workforce-form-title">{isEditMode ? "Edit workforce entity" : entity ? "Duplicate workforce entity" : "New workforce entity"}</h2>
-            <p className="mt-1 text-sm text-company-muted">{isEditMode ? "Update identity, responsibility, runtime access, and generated context." : "Create a human or AI workforce record connected to CompanyCore truth."}</p>
-          </div>
-          <div className="flex items-start gap-2">
-            <div className="hidden rounded-company border border-base-300 bg-base-100/75 px-3 py-2 text-right text-xs font-bold text-company-muted sm:block">
-              <span className="block text-company-ink">{typeLabel((values.type || "agent") as WorkforceEntity["type"])}</span>
-              <span>{values.status || "active"} / {runtimeLabels[(values.runtimeMode || "manual") as WorkforceEntity["runtimeMode"]]}</span>
-            </div>
-            <button className="btn btn-ghost btn-sm btn-circle" aria-label="Close" onClick={onClose} type="button">
-              <i className="ph-bold ph-x" aria-hidden="true"></i>
-            </button>
-          </div>
-        </div>
-
-        <div className="min-h-0 overflow-y-auto px-4 sm:px-5">
-          {error ? <CcNotice tone="error" title={error} live /> : null}
-
-          <section className="grid gap-4 py-4">
+    <CcRecordEditorModal
+      actions={<><CcButton onClick={onClose} type="button" variant="ghost">Cancel</CcButton><CcButton loading={saveState === "saving"} type="submit" variant="primary">Save entity</CcButton></>}
+      description={isEditMode ? "Update identity, responsibility, runtime access, and generated context." : "Create a human or AI workforce record connected to CompanyCore truth."}
+      eyebrow="06 People / Agents"
+      maxWidthClassName="max-w-5xl"
+      meta={<span>{typeLabel((values.type || "agent") as WorkforceEntity["type"])} · {values.status || "active"} · {runtimeLabels[(values.runtimeMode || "manual") as WorkforceEntity["runtimeMode"]]}</span>}
+      onClose={onClose}
+      onSubmit={submit}
+      title={isEditMode ? "Edit workforce entity" : entity ? "Duplicate workforce entity" : "New workforce entity"}
+      titleId="workforce-form-title"
+    >
+      {error ? <CcNotice tone="error" title={error} live /> : null}
+      <section className="grid gap-4">
             <div className="rounded-company border border-base-300 bg-base-100/70 p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <h3 className="font-black text-company-ink">Identity and role</h3>
-                  <p className="text-sm text-company-muted">The canonical CompanyCore identity shown in rosters and generated context files.</p>
-                </div>
-                <span className="rounded-company border border-primary/25 bg-primary/10 px-2 py-1 text-xs font-black uppercase text-primary">source of truth</span>
+              <div>
+                <h3 className="font-black text-company-ink">Identity and role</h3>
+                <p className="text-sm text-company-muted">The canonical CompanyCore identity shown in rosters and generated context files.</p>
               </div>
               <div className="mt-3 grid gap-4 md:grid-cols-2">
                 <CcField label="Name" required>
@@ -378,26 +368,26 @@ function WorkforceForm({
                 </CcField>
                 <CcField label="Type">
                   {({ id }) => (
-                    <select className={selectClassName} defaultValue={values.type || "agent"} id={id} name="type">
+                    <CcSelect defaultValue={values.type || "agent"} id={id} name="type">
                       <option value="human">Human</option>
                       <option value="agent">Agent</option>
-                    </select>
+                    </CcSelect>
                   )}
                 </CcField>
                 <CcField label="Status">
                   {({ id }) => (
-                    <select className={selectClassName} defaultValue={values.status || "active"} id={id} name="status">
+                    <CcSelect defaultValue={values.status || "active"} id={id} name="status">
                       {statuses.map((status) => <option key={status} value={status}>{status}</option>)}
-                    </select>
+                    </CcSelect>
                   )}
                 </CcField>
                 <CcField label="Department">
                   {({ id }) => (
-                    <select className={selectClassName} defaultValue={values.department || "06-kadry"} id={id} name="department">
+                    <CcSelect defaultValue={values.department || "06-kadry"} id={id} name="department">
                       {departments.length ? departments.map((department) => (
                         <option key={department.key} value={department.key}>{department.key}</option>
                       )) : <option value={values.department || "06-kadry"}>{values.department || "06-kadry"}</option>}
-                    </select>
+                    </CcSelect>
                   )}
                 </CcField>
                 <CcField label="Role">
@@ -413,12 +403,12 @@ function WorkforceForm({
                 </CcField>
                 <CcField label="Manager">
                   {({ id }) => (
-                    <select className={selectClassName} defaultValue={values.managerId || ""} id={id} name="managerId">
+                    <CcSelect defaultValue={values.managerId || ""} id={id} name="managerId">
                       <option value="">No manager</option>
                       {managers.filter((manager) => manager.id !== entity?.id).map((manager) => (
                         <option key={manager.id} value={manager.id}>{manager.name}</option>
                       ))}
-                    </select>
+                    </CcSelect>
                   )}
                 </CcField>
               </div>
@@ -431,16 +421,16 @@ function WorkforceForm({
                 <div className="mt-3 grid gap-4 md:grid-cols-2">
                   <CcField label="Personality profile">
                     {({ id }) => (
-                      <select className={selectClassName} defaultValue={values.personalityProfile || "supportive"} id={id} name="personalityProfile">
+                      <CcSelect defaultValue={values.personalityProfile || "supportive"} id={id} name="personalityProfile">
                         {personalityProfiles.map((profile) => <option key={profile} value={profile}>{profile}</option>)}
-                      </select>
+                      </CcSelect>
                     )}
                   </CcField>
                   <CcField label="Runtime mode">
                     {({ id }) => (
-                      <select className={selectClassName} defaultValue={values.runtimeMode || "manual"} id={id} name="runtimeMode">
+                      <CcSelect defaultValue={values.runtimeMode || "manual"} id={id} name="runtimeMode">
                         {runtimeModes.map((mode) => <option key={mode} value={mode}>{runtimeLabels[mode]}</option>)}
-                      </select>
+                      </CcSelect>
                     )}
                   </CcField>
                   <CcField label="Model">
@@ -528,15 +518,8 @@ function WorkforceForm({
                 ))}
               </div>
             </div>
-          </section>
-        </div>
-
-        <div className="flex flex-wrap justify-end gap-2 border-t border-base-300 p-4 sm:p-5">
-          <CcButton onClick={onClose} type="button" variant="ghost">Cancel</CcButton>
-          <CcButton loading={saveState === "saving"} type="submit" variant="primary">Save entity</CcButton>
-        </div>
-      </form>
-    </div>
+      </section>
+    </CcRecordEditorModal>
   );
 }
 
@@ -840,38 +823,19 @@ function ConfirmEntityModal({
 }) {
   const isDelete = action === "delete";
   return (
-    <dialog className="modal modal-open" open>
-      <div className="modal-box max-w-xl border border-base-300 bg-base-100">
-        <button className="btn btn-ghost btn-sm btn-circle absolute right-3 top-3" aria-label="Close" onClick={onCancel} type="button">
-          <i className="ph-bold ph-x" aria-hidden="true"></i>
-        </button>
-        <p className={`text-sm font-black uppercase ${isDelete ? "text-error" : "text-warning"}`}>
-          {isDelete ? "Delete workforce record" : "Archive workforce record"}
-        </p>
-        <h2 className="mt-2 text-2xl font-black text-company-ink">{entity.name}</h2>
-        <p className="mt-3 text-sm leading-6 text-company-muted">
-          {isDelete
-            ? "This permanently removes the workforce record. It does not delete a user account or the Paperclip runtime, but the CompanyCore source-of-truth row will be gone."
-            : "This keeps the record for history, but removes it from active workforce use."}
-        </p>
-        <div className="mt-4 rounded-company border border-base-300 bg-base-200/50 p-3 text-sm">
-          <strong className="text-company-ink">{typeLabel(entity.type)}</strong>
-          <span className="mx-2 text-company-muted">/</span>
-          <span>{entity.role || "Unassigned role"}</span>
-          <span className="mx-2 text-company-muted">/</span>
-          <span>{entity.department || "No department"}</span>
-        </div>
-        <div className="modal-action">
-          <CcButton onClick={onCancel} variant="ghost">Cancel</CcButton>
-          <CcButton iconLeft={isDelete ? "ph-trash" : "ph-archive"} onClick={onConfirm} variant={isDelete ? "danger" : "warning"}>
-            {isDelete ? "Delete" : "Archive"}
-          </CcButton>
-        </div>
-      </div>
-      <form className="modal-backdrop" method="dialog">
-        <button onClick={onCancel}>close</button>
-      </form>
-    </dialog>
+    <CcConfirmDialog
+      confirmIcon={isDelete ? "ph-trash" : "ph-archive"}
+      confirmLabel={isDelete ? "Delete" : "Archive"}
+      confirmTone={isDelete ? "danger" : "warning"}
+      description={isDelete
+        ? "This permanently removes the workforce record. It does not delete a user account or the Paperclip runtime, but the CompanyCore source-of-truth row will be gone."
+        : "This keeps the record for history, but removes it from active workforce use."}
+      detail={<><strong className="text-company-ink">{typeLabel(entity.type)}</strong><span className="mx-2 text-company-muted">/</span><span>{entity.role || "Unassigned role"}</span><span className="mx-2 text-company-muted">/</span><span>{entity.department || "No department"}</span></>}
+      eyebrow={isDelete ? "Delete workforce record" : "Archive workforce record"}
+      onCancel={onCancel}
+      onConfirm={onConfirm}
+      title={entity.name}
+    />
   );
 }
 
@@ -953,7 +917,7 @@ export function PeopleAgentsRoute() {
       className: "w-32 min-w-32",
       sortable: true,
       sortValue: (entity) => entity.department || "",
-      cell: (entity) => <span className="block truncate text-company-ink">{entity.department || "06-kadry"}</span>
+      cell: (entity) => <span className="block truncate text-company-ink">{humanizeBusinessValue((entity.department || "06-kadry").replace(/^\d+-/, ""), "People")}</span>
     },
     {
       key: "manager",
@@ -980,7 +944,7 @@ export function PeopleAgentsRoute() {
         { value: "archived", label: "archived" }
       ],
       sortable: true,
-      cell: (entity) => <span className={`badge badge-sm ${badgeTone(entity.status)}`}>{entity.status}</span>
+      cell: (entity) => <span className={`badge badge-sm ${badgeTone(entity.status)}`}>{humanizeBusinessValue(entity.status)}</span>
     },
     {
       key: "runtime",
@@ -1025,23 +989,6 @@ export function PeopleAgentsRoute() {
       icon: "ph-pencil-simple",
       tone: "ghost",
       onClick: (entity) => setEditingEntity({ entity, mode: "edit" })
-    },
-    {
-      key: "archive",
-      label: "Archive",
-      icon: "ph-archive",
-      tone: "warning",
-      disabled: (entity) => entity.status === "archived",
-      onClick: (entity) => setConfirmAction({ type: "archive", entity })
-    },
-    {
-      key: "delete",
-      label: "Delete",
-      icon: "ph-trash",
-      tone: "danger",
-      disabled: (entity) => entity.source === "user",
-      disabledLabel: () => "User-backed owner record cannot be deleted",
-      onClick: (entity) => setConfirmAction({ type: "delete", entity })
     }
   ], []);
 
@@ -1076,25 +1023,15 @@ export function PeopleAgentsRoute() {
   }
 
   return (
-    <Shell activeArea="06-kadry">
+    <>
+      <CcPageHeader actions={packet.status === "ready" ? <CcButton iconLeft="ph-plus" onClick={() => setEditingEntity({ entity: null, mode: "create" })} size="sm" variant="primary">New entity</CcButton> : null} description="Source-of-truth roster for humans, AI directors, responsibilities, runtime context, and generated files." eyebrow="06 People / Agents" title="Directory" />
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
       {packet.status === "error" ? <CcNotice tone="error" title={packet.error || "People / Agents packet is unavailable."} live /> : null}
       {notice ? <CcNotice tone={notice.tone} title={notice.title} live /> : null}
 
       {packet.status === "ready" ? (
         <section className="grid min-h-[calc(100vh-10rem)] gap-4">
-          <main className="roost-work-surface grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-3 rounded-company p-3">
-            <header className="grid gap-3 border-b border-base-300 pb-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
-              <div className="min-w-0">
-                <p className="text-xs font-black uppercase text-primary">06 People / Agents</p>
-                <h1 className="truncate text-xl font-black text-company-ink">Directory</h1>
-                <p className="text-sm text-company-muted">Source-of-truth roster for humans, AI directors, responsibilities, runtime context, and generated files.</p>
-              </div>
-              <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-end">
-                <CcButton iconLeft="ph-plus" onClick={() => setEditingEntity({ entity: null, mode: "create" })} size="sm" variant="primary">New entity</CcButton>
-              </div>
-            </header>
-
+          <main className="roost-work-surface grid min-h-0 rounded-company p-3">
             <div className="min-h-0 overflow-y-auto">
               <CcDataTable
                 columns={tableColumns}
@@ -1106,13 +1043,14 @@ export function PeopleAgentsRoute() {
                 initialColumnFilters={{ status: "active" }}
                 initialPageSize={25}
                 initialSort={{ key: "person", direction: "asc" }}
+                mobileMode="cards"
                 rowActionItems={rowActionItems}
                 rows={entities}
                 searchPlaceholder="Search people, agents, roles..."
                 tableMinWidthClassName="min-w-[1000px]"
               />
-              </div>
-            </main>
+            </div>
+          </main>
 
         </section>
       ) : null}
@@ -1150,6 +1088,6 @@ export function PeopleAgentsRoute() {
           onConfirm={() => confirmAction.type === "archive" ? archiveEntity(confirmAction.entity) : deleteEntity(confirmAction.entity)}
         />
       ) : null}
-    </Shell>
+    </>
   );
 }

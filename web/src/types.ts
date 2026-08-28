@@ -17,6 +17,11 @@ export type AuthMe = {
   authType: "user" | "api_key";
   userId?: string;
   workspaceId: string;
+  user?: {
+    email: string;
+    name?: string | null;
+    updatedAt?: string;
+  };
   workspaces?: WorkspaceSummary[];
 };
 

@@ -1,5 +1,6 @@
 import React, { Suspense, lazy, useMemo } from "react";
 import { createRoot } from "react-dom/client";
+import { useAppLocation, useClientNavigation } from "./app-navigation";
 import {
   canonicalGeneralDashboardPath,
   canonicalProductMapPath,
@@ -21,6 +22,7 @@ import { AuthRoute } from "./features/auth/auth-pages";
 import { PublicHomeRoute } from "./features/public/public-home";
 import { LanguageProvider } from "./i18n/i18n";
 import { CcRouteLoading } from "./components/cc-route-loading";
+import { Shell } from "./layout/shell";
 import "./styles.css";
 
 const AssetsRoute = lazy(() => import("./features/departments/assets-route").then((module) => ({ default: module.AssetsRoute })));
@@ -66,9 +68,15 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function PrivateAppRoute({ activeArea, children }: { activeArea?: string; children: React.ReactNode }) {
+  return <PrivateRoute><Shell activeArea={activeArea}><LazyRoute>{children}</LazyRoute></Shell></PrivateRoute>;
+}
+
 function App() {
+  const locationKey = useAppLocation();
+  useClientNavigation();
   const pathname = window.location.pathname;
-  const route = useMemo(() => resolveRouteMeta(pathname + window.location.search), [pathname]);
+  const route = useMemo(() => resolveRouteMeta(pathname + window.location.search), [locationKey]);
 
   if (pathname === "/") {
     return <PublicHomeRoute />;
@@ -86,112 +94,113 @@ function App() {
     if (window.location.search !== "?area=00-ogolny&view=product-map") {
       window.history.replaceState(null, "", canonicalProductMapPath);
     }
-    return <PrivateRoute><LazyRoute><ProductMapRoute /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute activeArea="00-ogolny"><ProductMapRoute /></PrivateAppRoute>;
   }
 
   if (pathname === "/dashboard" || pathname === "/react-dashboard" || (pathname === "/areas" && currentAreaKey() === "00-ogolny")) {
     if (pathname !== "/areas" || window.location.search !== "?area=00-ogolny&view=overview") {
       window.history.replaceState(null, "", canonicalGeneralDashboardPath);
     }
-    return <PrivateRoute><LazyRoute><GeneralDashboard /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute activeArea="00-ogolny"><GeneralDashboard /></PrivateAppRoute>;
   }
 
   if (pathname === "/areas" && currentAreaKey() === "01-strategia") {
     if (window.location.search !== "?area=01-strategia&view=overview") {
       window.history.replaceState(null, "", canonicalStrategyPath);
     }
-    return <PrivateRoute><LazyRoute><StrategyRoute /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute activeArea="01-strategia"><StrategyRoute /></PrivateAppRoute>;
   }
 
   if (pathname === "/areas" && currentAreaKey() === "02-produkt") {
     if (window.location.search !== "?area=02-produkt&view=overview") {
       window.history.replaceState(null, "", canonicalProductDeliveryPath);
     }
-    return <PrivateRoute><LazyRoute><ProductDeliveryRoute /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute activeArea="02-produkt"><ProductDeliveryRoute /></PrivateAppRoute>;
   }
 
   if (pathname === "/areas" && currentAreaKey() === "03-sprzedaz") {
     if (window.location.search !== "?area=03-sprzedaz&view=overview") {
       window.history.replaceState(null, "", canonicalSalesPath);
     }
-    return <PrivateRoute><LazyRoute><SalesRoute /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute activeArea="03-sprzedaz"><SalesRoute /></PrivateAppRoute>;
   }
 
   if (pathname === "/operations" || (pathname === "/areas" && currentAreaKey() === "04-operacje")) {
     if (pathname !== "/areas") {
       window.history.replaceState(null, "", canonicalOperationsPath);
     }
-    return <PrivateRoute><LazyRoute><OperationsRoute /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute activeArea="04-operacje"><OperationsRoute /></PrivateAppRoute>;
   }
 
   if (pathname === "/areas" && currentAreaKey() === "05-relacje") {
     if (window.location.search !== "?area=05-relacje&view=overview") {
       window.history.replaceState(null, "", canonicalRelationshipsPath);
     }
-    return <PrivateRoute><LazyRoute><RelationshipsRoute /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute activeArea="05-relacje"><RelationshipsRoute /></PrivateAppRoute>;
   }
 
   if (pathname === "/people-agents" || pathname === "/workforce" || (pathname === "/areas" && currentAreaKey() === "06-kadry")) {
     if (pathname !== "/areas" || window.location.search !== "?area=06-kadry&view=directory") {
       window.history.replaceState(null, "", canonicalPeopleAgentsPath);
     }
-    return <PrivateRoute><LazyRoute><PeopleAgentsRoute /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute activeArea="06-kadry"><PeopleAgentsRoute /></PrivateAppRoute>;
   }
 
   if (pathname === "/areas" && currentAreaKey() === "07-finanse") {
     if (window.location.search !== "?area=07-finanse&view=overview") {
       window.history.replaceState(null, "", canonicalFinancePath);
     }
-    return <PrivateRoute><LazyRoute><FinanceRoute /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute activeArea="07-finanse"><FinanceRoute /></PrivateAppRoute>;
   }
 
   if (pathname === "/areas" && currentAreaKey() === "08-zasoby") {
-    return <PrivateRoute><LazyRoute><AssetsRoute /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute activeArea="08-zasoby"><AssetsRoute /></PrivateAppRoute>;
   }
 
   if (pathname === "/areas" && currentAreaKey() === "09-technologia") {
-    if (window.location.search !== "?area=09-technologia&view=overview") {
+    const view = new URLSearchParams(window.location.search).get("view") || "overview";
+    if (!["overview", "integrations", "automations"].includes(view)) {
       window.history.replaceState(null, "", canonicalTechnologyPath);
     }
-    return <PrivateRoute><LazyRoute><TechnologyRoute /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute activeArea="09-technologia"><TechnologyRoute /></PrivateAppRoute>;
   }
 
   if (pathname === "/areas" && currentAreaKey() === "10-prawo") {
     if (window.location.search !== "?area=10-prawo&view=overview") {
       window.history.replaceState(null, "", canonicalLegalPath);
     }
-    return <PrivateRoute><LazyRoute><LegalRoute /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute activeArea="10-prawo"><LegalRoute /></PrivateAppRoute>;
   }
 
   if (pathname === "/areas" && currentAreaKey() === "11-innowacje") {
     if (window.location.search !== "?area=11-innowacje&view=overview") {
       window.history.replaceState(null, "", canonicalInnovationPath);
     }
-    return <PrivateRoute><LazyRoute><InnovationRoute /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute activeArea="11-innowacje"><InnovationRoute /></PrivateAppRoute>;
   }
 
   if (pathname === "/areas" && currentAreaKey() === "12-zarzadzanie") {
     if (window.location.search !== "?area=12-zarzadzanie&view=departments") {
       window.history.replaceState(null, "", canonicalManagementDepartmentsPath);
     }
-    return <PrivateRoute><LazyRoute><ManagementRoute /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute activeArea="12-zarzadzanie"><ManagementRoute /></PrivateAppRoute>;
   }
 
   if (pathname === "/account/settings") {
-    return <PrivateRoute><LazyRoute><AccountSettingsRoute /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute><AccountSettingsRoute /></PrivateAppRoute>;
   }
 
   if (pathname === "/workspace/settings") {
-    return <PrivateRoute><LazyRoute><WorkspaceSettingsRoute /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute><WorkspaceSettingsRoute /></PrivateAppRoute>;
   }
 
   if (route?.private) {
-    return <PrivateRoute><LazyRoute><GeneralDashboard /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute activeArea="00-ogolny"><GeneralDashboard /></PrivateAppRoute>;
   }
 
   if (isSignedIn()) {
     window.history.replaceState(null, "", canonicalGeneralDashboardPath);
-    return <PrivateRoute><LazyRoute><GeneralDashboard /></LazyRoute></PrivateRoute>;
+    return <PrivateAppRoute activeArea="00-ogolny"><GeneralDashboard /></PrivateAppRoute>;
   }
 
   return <AuthRoute mode="login" />;

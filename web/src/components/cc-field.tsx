@@ -19,7 +19,7 @@ export function CcField({
   const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
 
   return (
-    <div className="form-control grid gap-1">
+    <div className="form-control grid w-full self-start content-start gap-1">
       <label className="label py-0" htmlFor={id}>
         <span className="label-text font-bold">
           {label}

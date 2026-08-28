@@ -3,10 +3,14 @@ import { api } from "../../api/client";
 import { userErrorMessage } from "../../api/errors";
 import { CcButton } from "../../components/cc-button";
 import { CcDataTable, CcTableColumn } from "../../components/cc-data-table";
+import { CcField } from "../../components/cc-field";
+import { CcIconPicker } from "../../components/cc-icon-picker";
 import { CcNotice } from "../../components/cc-notice";
+import { CcPageHeader } from "../../components/cc-page-header";
+import { CcRecordEditorModal, CcRecordEditorSection } from "../../components/cc-record-editor";
+import { CcTextInput } from "../../components/cc-text-input";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
-import { Shell } from "../../layout/shell";
 import { DepartmentCatalogPacket, WorkspaceDepartment } from "../../types";
 
 type Draft = {
@@ -30,7 +34,15 @@ function departmentViewLabels(department: WorkspaceDepartment) {
   if (!department.views.length) {
     return "No linked views";
   }
-  return department.views.map((view) => view.enabled ? view.label : `${view.label} (planned)`).join(", ");
+  const departmentName = department.name.replace(/^\d+\s*/, "").trim();
+  return department.views.map((view) => {
+    let label = view.label
+      .replace(new RegExp(`^${departmentName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s+`, "i"), "")
+      .replace(/^people(?:\s*\/\s*agents|\s+and\s+agents)?\s+/i, "")
+      .replace(/^department management$/i, "Departments");
+    label = label.charAt(0).toUpperCase() + label.slice(1);
+    return view.enabled ? label : `${label} (planned)`;
+  }).join(", ");
 }
 
 function DepartmentForm({
@@ -51,69 +63,47 @@ function DepartmentForm({
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   return (
-    <form className="grid gap-4 rounded-company border border-base-300 bg-base-100 p-4 shadow-sm" onSubmit={onSubmit}>
-      <div className="grid gap-1">
-        <strong className="text-lg">{draft.id ? "Edit department" : "New department"}</strong>
-        <span className="text-sm text-company-muted">Department rows drive the sidebar. Linked views point to approved module surfaces.</span>
-      </div>
-
+    <CcRecordEditorModal
+      actions={<><CcButton onClick={onCancel} type="button" variant="ghost">Cancel</CcButton><CcButton disabled={saving} iconLeft={saving ? "ph-circle-notch" : "ph-floppy-disk"} type="submit" variant="primary">{saving ? "Saving" : "Save department"}</CcButton></>}
+      description="Define how this department appears in navigation and which existing workspace views it exposes."
+      eyebrow="12 Management · Departments"
+      onClose={onCancel}
+      onSubmit={onSubmit}
+      title={draft.id ? `Edit ${draft.name}` : "New department"}
+      titleId="department-editor-title"
+    >
       {error ? <CcNotice tone="error" title="Department could not be saved" detail={error} live /> : null}
-
-      <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_8rem_10rem]">
-        <label className="form-control">
-          <span className="label py-0"><span className="label-text font-bold">Name</span></span>
-          <input className="input input-bordered" maxLength={120} onChange={(event) => onChange({ ...draft, name: event.target.value })} required value={draft.name} />
-        </label>
-        <label className="form-control">
-          <span className="label py-0"><span className="label-text font-bold">Order</span></span>
-          <input className="input input-bordered" min={0} onChange={(event) => onChange({ ...draft, position: event.target.value })} type="number" value={draft.position} />
-        </label>
-        <label className="form-control">
-          <span className="label py-0"><span className="label-text font-bold">Icon</span></span>
-          <input className="input input-bordered" maxLength={80} onChange={(event) => onChange({ ...draft, icon: event.target.value })} value={draft.icon} />
-        </label>
-      </div>
-
-      <label className="form-control">
-        <span className="label py-0"><span className="label-text font-bold">Description</span></span>
-        <textarea className="textarea textarea-bordered min-h-24" maxLength={500} onChange={(event) => onChange({ ...draft, description: event.target.value })} value={draft.description} />
-      </label>
-
-      <fieldset className="grid gap-2">
-        <legend className="text-sm font-black">Linked views</legend>
-        <div className="grid gap-2 md:grid-cols-2">
-          {(packet?.availableViews || []).map((view) => {
-            const checked = draft.linkedViews.includes(view.id);
-            return (
-              <label className={`flex items-center gap-2 rounded-company border border-base-300 px-3 py-2 text-sm font-bold ${view.enabled ? "bg-base-200/45" : "bg-base-200/25 text-company-muted"}`} key={view.id}>
-                <input
-                  checked={checked}
-                  className="checkbox checkbox-sm"
-                  disabled={!view.enabled}
-                  onChange={(event) => {
-                    const nextViews = event.target.checked
-                      ? [...draft.linkedViews, view.id]
-                      : draft.linkedViews.filter((id) => id !== view.id);
-                    onChange({ ...draft, linkedViews: nextViews });
-                  }}
-                  type="checkbox"
-                />
-                <i className={`ph-bold ${view.icon}`} aria-hidden="true"></i>
-                <span className="min-w-0 truncate">{view.label}</span>
-                {!view.enabled ? <span className="ml-auto badge badge-outline">Planned</span> : null}
-              </label>
-            );
-          })}
+      <CcRecordEditorSection title="Definition" description="The name and purpose people see when they navigate the company structure.">
+        <div className="grid items-start gap-4 md:grid-cols-2">
+          <CcField label="Name" required>{({ id, describedBy, invalid }) => <CcTextInput aria-describedby={describedBy} autoFocus id={id} invalid={invalid} maxLength={120} onChange={(event) => onChange({ ...draft, name: event.target.value })} required value={draft.name} />}</CcField>
+          <div className="md:col-span-2"><CcField label="Description" hint="Keep it specific enough to distinguish this department from adjacent responsibilities.">{({ id, describedBy }) => <textarea aria-describedby={describedBy} className="textarea textarea-bordered min-h-24 w-full" id={id} maxLength={500} onChange={(event) => onChange({ ...draft, description: event.target.value })} value={draft.description} />}</CcField></div>
         </div>
-      </fieldset>
-
-      <div className="flex flex-wrap justify-end gap-2">
-        <CcButton onClick={onCancel} type="button" variant="ghost">Cancel</CcButton>
-        <CcButton disabled={saving} iconLeft={saving ? "ph-circle-notch" : "ph-floppy-disk"} type="submit" variant="primary">
-          {saving ? "Saving" : "Save department"}
-        </CcButton>
-      </div>
-    </form>
+      </CcRecordEditorSection>
+      <CcRecordEditorSection title="Navigation" description="Choose the visual marker and relative sidebar position.">
+        <div className="grid items-start gap-4 md:grid-cols-[minmax(0,1fr)_10rem]">
+          <CcField label="Icon" hint="Pick a symbol that remains recognizable in the compact sidebar.">{({ id }) => <CcIconPicker id={id} onChange={(icon) => onChange({ ...draft, icon })} value={draft.icon} />}</CcField>
+          <CcField label="Order" hint="Lower values appear first.">{({ id, describedBy }) => <CcTextInput aria-describedby={describedBy} id={id} min={0} onChange={(event) => onChange({ ...draft, position: event.target.value })} type="number" value={draft.position} />}</CcField>
+        </div>
+      </CcRecordEditorSection>
+      <CcRecordEditorSection title="Linked views" description="Select the approved workspace surfaces reachable from this department.">
+        <fieldset>
+          <legend className="sr-only">Available linked views</legend>
+          <div className="grid gap-2 md:grid-cols-2">
+            {(packet?.availableViews || []).map((view) => {
+              const checked = draft.linkedViews.includes(view.id);
+              return (
+                <label className={`flex min-h-11 items-center gap-3 rounded-company border border-base-300 px-3 py-2 text-sm font-bold transition-colors ${checked ? "bg-primary/8 text-company-ink" : view.enabled ? "bg-base-100/20 text-company-ink hover:bg-base-200/45" : "bg-base-100/10 text-company-muted"}`} key={view.id}>
+                  <input checked={checked} className="checkbox checkbox-primary checkbox-sm" disabled={!view.enabled} onChange={(event) => { const nextViews = event.target.checked ? [...draft.linkedViews, view.id] : draft.linkedViews.filter((id) => id !== view.id); onChange({ ...draft, linkedViews: nextViews }); }} type="checkbox" />
+                  <i className={`ph-bold ${view.icon} shrink-0 text-company-muted`} aria-hidden="true"></i>
+                  <span className="min-w-0 flex-1 truncate">{view.label}</span>
+                  {!view.enabled ? <span className="text-[0.65rem] font-bold uppercase tracking-wide text-company-muted">Planned</span> : null}
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+      </CcRecordEditorSection>
+    </CcRecordEditorModal>
   );
 }
 
@@ -157,8 +147,8 @@ export function ManagementRoute() {
       header: "Type",
       sortable: true,
       filterable: true,
-      filterValue: (department) => department.isSystem ? "System" : "Custom",
-      cell: (department) => <span className="badge badge-outline">{department.isSystem ? "System" : "Custom"}</span>
+      filterValue: (department) => department.isSystem ? "Built-in" : "Custom",
+      cell: (department) => <span className="text-sm font-bold text-company-muted">{department.isSystem ? "Built-in" : "Custom"}</span>
     },
     {
       key: "position",
@@ -210,16 +200,9 @@ export function ManagementRoute() {
   }
 
   return (
-    <Shell activeArea="12-zarzadzanie">
+    <>
       <section className="grid gap-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="text-sm font-black uppercase tracking-[0.14em] text-company-muted">12 Management</p>
-            <h1 className="text-3xl font-black tracking-tight text-company-ink">Departments</h1>
-            <p className="mt-1 max-w-3xl text-sm leading-6 text-company-muted">Manage the workspace department catalog, sidebar labels, and linked views shared from existing department modules.</p>
-          </div>
-          <CcButton iconLeft="ph-plus" onClick={() => { setDraft(emptyDraft); setSaveError(null); }} variant="primary">Add department</CcButton>
-        </div>
+        <CcPageHeader actions={<CcButton iconLeft="ph-plus" onClick={() => { setDraft(emptyDraft); setSaveError(null); }} size="sm" variant="primary">Add department</CcButton>} description="Manage the workspace department catalog, sidebar labels, and linked views shared from existing department modules." eyebrow="12 Management" title="Departments" />
 
         {draft ? (
           <DepartmentForm
@@ -238,8 +221,6 @@ export function ManagementRoute() {
           density="compact"
           emptyDetail="Add a custom department or restore the default department catalog."
           emptyTitle="No departments"
-          enableColumnVisibility
-          enablePagination
           enableSearch
           error={error}
           getRowLabel={(department) => department.name}
@@ -271,6 +252,6 @@ export function ManagementRoute() {
           tableMinWidthClassName="min-w-[760px]"
         />
       </section>
-    </Shell>
+    </>
   );
 }

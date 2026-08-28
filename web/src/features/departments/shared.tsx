@@ -1,24 +1,10 @@
 import { CcNotice } from "../../components/cc-notice";
 import { useLanguage } from "../../i18n/i18n";
 
-export function SummaryGrid({ summary }: { summary?: Record<string, unknown> }) {
-  const entries = Object.entries(summary || {})
-    .filter((entry): entry is [string, number] => typeof entry[1] === "number")
-    .slice(0, 6);
-  if (entries.length === 0) {
-    return null;
-  }
-
-  return (
-    <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {entries.map(([label, value]) => (
-        <article className="rounded-company border border-base-300 bg-base-100 p-4" key={label}>
-          <p className="text-xs font-black uppercase text-company-muted">{label.replace(/([A-Z])/g, " $1")}</p>
-          <strong className="mt-2 block text-3xl font-black">{value}</strong>
-        </article>
-      ))}
-    </section>
-  );
+export function humanizeBusinessValue(value?: string | null, fallback = "Unknown") {
+  if (!value?.trim()) return fallback;
+  const normalized = value.trim().replace(/[_-]+/g, " ").replace(/\s+/g, " ");
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
 
 export function BlockedActions({ actions }: { actions?: Array<string | { action?: string; reason?: string }> }) {
@@ -28,14 +14,20 @@ export function BlockedActions({ actions }: { actions?: Array<string | { action?
   }
 
   return (
-    <section className="rounded-company border border-warning/35 bg-warning/10 p-4">
-      <h2 className="text-sm font-black uppercase text-company-ink">{t("state.blockedActions")}</h2>
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+    <section className="roost-shared-blockers">
+      <header>
+        <i className="ph-bold ph-warning" aria-hidden="true"></i>
+        <h2>{t("state.blockedActions")}</h2>
+      </header>
+      <div>
         {actions.map((action) => (
-          <div className="rounded-company border border-warning/30 bg-base-100/70 p-3 text-sm" key={typeof action === "string" ? action : action.action}>
-            <strong className="block text-company-ink">{typeof action === "string" ? action : action.action}</strong>
-            {typeof action === "string" ? null : <span className="text-company-muted">{action.reason}</span>}
-          </div>
+          <article key={typeof action === "string" ? action : action.action}>
+            <span className="roost-command-marker" aria-hidden="true"></span>
+            <div>
+              <strong>{humanizeBusinessValue(typeof action === "string" ? action : action.action, "Blocked action")}</strong>
+              {typeof action === "string" ? null : <small>{action.reason}</small>}
+            </div>
+          </article>
         ))}
       </div>
     </section>

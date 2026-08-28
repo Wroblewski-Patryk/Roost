@@ -3,7 +3,6 @@ import { CcNotice } from "../../components/cc-notice";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import { formatAppDate } from "../../i18n/date-format";
-import { Shell } from "../../layout/shell";
 import { DashboardCommandPacket, DashboardPriorityItem } from "../../types";
 
 function formattedDate(value?: string | null) {
@@ -98,7 +97,7 @@ export function GeneralDashboard() {
   }
 
   return (
-    <Shell activeArea="00-ogolny">
+    <>
       <div className={`roost-liquid-dashboard${inspectorOpen && selectedPriority ? " has-inspector" : ""}`}>
         <div className="roost-liquid-dashboard-main">
           <header className="roost-briefing-header">
@@ -229,6 +228,6 @@ export function GeneralDashboard() {
           <button className="roost-inspector-reopen" onClick={() => setInspectorOpen(true)} type="button"><i className="ph-bold ph-sidebar-simple" aria-hidden="true"></i><span>{t("general.decisionContext")}</span></button>
         ) : null}
       </div>
-    </Shell>
+    </>
   );
 }

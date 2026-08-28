@@ -4,6 +4,28 @@ Date: 2026-05-15
 Stage: planning
 Task: `V1SETTINGS-001`
 
+## Implemented Workspace Slice — 2026-08-28
+
+`/workspace/settings` now provides an action-first connection surface instead
+of a read-only integration diagnostics panel:
+
+- ClickUp credentials, workspace ID, sync direction, and enabled state can be
+  saved through the existing workspace-scoped integration settings contract;
+- Google Drive accepts OAuth client credentials, starts the provider consent
+  flow, validates the returned state, and exchanges the authorization code
+  without returning stored secrets to the browser;
+- configured providers expose a direct enabled/disabled control that preserves
+  already imported CompanyCore data;
+- provider health, mappings, and sync operations link to the dedicated
+  Technology > Integrations work view rather than expanding settings into an
+  operations dashboard;
+- decorative readiness totals and raw secret/config-field diagnostics were
+  removed. Missing setup is represented as one recovery instruction followed
+  by the provider actions that resolve it.
+
+The broader `/settings` consolidation, Agent keys, MCP, and advanced provider
+scope controls remain future slices of this canonical spec.
+
 ## Purpose
 
 This spec defines the canonical V1 direction for the private settings module.

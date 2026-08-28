@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
 import { CcNotice } from "../../components/cc-notice";
+import { CcRecordEditorModal, CcRecordEditorSection } from "../../components/cc-record-editor";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { formatAppDate } from "../../i18n/date-format";
 import { useLanguage } from "../../i18n/i18n";
-import { Shell } from "../../layout/shell";
 import { AuthMe, ConnectionPacket, IntegrationStatus, LoadState } from "../../types";
 
 function SettingRow({ icon, label, value }: { icon?: string; label: string; value?: string | null }) {
@@ -27,18 +27,7 @@ function authLabel(authType: AuthMe["authType"] | undefined, t: ReturnType<typeo
   return "—";
 }
 
-function safeConfigKeys(config?: Record<string, unknown>) {
-  return Object.entries(config ?? {})
-    .filter(([, value]) => {
-      if (Array.isArray(value)) {
-        return value.length > 0;
-      }
-      return value !== undefined && value !== null && value !== "";
-    })
-    .map(([key]) => key);
-}
-
-function useIntegrationSetting(provider: "clickup" | "google_drive", enabled: boolean): LoadState<IntegrationStatus | null> {
+function useIntegrationSetting(provider: "clickup" | "google_drive", enabled: boolean, refreshKey = 0): LoadState<IntegrationStatus | null> {
   const [state, setState] = useState<LoadState<IntegrationStatus | null>>({ status: enabled ? "loading" : "idle", data: null });
 
   useEffect(() => {
@@ -71,7 +60,7 @@ function useIntegrationSetting(provider: "clickup" | "google_drive", enabled: bo
     return () => {
       active = false;
     };
-  }, [enabled, provider]);
+  }, [enabled, provider, refreshKey]);
 
   return state;
 }
@@ -85,76 +74,129 @@ function StatusBadge({ ready }: { ready: boolean }) {
   );
 }
 
-function IntegrationCard({
+function IntegrationRow({
   title,
   icon,
   connectionStatus,
-  settingStatus
+  settingStatus,
+  onConfigure,
+  onToggle,
+  busy,
+  requiresRefreshToken = false
 }: {
   title: string;
   icon: string;
   connectionStatus?: IntegrationStatus;
   settingStatus: LoadState<IntegrationStatus | null>;
+  onConfigure: () => void;
+  onToggle: (active: boolean) => void;
+  busy: boolean;
+  requiresRefreshToken?: boolean;
 }) {
   const { t } = useLanguage();
   const setting = settingStatus.data ?? undefined;
   const status = setting ?? connectionStatus;
   const configured = Boolean(status?.secretConfigured ?? status?.configured);
   const active = Boolean(status?.active);
-  const configKeys = safeConfigKeys(status?.config);
   const updatedAt = status?.updatedAt ? formatAppDate(status.updatedAt, { dateStyle: "medium", timeStyle: "short" }) : null;
+  const ready = configured && active && (!requiresRefreshToken || Boolean(status?.hasRefreshToken));
 
   return (
-    <article className="roost-integration-card">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-company bg-primary/10 text-primary">
-            <i className={`ph-bold ${icon} text-xl`} aria-hidden="true"></i>
-          </span>
-          <div className="min-w-0">
-            <h3 className="font-black text-company-ink">{title}</h3>
-            <p className="text-sm text-company-muted">{t("workspaceSettings.redactedStatus")}</p>
-          </div>
-        </div>
-        <StatusBadge ready={configured && active} />
+    <article className="roost-integration-row">
+      <span className="roost-integration-row-icon"><i className={`ph-bold ${icon}`} aria-hidden="true"></i></span>
+      <div className="roost-integration-row-copy">
+        <div className="flex flex-wrap items-center gap-2"><h3>{title}</h3><StatusBadge ready={ready} /></div>
+        <p>{settingStatus.status === "loading" ? t("workspaceSettings.loadingProvider") : ready ? t("workspaceSettings.providerReadyDetail") : t("workspaceSettings.providerSetupDetail")}</p>
+        {updatedAt ? <small>{t("workspaceSettings.lastUpdatedValue", { date: updatedAt })}</small> : null}
       </div>
-
-      {settingStatus.status === "loading" ? (
-        <p className="mt-4 text-sm text-company-muted">{t("workspaceSettings.loadingProvider")}</p>
-      ) : null}
-      {settingStatus.status === "error" ? (
-        <CcNotice tone="warning" title={t("workspaceSettings.providerError")} detail={t("workspaceSettings.providerErrorDetail")} live />
-      ) : null}
-
-      <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-        <div>
-          <dt className="font-black uppercase text-company-muted">{t("workspaceSettings.secretStatus")}</dt>
-          <dd className="mt-1 text-company-ink">{configured ? t("workspaceSettings.secretConfigured") : t("workspaceSettings.secretMissing")}</dd>
-        </div>
-        <div>
-          <dt className="font-black uppercase text-company-muted">{t("workspaceSettings.providerActive")}</dt>
-          <dd className="mt-1 text-company-ink">{active ? t("state.ready") : t("state.blocked")}</dd>
-        </div>
-        <div>
-          <dt className="font-black uppercase text-company-muted">{t("workspaceSettings.configFields")}</dt>
-          <dd className="mt-1 break-words text-company-ink">{configKeys.length ? configKeys.join(", ") : t("workspaceSettings.noConfigFields")}</dd>
-        </div>
-        <div>
-          <dt className="font-black uppercase text-company-muted">{t("workspaceSettings.lastUpdated")}</dt>
-          <dd className="mt-1 text-company-ink">{updatedAt || t("workspaceSettings.neverUpdated")}</dd>
-        </div>
-      </dl>
+      <div className="roost-integration-row-actions">
+        {configured ? <label className="label cursor-pointer gap-2 py-0"><span className="label-text text-xs font-bold">{active ? t("workspaceSettings.enabled") : t("workspaceSettings.disabled")}</span><input aria-label={t("workspaceSettings.toggleConnection", { provider: title })} checked={active} className="toggle toggle-primary toggle-sm" disabled={busy} onChange={(event) => onToggle(event.target.checked)} type="checkbox" /></label> : null}
+        <CcButton iconRight="ph-arrow-right" onClick={onConfigure} size="sm" variant={ready ? "outline" : "primary"}>
+          {ready ? t("workspaceSettings.manage") : t("workspaceSettings.configure")}
+        </CcButton>
+      </div>
     </article>
   );
 }
 
+type IntegrationEditor = "clickup" | "google_drive" | null;
+
 export function AccountSettingsRoute() {
   const { t } = useLanguage();
   const profile = useOwnerPacket<AuthMe>("/v1/auth/me", true, t);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [profilePassword, setProfilePassword] = useState("");
+  const [passwordEditorOpen, setPasswordEditorOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const activeWorkspace = profile.data?.workspaces?.find((workspace) => workspace.active);
+  const emailChanged = Boolean(profile.data?.user?.email && email.trim().toLowerCase() !== profile.data.user.email.toLowerCase());
+
+  useEffect(() => {
+    setName(profile.data?.user?.name || "");
+    setEmail(profile.data?.user?.email || "");
+  }, [profile.data?.user?.email, profile.data?.user?.name]);
+
+  function friendlyAccountError(reason: unknown) {
+    if (reason instanceof AppApiError) {
+      if (reason.code === "current_password_invalid") return t("account.error.currentPassword");
+      if (reason.code === "email_already_registered") return t("account.error.emailTaken");
+      if (reason.code === "new_password_must_differ") return t("account.error.passwordSame");
+    }
+    return t("account.error.generic");
+  }
+
+  async function saveProfile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const response = await api<{ data: { name: string | null; email: string } }>("/v1/auth/me", {
+        method: "PATCH",
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), ...(profilePassword ? { currentPassword: profilePassword } : {}) })
+      });
+      setName(response.data.name || "");
+      setEmail(response.data.email);
+      setProfilePassword("");
+      window.dispatchEvent(new CustomEvent("roost:profile-updated", { detail: { name: response.data.name } }));
+      setSuccess(t("account.profileSaved"));
+    } catch (reason) {
+      setError(friendlyAccountError(reason));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function changePassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const currentPassword = String(form.get("currentPassword") || "");
+    const newPassword = String(form.get("newPassword") || "");
+    const confirmPassword = String(form.get("confirmPassword") || "");
+    if (newPassword !== confirmPassword) {
+      setError(t("account.error.passwordMismatch"));
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await api("/v1/auth/password", { method: "POST", body: JSON.stringify({ currentPassword, newPassword }) });
+      setPasswordEditorOpen(false);
+      setSuccess(t("account.passwordChanged"));
+    } catch (reason) {
+      setError(friendlyAccountError(reason));
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
-    <Shell>
+    <>
       <div className="roost-settings-page">
         <header className="roost-settings-header">
           <span>{t("user.myAccount")}</span>
@@ -162,11 +204,29 @@ export function AccountSettingsRoute() {
           <p>{t("account.description")}</p>
         </header>
         {profile.status === "error" ? <CcNotice tone="error" title={profile.error || t("errors.request_failed")} live /> : null}
-        <section className="roost-settings-panel" aria-labelledby="account-session-heading">
+        <section className="roost-settings-panel" aria-labelledby="account-profile-heading">
           <header>
             <span className="roost-settings-panel-icon"><i className="ph-bold ph-user-circle" aria-hidden="true"></i></span>
-            <div><h2 id="account-session-heading">{t("account.session")}</h2><p>{t("account.sessionDescription")}</p></div>
-            <span className="roost-settings-status is-ready"><i aria-hidden="true"></i>{t("state.ready")}</span>
+            <div><h2 id="account-profile-heading">{t("account.profile")}</h2><p>{t("account.profileDescription")}</p></div>
+          </header>
+          <form className="roost-account-form" onSubmit={saveProfile}>
+            <label className="form-control"><span className="label py-1"><span className="label-text font-bold">{t("account.name")}</span></span><input autoComplete="name" className="input input-bordered w-full" disabled={profile.status !== "ready"} maxLength={120} onChange={(event) => setName(event.target.value)} required value={name} /></label>
+            <label className="form-control"><span className="label py-1"><span className="label-text font-bold">{t("account.email")}</span></span><input autoComplete="email" className="input input-bordered w-full" disabled={profile.status !== "ready"} onChange={(event) => setEmail(event.target.value)} required type="email" value={email} /></label>
+            {emailChanged ? <label className="form-control"><span className="label py-1"><span className="label-text font-bold">{t("account.confirmEmailChange")}</span></span><input autoComplete="current-password" className="input input-bordered w-full" onChange={(event) => setProfilePassword(event.target.value)} placeholder={t("account.confirmEmailChangePlaceholder")} required type="password" value={profilePassword} /></label> : null}
+            <div className="roost-account-form-action"><CcButton disabled={profile.status !== "ready"} loading={saving} type="submit" variant="primary">{t("account.saveProfile")}</CcButton></div>
+          </form>
+        </section>
+        <section className="roost-settings-panel" aria-labelledby="account-security-heading">
+          <header>
+            <span className="roost-settings-panel-icon"><i className="ph-bold ph-lock-key" aria-hidden="true"></i></span>
+            <div><h2 id="account-security-heading">{t("account.security")}</h2><p>{t("account.securityDescription")}</p></div>
+            <CcButton iconRight="ph-arrow-right" onClick={() => { setError(null); setPasswordEditorOpen(true); }} size="sm" variant="outline">{t("account.changePassword")}</CcButton>
+          </header>
+        </section>
+        <section className="roost-settings-panel" aria-labelledby="account-access-heading">
+          <header>
+            <span className="roost-settings-panel-icon"><i className="ph-bold ph-identification-card" aria-hidden="true"></i></span>
+            <div><h2 id="account-access-heading">{t("account.workspaceAccess")}</h2><p>{t("account.workspaceAccessDescription")}</p></div>
           </header>
           <div className="roost-settings-facts">
             <SettingRow icon="ph-buildings" label={t("workspace.label")} value={activeWorkspace?.name} />
@@ -180,27 +240,160 @@ export function AccountSettingsRoute() {
             <dl><div><dt>{t("account.userId")}</dt><dd>{profile.data?.userId || "—"}</dd></div><div><dt>{t("workspaceSettings.id")}</dt><dd>{activeWorkspace?.id || profile.data?.workspaceId || "—"}</dd></div></dl>
           </details>
         </section>
+        {error ? <CcNotice detail={error} live title={t("account.saveError")} tone="error" /> : null}
+        {success ? <CcNotice detail={success} live title={t("account.saved")} tone="success" /> : null}
       </div>
-    </Shell>
+      {passwordEditorOpen ? (
+        <CcRecordEditorModal
+          actions={<><CcButton onClick={() => setPasswordEditorOpen(false)} variant="ghost">{t("operations.cancel")}</CcButton><CcButton loading={saving} type="submit" variant="primary">{t("account.updatePassword")}</CcButton></>}
+          description={t("account.passwordEditorDescription")}
+          eyebrow={t("account.security")}
+          maxWidthClassName="max-w-xl"
+          onClose={() => setPasswordEditorOpen(false)}
+          onSubmit={changePassword}
+          title={t("account.changePassword")}
+          titleId="change-password-title"
+        >
+          {error ? <CcNotice detail={error} live title={t("account.saveError")} tone="error" /> : null}
+          <CcRecordEditorSection description={t("account.passwordRequirements")} title={t("account.passwordCredentials")}>
+            <div className="grid gap-4">
+              <label className="form-control"><span className="label py-1"><span className="label-text font-bold">{t("account.currentPassword")}</span></span><input autoComplete="current-password" className="input input-bordered w-full" name="currentPassword" required type="password" /></label>
+              <label className="form-control"><span className="label py-1"><span className="label-text font-bold">{t("account.newPassword")}</span></span><input autoComplete="new-password" className="input input-bordered w-full" minLength={12} name="newPassword" required type="password" /></label>
+              <label className="form-control"><span className="label py-1"><span className="label-text font-bold">{t("account.confirmPassword")}</span></span><input autoComplete="new-password" className="input input-bordered w-full" minLength={12} name="confirmPassword" required type="password" /></label>
+            </div>
+          </CcRecordEditorSection>
+        </CcRecordEditorModal>
+      ) : null}
+    </>
   );
 }
 
 export function WorkspaceSettingsRoute() {
   const { t } = useLanguage();
+  const [editor, setEditor] = useState<IntegrationEditor>(null);
+  const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const profile = useOwnerPacket<AuthMe>("/v1/auth/me", true, t);
   const connection = useOwnerPacket<ConnectionPacket>("/v1/connection", true, t);
   const clickUpConnectionStatus = connection.data?.integrations?.clickup;
   const googleDriveConnectionStatus = connection.data?.integrations?.googleDrive;
-  const clickUpSetting = useIntegrationSetting("clickup", connection.status === "ready" && Boolean(clickUpConnectionStatus?.configured || clickUpConnectionStatus?.secretConfigured));
-  const googleDriveSetting = useIntegrationSetting("google_drive", connection.status === "ready" && Boolean(googleDriveConnectionStatus?.configured || googleDriveConnectionStatus?.secretConfigured));
+  const clickUpSetting = useIntegrationSetting("clickup", connection.status === "ready", refreshKey);
+  const googleDriveSetting = useIntegrationSetting("google_drive", connection.status === "ready", refreshKey);
   const activeWorkspace = profile.data?.workspaces?.find((workspace) => workspace.active);
+  const clickUpStatus = clickUpSetting.data ?? clickUpConnectionStatus;
+  const googleDriveStatus = googleDriveSetting.data ?? googleDriveConnectionStatus;
   const configuredCount = [
-    clickUpSetting.data ?? clickUpConnectionStatus,
-    googleDriveSetting.data ?? googleDriveConnectionStatus
-  ].filter((integration) => Boolean(integration?.active && (integration.secretConfigured ?? integration.configured))).length;
+    Boolean(clickUpStatus?.active && (clickUpStatus.secretConfigured ?? clickUpStatus.configured)),
+    Boolean(googleDriveStatus?.active && (googleDriveStatus.secretConfigured ?? googleDriveStatus.configured) && googleDriveStatus.hasRefreshToken)
+  ].filter(Boolean).length;
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    const state = params.get("state");
+    if (!code || params.get("provider") !== "google_drive") return;
+
+    const expectedState = window.sessionStorage.getItem("roost.google-drive-oauth-state");
+    if (!state || !expectedState || state !== expectedState) {
+      setActionError(t("workspaceSettings.oauthStateError"));
+      return;
+    }
+
+    setSaving(true);
+    const redirectUri = `${window.location.origin}/workspace/settings?provider=google_drive`;
+    api<{ data: IntegrationStatus }>("/v1/integration-settings/google_drive/oauth/exchange", {
+      method: "POST",
+      body: JSON.stringify({ code, redirectUri, active: true })
+    }).then(() => {
+      window.sessionStorage.removeItem("roost.google-drive-oauth-state");
+      window.history.replaceState({}, "", "/workspace/settings");
+      setRefreshKey((value) => value + 1);
+      setActionSuccess(t("workspaceSettings.googleConnected"));
+    }).catch(() => {
+      setActionError(t("workspaceSettings.saveErrorDetail"));
+    }).finally(() => setSaving(false));
+  }, [t]);
+
+  async function saveClickUp(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setActionError(null);
+    const form = new FormData(event.currentTarget);
+    const token = String(form.get("clickupApiToken") || "").trim();
+    const teamId = String(form.get("clickupWorkspaceReference") || "").trim();
+    const syncMode = String(form.get("syncMode") || "pull");
+    const nextConfig = { ...(clickUpSetting.data?.config ?? {}), syncMode };
+    if (teamId) {
+      nextConfig.teamId = teamId;
+    } else {
+      delete nextConfig.teamId;
+    }
+    const payload: Record<string, unknown> = {
+      active: form.get("active") === "on",
+      config: nextConfig
+    };
+    if (token) payload.token = token;
+
+    try {
+      await api("/v1/integration-settings/clickup", { method: "PUT", body: JSON.stringify(payload) });
+      setEditor(null);
+      setRefreshKey((value) => value + 1);
+      setActionSuccess(t("workspaceSettings.clickupSaved"));
+    } catch (error) {
+      setActionError(t("workspaceSettings.saveErrorDetail"));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function connectGoogleDrive(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setActionError(null);
+    const form = new FormData(event.currentTarget);
+    const clientId = String(form.get("clientId") || "").trim();
+    const clientSecret = String(form.get("clientSecret") || "").trim();
+
+    try {
+      if (clientId) {
+        await api("/v1/integration-settings/google_drive", {
+          method: "PUT",
+          body: JSON.stringify({ oauthClient: { clientId, ...(clientSecret ? { clientSecret } : {}) }, active: true })
+        });
+      }
+      const state = crypto.randomUUID();
+      const redirectUri = `${window.location.origin}/workspace/settings?provider=google_drive`;
+      const response = await api<{ data: { authorizationUrl: string } }>("/v1/integration-settings/google_drive/oauth/authorize-url", {
+        method: "POST",
+        body: JSON.stringify({ redirectUri, state })
+      });
+      window.sessionStorage.setItem("roost.google-drive-oauth-state", state);
+      window.location.assign(response.data.authorizationUrl);
+    } catch (error) {
+      setActionError(t("workspaceSettings.saveErrorDetail"));
+      setSaving(false);
+    }
+  }
+
+  async function toggleIntegration(provider: "clickup" | "google_drive", active: boolean) {
+    setSaving(true);
+    setActionError(null);
+    setActionSuccess(null);
+    try {
+      await api(`/v1/integration-settings/${provider}`, { method: "PUT", body: JSON.stringify({ active }) });
+      setRefreshKey((value) => value + 1);
+      setActionSuccess(t(active ? "workspaceSettings.connectionEnabledSuccess" : "workspaceSettings.connectionDisabledSuccess"));
+    } catch (error) {
+      setActionError(t("workspaceSettings.saveErrorDetail"));
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
-    <Shell>
+    <>
       <div className="roost-settings-page">
         <header className="roost-settings-header">
           <span>{t("workspace.settings")}</span>
@@ -210,16 +403,13 @@ export function WorkspaceSettingsRoute() {
         {profile.status === "error" ? <CcNotice tone="error" title={profile.error || t("errors.request_failed")} live /> : null}
         {connection.status === "loading" ? <CcNotice tone="loading" title={t("workspaceSettings.connectionLoading")} detail={t("workspaceSettings.connectionLoadingDetail")} /> : null}
         {connection.status === "error" ? <CcNotice tone="error" title={t("workspaceSettings.connectionError")} detail={connection.error || t("errors.request_failed")} live /> : null}
-        <section className="roost-settings-panel" aria-labelledby="workspace-summary-heading">
+        <section className="roost-settings-panel roost-workspace-summary" aria-labelledby="workspace-summary-heading">
           <header>
             <span className="roost-settings-panel-icon"><i className="ph-bold ph-buildings" aria-hidden="true"></i></span>
-            <div><h2 id="workspace-summary-heading">{activeWorkspace?.name || t("workspace.current")}</h2><p>{t("shell.workspaceSafe")}</p></div>
-            <span className="roost-settings-status is-ready"><i aria-hidden="true"></i>{t("state.ready")}</span>
+            <div><h2 id="workspace-summary-heading">{activeWorkspace?.name || t("workspace.current")}</h2><p>{t("workspaceSettings.workspaceContext")}</p></div>
           </header>
           <div className="roost-settings-facts">
-            <SettingRow icon="ph-buildings" label={t("workspaceSettings.name")} value={activeWorkspace?.name} />
             <SettingRow icon="ph-crown" label={t("account.role")} value={roleLabel(activeWorkspace?.role, t)} />
-            <SettingRow icon="ph-stack" label={t("workspaceSettings.availableWorkspaces")} value={String(profile.data?.workspaces?.length || 0)} />
             <SettingRow icon="ph-shield-check" label={t("workspaceSettings.scopeMode")} value={connection.data?.scopeMode === "scoped" ? t("workspaceSettings.scope.scoped") : t("workspaceSettings.scope.broad")} />
           </div>
           <details className="roost-settings-technical">
@@ -232,35 +422,79 @@ export function WorkspaceSettingsRoute() {
           <header>
             <span className="roost-settings-panel-icon"><i className="ph-bold ph-plugs-connected" aria-hidden="true"></i></span>
             <div><h2 id="workspace-integrations-heading">{t("workspaceSettings.integrations")}</h2><p>{t("workspaceSettings.integrationsDescription")}</p></div>
-            <span className={`roost-settings-status${configuredCount === 2 ? " is-ready" : " is-warning"}`}><i aria-hidden="true"></i>{t("workspaceSettings.integrationsStatus", { count: configuredCount, total: 2 })}</span>
           </header>
-          <div className="roost-integration-grid">
-          <IntegrationCard
+          {configuredCount < 2 ? <div className="roost-settings-next-step"><i className="ph-bold ph-warning-circle" aria-hidden="true"></i><div><strong>{t("workspaceSettings.setupRequired")}</strong><span>{t("workspaceSettings.setupRequiredDetail", { count: 2 - configuredCount })}</span></div></div> : null}
+          <div className="roost-integration-list">
+          <IntegrationRow
+            busy={saving}
             connectionStatus={clickUpConnectionStatus}
             icon="ph-kanban"
+            onConfigure={() => { setActionError(null); setEditor("clickup"); }}
+            onToggle={(active) => void toggleIntegration("clickup", active)}
             settingStatus={clickUpSetting}
             title={t("workspaceSettings.clickup")}
           />
-          <IntegrationCard
+          <IntegrationRow
+            busy={saving}
             connectionStatus={googleDriveConnectionStatus}
             icon="ph-folder-open"
+            onConfigure={() => { setActionError(null); setEditor("google_drive"); }}
+            onToggle={(active) => void toggleIntegration("google_drive", active)}
+            requiresRefreshToken
             settingStatus={googleDriveSetting}
             title={t("workspaceSettings.googleDrive")}
           />
           </div>
-          <div className="roost-settings-notice">
-          <CcNotice
-            detail={t("workspaceSettings.noSecretsDetail")}
-            title={t("workspaceSettings.noSecretsTitle")}
-            tone="info"
-          />
-          </div>
           <div className="roost-settings-actions">
-          <CcButton href="/areas?area=09-technologia&view=overview" iconLeft="ph-plugs-connected" variant="outline">{t("workspaceSettings.technologyBoard")}</CcButton>
-          <CcButton href="/areas?area=08-zasoby&view=files" iconLeft="ph-folder-open" variant="outline">{t("workspaceSettings.assetFiles")}</CcButton>
+          <CcButton href="/areas?area=09-technologia&view=integrations" iconLeft="ph-chart-line-up" variant="ghost">{t("workspaceSettings.integrationHealth")}</CcButton>
           </div>
         </section>
+        {actionError ? <CcNotice detail={actionError} live title={t("workspaceSettings.saveError")} tone="error" /> : null}
+        {actionSuccess ? <CcNotice detail={actionSuccess} live title={t("workspaceSettings.saved")} tone="success" /> : null}
       </div>
-    </Shell>
+      {editor === "clickup" ? (
+        <CcRecordEditorModal
+          actions={<><CcButton onClick={() => setEditor(null)} variant="ghost">{t("operations.cancel")}</CcButton><CcButton loading={saving} type="submit" variant="primary">{t("workspaceSettings.saveConnection")}</CcButton></>}
+          description={t("workspaceSettings.clickupEditorDescription")}
+          eyebrow={t("workspaceSettings.connectionSetup")}
+          onClose={() => setEditor(null)}
+          onSubmit={saveClickUp}
+          title={t("workspaceSettings.clickupEditorTitle")}
+          titleId="clickup-settings-title"
+          maxWidthClassName="max-w-2xl"
+        >
+          {actionError ? <CcNotice detail={actionError} live title={t("workspaceSettings.saveError")} tone="error" /> : null}
+          <CcRecordEditorSection description={t("workspaceSettings.secretHelp")} title={t("workspaceSettings.credentials")}>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="form-control sm:col-span-2"><span className="label py-1"><span className="label-text font-bold">{t("workspaceSettings.clickupToken")}{clickUpSetting.data?.secretConfigured ? "" : " *"}</span></span><input autoComplete="new-password" className="input input-bordered w-full" data-1p-ignore="true" data-lpignore="true" name="clickupApiToken" placeholder={clickUpSetting.data?.secretConfigured ? t("workspaceSettings.secretKeepPlaceholder") : t("workspaceSettings.secretEnterPlaceholder")} required={!clickUpSetting.data?.secretConfigured} type="password" /></label>
+              <label className="form-control"><span className="label py-1"><span className="label-text font-bold">{t("workspaceSettings.clickupTeamId")}</span></span><input autoComplete="one-time-code" className="input input-bordered w-full" data-1p-ignore="true" data-lpignore="true" defaultValue={String(clickUpSetting.data?.config?.teamId || "")} name="clickupWorkspaceReference" /></label>
+              <label className="form-control"><span className="label py-1"><span className="label-text font-bold">{t("workspaceSettings.syncMode")}</span></span><select className="select select-bordered w-full" defaultValue={String(clickUpSetting.data?.config?.syncMode || "pull")} name="syncMode"><option value="pull">{t("workspaceSettings.syncPull")}</option><option value="two_way">{t("workspaceSettings.syncTwoWay")}</option></select></label>
+              <label className="label cursor-pointer justify-start gap-3 sm:col-span-2"><input className="toggle toggle-primary" defaultChecked={clickUpSetting.data?.active ?? true} name="active" type="checkbox" /><span className="label-text font-bold">{t("workspaceSettings.connectionEnabled")}</span></label>
+            </div>
+          </CcRecordEditorSection>
+        </CcRecordEditorModal>
+      ) : null}
+      {editor === "google_drive" ? (
+        <CcRecordEditorModal
+          actions={<><CcButton onClick={() => setEditor(null)} variant="ghost">{t("operations.cancel")}</CcButton><CcButton iconRight="ph-arrow-square-out" loading={saving} type="submit" variant="primary">{t("workspaceSettings.connectGoogle")}</CcButton></>}
+          description={t("workspaceSettings.googleEditorDescription")}
+          eyebrow={t("workspaceSettings.connectionSetup")}
+          onClose={() => setEditor(null)}
+          onSubmit={connectGoogleDrive}
+          title={t("workspaceSettings.googleEditorTitle")}
+          titleId="google-drive-settings-title"
+          maxWidthClassName="max-w-2xl"
+        >
+          {actionError ? <CcNotice detail={actionError} live title={t("workspaceSettings.saveError")} tone="error" /> : null}
+          <CcRecordEditorSection description={googleDriveSetting.data?.hasClientId && googleDriveSetting.data?.hasClientSecret ? t("workspaceSettings.googleStoredClient") : t("workspaceSettings.googleClientHelp")} title={t("workspaceSettings.googleOAuthClient")}>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="form-control"><span className="label py-1"><span className="label-text font-bold">{t("workspaceSettings.googleClientId")}{googleDriveSetting.data?.hasClientId && googleDriveSetting.data?.hasClientSecret ? "" : " *"}</span></span><input autoComplete="one-time-code" className="input input-bordered w-full" data-1p-ignore="true" data-lpignore="true" name="clientId" placeholder={googleDriveSetting.data?.hasClientId ? t("workspaceSettings.storedCredentialPlaceholder") : ""} required={!(googleDriveSetting.data?.hasClientId && googleDriveSetting.data?.hasClientSecret)} /></label>
+              <label className="form-control"><span className="label py-1"><span className="label-text font-bold">{t("workspaceSettings.googleClientSecret")}{googleDriveSetting.data?.hasClientId && googleDriveSetting.data?.hasClientSecret ? "" : " *"}</span></span><input autoComplete="new-password" className="input input-bordered w-full" data-1p-ignore="true" data-lpignore="true" name="clientSecret" placeholder={googleDriveSetting.data?.hasClientSecret ? t("workspaceSettings.secretKeepPlaceholder") : ""} required={!(googleDriveSetting.data?.hasClientId && googleDriveSetting.data?.hasClientSecret)} type="password" /></label>
+            </div>
+          </CcRecordEditorSection>
+          <CcNotice detail={t("workspaceSettings.googleRedirectDetail", { url: `${window.location.origin}/workspace/settings?provider=google_drive` })} title={t("workspaceSettings.googleRedirectTitle")} tone="info" />
+        </CcRecordEditorModal>
+      ) : null}
+    </>
   );
 }

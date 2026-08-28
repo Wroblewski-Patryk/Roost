@@ -1,11 +1,11 @@
 import { CcDataTable, type CcTableColumn } from "../../components/cc-data-table";
 import { CcNotice } from "../../components/cc-notice";
+import { CcPageHeader } from "../../components/cc-page-header";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import { formatAppDate } from "../../i18n/date-format";
-import { Shell } from "../../layout/shell";
 import { StrategyPacket } from "../../types";
-import { BlockedActions, SummaryGrid, useTranslatedTableLabels } from "./shared";
+import { BlockedActions, humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 
 function formatDate(value?: string | null) {
   if (!value) return "-";
@@ -16,6 +16,9 @@ export function StrategyRoute() {
   const { t } = useLanguage();
   const packet = useOwnerPacket<StrategyPacket>("/v1/strategy/context", true, t);
   const rows = packet.data?.goals || [];
+  const metrics = packet.data?.metrics || [];
+  const risks = packet.data?.risks || [];
+  const recentTasks = packet.data?.tasks || [];
   const tableLabels = useTranslatedTableLabels();
   const columns: Array<CcTableColumn<(typeof rows)[number]>> = [
     {
@@ -36,68 +39,60 @@ export function StrategyRoute() {
       sortable: true,
       filterable: true,
       filterValue: (row) => row.status || "unknown",
-      cell: (row) => <span className="badge badge-outline">{row.status || "unknown"}</span>
+      cell: (row) => <span className="badge badge-outline">{humanizeBusinessValue(row.status)}</span>
     },
     {
       key: "targets",
       header: "Targets",
       sortValue: (row) => row.targets?.length || 0,
-      cell: (row) => <span className="badge badge-ghost badge-sm">{row.targets?.length || 0}</span>
+      cell: (row) => <span className="text-sm text-company-muted">{row.targets?.length || "-"}</span>
     },
     {
       key: "tasks",
       header: "Follow-up tasks",
       sortValue: (row) => row.tasks?.length || 0,
-      cell: (row) => <span className="badge badge-ghost badge-sm">{row.tasks?.length || 0}</span>
+      cell: (row) => <span className="text-sm text-company-muted">{row.tasks?.length || "-"}</span>
     }
   ];
 
   return (
-    <Shell activeArea="01-strategia">
-      <section className="rounded-company border border-base-300 bg-base-100 p-5">
-        <p className="text-sm font-black uppercase text-primary">01 Strategy</p>
-        <h1 className="mt-2 text-3xl font-black text-company-ink">{packet.data?.department?.name || "Strategy Management System"}</h1>
-        <p className="mt-3 max-w-3xl leading-7 text-company-muted">
-          {packet.data?.department?.purpose || "Align goals, targets, metrics, risk, and decisions into one strategic operating context."}
-        </p>
-      </section>
+    <>
+      <CcPageHeader eyebrow="01 Strategy" title={packet.data?.department?.name || "Strategy Management System"} description={packet.data?.department?.purpose || "Align goals, targets, metrics, risk, and decisions into one strategic operating context."} />
 
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
       {packet.status === "error" ? <CcNotice tone="error" title={packet.error || "Strategy context could not load."} live /> : null}
 
-      <SummaryGrid summary={packet.data?.summary} />
-
-      <section className="grid gap-4 lg:grid-cols-2">
-        <article className="rounded-company border border-base-300 bg-base-100 p-4">
+      {metrics.length || risks.length ? <section className="grid gap-4 lg:grid-cols-2">
+        {metrics.length ? <article className="rounded-company border border-base-300 bg-base-100 p-4">
           <h2 className="text-lg font-black text-company-ink">Metrics</h2>
-          <div className="mt-3 grid gap-2">
-            {(packet.data?.metrics || []).slice(0, 8).map((metric) => (
+          <div className="roost-compact-list mt-3 grid gap-2">
+            {metrics.slice(0, 8).map((metric) => (
               <div className="rounded-company border border-base-300 bg-base-200/40 p-3" key={metric.id}>
                 <div className="flex items-start justify-between gap-2">
                   <strong>{metric.name}</strong>
-                  <span className="badge badge-outline">{metric.status || "active"}</span>
+                  <span className="badge badge-outline">{humanizeBusinessValue(metric.status, "Active")}</span>
                 </div>
                 <p className="mt-1 text-xs text-company-muted">{metric.category || "General"} • {metric.currentValue ?? "-"} / {metric.targetValue ?? "-"}</p>
               </div>
             ))}
           </div>
-        </article>
+        </article> : null}
 
-        <article className="rounded-company border border-base-300 bg-base-100 p-4">
+        {risks.length ? <article className="rounded-company border border-base-300 bg-base-100 p-4">
           <h2 className="text-lg font-black text-company-ink">Strategic risks</h2>
-          <div className="mt-3 grid gap-2">
-            {(packet.data?.risks || []).slice(0, 8).map((risk) => (
+          <div className="roost-compact-list mt-3 grid gap-2">
+            {risks.slice(0, 8).map((risk) => (
               <div className="rounded-company border border-base-300 bg-base-200/40 p-3" key={risk.id}>
                 <div className="flex items-start justify-between gap-2">
                   <strong>{risk.name}</strong>
-                  <span className="badge badge-outline">{risk.riskLevel || "medium"}</span>
+                  <span className="badge badge-outline">{humanizeBusinessValue(risk.riskLevel, "Medium")}</span>
                 </div>
                 <p className="mt-1 text-xs text-company-muted">{risk.category || "General"} • controls: {risk.controls?.length || 0}</p>
               </div>
             ))}
           </div>
-        </article>
-      </section>
+        </article> : null}
+      </section> : null}
 
       <CcDataTable
         columns={columns}
@@ -111,22 +106,22 @@ export function StrategyRoute() {
         mobileMode="cards"
       />
 
-      <section className="rounded-company border border-base-300 bg-base-100 p-4">
+      {recentTasks.length ? <section className="rounded-company border border-base-300 bg-base-100 p-4">
         <h2 className="text-lg font-black text-company-ink">Recent strategic tasks</h2>
-        <div className="mt-3 grid gap-2">
-          {(packet.data?.tasks || []).slice(0, 10).map((task) => (
+        <div className="roost-compact-list mt-3 grid gap-2">
+          {recentTasks.slice(0, 10).map((task) => (
             <div className="rounded-company border border-base-300 bg-base-200/40 p-3" key={task.id}>
               <div className="flex items-start justify-between gap-2">
                 <strong>{task.title}</strong>
-                <span className="badge badge-outline">{task.status || "todo"}</span>
+                <span className="badge badge-outline">{humanizeBusinessValue(task.status, "To do")}</span>
               </div>
               <p className="mt-1 text-xs text-company-muted">{task.priority || "normal"} • due {formatDate(task.dueDate)}</p>
             </div>
           ))}
         </div>
-      </section>
+      </section> : null}
 
       <BlockedActions actions={packet.data?.blockedActions || packet.data?.agentPacket?.blockedActions} />
-    </Shell>
+    </>
   );
 }
