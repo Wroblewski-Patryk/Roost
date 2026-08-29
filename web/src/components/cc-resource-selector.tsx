@@ -115,8 +115,8 @@ export function CcResourceSelector({
   }
 
   return (
-    <aside className="roost-work-surface grid max-h-[28rem] min-h-0 content-start gap-3 overflow-y-auto rounded-company p-3 xl:max-h-none">
-      <div className="roost-work-panel sticky top-0 z-10 grid gap-2 rounded-company p-2.5 shadow-sm backdrop-blur" data-resource-selector>
+    <aside className="cc-resource-selector roost-work-surface grid max-h-[28rem] min-h-0 grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-company p-3 xl:max-h-none">
+      <div className="cc-resource-selector-toolbar grid gap-2 rounded-company p-2.5" data-resource-selector>
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs font-black uppercase text-company-muted">{title}</span>
           {onCreate && createLabel ? <CcButton ariaLabel={createLabel} iconLeft={createIcon} onClick={onCreate} size="xs" variant="primary">{createLabel}</CcButton> : null}
@@ -149,34 +149,36 @@ export function CcResourceSelector({
         </label>
       </div>
 
-      {hasVisibleItems ? null : (
-        <div className="roost-empty-state rounded-company p-4 text-center text-sm text-company-muted">
-          <i className="ph-bold ph-magnifying-glass text-xl" aria-hidden="true"></i>
-          <p className="mt-2">{emptyLabel}</p>
-        </div>
-      )}
+      <div className="cc-resource-selector-scroll grid min-h-0 content-start gap-3 overflow-y-auto pt-3">
+        {hasVisibleItems ? null : (
+          <div className="roost-empty-state rounded-company p-4 text-center text-sm text-company-muted">
+            <i className="ph-bold ph-magnifying-glass text-xl" aria-hidden="true"></i>
+            <p className="mt-2">{emptyLabel}</p>
+          </div>
+        )}
 
-      {visibleGroups.map((group) => (
-        <section className="grid gap-1" key={group.id}>
-          <button className="flex items-center justify-between rounded-company px-2 py-1 text-left text-xs font-black uppercase text-company-muted hover:bg-base-200" onClick={() => setOpenGroups((current) => ({ ...current, [group.id]: !current[group.id] }))} type="button">
-            {group.title}
-            <i className={`ph-bold ${openGroups[group.id] ? "ph-caret-up" : "ph-caret-down"}`} aria-hidden="true"></i>
-          </button>
-          {openGroups[group.id] ? <div className="grid gap-1">{group.items.map(renderItem)}</div> : null}
-        </section>
-      ))}
+        {visibleGroups.map((group) => (
+          <section className="grid gap-1" key={group.id}>
+            <button className="flex items-center justify-between rounded-company px-2 py-1 text-left text-xs font-black uppercase text-company-muted hover:bg-base-200" onClick={() => setOpenGroups((current) => ({ ...current, [group.id]: !current[group.id] }))} type="button">
+              {group.title}
+              <i className={`ph-bold ${openGroups[group.id] ? "ph-caret-up" : "ph-caret-down"}`} aria-hidden="true"></i>
+            </button>
+            {openGroups[group.id] ? <div className="grid gap-1">{group.items.map(renderItem)}</div> : null}
+          </section>
+        ))}
 
-      {ungroupedTitle && visibleUngroupedItems.length ? (
-        <section className="grid gap-1 border-t border-base-300 pt-2">
-          <button className="flex items-center justify-between rounded-company px-2 py-1 text-left text-xs font-black uppercase text-company-muted hover:bg-base-200" onClick={() => setOpenGroups((current) => ({ ...current, __ungrouped: !current.__ungrouped }))} type="button">
-            {ungroupedTitle}
-            <i className={`ph-bold ${openGroups.__ungrouped ? "ph-caret-up" : "ph-caret-down"}`} aria-hidden="true"></i>
-          </button>
-          {openGroups.__ungrouped ? <div className="grid gap-1">{visibleUngroupedItems.map(renderItem)}</div> : null}
-        </section>
-      ) : null}
+        {ungroupedTitle && visibleUngroupedItems.length ? (
+          <section className="grid gap-1 border-t border-base-300 pt-2">
+            <button className="flex items-center justify-between rounded-company px-2 py-1 text-left text-xs font-black uppercase text-company-muted hover:bg-base-200" onClick={() => setOpenGroups((current) => ({ ...current, __ungrouped: !current.__ungrouped }))} type="button">
+              {ungroupedTitle}
+              <i className={`ph-bold ${openGroups.__ungrouped ? "ph-caret-up" : "ph-caret-down"}`} aria-hidden="true"></i>
+            </button>
+            {openGroups.__ungrouped ? <div className="grid gap-1">{visibleUngroupedItems.map(renderItem)}</div> : null}
+          </section>
+        ) : null}
 
-      {footer}
+        {footer}
+      </div>
     </aside>
   );
 }

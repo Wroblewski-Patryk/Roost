@@ -17,6 +17,7 @@ export function AuthRoute({ mode }: { mode: "login" | "register" }) {
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [submitError, setSubmitError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<AuthFormErrors>({});
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const isLogin = mode === "login";
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -61,13 +62,20 @@ export function AuthRoute({ mode }: { mode: "login" | "register" }) {
 
   return (
     <PublicLayout active={mode}>
-      <section className="mx-auto grid min-h-[calc(100vh-4.5rem)] max-w-6xl content-center gap-8 px-4 py-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(20rem,0.7fr)] lg:px-8">
-        <div>
-          <p className="text-sm font-black uppercase text-primary">{t(isLogin ? "auth.login.kicker" : "auth.register.kicker")}</p>
-          <h1 className="mt-3 text-4xl font-black text-company-ink">{t(isLogin ? "auth.login.title" : "auth.register.title")}</h1>
-          <p className="mt-4 text-lg leading-8 text-company-muted">{t("auth.description")}</p>
+      <section className="roost-auth-shell">
+        <div className="roost-auth-context">
+          <p className="roost-auth-kicker">{t(isLogin ? "auth.login.kicker" : "auth.register.kicker")}</p>
+          <h1>{t(isLogin ? "auth.login.title" : "auth.register.title")}</h1>
+          <p>{t(isLogin ? "auth.login.description" : "auth.register.description")}</p>
         </div>
-        <form className="grid gap-4 rounded-company border border-base-300 bg-base-100 p-5 shadow-sm" noValidate onSubmit={onSubmit}>
+        <form className="roost-auth-card" noValidate onSubmit={onSubmit}>
+          <header className="roost-auth-card-header">
+            <span className="roost-auth-card-icon"><i className={`ph-bold ${isLogin ? "ph-lock-key" : "ph-buildings"}`} aria-hidden="true"></i></span>
+            <div>
+              <h2>{t(isLogin ? "auth.form.loginTitle" : "auth.form.registerTitle")}</h2>
+              <p>{t(isLogin ? "auth.form.loginDescription" : "auth.form.registerDescription")}</p>
+            </div>
+          </header>
           {!isLogin ? (
             <>
               <CcField label={t("auth.name")}>
@@ -110,26 +118,41 @@ export function AuthRoute({ mode }: { mode: "login" | "register" }) {
           </CcField>
           <CcField error={fieldErrors.password} label={t("auth.password")} required>
             {({ id, describedBy, invalid }) => (
-              <CcTextInput
-                aria-describedby={describedBy}
-                autoComplete={isLogin ? "current-password" : "new-password"}
-                id={id}
-                invalid={invalid}
-                minLength={isLogin ? 1 : 12}
-                name="password"
-                required
-                type="password"
-              />
+              <div className="roost-auth-password">
+                <CcTextInput
+                  aria-describedby={describedBy}
+                  autoComplete={isLogin ? "current-password" : "new-password"}
+                  className="pr-12"
+                  id={id}
+                  invalid={invalid}
+                  minLength={isLogin ? 1 : 12}
+                  name="password"
+                  required
+                  type={passwordVisible ? "text" : "password"}
+                />
+                <button
+                  aria-label={t(passwordVisible ? "auth.password.hide" : "auth.password.show")}
+                  aria-pressed={passwordVisible}
+                  onClick={() => setPasswordVisible((visible) => !visible)}
+                  title={t(passwordVisible ? "auth.password.hide" : "auth.password.show")}
+                  type="button"
+                >
+                  <i className={`ph-bold ${passwordVisible ? "ph-eye-slash" : "ph-eye"}`} aria-hidden="true"></i>
+                </button>
+              </div>
             )}
           </CcField>
           {submitError ? <CcNotice live tone="error" title={submitError} /> : null}
-          <CcButton loading={status === "loading"} type="submit" variant="primary">
+          <CcButton className="roost-auth-submit" iconRight="ph-arrow-right" loading={status === "loading"} type="submit" variant="primary">
             {t(isLogin ? "auth.submit.login" : "auth.submit.register")}
           </CcButton>
-          <p className="text-sm text-company-muted">
-            {t(isLogin ? "auth.needWorkspace" : "auth.alreadyHaveAccess")}{" "}
-            <a className="font-bold text-primary" href={isLogin ? "/auth/register" : "/auth/login"}>{t(isLogin ? "auth.createOne" : "auth.submit.login")}</a>
-          </p>
+          <div className="roost-auth-switch">
+            <span>{t(isLogin ? "auth.needWorkspace" : "auth.alreadyHaveAccess")}</span>
+            <a href={isLogin ? "/auth/register" : "/auth/login"}>
+              {t(isLogin ? "auth.createOne" : "auth.submit.login")}
+              <i className="ph-bold ph-arrow-up-right" aria-hidden="true"></i>
+            </a>
+          </div>
         </form>
       </section>
     </PublicLayout>
