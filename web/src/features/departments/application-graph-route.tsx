@@ -31,6 +31,7 @@ type GraphNodeData = {
   record: ApplicationGraphNode;
   mode: ApplicationGraphMode;
   role: "focus" | "lineage" | "descendant" | "relation";
+  motionIndex: number;
   dimmed: boolean;
   focused: boolean;
   accent: string;
@@ -65,6 +66,14 @@ const modes: Array<{ id: ApplicationGraphMode; label: string; icon: string }> = 
   { id: "productization", label: "Productization", icon: "ph-rocket-launch" }
 ];
 
+const graphMotionDuration = 680;
+
+function graphMotionEase(progress: number) {
+  return progress < 0.5
+    ? 4 * progress * progress * progress
+    : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+}
+
 function iconFor(type: ApplicationGraphNode["type"]) {
   if (type === "company") return "ph-buildings";
   if (type === "application") return "ph-app-window";
@@ -98,7 +107,7 @@ function branchAccent(record: ApplicationGraphNode) {
 }
 
 function ApplicationGraphNodeView({ data }: NodeProps<GraphFlowNode>) {
-  const { record, dimmed, focused, mode, accent } = data;
+  const { record, dimmed, focused, mode, accent, motionIndex } = data;
   const progress = Math.max(0, Math.min(100, record.completeness));
   const modeAttention = mode === "agent-ready"
     ? record.details.missingEvidence || record.completeness < 90
@@ -115,7 +124,10 @@ function ApplicationGraphNodeView({ data }: NodeProps<GraphFlowNode>) {
       data-focused={focused || undefined}
       data-role={data.role}
       data-type={record.type}
-      style={{ "--graph-accent": accent } as React.CSSProperties}
+      style={{
+        "--graph-accent": accent,
+        "--graph-reveal-delay": `${Math.min(motionIndex, 10) * 24}ms`
+      } as React.CSSProperties}
     >
       {[Position.Top, Position.Right, Position.Bottom, Position.Left].map((position) => (
         <Handle className="application-graph-handle" id={`target-${position}`} key={`target-${position}`} position={position} type="target" />
@@ -425,13 +437,14 @@ function ApplicationGraphCanvas() {
     ? visibleRecords.filter((node) => !focus.path.includes(node.id) && !node.path.includes(focus.id)).length
     : 0, [focus, visibleRecords]);
 
-  const flowNodes = useMemo<GraphFlowNode[]>(() => visibleRecords.map((record) => ({
+  const flowNodes = useMemo<GraphFlowNode[]>(() => visibleRecords.map((record, motionIndex) => ({
     id: record.id,
     type: "applicationGraph",
     position: positions.get(record.id) ?? { x: 0, y: 0 },
     data: {
       record,
       mode,
+      motionIndex,
       role: record.id === focus?.id ? "focus" : focus?.path.includes(record.id) ? "lineage" : record.path.includes(focus?.id || "") ? "descendant" : "relation",
       focused: record.id === focus?.id,
       dimmed: record.id !== focus?.id && !record.path.includes(focus?.id || "") && !focus?.path.includes(record.id),
@@ -471,12 +484,23 @@ function ApplicationGraphCanvas() {
     if (!focus || !positions.has(focus.id)) return;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const timer = window.setTimeout(() => {
-      if (flowNodes.length > 2) void fitView({ padding: 0.1, duration: reducedMotion ? 0 : 360, maxZoom: 1 });
+      if (flowNodes.length > 2) void fitView({
+        padding: 0.14,
+        duration: reducedMotion ? 0 : graphMotionDuration,
+        ease: graphMotionEase,
+        interpolate: "smooth",
+        maxZoom: 1
+      });
       else {
         const position = positions.get(focus.id)!;
-        void setCenter(position.x + 120, position.y + 52, { zoom: 1, duration: reducedMotion ? 0 : 320 });
+        void setCenter(position.x + 120, position.y + 52, {
+          zoom: 1,
+          duration: reducedMotion ? 0 : graphMotionDuration,
+          ease: graphMotionEase,
+          interpolate: "smooth"
+        });
       }
-    }, 40);
+    }, reducedMotion ? 0 : 56);
     return () => window.clearTimeout(timer);
   }, [fitView, flowNodes.length, focus, inspectorId, mode, positions, setCenter]);
 
