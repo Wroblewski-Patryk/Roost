@@ -164,6 +164,10 @@ function sortIcon(active: boolean, direction?: SortDirection) {
   return direction === "desc" ? "ph-caret-down" : "ph-caret-up";
 }
 
+function columnClassName<Row>(column: CcTableColumn<Row>) {
+  return [column.className, column.key === "status" ? "cc-table-status-column" : ""].filter(Boolean).join(" ");
+}
+
 function uniqueOptions<Row>(rows: Row[], column: CcTableColumn<Row>, formatValue?: (value: string) => string) {
   if (column.filterOptions) return column.filterOptions;
   const values = new Map<string, string>();
@@ -545,7 +549,7 @@ export function CcDataTable<Row extends { id: string }>({
               return (
                 <th
                   aria-sort={sortable ? (active ? (sort?.direction === "asc" ? "ascending" : "descending") : "none") : undefined}
-                  className={column.className}
+                  className={columnClassName(column)}
                   key={column.key}
                 >
                   <button
@@ -594,7 +598,7 @@ export function CcDataTable<Row extends { id: string }>({
                 </td>
               ) : null}
               {renderedColumns.map((column) => (
-                <td className={column.className} key={column.key}>{column.cell(row)}</td>
+                <td className={columnClassName(column)} key={column.key}>{column.cell(row)}</td>
               ))}
               {(rowActions || rowActionItems.length) ? (
                 <td className={actionColumnClass}>

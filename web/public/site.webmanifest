@@ -1,0 +1,26 @@
+{
+  "name": "Roost — LuckySparrow Operating Center",
+  "short_name": "Roost",
+  "description": "One operating center for company work, people, processes, decisions, and supervised AI agents.",
+  "id": "/",
+  "start_url": "/areas?area=00-ogolny&view=overview",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#050a11",
+  "theme_color": "#050a11",
+  "icons": [
+    {
+      "src": "/react/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/react/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

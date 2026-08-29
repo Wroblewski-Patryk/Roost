@@ -192,6 +192,9 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
   const [profileAvatar, setProfileAvatar] = useState<string | null | undefined>(undefined);
   const userLabel = profileName || profile.data?.user?.name || (activeWorkspace?.role === "owner" ? t("user.admin") : t("user.account"));
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const mobileNavRef = useRef<HTMLElement>(null);
+  const mobileNavTriggerRef = useRef<HTMLButtonElement>(null);
+  const mobileNavCloseRef = useRef<HTMLButtonElement>(null);
   const [commandOpen, setCommandOpen] = useState(false);
   const [commandQuery, setCommandQuery] = useState("");
   const activeView = currentAreaView();
@@ -233,6 +236,61 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
   }, []);
 
   useEffect(() => {
+    if (!mobileNavOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function closeMobileNavigation() {
+      setMobileNavOpen(false);
+    }
+
+    function handleMobileNavigationKeys(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeMobileNavigation();
+        return;
+      }
+      if (event.key !== "Tab" || !mobileNavRef.current) return;
+
+      const focusable = Array.from(mobileNavRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )).filter((element) => !element.hasAttribute("hidden"));
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleMobileNavigationKeys);
+    window.addEventListener("popstate", closeMobileNavigation);
+    window.addEventListener("roost:navigation", closeMobileNavigation);
+    const desktopViewport = window.matchMedia("(min-width: 1024px)");
+    desktopViewport.addEventListener("change", closeMobileNavigation);
+
+    const focusFrame = window.requestAnimationFrame(() => {
+      mobileNavCloseRef.current?.focus();
+      mobileNavRef.current?.querySelector<HTMLElement>('[aria-current="page"]')?.scrollIntoView({ block: "nearest" });
+    });
+
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.removeEventListener("keydown", handleMobileNavigationKeys);
+      window.removeEventListener("popstate", closeMobileNavigation);
+      window.removeEventListener("roost:navigation", closeMobileNavigation);
+      desktopViewport.removeEventListener("change", closeMobileNavigation);
+      document.body.style.overflow = previousOverflow;
+      mobileNavTriggerRef.current?.focus();
+    };
+  }, [mobileNavOpen]);
+
+  useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
       if ((event.ctrlKey || event.metaKey) && event.key.toLocaleLowerCase() === "k") {
         event.preventDefault();
@@ -258,14 +316,15 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
     window.location.assign("/");
   }
 
-  const sidebar = (
+  function sidebar(mobile = false) {
+    return (
     <>
       <div className="roost-sidebar-brand-row">
         <a className="roost-sidebar-brand" href={canonicalGeneralDashboardPath} onClick={() => setMobileNavOpen(false)}>
           <RoostLogoMark className="h-8 w-8" />
           <span><strong>{t("app.name")}</strong><small>{t("app.operatingSystem")}</small></span>
         </a>
-        <button className="roost-sidebar-close lg:hidden" aria-label={t("sidebar.close")} onClick={() => setMobileNavOpen(false)} type="button"><i className="ph-bold ph-x" aria-hidden="true"></i></button>
+        {mobile ? <button className="roost-sidebar-close" aria-label={t("sidebar.close")} onClick={() => setMobileNavOpen(false)} ref={mobileNavCloseRef} type="button"><i className="ph-bold ph-x" aria-hidden="true"></i></button> : null}
       </div>
       <WorkspaceControl activeWorkspaceId={activeWorkspace?.id} onSelect={(id) => void selectWorkspace(id)} workspaces={workspaces} />
       <div className="roost-sidebar-scroll"><DepartmentSidebar activeArea={activeArea} onNavigate={() => setMobileNavOpen(false)} /></div>
@@ -279,14 +338,18 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
       </div>
     </>
   );
+  }
 
   return (
     <main className="roost-app-shell roost-liquid-shell" data-theme="roost" style={{ "--color-primary": activeWorkspace?.accentColor || "#6366F1", "--roost-workspace-accent": activeWorkspace?.accentColor || "#6366F1" } as React.CSSProperties}>
-      <aside className="roost-sidebar hidden lg:grid">{sidebar}</aside>
+      <aside className="roost-sidebar hidden lg:grid">{sidebar()}</aside>
       <section className="roost-app-main">
         <header className="roost-command-bar">
           <div className="roost-command-context">
-            <button aria-expanded={mobileNavOpen} aria-label={t("sidebar.open")} className="roost-mobile-menu lg:hidden" onClick={() => setMobileNavOpen(true)} type="button"><i className="ph-bold ph-list" aria-hidden="true"></i></button>
+            <button aria-controls="roost-mobile-navigation" aria-expanded={mobileNavOpen} aria-label={`${t("sidebar.open")}: ${activeShellLabel}, ${activeShellViewLabel}`} className="roost-mobile-menu lg:hidden" onClick={() => setMobileNavOpen(true)} ref={mobileNavTriggerRef} type="button">
+              <i className="ph-bold ph-list" aria-hidden="true"></i>
+              <span className="roost-mobile-context-copy"><strong>{activeShellLabel}</strong><small>{activeShellViewLabel}</small></span>
+            </button>
             <div className="roost-command-breadcrumb"><strong>{activeShellLabel}</strong><i className="ph-bold ph-caret-right" aria-hidden="true"></i><span>{activeShellViewLabel}</span></div>
           </div>
           <button className="roost-command-launch" onClick={() => setCommandOpen(true)} type="button">
@@ -318,9 +381,9 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
         ) : null}
 
         {mobileNavOpen ? (
-          <div className="roost-mobile-navigation" role="dialog" aria-modal="true" aria-label={t("sidebar.departments")}>
+          <div className="roost-mobile-navigation" id="roost-mobile-navigation" role="dialog" aria-modal="true" aria-label={t("sidebar.departments")}>
             <button aria-hidden="true" className="roost-mobile-backdrop" onClick={() => setMobileNavOpen(false)} tabIndex={-1} type="button"></button>
-            <aside className="roost-sidebar is-mobile">{sidebar}</aside>
+            <aside className="roost-sidebar is-mobile" ref={mobileNavRef}>{sidebar(true)}</aside>
           </div>
         ) : null}
 

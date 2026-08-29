@@ -9,6 +9,7 @@
     "build": "npm run build:server && npm run build:web",
     "build:server": "node --stack_size=8192 ./node_modules/typescript/bin/tsc",
     "build:web": "node scripts/clean-react-build.mjs && vite build",
+    "brand:assets": "node scripts/generate-web-brand-assets.mjs",
     "typecheck": "node --stack_size=8192 node_modules/typescript/bin/tsc --noEmit",
     "lint": "npm run check:public-js && npm run check:route-capabilities",
     "start": "node dist/server.js",

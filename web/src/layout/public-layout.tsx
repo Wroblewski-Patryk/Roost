@@ -10,15 +10,7 @@ type PublicLayoutActive = "home" | "login" | "register";
 
 const navItems = [
   { href: "#system", key: "nav.features" },
-  { href: "#system", key: "nav.forCompanies" },
-  { href: "#docs", key: "nav.docs" },
-  { href: "#status", key: "nav.status" }
-] as const;
-
-const footerColumns = [
-  { title: "footer.product.title", items: ["footer.product.0", "footer.product.1", "footer.product.2", "footer.product.3"] },
-  { title: "footer.resources.title", items: ["footer.resources.0", "footer.resources.1", "footer.resources.2", "footer.resources.3"] },
-  { title: "footer.legal.title", items: ["footer.legal.0", "footer.legal.1", "footer.legal.2", "footer.legal.3"] }
+  { href: "#workflow", key: "nav.forCompanies" }
 ] as const;
 
 function tx(t: (key: MessageKey) => string, key: string) {
@@ -31,12 +23,12 @@ export function PublicLayout({ active, children }: { active: PublicLayoutActive;
   return (
     <div className="min-h-screen bg-base-100 text-base-content" data-theme="roost">
       <header className="sticky top-0 z-40 border-b border-white/8 bg-[#071019]/82 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 w-full max-w-[92rem] items-center justify-between px-4 lg:px-8">
-          <a className="group flex items-center gap-4" href="/" aria-label="Roost home">
-            <RoostLogoMark className="h-11 w-11" />
+        <div className="mx-auto flex h-18 w-full max-w-[88rem] items-center justify-between px-4 lg:px-8">
+          <a className="group flex min-w-0 items-center gap-3" href="/" aria-label="Roost home">
+            <RoostLogoMark className="h-9 w-9 shrink-0 sm:h-10 sm:w-10" />
             <span className="grid">
-              <span className="text-2xl font-semibold uppercase leading-none tracking-[0.24em] text-white">Roost</span>
-              <span className="mt-1 text-[0.64rem] font-semibold uppercase tracking-[0.22em] text-primary">{t("app.operatingSystem")}</span>
+              <span className="text-lg font-semibold uppercase leading-none tracking-[0.24em] text-white sm:text-xl">Roost</span>
+              <span className="mt-1 hidden text-[0.58rem] font-semibold uppercase tracking-[0.2em] text-primary sm:block">{t("app.operatingSystem")}</span>
             </span>
           </a>
 
@@ -52,7 +44,7 @@ export function PublicLayout({ active, children }: { active: PublicLayoutActive;
             <a className={`hidden text-sm font-semibold transition sm:inline-flex ${active === "login" ? "text-accent" : "text-base-content/70 hover:text-white"}`} href="/auth/login">
               {t("nav.signIn")}
             </a>
-            <CcButton href="/auth/login" iconRight="ph-arrow-right" size="sm" variant="primary">
+            <CcButton className="!h-11 !min-h-11 whitespace-nowrap" href="/auth/login" iconRight="ph-arrow-right" size="sm" variant="primary">
               {t("home.enterRoost")}
             </CcButton>
           </div>
@@ -61,41 +53,30 @@ export function PublicLayout({ active, children }: { active: PublicLayoutActive;
 
       <main>{children}</main>
 
-      <footer className="border-t border-white/10 bg-[#070c12] px-4 py-12 lg:px-8" id="docs">
-        <div className="mx-auto grid max-w-[92rem] gap-10 lg:grid-cols-[1.3fr_2fr]">
-          <div>
-            <a className="flex items-center gap-4" href="/" aria-label="Roost home">
-              <RoostLogoMark className="h-11 w-11" />
+      <footer className="border-t border-white/10 bg-[#070c12] px-4 py-10 lg:px-8">
+        <div className="mx-auto grid max-w-[88rem] gap-8 md:grid-cols-[1fr_auto] md:items-end">
+          <div className="max-w-lg">
+            <a className="flex items-center gap-3" href="/" aria-label="Roost home">
+              <RoostLogoMark className="h-10 w-10" />
               <span className="grid">
-                <span className="text-2xl font-semibold uppercase leading-none tracking-[0.24em] text-white">Roost</span>
-                <span className="mt-1 text-[0.64rem] font-semibold uppercase tracking-[0.22em] text-primary">{t("app.operatingSystem")}</span>
+                <span className="text-xl font-semibold uppercase leading-none tracking-[0.24em] text-white">Roost</span>
+                <span className="mt-1 text-[0.58rem] font-semibold uppercase tracking-[0.2em] text-primary">{t("app.operatingSystem")}</span>
               </span>
             </a>
             <p className="mt-5 max-w-md text-sm leading-6 text-base-content/62">{t("footer.description")}</p>
-            <div className="mt-6 max-w-56">
-              <LanguageSelector />
-            </div>
           </div>
 
-          <div className="grid gap-8 sm:grid-cols-3">
-            {footerColumns.map((column) => (
-              <div key={column.title}>
-                <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">{tx(t, column.title)}</h2>
-                <ul className="mt-4 grid gap-3 text-sm text-base-content/62">
-                  {column.items.map((item) => (
-                    <li key={item}>
-                      <a className="transition hover:text-accent" href="/auth/login">
-                        {tx(t, item)}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+          <div className="grid gap-5 sm:grid-cols-[auto_14rem] sm:items-end">
+            <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-base-content/65" aria-label={t("footer.navigationLabel")}>
+              <a className="transition hover:text-accent" href="#system">{t("nav.features")}</a>
+              <a className="transition hover:text-accent" href="/auth/login">{t("nav.signIn")}</a>
+              <a className="transition hover:text-accent" href="/auth/register">{t("nav.createAccount")}</a>
+            </nav>
+            <LanguageSelector />
           </div>
         </div>
 
-        <div className="mx-auto mt-10 flex max-w-[92rem] flex-col gap-3 border-t border-white/10 pt-6 text-sm text-base-content/55 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto mt-8 flex max-w-[88rem] flex-col gap-3 border-t border-white/10 pt-6 text-sm text-base-content/55 sm:flex-row sm:items-center sm:justify-between">
           <p>{t("footer.copy")}</p>
           <p className="inline-flex items-center gap-2">
             <span>{t("footer.madeWith")}</span>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Roost by LuckySparrow">
+  <defs>
+    <radialGradient id="ambient" cx="0" cy="0" r="1" gradientTransform="translate(936 112) rotate(140) scale(660 430)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#343f99" stop-opacity=".72"/>
+      <stop offset="1" stop-color="#050a11" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="mark" x1="70" y1="82" x2="226" y2="194" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366f1"/>
+      <stop offset=".52" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#050a11"/>
+  <rect width="1200" height="630" fill="url(#ambient)"/>
+  <g transform="translate(72 72)">
+    <rect width="176" height="176" rx="40" fill="#07121d" stroke="#a4cdff" stroke-opacity=".22" stroke-width="2"/>
+    <path d="M33 101h42l20-20h36l16-16M75 101l24 24" fill="none" stroke="url(#mark)" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="33" cy="101" r="9" fill="#6366f1"/>
+    <circle cx="147" cy="65" r="9" fill="#06b6d4"/>
+    <circle cx="99" cy="125" r="9" fill="#3b82f6"/>
+  </g>
+  <text x="292" y="168" fill="#f5f9fc" font-family="Inter, Arial, sans-serif" font-size="88" font-weight="800" letter-spacing="-3">Roost</text>
+  <text x="295" y="215" fill="#9ca3af" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="700" letter-spacing="5">LUCKYSPARROW OPERATING CENTER</text>
+  <text x="76" y="392" fill="#f5f9fc" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="750" letter-spacing="-1.5">Company work in one accountable place.</text>
+  <text x="78" y="452" fill="#aebdd0" font-family="Inter, Arial, sans-serif" font-size="28">People · processes · decisions · supervised AI agents</text>
+  <path d="M78 524h1044" stroke="#a4cdff" stroke-opacity=".16"/>
+  <text x="78" y="568" fill="#718096" font-family="Inter, Arial, sans-serif" font-size="22">roost.luckysparrow.ch</text>
+</svg>

@@ -320,9 +320,19 @@ Responsive behavior:
 - Mobile: compact topbar, drawer for full IA, optional bottom shortcuts for
   core destinations, command brief before broad stats, and map as overview or
   district switcher instead of a tiny full canvas.
+- The mobile navigation drawer preserves the desktop workspace, area, current
+  view, account, and sign-out hierarchy while using touch-sized rows. It opens
+  above the workbench without reflow, locks background scrolling, moves focus
+  into the drawer, traps keyboard focus, closes on Escape/navigation/backdrop,
+  and returns focus to its compact current-context trigger.
 - Browser chrome, safe-area gaps, overscroll, and scrollbar tracks must inherit
   the graphite shell color; no light document canvas may appear around private
   routes on mobile.
+- Browser-level identity is part of the interface: the React document owns a
+  dedicated small-size Roost favicon, Apple touch icon, pinned-tab mask,
+  install manifest, graphite browser theme, and public sharing card. Page
+  titles and descriptions follow client-side navigation and the selected
+  locale; authenticated and authentication routes remain `noindex`.
 
 The sidebar should not remain a generic route directory. For V1 it should
 express the operating model as a company area list. Workflows, Knowledge,
@@ -336,7 +346,10 @@ command bar; they must not recreate the sidebar, command bar, workspace/profile
 state, or ambient shell. Back and Forward remain first-class navigation.
 External destinations, OAuth handoffs, sign-out, and workspace-token changes
 may perform full document navigation because they cross or replace the active
-security context.
+security context. A stale lazy-route asset after a deployment or local rebuild
+may trigger one automatic full reload to obtain the current asset manifest. If
+that recovery fails, keep the shell and sidebar visible and show a route-level
+retry state instead of leaving a blank page.
 
 ## Iconography
 
