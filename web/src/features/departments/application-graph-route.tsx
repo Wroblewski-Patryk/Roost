@@ -32,6 +32,7 @@ type GraphNodeData = {
   mode: ApplicationGraphMode;
   role: "focus" | "lineage" | "descendant" | "relation";
   hoverState: "active" | "context" | "muted" | null;
+  departing: boolean;
   motionIndex: number;
   dimmed: boolean;
   focused: boolean;
@@ -67,12 +68,11 @@ const modes: Array<{ id: ApplicationGraphMode; label: string; icon: string }> = 
   { id: "productization", label: "Productization", icon: "ph-rocket-launch" }
 ];
 
-const graphMotionDuration = 680;
+const graphMotionDuration = 720;
+const graphExitDuration = 150;
 
 function graphMotionEase(progress: number) {
-  return progress < 0.5
-    ? 4 * progress * progress * progress
-    : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+  return progress * progress * (3 - 2 * progress);
 }
 
 function iconFor(type: ApplicationGraphNode["type"]) {
@@ -126,6 +126,7 @@ function ApplicationGraphNodeView({ data }: NodeProps<GraphFlowNode>) {
       data-hover-active={data.hoverState === "active" || undefined}
       data-hover-context={data.hoverState === "context" || undefined}
       data-hover-muted={data.hoverState === "muted" || undefined}
+      data-departing={data.departing || undefined}
       data-role={data.role}
       data-type={record.type}
       style={{
@@ -346,11 +347,13 @@ function GraphInspector({ node, onClose }: { node: ApplicationGraphNode; onClose
 
 function ApplicationGraphCanvas() {
   const searchRef = useRef<HTMLInputElement>(null);
+  const focusTransitionTimerRef = useRef<number | null>(null);
   const [portfolio, setPortfolio] = useState<ApplicationGraphPacket | null>(null);
   const [applicationPackets, setApplicationPackets] = useState<Map<string, ApplicationGraphPacket>>(new Map());
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [error, setError] = useState<string | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
+  const [pendingFocusId, setPendingFocusId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [inspectorId, setInspectorId] = useState<string | null>(null);
   const [mode, setMode] = useState<ApplicationGraphMode>("structure");
@@ -388,17 +391,43 @@ function ApplicationGraphCanvas() {
     setApplicationPackets((current) => new Map(current).set(applicationNode.entityId, response.data));
   }, [applicationPackets]);
 
+  const scheduleFocus = useCallback((nextFocusId: string, nextInspectorId: string | null) => {
+    if (focusTransitionTimerRef.current !== null) window.clearTimeout(focusTransitionTimerRef.current);
+    setHoveredId(null);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) {
+      setPendingFocusId(null);
+      setFocusId(nextFocusId);
+      setInspectorId(nextInspectorId);
+      return;
+    }
+    setPendingFocusId(nextFocusId);
+    focusTransitionTimerRef.current = window.setTimeout(() => {
+      setFocusId(nextFocusId);
+      setInspectorId(nextInspectorId);
+      setPendingFocusId(null);
+      focusTransitionTimerRef.current = null;
+    }, graphExitDuration);
+  }, []);
+
+  useEffect(() => () => {
+    if (focusTransitionTimerRef.current !== null) window.clearTimeout(focusTransitionTimerRef.current);
+  }, []);
+
   const focusNode = useCallback(async (node: ApplicationGraphNode) => {
     try {
       setHoveredId(null);
       if (node.type === "application") await ensureApplication(node);
       setError(null);
-      setFocusId(node.id);
-      setInspectorId(node.id);
+      if (node.id === focusId) {
+        setInspectorId(node.id);
+        return;
+      }
+      scheduleFocus(node.id, node.id);
     } catch (caught) {
       setError(caught instanceof AppApiError ? caught.code : "application_graph_branch_load_failed");
     }
-  }, [ensureApplication]);
+  }, [ensureApplication, focusId, scheduleFocus]);
 
   const loadAllForSearch = useCallback(async () => {
     if (!portfolio || allSearchDataLoaded || searching) return;
@@ -453,6 +482,16 @@ function ApplicationGraphCanvas() {
     });
     return ids;
   }, [byId, graph.nodes, hoveredId]);
+  const pendingNeighbourhood = useMemo(() => {
+    if (!pendingFocusId) return null;
+    const pending = byId.get(pendingFocusId);
+    if (!pending) return null;
+    const ids = new Set(pending.path);
+    graph.nodes.forEach((node) => {
+      if (node.parentNodeId === pending.id) ids.add(node.id);
+    });
+    return ids;
+  }, [byId, graph.nodes, pendingFocusId]);
 
   const flowNodes = useMemo<GraphFlowNode[]>(() => visibleRecords.map((record, motionIndex) => ({
     id: record.id,
@@ -469,6 +508,7 @@ function ApplicationGraphCanvas() {
           : hoverNeighbourhood.has(record.id)
             ? "context"
             : "muted",
+      departing: Boolean(pendingNeighbourhood && !pendingNeighbourhood.has(record.id)),
       role: record.id === focus?.id ? "focus" : focus?.path.includes(record.id) ? "lineage" : record.path.includes(focus?.id || "") ? "descendant" : "relation",
       focused: record.id === focus?.id,
       dimmed: record.id !== focus?.id && !record.path.includes(focus?.id || "") && !focus?.path.includes(record.id),
@@ -478,7 +518,7 @@ function ApplicationGraphCanvas() {
     selectable: true,
     focusable: true,
     ariaLabel: `${record.label}, ${record.category}, ${record.completeness}% complete`
-  })), [focus, hoverNeighbourhood, hoveredId, mode, positions, visibleRecords]);
+  })), [focus, hoverNeighbourhood, hoveredId, mode, pendingNeighbourhood, positions, visibleRecords]);
 
   const flowEdges = useMemo<Edge[]>(() => graph.edges
     .filter((edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target))
@@ -492,6 +532,7 @@ function ApplicationGraphCanvas() {
         && hoverNeighbourhood.has(edge.target)
         && (edge.source === hoveredId || edge.target === hoveredId)
       );
+      const pendingConnected = Boolean(pendingNeighbourhood?.has(edge.source) && pendingNeighbourhood.has(edge.target));
       const hierarchyAccent = sourceNode?.type === "company" && targetNode ? branchAccent(targetNode) : sourceNode ? branchAccent(sourceNode) : "#7f8da8";
       const handles = handlesForEdge(positions.get(edge.source) ?? { x: 0, y: 0 }, positions.get(edge.target) ?? { x: 0, y: 0 });
       return {
@@ -506,9 +547,9 @@ function ApplicationGraphCanvas() {
         style: edge.type === "hierarchy"
           ? { stroke: hierarchyAccent, strokeOpacity: 0.78, strokeWidth: 2 }
           : { stroke: edge.type === "blocks" ? "#d66565" : "#7f8da8", strokeWidth: edge.type === "blocks" ? 2.5 : 1.5, strokeDasharray: "6 6" },
-        className: `application-graph-edge application-graph-edge--${edge.type}${hoveredId ? hoverConnected ? " application-graph-edge--hover-connected" : " application-graph-edge--hover-muted" : ""}`
+        className: `application-graph-edge application-graph-edge--${edge.type}${hoveredId ? hoverConnected ? " application-graph-edge--hover-connected" : " application-graph-edge--hover-muted" : ""}${pendingNeighbourhood && !pendingConnected ? " application-graph-edge--departing" : ""}`
       };
-    }), [byId, graph.edges, hoveredId, hoverNeighbourhood, mode, positions, visibleIds]);
+    }), [byId, graph.edges, hoveredId, hoverNeighbourhood, mode, pendingNeighbourhood, positions, visibleIds]);
 
   useEffect(() => {
     if (!focus || !positions.has(focus.id)) return;
@@ -536,17 +577,13 @@ function ApplicationGraphCanvas() {
 
   const goToParent = useCallback(() => {
     if (!focus?.parentNodeId) return;
-    setHoveredId(null);
-    setFocusId(focus.parentNodeId);
-    setInspectorId(focus.parentNodeId);
-  }, [focus]);
+    scheduleFocus(focus.parentNodeId, focus.parentNodeId);
+  }, [focus, scheduleFocus]);
 
   const goHome = useCallback(() => {
     if (!portfolio) return;
-    setHoveredId(null);
-    setFocusId(portfolio.rootNodeId);
-    setInspectorId(null);
-  }, [portfolio]);
+    scheduleFocus(portfolio.rootNodeId, null);
+  }, [portfolio, scheduleFocus]);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -656,10 +693,9 @@ function ApplicationGraphCanvas() {
           nodesDraggable={false}
           nodeTypes={nodeTypes}
           onNodeClick={(_event, node) => void focusNode(node.data.record)}
-          onNodeMouseEnter={(_event, node) => setHoveredId(node.id)}
+          onNodeMouseEnter={(_event, node) => { if (!pendingFocusId) setHoveredId(node.id); }}
           onNodeMouseLeave={() => setHoveredId(null)}
           onPaneClick={() => setInspectorId(null)}
-          onlyRenderVisibleElements
           panOnDrag
           proOptions={{ hideAttribution: true }}
           selectionOnDrag={false}
@@ -671,7 +707,7 @@ function ApplicationGraphCanvas() {
           <MiniMap ariaLabel="Application Graph minimap" maskColor="rgba(9, 13, 25, .72)" nodeColor={(node) => node.data?.record.isBlocked ? "#d66565" : node.data?.focused ? "#8ea5ff" : "#52617c"} pannable position="bottom-right" zoomable />
         </ReactFlow>
         <div className="application-graph-help" aria-label="Keyboard shortcuts"><span><kbd>Esc</kbd> Back</span><span><kbd>Home</kbd> Portfolio</span><span><kbd>F</kbd> Search</span></div>
-        {inspectorNode ? <GraphInspector node={inspectorNode} onClose={() => setInspectorId(null)} /> : null}
+        {inspectorNode ? <GraphInspector key={inspectorNode.id} node={inspectorNode} onClose={() => setInspectorId(null)} /> : null}
       </div>
     </section>
   );
