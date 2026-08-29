@@ -31,6 +31,7 @@ type GraphNodeData = {
   mode: ApplicationGraphMode;
   dimmed: boolean;
   focused: boolean;
+  accent: string;
 };
 
 type GraphFlowNode = Node<GraphNodeData, "applicationGraph">;
@@ -74,8 +75,20 @@ function statusLabel(record: ApplicationGraphNode) {
   return humanizeBusinessValue(record.status);
 }
 
+const branchPalette = ["#8b7cf6", "#2da9e9", "#16b985", "#e6a12a", "#d85b65", "#7d8ba8"];
+
+function branchAccent(record: ApplicationGraphNode) {
+  if (record.type === "company") return "#9a8cff";
+  const applicationId = record.type === "application"
+    ? record.id
+    : record.path.find((id) => id.startsWith("application:")) ?? record.id;
+  let hash = 0;
+  for (const character of applicationId) hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
+  return branchPalette[hash % branchPalette.length];
+}
+
 function ApplicationGraphNodeView({ data }: NodeProps<GraphFlowNode>) {
-  const { record, dimmed, focused, mode } = data;
+  const { record, dimmed, focused, mode, accent } = data;
   const progress = Math.max(0, Math.min(100, record.completeness));
   const modeAttention = mode === "agent-ready"
     ? record.details.missingEvidence || record.completeness < 90
@@ -91,8 +104,11 @@ function ApplicationGraphNodeView({ data }: NodeProps<GraphFlowNode>) {
       data-dimmed={dimmed || undefined}
       data-focused={focused || undefined}
       data-type={record.type}
+      style={{ "--graph-accent": accent } as React.CSSProperties}
     >
-      <Handle className="application-graph-handle" position={Position.Left} type="target" />
+      {[Position.Top, Position.Right, Position.Bottom, Position.Left].map((position) => (
+        <Handle className="application-graph-handle" id={`target-${position}`} key={`target-${position}`} position={position} type="target" />
+      ))}
       <button
         aria-label={`Focus ${record.type} ${record.label}. ${statusLabel(record)}, ${record.completeness}% complete.`}
         className="application-graph-node__button nodrag nopan"
@@ -110,11 +126,20 @@ function ApplicationGraphNodeView({ data }: NodeProps<GraphFlowNode>) {
           <strong className="application-graph-node__label">{record.shortLabel}</strong>
           <span className="application-graph-node__meta">
             {record.isBlocked ? <i className="ph-bold ph-warning-diamond" aria-hidden="true"></i> : null}
-            {mode === "structure" ? `${record.childCount} ${record.childCount === 1 ? "child" : "children"}` : `${progress}% · ${statusLabel(record)}`}
+            {record.type === "company"
+              ? `${record.childCount} ${record.childCount === 1 ? "application" : "applications"}`
+              : record.type === "application" && mode === "structure"
+                ? "Open application map"
+                : mode === "structure"
+                  ? `${record.childCount} ${record.childCount === 1 ? "child" : "children"}`
+                  : `${progress}% · ${statusLabel(record)}`}
           </span>
         </span>
+        {record.type === "application" ? <span className="application-graph-node__readiness">{progress}%</span> : null}
       </button>
-      <Handle className="application-graph-handle" position={Position.Right} type="source" />
+      {[Position.Top, Position.Right, Position.Bottom, Position.Left].map((position) => (
+        <Handle className="application-graph-handle" id={`source-${position}`} key={`source-${position}`} position={position} type="source" />
+      ))}
     </article>
   );
 }
@@ -148,71 +173,88 @@ function matchesFilters(node: ApplicationGraphNode, filters: GraphFilters) {
   return true;
 }
 
-function visibleNodeIds(allNodes: ApplicationGraphNode[], focus: ApplicationGraphNode, mode: ApplicationGraphMode, filters: GraphFilters) {
+function visibleNodeIds(
+  allNodes: ApplicationGraphNode[],
+  allEdges: ApplicationGraphPacket["edges"],
+  focus: ApplicationGraphNode,
+  mode: ApplicationGraphMode,
+  filters: GraphFilters
+) {
   const byId = new Map(allNodes.map((node) => [node.id, node]));
-  const visible = new Set(focus.path);
-  const directChildren = allNodes.filter((node) => node.parentNodeId === focus.id && matchesFilters(node, filters));
+  const visible = new Set<string>([focus.id]);
+
+  const directChildren = allNodes
+    .filter((node) => node.parentNodeId === focus.id)
+    .filter((node) => matchesFilters(node, filters));
   directChildren.forEach((node) => visible.add(node.id));
 
-  const parent = focus.parentNodeId ? byId.get(focus.parentNodeId) : null;
-  if (parent) {
-    allNodes.filter((node) => node.parentNodeId === parent.id && matchesFilters(node, filters)).forEach((node) => visible.add(node.id));
-  }
-
-  if (focus.type === "company") {
-    allNodes.filter((node) => node.type === "application").forEach((node) => visible.add(node.id));
-  }
-  if (focus.type === "application") {
-    allNodes.filter((node) => node.type === "application" || node.parentNodeId === focus.id).forEach((node) => visible.add(node.id));
-  }
   if (mode === "dependencies") {
-    const applicationId = focus.path.find((id) => id.startsWith("application:"));
-    if (applicationId) {
-      allNodes.filter((node) => node.path.includes(applicationId) && (node.type === "domain" || node.type === "capability")).filter((node) => matchesFilters(node, filters)).forEach((node) => visible.add(node.id));
-    }
-  }
-  return visible;
-}
+    const anchors = focus.type === "capability"
+      ? new Set([focus.id])
+      : new Set(directChildren.filter((node) => node.type === "capability").map((node) => node.id));
+    const relatedIds: string[] = [];
 
-function radialPosition(index: number, total: number, radius: number, center = { x: 0, y: 0 }, start = -Math.PI / 2, verticalScale = 1) {
-  const angle = start + (Math.PI * 2 * index) / Math.max(total, 1);
-  return { x: center.x + Math.cos(angle) * radius, y: center.y + Math.sin(angle) * radius * verticalScale };
+    for (const edge of allEdges) {
+      if (edge.type === "hierarchy") continue;
+      const relatedId = anchors.has(edge.source) ? edge.target : anchors.has(edge.target) ? edge.source : null;
+      if (!relatedId || anchors.has(relatedId) || relatedIds.includes(relatedId)) continue;
+      const related = byId.get(relatedId);
+      if (related?.type === "capability" && matchesFilters(related, filters)) relatedIds.push(relatedId);
+    }
+
+    // A local dependency neighbourhood remains readable; global discovery is
+    // handled by search and successive focus changes.
+    relatedIds.slice(0, 12).forEach((id) => visible.add(id));
+  }
+
+  return visible;
 }
 
 function layoutNodes(nodes: ApplicationGraphNode[], focus: ApplicationGraphNode) {
   const positions = new Map<string, { x: number; y: number }>();
-  const byId = new Map(nodes.map((node) => [node.id, node]));
   positions.set(focus.id, { x: 0, y: 0 });
 
-  const ancestors = focus.path.slice(0, -1).reverse();
-  ancestors.forEach((id, index) => positions.set(id, { x: -390 - index * 300, y: -index * 100 }));
-
-  const children = nodes.filter((node) => node.parentNodeId === focus.id);
-  children.forEach((node, index) => positions.set(node.id, radialPosition(
-    index,
-    children.length,
-    focus.type === "company" ? 380 : 310,
-    { x: 0, y: 0 },
-    -Math.PI / 2,
-    focus.type === "company" ? 0.48 : 0.72
-  )));
-
-  if (focus.parentNodeId) {
-    const parentPosition = positions.get(focus.parentNodeId) ?? { x: -390, y: 0 };
-    const siblings = nodes.filter((node) => node.parentNodeId === focus.parentNodeId && node.id !== focus.id && !positions.has(node.id));
-    siblings.forEach((node, index) => positions.set(node.id, radialPosition(index, siblings.length, 210, parentPosition, Math.PI / 2, 0.72)));
-  }
-
-  const remaining = nodes.filter((node) => !positions.has(node.id));
-  remaining.forEach((node, index) => {
-    const parentPosition = node.parentNodeId ? positions.get(node.parentNodeId) : null;
-    positions.set(node.id, parentPosition
-      ? radialPosition(index, remaining.length, 240, parentPosition)
-      : { x: 460 + (index % 5) * 230, y: -300 + Math.floor(index / 5) * 160 });
+  const nextLevel = nodes
+    .filter((node) => node.id !== focus.id)
+    .sort((left, right) => {
+      const childOrder = Number(right.parentNodeId === focus.id) - Number(left.parentNodeId === focus.id);
+      return childOrder || Number(right.isBlocked) - Number(left.isBlocked) || left.label.localeCompare(right.label);
+    });
+  const radiusX = Math.max(focus.type === "company" ? 300 : 310, nextLevel.length * 36);
+  const radiusY = Math.max(focus.type === "company" ? 210 : 220, nextLevel.length * 22);
+  const startAngle = nextLevel.length === 1 ? 0 : -Math.PI / 2;
+  nextLevel.forEach((node, index) => {
+    const angle = startAngle + (Math.PI * 2 * index) / Math.max(nextLevel.length, 1);
+    positions.set(node.id, {
+      x: Math.cos(angle) * radiusX,
+      y: Math.sin(angle) * radiusY
+    });
   });
-
-  for (const [id] of positions) if (!byId.has(id)) positions.delete(id);
   return positions;
+}
+
+function nextLevelLabel(type: ApplicationGraphNode["type"], count: number) {
+  const labels: Record<ApplicationGraphNode["type"], [string, string]> = {
+    company: ["application", "applications"],
+    application: ["domain", "domains"],
+    domain: ["capability", "capabilities"],
+    capability: ["feature", "features"],
+    feature: ["child", "children"]
+  };
+  return `${count} ${labels[type][count === 1 ? 0 : 1]}`;
+}
+
+function handlesForEdge(source: { x: number; y: number }, target: { x: number; y: number }) {
+  const dx = target.x - source.x;
+  const dy = target.y - source.y;
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    return dx >= 0
+      ? { sourceHandle: `source-${Position.Right}`, targetHandle: `target-${Position.Left}` }
+      : { sourceHandle: `source-${Position.Left}`, targetHandle: `target-${Position.Right}` };
+  }
+  return dy >= 0
+    ? { sourceHandle: `source-${Position.Bottom}`, targetHandle: `target-${Position.Top}` }
+    : { sourceHandle: `source-${Position.Top}`, targetHandle: `target-${Position.Bottom}` };
 }
 
 function GraphInspector({ node, onClose }: { node: ApplicationGraphNode; onClose: () => void }) {
@@ -333,10 +375,14 @@ function ApplicationGraphCanvas() {
     return graph.nodes.filter((node) => [node.label, node.category, ...node.tags].join(" ").toLocaleLowerCase().includes(normalized)).slice(0, 12);
   }, [graph.nodes, query]);
 
-  const domainOptions = useMemo(() => graph.nodes.filter((node) => node.type === "domain").sort((a, b) => a.label.localeCompare(b.label)), [graph.nodes]);
-  const visibleIds = useMemo(() => focus ? visibleNodeIds(graph.nodes, focus, mode, filters) : new Set<string>(), [filters, focus, graph.nodes, mode]);
+  const activeApplicationNodeId = focus?.type === "application" ? focus.id : focus?.path.find((id) => id.startsWith("application:"));
+  const domainOptions = useMemo(() => activeApplicationNodeId
+    ? graph.nodes.filter((node) => node.type === "domain" && node.path.includes(activeApplicationNodeId)).sort((a, b) => a.label.localeCompare(b.label))
+    : [], [activeApplicationNodeId, graph.nodes]);
+  const visibleIds = useMemo(() => focus ? visibleNodeIds(graph.nodes, graph.edges, focus, mode, filters) : new Set<string>(), [filters, focus, graph.edges, graph.nodes, mode]);
   const visibleRecords = useMemo(() => graph.nodes.filter((node) => visibleIds.has(node.id)), [graph.nodes, visibleIds]);
   const positions = useMemo(() => focus ? layoutNodes(visibleRecords, focus) : new Map<string, { x: number; y: number }>(), [focus, visibleRecords]);
+  const visibleChildren = useMemo(() => visibleRecords.filter((node) => node.parentNodeId === focus?.id), [focus?.id, visibleRecords]);
 
   const flowNodes = useMemo<GraphFlowNode[]>(() => visibleRecords.map((record) => ({
     id: record.id,
@@ -346,7 +392,8 @@ function ApplicationGraphCanvas() {
       record,
       mode,
       focused: record.id === focus?.id,
-      dimmed: record.id !== focus?.id && record.parentNodeId !== focus?.id && !focus?.path.includes(record.id)
+      dimmed: record.id !== focus?.id && record.parentNodeId !== focus?.id,
+      accent: branchAccent(record)
     },
     draggable: false,
     selectable: true,
@@ -357,33 +404,39 @@ function ApplicationGraphCanvas() {
   const flowEdges = useMemo<Edge[]>(() => graph.edges
     .filter((edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target))
     .filter((edge) => mode === "dependencies" || edge.type === "hierarchy")
-    .map((edge) => ({
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      type: "smoothstep",
-      animated: edge.type === "blocks",
-      label: mode === "dependencies" && edge.type !== "hierarchy" ? edge.label || (edge.type === "blocks" ? "blocks" : "depends on") : undefined,
-      markerEnd: edge.type === "hierarchy" ? undefined : { type: MarkerType.ArrowClosed, color: edge.type === "blocks" ? "#d66565" : "#7f8da8" },
-      style: edge.type === "hierarchy"
-        ? { stroke: "rgba(118, 132, 162, .48)", strokeWidth: 1.5 }
-        : { stroke: edge.type === "blocks" ? "#d66565" : "#7f8da8", strokeWidth: edge.type === "blocks" ? 2.5 : 1.5, strokeDasharray: "6 6" },
-      className: `application-graph-edge application-graph-edge--${edge.type}`
-    })), [graph.edges, mode, visibleIds]);
+    .map((edge) => {
+      const sourceNode = byId.get(edge.source);
+      const targetNode = byId.get(edge.target);
+      const hierarchyAccent = sourceNode?.type === "company" && targetNode ? branchAccent(targetNode) : sourceNode ? branchAccent(sourceNode) : "#7f8da8";
+      const handles = handlesForEdge(positions.get(edge.source) ?? { x: 0, y: 0 }, positions.get(edge.target) ?? { x: 0, y: 0 });
+      return {
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        ...handles,
+        type: "bezier",
+        animated: edge.type === "blocks",
+        label: mode === "dependencies" && edge.type !== "hierarchy" ? edge.label || (edge.type === "blocks" ? "blocks" : "depends on") : undefined,
+        markerEnd: edge.type === "hierarchy" ? undefined : { type: MarkerType.ArrowClosed, color: edge.type === "blocks" ? "#d66565" : "#7f8da8" },
+        style: edge.type === "hierarchy"
+          ? { stroke: hierarchyAccent, strokeOpacity: 0.78, strokeWidth: 2 }
+          : { stroke: edge.type === "blocks" ? "#d66565" : "#7f8da8", strokeWidth: edge.type === "blocks" ? 2.5 : 1.5, strokeDasharray: "6 6" },
+        className: `application-graph-edge application-graph-edge--${edge.type}`
+      };
+    }), [byId, graph.edges, mode, positions, visibleIds]);
 
   useEffect(() => {
     if (!focus || !positions.has(focus.id)) return;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const timer = window.setTimeout(() => {
-      if (focus.type === "company" || flowNodes.length > 8 || mode === "dependencies") {
-        void fitView({ padding: 0.18, duration: reducedMotion ? 0 : 400, maxZoom: 1 });
-      } else {
+      if (flowNodes.length > 2) void fitView({ padding: 0.1, duration: reducedMotion ? 0 : 360, maxZoom: 1 });
+      else {
         const position = positions.get(focus.id)!;
-        void setCenter(position.x + 95, position.y + 55, { zoom: focus.type === "company" ? 0.82 : 1.02, duration: reducedMotion ? 0 : 420 });
+        void setCenter(position.x + 120, position.y + 52, { zoom: 1, duration: reducedMotion ? 0 : 320 });
       }
     }, 40);
     return () => window.clearTimeout(timer);
-  }, [fitView, flowNodes.length, focus, mode, positions, setCenter]);
+  }, [fitView, flowNodes.length, focus, inspectorId, mode, positions, setCenter]);
 
   const goToParent = useCallback(() => {
     if (!focus?.parentNodeId) return;
@@ -465,12 +518,24 @@ function ApplicationGraphCanvas() {
           if (!crumb) return null;
           return <span key={id}>{index ? <i className="ph-bold ph-caret-right" aria-hidden="true"></i> : null}<button aria-current={id === focus.id ? "page" : undefined} onClick={() => void focusNode(crumb)} type="button">{crumb.label}</button></span>;
         })}
-        <span className="application-graph-breadcrumb__count">{visibleRecords.length} visible nodes</span>
+        <span className="application-graph-breadcrumb__count">{visibleRecords.length} visible {visibleRecords.length === 1 ? "node" : "nodes"}</span>
       </div>
 
       <nav aria-label="Application Graph mode" className="application-graph-modes">
         {modes.map((item) => <button aria-label={item.label} aria-pressed={mode === item.id} className={mode === item.id ? "is-active" : ""} key={item.id} onClick={() => setMode(item.id)} type="button"><i className={`ph-bold ${item.icon}`} aria-hidden="true"></i><span>{item.label}</span></button>)}
       </nav>
+
+      <div className="application-graph-context">
+        <span><i className="ph-bold ph-crosshair" aria-hidden="true"></i> Focus <strong>{focus.label}</strong></span>
+        <span><i className="ph-bold ph-flow-arrow" aria-hidden="true"></i> {nextLevelLabel(focus.type, visibleChildren.length)}</span>
+        <span className="application-graph-context__hint">
+          {mode === "dependencies" && visibleRecords.length === 1
+            ? "No recorded dependencies for this capability."
+            : focus.childCount === 0
+              ? "No deeper records are assigned yet. Use Product Engineering to add them."
+              : "Select a node to reveal its next level. Use the breadcrumb to jump back."}
+        </span>
+      </div>
 
       <div className="application-graph-canvas" data-inspector-open={Boolean(inspectorNode) || undefined}>
         {error ? <div className="application-graph-inline-error" role="alert"><i className="ph-bold ph-warning-diamond" aria-hidden="true"></i><span>The requested graph branch could not be loaded ({error}).</span><button aria-label="Dismiss graph error" onClick={() => setError(null)} type="button"><i className="ph-bold ph-x" aria-hidden="true"></i></button></div> : null}
@@ -487,7 +552,8 @@ function ApplicationGraphCanvas() {
           nodesDraggable={false}
           nodeTypes={nodeTypes}
           onNodeClick={(_event, node) => void focusNode(node.data.record)}
-          onPaneClick={goToParent}
+          onPaneClick={() => setInspectorId(null)}
+          onlyRenderVisibleElements
           panOnDrag
           proOptions={{ hideAttribution: true }}
           selectionOnDrag={false}

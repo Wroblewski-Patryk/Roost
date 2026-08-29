@@ -210,9 +210,13 @@ the initial canvas. `GET /applications/:id/graph` lazily returns one complete
 application projection with domains, capabilities, assigned features,
 hierarchy edges, dependency edges, blockers, evidence summaries, ancestor
 paths, and deterministic completeness derived from Product Engineering state.
-The web client progressively renders the focused node, its ancestors,
-siblings, and direct children; it may load all application projections only
-after a cross-portfolio search is requested.
+The web client uses a bounded radial drill-down: the focused node remains the
+visual center and only its direct children or local dependency neighbourhood
+form the surrounding ring. Complete ancestry stays in the breadcrumb instead
+of being repeated on the canvas. This preserves an Obsidian-like spatial map
+without rendering the whole portfolio as an unreadable hairball. The client
+may load all application projections only after a cross-portfolio search is
+requested.
 
 The supported visual modes are Structure, Progress, Dependencies, Agent Ready,
 and Productization. They are alternate interpretations of one packet, not
