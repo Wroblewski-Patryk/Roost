@@ -181,8 +181,11 @@
 }
 
 .application-graph-canvas .application-graph-edge {
-  animation: application-graph-edge-reveal 460ms cubic-bezier(0.33, 1, 0.68, 1) both;
+  animation: application-graph-edge-reveal 460ms cubic-bezier(0.33, 1, 0.68, 1) backwards;
+  transition: opacity 180ms ease;
 }
+.application-graph-canvas .application-graph-edge--hover-muted { opacity: 0.06; }
+.application-graph-canvas .application-graph-edge--hover-connected { opacity: 1; }
 
 .application-graph-node {
   --graph-accent: #8b7cf6;
@@ -229,6 +232,9 @@
 .application-graph-node[data-blocked] { border-color: rgba(214, 101, 101, 0.72); }
 .application-graph-node[data-attention]:not([data-blocked]) { border-color: rgba(213, 166, 82, 0.65); }
 .application-graph-node[data-dimmed] { opacity: 0.62; }
+.application-graph-node[data-hover-active],
+.application-graph-node[data-hover-context] { opacity: 1; }
+.application-graph-node[data-hover-muted] { opacity: 0.1; }
 .application-graph-node:hover { opacity: 1; transform: translateY(-2px); border-color: color-mix(in srgb, var(--graph-accent) 82%, white); }
 .application-graph-node:focus-within { outline: 3px solid rgba(142, 165, 255, 0.35); outline-offset: 3px; }
 

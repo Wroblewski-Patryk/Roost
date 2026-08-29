@@ -66,6 +66,36 @@ test("two-level project focus keeps thirty task nodes collision free", () => {
   assertCollisionFree([company, application, delivery, project, taskList, ...tasks], project);
 });
 
+test("second-level records stay grouped beneath their direct parent", () => {
+  const company = graphNode({ id: "company", type: "company", parentNodeId: null, path: ["company"] });
+  const application = graphNode({ id: "soar", type: "application", parentNodeId: company.id, path: [company.id, "soar"] });
+  const domains = Array.from({ length: 7 }, (_, index) => graphNode({
+    id: `domain-${index}`,
+    type: "domain",
+    parentNodeId: application.id,
+    path: [...application.path, `domain-${index}`]
+  }));
+  const capabilities = domains.flatMap((domain, domainIndex) => Array.from({ length: domainIndex % 2 === 0 ? 6 : 4 }, (_, childIndex) => graphNode({
+    id: `${domain.id}-capability-${childIndex}`,
+    type: "capability",
+    parentNodeId: domain.id,
+    path: [...domain.path, `${domain.id}-capability-${childIndex}`]
+  })));
+  const nodes = [company, application, ...domains, ...capabilities];
+  const positions = layoutApplicationGraphNodes(nodes, application);
+
+  assertCollisionFree(nodes, application);
+  for (const domain of domains) {
+    const parentPosition = positions.get(domain.id)!;
+    const children = capabilities.filter((capability) => capability.parentNodeId === domain.id);
+    const childPositions = children.map((child) => positions.get(child.id)!);
+    const childTop = Math.min(...childPositions.map((position) => position.y));
+    const childBottom = Math.max(...childPositions.map((position) => position.y + 84));
+    assert.ok(parentPosition.x + 216 + 100 <= Math.min(...childPositions.map((position) => position.x)), "parent-to-child lanes should have visible horizontal breathing room");
+    assert.ok(parentPosition.y + 84 / 2 >= childTop && parentPosition.y + 84 / 2 <= childBottom, "parent should remain vertically aligned with its own child group");
+  }
+});
+
 test("portfolio orbit remains collision free at eight applications", () => {
   const company = graphNode({ id: "company", type: "company", parentNodeId: null, path: ["company"] });
   const applications = Array.from({ length: 8 }, (_, index) => graphNode({

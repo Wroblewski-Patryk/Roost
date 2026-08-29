@@ -31,6 +31,7 @@ type GraphNodeData = {
   record: ApplicationGraphNode;
   mode: ApplicationGraphMode;
   role: "focus" | "lineage" | "descendant" | "relation";
+  hoverState: "active" | "context" | "muted" | null;
   motionIndex: number;
   dimmed: boolean;
   focused: boolean;
@@ -122,6 +123,9 @@ function ApplicationGraphNodeView({ data }: NodeProps<GraphFlowNode>) {
       data-blocked={record.isBlocked || undefined}
       data-dimmed={dimmed || undefined}
       data-focused={focused || undefined}
+      data-hover-active={data.hoverState === "active" || undefined}
+      data-hover-context={data.hoverState === "context" || undefined}
+      data-hover-muted={data.hoverState === "muted" || undefined}
       data-role={data.role}
       data-type={record.type}
       style={{
@@ -347,6 +351,7 @@ function ApplicationGraphCanvas() {
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [error, setError] = useState<string | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [inspectorId, setInspectorId] = useState<string | null>(null);
   const [mode, setMode] = useState<ApplicationGraphMode>("structure");
   const [revealDepth, setRevealDepth] = useState<1 | 2>(1);
@@ -385,6 +390,7 @@ function ApplicationGraphCanvas() {
 
   const focusNode = useCallback(async (node: ApplicationGraphNode) => {
     try {
+      setHoveredId(null);
       if (node.type === "application") await ensureApplication(node);
       setError(null);
       setFocusId(node.id);
@@ -436,6 +442,17 @@ function ApplicationGraphCanvas() {
   const dependencyNeighbourCount = useMemo(() => focus
     ? visibleRecords.filter((node) => !focus.path.includes(node.id) && !node.path.includes(focus.id)).length
     : 0, [focus, visibleRecords]);
+  const hoverNeighbourhood = useMemo(() => {
+    if (!hoveredId) return null;
+    const hovered = byId.get(hoveredId);
+    if (!hovered) return null;
+    const ids = new Set<string>([hovered.id]);
+    if (hovered.parentNodeId) ids.add(hovered.parentNodeId);
+    graph.nodes.forEach((node) => {
+      if (node.parentNodeId === hovered.id) ids.add(node.id);
+    });
+    return ids;
+  }, [byId, graph.nodes, hoveredId]);
 
   const flowNodes = useMemo<GraphFlowNode[]>(() => visibleRecords.map((record, motionIndex) => ({
     id: record.id,
@@ -445,6 +462,13 @@ function ApplicationGraphCanvas() {
       record,
       mode,
       motionIndex,
+      hoverState: !hoverNeighbourhood
+        ? null
+        : record.id === hoveredId
+          ? "active"
+          : hoverNeighbourhood.has(record.id)
+            ? "context"
+            : "muted",
       role: record.id === focus?.id ? "focus" : focus?.path.includes(record.id) ? "lineage" : record.path.includes(focus?.id || "") ? "descendant" : "relation",
       focused: record.id === focus?.id,
       dimmed: record.id !== focus?.id && !record.path.includes(focus?.id || "") && !focus?.path.includes(record.id),
@@ -454,7 +478,7 @@ function ApplicationGraphCanvas() {
     selectable: true,
     focusable: true,
     ariaLabel: `${record.label}, ${record.category}, ${record.completeness}% complete`
-  })), [focus, mode, positions, visibleRecords]);
+  })), [focus, hoverNeighbourhood, hoveredId, mode, positions, visibleRecords]);
 
   const flowEdges = useMemo<Edge[]>(() => graph.edges
     .filter((edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target))
@@ -462,6 +486,12 @@ function ApplicationGraphCanvas() {
     .map((edge) => {
       const sourceNode = byId.get(edge.source);
       const targetNode = byId.get(edge.target);
+      const hoverConnected = Boolean(
+        hoveredId
+        && hoverNeighbourhood?.has(edge.source)
+        && hoverNeighbourhood.has(edge.target)
+        && (edge.source === hoveredId || edge.target === hoveredId)
+      );
       const hierarchyAccent = sourceNode?.type === "company" && targetNode ? branchAccent(targetNode) : sourceNode ? branchAccent(sourceNode) : "#7f8da8";
       const handles = handlesForEdge(positions.get(edge.source) ?? { x: 0, y: 0 }, positions.get(edge.target) ?? { x: 0, y: 0 });
       return {
@@ -476,9 +506,9 @@ function ApplicationGraphCanvas() {
         style: edge.type === "hierarchy"
           ? { stroke: hierarchyAccent, strokeOpacity: 0.78, strokeWidth: 2 }
           : { stroke: edge.type === "blocks" ? "#d66565" : "#7f8da8", strokeWidth: edge.type === "blocks" ? 2.5 : 1.5, strokeDasharray: "6 6" },
-        className: `application-graph-edge application-graph-edge--${edge.type}`
+        className: `application-graph-edge application-graph-edge--${edge.type}${hoveredId ? hoverConnected ? " application-graph-edge--hover-connected" : " application-graph-edge--hover-muted" : ""}`
       };
-    }), [byId, graph.edges, mode, positions, visibleIds]);
+    }), [byId, graph.edges, hoveredId, hoverNeighbourhood, mode, positions, visibleIds]);
 
   useEffect(() => {
     if (!focus || !positions.has(focus.id)) return;
@@ -506,12 +536,14 @@ function ApplicationGraphCanvas() {
 
   const goToParent = useCallback(() => {
     if (!focus?.parentNodeId) return;
+    setHoveredId(null);
     setFocusId(focus.parentNodeId);
     setInspectorId(focus.parentNodeId);
   }, [focus]);
 
   const goHome = useCallback(() => {
     if (!portfolio) return;
+    setHoveredId(null);
     setFocusId(portfolio.rootNodeId);
     setInspectorId(null);
   }, [portfolio]);
@@ -624,6 +656,8 @@ function ApplicationGraphCanvas() {
           nodesDraggable={false}
           nodeTypes={nodeTypes}
           onNodeClick={(_event, node) => void focusNode(node.data.record)}
+          onNodeMouseEnter={(_event, node) => setHoveredId(node.id)}
+          onNodeMouseLeave={() => setHoveredId(null)}
           onPaneClick={() => setInspectorId(null)}
           onlyRenderVisibleElements
           panOnDrag
