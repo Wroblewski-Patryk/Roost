@@ -670,11 +670,14 @@ assetsRouter.get("/context", asyncHandler(async (req, res) => {
   ]);
 
   const driveFiles = [...driveFolders, ...driveFilesOnly];
-  const [resourceContexts, contextualResourceIds] = await Promise.all([
+  const [resourceContexts, contextualResourceIds, fileContexts, contextualFileIds] = await Promise.all([
     organizationalContextsForEntities(workspaceId, "resource", resources.map((resource) => resource.id)),
-    query.departmentKey ? contextualEntityIds(workspaceId, "resource", query.departmentKey, true) : Promise.resolve([])
+    query.departmentKey ? contextualEntityIds(workspaceId, "resource", query.departmentKey, true) : Promise.resolve([]),
+    organizationalContextsForEntities(workspaceId, "file", driveFiles.map((file) => file.id)),
+    query.departmentKey ? contextualEntityIds(workspaceId, "file", query.departmentKey, true) : Promise.resolve([])
   ]);
   const contextualResourceIdSet = new Set(contextualResourceIds);
+  const contextualFileIdSet = new Set(contextualFileIds);
 
   const driveResourceItems = driveFiles.map((file) => {
     const latestSnapshot = file.contentSnapshots[0] ?? null;
@@ -698,7 +701,7 @@ assetsRouter.get("/context", asyncHandler(async (req, res) => {
         isFolder: file.isFolder
       },
       organization: {
-        department: file.operatingArea?.key ?? null,
+        department: fileContexts.get(file.id)?.ownerDepartment?.key ?? file.operatingArea?.key ?? null,
         departmentCanonical: canonicalDepartmentMetadata(file.rawMetadata),
         folder: file.operatingFolder?.name ?? null,
         table: file.operatingTable?.name ?? null,
@@ -715,6 +718,7 @@ assetsRouter.get("/context", asyncHandler(async (req, res) => {
         aiContextReady: readiness === "ai_context_ready",
         contentSnapshot: snapshotPreview(latestSnapshot)
       },
+      organizationalContext: fileContexts.get(file.id),
       relations: {
         tasks: [],
         projects: [],
@@ -796,7 +800,7 @@ assetsRouter.get("/context", asyncHandler(async (req, res) => {
   });
 
   const allItems = [...driveResourceItems, ...resourceItems]
-    .filter((item) => !query.departmentKey || (item.sourceModel === "Resource" ? contextualResourceIdSet.has(item.sourceId) : item.organization.departmentCanonical === query.departmentKey || item.organization.department === query.departmentKey))
+    .filter((item) => !query.departmentKey || (item.sourceModel === "Resource" ? contextualResourceIdSet.has(item.sourceId) : contextualFileIdSet.has(item.sourceId) || item.organization.departmentCanonical === query.departmentKey || item.organization.department === query.departmentKey))
     .filter((item) => !query.type || item.resourceType === query.type)
     .filter((item) => !query.readiness || item.aiCompatibility.readiness === query.readiness);
 

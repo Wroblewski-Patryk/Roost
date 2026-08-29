@@ -32,6 +32,7 @@ const protectedMounts = new Map([
   ["goals.routes.ts", "/goals"],
   ["organizational-context.routes.ts", "/organizational-context"],
   ["company-records.routes.ts", "/company-records"],
+  ["company-objects.routes.ts", "/company-objects"],
   ["evidence.routes.ts", "/evidence"],
   ["entity-relations.routes.ts", "/entity-relations"],
   ["company-intelligence.routes.ts", "/company-intelligence"],

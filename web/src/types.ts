@@ -737,6 +737,7 @@ export type DepartmentView = {
 
 export type DepartmentCatalogView = {
   id: string;
+  routeView?: string;
   label: string;
   href?: string | null;
   icon: string;

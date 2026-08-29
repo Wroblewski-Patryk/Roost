@@ -133,6 +133,10 @@ function routeDescription(route: ManifestRoute) {
     return "Read or manage canonical cross-department requirements, deliverables, issues, incidents, contracts, budgets, experiments, and other Company OS records with explicit expected, observed, and verification state.";
   }
 
+  if (route.capability.startsWith("company-objects:")) {
+    return "Read or manage canonical company resources, risks, metrics, and policies with shared organizational scope and Company Graph relationships.";
+  }
+
   if (route.capability.startsWith("evidence:")) {
     return "Record, inspect, or verify evidence for a Company OS entity without automatically promoting its declared functional state.";
   }

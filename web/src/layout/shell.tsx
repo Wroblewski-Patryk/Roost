@@ -40,9 +40,8 @@ function contextualViewLabel(viewLabel: string, areaLabel: string) {
 type UniversalSearchResult = { entityType: string; recordType?: string; id: string; title: string; subtitle?: string | null };
 
 function searchResultDestination(result: UniversalSearchResult) {
-  const recordRoutes: Record<string, string> = { requirement: "/areas?area=11-innowacje&view=requirements", deliverable: "/areas?area=02-produkt&view=deliverables", initiative: "/areas?area=01-strategia&view=initiatives", contract: "/areas?area=10-prawo&view=contracts", compliance_item: "/areas?area=10-prawo&view=compliance", technical_incident: "/areas?area=09-technologia&view=incidents", knowledge_record: "/areas?area=08-zasoby&view=knowledge" };
-  if (result.entityType === "company_record") return recordRoutes[result.recordType || ""] || canonicalGeneralDashboardPath;
-  return ({ goal: "/areas?area=01-strategia&view=goals", task: "/areas?area=01-strategia&view=tasks", project: "/areas?area=11-innowacje&view=overview", application: "/areas?area=11-innowacje&view=application-graph", feature: "/areas?area=11-innowacje&view=application-graph", client: "/areas?area=05-relacje&view=overview", procedure: "/areas?area=04-operacje&view=procedures", resource: "/areas?area=08-zasoby&view=files", workforce: "/areas?area=06-kadry&view=directory", agent: "/areas?area=06-kadry&view=directory", decision: "/areas?area=01-strategia&view=decisions", risk: "/areas?area=12-zarzadzanie&view=escalations", metric: "/areas?area=12-zarzadzanie&view=reviews" } as Record<string, string>)[result.entityType] || canonicalGeneralDashboardPath;
+  const entityType = result.recordType === "requirement" ? "requirement" : result.entityType;
+  return `/areas?area=00-ogolny&view=entity&type=${encodeURIComponent(entityType)}&id=${encodeURIComponent(result.id)}`;
 }
 
 function searchResultIcon(entityType: string) {
@@ -62,24 +61,14 @@ function DepartmentSidebar({ activeArea, onNavigate }: { activeArea?: string; on
     .map((department) => {
       const fallbackArea = coreAreas.find((area) => area.key === department.key);
       const catalogViews = department.views.map((view) => ({
-        key: view.id,
+        key: view.routeView || (view.href ? new URL(view.href, window.location.origin).searchParams.get("view") || view.id : view.id),
         labelKey: view.label,
         href: view.href || undefined,
         icon: view.icon,
         enabled: view.enabled !== false && Boolean(view.href)
       }));
-      const fallbackViews = fallbackArea?.views || [];
-      const combinedViews = [
-        ...fallbackViews.map((fallbackView) => {
-          const catalogView = catalogViews.find((view) => view.key === fallbackView.key);
-          if (!catalogView) return fallbackView;
-          const viewHref = catalogView.href || fallbackView.href;
-          return { ...fallbackView, ...catalogView, href: viewHref, enabled: catalogView.enabled !== false && Boolean(viewHref) };
-        }),
-        ...catalogViews.filter((view) => !fallbackViews.some((fallbackView) => fallbackView.key === view.key))
-      ];
       const seenViewDestinations = new Set<string>();
-      const linkedViews = combinedViews.filter((view) => {
+      const linkedViews = catalogViews.filter((view) => {
         const destination = view.href || view.key;
         if (seenViewDestinations.has(destination)) return false;
         seenViewDestinations.add(destination);
@@ -213,6 +202,7 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
   const mobileNavCloseRef = useRef<HTMLButtonElement>(null);
   const [commandOpen, setCommandOpen] = useState(false);
   const [commandQuery, setCommandQuery] = useState("");
+  const [searchDepartmentKey, setSearchDepartmentKey] = useState("");
   const [entityResults, setEntityResults] = useState<UniversalSearchResult[]>([]);
   const [entitySearchBusy, setEntitySearchBusy] = useState(false);
   const activeView = currentAreaView();
@@ -242,14 +232,14 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
     const timer = window.setTimeout(async () => {
       setEntitySearchBusy(true);
       try {
-        const response = await api<{ data: UniversalSearchResult[] }>(`/v1/company-intelligence/search?q=${encodeURIComponent(query)}`, { signal: controller.signal });
+        const response = await api<{ data: UniversalSearchResult[] }>(`/v1/company-intelligence/search?q=${encodeURIComponent(query)}${searchDepartmentKey ? `&departmentKey=${encodeURIComponent(searchDepartmentKey)}` : ""}`, { signal: controller.signal });
         setEntityResults(response.data.slice(0, 20));
       } catch (error) {
         if (!(error instanceof DOMException && error.name === "AbortError")) setEntityResults([]);
       } finally { if (!controller.signal.aborted) setEntitySearchBusy(false); }
     }, 180);
     return () => { window.clearTimeout(timer); controller.abort(); };
-  }, [commandOpen, commandQuery]);
+  }, [commandOpen, commandQuery, searchDepartmentKey]);
 
   useEffect(() => {
     function handleProfileUpdated(event: Event) {
@@ -399,7 +389,7 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
             <button className="roost-command-backdrop" aria-label={t("shell.closeCommand")} onClick={() => setCommandOpen(false)} type="button"></button>
             <section className="roost-command-palette">
               <label><i className="ph-bold ph-magnifying-glass" aria-hidden="true"></i><input aria-label={t("shell.commandSearch")} autoFocus onChange={(event) => setCommandQuery(event.target.value)} placeholder={t("shell.commandSearch")} type="search" value={commandQuery} /><kbd aria-hidden="true">ESC</kbd></label>
-              <p>{t("shell.commandHint")}</p>
+              <div className="flex items-center justify-between gap-3"><p>{t("shell.commandHint")}</p><select aria-label="Search department" className="select select-bordered select-sm max-w-52" onChange={(event) => setSearchDepartmentKey(event.target.value)} value={searchDepartmentKey}><option value="">All departments</option>{coreAreas.map((area) => <option key={area.key} value={area.key}>{displayDepartmentLabel(t(area.labelKey))}</option>)}</select></div>
               <nav aria-label={t("sidebar.departments")}>
                 {commandResults.map((area) => (
                   <a href={area.href} key={area.key} onClick={() => setCommandOpen(false)}>

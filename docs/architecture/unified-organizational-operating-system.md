@@ -351,14 +351,15 @@ preserved without inventing ownership or scope during migration.
 The same service boundary is available to tasks, task lists, procedures,
 projects, decisions, risks, metrics, resources, policies, processes,
 applications, clients, workforce entities, features, evidence, and generic
-company records. `company_records` supplies canonical requirements,
+company records and Drive-backed files. `company_records` supplies canonical requirements,
 deliverables, issues, incidents, contracts, compliance items, budgets,
 invoices, experiments, portfolio items, escalations, reviews, and similar
 families only where no stronger native model exists. `evidence_records` and the
 generic `dependencies` edge table provide verified evidence and typed
 cross-entity relationships without department-local copies.
 
-Tasks, Task Lists, Projects, Procedures, Decisions, Goals, and shared Resources
+Tasks, Task Lists, Projects, Procedures, Decisions, Goals, Resources, Risks,
+Metrics, Policies, workforce records, and Drive files
 now expose department-filtered reads over their native records. Technology,
 Legal, and Innovation reuse the canonical Operations Procedure and Assets File
 workbenches through contextual routes; edits retain one source ID and Procedure
@@ -367,34 +368,53 @@ revisions inherit organizational context.
 `department_view_definitions` declares each view's canonical department,
 route, default scope, permissions, and order;
 `department_view_availability` makes that view available in additional
-departments. The Products and Innovation requirement workbenches therefore
-query the same record IDs. All 13 departments expose active workbenches for
-their core native records or the shared record families.
+departments. The authenticated department catalog now renders navigation from
+these persisted availability rows; the static catalog is only a bootstrap and
+network-failure fallback. Management can assign enabled views to a department
+without changing frontend routing. The Products and Innovation requirement
+workbenches therefore query the same record IDs. All 13 departments expose
+active workbenches for their core native records or the shared record families.
 
-The read layer exposes global search, company and department health, a unified
-Company Graph, and `task-agent-execution-context-v1`. Application-linked
+The read layer exposes global search, company and department health, an
+interactive unified Company Graph, universal entity inspection/navigation,
+and `task-agent-execution-context-v1`. The agent packet includes objective,
+business context, project, capabilities/features/requirements, current and
+desired state, components, dependencies, policies, resources, permissions,
+procedures, decisions, issues, incidents, risks, acceptance criteria, evidence,
+and escalation rules. Application-linked
 requirements are included in the existing Application Graph and application
 agent context, preserving one graph per application.
 
-## Missing Abstractions And Target Gaps
+Every department dashboard receives the same scoped health packet. The packet
+aggregates active goals/projects, open/blocked/overdue tasks, applicable
+procedures, assigned people and agents, resources, incidents/issues, decisions
+requiring review, active risks, tracked metrics, stale evidence, and functional
+state gaps. Dashboard cards route to the same reusable workbenches with a
+department filter.
 
-The following gaps are accepted target gaps. They require future scoped task
-contracts before implementation:
+## Implemented Company OS Coverage
 
-| Gap | Current workaround/foundation | Future architecture direction |
+The runtime foundation now covers the requested shared domains without making
+departments database containers:
+
+| Concern | Canonical implementation | Department projection |
 | --- | --- | --- |
-| Unified workforce identity | separate `users` and `agents` with roles/service keys | workforce member abstraction with human and agent profiles |
-| Rank hierarchy | role type and escalation targets | rank catalog and supervisor/reporting graph |
-| Department membership | operating areas, business functions, role ownership | explicit workforce-department membership/capacity model |
-| Assignment/delegation history | task owner fields are not first-class; workflow actors exist in runs | task assignment, delegation, escalation, returned-context records |
-| Rich task lifecycle | limited `TaskStatus` plus workflow/stage statuses | command-shaped lifecycle over task and workflow records |
-| Contextual visibility | API capabilities and service-key profiles | rank/role/department/project-context policy derivation |
-| Workforce workload | partial task/read packet summaries | capacity, availability, workload, blocker state |
-| Agent profile depth | `agents`, service keys, agent logs/events | profile for MCP identity, provider/model, skills, tools, constraints, memory |
+| Ownership and scope | organizational relations, scopes, entity ownership | owner/related/applicable/company filters |
+| Goals, tasks, task lists, projects, procedures, decisions | native global models and CRUD | canonical plus contextual workbenches |
+| Requirements, deliverables, issues, incidents, environments, contracts and other record families | `company_records` | record-type and department filters |
+| Resources, risks, metrics, policies | native models through `/v1/company-objects` | canonical Assets/Management/Strategy/Legal homes plus contextual views |
+| Files | Drive-backed canonical file rows | Assets canonical file manager and department-filtered projections |
+| Relations and evidence | generic dependency edges and evidence ledger | Company Graph and universal entity inspector |
+| Company and department observability | one health aggregation API | the same signal model scoped per department |
+| Agent execution | structured task/application context APIs | cross-department context follows explicit relations |
+| Application engineering | one Application Workspace and expandable Application Graph | projects, capabilities, features, requirements, components, tasks, procedures and evidence remain linked records |
+| Project execution | one central Project Workspace with five grouped views | intent, product model, delivery, governance, evidence and activity resolve from the canonical Project ID instead of duplicated project pages |
 
-Implementation must prefer read models and explicit mapping audits first. Add
-new tables only when existing CompanyCore foundations cannot honestly express
-the needed behavior.
+The intentionally deferred boundary from the request is automated repository
+discovery/scanning. The model is ready to receive discovered architecture,
+components, features, dependencies, implementation observations and evidence,
+but no scanner is simulated and source code is never treated as proof that a
+requirement works.
 
 ## Compatibility With Existing Architecture
 

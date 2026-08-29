@@ -873,7 +873,7 @@ function ConfirmEntityModal({
   );
 }
 
-export function PeopleAgentsRoute() {
+export function PeopleAgentsRoute({ departmentKey }: { departmentKey?: string } = {}) {
   const { locale, t } = useLanguage();
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedId, setSelectedId] = useState("");
@@ -881,7 +881,7 @@ export function PeopleAgentsRoute() {
   const [editingEntity, setEditingEntity] = useState<{ entity?: WorkforceEntity | null; mode?: "create" | "edit" } | undefined>(undefined);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
   const [notice, setNotice] = useState<RouteNotice | null>(null);
-  const packet = useOwnerPacket<WorkforcePacket>(`/v1/workforce?refresh=${refreshKey}`, true, t);
+  const packet = useOwnerPacket<WorkforcePacket>(`/v1/workforce?refresh=${refreshKey}${departmentKey ? `&departmentKey=${encodeURIComponent(departmentKey)}` : ""}`, true, t);
   const entities = packet.data?.entities || [];
   const selected = selectedId ? entities.find((entity) => entity.id === selectedId) || null : null;
   const duplicateEntity = (entity: WorkforceEntity): WorkforceEntity => ({

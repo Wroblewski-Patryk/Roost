@@ -54,6 +54,8 @@ export const capabilities = [
   "evidence:verify",
   "company-graph:read",
   "company-graph:write",
+  "company-objects:read",
+  "company-objects:write",
   "targets:read",
   "targets:write",
   "task-lists:read",
@@ -253,6 +255,13 @@ export const adapterManifest = {
       { method: "PATCH", path: "/v1/company-records/:id", capability: "company-records:write" },
       { method: "DELETE", path: "/v1/company-records/:id", capability: "company-records:write" }
     ],
+    companyObjects: [
+      { method: "GET", path: "/v1/company-objects/:type", capability: "company-objects:read" },
+      { method: "GET", path: "/v1/company-objects/:type/:id", capability: "company-objects:read" },
+      { method: "POST", path: "/v1/company-objects/:type", capability: "company-objects:write" },
+      { method: "PATCH", path: "/v1/company-objects/:type/:id", capability: "company-objects:write" },
+      { method: "DELETE", path: "/v1/company-objects/:type/:id", capability: "company-objects:write" }
+    ],
     evidence: [
       { method: "GET", path: "/v1/evidence", capability: "evidence:read" },
       { method: "POST", path: "/v1/evidence", capability: "evidence:write" },
@@ -270,6 +279,7 @@ export const adapterManifest = {
       { method: "GET", path: "/v1/company-intelligence/search", capability: "company-graph:read" },
       { method: "GET", path: "/v1/company-intelligence/graph", capability: "company-graph:read" },
       { method: "GET", path: "/v1/company-intelligence/health", capability: "company-graph:read" },
+      { method: "GET", path: "/v1/company-intelligence/entities/:entityType/:id", capability: "company-graph:read" },
       { method: "GET", path: "/v1/company-intelligence/tasks/:id/agent-context", capability: "company-graph:read" }
     ],
     productEngineering: [
@@ -324,6 +334,7 @@ export const adapterManifest = {
     projects: [
       { method: "GET", path: "/v1/projects", capability: "projects:read" },
       { method: "GET", path: "/v1/projects/:id", capability: "projects:read" },
+      { method: "GET", path: "/v1/projects/:id/workspace", capability: "projects:read" },
       { method: "POST", path: "/v1/projects", capability: "projects:write" },
       { method: "PATCH", path: "/v1/projects/:id", capability: "projects:write" },
       { method: "DELETE", path: "/v1/projects/:id", capability: "projects:write" }

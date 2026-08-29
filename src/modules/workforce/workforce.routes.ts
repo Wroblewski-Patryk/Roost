@@ -16,6 +16,7 @@ const querySchema = z.object({
   type: z.nativeEnum(WorkforceEntityType).optional(),
   status: z.nativeEnum(WorkforceEntityStatus).optional(),
   q: z.string().trim().min(1).optional(),
+  departmentKey: z.string().trim().min(1).optional(),
   refresh: z.string().optional()
 }).strict();
 

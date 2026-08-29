@@ -692,6 +692,8 @@ test("company operating graph keeps records canonical, contextual, evidenced, an
   const departmentBody = departments.body as { data: { departments: Array<{ key: string }>; availableViews: Array<{ id: string; availableInDepartments: string[] }> } };
   assert.equal(departmentBody.data.departments.length, 13);
   assert.ok(departmentBody.data.availableViews.some((view) => view.id === "product.requirements" && view.availableInDepartments.includes("11-innowacje")));
+  assert.ok(departmentBody.data.availableViews.some((view) => view.id === "assets.resources" && view.availableInDepartments.includes("09-technologia")));
+  assert.ok(departmentBody.data.availableViews.some((view) => view.id === "management.risks" && view.availableInDepartments.includes("10-prawo")));
 
   const created = await request("/v1/company-records", {
     method: "POST", headers, body: JSON.stringify({
@@ -741,6 +743,9 @@ test("company operating graph keeps records canonical, contextual, evidenced, an
   const taskListId = (createdTaskList.body as { data: { id: string } }).data.id;
   const innovationTaskLists = await request("/v1/task-lists?departmentKey=11-innowacje", { headers });
   assert.ok((innovationTaskLists.body as { data: Array<{ id: string }> }).data.some((item) => item.id === taskListId));
+  const projectTaskResponse = await request("/v1/tasks", { method: "POST", headers, body: JSON.stringify({ title: "Verify the shared project workspace", status: "in_progress", projectId, taskListId, organizationalContext: { ownerDepartmentKey: "11-innowacje", relatedDepartmentKeys: ["09-technologia"], applicableDepartmentKeys: [], scopes: [] } }) });
+  assert.equal(projectTaskResponse.status, 201, JSON.stringify(projectTaskResponse.body));
+  const projectTaskId = (projectTaskResponse.body as { data: { id: string } }).data.id;
 
   const createdProcedure = await request("/v1/process-core/procedures", { method: "POST", headers, body: JSON.stringify({ name: "Shared production verification", purpose: "Verify releases before declaring completion", expectedResult: "Verified runtime evidence", steps: [{ instruction: "Run the approved verification suite", stepType: "manual" }], organizationalContext: { ownerDepartmentKey: "04-operacje", relatedDepartmentKeys: [], applicableDepartmentKeys: ["09-technologia", "11-innowacje"], scopes: [] } }) });
   assert.equal(createdProcedure.status, 201, JSON.stringify(createdProcedure.body));
@@ -748,15 +753,69 @@ test("company operating graph keeps records canonical, contextual, evidenced, an
   const technologyProcedures = await request("/v1/process-core/procedures?departmentKey=09-technologia", { headers });
   assert.ok((technologyProcedures.body as { data: Array<{ id: string }> }).data.some((item) => item.id === procedureId));
 
+  const sharedContext = { ownerDepartmentKey: "09-technologia", relatedDepartmentKeys: ["11-innowacje"], applicableDepartmentKeys: ["04-operacje"], scopes: [{ type: "company" }] };
+  const resourceResponse = await request("/v1/company-objects/resource", { method: "POST", headers, body: JSON.stringify({ name: "Shared runtime repository", type: "repository", url: "https://example.test/repository", accessLevel: "workspace", metadata: { environment: "production" }, organizationalContext: sharedContext }) });
+  assert.equal(resourceResponse.status, 201, JSON.stringify(resourceResponse.body));
+  const resourceId = (resourceResponse.body as { data: { id: string } }).data.id;
+  const riskResponse = await request("/v1/company-objects/risk", { method: "POST", headers, body: JSON.stringify({ name: "Runtime drift", category: "technology", riskLevel: "high", likelihood: "possible", impact: "Incorrect production behaviour", organizationalContext: sharedContext }) });
+  assert.equal(riskResponse.status, 201, JSON.stringify(riskResponse.body));
+  const riskId = (riskResponse.body as { data: { id: string } }).data.id;
+  const metricResponse = await request("/v1/company-objects/metric", { method: "POST", headers, body: JSON.stringify({ name: "Verified requirement coverage", category: "quality", measurementType: "percentage", unit: "%", currentValue: 35, targetValue: 100, organizationalContext: sharedContext }) });
+  assert.equal(metricResponse.status, 201, JSON.stringify(metricResponse.body));
+  const policyResponse = await request("/v1/company-objects/policy", { method: "POST", headers, body: JSON.stringify({ name: "Verified completion only", appliesTo: "company", ruleType: "evidence_guardrail", severity: "critical", enforcementMode: "require_approval", organizationalContext: sharedContext }) });
+  assert.equal(policyResponse.status, 201, JSON.stringify(policyResponse.body));
+  const policyId = (policyResponse.body as { data: { id: string } }).data.id;
+
+  for (const [type, id] of [["resource", resourceId], ["risk", riskId], ["metric", (metricResponse.body as { data: { id: string } }).data.id], ["policy", policyId]]) {
+    const contextual = await request(`/v1/company-objects/${type}?departmentKey=11-innowacje`, { headers });
+    assert.ok((contextual.body as { data: Array<{ id: string }> }).data.some((item) => item.id === id), `${type} missing from related department`);
+  }
+  const updatedMetric = await request(`/v1/company-objects/metric/${(metricResponse.body as { data: { id: string } }).data.id}`, { method: "PATCH", headers, body: JSON.stringify({ currentValue: 61 }) });
+  assert.equal((updatedMetric.body as { data: { currentValue: number } }).data.currentValue, 61);
+
+  const riskRelation = await request("/v1/entity-relations", { method: "POST", headers, body: JSON.stringify({ dependencyType: "affects", from: { entityType: "risk", entityId: riskId }, to: { entityType: "resource", entityId: resourceId } }) });
+  assert.equal(riskRelation.status, 201, JSON.stringify(riskRelation.body));
+  const projectRiskRelation = await request("/v1/entity-relations", { method: "POST", headers, body: JSON.stringify({ dependencyType: "affects", from: { entityType: "risk", entityId: riskId }, to: { entityType: "project", entityId: projectId } }) });
+  assert.equal(projectRiskRelation.status, 201, JSON.stringify(projectRiskRelation.body));
+  const projectWorkspace = await request(`/v1/projects/${projectId}/workspace`, { headers });
+  assert.equal(projectWorkspace.status, 200, JSON.stringify(projectWorkspace.body));
+  const projectWorkspaceData = (projectWorkspace.body as { data: { schemaVersion: string; organizationalContext: { ownerDepartment: { key: string } }; delivery: { taskLists: Array<{ id: string }>; tasks: Array<{ id: string }> }; risks: Array<{ id: string }>; relations: Array<{ dependencyType: string }> } }).data;
+  assert.equal(projectWorkspaceData.schemaVersion, "project-workspace-v1");
+  assert.equal(projectWorkspaceData.organizationalContext.ownerDepartment.key, "11-innowacje");
+  assert.ok(projectWorkspaceData.delivery.taskLists.some((item) => item.id === taskListId));
+  assert.ok(projectWorkspaceData.delivery.tasks.some((item) => item.id === projectTaskId));
+  assert.ok(projectWorkspaceData.risks.some((item) => item.id === riskId));
+  assert.ok(projectWorkspaceData.relations.some((item) => item.dependencyType === "affects"));
+  const resourceEntity = await request(`/v1/company-intelligence/entities/resource/${resourceId}`, { headers });
+  assert.equal(resourceEntity.status, 200);
+  assert.ok((resourceEntity.body as { data: { relations: Array<{ dependencyType: string }> } }).data.relations.some((item) => item.dependencyType === "affects"));
+  const technologySearch = await request("/v1/company-intelligence/search?q=Shared%20runtime&departmentKey=09-technologia", { headers });
+  assert.ok((technologySearch.body as { data: Array<{ id: string }> }).data.some((item) => item.id === resourceId));
+  const financeSearch = await request("/v1/company-intelligence/search?q=Shared%20runtime&departmentKey=07-finanse", { headers });
+  assert.ok((financeSearch.body as { data: Array<{ id: string }> }).data.some((item) => item.id === resourceId), "company-wide resource should remain visible in department-filtered search");
+  const isolatedSearch = await request("/v1/company-intelligence/search?q=Evidence%20gate&departmentKey=07-finanse", { headers });
+  assert.ok(!(isolatedSearch.body as { data: Array<{ id: string }> }).data.some((item) => item.id === secondId), "department-only record must not leak into unrelated search scope");
+
+  const driveFile = await prisma.googleDriveFile.create({ data: { workspaceId: owner.workspace.id, externalId: "shared-architecture-file", name: "Shared Authentication Architecture", mimeType: "text/markdown", description: "Canonical architecture evidence" } });
+  const fileContext = await request(`/v1/organizational-context/file/${driveFile.id}`, { method: "PATCH", headers, body: JSON.stringify({ ownerDepartmentKey: "09-technologia", relatedDepartmentKeys: ["11-innowacje"], applicableDepartmentKeys: [], scopes: [] }) });
+  assert.equal(fileContext.status, 200, JSON.stringify(fileContext.body));
+  const fileEntity = await request(`/v1/company-intelligence/entities/file/${driveFile.id}`, { headers });
+  assert.equal(fileEntity.status, 200);
+
   const taskContext = await request(`/v1/company-intelligence/tasks/${task.id}/agent-context`, { headers });
   assert.equal(taskContext.status, 200);
   assert.equal((taskContext.body as { data: { schemaVersion: string; constraints: { sourceOfTruth: string } } }).data.schemaVersion, "task-agent-execution-context-v1");
   assert.equal((taskContext.body as { data: { constraints: { sourceOfTruth: string } } }).data.constraints.sourceOfTruth, "roost");
+  assert.ok(Array.isArray((taskContext.body as { data: { risks: unknown[] } }).data.risks));
+  assert.ok(Array.isArray((taskContext.body as { data: { incidents: unknown[] } }).data.incidents));
+  assert.ok(Array.isArray((taskContext.body as { data: { escalationRules: { records: unknown[] } } }).data.escalationRules.records));
 
   const graph = await request("/v1/company-intelligence/graph", { headers });
   assert.equal(graph.status, 200);
   const graphBody = graph.body as { data: { nodes: Array<{ id: string }>; edges: Array<{ type: string }> } };
   assert.ok(graphBody.data.nodes.some((node) => node.id === record.id));
+  assert.ok(graphBody.data.nodes.some((node) => node.id === resourceId));
+  assert.ok(graphBody.data.nodes.some((node) => node.id === driveFile.id));
   assert.ok(graphBody.data.edges.some((edge) => edge.type === "implements"));
   const health = await request("/v1/company-intelligence/health", { headers });
   assert.equal(health.status, 200);
@@ -1016,6 +1075,17 @@ test("product engineering keeps definitions shared, observations explicit, and p
   const deliveryTask = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: deliveryProject.id, taskListId: deliveryList.id, title: "Verify release", status: "in_progress" } });
   const projectLink = await request(`/v1/product-engineering/applications/${roostId}/projects`, { method: "POST", headers: auth, body: JSON.stringify({ projectId: deliveryProject.id, relationType: "delivery" }) });
   assert.equal(projectLink.status, 201);
+  const applicationRepository = await prisma.applicationRepository.create({ data: { applicationId: roostId, name: "Roost repository", url: "https://example.test/roost.git", isPrimary: true } });
+  const applicationComponent = await prisma.applicationArchitectureComponent.create({ data: { applicationId: roostId, type: "backend", name: "Roost API", status: "active" } });
+  const projectWorkspaceResponse = await request(`/v1/projects/${deliveryProject.id}/workspace`, { headers: auth });
+  assert.equal(projectWorkspaceResponse.status, 200, JSON.stringify(projectWorkspaceResponse.body));
+  const projectWorkspace = (projectWorkspaceResponse.body as { data: { product: { capabilities: Array<{ id: string }>; features: Array<{ id: string }>; architecture: Array<{ id: string }>; repositories: Array<{ id: string }> }; procedures: Array<{ id: string }>; evidence: Array<{ id: string }> } }).data;
+  assert.ok(projectWorkspace.product.capabilities.some((item) => item.id === assignments[0]));
+  assert.ok(projectWorkspace.product.features.some((item) => item.id === (featureAssignment.body as { data: { id: string } }).data.id));
+  assert.ok(projectWorkspace.product.architecture.some((item) => item.id === applicationComponent.id));
+  assert.ok(projectWorkspace.product.repositories.some((item) => item.id === applicationRepository.id));
+  assert.ok(projectWorkspace.procedures.some((item) => item.id === procedure.id));
+  assert.ok(projectWorkspace.evidence.some((item) => item.id === evidenceId));
   const executionGraphResponse = await request(`/v1/product-engineering/applications/${roostId}/graph`, { headers: auth });
   assert.equal(executionGraphResponse.status, 200);
   const executionNodes = (executionGraphResponse.body as { data: { nodes: Array<{ type: string; entityId: string }> } }).data.nodes;

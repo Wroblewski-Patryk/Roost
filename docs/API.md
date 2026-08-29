@@ -2255,6 +2255,7 @@ Automation definition payload:
 ```http
 GET /v1/projects
 GET /v1/projects/:id
+GET /v1/projects/:id/workspace
 POST /v1/projects
 PATCH /v1/projects/:id
 DELETE /v1/projects/:id
@@ -2264,6 +2265,14 @@ POST /projects
 PATCH /projects/:id
 DELETE /projects/:id
 ```
+
+`GET /v1/projects/:id/workspace` returns the central grouped Project Workspace
+packet. It joins project intent and goals, applications, product records and
+requirements, task lists and tasks, procedures, issues and incidents,
+decisions, risks, metrics, resources, typed relations, evidence, activity,
+organizational context, and a derived project health summary. The owner console
+presents this packet as five stable views: Overview, Product model, Delivery,
+Governance, and Evidence & activity.
 
 ```json
 {
@@ -2331,6 +2340,12 @@ POST   /v1/company-records
 PATCH  /v1/company-records/:id
 DELETE /v1/company-records/:id
 
+GET    /v1/company-objects/:type
+GET    /v1/company-objects/:type/:id
+POST   /v1/company-objects/:type
+PATCH  /v1/company-objects/:type/:id
+DELETE /v1/company-objects/:type/:id
+
 GET    /v1/evidence
 POST   /v1/evidence
 PATCH  /v1/evidence/:id
@@ -2342,10 +2357,11 @@ POST   /v1/entity-relations
 PATCH  /v1/entity-relations/:id
 DELETE /v1/entity-relations/:id
 
-GET /v1/company-intelligence/search?q=...
+GET /v1/company-intelligence/search?q=...&departmentKey=09-technologia
 GET /v1/company-intelligence/graph
 GET /v1/company-intelligence/health
 GET /v1/company-intelligence/health?departmentKey=09-technologia
+GET /v1/company-intelligence/entities/:entityType/:id
 GET /v1/company-intelligence/tasks/:id/agent-context
 
 GET    /v1/tasks?departmentKey=09-technologia
@@ -2369,6 +2385,15 @@ coverage, hierarchy, application/project/client links, due date, priority,
 status, metadata, and organizational context. `recordType` identifies the
 family; `departmentKey` returns a contextual projection over the same IDs.
 
+`company-objects` is the native CRUD surface for `resource`, `risk`, `metric`,
+and `policy`. All four types accept `organizationalContext`; list reads accept
+`departmentKey` and `includeCompanyWide`, and every contextual projection
+returns the canonical ID. Risk reads include controls, metric reads retain
+calculation/target/current state, policy reads retain enforcement mode, and
+resource reads retain project/process/external-provider links. Archiving is
+soft for governed records; Resource deletion removes the canonical catalog row
+and cascaded generic context while leaving its emitted audit event.
+
 Typed entity relations use `depends_on`, `blocks`, `implements`, `consumes`,
 `exposes`, `affects`, `requires`, `owned_by`, `validated_by`, `governed_by`,
 `supersedes`, or `related_to`. Evidence has an explicit verification lifecycle
@@ -2376,9 +2401,18 @@ Typed entity relations use `depends_on`, `blocks`, `implements`, `consumes`,
 functional state automatically.
 
 `GET /v1/company-intelligence/graph` is the whole-workspace Company Graph.
+`GET /v1/company-intelligence/entities/:entityType/:id` is the universal entity
+inspector packet: canonical record, organizational context, inbound/outbound
+typed edges, resolved related records, and evidence. Search results navigate
+to this packet rather than losing object identity in a module landing page.
+Google Drive files participate as `file` entities and can be related to goals,
+projects, requirements, decisions, components, procedures, and other objects.
 Application-scoped requirements also appear in
 `GET /v1/product-engineering/applications/:id/graph` and in that application's
 agent context, keeping one Application Graph rather than a parallel registry.
+Task agent context also includes known issues, incidents, risks, approval/block
+policies, and explicit escalation records in addition to requirements,
+components, resources, permissions, procedures, decisions, and evidence.
 
 Tasks and decisions are native global models. Their create and update payloads
 accept the same `organizationalContext` object used by Goals; contextual list

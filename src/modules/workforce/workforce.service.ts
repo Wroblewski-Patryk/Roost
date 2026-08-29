@@ -12,6 +12,7 @@ import { agentKeyProfiles } from "../../auth/agent-key-profiles";
 import { capabilities } from "../../auth/capabilities";
 import { departmentRegistry, resolveDepartmentEntry } from "../../operating-model/department-registry";
 import { createEvent } from "../events/event.service";
+import { contextualEntityIds } from "../organizational-context/organizational-context.service";
 
 export const workforceEntityTypes = ["human", "agent"] as const satisfies WorkforceEntityType[];
 export const workforceEntityStatuses = ["active", "inactive", "paused", "archived"] as const satisfies WorkforceEntityStatus[];
@@ -445,19 +446,22 @@ export async function listWorkforceEntities(workspaceId: string, filters: {
   type?: WorkforceEntityType;
   status?: WorkforceEntityStatus;
   q?: string;
+  departmentKey?: string;
 }) {
+  const contextualIds = filters.departmentKey ? await contextualEntityIds(workspaceId, "workforce", filters.departmentKey, true) : [];
   const where: Prisma.WorkforceEntityWhereInput = {
     workspaceId,
     ...(filters.type ? { type: filters.type } : {}),
     ...(filters.status ? { status: filters.status } : {}),
-    ...(filters.q ? {
-      OR: [
-        { name: { contains: filters.q, mode: "insensitive" } },
-        { role: { contains: filters.q, mode: "insensitive" } },
-        { department: { contains: filters.q, mode: "insensitive" } },
-        { slug: { contains: filters.q, mode: "insensitive" } }
-      ]
-    } : {})
+    ...((filters.departmentKey || filters.q) ? { AND: [
+      ...(filters.departmentKey ? [{ OR: [{ id: { in: contextualIds } }, { department: filters.departmentKey }] }] : []),
+      ...(filters.q ? [{ OR: [
+        { name: { contains: filters.q, mode: "insensitive" as const } },
+        { role: { contains: filters.q, mode: "insensitive" as const } },
+        { department: { contains: filters.q, mode: "insensitive" as const } },
+        { slug: { contains: filters.q, mode: "insensitive" as const } }
+      ] }] : [])
+    ] } : {})
   };
 
   const [entities, counts] = await Promise.all([

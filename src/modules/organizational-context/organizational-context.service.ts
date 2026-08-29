@@ -5,7 +5,7 @@ import { isCanonicalDepartmentKey } from "../../operating-model/department-regis
 export const organizationalEntityTypes = [
   "goal", "task", "task_list", "procedure", "project", "requirement", "feature",
   "decision", "risk", "metric", "resource", "policy", "process", "application",
-  "client", "workforce", "company_record", "evidence"
+  "client", "workforce", "agent", "role", "company_record", "evidence", "file"
 ] as const;
 
 export const organizationalScopeTypes = [
@@ -157,7 +157,10 @@ export async function entityExists(workspaceId: string, entityType: string, enti
     case "company_record": return Boolean(await prisma.companyRecord.findFirst({ where: { id: entityId, workspaceId } }));
     case "client": return Boolean(await prisma.client.findFirst({ where: { id: entityId, workspaceId } }));
     case "workforce": return Boolean(await prisma.workforceEntity.findFirst({ where: { id: entityId, workspaceId } }));
+    case "agent": return Boolean(await prisma.agent.findFirst({ where: { id: entityId, workspaceId } }));
+    case "role": return Boolean(await prisma.companyRole.findFirst({ where: { id: entityId, workspaceId } }));
     case "evidence": return Boolean(await prisma.evidenceRecord.findFirst({ where: { id: entityId, workspaceId } }));
+    case "file": return Boolean(await prisma.googleDriveFile.findFirst({ where: { id: entityId, workspaceId } }));
     default: return false;
   }
 }

@@ -57,13 +57,14 @@ Use it with:
 | clickup webhook | `/v1/webhooks/clickup` | Raw-body signed webhook ingestion. |
 | tasks | `/v1/tasks` | Global Task CRUD/archive, organizational context and department projections, ClickUp custom field writes, and ClickUp sync routes. |
 | task lists | `/v1/task-lists` | Global task-list CRUD/archive with project links, organizational context, and department projections. |
-| projects | `/v1/projects` | Global project CRUD/archive with multi-department organizational context and department projections. |
+| projects | `/v1/projects` | Global project CRUD/archive with multi-department organizational context and department projections, plus the grouped central Project Workspace packet at `/:id/workspace`. |
 | goals | `/v1/goals` | Workspace-scoped global Goal CRUD/archive with reusable ownership, multi-department relationships, scope, and contextual department filtering. |
 | organizational context | `/v1/organizational-context/:entityType/:entityId` | Shared owner/related/applicable department, scope, and accountable ownership API. |
 | company records | `/v1/company-records` | Canonical CRUD/archive for requirements and missing Company OS record families with contextual department projections. |
+| company objects | `/v1/company-objects/:type` | Native CRUD/archive and contextual projections for Resources, Risks, Metrics, and Policies. |
 | evidence | `/v1/evidence` | Generic entity evidence plus explicit verification lifecycle. |
 | entity relations | `/v1/entity-relations` | Typed cross-entity Company Graph edges over canonical records. |
-| company intelligence | `/v1/company-intelligence` | Universal search, unified graph, company/department health, and task agent execution context. |
+| company intelligence | `/v1/company-intelligence` | Universal search, unified graph, universal entity inspector, company/department health, and complete task agent execution context. |
 | targets | `/v1/targets` | Workspace-scoped target CRUD/archive. |
 | clients | `/v1/clients` | Workspace-scoped client CRUD/archive. |
 | deals | `/v1/deals` | Workspace-scoped deal CRUD/archive. |

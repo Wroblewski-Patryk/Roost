@@ -3,6 +3,36 @@
   themes: companycore --default, roost, light;
 }
 
+.company-graph-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; border-bottom: 1px solid hsl(var(--bc) / .14); padding: .85rem 1rem; }
+.company-graph-search { display: flex; min-height: 2.75rem; min-width: min(100%, 20rem); flex: 1; align-items: center; gap: .65rem; border: 1px solid hsl(var(--bc) / .16); border-radius: var(--rounded-box, .75rem); background: hsl(var(--b1) / .78); padding: 0 .85rem; }
+.company-graph-search input { min-width: 0; flex: 1; border: 0; outline: 0; background: transparent; font-size: .9rem; }
+.company-graph-health { display: flex; align-items: center; gap: .65rem; color: hsl(var(--bc) / .64); font-size: .78rem; font-weight: 700; }
+.company-graph-health--healthy { border-color: hsl(var(--su)); color: hsl(var(--su)); }
+.company-graph-health--attention { border-color: hsl(var(--wa)); color: hsl(var(--wa)); }
+.company-graph-health--critical { border-color: hsl(var(--er)); color: hsl(var(--er)); }
+.company-graph-filterbar { display: flex; gap: .4rem; overflow-x: auto; border-bottom: 1px solid hsl(var(--bc) / .12); padding: .65rem 1rem; scrollbar-width: thin; }
+.company-graph-filterbar button { display: inline-flex; min-height: 2rem; flex: 0 0 auto; align-items: center; gap: .4rem; border: 1px solid hsl(var(--bc) / .14); border-radius: 999px; padding: .3rem .65rem; color: hsl(var(--bc) / .7); font-size: .72rem; font-weight: 800; }
+.company-graph-filterbar button > span { height: .5rem; width: .5rem; border-radius: 999px; }
+.company-graph-filterbar button small { border-radius: 999px; background: hsl(var(--b2)); padding: .05rem .3rem; }
+.company-graph-filterbar button.is-active { border-color: hsl(var(--p)); background: hsl(var(--p) / .1); color: hsl(var(--p)); }
+.company-graph-stage { display: grid; min-height: 42rem; grid-template-columns: minmax(0, 1fr); }
+.company-graph-stage.has-inspector { grid-template-columns: minmax(0, 1fr) minmax(18rem, 23rem); }
+.company-graph-canvas { min-height: 42rem; background: linear-gradient(145deg, hsl(var(--b1) / .9), hsl(var(--b2) / .55)); }
+.company-graph-node { border-radius: .75rem !important; background: hsl(var(--b1) / .96) !important; box-shadow: 0 .5rem 1.5rem hsl(var(--bc) / .08); }
+.company-graph-node.is-selected { outline: 3px solid hsl(var(--p) / .24); box-shadow: 0 .75rem 2rem hsl(var(--p) / .16); }
+.company-graph-node-copy { display: grid; gap: .2rem; text-align: left; }
+.company-graph-node-copy small { color: hsl(var(--bc) / .55); font-size: .62rem; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
+.company-graph-node-copy strong { overflow: hidden; color: hsl(var(--bc)); font-size: .82rem; text-overflow: ellipsis; white-space: nowrap; }
+.company-graph-node-copy span { color: hsl(var(--bc) / .6); font-size: .68rem; }
+.company-graph-inspector { position: relative; display: grid; align-content: start; gap: .85rem; border-left: 1px solid hsl(var(--bc) / .14); background: hsl(var(--b1) / .94); padding: 1.25rem; }
+.company-graph-inspector > button { position: absolute; right: .65rem; top: .65rem; }
+.company-graph-inspector > p { padding-right: 2rem; color: hsl(var(--p)); font-size: .7rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+.company-graph-inspector > h2 { padding-right: 2rem; font-size: 1.25rem; font-weight: 900; line-height: 1.2; }
+.company-graph-inspector section { display: grid; gap: .5rem; border-top: 1px solid hsl(var(--bc) / .12); padding-top: .85rem; }
+.company-graph-inspector section h3 { font-size: .75rem; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+.company-graph-inspector section p { color: hsl(var(--bc) / .64); font-size: .84rem; }
+@media (max-width: 900px) { .company-graph-stage.has-inspector { grid-template-columns: minmax(0, 1fr); }.company-graph-inspector { border-left: 0; border-top: 1px solid hsl(var(--bc) / .14); }.company-graph-canvas { min-height: 34rem; } }
+
 @plugin "daisyui/theme" {
   name: "roost";
   color-scheme: dark;

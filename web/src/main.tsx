@@ -27,6 +27,7 @@ import { CcRouteBoundary } from "./components/cc-route-boundary";
 import { clearRouteAssetRecovery, installRouteAssetRecovery } from "./route-recovery";
 import { Shell } from "./layout/shell";
 import { AppDocumentMetadata } from "./app-document-metadata";
+import { DepartmentHealthStrip } from "./features/departments/department-health-strip";
 import "./styles.css";
 
 const AssetsRoute = lazy(() => import("./features/departments/assets-route").then((module) => ({ default: module.AssetsRoute })));
@@ -48,6 +49,12 @@ const CompanyRecordsWorkbench = lazy(() => import("./features/departments/compan
 const TasksWorkbench = lazy(() => import("./features/departments/tasks-workbench").then((module) => ({ default: module.TasksWorkbench })));
 const DecisionsWorkbench = lazy(() => import("./features/departments/decisions-workbench").then((module) => ({ default: module.DecisionsWorkbench })));
 const ProceduresWorkbench = lazy(() => import("./features/departments/procedures-workbench").then((module) => ({ default: module.ProceduresWorkbench })));
+const GoalsWorkbench = lazy(() => import("./features/departments/goals-workbench").then((module) => ({ default: module.GoalsWorkbench })));
+const CompanyObjectsWorkbench = lazy(() => import("./features/departments/company-objects-workbench").then((module) => ({ default: module.CompanyObjectsWorkbench })));
+const CompanyGraphRoute = lazy(() => import("./features/departments/company-graph-route").then((module) => ({ default: module.CompanyGraphRoute })));
+const EntityInspectorRoute = lazy(() => import("./features/departments/entity-inspector-route").then((module) => ({ default: module.EntityInspectorRoute })));
+const ProjectsWorkbench = lazy(() => import("./features/departments/projects-workbench").then((module) => ({ default: module.ProjectsWorkbench })));
+const ProjectWorkspaceRoute = lazy(() => import("./features/departments/project-workspace-route").then((module) => ({ default: module.ProjectWorkspaceRoute })));
 const AccountSettingsRoute = lazy(() => import("./features/settings/settings-routes").then((module) => ({ default: module.AccountSettingsRoute })));
 const WorkspaceSettingsRoute = lazy(() => import("./features/settings/settings-routes").then((module) => ({ default: module.WorkspaceSettingsRoute })));
 
@@ -117,7 +124,8 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 function PrivateAppRoute({ activeArea, children }: { activeArea?: string; children: React.ReactNode }) {
-  return <PrivateRoute><Shell activeArea={activeArea}><LazyRoute>{children}</LazyRoute></Shell></PrivateRoute>;
+  const dashboardView = ["overview", "directory", "departments"].includes(currentAreaView()) || (activeArea === "04-operacje" && currentAreaView() === "tasks");
+  return <PrivateRoute><Shell activeArea={activeArea}><LazyRoute>{activeArea && dashboardView ? <DepartmentHealthStrip departmentKey={activeArea as ReturnType<typeof currentAreaKey>} /> : null}{children}</LazyRoute></Shell></PrivateRoute>;
 }
 
 function App() {
@@ -129,6 +137,28 @@ function App() {
   const metadata = <AppDocumentMetadata locationKey={locationKey} route={route} />;
 
   const areaKey = currentAreaKey();
+  if (pathname === "/areas" && currentAreaView() === "company-graph") {
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><CompanyGraphRoute /></PrivateAppRoute></>;
+  }
+  if (pathname === "/areas" && currentAreaView() === "entity") {
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><EntityInspectorRoute /></PrivateAppRoute></>;
+  }
+  const companyObjectType = ({ resources: "resource", risks: "risk", metrics: "metric", policies: "policy" } as const)[currentAreaView() as "resources" | "risks" | "metrics" | "policies"];
+  if (pathname === "/areas" && companyObjectType) {
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><CompanyObjectsWorkbench departmentKey={areaKey} type={companyObjectType} /></PrivateAppRoute></>;
+  }
+  if (pathname === "/areas" && currentAreaView() === "projects") {
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><ProjectsWorkbench departmentKey={areaKey} /></PrivateAppRoute></>;
+  }
+  if (pathname === "/areas" && currentAreaView() === "project-workspace") {
+    return <>{metadata}<PrivateAppRoute activeArea="11-innowacje"><ProjectWorkspaceRoute /></PrivateAppRoute></>;
+  }
+  if (pathname === "/areas" && currentAreaView() === "directory" && areaKey !== "06-kadry") {
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><PeopleAgentsRoute departmentKey={areaKey} /></PrivateAppRoute></>;
+  }
+  if (pathname === "/areas" && currentAreaView() === "goals" && areaKey !== "01-strategia" && areaKey !== "09-technologia") {
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><GoalsWorkbench canonical={false} departmentKey={areaKey} /></PrivateAppRoute></>;
+  }
   if (pathname === "/areas" && currentAreaView() === "tasks" && areaKey !== "04-operacje") {
     return <>{metadata}<PrivateAppRoute activeArea={areaKey}><TasksWorkbench departmentKey={areaKey} /></PrivateAppRoute></>;
   }

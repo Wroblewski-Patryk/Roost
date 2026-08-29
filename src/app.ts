@@ -51,6 +51,7 @@ import { companyRecordsRouter } from "./modules/company-records/company-records.
 import { evidenceRouter } from "./modules/evidence/evidence.routes";
 import { entityRelationsRouter } from "./modules/entity-relations/entity-relations.routes";
 import { companyIntelligenceRouter } from "./modules/company-intelligence/company-intelligence.routes";
+import { companyObjectsRouter } from "./modules/company-objects/company-objects.routes";
 
 function mountProtectedRoutes(router: Router) {
   router.use("/projects", projectsRouter);
@@ -96,6 +97,7 @@ function mountProtectedRoutes(router: Router) {
   router.use("/evidence", evidenceRouter);
   router.use("/entity-relations", entityRelationsRouter);
   router.use("/company-intelligence", companyIntelligenceRouter);
+  router.use("/company-objects", companyObjectsRouter);
 }
 
 function isApiHost(host = "") {
