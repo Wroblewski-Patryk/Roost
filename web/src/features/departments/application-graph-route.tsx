@@ -286,7 +286,8 @@ function layoutNodes(nodes: ApplicationGraphNode[], focus: ApplicationGraphNode)
   return positions;
 }
 
-function nextLevelLabel(type: ApplicationGraphNode["type"], count: number) {
+function nextLevelLabel(type: ApplicationGraphNode["type"], children: ApplicationGraphNode[]) {
+  const count = children.length;
   const labels: Record<ApplicationGraphNode["type"], [string, string]> = {
     company: ["application", "applications"],
     application: ["domain", "domains"],
@@ -301,7 +302,23 @@ function nextLevelLabel(type: ApplicationGraphNode["type"], count: number) {
     task_list: ["task", "tasks"],
     task: ["part", "parts"]
   };
-  return `${count} ${labels[type][count === 1 ? 0 : 1]}`;
+  const childTypes = Array.from(new Set(children.map((child) => child.type)));
+  const labelType = childTypes.length === 1 ? childTypes[0] : null;
+  const explicitChildLabels: Partial<Record<ApplicationGraphNode["type"], [string, string]>> = {
+    application: ["application", "applications"],
+    domain: ["domain", "domains"],
+    capability: ["capability", "capabilities"],
+    feature: ["feature", "features"],
+    layer: ["layer", "layers"],
+    implementation: ["atom", "atoms"],
+    procedure: ["procedure", "procedures"],
+    procedure_step: ["step", "steps"],
+    project: ["project", "projects"],
+    task_list: ["task list", "task lists"],
+    task: ["task", "tasks"]
+  };
+  const nouns = labelType ? explicitChildLabels[labelType] : labels[type];
+  return `${count} ${nouns?.[count === 1 ? 0 : 1] ?? (count === 1 ? "record" : "records")}`;
 }
 
 function handlesForEdge(source: { x: number; y: number }, target: { x: number; y: number }) {
@@ -606,7 +623,7 @@ function ApplicationGraphCanvas() {
 
       <div className="application-graph-context">
         <span><i className="ph-bold ph-crosshair" aria-hidden="true"></i> Focus <strong>{focus.label}</strong></span>
-        <span><i className="ph-bold ph-flow-arrow" aria-hidden="true"></i> {nextLevelLabel(focus.type, visibleChildren.length)}</span>
+        <span><i className="ph-bold ph-flow-arrow" aria-hidden="true"></i> {nextLevelLabel(focus.type, visibleChildren)}</span>
         <span className="application-graph-depth" aria-label="Visible graph depth">
           <i className="ph-bold ph-circles-three" aria-hidden="true"></i> Depth
           {([1, 2] as const).map((depth) => <button aria-pressed={revealDepth === depth} className={revealDepth === depth ? "is-active" : ""} key={depth} onClick={() => setRevealDepth(depth)} type="button">{depth}</button>)}
