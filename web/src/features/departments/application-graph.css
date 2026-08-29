@@ -187,7 +187,9 @@
 .application-graph-canvas .application-graph-edge .react-flow__edge-path { transition: stroke-width 180ms ease, stroke-opacity 180ms ease; }
 .application-graph-canvas .application-graph-edge--hover-muted { opacity: 0.06; }
 .application-graph-canvas .application-graph-edge--hover-connected { opacity: 1; }
+.application-graph-canvas .application-graph-edge--hover-connected .react-flow__edge-path { stroke-width: 3 !important; stroke-opacity: 1 !important; }
 .application-graph-canvas .application-graph-edge--departing { opacity: 0 !important; }
+.application-graph-canvas[data-layout-moving] .react-flow__node-applicationGraph { pointer-events: none; }
 
 .application-graph-node {
   --graph-accent: #8b7cf6;
@@ -247,7 +249,7 @@
 .application-graph-node[data-hover-context] { opacity: 1; }
 .application-graph-node[data-hover-muted] { opacity: 0.1; }
 .application-graph-node[data-departing] { opacity: 0 !important; pointer-events: none; }
-.application-graph-node:hover { opacity: 1; border-color: color-mix(in srgb, var(--graph-accent) 82%, white); box-shadow: 0 0 0 2px color-mix(in srgb, var(--graph-accent) 16%, transparent), 0 0.9rem 1.9rem rgba(0, 0, 0, 0.26); }
+.application-graph-canvas:not([data-layout-moving]) .application-graph-node:hover { opacity: 1; border-color: color-mix(in srgb, var(--graph-accent) 82%, white); box-shadow: 0 0 0 2px color-mix(in srgb, var(--graph-accent) 16%, transparent), 0 0.9rem 1.9rem rgba(0, 0, 0, 0.26); }
 .application-graph-node:focus-within { outline: 3px solid rgba(142, 165, 255, 0.35); outline-offset: 3px; }
 
 .application-graph-node__button { position: relative; display: grid; width: 100%; min-height: inherit; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 0.78rem; padding: 0.85rem; border-radius: inherit; transition: gap 320ms cubic-bezier(0.4, 0, 0.2, 1), padding 320ms cubic-bezier(0.4, 0, 0.2, 1); }

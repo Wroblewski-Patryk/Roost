@@ -38,6 +38,8 @@ type GraphNodeData = {
   dimmed: boolean;
   focused: boolean;
   accent: string;
+  onInteractionStart: (id: string) => void;
+  onInteractionEnd: (id: string) => void;
 };
 
 type GraphFlowNode = Node<GraphNodeData, "applicationGraph">;
@@ -78,8 +80,10 @@ function graphMotionEase(progress: number) {
 
 function useAnimatedGraphPositions(targetPositions: Map<string, GraphPosition>) {
   const currentPositionsRef = useRef(targetPositions);
+  const settledTargetRef = useRef(targetPositions);
   const animationFrameRef = useRef<number | null>(null);
   const [animatedPositions, setAnimatedPositions] = useState(targetPositions);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
     if (animationFrameRef.current !== null) cancelAnimationFrame(animationFrameRef.current);
@@ -87,10 +91,13 @@ function useAnimatedGraphPositions(targetPositions: Map<string, GraphPosition>) 
     const currentPositions = currentPositionsRef.current;
     if (reducedMotion || currentPositions.size === 0) {
       currentPositionsRef.current = targetPositions;
+      settledTargetRef.current = targetPositions;
       setAnimatedPositions(targetPositions);
+      setIsAnimating(false);
       return;
     }
 
+    setIsAnimating(true);
     const startPositions = new Map<string, GraphPosition>();
     targetPositions.forEach((target, id) => startPositions.set(id, currentPositions.get(id) ?? target));
     const startedAt = performance.now();
@@ -100,7 +107,11 @@ function useAnimatedGraphPositions(targetPositions: Map<string, GraphPosition>) 
       currentPositionsRef.current = nextPositions;
       setAnimatedPositions(nextPositions);
       if (progress < 1) animationFrameRef.current = requestAnimationFrame(animate);
-      else animationFrameRef.current = null;
+      else {
+        animationFrameRef.current = null;
+        settledTargetRef.current = targetPositions;
+        setIsAnimating(false);
+      }
     };
     animationFrameRef.current = requestAnimationFrame(animate);
     return () => {
@@ -108,7 +119,10 @@ function useAnimatedGraphPositions(targetPositions: Map<string, GraphPosition>) 
     };
   }, [targetPositions]);
 
-  return animatedPositions.size === 0 ? targetPositions : animatedPositions;
+  return {
+    isAnimating: isAnimating || settledTargetRef.current !== targetPositions,
+    positions: animatedPositions.size === 0 ? targetPositions : animatedPositions
+  };
 }
 
 function applicationGraphBounds(records: ApplicationGraphNode[], focus: ApplicationGraphNode, positions: Map<string, GraphPosition>) {
@@ -187,9 +201,11 @@ function ApplicationGraphNodeView({ data }: NodeProps<GraphFlowNode>) {
         <Handle className="application-graph-handle" id={`target-${position}`} key={`target-${position}`} position={position} type="target" />
       ))}
       <button
-        aria-label={`Focus ${record.type} ${record.label}. ${statusLabel(record)}, ${record.completeness}% complete.`}
-        className="application-graph-node__button nodrag nopan"
-        type="button"
+      aria-label={`Focus ${record.type} ${record.label}. ${statusLabel(record)}, ${record.completeness}% complete.`}
+      className="application-graph-node__button nodrag nopan"
+      onBlur={() => data.onInteractionEnd(record.id)}
+      onFocus={() => data.onInteractionStart(record.id)}
+      type="button"
       >
         <span
           aria-hidden="true"
@@ -516,7 +532,7 @@ function ApplicationGraphCanvas() {
   const visibleIds = useMemo(() => focus ? visibleNodeIds(graph.nodes, graph.edges, focus, mode, filters, revealDepth) : new Set<string>(), [filters, focus, graph.edges, graph.nodes, mode, revealDepth]);
   const visibleRecords = useMemo(() => graph.nodes.filter((node) => visibleIds.has(node.id)), [graph.nodes, visibleIds]);
   const targetPositions = useMemo(() => focus ? layoutApplicationGraphNodes(visibleRecords, focus) : new Map<string, GraphPosition>(), [focus, visibleRecords]);
-  const positions = useAnimatedGraphPositions(targetPositions);
+  const { isAnimating: layoutAnimating, positions } = useAnimatedGraphPositions(targetPositions);
   const visibleChildren = useMemo(() => visibleRecords.filter((node) => node.parentNodeId === focus?.id), [focus?.id, visibleRecords]);
   const dependencyNeighbourCount = useMemo(() => focus
     ? visibleRecords.filter((node) => !focus.path.includes(node.id) && !node.path.includes(focus.id)).length
@@ -542,6 +558,13 @@ function ApplicationGraphCanvas() {
     });
     return ids;
   }, [byId, graph.nodes, pendingFocusId]);
+  const interactionLocked = Boolean(pendingFocusId) || layoutAnimating;
+  const startNodeInteraction = useCallback((id: string) => {
+    if (!interactionLocked) setHoveredId(id);
+  }, [interactionLocked]);
+  const endNodeInteraction = useCallback((id: string) => {
+    setHoveredId((current) => current === id ? null : current);
+  }, []);
 
   const flowNodes = useMemo<GraphFlowNode[]>(() => visibleRecords.map((record, motionIndex) => ({
     id: record.id,
@@ -562,13 +585,15 @@ function ApplicationGraphCanvas() {
       role: record.id === focus?.id ? "focus" : focus?.path.includes(record.id) ? "lineage" : record.path.includes(focus?.id || "") ? "descendant" : "relation",
       focused: record.id === focus?.id,
       dimmed: record.id !== focus?.id && !record.path.includes(focus?.id || "") && !focus?.path.includes(record.id),
-      accent: branchAccent(record)
+      accent: branchAccent(record),
+      onInteractionStart: startNodeInteraction,
+      onInteractionEnd: endNodeInteraction
     },
     draggable: false,
     selectable: true,
-    focusable: true,
+    focusable: false,
     ariaLabel: `${record.label}, ${record.category}, ${record.completeness}% complete`
-  })), [focus, hoverNeighbourhood, hoveredId, mode, pendingNeighbourhood, positions, targetPositions, visibleRecords]);
+  })), [endNodeInteraction, focus, hoverNeighbourhood, hoveredId, mode, pendingNeighbourhood, positions, startNodeInteraction, targetPositions, visibleRecords]);
 
   const flowEdges = useMemo<Edge[]>(() => graph.edges
     .filter((edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target))
@@ -731,7 +756,7 @@ function ApplicationGraphCanvas() {
         </span>
       </div>
 
-      <div className="application-graph-canvas" data-inspector-open={Boolean(inspectorNode) || undefined}>
+      <div className="application-graph-canvas" data-inspector-open={Boolean(inspectorNode) || undefined} data-layout-moving={interactionLocked || undefined}>
         {error ? <div className="application-graph-inline-error" role="alert"><i className="ph-bold ph-warning-diamond" aria-hidden="true"></i><span>The requested graph branch could not be loaded ({error}).</span><button aria-label="Dismiss graph error" onClick={() => setError(null)} type="button"><i className="ph-bold ph-x" aria-hidden="true"></i></button></div> : null}
         {portfolio.nodes.filter((node) => node.type === "application").length === 0 ? <div className="application-graph-empty"><CcNotice action={<CcButton href="/areas?area=11-innowacje&view=overview" size="sm" variant="primary">Create an application</CcButton>} detail="Application Graph is a projection of Product Engineering. Add an application there to place it on this canvas." tone="empty" title="No applications to map yet" /></div> : null}
         <ReactFlow<GraphFlowNode>
@@ -746,8 +771,8 @@ function ApplicationGraphCanvas() {
           nodesDraggable={false}
           nodeTypes={nodeTypes}
           onNodeClick={(_event, node) => void focusNode(node.data.record)}
-          onNodeMouseEnter={(_event, node) => { if (!pendingFocusId) setHoveredId(node.id); }}
-          onNodeMouseLeave={() => setHoveredId(null)}
+          onNodeMouseEnter={(_event, node) => startNodeInteraction(node.id)}
+          onNodeMouseLeave={(_event, node) => endNodeInteraction(node.id)}
           onPaneClick={() => setInspectorId(null)}
           panOnDrag
           proOptions={{ hideAttribution: true }}
