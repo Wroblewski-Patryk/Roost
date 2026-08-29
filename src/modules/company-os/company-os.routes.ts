@@ -5,6 +5,8 @@ import { z } from "zod";
 import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
 import { workflowDefinitionDraftsRouter, workflowDefinitionRecoveryRouter } from "./workflow-definition-drafts.routes";
+import { isCanonicalDepartmentKey } from "../../operating-model/department-registry";
+import { contextualEntityIds, organizationalContextsForEntities } from "../organizational-context/organizational-context.service";
 
 const collectionNames = [
   "processes",
@@ -42,8 +44,11 @@ const collectionNames = [
 
 const collectionSchema = z.enum(collectionNames);
 const listQuerySchema = z.object({
-  limit: z.coerce.number().int().min(1).max(100).default(50)
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  departmentKey: z.string().refine(isCanonicalDepartmentKey).optional(),
+  includeCompanyWide: z.enum(["true", "false"]).default("true")
 }).strict();
+const contextualCollections: Partial<Record<CollectionName, string>> = { processes: "process", procedures: "procedure", resources: "resource", policies: "policy", metrics: "metric", risks: "risk" };
 const actorTypeSchema = z.enum(["user", "agent", "system", "integration"]);
 const riskLevelSchema = z.enum(["low", "medium", "high", "critical"]);
 const approvalRequestSchema = z.object({
@@ -2756,9 +2761,14 @@ companyOsRouter.get("/", asyncHandler(async (req, res) => {
 
 companyOsRouter.get("/:collection", asyncHandler(async (req, res) => {
   const collection = collectionSchema.parse(req.params.collection);
-  const { limit } = listQuerySchema.parse(req.query);
+  const { limit, departmentKey, includeCompanyWide } = listQuerySchema.parse(req.query);
   const data = await collectionReaders[collection].list(req.auth!.workspaceId, limit);
-  res.json({ data });
+  const entityType = contextualCollections[collection];
+  if (!entityType) return res.json({ data });
+  const ids = departmentKey ? new Set(await contextualEntityIds(req.auth!.workspaceId, entityType, departmentKey, includeCompanyWide === "true")) : null;
+  const filtered = (data as Array<{ id: string }>).filter((item) => !ids || ids.has(item.id));
+  const contexts = await organizationalContextsForEntities(req.auth!.workspaceId, entityType, filtered.map((item) => item.id));
+  res.json({ data: filtered.map((item) => ({ ...item, organizationalContext: contexts.get(item.id) })) });
 }));
 
 companyOsRouter.get("/:collection/:id", asyncHandler(async (req, res) => {

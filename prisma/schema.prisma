@@ -369,6 +369,55 @@ enum ProductOfferingStatus {
   retired
 }
 
+enum OrganizationalRelationshipRole {
+  owner
+  related
+  applicable
+}
+
+enum OrganizationalScopeType {
+  company
+  department
+  project
+  product
+  service
+  client
+  team
+  role
+  human
+  agent
+  feature
+  component
+}
+
+enum EntityOwnerType {
+  department
+  human
+  agent
+  role
+  team
+}
+
+enum EntityResponsibilityType {
+  accountable
+  responsible
+  contributor
+  reviewer
+  approver
+}
+
+enum FunctionalState {
+  discovered
+  expected
+  missing
+  implemented
+  partially_implemented
+  broken
+  verified_working
+  unknown
+  deprecated
+}
+
 model User {
   id                String                @id @default(uuid()) @db.Uuid
   email             String                @unique
@@ -387,90 +436,97 @@ model User {
 }
 
 model Workspace {
-  id                              String                           @id @default(uuid()) @db.Uuid
-  name                            String
-  logo                            String?
-  accentColor                     String?                          @map("accent_color")
-  ownerUserId                     String                           @map("owner_user_id") @db.Uuid
-  productMapCompanyId             String?                          @unique @map("product_map_company_id")
-  owner                           User                             @relation("WorkspaceOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
-  memberships                     WorkspaceMembership[]
-  apiKeys                         ApiKey[]
-  integrationSettings             IntegrationSetting[]
-  projects                        Project[]
-  goals                           Goal[]
-  targets                         Target[]
-  taskLists                       TaskList[]
-  tasks                           Task[]
-  clients                         Client[]
-  pipelineStages                  PipelineStage[]
-  deals                           Deal[]
-  interactions                    Interaction[]
-  notes                           Note[]
-  decisions                       Decision[]
-  agents                          Agent[]
-  workforceEntities               WorkforceEntity[]
-  agentLogs                       AgentLog[]
-  events                          Event[]
-  processes                       Process[]
-  pipelines                       Pipeline[]
-  procedures                      Procedure[]
-  companyRoles                    CompanyRole[]
-  universalResources              Resource[]
-  toolAdapters                    ToolAdapter[]
-  integrationCapabilities         IntegrationCapability[]
-  standards                       Standard[]
-  pipelineRuns                    PipelineRun[]
-  pipelineRunTaskLinks            PipelineRunTaskLink[]
-  stageRuns                       StageRun[]
-  approvals                       Approval[]
-  auditLogs                       AuditLog[]
-  checklistTemplates              ChecklistTemplate[]
-  checklistItems                  ChecklistItem[]
-  acceptanceCriteria              AcceptanceCriterion[]
-  policies                        Policy[]
-  metrics                         Metric[]
-  risks                           Risk[]
-  controls                        Control[]
-  knowledgeItems                  KnowledgeItem[]
-  knowledgeLinks                  KnowledgeLink[]
-  decisionLogs                    DecisionLog[]
-  automationRules                 AutomationRule[]
-  triggers                        Trigger[]
-  artifacts                       Artifact[]
-  dependencies                    Dependency[]
-  businessFunctions               BusinessFunction[]
-  stakeholders                    Stakeholder[]
-  operatingAreas                  OperatingArea[]
-  operatingFolders                OperatingFolder[]
-  operatingTables                 OperatingTable[]
-  externalContainerMappings       ExternalContainerMapping[]
-  externalFieldMappings           ExternalFieldMapping[]
-  storageLocations                StorageLocation[]
-  knowledgeRoots                  KnowledgeRoot[]
-  automationDefinitions           AutomationDefinition[]
-  googleDriveFiles                GoogleDriveFile[]
-  googleDriveContentSnapshots     GoogleDriveContentSnapshot[]
-  departments                     WorkspaceDepartment[]
-  externalWebhookRegistrations    ExternalWebhookRegistration[]
-  providerEventInbox              ProviderEventInbox[]
-  productMapProjectionSnapshots   ProductMapProjectionSnapshot[]
-  productMapProjectionReceipts    ProductMapProjectionReceipt[]
-  productMapProjectionQuarantines ProductMapProjectionQuarantine[]
-  productMapProjectionState       ProductMapProjectionState?
-  productMapProjectionAdmissions  ProductMapProjectionAdmission[]
-  agentEventOutbox                AgentEventOutbox[]
-  applications                    Application[]
-  capabilityDomains               CapabilityDomain[]
-  capabilityDefinitions           CapabilityDefinition[]
-  readinessDimensions             ReadinessDimensionDefinition[]
-  capabilityPacks                 CapabilityPack[]
-  applicationBlueprints           ApplicationBlueprint[]
-  technologyDefinitions           TechnologyDefinition[]
-  productOfferings                ProductOffering[]
-  applicationEvidence             ApplicationEvidence[]
-  createdAt                       DateTime                         @default(now()) @map("created_at")
-  updatedAt                       DateTime                         @updatedAt @map("updated_at")
+  id                                String                             @id @default(uuid()) @db.Uuid
+  name                              String
+  logo                              String?
+  accentColor                       String?                            @map("accent_color")
+  ownerUserId                       String                             @map("owner_user_id") @db.Uuid
+  productMapCompanyId               String?                            @unique @map("product_map_company_id")
+  owner                             User                               @relation("WorkspaceOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
+  memberships                       WorkspaceMembership[]
+  apiKeys                           ApiKey[]
+  integrationSettings               IntegrationSetting[]
+  projects                          Project[]
+  goals                             Goal[]
+  targets                           Target[]
+  taskLists                         TaskList[]
+  tasks                             Task[]
+  clients                           Client[]
+  pipelineStages                    PipelineStage[]
+  deals                             Deal[]
+  interactions                      Interaction[]
+  notes                             Note[]
+  decisions                         Decision[]
+  agents                            Agent[]
+  workforceEntities                 WorkforceEntity[]
+  agentLogs                         AgentLog[]
+  events                            Event[]
+  processes                         Process[]
+  pipelines                         Pipeline[]
+  procedures                        Procedure[]
+  companyRoles                      CompanyRole[]
+  universalResources                Resource[]
+  toolAdapters                      ToolAdapter[]
+  integrationCapabilities           IntegrationCapability[]
+  standards                         Standard[]
+  pipelineRuns                      PipelineRun[]
+  pipelineRunTaskLinks              PipelineRunTaskLink[]
+  stageRuns                         StageRun[]
+  approvals                         Approval[]
+  auditLogs                         AuditLog[]
+  checklistTemplates                ChecklistTemplate[]
+  checklistItems                    ChecklistItem[]
+  acceptanceCriteria                AcceptanceCriterion[]
+  policies                          Policy[]
+  metrics                           Metric[]
+  risks                             Risk[]
+  controls                          Control[]
+  knowledgeItems                    KnowledgeItem[]
+  knowledgeLinks                    KnowledgeLink[]
+  decisionLogs                      DecisionLog[]
+  automationRules                   AutomationRule[]
+  triggers                          Trigger[]
+  artifacts                         Artifact[]
+  dependencies                      Dependency[]
+  businessFunctions                 BusinessFunction[]
+  stakeholders                      Stakeholder[]
+  operatingAreas                    OperatingArea[]
+  operatingFolders                  OperatingFolder[]
+  operatingTables                   OperatingTable[]
+  externalContainerMappings         ExternalContainerMapping[]
+  externalFieldMappings             ExternalFieldMapping[]
+  storageLocations                  StorageLocation[]
+  knowledgeRoots                    KnowledgeRoot[]
+  automationDefinitions             AutomationDefinition[]
+  googleDriveFiles                  GoogleDriveFile[]
+  googleDriveContentSnapshots       GoogleDriveContentSnapshot[]
+  departments                       WorkspaceDepartment[]
+  organizationalDepartmentRelations OrganizationalDepartmentRelation[]
+  organizationalScopes              OrganizationalScope[]
+  entityOwnerships                  EntityOwnership[]
+  companyRecords                    CompanyRecord[]
+  evidenceRecords                   EvidenceRecord[]
+  departmentViewDefinitions         DepartmentViewDefinition[]
+  departmentViewAvailabilities      DepartmentViewAvailability[]
+  externalWebhookRegistrations      ExternalWebhookRegistration[]
+  providerEventInbox                ProviderEventInbox[]
+  productMapProjectionSnapshots     ProductMapProjectionSnapshot[]
+  productMapProjectionReceipts      ProductMapProjectionReceipt[]
+  productMapProjectionQuarantines   ProductMapProjectionQuarantine[]
+  productMapProjectionState         ProductMapProjectionState?
+  productMapProjectionAdmissions    ProductMapProjectionAdmission[]
+  agentEventOutbox                  AgentEventOutbox[]
+  applications                      Application[]
+  capabilityDomains                 CapabilityDomain[]
+  capabilityDefinitions             CapabilityDefinition[]
+  readinessDimensions               ReadinessDimensionDefinition[]
+  capabilityPacks                   CapabilityPack[]
+  applicationBlueprints             ApplicationBlueprint[]
+  technologyDefinitions             TechnologyDefinition[]
+  productOfferings                  ProductOffering[]
+  applicationEvidence               ApplicationEvidence[]
+  createdAt                         DateTime                           @default(now()) @map("created_at")
+  updatedAt                         DateTime                           @updatedAt @map("updated_at")
 
   @@map("workspaces")
 }
@@ -500,25 +556,191 @@ model OperatingArea {
 }
 
 model WorkspaceDepartment {
-  id          String    @id @default(uuid()) @db.Uuid
-  workspaceId String    @map("workspace_id") @db.Uuid
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  key         String
-  name        String
-  description String?
-  icon        String    @default("ph-buildings")
-  position    Int       @default(0)
-  isSystem    Boolean   @default(false) @map("is_system")
-  status      String    @default("active")
-  linkedViews Json      @default("[]") @map("linked_views")
-  metadata    Json      @default("{}")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  id                       String                             @id @default(uuid()) @db.Uuid
+  workspaceId              String                             @map("workspace_id") @db.Uuid
+  workspace                Workspace                          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  key                      String
+  name                     String
+  description              String?
+  icon                     String                             @default("ph-buildings")
+  position                 Int                                @default(0)
+  isSystem                 Boolean                            @default(false) @map("is_system")
+  status                   String                             @default("active")
+  linkedViews              Json                               @default("[]") @map("linked_views")
+  metadata                 Json                               @default("{}")
+  organizationalRelations  OrganizationalDepartmentRelation[]
+  canonicalViewDefinitions DepartmentViewDefinition[]         @relation("CanonicalDepartmentViews")
+  availableViews           DepartmentViewAvailability[]
+  createdAt                DateTime                           @default(now()) @map("created_at")
+  updatedAt                DateTime                           @updatedAt @map("updated_at")
 
   @@unique([workspaceId, key])
   @@index([workspaceId, position])
   @@index([workspaceId, status])
   @@map("workspace_departments")
+}
+
+model OrganizationalDepartmentRelation {
+  id               String                         @id @default(uuid()) @db.Uuid
+  workspaceId      String                         @map("workspace_id") @db.Uuid
+  workspace        Workspace                      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  entityType       String                         @map("entity_type")
+  entityId         String                         @map("entity_id") @db.Uuid
+  departmentId     String                         @map("department_id") @db.Uuid
+  department       WorkspaceDepartment            @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  relationshipRole OrganizationalRelationshipRole @map("relationship_role")
+  createdAt        DateTime                       @default(now()) @map("created_at")
+  updatedAt        DateTime                       @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, entityType, entityId, relationshipRole, departmentId])
+  @@index([workspaceId, entityType, entityId])
+  @@index([workspaceId, departmentId, entityType, relationshipRole])
+  @@map("organizational_department_relations")
+}
+
+model OrganizationalScope {
+  id            String                  @id @default(uuid()) @db.Uuid
+  workspaceId   String                  @map("workspace_id") @db.Uuid
+  workspace     Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  entityType    String                  @map("entity_type")
+  entityId      String                  @map("entity_id") @db.Uuid
+  scopeType     OrganizationalScopeType @map("scope_type")
+  scopeEntityId String?                 @map("scope_entity_id")
+  label         String?
+  createdAt     DateTime                @default(now()) @map("created_at")
+  updatedAt     DateTime                @updatedAt @map("updated_at")
+
+  @@index([workspaceId, entityType, entityId])
+  @@index([workspaceId, scopeType, scopeEntityId])
+  @@map("organizational_scopes")
+}
+
+model EntityOwnership {
+  id                 String                   @id @default(uuid()) @db.Uuid
+  workspaceId        String                   @map("workspace_id") @db.Uuid
+  workspace          Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  entityType         String                   @map("entity_type")
+  entityId           String                   @map("entity_id") @db.Uuid
+  ownerType          EntityOwnerType          @map("owner_type")
+  ownerId            String                   @map("owner_id")
+  responsibilityType EntityResponsibilityType @default(accountable) @map("responsibility_type")
+  createdAt          DateTime                 @default(now()) @map("created_at")
+  updatedAt          DateTime                 @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, entityType, entityId, ownerType, ownerId, responsibilityType])
+  @@index([workspaceId, entityType, entityId])
+  @@index([workspaceId, ownerType, ownerId])
+  @@map("entity_ownerships")
+}
+
+model DepartmentViewDefinition {
+  id                    String                       @id @default(uuid()) @db.Uuid
+  workspaceId           String                       @map("workspace_id") @db.Uuid
+  workspace             Workspace                    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  key                   String
+  label                 String
+  description           String?
+  icon                  String                       @default("ph-squares-four")
+  canonicalDepartmentId String                       @map("canonical_department_id") @db.Uuid
+  canonicalDepartment   WorkspaceDepartment          @relation("CanonicalDepartmentViews", fields: [canonicalDepartmentId], references: [id], onDelete: Cascade)
+  routeView             String                       @map("route_view")
+  defaultScope          Json                         @default("{}") @map("default_scope")
+  permissions           Json                         @default("[]")
+  displayOrder          Int                          @default(0) @map("display_order")
+  enabled               Boolean                      @default(true)
+  availability          DepartmentViewAvailability[]
+  createdAt             DateTime                     @default(now()) @map("created_at")
+  updatedAt             DateTime                     @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, key])
+  @@index([workspaceId, canonicalDepartmentId, displayOrder])
+  @@map("department_view_definitions")
+}
+
+model DepartmentViewAvailability {
+  id           String                   @id @default(uuid()) @db.Uuid
+  workspaceId  String                   @map("workspace_id") @db.Uuid
+  workspace    Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  viewId       String                   @map("view_id") @db.Uuid
+  view         DepartmentViewDefinition @relation(fields: [viewId], references: [id], onDelete: Cascade)
+  departmentId String                   @map("department_id") @db.Uuid
+  department   WorkspaceDepartment      @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  defaultScope Json                     @default("{}") @map("default_scope")
+  displayOrder Int                      @default(0) @map("display_order")
+  isCore       Boolean                  @default(false) @map("is_core")
+  enabled      Boolean                  @default(true)
+  createdAt    DateTime                 @default(now()) @map("created_at")
+  updatedAt    DateTime                 @updatedAt @map("updated_at")
+
+  @@unique([viewId, departmentId])
+  @@index([workspaceId, departmentId, displayOrder])
+  @@map("department_view_availability")
+}
+
+model CompanyRecord {
+  id                     String             @id @default(uuid()) @db.Uuid
+  workspaceId            String             @map("workspace_id") @db.Uuid
+  workspace              Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  recordType             String             @map("record_type")
+  key                    String
+  title                  String
+  description            String?
+  businessPurpose        String?            @map("business_purpose")
+  currentState           String?            @map("current_state")
+  desiredState           String?            @map("desired_state")
+  expectedBehavior       String?            @map("expected_behavior")
+  rationale              String?
+  acceptanceCriteria     Json               @default("[]") @map("acceptance_criteria")
+  priority               String             @default("normal")
+  status                 String             @default("active")
+  functionalState        FunctionalState    @default(unknown) @map("functional_state")
+  verificationState      VerificationStatus @default(not_started) @map("verification_state")
+  implementationCoverage Float?             @map("implementation_coverage")
+  source                 String             @default("companycore")
+  dueDate                DateTime?          @map("due_date")
+  parentId               String?            @map("parent_id") @db.Uuid
+  parent                 CompanyRecord?     @relation("CompanyRecordHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children               CompanyRecord[]    @relation("CompanyRecordHierarchy")
+  projectId              String?            @map("project_id") @db.Uuid
+  applicationId          String?            @map("application_id") @db.Uuid
+  clientId               String?            @map("client_id") @db.Uuid
+  metadata               Json               @default("{}")
+  createdAt              DateTime           @default(now()) @map("created_at")
+  updatedAt              DateTime           @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, recordType, key])
+  @@index([workspaceId, recordType, status])
+  @@index([workspaceId, projectId])
+  @@index([workspaceId, applicationId])
+  @@index([workspaceId, clientId])
+  @@index([workspaceId, parentId])
+  @@map("company_records")
+}
+
+model EvidenceRecord {
+  id                 String                     @id @default(uuid()) @db.Uuid
+  workspaceId        String                     @map("workspace_id") @db.Uuid
+  workspace          Workspace                  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  entityType         String                     @map("entity_type")
+  entityId           String                     @map("entity_id") @db.Uuid
+  type               EvidenceType
+  source             EvidenceSource             @default(human)
+  reference          String
+  url                String?
+  description        String?
+  verificationStatus EvidenceVerificationStatus @default(unverified) @map("verification_status")
+  confidence         Int?
+  observedAt         DateTime                   @default(now()) @map("observed_at")
+  verifiedByType     ActorType?                 @map("verified_by_type")
+  verifiedById       String?                    @map("verified_by_id")
+  verifiedAt         DateTime?                  @map("verified_at")
+  metadata           Json                       @default("{}")
+  createdAt          DateTime                   @default(now()) @map("created_at")
+  updatedAt          DateTime                   @updatedAt @map("updated_at")
+
+  @@index([workspaceId, entityType, entityId])
+  @@index([workspaceId, verificationStatus, observedAt])
+  @@map("evidence_records")
 }
 
 model OperatingFolder {
@@ -684,31 +906,31 @@ model Pipeline {
 }
 
 model Procedure {
-  id                  String          @id @default(uuid()) @db.Uuid
-  familyId            String          @default(uuid()) @map("family_id") @db.Uuid
-  workspaceId         String          @map("workspace_id") @db.Uuid
-  workspace           Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  processId           String?         @map("process_id") @db.Uuid
-  process             Process?        @relation(fields: [processId], references: [id], onDelete: SetNull)
+  id                  String                 @id @default(uuid()) @db.Uuid
+  familyId            String                 @default(uuid()) @map("family_id") @db.Uuid
+  workspaceId         String                 @map("workspace_id") @db.Uuid
+  workspace           Workspace              @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  processId           String?                @map("process_id") @db.Uuid
+  process             Process?               @relation(fields: [processId], references: [id], onDelete: SetNull)
   name                String
   purpose             String
   scope               String?
-  ownerRoleId         String?         @map("owner_role_id") @db.Uuid
-  ownerRole           CompanyRole?    @relation("ProcedureOwnerRole", fields: [ownerRoleId], references: [id], onDelete: SetNull)
-  version             Int             @default(1)
-  status              OperatingStatus @default(draft)
-  requiredTools       Json            @default("[]") @map("required_tools")
-  requiredPermissions Json            @default("[]") @map("required_permissions")
-  expectedResult      String?         @map("expected_result")
-  qualityStandardId   String?         @map("quality_standard_id") @db.Uuid
-  qualityStandard     Standard?       @relation(fields: [qualityStandardId], references: [id], onDelete: SetNull)
+  ownerRoleId         String?                @map("owner_role_id") @db.Uuid
+  ownerRole           CompanyRole?           @relation("ProcedureOwnerRole", fields: [ownerRoleId], references: [id], onDelete: SetNull)
+  version             Int                    @default(1)
+  status              OperatingStatus        @default(draft)
+  requiredTools       Json                   @default("[]") @map("required_tools")
+  requiredPermissions Json                   @default("[]") @map("required_permissions")
+  expectedResult      String?                @map("expected_result")
+  qualityStandardId   String?                @map("quality_standard_id") @db.Uuid
+  qualityStandard     Standard?              @relation(fields: [qualityStandardId], references: [id], onDelete: SetNull)
   stages              PipelineStage[]
   steps               ProcedureStep[]
   policies            Policy[]
   applicationLinks    ApplicationProcedure[]
   capabilityLinks     CapabilityProcedure[]
-  createdAt           DateTime        @default(now()) @map("created_at")
-  updatedAt           DateTime        @updatedAt @map("updated_at")
+  createdAt           DateTime               @default(now()) @map("created_at")
+  updatedAt           DateTime               @updatedAt @map("updated_at")
 
   @@unique([workspaceId, name, version])
   @@index([workspaceId, status])
@@ -2224,24 +2446,31 @@ model ProductOffering {
 }
 
 model Goal {
-  id          String     @id @default(uuid()) @db.Uuid
-  workspaceId String?    @map("workspace_id") @db.Uuid
-  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  projectId   String?    @map("project_id") @db.Uuid
-  project     Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  processId   String?    @map("process_id") @db.Uuid
-  process     Process?   @relation(fields: [processId], references: [id], onDelete: SetNull)
-  title       String
-  description String?
-  status      String     @default("active")
-  externalId  String?    @map("external_id")
-  source      String?    @default("companycore")
-  targets     Target[]
-  tasks       Task[]
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
+  id              String     @id @default(uuid()) @db.Uuid
+  workspaceId     String?    @map("workspace_id") @db.Uuid
+  workspace       Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  projectId       String?    @map("project_id") @db.Uuid
+  project         Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  processId       String?    @map("process_id") @db.Uuid
+  process         Process?   @relation(fields: [processId], references: [id], onDelete: SetNull)
+  title           String
+  description     String?
+  businessPurpose String?    @map("business_purpose")
+  priority        String     @default("normal")
+  deadline        DateTime?
+  parentGoalId    String?    @map("parent_goal_id") @db.Uuid
+  parentGoal      Goal?      @relation("GoalHierarchy", fields: [parentGoalId], references: [id], onDelete: SetNull)
+  childGoals      Goal[]     @relation("GoalHierarchy")
+  status          String     @default("active")
+  externalId      String?    @map("external_id")
+  source          String?    @default("companycore")
+  targets         Target[]
+  tasks           Task[]
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
 
   @@index([processId])
+  @@index([workspaceId, parentGoalId])
   @@map("goals")
 }
 
@@ -2457,20 +2686,31 @@ model Note {
 }
 
 model Decision {
-  id          String     @id @default(uuid()) @db.Uuid
-  workspaceId String?    @map("workspace_id") @db.Uuid
-  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  projectId   String?    @map("project_id") @db.Uuid
-  project     Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  title       String
-  rationale   String?
-  outcome     String?
-  status      String     @default("active")
-  externalId  String?    @map("external_id")
-  source      String?    @default("companycore")
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt @map("updated_at")
+  id           String     @id @default(uuid()) @db.Uuid
+  workspaceId  String?    @map("workspace_id") @db.Uuid
+  workspace    Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  projectId    String?    @map("project_id") @db.Uuid
+  project      Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title        String
+  context      String?
+  problem      String?
+  decision     String?
+  rationale    String?
+  alternatives Json       @default("[]")
+  consequences String?
+  outcome      String?
+  authorType   String?    @map("author_type")
+  authorId     String?    @map("author_id")
+  supersedesId String?    @map("supersedes_id") @db.Uuid
+  supersedes   Decision?  @relation("DecisionSupersession", fields: [supersedesId], references: [id], onDelete: SetNull)
+  supersededBy Decision[] @relation("DecisionSupersession")
+  status       String     @default("active")
+  externalId   String?    @map("external_id")
+  source       String?    @default("companycore")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
 
+  @@index([workspaceId, supersedesId])
   @@map("decisions")
 }
 

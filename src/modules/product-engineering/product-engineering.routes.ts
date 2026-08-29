@@ -401,7 +401,7 @@ productEngineeringRouter.get("/graph", asyncHandler(async (req, res) => {
 
 productEngineeringRouter.get("/applications/:id/graph", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
-  const [workspace, application, architecture, procedures, projects] = await Promise.all([
+  const [workspace, application, architecture, procedures, projects, records] = await Promise.all([
     prisma.workspace.findUnique({ where: { id: workspaceId }, select: { id: true, name: true } }),
     prisma.application.findFirst({ where: { id: String(req.params.id), workspaceId } }),
     prisma.applicationArchitectureComponent.findMany({
@@ -417,13 +417,17 @@ productEngineeringRouter.get("/applications/:id/graph", asyncHandler(async (req,
       where: { application: { id: String(req.params.id), workspaceId } },
       include: { project: { include: projectInclude } },
       orderBy: { createdAt: "asc" }
-    })
+    }),
+    prisma.companyRecord.findMany({ where: { workspaceId, applicationId: String(req.params.id), status: { not: "archived" } }, orderBy: [{ recordType: "asc" }, { priority: "asc" }, { updatedAt: "desc" }] })
   ]);
   if (!workspace) return sendApiError(res, 404, "workspace_not_found");
   if (!application) return sendApiError(res, 404, "application_not_found");
   const capabilities = await loadCapabilities(application.id);
   const readiness = calculateApplicationReadiness(readinessInput(capabilities));
-  res.json({ data: buildApplicationGraph({ workspace, application, capabilities, architecture, procedures, projects, readiness }) });
+  const evidenceCounts = await prisma.evidenceRecord.groupBy({ by: ["entityId"], where: { workspaceId, entityId: { in: records.map((record) => record.id) } }, _count: true });
+  const evidenceById = new Map(evidenceCounts.map((entry) => [entry.entityId, entry._count]));
+  const relationships = await prisma.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ fromEntityType: "application", fromEntityId: application.id }, { toEntityType: "application", toEntityId: application.id }, { fromEntityId: { in: records.map((record) => record.id) } }, { toEntityId: { in: records.map((record) => record.id) } }] } });
+  res.json({ data: buildApplicationGraph({ workspace, application, capabilities, architecture, procedures, projects, records: records.map((record) => ({ ...record, evidenceCount: evidenceById.get(record.id) ?? 0 })), relationships, readiness }) });
 }));
 
 productEngineeringRouter.get("/portfolio", asyncHandler(async (req, res) => {
@@ -562,6 +566,11 @@ productEngineeringRouter.get("/applications/:id/agent-context", asyncHandler(asy
   });
   if (!application) return sendApiError(res, 404, "application_not_found");
   const capabilities = await loadCapabilities(application.id);
+  const [records, genericEvidence, entityRelations] = await Promise.all([
+    prisma.companyRecord.findMany({ where: { workspaceId: req.auth!.workspaceId, applicationId: application.id, status: { not: "archived" } }, orderBy: [{ recordType: "asc" }, { priority: "asc" }] }),
+    prisma.evidenceRecord.findMany({ where: { workspaceId: req.auth!.workspaceId, OR: [{ entityType: "application", entityId: application.id }, { entityId: { in: await prisma.companyRecord.findMany({ where: { workspaceId: req.auth!.workspaceId, applicationId: application.id }, select: { id: true } }).then((items) => items.map((item) => item.id)) } }] } }),
+    prisma.dependency.findMany({ where: { workspaceId: req.auth!.workspaceId, status: { not: "archived" }, OR: [{ fromEntityType: "application", fromEntityId: application.id }, { toEntityType: "application", toEntityId: application.id }] } })
+  ]);
   const gaps = gapsFor(capabilities);
   const readiness = calculateApplicationReadiness(readinessInput(capabilities));
   res.json({
@@ -575,6 +584,9 @@ productEngineeringRouter.get("/applications/:id/agent-context", asyncHandler(asy
       gaps,
       blockers: gaps.filter((gap) => gap.blocked),
       dependencies: capabilities.flatMap((item) => item.dependenciesFrom),
+      companyRecords: records,
+      genericEvidence,
+      entityRelations,
       operatingModel: {
         applicationProcedures: application.procedures,
         capabilityProcedures: capabilities.flatMap((item) => item.capabilityDefinition.procedures.map((link) => ({

@@ -125,6 +125,22 @@ function routeDescription(route: ManifestRoute) {
     return "Create or update workspace departments and their linked view templates without mutating the underlying department modules or provider records.";
   }
 
+  if (route.capability.startsWith("organizational-context:")) {
+    return "Read or assign the owner department, related departments, applicability, scopes, and accountable ownership for one canonical Company OS entity.";
+  }
+
+  if (route.capability.startsWith("company-records:")) {
+    return "Read or manage canonical cross-department requirements, deliverables, issues, incidents, contracts, budgets, experiments, and other Company OS records with explicit expected, observed, and verification state.";
+  }
+
+  if (route.capability.startsWith("evidence:")) {
+    return "Record, inspect, or verify evidence for a Company OS entity without automatically promoting its declared functional state.";
+  }
+
+  if (route.capability.startsWith("company-graph:")) {
+    return "Search or traverse the workspace-scoped Company Graph, manage typed entity relationships, inspect health signals, or load an agent execution context.";
+  }
+
   if (route.capability === "intake:write") {
     return "Create proposal-only global intake classification and routing evidence without acknowledging agent events, mutating providers, approving work, invoicing, discounting, deleting, or executing commercial/legal actions.";
   }

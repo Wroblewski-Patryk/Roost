@@ -12,6 +12,13 @@ import {
 import { clickUpImportModes, syncClickUpTasksForWorkspaceWithOptions } from "../../integrations/clickup/clickup.sync";
 import { asyncHandler } from "../../middleware/async-handler";
 import { createEvent } from "../events/event.service";
+import { ensureDefaultDepartments } from "../departments/departments.routes";
+import { contextualEntityIds, departmentKeysAreValid, organizationalContextsForEntities, organizationalScopeTypes, replaceOrganizationalContext } from "../organizational-context/organizational-context.service";
+
+const organizationalContextSchema = z.object({
+  ownerDepartmentKey: z.string().nullable().optional(), relatedDepartmentKeys: z.array(z.string()).default([]), applicableDepartmentKeys: z.array(z.string()).default([]),
+  scopes: z.array(z.object({ type: z.enum(organizationalScopeTypes), entityId: z.string().trim().min(1).nullable().optional(), label: z.string().trim().max(160).nullable().optional() })).default([])
+}).strict();
 
 const statusSchema = z.nativeEnum(TaskStatus).optional();
 
@@ -26,7 +33,8 @@ const createTaskSchema = z.object({
   priority: z.string().optional(),
   dueDate: z.coerce.date().optional(),
   externalId: z.string().optional(),
-  source: z.string().optional()
+  source: z.string().optional(),
+  organizationalContext: organizationalContextSchema.optional()
 });
 
 const updateTaskSchema = createTaskSchema.partial().omit({ externalId: true, source: true });
@@ -55,6 +63,9 @@ const nativeClickUpSyncSchema = z.object({
 
 export const tasksRouter = Router();
 
+const taskInclude = { taskList: { select: { id: true, name: true, externalId: true, source: true } }, project: { select: { id: true, name: true } }, goal: { select: { id: true, title: true } }, target: { select: { id: true, title: true } } };
+async function serializeTasks(workspaceId: string, tasks: Array<Record<string, any>>) { const contexts = await organizationalContextsForEntities(workspaceId, "task", tasks.map((task) => task.id)); return tasks.map((task) => ({ ...task, organizationalContext: contexts.get(task.id) })); }
+
 async function visibleTaskRelations(workspaceId: string, input: {
   projectId?: string;
   goalId?: string;
@@ -73,47 +84,32 @@ async function visibleTaskRelations(workspaceId: string, input: {
 }
 
 tasksRouter.get("/", asyncHandler(async (req, res) => {
+  const workspaceId = req.auth!.workspaceId; const departmentKey = typeof req.query.departmentKey === "string" ? req.query.departmentKey : null;
+  const ids = departmentKey ? await contextualEntityIds(workspaceId, "task", departmentKey, req.query.includeCompanyWide !== "false") : null;
   const tasks = await prisma.task.findMany({
-    where: { workspaceId: req.auth!.workspaceId },
-    include: {
-      taskList: {
-        select: {
-          id: true,
-          name: true,
-          externalId: true,
-          source: true
-        }
-      }
-    },
+    where: { workspaceId, ...(ids ? { id: { in: ids } } : {}) }, include: taskInclude,
     orderBy: { createdAt: "desc" }
   });
-  res.json({ data: tasks });
+  res.json({ data: await serializeTasks(workspaceId, tasks) });
 }));
 
 tasksRouter.get("/:id", asyncHandler(async (req, res) => {
   const task = await prisma.task.findFirst({
     where: { id: String(req.params.id), workspaceId: req.auth!.workspaceId },
-    include: {
-      taskList: {
-        select: {
-          id: true,
-          name: true,
-          externalId: true,
-          source: true
-        }
-      }
-    }
+    include: taskInclude
   });
 
   if (!task) {
     return res.status(404).json({ error: "not_found" });
   }
 
-  res.json({ data: task });
+  res.json({ data: (await serializeTasks(req.auth!.workspaceId, [task]))[0] });
 }));
 
 tasksRouter.post("/", asyncHandler(async (req, res) => {
   const input = createTaskSchema.parse(req.body);
+  const { organizationalContext, ...taskInput } = input;
+  if (organizationalContext && !departmentKeysAreValid(organizationalContext)) return res.status(400).json({ error: "invalid_department_key" });
   if (!await visibleTaskRelations(req.auth!.workspaceId, input)) {
     return res.status(404).json({ error: "not_found" });
   }
@@ -161,13 +157,8 @@ tasksRouter.post("/", asyncHandler(async (req, res) => {
     }
   }
 
-  const task = await prisma.task.create({
-    data: {
-      ...input,
-      ...providerFields,
-      workspaceId: req.auth!.workspaceId
-    }
-  });
+  await ensureDefaultDepartments(req.auth!.workspaceId);
+  const task = await prisma.$transaction(async (transaction) => { const created = await transaction.task.create({ data: { ...taskInput, ...providerFields, workspaceId: req.auth!.workspaceId }, include: taskInclude }); if (organizationalContext) await replaceOrganizationalContext(transaction, req.auth!.workspaceId, "task", created.id, organizationalContext); return created; });
   await createEvent({
     type: "task_created",
     workspaceId: req.auth!.workspaceId,
@@ -176,11 +167,13 @@ tasksRouter.post("/", asyncHandler(async (req, res) => {
     source: task.source,
     payload: { taskId: task.id, title: task.title }
   });
-  res.status(201).json({ data: task });
+  res.status(201).json({ data: (await serializeTasks(req.auth!.workspaceId, [task]))[0] });
 }));
 
 tasksRouter.patch("/:id", asyncHandler(async (req, res) => {
   const input = updateTaskSchema.parse(req.body);
+  const { organizationalContext, ...taskInput } = input;
+  if (organizationalContext && !departmentKeysAreValid(organizationalContext)) return res.status(400).json({ error: "invalid_department_key" });
   if (!await visibleTaskRelations(req.auth!.workspaceId, input)) {
     return res.status(404).json({ error: "not_found" });
   }
@@ -201,11 +194,11 @@ tasksRouter.patch("/:id", asyncHandler(async (req, res) => {
         workspaceId: req.auth!.workspaceId,
         externalId: existing.externalId,
         changes: {
-          title: input.title,
-          description: input.description,
-          status: input.status,
-          priority: input.priority,
-          dueDate: input.dueDate
+          title: taskInput.title,
+          description: taskInput.description,
+          status: taskInput.status,
+          priority: taskInput.priority,
+          dueDate: taskInput.dueDate
         }
       });
     } catch (error) {
@@ -228,13 +221,8 @@ tasksRouter.patch("/:id", asyncHandler(async (req, res) => {
     }
   }
 
-  const task = await prisma.task.update({
-    where: {
-      id: String(req.params.id),
-      workspaceId: req.auth!.workspaceId
-    },
-    data: input
-  });
+  await ensureDefaultDepartments(req.auth!.workspaceId);
+  const task = await prisma.$transaction(async (transaction) => { const updated = await transaction.task.update({ where: { id: existing.id }, data: taskInput, include: taskInclude }); if (organizationalContext) await replaceOrganizationalContext(transaction, req.auth!.workspaceId, "task", existing.id, organizationalContext); return updated; });
   await createEvent({
     type: "task_updated",
     workspaceId: req.auth!.workspaceId,
@@ -243,7 +231,7 @@ tasksRouter.patch("/:id", asyncHandler(async (req, res) => {
     source: task.source,
     payload: { taskId: task.id, changed: Object.keys(input) }
   });
-  res.json({ data: task });
+  res.json({ data: (await serializeTasks(req.auth!.workspaceId, [task]))[0] });
 }));
 
 tasksRouter.delete("/:id", asyncHandler(async (req, res) => {

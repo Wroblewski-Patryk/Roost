@@ -37,6 +37,22 @@ function contextualViewLabel(viewLabel: string, areaLabel: string) {
   return withoutRepeatedArea || viewLabel;
 }
 
+type UniversalSearchResult = { entityType: string; recordType?: string; id: string; title: string; subtitle?: string | null };
+
+function searchResultDestination(result: UniversalSearchResult) {
+  const recordRoutes: Record<string, string> = { requirement: "/areas?area=11-innowacje&view=requirements", deliverable: "/areas?area=02-produkt&view=deliverables", initiative: "/areas?area=01-strategia&view=initiatives", contract: "/areas?area=10-prawo&view=contracts", compliance_item: "/areas?area=10-prawo&view=compliance", technical_incident: "/areas?area=09-technologia&view=incidents", knowledge_record: "/areas?area=08-zasoby&view=knowledge" };
+  if (result.entityType === "company_record") return recordRoutes[result.recordType || ""] || canonicalGeneralDashboardPath;
+  return ({ goal: "/areas?area=01-strategia&view=goals", task: "/areas?area=01-strategia&view=tasks", project: "/areas?area=11-innowacje&view=overview", application: "/areas?area=11-innowacje&view=application-graph", feature: "/areas?area=11-innowacje&view=application-graph", client: "/areas?area=05-relacje&view=overview", procedure: "/areas?area=04-operacje&view=procedures", resource: "/areas?area=08-zasoby&view=files", workforce: "/areas?area=06-kadry&view=directory", agent: "/areas?area=06-kadry&view=directory", decision: "/areas?area=01-strategia&view=decisions", risk: "/areas?area=12-zarzadzanie&view=escalations", metric: "/areas?area=12-zarzadzanie&view=reviews" } as Record<string, string>)[result.entityType] || canonicalGeneralDashboardPath;
+}
+
+function searchResultIcon(entityType: string) {
+  return ({ goal: "ph-target", task: "ph-list-checks", project: "ph-briefcase", company_record: "ph-file-text", application: "ph-cube", feature: "ph-puzzle-piece", client: "ph-address-book", procedure: "ph-list-numbers", resource: "ph-folder-open", workforce: "ph-user", agent: "ph-robot", decision: "ph-signpost", risk: "ph-warning-octagon", metric: "ph-chart-line-up" } as Record<string, string>)[entityType] || "ph-magnifying-glass";
+}
+
+function humanizeSearchType(result: UniversalSearchResult) {
+  return (result.recordType || result.entityType).replace(/_/g, " ");
+}
+
 function DepartmentSidebar({ activeArea, onNavigate }: { activeArea?: string; onNavigate?: () => void }) {
   const { t } = useLanguage();
   const activeView = currentAreaView();
@@ -197,6 +213,8 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
   const mobileNavCloseRef = useRef<HTMLButtonElement>(null);
   const [commandOpen, setCommandOpen] = useState(false);
   const [commandQuery, setCommandQuery] = useState("");
+  const [entityResults, setEntityResults] = useState<UniversalSearchResult[]>([]);
+  const [entitySearchBusy, setEntitySearchBusy] = useState(false);
   const activeView = currentAreaView();
   const activeShellArea = coreAreas.find((area) => area.key === activeArea) || coreAreas[0];
   const settingsRoute = pathname === "/workspace/settings" || pathname === "/account/settings";
@@ -216,6 +234,22 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
       return area.enabled !== false && area.href && (!query || `${label} ${t(area.eyebrowKey)}`.toLocaleLowerCase().includes(query));
     }).slice(0, 8);
   }, [commandQuery, t]);
+
+  useEffect(() => {
+    const query = commandQuery.trim();
+    if (!commandOpen || query.length < 2) { setEntityResults([]); setEntitySearchBusy(false); return; }
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setEntitySearchBusy(true);
+      try {
+        const response = await api<{ data: UniversalSearchResult[] }>(`/v1/company-intelligence/search?q=${encodeURIComponent(query)}`, { signal: controller.signal });
+        setEntityResults(response.data.slice(0, 20));
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) setEntityResults([]);
+      } finally { if (!controller.signal.aborted) setEntitySearchBusy(false); }
+    }, 180);
+    return () => { window.clearTimeout(timer); controller.abort(); };
+  }, [commandOpen, commandQuery]);
 
   useEffect(() => {
     function handleProfileUpdated(event: Event) {
@@ -374,7 +408,15 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
                     <i className="ph-bold ph-arrow-up-right" aria-hidden="true"></i>
                   </a>
                 ))}
-                {!commandResults.length ? <span className="roost-command-empty">{t("shell.commandEmpty")}</span> : null}
+                {entityResults.map((result) => (
+                  <a href={searchResultDestination(result)} key={`${result.entityType}:${result.id}`} onClick={() => setCommandOpen(false)}>
+                    <i className={`ph-bold ${searchResultIcon(result.entityType)}`} aria-hidden="true"></i>
+                    <span><strong>{result.title}</strong><small>{[humanizeSearchType(result), result.subtitle].filter(Boolean).join(" · ")}</small></span>
+                    <i className="ph-bold ph-arrow-up-right" aria-hidden="true"></i>
+                  </a>
+                ))}
+                {entitySearchBusy ? <span className="roost-command-empty">{t("table.loading.title")}</span> : null}
+                {!commandResults.length && !entityResults.length && !entitySearchBusy ? <span className="roost-command-empty">{t("shell.commandEmpty")}</span> : null}
               </nav>
             </section>
           </div>

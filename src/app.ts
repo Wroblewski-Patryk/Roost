@@ -46,6 +46,11 @@ import { buildInfoRouter, healthRouter, readinessRouter } from "./health/health.
 import { interactionsRouter } from "./modules/interactions/interactions.routes";
 import { workspacesRouter } from "./modules/workspaces/workspaces.routes";
 import { workforceRouter } from "./modules/workforce/workforce.routes";
+import { organizationalContextRouter } from "./modules/organizational-context/organizational-context.routes";
+import { companyRecordsRouter } from "./modules/company-records/company-records.routes";
+import { evidenceRouter } from "./modules/evidence/evidence.routes";
+import { entityRelationsRouter } from "./modules/entity-relations/entity-relations.routes";
+import { companyIntelligenceRouter } from "./modules/company-intelligence/company-intelligence.routes";
 
 function mountProtectedRoutes(router: Router) {
   router.use("/projects", projectsRouter);
@@ -86,6 +91,11 @@ function mountProtectedRoutes(router: Router) {
   router.use("/integration-settings", integrationSettingsRouter);
   router.use("/events", eventsRouter);
   router.use("/finance", financeRouter);
+  router.use("/organizational-context", organizationalContextRouter);
+  router.use("/company-records", companyRecordsRouter);
+  router.use("/evidence", evidenceRouter);
+  router.use("/entity-relations", entityRelationsRouter);
+  router.use("/company-intelligence", companyIntelligenceRouter);
 }
 
 function isApiHost(host = "") {

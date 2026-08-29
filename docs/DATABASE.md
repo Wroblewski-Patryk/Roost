@@ -46,12 +46,26 @@ workspace scope.
 - `deals`: sales opportunities linked to clients and pipeline stages.
 - `interactions`: CRM interactions linked to clients.
 - `notes`: notes linked to projects, tasks, clients, or deals.
-- `decisions`: recorded decisions, usually linked to projects.
+- `decisions`: structured global decisions with context, problem, chosen
+  decision, alternatives, rationale, consequences, outcome, human/agent/system
+  author identity, optional supersession history, and project links.
 - `agents`: AI agents such as Paperclip/Jarvis workers.
 - `agent_logs`: logs emitted by agents.
 - `events`: append-style system events for important changes.
 - `company_roles`: human, agent, and system roles with responsibilities,
   permissions, allowed tools, escalation targets, and default policies.
+- `organizational_department_relations`: owning, related, and applicable
+  department links for global records without department-local duplication.
+- `organizational_scopes`: company, department, project, product, client,
+  workforce, feature, and component lenses for shared records.
+- `entity_ownerships`: accountable and responsible ownership separated from
+  visibility and organizational relevance.
+- `department_view_definitions` and `department_view_availability`: persisted
+  canonical view contracts and their contextual availability across departments.
+- `company_records`: normalized shared record families used only where a
+  stronger native model does not already exist.
+- `evidence_records`: generic observed evidence with explicit verification
+  state for native and shared records.
 
 The target unified workforce direction is documented in
 `docs/architecture/unified-organizational-operating-system.md`. Current

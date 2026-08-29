@@ -683,6 +683,86 @@ test("account and workspace settings profile contract exposes active owner works
   assert.deepEqual(legacyProfileBody.data.workspaces, profileBody.data.workspaces);
 });
 
+test("company operating graph keeps records canonical, contextual, evidenced, and agent-readable", async () => {
+  const owner = await registerOwner("company-graph-owner@example.com", "Company Graph Workspace");
+  const headers = { Authorization: `Bearer ${owner.token}`, "Content-Type": "application/json" };
+
+  const departments = await request("/v1/departments", { headers });
+  assert.equal(departments.status, 200);
+  const departmentBody = departments.body as { data: { departments: Array<{ key: string }>; availableViews: Array<{ id: string; availableInDepartments: string[] }> } };
+  assert.equal(departmentBody.data.departments.length, 13);
+  assert.ok(departmentBody.data.availableViews.some((view) => view.id === "product.requirements" && view.availableInDepartments.includes("11-innowacje")));
+
+  const created = await request("/v1/company-records", {
+    method: "POST", headers, body: JSON.stringify({
+      recordType: "requirement", title: "Shared audit trail", businessPurpose: "Make execution verifiable",
+      desiredState: "Every completion has verified evidence", expectedBehavior: "Agents refuse unsupported completion claims",
+      acceptanceCriteria: ["Verified evidence is attached"], functionalState: "expected", implementationCoverage: 35,
+      organizationalContext: { ownerDepartmentKey: "02-produkt", relatedDepartmentKeys: ["11-innowacje"], applicableDepartmentKeys: [], scopes: [{ type: "company" }] }
+    })
+  });
+  assert.equal(created.status, 201, JSON.stringify(created.body));
+  const record = (created.body as { data: { id: string; organizationalContext: { ownerDepartment: { key: string } } } }).data;
+  assert.equal(record.organizationalContext.ownerDepartment.key, "02-produkt");
+
+  const productRecords = await request("/v1/company-records?recordType=requirement&departmentKey=02-produkt", { headers });
+  const innovationRecords = await request("/v1/company-records?recordType=requirement&departmentKey=11-innowacje", { headers });
+  assert.ok((productRecords.body as { data: Array<{ id: string }> }).data.some((item) => item.id === record.id));
+  assert.ok((innovationRecords.body as { data: Array<{ id: string }> }).data.some((item) => item.id === record.id));
+
+  const second = await request("/v1/company-records", { method: "POST", headers, body: JSON.stringify({ recordType: "deliverable", title: "Evidence gate", organizationalContext: { ownerDepartmentKey: "09-technologia", relatedDepartmentKeys: [], applicableDepartmentKeys: [], scopes: [] } }) });
+  assert.equal(second.status, 201, JSON.stringify(second.body));
+  const secondId = (second.body as { data: { id: string } }).data.id;
+  const relation = await request("/v1/entity-relations", { method: "POST", headers, body: JSON.stringify({ dependencyType: "implements", from: { entityType: "company_record", entityId: secondId }, to: { entityType: "requirement", entityId: record.id } }) });
+  assert.equal(relation.status, 201, JSON.stringify(relation.body));
+
+  const evidence = await request("/v1/evidence", { method: "POST", headers, body: JSON.stringify({ entityType: "requirement", entityId: record.id, type: "test", source: "agent", reference: "api:test:company-operating-graph", confidence: 95 }) });
+  assert.equal(evidence.status, 201, JSON.stringify(evidence.body));
+  const evidenceId = (evidence.body as { data: { id: string } }).data.id;
+  const verified = await request(`/v1/evidence/${evidenceId}/verification`, { method: "POST", headers, body: JSON.stringify({ status: "verified", verifiedByType: "system", verifiedById: "api-test" }) });
+  assert.equal((verified.body as { data: { verificationStatus: string } }).data.verificationStatus, "verified");
+
+  const createdTask = await request("/v1/tasks", { method: "POST", headers, body: JSON.stringify({ title: "Implement evidence gate", status: "todo", organizationalContext: { ownerDepartmentKey: "09-technologia", relatedDepartmentKeys: ["11-innowacje"], applicableDepartmentKeys: [], scopes: [] } }) });
+  assert.equal(createdTask.status, 201, JSON.stringify(createdTask.body));
+  const task = (createdTask.body as { data: { id: string } }).data;
+  const technologyTasks = await request("/v1/tasks?departmentKey=09-technologia", { headers });
+  const innovationTasks = await request("/v1/tasks?departmentKey=11-innowacje", { headers });
+  assert.ok((technologyTasks.body as { data: Array<{ id: string }> }).data.some((item) => item.id === task.id));
+  assert.ok((innovationTasks.body as { data: Array<{ id: string }> }).data.some((item) => item.id === task.id));
+
+  const createdProject = await request("/v1/projects", { method: "POST", headers, body: JSON.stringify({ name: "Shared application project", organizationalContext: { ownerDepartmentKey: "11-innowacje", relatedDepartmentKeys: ["09-technologia"], applicableDepartmentKeys: [], scopes: [{ type: "company" }] } }) });
+  assert.equal(createdProject.status, 201, JSON.stringify(createdProject.body));
+  const projectId = (createdProject.body as { data: { id: string } }).data.id;
+  const technologyProjects = await request("/v1/projects?departmentKey=09-technologia", { headers });
+  assert.ok((technologyProjects.body as { data: Array<{ id: string }> }).data.some((item) => item.id === projectId));
+
+  const createdTaskList = await request("/v1/task-lists", { method: "POST", headers, body: JSON.stringify({ name: "Shared engineering execution", projectId, organizationalContext: { ownerDepartmentKey: "09-technologia", relatedDepartmentKeys: ["11-innowacje"], applicableDepartmentKeys: [], scopes: [] } }) });
+  assert.equal(createdTaskList.status, 201, JSON.stringify(createdTaskList.body));
+  const taskListId = (createdTaskList.body as { data: { id: string } }).data.id;
+  const innovationTaskLists = await request("/v1/task-lists?departmentKey=11-innowacje", { headers });
+  assert.ok((innovationTaskLists.body as { data: Array<{ id: string }> }).data.some((item) => item.id === taskListId));
+
+  const createdProcedure = await request("/v1/process-core/procedures", { method: "POST", headers, body: JSON.stringify({ name: "Shared production verification", purpose: "Verify releases before declaring completion", expectedResult: "Verified runtime evidence", steps: [{ instruction: "Run the approved verification suite", stepType: "manual" }], organizationalContext: { ownerDepartmentKey: "04-operacje", relatedDepartmentKeys: [], applicableDepartmentKeys: ["09-technologia", "11-innowacje"], scopes: [] } }) });
+  assert.equal(createdProcedure.status, 201, JSON.stringify(createdProcedure.body));
+  const procedureId = (createdProcedure.body as { data: { id: string } }).data.id;
+  const technologyProcedures = await request("/v1/process-core/procedures?departmentKey=09-technologia", { headers });
+  assert.ok((technologyProcedures.body as { data: Array<{ id: string }> }).data.some((item) => item.id === procedureId));
+
+  const taskContext = await request(`/v1/company-intelligence/tasks/${task.id}/agent-context`, { headers });
+  assert.equal(taskContext.status, 200);
+  assert.equal((taskContext.body as { data: { schemaVersion: string; constraints: { sourceOfTruth: string } } }).data.schemaVersion, "task-agent-execution-context-v1");
+  assert.equal((taskContext.body as { data: { constraints: { sourceOfTruth: string } } }).data.constraints.sourceOfTruth, "roost");
+
+  const graph = await request("/v1/company-intelligence/graph", { headers });
+  assert.equal(graph.status, 200);
+  const graphBody = graph.body as { data: { nodes: Array<{ id: string }>; edges: Array<{ type: string }> } };
+  assert.ok(graphBody.data.nodes.some((node) => node.id === record.id));
+  assert.ok(graphBody.data.edges.some((edge) => edge.type === "implements"));
+  const health = await request("/v1/company-intelligence/health", { headers });
+  assert.equal(health.status, 200);
+  assert.ok(Number((health.body as { data: { score: number } }).data.score) >= 0);
+});
+
 test("owner can update account identity and password with current-password verification", async () => {
   const owner = await registerOwner("account-actions-owner@example.com", "Account Actions Workspace");
   const headers = { Authorization: `Bearer ${owner.token}` };
@@ -7504,25 +7584,50 @@ test("CompanyCore v1 protected API flow", async () => {
     body: JSON.stringify({
       projectId: projectAId,
       processId: processIdA,
-      title: "Agent-readable goal"
+      title: "Agent-readable goal",
+      businessPurpose: "Prove one Goal ID across departmental perspectives",
+      priority: "high",
+      organizationalContext: {
+        ownerDepartmentKey: "09-technologia",
+        relatedDepartmentKeys: ["11-innowacje"],
+        applicableDepartmentKeys: [],
+        scopes: [
+          { type: "department", entityId: "09-technologia" },
+          { type: "department", entityId: "11-innowacje" }
+        ]
+      }
     })
   });
-  assert.equal(goal.status, 201);
+  assert.equal(goal.status, 201, JSON.stringify(goal.body));
   const goalId = (goal.body as { data: { id: string } }).data.id;
 
   const readGoal = await request(`/v1/goals/${goalId}`, { headers: authA });
   assert.equal(readGoal.status, 200);
   assert.equal((readGoal.body as { data: { title: string } }).data.title, "Agent-readable goal");
   assert.equal((readGoal.body as { data: { processId: string } }).data.processId, processIdA);
+  assert.equal((readGoal.body as { data: { organizationalContext: { ownerDepartment: { key: string } } } }).data.organizationalContext.ownerDepartment.key, "09-technologia");
+
+  const technologyGoals = await request("/v1/goals?departmentKey=09-technologia", { headers: authA });
+  const innovationGoals = await request("/v1/goals?departmentKey=11-innowacje", { headers: authA });
+  const salesGoals = await request("/v1/goals?departmentKey=03-sprzedaz", { headers: authA });
+  assert.equal(technologyGoals.status, 200);
+  assert.equal(innovationGoals.status, 200);
+  assert.equal(salesGoals.status, 200);
+  assert.ok((technologyGoals.body as { data: Array<{ id: string }> }).data.some((item) => item.id === goalId));
+  assert.ok((innovationGoals.body as { data: Array<{ id: string }> }).data.some((item) => item.id === goalId));
+  assert.ok(!(salesGoals.body as { data: Array<{ id: string }> }).data.some((item) => item.id === goalId));
 
   const updatedGoal = await request(`/v1/goals/${goalId}`, {
     method: "PATCH",
     headers: authA,
     body: JSON.stringify({
-      status: "active-reviewed"
+      status: "active-reviewed",
+      title: "Agent-readable goal updated once"
     })
   });
   assert.equal(updatedGoal.status, 200);
+  const innovationGoalAfterUpdate = await request("/v1/goals?departmentKey=11-innowacje", { headers: authA });
+  assert.equal((innovationGoalAfterUpdate.body as { data: Array<{ id: string; title: string }> }).data.find((item) => item.id === goalId)?.title, "Agent-readable goal updated once");
   const targetMetric = await prisma.metric.create({
     data: {
       workspaceId: ownerA.workspace.id,
@@ -8027,12 +8132,32 @@ test("CompanyCore v1 protected API flow", async () => {
     headers: authA,
     body: JSON.stringify({
       title: "Use CompanyCore as source of truth",
+      context: "Operational records are fragmented across provider tools",
+      problem: "Agents cannot distinguish declarations from observed truth",
+      decision: "Roost remains the canonical source of truth",
       rationale: "Agents need durable operational memory",
-      outcome: "approved"
+      alternatives: ["Use provider state directly", "Keep agent-local memory"],
+      consequences: "External tools synchronize through governed API and MCP boundaries",
+      outcome: "approved",
+      authorType: "human",
+      authorId: "workspace-owner",
+      organizationalContext: {
+        ownerDepartmentKey: "01-strategia",
+        relatedDepartmentKeys: ["09-technologia"],
+        applicableDepartmentKeys: [],
+        scopes: [{ type: "company" }]
+      }
     })
   });
-  assert.equal(decision.status, 201);
-  const decisionId = (decision.body as { data: { id: string } }).data.id;
+  assert.equal(decision.status, 201, JSON.stringify(decision.body));
+  const decisionData = (decision.body as { data: { id: string; decision: string; alternatives: string[]; organizationalContext: { ownerDepartment: { key: string } } } }).data;
+  const decisionId = decisionData.id;
+  assert.equal(decisionData.decision, "Roost remains the canonical source of truth");
+  assert.equal(decisionData.alternatives.length, 2);
+  assert.equal(decisionData.organizationalContext.ownerDepartment.key, "01-strategia");
+
+  const technologyDecisions = await request("/v1/decisions?departmentKey=09-technologia", { headers: authA });
+  assert.ok((technologyDecisions.body as { data: Array<{ id: string }> }).data.some((item) => item.id === decisionId));
 
   const readDecision = await request(`/v1/decisions/${decisionId}`, { headers: authA });
   assert.equal(readDecision.status, 200);

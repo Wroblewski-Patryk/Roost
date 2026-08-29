@@ -6,7 +6,7 @@ import type {
   ProductLifecycleStage
 } from "@prisma/client";
 
-export type ApplicationGraphNodeType = "company" | "application" | "domain" | "capability" | "feature" | "layer" | "implementation" | "procedure" | "procedure_step" | "project" | "task_list" | "task";
+export type ApplicationGraphNodeType = "company" | "application" | "requirement" | "domain" | "capability" | "feature" | "layer" | "implementation" | "procedure" | "procedure_step" | "project" | "task_list" | "task";
 export type ApplicationGraphEdgeType = "hierarchy" | "dependency" | "blocks" | "relates_to";
 
 export type ApplicationGraphNode = {
@@ -723,6 +723,8 @@ export function buildApplicationGraph(input: {
   architecture?: GraphArchitectureComponent[];
   procedures?: GraphApplicationProcedure[];
   projects?: GraphProject[];
+  records?: Array<{ id: string; recordType: string; key: string; title: string; description?: string | null; status: string; priority: string; functionalState: string; implementationCoverage?: number | null; evidenceCount?: number }>;
+  relationships?: Array<{ id: string; dependencyType: string; fromEntityType?: string | null; fromEntityId?: string | null; toEntityType?: string | null; toEntityId?: string | null }>;
   readiness: { overall: number; blockers: Array<{ capabilityId: string }> };
 }): ApplicationGraphPacket {
   const companyId = nodeId("company", input.workspace.id);
@@ -790,6 +792,20 @@ export function buildApplicationGraph(input: {
   const edges: ApplicationGraphEdge[] = [{ id: `hierarchy:${companyId}:${applicationId}`, source: companyId, target: applicationId, type: "hierarchy", required: true }];
   const featureNodeByKey = new Map<string, ApplicationGraphNode>();
   const capabilityNodeByDefinitionId = new Map<string, ApplicationGraphNode>();
+
+  for (const record of input.records ?? []) {
+    const recordId = nodeId("requirement", record.id);
+    const blocked = ["missing", "broken"].includes(record.functionalState) || record.status === "blocked";
+    nodes.push({
+      id: recordId, entityId: record.id, type: "requirement", label: record.title, shortLabel: record.title,
+      category: record.recordType.replace(/_/g, " "), status: record.functionalState,
+      completeness: record.implementationCoverage ?? (record.functionalState === "verified_working" ? 100 : record.functionalState === "implemented" ? 90 : record.functionalState === "partially_implemented" ? 50 : 0),
+      isRequired: record.recordType === "requirement", isBlocked: blocked, hasEvidence: Boolean(record.evidenceCount), tags: [record.recordType, record.key, record.priority],
+      parentNodeId: applicationId, childCount: 0, path: [companyId, applicationId, recordId],
+      details: { description: record.description, evidenceCount: record.evidenceCount ?? 0, missingEvidence: record.recordType === "requirement" && !record.evidenceCount, recommendations: !record.evidenceCount ? ["Attach verified evidence before claiming implementation."] : [] }
+    });
+    edges.push({ id: `hierarchy:${applicationId}:${recordId}`, source: applicationId, target: recordId, type: "hierarchy", required: record.recordType === "requirement" });
+  }
 
   for (const group of Array.from(groups.values()).sort((left, right) => left.order - right.order || left.label.localeCompare(right.label))) {
     const domainId = nodeId("domain", `${input.application.id}:${group.key}`);
@@ -946,6 +962,14 @@ export function buildApplicationGraph(input: {
     nodes,
     edges
   });
+
+  const normalizeEntityType = (value?: string | null) => value === "company_record" ? "requirement" : value;
+  for (const relation of input.relationships ?? []) {
+    const source = nodes.find((node) => node.entityId === relation.fromEntityId && node.type === normalizeEntityType(relation.fromEntityType));
+    const target = nodes.find((node) => node.entityId === relation.toEntityId && node.type === normalizeEntityType(relation.toEntityType));
+    if (!source || !target) continue;
+    edges.push({ id: `company-relation:${relation.id}`, source: source.id, target: target.id, type: relation.dependencyType === "blocks" ? "blocks" : relation.dependencyType === "related_to" ? "relates_to" : "dependency", required: relation.dependencyType === "requires" || relation.dependencyType === "depends_on", label: relation.dependencyType.replace(/_/g, " ") });
+  }
 
   const childCounts = new Map<string, number>();
   for (const node of nodes) {

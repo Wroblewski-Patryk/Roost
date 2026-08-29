@@ -1157,19 +1157,19 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
   );
 }
 
-export function AssetsRoute() {
+export function AssetsRoute({ departmentKey = "08-zasoby", canonical = true }: { departmentKey?: CoreAreaKey; canonical?: boolean }) {
   const { t } = useLanguage();
   const activeView = currentAssetsView();
   const [refreshKey, setRefreshKey] = useState(0);
-  const packet = useOwnerPacket<AssetsPacket>(`/v1/assets/context?areaKey=all&limit=1000&refresh=${refreshKey}`, true, t);
+  const packet = useOwnerPacket<AssetsPacket>(`/v1/assets/context?areaKey=all&limit=1000${canonical ? "" : `&departmentKey=${encodeURIComponent(departmentKey)}`}&refresh=${refreshKey}`, true, t);
 
   return (
     <>
       {activeView === "files" ? (
         <CcPageHeader
-          description={t("assets.filesFoldersDescription")}
-          eyebrow={t("areas.08.label")}
-          title={t("assets.filesFoldersTitle")}
+          description={canonical ? t("assets.filesFoldersDescription") : "Kontekstowy widok tej samej firmowej warstwy plików i zasobów."}
+          eyebrow={canonical ? t("areas.08.label") : departmentLabel(departmentKey, t)}
+          title={canonical ? t("assets.filesFoldersTitle") : `${t("assets.filesFoldersTitle")} · ${departmentLabel(departmentKey, t)}`}
         />
       ) : null}
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}

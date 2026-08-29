@@ -329,6 +329,53 @@ MCP servers remain thin wrappers. They must not implement independent
 permission logic, workflow state transitions, approval decisions, provider
 access, or database reads.
 
+## Shared Organizational Record Context
+
+Roost now has a reusable organizational-context foundation for global company
+records:
+
+- `organizational_department_relations` records owning, related, and applicable
+  departments without making a department the database container of an object;
+- `organizational_scopes` records company, department, project, product,
+  service, client, team, role, human, agent, feature, and component lenses;
+- `entity_ownerships` separates accountable/responsible ownership from scope
+  and department relevance.
+
+`Goal` is the native-model reference implementation. `01 Strategy -> Goals` is
+the canonical all-company workbench, while `09 Technology -> Goals` is a
+contextual projection over the same `/v1/goals` records. A Goal related to
+multiple departments keeps one ID; updates made through any perspective are
+immediately visible in every other matching perspective. Existing Goal rows are
+preserved without inventing ownership or scope during migration.
+
+The same service boundary is available to tasks, task lists, procedures,
+projects, decisions, risks, metrics, resources, policies, processes,
+applications, clients, workforce entities, features, evidence, and generic
+company records. `company_records` supplies canonical requirements,
+deliverables, issues, incidents, contracts, compliance items, budgets,
+invoices, experiments, portfolio items, escalations, reviews, and similar
+families only where no stronger native model exists. `evidence_records` and the
+generic `dependencies` edge table provide verified evidence and typed
+cross-entity relationships without department-local copies.
+
+Tasks, Task Lists, Projects, Procedures, Decisions, Goals, and shared Resources
+now expose department-filtered reads over their native records. Technology,
+Legal, and Innovation reuse the canonical Operations Procedure and Assets File
+workbenches through contextual routes; edits retain one source ID and Procedure
+revisions inherit organizational context.
+
+`department_view_definitions` declares each view's canonical department,
+route, default scope, permissions, and order;
+`department_view_availability` makes that view available in additional
+departments. The Products and Innovation requirement workbenches therefore
+query the same record IDs. All 13 departments expose active workbenches for
+their core native records or the shared record families.
+
+The read layer exposes global search, company and department health, a unified
+Company Graph, and `task-agent-execution-context-v1`. Application-linked
+requirements are included in the existing Application Graph and application
+agent context, preserving one graph per application.
+
 ## Missing Abstractions And Target Gaps
 
 The following gaps are accepted target gaps. They require future scoped task
@@ -344,7 +391,6 @@ contracts before implementation:
 | Contextual visibility | API capabilities and service-key profiles | rank/role/department/project-context policy derivation |
 | Workforce workload | partial task/read packet summaries | capacity, availability, workload, blocker state |
 | Agent profile depth | `agents`, service keys, agent logs/events | profile for MCP identity, provider/model, skills, tools, constraints, memory |
-| Organizational world-state API | area graphs and department read packets | unified org-state read API plus MCP resources |
 
 Implementation must prefer read models and explicit mapping audits first. Add
 new tables only when existing CompanyCore foundations cannot honestly express

@@ -45,6 +45,15 @@ export const capabilities = [
   "projects:write",
   "goals:read",
   "goals:write",
+  "organizational-context:read",
+  "organizational-context:write",
+  "company-records:read",
+  "company-records:write",
+  "evidence:read",
+  "evidence:write",
+  "evidence:verify",
+  "company-graph:read",
+  "company-graph:write",
   "targets:read",
   "targets:write",
   "task-lists:read",
@@ -232,6 +241,36 @@ export const adapterManifest = {
       { method: "PATCH", path: "/v1/process-core/procedures/:id", capability: "process-core:write" },
       { method: "POST", path: "/v1/process-core/procedures/:id/actions/activate", capability: "process-core:activate" },
       { method: "POST", path: "/v1/process-core/procedures/:id/actions/archive", capability: "process-core:activate" }
+    ],
+    organizationalContext: [
+      { method: "GET", path: "/v1/organizational-context/:entityType/:entityId", capability: "organizational-context:read" },
+      { method: "PATCH", path: "/v1/organizational-context/:entityType/:entityId", capability: "organizational-context:write" }
+    ],
+    companyRecords: [
+      { method: "GET", path: "/v1/company-records", capability: "company-records:read" },
+      { method: "GET", path: "/v1/company-records/:id", capability: "company-records:read" },
+      { method: "POST", path: "/v1/company-records", capability: "company-records:write" },
+      { method: "PATCH", path: "/v1/company-records/:id", capability: "company-records:write" },
+      { method: "DELETE", path: "/v1/company-records/:id", capability: "company-records:write" }
+    ],
+    evidence: [
+      { method: "GET", path: "/v1/evidence", capability: "evidence:read" },
+      { method: "POST", path: "/v1/evidence", capability: "evidence:write" },
+      { method: "PATCH", path: "/v1/evidence/:id", capability: "evidence:write" },
+      { method: "POST", path: "/v1/evidence/:id/verification", capability: "evidence:verify" },
+      { method: "DELETE", path: "/v1/evidence/:id", capability: "evidence:write" }
+    ],
+    entityRelations: [
+      { method: "GET", path: "/v1/entity-relations", capability: "company-graph:read" },
+      { method: "POST", path: "/v1/entity-relations", capability: "company-graph:write" },
+      { method: "PATCH", path: "/v1/entity-relations/:id", capability: "company-graph:write" },
+      { method: "DELETE", path: "/v1/entity-relations/:id", capability: "company-graph:write" }
+    ],
+    companyIntelligence: [
+      { method: "GET", path: "/v1/company-intelligence/search", capability: "company-graph:read" },
+      { method: "GET", path: "/v1/company-intelligence/graph", capability: "company-graph:read" },
+      { method: "GET", path: "/v1/company-intelligence/health", capability: "company-graph:read" },
+      { method: "GET", path: "/v1/company-intelligence/tasks/:id/agent-context", capability: "company-graph:read" }
     ],
     productEngineering: [
       { method: "GET", path: "/v1/product-engineering/graph", capability: "product-engineering:read" },

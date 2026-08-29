@@ -55,16 +55,21 @@ Use it with:
 | google drive | `/v1/google-drive` | File metadata reads, content reads, scope updates, descriptions, Docs/Sheets create/edit. |
 | integration settings | `/v1/integration-settings` | ClickUp discovery/webhooks/events/maintenance, Google Drive OAuth/import/discovery/reconcile, provider settings. |
 | clickup webhook | `/v1/webhooks/clickup` | Raw-body signed webhook ingestion. |
-| tasks | `/v1/tasks` | Task CRUD/archive, ClickUp custom field writes, ClickUp sync routes. |
-| task lists | `/v1/task-lists` | Workspace-scoped task-list CRUD/archive. |
-| projects | `/v1/projects` | Workspace-scoped project CRUD/archive. |
-| goals | `/v1/goals` | Workspace-scoped goal CRUD/archive. |
+| tasks | `/v1/tasks` | Global Task CRUD/archive, organizational context and department projections, ClickUp custom field writes, and ClickUp sync routes. |
+| task lists | `/v1/task-lists` | Global task-list CRUD/archive with project links, organizational context, and department projections. |
+| projects | `/v1/projects` | Global project CRUD/archive with multi-department organizational context and department projections. |
+| goals | `/v1/goals` | Workspace-scoped global Goal CRUD/archive with reusable ownership, multi-department relationships, scope, and contextual department filtering. |
+| organizational context | `/v1/organizational-context/:entityType/:entityId` | Shared owner/related/applicable department, scope, and accountable ownership API. |
+| company records | `/v1/company-records` | Canonical CRUD/archive for requirements and missing Company OS record families with contextual department projections. |
+| evidence | `/v1/evidence` | Generic entity evidence plus explicit verification lifecycle. |
+| entity relations | `/v1/entity-relations` | Typed cross-entity Company Graph edges over canonical records. |
+| company intelligence | `/v1/company-intelligence` | Universal search, unified graph, company/department health, and task agent execution context. |
 | targets | `/v1/targets` | Workspace-scoped target CRUD/archive. |
 | clients | `/v1/clients` | Workspace-scoped client CRUD/archive. |
 | deals | `/v1/deals` | Workspace-scoped deal CRUD/archive. |
 | interactions | `/v1/interactions` | Workspace-scoped interaction CRUD/archive. |
 | notes | `/v1/notes` | Workspace-scoped note CRUD/archive and ClickUp comment bridge behavior. |
-| decisions | `/v1/decisions` | Lightweight decision CRUD/archive. |
+| decisions | `/v1/decisions` | Structured decision CRUD/archive with context, problem, chosen decision, alternatives, consequences, author, supersession history, organizational ownership, and department filtering. |
 | agents | `/v1/agents` | Agent registry CRUD/archive. |
 | agent logs | `/v1/agent-logs` | Agent log read/write. |
 | agent events | `/v1/agent-events` | Agent event read and acknowledgement. |
@@ -83,6 +88,13 @@ Use it with:
 | `/areas?area=00-ogolny&view=overview` | React | Canonical post-login `00 General` dashboard. |
 | `/areas?area=00-ogolny&view=product-map` | React | Canonical owner-facing product map. |
 | `/areas?area=01-strategia` through `/areas?area=12-zarzadzanie` | React | Active department workbenches; canonical query and view values are defined by the route registry. |
+| `/areas?area=01-strategia&view=goals` | React | Canonical all-company Goal workbench with CRUD and organizational context editing. |
+| `/areas?area=09-technologia&view=goals` | React | Technology-filtered projection of the same global Goal records. |
+| `/areas?area=01-strategia&view=decisions` and contextual decision views | React | Canonical structured Decision register plus Technology, Legal, Innovation, and Management projections over the same IDs. |
+| contextual task views across `01`-`12` | React | Department projections over the same global Task records, with organizational ownership and related-department editing. |
+| `/areas?...&view=procedures` in Operations, Technology, Legal, and Innovation | React | Canonical and contextual projections over the same versioned Procedure IDs. |
+| `/areas?...&view=files` in Assets, Technology, Legal, and Innovation | React | Canonical and contextual projections over the shared Drive/Resource layer. |
+| contextual record views across `00`-`12` | React | Reusable CRUD workbenches for requirements, deliverables, issues, incidents, contracts, budgets, evidence-bearing reviews, and other canonical record families. |
 | `/areas?area=11-innowacje&view=application-graph` | React | Progressive Product Engineering graph projection with focus, search, modes, filters, dependencies, and details. |
 | `/dashboard`, `/react-dashboard`, `/operations`, `/people-agents`, `/workforce` | React | Compatibility aliases normalized to canonical `/areas` routes. |
 | `/account/settings`, `/workspace/settings` | React | Authenticated account and workspace settings. |

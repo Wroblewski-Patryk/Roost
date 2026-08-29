@@ -6,6 +6,7 @@ import { useLanguage } from "../../i18n/i18n";
 import { formatAppDate } from "../../i18n/date-format";
 import { StrategyPacket } from "../../types";
 import { BlockedActions, humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
+import { GoalsWorkbench } from "./goals-workbench";
 
 function formatDate(value?: string | null) {
   if (!value) return "-";
@@ -13,6 +14,9 @@ function formatDate(value?: string | null) {
 }
 
 export function StrategyRoute() {
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("view") === "goals") {
+    return <GoalsWorkbench canonical />;
+  }
   const { t } = useLanguage();
   const packet = useOwnerPacket<StrategyPacket>("/v1/strategy/context", true, t);
   const rows = packet.data?.goals || [];

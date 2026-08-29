@@ -8,8 +8,9 @@ import { type Translate, useLanguage } from "../../i18n/i18n";
 import type { Locale } from "../../i18n/locales";
 import { OperatingGraphPacket } from "../../types";
 import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
+import { GoalsWorkbench } from "./goals-workbench";
 
-type TechnologyView = "overview" | "integrations" | "automations";
+type TechnologyView = "overview" | "goals" | "integrations" | "automations";
 
 type IntegrationCapability = {
   id: string;
@@ -42,7 +43,7 @@ type AutomationDefinition = {
 function currentView(): TechnologyView {
   if (typeof window === "undefined") return "overview";
   const view = new URLSearchParams(window.location.search).get("view");
-  return view === "integrations" || view === "automations" ? view : "overview";
+  return view === "goals" || view === "integrations" || view === "automations" ? view : "overview";
 }
 
 function humanize(value?: string | null) {
@@ -139,6 +140,7 @@ function AutomationsView() {
 
 export function TechnologyRoute() {
   const view = currentView();
+  if (view === "goals") return <GoalsWorkbench departmentKey="09-technologia" />;
   return (
     <>
       <section className="grid gap-5">

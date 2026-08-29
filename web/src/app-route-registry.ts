@@ -19,6 +19,7 @@ export type AppRouteGroup = {
 export const canonicalGeneralDashboardPath = "/areas?area=00-ogolny&view=overview";
 export const canonicalProductMapPath = "/areas?area=00-ogolny&view=product-map";
 export const canonicalStrategyPath = "/areas?area=01-strategia&view=overview";
+export const canonicalStrategyGoalsPath = "/areas?area=01-strategia&view=goals";
 export const canonicalProductDeliveryPath = "/areas?area=02-produkt&view=overview";
 export const canonicalSalesPath = "/areas?area=03-sprzedaz&view=overview";
 export const canonicalOperationsPath = "/areas?area=04-operacje&view=tasks";
@@ -27,12 +28,24 @@ export const canonicalPeopleAgentsPath = "/areas?area=06-kadry&view=directory";
 export const canonicalFinancePath = "/areas?area=07-finanse&view=overview";
 export const canonicalAssetsPath = "/areas?area=08-zasoby&view=overview";
 export const canonicalTechnologyPath = "/areas?area=09-technologia&view=overview";
+export const canonicalTechnologyGoalsPath = "/areas?area=09-technologia&view=goals";
 export const canonicalTechnologyIntegrationsPath = "/areas?area=09-technologia&view=integrations";
 export const canonicalTechnologyAutomationsPath = "/areas?area=09-technologia&view=automations";
 export const canonicalLegalPath = "/areas?area=10-prawo&view=overview";
 export const canonicalInnovationPath = "/areas?area=11-innowacje&view=overview";
 export const canonicalApplicationGraphPath = "/areas?area=11-innowacje&view=application-graph";
 export const canonicalManagementDepartmentsPath = "/areas?area=12-zarzadzanie&view=departments";
+
+const contextualRecordViews: Record<string, string[]> = {
+  "00-ogolny": ["company-updates"], "01-strategia": ["initiatives", "decisions"], "02-produkt": ["requirements", "deliverables"],
+  "03-sprzedaz": ["offers"], "04-operacje": ["issues", "events"], "05-relacje": ["feedback"], "06-kadry": ["competencies"],
+  "07-finanse": ["budgets", "invoices"], "08-zasoby": ["knowledge"], "09-technologia": ["incidents", "environments"],
+  "10-prawo": ["contracts", "compliance"], "11-innowacje": ["requirements", "experiments"], "12-zarzadzanie": ["portfolio", "escalations", "reviews"]
+};
+const contextualTaskAreas = new Set(["01-strategia", "02-produkt", "03-sprzedaz", "05-relacje", "06-kadry", "07-finanse", "08-zasoby", "09-technologia", "10-prawo", "11-innowacje", "12-zarzadzanie"]);
+const contextualDecisionAreas = new Set(["01-strategia", "09-technologia", "10-prawo", "11-innowacje", "12-zarzadzanie"]);
+const contextualProcedureAreas = new Set(["09-technologia", "10-prawo", "11-innowacje"]);
+const contextualFileAreas = new Set(["09-technologia", "10-prawo", "11-innowacje"]);
 
 export const publicHomeRoute: AppRouteMeta = {
   id: "home",
@@ -309,11 +322,26 @@ export function canonicalPostAuthPath(pathname?: string | null) {
     const params = new URLSearchParams(rawQuery);
     const area = params.get("area");
     const view = params.get("view");
+    if (area && view && contextualRecordViews[area]?.includes(view)) {
+      return `/areas?area=${encodeURIComponent(area)}&view=${encodeURIComponent(view)}`;
+    }
+    if (area && view === "tasks" && contextualTaskAreas.has(area)) {
+      return `/areas?area=${encodeURIComponent(area)}&view=tasks`;
+    }
+    if (area && view === "decisions" && contextualDecisionAreas.has(area)) {
+      return `/areas?area=${encodeURIComponent(area)}&view=decisions`;
+    }
+    if (area && view === "procedures" && contextualProcedureAreas.has(area)) {
+      return `/areas?area=${encodeURIComponent(area)}&view=procedures`;
+    }
+    if (area && view === "files" && contextualFileAreas.has(area)) {
+      return `/areas?area=${encodeURIComponent(area)}&view=files`;
+    }
     if (area === "00-ogolny" && view === "product-map") {
       return canonicalProductMapPath;
     }
     if (area === "01-strategia") {
-      return canonicalStrategyPath;
+      return view === "goals" ? canonicalStrategyGoalsPath : canonicalStrategyPath;
     }
     if (area === "03-sprzedaz") {
       return canonicalSalesPath;
@@ -342,6 +370,7 @@ export function canonicalPostAuthPath(pathname?: string | null) {
     }
     if (area === "09-technologia") {
       const view = params.get("view");
+      if (view === "goals") return canonicalTechnologyGoalsPath;
       if (view === "integrations") return canonicalTechnologyIntegrationsPath;
       if (view === "automations") return canonicalTechnologyAutomationsPath;
       return canonicalTechnologyPath;

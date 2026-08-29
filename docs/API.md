@@ -2275,19 +2275,128 @@ DELETE /projects/:id
 ## Goals
 
 ```http
-GET /goals
-GET /goals/:id
-POST /goals
-PATCH /goals/:id
-DELETE /goals/:id
+GET /v1/goals
+GET /v1/goals/:id
+POST /v1/goals
+PATCH /v1/goals/:id
+DELETE /v1/goals/:id
+```
+
+`GET /v1/goals` is the canonical all-company collection. Pass a canonical
+`departmentKey` to obtain a contextual projection over the same Goal IDs.
+Company-wide scopes are included by default and can be excluded with
+`includeCompanyWide=false`.
+
+```http
+GET /v1/goals?departmentKey=09-technologia
+GET /v1/goals?departmentKey=11-innowacje&includeCompanyWide=false
 ```
 
 ```json
 {
   "projectId": "uuid",
-  "title": "Reach first paying customers"
+  "title": "Release Soar production version",
+  "businessPurpose": "Make the validated application available to customers",
+  "priority": "high",
+  "deadline": "2026-10-01T12:00:00.000Z",
+  "organizationalContext": {
+    "ownerDepartmentKey": "11-innowacje",
+    "relatedDepartmentKeys": ["09-technologia"],
+    "applicableDepartmentKeys": [],
+    "scopes": [
+      { "type": "department", "entityId": "11-innowacje" },
+      { "type": "department", "entityId": "09-technologia" }
+    ]
+  }
 }
 ```
+
+Ownership, department relationships, and scope are distinct. Updating the Goal
+through any contextual view updates one record; the API never creates a
+department-local copy.
+
+## Company Operating Graph
+
+The following workspace-scoped routes form the shared Company OS layer. Owner
+tokens have access through the normal authenticated API; service keys require
+the capability listed in `GET /v1/mcp/manifest`.
+
+```http
+GET    /v1/organizational-context/:entityType/:entityId
+PATCH  /v1/organizational-context/:entityType/:entityId
+
+GET    /v1/company-records
+GET    /v1/company-records/:id
+POST   /v1/company-records
+PATCH  /v1/company-records/:id
+DELETE /v1/company-records/:id
+
+GET    /v1/evidence
+POST   /v1/evidence
+PATCH  /v1/evidence/:id
+POST   /v1/evidence/:id/verification
+DELETE /v1/evidence/:id
+
+GET    /v1/entity-relations
+POST   /v1/entity-relations
+PATCH  /v1/entity-relations/:id
+DELETE /v1/entity-relations/:id
+
+GET /v1/company-intelligence/search?q=...
+GET /v1/company-intelligence/graph
+GET /v1/company-intelligence/health
+GET /v1/company-intelligence/health?departmentKey=09-technologia
+GET /v1/company-intelligence/tasks/:id/agent-context
+
+GET    /v1/tasks?departmentKey=09-technologia
+POST   /v1/tasks
+PATCH  /v1/tasks/:id
+
+GET    /v1/decisions?departmentKey=09-technologia
+GET    /v1/decisions/:id
+POST   /v1/decisions
+PATCH  /v1/decisions/:id
+DELETE /v1/decisions/:id
+```
+
+`company-records` is the reusable canonical registry for object families that
+do not already have a stronger native model, including requirements,
+deliverables, issues, incidents, contracts, compliance items, budgets,
+invoices, experiments, portfolio items, escalations, and management reviews.
+It records business purpose, current/desired state, expected behavior,
+acceptance criteria, functional and verification state, implementation
+coverage, hierarchy, application/project/client links, due date, priority,
+status, metadata, and organizational context. `recordType` identifies the
+family; `departmentKey` returns a contextual projection over the same IDs.
+
+Typed entity relations use `depends_on`, `blocks`, `implements`, `consumes`,
+`exposes`, `affects`, `requires`, `owned_by`, `validated_by`, `governed_by`,
+`supersedes`, or `related_to`. Evidence has an explicit verification lifecycle
+(`unverified`, `verified`, `rejected`, `stale`) and never promotes a declared
+functional state automatically.
+
+`GET /v1/company-intelligence/graph` is the whole-workspace Company Graph.
+Application-scoped requirements also appear in
+`GET /v1/product-engineering/applications/:id/graph` and in that application's
+agent context, keeping one Application Graph rather than a parallel registry.
+
+Tasks and decisions are native global models. Their create and update payloads
+accept the same `organizationalContext` object used by Goals; contextual list
+queries return the original record IDs. A Decision additionally records
+`context`, `problem`, the chosen `decision`, `alternatives`, `rationale`,
+`consequences`, `outcome`, `authorType`, `authorId`, and optional
+`supersedesId`. Supersession is workspace-validated and cannot point to the
+same Decision.
+
+Projects and Task Lists accept the same embedded organizational context and
+support `departmentKey` contextual list queries. Process Core Procedures do as
+well; when an active procedure is revised, the new draft version inherits its
+organizational context unless the caller explicitly changes it. The Assets
+context endpoint accepts `departmentKey` to project Drive metadata and shared
+Resource relationships into Technology, Legal, Innovation, or another
+department without creating another file manager. Company OS reads for
+`processes`, `procedures`, `resources`, `policies`, `metrics`, and `risks`
+accept the same department filter and return organizational context.
 
 ## Targets
 

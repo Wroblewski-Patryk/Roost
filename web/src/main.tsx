@@ -44,6 +44,10 @@ const LegalRoute = lazy(() => import("./features/departments/legal-route").then(
 const InnovationRoute = lazy(() => import("./features/departments/innovation-route").then((module) => ({ default: module.InnovationRoute })));
 const ApplicationGraphRoute = lazy(() => import("./features/departments/application-graph-route").then((module) => ({ default: module.ApplicationGraphRoute })));
 const ManagementRoute = lazy(() => import("./features/departments/management-route").then((module) => ({ default: module.ManagementRoute })));
+const CompanyRecordsWorkbench = lazy(() => import("./features/departments/company-records-workbench").then((module) => ({ default: module.CompanyRecordsWorkbench })));
+const TasksWorkbench = lazy(() => import("./features/departments/tasks-workbench").then((module) => ({ default: module.TasksWorkbench })));
+const DecisionsWorkbench = lazy(() => import("./features/departments/decisions-workbench").then((module) => ({ default: module.DecisionsWorkbench })));
+const ProceduresWorkbench = lazy(() => import("./features/departments/procedures-workbench").then((module) => ({ default: module.ProceduresWorkbench })));
 const AccountSettingsRoute = lazy(() => import("./features/settings/settings-routes").then((module) => ({ default: module.AccountSettingsRoute })));
 const WorkspaceSettingsRoute = lazy(() => import("./features/settings/settings-routes").then((module) => ({ default: module.WorkspaceSettingsRoute })));
 
@@ -79,6 +83,30 @@ function currentAreaView() {
   return new URLSearchParams(window.location.search).get("view") || "overview";
 }
 
+const companyRecordViews: Record<string, { recordType: string; title: string }> = {
+  "00-ogolny:company-updates": { recordType: "company_update", title: "Company updates" },
+  "01-strategia:initiatives": { recordType: "initiative", title: "Strategic initiatives" },
+  "02-produkt:requirements": { recordType: "requirement", title: "Product requirements" },
+  "02-produkt:deliverables": { recordType: "deliverable", title: "Product deliverables" },
+  "03-sprzedaz:offers": { recordType: "commercial_offer", title: "Commercial offers" },
+  "04-operacje:issues": { recordType: "operational_issue", title: "Operational issues" },
+  "04-operacje:events": { recordType: "operational_event", title: "Operational events" },
+  "05-relacje:feedback": { recordType: "feedback", title: "Feedback and relationship evidence" },
+  "06-kadry:competencies": { recordType: "competency", title: "Competencies" },
+  "07-finanse:budgets": { recordType: "budget", title: "Budgets" },
+  "07-finanse:invoices": { recordType: "invoice", title: "Invoices" },
+  "08-zasoby:knowledge": { recordType: "knowledge_record", title: "Knowledge records" },
+  "09-technologia:incidents": { recordType: "technical_incident", title: "Technical incidents" },
+  "09-technologia:environments": { recordType: "environment", title: "Environments" },
+  "10-prawo:contracts": { recordType: "contract", title: "Contracts" },
+  "10-prawo:compliance": { recordType: "compliance_item", title: "Compliance register" },
+  "11-innowacje:requirements": { recordType: "requirement", title: "Requirements" },
+  "11-innowacje:experiments": { recordType: "experiment", title: "Experiments" },
+  "12-zarzadzanie:portfolio": { recordType: "portfolio_item", title: "Company portfolio" },
+  "12-zarzadzanie:escalations": { recordType: "escalation", title: "Escalations" },
+  "12-zarzadzanie:reviews": { recordType: "management_review", title: "Management reviews" }
+};
+
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const routeKey = window.location.pathname + window.location.search;
   if (!isSignedIn()) {
@@ -99,6 +127,24 @@ function App() {
   const route = useMemo(() => resolveRouteMeta(pathname + window.location.search), [locationKey]);
 
   const metadata = <AppDocumentMetadata locationKey={locationKey} route={route} />;
+
+  const areaKey = currentAreaKey();
+  if (pathname === "/areas" && currentAreaView() === "tasks" && areaKey !== "04-operacje") {
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><TasksWorkbench departmentKey={areaKey} /></PrivateAppRoute></>;
+  }
+  if (pathname === "/areas" && currentAreaView() === "decisions") {
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><DecisionsWorkbench canonical={areaKey === "01-strategia"} departmentKey={areaKey} /></PrivateAppRoute></>;
+  }
+  if (pathname === "/areas" && currentAreaView() === "procedures" && areaKey !== "04-operacje") {
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><ProceduresWorkbench canonical={false} departmentKey={areaKey} /></PrivateAppRoute></>;
+  }
+  if (pathname === "/areas" && currentAreaView() === "files" && areaKey !== "08-zasoby") {
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><AssetsRoute canonical={false} departmentKey={areaKey} /></PrivateAppRoute></>;
+  }
+  const recordView = pathname === "/areas" ? companyRecordViews[`${areaKey}:${currentAreaView()}`] : null;
+  if (recordView) {
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><CompanyRecordsWorkbench departmentKey={areaKey} recordType={recordView.recordType} title={recordView.title} /></PrivateAppRoute></>;
+  }
 
   if (pathname === "/") {
     return <>{metadata}<PublicHomeRoute /></>;
@@ -127,7 +173,7 @@ function App() {
   }
 
   if (pathname === "/areas" && currentAreaKey() === "01-strategia") {
-    if (window.location.search !== "?area=01-strategia&view=overview") {
+    if (!["overview", "goals"].includes(currentAreaView())) {
       window.history.replaceState(null, "", canonicalStrategyPath);
     }
     return <>{metadata}<PrivateAppRoute activeArea="01-strategia"><StrategyRoute /></PrivateAppRoute></>;
@@ -181,7 +227,7 @@ function App() {
 
   if (pathname === "/areas" && currentAreaKey() === "09-technologia") {
     const view = new URLSearchParams(window.location.search).get("view") || "overview";
-    if (!["overview", "integrations", "automations"].includes(view)) {
+    if (!["overview", "goals", "integrations", "automations"].includes(view)) {
       window.history.replaceState(null, "", canonicalTechnologyPath);
     }
     return <>{metadata}<PrivateAppRoute activeArea="09-technologia"><TechnologyRoute /></PrivateAppRoute></>;

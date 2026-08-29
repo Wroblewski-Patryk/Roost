@@ -6,6 +6,7 @@ import { getGoogleDriveClientForWorkspace } from "../../integrations/google-driv
 import { toJsonInput } from "../../integrations/integration-settings.service";
 import { asyncHandler } from "../../middleware/async-handler";
 import { isCanonicalDepartmentKey, resolveDepartmentEntry } from "../../operating-model/department-registry";
+import { contextualEntityIds, organizationalContextsForEntities } from "../organizational-context/organizational-context.service";
 
 const ASSETS_DEPARTMENT_KEY = "08-zasoby";
 const DEFAULT_LIMIT = 500;
@@ -16,6 +17,7 @@ const querySchema = z.object({
   type: z.string().min(1).optional(),
   readiness: z.enum(["not_indexed", "metadata_ready", "content_ready", "summary_ready", "relation_ready", "ai_context_ready"]).optional(),
   areaKey: z.string().min(1).optional(),
+  departmentKey: z.string().refine(isCanonicalDepartmentKey).optional(),
   refresh: z.coerce.number().int().optional(),
   limit: z.coerce.number().int().min(1).max(MAX_CONTEXT_LIMIT).default(DEFAULT_LIMIT)
 }).strict();
@@ -668,6 +670,11 @@ assetsRouter.get("/context", asyncHandler(async (req, res) => {
   ]);
 
   const driveFiles = [...driveFolders, ...driveFilesOnly];
+  const [resourceContexts, contextualResourceIds] = await Promise.all([
+    organizationalContextsForEntities(workspaceId, "resource", resources.map((resource) => resource.id)),
+    query.departmentKey ? contextualEntityIds(workspaceId, "resource", query.departmentKey, true) : Promise.resolve([])
+  ]);
+  const contextualResourceIdSet = new Set(contextualResourceIds);
 
   const driveResourceItems = driveFiles.map((file) => {
     const latestSnapshot = file.contentSnapshots[0] ?? null;
@@ -728,6 +735,7 @@ assetsRouter.get("/context", asyncHandler(async (req, res) => {
   const resourceItems = resources.map((resource) => {
     const readiness = readinessForResource(resource);
     const metadata = metadataRecord(resource.metadata);
+    const organizationalContext = resourceContexts.get(resource.id);
 
     return {
       id: `resource:${resource.id}`,
@@ -746,7 +754,8 @@ assetsRouter.get("/context", asyncHandler(async (req, res) => {
         isFolder: false
       },
       organization: {
-        department: null,
+        department: organizationalContext?.ownerDepartment?.key ?? null,
+        departmentCanonical: organizationalContext?.ownerDepartment?.key ?? null,
         folder: null,
         table: null,
         storageLocation: null,
@@ -755,6 +764,7 @@ assetsRouter.get("/context", asyncHandler(async (req, res) => {
         status: typeof metadata.status === "string" ? metadata.status : "active",
         tags: Array.isArray(metadata.tags) ? metadata.tags.filter((tag): tag is string => typeof tag === "string") : []
       },
+      organizationalContext,
       aiCompatibility: {
         readiness,
         summary: textMetadata(resource.metadata, "summary") ?? textMetadata(resource.metadata, "description"),
@@ -786,6 +796,7 @@ assetsRouter.get("/context", asyncHandler(async (req, res) => {
   });
 
   const allItems = [...driveResourceItems, ...resourceItems]
+    .filter((item) => !query.departmentKey || (item.sourceModel === "Resource" ? contextualResourceIdSet.has(item.sourceId) : item.organization.departmentCanonical === query.departmentKey || item.organization.department === query.departmentKey))
     .filter((item) => !query.type || item.resourceType === query.type)
     .filter((item) => !query.readiness || item.aiCompatibility.readiness === query.readiness);
 
