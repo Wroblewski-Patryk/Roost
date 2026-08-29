@@ -7,15 +7,29 @@ import { asyncHandler } from "../../middleware/async-handler";
 import { ensureOperatingModelForWorkspace } from "../../operating-model/catalog";
 import { ensureLifecycleProcedureForWorkspace } from "../company-os/lifecycle-procedure-definition";
 
+const identityValueSchema = z.string().max(900_000).refine((value) => (
+  value === "initials"
+  || /^icon:ph-[a-z0-9-]+$/.test(value)
+  || /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value)
+), "invalid_identity_value");
+
 const workspaceSchema = z.object({
   name: z.string().min(1)
 }).strict();
+
+const updateWorkspaceSchema = z.object({
+  name: z.string().trim().min(1).max(120).optional(),
+  logo: identityValueSchema.nullable().optional(),
+  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).nullable().optional()
+}).strict().refine((input) => Object.keys(input).length > 0, { message: "workspace_field_required" });
 
 export const workspacesRouter = Router();
 
 function safeWorkspace(workspace: {
   id: string;
   name: string;
+  logo: string | null;
+  accentColor: string | null;
   ownerUserId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -23,6 +37,8 @@ function safeWorkspace(workspace: {
   return {
     id: workspace.id,
     name: workspace.name,
+    logo: workspace.logo,
+    accentColor: workspace.accentColor,
     ownerUserId: workspace.ownerUserId,
     createdAt: workspace.createdAt.toISOString(),
     updatedAt: workspace.updatedAt.toISOString()
@@ -98,6 +114,25 @@ workspacesRouter.post("/", asyncHandler(async (req, res) => {
       workspace: safeWorkspace(workspace)
     }
   });
+}));
+
+workspacesRouter.patch("/:id", asyncHandler(async (req, res) => {
+  const userId = requireUserAuth(req, res);
+  if (!userId) return;
+
+  const workspaceId = z.string().uuid().parse(req.params.id);
+  const membership = await prisma.workspaceMembership.findUnique({
+    where: { workspaceId_userId: { workspaceId, userId } }
+  });
+  if (!membership) return res.status(404).json({ error: "not_found" });
+  if (membership.role !== "owner") return res.status(403).json({ error: "forbidden" });
+
+  const input = updateWorkspaceSchema.parse(req.body);
+  const workspace = await prisma.workspace.update({
+    where: { id: workspaceId },
+    data: input
+  });
+  res.json({ data: { ...safeWorkspace(workspace), role: membership.role, active: workspaceId === req.auth!.workspaceId } });
 }));
 
 workspacesRouter.post("/:id/actions/select", asyncHandler(async (req, res) => {

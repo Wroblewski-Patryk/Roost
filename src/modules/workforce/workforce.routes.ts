@@ -25,7 +25,11 @@ const createSchema = z.object({
   name: z.string().trim().min(1).max(160),
   slug: z.string().trim().min(1).max(100).optional(),
   description: z.string().trim().max(4000).nullable().optional(),
-  avatar: z.string().trim().max(500).nullable().optional(),
+  avatar: z.string().trim().max(900_000).refine((value) => (
+    value === "initials"
+    || /^icon:ph-[a-z0-9-]+$/.test(value)
+    || /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value)
+  ), "invalid_identity_value").nullable().optional(),
   department: z.string().trim().max(120).nullable().optional(),
   role: z.string().trim().max(180).nullable().optional(),
   managerId: z.string().uuid().nullable().optional(),

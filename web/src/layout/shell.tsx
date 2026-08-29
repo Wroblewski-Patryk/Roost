@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { canonicalGeneralDashboardPath } from "../app-route-registry";
 import { api } from "../api/client";
 import { clearOwnerToken, setOwnerToken } from "../api/auth-token";
+import { CcIdentityMark } from "../components/cc-identity-picker";
 import { RoostLogoMark } from "../components/roost-logo-mark";
 import { coreAreas } from "../features/departments/core-area-data";
 import { useOwnerPacket } from "../hooks/use-owner-packet";
@@ -11,6 +12,10 @@ import { AuthMe, CoreArea, DepartmentCatalogPacket } from "../types";
 
 function displayDepartmentLabel(label: string) {
   return label.replace(/^\d{2}\s+/, "");
+}
+
+function roleLabel(role: string | undefined, t: ReturnType<typeof useLanguage>["t"]) {
+  return role === "owner" ? t("account.role.owner") : role || t("user.account");
 }
 
 function currentAreaView() {
@@ -145,14 +150,17 @@ function WorkspaceControl({ activeWorkspaceId, workspaces, onSelect }: { activeW
   return (
     <div className="roost-workspace-switcher" ref={rootRef}>
       <span className="roost-workspace-label">{t("workspace.shortLabel")}</span>
-      <button aria-expanded={open} aria-haspopup="menu" className="roost-workspace-trigger" onClick={() => setOpen((value) => !value)} type="button">
-        <span className="roost-workspace-mark"><RoostLogoMark className="h-5 w-5" /></span>
-        <span className="roost-workspace-copy">
-          <strong>{activeWorkspace?.name || t("workspace.current")}</strong>
-          <small><span className="roost-workspace-status" aria-hidden="true"></span>{t("shell.workspaceSafe")}</small>
-        </span>
-        <i className={`ph-bold ph-caret-down${open ? " is-open" : ""}`} aria-hidden="true"></i>
-      </button>
+      <div className="roost-workspace-trigger-row">
+        <button aria-expanded={open} aria-haspopup="menu" className="roost-workspace-trigger" onClick={() => setOpen((value) => !value)} type="button">
+          <CcIdentityMark className="roost-workspace-mark" name={activeWorkspace?.name} value={activeWorkspace?.logo} />
+          <span className="roost-workspace-copy">
+            <strong>{activeWorkspace?.name || t("workspace.current")}</strong>
+            <small>{roleLabel(activeWorkspace?.role, t)}</small>
+          </span>
+          <i className={`ph-bold ph-caret-down${open ? " is-open" : ""}`} aria-hidden="true"></i>
+        </button>
+        <a aria-label={t("workspace.settings")} className="roost-workspace-settings-shortcut" href="/workspace/settings" title={t("workspace.settings")}><i className="ph-bold ph-gear-six" aria-hidden="true"></i></a>
+      </div>
 
       {open ? (
         <div className="roost-workspace-popover" role="menu" aria-label={t("workspace.switch")}>
@@ -161,13 +169,12 @@ function WorkspaceControl({ activeWorkspaceId, workspaces, onSelect }: { activeW
             const selected = workspace.id === activeWorkspace?.id;
             return (
               <button aria-current={selected ? "true" : undefined} className={selected ? "is-active" : ""} key={workspace.id} onClick={() => { setOpen(false); onSelect(workspace.id); }} role="menuitem" type="button">
-                <span className="roost-workspace-option-mark"><RoostLogoMark className="h-4 w-4" /></span>
-                <span><strong>{workspace.name}</strong><small><span className="roost-workspace-status" aria-hidden="true"></span>{t("shell.workspaceSafe")}</small></span>
+                <CcIdentityMark className="roost-workspace-option-mark" name={workspace.name} value={workspace.logo} />
+                <span><strong>{workspace.name}</strong><small>{roleLabel(workspace.role, t)}</small></span>
                 {selected ? <i className="ph-bold ph-check" aria-hidden="true"></i> : null}
               </button>
             );
           }) : <span className="roost-workspace-empty">{t("workspace.current")}</span>}
-          <a href="/workspace/settings"><i className="ph-bold ph-buildings" aria-hidden="true"></i>{t("workspace.manage")}</a>
         </div>
       ) : null}
     </div>
@@ -178,9 +185,11 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
   const { t } = useLanguage();
   const pathname = typeof window === "undefined" ? "" : window.location.pathname;
   const profile = useOwnerPacket<AuthMe>("/v1/auth/me", true, t);
-  const workspaces = profile.data?.workspaces || [];
+  const [workspaceUpdate, setWorkspaceUpdate] = useState<Partial<NonNullable<AuthMe["workspaces"]>[number]> | null>(null);
+  const workspaces = (profile.data?.workspaces || []).map((workspace) => workspace.id === workspaceUpdate?.id ? { ...workspace, ...workspaceUpdate } : workspace);
   const activeWorkspace = workspaces.find((workspace) => workspace.active) || workspaces[0];
   const [profileName, setProfileName] = useState<string | null>(null);
+  const [profileAvatar, setProfileAvatar] = useState<string | null | undefined>(undefined);
   const userLabel = profileName || profile.data?.user?.name || (activeWorkspace?.role === "owner" ? t("user.admin") : t("user.account"));
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
@@ -207,11 +216,20 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
 
   useEffect(() => {
     function handleProfileUpdated(event: Event) {
-      const name = (event as CustomEvent<{ name?: string | null }>).detail?.name;
+      const detail = (event as CustomEvent<{ name?: string | null; avatar?: string | null }>).detail;
+      const name = detail?.name;
       setProfileName(name || null);
+      setProfileAvatar(detail?.avatar || "initials");
+    }
+    function handleWorkspaceUpdated(event: Event) {
+      setWorkspaceUpdate((event as CustomEvent<Partial<NonNullable<AuthMe["workspaces"]>[number]>>).detail);
     }
     window.addEventListener("roost:profile-updated", handleProfileUpdated);
-    return () => window.removeEventListener("roost:profile-updated", handleProfileUpdated);
+    window.addEventListener("roost:workspace-updated", handleWorkspaceUpdated);
+    return () => {
+      window.removeEventListener("roost:profile-updated", handleProfileUpdated);
+      window.removeEventListener("roost:workspace-updated", handleWorkspaceUpdated);
+    };
   }, []);
 
   useEffect(() => {
@@ -252,9 +270,8 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
       <WorkspaceControl activeWorkspaceId={activeWorkspace?.id} onSelect={(id) => void selectWorkspace(id)} workspaces={workspaces} />
       <div className="roost-sidebar-scroll"><DepartmentSidebar activeArea={activeArea} onNavigate={() => setMobileNavOpen(false)} /></div>
       <div className="roost-sidebar-footer">
-        <a aria-current={pathname === "/workspace/settings" ? "page" : undefined} className={pathname === "/workspace/settings" ? "is-active" : undefined} href="/workspace/settings" onClick={() => setMobileNavOpen(false)}><i className="ph-bold ph-gear-six" aria-hidden="true"></i><span>{t("workspace.settings")}</span></a>
         <a aria-current={pathname === "/account/settings" ? "page" : undefined} className={`roost-sidebar-account${pathname === "/account/settings" ? " is-active" : ""}`} href="/account/settings" onClick={() => setMobileNavOpen(false)}>
-          <span className="roost-owner-avatar" aria-hidden="true"><i className="ph-bold ph-user"></i></span>
+          <CcIdentityMark className="roost-owner-avatar" name={userLabel} value={profileAvatar === undefined ? profile.data?.user?.avatar : profileAvatar} />
           <span><strong>{userLabel}</strong><small>{t("user.myAccount")}</small></span>
           <i className="ph-bold ph-caret-right" aria-hidden="true"></i>
         </a>
@@ -264,7 +281,7 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
   );
 
   return (
-    <main className="roost-app-shell roost-liquid-shell" data-theme="roost">
+    <main className="roost-app-shell roost-liquid-shell" data-theme="roost" style={{ "--color-primary": activeWorkspace?.accentColor || "#6366F1", "--roost-workspace-accent": activeWorkspace?.accentColor || "#6366F1" } as React.CSSProperties}>
       <aside className="roost-sidebar hidden lg:grid">{sidebar}</aside>
       <section className="roost-app-main">
         <header className="roost-command-bar">

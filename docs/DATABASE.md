@@ -22,6 +22,13 @@ relationship and readiness contract.
 Primary keys are UUIDs. Tables include `created_at`, `updated_at`, and
 integration fields such as `external_id` and `source` where relevant.
 
+Workspace presentation is persisted with the workspace record: `logo` stores
+the controlled identity value and `accent_color` stores a validated six-digit
+hex color. User `avatar` and workforce `avatar` use the same controlled value
+contract: `initials`, `icon:ph-*`, or a size-limited PNG/JPEG/WebP data URL.
+These values are presentation metadata; they do not grant authority or change
+workspace scope.
+
 ## Tables
 
 - `users`: human account records for owner login.

@@ -648,6 +648,8 @@ test("account and workspace settings profile contract exposes active owner works
       workspaces: Array<{
         id: string;
         name: string;
+        logo: string | null;
+        accentColor: string | null;
         role: string;
         active: boolean;
       }>;
@@ -663,6 +665,8 @@ test("account and workspace settings profile contract exposes active owner works
   assert.deepEqual(profileBody.data.workspaces[0], {
     id: owner.workspace.id,
     name: "Settings Profile Workspace",
+    logo: null,
+    accentColor: null,
     role: "owner",
     active: true
   });
@@ -696,18 +700,21 @@ test("owner can update account identity and password with current-password verif
     headers,
     body: JSON.stringify({
       name: "Updated Owner",
+      avatar: "icon:ph-bird",
       email: "account-actions-updated@example.com",
       currentPassword: "very-strong-password"
     })
   });
   assert.equal(updatedProfile.status, 200);
   assert.equal((updatedProfile.body as { data: { name: string; email: string } }).data.name, "Updated Owner");
-  assert.equal((updatedProfile.body as { data: { name: string; email: string } }).data.email, "account-actions-updated@example.com");
+  assert.equal((updatedProfile.body as { data: { name: string; email: string; avatar: string } }).data.email, "account-actions-updated@example.com");
+  assert.equal((updatedProfile.body as { data: { avatar: string } }).data.avatar, "icon:ph-bird");
 
   const workforceIdentity = await prisma.workforceEntity.findFirst({
     where: { workspaceId: owner.workspace.id, source: "user" }
   });
   assert.equal(workforceIdentity?.name, "Updated Owner");
+  assert.equal(workforceIdentity?.avatar, "icon:ph-bird");
 
   const wrongPassword = await request("/v1/auth/password", {
     method: "POST",
@@ -735,6 +742,36 @@ test("owner can update account identity and password with current-password verif
     body: JSON.stringify({ email: "account-actions-updated@example.com", password: "another-strong-password" })
   });
   assert.equal(newLogin.status, 200);
+});
+
+test("workspace owner can update scoped workspace identity", async () => {
+  const owner = await registerOwner("workspace-identity-owner@example.com", "Workspace Identity");
+  const outsider = await registerOwner("workspace-identity-outsider@example.com", "Other Workspace");
+  const headers = { Authorization: `Bearer ${owner.token}` };
+
+  const updated = await request(`/v1/workspaces/${owner.workspace.id}`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify({ name: "LuckySparrow Studio", logo: "icon:ph-bird", accentColor: "#06B6D4" })
+  });
+  assert.equal(updated.status, 200);
+  const updatedWorkspace = (updated.body as { data: { name: string; logo: string; accentColor: string } }).data;
+  assert.equal(updatedWorkspace.name, "LuckySparrow Studio");
+  assert.equal(updatedWorkspace.logo, "icon:ph-bird");
+  assert.equal(updatedWorkspace.accentColor, "#06B6D4");
+
+  const profile = await request("/v1/auth/me", { headers });
+  const workspace = (profile.body as { data: { workspaces: Array<{ name: string; logo: string; accentColor: string }> } }).data.workspaces[0];
+  assert.equal(workspace.name, "LuckySparrow Studio");
+  assert.equal(workspace.logo, "icon:ph-bird");
+  assert.equal(workspace.accentColor, "#06B6D4");
+
+  const foreignUpdate = await request(`/v1/workspaces/${owner.workspace.id}`, {
+    method: "PATCH",
+    headers: { Authorization: `Bearer ${outsider.token}` },
+    body: JSON.stringify({ name: "Must not update" })
+  });
+  assert.equal(foreignUpdate.status, 404);
 });
 
 test("product engineering keeps definitions shared, observations explicit, and procedures versioned", async () => {

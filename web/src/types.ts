@@ -20,6 +20,7 @@ export type AuthMe = {
   user?: {
     email: string;
     name?: string | null;
+    avatar?: string | null;
     updatedAt?: string;
   };
   workspaces?: WorkspaceSummary[];
@@ -28,6 +29,8 @@ export type AuthMe = {
 export type WorkspaceSummary = {
   id: string;
   name: string;
+  logo?: string | null;
+  accentColor?: string | null;
   role?: string;
   active?: boolean;
   ownerUserId?: string;

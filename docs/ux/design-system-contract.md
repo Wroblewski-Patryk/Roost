@@ -538,6 +538,13 @@ primitives before adding a route-local modal recipe.
   editor's scroll region. The popover follows its trigger during scrolling,
   fits above or below within the viewport, provides a full-width search field,
   and closes on Escape or an outside click.
+- Workspace logos, account avatars, and workforce avatars use the shared
+  identity picker. Supported modes are generated initials, a catalog icon, or
+  a local PNG/JPEG/WebP upload; editable screens must not expose raw avatar URL
+  text fields.
+- Workspace identity owns the active accent color. Apply it to navigation,
+  focus, and identity details while preserving semantic success, warning, and
+  danger colors.
 - Ordered definitions such as procedure steps use explicit record rows with
   add, remove, and move controls. A multiline textarea is not an editor for an
   ordered object collection. Reordering must preserve the step's execution

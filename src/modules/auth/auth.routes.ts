@@ -22,11 +22,18 @@ const loginSchema = z.object({
   password: z.string().min(1)
 });
 
+const identityValueSchema = z.string().max(900_000).refine((value) => (
+  value === "initials"
+  || /^icon:ph-[a-z0-9-]+$/.test(value)
+  || /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value)
+), "invalid_identity_value");
+
 const updateProfileSchema = z.object({
   name: z.string().trim().min(1).max(120).optional(),
   email: z.string().email().transform((value) => value.toLowerCase()).optional(),
+  avatar: identityValueSchema.nullable().optional(),
   currentPassword: z.string().min(1).optional()
-}).strict().refine((input) => input.name !== undefined || input.email !== undefined, {
+}).strict().refine((input) => input.name !== undefined || input.email !== undefined || input.avatar !== undefined, {
   message: "profile_field_required"
 });
 
@@ -168,7 +175,7 @@ authRouter.get("/me", requireAuthContext, asyncHandler(async (req, res) => {
   });
   const user = await prisma.user.findUniqueOrThrow({
     where: { id: req.auth!.userId },
-    select: { email: true, name: true, updatedAt: true }
+    select: { email: true, name: true, avatar: true, updatedAt: true }
   });
 
   res.json({
@@ -178,6 +185,8 @@ authRouter.get("/me", requireAuthContext, asyncHandler(async (req, res) => {
       workspaces: memberships.map((membership) => ({
         id: membership.workspace.id,
         name: membership.workspace.name,
+        logo: membership.workspace.logo,
+        accentColor: membership.workspace.accentColor,
         role: membership.role,
         active: membership.workspaceId === req.auth!.workspaceId
       }))
@@ -199,12 +208,12 @@ authRouter.patch("/me", requireAuthContext, asyncHandler(async (req, res) => {
     const user = await prisma.$transaction(async (tx) => {
       const updated = await tx.user.update({
         where: { id: req.auth!.userId },
-        data: { name: input.name, email: input.email },
-        select: { id: true, email: true, name: true, updatedAt: true }
+        data: { name: input.name, email: input.email, avatar: input.avatar },
+        select: { id: true, email: true, name: true, avatar: true, updatedAt: true }
       });
       await tx.workforceEntity.updateMany({
         where: { source: "user", externalId: updated.id },
-        data: { name: updated.name || updated.email }
+        data: { name: updated.name || updated.email, ...(input.avatar !== undefined ? { avatar: input.avatar } : {}) }
       });
       return updated;
     });

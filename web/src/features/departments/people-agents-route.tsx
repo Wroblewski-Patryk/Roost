@@ -5,6 +5,8 @@ import { CcButton } from "../../components/cc-button";
 import { CcConfirmDialog } from "../../components/cc-confirm-dialog";
 import { CcDataTable, type CcTableColumn, type CcTableRowAction } from "../../components/cc-data-table";
 import { CcField } from "../../components/cc-field";
+import { CcIdentityMark, CcIdentityPicker } from "../../components/cc-identity-picker";
+import { CcMultiSelect, type CcMultiSelectOption } from "../../components/cc-multi-select";
 import { CcNotice } from "../../components/cc-notice";
 import { CcPageHeader } from "../../components/cc-page-header";
 import { CcRecordEditorModal } from "../../components/cc-record-editor";
@@ -222,10 +224,7 @@ function blockedActionText(action: string | { action?: string; reason?: string }
 }
 
 function EntityAvatar({ entity }: { entity: WorkforceEntity }) {
-  if (entity.avatar) {
-    return <img alt="" className="h-11 w-11 rounded-company border border-base-300 object-cover" src={entity.avatar} />;
-  }
-  return null;
+  return <CcIdentityMark className="h-11 w-11 rounded-company" name={entity.name} value={entity.avatar} />;
 }
 
 function defaultEntity(): Partial<WorkforceEntity> {
@@ -247,14 +246,32 @@ function defaultEntity(): Partial<WorkforceEntity> {
   };
 }
 
-function splitIndex(value: FormDataEntryValue | null) {
-  return String(value || "")
-    .split(/\n|,/)
-    .map((item) => item.trim())
-    .filter(Boolean);
+const textareaClassName = "textarea textarea-bordered w-full";
+
+const defaultAccessCatalogs = {
+  skillIndex: ["operations", "product-management", "software-engineering", "design", "research", "sales", "finance", "quality-assurance"],
+  knowledgeIndex: ["company-context", "procedures", "products", "customers", "architecture", "security", "operations"],
+  toolIndex: ["roost", "clickup", "google-drive", "github", "paperclip", "n8n"],
+  authorityScope: ["companycore:read", "companycore:tasks:write", "companycore:workforce:read", "companycore:assets:read", "companycore:procedures:read"]
+} as const;
+
+function accessOptions(key: keyof typeof defaultAccessCatalogs, entities: WorkforceEntity[], current: string[] = []): CcMultiSelectOption[] {
+  const values = new Set<string>([...defaultAccessCatalogs[key], ...current]);
+  for (const entity of entities) {
+    for (const value of entity[key] || []) values.add(value);
+    if (key === "authorityScope") for (const value of entity.authority?.supportedCapabilities || []) values.add(value);
+  }
+  return [...values].sort().map((value) => ({ value, label: humanizeBusinessValue(value.replace(/^companycore:/, ""), "People") }));
 }
 
-const textareaClassName = "textarea textarea-bordered w-full";
+function workforceIdentityLabels(t: ReturnType<typeof useLanguage>["t"]) {
+  return {
+    initials: t("identity.initials"), icon: t("identity.icon"), image: t("identity.image"),
+    chooseFile: t("identity.chooseFile"), replaceFile: t("identity.replaceFile"), removeFile: t("identity.removeFile"),
+    imageHint: t("identity.imageHint"), imageTooLarge: t("identity.imageTooLarge"), imageInvalid: t("identity.imageInvalid"),
+    searchIcons: t("identity.searchIcons")
+  };
+}
 
 function WorkforceForm({
   entity,
@@ -280,6 +297,18 @@ function WorkforceForm({
   const runtimeModes = dictionaries?.runtimeModes || Object.keys(runtimeLabels) as WorkforceEntity["runtimeMode"][];
   const personalityProfiles = dictionaries?.personalityProfiles || ["analytical", "creative", "executive", "supportive", "researcher", "custom"];
   const isEditMode = mode === "edit" && Boolean(entity?.id);
+  const [identityName, setIdentityName] = useState(values.name || "");
+  const [avatar, setAvatar] = useState<string | null>(() => (
+    values.avatar === "initials" || values.avatar?.startsWith("icon:") || values.avatar?.startsWith("data:image/")
+      ? values.avatar
+      : "initials"
+  ));
+  const [accessIndexes, setAccessIndexes] = useState({
+    skillIndex: values.skillIndex || [],
+    knowledgeIndex: values.knowledgeIndex || [],
+    toolIndex: values.toolIndex || [],
+    authorityScope: values.authorityScope || []
+  });
   const [bigFiveDraft, setBigFiveDraft] = useState<Record<string, number>>(() => {
     const current = values.bigFiveProfile || {};
     return Object.fromEntries(bigFiveTraits.map((trait) => [trait.key, normalizeBigFiveScore(current[trait.key])]));
@@ -300,7 +329,7 @@ function WorkforceForm({
       name: String(form.get("name") || ""),
       slug: String(form.get("slug") || "") || undefined,
       description: String(form.get("description") || "") || null,
-      avatar: String(form.get("avatar") || "") || null,
+      avatar,
       department: String(form.get("department") || "") || null,
       role: String(form.get("role") || "") || null,
       managerId: managerId || null,
@@ -317,10 +346,10 @@ function WorkforceForm({
         agreeableness: normalizeBigFiveScore(form.get("bigFiveAgreeableness")),
         neuroticism: normalizeBigFiveScore(form.get("bigFiveNeuroticism"))
       },
-      skillIndex: splitIndex(form.get("skillIndex")),
-      knowledgeIndex: splitIndex(form.get("knowledgeIndex")),
-      toolIndex: splitIndex(form.get("toolIndex")),
-      authorityScope: splitIndex(form.get("authorityScope"))
+      skillIndex: accessIndexes.skillIndex,
+      knowledgeIndex: accessIndexes.knowledgeIndex,
+      toolIndex: accessIndexes.toolIndex,
+      authorityScope: accessIndexes.authorityScope
     };
 
     setSaveState("saving");
@@ -361,7 +390,7 @@ function WorkforceForm({
               </div>
               <div className="mt-3 grid gap-4 md:grid-cols-2">
                 <CcField label="Name" required>
-                  {({ id }) => <CcTextInput autoFocus={!isEditMode} defaultValue={values.name || ""} id={id} name="name" required />}
+                  {({ id }) => <CcTextInput autoFocus={!isEditMode} id={id} name="name" onChange={(event) => setIdentityName(event.target.value)} required value={identityName} />}
                 </CcField>
                 <CcField label="Slug">
                   {({ id }) => <CcTextInput defaultValue={values.slug || ""} id={id} name="slug" />}
@@ -398,9 +427,11 @@ function WorkforceForm({
                     {({ id }) => <textarea className={`${textareaClassName} min-h-28`} defaultValue={values.description || ""} id={id} name="description"></textarea>}
                   </CcField>
                 </div>
-                <CcField label="Avatar URL">
-                  {({ id }) => <CcTextInput defaultValue={values.avatar || ""} id={id} name="avatar" />}
-                </CcField>
+                <div className="md:col-span-2">
+                  <CcField label={t("people.identity")} hint={t("people.identityHint")}>
+                    {() => <CcIdentityPicker labels={workforceIdentityLabels(t)} onChange={setAvatar} previewName={identityName} value={avatar} />}
+                  </CcField>
+                </div>
                 <CcField label="Manager">
                   {({ id }) => (
                     <CcSelect defaultValue={values.managerId || ""} id={id} name="managerId">
@@ -496,26 +527,29 @@ function WorkforceForm({
 
             <div className="rounded-company border border-base-300 bg-base-100/70 p-4">
               <h3 className="font-black text-company-ink">Access indexes</h3>
-              <p className="text-sm text-company-muted">One item per line or comma-separated. These names become the first lightweight map of skills, knowledge, tools, and authority.</p>
+              <p className="text-sm text-company-muted">Select linked catalog values. This avoids spelling variants and keeps workforce access searchable.</p>
               <div className="mt-3 grid gap-4 md:grid-cols-2">
                 {[
-                  ["skillIndex", "Skills index", values.skillIndex],
-                  ["knowledgeIndex", "Knowledge index", values.knowledgeIndex],
-                  ["toolIndex", "Tools index", values.toolIndex],
-                  ["authorityScope", "Authority scope", values.authorityScope]
-                ].map(([name, label, value]) => (
-                  <CcField label={String(label)} key={String(name)}>
+                  ["skillIndex", "Skills", "Select skills..."],
+                  ["knowledgeIndex", "Knowledge", "Select knowledge areas..."],
+                  ["toolIndex", "Tools", "Select connected tools..."],
+                  ["authorityScope", "Authority", "Select permissions..."]
+                ].map(([name, label, placeholder]) => {
+                  const key = String(name) as keyof typeof accessIndexes;
+                  return <CcField label={String(label)} key={key}>
                     {({ id }) => (
-                      <textarea
-                        className={`${textareaClassName} min-h-24`}
-                        defaultValue={Array.isArray(value) ? value.join("\n") : ""}
+                      <CcMultiSelect
                         id={id}
-                        name={String(name)}
-                        placeholder="One item per line"
-                      ></textarea>
+                        name={key}
+                        onChange={(next) => setAccessIndexes((current) => ({ ...current, [key]: next }))}
+                        options={accessOptions(key, managers, accessIndexes[key])}
+                        placeholder={String(placeholder)}
+                        searchPlaceholder={`Search ${String(label).toLocaleLowerCase()}...`}
+                        value={accessIndexes[key]}
+                      />
                     )}
-                  </CcField>
-                ))}
+                  </CcField>;
+                })}
               </div>
             </div>
       </section>

@@ -1,12 +1,31 @@
 import { FormEvent, useEffect, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
+import { CcField } from "../../components/cc-field";
+import { CcIdentityMark, CcIdentityPicker } from "../../components/cc-identity-picker";
 import { CcNotice } from "../../components/cc-notice";
 import { CcRecordEditorModal, CcRecordEditorSection } from "../../components/cc-record-editor";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { formatAppDate } from "../../i18n/date-format";
 import { useLanguage } from "../../i18n/i18n";
 import { AuthMe, ConnectionPacket, IntegrationStatus, LoadState } from "../../types";
+
+const workspaceAccentPresets = ["#6366F1", "#3B82F6", "#06B6D4", "#10B981", "#F59E0B", "#EC4899"];
+
+function identityLabels(t: ReturnType<typeof useLanguage>["t"]) {
+  return {
+    initials: t("identity.initials"),
+    icon: t("identity.icon"),
+    image: t("identity.image"),
+    chooseFile: t("identity.chooseFile"),
+    replaceFile: t("identity.replaceFile"),
+    removeFile: t("identity.removeFile"),
+    imageHint: t("identity.imageHint"),
+    imageTooLarge: t("identity.imageTooLarge"),
+    imageInvalid: t("identity.imageInvalid"),
+    searchIcons: t("identity.searchIcons")
+  };
+}
 
 function SettingRow({ icon, label, value }: { icon?: string; label: string; value?: string | null }) {
   return (
@@ -126,6 +145,7 @@ export function AccountSettingsRoute() {
   const profile = useOwnerPacket<AuthMe>("/v1/auth/me", true, t);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [avatar, setAvatar] = useState<string | null>(null);
   const [profilePassword, setProfilePassword] = useState("");
   const [passwordEditorOpen, setPasswordEditorOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -137,7 +157,8 @@ export function AccountSettingsRoute() {
   useEffect(() => {
     setName(profile.data?.user?.name || "");
     setEmail(profile.data?.user?.email || "");
-  }, [profile.data?.user?.email, profile.data?.user?.name]);
+    setAvatar(profile.data?.user?.avatar || "initials");
+  }, [profile.data?.user?.avatar, profile.data?.user?.email, profile.data?.user?.name]);
 
   function friendlyAccountError(reason: unknown) {
     if (reason instanceof AppApiError) {
@@ -154,14 +175,15 @@ export function AccountSettingsRoute() {
     setError(null);
     setSuccess(null);
     try {
-      const response = await api<{ data: { name: string | null; email: string } }>("/v1/auth/me", {
+      const response = await api<{ data: { name: string | null; email: string; avatar?: string | null } }>("/v1/auth/me", {
         method: "PATCH",
-        body: JSON.stringify({ name: name.trim(), email: email.trim(), ...(profilePassword ? { currentPassword: profilePassword } : {}) })
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), avatar, ...(profilePassword ? { currentPassword: profilePassword } : {}) })
       });
       setName(response.data.name || "");
       setEmail(response.data.email);
       setProfilePassword("");
-      window.dispatchEvent(new CustomEvent("roost:profile-updated", { detail: { name: response.data.name } }));
+      setAvatar(response.data.avatar || "initials");
+      window.dispatchEvent(new CustomEvent("roost:profile-updated", { detail: { name: response.data.name, avatar: response.data.avatar } }));
       setSuccess(t("account.profileSaved"));
     } catch (reason) {
       setError(friendlyAccountError(reason));
@@ -210,6 +232,11 @@ export function AccountSettingsRoute() {
             <div><h2 id="account-profile-heading">{t("account.profile")}</h2><p>{t("account.profileDescription")}</p></div>
           </header>
           <form className="roost-account-form" onSubmit={saveProfile}>
+            <div className="roost-account-identity">
+              <CcField label={t("account.avatar")} hint={t("account.avatarHint")}>
+                {() => <CcIdentityPicker labels={identityLabels(t)} onChange={setAvatar} previewName={name || email} value={avatar} />}
+              </CcField>
+            </div>
             <label className="form-control"><span className="label py-1"><span className="label-text font-bold">{t("account.name")}</span></span><input autoComplete="name" className="input input-bordered w-full" disabled={profile.status !== "ready"} maxLength={120} onChange={(event) => setName(event.target.value)} required value={name} /></label>
             <label className="form-control"><span className="label py-1"><span className="label-text font-bold">{t("account.email")}</span></span><input autoComplete="email" className="input input-bordered w-full" disabled={profile.status !== "ready"} onChange={(event) => setEmail(event.target.value)} required type="email" value={email} /></label>
             {emailChanged ? <label className="form-control"><span className="label py-1"><span className="label-text font-bold">{t("account.confirmEmailChange")}</span></span><input autoComplete="current-password" className="input input-bordered w-full" onChange={(event) => setProfilePassword(event.target.value)} placeholder={t("account.confirmEmailChangePlaceholder")} required type="password" value={profilePassword} /></label> : null}
@@ -275,6 +302,9 @@ export function WorkspaceSettingsRoute() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [workspaceName, setWorkspaceName] = useState("");
+  const [workspaceLogo, setWorkspaceLogo] = useState<string | null>(null);
+  const [workspaceAccent, setWorkspaceAccent] = useState("#6366F1");
   const profile = useOwnerPacket<AuthMe>("/v1/auth/me", true, t);
   const connection = useOwnerPacket<ConnectionPacket>("/v1/connection", true, t);
   const clickUpConnectionStatus = connection.data?.integrations?.clickup;
@@ -288,6 +318,13 @@ export function WorkspaceSettingsRoute() {
     Boolean(clickUpStatus?.active && (clickUpStatus.secretConfigured ?? clickUpStatus.configured)),
     Boolean(googleDriveStatus?.active && (googleDriveStatus.secretConfigured ?? googleDriveStatus.configured) && googleDriveStatus.hasRefreshToken)
   ].filter(Boolean).length;
+
+  useEffect(() => {
+    if (!activeWorkspace) return;
+    setWorkspaceName(activeWorkspace.name);
+    setWorkspaceLogo(activeWorkspace.logo || "initials");
+    setWorkspaceAccent(activeWorkspace.accentColor || "#6366F1");
+  }, [activeWorkspace?.accentColor, activeWorkspace?.id, activeWorkspace?.logo, activeWorkspace?.name]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -392,6 +429,29 @@ export function WorkspaceSettingsRoute() {
     }
   }
 
+  async function saveWorkspaceIdentity(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!activeWorkspace) return;
+    setSaving(true);
+    setActionError(null);
+    setActionSuccess(null);
+    try {
+      const response = await api<{ data: { id: string; name: string; logo?: string | null; accentColor?: string | null } }>(`/v1/workspaces/${activeWorkspace.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ name: workspaceName.trim(), logo: workspaceLogo, accentColor: workspaceAccent })
+      });
+      setWorkspaceName(response.data.name);
+      setWorkspaceLogo(response.data.logo || "initials");
+      setWorkspaceAccent(response.data.accentColor || "#6366F1");
+      window.dispatchEvent(new CustomEvent("roost:workspace-updated", { detail: response.data }));
+      setActionSuccess(t("workspaceSettings.identitySaved"));
+    } catch {
+      setActionError(t("workspaceSettings.saveErrorDetail"));
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <>
       <div className="roost-settings-page">
@@ -405,9 +465,31 @@ export function WorkspaceSettingsRoute() {
         {connection.status === "error" ? <CcNotice tone="error" title={t("workspaceSettings.connectionError")} detail={connection.error || t("errors.request_failed")} live /> : null}
         <section className="roost-settings-panel roost-workspace-summary" aria-labelledby="workspace-summary-heading">
           <header>
-            <span className="roost-settings-panel-icon"><i className="ph-bold ph-buildings" aria-hidden="true"></i></span>
-            <div><h2 id="workspace-summary-heading">{activeWorkspace?.name || t("workspace.current")}</h2><p>{t("workspaceSettings.workspaceContext")}</p></div>
+            <CcIdentityMark className="roost-settings-panel-identity" name={workspaceName || activeWorkspace?.name} value={workspaceLogo} />
+            <div><h2 id="workspace-summary-heading">{t("workspaceSettings.identityTitle")}</h2><p>{t("workspaceSettings.identityDescription")}</p></div>
           </header>
+          <form className="roost-workspace-profile-form" onSubmit={saveWorkspaceIdentity}>
+            <div className="roost-workspace-profile-logo">
+              <CcField label={t("workspaceSettings.logo")} hint={t("workspaceSettings.logoHint")}>
+                {() => <CcIdentityPicker labels={identityLabels(t)} onChange={setWorkspaceLogo} previewName={workspaceName} value={workspaceLogo} />}
+              </CcField>
+            </div>
+            <CcField label={t("workspaceSettings.name")} required>
+              {({ id }) => <input className="input input-bordered w-full" disabled={profile.status !== "ready"} id={id} maxLength={120} onChange={(event) => setWorkspaceName(event.target.value)} required value={workspaceName} />}
+            </CcField>
+            <CcField label={t("workspaceSettings.accentColor")} hint={t("workspaceSettings.accentColorHint")}>
+              {({ id }) => (
+                <div className="roost-accent-picker">
+                  <input aria-label={t("workspaceSettings.customAccentColor")} id={id} onChange={(event) => setWorkspaceAccent(event.target.value.toUpperCase())} type="color" value={workspaceAccent} />
+                  <span className="roost-accent-value">{workspaceAccent}</span>
+                  <div className="roost-accent-presets" aria-label={t("workspaceSettings.accentPresets")}>
+                    {workspaceAccentPresets.map((color) => <button aria-label={color} aria-pressed={workspaceAccent === color} key={color} onClick={() => setWorkspaceAccent(color)} style={{ backgroundColor: color }} type="button"></button>)}
+                  </div>
+                </div>
+              )}
+            </CcField>
+            <div className="roost-workspace-profile-action"><CcButton disabled={profile.status !== "ready"} loading={saving} type="submit" variant="primary">{t("workspaceSettings.saveIdentity")}</CcButton></div>
+          </form>
           <div className="roost-settings-facts">
             <SettingRow icon="ph-crown" label={t("account.role")} value={roleLabel(activeWorkspace?.role, t)} />
             <SettingRow icon="ph-shield-check" label={t("workspaceSettings.scopeMode")} value={connection.data?.scopeMode === "scoped" ? t("workspaceSettings.scope.scoped") : t("workspaceSettings.scope.broad")} />
