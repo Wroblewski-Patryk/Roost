@@ -234,10 +234,12 @@ export const adapterManifest = {
       { method: "POST", path: "/v1/process-core/procedures/:id/actions/archive", capability: "process-core:activate" }
     ],
     productEngineering: [
+      { method: "GET", path: "/v1/product-engineering/graph", capability: "product-engineering:read" },
       { method: "GET", path: "/v1/product-engineering/portfolio", capability: "product-engineering:read" },
       { method: "GET", path: "/v1/product-engineering/applications", capability: "product-engineering:read" },
       { method: "POST", path: "/v1/product-engineering/applications", capability: "product-engineering:write" },
       { method: "GET", path: "/v1/product-engineering/applications/:id", capability: "product-engineering:read" },
+      { method: "GET", path: "/v1/product-engineering/applications/:id/graph", capability: "product-engineering:read" },
       { method: "PATCH", path: "/v1/product-engineering/applications/:id", capability: "product-engineering:write" },
       { method: "GET", path: "/v1/product-engineering/applications/:id/capability-map", capability: "product-engineering:read" },
       { method: "GET", path: "/v1/product-engineering/applications/:id/gaps", capability: "product-engineering:read" },

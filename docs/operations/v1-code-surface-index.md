@@ -69,6 +69,7 @@ Use it with:
 | agent logs | `/v1/agent-logs` | Agent log read/write. |
 | agent events | `/v1/agent-events` | Agent event read and acknowledgement. |
 | pipeline stages | `/v1/pipeline-stages` | Shared pipeline stage CRUD/archive. |
+| product engineering | `/v1/product-engineering` | Application portfolio, Application Graph projections, capability/evidence/readiness context, and productization commands. |
 | events | `/v1/events` | Workspace-scoped event reads. |
 | health | `/health`, `/v1/health` | Public readiness signal. |
 | auth | `/auth`, `/v1/auth` | Register, login, and current user context. |
@@ -82,6 +83,7 @@ Use it with:
 | `/areas?area=00-ogolny&view=overview` | React | Canonical post-login `00 General` dashboard. |
 | `/areas?area=00-ogolny&view=product-map` | React | Canonical owner-facing product map. |
 | `/areas?area=01-strategia` through `/areas?area=12-zarzadzanie` | React | Active department workbenches; canonical query and view values are defined by the route registry. |
+| `/areas?area=11-innowacje&view=application-graph` | React | Progressive Product Engineering graph projection with focus, search, modes, filters, dependencies, and details. |
 | `/dashboard`, `/react-dashboard`, `/operations`, `/people-agents`, `/workforce` | React | Compatibility aliases normalized to canonical `/areas` routes. |
 | `/account/settings`, `/workspace/settings` | React | Authenticated account and workspace settings. |
 | Retired private paths such as `/data`, `/relationships`, `/pipeline`, and provider-specific setup routes | None | Not active web routes; protected backend contracts remain available for scoped React rebuilds and API/MCP use. |

@@ -42,6 +42,7 @@
     "@prisma/client": "^5.22.0",
     "@tailwindcss/vite": "^4.3.0",
     "@vitejs/plugin-react": "^6.0.1",
+    "@xyflow/react": "^12.11.5",
     "cors": "^2.8.5",
     "daisyui": "^5.5.19",
     "dotenv": "^16.4.7",

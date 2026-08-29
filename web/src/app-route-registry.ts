@@ -31,6 +31,7 @@ export const canonicalTechnologyIntegrationsPath = "/areas?area=09-technologia&v
 export const canonicalTechnologyAutomationsPath = "/areas?area=09-technologia&view=automations";
 export const canonicalLegalPath = "/areas?area=10-prawo&view=overview";
 export const canonicalInnovationPath = "/areas?area=11-innowacje&view=overview";
+export const canonicalApplicationGraphPath = "/areas?area=11-innowacje&view=application-graph";
 export const canonicalManagementDepartmentsPath = "/areas?area=12-zarzadzanie&view=departments";
 
 export const publicHomeRoute: AppRouteMeta = {
@@ -349,7 +350,7 @@ export function canonicalPostAuthPath(pathname?: string | null) {
       return canonicalLegalPath;
     }
     if (area === "11-innowacje") {
-      return canonicalInnovationPath;
+      return view === "application-graph" ? canonicalApplicationGraphPath : canonicalInnovationPath;
     }
     if (area === "12-zarzadzanie") {
       return canonicalManagementDepartmentsPath;

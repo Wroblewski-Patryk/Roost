@@ -160,7 +160,10 @@ export const coreAreas: CoreArea[] = [
     descriptionKey: "departments.11.description",
     icon: "ph-lightbulb",
     enabled: true,
-    views: [{ key: "overview", labelKey: "views.default.overview", href: canonicalInnovationPath, icon: "ph-gauge", enabled: true }]
+    views: [
+      { key: "overview", labelKey: "views.default.overview", href: canonicalInnovationPath, icon: "ph-gauge", enabled: true },
+      { key: "application-graph", labelKey: "views.11.applicationGraph", href: "/areas?area=11-innowacje&view=application-graph", icon: "ph-graph", enabled: true }
+    ]
   },
   {
     key: "12-zarzadzanie",

@@ -12,6 +12,8 @@ Primary read models:
 
 ```http
 GET /v1/product-engineering/portfolio
+GET /v1/product-engineering/graph
+GET /v1/product-engineering/applications/:id/graph
 GET /v1/product-engineering/applications/:id/capability-map
 GET /v1/product-engineering/applications/:id/gaps
 GET /v1/product-engineering/applications/:id/readiness
@@ -26,6 +28,12 @@ The `agent-context` response is a machine-readable aggregate with lifecycle,
 target and observed capabilities, evidence, gaps, dependencies, architecture,
 interfaces, and readiness. It is a derived packet; PostgreSQL domain records
 remain the source of truth.
+
+The graph endpoints return the versioned `application-graph-v1` read model.
+`/graph` is the lightweight company/application portfolio projection;
+`/applications/:id/graph` contains one application's Domain -> Capability ->
+Feature hierarchy and its dependency/blocker edges. Both are derived responses
+and require `product-engineering:read`.
 
 ## Procedure management
 

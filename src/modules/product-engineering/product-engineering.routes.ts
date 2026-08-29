@@ -25,6 +25,7 @@ import { prisma } from "../../db/prisma";
 import { sendApiError } from "../../middleware/api-error";
 import { asyncHandler } from "../../middleware/async-handler";
 import { createEvent } from "../events/event.service";
+import { buildApplicationGraph, buildPortfolioGraph } from "./application-graph";
 import { calculateApplicationReadiness } from "./readiness";
 
 const optionalText = z.string().trim().min(1).optional().nullable();
@@ -351,6 +352,47 @@ function gapsFor(capabilities: Awaited<ReturnType<typeof loadCapabilities>>) {
 }
 
 export const productEngineeringRouter = Router();
+
+productEngineeringRouter.get("/graph", asyncHandler(async (req, res) => {
+  const workspaceId = req.auth!.workspaceId;
+  const [workspace, applications] = await Promise.all([
+    prisma.workspace.findUnique({ where: { id: workspaceId }, select: { id: true, name: true } }),
+    prisma.application.findMany({
+      where: { workspaceId, status: { not: ApplicationStatus.archived } },
+      include: { capabilities: { include: capabilityInclude }, evidence: { select: { id: true } } },
+      orderBy: [{ name: "asc" }, { id: "asc" }]
+    })
+  ]);
+  if (!workspace) return sendApiError(res, 404, "workspace_not_found");
+  const packet = buildPortfolioGraph({
+    workspace,
+    applications: applications.map((application) => {
+      const readiness = calculateApplicationReadiness(readinessInput(application.capabilities));
+      const gaps = gapsFor(application.capabilities);
+      return {
+        ...application,
+        readiness,
+        capabilityCount: application.capabilities.filter((capability) => capability.applicability !== "not_applicable").length,
+        gapCount: gaps.length,
+        evidenceCount: application.evidence.length
+      };
+    })
+  });
+  res.json({ data: packet });
+}));
+
+productEngineeringRouter.get("/applications/:id/graph", asyncHandler(async (req, res) => {
+  const workspaceId = req.auth!.workspaceId;
+  const [workspace, application] = await Promise.all([
+    prisma.workspace.findUnique({ where: { id: workspaceId }, select: { id: true, name: true } }),
+    prisma.application.findFirst({ where: { id: String(req.params.id), workspaceId } })
+  ]);
+  if (!workspace) return sendApiError(res, 404, "workspace_not_found");
+  if (!application) return sendApiError(res, 404, "application_not_found");
+  const capabilities = await loadCapabilities(application.id);
+  const readiness = calculateApplicationReadiness(readinessInput(capabilities));
+  res.json({ data: buildApplicationGraph({ workspace, application, capabilities, readiness }) });
+}));
 
 productEngineeringRouter.get("/portfolio", asyncHandler(async (req, res) => {
   const applications = await prisma.application.findMany({

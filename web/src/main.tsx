@@ -15,6 +15,7 @@ import {
   canonicalTechnologyPath,
   canonicalLegalPath,
   canonicalInnovationPath,
+  canonicalApplicationGraphPath,
   resolveRouteMeta
 } from "./app-route-registry";
 import { isSignedIn } from "./api/auth-token";
@@ -38,6 +39,7 @@ const FinanceRoute = lazy(() => import("./features/departments/finance-route").t
 const TechnologyRoute = lazy(() => import("./features/departments/technology-route").then((module) => ({ default: module.TechnologyRoute })));
 const LegalRoute = lazy(() => import("./features/departments/legal-route").then((module) => ({ default: module.LegalRoute })));
 const InnovationRoute = lazy(() => import("./features/departments/innovation-route").then((module) => ({ default: module.InnovationRoute })));
+const ApplicationGraphRoute = lazy(() => import("./features/departments/application-graph-route").then((module) => ({ default: module.ApplicationGraphRoute })));
 const ManagementRoute = lazy(() => import("./features/departments/management-route").then((module) => ({ default: module.ManagementRoute })));
 const AccountSettingsRoute = lazy(() => import("./features/settings/settings-routes").then((module) => ({ default: module.AccountSettingsRoute })));
 const WorkspaceSettingsRoute = lazy(() => import("./features/settings/settings-routes").then((module) => ({ default: module.WorkspaceSettingsRoute })));
@@ -173,6 +175,12 @@ function App() {
   }
 
   if (pathname === "/areas" && currentAreaKey() === "11-innowacje") {
+    if (currentAreaView() === "application-graph") {
+      if (window.location.search !== "?area=11-innowacje&view=application-graph") {
+        window.history.replaceState(null, "", canonicalApplicationGraphPath);
+      }
+      return <PrivateAppRoute activeArea="11-innowacje"><ApplicationGraphRoute /></PrivateAppRoute>;
+    }
     if (window.location.search !== "?area=11-innowacje&view=overview") {
       window.history.replaceState(null, "", canonicalInnovationPath);
     }

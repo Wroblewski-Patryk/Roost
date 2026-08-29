@@ -170,6 +170,8 @@ The protected `/v1/product-engineering` API provides catalog and application
 commands plus the following read models:
 
 - `GET /portfolio`
+- `GET /graph`
+- `GET /applications/:id/graph`
 - `GET /applications/:id/capability-map`
 - `GET /applications/:id/gaps`
 - `GET /applications/:id/readiness`
@@ -180,6 +182,43 @@ target and observed capabilities, gaps, blockers, dependencies, architecture,
 technologies, interfaces, evidence coverage, and readiness. It explicitly
 states that declarations are not observations and evidence does not silently
 promote state.
+
+## Application Graph
+
+`11 Innovation / Application Graph` is an interactive read projection of the
+same Product Engineering records. It does not own application, capability,
+feature, evidence, dependency, readiness, or lifecycle state and introduces no
+parallel graph tables.
+
+The bounded hierarchy is:
+
+```text
+Company -> Application -> Graph Domain -> Capability -> Feature
+```
+
+Graph domains are deterministic navigation groups over canonical
+`CapabilityDomain` records. The `application-graph-domains-v1` mapping keeps a
+comparable structure across applications: Experience projects to Frontend,
+Identity & Access to Backend, Interfaces to API / Integrations, AI / Agent
+Readiness to AI / MCP / Agents, and product-specific Trading or Company
+Operating System capabilities to Domain. Unrecognized catalog domains remain
+visible under their canonical name. The mapping never copies or reassigns the
+source capability definition.
+
+`GET /graph` returns only the company and application portfolio required for
+the initial canvas. `GET /applications/:id/graph` lazily returns one complete
+application projection with domains, capabilities, assigned features,
+hierarchy edges, dependency edges, blockers, evidence summaries, ancestor
+paths, and deterministic completeness derived from Product Engineering state.
+The web client progressively renders the focused node, its ancestors,
+siblings, and direct children; it may load all application projections only
+after a cross-portfolio search is requested.
+
+The supported visual modes are Structure, Progress, Dependencies, Agent Ready,
+and Productization. They are alternate interpretations of one packet, not
+stored state. Required incomplete dependencies are represented as blocker
+edges. Missing evidence and incomplete required state remain explicit and are
+never inferred as complete by the graph.
 
 ## Shared procedure management
 
@@ -198,7 +237,7 @@ procedure merely by submitting a patch.
 
 ## UI surfaces
 
-- `11 Innovation`: portfolio, calculated readiness, editable application
+- `11 Innovation`: portfolio, Application Graph, calculated readiness, editable application
   profile, application cockpit, capability matrix and detail, gaps,
   architecture, interfaces, evidence, capability library, packs, and
   blueprints.
