@@ -367,6 +367,11 @@ security context.
 - Wrap DaisyUI usage in project-specific React primitives where a pattern will
   repeat: app shell, buttons, alerts/toasts, tables, filters, module links,
   command panels, empty states, and form fields.
+- Use inline notices for loading, empty, validation, and recoverable error
+  states that need page or form context. Use the shared toast layer for brief
+  action confirmation such as a successful save; it must not alter document
+  flow, must be dismissible, announce itself to assistive technology, pause
+  dismissal while hovered or focused, and respect mobile safe areas.
 - Reusable primitives must support variants instead of cloned components. For
   example, one button primitive may support icon-left, icon-right, icon-only,
   loading, disabled, danger, primary, secondary, and ghost variants; one table

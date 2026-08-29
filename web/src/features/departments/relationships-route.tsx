@@ -1,4 +1,5 @@
 import { CcDataTable, type CcTableColumn } from "../../components/cc-data-table";
+import { CcCompactList, CcCompactListItem, CcListStatus } from "../../components/cc-compact-list";
 import { CcNotice } from "../../components/cc-notice";
 import { CcPageHeader } from "../../components/cc-page-header";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
@@ -71,33 +72,33 @@ export function RelationshipsRoute() {
       {interactions.length || tasks.length ? <section className={`grid gap-4 ${interactions.length && tasks.length ? "lg:grid-cols-2" : ""}`}>
         {interactions.length ? <article className="rounded-company border border-base-300 bg-base-100 p-4">
           <h2 className="text-lg font-black text-company-ink">{t("relationships.interactions")}</h2>
-          <div className="roost-compact-list mt-3 grid gap-2">
+          <CcCompactList className="mt-3">
             {interactions.slice(0, 8).map((interaction) => (
-              <div className="rounded-company border border-base-300 bg-base-200/40 p-3" key={interaction.id}>
+              <CcCompactListItem key={interaction.id}>
                 <div className="flex items-start justify-between gap-2">
                   <strong>{interaction.type}</strong>
-                  <span className="badge badge-outline">{humanizeBusinessValue(interaction.status, "Active")}</span>
+                  <CcListStatus tone={interaction.status === "active" ? "active" : "neutral"}>{humanizeBusinessValue(interaction.status, "Active")}</CcListStatus>
                 </div>
                 <p className="mt-1 text-sm text-company-muted">{interaction.summary || "No summary"}</p>
                 <p className="mt-1 text-xs text-company-muted">{interaction.client?.name || "Unassigned client"} • {formatDate(interaction.occurredAt)}</p>
-              </div>
+              </CcCompactListItem>
             ))}
-          </div>
+          </CcCompactList>
         </article> : null}
 
         {tasks.length ? <article className="rounded-company border border-base-300 bg-base-100 p-4">
           <h2 className="text-lg font-black text-company-ink">{t("relationships.tasks")}</h2>
-          <div className="roost-compact-list mt-3 grid gap-2">
+          <CcCompactList className="mt-3">
             {tasks.slice(0, 8).map((task) => (
-              <div className="rounded-company border border-base-300 bg-base-200/40 p-3" key={task.id}>
+              <CcCompactListItem key={task.id}>
                 <div className="flex items-start justify-between gap-2">
                   <strong>{task.title}</strong>
-                  <span className="badge badge-outline">{humanizeBusinessValue(task.status, "To do")}</span>
+                  <CcListStatus>{humanizeBusinessValue(task.status, "To do")}</CcListStatus>
                 </div>
                 <p className="mt-1 text-xs text-company-muted">{task.priority || "normal"} • due {formatDate(task.dueDate)}</p>
-              </div>
+              </CcCompactListItem>
             ))}
-          </div>
+          </CcCompactList>
         </article> : null}
       </section> : null}
 

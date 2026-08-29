@@ -9667,6 +9667,181 @@ textarea:focus-visible,
   }
 }
 
+.cc-toast-viewport {
+  position: fixed;
+  z-index: 120;
+  top: max(5.25rem, calc(env(safe-area-inset-top) + 1rem));
+  right: max(1rem, env(safe-area-inset-right));
+  width: min(24rem, calc(100vw - 2rem));
+  pointer-events: none;
+}
+
+/* Repeated operational records read as one calm list, not a stack of cards. */
+.roost-liquid-shell .cc-compact-list {
+  overflow: hidden;
+  border-block: 1px solid var(--roost-work-line, rgb(170 207 255 / 0.13));
+  background: transparent;
+}
+
+.roost-liquid-shell .cc-compact-list-item {
+  min-width: 0;
+  min-height: 4.25rem;
+  padding: 0.85rem 0.55rem;
+  border-bottom: 1px solid var(--roost-work-line, rgb(170 207 255 / 0.13));
+  background: transparent;
+}
+
+.roost-liquid-shell .cc-compact-list-item:last-child {
+  border-bottom: 0;
+}
+
+.roost-liquid-shell .cc-compact-list-item strong {
+  color: #eaf2f8;
+  font-size: 0.9rem;
+  font-weight: 720;
+  line-height: 1.4;
+}
+
+.roost-liquid-shell .cc-compact-list-item p {
+  line-height: 1.45;
+}
+
+.roost-liquid-shell .cc-list-status {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.12rem 0.18rem;
+  color: rgb(192 208 223 / 0.72);
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.roost-liquid-shell .cc-list-status::before {
+  width: 0.34rem;
+  height: 0.34rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: rgb(157 177 198 / 0.62);
+  content: "";
+}
+
+.roost-liquid-shell .cc-list-status-active {
+  color: rgb(134 226 177 / 0.86);
+}
+
+.roost-liquid-shell .cc-list-status-active::before {
+  background: rgb(92 214 151 / 0.9);
+}
+
+.roost-liquid-shell .cc-list-status-attention {
+  color: rgb(235 196 125 / 0.86);
+}
+
+.roost-liquid-shell .cc-list-status-attention::before {
+  background: rgb(231 186 101 / 0.9);
+}
+
+@media (max-width: 720px) {
+  .roost-liquid-shell .cc-compact-list-item {
+    min-height: 4.5rem;
+    padding: 0.9rem 0.35rem;
+  }
+}
+
+.cc-toast {
+  --cc-toast-color: rgb(142 192 240);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: start;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--cc-toast-color) 30%, transparent);
+  border-left: 3px solid var(--cc-toast-color);
+  border-radius: 0.7rem;
+  padding: 0.85rem 0.75rem 0.85rem 0.85rem;
+  background: rgb(7 18 30 / 0.92);
+  box-shadow: 0 18px 48px rgb(0 0 0 / 0.34), inset 0 1px 0 rgb(255 255 255 / 0.05);
+  color: #edf4fa;
+  pointer-events: auto;
+  backdrop-filter: blur(22px) saturate(118%);
+  animation: cc-toast-enter 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.cc-toast-success { --cc-toast-color: rgb(92 214 151); }
+.cc-toast-warning { --cc-toast-color: rgb(231 186 101); }
+.cc-toast-error { --cc-toast-color: rgb(242 120 128); }
+
+.cc-toast-icon {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--cc-toast-color) 12%, transparent);
+  color: var(--cc-toast-color);
+  font-size: 1.05rem;
+}
+
+.cc-toast-copy {
+  min-width: 0;
+  padding-top: 0.05rem;
+}
+
+.cc-toast-copy strong {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 760;
+  line-height: 1.35;
+}
+
+.cc-toast-copy p {
+  margin-top: 0.16rem;
+  color: rgb(198 213 228 / 0.78);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.cc-toast-dismiss {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  margin: -0.18rem -0.1rem 0 0;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: rgb(201 216 231 / 0.7);
+}
+
+.cc-toast-dismiss:hover,
+.cc-toast-dismiss:focus-visible {
+  border-color: rgb(170 207 255 / 0.16);
+  background: rgb(170 207 255 / 0.07);
+  color: #f5f9fc;
+}
+
+.cc-toast-dismiss:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--cc-toast-color) 55%, transparent);
+  outline-offset: 1px;
+}
+
+@keyframes cc-toast-enter {
+  from { opacity: 0; transform: translate3d(0, -0.5rem, 0) scale(0.985); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@media (max-width: 720px) {
+  .cc-toast-viewport {
+    top: max(4.75rem, calc(env(safe-area-inset-top) + 0.75rem));
+    right: max(0.75rem, env(safe-area-inset-right));
+    left: max(0.75rem, env(safe-area-inset-left));
+    width: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .roost-liquid-shell *,
   .roost-liquid-shell *::before,

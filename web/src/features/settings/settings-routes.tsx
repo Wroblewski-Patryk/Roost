@@ -5,6 +5,7 @@ import { CcField } from "../../components/cc-field";
 import { CcIdentityMark, CcIdentityPicker } from "../../components/cc-identity-picker";
 import { CcNotice } from "../../components/cc-notice";
 import { CcRecordEditorModal, CcRecordEditorSection } from "../../components/cc-record-editor";
+import { CcToast } from "../../components/cc-toast";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { formatAppDate } from "../../i18n/date-format";
 import { useLanguage } from "../../i18n/i18n";
@@ -268,8 +269,8 @@ export function AccountSettingsRoute() {
           </details>
         </section>
         {error ? <CcNotice detail={error} live title={t("account.saveError")} tone="error" /> : null}
-        {success ? <CcNotice detail={success} live title={t("account.saved")} tone="success" /> : null}
       </div>
+      {success ? <CcToast detail={success} dismissLabel={t("common.dismiss")} onDismiss={() => setSuccess(null)} title={t("account.saved")} tone="success" /> : null}
       {passwordEditorOpen ? (
         <CcRecordEditorModal
           actions={<><CcButton onClick={() => setPasswordEditorOpen(false)} variant="ghost">{t("operations.cancel")}</CcButton><CcButton loading={saving} type="submit" variant="primary">{t("account.updatePassword")}</CcButton></>}
@@ -532,8 +533,8 @@ export function WorkspaceSettingsRoute() {
           </div>
         </section>
         {actionError ? <CcNotice detail={actionError} live title={t("workspaceSettings.saveError")} tone="error" /> : null}
-        {actionSuccess ? <CcNotice detail={actionSuccess} live title={t("workspaceSettings.saved")} tone="success" /> : null}
       </div>
+      {actionSuccess ? <CcToast detail={actionSuccess} dismissLabel={t("common.dismiss")} onDismiss={() => setActionSuccess(null)} title={t("workspaceSettings.saved")} tone="success" /> : null}
       {editor === "clickup" ? (
         <CcRecordEditorModal
           actions={<><CcButton onClick={() => setEditor(null)} variant="ghost">{t("operations.cancel")}</CcButton><CcButton loading={saving} type="submit" variant="primary">{t("workspaceSettings.saveConnection")}</CcButton></>}
