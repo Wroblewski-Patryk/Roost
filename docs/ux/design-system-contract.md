@@ -466,6 +466,18 @@ not repeat that image or cover it with large opaque gray containers.
   internal pagination stays hidden until the result set exceeds the active
   page size. Small datasets must not carry inert checkboxes, column menus, or
   `1-3 of 3` navigation.
+- Sortable table headers use a three-step cycle: ascending, descending, then
+  unsorted in source order. The active state is exposed with `aria-sort`.
+- Search, quick filters, field filters, column controls, and reset actions form
+  one shared table command row. A search-only table stretches the search field
+  to the available width instead of nesting a narrow input inside an otherwise
+  empty toolbar card.
+- Overview grids collapse to one full-width surface when only one data region
+  is present. Never preserve an empty second column merely because the route
+  can display two datasets when both exist.
+- Demonstration records may explain a backend-connected module before the
+  workspace has data only when they are explicitly marked as examples and are
+  never mixed with, persisted as, or visually presented as live records.
 - Standard department workbenches use `CcPageHeader` for the eyebrow, title,
   operating description, and page-level actions. Specialized briefing and map
   surfaces may keep a bespoke orientation header when that hierarchy performs

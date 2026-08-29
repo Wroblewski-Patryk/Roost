@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { isLocale, useLanguage } from "./i18n";
 
+const localeFlag = {
+  en: "/assets/roost/flags/gb.svg",
+  pl: "/assets/roost/flags/pl.svg"
+} as const;
+
 export function LanguageSelector({ compact = false }: { compact?: boolean }) {
   const { locale, setLocale, t } = useLanguage();
   const [open, setOpen] = useState(false);
@@ -34,7 +39,7 @@ export function LanguageSelector({ compact = false }: { compact?: boolean }) {
           onClick={() => setOpen((value) => !value)}
           type="button"
         >
-          <i className="ph-bold ph-globe-hemisphere-west" aria-hidden="true"></i>
+          <img alt="" aria-hidden="true" className="roost-language-flag" src={localeFlag[locale]} />
           <span>{locale.toUpperCase()}</span>
           <i className={`ph-bold ph-caret-down${open ? " is-open" : ""}`} aria-hidden="true"></i>
         </button>
@@ -53,8 +58,9 @@ export function LanguageSelector({ compact = false }: { compact?: boolean }) {
                 role="menuitem"
                 type="button"
               >
-                <span className="roost-language-code">{value.toUpperCase()}</span>
+                <span className="roost-language-option-icon" aria-hidden="true"><img alt="" src={localeFlag[value]} /></span>
                 <span>{t(`language.${value}`)}</span>
+                <span className="roost-language-code">{value.toUpperCase()}</span>
                 {locale === value ? <i className="ph-bold ph-check" aria-hidden="true"></i> : null}
               </button>
             ))}

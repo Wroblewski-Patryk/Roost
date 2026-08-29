@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { CcButton } from "./cc-button";
 import { CcNotice } from "./cc-notice";
 import { CcSelect } from "./cc-select";
+import { useLanguage } from "../i18n/i18n";
+import { formatBusinessValue } from "../i18n/business-values";
 
 type SortDirection = "asc" | "desc";
 
@@ -82,6 +84,8 @@ export type CcDataTableProps<Row extends { id: string }> = {
     selected?: (count: number) => string;
     page?: string;
     clear?: string;
+    all?: string;
+    filterOption?: (value: string) => string;
   };
   loading?: boolean;
   error?: string | null;
@@ -95,6 +99,7 @@ export type CcDataTableProps<Row extends { id: string }> = {
   quickFilters?: Array<CcTableQuickFilter<Row>>;
   getRowLabel?: (row: Row) => string;
   getRowClassName?: (row: Row) => string;
+  onRowClick?: (row: Row) => void;
   tableMinWidthClassName?: string;
   stickyActions?: boolean;
   searchPlaceholder?: string;
@@ -124,7 +129,9 @@ const defaultLabels: NonNullable<CcDataTableProps<{ id: string }>["labels"]> = {
   rowsPerPage: "Rows",
   selected: (count) => `${count} selected`,
   page: "Page",
-  clear: "Clear"
+  clear: "Clear",
+  all: "All",
+  filterOption: (value) => value
 };
 
 function paginationState(pagination: CcTablePagination) {
@@ -157,7 +164,7 @@ function sortIcon(active: boolean, direction?: SortDirection) {
   return direction === "desc" ? "ph-caret-down" : "ph-caret-up";
 }
 
-function uniqueOptions<Row>(rows: Row[], column: CcTableColumn<Row>) {
+function uniqueOptions<Row>(rows: Row[], column: CcTableColumn<Row>, formatValue?: (value: string) => string) {
   if (column.filterOptions) return column.filterOptions;
   const values = new Map<string, string>();
   rows.forEach((row) => {
@@ -167,7 +174,7 @@ function uniqueOptions<Row>(rows: Row[], column: CcTableColumn<Row>) {
   });
   return Array.from(values.entries())
     .sort((a, b) => a[1].localeCompare(b[1]))
-    .map(([value, label]) => ({ value, label }));
+    .map(([value, label]) => ({ value, label: formatValue?.(label) || label }));
 }
 
 function defaultSearchValue<Row>(row: Row, columns: Array<CcTableColumn<Row>>) {
@@ -223,6 +230,7 @@ export function CcDataTable<Row extends { id: string }>({
   quickFilters = [],
   getRowLabel,
   getRowClassName,
+  onRowClick,
   tableMinWidthClassName = "min-w-full",
   stickyActions = true,
   searchPlaceholder,
@@ -235,8 +243,28 @@ export function CcDataTable<Row extends { id: string }>({
   initialColumnFilters,
   initialQuickFilter = "all"
 }: CcDataTableProps<Row>) {
+  const { t } = useLanguage();
   const tableDensityClass = density === "compact" ? "table-sm" : "";
-  const tableLabels = { ...defaultLabels, ...labels };
+  const tableLabels = {
+    ...defaultLabels,
+    loadingTitle: t("table.loading.title"),
+    loadingDetail: t("table.loading.detail"),
+    errorTitle: t("table.error.title"),
+    actions: t("table.actions"),
+    previous: t("table.previous"),
+    next: t("table.next"),
+    pagination: ({ start, end, total }: { start: number; end: number; total: number }) => t("table.pagination", { start, end, total }),
+    search: t("table.search"),
+    filters: t("table.filters"),
+    columns: t("table.columns"),
+    rowsPerPage: t("table.rows"),
+    selected: (count: number) => t("table.selected", { count }),
+    page: t("table.page"),
+    clear: t("table.clear"),
+    all: t("table.all"),
+    filterOption: (value: string) => formatBusinessValue(value),
+    ...labels
+  };
   const actionColumnClass = stickyActions
     ? "sticky right-0 z-10 bg-transparent shadow-[-14px_0_18px_-18px_rgba(15,23,42,0.72)]"
     : "";
@@ -322,7 +350,8 @@ export function CcDataTable<Row extends { id: string }>({
     if (!column.sortable && !column.sortValue && !column.filterValue) return;
     setSort((current) => {
       if (current?.key !== column.key) return { key: column.key, direction: "asc" };
-      return { key: column.key, direction: current.direction === "asc" ? "desc" : "asc" };
+      if (current.direction === "asc") return { key: column.key, direction: "desc" };
+      return null;
     });
   }
 
@@ -350,7 +379,7 @@ export function CcDataTable<Row extends { id: string }>({
   }
 
   const filterBar = (
-    <div className="roost-work-panel cc-table-toolbar rounded-company p-3">
+    <div className="cc-table-toolbar">
       {quickFilters.length ? (
         <div className="cc-table-quick-filters" aria-label="Quick filters">
           {quickFilters.map((filter) => (
@@ -386,7 +415,7 @@ export function CcDataTable<Row extends { id: string }>({
             </label>
           ) : null}
           {filterableColumns.map((column) => {
-            const options = uniqueOptions(rows, column);
+            const options = uniqueOptions(rows, column, tableLabels.filterOption);
             if (options.length < 2) return null;
             const label = column.filterLabel || column.header;
             return (
@@ -400,7 +429,7 @@ export function CcDataTable<Row extends { id: string }>({
                   onChange={(event) => setColumnFilters((current) => ({ ...current, [column.key]: event.target.value }))}
                   value={columnFilters[column.key] || "all"}
                 >
-                  <option value="all">All {label.toLowerCase()}</option>
+                  <option value="all">{tableLabels.all}</option>
                   {options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </CcSelect>
               </label>
@@ -514,7 +543,11 @@ export function CcDataTable<Row extends { id: string }>({
               const sortable = column.sortable || column.sortValue || column.filterValue;
               const active = sort?.key === column.key;
               return (
-                <th className={column.className} key={column.key}>
+                <th
+                  aria-sort={sortable ? (active ? (sort?.direction === "asc" ? "ascending" : "descending") : "none") : undefined}
+                  className={column.className}
+                  key={column.key}
+                >
                   <button
                     className={`inline-flex items-center gap-1 text-left font-black uppercase ${sortable ? "cursor-pointer hover:text-primary" : "cursor-default"}`}
                     disabled={!sortable}
@@ -532,7 +565,18 @@ export function CcDataTable<Row extends { id: string }>({
         </thead>
         <tbody>
           {displayedRows.length ? displayedRows.map((row) => (
-            <tr className={["hover transition-colors", getRowClassName?.(row)].filter(Boolean).join(" ")} key={row.id}>
+            <tr
+              className={["hover transition-colors", onRowClick ? "cursor-pointer" : "", getRowClassName?.(row)].filter(Boolean).join(" ")}
+              key={row.id}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+              onKeyDown={onRowClick ? (event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onRowClick(row);
+                }
+              } : undefined}
+              tabIndex={onRowClick ? 0 : undefined}
+            >
               {selectionEnabled ? (
                 <td className={selectColumnClass}>
                   <input
@@ -596,14 +640,26 @@ export function CcDataTable<Row extends { id: string }>({
   };
 
   return (
-    <div className="cc-data-table grid gap-3">
+    <div className="cc-data-table">
       {rows.length ? filterBar : null}
       {mobileMode === "cards" ? (
         <>
           <div className="sm:hidden">
             <div className="grid gap-3">
               {displayedRows.map((row) => (
-                <article className={["rounded-company border border-base-300 bg-base-100 p-4", getRowClassName?.(row)].filter(Boolean).join(" ")} key={row.id}>
+                <article
+                  className={["rounded-company border border-base-300 bg-base-100 p-4", onRowClick ? "cursor-pointer" : "", getRowClassName?.(row)].filter(Boolean).join(" ")}
+                  key={row.id}
+                  onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  onKeyDown={onRowClick ? (event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onRowClick(row);
+                    }
+                  } : undefined}
+                  role={onRowClick ? "button" : undefined}
+                  tabIndex={onRowClick ? 0 : undefined}
+                >
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <label className="flex min-w-0 items-center gap-2">
                       {selectionEnabled ? (
@@ -622,7 +678,7 @@ export function CcDataTable<Row extends { id: string }>({
                       <strong className="break-words text-sm">{getRowLabel?.(row) ?? row.id}</strong>
                     </label>
                     {(rowActions || rowActionItems.length) ? (
-                      <div className="roost-table-actions flex flex-wrap justify-end gap-2">
+                      <div className="roost-table-actions flex shrink-0 flex-nowrap justify-end gap-1">
                         {rowActionItems.filter((action) => !action.hidden?.(row)).map((action) => (
                           <button
                             aria-label={action.label}

@@ -20,22 +20,23 @@ export function StrategyRoute() {
   const risks = packet.data?.risks || [];
   const recentTasks = packet.data?.tasks || [];
   const tableLabels = useTranslatedTableLabels();
+  const header = <CcPageHeader eyebrow={t("strategy.eyebrow")} title={t("strategy.title")} description={t("strategy.description")} />;
   const columns: Array<CcTableColumn<(typeof rows)[number]>> = [
     {
       key: "goal",
-      header: "Goal",
+      header: t("strategy.goal"),
       sortable: true,
       searchValue: (row) => `${row.title} ${row.description || ""}`,
       cell: (row) => (
         <div className="grid">
           <strong>{row.title}</strong>
-          <span className="text-xs text-company-muted">{row.description || "No description"}</span>
+          <span className="text-xs text-company-muted">{row.description || t("common.noDescription")}</span>
         </div>
       )
     },
     {
       key: "status",
-      header: "Status",
+      header: t("table.status"),
       sortable: true,
       filterable: true,
       filterValue: (row) => row.status || "unknown",
@@ -43,28 +44,32 @@ export function StrategyRoute() {
     },
     {
       key: "targets",
-      header: "Targets",
+      header: t("strategy.targets"),
       sortValue: (row) => row.targets?.length || 0,
       cell: (row) => <span className="text-sm text-company-muted">{row.targets?.length || "-"}</span>
     },
     {
       key: "tasks",
-      header: "Follow-up tasks",
+      header: t("strategy.followUpTasks"),
       sortValue: (row) => row.tasks?.length || 0,
       cell: (row) => <span className="text-sm text-company-muted">{row.tasks?.length || "-"}</span>
     }
   ];
 
+  if (packet.status === "ready" && !rows.length) {
+    return <>{header}<CcNotice tone="empty" title={t("strategy.empty.title")} detail={t("strategy.empty.detail")} /></>;
+  }
+
   return (
     <>
-      <CcPageHeader eyebrow="01 Strategy" title={packet.data?.department?.name || "Strategy Management System"} description={packet.data?.department?.purpose || "Align goals, targets, metrics, risk, and decisions into one strategic operating context."} />
+      {header}
 
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
       {packet.status === "error" ? <CcNotice tone="error" title={packet.error || "Strategy context could not load."} live /> : null}
 
-      {metrics.length || risks.length ? <section className="grid gap-4 lg:grid-cols-2">
+      {metrics.length || risks.length ? <section className={`grid gap-4 ${metrics.length && risks.length ? "lg:grid-cols-2" : ""}`}>
         {metrics.length ? <article className="rounded-company border border-base-300 bg-base-100 p-4">
-          <h2 className="text-lg font-black text-company-ink">Metrics</h2>
+          <h2 className="text-lg font-black text-company-ink">{t("strategy.metrics")}</h2>
           <div className="roost-compact-list mt-3 grid gap-2">
             {metrics.slice(0, 8).map((metric) => (
               <div className="rounded-company border border-base-300 bg-base-200/40 p-3" key={metric.id}>
@@ -79,7 +84,7 @@ export function StrategyRoute() {
         </article> : null}
 
         {risks.length ? <article className="rounded-company border border-base-300 bg-base-100 p-4">
-          <h2 className="text-lg font-black text-company-ink">Strategic risks</h2>
+          <h2 className="text-lg font-black text-company-ink">{t("strategy.risks")}</h2>
           <div className="roost-compact-list mt-3 grid gap-2">
             {risks.slice(0, 8).map((risk) => (
               <div className="rounded-company border border-base-300 bg-base-200/40 p-3" key={risk.id}>
@@ -97,8 +102,8 @@ export function StrategyRoute() {
       <CcDataTable
         columns={columns}
         rows={rows}
-        emptyTitle="No strategy goals"
-        emptyDetail="Add strategic goals and targets to populate this board."
+        emptyTitle={t("strategy.empty.title")}
+        emptyDetail={t("strategy.empty.detail")}
         error={packet.status === "error" ? packet.error || "Strategy context could not load." : null}
         getRowLabel={(row) => row.title}
         labels={tableLabels}
@@ -107,7 +112,7 @@ export function StrategyRoute() {
       />
 
       {recentTasks.length ? <section className="rounded-company border border-base-300 bg-base-100 p-4">
-        <h2 className="text-lg font-black text-company-ink">Recent strategic tasks</h2>
+        <h2 className="text-lg font-black text-company-ink">{t("strategy.recentTasks")}</h2>
         <div className="roost-compact-list mt-3 grid gap-2">
           {recentTasks.slice(0, 10).map((task) => (
             <div className="rounded-company border border-base-300 bg-base-200/40 p-3" key={task.id}>

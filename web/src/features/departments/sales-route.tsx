@@ -15,38 +15,45 @@ function formatDate(value?: string | null) {
 export function SalesRoute() {
   const { t } = useLanguage();
   const packet = useOwnerPacket<SalesPacket>("/v1/sales/context?limit=80", true, t);
-  const rows = packet.data?.deals || [];
+  const realRows = packet.data?.deals || [];
+  const exampleRows: NonNullable<SalesPacket["deals"]> = [
+    { id: "example-discovery", title: t("sales.example.deal.redesign"), clientName: "Northstar Labs", pipelineStageName: t("sales.example.stage.discovery"), value: 18000, currency: "CHF", status: "qualified" },
+    { id: "example-proposal", title: t("sales.example.deal.audit"), clientName: "Alpine Office", pipelineStageName: t("sales.example.stage.proposal"), value: 6500, currency: "CHF", status: "proposal" },
+    { id: "example-negotiation", title: t("sales.example.deal.support"), clientName: t("sales.example.client"), pipelineStageName: t("sales.example.stage.negotiation"), value: 2400, currency: "CHF", status: "negotiation" }
+  ];
+  const showingExample = packet.status === "ready" && realRows.length === 0;
+  const rows = showingExample ? exampleRows : realRows;
   const clientWork = packet.data?.currentClientWork || [];
   const followUpTasks = packet.data?.followUpTasks || [];
   const tableLabels = useTranslatedTableLabels();
   const columns: Array<CcTableColumn<(typeof rows)[number]>> = [
     {
       key: "deal",
-      header: "Deal",
+      header: t("sales.deal"),
       sortable: true,
       searchValue: (row) => `${row.title} ${row.clientName || ""}`,
       cell: (row) => (
         <div className="grid">
           <strong>{row.title}</strong>
-          <span className="text-xs text-company-muted">{row.clientName || "Unassigned client"}</span>
+          <span className="text-xs text-company-muted">{row.clientName || t("sales.unassignedClient")}</span>
         </div>
       )
     },
     {
       key: "stage",
-      header: "Stage",
+      header: t("sales.stage"),
       sortable: true,
       cell: (row) => <span>{row.pipelineStageName || "-"}</span>
     },
     {
       key: "value",
-      header: "Value",
+      header: t("sales.value"),
       sortValue: (row) => row.value || 0,
       cell: (row) => <span>{row.value != null ? `${row.value} ${row.currency || ""}` : "-"}</span>
     },
     {
       key: "status",
-      header: "Status",
+      header: t("table.status"),
       sortable: true,
       filterable: true,
       filterValue: (row) => row.status || "unknown",
@@ -56,14 +63,16 @@ export function SalesRoute() {
 
   return (
     <>
-      <CcPageHeader eyebrow="03 Sales" title={packet.data?.department?.name || "Sales Management System"} description={packet.data?.department?.purpose || "Manage clients, deals, pipeline, follow-up, and commercial exception evidence before owner-approved commitments."} />
+      <CcPageHeader eyebrow={t("sales.eyebrow")} title={t("sales.title")} description={t("sales.description")} />
 
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
       {packet.status === "error" ? <CcNotice tone="error" title={packet.error || "Sales context could not load."} live /> : null}
 
-      {clientWork.length || followUpTasks.length ? <section className="grid gap-4 lg:grid-cols-2">
+      {showingExample ? <div className="roost-example-note"><i className="ph-bold ph-eye" aria-hidden="true"></i><div><strong>{t("sales.example.title")}</strong><span>{t("sales.example.detail")}</span></div></div> : null}
+
+      {clientWork.length || followUpTasks.length ? <section className={`grid gap-4 ${clientWork.length && followUpTasks.length ? "lg:grid-cols-2" : ""}`}>
         {clientWork.length ? <article className="rounded-company border border-base-300 bg-base-100 p-4">
-          <h2 className="text-lg font-black text-company-ink">Current client work</h2>
+          <h2 className="text-lg font-black text-company-ink">{t("sales.currentWork")}</h2>
           <div className="roost-compact-list mt-3 grid gap-2">
             {clientWork.slice(0, 8).map((item) => (
               <div className="rounded-company border border-base-300 bg-base-200/40 p-3" key={item.id}>
@@ -78,7 +87,7 @@ export function SalesRoute() {
         </article> : null}
 
         {followUpTasks.length ? <article className="rounded-company border border-base-300 bg-base-100 p-4">
-          <h2 className="text-lg font-black text-company-ink">Follow-up tasks</h2>
+          <h2 className="text-lg font-black text-company-ink">{t("sales.followUpTasks")}</h2>
           <div className="roost-compact-list mt-3 grid gap-2">
             {followUpTasks.slice(0, 8).map((task) => (
               <div className="rounded-company border border-base-300 bg-base-200/40 p-3" key={task.id}>
@@ -96,8 +105,8 @@ export function SalesRoute() {
       <CcDataTable
         columns={columns}
         rows={rows}
-        emptyTitle="No deals in sales context"
-        emptyDetail="Add clients, deals, or pipeline records to populate this board."
+        emptyTitle={t("sales.empty.title")}
+        emptyDetail={t("sales.empty.detail")}
         error={packet.status === "error" ? packet.error || "Sales context could not load." : null}
         getRowLabel={(row) => row.title}
         labels={tableLabels}
@@ -105,7 +114,7 @@ export function SalesRoute() {
         mobileMode="cards"
       />
 
-      <BlockedActions actions={packet.data?.blockedActions || packet.data?.agentPacket?.blockedActions} />
+      {!showingExample ? <BlockedActions actions={packet.data?.blockedActions || packet.data?.agentPacket?.blockedActions} /> : null}
     </>
   );
 }

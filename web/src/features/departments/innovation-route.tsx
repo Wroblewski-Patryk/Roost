@@ -1,12 +1,15 @@
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
+import { CcDataTable, type CcTableColumn } from "../../components/cc-data-table";
 import { CcField } from "../../components/cc-field";
 import { CcNotice } from "../../components/cc-notice";
 import { CcPageHeader } from "../../components/cc-page-header";
 import { CcRecordEditorModal, CcRecordEditorSection } from "../../components/cc-record-editor";
 import { CcSelect } from "../../components/cc-select";
 import { CcTextInput } from "../../components/cc-text-input";
+import { useLanguage } from "../../i18n/i18n";
+import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 import {
   ApplicationCapability,
   ProductApplication,
@@ -116,9 +119,16 @@ const applicationPlatforms = [
 ];
 
 function humanize(value: string) {
-  return value
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  return humanizeBusinessValue(value);
+}
+
+function lifecycleIcon(stage: string) {
+  if (["productized", "growth", "mature"].includes(stage)) return "ph-rocket-launch";
+  if (["validation", "launch_preparation"].includes(stage)) return "ph-seal-check";
+  if (["development", "mvp"].includes(stage)) return "ph-code";
+  if (["prototype", "discovery"].includes(stage)) return "ph-flask";
+  if (["archived", "retired"].includes(stage)) return "ph-archive";
+  return "ph-lightbulb";
 }
 
 function Meter({ value, label }: { value: number; label: string }) {
@@ -144,6 +154,7 @@ function ApplicationCard({
   application: ProductApplication;
   onOpen: () => void;
 }) {
+  const { t } = useLanguage();
   return (
     <button
       className="rounded-company border border-base-300 bg-base-100 p-5 text-left transition hover:border-primary hover:shadow-md"
@@ -158,8 +169,13 @@ function ApplicationCard({
             {application.description || "No application description yet."}
           </p>
         </div>
-        <span className="badge badge-primary badge-outline">
-          {humanize(application.innovationStage)}
+        <span
+          aria-label={`${t("innovation.stage")}: ${humanize(application.innovationStage)}`}
+          className="roost-stage-icon"
+          role="img"
+          title={humanize(application.innovationStage)}
+        >
+          <i className={`ph-bold ${lifecycleIcon(application.innovationStage)}`} aria-hidden="true"></i>
         </span>
       </div>
       <div className="mt-5 grid gap-3">
@@ -193,6 +209,7 @@ function CreateApplicationPanel({
   catalog: ProductEngineeringCatalog | null;
   onCreated: (application: ProductApplication) => void;
 }) {
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -238,10 +255,10 @@ function CreateApplicationPanel({
 
   if (!open)
     return (
-      <CcButton iconLeft="ph-plus" onClick={() => setOpen(true)} size="sm" variant="primary">New application</CcButton>
+      <CcButton iconLeft="ph-plus" onClick={() => setOpen(true)} size="sm" variant="primary">{t("innovation.newApplication")}</CcButton>
     );
   return (
-    <CcRecordEditorModal actions={<><CcButton onClick={() => setOpen(false)} type="button" variant="ghost">Cancel</CcButton><CcButton disabled={saving} iconLeft="ph-plus" type="submit" variant="primary">{saving ? "Creating…" : "Create application"}</CcButton></>} description="Create the source record used by innovation, delivery and productization." eyebrow="11 Innovation · Product Engineering" onClose={() => setOpen(false)} onSubmit={submit} title="New application" titleId="application-create-title">
+    <CcRecordEditorModal actions={<><CcButton onClick={() => setOpen(false)} type="button" variant="ghost">{t("common.cancel")}</CcButton><CcButton disabled={saving} iconLeft="ph-plus" type="submit" variant="primary">{saving ? t("innovation.creating") : t("innovation.createApplication")}</CcButton></>} description={t("innovation.createDescription")} eyebrow={t("innovation.eyebrow")} onClose={() => setOpen(false)} onSubmit={submit} title={t("innovation.newApplication")} titleId="application-create-title">
       {error ? <CcNotice tone="error" title={error} /> : null}
       <CcRecordEditorSection title="Identity" description="Give the application a durable name, identifier and concise definition.">
         <div className="grid items-start gap-4 md:grid-cols-2">
@@ -435,8 +452,8 @@ function CapabilityMatrix({
   catalog: ProductEngineeringCatalog | null;
   onRefresh: () => Promise<void>;
 }) {
-  const [domain, setDomain] = useState("all");
-  const [gapOnly, setGapOnly] = useState(false);
+  const { t } = useLanguage();
+  const tableLabels = useTranslatedTableLabels();
   const [selected, setSelected] = useState<ApplicationCapability | null>(null);
   const assignedIds = new Set(
     capabilities.map((item) => item.capabilityDefinition.id),
@@ -447,11 +464,7 @@ function CapabilityMatrix({
         .filter((item) => !assignedIds.has(item.id))
         .map((capability) => ({ capability, domainName: domain.name })),
     ) || [];
-  const rows = capabilities.filter(
-    (item) =>
-      (domain === "all" || item.capabilityDefinition.domain.key === domain) &&
-      (!gapOnly || !["complete", "verified"].includes(item.observedState)),
-  );
+  const rows = capabilities;
 
   useEffect(() => {
     if (selected)
@@ -526,14 +539,52 @@ function CapabilityMatrix({
     await onRefresh();
   }
 
+  const columns: Array<CcTableColumn<ApplicationCapability>> = [
+    {
+      key: "capability",
+      header: t("innovation.capability"),
+      sortable: true,
+      searchValue: (item) => `${item.capabilityDefinition.name} ${item.capabilityDefinition.domain.name}`,
+      filterable: true,
+      filterLabel: t("innovation.domain"),
+      filterValue: (item) => item.capabilityDefinition.domain.key,
+      filterOptions: catalog?.domains.map((item) => ({ value: item.key, label: item.name })),
+      cell: (item) => <div className="grid"><strong>{item.capabilityDefinition.name}</strong><span className="text-xs text-company-muted">{item.capabilityDefinition.domain.name}</span></div>
+    },
+    {
+      key: "applicability",
+      header: t("innovation.applicability"),
+      sortable: true,
+      filterable: true,
+      filterValue: (item) => item.applicability,
+      cell: (item) => <span>{humanize(item.applicability)}</span>
+    },
+    { key: "target", header: t("innovation.target"), sortable: true, sortValue: (item) => item.targetState, cell: (item) => <span>{humanize(item.targetState)}</span> },
+    {
+      key: "observed",
+      header: t("innovation.observed"),
+      sortable: true,
+      filterable: true,
+      filterValue: (item) => item.observedState,
+      cell: (item) => <CcSelect className="select-sm" onClick={(event) => event.stopPropagation()} onChange={(event) => void recordObserved(item, event.target.value)} value={item.observedState} wrapperClassName="min-w-36">{observedStates.map((state) => <option key={state} value={state}>{humanize(state)}</option>)}</CcSelect>
+    },
+    { key: "evidence", header: t("innovation.evidence"), sortable: true, sortValue: (item) => item.evidence.length, cell: (item) => <span>{item.evidence.length}</span> },
+    {
+      key: "blocked",
+      header: t("innovation.blocked"),
+      sortable: true,
+      sortValue: (item) => item.dependenciesFrom.some((dependency) => dependency.required && !["complete", "verified"].includes(dependency.toCapability.observedState)) ? 1 : 0,
+      cell: (item) => item.dependenciesFrom.some((dependency) => dependency.required && !["complete", "verified"].includes(dependency.toCapability.observedState)) ? <span className="badge badge-error">{t("common.yes")}</span> : <span className="text-company-muted">{t("common.no")}</span>
+    }
+  ];
+
   return (
     <div className="grid gap-5">
       <form
         className="grid gap-3 rounded-company border border-base-300 bg-base-200/35 p-4 md:grid-cols-[1fr_auto_auto_auto]"
         onSubmit={assign}
       >
-        <select
-          className="select select-bordered"
+        <CcSelect
           name="capabilityDefinitionId"
           required
         >
@@ -543,13 +594,13 @@ function CapabilityMatrix({
               {domainName} / {capability.name}
             </option>
           ))}
-        </select>
-        <select className="select select-bordered" name="applicability">
+        </CcSelect>
+        <CcSelect name="applicability">
           <option value="required">Required</option>
           <option value="recommended">Recommended</option>
           <option value="optional">Optional</option>
           <option value="not_applicable">Not applicable</option>
-        </select>
+        </CcSelect>
         <input
           className="input input-bordered w-24"
           name="priority"
@@ -561,92 +612,25 @@ function CapabilityMatrix({
         />
         <CcButton type="submit">Assign</CcButton>
       </form>
-      <div className="flex flex-wrap gap-3">
-        <select
-          className="select select-bordered select-sm"
-          value={domain}
-          onChange={(event) => setDomain(event.target.value)}
-        >
-          <option value="all">All domains</option>
-          {catalog?.domains.map((item) => (
-            <option key={item.id} value={item.key}>
-              {item.name}
-            </option>
-          ))}
-        </select>
-        <label className="label cursor-pointer gap-2">
-          <input
-            className="checkbox checkbox-sm"
-            type="checkbox"
-            checked={gapOnly}
-            onChange={(event) => setGapOnly(event.target.checked)}
-          />
-          <span>Only gaps</span>
-        </label>
-      </div>
-      <div className="overflow-x-auto rounded-company border border-base-300">
-        <table className="table table-zebra">
-          <thead>
-            <tr>
-              <th>Capability</th>
-              <th>Applicability</th>
-              <th>Target</th>
-              <th>Observed</th>
-              <th>Evidence</th>
-              <th>Blocked</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((item) => (
-              <tr
-                className="cursor-pointer hover"
-                key={item.id}
-                onClick={() => setSelected(item)}
-              >
-                <td>
-                  <strong>{item.capabilityDefinition.name}</strong>
-                  <br />
-                  <span className="text-xs text-company-muted">
-                    {item.capabilityDefinition.domain.name}
-                  </span>
-                </td>
-                <td>{humanize(item.applicability)}</td>
-                <td>{humanize(item.targetState)}</td>
-                <td>
-                  <select
-                    className="select select-bordered select-sm"
-                    value={item.observedState}
-                    onClick={(event) => event.stopPropagation()}
-                    onChange={(event) =>
-                      void recordObserved(item, event.target.value)
-                    }
-                  >
-                    {observedStates.map((state) => (
-                      <option key={state} value={state}>
-                        {humanize(state)}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td>{item.evidence.length}</td>
-                <td>
-                  {item.dependenciesFrom.some(
-                    (dependency) =>
-                      dependency.required &&
-                      !["complete", "verified"].includes(
-                        dependency.toCapability.observedState,
-                      ),
-                  ) ? (
-                    <span className="badge badge-error">Yes</span>
-                  ) : (
-                    "No"
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <CcDataTable
+        columns={columns}
+        density="compact"
+        emptyDetail={t("innovation.capabilities.empty.detail")}
+        emptyTitle={t("innovation.capabilities.empty.title")}
+        enableColumnVisibility={false}
+        enablePagination={false}
+        getRowLabel={(item) => item.capabilityDefinition.name}
+        labels={tableLabels}
+        mobileMode="cards"
+        onRowClick={setSelected}
+        quickFilters={[
+          { key: "all", label: t("table.all"), predicate: () => true },
+          { key: "gaps", label: t("innovation.onlyGaps"), predicate: (item) => !["complete", "verified"].includes(item.observedState) }
+        ]}
+        rows={rows}
+        searchPlaceholder={t("innovation.capabilities.search")}
+        tableMinWidthClassName="min-w-[840px]"
+      />
       {selected ? (
         <section className="rounded-company border border-primary/25 bg-base-100 p-5">
           <div className="flex justify-between gap-3">
@@ -931,6 +915,7 @@ function CatalogView({
 }
 
 export function InnovationRoute() {
+  const { t } = useLanguage();
   const [portfolio, setPortfolio] = useState<PortfolioPacket | null>(null);
   const [catalog, setCatalog] = useState<ProductEngineeringCatalog | null>(
     null,
@@ -1059,7 +1044,7 @@ export function InnovationRoute() {
                 setSelected(null);
               }}
             >
-              {catalogOpen ? "Portfolio" : "Capability Library"}
+              {catalogOpen ? t("innovation.portfolio") : t("innovation.library")}
             </CcButton>
             {!catalogOpen ? (
               <CreateApplicationPanel
@@ -1071,12 +1056,12 @@ export function InnovationRoute() {
               />
             ) : null}
           </>}
-        description="Define what an application should become, record what was actually observed, attach proof, expose gaps, and productize the same record without copying it."
-        eyebrow="11 Innovation · Product Engineering"
-        title="Application portfolio and product source of truth"
+        description={t("innovation.description")}
+        eyebrow={t("innovation.eyebrow")}
+        title={t("innovation.title")}
       />
       {status === "loading" ? (
-        <CcNotice tone="loading" title="Loading application portfolio" />
+        <CcNotice tone="loading" title={t("innovation.loading")} />
       ) : null}
       {status === "error" ? (
         <CcNotice tone="error" title={error || "Innovation could not load"} />
@@ -1430,8 +1415,8 @@ export function InnovationRoute() {
               <div className="lg:col-span-3">
                 <CcNotice
                   tone="empty"
-                  title="No applications defined"
-                  detail="Create Roost, Soar, Featherly, Nest or Aviary to begin building the product source of truth."
+                  title={t("innovation.empty.title")}
+                  detail={t("innovation.empty.detail")}
                 />
               </div>
             ) : null}

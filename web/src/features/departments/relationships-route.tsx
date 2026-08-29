@@ -21,6 +21,7 @@ export function RelationshipsRoute() {
   const decisions = packet.data?.decisions || [];
   const interactions = packet.data?.interactions || [];
   const tasks = packet.data?.tasks || [];
+  const hasRelationshipData = Boolean(rows.length || notes.length || driveFiles.length || decisions.length || interactions.length || tasks.length);
   const tableLabels = useTranslatedTableLabels();
   const columns: Array<CcTableColumn<(typeof rows)[number]>> = [
     {
@@ -62,14 +63,14 @@ export function RelationshipsRoute() {
 
   return (
     <>
-      <CcPageHeader eyebrow="05 Relationships" title={packet.data?.department?.name || "Relationships Management"} description={packet.data?.department?.purpose || "Track client trust, support continuity, and relationship risk across clients, stakeholders, interactions, and follow-up evidence."} />
+      <CcPageHeader eyebrow={t("relationships.eyebrow")} title={t("relationships.title")} description={t("relationships.description")} />
 
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
       {packet.status === "error" ? <CcNotice tone="error" title={packet.error || "Relationships context could not load."} live /> : null}
 
-      {interactions.length || tasks.length ? <section className="grid gap-4 lg:grid-cols-2">
+      {interactions.length || tasks.length ? <section className={`grid gap-4 ${interactions.length && tasks.length ? "lg:grid-cols-2" : ""}`}>
         {interactions.length ? <article className="rounded-company border border-base-300 bg-base-100 p-4">
-          <h2 className="text-lg font-black text-company-ink">Recent interactions</h2>
+          <h2 className="text-lg font-black text-company-ink">{t("relationships.interactions")}</h2>
           <div className="roost-compact-list mt-3 grid gap-2">
             {interactions.slice(0, 8).map((interaction) => (
               <div className="rounded-company border border-base-300 bg-base-200/40 p-3" key={interaction.id}>
@@ -85,7 +86,7 @@ export function RelationshipsRoute() {
         </article> : null}
 
         {tasks.length ? <article className="rounded-company border border-base-300 bg-base-100 p-4">
-          <h2 className="text-lg font-black text-company-ink">Relationship tasks</h2>
+          <h2 className="text-lg font-black text-company-ink">{t("relationships.tasks")}</h2>
           <div className="roost-compact-list mt-3 grid gap-2">
             {tasks.slice(0, 8).map((task) => (
               <div className="rounded-company border border-base-300 bg-base-200/40 p-3" key={task.id}>
@@ -100,12 +101,12 @@ export function RelationshipsRoute() {
         </article> : null}
       </section> : null}
 
-      {notes.length || driveFiles.length ? <section className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.65fr)]">
+      {notes.length || driveFiles.length ? <section className={`grid gap-4 ${notes.length && driveFiles.length ? "xl:grid-cols-[minmax(0,1fr)_minmax(20rem,0.65fr)]" : ""}`}>
         {notes.length ? <article className="rounded-company border border-base-300 bg-base-100 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-black uppercase text-primary">Evidence visibility</p>
-              <h2 className="mt-1 text-lg font-black text-company-ink">Relationship notes</h2>
+              <p className="text-xs font-black uppercase text-primary">{t("relationships.evidence")}</p>
+              <h2 className="mt-1 text-lg font-black text-company-ink">{t("relationships.notes")}</h2>
             </div>
           </div>
           <div className="roost-compact-list mt-3 grid gap-2">
@@ -125,8 +126,8 @@ export function RelationshipsRoute() {
         {driveFiles.length ? <article className="rounded-company border border-base-300 bg-base-100 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-black uppercase text-primary">Provider evidence</p>
-              <h2 className="mt-1 text-lg font-black text-company-ink">Relationship Drive files</h2>
+              <p className="text-xs font-black uppercase text-primary">{t("relationships.providerEvidence")}</p>
+              <h2 className="mt-1 text-lg font-black text-company-ink">{t("relationships.files")}</h2>
             </div>
           </div>
           <div className="roost-compact-list mt-3 grid gap-2">
@@ -158,8 +159,8 @@ export function RelationshipsRoute() {
       {decisions.length ? <section className="rounded-company border border-base-300 bg-base-100 p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-black uppercase text-primary">Decision context</p>
-            <h2 className="mt-1 text-lg font-black text-company-ink">Relationship decisions</h2>
+            <p className="text-xs font-black uppercase text-primary">{t("relationships.decisionContext")}</p>
+            <h2 className="mt-1 text-lg font-black text-company-ink">{t("relationships.decisions")}</h2>
           </div>
         </div>
         <div className="roost-compact-list mt-3 grid gap-2 sm:grid-cols-2">
@@ -178,8 +179,8 @@ export function RelationshipsRoute() {
       <CcDataTable
         columns={columns}
         rows={rows}
-        emptyTitle="No clients in relationships context"
-        emptyDetail="Add client, interaction, or stakeholder records to build this board."
+        emptyTitle={t("relationships.empty.title")}
+        emptyDetail={t("relationships.empty.detail")}
         error={packet.status === "error" ? packet.error || "Relationships context could not load." : null}
         getRowLabel={(row) => row.name}
         labels={tableLabels}
@@ -187,7 +188,7 @@ export function RelationshipsRoute() {
         mobileMode="cards"
       />
 
-      <BlockedActions actions={packet.data?.blockedActions || packet.data?.agentPacket?.blockedActions} />
+      {hasRelationshipData ? <BlockedActions actions={packet.data?.blockedActions || packet.data?.agentPacket?.blockedActions} /> : null}
     </>
   );
 }

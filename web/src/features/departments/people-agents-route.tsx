@@ -840,7 +840,7 @@ function ConfirmEntityModal({
 }
 
 export function PeopleAgentsRoute() {
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedId, setSelectedId] = useState("");
   const [detailTab, setDetailTab] = useState<DetailTab>("profile");
@@ -866,8 +866,8 @@ export function PeopleAgentsRoute() {
   const tableColumns = useMemo<Array<CcTableColumn<WorkforceEntity>>>(() => [
     {
       key: "person",
-      header: "Name",
-      mobileLabel: "Name",
+      header: t("people.name"),
+      mobileLabel: t("people.name"),
       required: true,
       sortable: true,
       sortValue: (entity) => entity.name,
@@ -889,31 +889,31 @@ export function PeopleAgentsRoute() {
     },
     {
       key: "kind",
-      header: "Kind",
-      mobileLabel: "Kind",
+      header: t("people.kind"),
+      mobileLabel: t("people.kind"),
       filterable: true,
-      filterLabel: "Type",
+      filterLabel: t("management.type"),
       filterValue: (entity) => entity.type,
       filterOptions: [
-        { value: "human", label: "Human" },
-        { value: "agent", label: "Agent" }
+        { value: "human", label: t("people.human") },
+        { value: "agent", label: t("people.agent") }
       ],
       sortable: true,
-      cell: (entity) => <span className="font-bold text-company-ink">{typeLabel(entity.type)}</span>
+      cell: (entity) => <span className="font-bold text-company-ink">{entity.type === "human" ? t("people.human") : t("people.agent")}</span>
     },
     {
       key: "role",
-      header: "Role",
-      mobileLabel: "Role",
+      header: t("people.role"),
+      mobileLabel: t("people.role"),
       className: "min-w-[12rem]",
       sortable: true,
       sortValue: (entity) => entity.role || "",
-      cell: (entity) => <span className="block truncate text-company-ink">{entity.role || "Unassigned role"}</span>
+      cell: (entity) => <span className="block truncate text-company-ink">{entity.role || t("people.unassignedRole")}</span>
     },
     {
       key: "department",
-      header: "Department",
-      mobileLabel: "Department",
+      header: t("people.department"),
+      mobileLabel: t("people.department"),
       className: "w-32 min-w-32",
       sortable: true,
       sortValue: (entity) => entity.department || "",
@@ -921,54 +921,54 @@ export function PeopleAgentsRoute() {
     },
     {
       key: "manager",
-      header: "Manager",
-      mobileLabel: "Manager",
+      header: t("people.manager"),
+      mobileLabel: t("people.manager"),
       className: "w-36 min-w-36",
       visibleByDefault: false,
       sortable: true,
       sortValue: (entity) => entity.manager?.name || "",
-      cell: (entity) => <span className="block truncate">{entity.manager?.name || "No manager"}</span>
+      cell: (entity) => <span className="block truncate">{entity.manager?.name || t("people.noManager")}</span>
     },
     {
       key: "status",
-      header: "Status",
-      mobileLabel: "Status",
+      header: t("people.status"),
+      mobileLabel: t("people.status"),
       className: "w-24 min-w-24",
       filterable: true,
-      filterLabel: "Status",
+      filterLabel: t("people.status"),
       filterValue: (entity) => entity.status,
       filterOptions: [
-        { value: "active", label: "active" },
-        { value: "inactive", label: "inactive" },
-        { value: "paused", label: "paused" },
-        { value: "archived", label: "archived" }
+        { value: "active", label: humanizeBusinessValue("active", "Unknown", locale) },
+        { value: "inactive", label: humanizeBusinessValue("inactive", "Unknown", locale) },
+        { value: "paused", label: humanizeBusinessValue("paused", "Unknown", locale) },
+        { value: "archived", label: humanizeBusinessValue("archived", "Unknown", locale) }
       ],
       sortable: true,
-      cell: (entity) => <span className={`badge badge-sm ${badgeTone(entity.status)}`}>{humanizeBusinessValue(entity.status)}</span>
+      cell: (entity) => <span className={`badge badge-sm ${badgeTone(entity.status)}`}>{humanizeBusinessValue(entity.status, "Unknown", locale)}</span>
     },
     {
       key: "runtime",
-      header: "Runtime",
-      mobileLabel: "Runtime",
+      header: t("people.runtime"),
+      mobileLabel: t("people.runtime"),
       className: "w-36 min-w-36",
       visibleByDefault: false,
       filterable: true,
-      filterLabel: "Runtime",
+      filterLabel: t("people.runtime"),
       filterValue: (entity) => entity.runtimeMode,
       filterOptions: [
-        { value: "manual", label: "Manual" },
-        { value: "semi_autonomous", label: "Semi-autonomous" },
-        { value: "autonomous", label: "Autonomous" }
+        { value: "manual", label: humanizeBusinessValue("manual", "Unknown", locale) },
+        { value: "semi_autonomous", label: humanizeBusinessValue("semi autonomous", "Unknown", locale) },
+        { value: "autonomous", label: humanizeBusinessValue("autonomous", "Unknown", locale) }
       ],
       sortable: true,
       sortValue: (entity) => entity.hierarchyLevel || entity.runtimeMode,
       cell: (entity) => <span className="block truncate text-company-ink">{entity.hierarchyLevel || runtimeLabels[entity.runtimeMode]}</span>
     }
-  ], []);
+  ], [locale, t]);
   const rowActionItems = useMemo<Array<CcTableRowAction<WorkforceEntity>>>(() => [
     {
       key: "preview",
-      label: "Preview",
+      label: t("people.preview"),
       icon: "ph-eye",
       tone: "outline",
       onClick: (entity) => {
@@ -978,19 +978,19 @@ export function PeopleAgentsRoute() {
     },
     {
       key: "duplicate",
-      label: "Duplicate",
+      label: t("people.duplicate"),
       icon: "ph-copy",
       tone: "ghost",
       onClick: (entity) => setEditingEntity({ entity: duplicateEntity(entity), mode: "create" })
     },
     {
       key: "edit",
-      label: "Edit",
+      label: t("people.edit"),
       icon: "ph-pencil-simple",
       tone: "ghost",
       onClick: (entity) => setEditingEntity({ entity, mode: "edit" })
     }
-  ], []);
+  ], [t]);
 
   function refresh() {
     setRefreshKey((current) => current + 1);
@@ -1024,9 +1024,9 @@ export function PeopleAgentsRoute() {
 
   return (
     <>
-      <CcPageHeader actions={packet.status === "ready" ? <CcButton iconLeft="ph-plus" onClick={() => setEditingEntity({ entity: null, mode: "create" })} size="sm" variant="primary">New entity</CcButton> : null} description="Source-of-truth roster for humans, AI directors, responsibilities, runtime context, and generated files." eyebrow="06 People / Agents" title="Directory" />
+      <CcPageHeader actions={packet.status === "ready" ? <CcButton iconLeft="ph-plus" onClick={() => setEditingEntity({ entity: null, mode: "create" })} size="sm" variant="primary">{t("people.new")}</CcButton> : null} description={t("people.description")} eyebrow={t("people.eyebrow")} title={t("people.title")} />
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
-      {packet.status === "error" ? <CcNotice tone="error" title={packet.error || "People / Agents packet is unavailable."} live /> : null}
+      {packet.status === "error" ? <CcNotice tone="error" title={packet.error || t("people.loadError")} live /> : null}
       {notice ? <CcNotice tone={notice.tone} title={notice.title} live /> : null}
 
       {packet.status === "ready" ? (
@@ -1036,8 +1036,8 @@ export function PeopleAgentsRoute() {
               <CcDataTable
                 columns={tableColumns}
                 density="compact"
-                emptyTitle="No matching workforce entities"
-                emptyDetail="Clear filters or create the first person/agent profile."
+                emptyTitle={t("people.empty")}
+                emptyDetail={t("people.emptyDetail")}
                 getRowClassName={(entity) => needsAttention(entity) ? "bg-warning/5" : ""}
                 getRowLabel={(entity) => entity.name}
                 initialColumnFilters={{ status: "active" }}
@@ -1046,7 +1046,7 @@ export function PeopleAgentsRoute() {
                 mobileMode="cards"
                 rowActionItems={rowActionItems}
                 rows={entities}
-                searchPlaceholder="Search people, agents, roles..."
+                searchPlaceholder={t("people.search")}
                 tableMinWidthClassName="min-w-[1000px]"
               />
             </div>

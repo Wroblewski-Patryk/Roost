@@ -10,6 +10,8 @@ import { CcPageHeader } from "../../components/cc-page-header";
 import { CcRecordEditorModal, CcRecordEditorSection } from "../../components/cc-record-editor";
 import { CcSelect } from "../../components/cc-select";
 import { CcTextInput } from "../../components/cc-text-input";
+import { useLanguage } from "../../i18n/i18n";
+import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 
 type ProcedureStep = {
   id: string;
@@ -264,6 +266,8 @@ function ProcedureDetail({ procedure, busy, onActivate, onArchive, onClose, onEd
 }
 
 export function ProceduresWorkbench() {
+  const { locale, t } = useLanguage();
+  const tableLabels = useTranslatedTableLabels();
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [processes, setProcesses] = useState<ProcessDefinition[]>([]);
   const [toolAdapters, setToolAdapters] = useState<ToolAdapter[]>([]);
@@ -358,24 +362,24 @@ export function ProceduresWorkbench() {
   }
 
   const columns = useMemo<Array<CcTableColumn<Procedure>>>(() => [
-    { key: "name", header: "Procedure", required: true, sortable: true, sortValue: (procedure) => procedure.name, searchValue: (procedure) => [procedure.name, procedure.purpose, procedure.scope, procedure.process?.name].filter(Boolean).join(" "), className: "min-w-[18rem]", cell: (procedure) => <div className="min-w-0"><strong className="block truncate text-company-ink">{procedure.name}</strong><span className="block truncate text-xs text-company-muted">{procedure.purpose}</span></div> },
-    { key: "departments", header: "Departments", filterable: true, filterLabel: "Department", filterValue: (procedure) => departmentScopes(procedure.process), searchValue: (procedure) => departmentScopes(procedure.process).join(" "), className: "min-w-[12rem]", cell: (procedure) => <span className="text-sm text-company-ink">{departmentScopes(procedure.process).join(" · ")}</span> },
-    { key: "process", header: "Process", sortable: true, sortValue: (procedure) => procedure.process?.name || "", className: "min-w-[12rem]", cell: (procedure) => <span className="block truncate text-company-ink">{procedure.process?.name || "Not linked"}</span> },
-    { key: "status", header: "Status", filterable: true, filterValue: (procedure) => procedure.status, filterOptions: [{ value: "draft", label: "Draft" }, { value: "active", label: "Active" }, { value: "archived", label: "Archived" }, { value: "retired", label: "Retired" }], sortable: true, className: "w-28 min-w-28", cell: (procedure) => <span className={`badge badge-sm ${statusBadge(procedure.status)}`}>{humanize(procedure.status)}</span> },
-    { key: "updated", header: "Updated", sortable: true, sortValue: (procedure) => new Date(procedure.updatedAt), className: "w-36 min-w-36", cell: (procedure) => <span className="text-sm text-company-muted">{updatedLabel(procedure.updatedAt)}</span> }
-  ], []);
+    { key: "name", header: t("procedures.procedure"), required: true, sortable: true, sortValue: (procedure) => procedure.name, searchValue: (procedure) => [procedure.name, procedure.purpose, procedure.scope, procedure.process?.name].filter(Boolean).join(" "), className: "min-w-[18rem]", cell: (procedure) => <div className="min-w-0"><strong className="block truncate text-company-ink">{procedure.name}</strong><span className="block truncate text-xs text-company-muted">{procedure.purpose}</span></div> },
+    { key: "departments", header: t("procedures.departments"), filterable: true, filterLabel: t("procedures.department"), filterValue: (procedure) => departmentScopes(procedure.process), searchValue: (procedure) => departmentScopes(procedure.process).join(" "), className: "min-w-[12rem]", cell: (procedure) => <span className="text-sm text-company-ink">{departmentScopes(procedure.process).join(" · ")}</span> },
+    { key: "process", header: t("procedures.process"), sortable: true, sortValue: (procedure) => procedure.process?.name || "", className: "min-w-[12rem]", cell: (procedure) => <span className="block truncate text-company-ink">{procedure.process?.name || t("procedures.notLinked")}</span> },
+    { key: "status", header: t("procedures.status"), filterable: true, filterValue: (procedure) => procedure.status, filterOptions: ["draft", "active", "archived", "retired"].map((value) => ({ value, label: humanizeBusinessValue(value, "Unknown", locale) })), sortable: true, className: "w-28 min-w-28", cell: (procedure) => <span className={`badge badge-sm ${statusBadge(procedure.status)}`}>{humanizeBusinessValue(procedure.status, "Unknown", locale)}</span> },
+    { key: "updated", header: t("procedures.updated"), sortable: true, sortValue: (procedure) => new Date(procedure.updatedAt), className: "w-36 min-w-36", cell: (procedure) => <span className="text-sm text-company-muted">{updatedLabel(procedure.updatedAt)}</span> }
+  ], [locale, t]);
   const rowActions = useMemo<Array<CcTableRowAction<Procedure>>>(() => [
-    { key: "preview", label: "Open", icon: "ph-eye", tone: "outline", onClick: (procedure) => setSelectedId(procedure.id) },
-    { key: "edit", label: "Edit", icon: "ph-pencil-simple", tone: "ghost", onClick: (procedure) => setEditing(procedure) }
-  ], []);
+    { key: "preview", label: t("procedures.open"), icon: "ph-eye", tone: "outline", onClick: (procedure) => setSelectedId(procedure.id) },
+    { key: "edit", label: t("procedures.edit"), icon: "ph-pencil-simple", tone: "ghost", onClick: (procedure) => setEditing(procedure) }
+  ], [t]);
 
   return (
     <section className="roost-work-surface grid min-h-[calc(100vh-10rem)] min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 rounded-company p-3">
-      <CcPageHeader actions={<CcButton iconLeft="ph-plus" onClick={() => { setError(null); setEditing(null); }} size="sm" variant="primary">New procedure</CcButton>} description="One shared catalog of repeatable work, visible through every department it supports." eyebrow="04 Operations" title="Procedures" />
+      <CcPageHeader actions={<CcButton iconLeft="ph-plus" onClick={() => { setError(null); setEditing(null); }} size="sm" variant="primary">{t("procedures.new")}</CcButton>} description={t("procedures.description")} eyebrow={t("procedures.eyebrow")} title={t("views.04.procedures")} />
       <div className="min-h-0 min-w-0 overflow-y-auto">
-        {status === "loading" ? <CcNotice tone="loading" title="Loading procedures" /> : null}
-        {status === "error" ? <CcNotice tone="error" title={error || "Procedures could not load"} /> : null}
-        {status === "ready" ? <CcDataTable columns={columns} density="compact" emptyDetail="Create the first reusable procedure or clear the active filters." emptyTitle="No matching procedures" enableColumnVisibility={false} enablePagination={false} enableSelection={false} getRowLabel={(procedure) => procedure.name} initialQuickFilter="current" initialSort={{ key: "name", direction: "asc" }} mobileMode="cards" quickFilters={[{ key: "current", label: "Current", predicate: (procedure) => !["archived", "retired"].includes(procedure.status) }, { key: "all", label: "All", predicate: () => true }]} rowActionItems={rowActions} rows={procedures} searchPlaceholder="Search procedures, purposes, processes..." tableMinWidthClassName="min-w-[920px]" /> : null}
+        {status === "loading" ? <CcNotice tone="loading" title={t("procedures.loading")} /> : null}
+        {status === "error" ? <CcNotice tone="error" title={error || t("procedures.loadError")} /> : null}
+        {status === "ready" ? <CcDataTable columns={columns} density="compact" emptyDetail={t("procedures.emptyDetail")} emptyTitle={t("procedures.empty")} enableColumnVisibility={false} enablePagination={false} enableSelection={false} getRowLabel={(procedure) => procedure.name} initialQuickFilter="current" initialSort={{ key: "name", direction: "asc" }} labels={tableLabels} mobileMode="cards" quickFilters={[{ key: "current", label: t("procedures.current"), predicate: (procedure) => !["archived", "retired"].includes(procedure.status) }, { key: "all", label: t("procedures.all"), predicate: () => true }]} rowActionItems={rowActions} rows={procedures} searchPlaceholder={t("procedures.search")} tableMinWidthClassName="min-w-[920px]" /> : null}
       </div>
       {selected ? <ProcedureDetail busy={busy} onActivate={() => void activate()} onArchive={() => setConfirmArchive(true)} onClose={() => setSelectedId(null)} onEdit={() => { setSelectedId(null); setError(null); setEditing(selected); }} procedure={selected} /> : null}
       {selected && confirmArchive ? <CcConfirmDialog busy={busy} confirmIcon="ph-archive" confirmLabel="Archive" confirmTone="warning" description="This keeps the procedure and its version history, but removes it from current operational use." detail={<><strong className="text-company-ink">{departmentScopes(selected.process).join(" · ")}</strong><span className="mx-2 text-company-muted">/</span><span>Version {selected.version}</span></>} eyebrow="Archive procedure" onCancel={() => setConfirmArchive(false)} onConfirm={() => void archive()} title={selected.name} /> : null}

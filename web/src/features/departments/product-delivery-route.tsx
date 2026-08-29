@@ -8,13 +8,16 @@ import { CcPageHeader } from "../../components/cc-page-header";
 import { CcRecordEditorModal, CcRecordEditorSection } from "../../components/cc-record-editor";
 import { CcSelect } from "../../components/cc-select";
 import { CcTextInput } from "../../components/cc-text-input";
+import { formatBusinessValue } from "../../i18n/business-values";
+import { useLanguage } from "../../i18n/i18n";
 import { ProductApplication, ProductOffering } from "./product-engineering-types";
 
 function humanize(value: string) {
-  return value.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  return formatBusinessValue(value);
 }
 
 export function ProductDeliveryRoute() {
+  const { t } = useLanguage();
   const [offerings, setOfferings] = useState<ProductOffering[]>([]);
   const [applications, setApplications] = useState<ProductApplication[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -64,17 +67,17 @@ export function ProductDeliveryRoute() {
   }
 
   const offeringColumns: Array<CcTableColumn<ProductOffering>> = [
-    { key: "offering", header: "Offering", required: true, sortable: true, searchValue: (offering) => `${offering.name} ${offering.type}`, cell: (offering) => <span className="grid"><strong>{offering.name}</strong><small className="text-company-muted">{humanize(offering.type)}</small></span> },
-    { key: "application", header: "Application", sortable: true, sortValue: (offering) => offering.application?.name || "", cell: (offering) => offering.application?.name || "Standalone" },
-    { key: "lifecycle", header: "Lifecycle", sortable: true, sortValue: (offering) => offering.lifecycleStage, cell: (offering) => humanize(offering.lifecycleStage) },
-    { key: "commercialStatus", header: "Commercial status", filterable: true, filterValue: (offering) => offering.commercialStatus, cell: (offering) => <CcSelect aria-label={`Commercial status for ${offering.name}`} className="select-sm min-w-40" value={offering.commercialStatus} onChange={(event) => void updateOffering(offering.id, event.target.value)}><option value="draft">Draft</option><option value="validation">Validation</option><option value="launch_preparation">Launch preparation</option><option value="active">Active</option><option value="paused">Paused</option><option value="retired">Retired</option></CcSelect> },
-    { key: "sales", header: "Sales", sortable: true, sortValue: (offering) => offering.salesReadiness, cell: (offering) => humanize(offering.salesReadiness) },
-    { key: "support", header: "Support", sortable: true, sortValue: (offering) => offering.supportReadiness, cell: (offering) => humanize(offering.supportReadiness) }
+    { key: "offering", header: t("products.offering"), required: true, sortable: true, searchValue: (offering) => `${offering.name} ${offering.type}`, cell: (offering) => <span className="grid"><strong>{offering.name}</strong><small className="text-company-muted">{humanize(offering.type)}</small></span> },
+    { key: "application", header: t("products.application"), sortable: true, sortValue: (offering) => offering.application?.name || "", cell: (offering) => offering.application?.name || t("products.standalone") },
+    { key: "lifecycle", header: t("products.lifecycle"), sortable: true, sortValue: (offering) => offering.lifecycleStage, cell: (offering) => humanize(offering.lifecycleStage) },
+    { key: "commercialStatus", header: t("products.commercialStatus"), filterable: true, filterValue: (offering) => offering.commercialStatus, cell: (offering) => <CcSelect aria-label={`${t("products.commercialStatus")}: ${offering.name}`} className="select-sm min-w-40" value={offering.commercialStatus} onChange={(event) => void updateOffering(offering.id, event.target.value)}><option value="draft">{humanize("draft")}</option><option value="validation">{humanize("validation")}</option><option value="launch_preparation">{humanize("launch_preparation")}</option><option value="active">{humanize("active")}</option><option value="paused">{humanize("paused")}</option><option value="retired">{humanize("retired")}</option></CcSelect> },
+    { key: "sales", header: t("products.sales"), sortable: true, sortValue: (offering) => offering.salesReadiness, cell: (offering) => humanize(offering.salesReadiness) },
+    { key: "support", header: t("products.support"), sortable: true, sortValue: (offering) => offering.supportReadiness, cell: (offering) => humanize(offering.supportReadiness) }
   ];
 
   return (
     <>
-      <CcPageHeader actions={!showCreate ? <CcButton iconLeft="ph-plus" onClick={() => setShowCreate(true)} size="sm" variant="primary">New product / service</CcButton> : null} description="Commercial offerings reference the same application records developed in Innovation. Productization never copies the application, capability map, evidence, or development history." eyebrow="02 Products & Services" title="Productization and delivery portfolio" />
+      <CcPageHeader actions={!showCreate ? <CcButton iconLeft="ph-plus" onClick={() => setShowCreate(true)} size="sm" variant="primary">{t("products.new")}</CcButton> : null} description={t("products.description")} eyebrow={t("products.eyebrow")} title={t("products.title")} />
 
       {status === "loading" ? <CcNotice tone="loading" title="Loading products and services" /> : null}
       {status === "error" ? <CcNotice tone="error" title={error || "Products and Services could not load"} /> : null}
@@ -106,7 +109,7 @@ export function ProductDeliveryRoute() {
         </CcRecordEditorSection>
       </CcRecordEditorModal> : null}
 
-      <section className="grid gap-3"><div><h2 className="text-lg font-black text-company-ink">Products and services</h2><p className="text-sm text-company-muted">Commercial definitions and their delivery readiness.</p></div><CcDataTable columns={offeringColumns} density="compact" emptyDetail="Create an offering and optionally connect it to an application from Innovation." emptyTitle="No products or services defined" enableColumnVisibility={false} enablePagination={false} enableSelection={false} getRowLabel={(offering) => offering.name} loading={status === "loading"} mobileMode="cards" rows={offerings} searchPlaceholder="Search products and services..." tableMinWidthClassName="min-w-[900px]" /></section>
+      <section className="grid gap-3"><div><h2 className="text-lg font-black text-company-ink">{t("products.list.title")}</h2><p className="text-sm text-company-muted">{t("products.list.detail")}</p></div><CcDataTable columns={offeringColumns} density="compact" emptyDetail={t("products.empty.detail")} emptyTitle={t("products.empty.title")} enableColumnVisibility={false} enablePagination={false} enableSelection={false} getRowLabel={(offering) => offering.name} loading={status === "loading"} mobileMode="cards" rows={offerings} searchPlaceholder={t("products.search")} tableMinWidthClassName="min-w-[900px]" /></section>
 
       {applications.length ? <section className="rounded-company border border-base-300 bg-base-100 p-5">
         <h2 className="text-xl font-black">Application product readiness</h2>

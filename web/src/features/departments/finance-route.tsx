@@ -4,41 +4,41 @@ import { CcPageHeader } from "../../components/cc-page-header";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import { FinancePacket } from "../../types";
-import { BlockedActions, humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
+import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 
 export function FinanceRoute() {
   const { t } = useLanguage();
   const packet = useOwnerPacket<FinancePacket>("/v1/finance/context?limit=80", true, t);
   const rows = packet.data?.pricingModels || [];
-  const invoiceReadiness = packet.data?.invoiceReadiness || [];
-  const commercialExceptions = packet.data?.commercialExceptions || [];
+  const invoiceReadiness = (packet.data?.invoiceReadiness || []).filter((item) => Boolean(item.clientId || item.dealId));
+  const commercialExceptions = (packet.data?.commercialExceptions || []).filter((item) => Boolean(item.clientName?.trim() || item.dealId));
   const tableLabels = useTranslatedTableLabels();
   const columns: Array<CcTableColumn<(typeof rows)[number]>> = [
     {
       key: "model",
-      header: "Pricing model",
+      header: t("finance.model"),
       sortable: true,
       searchValue: (row) => `${row.name} ${row.market || ""}`,
       cell: (row) => (
         <div className="grid">
           <strong>{row.name}</strong>
-          <span className="text-xs text-company-muted">{row.market || "Market n/a"} • {row.currency || "-"}</span>
+          <span className="text-xs text-company-muted">{row.market || t("finance.marketUnknown")} • {row.currency || "-"}</span>
         </div>
       )
     },
     {
       key: "pricing",
-      header: "Pricing",
+      header: t("finance.pricing"),
       cell: (row) => (
         <span className="text-sm">
-          {row.setupFee != null ? `setup ${row.setupFee} ${row.currency || ""}, ` : ""}
-          {row.recurringFee != null ? `recurring ${row.recurringFee} ${row.currency || ""}` : "n/a"}
+          {row.setupFee != null ? `${t("finance.setupFee")} ${row.setupFee} ${row.currency || ""}, ` : ""}
+          {row.recurringFee != null ? `${t("finance.recurringFee")} ${row.recurringFee} ${row.currency || ""}` : "-"}
         </span>
       )
     },
     {
       key: "status",
-      header: "Status",
+      header: t("table.status"),
       sortable: true,
       filterable: true,
       filterValue: (row) => row.status || "unknown",
@@ -46,21 +46,21 @@ export function FinanceRoute() {
     },
     {
       key: "decision",
-      header: "Owner decision",
-      cell: (row) => row.ownerDecisionNeeded ? <span className="badge badge-sm badge-warning">Required</span> : <span className="text-company-muted">-</span>
+      header: t("finance.ownerDecision"),
+      cell: (row) => row.ownerDecisionNeeded ? <span className="badge badge-sm badge-warning">{humanizeBusinessValue("required")}</span> : <span className="text-company-muted">-</span>
     }
   ];
 
   return (
     <>
-      <CcPageHeader eyebrow="07 Finance" title="Finance and Billing Management" description="Review pricing models, valuation readiness, invoice blockers, payment context, and owner-required finance decisions." />
+      <CcPageHeader eyebrow={t("finance.eyebrow")} title={t("finance.title")} description={t("finance.description")} />
 
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
       {packet.status === "error" ? <CcNotice tone="error" title={packet.error || "Finance context could not load."} live /> : null}
 
-      {invoiceReadiness.length || commercialExceptions.length ? <section className="grid gap-4 lg:grid-cols-2">
+      {invoiceReadiness.length || commercialExceptions.length ? <section className={`grid gap-4 ${invoiceReadiness.length && commercialExceptions.length ? "lg:grid-cols-2" : ""}`}>
         {invoiceReadiness.length ? <article className="rounded-company border border-base-300 bg-base-100 p-4">
-          <h2 className="text-lg font-black text-company-ink">Invoice readiness</h2>
+          <h2 className="text-lg font-black text-company-ink">{t("finance.invoiceReadiness")}</h2>
           <div className="roost-compact-list mt-3 grid gap-2">
             {invoiceReadiness.slice(0, 8).map((item) => (
               <div className="rounded-company border border-base-300 bg-base-200/40 p-3" key={item.id}>
@@ -75,7 +75,7 @@ export function FinanceRoute() {
         </article> : null}
 
         {commercialExceptions.length ? <article className="rounded-company border border-base-300 bg-base-100 p-4">
-          <h2 className="text-lg font-black text-company-ink">Commercial exceptions</h2>
+          <h2 className="text-lg font-black text-company-ink">{t("finance.exceptions")}</h2>
           <div className="roost-compact-list mt-3 grid gap-2">
             {commercialExceptions.slice(0, 8).map((item) => (
               <div className="rounded-company border border-base-300 bg-base-200/40 p-3" key={item.id}>
@@ -93,8 +93,8 @@ export function FinanceRoute() {
       <CcDataTable
         columns={columns}
         rows={rows}
-        emptyTitle="No finance pricing models"
-        emptyDetail="Add or import pricing source records to populate finance management."
+        emptyTitle={t("finance.empty.title")}
+        emptyDetail={t("finance.empty.detail")}
         error={packet.status === "error" ? packet.error || "Finance context could not load." : null}
         getRowLabel={(row) => row.name}
         labels={tableLabels}
@@ -102,7 +102,6 @@ export function FinanceRoute() {
         mobileMode="cards"
       />
 
-      <BlockedActions actions={packet.data?.blockedActions || packet.data?.agentPacket?.blockedActions} />
     </>
   );
 }

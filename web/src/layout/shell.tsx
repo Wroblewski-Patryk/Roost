@@ -67,7 +67,10 @@ function DepartmentSidebar({ activeArea, onNavigate }: { activeArea?: string; on
       const href = department.href || fallbackArea?.href;
       return {
         key: department.key,
-        labelKey: department.name,
+        // Keep canonical departments translated even when the runtime catalog
+        // supplies their persisted English display names. Custom departments
+        // still fall back to the workspace-owned name.
+        labelKey: fallbackArea?.labelKey || department.name,
         eyebrowKey: department.description || fallbackArea?.eyebrowKey || "Workspace department",
         descriptionKey: department.description || fallbackArea?.descriptionKey || "",
         href,

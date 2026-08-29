@@ -4,9 +4,10 @@ import { CcNotice } from "../../components/cc-notice";
 import { CcPageHeader } from "../../components/cc-page-header";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { formatAppDate } from "../../i18n/date-format";
-import { useLanguage } from "../../i18n/i18n";
+import { type Translate, useLanguage } from "../../i18n/i18n";
+import type { Locale } from "../../i18n/locales";
 import { OperatingGraphPacket } from "../../types";
-import { useTranslatedTableLabels } from "./shared";
+import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 
 type TechnologyView = "overview" | "integrations" | "automations";
 
@@ -49,8 +50,8 @@ function humanize(value?: string | null) {
   return value.replace(/[_-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function dateLabel(value?: string | null) {
-  return value ? formatAppDate(value, { dateStyle: "medium", timeStyle: "short" }) : "Never";
+function dateLabel(value: string | null | undefined, t: Translate) {
+  return value ? formatAppDate(value, { dateStyle: "medium", timeStyle: "short" }) : t("workbench.never");
 }
 
 function stateTone(value: string) {
@@ -59,21 +60,22 @@ function stateTone(value: string) {
   return "badge-error";
 }
 
-function Status({ value }: { value: string }) {
-  return <span className={`badge badge-sm ${stateTone(value)}`}>{humanize(value)}</span>;
+function Status({ value, locale }: { value: string; locale: Locale }) {
+  return <span className={`badge badge-sm ${stateTone(value)}`}>{humanizeBusinessValue(value, "Unknown", locale)}</span>;
 }
 
 function TechnologyHeader({ view, areaName }: { view: TechnologyView; areaName?: string }) {
+  const { t } = useLanguage();
   const content = view === "integrations"
-    ? { title: "Integrations", detail: "External providers, connection health, and the capabilities they expose to Roost." }
+    ? { title: t("views.09.integrations"), detail: t("technology.integrationsDescription") }
     : view === "automations"
-      ? { title: "Automations", detail: "Event-driven and scheduled execution definitions, their triggers, and last known run state." }
-      : { title: "Technology overview", detail: areaName ? `${areaName}. Technical dependencies and operating-graph context across systems, integrations, and execution.` : "Technical dependencies and operating-graph context across systems, integrations, and execution." };
+      ? { title: t("views.09.automations"), detail: t("technology.automationsDescription") }
+      : { title: t("views.09.overview"), detail: areaName ? `${areaName}. ${t("technology.overviewDescription")}` : t("technology.overviewDescription") };
   const actions = view === "overview" ? <>
-    <CcButton href="/areas?area=09-technologia&view=integrations" iconLeft="ph-plugs-connected" size="sm" variant="outline">Integrations</CcButton>
-    <CcButton href="/areas?area=09-technologia&view=automations" iconLeft="ph-lightning" size="sm" variant="outline">Automations</CcButton>
-  </> : <CcButton href="/areas?area=09-technologia&view=overview" iconLeft="ph-arrow-left" size="sm" variant="ghost">Overview</CcButton>;
-  return <CcPageHeader actions={actions} description={content.detail} eyebrow="09 Technology" title={content.title} />;
+    <CcButton href="/areas?area=09-technologia&view=integrations" iconLeft="ph-plugs-connected" size="sm" variant="outline">{t("views.09.integrations")}</CcButton>
+    <CcButton href="/areas?area=09-technologia&view=automations" iconLeft="ph-lightning" size="sm" variant="outline">{t("views.09.automations")}</CcButton>
+  </> : <CcButton href="/areas?area=09-technologia&view=overview" iconLeft="ph-arrow-left" size="sm" variant="ghost">{t("workbench.overview")}</CcButton>;
+  return <CcPageHeader actions={actions} description={content.detail} eyebrow={t("technology.eyebrow")} title={content.title} />;
 }
 
 function OverviewView() {
@@ -84,54 +86,54 @@ function OverviewView() {
   const columns: Array<CcTableColumn<(typeof rows)[number]>> = [
     {
       key: "node",
-      header: "Node",
+      header: t("workbench.node"),
       sortable: true,
       searchValue: (row) => `${row.label} ${row.summary || ""} ${row.type}`,
       cell: (row) => <div className="grid"><strong>{row.label}</strong><span className="text-xs text-company-muted">{humanize(row.type)}</span></div>
     },
-    { key: "summary", header: "Summary", cell: (row) => <span className="text-sm text-company-muted">{row.summary || "No summary"}</span> }
+    { key: "summary", header: t("workbench.summary"), cell: (row) => <span className="text-sm text-company-muted">{row.summary || t("workbench.noSummary")}</span> }
   ];
   return <>
     <TechnologyHeader areaName={packet.data?.area?.name} view="overview" />
-    {packet.status === "error" ? <CcNotice tone="error" title={packet.error || "Technology context could not load."} live /> : null}
-    <CcDataTable columns={columns} rows={rows} emptyTitle="No technology graph nodes" emptyDetail="Add scoped technical records and mappings to populate this overview." enableColumnVisibility={false} enablePagination={false} enableSelection={false} error={packet.status === "error" ? packet.error || "Technology context could not load." : null} getRowLabel={(row) => row.label} labels={tableLabels} loading={packet.status === "loading"} mobileMode="cards" />
+    {packet.status === "error" ? <CcNotice tone="error" title={packet.error || t("technology.loadError")} live /> : null}
+    <CcDataTable columns={columns} rows={rows} emptyTitle={t("technology.emptyOverview")} emptyDetail={t("technology.emptyOverviewDetail")} enableColumnVisibility={false} enablePagination={false} enableSelection={false} error={packet.status === "error" ? packet.error || t("technology.loadError") : null} getRowLabel={(row) => row.label} labels={tableLabels} loading={packet.status === "loading"} mobileMode="cards" />
   </>;
 }
 
 function IntegrationsView() {
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
   const packet = useOwnerPacket<ToolAdapter[]>("/v1/company-os/tool-adapters?limit=100", true, t);
   const tableLabels = useTranslatedTableLabels();
   const rows = packet.data || [];
   const columns: Array<CcTableColumn<ToolAdapter>> = [
-    { key: "integration", header: "Integration", sortable: true, searchValue: (row) => `${row.name} ${row.provider}`, cell: (row) => <div className="grid"><strong>{row.name}</strong><span className="text-xs text-company-muted">{humanize(row.provider)}</span></div> },
-    { key: "connection", header: "Connection", sortable: true, sortValue: (row) => row.connectionStatus, cell: (row) => <Status value={row.connectionStatus} /> },
-    { key: "health", header: "Health", sortable: true, sortValue: (row) => row.healthStatus, cell: (row) => <Status value={row.healthStatus} /> },
-    { key: "capabilities", header: "Capabilities", sortValue: (row) => row.capabilities?.length || 0, cell: (row) => <span className="text-sm text-company-ink">{row.capabilities?.length ? row.capabilities.map((item) => humanize(item.capabilityKey)).join(", ") : "No exposed capabilities"}</span> },
-    { key: "sync", header: "Last sync", sortable: true, sortValue: (row) => row.lastSyncAt || "", cell: (row) => <span className="text-sm text-company-muted">{dateLabel(row.lastSyncAt)}</span> }
+    { key: "integration", header: t("technology.integration"), sortable: true, searchValue: (row) => `${row.name} ${row.provider}`, cell: (row) => <div className="grid"><strong>{row.name}</strong><span className="text-xs text-company-muted">{humanize(row.provider)}</span></div> },
+    { key: "connection", header: t("technology.connection"), sortable: true, sortValue: (row) => row.connectionStatus, cell: (row) => <Status locale={locale} value={row.connectionStatus} /> },
+    { key: "health", header: t("technology.health"), sortable: true, sortValue: (row) => row.healthStatus, cell: (row) => <Status locale={locale} value={row.healthStatus} /> },
+    { key: "capabilities", header: t("technology.capabilities"), sortValue: (row) => row.capabilities?.length || 0, cell: (row) => <span className="text-sm text-company-ink">{row.capabilities?.length ? row.capabilities.map((item) => humanize(item.capabilityKey)).join(", ") : t("technology.noCapabilities")}</span> },
+    { key: "sync", header: t("technology.lastSync"), sortable: true, sortValue: (row) => row.lastSyncAt || "", cell: (row) => <span className="text-sm text-company-muted">{dateLabel(row.lastSyncAt, t)}</span> }
   ];
   return <>
     <TechnologyHeader view="integrations" />
-    {packet.status === "error" ? <CcNotice tone="error" title={packet.error || "Integrations could not load."} live /> : null}
-    <CcDataTable columns={columns} rows={rows} density="compact" emptyTitle="No integrations" emptyDetail="Register a workspace tool adapter to expose provider capabilities here." enableColumnVisibility={false} enablePagination={false} enableSelection={false} error={packet.status === "error" ? packet.error || "Integrations could not load." : null} getRowLabel={(row) => row.name} labels={tableLabels} loading={packet.status === "loading"} mobileMode="cards" tableMinWidthClassName="min-w-[900px]" />
+    {packet.status === "error" ? <CcNotice tone="error" title={packet.error || t("technology.integrationsLoadError")} live /> : null}
+    <CcDataTable columns={columns} rows={rows} density="compact" emptyTitle={t("technology.emptyIntegrations")} emptyDetail={t("technology.emptyIntegrationsDetail")} enableColumnVisibility={false} enablePagination={false} enableSelection={false} error={packet.status === "error" ? packet.error || t("technology.integrationsLoadError") : null} getRowLabel={(row) => row.name} labels={tableLabels} loading={packet.status === "loading"} mobileMode="cards" tableMinWidthClassName="min-w-[900px]" />
   </>;
 }
 
 function AutomationsView() {
-  const { t } = useLanguage();
+  const { locale, t } = useLanguage();
   const packet = useOwnerPacket<AutomationDefinition[]>("/v1/operating-model/automation-definitions", true, t);
   const tableLabels = useTranslatedTableLabels();
   const rows = packet.data || [];
   const columns: Array<CcTableColumn<AutomationDefinition>> = [
-    { key: "automation", header: "Automation", sortable: true, searchValue: (row) => `${row.name} ${row.provider || ""} ${row.triggerType}`, cell: (row) => <div className="grid"><strong>{row.name}</strong><span className="text-xs text-company-muted">{row.provider ? humanize(row.provider) : "Roost"}</span></div> },
-    { key: "trigger", header: "Trigger", sortable: true, sortValue: (row) => row.triggerType, cell: (row) => <span className="text-sm text-company-ink">{humanize(row.triggerType)}</span> },
-    { key: "state", header: "State", sortable: true, sortValue: (row) => row.lastError ? "error" : row.enabled ? "active" : "disabled", cell: (row) => <Status value={row.lastError ? "failed" : row.enabled ? "active" : "disabled"} /> },
-    { key: "lastRun", header: "Last run", sortable: true, sortValue: (row) => row.lastRunAt || "", cell: (row) => <div className="grid"><span className="text-sm text-company-muted">{dateLabel(row.lastRunAt)}</span>{row.lastError ? <span className="max-w-md truncate text-xs text-error" title={row.lastError}>{row.lastError}</span> : null}</div> }
+    { key: "automation", header: t("technology.automation"), sortable: true, searchValue: (row) => `${row.name} ${row.provider || ""} ${row.triggerType}`, cell: (row) => <div className="grid"><strong>{row.name}</strong><span className="text-xs text-company-muted">{row.provider ? humanize(row.provider) : "Roost"}</span></div> },
+    { key: "trigger", header: t("technology.trigger"), sortable: true, sortValue: (row) => row.triggerType, cell: (row) => <span className="text-sm text-company-ink">{humanize(row.triggerType)}</span> },
+    { key: "state", header: t("technology.state"), sortable: true, sortValue: (row) => row.lastError ? "error" : row.enabled ? "active" : "disabled", cell: (row) => <Status locale={locale} value={row.lastError ? "failed" : row.enabled ? "active" : "disabled"} /> },
+    { key: "lastRun", header: t("technology.lastRun"), sortable: true, sortValue: (row) => row.lastRunAt || "", cell: (row) => <div className="grid"><span className="text-sm text-company-muted">{dateLabel(row.lastRunAt, t)}</span>{row.lastError ? <span className="max-w-md truncate text-xs text-error" title={row.lastError}>{row.lastError}</span> : null}</div> }
   ];
   return <>
     <TechnologyHeader view="automations" />
-    {packet.status === "error" ? <CcNotice tone="error" title={packet.error || "Automations could not load."} live /> : null}
-    <CcDataTable columns={columns} rows={rows} density="compact" emptyTitle="No automations" emptyDetail="Scheduled and event-driven work will appear here after an automation definition is configured." enableColumnVisibility={false} enablePagination={false} enableSelection={false} error={packet.status === "error" ? packet.error || "Automations could not load." : null} getRowLabel={(row) => row.name} labels={tableLabels} loading={packet.status === "loading"} mobileMode="cards" tableMinWidthClassName="min-w-[760px]" />
+    {packet.status === "error" ? <CcNotice tone="error" title={packet.error || t("technology.automationsLoadError")} live /> : null}
+    <CcDataTable columns={columns} rows={rows} density="compact" emptyTitle={t("technology.emptyAutomations")} emptyDetail={t("technology.emptyAutomationsDetail")} enableColumnVisibility={false} enablePagination={false} enableSelection={false} error={packet.status === "error" ? packet.error || t("technology.automationsLoadError") : null} getRowLabel={(row) => row.name} labels={tableLabels} loading={packet.status === "loading"} mobileMode="cards" tableMinWidthClassName="min-w-[760px]" />
   </>;
 }
 

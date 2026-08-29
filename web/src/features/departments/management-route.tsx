@@ -12,6 +12,7 @@ import { CcTextInput } from "../../components/cc-text-input";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import { DepartmentCatalogPacket, WorkspaceDepartment } from "../../types";
+import { useTranslatedTableLabels } from "./shared";
 
 type Draft = {
   id?: string;
@@ -109,6 +110,7 @@ function DepartmentForm({
 
 export function ManagementRoute() {
   const { t } = useLanguage();
+  const tableLabels = useTranslatedTableLabels();
   const packetState = useOwnerPacket<DepartmentCatalogPacket>("/v1/departments", true, t);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [saving, setSaving] = useState(false);
@@ -117,13 +119,13 @@ export function ManagementRoute() {
   const refreshedPacketState = useOwnerPacket<DepartmentCatalogPacket>(`/v1/departments?refresh=${refreshKey}`, true, t);
   const packet = refreshedPacketState.data || packetState.data;
   const loading = packetState.status === "loading" && !packet;
-  const error = packetState.status === "error" ? packetState.error || "Department catalog could not load." : null;
+  const error = packetState.status === "error" ? packetState.error || t("management.loadError") : null;
 
   const rows = useMemo(() => (packet?.departments || []).filter((department) => department.status !== "archived"), [packet]);
   const columns = useMemo<Array<CcTableColumn<WorkspaceDepartment>>>(() => [
     {
       key: "name",
-      header: "Department",
+      header: t("management.department"),
       sortable: true,
       searchValue: (department) => `${department.name} ${department.description || ""}`,
       cell: (department) => (
@@ -138,26 +140,26 @@ export function ManagementRoute() {
     },
     {
       key: "views",
-      header: "Linked views",
+      header: t("management.linkedViews"),
       searchValue: departmentViewLabels,
       cell: (department) => <span className="block max-w-lg truncate text-sm">{departmentViewLabels(department)}</span>
     },
     {
       key: "type",
-      header: "Type",
+      header: t("management.type"),
       sortable: true,
       filterable: true,
-      filterValue: (department) => department.isSystem ? "Built-in" : "Custom",
-      cell: (department) => <span className="text-sm font-bold text-company-muted">{department.isSystem ? "Built-in" : "Custom"}</span>
+      filterValue: (department) => department.isSystem ? t("management.builtIn") : t("management.custom"),
+      cell: (department) => <span className="text-sm font-bold text-company-muted">{department.isSystem ? t("management.builtIn") : t("management.custom")}</span>
     },
     {
       key: "position",
-      header: "Order",
+      header: t("management.order"),
       sortable: true,
       sortValue: (department) => department.position,
       cell: (department) => <span className="font-mono text-sm">{department.position}</span>
     }
-  ], []);
+  ], [t]);
 
   async function saveDraft(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -202,7 +204,7 @@ export function ManagementRoute() {
   return (
     <>
       <section className="grid gap-5">
-        <CcPageHeader actions={<CcButton iconLeft="ph-plus" onClick={() => { setDraft(emptyDraft); setSaveError(null); }} size="sm" variant="primary">Add department</CcButton>} description="Manage the workspace department catalog, sidebar labels, and linked views shared from existing department modules." eyebrow="12 Management" title="Departments" />
+        <CcPageHeader actions={<CcButton iconLeft="ph-plus" onClick={() => { setDraft(emptyDraft); setSaveError(null); }} size="sm" variant="primary">{t("management.add")}</CcButton>} description={t("management.description")} eyebrow={t("management.eyebrow")} title={t("management.title")} />
 
         {draft ? (
           <DepartmentForm
@@ -219,33 +221,18 @@ export function ManagementRoute() {
         <CcDataTable
           columns={columns}
           density="compact"
-          emptyDetail="Add a custom department or restore the default department catalog."
-          emptyTitle="No departments"
+          emptyDetail={t("management.emptyDetail")}
+          emptyTitle={t("management.empty")}
           enableSearch
           error={error}
           getRowLabel={(department) => department.name}
           initialPageSize={25}
           initialSort={{ key: "position", direction: "asc" }}
-          labels={{
-            loadingTitle: "Loading departments",
-            loadingDetail: "CompanyCore is reading the workspace department catalog.",
-            errorTitle: "Departments could not load",
-            actions: "Actions",
-            previous: "Previous",
-            next: "Next",
-            pagination: ({ start, end, total }) => `${start}-${end} of ${total}`,
-            search: "Search",
-            filters: "Filters",
-            columns: "Columns",
-            rowsPerPage: "Rows",
-            selected: (count) => `${count} selected`,
-            page: "Page",
-            clear: "Clear"
-          }}
+          labels={tableLabels}
           loading={loading}
           mobileMode="cards"
           rowActionItems={[
-            { key: "edit", label: "Edit", icon: "ph-pencil-simple", tone: "primary", onClick: editDepartment }
+            { key: "edit", label: t("management.edit"), icon: "ph-pencil-simple", tone: "primary", onClick: editDepartment }
           ]}
           rows={rows}
           stickyActions
