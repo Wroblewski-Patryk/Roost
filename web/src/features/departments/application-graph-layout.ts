@@ -2,7 +2,7 @@ import type { ApplicationGraphNode } from "./application-graph-types";
 
 export type GraphPosition = { x: number; y: number };
 
-function graphNodeSize(node: ApplicationGraphNode, focusId: string) {
+export function getApplicationGraphNodeSize(node: ApplicationGraphNode, focusId: string) {
   if (node.id === focusId && node.type === "company") return { width: 200, height: 200 };
   if (node.id === focusId) return { width: 256, height: node.type === "application" ? 112 : 100 };
   if (node.path.includes(focusId)) {
@@ -24,7 +24,7 @@ function boxesOverlap(left: GraphPosition & { width: number; height: number }, r
 export function findApplicationGraphLayoutCollisions(nodes: ApplicationGraphNode[], focus: ApplicationGraphNode, positions: Map<string, GraphPosition>) {
   const boxes = nodes.flatMap((node) => {
     const position = positions.get(node.id);
-    return position ? [{ ...position, ...graphNodeSize(node, focus.id), id: node.id }] : [];
+    return position ? [{ ...position, ...getApplicationGraphNodeSize(node, focus.id), id: node.id }] : [];
   });
   const collisions: Array<[string, string]> = [];
   for (let leftIndex = 0; leftIndex < boxes.length; leftIndex += 1) {
@@ -50,7 +50,7 @@ function resolveLayoutCollisions(nodes: ApplicationGraphNode[], focus: Applicati
   const placed: Array<GraphPosition & { id: string; width: number; height: number }> = [];
   for (const node of ordered) {
     const original = positions.get(node.id)!;
-    const size = graphNodeSize(node, focus.id);
+    const size = getApplicationGraphNodeSize(node, focus.id);
     const candidate = { ...original, ...size, id: node.id };
     if (node.id !== focus.id) {
       let collision = placed.find((other) => boxesOverlap(candidate, other));
@@ -106,7 +106,7 @@ export function layoutApplicationGraphNodes(nodes: ApplicationGraphNode[], focus
       const columns = Math.min(4, Math.max(children.length, 1));
       const rows = Math.max(1, Math.ceil(children.length / columns));
       const groupHeight = (rows - 1) * 142 + 100;
-      const parentHeight = graphNodeSize(parent, focus.id).height;
+      const parentHeight = getApplicationGraphNodeSize(parent, focus.id).height;
       groupedPositions.push([parent.id, { x: 390, y: groupTop + groupHeight / 2 - parentHeight / 2 }]);
       children.forEach((child, index) => {
         groupedPositions.push([child.id, {
@@ -116,7 +116,7 @@ export function layoutApplicationGraphNodes(nodes: ApplicationGraphNode[], focus
       });
       groupTop += groupHeight + 48;
     }
-    const verticalOffset = Math.max(0, groupTop - 48) / 2 - graphNodeSize(focus, focus.id).height / 2;
+    const verticalOffset = Math.max(0, groupTop - 48) / 2 - getApplicationGraphNodeSize(focus, focus.id).height / 2;
     groupedPositions.forEach(([id, position]) => positions.set(id, { x: position.x, y: position.y - verticalOffset }));
   } else {
     firstLevel.forEach((node, index) => {

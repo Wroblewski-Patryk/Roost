@@ -33,6 +33,7 @@
     "evidence:retention:check": "node scripts/ignored-evidence-retention-guardrail.mjs",
     "test:evidence-retention": "node scripts/ignored-evidence-retention-guardrail.test.mjs",
     "test:application-graph-layout": "tsx --test web/src/features/departments/application-graph-layout.test.ts",
+    "test:application-graph-motion": "tsx --test web/src/features/departments/application-graph-motion.test.ts",
     "check:public-js": "node -e \"console.log('legacy public JS removed; React/Vite build is the web syntax gate')\"",
     "check:route-capabilities": "node scripts/check-route-capabilities.mjs",
     "test:api": "npm run build && npm run prisma:migrate:deploy && node --test \"dist/tests/api.test.js\"",

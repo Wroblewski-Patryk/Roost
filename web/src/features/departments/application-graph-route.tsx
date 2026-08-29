@@ -19,7 +19,8 @@ import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
 import { CcNotice } from "../../components/cc-notice";
 import { humanizeBusinessValue } from "./shared";
-import { layoutApplicationGraphNodes } from "./application-graph-layout";
+import { getApplicationGraphNodeSize, layoutApplicationGraphNodes, type GraphPosition } from "./application-graph-layout";
+import { interpolateApplicationGraphPositions } from "./application-graph-motion";
 import type {
   ApplicationGraphMode,
   ApplicationGraphNode,
@@ -73,6 +74,54 @@ const graphExitDuration = 150;
 
 function graphMotionEase(progress: number) {
   return progress * progress * (3 - 2 * progress);
+}
+
+function useAnimatedGraphPositions(targetPositions: Map<string, GraphPosition>) {
+  const currentPositionsRef = useRef(targetPositions);
+  const animationFrameRef = useRef<number | null>(null);
+  const [animatedPositions, setAnimatedPositions] = useState(targetPositions);
+
+  useEffect(() => {
+    if (animationFrameRef.current !== null) cancelAnimationFrame(animationFrameRef.current);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const currentPositions = currentPositionsRef.current;
+    if (reducedMotion || currentPositions.size === 0) {
+      currentPositionsRef.current = targetPositions;
+      setAnimatedPositions(targetPositions);
+      return;
+    }
+
+    const startPositions = new Map<string, GraphPosition>();
+    targetPositions.forEach((target, id) => startPositions.set(id, currentPositions.get(id) ?? target));
+    const startedAt = performance.now();
+    const animate = (now: number) => {
+      const progress = Math.min(1, (now - startedAt) / graphMotionDuration);
+      const nextPositions = interpolateApplicationGraphPositions(startPositions, targetPositions, graphMotionEase(progress));
+      currentPositionsRef.current = nextPositions;
+      setAnimatedPositions(nextPositions);
+      if (progress < 1) animationFrameRef.current = requestAnimationFrame(animate);
+      else animationFrameRef.current = null;
+    };
+    animationFrameRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (animationFrameRef.current !== null) cancelAnimationFrame(animationFrameRef.current);
+    };
+  }, [targetPositions]);
+
+  return animatedPositions.size === 0 ? targetPositions : animatedPositions;
+}
+
+function applicationGraphBounds(records: ApplicationGraphNode[], focus: ApplicationGraphNode, positions: Map<string, GraphPosition>) {
+  const boxes = records.flatMap((record) => {
+    const position = positions.get(record.id);
+    return position ? [{ ...position, ...getApplicationGraphNodeSize(record, focus.id) }] : [];
+  });
+  if (!boxes.length) return null;
+  const x = Math.min(...boxes.map((box) => box.x));
+  const y = Math.min(...boxes.map((box) => box.y));
+  const right = Math.max(...boxes.map((box) => box.x + box.width));
+  const bottom = Math.max(...boxes.map((box) => box.y + box.height));
+  return { x, y, width: right - x, height: bottom - y };
 }
 
 function iconFor(type: ApplicationGraphNode["type"]) {
@@ -362,7 +411,7 @@ function ApplicationGraphCanvas() {
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const [allSearchDataLoaded, setAllSearchDataLoaded] = useState(false);
-  const { fitView, setCenter } = useReactFlow<GraphFlowNode>();
+  const { fitBounds, setCenter } = useReactFlow<GraphFlowNode>();
 
   useEffect(() => {
     let active = true;
@@ -466,7 +515,8 @@ function ApplicationGraphCanvas() {
     : [], [activeApplicationNodeId, graph.nodes]);
   const visibleIds = useMemo(() => focus ? visibleNodeIds(graph.nodes, graph.edges, focus, mode, filters, revealDepth) : new Set<string>(), [filters, focus, graph.edges, graph.nodes, mode, revealDepth]);
   const visibleRecords = useMemo(() => graph.nodes.filter((node) => visibleIds.has(node.id)), [graph.nodes, visibleIds]);
-  const positions = useMemo(() => focus ? layoutApplicationGraphNodes(visibleRecords, focus) : new Map<string, { x: number; y: number }>(), [focus, visibleRecords]);
+  const targetPositions = useMemo(() => focus ? layoutApplicationGraphNodes(visibleRecords, focus) : new Map<string, GraphPosition>(), [focus, visibleRecords]);
+  const positions = useAnimatedGraphPositions(targetPositions);
   const visibleChildren = useMemo(() => visibleRecords.filter((node) => node.parentNodeId === focus?.id), [focus?.id, visibleRecords]);
   const dependencyNeighbourCount = useMemo(() => focus
     ? visibleRecords.filter((node) => !focus.path.includes(node.id) && !node.path.includes(focus.id)).length
@@ -496,7 +546,7 @@ function ApplicationGraphCanvas() {
   const flowNodes = useMemo<GraphFlowNode[]>(() => visibleRecords.map((record, motionIndex) => ({
     id: record.id,
     type: "applicationGraph",
-    position: positions.get(record.id) ?? { x: 0, y: 0 },
+    position: positions.get(record.id) ?? targetPositions.get(record.id) ?? { x: 0, y: 0 },
     data: {
       record,
       mode,
@@ -518,7 +568,7 @@ function ApplicationGraphCanvas() {
     selectable: true,
     focusable: true,
     ariaLabel: `${record.label}, ${record.category}, ${record.completeness}% complete`
-  })), [focus, hoverNeighbourhood, hoveredId, mode, pendingNeighbourhood, positions, visibleRecords]);
+  })), [focus, hoverNeighbourhood, hoveredId, mode, pendingNeighbourhood, positions, targetPositions, visibleRecords]);
 
   const flowEdges = useMemo<Edge[]>(() => graph.edges
     .filter((edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target))
@@ -534,7 +584,10 @@ function ApplicationGraphCanvas() {
       );
       const pendingConnected = Boolean(pendingNeighbourhood?.has(edge.source) && pendingNeighbourhood.has(edge.target));
       const hierarchyAccent = sourceNode?.type === "company" && targetNode ? branchAccent(targetNode) : sourceNode ? branchAccent(sourceNode) : "#7f8da8";
-      const handles = handlesForEdge(positions.get(edge.source) ?? { x: 0, y: 0 }, positions.get(edge.target) ?? { x: 0, y: 0 });
+      const handles = handlesForEdge(
+        positions.get(edge.source) ?? targetPositions.get(edge.source) ?? { x: 0, y: 0 },
+        positions.get(edge.target) ?? targetPositions.get(edge.target) ?? { x: 0, y: 0 }
+      );
       return {
         id: edge.id,
         source: edge.source,
@@ -549,21 +602,21 @@ function ApplicationGraphCanvas() {
           : { stroke: edge.type === "blocks" ? "#d66565" : "#7f8da8", strokeWidth: edge.type === "blocks" ? 2.5 : 1.5, strokeDasharray: "6 6" },
         className: `application-graph-edge application-graph-edge--${edge.type}${hoveredId ? hoverConnected ? " application-graph-edge--hover-connected" : " application-graph-edge--hover-muted" : ""}${pendingNeighbourhood && !pendingConnected ? " application-graph-edge--departing" : ""}`
       };
-    }), [byId, graph.edges, hoveredId, hoverNeighbourhood, mode, pendingNeighbourhood, positions, visibleIds]);
+    }), [byId, graph.edges, hoveredId, hoverNeighbourhood, mode, pendingNeighbourhood, positions, targetPositions, visibleIds]);
 
   useEffect(() => {
-    if (!focus || !positions.has(focus.id)) return;
+    if (!focus || !targetPositions.has(focus.id)) return;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const timer = window.setTimeout(() => {
-      if (flowNodes.length > 2) void fitView({
+      const bounds = applicationGraphBounds(visibleRecords, focus, targetPositions);
+      if (visibleRecords.length > 2 && bounds) void fitBounds(bounds, {
         padding: 0.14,
         duration: reducedMotion ? 0 : graphMotionDuration,
         ease: graphMotionEase,
-        interpolate: "smooth",
-        maxZoom: 1
+        interpolate: "smooth"
       });
       else {
-        const position = positions.get(focus.id)!;
+        const position = targetPositions.get(focus.id)!;
         void setCenter(position.x + 120, position.y + 52, {
           zoom: 1,
           duration: reducedMotion ? 0 : graphMotionDuration,
@@ -573,7 +626,7 @@ function ApplicationGraphCanvas() {
       }
     }, reducedMotion ? 0 : 56);
     return () => window.clearTimeout(timer);
-  }, [fitView, flowNodes.length, focus, inspectorId, mode, positions, setCenter]);
+  }, [fitBounds, focus, inspectorId, mode, setCenter, targetPositions, visibleRecords]);
 
   const goToParent = useCallback(() => {
     if (!focus?.parentNodeId) return;
