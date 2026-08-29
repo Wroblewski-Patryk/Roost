@@ -90,7 +90,7 @@ export function layoutApplicationGraphNodes(nodes: ApplicationGraphNode[], focus
   }
 
   const firstLevelCount = nodes.filter((node) => depthById.get(node.id) === 1).length;
-  const firstLevelColumns = firstLevelCount > 9 ? 2 : 1;
+  const firstLevelColumns = firstLevelCount > 18 ? 3 : firstLevelCount > 6 ? 2 : 1;
   for (const depth of [1, 2]) {
     const level = nodes
       .filter((node) => depthById.get(node.id) === depth)

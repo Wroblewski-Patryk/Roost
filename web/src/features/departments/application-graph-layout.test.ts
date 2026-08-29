@@ -45,6 +45,9 @@ test("application focus keeps a Featherly-sized domain set collision free", () =
     graphNode({ id: `domain-${index}`, type: "domain", parentNodeId: application.id, path: [...application.path, `domain-${index}`], label })
   );
   assertCollisionFree([company, application, ...domains], application);
+  const positions = layoutApplicationGraphNodes([company, application, ...domains], application);
+  const domainPositions = domains.map((domain) => positions.get(domain.id)!);
+  assert.ok(Math.max(...domainPositions.map((position) => position.y)) - Math.min(...domainPositions.map((position) => position.y)) <= 480, "seven domains should remain compact enough to read without excessive zoom-out");
 });
 
 test("two-level project focus keeps thirty task nodes collision free", () => {
