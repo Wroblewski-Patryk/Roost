@@ -248,8 +248,26 @@ const createOfferingSchema = z.object({
 
 const updateOfferingSchema = createOfferingSchema.omit({ key: true }).partial();
 
+const procedureInclude = {
+  process: true,
+  qualityStandard: true,
+  steps: { orderBy: { stepOrder: "asc" as const } }
+};
+
+const projectInclude = {
+  taskLists: { include: { tasks: { orderBy: [{ status: "asc" as const }, { updatedAt: "desc" as const }] } }, orderBy: { name: "asc" as const } },
+  tasks: { where: { taskListId: null }, orderBy: [{ status: "asc" as const }, { updatedAt: "desc" as const }] }
+};
+
 const capabilityInclude = {
-  capabilityDefinition: { include: { domain: true, readinessDimension: true, features: true } },
+  capabilityDefinition: {
+    include: {
+      domain: true,
+      readinessDimension: true,
+      features: true,
+      procedures: { include: { procedure: { include: procedureInclude } }, orderBy: { createdAt: "asc" as const } }
+    }
+  },
   dimensions: { orderBy: { key: "asc" as const } },
   evidence: { orderBy: { observedAt: "desc" as const } },
   interfaces: { orderBy: { name: "asc" as const } },
@@ -383,15 +401,29 @@ productEngineeringRouter.get("/graph", asyncHandler(async (req, res) => {
 
 productEngineeringRouter.get("/applications/:id/graph", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
-  const [workspace, application] = await Promise.all([
+  const [workspace, application, architecture, procedures, projects] = await Promise.all([
     prisma.workspace.findUnique({ where: { id: workspaceId }, select: { id: true, name: true } }),
-    prisma.application.findFirst({ where: { id: String(req.params.id), workspaceId } })
+    prisma.application.findFirst({ where: { id: String(req.params.id), workspaceId } }),
+    prisma.applicationArchitectureComponent.findMany({
+      where: { application: { id: String(req.params.id), workspaceId } },
+      orderBy: [{ name: "asc" }, { id: "asc" }]
+    }),
+    prisma.applicationProcedure.findMany({
+      where: { application: { id: String(req.params.id), workspaceId } },
+      include: { procedure: { include: procedureInclude } },
+      orderBy: { createdAt: "asc" }
+    }),
+    prisma.applicationProject.findMany({
+      where: { application: { id: String(req.params.id), workspaceId } },
+      include: { project: { include: projectInclude } },
+      orderBy: { createdAt: "asc" }
+    })
   ]);
   if (!workspace) return sendApiError(res, 404, "workspace_not_found");
   if (!application) return sendApiError(res, 404, "application_not_found");
   const capabilities = await loadCapabilities(application.id);
   const readiness = calculateApplicationReadiness(readinessInput(capabilities));
-  res.json({ data: buildApplicationGraph({ workspace, application, capabilities, readiness }) });
+  res.json({ data: buildApplicationGraph({ workspace, application, capabilities, architecture, procedures, projects, readiness }) });
 }));
 
 productEngineeringRouter.get("/portfolio", asyncHandler(async (req, res) => {
@@ -472,7 +504,8 @@ productEngineeringRouter.get("/applications/:id", asyncHandler(async (req, res) 
       interfaces: true,
       evidence: { orderBy: { observedAt: "desc" }, take: 100 },
       offerings: true,
-      projects: { include: { project: true } }
+      procedures: { include: { procedure: { include: procedureInclude } }, orderBy: { createdAt: "asc" } },
+      projects: { include: { project: { include: projectInclude } }, orderBy: { createdAt: "asc" } }
     }
   });
   if (!application) return sendApiError(res, 404, "application_not_found");
@@ -523,7 +556,8 @@ productEngineeringRouter.get("/applications/:id/agent-context", asyncHandler(asy
       architecture: { include: { technologyDefinition: true } },
       interfaces: true,
       offerings: true,
-      projects: { include: { project: true } }
+      procedures: { include: { procedure: { include: procedureInclude } }, orderBy: { createdAt: "asc" } },
+      projects: { include: { project: { include: projectInclude } }, orderBy: { createdAt: "asc" } }
     }
   });
   if (!application) return sendApiError(res, 404, "application_not_found");
@@ -532,7 +566,7 @@ productEngineeringRouter.get("/applications/:id/agent-context", asyncHandler(asy
   const readiness = calculateApplicationReadiness(readinessInput(capabilities));
   res.json({
     data: {
-      schemaVersion: "application-agent-context-v1",
+      schemaVersion: "application-agent-context-v2",
       generatedAt: new Date().toISOString(),
       application,
       lifecycle: { innovation: application.innovationStage, product: application.productStage, status: application.status },
@@ -541,6 +575,15 @@ productEngineeringRouter.get("/applications/:id/agent-context", asyncHandler(asy
       gaps,
       blockers: gaps.filter((gap) => gap.blocked),
       dependencies: capabilities.flatMap((item) => item.dependenciesFrom),
+      operatingModel: {
+        applicationProcedures: application.procedures,
+        capabilityProcedures: capabilities.flatMap((item) => item.capabilityDefinition.procedures.map((link) => ({
+          capabilityId: item.id,
+          capabilityKey: item.capabilityDefinition.key,
+          ...link
+        }))),
+        projects: application.projects
+      },
       architecture: application.architecture,
       technologies: application.technologies,
       interfaces: application.interfaces,
@@ -713,7 +756,7 @@ productEngineeringRouter.post("/applications/:id/dependencies", asyncHandler(asy
 productEngineeringRouter.get("/catalog", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
   const [domains, dimensions, packs, blueprints, technologies] = await Promise.all([
-    prisma.capabilityDomain.findMany({ where: { workspaceId }, include: { capabilities: { include: { domain: true, readinessDimension: true, features: true } } }, orderBy: { position: "asc" } }),
+    prisma.capabilityDomain.findMany({ where: { workspaceId }, include: { capabilities: { include: { domain: true, readinessDimension: true, features: true, procedures: { include: { procedure: { include: procedureInclude } } } } } }, orderBy: { position: "asc" } }),
     prisma.readinessDimensionDefinition.findMany({ where: { workspaceId }, orderBy: { position: "asc" } }),
     prisma.capabilityPack.findMany({ where: { workspaceId }, include: { items: { include: { capabilityDefinition: true } } }, orderBy: { name: "asc" } }),
     prisma.applicationBlueprint.findMany({ where: { workspaceId }, include: { capabilities: { include: { capabilityDefinition: true } } }, orderBy: { name: "asc" } }),
@@ -764,6 +807,43 @@ productEngineeringRouter.post("/capability-definitions/:id/features", asyncHandl
   const feature = await prisma.featureDefinition.create({ data: { ...input, capabilityDefinitionId: definition.id } });
   await audit(req, "feature_definition.create", "FeatureDefinition", feature.id, { capabilityDefinitionId: definition.id });
   res.status(201).json({ data: feature });
+}));
+
+productEngineeringRouter.post("/capability-definitions/:id/procedures", asyncHandler(async (req, res) => {
+  const input = z.object({
+    procedureId: idSchema,
+    relationType: z.string().trim().min(1).optional(),
+    required: z.boolean().optional()
+  }).parse(req.body);
+  const workspaceId = req.auth!.workspaceId;
+  const [definition, procedure] = await Promise.all([
+    prisma.capabilityDefinition.findFirst({ where: { id: String(req.params.id), workspaceId } }),
+    prisma.procedure.findFirst({ where: { id: input.procedureId, workspaceId } })
+  ]);
+  if (!definition) return sendApiError(res, 404, "capability_definition_not_found");
+  if (!procedure) return sendApiError(res, 404, "procedure_not_found");
+  const link = await prisma.capabilityProcedure.upsert({
+    where: { capabilityDefinitionId_procedureId: { capabilityDefinitionId: definition.id, procedureId: procedure.id } },
+    create: { capabilityDefinitionId: definition.id, procedureId: procedure.id, relationType: input.relationType, required: input.required },
+    update: { relationType: input.relationType, required: input.required },
+    include: { procedure: { include: procedureInclude } }
+  });
+  await audit(req, "capability_procedure.link", "CapabilityProcedure", definition.id, { procedureId: procedure.id, relationType: link.relationType });
+  await createEvent({ type: "capability_procedure_linked", workspaceId, ...actor(req), resourceType: "CapabilityDefinition", resourceId: definition.id, payload: { procedureId: procedure.id } });
+  res.status(201).json({ data: link });
+}));
+
+productEngineeringRouter.delete("/capability-definitions/:id/procedures/:procedureId", asyncHandler(async (req, res) => {
+  const workspaceId = req.auth!.workspaceId;
+  const definition = await prisma.capabilityDefinition.findFirst({ where: { id: String(req.params.id), workspaceId } });
+  if (!definition) return sendApiError(res, 404, "capability_definition_not_found");
+  const result = await prisma.capabilityProcedure.deleteMany({
+    where: { capabilityDefinitionId: definition.id, procedureId: String(req.params.procedureId), procedure: { workspaceId } }
+  });
+  if (!result.count) return sendApiError(res, 404, "capability_procedure_not_found");
+  await audit(req, "capability_procedure.unlink", "CapabilityProcedure", definition.id, { procedureId: String(req.params.procedureId) });
+  await createEvent({ type: "capability_procedure_unlinked", workspaceId, ...actor(req), resourceType: "CapabilityDefinition", resourceId: definition.id, payload: { procedureId: String(req.params.procedureId) } });
+  res.status(204).send();
 }));
 
 productEngineeringRouter.post("/capability-packs", asyncHandler(async (req, res) => {
@@ -872,6 +952,56 @@ productEngineeringRouter.post("/applications/:id/projects", asyncHandler(async (
   });
   await audit(req, "application_project.link", "ApplicationProject", application.id, { projectId: project.id, relationType: link.relationType });
   res.status(201).json({ data: link });
+}));
+
+productEngineeringRouter.delete("/applications/:id/projects/:projectId", asyncHandler(async (req, res) => {
+  const workspaceId = req.auth!.workspaceId;
+  const application = await applicationForWorkspace(workspaceId, String(req.params.id));
+  if (!application) return sendApiError(res, 404, "application_not_found");
+  const result = await prisma.applicationProject.deleteMany({
+    where: { applicationId: application.id, projectId: String(req.params.projectId), project: { workspaceId } }
+  });
+  if (!result.count) return sendApiError(res, 404, "application_project_not_found");
+  await audit(req, "application_project.unlink", "ApplicationProject", application.id, { projectId: String(req.params.projectId) });
+  await createEvent({ type: "application_project_unlinked", workspaceId, ...actor(req), resourceType: "Application", resourceId: application.id, payload: { projectId: String(req.params.projectId) } });
+  res.status(204).send();
+}));
+
+productEngineeringRouter.post("/applications/:id/procedures", asyncHandler(async (req, res) => {
+  const input = z.object({
+    procedureId: idSchema,
+    relationType: z.string().trim().min(1).optional(),
+    required: z.boolean().optional()
+  }).parse(req.body);
+  const workspaceId = req.auth!.workspaceId;
+  const [application, procedure] = await Promise.all([
+    applicationForWorkspace(workspaceId, String(req.params.id)),
+    prisma.procedure.findFirst({ where: { id: input.procedureId, workspaceId } })
+  ]);
+  if (!application) return sendApiError(res, 404, "application_not_found");
+  if (!procedure) return sendApiError(res, 404, "procedure_not_found");
+  const link = await prisma.applicationProcedure.upsert({
+    where: { applicationId_procedureId: { applicationId: application.id, procedureId: procedure.id } },
+    create: { applicationId: application.id, procedureId: procedure.id, relationType: input.relationType, required: input.required },
+    update: { relationType: input.relationType, required: input.required },
+    include: { procedure: { include: procedureInclude } }
+  });
+  await audit(req, "application_procedure.link", "ApplicationProcedure", application.id, { procedureId: procedure.id, relationType: link.relationType });
+  await createEvent({ type: "application_procedure_linked", workspaceId, ...actor(req), resourceType: "Application", resourceId: application.id, payload: { procedureId: procedure.id } });
+  res.status(201).json({ data: link });
+}));
+
+productEngineeringRouter.delete("/applications/:id/procedures/:procedureId", asyncHandler(async (req, res) => {
+  const workspaceId = req.auth!.workspaceId;
+  const application = await applicationForWorkspace(workspaceId, String(req.params.id));
+  if (!application) return sendApiError(res, 404, "application_not_found");
+  const result = await prisma.applicationProcedure.deleteMany({
+    where: { applicationId: application.id, procedureId: String(req.params.procedureId), procedure: { workspaceId } }
+  });
+  if (!result.count) return sendApiError(res, 404, "application_procedure_not_found");
+  await audit(req, "application_procedure.unlink", "ApplicationProcedure", application.id, { procedureId: String(req.params.procedureId) });
+  await createEvent({ type: "application_procedure_unlinked", workspaceId, ...actor(req), resourceType: "Application", resourceId: application.id, payload: { procedureId: String(req.params.procedureId) } });
+  res.status(204).send();
 }));
 
 productEngineeringRouter.get("/offerings", asyncHandler(async (req, res) => {

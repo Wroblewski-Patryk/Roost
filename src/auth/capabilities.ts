@@ -260,6 +260,8 @@ export const adapterManifest = {
       { method: "POST", path: "/v1/product-engineering/capability-definitions", capability: "product-engineering:write" },
       { method: "PATCH", path: "/v1/product-engineering/capability-definitions/:id", capability: "product-engineering:write" },
       { method: "POST", path: "/v1/product-engineering/capability-definitions/:id/features", capability: "product-engineering:write" },
+      { method: "POST", path: "/v1/product-engineering/capability-definitions/:id/procedures", capability: "product-engineering:write" },
+      { method: "DELETE", path: "/v1/product-engineering/capability-definitions/:id/procedures/:procedureId", capability: "product-engineering:write" },
       { method: "POST", path: "/v1/product-engineering/capability-packs", capability: "product-engineering:write" },
       { method: "POST", path: "/v1/product-engineering/applications/:id/actions/apply-pack", capability: "product-engineering:write" },
       { method: "POST", path: "/v1/product-engineering/application-blueprints", capability: "product-engineering:write" },
@@ -268,6 +270,9 @@ export const adapterManifest = {
       { method: "POST", path: "/v1/product-engineering/applications/:id/architecture", capability: "product-engineering:write" },
       { method: "POST", path: "/v1/product-engineering/applications/:id/interfaces", capability: "product-engineering:write" },
       { method: "POST", path: "/v1/product-engineering/applications/:id/projects", capability: "product-engineering:write" },
+      { method: "DELETE", path: "/v1/product-engineering/applications/:id/projects/:projectId", capability: "product-engineering:write" },
+      { method: "POST", path: "/v1/product-engineering/applications/:id/procedures", capability: "product-engineering:write" },
+      { method: "DELETE", path: "/v1/product-engineering/applications/:id/procedures/:procedureId", capability: "product-engineering:write" },
       { method: "GET", path: "/v1/product-engineering/offerings", capability: "product-engineering:read" },
       { method: "POST", path: "/v1/product-engineering/offerings", capability: "product-engineering:write" },
       { method: "PATCH", path: "/v1/product-engineering/offerings/:id", capability: "product-engineering:write" }

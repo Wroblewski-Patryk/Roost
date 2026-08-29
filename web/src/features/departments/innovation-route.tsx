@@ -15,6 +15,8 @@ import {
   ProductApplication,
   ProductEngineeringCatalog,
   ProductGap,
+  ProcedureSummary,
+  ProjectSummary,
   Readiness,
 } from "./product-engineering-types";
 
@@ -36,6 +38,7 @@ type CockpitView =
   | "gaps"
   | "architecture"
   | "interfaces"
+  | "execution"
   | "evidence";
 
 const lifecycleStages = [
@@ -445,11 +448,13 @@ function CapabilityMatrix({
   application,
   capabilities,
   catalog,
+  procedures,
   onRefresh,
 }: {
   application: ProductApplication;
   capabilities: ApplicationCapability[];
   catalog: ProductEngineeringCatalog | null;
+  procedures: ProcedureSummary[];
   onRefresh: () => Promise<void>;
 }) {
   const { t } = useLanguage();
@@ -536,6 +541,25 @@ function CapabilityMatrix({
       method: "POST",
       body: JSON.stringify({ status: "verified" }),
     });
+    await onRefresh();
+  }
+
+  async function linkProcedure(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selected) return;
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+    await api(`/v1/product-engineering/capability-definitions/${selected.capabilityDefinition.id}/procedures`, {
+      method: "POST",
+      body: JSON.stringify({ procedureId: form.get("procedureId"), relationType: "implementation", required: true })
+    });
+    formElement.reset();
+    await onRefresh();
+  }
+
+  async function unlinkProcedure(procedureId: string) {
+    if (!selected) return;
+    await api(`/v1/product-engineering/capability-definitions/${selected.capabilityDefinition.id}/procedures/${procedureId}`, { method: "DELETE" });
     await onRefresh();
   }
 
@@ -690,6 +714,24 @@ function CapabilityMatrix({
                   </p>
                 ) : null}
               </div>
+              <h4 className="mt-5 font-black">Reusable procedures</h4>
+              <p className="mt-1 text-xs text-company-muted">These procedures belong to the capability definition and appear in every application that uses it.</p>
+              <div className="mt-2 grid gap-2">
+                {(selected.capabilityDefinition.procedures || []).map((link) => (
+                  <div className="flex items-center justify-between gap-3 rounded-company border border-base-300 p-3 text-sm" key={link.procedure.id}>
+                    <span><strong>{link.procedure.name}</strong><small className="block text-company-muted">v{link.procedure.version} · {humanize(link.procedure.status)} · {link.procedure.steps.length} steps</small></span>
+                    <button className="btn btn-ghost btn-xs" onClick={() => void unlinkProcedure(link.procedure.id)} type="button">Unlink</button>
+                  </div>
+                ))}
+                {!(selected.capabilityDefinition.procedures || []).length ? <p className="text-sm text-company-muted">No reusable procedure linked.</p> : null}
+              </div>
+              <form className="mt-3 flex flex-col gap-2 sm:flex-row" onSubmit={linkProcedure}>
+                <CcSelect name="procedureId" required wrapperClassName="grow">
+                  <option value="">Link active procedure…</option>
+                  {procedures.filter((procedure) => !(selected.capabilityDefinition.procedures || []).some((link) => link.procedure.id === procedure.id)).map((procedure) => <option key={procedure.id} value={procedure.id}>{procedure.name}</option>)}
+                </CcSelect>
+                <CcButton type="submit">Link</CcButton>
+              </form>
             </div>
             <div>
               <h4 className="font-black">Evidence</h4>
@@ -914,6 +956,94 @@ function CatalogView({
   );
 }
 
+function ExecutionWorkbench({
+  application,
+  procedures,
+  projects,
+  onRefresh,
+}: {
+  application: ProductApplication;
+  procedures: ProcedureSummary[];
+  projects: ProjectSummary[];
+  onRefresh: () => Promise<void>;
+}) {
+  const linkedProcedureIds = new Set((application.procedures || []).map((link) => link.procedure.id));
+  const linkedProjectIds = new Set((application.projects || []).map((link) => link.project.id));
+
+  async function linkProcedure(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+    await api(`/v1/product-engineering/applications/${application.id}/procedures`, {
+      method: "POST",
+      body: JSON.stringify({ procedureId: form.get("procedureId"), relationType: "governs", required: true })
+    });
+    formElement.reset();
+    await onRefresh();
+  }
+
+  async function linkProject(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+    await api(`/v1/product-engineering/applications/${application.id}/projects`, {
+      method: "POST",
+      body: JSON.stringify({ projectId: form.get("projectId"), relationType: "delivery" })
+    });
+    formElement.reset();
+    await onRefresh();
+  }
+
+  async function unlink(kind: "procedures" | "projects", id: string) {
+    await api(`/v1/product-engineering/applications/${application.id}/${kind}/${id}`, { method: "DELETE" });
+    await onRefresh();
+  }
+
+  return (
+    <div className="grid gap-5 xl:grid-cols-2">
+      <section className="rounded-company border border-base-300 bg-base-100 p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div><p className="text-xs font-black uppercase text-primary">Operating model</p><h3 className="text-xl font-black">Application procedures</h3><p className="mt-1 text-sm text-company-muted">The repeatable way this application is designed, verified, released and improved.</p></div>
+          <a className="btn btn-ghost btn-sm" href="/areas?area=04-operacje&view=procedures">Manage procedures</a>
+        </div>
+        <form className="mt-4 flex flex-col gap-2 sm:flex-row" onSubmit={linkProcedure}>
+          <CcSelect name="procedureId" required wrapperClassName="grow"><option value="">Link application procedure…</option>{procedures.filter((item) => !linkedProcedureIds.has(item.id)).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</CcSelect>
+          <CcButton type="submit">Link</CcButton>
+        </form>
+        <div className="mt-4 divide-y divide-base-300 border-y border-base-300">
+          {(application.procedures || []).map((link) => (
+            <article className="flex items-start justify-between gap-4 py-4" key={link.procedure.id}>
+              <div><div className="flex flex-wrap items-center gap-2"><strong>{link.procedure.name}</strong><span className={`badge badge-sm ${link.procedure.status === "active" ? "badge-success" : "badge-warning"}`}>{humanize(link.procedure.status)}</span></div><p className="mt-1 text-sm text-company-muted">{link.procedure.purpose}</p><p className="mt-2 text-xs font-bold">v{link.procedure.version} · {link.procedure.steps.length} steps · {humanize(link.relationType)}</p></div>
+              <button className="btn btn-ghost btn-xs" onClick={() => void unlink("procedures", link.procedure.id)} type="button">Unlink</button>
+            </article>
+          ))}
+          {!(application.procedures || []).length ? <CcNotice tone="empty" title="No application procedure linked" detail="Link a lifecycle, release or verification procedure to make the delivery model explicit." /> : null}
+        </div>
+      </section>
+
+      <section className="rounded-company border border-base-300 bg-base-100 p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div><p className="text-xs font-black uppercase text-primary">Execution</p><h3 className="text-xl font-black">Projects & tasks</h3><p className="mt-1 text-sm text-company-muted">Shared work records that expose delivery state to you, the graph and AI agents.</p></div>
+          <a className="btn btn-ghost btn-sm" href="/areas?area=04-operacje&view=tasks">Open tasks</a>
+        </div>
+        <form className="mt-4 flex flex-col gap-2 sm:flex-row" onSubmit={linkProject}>
+          <CcSelect name="projectId" required wrapperClassName="grow"><option value="">Link delivery project…</option>{projects.filter((item) => !linkedProjectIds.has(item.id)).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</CcSelect>
+          <CcButton type="submit">Link</CcButton>
+        </form>
+        <div className="mt-4 divide-y divide-base-300 border-y border-base-300">
+          {(application.projects || []).map((link) => {
+            const tasks = [...(link.project.tasks || []), ...(link.project.taskLists || []).flatMap((list) => list.tasks)];
+            const done = tasks.filter((task) => task.status === "done").length;
+            const blocked = tasks.filter((task) => task.status === "blocked").length;
+            return <article className="py-4" key={link.project.id}><div className="flex items-start justify-between gap-4"><div><div className="flex flex-wrap items-center gap-2"><strong>{link.project.name}</strong><span className="badge badge-sm badge-outline">{humanize(link.project.status)}</span>{blocked ? <span className="badge badge-sm badge-error">{blocked} blocked</span> : null}</div><p className="mt-1 text-sm text-company-muted">{link.project.description || "No project description."}</p></div><button className="btn btn-ghost btn-xs" onClick={() => void unlink("projects", link.project.id)} type="button">Unlink</button></div><div className="mt-3 flex items-center gap-3 text-xs font-bold"><span>{done}/{tasks.length} tasks done</span><progress className="progress progress-primary h-1.5 max-w-40" max="100" value={tasks.length ? Math.round(done / tasks.length * 100) : 0}></progress></div></article>;
+          })}
+          {!(application.projects || []).length ? <CcNotice tone="empty" title="No delivery project linked" detail="Link a shared project so tasks and progress become part of this application's live model." /> : null}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export function InnovationRoute() {
   const { t } = useLanguage();
   const [portfolio, setPortfolio] = useState<PortfolioPacket | null>(null);
@@ -924,6 +1054,8 @@ export function InnovationRoute() {
   const [capabilities, setCapabilities] = useState<ApplicationCapability[]>([]);
   const [gaps, setGaps] = useState<ProductGap[]>([]);
   const [readiness, setReadiness] = useState<Readiness | null>(null);
+  const [procedures, setProcedures] = useState<ProcedureSummary[]>([]);
+  const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [view, setView] = useState<CockpitView>("overview");
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
@@ -933,14 +1065,18 @@ export function InnovationRoute() {
 
   const loadBase = useCallback(async () => {
     try {
-      const [portfolioResponse, catalogResponse] = await Promise.all([
+      const [portfolioResponse, catalogResponse, proceduresResponse, projectsResponse] = await Promise.all([
         api<{ data: PortfolioPacket }>("/v1/product-engineering/portfolio"),
         api<{ data: ProductEngineeringCatalog }>(
           "/v1/product-engineering/catalog",
         ),
+        api<{ data: ProcedureSummary[] }>("/v1/process-core/procedures"),
+        api<{ data: ProjectSummary[] }>("/v1/projects"),
       ]);
       setPortfolio(portfolioResponse.data);
       setCatalog(catalogResponse.data);
+      setProcedures(proceduresResponse.data.filter((procedure) => procedure.status === "active"));
+      setProjects(projectsResponse.data.filter((project) => project.status !== "archived"));
       setStatus("ready");
     } catch (caught) {
       setError(
@@ -1110,6 +1246,7 @@ export function InnovationRoute() {
                   "gaps",
                   "architecture",
                   "interfaces",
+                  "execution",
                   "evidence",
                 ] as CockpitView[]
               ).map((item) => (
@@ -1210,6 +1347,7 @@ export function InnovationRoute() {
                 application={selected}
                 capabilities={capabilities}
                 catalog={catalog}
+                procedures={procedures}
                 onRefresh={() => loadCockpit(selected.id)}
               />
             </section>
@@ -1363,6 +1501,14 @@ export function InnovationRoute() {
                 </table>
               </div>
             </section>
+          ) : null}
+          {view === "execution" ? (
+            <ExecutionWorkbench
+              application={selected}
+              procedures={procedures}
+              projects={projects}
+              onRefresh={() => loadCockpit(selected.id)}
+            />
           ) : null}
           {view === "evidence" ? (
             <section className="rounded-company border border-base-300 bg-base-100 p-5">

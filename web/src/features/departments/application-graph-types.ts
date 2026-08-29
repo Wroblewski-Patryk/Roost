@@ -1,4 +1,4 @@
-export type ApplicationGraphNodeType = "company" | "application" | "domain" | "capability" | "feature";
+export type ApplicationGraphNodeType = "company" | "application" | "domain" | "capability" | "feature" | "layer" | "implementation" | "procedure" | "procedure_step" | "project" | "task_list" | "task";
 export type ApplicationGraphEdgeType = "hierarchy" | "dependency" | "blocks" | "relates_to";
 
 export type ApplicationGraphNode = {
@@ -27,11 +27,27 @@ export type ApplicationGraphNode = {
     targetState?: string;
     observedState?: string;
     lifecycleStatus?: string;
+    atomType?: string;
+    layer?: string;
+    module?: string;
+    riskLevel?: string;
+    verificationStatus?: string;
+    filePath?: string;
+    externalId?: string;
+    relationCount?: number;
     evidenceCount?: number;
     verifiedEvidenceCount?: number;
     missingEvidence?: boolean;
     blockerLabels?: string[];
     recommendations?: string[];
+    relationType?: string;
+    processName?: string | null;
+    procedureVersion?: number;
+    stepType?: string;
+    stepOrder?: number;
+    expectedResult?: string | null;
+    dueDate?: string | null;
+    priority?: string | null;
     links?: Array<{ label: string; href: string }>;
   };
 };
@@ -46,7 +62,7 @@ export type ApplicationGraphEdge = {
 };
 
 export type ApplicationGraphPacket = {
-  schemaVersion: "application-graph-v1";
+  schemaVersion: "application-graph-v2";
   generatedAt: string;
   scope: "portfolio" | "application";
   rootNodeId: string;
@@ -61,4 +77,4 @@ export type ApplicationGraphPacket = {
   };
 };
 
-export type ApplicationGraphMode = "structure" | "progress" | "dependencies" | "agent-ready" | "productization";
+export type ApplicationGraphMode = "structure" | "execution" | "progress" | "dependencies" | "agent-ready" | "productization";

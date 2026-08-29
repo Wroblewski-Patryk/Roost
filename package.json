@@ -17,6 +17,7 @@
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:migrate:dev": "prisma migrate dev",
     "seed": "tsx prisma/seed.ts",
+    "seed:soar-graph": "tsx scripts/import-soar-application-graph.ts",
     "adapter:smoke": "node scripts/adapter-smoke.mjs",
     "agent:training-smoke": "node scripts/agent-training-smoke.mjs",
     "owner-console:ux-smoke": "node scripts/owner-console-ux-smoke.mjs",

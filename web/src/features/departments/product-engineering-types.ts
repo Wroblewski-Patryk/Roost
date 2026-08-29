@@ -39,7 +39,33 @@ export type ProductApplication = {
   architecture?: Array<{ id: string; type: string; name: string; description?: string; technologyDefinition?: TechnologyDefinition }>;
   technologies?: Array<{ id: string; purpose?: string; version?: string; technologyDefinition: TechnologyDefinition }>;
   interfaces?: Array<{ id: string; type: string; key: string; name: string; reference?: string; requiresApproval: boolean; auditRequired: boolean }>;
+  procedures?: ApplicationProcedureLink[];
+  projects?: ApplicationProjectLink[];
 };
+
+export type ProcedureSummary = {
+  id: string;
+  name: string;
+  purpose: string;
+  status: string;
+  version: number;
+  expectedResult?: string | null;
+  process?: { id: string; name: string } | null;
+  steps: Array<{ id: string; stepOrder: number; instruction: string; stepType: string }>;
+};
+
+export type ApplicationProcedureLink = { relationType: string; required: boolean; procedure: ProcedureSummary };
+
+export type ProjectSummary = {
+  id: string;
+  name: string;
+  description?: string | null;
+  status: string;
+  taskLists?: Array<{ id: string; name: string; status: string; tasks: Array<{ id: string; title: string; status: string }> }>;
+  tasks?: Array<{ id: string; title: string; status: string }>;
+};
+
+export type ApplicationProjectLink = { relationType: string; project: ProjectSummary };
 
 export type CapabilityDefinition = {
   id: string;
@@ -51,6 +77,7 @@ export type CapabilityDefinition = {
   domain: { id: string; key: string; name: string };
   readinessDimension?: { id: string; key: string; name: string } | null;
   features?: Array<{ id: string; key: string; name: string }>;
+  procedures?: Array<{ relationType: string; required: boolean; procedure: ProcedureSummary }>;
 };
 
 export type ApplicationCapability = {

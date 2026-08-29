@@ -29,6 +29,7 @@ import "./application-graph.css";
 type GraphNodeData = {
   record: ApplicationGraphNode;
   mode: ApplicationGraphMode;
+  role: "focus" | "lineage" | "descendant" | "relation";
   dimmed: boolean;
   focused: boolean;
   accent: string;
@@ -56,6 +57,7 @@ const initialFilters: GraphFilters = {
 
 const modes: Array<{ id: ApplicationGraphMode; label: string; icon: string }> = [
   { id: "structure", label: "Structure", icon: "ph-tree-structure" },
+  { id: "execution", label: "Execution", icon: "ph-kanban" },
   { id: "progress", label: "Progress", icon: "ph-chart-donut" },
   { id: "dependencies", label: "Dependencies", icon: "ph-git-branch" },
   { id: "agent-ready", label: "Agent Ready", icon: "ph-robot" },
@@ -67,6 +69,13 @@ function iconFor(type: ApplicationGraphNode["type"]) {
   if (type === "application") return "ph-app-window";
   if (type === "domain") return "ph-circles-three-plus";
   if (type === "capability") return "ph-hexagon";
+  if (type === "layer") return "ph-stack";
+  if (type === "implementation") return "ph-cube";
+  if (type === "procedure") return "ph-list-checks";
+  if (type === "procedure_step") return "ph-list-numbers";
+  if (type === "project") return "ph-kanban";
+  if (type === "task_list") return "ph-columns";
+  if (type === "task") return "ph-check-square";
   return "ph-diamond";
 }
 
@@ -103,6 +112,7 @@ function ApplicationGraphNodeView({ data }: NodeProps<GraphFlowNode>) {
       data-blocked={record.isBlocked || undefined}
       data-dimmed={dimmed || undefined}
       data-focused={focused || undefined}
+      data-role={data.role}
       data-type={record.type}
       style={{ "--graph-accent": accent } as React.CSSProperties}
     >
@@ -178,20 +188,31 @@ function visibleNodeIds(
   allEdges: ApplicationGraphPacket["edges"],
   focus: ApplicationGraphNode,
   mode: ApplicationGraphMode,
-  filters: GraphFilters
+  filters: GraphFilters,
+  revealDepth: 1 | 2
 ) {
   const byId = new Map(allNodes.map((node) => [node.id, node]));
-  const visible = new Set<string>([focus.id]);
+  const visible = new Set<string>(focus.path);
+  let frontier = [focus.id];
+  const descendants: ApplicationGraphNode[] = [];
+  for (let depth = 0; depth < revealDepth; depth += 1) {
+    const parents = new Set(frontier);
+    const children = allNodes
+      .filter((node) => node.parentNodeId && parents.has(node.parentNodeId))
+      .filter((node) => matchesFilters(node, filters))
+      .filter((node) => mode !== "execution" || node.type === "application" || node.tags.includes("execution"))
+      .sort((left, right) => Number(right.isBlocked) - Number(left.isBlocked) || left.label.localeCompare(right.label));
+    descendants.push(...children);
+    children.forEach((node) => visible.add(node.id));
+    frontier = children.map((node) => node.id);
+  }
 
-  const directChildren = allNodes
-    .filter((node) => node.parentNodeId === focus.id)
-    .filter((node) => matchesFilters(node, filters));
-  directChildren.forEach((node) => visible.add(node.id));
+  const directChildren = descendants.filter((node) => node.parentNodeId === focus.id);
 
   if (mode === "dependencies") {
-    const anchors = focus.type === "capability"
+    const anchors = ["capability", "feature", "layer", "implementation"].includes(focus.type)
       ? new Set([focus.id])
-      : new Set(directChildren.filter((node) => node.type === "capability").map((node) => node.id));
+      : new Set(directChildren.filter((node) => node.type === "capability" || node.type === "implementation").map((node) => node.id));
     const relatedIds: string[] = [];
 
     for (const edge of allEdges) {
@@ -199,12 +220,12 @@ function visibleNodeIds(
       const relatedId = anchors.has(edge.source) ? edge.target : anchors.has(edge.target) ? edge.source : null;
       if (!relatedId || anchors.has(relatedId) || relatedIds.includes(relatedId)) continue;
       const related = byId.get(relatedId);
-      if (related?.type === "capability" && matchesFilters(related, filters)) relatedIds.push(relatedId);
+      if (related && !["company", "application", "domain"].includes(related.type) && matchesFilters(related, filters)) relatedIds.push(relatedId);
     }
 
     // A local dependency neighbourhood remains readable; global discovery is
     // handled by search and successive focus changes.
-    relatedIds.slice(0, 12).forEach((id) => visible.add(id));
+    relatedIds.slice(0, 18).forEach((id) => visible.add(id));
   }
 
   return visible;
@@ -214,21 +235,53 @@ function layoutNodes(nodes: ApplicationGraphNode[], focus: ApplicationGraphNode)
   const positions = new Map<string, { x: number; y: number }>();
   positions.set(focus.id, { x: 0, y: 0 });
 
-  const nextLevel = nodes
-    .filter((node) => node.id !== focus.id)
-    .sort((left, right) => {
-      const childOrder = Number(right.parentNodeId === focus.id) - Number(left.parentNodeId === focus.id);
-      return childOrder || Number(right.isBlocked) - Number(left.isBlocked) || left.label.localeCompare(right.label);
+  const lineage = focus.path
+    .slice(0, -1)
+    .map((id) => nodes.find((node) => node.id === id))
+    .filter((node): node is ApplicationGraphNode => Boolean(node));
+  lineage.forEach((node, index) => {
+    positions.set(node.id, { x: -410, y: (index - (lineage.length - 1) / 2) * 112 });
+  });
+
+  const depthById = new Map<string, number>([[focus.id, 0]]);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const node of nodes) {
+      if (!node.parentNodeId || depthById.has(node.id)) continue;
+      const parentDepth = depthById.get(node.parentNodeId);
+      if (parentDepth === undefined) continue;
+      depthById.set(node.id, parentDepth + 1);
+      changed = true;
+    }
+  }
+
+  for (const depth of [1, 2]) {
+    const level = nodes
+      .filter((node) => depthById.get(node.id) === depth)
+      .sort((left, right) => Number(right.isBlocked) - Number(left.isBlocked) || left.label.localeCompare(right.label));
+    level.forEach((node, index) => {
+      if (depth === 1 && lineage.length === 0 && level.length <= 8) {
+        const angle = -Math.PI / 2 + (Math.PI * 2 * index) / Math.max(level.length, 1);
+        positions.set(node.id, { x: Math.cos(angle) * 360, y: Math.sin(angle) * 270 });
+      } else if (depth === 1 && level.length <= 8) {
+        const angle = level.length === 1 ? 0 : -Math.PI / 2 + (Math.PI * index) / (level.length - 1);
+        positions.set(node.id, { x: 350 + Math.cos(angle) * 120, y: Math.sin(angle) * Math.max(270, level.length * 55) });
+      } else if (depth === 2 && level.length <= 24) {
+        const angle = level.length === 1 ? 0 : -Math.PI / 2 + (Math.PI * index) / (level.length - 1);
+        positions.set(node.id, { x: 660 + Math.cos(angle) * 150, y: Math.sin(angle) * 440 });
+      } else {
+        const columns = depth === 1 ? 2 : 3;
+        const column = index % columns;
+        const row = Math.floor(index / columns);
+        positions.set(node.id, { x: (depth === 1 ? 300 : 660) + column * 245, y: (row - (Math.ceil(level.length / columns) - 1) / 2) * 125 });
+      }
     });
-  const radiusX = Math.max(focus.type === "company" ? 300 : 310, nextLevel.length * 36);
-  const radiusY = Math.max(focus.type === "company" ? 210 : 220, nextLevel.length * 22);
-  const startAngle = nextLevel.length === 1 ? 0 : -Math.PI / 2;
-  nextLevel.forEach((node, index) => {
-    const angle = startAngle + (Math.PI * 2 * index) / Math.max(nextLevel.length, 1);
-    positions.set(node.id, {
-      x: Math.cos(angle) * radiusX,
-      y: Math.sin(angle) * radiusY
-    });
+  }
+
+  const relations = nodes.filter((node) => !positions.has(node.id));
+  relations.forEach((node, index) => {
+    positions.set(node.id, { x: 120 + (index % 3) * 280, y: 290 + Math.floor(index / 3) * 120 });
   });
   return positions;
 }
@@ -239,7 +292,14 @@ function nextLevelLabel(type: ApplicationGraphNode["type"], count: number) {
     application: ["domain", "domains"],
     domain: ["capability", "capabilities"],
     capability: ["feature", "features"],
-    feature: ["child", "children"]
+    feature: ["layer", "layers"],
+    layer: ["atom", "atoms"],
+    implementation: ["part", "parts"],
+    procedure: ["step", "steps"],
+    procedure_step: ["part", "parts"],
+    project: ["work item", "work items"],
+    task_list: ["task", "tasks"],
+    task: ["part", "parts"]
   };
   return `${count} ${labels[type][count === 1 ? 0 : 1]}`;
 }
@@ -279,9 +339,23 @@ function GraphInspector({ node, onClose }: { node: ApplicationGraphNode; onClose
           {details.applicability ? <div><dt>Applicability</dt><dd>{humanizeBusinessValue(details.applicability)}</dd></div> : null}
           {details.targetState ? <div><dt>Target</dt><dd>{humanizeBusinessValue(details.targetState)}</dd></div> : null}
           {details.observedState ? <div><dt>Observed</dt><dd>{humanizeBusinessValue(details.observedState)}</dd></div> : null}
+          {details.atomType ? <div><dt>Atom</dt><dd>{humanizeBusinessValue(details.atomType)}</dd></div> : null}
+          {details.layer ? <div><dt>Layer</dt><dd>{humanizeBusinessValue(details.layer)}</dd></div> : null}
+          {details.module ? <div><dt>Module</dt><dd>{details.module}</dd></div> : null}
+          {details.riskLevel ? <div><dt>Risk</dt><dd>{humanizeBusinessValue(details.riskLevel)}</dd></div> : null}
+          {details.verificationStatus ? <div><dt>Verification</dt><dd>{humanizeBusinessValue(details.verificationStatus)}</dd></div> : null}
+          {details.relationType ? <div><dt>Relation</dt><dd>{humanizeBusinessValue(details.relationType)}</dd></div> : null}
+          {details.processName ? <div><dt>Process</dt><dd>{details.processName}</dd></div> : null}
+          {typeof details.procedureVersion === "number" ? <div><dt>Version</dt><dd>{details.procedureVersion}</dd></div> : null}
+          {details.stepType ? <div><dt>Step type</dt><dd>{humanizeBusinessValue(details.stepType)}</dd></div> : null}
+          {details.dueDate ? <div><dt>Due</dt><dd>{new Date(details.dueDate).toLocaleDateString()}</dd></div> : null}
+          {details.priority ? <div><dt>Priority</dt><dd>{humanizeBusinessValue(details.priority)}</dd></div> : null}
+          {typeof details.relationCount === "number" ? <div><dt>Relations</dt><dd>{details.relationCount}</dd></div> : null}
           {typeof details.evidenceCount === "number" ? <div><dt>Evidence</dt><dd>{details.verifiedEvidenceCount ?? 0} verified / {details.evidenceCount}</dd></div> : null}
           <div><dt>Children</dt><dd>{node.childCount}</dd></div>
         </dl>
+
+        {details.filePath ? <section><h3 className="application-graph-inspector__heading"><i className="ph-bold ph-file-code" aria-hidden="true"></i> Implementation source</h3><code className="application-graph-inspector__path">{details.filePath}</code></section> : null}
 
         {details.blockerLabels?.length ? <section><h3 className="application-graph-inspector__heading"><i className="ph-bold ph-warning-diamond" aria-hidden="true"></i> Blockers</h3><ul className="application-graph-inspector__list">{details.blockerLabels.map((label) => <li key={label}>{label}</li>)}</ul></section> : null}
         {details.recommendations?.length ? <section><h3 className="application-graph-inspector__heading"><i className="ph-bold ph-lightbulb" aria-hidden="true"></i> Recommended next step</h3><ul className="application-graph-inspector__list">{details.recommendations.map((recommendation) => <li key={recommendation}>{recommendation}</li>)}</ul></section> : null}
@@ -300,6 +374,7 @@ function ApplicationGraphCanvas() {
   const [focusId, setFocusId] = useState<string | null>(null);
   const [inspectorId, setInspectorId] = useState<string | null>(null);
   const [mode, setMode] = useState<ApplicationGraphMode>("structure");
+  const [revealDepth, setRevealDepth] = useState<1 | 2>(1);
   const [filters, setFilters] = useState<GraphFilters>(initialFilters);
   const [query, setQuery] = useState("");
   const [searching, setSearching] = useState(false);
@@ -379,10 +454,13 @@ function ApplicationGraphCanvas() {
   const domainOptions = useMemo(() => activeApplicationNodeId
     ? graph.nodes.filter((node) => node.type === "domain" && node.path.includes(activeApplicationNodeId)).sort((a, b) => a.label.localeCompare(b.label))
     : [], [activeApplicationNodeId, graph.nodes]);
-  const visibleIds = useMemo(() => focus ? visibleNodeIds(graph.nodes, graph.edges, focus, mode, filters) : new Set<string>(), [filters, focus, graph.edges, graph.nodes, mode]);
+  const visibleIds = useMemo(() => focus ? visibleNodeIds(graph.nodes, graph.edges, focus, mode, filters, revealDepth) : new Set<string>(), [filters, focus, graph.edges, graph.nodes, mode, revealDepth]);
   const visibleRecords = useMemo(() => graph.nodes.filter((node) => visibleIds.has(node.id)), [graph.nodes, visibleIds]);
   const positions = useMemo(() => focus ? layoutNodes(visibleRecords, focus) : new Map<string, { x: number; y: number }>(), [focus, visibleRecords]);
   const visibleChildren = useMemo(() => visibleRecords.filter((node) => node.parentNodeId === focus?.id), [focus?.id, visibleRecords]);
+  const dependencyNeighbourCount = useMemo(() => focus
+    ? visibleRecords.filter((node) => !focus.path.includes(node.id) && !node.path.includes(focus.id)).length
+    : 0, [focus, visibleRecords]);
 
   const flowNodes = useMemo<GraphFlowNode[]>(() => visibleRecords.map((record) => ({
     id: record.id,
@@ -391,15 +469,16 @@ function ApplicationGraphCanvas() {
     data: {
       record,
       mode,
+      role: record.id === focus?.id ? "focus" : focus?.path.includes(record.id) ? "lineage" : record.path.includes(focus?.id || "") ? "descendant" : "relation",
       focused: record.id === focus?.id,
-      dimmed: record.id !== focus?.id && record.parentNodeId !== focus?.id,
+      dimmed: record.id !== focus?.id && !record.path.includes(focus?.id || "") && !focus?.path.includes(record.id),
       accent: branchAccent(record)
     },
     draggable: false,
     selectable: true,
     focusable: true,
     ariaLabel: `${record.label}, ${record.category}, ${record.completeness}% complete`
-  })), [focus, focusNode, mode, positions, visibleRecords]);
+  })), [focus, mode, positions, visibleRecords]);
 
   const flowEdges = useMemo<Edge[]>(() => graph.edges
     .filter((edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target))
@@ -528,12 +607,18 @@ function ApplicationGraphCanvas() {
       <div className="application-graph-context">
         <span><i className="ph-bold ph-crosshair" aria-hidden="true"></i> Focus <strong>{focus.label}</strong></span>
         <span><i className="ph-bold ph-flow-arrow" aria-hidden="true"></i> {nextLevelLabel(focus.type, visibleChildren.length)}</span>
+        <span className="application-graph-depth" aria-label="Visible graph depth">
+          <i className="ph-bold ph-circles-three" aria-hidden="true"></i> Depth
+          {([1, 2] as const).map((depth) => <button aria-pressed={revealDepth === depth} className={revealDepth === depth ? "is-active" : ""} key={depth} onClick={() => setRevealDepth(depth)} type="button">{depth}</button>)}
+        </span>
         <span className="application-graph-context__hint">
-          {mode === "dependencies" && visibleRecords.length === 1
-            ? "No recorded dependencies for this capability."
+          {mode === "dependencies"
+            ? dependencyNeighbourCount
+              ? `${dependencyNeighbourCount} directly related ${dependencyNeighbourCount === 1 ? "record" : "records"}. Select one to follow the implementation chain.`
+              : "No recorded dependencies for this node."
             : focus.childCount === 0
               ? "No deeper records are assigned yet. Use Product Engineering to add them."
-              : "Select a node to reveal its next level. Use the breadcrumb to jump back."}
+              : "The lineage stays visible while you move deeper. Select an atom or switch to Dependencies to inspect its neighbourhood."}
         </span>
       </div>
 

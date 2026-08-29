@@ -190,11 +190,32 @@ same Product Engineering records. It does not own application, capability,
 feature, evidence, dependency, readiness, or lifecycle state and introduces no
 parallel graph tables.
 
-The bounded hierarchy is:
+The bounded product and implementation hierarchy is:
 
 ```text
 Company -> Application -> Graph Domain -> Capability -> Feature
+                                                -> Implementation Layer -> Implementation Atom
+                    -> Operating model -> Application Procedure -> Procedure Step
+                    -> Delivery -> Project -> Task List -> Task
+Capability -> Reusable Procedure -> Procedure Step
 ```
+
+An implementation atom is an existing `ApplicationArchitectureComponent` with
+structured provenance metadata. It may represent a page, component, API route,
+service, database model, test, document, workflow, agent, or executable chain.
+The graph does not introduce a parallel source-of-truth table. Registry source
+IDs, parent IDs, verification state, code paths, risk, completion, and typed
+relations are retained in component metadata and projected by
+`application-graph-v2`.
+
+Execution state remains shared with the rest of Roost. `ApplicationProcedure`
+links application-specific lifecycle and release procedures, while
+`CapabilityProcedure` links a reusable procedure to a capability definition so
+every assigned application inherits the same operating skeleton. Projects are
+linked through `ApplicationProject`; their existing task lists and tasks are
+projected directly. The application cockpit's Execution workbench manages these
+links, and `application-agent-context-v2` exposes the same operating model to AI
+agents. No procedure, project, list, or task is copied into Product Engineering.
 
 Graph domains are deterministic navigation groups over canonical
 `CapabilityDomain` records. The `application-graph-domains-v1` mapping keeps a
@@ -208,18 +229,28 @@ source capability definition.
 `GET /graph` returns only the company and application portfolio required for
 the initial canvas. `GET /applications/:id/graph` lazily returns one complete
 application projection with domains, capabilities, assigned features,
-hierarchy edges, dependency edges, blockers, evidence summaries, ancestor
-paths, and deterministic completeness derived from Product Engineering state.
-The web client uses a bounded radial drill-down: the focused node remains the
-visual center and only its direct children or local dependency neighbourhood
-form the surrounding ring. Complete ancestry stays in the breadcrumb instead
-of being repeated on the canvas. This preserves an Obsidian-like spatial map
-without rendering the whole portfolio as an unreadable hairball. The client
-may load all application projections only after a cross-portfolio search is
-requested.
+implementation layers and atoms, hierarchy edges, typed implementation
+relations, blockers, evidence summaries, ancestor paths, and deterministic
+completeness derived from Product Engineering state.
 
-The supported visual modes are Structure, Progress, Dependencies, Agent Ready,
-and Productization. They are alternate interpretations of one packet, not
+The web client uses a bounded 2.5D constellation rather than literal WebGL
+3D. The focused node remains central, direct children form an orbit or readable
+grid, and the complete ancestor path remains visible as a compact canvas spine
+as well as in the breadcrumb. Optional depth two reveals one additional ring.
+Dependency mode adds only the focused node's bounded relation neighbourhood.
+This preserves spatial context and readable text without occlusion, camera
+navigation, or a whole-portfolio hairball. The client may load all application
+projections only after a cross-portfolio search is requested.
+
+`npm run seed:soar-graph -- <path-to-soar>` is an explicit local/import command
+for the Soar architecture registry. It converts Soar feature records to native
+Roost feature assignments and imports non-feature registry records and chains
+as architecture atoms. It is idempotent for records whose metadata source is
+`soar-architecture-registry`; it is not part of the production seed and does
+not infer verified runtime state beyond the source registry's declarations.
+
+The supported visual modes are Structure, Execution, Progress, Dependencies,
+Agent Ready, and Productization. They are alternate interpretations of one packet, not
 stored state. Required incomplete dependencies are represented as blocker
 edges. Missing evidence and incomplete required state remain explicit and are
 never inferred as complete by the graph.

@@ -6,7 +6,7 @@ import type {
   ProductLifecycleStage
 } from "@prisma/client";
 
-export type ApplicationGraphNodeType = "company" | "application" | "domain" | "capability" | "feature";
+export type ApplicationGraphNodeType = "company" | "application" | "domain" | "capability" | "feature" | "layer" | "implementation" | "procedure" | "procedure_step" | "project" | "task_list" | "task";
 export type ApplicationGraphEdgeType = "hierarchy" | "dependency" | "blocks" | "relates_to";
 
 export type ApplicationGraphNode = {
@@ -35,11 +35,27 @@ export type ApplicationGraphNode = {
     targetState?: string;
     observedState?: string;
     lifecycleStatus?: string;
+    atomType?: string;
+    layer?: string;
+    module?: string;
+    riskLevel?: string;
+    verificationStatus?: string;
+    filePath?: string;
+    externalId?: string;
+    relationCount?: number;
     evidenceCount?: number;
     verifiedEvidenceCount?: number;
     missingEvidence?: boolean;
     blockerLabels?: string[];
     recommendations?: string[];
+    relationType?: string;
+    processName?: string | null;
+    procedureVersion?: number;
+    stepType?: string;
+    stepOrder?: number;
+    expectedResult?: string | null;
+    dueDate?: string | null;
+    priority?: string | null;
     links?: Array<{ label: string; href: string }>;
   };
 };
@@ -54,7 +70,7 @@ export type ApplicationGraphEdge = {
 };
 
 export type ApplicationGraphPacket = {
-  schemaVersion: "application-graph-v1";
+  schemaVersion: "application-graph-v2";
   generatedAt: string;
   scope: "portfolio" | "application";
   rootNodeId: string;
@@ -113,6 +129,7 @@ type GraphCapability = {
     description?: string | null;
     tags: string[];
     domain: { key: string; name: string };
+    procedures?: GraphCapabilityProcedure[];
   };
   evidence: Array<{ verificationStatus: string }>;
   features: GraphFeature[];
@@ -122,6 +139,47 @@ type GraphCapability = {
     notes?: string | null;
     toCapability: { id: string; observedState: CapabilityState; capabilityDefinition: { name: string } };
   }>;
+};
+
+type GraphProcedure = {
+  id: string;
+  name: string;
+  purpose: string;
+  status: string;
+  version: number;
+  expectedResult?: string | null;
+  process?: { name: string } | null;
+  qualityStandard?: { name: string } | null;
+  steps: Array<{ id: string; stepOrder: number; instruction: string; stepType: string }>;
+};
+
+type GraphCapabilityProcedure = {
+  relationType: string;
+  required: boolean;
+  procedure: GraphProcedure;
+};
+
+type GraphApplicationProcedure = GraphCapabilityProcedure;
+
+type GraphTask = {
+  id: string;
+  title: string;
+  description?: string | null;
+  status: string;
+  priority?: string | null;
+  dueDate?: Date | string | null;
+};
+
+type GraphProject = {
+  relationType: string;
+  project: {
+    id: string;
+    name: string;
+    description?: string | null;
+    status: string;
+    taskLists: Array<{ id: string; name: string; description?: string | null; status: string; tasks: GraphTask[] }>;
+    tasks: GraphTask[];
+  };
 };
 
 type GraphApplication = {
@@ -136,6 +194,30 @@ type GraphApplication = {
   frontendUrl?: string | null;
   backendUrl?: string | null;
   documentationUrl?: string | null;
+};
+
+type GraphArchitectureComponent = {
+  id: string;
+  type: string;
+  name: string;
+  description?: string | null;
+  status: string;
+  metadata: unknown;
+};
+
+type ImplementationMetadata = {
+  sourceId?: string;
+  sourceSystem?: string;
+  atomType?: string;
+  layer?: string;
+  module?: string;
+  feature?: string;
+  parentSourceId?: string;
+  completionPercent?: number;
+  verificationStatus?: string;
+  riskLevel?: string;
+  filePath?: string;
+  relations?: Array<{ targetSourceId?: string; type?: string; status?: string; description?: string }>;
 };
 
 const stateScore: Record<CapabilityState, number> = {
@@ -178,12 +260,391 @@ function average(values: number[]) {
   return values.length ? clampPercent(values.reduce((sum, value) => sum + value, 0) / values.length) : 0;
 }
 
+function implementationMetadata(value: unknown): ImplementationMetadata {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return value as ImplementationMetadata;
+}
+
+function implementationStatus(metadata: ImplementationMetadata, fallback: string) {
+  return metadata.verificationStatus || fallback;
+}
+
 function linksFor(application: GraphApplication | PortfolioApplication) {
   return [
     application.frontendUrl ? { label: "Open application", href: application.frontendUrl } : null,
     "backendUrl" in application && application.backendUrl ? { label: "Open API", href: application.backendUrl } : null,
     application.documentationUrl ? { label: "Documentation", href: application.documentationUrl } : null
   ].filter((link): link is { label: string; href: string } => Boolean(link));
+}
+
+function graphLabel(value: string) {
+  return value.replace(/[_-]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function appendImplementationProjection(input: {
+  applicationId: string;
+  applicationNodeId: string;
+  architecture: GraphArchitectureComponent[];
+  featureNodeByKey: Map<string, ApplicationGraphNode>;
+  nodes: ApplicationGraphNode[];
+  edges: ApplicationGraphEdge[];
+}) {
+  if (!input.architecture.length) return;
+
+  const nodeById = new Map(input.nodes.map((node) => [node.id, node]));
+  const records = input.architecture.map((component) => ({ component, metadata: implementationMetadata(component.metadata) }));
+  const recordBySourceId = new Map(records.map((record) => [record.metadata.sourceId || record.component.id, record]));
+  const implementationNodeBySourceId = new Map<string, ApplicationGraphNode>();
+  const layerNodeByKey = new Map<string, ApplicationGraphNode>();
+  let implementationDomain: ApplicationGraphNode | null = null;
+
+  const ensureImplementationDomain = () => {
+    if (implementationDomain) return implementationDomain;
+    const applicationNode = nodeById.get(input.applicationNodeId)!;
+    const id = nodeId("domain", `${input.applicationId}:implementation`);
+    implementationDomain = {
+      id,
+      entityId: "implementation",
+      type: "domain",
+      label: "Implementation",
+      shortLabel: "Implementation",
+      category: "System anatomy",
+      status: "active",
+      completeness: average(records.map(({ metadata }) => Number(metadata.completionPercent) || 0)),
+      isRequired: true,
+      isBlocked: false,
+      hasEvidence: records.some(({ metadata }) => Boolean(metadata.filePath || metadata.verificationStatus?.includes("verified"))),
+      tags: ["implementation", "architecture", "system-anatomy"],
+      parentNodeId: applicationNode.id,
+      childCount: 0,
+      path: [...applicationNode.path, id],
+      details: {
+        description: "Implementation atoms that realize application capabilities across UI, API, runtime, data, tests and documentation."
+      }
+    };
+    input.nodes.push(implementationDomain);
+    nodeById.set(id, implementationDomain);
+    input.edges.push({ id: `hierarchy:${applicationNode.id}:${id}`, source: applicationNode.id, target: id, type: "hierarchy", required: true });
+    return implementationDomain;
+  };
+
+  const ensureLayer = (metadata: ImplementationMetadata) => {
+    const featureNode = metadata.feature ? input.featureNodeByKey.get(metadata.feature) : undefined;
+    const parent = featureNode || ensureImplementationDomain();
+    const layer = metadata.layer || metadata.atomType || "other";
+    const key = `${parent.id}:${layer}`;
+    const existing = layerNodeByKey.get(key);
+    if (existing) return existing;
+    const id = nodeId("layer", `${input.applicationId}:${key}`);
+    const related = records.filter((record) => {
+      const relatedFeature = record.metadata.feature ? input.featureNodeByKey.get(record.metadata.feature) : undefined;
+      return (relatedFeature || implementationDomain)?.id === parent.id && (record.metadata.layer || record.metadata.atomType || "other") === layer;
+    });
+    const completeness = average(related.map(({ metadata }) => Number(metadata.completionPercent) || 0));
+    const layerNode: ApplicationGraphNode = {
+      id,
+      entityId: key,
+      type: "layer",
+      label: graphLabel(layer),
+      shortLabel: graphLabel(layer),
+      category: featureNode ? "Implementation layer" : "Architecture layer",
+      status: completeness >= 90 ? "complete" : completeness > 0 ? "partial" : "unknown",
+      completeness,
+      isRequired: true,
+      isBlocked: false,
+      hasEvidence: related.some(({ metadata }) => Boolean(metadata.filePath || metadata.verificationStatus?.includes("verified"))),
+      tags: [layer, metadata.feature || "architecture", "implementation-layer"],
+      parentNodeId: parent.id,
+      childCount: 0,
+      path: [...parent.path, id],
+      details: {
+        description: featureNode
+          ? `${graphLabel(layer)} atoms that realize ${featureNode.label}.`
+          : `${graphLabel(layer)} implementation atoms recorded for this application.`
+      }
+    };
+    input.nodes.push(layerNode);
+    nodeById.set(id, layerNode);
+    layerNodeByKey.set(key, layerNode);
+    input.edges.push({ id: `hierarchy:${parent.id}:${id}`, source: parent.id, target: id, type: "hierarchy", required: true });
+    return layerNode;
+  };
+
+  const visiting = new Set<string>();
+  const ensureImplementationNode = (sourceId: string): ApplicationGraphNode | null => {
+    const existing = implementationNodeBySourceId.get(sourceId);
+    if (existing) return existing;
+    const record = recordBySourceId.get(sourceId);
+    if (!record) return null;
+    const { component, metadata } = record;
+    const layerNode = ensureLayer(metadata);
+    let parent = layerNode;
+    if (metadata.parentSourceId && metadata.parentSourceId !== sourceId && !visiting.has(metadata.parentSourceId)) {
+      visiting.add(sourceId);
+      const parentRecord = recordBySourceId.get(metadata.parentSourceId);
+      if (parentRecord?.metadata.feature === metadata.feature) parent = ensureImplementationNode(metadata.parentSourceId) || layerNode;
+      visiting.delete(sourceId);
+    }
+    const id = nodeId("implementation", component.id);
+    const completeness = clampPercent(Number(metadata.completionPercent) || 0);
+    const relationCount = metadata.relations?.length ?? 0;
+    const atom: ApplicationGraphNode = {
+      id,
+      entityId: component.id,
+      type: "implementation",
+      label: component.name,
+      shortLabel: component.name,
+      category: graphLabel(metadata.atomType || component.type),
+      status: implementationStatus(metadata, component.status),
+      completeness,
+      isRequired: true,
+      isBlocked: false,
+      hasEvidence: Boolean(metadata.filePath || metadata.verificationStatus?.includes("verified")),
+      tags: [metadata.sourceId, metadata.sourceSystem, metadata.atomType, metadata.layer, metadata.module, metadata.feature].filter((tag): tag is string => Boolean(tag)),
+      parentNodeId: parent.id,
+      childCount: 0,
+      path: [...parent.path, id],
+      details: {
+        description: component.description,
+        atomType: metadata.atomType || component.type,
+        layer: metadata.layer,
+        module: metadata.module,
+        riskLevel: metadata.riskLevel,
+        verificationStatus: metadata.verificationStatus,
+        filePath: metadata.filePath,
+        externalId: metadata.sourceId,
+        relationCount,
+        missingEvidence: !metadata.filePath && !metadata.verificationStatus?.includes("verified"),
+        recommendations: completeness < 90 ? ["Inspect this implementation atom and its dependency neighbourhood before treating the feature as complete."] : []
+      }
+    };
+    input.nodes.push(atom);
+    nodeById.set(id, atom);
+    implementationNodeBySourceId.set(sourceId, atom);
+    input.edges.push({ id: `hierarchy:${parent.id}:${id}`, source: parent.id, target: id, type: "hierarchy", required: true });
+    return atom;
+  };
+
+  for (const sourceId of recordBySourceId.keys()) ensureImplementationNode(sourceId);
+
+  for (const [sourceId, record] of recordBySourceId) {
+    const source = implementationNodeBySourceId.get(sourceId);
+    if (!source) continue;
+    for (const [index, relation] of (record.metadata.relations ?? []).entries()) {
+      if (!relation.targetSourceId) continue;
+      const target = implementationNodeBySourceId.get(relation.targetSourceId);
+      if (!target || target.id === source.id) continue;
+      const dependency = ["depends_on", "calls", "reads", "writes", "reads_writes", "uses", "triggers"].includes(relation.type || "");
+      input.edges.push({
+        id: `${dependency ? "dependency" : "relates"}:${source.id}:${target.id}:${index}`,
+        source: source.id,
+        target: target.id,
+        type: dependency ? "dependency" : "relates_to",
+        required: dependency,
+        label: relation.type ? graphLabel(relation.type) : relation.description
+      });
+    }
+  }
+}
+
+function executionScore(status: string) {
+  if (["done", "complete", "completed", "active", "verified"].includes(status)) return 100;
+  if (["in_progress", "partial", "review"].includes(status)) return 50;
+  if (["blocked", "paused"].includes(status)) return 25;
+  return 0;
+}
+
+function appendExecutionProjection(input: {
+  applicationId: string;
+  applicationNodeId: string;
+  procedures: GraphApplicationProcedure[];
+  projects: GraphProject[];
+  capabilityNodeByDefinitionId: Map<string, ApplicationGraphNode>;
+  capabilityProcedures: Array<{ capabilityDefinitionId: string; link: GraphCapabilityProcedure }>;
+  nodes: ApplicationGraphNode[];
+  edges: ApplicationGraphEdge[];
+}) {
+  if (!input.procedures.length && !input.projects.length && !input.capabilityProcedures.length) return;
+  const nodeById = new Map(input.nodes.map((node) => [node.id, node]));
+  const appNode = nodeById.get(input.applicationNodeId)!;
+
+  const makeDomain = (key: string, label: string, description: string, scores: number[]) => {
+    const id = nodeId("domain", `${input.applicationId}:${key}`);
+    const node: ApplicationGraphNode = {
+      id,
+      entityId: key,
+      type: "domain",
+      label,
+      shortLabel: label,
+      category: "Execution",
+      status: average(scores) >= 90 ? "complete" : scores.some((score) => score > 0) ? "in_progress" : "not_started",
+      completeness: average(scores),
+      isRequired: true,
+      isBlocked: false,
+      hasEvidence: scores.some((score) => score >= 100),
+      tags: ["execution", key],
+      parentNodeId: appNode.id,
+      childCount: 0,
+      path: [...appNode.path, id],
+      details: { description }
+    };
+    input.nodes.push(node);
+    nodeById.set(id, node);
+    input.edges.push({ id: `hierarchy:${appNode.id}:${id}`, source: appNode.id, target: id, type: "hierarchy", required: true });
+    return node;
+  };
+
+  const appendProcedure = (link: GraphCapabilityProcedure, parent: ApplicationGraphNode, context: string) => {
+    const procedure = link.procedure;
+    const id = nodeId("procedure", `${context}:${procedure.id}`);
+    if (nodeById.has(id)) return;
+    const completeness = procedure.status === "active" ? 100 : procedure.status === "draft" ? 50 : 0;
+    const procedureNode: ApplicationGraphNode = {
+      id,
+      entityId: procedure.id,
+      type: "procedure",
+      label: procedure.name,
+      shortLabel: procedure.name,
+      category: "Procedure",
+      status: procedure.status,
+      completeness,
+      isRequired: link.required,
+      isBlocked: link.required && procedure.status !== "active",
+      hasEvidence: Boolean(procedure.qualityStandard),
+      tags: ["execution", "procedure", link.relationType, procedure.status],
+      parentNodeId: parent.id,
+      childCount: procedure.steps.length,
+      path: [...parent.path, id],
+      details: {
+        description: procedure.purpose,
+        relationType: link.relationType,
+        processName: procedure.process?.name,
+        procedureVersion: procedure.version,
+        expectedResult: procedure.expectedResult,
+        blockerLabels: link.required && procedure.status !== "active" ? ["Required procedure is not active"] : [],
+        recommendations: link.required && procedure.status !== "active" ? ["Review and activate this procedure before relying on it for delivery."] : []
+      }
+    };
+    input.nodes.push(procedureNode);
+    nodeById.set(id, procedureNode);
+    input.edges.push({ id: `hierarchy:${parent.id}:${id}`, source: parent.id, target: id, type: "hierarchy", required: link.required, label: link.relationType });
+    for (const step of procedure.steps) {
+      const stepId = nodeId("procedure_step", `${context}:${step.id}`);
+      input.nodes.push({
+        id: stepId,
+        entityId: step.id,
+        type: "procedure_step",
+        label: step.instruction,
+        shortLabel: `${step.stepOrder}. ${step.instruction}`,
+        category: "Procedure step",
+        status: procedure.status,
+        completeness,
+        isRequired: link.required,
+        isBlocked: false,
+        hasEvidence: false,
+        tags: ["execution", "procedure-step", step.stepType],
+        parentNodeId: id,
+        childCount: 0,
+        path: [...procedureNode.path, stepId],
+        details: { description: step.instruction, stepType: step.stepType, stepOrder: step.stepOrder }
+      });
+      input.edges.push({ id: `hierarchy:${id}:${stepId}`, source: id, target: stepId, type: "hierarchy", required: link.required });
+    }
+  };
+
+  if (input.procedures.length) {
+    const operatingModel = makeDomain(
+      "operating-model",
+      "Operating model",
+      "Application-specific procedures that govern how this product is designed, verified, released and improved.",
+      input.procedures.map((link) => link.procedure.status === "active" ? 100 : link.procedure.status === "draft" ? 50 : 0)
+    );
+    for (const link of input.procedures) appendProcedure(link, operatingModel, `application:${input.applicationId}`);
+  }
+
+  for (const { capabilityDefinitionId, link } of input.capabilityProcedures) {
+    const parent = input.capabilityNodeByDefinitionId.get(capabilityDefinitionId);
+    if (parent) appendProcedure(link, parent, `capability:${parent.entityId}`);
+  }
+
+  if (input.projects.length) {
+    const taskScores = input.projects.flatMap(({ project }) => [...project.tasks, ...project.taskLists.flatMap((list) => list.tasks)]).map((task) => executionScore(task.status));
+    const delivery = makeDomain("delivery", "Delivery", "Projects and tasks that turn the application model into verified product increments.", taskScores);
+    for (const link of input.projects) {
+      const project = link.project;
+      const projectTasks = [...project.tasks, ...project.taskLists.flatMap((list) => list.tasks)];
+      const projectId = nodeId("project", project.id);
+      const projectNode: ApplicationGraphNode = {
+        id: projectId,
+        entityId: project.id,
+        type: "project",
+        label: project.name,
+        shortLabel: project.name,
+        category: "Project",
+        status: project.status,
+        completeness: average(projectTasks.map((task) => executionScore(task.status))),
+        isRequired: true,
+        isBlocked: projectTasks.some((task) => task.status === "blocked"),
+        hasEvidence: projectTasks.some((task) => task.status === "done"),
+        tags: ["execution", "project", link.relationType],
+        parentNodeId: delivery.id,
+        childCount: project.taskLists.length + project.tasks.length,
+        path: [...delivery.path, projectId],
+        details: { description: project.description, relationType: link.relationType }
+      };
+      input.nodes.push(projectNode);
+      input.edges.push({ id: `hierarchy:${delivery.id}:${projectId}`, source: delivery.id, target: projectId, type: "hierarchy", required: true, label: link.relationType });
+
+      const appendTask = (task: GraphTask, parent: ApplicationGraphNode) => {
+        const taskId = nodeId("task", task.id);
+        input.nodes.push({
+          id: taskId,
+          entityId: task.id,
+          type: "task",
+          label: task.title,
+          shortLabel: task.title,
+          category: "Task",
+          status: task.status,
+          completeness: executionScore(task.status),
+          isRequired: true,
+          isBlocked: task.status === "blocked",
+          hasEvidence: task.status === "done",
+          tags: ["execution", "task", task.status, task.priority].filter((tag): tag is string => Boolean(tag)),
+          parentNodeId: parent.id,
+          childCount: 0,
+          path: [...parent.path, taskId],
+          details: { description: task.description, dueDate: task.dueDate ? new Date(task.dueDate).toISOString() : null, priority: task.priority }
+        });
+        input.edges.push({ id: `hierarchy:${parent.id}:${taskId}`, source: parent.id, target: taskId, type: "hierarchy", required: true });
+      };
+
+      for (const task of project.tasks) appendTask(task, projectNode);
+      for (const list of project.taskLists) {
+        const listId = nodeId("task_list", list.id);
+        const listNode: ApplicationGraphNode = {
+          id: listId,
+          entityId: list.id,
+          type: "task_list",
+          label: list.name,
+          shortLabel: list.name,
+          category: "Task list",
+          status: list.status,
+          completeness: average(list.tasks.map((task) => executionScore(task.status))),
+          isRequired: true,
+          isBlocked: list.tasks.some((task) => task.status === "blocked"),
+          hasEvidence: list.tasks.some((task) => task.status === "done"),
+          tags: ["execution", "task-list"],
+          parentNodeId: projectId,
+          childCount: list.tasks.length,
+          path: [...projectNode.path, listId],
+          details: { description: list.description }
+        };
+        input.nodes.push(listNode);
+        input.edges.push({ id: `hierarchy:${projectId}:${listId}`, source: projectId, target: listId, type: "hierarchy", required: true });
+        for (const task of list.tasks) appendTask(task, listNode);
+      }
+    }
+  }
 }
 
 export function buildPortfolioGraph(input: { workspace: { id: string; name: string }; applications: PortfolioApplication[] }): ApplicationGraphPacket {
@@ -245,7 +706,7 @@ export function buildPortfolioGraph(input: { workspace: { id: string; name: stri
   };
 
   return {
-    schemaVersion: "application-graph-v1",
+    schemaVersion: "application-graph-v2",
     generatedAt: new Date().toISOString(),
     scope: "portfolio",
     rootNodeId: rootId,
@@ -259,6 +720,9 @@ export function buildApplicationGraph(input: {
   workspace: { id: string; name: string };
   application: GraphApplication;
   capabilities: GraphCapability[];
+  architecture?: GraphArchitectureComponent[];
+  procedures?: GraphApplicationProcedure[];
+  projects?: GraphProject[];
   readiness: { overall: number; blockers: Array<{ capabilityId: string }> };
 }): ApplicationGraphPacket {
   const companyId = nodeId("company", input.workspace.id);
@@ -324,6 +788,8 @@ export function buildApplicationGraph(input: {
 
   const nodes: ApplicationGraphNode[] = [companyNode, appNode];
   const edges: ApplicationGraphEdge[] = [{ id: `hierarchy:${companyId}:${applicationId}`, source: companyId, target: applicationId, type: "hierarchy", required: true }];
+  const featureNodeByKey = new Map<string, ApplicationGraphNode>();
+  const capabilityNodeByDefinitionId = new Map<string, ApplicationGraphNode>();
 
   for (const group of Array.from(groups.values()).sort((left, right) => left.order - right.order || left.label.localeCompare(right.label))) {
     const domainId = nodeId("domain", `${input.application.id}:${group.key}`);
@@ -366,7 +832,7 @@ export function buildApplicationGraph(input: {
         .map((dependency) => dependency.toCapability.capabilityDefinition.name);
       const evidenceCount = capability.evidence.length;
       const verifiedEvidenceCount = capability.evidence.filter((evidence) => evidence.verificationStatus === "verified").length;
-      nodes.push({
+      const capabilityNode: ApplicationGraphNode = {
         id: capabilityId,
         entityId: capability.id,
         type: "capability",
@@ -399,13 +865,15 @@ export function buildApplicationGraph(input: {
             ...(blockerLabels.length ? ["Complete or waive the required dependencies shown in dependency mode."] : [])
           ]
         }
-      });
+      };
+      nodes.push(capabilityNode);
+      capabilityNodeByDefinitionId.set(capability.capabilityDefinition.id, capabilityNode);
       edges.push({ id: `hierarchy:${domainId}:${capabilityId}`, source: domainId, target: capabilityId, type: "hierarchy", required: true });
 
       for (const feature of capability.features.filter((item) => item.applicability !== "not_applicable")) {
         const featureId = nodeId("feature", feature.id);
         const featureEvidenceCount = feature.evidence.length;
-        nodes.push({
+        const featureNode: ApplicationGraphNode = {
           id: featureId,
           entityId: feature.id,
           type: "feature",
@@ -432,7 +900,9 @@ export function buildApplicationGraph(input: {
             missingEvidence: feature.applicability === "required" && featureEvidenceCount === 0,
             recommendations: feature.observedState === "unknown" ? ["Record an explicit feature observation."] : []
           }
-        });
+        };
+        nodes.push(featureNode);
+        featureNodeByKey.set(feature.featureDefinition.key, featureNode);
         edges.push({ id: `hierarchy:${capabilityId}:${featureId}`, source: capabilityId, target: featureId, type: "hierarchy", required: true });
       }
     }
@@ -454,8 +924,37 @@ export function buildApplicationGraph(input: {
     }
   }
 
+  appendImplementationProjection({
+    applicationId: input.application.id,
+    applicationNodeId: applicationId,
+    architecture: input.architecture ?? [],
+    featureNodeByKey,
+    nodes,
+    edges
+  });
+
+  appendExecutionProjection({
+    applicationId: input.application.id,
+    applicationNodeId: applicationId,
+    procedures: input.procedures ?? [],
+    projects: input.projects ?? [],
+    capabilityNodeByDefinitionId,
+    capabilityProcedures: input.capabilities.flatMap((capability) => (capability.capabilityDefinition.procedures ?? []).map((link) => ({
+      capabilityDefinitionId: capability.capabilityDefinition.id,
+      link
+    }))),
+    nodes,
+    edges
+  });
+
+  const childCounts = new Map<string, number>();
+  for (const node of nodes) {
+    if (node.parentNodeId) childCounts.set(node.parentNodeId, (childCounts.get(node.parentNodeId) ?? 0) + 1);
+  }
+  for (const node of nodes) node.childCount = childCounts.get(node.id) ?? 0;
+
   return {
-    schemaVersion: "application-graph-v1",
+    schemaVersion: "application-graph-v2",
     generatedAt: new Date().toISOString(),
     scope: "application",
     rootNodeId: companyId,

@@ -705,6 +705,8 @@ model Procedure {
   stages              PipelineStage[]
   steps               ProcedureStep[]
   policies            Policy[]
+  applicationLinks    ApplicationProcedure[]
+  capabilityLinks     CapabilityProcedure[]
   createdAt           DateTime        @default(now()) @map("created_at")
   updatedAt           DateTime        @updatedAt @map("updated_at")
 
@@ -1763,6 +1765,7 @@ model Application {
   evidence         ApplicationEvidence[]
   observations     CapabilityObservation[]
   projects         ApplicationProject[]
+  procedures       ApplicationProcedure[]
   offerings        ProductOffering[]
   createdAt        DateTime                           @default(now()) @map("created_at")
   updatedAt        DateTime                           @updatedAt @map("updated_at")
@@ -1842,6 +1845,7 @@ model CapabilityDefinition {
   applications         ApplicationCapability[]
   packItems            CapabilityPackItem[]
   blueprintItems       ApplicationBlueprintCapability[]
+  procedures           CapabilityProcedure[]
   createdAt            DateTime                         @default(now()) @map("created_at")
   updatedAt            DateTime                         @updatedAt @map("updated_at")
 
@@ -2161,6 +2165,34 @@ model ApplicationProject {
 
   @@id([applicationId, projectId])
   @@map("application_projects")
+}
+
+model ApplicationProcedure {
+  applicationId String      @map("application_id") @db.Uuid
+  procedureId   String      @map("procedure_id") @db.Uuid
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  procedure     Procedure   @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+  relationType  String      @default("governs") @map("relation_type")
+  required      Boolean     @default(true)
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  @@id([applicationId, procedureId])
+  @@index([procedureId])
+  @@map("application_procedures")
+}
+
+model CapabilityProcedure {
+  capabilityDefinitionId String               @map("capability_definition_id") @db.Uuid
+  procedureId            String               @map("procedure_id") @db.Uuid
+  capabilityDefinition   CapabilityDefinition @relation(fields: [capabilityDefinitionId], references: [id], onDelete: Cascade)
+  procedure              Procedure            @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+  relationType           String               @default("implementation") @map("relation_type")
+  required               Boolean              @default(true)
+  createdAt              DateTime             @default(now()) @map("created_at")
+
+  @@id([capabilityDefinitionId, procedureId])
+  @@index([procedureId])
+  @@map("capability_procedures")
 }
 
 model ProductOffering {
