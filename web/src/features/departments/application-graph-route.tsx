@@ -19,6 +19,7 @@ import { api, AppApiError } from "../../api/client";
 import { CcButton } from "../../components/cc-button";
 import { CcNotice } from "../../components/cc-notice";
 import { humanizeBusinessValue } from "./shared";
+import { layoutApplicationGraphNodes } from "./application-graph-layout";
 import type {
   ApplicationGraphMode,
   ApplicationGraphNode,
@@ -231,61 +232,6 @@ function visibleNodeIds(
   return visible;
 }
 
-function layoutNodes(nodes: ApplicationGraphNode[], focus: ApplicationGraphNode) {
-  const positions = new Map<string, { x: number; y: number }>();
-  positions.set(focus.id, { x: 0, y: 0 });
-
-  const lineage = focus.path
-    .slice(0, -1)
-    .map((id) => nodes.find((node) => node.id === id))
-    .filter((node): node is ApplicationGraphNode => Boolean(node));
-  lineage.forEach((node, index) => {
-    positions.set(node.id, { x: -410, y: (index - (lineage.length - 1) / 2) * 112 });
-  });
-
-  const depthById = new Map<string, number>([[focus.id, 0]]);
-  let changed = true;
-  while (changed) {
-    changed = false;
-    for (const node of nodes) {
-      if (!node.parentNodeId || depthById.has(node.id)) continue;
-      const parentDepth = depthById.get(node.parentNodeId);
-      if (parentDepth === undefined) continue;
-      depthById.set(node.id, parentDepth + 1);
-      changed = true;
-    }
-  }
-
-  for (const depth of [1, 2]) {
-    const level = nodes
-      .filter((node) => depthById.get(node.id) === depth)
-      .sort((left, right) => Number(right.isBlocked) - Number(left.isBlocked) || left.label.localeCompare(right.label));
-    level.forEach((node, index) => {
-      if (depth === 1 && lineage.length === 0 && level.length <= 8) {
-        const angle = -Math.PI / 2 + (Math.PI * 2 * index) / Math.max(level.length, 1);
-        positions.set(node.id, { x: Math.cos(angle) * 360, y: Math.sin(angle) * 270 });
-      } else if (depth === 1 && level.length <= 8) {
-        const angle = level.length === 1 ? 0 : -Math.PI / 2 + (Math.PI * index) / (level.length - 1);
-        positions.set(node.id, { x: 350 + Math.cos(angle) * 120, y: Math.sin(angle) * Math.max(270, level.length * 55) });
-      } else if (depth === 2 && level.length <= 24) {
-        const angle = level.length === 1 ? 0 : -Math.PI / 2 + (Math.PI * index) / (level.length - 1);
-        positions.set(node.id, { x: 660 + Math.cos(angle) * 150, y: Math.sin(angle) * 440 });
-      } else {
-        const columns = depth === 1 ? 2 : 3;
-        const column = index % columns;
-        const row = Math.floor(index / columns);
-        positions.set(node.id, { x: (depth === 1 ? 300 : 660) + column * 245, y: (row - (Math.ceil(level.length / columns) - 1) / 2) * 125 });
-      }
-    });
-  }
-
-  const relations = nodes.filter((node) => !positions.has(node.id));
-  relations.forEach((node, index) => {
-    positions.set(node.id, { x: 120 + (index % 3) * 280, y: 290 + Math.floor(index / 3) * 120 });
-  });
-  return positions;
-}
-
 function nextLevelLabel(type: ApplicationGraphNode["type"], children: ApplicationGraphNode[]) {
   const count = children.length;
   const labels: Record<ApplicationGraphNode["type"], [string, string]> = {
@@ -473,7 +419,7 @@ function ApplicationGraphCanvas() {
     : [], [activeApplicationNodeId, graph.nodes]);
   const visibleIds = useMemo(() => focus ? visibleNodeIds(graph.nodes, graph.edges, focus, mode, filters, revealDepth) : new Set<string>(), [filters, focus, graph.edges, graph.nodes, mode, revealDepth]);
   const visibleRecords = useMemo(() => graph.nodes.filter((node) => visibleIds.has(node.id)), [graph.nodes, visibleIds]);
-  const positions = useMemo(() => focus ? layoutNodes(visibleRecords, focus) : new Map<string, { x: number; y: number }>(), [focus, visibleRecords]);
+  const positions = useMemo(() => focus ? layoutApplicationGraphNodes(visibleRecords, focus) : new Map<string, { x: number; y: number }>(), [focus, visibleRecords]);
   const visibleChildren = useMemo(() => visibleRecords.filter((node) => node.parentNodeId === focus?.id), [focus?.id, visibleRecords]);
   const dependencyNeighbourCount = useMemo(() => focus
     ? visibleRecords.filter((node) => !focus.path.includes(node.id) && !node.path.includes(focus.id)).length
