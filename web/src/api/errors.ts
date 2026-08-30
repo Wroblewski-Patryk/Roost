@@ -14,6 +14,15 @@ const errorMessageKeys: Record<string, MessageKey> = {
   parent_folder_not_found: "errors.parent_folder_not_found",
   department_assignment_requires_root_folder: "errors.department_assignment_requires_root_folder",
   invalid_department: "errors.invalid_department",
+  invalid_workforce_role: "errors.invalid_workforce_role",
+  workforce_role_type_mismatch: "errors.workforce_role_type_mismatch",
+  invalid_manager: "errors.invalid_manager",
+  manager_hierarchy_cycle: "errors.manager_hierarchy_cycle",
+  primary_owner_transfer_required: "errors.primary_owner_transfer_required",
+  cannot_remove_self: "errors.cannot_remove_self",
+  cannot_delete_entity_with_direct_reports: "errors.cannot_delete_entity_with_direct_reports",
+  cannot_remove_member_with_direct_reports: "errors.cannot_delete_entity_with_direct_reports",
+  user_membership_not_found: "errors.user_membership_not_found",
   department_area_not_found: "errors.department_area_not_found",
   unknown_error: "errors.unknown_error"
 };

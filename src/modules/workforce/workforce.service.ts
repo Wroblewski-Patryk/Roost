@@ -1,16 +1,19 @@
+import { randomUUID } from "crypto";
 import {
   Prisma,
   WorkforceEntity,
   WorkforceEntityStatus,
   WorkforceEntityType,
   WorkforcePersonalityProfile,
-  WorkforceRuntimeMode
+  WorkforceRuntimeMode,
+  WorkspaceRole
 } from "@prisma/client";
 import { prisma } from "../../db/prisma";
 import { toJsonInput } from "../../integrations/integration-settings.service";
 import { agentKeyProfiles } from "../../auth/agent-key-profiles";
 import { capabilities } from "../../auth/capabilities";
-import { departmentRegistry, resolveDepartmentEntry } from "../../operating-model/department-registry";
+import { roleAtLeast } from "../../auth/workspace-access";
+import { departmentRegistry, isCanonicalDepartmentKey, resolveDepartmentEntry } from "../../operating-model/department-registry";
 import { createEvent } from "../events/event.service";
 import { contextualEntityIds } from "../organizational-context/organizational-context.service";
 
@@ -27,7 +30,9 @@ export type WorkforceEntityInput = {
   description?: string | null;
   avatar?: string | null;
   department?: string | null;
+  departmentKeys?: string[];
   role?: string | null;
+  roleIds?: string[];
   managerId?: string | null;
   personalityProfile?: WorkforcePersonalityProfile;
   model?: string | null;
@@ -50,6 +55,12 @@ export type WorkforceEntityUpdate = Partial<Omit<WorkforceEntityInput, "type">> 
 type WorkforceEntityCreateOptions = {
   source?: string;
   externalId?: string | null;
+};
+
+type WorkforceDeleteActor = {
+  authType: "user" | "api_key";
+  userId?: string;
+  workspaceRole?: WorkspaceRole;
 };
 
 function slugify(value: string) {
@@ -79,6 +90,140 @@ async function uniqueSlug(workspaceId: string, name: string, requestedSlug?: str
   }
 
   return slug;
+}
+
+async function resolveWorkforceAssignments(
+  workspaceId: string,
+  input: WorkforceEntityInput | WorkforceEntityUpdate,
+  entityType?: WorkforceEntityType
+) {
+  const departmentKeys = input.departmentKeys === undefined
+    ? undefined
+    : [...new Set(input.departmentKeys)].filter(Boolean);
+  if (departmentKeys && !departmentKeys.every(isCanonicalDepartmentKey)) {
+    throw Object.assign(new Error("invalid_department"), { status: 422 });
+  }
+
+  const roleIds = input.roleIds === undefined ? undefined : [...new Set(input.roleIds)];
+  const roles = roleIds === undefined ? undefined : await prisma.companyRole.findMany({
+    where: { workspaceId, id: { in: roleIds } },
+    select: { id: true, name: true, type: true }
+  });
+  if (roles && roles.length !== roleIds!.length) {
+    throw Object.assign(new Error("invalid_workforce_role"), { status: 422 });
+  }
+  if (roles && entityType && roles.some((role) => role.type !== entityType)) {
+    throw Object.assign(new Error("workforce_role_type_mismatch"), { status: 422 });
+  }
+  const rolesById = new Map((roles ?? []).map((role) => [role.id, role]));
+  const orderedRoles = roleIds?.map((roleId) => rolesById.get(roleId)!);
+
+  return {
+    departmentKeys,
+    roleIds,
+    roles: orderedRoles,
+    primaryDepartment: departmentKeys === undefined ? input.department : departmentKeys[0] ?? null,
+    primaryRole: roleIds === undefined ? input.role : orderedRoles?.[0]?.name ?? null
+  };
+}
+
+async function persistWorkforceAssignments(
+  transaction: Prisma.TransactionClient,
+  workspaceId: string,
+  workforceEntityId: string,
+  assignments: Awaited<ReturnType<typeof resolveWorkforceAssignments>>
+) {
+  if (assignments.departmentKeys !== undefined) {
+    const departments = await transaction.workspaceDepartment.findMany({
+      where: { workspaceId, key: { in: assignments.departmentKeys } },
+      select: { id: true, key: true }
+    });
+    if (departments.length !== assignments.departmentKeys.length) {
+      throw Object.assign(new Error("invalid_department"), { status: 422 });
+    }
+    const departmentsByKey = new Map(departments.map((department) => [department.key, department]));
+    await transaction.organizationalDepartmentRelation.deleteMany({
+      where: { workspaceId, entityType: "workforce", entityId: workforceEntityId }
+    });
+    await transaction.entityOwnership.deleteMany({
+      where: { workspaceId, entityType: "workforce", entityId: workforceEntityId, ownerType: "department" }
+    });
+    if (assignments.departmentKeys.length) {
+      await transaction.organizationalDepartmentRelation.createMany({
+        data: assignments.departmentKeys.map((key, index) => ({
+          workspaceId,
+          entityType: "workforce",
+          entityId: workforceEntityId,
+          departmentId: departmentsByKey.get(key)!.id,
+          relationshipRole: index === 0 ? "owner" : "related"
+        }))
+      });
+      await transaction.entityOwnership.create({
+        data: {
+          workspaceId,
+          entityType: "workforce",
+          entityId: workforceEntityId,
+          ownerType: "department",
+          ownerId: departmentsByKey.get(assignments.departmentKeys[0]!)!.id,
+          responsibilityType: "accountable"
+        }
+      });
+    }
+  }
+
+  if (assignments.roleIds !== undefined) {
+    await transaction.organizationalScope.deleteMany({
+      where: { workspaceId, entityType: "workforce", entityId: workforceEntityId, scopeType: "role" }
+    });
+    if (assignments.roleIds.length) {
+      await transaction.organizationalScope.createMany({
+        data: assignments.roleIds.map((roleId) => ({
+          workspaceId,
+          entityType: "workforce",
+          entityId: workforceEntityId,
+          scopeType: "role",
+          scopeEntityId: roleId,
+          label: assignments.roles?.find((role) => role.id === roleId)?.name ?? null
+        }))
+      });
+    }
+  }
+}
+
+async function workforceAssignmentMaps(workspaceId: string, entityIds: string[]) {
+  const [relations, roleScopes, roles] = await Promise.all([
+    prisma.organizationalDepartmentRelation.findMany({
+      where: { workspaceId, entityType: "workforce", entityId: { in: entityIds } },
+      include: { department: { select: { key: true, name: true } } }
+    }),
+    prisma.organizationalScope.findMany({
+      where: { workspaceId, entityType: "workforce", entityId: { in: entityIds }, scopeType: "role" }
+    }),
+    prisma.companyRole.findMany({
+      where: { workspaceId },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, type: true }
+    })
+  ]);
+  const rolesById = new Map(roles.map((role) => [role.id, role]));
+  return {
+    roles,
+    forEntity(entity: WorkforceEntity) {
+      const entityRelations = relations.filter((relation) => relation.entityId === entity.id);
+      const owner = entityRelations.find((relation) => relation.relationshipRole === "owner");
+      const related = entityRelations.filter((relation) => relation.relationshipRole === "related");
+      const entityRoleIds = roleScopes
+        .filter((scope) => scope.entityId === entity.id && scope.scopeEntityId && rolesById.has(scope.scopeEntityId))
+        .map((scope) => scope.scopeEntityId!);
+      return {
+        departmentKeys: owner || related.length
+          ? [...(owner ? [owner.department.key] : []), ...related.map((relation) => relation.department.key)]
+          : entity.department ? [entity.department] : [],
+        roleIds: entityRoleIds,
+        roles: entityRoleIds.map((roleId) => rolesById.get(roleId)!)
+      };
+    }
+  };
 }
 
 function asSyncLog(value: unknown) {
@@ -481,15 +626,18 @@ export async function listWorkforceEntities(workspaceId: string, filters: {
       prisma.workforceEntity.count({ where: { workspaceId, syncStatus: "queued" } })
     ])
   ]);
-  const tasks = await prisma.task.findMany({
-    where: { workspaceId },
-    orderBy: { updatedAt: "desc" },
-    take: 200,
-    include: {
-      taskList: true,
-      project: true
-    }
-  });
+  const [tasks, assignments] = await Promise.all([
+    prisma.task.findMany({
+      where: { workspaceId },
+      orderBy: { updatedAt: "desc" },
+      take: 200,
+      include: {
+        taskList: true,
+        project: true
+      }
+    }),
+    workforceAssignmentMaps(workspaceId, entities.map((entity) => entity.id))
+  ]);
 
   const [total, humans, agents, syncEnabled, syncQueued] = counts;
   return {
@@ -503,6 +651,7 @@ export async function listWorkforceEntities(workspaceId: string, filters: {
     },
     entities: entities.map((entity) => ({
       ...withGeneratedFiles(entity),
+      ...assignments.forEntity(entity),
       readiness: entityReadiness(entity),
       authority: entityAuthority(entity),
       work: entityWorkSummary(entity, tasks),
@@ -517,7 +666,8 @@ export async function listWorkforceEntities(workspaceId: string, filters: {
         key: department.canonicalKey,
         backendAreaKey: department.backendAreaKey,
         position: department.position
-      }))
+      })),
+      roles: assignments.roles
     },
     agentPacket: {
       mode: "source_of_truth",
@@ -546,16 +696,24 @@ export async function getWorkforceEntity(workspaceId: string, id: string) {
     where: { id, workspaceId },
     include: { manager: { select: { id: true, name: true, slug: true } } }
   });
-  return entity ? withGeneratedFiles(entity) : null;
+  if (!entity) return null;
+  const assignments = await workforceAssignmentMaps(workspaceId, [entity.id]);
+  return { ...withGeneratedFiles(entity), ...assignments.forEntity(entity) };
 }
 
 export async function createWorkforceEntity(workspaceId: string, input: WorkforceEntityInput, options: WorkforceEntityCreateOptions = {}) {
   const slug = await uniqueSlug(workspaceId, input.name, input.slug);
+  const assignments = await resolveWorkforceAssignments(workspaceId, input, input.type);
+  if (input.managerId && !await prisma.workforceEntity.findFirst({ where: { id: input.managerId, workspaceId }, select: { id: true } })) {
+    throw Object.assign(new Error("invalid_manager"), { status: 422 });
+  }
+  const department = assignments.primaryDepartment === undefined ? "06-kadry" : assignments.primaryDepartment;
+  const role = assignments.primaryRole === undefined ? input.role ?? null : assignments.primaryRole;
   const generatedFiles = generateWorkforceMarkdown({
     name: input.name,
     description: input.description ?? null,
-    department: input.department ?? "06-kadry",
-    role: input.role ?? null,
+    department: department ?? "06-kadry",
+    role,
     personalityProfile: input.personalityProfile ?? "supportive",
     runtimeMode: input.runtimeMode ?? "manual",
     model: input.model ?? null,
@@ -570,34 +728,38 @@ export async function createWorkforceEntity(workspaceId: string, input: Workforc
     runtimeProfile: input.runtimeProfile ?? {}
   });
 
-  const entity = await prisma.workforceEntity.create({
-    data: {
-      workspaceId,
-      type: input.type,
-      status: input.status,
-      name: input.name,
-      slug,
-      description: input.description,
-      avatar: input.avatar,
-      department: input.department ?? "06-kadry",
-      role: input.role,
-      managerId: input.managerId,
-      personalityProfile: input.personalityProfile,
-      model: input.model,
-      runtimeMode: input.runtimeMode,
-      runtimeExternalId: input.runtimeExternalId,
-      synchronizationEnabled: input.synchronizationEnabled,
-      hierarchyLevel: input.hierarchyLevel,
-      bigFiveProfile: toJsonInput(input.bigFiveProfile ?? {}),
-      skillIndex: toJsonInput(input.skillIndex ?? []),
-      knowledgeIndex: toJsonInput(input.knowledgeIndex ?? []),
-      toolIndex: toJsonInput(input.toolIndex ?? []),
-      authorityScope: toJsonInput(input.authorityScope ?? []),
-      runtimeProfile: toJsonInput(input.runtimeProfile ?? {}),
-      generatedFiles: toJsonInput(generatedFiles),
-      source: options.source ?? "companycore",
-      externalId: options.externalId ?? null
-    }
+  const entity = await prisma.$transaction(async (transaction) => {
+    const created = await transaction.workforceEntity.create({
+      data: {
+        workspaceId,
+        type: input.type,
+        status: input.status,
+        name: input.name,
+        slug,
+        description: input.description,
+        avatar: input.avatar,
+        department: department ?? null,
+        role,
+        managerId: input.managerId,
+        personalityProfile: input.personalityProfile,
+        model: input.model,
+        runtimeMode: input.runtimeMode,
+        runtimeExternalId: input.runtimeExternalId,
+        synchronizationEnabled: input.synchronizationEnabled,
+        hierarchyLevel: input.hierarchyLevel,
+        bigFiveProfile: toJsonInput(input.bigFiveProfile ?? {}),
+        skillIndex: toJsonInput(input.skillIndex ?? []),
+        knowledgeIndex: toJsonInput(input.knowledgeIndex ?? []),
+        toolIndex: toJsonInput(input.toolIndex ?? []),
+        authorityScope: toJsonInput(input.authorityScope ?? []),
+        runtimeProfile: toJsonInput(input.runtimeProfile ?? {}),
+        generatedFiles: toJsonInput(generatedFiles),
+        source: options.source ?? "companycore",
+        externalId: options.externalId ?? null
+      }
+    });
+    await persistWorkforceAssignments(transaction, workspaceId, created.id, assignments);
+    return created;
   });
 
   await createEvent({
@@ -607,20 +769,34 @@ export async function createWorkforceEntity(workspaceId: string, input: Workforc
     payload: { workforceEntityId: entity.id, type: entity.type, name: entity.name }
   });
 
-  return withGeneratedFiles(entity);
+  const savedAssignments = await workforceAssignmentMaps(workspaceId, [entity.id]);
+  return { ...withGeneratedFiles(entity), ...savedAssignments.forEntity(entity) };
 }
 
 export async function updateWorkforceEntity(workspaceId: string, id: string, input: WorkforceEntityUpdate) {
   const existing = await prisma.workforceEntity.findFirst({ where: { id, workspaceId } });
   if (!existing) return null;
+  const assignments = await resolveWorkforceAssignments(workspaceId, input, input.type ?? existing.type);
 
   if (input.managerId) {
-    const manager = await prisma.workforceEntity.findFirst({
+    let manager = await prisma.workforceEntity.findFirst({
       where: { id: input.managerId, workspaceId },
-      select: { id: true }
+      select: { id: true, managerId: true }
     });
     if (!manager || manager.id === existing.id) {
       throw Object.assign(new Error("invalid_manager"), { status: 422 });
+    }
+    const visited = new Set([existing.id]);
+    while (manager) {
+      if (visited.has(manager.id)) {
+        throw Object.assign(new Error("manager_hierarchy_cycle"), { status: 422 });
+      }
+      visited.add(manager.id);
+      if (!manager.managerId) break;
+      manager = await prisma.workforceEntity.findFirst({
+        where: { id: manager.managerId, workspaceId },
+        select: { id: true, managerId: true }
+      });
     }
   }
 
@@ -629,8 +805,8 @@ export async function updateWorkforceEntity(workspaceId: string, id: string, inp
     ...input,
     name: input.name ?? existing.name,
     description: input.description === undefined ? existing.description : input.description,
-    department: input.department === undefined ? existing.department : input.department,
-    role: input.role === undefined ? existing.role : input.role,
+    department: assignments.primaryDepartment === undefined ? existing.department : assignments.primaryDepartment,
+    role: assignments.primaryRole === undefined ? existing.role : assignments.primaryRole,
     personalityProfile: input.personalityProfile ?? existing.personalityProfile,
     runtimeMode: input.runtimeMode ?? existing.runtimeMode,
     model: input.model === undefined ? existing.model : input.model,
@@ -646,16 +822,20 @@ export async function updateWorkforceEntity(workspaceId: string, id: string, inp
   };
   const generatedFiles = generateWorkforceMarkdown(next);
 
-  const entity = await prisma.workforceEntity.update({
-    where: { id: existing.id },
-    data: {
+  const nextSlug = input.name || input.slug
+    ? await uniqueSlug(workspaceId, input.name ?? existing.name, input.slug ?? existing.slug, existing.id)
+    : undefined;
+  const entity = await prisma.$transaction(async (transaction) => {
+    const updated = await transaction.workforceEntity.update({
+      where: { id: existing.id },
+      data: {
       ...(input.type !== undefined ? { type: input.type } : {}),
       ...(input.status !== undefined ? { status: input.status } : {}),
       ...(input.name !== undefined ? { name: input.name } : {}),
       ...(input.description !== undefined ? { description: input.description } : {}),
       ...(input.avatar !== undefined ? { avatar: input.avatar } : {}),
-      ...(input.department !== undefined ? { department: input.department } : {}),
-      ...(input.role !== undefined ? { role: input.role } : {}),
+      ...(assignments.primaryDepartment !== undefined ? { department: assignments.primaryDepartment } : {}),
+      ...(assignments.primaryRole !== undefined ? { role: assignments.primaryRole } : {}),
       ...(input.managerId !== undefined ? { managerId: input.managerId } : {}),
       ...(input.personalityProfile !== undefined ? { personalityProfile: input.personalityProfile } : {}),
       ...(input.model !== undefined ? { model: input.model } : {}),
@@ -669,10 +849,13 @@ export async function updateWorkforceEntity(workspaceId: string, id: string, inp
       ...(input.toolIndex !== undefined ? { toolIndex: toJsonInput(input.toolIndex) } : {}),
       ...(input.authorityScope !== undefined ? { authorityScope: toJsonInput(input.authorityScope) } : {}),
       ...(input.runtimeProfile !== undefined ? { runtimeProfile: toJsonInput(input.runtimeProfile) } : {}),
-      ...(input.name || input.slug ? { slug: await uniqueSlug(workspaceId, input.name ?? existing.name, input.slug ?? existing.slug, existing.id) } : {}),
+      ...(nextSlug ? { slug: nextSlug } : {}),
       generatedFiles: toJsonInput(generatedFiles),
       syncStatus: existing.syncStatus === "synced" ? "stale" : existing.syncStatus
-    }
+      }
+    });
+    await persistWorkforceAssignments(transaction, workspaceId, existing.id, assignments);
+    return updated;
   });
 
   await createEvent({
@@ -682,14 +865,15 @@ export async function updateWorkforceEntity(workspaceId: string, id: string, inp
     payload: { workforceEntityId: entity.id, changed: Object.keys(input) }
   });
 
-  return withGeneratedFiles(entity);
+  const savedAssignments = await workforceAssignmentMaps(workspaceId, [entity.id]);
+  return { ...withGeneratedFiles(entity), ...savedAssignments.forEntity(entity) };
 }
 
 export async function archiveWorkforceEntity(workspaceId: string, id: string) {
   return updateWorkforceEntity(workspaceId, id, { status: "archived", synchronizationEnabled: false });
 }
 
-export async function deleteWorkforceEntity(workspaceId: string, id: string) {
+export async function deleteWorkforceEntity(workspaceId: string, id: string, actor: WorkforceDeleteActor) {
   const existing = await prisma.workforceEntity.findFirst({
     where: { id, workspaceId },
     select: {
@@ -698,18 +882,71 @@ export async function deleteWorkforceEntity(workspaceId: string, id: string) {
       name: true,
       slug: true,
       source: true,
+      externalId: true,
       directReports: { select: { id: true }, take: 1 }
     }
   });
   if (!existing) return null;
-  if (existing.source === "user") {
-    throw Object.assign(new Error("cannot_delete_user_backed_workforce_entity"), { status: 409 });
-  }
   if (existing.directReports.length > 0) {
     throw Object.assign(new Error("cannot_delete_entity_with_direct_reports"), { status: 409 });
   }
 
-  await prisma.workforceEntity.delete({ where: { id: existing.id } });
+  let removedWorkspaceMembership = false;
+  if (existing.source === "user") {
+    if (actor.authType !== "user" || !actor.userId || !roleAtLeast(actor.workspaceRole, "admin")) {
+      throw Object.assign(new Error("forbidden"), { status: 403 });
+    }
+    if (!existing.externalId) {
+      throw Object.assign(new Error("user_membership_not_found"), { status: 409 });
+    }
+    const [workspace, target] = await Promise.all([
+      prisma.workspace.findUniqueOrThrow({ where: { id: workspaceId }, select: { ownerUserId: true } }),
+      prisma.workspaceMembership.findUnique({
+        where: { workspaceId_userId: { workspaceId, userId: existing.externalId } }
+      })
+    ]);
+    if (!target) {
+      throw Object.assign(new Error("user_membership_not_found"), { status: 409 });
+    }
+    if (target.userId === workspace.ownerUserId) {
+      throw Object.assign(new Error("primary_owner_transfer_required"), { status: 409 });
+    }
+    if (target.userId === actor.userId) {
+      throw Object.assign(new Error("cannot_remove_self"), { status: 409 });
+    }
+    if ((target.role === "owner" || target.role === "admin") && actor.workspaceRole !== "owner") {
+      throw Object.assign(new Error("forbidden"), { status: 403 });
+    }
+
+    await prisma.$transaction(async (transaction) => {
+      await transaction.organizationalDepartmentRelation.deleteMany({ where: { workspaceId, entityType: "workforce", entityId: existing.id } });
+      await transaction.organizationalScope.deleteMany({ where: { workspaceId, entityType: "workforce", entityId: existing.id } });
+      await transaction.entityOwnership.deleteMany({ where: { workspaceId, entityType: "workforce", entityId: existing.id } });
+      await transaction.workforceEntity.delete({ where: { id: existing.id } });
+      await transaction.workspaceMembership.delete({ where: { id: target.id } });
+      await transaction.auditLog.create({
+        data: {
+          workspaceId,
+          actorType: "user",
+          actorId: actor.userId!,
+          action: "workspace_member_removed",
+          resourceType: "workspace_membership",
+          resourceId: target.id,
+          inputPayload: {},
+          outputPayload: { userId: target.userId, source: "workforce_directory" },
+          correlationId: randomUUID()
+        }
+      });
+    });
+    removedWorkspaceMembership = true;
+  } else {
+    await prisma.$transaction(async (transaction) => {
+      await transaction.organizationalDepartmentRelation.deleteMany({ where: { workspaceId, entityType: "workforce", entityId: existing.id } });
+      await transaction.organizationalScope.deleteMany({ where: { workspaceId, entityType: "workforce", entityId: existing.id } });
+      await transaction.entityOwnership.deleteMany({ where: { workspaceId, entityType: "workforce", entityId: existing.id } });
+      await transaction.workforceEntity.delete({ where: { id: existing.id } });
+    });
+  }
 
   await createEvent({
     type: "workforce_entity_deleted",
@@ -719,13 +956,15 @@ export async function deleteWorkforceEntity(workspaceId: string, id: string) {
       workforceEntityId: existing.id,
       type: existing.type,
       name: existing.name,
-      slug: existing.slug
+      slug: existing.slug,
+      removedWorkspaceMembership
     }
   });
 
   return {
     id: existing.id,
-    deleted: true
+    deleted: true,
+    removedWorkspaceMembership
   };
 }
 

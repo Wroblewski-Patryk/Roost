@@ -39,9 +39,21 @@ be removed or demoted. Ownership transfer promotes the selected member to
 workspace atomically. A user cannot remove themselves or change their own role
 through the member editor.
 
+Removing a non-owner member from either Workspace settings or the linked
+People / Agents directory atomically removes the workspace membership and its
+`source=user` workforce profile. It does not delete the person's global Roost
+login, so another workspace membership or a later invitation remains safe.
+Members with direct reports must have those reports reassigned first.
+
 ## Agent Access
 
 Agents remain separate from human memberships. They use individually named,
 workspace-scoped API keys with explicit capability profiles. Raw keys are shown
 once; administrators can inspect safe prefixes/scopes, last use, and revoke or
 enable a credential. Agent credentials never create human sessions.
+
+The workforce editor may assign several governed company roles and several
+departments to one human or agent. The first selected role and department are
+the primary working role and accountable department retained in the legacy
+scalar fields; the full selection is stored through organizational role scopes
+and department relations.

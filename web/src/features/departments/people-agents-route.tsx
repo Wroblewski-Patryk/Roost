@@ -28,11 +28,11 @@ const runtimeLabels: Record<WorkforceEntity["runtimeMode"], string> = {
 };
 
 const bigFiveTraits = [
-  { key: "openness", label: "Openness", short: "O" },
-  { key: "conscientiousness", label: "Conscientiousness", short: "C" },
-  { key: "extraversion", label: "Extraversion", short: "E" },
-  { key: "agreeableness", label: "Agreeableness", short: "A" },
-  { key: "neuroticism", label: "Neuroticism", short: "N" }
+  { key: "openness", label: "Openness", short: "O", icon: "ph-lightbulb" },
+  { key: "conscientiousness", label: "Conscientiousness", short: "C", icon: "ph-list-checks" },
+  { key: "extraversion", label: "Extraversion", short: "E", icon: "ph-users-three" },
+  { key: "agreeableness", label: "Agreeableness", short: "A", icon: "ph-handshake" },
+  { key: "neuroticism", label: "Neuroticism", short: "N", icon: "ph-wave-sine" }
 ] as const;
 
 function badgeTone(value?: string) {
@@ -116,8 +116,8 @@ function BigFiveRadarChart({
           <p className="text-xs font-black uppercase tracking-wide text-primary">Big Five</p>
           <h3 className="mt-1 font-black text-company-ink">Personality shape</h3>
         </div>
-        <div className="text-right text-xs font-bold text-company-muted">
-          {strongest.map((trait) => `${trait.short} ${trait.value.toFixed(2)}`).join(" / ")}
+        <div className="flex items-center gap-2 text-right text-xs font-bold text-company-muted">
+          {strongest.map((trait) => <span className="inline-flex items-center gap-1" key={trait.key}><i className={`ph-bold ${trait.icon}`} aria-hidden="true"></i>{trait.value.toFixed(2)}</span>)}
         </div>
       </div>
       <div className={`mt-3 grid gap-3 ${compact ? "" : "lg:grid-cols-[13rem_minmax(0,1fr)] lg:items-center"}`}>
@@ -169,7 +169,9 @@ function BigFiveRadarChart({
                 </div>
                 <progress className="progress progress-primary h-1.5 w-full" max={1} value={trait.value}></progress>
               </div>
-              <span className="grid h-8 w-8 place-items-center rounded-company border border-base-300 bg-base-200/70 text-xs font-black text-company-muted">{trait.short}</span>
+              <span aria-label={trait.label} className="grid h-8 w-8 place-items-center rounded-company border border-base-300 bg-base-200/70 text-company-muted" title={trait.label}>
+                <i className={`ph-bold ${trait.icon} text-base`} aria-hidden="true"></i>
+              </span>
             </div>
           ))}
         </div>
@@ -293,10 +295,19 @@ function WorkforceForm({
   const [error, setError] = useState("");
   const values = entity || defaultEntity();
   const departments = dictionaries?.departments || [];
+  const roleCatalog = dictionaries?.roles || [];
   const statuses = dictionaries?.statuses || ["active", "inactive", "paused", "archived"];
   const runtimeModes = dictionaries?.runtimeModes || Object.keys(runtimeLabels) as WorkforceEntity["runtimeMode"][];
   const personalityProfiles = dictionaries?.personalityProfiles || ["analytical", "creative", "executive", "supportive", "researcher", "custom"];
   const isEditMode = mode === "edit" && Boolean(entity?.id);
+  const [entityType, setEntityType] = useState<WorkforceEntity["type"]>((values.type || "agent") as WorkforceEntity["type"]);
+  const [departmentKeys, setDepartmentKeys] = useState<string[]>(() => values.departmentKeys?.length
+    ? values.departmentKeys
+    : values.department ? [values.department] : ["06-kadry"]);
+  const [roleIds, setRoleIds] = useState<string[]>(() => values.roleIds?.length
+    ? values.roleIds
+    : roleCatalog.filter((role) => role.type === values.type && role.name === values.role).map((role) => role.id));
+  const [rolesTouched, setRolesTouched] = useState(Boolean(values.roleIds?.length));
   const [identityName, setIdentityName] = useState(values.name || "");
   const [avatar, setAvatar] = useState<string | null>(() => (
     values.avatar === "initials" || values.avatar?.startsWith("icon:") || values.avatar?.startsWith("data:image/")
@@ -330,8 +341,9 @@ function WorkforceForm({
       slug: String(form.get("slug") || "") || undefined,
       description: String(form.get("description") || "") || null,
       avatar,
-      department: String(form.get("department") || "") || null,
-      role: String(form.get("role") || "") || null,
+      departmentKeys,
+      role: rolesTouched ? undefined : values.role || null,
+      roleIds: rolesTouched ? roleIds : undefined,
       managerId: managerId || null,
       personalityProfile: String(form.get("personalityProfile") || "supportive"),
       model: String(form.get("model") || "") || null,
@@ -397,7 +409,7 @@ function WorkforceForm({
                 </CcField>
                 <CcField label="Type">
                   {({ id }) => (
-                    <CcSelect defaultValue={values.type || "agent"} id={id} name="type">
+                    <CcSelect id={id} name="type" onChange={(event) => setEntityType(event.target.value as WorkforceEntity["type"])} value={entityType}>
                       <option value="human">Human</option>
                       <option value="agent">Agent</option>
                     </CcSelect>
@@ -410,17 +422,37 @@ function WorkforceForm({
                     </CcSelect>
                   )}
                 </CcField>
-                <CcField label="Department">
-                  {({ id }) => (
-                    <CcSelect defaultValue={values.department || "06-kadry"} id={id} name="department">
-                      {departments.length ? departments.map((department) => (
-                        <option key={department.key} value={department.key}>{department.key}</option>
-                      )) : <option value={values.department || "06-kadry"}>{values.department || "06-kadry"}</option>}
-                    </CcSelect>
-                  )}
+                <CcField label="Departments" hint="Select every department this person or agent works in. The first selected department is the primary owner.">
+                  {({ id }) => <CcMultiSelect
+                    id={id}
+                    name="departmentKeys"
+                    onChange={setDepartmentKeys}
+                    options={(departments.length ? departments : [{ key: values.department || "06-kadry", backendAreaKey: "people-agents", position: 6 }]).map((department) => ({
+                      value: department.key,
+                      label: humanizeBusinessValue(department.key.replace(/^\d+-/, ""), "Department"),
+                      description: department.key
+                    }))}
+                    placeholder="Select departments..."
+                    searchPlaceholder="Search departments..."
+                    value={departmentKeys}
+                  />}
                 </CcField>
-                <CcField label="Role">
-                  {({ id }) => <CcTextInput defaultValue={values.role || ""} id={id} name="role" />}
+                <CcField label="Roles" hint="Choose one or more governed company roles. The first selected role is used as the primary working role.">
+                  {({ id }) => <div className="grid gap-2"><CcMultiSelect
+                      id={id}
+                      name="roleIds"
+                      onChange={(next) => { setRoleIds(next); setRolesTouched(true); }}
+                      options={roleCatalog.filter((role) => role.type === entityType || roleIds.includes(role.id)).map((role) => ({
+                        value: role.id,
+                        label: role.name,
+                        description: typeLabel(role.type)
+                      }))}
+                      placeholder={roleCatalog.length ? "Select roles..." : "No governed roles configured"}
+                      searchPlaceholder="Search company roles..."
+                      value={roleIds}
+                    />
+                    {!rolesTouched && values.role && !roleIds.length ? <p className="text-xs text-company-muted">Current legacy role: <strong className="text-company-ink">{values.role}</strong>. Selecting a governed role replaces it.</p> : null}
+                  </div>}
                 </CcField>
                 <div className="md:col-span-2">
                   <CcField label="Description / responsibilities">
@@ -432,12 +464,12 @@ function WorkforceForm({
                     {() => <CcIdentityPicker labels={workforceIdentityLabels(t)} onChange={setAvatar} previewName={identityName} value={avatar} />}
                   </CcField>
                 </div>
-                <CcField label="Manager">
+                <CcField label="Reports to" hint="The direct supervisor responsible for this person or agent in the workforce hierarchy.">
                   {({ id }) => (
                     <CcSelect defaultValue={values.managerId || ""} id={id} name="managerId">
-                      <option value="">No manager</option>
+                      <option value="">No direct supervisor</option>
                       {managers.filter((manager) => manager.id !== entity?.id).map((manager) => (
-                        <option key={manager.id} value={manager.id}>{manager.name}</option>
+                        <option key={manager.id} value={manager.id}>{manager.name}{manager.role ? ` · ${manager.role}` : ""}</option>
                       ))}
                     </CcSelect>
                   )}
@@ -657,12 +689,12 @@ function DetailModal({
           </div>
           <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2 xl:grid-cols-4">
             {[
-              ["Department", entity.department || "06-kadry"],
+              ["Departments", (entity.departmentKeys?.length ? entity.departmentKeys : [entity.department || "06-kadry"]).join(", ")],
               ["Status", entity.status],
               ["Runtime", runtimeLabels[entity.runtimeMode]],
               ["Runtime state", agentRuntime(entity)],
               ["Hierarchy", entity.hierarchyLevel || "No hierarchy"],
-              ["Manager", entity.manager?.name || "None"],
+              ["Reports to", entity.manager?.name || "No direct supervisor"],
               ["Direct reports", String(entity.directReportCount ?? 0)],
               ["Source", entity.source || "companycore"]
             ].map(([label, value]) => (
@@ -675,12 +707,10 @@ function DetailModal({
         </div>
         <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
           <CcButton iconLeft="ph-pencil-simple" onClick={() => onEdit(entity)} size="sm" variant="outline">Edit</CcButton>
-          {entity.status !== "archived" ? (
+          {entity.status !== "archived" && entity.source !== "user" ? (
             <CcButton iconLeft="ph-archive" onClick={() => onArchive(entity)} size="sm" variant="ghost">Archive</CcButton>
           ) : null}
-          {entity.source !== "user" ? (
-            <CcButton iconLeft="ph-trash" onClick={() => onDelete(entity)} size="sm" variant="ghost">Delete</CcButton>
-          ) : null}
+          <CcButton iconLeft={entity.source === "user" ? "ph-user-minus" : "ph-trash"} onClick={() => onDelete(entity)} size="sm" variant="ghost">{entity.source === "user" ? "Remove access" : "Delete"}</CcButton>
           <CcButton iconLeft="ph-x" onClick={onClose} size="sm" variant="ghost">Close</CcButton>
         </div>
       </header>
@@ -718,7 +748,8 @@ function DetailModal({
             <dl className="grid gap-3 text-sm md:grid-cols-2">
               {[
                 ["Slug", entity.slug],
-                ["Manager", entity.manager?.name || "No manager"],
+                ["Reports to", entity.manager?.name || "No direct supervisor"],
+                ["Roles", entity.roles?.length ? entity.roles.map((role) => role.name).join(", ") : entity.role || "Not configured"],
                 ["Personality", entity.personalityProfile],
                 ["Model", entity.model || "Not configured"],
                 ["Hierarchy", entity.hierarchyLevel || "Not configured"],
@@ -858,14 +889,16 @@ function ConfirmEntityModal({
   const isDelete = action === "delete";
   return (
     <CcConfirmDialog
-      confirmIcon={isDelete ? "ph-trash" : "ph-archive"}
-      confirmLabel={isDelete ? "Delete" : "Archive"}
+      confirmIcon={isDelete ? entity.source === "user" ? "ph-user-minus" : "ph-trash" : "ph-archive"}
+      confirmLabel={isDelete ? entity.source === "user" ? "Remove access" : "Delete" : "Archive"}
       confirmTone={isDelete ? "danger" : "warning"}
       description={isDelete
-        ? "This permanently removes the workforce record. It does not delete a user account or an external runtime, but the Roost source-of-truth row will be gone."
+        ? entity.source === "user"
+          ? "This removes the person's access to this workspace and deletes their linked workforce profile. Their global Roost login is preserved. The primary owner and your own account are protected."
+          : "This permanently removes the workforce record and its organizational assignments. It does not delete an external runtime."
         : "This keeps the record for history, but removes it from active workforce use."}
-      detail={<><strong className="text-company-ink">{typeLabel(entity.type)}</strong><span className="mx-2 text-company-muted">/</span><span>{entity.role || "Unassigned role"}</span><span className="mx-2 text-company-muted">/</span><span>{entity.department || "No department"}</span></>}
-      eyebrow={isDelete ? "Delete workforce record" : "Archive workforce record"}
+      detail={<><strong className="text-company-ink">{typeLabel(entity.type)}</strong><span className="mx-2 text-company-muted">/</span><span>{entity.roles?.length ? entity.roles.map((role) => role.name).join(", ") : entity.role || "Unassigned role"}</span><span className="mx-2 text-company-muted">/</span><span>{entity.departmentKeys?.length ? entity.departmentKeys.join(", ") : entity.department || "No department"}</span></>}
+      eyebrow={isDelete ? entity.source === "user" ? "Remove workspace account" : "Delete workforce record" : "Archive workforce record"}
       onCancel={onCancel}
       onConfirm={onConfirm}
       title={entity.name}
@@ -910,6 +943,8 @@ export function PeopleAgentsRoute({ departmentKey }: { departmentKey?: string } 
         entity.slug,
         entity.role,
         entity.department,
+        ...(entity.roles || []).map((role) => role.name),
+        ...(entity.departmentKeys || []),
         entity.model,
         entity.hierarchyLevel,
         ...(entity.skillIndex || []),
@@ -941,8 +976,8 @@ export function PeopleAgentsRoute({ departmentKey }: { departmentKey?: string } 
       mobileLabel: t("people.role"),
       className: "min-w-[12rem]",
       sortable: true,
-      sortValue: (entity) => entity.role || "",
-      cell: (entity) => <span className="block truncate text-company-ink">{entity.role || t("people.unassignedRole")}</span>
+      sortValue: (entity) => entity.roles?.map((role) => role.name).join(" ") || entity.role || "",
+      cell: (entity) => <span className="block truncate text-company-ink">{entity.roles?.length ? entity.roles.map((role) => role.name).join(", ") : entity.role || t("people.unassignedRole")}</span>
     },
     {
       key: "department",
@@ -950,8 +985,8 @@ export function PeopleAgentsRoute({ departmentKey }: { departmentKey?: string } 
       mobileLabel: t("people.department"),
       className: "w-32 min-w-32",
       sortable: true,
-      sortValue: (entity) => entity.department || "",
-      cell: (entity) => <span className="block truncate text-company-ink">{humanizeBusinessValue((entity.department || "06-kadry").replace(/^\d+-/, ""), "People")}</span>
+      sortValue: (entity) => entity.departmentKeys?.join(" ") || entity.department || "",
+      cell: (entity) => <span className="block truncate text-company-ink">{(entity.departmentKeys?.length ? entity.departmentKeys : [entity.department || "06-kadry"]).map((department) => humanizeBusinessValue(department.replace(/^\d+-/, ""), "People")).join(", ")}</span>
     },
     {
       key: "manager",
@@ -1023,6 +1058,13 @@ export function PeopleAgentsRoute({ departmentKey }: { departmentKey?: string } 
       icon: "ph-pencil-simple",
       tone: "ghost",
       onClick: (entity) => setEditingEntity({ entity, mode: "edit" })
+    },
+    {
+      key: "delete",
+      label: "Delete / remove",
+      icon: "ph-trash",
+      tone: "danger",
+      onClick: (entity) => setConfirmAction({ type: "delete", entity })
     }
   ], [t]);
 
@@ -1047,7 +1089,9 @@ export function PeopleAgentsRoute({ departmentKey }: { departmentKey?: string } 
     setNotice(null);
     try {
       await api(`/v1/workforce/${entity.id}/actions/delete`, { method: "POST" });
-      setNotice({ tone: "success", title: `${entity.name} was deleted.` });
+      setNotice({ tone: "success", title: entity.source === "user"
+        ? `${entity.name} was removed from this workspace.`
+        : `${entity.name} was deleted.` });
       setSelectedId("");
       setConfirmAction(null);
       refresh();

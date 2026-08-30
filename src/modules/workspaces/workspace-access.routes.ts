@@ -174,8 +174,31 @@ workspaceAccessRouter.delete("/members/:userId", asyncHandler(async (req, res) =
   if (targetUserId === workspace.ownerUserId) return sendApiError(res, 409, "primary_owner_transfer_required");
   if ((target.role === "owner" || target.role === "admin") && actor.role !== "owner") return sendApiError(res, 403, "forbidden");
   if (targetUserId === req.auth!.userId) return sendApiError(res, 409, "cannot_remove_self");
-  await prisma.workspaceMembership.delete({ where: { id: target.id } });
-  await audit(actor.workspaceId, req.auth!.userId!, "workspace_member_removed", "workspace_membership", target.id, { userId: targetUserId });
+  const workforce = await prisma.workforceEntity.findFirst({
+    where: { workspaceId: actor.workspaceId, source: "user", externalId: targetUserId },
+    select: { id: true, directReports: { select: { id: true }, take: 1 } }
+  });
+  if (workforce?.directReports.length) return sendApiError(res, 409, "cannot_remove_member_with_direct_reports");
+  await prisma.$transaction(async (transaction) => {
+    if (workforce) {
+      await transaction.organizationalDepartmentRelation.deleteMany({ where: { workspaceId: actor.workspaceId, entityType: "workforce", entityId: workforce.id } });
+      await transaction.organizationalScope.deleteMany({ where: { workspaceId: actor.workspaceId, entityType: "workforce", entityId: workforce.id } });
+      await transaction.entityOwnership.deleteMany({ where: { workspaceId: actor.workspaceId, entityType: "workforce", entityId: workforce.id } });
+      await transaction.workforceEntity.delete({ where: { id: workforce.id } });
+    }
+    await transaction.workspaceMembership.delete({ where: { id: target.id } });
+    await transaction.auditLog.create({ data: {
+      workspaceId: actor.workspaceId,
+      actorType: "user",
+      actorId: req.auth!.userId!,
+      action: "workspace_member_removed",
+      resourceType: "workspace_membership",
+      resourceId: target.id,
+      inputPayload: {},
+      outputPayload: { userId: targetUserId, workforceEntityId: workforce?.id ?? null },
+      correlationId: randomUUID()
+    } });
+  });
   res.status(204).send();
 }));
 

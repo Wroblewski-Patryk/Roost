@@ -32,7 +32,9 @@ const createSchema = z.object({
     || /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(value)
   ), "invalid_identity_value").nullable().optional(),
   department: z.string().trim().max(120).nullable().optional(),
+  departmentKeys: z.array(z.string().trim().min(1).max(120)).max(13).optional(),
   role: z.string().trim().max(180).nullable().optional(),
+  roleIds: z.array(z.string().uuid()).max(24).optional(),
   managerId: z.string().uuid().nullable().optional(),
   personalityProfile: z.nativeEnum(WorkforcePersonalityProfile).optional(),
   model: z.string().trim().max(120).nullable().optional(),
@@ -106,7 +108,15 @@ workforceRouter.delete("/:id", asyncHandler(async (req, res) => {
 
 workforceRouter.post("/:id/actions/delete", asyncHandler(async (req, res) => {
   try {
-    const result = await deleteWorkforceEntity(req.auth!.workspaceId, z.string().uuid().parse(req.params.id));
+    const result = await deleteWorkforceEntity(
+      req.auth!.workspaceId,
+      z.string().uuid().parse(req.params.id),
+      {
+        authType: req.auth!.authType,
+        userId: req.auth!.userId,
+        workspaceRole: req.auth!.workspaceRole
+      }
+    );
     if (!result) {
       return res.status(404).json({ error: "not_found" });
     }

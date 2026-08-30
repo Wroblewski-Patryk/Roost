@@ -285,7 +285,10 @@ export type WorkforceEntity = {
   description?: string | null;
   avatar?: string | null;
   department?: string | null;
+  departmentKeys?: string[];
   role?: string | null;
+  roleIds?: string[];
+  roles?: Array<{ id: string; name: string; type: "human" | "agent" }>;
   managerId?: string | null;
   manager?: { id: string; name: string; slug: string } | null;
   personalityProfile: "analytical" | "creative" | "executive" | "supportive" | "researcher" | "custom";
@@ -363,6 +366,7 @@ export type WorkforcePacket = {
     runtimeModes?: WorkforceEntity["runtimeMode"][];
     personalityProfiles?: WorkforceEntity["personalityProfile"][];
     departments?: Array<{ key: string; backendAreaKey: string; position: number }>;
+    roles?: Array<{ id: string; name: string; type: "human" | "agent" }>;
   };
   agentPacket?: {
     mode?: string;

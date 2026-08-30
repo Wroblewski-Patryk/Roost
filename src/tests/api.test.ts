@@ -1418,10 +1418,22 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(workspaceBDepartmentsBody.data.departments.length, 13);
   assert.ok(!workspaceBDepartmentsBody.data.departments.some((department) => department.key === "13-marketing-lab"));
 
+  await prisma.companyRole.createMany({ data: [
+    { workspaceId: ownerA.workspace.id, name: "Operations Agent", type: "agent" },
+    { workspaceId: ownerA.workspace.id, name: "Quality Agent", type: "agent" }
+  ] });
   const initialWorkforce = await request("/v1/workforce", { headers: authA });
   assert.equal(initialWorkforce.status, 200);
-  const initialWorkforceBody = initialWorkforce.body as { data: { summary: { humans: number }; entities: Array<{ id: string; source?: string }> } };
+  const initialWorkforceBody = initialWorkforce.body as {
+    data: {
+      summary: { humans: number };
+      entities: Array<{ id: string; source?: string }>;
+      dictionaries: { roles: Array<{ id: string; name: string; type: "human" | "agent" }> };
+    };
+  };
   assert.equal(initialWorkforceBody.data.summary.humans, 1);
+  const agentRoleIds = initialWorkforceBody.data.dictionaries.roles.filter((role) => role.type === "agent").slice(0, 2).map((role) => role.id);
+  assert.equal(agentRoleIds.length, 2);
 
   const workforceAgent = await request("/v1/workforce", {
     method: "POST",
@@ -1430,8 +1442,8 @@ test("CompanyCore v1 protected API flow", async () => {
       type: "agent",
       status: "active",
       name: "Codex Operations Agent",
-      department: "06-kadry",
-      role: "Operations runtime worker",
+      departmentKeys: ["04-operacje", "06-kadry"],
+      roleIds: agentRoleIds,
       personalityProfile: "analytical",
       runtimeMode: "semi_autonomous",
       model: "gpt-5.4",
@@ -1459,6 +1471,9 @@ test("CompanyCore v1 protected API flow", async () => {
       syncStatus: string;
       skillIndex: string[];
       bigFiveProfile: { openness: number };
+      departmentKeys: string[];
+      roleIds: string[];
+      roles: Array<{ id: string; name: string }>;
     };
   };
   assert.ok(workforceAgentBody.data.generatedFiles["agent.md"].includes("Codex Operations Agent"));
@@ -1468,6 +1483,9 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.deepEqual(workforceAgentBody.data.skillIndex, ["APQC Process Map", "MECE Responsibility Design"]);
   assert.equal(workforceAgentBody.data.bigFiveProfile.openness, 0.8);
   assert.equal(workforceAgentBody.data.syncStatus, "not_synced");
+  assert.deepEqual(workforceAgentBody.data.departmentKeys, ["04-operacje", "06-kadry"]);
+  assert.deepEqual(workforceAgentBody.data.roleIds, agentRoleIds);
+  assert.deepEqual(workforceAgentBody.data.roles.map((role) => role.id), agentRoleIds);
 
   const workforceSync = await request(`/v1/workforce/${workforceAgentBody.data.id}/actions/sync`, {
     method: "POST",
@@ -1485,7 +1503,36 @@ test("CompanyCore v1 protected API flow", async () => {
     headers: authA
   });
   assert.equal(blockedOwnerDelete.status, 409);
-  assert.equal((blockedOwnerDelete.body as { error: string }).error, "cannot_delete_user_backed_workforce_entity");
+  assert.equal((blockedOwnerDelete.body as { error: string }).error, "primary_owner_transfer_required");
+
+  const removableUser = await prisma.user.create({
+    data: { email: "removable-workforce-member@example.com", name: "Removable Member", passwordHash: "test-only-hash" }
+  });
+  await prisma.workspaceMembership.create({
+    data: { workspaceId: ownerA.workspace.id, userId: removableUser.id, role: "member" }
+  });
+  const removableWorkforce = await prisma.workforceEntity.create({
+    data: {
+      workspaceId: ownerA.workspace.id,
+      type: "human",
+      name: "Removable Member",
+      slug: "removable-member",
+      department: "06-kadry",
+      role: "Human member",
+      source: "user",
+      externalId: removableUser.id
+    }
+  });
+  const removedHuman = await request(`/v1/workforce/${removableWorkforce.id}/actions/delete`, {
+    method: "POST",
+    headers: authA
+  });
+  assert.equal(removedHuman.status, 200);
+  assert.equal((removedHuman.body as { data: { deleted: boolean; removedWorkspaceMembership: boolean } }).data.removedWorkspaceMembership, true);
+  assert.equal(await prisma.workspaceMembership.count({ where: { workspaceId: ownerA.workspace.id, userId: removableUser.id } }), 0);
+  assert.equal(await prisma.workforceEntity.count({ where: { id: removableWorkforce.id } }), 0);
+  assert.ok(await prisma.user.findUnique({ where: { id: removableUser.id } }));
+  await prisma.user.delete({ where: { id: removableUser.id } });
 
   const workforceDelete = await request(`/v1/workforce/${workforceAgentBody.data.id}/actions/delete`, {
     method: "POST",
@@ -3996,7 +4043,9 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal((await request(`/v1/workspaces/${ownerA.workspace.id}/access/members/${acceptedInvitationBody.data.user.id}`, {
     method: "DELETE", headers: authA
   })).status, 204);
-  await prisma.workforceEntity.deleteMany({ where: { workspaceId: ownerA.workspace.id, source: "user", externalId: acceptedInvitationBody.data.user.id } });
+  assert.equal(await prisma.workforceEntity.count({
+    where: { workspaceId: ownerA.workspace.id, source: "user", externalId: acceptedInvitationBody.data.user.id }
+  }), 0);
   await prisma.user.delete({ where: { id: acceptedInvitationBody.data.user.id } });
   assert.ok(await prisma.auditLog.count({ where: { workspaceId: ownerA.workspace.id, action: { startsWith: "workspace_" } } }) >= 3);
   await prisma.auditLog.deleteMany({ where: { workspaceId: ownerA.workspace.id, action: { startsWith: "workspace_" } } });
