@@ -1362,6 +1362,10 @@ async function ensureWorkforceFoundation(workspaceId: string, owner: { id: strin
     where: { workspaceId, source: "seed", type: "agent" },
     data: { status: "archived", synchronizationEnabled: false, syncStatus: "stale" }
   });
+  await prisma.workforceEntity.updateMany({
+    where: { workspaceId, slug: { startsWith: "paperclip-" } },
+    data: { status: "archived", synchronizationEnabled: false, syncStatus: "stale" }
+  });
 
   const directorBySlug = new Map<string, { id: string }>();
   for (const director of departmentAgentSeeds) {
@@ -1397,6 +1401,13 @@ async function ensureWorkforceFoundation(workspaceId: string, owner: { id: strin
       knowledgeIndex,
       toolIndex
     });
+    const existingSlugRecord = await prisma.workforceEntity.findUnique({ where: { workspaceId_slug: { workspaceId, slug: director.slug } } });
+    if (existingSlugRecord && (existingSlugRecord.source !== "seed" || existingSlugRecord.externalId !== director.slug)) {
+      await prisma.workforceEntity.update({
+        where: { id: existingSlugRecord.id },
+        data: { source: "seed", externalId: director.slug }
+      });
+    }
     const record = await prisma.workforceEntity.upsert({
       where: {
         workspaceId_source_externalId: {
