@@ -24,14 +24,14 @@ const targetCoverage: CoverageRow[] = [
     concept: "Pipeline",
     status: "partial",
     currentSources: ["Process", "Pipeline", "PipelineStage", "PipelineRun"],
-    unsupportedTargetFields: ["reusableType", "targetEntityType", "templateFlag", "paperclipEnabledFlag"],
+    unsupportedTargetFields: ["reusableType", "targetEntityType", "templateFlag", "agentRuntimeEnabledFlag"],
     notes: "Current pipeline records are process-centric definitions with stages, runs, schemas, owner roles, status, version, automation, risk, and metrics."
   },
   {
     concept: "PipelineStage",
     status: "partial",
     currentSources: ["PipelineStage", "StageRun", "Approval", "AcceptanceCriterion"],
-    unsupportedTargetFields: ["wipLimit", "firstClassEvidenceRequirement", "paperclipInstruction"],
+    unsupportedTargetFields: ["wipLimit", "firstClassEvidenceRequirement", "agentRuntimeInstruction"],
     notes: "Stage definitions include entry/exit conditions, role, procedure, tools, approvals, failure strategy, retry policy, and runtime stage runs."
   },
   {
@@ -52,7 +52,7 @@ const targetCoverage: CoverageRow[] = [
     concept: "Procedure",
     status: "partial",
     currentSources: ["Procedure", "ProcedureStep", "WorkflowDefinitionDraft"],
-    unsupportedTargetFields: ["procedureType", "triggerPolicy", "paperclipContext", "relatedPipelineStageId"],
+    unsupportedTargetFields: ["procedureType", "triggerPolicy", "agentRuntimeContext", "relatedPipelineStageId"],
     notes: "Procedures and steps cover owner, tools, permissions, expected result, quality standard, input/output, validation, and rollback instructions."
   },
   {
@@ -91,11 +91,11 @@ const targetCoverage: CoverageRow[] = [
     notes: "Assets are represented by resources, artifacts, dependencies, knowledge links, and Drive files rather than one universal linked-asset relation."
   },
   {
-    concept: "PaperclipSyncContext",
+    concept: "AgentRuntimeContext",
     status: "partial",
     currentSources: ["WorkforceEntity", "MCPManifest", "RouteManifest"],
     unsupportedTargetFields: ["objectAllowedActions", "objectBlockedActions", "defaultAgent", "objectApprovalPolicy", "lastObjectSyncDate"],
-    notes: "Paperclip sync details exist for workforce entities and route/MCP capabilities, but not as object-level sync context."
+    notes: "Agent runtime details exist for workforce entities and route/MCP capabilities, but not as object-level execution context."
   }
 ];
 
@@ -262,7 +262,7 @@ processCoreRouter.get("/coverage", asyncHandler(async (req, res) => {
         "workflow_attachment_packet",
         "governance_and_evidence_packet",
         "asset_and_workforce_context_packet",
-        "paperclip_authority_packet"
+        "agent_runtime_authority_packet"
       ],
       apiExposure: {
         route: "/v1/process-core/coverage",

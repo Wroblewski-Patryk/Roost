@@ -8,9 +8,9 @@ Roost must evolve into a company operating system where process state is a
 reusable core capability, not a view owned by one department. The Process Core
 is the shared workflow engine for departments, products, service projects,
 clients, tasks, people, AI agents, assets, repositories, releases, decisions,
-and Paperclip synchronization.
+and agent runtime context synchronization.
 
-Roost remains the source of truth. Paperclip remains an external execution
+Roost remains the source of truth. Codex Agent Host remains an external execution
 layer that reads context, proposes work, executes allowed actions, reports
 progress, requests approvals, and leaves evidence through Roost API/MCP
 contracts.
@@ -19,12 +19,12 @@ contracts.
 
 - Process Core is not a separate department app.
 - Pipelines, procedures, checklists, approvals, evidence, blueprints, linked
-  assets, and Paperclip sync contexts are reusable system entities.
+  assets, and agent runtime contexts are reusable system entities.
 - Departments are management lenses over the shared Process Core.
 - Runtime writes must stay command-shaped, workspace-scoped,
   permission-aware, approval-aware, event-emitting, and auditable.
 - External agents must not infer authority from raw database rows, provider
-  records, spreadsheets, or Paperclip-local state.
+  records, spreadsheets, or agent-host-local state.
 - Do not seed real named clients, service projects, or subscription products
   merely to explain the architecture.
 
@@ -60,18 +60,18 @@ must be justified by a gap audit.
 
 | Model | Responsibility | Minimum target contract |
 | --- | --- | --- |
-| `Pipeline` | Defines a reusable workflow for a workspace and optional department. | workspace, optional department, name, slug, description, type, status, target entity type, owner type/ID, template/active flags, Paperclip enabled flag. |
-| `PipelineStage` | Ordered state inside a pipeline. | order, criteria, approval/evidence requirements, default role, assignee, procedure, WIP limit, Paperclip instruction. |
+| `Pipeline` | Defines a reusable workflow for a workspace and optional department. | workspace, optional department, name, slug, description, type, status, target entity type, owner type/ID, template/active flags, agent runtime enabled flag. |
+| `PipelineStage` | Ordered state inside a pipeline. | order, criteria, approval/evidence requirements, default role, assignee, procedure, WIP limit, agent runtime instruction. |
 | `PipelineTransition` | Allowed movement between stages. | from stage, to stage, condition, approval and evidence requirements. |
 | `WorkflowItem` | Attaches any entity to a pipeline and current stage. | workspace, pipeline, current stage, entity type/ID, title, status, priority, owner, assignee, start/completion timestamps. |
-| `Procedure` | Reusable method of work. | workspace, optional department, type, status, purpose, trigger, input/output requirements, owner role, responsible actor, related pipeline/stage, approval policy, Paperclip context. |
-| `ProcedureStep` | Human-readable and agent-readable action step. | ordered instruction, expected output, tool/asset requirement, human approval flag, evidence flag, Paperclip instruction. |
+| `Procedure` | Reusable method of work. | workspace, optional department, type, status, purpose, trigger, input/output requirements, owner role, responsible actor, related pipeline/stage, approval policy, agent runtime context. |
+| `ProcedureStep` | Human-readable and agent-readable action step. | ordered instruction, expected output, tool/asset requirement, human approval flag, evidence flag, agent runtime instruction. |
 | `Checklist` / `ChecklistItem` | Reusable completion lists. | template support, required items, evidence requirements, attachable to stages, procedures, tasks, products, projects, releases, service projects, or agent assignments. |
 | `EvidenceLog` | Proof that work happened. | entity type/ID, related task, workflow item, stage, procedure, submitter, evidence type, title, description, URL/file/repository/commit/screenshot metadata. |
 | `ApprovalPolicy` / `ApprovalRequest` / `ApprovalDecision` | Governance control layer. | policy definition, concrete request, one-time decision with approver, decision, reason, timestamp, and audit/event evidence. |
 | `Blueprint` / `EntitySchema` | Structured object definition. | workspace, optional department, entity type, JSON schema, template/active flags. |
 | `LinkedAsset` | Universal asset relation. | entity type/ID, asset type/ID, relation type, description. |
-| `PaperclipSyncContext` | Agent-readable authority and context packet. | entity type/ID, enabled flag, scope, summary, allowed actions, blocked actions, default agent, required approval policy, last sync date. |
+| `AgentRuntimeContext` | Agent-readable authority and context packet. | entity type/ID, enabled flag, scope, summary, allowed actions, blocked actions, default agent, required approval policy, last sync date. |
 
 Recommended enum families must stay extensible:
 
@@ -83,11 +83,11 @@ Recommended enum families must stay extensible:
   `experiment`, `release`, `deployment`, `asset`, `agent`, `human`,
   `department`, `repository`, `file`, `custom`.
 - Evidence types: `file`, `link`, `commit`, `screenshot`, `note`, `report`,
-  `test_result`, `deployment`, `approval`, `paperclip_output`.
+  `test_result`, `deployment`, `approval`, `agent_runtime_output`.
 
-## Paperclip Context Contract
+## Codex Agent Host Context Contract
 
-Every Paperclip-operable object must expose a structured context packet:
+Every Codex Agent Host-operable object must expose a structured context packet:
 
 ```text
 entity type/id
@@ -102,7 +102,7 @@ evidence requirements
 last sync date
 ```
 
-Paperclip must know what the object is, which department it belongs to, which
+Codex Agent Host must know what the object is, which department it belongs to, which
 stage it is in, what procedure applies, what is allowed, what is blocked, who
 approves risky work, and what evidence must be left. Publishing to clients,
 changing prices, changing legal terms, changing permissions, or deploying
@@ -116,7 +116,7 @@ tables.
 
 | Department | Required Process Core lens |
 | --- | --- |
-| `00 General` | command center, inbox, global pipelines, global procedures, Paperclip sync. |
+| `00 General` | command center, inbox, global pipelines, global procedures, Codex Agent Host sync. |
 | `01 Strategy` | goals, roadmap, decisions, priorities, strategic pipelines. |
 | `02 Product` | products, product pipeline, backlog, releases, pricing, requirements, product procedures. |
 | `03 Sales` | leads, deals, offers, sales pipeline, subscriptions, follow-ups, proposal templates, conversion evidence. |
@@ -128,12 +128,12 @@ tables.
 | `09 Technology` | apps, repositories, environments, deployments, integrations, technical backlog, incidents, automation hooks, release checklists. |
 | `10 Legal` | contracts, policies, approvals, legal risks, compliance checklists, product legal, client agreements, data processing. |
 | `11 Innovation` | ideas, experiments, research, hypotheses, validation, innovation pipeline, prototype lab, transfer to product. |
-| `12 Management` | portfolio, approvals, risks, reports, audit log, decision log, governance, permissions, Paperclip control, process map. |
+| `12 Management` | portfolio, approvals, risks, reports, audit log, decision log, governance, permissions, Codex Agent Host control, process map. |
 
 Pipeline UI must support at least board and table modes. Board mode shows
 stages as columns. Table mode filters by department, entity type, status,
 priority, owner, assignee, approval requirement, missing evidence, and
-Paperclip enablement.
+Codex Agent Host enablement.
 
 ## System Flows
 
@@ -149,7 +149,7 @@ Innovation idea/research/experiment
   -> Operations delivery, maintenance, support procedures
   -> Sales and Relationships offer, leads, customers, feedback
   -> Management approvals, risks, reports, decisions
-  -> Paperclip supervised execution, delegation, synchronization, reporting
+  -> Codex Agent Host supervised execution, delegation, synchronization, reporting
 ```
 
 Innovation validates. Product owns the product definition after transfer.
@@ -164,7 +164,7 @@ Relationships client/contact/need/request
   -> Technology implementation when technical work is needed
   -> Product/Operations/Assets content or design delivery evidence
   -> Management approval, quality control, decision
-  -> Paperclip draft/checklist/content/report generation with approval gates
+  -> Codex Agent Host draft/checklist/content/report generation with approval gates
 ```
 
 A client can have projects, orders, tasks, files, feedback, and relationship
@@ -182,11 +182,11 @@ history. A client is not a subscription product.
 3. Add or extend the minimal data contract only after the audit proves real
    gaps.
 4. Expose read-only packets before write commands:
-   global pipelines, global procedures, Paperclip sync contexts, linked
+   global pipelines, global procedures, agent runtime contexts, linked
    assets, evidence requirements, and approval requirements.
 5. Add command-shaped writes for workflow item creation, stage movement,
    evidence submission, approval request/decision, linked asset attach, and
-   Paperclip context updates.
+   agent runtime context updates.
 6. Add department views from shared packets, not department-specific process
    copies.
 7. Expose MCP tools/resources only from the same API contracts and with
@@ -204,14 +204,14 @@ history. A client is not a subscription product.
 - Evidence is required before high-impact completion can be treated as done.
 - Approval policies are a separate control layer.
 - Assets can link to any supported entity.
-- PaperclipSyncContext tells external agents what they may read, propose,
+- AgentRuntimeContext tells external agents what they may read, propose,
   execute, and must not do.
 - Clients, service projects, internal projects, innovation projects, products,
   and subscription products are distinct.
 - Department sidebars and views extend the existing department architecture
   instead of creating a competing workflow app.
 - Management can inspect portfolio, risks, approvals, decisions, evidence,
-  and Paperclip activity.
+  and Codex Agent Host activity.
 - The design stays ready for MCP, repositories, Obsidian/Markdown/CSV,
   provider adapters, and future automation.
 
@@ -223,7 +223,7 @@ history. A client is not a subscription product.
 - Keep client/project/product taxonomy explicit in API names and UI copy.
 - Keep agent access least-privilege by workspace, department, role,
   entity permission, capability, and approval policy.
-- Never let Paperclip use direct database access or provider tokens as a
+- Never let Codex Agent Host use direct database access or provider tokens as a
   substitute for Roost authority.
 - Do not add fake clients, fake subscription products, or placeholder records
   to make views look complete.

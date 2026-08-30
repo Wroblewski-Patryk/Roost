@@ -1,13 +1,13 @@
 # Roost V1 Operator Handoff
 
-Last updated: 2026-05-14
+Last updated: 2026-08-30
 
 ## Verdict
 
 CompanyCore v1 is deployed, live, smoke tested, and accepted for the approved
 runtime scope.
 
-The system is ready for normal owner usage and for Jarvis/Paperclip to consume
+The system is ready for normal owner usage and for Jarvis/Codex Agent Host to consume
 CompanyCore as the company operational source of truth.
 
 The local architecture-derived V1 evidence set is complete as of 2026-05-11.
@@ -28,7 +28,8 @@ achievement boundary and external blocker list.
   folders, tables, provider mappings, custom fields, views, storage locations,
   knowledge roots, and automation definitions.
 - Jarvis CompanyCore connector and chat context.
-- Paperclip CompanyCore agent-event adapter.
+- Codex Agent Host queue and result API; the Windows host rollout is documented
+  separately and is not asserted as deployed by this historical V1 handoff.
 - Clean sync data hygiene: no duplicate ClickUp tasks and no repeated sync
   event noise from unchanged pulls.
 
@@ -39,7 +40,7 @@ achievement boundary and external blocker list.
 - Health: `https://api.roost.luckysparrow.ch/health`
 - V1 health: `https://api.roost.luckysparrow.ch/v1/health`
 - Jarvis: `https://jarvis.luckysparrow.ch/`
-- Paperclip: `https://paperclip.luckysparrow.ch/`
+- Codex Agent Host: outbound local process; no separate public endpoint
 
 ## Current Runtime
 
@@ -74,14 +75,14 @@ achievement boundary and external blocker list.
 - Protected CompanyCore `/v1/connection` returned `200`.
 - ClickUp maintenance `inspect_only` returned 219 items, 0 created, 0 updated,
   0 deleted, 219 skipped, and 0 failed retries.
-- Paperclip health returned `200`.
+- The retired external agent runtime health check is no longer part of Roost.
 - Jarvis health returned `200`.
 - Jarvis CompanyCore connector returned `connected=true`, `auth_type=bridge`,
   and 259 CompanyCore chunks.
-- CompanyCore Paperclip agent-event queue had 0 pending events.
+- The historical generic agent-event queue had 0 pending events.
 - Agent CRUD production smoke returned 51 capabilities, verified
   `/v1/connection` manifest routes, created/deleted a user-created operating
-  area, created/read/updated/archived a note, and confirmed Paperclip
+  area, created/read/updated/archived a note, and confirmed Codex Agent Host
   agent-event reads.
 - 2026-05-08 public smoke returned `200` for CompanyCore `/health`,
   `/v1/health`, and the web root; `/health` reported build/image
@@ -95,8 +96,7 @@ achievement boundary and external blocker list.
 - 2026-05-08 public `app.js` marker check confirmed typed editor surfaces for
   Notes, Projects, Clients, Task Lists, and Tasks.
 - 2026-05-11 public no-secret smoke returned `200` for CompanyCore `/health`,
-  CompanyCore `/v1/health`, CompanyCore web root, Paperclip `/api/health`, and
-  Jarvis `/health`.
+  CompanyCore `/v1/health`, CompanyCore web root, and Jarvis `/health`.
 
 ## Data State
 
@@ -116,7 +116,6 @@ Run after any deploy, credential rotation, or provider incident:
 curl -fsS https://api.roost.luckysparrow.ch/health
 curl -fsS https://api.roost.luckysparrow.ch/v1/health
 curl -fsS https://roost.luckysparrow.ch/
-curl -fsS https://paperclip.luckysparrow.ch/api/health
 curl -fsS https://jarvis.luckysparrow.ch/health
 ```
 
@@ -136,7 +135,7 @@ environment. Do not print raw API keys in terminals, logs, docs, or chat.
 - Roll back the backend image/container first.
 - Restore database backup only for confirmed data corruption.
 - After rollback, rerun public health, protected connection, ClickUp
-  maintenance, Jarvis connector, and Paperclip health checks.
+    maintenance, Jarvis connector, and Agent Host registration checks.
 
 ## Residual Non-Runtime Blockers
 
@@ -147,11 +146,10 @@ environment. Do not print raw API keys in terminals, logs, docs, or chat.
     administration.
   - Local `gh` CLI is not installed.
   - Manual rollover remains the approved v1 release path.
-- Paperclip upstream source merge:
-  - Adapter commit `4cfa476f` is validated.
-  - Branch push to `paperclipai/paperclip` failed with GitHub `403`.
-  - Managed patch remains in
-    `integrations/paperclip/companycore-adapter.patch`.
+- Local Codex Agent Host activation:
+  - Deploy the current Roost migration/API/web bundle.
+  - Create a `mcp_codex_worker` key and configure the Windows host using
+    `docs/operations/local-codex-agent-host.md`.
 - OpenJarvis upstream source merge:
   - CompanyCore connector change is validated on a clean current upstream base.
   - Branch push to `open-jarvis/OpenJarvis` failed with GitHub `403`.
@@ -161,6 +159,6 @@ environment. Do not print raw API keys in terminals, logs, docs, or chat.
 The next engineering move is not more v1 runtime hardening. Choose one:
 
 - v2 company operations dashboard scope.
-- upstream/fork route for OpenJarvis and Paperclip handoff.
+- local Codex Agent Host activation and supervised first execution.
 - GitHub/Coolify auto-deploy tooling and credentials.
 - next provider or knowledge-root integration.

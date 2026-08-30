@@ -109,7 +109,7 @@ export const agentKeyProfiles = [
     id: "mcp_event_worker",
     label: "MCP Event Worker",
     description: "MCP access for agents that consume assigned events, report execution logs, and close their own event queue items.",
-    recommendedFor: ["Paperclip", "Agent Task Execution Agent", "Operations Agent"],
+    recommendedFor: ["Codex", "Agent Task Execution Agent", "Operations Agent"],
     riskLevel: "medium",
     scopes: [
       ...mcpBaseScopes,
@@ -133,6 +133,32 @@ export const agentKeyProfiles = [
       "agent-events:read",
       "agent-events:ack",
       "intake:write",
+      "events:read"
+    ]
+  },
+  {
+    id: "mcp_codex_worker",
+    label: "Local Codex Worker",
+    description: "Least-privilege access for a local Codex Agent Host that claims queued work, reads task and application context, and reports execution evidence.",
+    recommendedFor: ["Codex Agent Host", "Local Development Agent"],
+    riskLevel: "medium",
+    scopes: [
+      ...mcpBaseScopes,
+      "dashboard:read",
+      "departments:read",
+      "company-os:read",
+      "operating-model:read",
+      "process-core:read",
+      "product-engineering:read",
+      "projects:read",
+      "tasks:read",
+      "company-records:read",
+      "company-graph:read",
+      "evidence:read",
+      "agent-logs:read",
+      "agent-logs:write",
+      "agent-runtime:claim",
+      "agent-runtime:report",
       "events:read"
     ]
   },

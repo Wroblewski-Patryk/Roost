@@ -215,5 +215,5 @@ stage run and verifies `409 invalid_stage_transition`, proving the bridge
 forwarded only after the supervised mode was explicitly selected while the API
 remained the command authority.
 
-Agent runtime setup snippets for Paperclip, Codex, and future MCP-compatible
+Agent runtime setup snippets for Codex Agent Host, Codex, and future MCP-compatible
 runtimes live in `docs/operations/mcp-agent-runtime-setup.md`.

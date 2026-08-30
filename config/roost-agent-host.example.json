@@ -1,0 +1,42 @@
+{
+  "host": {
+    "name": "Development laptop",
+    "slug": "development-windows"
+  },
+  "workspaceRoot": "C:\\Personal\\Projekty\\Aplikacje",
+  "codexCommand": "codex",
+  "sandbox": "workspace-write",
+  "pollIntervalMs": 5000,
+  "repositories": {
+    "aviary": {
+      "directory": "Aviary",
+      "originUrl": "https://github.com/Wroblewski-Patryk/Aviary.git",
+      "deploymentUrl": "https://aviary.luckysparrow.ch/",
+      "baseBranch": "main"
+    },
+    "featherly": {
+      "directory": "Featherly",
+      "originUrl": "https://github.com/Wroblewski-Patryk/Featherly.git",
+      "deploymentUrl": "https://test.wroblewskipatryk.pl/pl",
+      "baseBranch": "main"
+    },
+    "nest": {
+      "directory": "Nest",
+      "originUrl": "https://github.com/Wroblewski-Patryk/Nest.git",
+      "deploymentUrl": "https://nest.luckysparrow.ch/",
+      "baseBranch": "main"
+    },
+    "roost": {
+      "directory": "Roost",
+      "originUrl": "https://github.com/Wroblewski-Patryk/Roost.git",
+      "deploymentUrl": "https://roost.luckysparrow.ch/",
+      "baseBranch": "main"
+    },
+    "soar": {
+      "directory": "Soar",
+      "originUrl": "https://github.com/Wroblewski-Patryk/Soar.git",
+      "deploymentUrl": "https://soar.luckysparrow.ch/",
+      "baseBranch": "main"
+    }
+  }
+}

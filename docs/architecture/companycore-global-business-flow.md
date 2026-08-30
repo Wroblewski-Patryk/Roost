@@ -1,4 +1,4 @@
-﻿# CompanyCore Global Business Flow
+# CompanyCore Global Business Flow
 
 Last updated: 2026-05-16
 
@@ -281,7 +281,7 @@ AI-facing stages should be exposed through layers:
 Intent -> Knowledge -> Planning -> Tools -> Access -> Audit -> Feedback
 ```
 
-This keeps Paperclip, Jarvis, Codex, n8n, and future agents aligned with the
+This keeps Codex Agent Host, Jarvis, Codex, n8n, and future agents aligned with the
 same company value flow used by humans.
 
 ## Metrics And Health

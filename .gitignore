@@ -60,6 +60,9 @@ docs/.obsidian/workspace.json
 /docs/status/runtime-error-index.md
 /docs/status/task-synchronization-report.md
 
-# Paperclip owns agent runtime context; repository extensions use only .agents/.
+# Codex keeps transient runtime state outside the repository; repository extensions use only .agents/.
 /.codex/
 /.claude/
+
+# Machine-specific Agent Host mapping (the tracked example remains safe).
+/config/roost-agent-host.json

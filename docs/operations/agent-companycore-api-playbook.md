@@ -3,7 +3,7 @@
 ## Purpose
 
 This playbook teaches a service agent how to use CompanyCore as durable
-operational memory. It applies to Jarvis, Paperclip, Aviary, n8n, and future
+operational memory. It applies to Jarvis, Codex Agent Host, Aviary, n8n, and future
 agents.
 
 Agents must use the HTTP API. They must not connect directly to PostgreSQL.
@@ -12,7 +12,7 @@ Agents must use the HTTP API. They must not connect directly to PostgreSQL.
 
 - `COMPANYCORE_BASE_URL`, for example `https://api.roost.luckysparrow.ch`
 - `COMPANYCORE_API_KEY`, a workspace-scoped service key
-- optional agent identity, for example `jarvis`, `paperclip`, or `aviary`
+- optional agent identity, for example `jarvis`, `agent-runtime`, or `aviary`
 
 Raw service keys are secret material. Store them only in the agent's secret
 store or runtime environment. Do not print them in logs, screenshots, traces,

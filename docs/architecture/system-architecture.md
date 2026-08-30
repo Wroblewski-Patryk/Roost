@@ -21,13 +21,13 @@ providers, and agents are documented in
 map is extended by the Process Core / Workflow Core target in
 `docs/architecture/process-core-workflow-core-architecture.md`, which defines
 reusable pipelines, stages, transitions, workflow items, procedures,
-checklists, evidence, approvals, blueprints, linked assets, and Paperclip sync
+checklists, evidence, approvals, blueprints, linked assets, and Codex Agent Host sync
 contexts as shared system capabilities across all departments and entity
 types. The business ontology import direction for APQC PCF, SIPOC,
 organization-chart CSV, role/ACL
 mappings, and SOP templates is documented in
 `docs/architecture/business-ontology-import-strategy.md`. These sources may
-guide process taxonomy, MECE ownership, PAEI tagging, Paperclip context, and
+guide process taxonomy, MECE ownership, PAEI tagging, agent runtime context, and
 import validation, but they must map into CompanyCore contracts before runtime
 authority or schema expansion. The end-to-end
 business value flow that connects market presence, lead qualification,
@@ -57,15 +57,19 @@ boundary that CompanyCore itself is infrastructure, not AI.
   maintenance scheduler. It reuses the authenticated maintenance service for
   active workspace settings so missed webhooks, failed inbox rows, and provider
   drift are repaired without introducing a separate worker tier in v1.
+- Local agent execution: a Windows Codex Agent Host polls the VPS API over
+  outbound HTTPS, claims leased application tasks, runs Codex in mapped local
+  repositories, and reports progress/results. It is not a VPS worker and has no
+  production database connection.
 - External services: PostgreSQL, ClickUp API, Google Drive/Docs/Sheets APIs,
-  optional n8n orchestration, future Paperclip/Jarvis/future GUI API clients.
+  optional n8n orchestration, future Codex Agent Host/Jarvis/future GUI API clients.
 
 ## Source Of Truth Rules
 
 - PostgreSQL owns canonical company state.
 - Prisma owns the database schema and generated database client.
 - External tools must not write directly to PostgreSQL.
-- Paperclip, Jarvis, n8n, future dashboard clients, and other agents must use
+- Codex Agent Host, Jarvis, n8n, future dashboard clients, and other agents must use
   the API.
 - MCP is the preferred agent tool interface above the API. MCP servers should
   wrap CompanyCore HTTP routes and inherit the same workspace, capability,
@@ -109,7 +113,7 @@ foundation target.
   stages that can be used by any department.
 - Process Core: reusable workflow item attachments, procedure/checklist
   execution, evidence logs, approval policies, blueprints, linked assets, and
-  Paperclip sync contexts that can attach to products, subscription products,
+  agent runtime contexts that can attach to products, subscription products,
   service projects, clients, tasks, releases, deployments, people, agents,
   assets, repositories, files, and departments.
 - CRM and sales: clients, deals, interactions, and CRM usage of shared
@@ -133,7 +137,7 @@ systems. As of 2026-05-17, `workforce_entities` is the first shared workforce
 layer for `06 People & Agents`. It stores the workspace-scoped roster for
 humans and AI agents, including type, lifecycle status, name/slug, description,
 avatar, department, role, manager link, personality profile, model,
-runtime mode, Paperclip runtime ID, sync opt-in state, generated markdown
+runtime mode, runtime external ID, sync opt-in state, generated markdown
 resources, and sync evidence. Human auth and existing agent registry behavior
 remain separate foundations; richer HR, skills, rank, capacity, ClickUp account
 mapping, and RBAC derivation require future scoped contracts. Human-specific
@@ -155,7 +159,7 @@ replacing the existing Company OS model:
   embeddings, and decision memory
 - web, future mobile, and MCP as first-class clients over the same API,
   permission, approval, audit, and event boundaries
-- Paperclip as a supervised external company-building execution agent that
+- Codex Agent Host as a supervised external company-building execution agent that
   uses CompanyCore knowledge, task context, and scoped tools through the same
   API/MCP boundaries rather than direct database or provider access
 
@@ -689,7 +693,7 @@ provider-specific shortcuts:
 - audit: which event, audit log, correlation ID, and feedback signal proves
   the action or read path.
 
-This keeps future Paperclip, Jarvis, and other agents focused on CompanyCore's
+This keeps future Codex Agent Host, Jarvis, and other agents focused on CompanyCore's
 business operating graph instead of raw ClickUp, Google Drive, or database
 contracts.
 
@@ -745,7 +749,7 @@ webhook flow is:
 Owner enables ClickUp integration -> CompanyCore creates scoped ClickUp webhook
   -> ClickUp POSTs signed event -> CompanyCore verifies signature from raw body
   -> provider event inbox deduplicates -> task delta is reconciled
-  -> CompanyCore event/outbox notifies Paperclip, Jarvis, Aviary, or future agents
+  -> CompanyCore event/outbox notifies Codex Agent Host, Jarvis, Aviary, or future agents
 ```
 
 ClickUp webhook registrations are tied to the user token that created them, so
@@ -782,7 +786,7 @@ explicit owner/operator action.
 
 Webhook processing should be event-first and bridge-friendly. Status changes,
 for example `taskStatusUpdated`, must update the CompanyCore task state and
-also emit a durable internal event that downstream agents can consume. Paperclip
+also emit a durable internal event that downstream agents can consume. Codex Agent Host
 can use status changes as work triggers, while Jarvis and Aviary can consume the
 same event stream for context refreshes, decisions, notifications, or future
 automation modules.
@@ -865,11 +869,11 @@ The Google Drive adapter should deliver in vertical slices:
    metadata/content snapshots after successful provider writes.
 6. Reconcile external edits through Drive `changes.list`, then add
    `changes.watch` channels for push-based freshness.
-7. Expose provider-neutral file/content APIs for Jarvis, Paperclip, Aviary, and
+7. Expose provider-neutral file/content APIs for Jarvis, Codex Agent Host, Aviary, and
    future GUI modules.
 
 CompanyCore remains the source of truth for operational interpretation. Google
-Drive remains the file/content source of truth. Jarvis or Paperclip may propose
+Drive remains the file/content source of truth. Jarvis or Codex Agent Host may propose
 structured imports from Docs/Sheets into CompanyCore business tables only when a
 workspace-visible table mapping exists, the operation is auditable, and writes
 go through CompanyCore APIs. Agents must not use raw Google tokens or write
@@ -881,7 +885,7 @@ directly to PostgreSQL.
 - Business, auth-context, integration, and event routes are protected except for
   explicitly public auth bootstrap/login/register routes.
 - Owner-user auth is for human/API clients.
-- Workspace-scoped service API keys are for Paperclip, Jarvis, n8n, and other
+- Workspace-scoped service API keys are for Codex Agent Host, Jarvis, n8n, and other
   agents.
 - API keys and integration tokens must not be stored only as plaintext in
   production paths.

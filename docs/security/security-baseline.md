@@ -1,4 +1,4 @@
-﻿# Security Baseline
+# Security Baseline
 
 ## Always Check
 
@@ -15,7 +15,7 @@
   transaction.
 - Workspace memberships exist for future growth, but v1 only activates the
   `owner` role.
-- Service API keys are workspace-scoped credentials for Paperclip, Jarvis, n8n,
+- Service API keys are workspace-scoped credentials for Codex Agent Host, Jarvis, n8n,
   and other agents.
 - API key material is hashed for new seed/bootstrap paths. Legacy plaintext
   rows are accepted only as a documented transition path when `key_hash` is
@@ -83,6 +83,6 @@ key from minting persistent replacement credentials.
 
 ## AI Security Rule
 
-AI systems must be tested against prompt injection, data leakage, and unauthorized access before deployment. Use `AI_TESTING_PROTOCOL.md` and assign reproducible red-team work through the Paperclip security lane.
+AI systems must be tested against prompt injection, data leakage, and unauthorized access before deployment. Use `AI_TESTING_PROTOCOL.md` and assign reproducible red-team work through the Codex Agent Host security lane.
 
 AI, auth-sensitive, money-impacting, and cross-user data flows must fail closed when authorization, ownership, tool access, model memory, or policy validation is ambiguous.

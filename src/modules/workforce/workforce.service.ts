@@ -32,7 +32,7 @@ export type WorkforceEntityInput = {
   personalityProfile?: WorkforcePersonalityProfile;
   model?: string | null;
   runtimeMode?: WorkforceRuntimeMode;
-  paperclipAgentId?: string | null;
+  runtimeExternalId?: string | null;
   synchronizationEnabled?: boolean;
   hierarchyLevel?: string | null;
   bigFiveProfile?: unknown;
@@ -40,7 +40,7 @@ export type WorkforceEntityInput = {
   knowledgeIndex?: unknown;
   toolIndex?: unknown;
   authorityScope?: unknown;
-  paperclipProfile?: unknown;
+  runtimeProfile?: unknown;
 };
 
 export type WorkforceEntityUpdate = Partial<Omit<WorkforceEntityInput, "type">> & {
@@ -122,7 +122,7 @@ type WorkforceMarkdownEntity = {
   personalityProfile: WorkforcePersonalityProfile;
   runtimeMode: WorkforceRuntimeMode;
   model?: string | null;
-  paperclipAgentId?: string | null;
+  runtimeExternalId?: string | null;
   type: WorkforceEntityType;
   hierarchyLevel?: string | null;
   bigFiveProfile?: unknown;
@@ -130,7 +130,7 @@ type WorkforceMarkdownEntity = {
   knowledgeIndex?: unknown;
   toolIndex?: unknown;
   authorityScope?: unknown;
-  paperclipProfile?: unknown;
+  runtimeProfile?: unknown;
 };
 
 export function generateWorkforceMarkdown(entity: WorkforceMarkdownEntity) {
@@ -179,7 +179,7 @@ ${listMarkdown(entity.authorityScope)}
 ## Runtime
 - Runtime mode: ${entity.runtimeMode}
 - Model: ${entity.model || "not configured"}
-- Paperclip agent ID: ${entity.paperclipAgentId || "not linked"}
+- Runtime external ID: ${entity.runtimeExternalId || "not linked"}
 `,
     "personality.md": `# ${entity.name} Personality
 
@@ -218,11 +218,11 @@ The entity belongs to ${entity.department || "06 People / Agents"} and operates 
 - 11 Innovation: experiments, portfolio exploration, and new capability discovery.
 - 12 Management: executive decisions, ownership, approvals, and company governance.
 
-## Paperclip
-Paperclip is the external agent runtime. CompanyCore owns people, agent configuration, hierarchy, skills, knowledge access, tool access, generated markdown, and synchronization packets. Paperclip executes with the latest synchronized context instead of becoming the source of truth.
+## Agent Runtime
+Roost owns people, agent configuration, hierarchy, skills, knowledge access, tool access, generated markdown, and synchronization packets. Local Codex Agent Hosts execute work using the latest authorized Roost context and report results back through the API.
 
 ## Runtime Profile
-${entity.paperclipProfile && typeof entity.paperclipProfile === "object" ? JSON.stringify(entity.paperclipProfile, null, 2) : "No Paperclip profile captured yet."}
+${entity.runtimeProfile && typeof entity.runtimeProfile === "object" ? JSON.stringify(entity.runtimeProfile, null, 2) : "No runtime profile captured yet."}
 `
   };
 }
@@ -525,12 +525,12 @@ export async function listWorkforceEntities(workspaceId: string, filters: {
         "read_workforce_entities",
         "edit_workforce_entity",
         "preview_generated_markdown",
-        "request_manual_paperclip_sync"
+        "request_agent_runtime_sync"
       ],
       blockedActions: [
         {
-          action: "paperclip_config_as_source_of_truth",
-          reason: "CompanyCore/Roost owns workforce configuration. Paperclip is runtime only."
+          action: "agent_runtime_config_as_source_of_truth",
+          reason: "Roost owns workforce configuration. Execution hosts consume only authorized runtime context."
         },
         {
           action: "autonomous_hr_decisions",
@@ -559,7 +559,7 @@ export async function createWorkforceEntity(workspaceId: string, input: Workforc
     personalityProfile: input.personalityProfile ?? "supportive",
     runtimeMode: input.runtimeMode ?? "manual",
     model: input.model ?? null,
-    paperclipAgentId: input.paperclipAgentId ?? null,
+    runtimeExternalId: input.runtimeExternalId ?? null,
     type: input.type,
     hierarchyLevel: input.hierarchyLevel ?? null,
     bigFiveProfile: input.bigFiveProfile ?? {},
@@ -567,7 +567,7 @@ export async function createWorkforceEntity(workspaceId: string, input: Workforc
     knowledgeIndex: input.knowledgeIndex ?? [],
     toolIndex: input.toolIndex ?? [],
     authorityScope: input.authorityScope ?? [],
-    paperclipProfile: input.paperclipProfile ?? {}
+    runtimeProfile: input.runtimeProfile ?? {}
   });
 
   const entity = await prisma.workforceEntity.create({
@@ -585,7 +585,7 @@ export async function createWorkforceEntity(workspaceId: string, input: Workforc
       personalityProfile: input.personalityProfile,
       model: input.model,
       runtimeMode: input.runtimeMode,
-      paperclipAgentId: input.paperclipAgentId,
+      runtimeExternalId: input.runtimeExternalId,
       synchronizationEnabled: input.synchronizationEnabled,
       hierarchyLevel: input.hierarchyLevel,
       bigFiveProfile: toJsonInput(input.bigFiveProfile ?? {}),
@@ -593,7 +593,7 @@ export async function createWorkforceEntity(workspaceId: string, input: Workforc
       knowledgeIndex: toJsonInput(input.knowledgeIndex ?? []),
       toolIndex: toJsonInput(input.toolIndex ?? []),
       authorityScope: toJsonInput(input.authorityScope ?? []),
-      paperclipProfile: toJsonInput(input.paperclipProfile ?? {}),
+      runtimeProfile: toJsonInput(input.runtimeProfile ?? {}),
       generatedFiles: toJsonInput(generatedFiles),
       source: options.source ?? "companycore",
       externalId: options.externalId ?? null
@@ -634,7 +634,7 @@ export async function updateWorkforceEntity(workspaceId: string, id: string, inp
     personalityProfile: input.personalityProfile ?? existing.personalityProfile,
     runtimeMode: input.runtimeMode ?? existing.runtimeMode,
     model: input.model === undefined ? existing.model : input.model,
-    paperclipAgentId: input.paperclipAgentId === undefined ? existing.paperclipAgentId : input.paperclipAgentId,
+    runtimeExternalId: input.runtimeExternalId === undefined ? existing.runtimeExternalId : input.runtimeExternalId,
     type: input.type ?? existing.type,
     hierarchyLevel: input.hierarchyLevel === undefined ? existing.hierarchyLevel : input.hierarchyLevel,
     bigFiveProfile: input.bigFiveProfile === undefined ? existing.bigFiveProfile : input.bigFiveProfile,
@@ -642,7 +642,7 @@ export async function updateWorkforceEntity(workspaceId: string, id: string, inp
     knowledgeIndex: input.knowledgeIndex === undefined ? existing.knowledgeIndex : input.knowledgeIndex,
     toolIndex: input.toolIndex === undefined ? existing.toolIndex : input.toolIndex,
     authorityScope: input.authorityScope === undefined ? existing.authorityScope : input.authorityScope,
-    paperclipProfile: input.paperclipProfile === undefined ? existing.paperclipProfile : input.paperclipProfile
+    runtimeProfile: input.runtimeProfile === undefined ? existing.runtimeProfile : input.runtimeProfile
   };
   const generatedFiles = generateWorkforceMarkdown(next);
 
@@ -660,7 +660,7 @@ export async function updateWorkforceEntity(workspaceId: string, id: string, inp
       ...(input.personalityProfile !== undefined ? { personalityProfile: input.personalityProfile } : {}),
       ...(input.model !== undefined ? { model: input.model } : {}),
       ...(input.runtimeMode !== undefined ? { runtimeMode: input.runtimeMode } : {}),
-      ...(input.paperclipAgentId !== undefined ? { paperclipAgentId: input.paperclipAgentId } : {}),
+      ...(input.runtimeExternalId !== undefined ? { runtimeExternalId: input.runtimeExternalId } : {}),
       ...(input.synchronizationEnabled !== undefined ? { synchronizationEnabled: input.synchronizationEnabled } : {}),
       ...(input.hierarchyLevel !== undefined ? { hierarchyLevel: input.hierarchyLevel } : {}),
       ...(input.bigFiveProfile !== undefined ? { bigFiveProfile: toJsonInput(input.bigFiveProfile) } : {}),
@@ -668,7 +668,7 @@ export async function updateWorkforceEntity(workspaceId: string, id: string, inp
       ...(input.knowledgeIndex !== undefined ? { knowledgeIndex: toJsonInput(input.knowledgeIndex) } : {}),
       ...(input.toolIndex !== undefined ? { toolIndex: toJsonInput(input.toolIndex) } : {}),
       ...(input.authorityScope !== undefined ? { authorityScope: toJsonInput(input.authorityScope) } : {}),
-      ...(input.paperclipProfile !== undefined ? { paperclipProfile: toJsonInput(input.paperclipProfile) } : {}),
+      ...(input.runtimeProfile !== undefined ? { runtimeProfile: toJsonInput(input.runtimeProfile) } : {}),
       ...(input.name || input.slug ? { slug: await uniqueSlug(workspaceId, input.name ?? existing.name, input.slug ?? existing.slug, existing.id) } : {}),
       generatedFiles: toJsonInput(generatedFiles),
       syncStatus: existing.syncStatus === "synced" ? "stale" : existing.syncStatus
@@ -741,14 +741,14 @@ export async function syncWorkforceEntity(workspaceId: string, id: string, reque
     at: new Date().toISOString(),
     status: "queued",
     actor: requestedByUserId ? "user" : "api_key",
-    message: "Paperclip runtime synchronization requested from CompanyCore."
+    message: "Agent runtime synchronization requested from Roost."
   };
 
   const outbox = await prisma.agentEventOutbox.create({
     data: {
       workspaceId,
-      eventType: "paperclip_agent_config_sync_requested",
-      targetAgent: existing.paperclipAgentId || existing.slug,
+      eventType: "agent_runtime_config_sync_requested",
+      targetAgent: existing.runtimeExternalId || existing.slug,
       scope: {
         workforceEntityId: existing.id,
         department: existing.department,
@@ -765,14 +765,14 @@ export async function syncWorkforceEntity(workspaceId: string, id: string, reque
           role: existing.role,
           runtimeMode: existing.runtimeMode,
           model: existing.model,
-          paperclipAgentId: existing.paperclipAgentId,
+          runtimeExternalId: existing.runtimeExternalId,
           hierarchyLevel: existing.hierarchyLevel,
           bigFiveProfile: existing.bigFiveProfile,
           skillIndex: existing.skillIndex,
           knowledgeIndex: existing.knowledgeIndex,
           toolIndex: existing.toolIndex,
           authorityScope: existing.authorityScope,
-          paperclipProfile: existing.paperclipProfile
+          runtimeProfile: existing.runtimeProfile
         },
         generatedFiles
       }

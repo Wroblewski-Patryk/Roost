@@ -70,7 +70,7 @@ Top-level settings sections:
 | Section | Purpose |
 | --- | --- |
 | Integrations | Integration list with one contextual configuration form per provider. |
-| Agent keys | Minimal API key creation for Jarvis, Paperclip, and future apps. |
+| Agent keys | Minimal API key creation for Jarvis, Codex Agent Host, and future apps. |
 | MCP | Copy/read the MCP manifest URL and local server command. |
 
 ## Layer Model
@@ -83,7 +83,7 @@ contracts:
 - Google Drive: integration-list `active` switch, `Client ID`, `Client secret`,
   `rootFolderIds`, `sharedDriveIds`, `selectedFolderIds`, `syncMode`,
   `importMode`, and optional `changesPageToken`.
-- Jarvis/Paperclip: `Agent`, `Access profile`, and generated API key.
+- Jarvis/Codex Agent Host: `Agent`, `Access profile`, and generated API key.
 - MCP: `Manifest URL` and local server command.
 
 Detailed access review, tool catalogs, sync logs, and audit trails belong in

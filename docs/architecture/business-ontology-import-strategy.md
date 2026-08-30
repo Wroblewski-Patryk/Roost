@@ -34,7 +34,7 @@ instead of creating a parallel system.
 | APQC category or process domain | Future process-domain taxonomy linked to existing `processes`, `business_functions`, and `operating_areas`. | Add only after an audit proves current process records cannot express the needed classification. |
 | APQC process or activity | Existing `processes`, `pipelines`, `procedures`, and `procedure_steps`. | Prefer classification/linking before creating new workflow roots. |
 | SIPOC supplier/input/output/customer | Process context, knowledge items, resources, relationships, clients, stakeholders, and acceptance criteria. | Start as read-only context and validation metadata. |
-| Org-chart node | `workforce_entities`, `users`, `agents`, `company_roles`, and future rank/supervisor records. | Reconcile with current People/Agents and Paperclip director records before importing. |
+| Org-chart node | `workforce_entities`, `users`, `agents`, `company_roles`, and future rank/supervisor records. | Reconcile with current People/Agents and Codex Agent Host director records before importing. |
 | MECE responsibility | `company_roles`, `business_functions`, and future explicit responsibility records. | Every high-impact responsibility needs one accountable owner. |
 | PAEI tag | Behavioral profile metadata on roles, agents, or imported process rows. | PAEI informs routing and staffing; it is not an authorization model. |
 | ACL row | Capabilities, service-key profiles, approval gates, policies, controls, and blocked actions. | Permissions must remain enforced through API/MCP/auth policy, not CSV alone. |
@@ -140,16 +140,16 @@ runtime enforcement must continue through:
 - policies and controls;
 - audit/event evidence.
 
-Every imported ACL row must also declare blocked actions so Paperclip and other
+Every imported ACL row must also declare blocked actions so Codex Agent Host and other
 agents can understand what they cannot do.
 
-## Paperclip Usage
+## Codex Agent Host Usage
 
-Paperclip should consume this ontology through CompanyCore API/MCP read packets
+Codex Agent Host should consume this ontology through CompanyCore API/MCP read packets
 and command routes. It must not import CSV files directly into its own separate
 authority model.
 
-Target Paperclip loop:
+Target Codex Agent Host loop:
 
 ```text
 business plan / owner intent
@@ -160,7 +160,7 @@ business plan / owner intent
   -> evidence, feedback, and next gap
 ```
 
-Paperclip may use APQC/SIPOC/org/ACL data to plan, classify, and propose work.
+Codex Agent Host may use APQC/SIPOC/org/ACL data to plan, classify, and propose work.
 It may execute only through approved CompanyCore capabilities and approval
 gates.
 
@@ -176,7 +176,7 @@ gates.
    detection, and blocked action checks.
 4. `ONTOLOGY-005` MECE responsibility and PAEI mapping audit over current
    departments, roles, agents, and workforce entities.
-5. `ONTOLOGY-006` read-only Paperclip planning packet that exposes process
+5. `ONTOLOGY-006` read-only Codex Agent Host planning packet that exposes process
    taxonomy, responsibilities, SOP links, blocked actions, and approval gates.
 
 ## Guardrails

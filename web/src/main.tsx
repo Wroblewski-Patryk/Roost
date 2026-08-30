@@ -39,6 +39,7 @@ const SalesRoute = lazy(() => import("./features/departments/sales-route").then(
 const OperationsRoute = lazy(() => import("./features/departments/operations-route").then((module) => ({ default: module.OperationsRoute })));
 const RelationshipsRoute = lazy(() => import("./features/departments/relationships-route").then((module) => ({ default: module.RelationshipsRoute })));
 const PeopleAgentsRoute = lazy(() => import("./features/departments/people-agents-route").then((module) => ({ default: module.PeopleAgentsRoute })));
+const AgentExecutionsRoute = lazy(() => import("./features/departments/agent-executions-route").then((module) => ({ default: module.AgentExecutionsRoute })));
 const FinanceRoute = lazy(() => import("./features/departments/finance-route").then((module) => ({ default: module.FinanceRoute })));
 const TechnologyRoute = lazy(() => import("./features/departments/technology-route").then((module) => ({ default: module.TechnologyRoute })));
 const LegalRoute = lazy(() => import("./features/departments/legal-route").then((module) => ({ default: module.LegalRoute })));
@@ -238,6 +239,9 @@ function App() {
   }
 
   if (pathname === "/people-agents" || pathname === "/workforce" || (pathname === "/areas" && currentAreaKey() === "06-kadry")) {
+    if (pathname === "/areas" && currentAreaView() === "executions") {
+      return <>{metadata}<PrivateAppRoute activeArea="06-kadry"><AgentExecutionsRoute /></PrivateAppRoute></>;
+    }
     if (pathname !== "/areas" || window.location.search !== "?area=06-kadry&view=directory") {
       window.history.replaceState(null, "", canonicalPeopleAgentsPath);
     }

@@ -448,7 +448,7 @@ intakeRouter.get("/", asyncHandler(async (req, res) => {
         workspaceId,
         OR: [
           { projectId: null, goalId: null, targetId: null, taskListId: null },
-          { source: { in: ["paperclip", "jarvis", "clickup", "google_drive"] } }
+          { source: { in: ["agent_runtime", "codex", "jarvis", "clickup", "google_drive"] } }
         ]
       },
       orderBy: { updatedAt: "desc" },
@@ -457,7 +457,7 @@ intakeRouter.get("/", asyncHandler(async (req, res) => {
     prisma.event.findMany({
       where: {
         workspaceId,
-        source: { in: ["paperclip", "jarvis", "clickup", "google_drive", "agent", "automation"] }
+        source: { in: ["agent_runtime", "codex", "jarvis", "clickup", "google_drive", "agent", "automation"] }
       },
       orderBy: { createdAt: "desc" },
       take: perSourceLimit
@@ -634,11 +634,11 @@ intakeRouter.get("/", asyncHandler(async (req, res) => {
       }
     })),
     ...tasks.map((task) => item({
-      family: task.source === "paperclip" ? "agent_output" : "owner_idea",
+      family: ["agent_runtime", "codex"].includes(task.source ?? "") ? "agent_output" : "owner_idea",
       status: "ready_to_route",
       title: task.title,
       source: task.source ?? "companycore",
-      sourceAgent: task.source === "paperclip" || task.source === "jarvis" ? task.source : null,
+      sourceAgent: ["agent_runtime", "codex", "jarvis"].includes(task.source ?? "") ? task.source : null,
       sourceModel: "Task",
       sourceId: task.id,
       risk: inferRisk(task.title, task.description),

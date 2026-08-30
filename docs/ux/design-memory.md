@@ -267,7 +267,7 @@ of rediscovering them.
 - Type: reusable_pattern
 - Context: The user asked for a clean settings surface that can support
   application settings, ClickUp, Google Drive, API keys, MCP, Jarvis,
-  Paperclip, and future AI/application access without scattering each tool
+  Codex Agent Host, and future AI/application access without scattering each tool
   into a separate view or mixing OAuth, imports, mapping, and permissions into
   one form.
 - Decision: Treat settings as a contextual connector configuration surface,
@@ -284,7 +284,7 @@ of rediscovering them.
 - Reuse when: Rebuilding `/settings`, `/settings/integrations`,
   `/settings/drive`, `/settings/api`, `/react-agent-tools`, ClickUp
   connection setup, Drive connection setup, service-key workflows, or future
-  Paperclip/Jarvis access screens.
+  Codex Agent Host/Jarvis access screens.
 - Avoid when: A route is a narrow record editor, table browser, or selected
   area capability view where the settings tab model would hide the immediate
   owner task.

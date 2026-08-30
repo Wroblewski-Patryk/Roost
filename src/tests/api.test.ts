@@ -39,7 +39,7 @@ function productMapPacket(observedAt: string, offeringId = "roost") {
     lifecycleProcedure: {
       procedureId: "PROC-SH-APPLICATION-LIFECYCLE" as const,
       procedureVersion: "1.0" as const,
-      executionAuthority: "paperclip" as const,
+      executionAuthority: "agent_runtime" as const,
       observedAt,
       verifiedAt: observedAt,
       freshness: "current" as const,
@@ -57,7 +57,7 @@ function productMapPacket(observedAt: string, offeringId = "roost") {
     },
     items: [{
       offeringId,
-      paperclipProjectName: "Roost",
+      executionProjectName: "Roost",
       lifecycleStage: "implementation",
       conflictState: "none" as const,
       sourceControl: {
@@ -118,6 +118,9 @@ function assertSafeTestDatabase() {
 
 async function resetDatabase() {
   assertSafeTestDatabase();
+  await prisma.agentExecutionEvent.deleteMany();
+  await prisma.agentExecution.deleteMany();
+  await prisma.agentHost.deleteMany();
   await prisma.applicationEvidence.deleteMany();
   await prisma.capabilityObservation.deleteMany();
   await prisma.applicationInterface.deleteMany();
@@ -1113,6 +1116,118 @@ test("product engineering keeps definitions shared, observations explicit, and p
   assert.equal(revisionBody.status, "draft");
 });
 
+test("local Codex Agent Host claims scoped work and reports owner-visible evidence", async () => {
+  delete process.env.ROOST_CODEX_EXECUTION_ENABLED;
+  const owner = await registerOwner("codex-runtime-owner@example.com", "Codex Runtime Workspace");
+  const outsider = await registerOwner("codex-runtime-outsider@example.com", "Other Runtime Workspace");
+  const ownerAuth = { Authorization: `Bearer ${owner.token}` };
+  const application = await prisma.application.create({
+    data: { workspaceId: owner.workspace.id, name: "Soar Runtime Test", slug: "soar-runtime-test", targetPlatforms: ["web"] }
+  });
+  const project = await prisma.project.create({ data: { workspaceId: owner.workspace.id, name: "Soar runtime delivery", status: "active" } });
+  await prisma.applicationProject.create({ data: { applicationId: application.id, projectId: project.id, relationType: "delivery" } });
+  const task = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: project.id, title: "Implement the runtime slice", status: "todo" } });
+
+  const keyResponse = await request("/v1/api-keys", {
+    method: "POST",
+    headers: ownerAuth,
+    body: JSON.stringify({ name: "Windows Codex host", profileId: "mcp_codex_worker" })
+  });
+  assert.equal(keyResponse.status, 201);
+  const workerAuth = { "X-API-Key": (keyResponse.body as { data: { key: string } }).data.key };
+
+  const hostResponse = await request("/v1/agent-runtime/hosts/register", {
+    method: "POST",
+    headers: workerAuth,
+    body: JSON.stringify({ name: "Test laptop", slug: "test-windows", platform: "win32-x64", capabilities: ["codex_exec_json"], applicationSlugs: [application.slug], metadata: {} })
+  });
+  assert.equal(hostResponse.status, 200);
+
+  const foundationReadiness = await request("/v1/agent-runtime/readiness", { headers: ownerAuth });
+  assert.equal(foundationReadiness.status, 200);
+  assert.equal((foundationReadiness.body as { data: { executionEnabled: boolean; mode: string } }).data.executionEnabled, false);
+  assert.equal((foundationReadiness.body as { data: { executionEnabled: boolean; mode: string } }).data.mode, "foundation_only");
+  const disabledQueue = await request("/v1/agent-runtime/executions", { method: "POST", headers: ownerAuth, body: JSON.stringify({ taskId: task.id }) });
+  assert.equal(disabledQueue.status, 409);
+  assert.equal((disabledQueue.body as { error: string }).error, "agent_execution_disabled");
+  process.env.ROOST_CODEX_EXECUTION_ENABLED = "true";
+
+  const queueResponse = await request("/v1/agent-runtime/executions", {
+    method: "POST",
+    headers: ownerAuth,
+    body: JSON.stringify({ taskId: task.id })
+  });
+  assert.equal(queueResponse.status, 201);
+  const queued = (queueResponse.body as { data: { id: string; applicationId: string; status: string } }).data;
+  assert.equal(queued.applicationId, application.id);
+  assert.equal(queued.status, "queued");
+
+  const duplicateQueue = await request("/v1/agent-runtime/executions", { method: "POST", headers: ownerAuth, body: JSON.stringify({ taskId: task.id }) });
+  assert.equal(duplicateQueue.status, 409);
+  const outsiderRead = await request(`/v1/agent-runtime/executions/${queued.id}`, { headers: { Authorization: `Bearer ${outsider.token}` } });
+  assert.equal(outsiderRead.status, 404);
+
+  const claimResponse = await request("/v1/agent-runtime/executions/claim", {
+    method: "POST",
+    headers: workerAuth,
+    body: JSON.stringify({ hostSlug: "test-windows" })
+  });
+  assert.equal(claimResponse.status, 200);
+  const claimed = (claimResponse.body as { data: { id: string; leaseToken: string; status: string } }).data;
+  assert.equal(claimed.id, queued.id);
+  assert.equal(claimed.status, "claimed");
+  assert.ok(claimed.leaseToken);
+  assert.equal((await prisma.task.findUniqueOrThrow({ where: { id: task.id } })).status, "in_progress");
+
+  const heartbeat = await request(`/v1/agent-runtime/executions/${queued.id}/heartbeat`, {
+    method: "POST", headers: workerAuth,
+    body: JSON.stringify({ leaseToken: claimed.leaseToken, status: "running", codexThreadId: "thread-test" })
+  });
+  assert.equal(heartbeat.status, 200);
+  const progressEvent = await request(`/v1/agent-runtime/executions/${queued.id}/events`, {
+    method: "POST", headers: workerAuth,
+    body: JSON.stringify({ leaseToken: claimed.leaseToken, type: "file_change", message: "Updated src/app.ts", payload: { path: "src/app.ts" } })
+  });
+  assert.equal(progressEvent.status, 201);
+
+  const complete = await request(`/v1/agent-runtime/executions/${queued.id}/actions/complete`, {
+    method: "POST", headers: workerAuth,
+    body: JSON.stringify({ leaseToken: claimed.leaseToken, summary: "Implemented and verified.", finalResponse: "Ready for owner review.", codexThreadId: "thread-test", changedFiles: ["src/app.ts"], verification: { commands: [{ command: "npm run typecheck", exitCode: 0 }] }, usage: { input_tokens: 10 } })
+  });
+  assert.equal(complete.status, 200);
+  assert.equal((complete.body as { data: { status: string } }).data.status, "completed");
+  assert.equal(await prisma.evidenceRecord.count({ where: { workspaceId: owner.workspace.id, entityType: "task", entityId: task.id, metadata: { path: ["executionId"], equals: queued.id } } }), 1);
+
+  const ownerRead = await request(`/v1/agent-runtime/executions/${queued.id}`, { headers: ownerAuth });
+  assert.equal(ownerRead.status, 200);
+  const ownerExecution = (ownerRead.body as { data: { status: string; changedFiles: string[]; events: Array<{ type: string }> } }).data;
+  assert.equal(ownerExecution.status, "completed");
+  assert.deepEqual(ownerExecution.changedFiles, ["src/app.ts"]);
+  assert.ok(ownerExecution.events.some((event) => event.type === "completed"));
+
+  const retryCompleted = await request(`/v1/agent-runtime/executions/${queued.id}/actions/retry`, { method: "POST", headers: ownerAuth, body: "{}" });
+  assert.equal(retryCompleted.status, 409, "completed work requires a new owner decision, not an automatic retry");
+
+  const cancelledTask = await prisma.task.create({ data: { workspaceId: owner.workspace.id, projectId: project.id, title: "Cancel the runtime slice", status: "todo" } });
+  const cancelQueue = await request("/v1/agent-runtime/executions", { method: "POST", headers: ownerAuth, body: JSON.stringify({ taskId: cancelledTask.id }) });
+  assert.equal(cancelQueue.status, 201);
+  const cancelExecutionId = (cancelQueue.body as { data: { id: string } }).data.id;
+  const cancelClaim = await request("/v1/agent-runtime/executions/claim", { method: "POST", headers: workerAuth, body: JSON.stringify({ hostSlug: "test-windows" }) });
+  assert.equal(cancelClaim.status, 200);
+  const cancelLeaseToken = (cancelClaim.body as { data: { leaseToken: string } }).data.leaseToken;
+  const cancelRequest = await request(`/v1/agent-runtime/executions/${cancelExecutionId}/actions/cancel`, { method: "POST", headers: ownerAuth, body: "{}" });
+  assert.equal(cancelRequest.status, 200);
+  const cancelledHeartbeat = await request(`/v1/agent-runtime/executions/${cancelExecutionId}/heartbeat`, { method: "POST", headers: workerAuth, body: JSON.stringify({ leaseToken: cancelLeaseToken, status: "running" }) });
+  assert.equal(cancelledHeartbeat.status, 409);
+  assert.equal((cancelledHeartbeat.body as { error: string }).error, "agent_execution_cancel_requested");
+  const cancellationAck = await request(`/v1/agent-runtime/executions/${cancelExecutionId}/actions/cancelled`, { method: "POST", headers: workerAuth, body: JSON.stringify({ leaseToken: cancelLeaseToken }) });
+  assert.equal(cancellationAck.status, 200);
+  const retryCancelled = await request(`/v1/agent-runtime/executions/${cancelExecutionId}/actions/retry`, { method: "POST", headers: ownerAuth, body: "{}" });
+  assert.equal(retryCancelled.status, 201);
+  assert.equal((retryCancelled.body as { data: { status: string } }).data.status, "queued");
+  delete process.env.ROOST_CODEX_EXECUTION_ENABLED;
+});
+
 test("CompanyCore v1 protected API flow", async () => {
   const health = await request("/health");
   assert.equal(health.status, 200);
@@ -1313,13 +1428,13 @@ test("CompanyCore v1 protected API flow", async () => {
     body: JSON.stringify({
       type: "agent",
       status: "active",
-      name: "Paperclip Operations Agent",
+      name: "Codex Operations Agent",
       department: "06-kadry",
       role: "Operations runtime worker",
       personalityProfile: "analytical",
       runtimeMode: "semi_autonomous",
       model: "gpt-5.4",
-      paperclipAgentId: "paperclip-ops",
+      runtimeExternalId: "codex-ops",
       synchronizationEnabled: true,
       hierarchyLevel: "department_director",
       bigFiveProfile: {
@@ -1345,7 +1460,7 @@ test("CompanyCore v1 protected API flow", async () => {
       bigFiveProfile: { openness: number };
     };
   };
-  assert.ok(workforceAgentBody.data.generatedFiles["agent.md"].includes("Paperclip Operations Agent"));
+  assert.ok(workforceAgentBody.data.generatedFiles["agent.md"].includes("Codex Operations Agent"));
   assert.ok(workforceAgentBody.data.generatedFiles["agent.md"].includes("APQC Process Map"));
   assert.ok(workforceAgentBody.data.generatedFiles["personality.md"].includes("openness: 0.80"));
   assert.ok(workforceAgentBody.data.generatedFiles["environment.md"].includes("00 General"));
@@ -1390,11 +1505,11 @@ test("CompanyCore v1 protected API flow", async () => {
   const unauthenticatedCommercialExceptions = await request("/v1/commercial-exceptions");
   assert.equal(unauthenticatedCommercialExceptions.status, 401);
 
-  const paperclipIntakeEvent = await prisma.agentEventOutbox.create({
+  const codexIntakeEvent = await prisma.agentEventOutbox.create({
     data: {
       workspaceId: ownerA.workspace.id,
-      eventType: "paperclip_pricing_discount_proposal",
-      targetAgent: "paperclip",
+      eventType: "codex_pricing_discount_proposal",
+      targetAgent: "codex",
       payload: {
         client: "Trial client",
         proposedDiscount: "100%",
@@ -1407,14 +1522,14 @@ test("CompanyCore v1 protected API flow", async () => {
       workspaceId: ownerA.workspace.id,
       eventType: "jarvis_internal_note",
       targetAgent: "jarvis",
-      payload: { note: "Not for Paperclip filtered intake." }
+      payload: { note: "Not for Codex filtered intake." }
     }
   });
   const foreignIntakeEvent = await prisma.agentEventOutbox.create({
     data: {
       workspaceId: ownerB.workspace.id,
       eventType: "foreign_workspace_signal",
-      targetAgent: "paperclip",
+      targetAgent: "codex",
       payload: { leak: false }
     }
   });
@@ -1465,7 +1580,7 @@ test("CompanyCore v1 protected API flow", async () => {
     data: {
       workspaceId: ownerA.workspace.id,
       requestedByType: "agent",
-      requestedById: "paperclip",
+      requestedById: "codex",
       requestedForAction: "invoice.discount.apply",
       resourceType: "deal",
       riskLevel: "high"
@@ -1507,7 +1622,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.ok(globalIntakeBody.data.summary.byDepartment["00-ogolny"] >= 1);
   assert.ok(globalIntakeBody.data.items.some((item) => (
     item.sourceModel === "AgentEventOutbox"
-    && item.sourceId === paperclipIntakeEvent.id
+    && item.sourceId === codexIntakeEvent.id
     && item.family === "agent_output"
     && item.suggestedDepartment === "07-finanse"
   )));
@@ -1547,18 +1662,18 @@ test("CompanyCore v1 protected API flow", async () => {
   )));
   assert.ok(!globalIntakeBody.data.items.some((item) => item.sourceId === foreignIntakeEvent.id));
 
-  const paperclipFilteredIntake = await request("/v1/intake?sourceAgent=paperclip&limit=20", { headers: authA });
-  assert.equal(paperclipFilteredIntake.status, 200);
-  const paperclipFilteredIntakeBody = paperclipFilteredIntake.body as {
+  const codexFilteredIntake = await request("/v1/intake?sourceAgent=codex&limit=20", { headers: authA });
+  assert.equal(codexFilteredIntake.status, 200);
+  const codexFilteredIntakeBody = codexFilteredIntake.body as {
     data: { items: Array<{ sourceId: string; sourceAgent?: string | null }> };
   };
-  assert.ok(paperclipFilteredIntakeBody.data.items.some((item) => item.sourceId === paperclipIntakeEvent.id));
-  assert.ok(!paperclipFilteredIntakeBody.data.items.some((item) => item.sourceId === jarvisIntakeEvent.id));
+  assert.ok(codexFilteredIntakeBody.data.items.some((item) => item.sourceId === codexIntakeEvent.id));
+  assert.ok(!codexFilteredIntakeBody.data.items.some((item) => item.sourceId === jarvisIntakeEvent.id));
 
-  const pendingPaperclipEventAfterIntake = await prisma.agentEventOutbox.findUniqueOrThrow({
-    where: { id: paperclipIntakeEvent.id }
+  const pendingCodexEventAfterIntake = await prisma.agentEventOutbox.findUniqueOrThrow({
+    where: { id: codexIntakeEvent.id }
   });
-  assert.equal(pendingPaperclipEventAfterIntake.deliveryStatus, "pending");
+  assert.equal(pendingCodexEventAfterIntake.deliveryStatus, "pending");
 
   const mcpManifestWithIntake = await request("/v1/mcp/manifest", { headers: authA });
   assert.equal(mcpManifestWithIntake.status, 200);
@@ -1592,15 +1707,15 @@ test("CompanyCore v1 protected API flow", async () => {
     headers: authA,
     body: JSON.stringify({
       sourceModel: "AgentEventOutbox",
-      sourceId: paperclipIntakeEvent.id,
+      sourceId: codexIntakeEvent.id,
       targetDepartmentKey: "03-sprzedaz",
       classification: "route_to_department",
-      reason: "Paperclip proposal should be reviewed by Sales before any commercial action.",
+      reason: "Codex proposal should be reviewed by Sales before any commercial action.",
       proposedNextAction: "Review the discount context and decide whether a Sales follow-up task is needed.",
       riskLevel: "medium",
       requestOwnerDecision: true,
       createTaskDraft: true,
-      idempotencyKey: "paperclip-discount-route-test"
+      idempotencyKey: "codex-discount-route-test"
     })
   });
   assert.equal(routeProposal.status, 201);
@@ -1628,7 +1743,7 @@ test("CompanyCore v1 protected API flow", async () => {
     };
   };
   assert.equal(routeProposalBody.data.proposal.sourceModel, "AgentEventOutbox");
-  assert.equal(routeProposalBody.data.proposal.sourceId, paperclipIntakeEvent.id);
+  assert.equal(routeProposalBody.data.proposal.sourceId, codexIntakeEvent.id);
   assert.equal(routeProposalBody.data.proposal.targetDepartmentKey, "03-sprzedaz");
   assert.equal(routeProposalBody.data.proposal.status, "proposed");
   assert.equal(routeProposalBody.data.effects.sourceMutated, false);
@@ -1666,25 +1781,25 @@ test("CompanyCore v1 protected API flow", async () => {
   });
   assert.equal(proposalEvent.source, "companycore_intake");
 
-  const pendingPaperclipEventAfterProposal = await prisma.agentEventOutbox.findUniqueOrThrow({
-    where: { id: paperclipIntakeEvent.id }
+  const pendingCodexEventAfterProposal = await prisma.agentEventOutbox.findUniqueOrThrow({
+    where: { id: codexIntakeEvent.id }
   });
-  assert.equal(pendingPaperclipEventAfterProposal.deliveryStatus, "pending");
+  assert.equal(pendingCodexEventAfterProposal.deliveryStatus, "pending");
 
   const repeatedRouteProposal = await request("/v1/intake/actions/propose-route", {
     method: "POST",
     headers: authA,
     body: JSON.stringify({
       sourceModel: "AgentEventOutbox",
-      sourceId: paperclipIntakeEvent.id,
+      sourceId: codexIntakeEvent.id,
       targetDepartmentKey: "03-sprzedaz",
       classification: "route_to_department",
-      reason: "Paperclip proposal should be reviewed by Sales before any commercial action.",
+      reason: "Codex proposal should be reviewed by Sales before any commercial action.",
       proposedNextAction: "Review the discount context and decide whether a Sales follow-up task is needed.",
       riskLevel: "medium",
       requestOwnerDecision: true,
       createTaskDraft: true,
-      idempotencyKey: "paperclip-discount-route-test"
+      idempotencyKey: "codex-discount-route-test"
     })
   });
   assert.equal(repeatedRouteProposal.status, 200);
@@ -1748,7 +1863,7 @@ test("CompanyCore v1 protected API flow", async () => {
   const readbackProposal = routeProposalReadbackBody.data.proposals.find((proposal) => proposal.proposal.id === proposalDecision.id);
   assert.ok(readbackProposal);
   assert.equal(readbackProposal.proposal.sourceModel, "AgentEventOutbox");
-  assert.equal(readbackProposal.proposal.sourceId, paperclipIntakeEvent.id);
+  assert.equal(readbackProposal.proposal.sourceId, codexIntakeEvent.id);
   assert.equal(readbackProposal.proposal.targetDepartmentKey, "03-sprzedaz");
   assert.equal(readbackProposal.proposal.lifecycleState, "task_draft_created");
   assert.equal(readbackProposal.proposal.riskLevel, "medium");
@@ -1792,7 +1907,7 @@ test("CompanyCore v1 protected API flow", async () => {
     headers: authA,
     body: JSON.stringify({
       sourceModel: "AgentEventOutbox",
-      sourceId: paperclipIntakeEvent.id,
+      sourceId: codexIntakeEvent.id,
       targetDepartmentKey: "07-finance",
       classification: "route_to_department",
       reason: "Non-canonical department keys should be rejected.",
@@ -1814,7 +1929,7 @@ test("CompanyCore v1 protected API flow", async () => {
   await prisma.googleDriveFile.delete({ where: { id: unassignedDriveFile.id } });
   await prisma.providerEventInbox.delete({ where: { id: failedProviderIntake.id } });
   await prisma.agentEventOutbox.deleteMany({
-    where: { id: { in: [paperclipIntakeEvent.id, jarvisIntakeEvent.id, foreignIntakeEvent.id] } }
+    where: { id: { in: [codexIntakeEvent.id, jarvisIntakeEvent.id, foreignIntakeEvent.id] } }
   });
 
   const commercialClient = await prisma.client.create({
@@ -1840,7 +1955,7 @@ test("CompanyCore v1 protected API flow", async () => {
     data: {
       workspaceId: ownerA.workspace.id,
       requestedByType: "agent",
-      requestedById: "paperclip",
+      requestedById: "codex",
       requestedForAction: "invoice.discount.apply 100% portfolio trial discount",
       resourceType: "deal",
       resourceId: commercialDeal.id,
@@ -1868,8 +1983,8 @@ test("CompanyCore v1 protected API flow", async () => {
   const commercialAgentEvent = await prisma.agentEventOutbox.create({
     data: {
       workspaceId: ownerA.workspace.id,
-      eventType: "paperclip_commercial_exception_candidate",
-      targetAgent: "paperclip",
+      eventType: "codex_commercial_exception_candidate",
+      targetAgent: "codex",
       payload: {
         clientName: "Current discount client",
         proposedDiscount: "100%",
@@ -2344,7 +2459,7 @@ test("CompanyCore v1 protected API flow", async () => {
     data: {
       workspaceId: ownerA.workspace.id,
       requestedByType: "agent",
-      requestedById: "paperclip",
+      requestedById: "codex",
       requestedForAction: "operations.weekly_plan.approve",
       resourceType: "procedure",
       resourceId: operationsProcedure.id,
@@ -3645,7 +3760,7 @@ test("CompanyCore v1 protected API flow", async () => {
       chosenOption: "focused AI operations",
       reason: "Better positioning and delivery leverage.",
       decidedByType: "user",
-      consequences: "Prioritize CompanyCore and Paperclip integration work."
+      consequences: "Prioritize CompanyCore and Codex integration work."
     }
   });
   const strategyDecision = await prisma.decision.create({
@@ -3662,7 +3777,7 @@ test("CompanyCore v1 protected API flow", async () => {
       workspaceId: ownerA.workspace.id,
       title: "Strategy brief",
       itemType: "strategy_note",
-      summary: "Owner strategy, goals, and constraints for Paperclip planning.",
+      summary: "Owner strategy, goals, and constraints for Codex planning.",
       sourceProvider: "test",
       sourceExternalId: "strategy-brief"
     }
@@ -7605,7 +7720,7 @@ test("CompanyCore v1 protected API flow", async () => {
     headers: authA,
     body: JSON.stringify({
       projectId: projectAId,
-      name: "Paperclip intake"
+      name: "Codex intake"
     })
   });
   assert.equal(taskList.status, 201);
@@ -8117,8 +8232,8 @@ test("CompanyCore v1 protected API flow", async () => {
     body: JSON.stringify({
       clientId,
       type: "email",
-      summary: "Paperclip captured a reply from the lead",
-      source: "paperclip"
+      summary: "Codex captured a reply from the lead",
+      source: "codex"
     })
   });
   assert.equal(interaction.status, 201);
@@ -8131,7 +8246,7 @@ test("CompanyCore v1 protected API flow", async () => {
     method: "PATCH",
     headers: authA,
     body: JSON.stringify({
-      summary: "Paperclip captured and enriched a reply"
+      summary: "Codex captured and enriched a reply"
     })
   });
   assert.equal(updatedInteraction.status, 200);
@@ -9109,7 +9224,7 @@ test("CompanyCore v1 protected API flow", async () => {
     }
   });
   assert.equal(driveAgentEvents.length, 2);
-  const pendingAgentEvents = await request("/v1/agent-events?targetAgent=paperclip", {
+  const pendingAgentEvents = await request("/v1/agent-events?targetAgent=codex", {
     headers: { "X-API-Key": serviceKey }
   });
   assert.equal(pendingAgentEvents.status, 200);
@@ -9117,7 +9232,7 @@ test("CompanyCore v1 protected API flow", async () => {
   const acknowledgedAgentEvent = await request(`/v1/agent-events/${driveAgentEvents[0]!.id}/ack`, {
     method: "POST",
     headers: { "X-API-Key": serviceKey },
-    body: JSON.stringify({ targetAgent: "paperclip" })
+    body: JSON.stringify({ targetAgent: "codex" })
   });
   assert.equal(acknowledgedAgentEvent.status, 200);
   assert.equal((acknowledgedAgentEvent.body as { data: { deliveryStatus: string } }).data.deliveryStatus, "delivered");
@@ -10420,21 +10535,21 @@ test("CompanyCore v1 protected API flow", async () => {
   const projectionSourceBinding = await request("/v1/product-map/projection/source", {
     method: "PUT",
     headers: authA,
-    body: JSON.stringify({ companyId: "paperclip-company-a" })
+    body: JSON.stringify({ companyId: "codex-company-a" })
   });
   assert.equal(projectionSourceBinding.status, 200);
-  assert.deepEqual(projectionSourceBinding.body, { data: { companyId: "paperclip-company-a", state: "bound" } });
+  assert.deepEqual(projectionSourceBinding.body, { data: { companyId: "codex-company-a", state: "bound" } });
   const projectionSourceIdempotent = await request("/v1/product-map/projection/source", {
     method: "PUT",
     headers: authA,
-    body: JSON.stringify({ companyId: "paperclip-company-a" })
+    body: JSON.stringify({ companyId: "codex-company-a" })
   });
   assert.equal(projectionSourceIdempotent.status, 200);
-  assert.deepEqual(projectionSourceIdempotent.body, { data: { companyId: "paperclip-company-a", state: "unchanged" } });
+  assert.deepEqual(projectionSourceIdempotent.body, { data: { companyId: "codex-company-a", state: "unchanged" } });
   const projectionSourceRemapDenied = await request("/v1/product-map/projection/source", {
     method: "PUT",
     headers: authA,
-    body: JSON.stringify({ companyId: "paperclip-company-b" })
+    body: JSON.stringify({ companyId: "codex-company-b" })
   });
   assert.equal(projectionSourceRemapDenied.status, 409);
   const productMapKey = await request("/v1/api-keys", {
@@ -10480,7 +10595,7 @@ test("CompanyCore v1 protected API flow", async () => {
   const productEnvelopeBase = {
     transportVersion: productMapTransportVersion,
     schemaVersion: productMapSchemaVersion,
-    companyId: "paperclip-company-a",
+    companyId: "codex-company-a",
     sourceSnapshotId: "portfolio-snapshot-a",
     observedAt: productObservedAt,
     publishedAt: new Date().toISOString(),
@@ -10571,7 +10686,7 @@ test("CompanyCore v1 protected API flow", async () => {
         identity: { procedureId: string; procedureVersion: string };
         gates: unknown[];
         audit: { correlationId: string; packetDigestPrefix: string };
-        authority: { readOnly: boolean; canMutatePaperclip: boolean; canPromoteReadiness: boolean };
+        authority: { readOnly: boolean; canMutateAgentRuntime: boolean; canPromoteReadiness: boolean };
       };
     };
   }).data;
@@ -10633,7 +10748,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.match(projectionProcedure.procedure.audit.correlationId, /^[0-9a-f-]{36}$/);
   assert.equal(projectionProcedure.procedure.audit.packetDigestPrefix, productDigest.slice(0, 12));
   assert.equal(projectionProcedure.procedure.authority.readOnly, true);
-  assert.equal(projectionProcedure.procedure.authority.canMutatePaperclip, false);
+  assert.equal(projectionProcedure.procedure.authority.canMutateAgentRuntime, false);
   assert.equal(projectionProcedure.procedure.authority.canPromoteReadiness, false);
   const repeatedProjectionRead = await request("/v1/product-map/projection", {
     headers: { "X-API-Key": projectionReadKeyValue, "X-Request-ID": "different-request-correlation" }

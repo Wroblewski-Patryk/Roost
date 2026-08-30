@@ -1,4 +1,4 @@
-﻿# Department Management Systems Architecture
+# Department Management Systems Architecture
 
 Last updated: 2026-05-16
 
@@ -25,7 +25,7 @@ The detailed V1 implementation blueprint for `00 Main` plus the 12 operating
 departments lives in
 `docs/architecture/department-management-systems-v1-blueprint.md`. Use that
 blueprint when planning department-specific web views, backend read models,
-safe write actions, and Paperclip department packets.
+safe write actions, and Codex Agent Host department packets.
 
 ## Core Principle
 
@@ -200,7 +200,7 @@ Department shell
 ```
 
 This standard layout lets the owner learn one pattern and then operate any
-department. It also lets Paperclip and other agents reason consistently about
+department. It also lets Codex Agent Host and other agents reason consistently about
 where to read context, propose work, request approval, and report evidence.
 
 ## Standard Component Groups
@@ -233,7 +233,7 @@ Department agent packet
   -> feedback and improvement queue
 ```
 
-Paperclip should use this packet to:
+Codex Agent Host should use this packet to:
 
 - understand the department's job;
 - find missing work;
@@ -277,7 +277,7 @@ sequence is:
 
 1. Which subsystem definitions should become durable records, and which should
    remain view configuration?
-2. Should each department have a typed agent profile, or should one Paperclip
+2. Should each department have a typed agent profile, or should one Codex Agent Host
    profile inspect all departments with scoped capabilities?
 3. Which V1 department systems need write actions first?
 4. Which provider integrations are required for marketing ads, finance, and

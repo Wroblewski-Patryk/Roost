@@ -70,14 +70,14 @@ const workProductEvidenceSchema = z.object({
   objectId: uuidSchema,
   label: nonBlank(120)
 }).strict();
-export const paperclipEvidenceRefSchema = z.union([
+export const agentExecutionEvidenceRefSchema = z.union([
   issueEvidenceSchema,
   commentEvidenceSchema,
   documentEvidenceSchema,
   attachmentEvidenceSchema,
   workProductEvidenceSchema
 ]);
-export type PaperclipEvidenceRef = z.infer<typeof paperclipEvidenceRefSchema>;
+export type AgentExecutionEvidenceRef = z.infer<typeof agentExecutionEvidenceRefSchema>;
 
 export const lifecycleGateResultSchema = z.object({
   stageKey: lifecycleStageKeySchema,
@@ -85,7 +85,7 @@ export const lifecycleGateResultSchema = z.object({
   summary: nonBlank(500),
   ownerRole: nonBlank(120),
   verifiedAt: isoDateTimeSchema.nullable(),
-  evidenceRefs: z.array(paperclipEvidenceRefSchema).max(10)
+  evidenceRefs: z.array(agentExecutionEvidenceRefSchema).max(10)
 }).strict().superRefine((gate, ctx) => {
   if (gate.status === "verified" && (!gate.verifiedAt || gate.evidenceRefs.length === 0)) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: "verified_gate_requires_evidence" });
@@ -105,12 +105,12 @@ const lifecycleSourceSchema = z.object({
 export const lifecycleExecutionProjectionSchema = z.object({
   procedureId: z.literal(lifecycleProcedureId),
   procedureVersion: z.literal(lifecycleProcedureVersion),
-  executionAuthority: z.literal("paperclip"),
+  executionAuthority: z.literal("agent_runtime"),
   observedAt: isoDateTimeSchema,
   verifiedAt: isoDateTimeSchema.nullable(),
   freshness: z.enum(["current", "stale", "unavailable"]),
   gateResults: z.array(lifecycleGateResultSchema).length(canonicalLifecycleStages.length),
-  evidenceRefs: z.array(paperclipEvidenceRefSchema).max(50),
+  evidenceRefs: z.array(agentExecutionEvidenceRefSchema).max(50),
   supersession: z.object({
     status: z.enum(["active", "superseded"]),
     supersedesVersion: nonBlank(40).nullable(),
@@ -151,7 +151,7 @@ const issueStatusCountsSchema = z.object({
 
 export const productMapOfferingSchema = z.object({
   offeringId: stableIdSchema,
-  paperclipProjectName: nonBlank(120),
+  executionProjectName: nonBlank(120),
   lifecycleStage: nonBlank(120),
   applicationVersion: z.object({
     namespace: z.literal("application_release"),
@@ -413,7 +413,7 @@ export function quarantineInvalidatesActiveProjection(reason: string | null | un
 export function packetWideLifecycleConflicts(packet: ProductMapProjectionPacket): LifecycleConflict[] {
   const conflicts: LifecycleConflict[] = [];
   if (packet.sourceState !== "available" || packet.conflictState === "source_unavailable") {
-    conflicts.push(conflict("source_unavailable", "The Paperclip execution projection source is unavailable."));
+    conflicts.push(conflict("source_unavailable", "The agent-runtime execution projection source is unavailable."));
   }
   if (packet.conflictState === "project_mapping_conflict" || packet.conflictState === "owner_surface_unavailable") {
     conflicts.push(conflict("projection_conflict", "The Product Map projection contains an unresolved mapping or owner-surface conflict."));
@@ -432,14 +432,14 @@ function publicLifecycleStatus(status: string): PublicLifecycleStatus | null {
   return null;
 }
 
-function evidenceKey(ref: PaperclipEvidenceRef) {
+function evidenceKey(ref: AgentExecutionEvidenceRef) {
   if (ref.kind === "comment") return `${ref.kind}:${ref.issueIdentifier}:${ref.commentId}`;
   if (ref.kind === "document") return `${ref.kind}:${ref.issueIdentifier}:${ref.documentKey}`;
   if (ref.kind === "attachment" || ref.kind === "work_product") return `${ref.kind}:${ref.issueIdentifier}:${ref.objectId}`;
   return `${ref.kind}:${ref.issueIdentifier}`;
 }
 
-function evidenceHref(ref: PaperclipEvidenceRef) {
+function evidenceHref(ref: AgentExecutionEvidenceRef) {
   const base = `/LUC/issues/${ref.issueIdentifier}`;
   if (ref.kind === "comment") return `${base}#comment-${ref.commentId}`;
   if (ref.kind === "document") return `${base}#document-${ref.documentKey}`;
@@ -647,7 +647,7 @@ export async function readProjection(workspaceId: string, now = new Date()) {
     },
     provenance: {
       definitionAuthority: "roost" as const,
-      executionAuthority: "paperclip" as const,
+      executionAuthority: "agent_runtime" as const,
       roostSource: lifecycleRoostSource,
       operatingContractSource: packet?.lifecycleProcedure.source ?? lifecycleOperatingContractSource,
       observedAt: packet?.lifecycleProcedure.observedAt ?? null,
@@ -660,7 +660,7 @@ export async function readProjection(workspaceId: string, now = new Date()) {
     relations: {
       offerings: packet?.items.map((item) => ({
         offeringId: item.offeringId,
-        name: item.paperclipProjectName,
+        name: item.executionProjectName,
         lifecycleStage: item.lifecycleStage,
         readiness: item.readiness.status
       })) ?? [],
@@ -698,9 +698,9 @@ export async function readProjection(workspaceId: string, now = new Date()) {
     } : null,
     authority: {
       readOnly: true as const,
-      executionSystem: "paperclip" as const,
+      executionSystem: "agent_runtime" as const,
       definitionSystem: "roost" as const,
-      canMutatePaperclip: false as const,
+      canMutateAgentRuntime: false as const,
       canPromoteReadiness: false as const
     }
   };

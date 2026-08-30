@@ -1,7 +1,7 @@
 # Agents Module
 
 The agents module exposes the workspace-scoped v1 agent registry for service
-clients such as Paperclip, Jarvis, Jarvan, and Aviary.
+clients such as Codex, Jarvis, Jarvan, and Aviary.
 
 Implemented routes:
 

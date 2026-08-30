@@ -1,7 +1,7 @@
 # Next development work
 
 The repository cleanup established a stable baseline for continued product
-development. No Paperclip issue queue is stored in the repository.
+development. No Codex Agent Host issue queue is stored in the repository.
 
 ## Recommended order
 

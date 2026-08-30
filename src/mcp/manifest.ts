@@ -174,11 +174,11 @@ function routeDescription(route: ManifestRoute) {
   }
 
   if (route.capability === "workforce:read") {
-    return "Read the 06 People and Agents source-of-truth context for humans, AI agents, roles, runtime modes, generated markdown files, and Paperclip synchronization state.";
+    return "Read the 06 People and Agents source-of-truth context for humans, AI agents, roles, runtime modes, generated markdown files, and agent-runtime synchronization state.";
   }
 
   if (route.capability === "workforce:write") {
-    return "Create or update CompanyCore workforce entities and request manual Paperclip runtime synchronization while preserving CompanyCore as the source of truth.";
+    return "Create or update Roost workforce entities and request agent-runtime synchronization while preserving Roost as the source of truth.";
   }
 
   if (route.capability === "assets:read") {
@@ -227,6 +227,18 @@ function routeDescription(route: ManifestRoute) {
 
   if (route.capability.startsWith("agent-events:")) {
     return "Read or acknowledge provider-neutral operational events for agents.";
+  }
+
+  if (route.capability === "agent-runtime:read") {
+    return "Read local Codex Agent Host availability, execution status, progress, verification evidence, and final results.";
+  }
+
+  if (route.capability === "agent-runtime:write") {
+    return "Queue, cancel, or retry a governed local Codex execution linked to an existing Roost task and application.";
+  }
+
+  if (route.capability === "agent-runtime:claim" || route.capability === "agent-runtime:report") {
+    return "Operate the lease-bound lifecycle used by an authenticated local Codex Agent Host without receiving direct database access.";
   }
 
   return "Call a workspace-scoped CompanyCore API route through the MCP bridge.";

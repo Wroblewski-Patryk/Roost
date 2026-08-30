@@ -1,6 +1,6 @@
 # Adapter Onboarding
 
-CompanyCore v1 is ready for service adapters such as Paperclip, Jarvis,
+CompanyCore v1 is ready for service adapters such as Codex Agent Host, Jarvis,
 Jarvan, Aviary, n8n, and other AI agents through the HTTP API. Adapters must
 use the API only; they must not connect directly to PostgreSQL or provider
 tools such as ClickUp.
@@ -121,7 +121,7 @@ tokens.
 ## Smoke Script
 
 After an owner creates a workspace service API key, run the adapter smoke script
-before wiring Paperclip or Jarvis:
+before wiring Codex Agent Host or Jarvis:
 
 ```powershell
 $env:COMPANYCORE_BASE_URL="https://api.roost.luckysparrow.ch"
@@ -174,10 +174,10 @@ X-API-Key: <workspace-service-key>
 Content-Type: application/json
 
 {
-  "title": "Review Paperclip lead capture flow",
-  "description": "Created by Paperclip adapter",
+  "title": "Review Codex Agent Host lead capture flow",
+  "description": "Created by Codex Agent Host adapter",
   "status": "todo",
-  "source": "paperclip"
+  "source": "agent_runtime"
 }
 ```
 
@@ -190,8 +190,8 @@ Content-Type: application/json
 
 {
   "projectId": "uuid",
-  "name": "Paperclip intake",
-  "source": "paperclip"
+  "name": "Codex Agent Host intake",
+  "source": "agent_runtime"
 }
 ```
 
@@ -232,8 +232,8 @@ Content-Type: application/json
 {
   "clientId": "uuid",
   "type": "email",
-  "summary": "Paperclip captured a reply from the lead",
-  "source": "paperclip"
+  "summary": "Codex Agent Host captured a reply from the lead",
+  "source": "agent_runtime"
 }
 ```
 
@@ -259,9 +259,9 @@ Content-Type: application/json
 
 {
   "level": "info",
-  "message": "Paperclip adapter completed sync",
+  "message": "Codex Agent Host adapter completed sync",
   "metadata": {
-    "adapter": "paperclip",
+    "adapter": "agent-runtime",
     "operation": "sync"
   }
 }
@@ -284,8 +284,8 @@ Authorization: Bearer <owner-token>
 Content-Type: application/json
 
 {
-  "name": "Paperclip adapter",
-  "scopes": ["adapter:paperclip"]
+  "name": "Codex Agent Host adapter",
+  "scopes": ["adapter:agent-runtime"]
 }
 ```
 
@@ -299,6 +299,6 @@ Subsequent list responses return only metadata and `keyPrefix`.
 - Treat `401`, `403`, and `422` as fail-closed startup errors.
 - Never include `workspaceId` in write payloads; CompanyCore derives it from
   auth.
-- Never call ClickUp directly from Paperclip/Jarvis when CompanyCore can own the
+- Never call ClickUp directly from Codex Agent Host/Jarvis when CompanyCore can own the
   integration.
 - Never store CompanyCore API keys in prompts, notebooks, logs, or public docs.

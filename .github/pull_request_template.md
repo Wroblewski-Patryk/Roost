@@ -50,7 +50,7 @@ Journeys executed:
 - Logs:
 
 ## Context Updated
-- [ ] Paperclip issue, comments, and work products updated where relevant
+- [ ] Roost task, Codex execution evidence, and work products updated where relevant
 - [ ] `docs/planning/*` if priorities or sequencing changed
 - [ ] Project docs or ADRs (if used):
 

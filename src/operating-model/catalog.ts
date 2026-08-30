@@ -241,7 +241,7 @@ export const operatingTables = [
     tableName: "workforce_entities",
     apiSlug: "workforce",
     name: "Workforce entities",
-    description: "Unified human and AI-agent roster used as the CompanyCore source of truth for Paperclip runtime sync"
+    description: "Unified human and AI-agent roster used as the Roost source of truth for supervised runtime context"
   },
   {
     areaKey: "sales-crm",
@@ -355,7 +355,7 @@ export function classifyOperatingAreaKey(...names: Array<string | null | undefin
   if (/(automation|integration|webhook|sync)/.test(text)) {
     return "automations-integrations";
   }
-  if (/(ai|agent|jarvis|paperclip|log|event|observability)/.test(text)) {
+  if (/(ai|agent|jarvis|codex|log|event|observability)/.test(text)) {
     return "ai-agents-observability";
   }
   if (/(operation|operations|administration|admin|office|backoffice)/.test(text)) {

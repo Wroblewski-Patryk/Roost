@@ -20,7 +20,7 @@ AI agents = workforce members using API/MCP and service integrations
 Providers = external systems connected through adapters
 ```
 
-AI systems such as Paperclip, Aviary, Jarvis, Codex, or future automation
+AI systems such as Codex Agent Host, Aviary, Jarvis, Codex, or future automation
 runtimes must remain external clients. They may receive work, read context,
 report progress, request approvals, and execute allowed commands only through
 CompanyCore API/MCP/service boundaries.
@@ -36,7 +36,7 @@ The current implementation already contains important foundations:
 | Roles and authority | `company_roles`, API scopes, capabilities, service-key profiles | evolve into rank, role, department, and project-context derived permissions |
 | Tasks | `tasks`, `task_lists`, ClickUp sync, Operations read packets | evolve from todo/status records into recursive delegated work items |
 | Workflows | `processes`, `pipelines`, `pipeline_stages`, `procedures`, `procedure_steps` | remain the canonical process/procedure model for human and agent execution |
-| Process Core | existing workflow definitions, runtime runs, approvals, events, audit, resources, workforce, and MCP manifest foundations | evolve into reusable workflow-item attachment, evidence, approval-policy, checklist, blueprint, linked-asset, and Paperclip sync context contracts across departments and entity types |
+| Process Core | existing workflow definitions, runtime runs, approvals, events, audit, resources, workforce, and MCP manifest foundations | evolve into reusable workflow-item attachment, evidence, approval-policy, checklist, blueprint, linked-asset, and agent runtime context contracts across departments and entity types |
 | Runtime state | `pipeline_runs`, `stage_runs`, `approvals`, `acceptance_criteria`, `events`, `audit_logs` | remain the auditable evidence layer for work, escalation, approval, and automation |
 | Resources and knowledge | `resources`, Drive files/snapshots, `knowledge_roots`, `knowledge_items`, notes, decisions | expose organizational context to humans and agents through permissioned read packets |
 | MCP/API | capability manifest, scoped key profiles, `/v1/mcp/manifest`, `/v1/connection` | become the primary structured world-state interface for external agents |
@@ -80,9 +80,9 @@ Target shared properties:
 
 Current `workforce_entities` V1 attributes are narrower: `type`, `status`,
 `name`, `slug`, `description`, `avatar`, `department`, `role`, `manager_id`,
-`personality_profile`, `model`, `runtime_mode`, `paperclip_agent_id`,
+`personality_profile`, `model`, `runtime_mode`, `runtime_external_id`,
 `synchronization_enabled`, generated markdown files, sync status, sync log, and
-timestamps. CompanyCore/Roost owns these values; Paperclip consumes them as a
+timestamps. CompanyCore/Roost owns these values; Codex Agent Host consumes them as a
 runtime target through explicit sync events.
 
 Human-specific profile data belongs in a human profile layer:

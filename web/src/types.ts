@@ -268,7 +268,7 @@ export type WorkforceEntity = {
   personalityProfile: "analytical" | "creative" | "executive" | "supportive" | "researcher" | "custom";
     model?: string | null;
     runtimeMode: "manual" | "semi_autonomous" | "autonomous";
-    paperclipAgentId?: string | null;
+    runtimeExternalId?: string | null;
     synchronizationEnabled: boolean;
     source?: string;
     externalId?: string | null;
@@ -278,7 +278,7 @@ export type WorkforceEntity = {
     knowledgeIndex?: string[];
     toolIndex?: string[];
     authorityScope?: string[];
-    paperclipProfile?: {
+    runtimeProfile?: {
       url?: string;
       title?: string;
       runtimeStatus?: string;

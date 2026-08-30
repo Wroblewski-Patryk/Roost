@@ -205,6 +205,50 @@ function ApplicationCard({
   );
 }
 
+function metadataText(application: ProductApplication, key: string) {
+  const value = application.metadata?.[key];
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+function OperationalContext({ application }: { application: ProductApplication }) {
+  const workspaceRoot = metadataText(application, "localWorkspaceRoot");
+  const localDirectory = metadataText(application, "localDirectory");
+  const repository = application.repositories?.find((item) => item.isPrimary) || application.repositories?.[0];
+  const deploymentUrl = metadataText(application, "deploymentUrl") || application.frontendUrl;
+  const localPath = workspaceRoot && localDirectory ? `${workspaceRoot}\\${localDirectory}` : null;
+
+  return (
+    <section className="rounded-company border border-base-300 bg-base-100 p-5 lg:col-span-2">
+      <div>
+        <p className="text-xs font-black uppercase text-primary">Codex + Roost</p>
+        <h3 className="text-xl font-black">Operational context</h3>
+        <p className="mt-1 text-sm text-company-muted">Canonical locations used to route local Codex work and owner-authorized releases.</p>
+      </div>
+      <dl className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div>
+          <dt className="text-xs font-black uppercase text-company-muted">Local repository</dt>
+          <dd className="mt-1 break-all font-mono text-sm">{localPath || "Not configured"}</dd>
+        </div>
+        <div>
+          <dt className="text-xs font-black uppercase text-company-muted">Git repository</dt>
+          <dd className="mt-1 break-all text-sm">{repository ? <a className="link link-primary" href={repository.url} rel="noreferrer" target="_blank">{repository.url}</a> : "Not configured"}</dd>
+          {repository?.defaultBranch ? <p className="mt-1 text-xs text-company-muted">Default branch: {repository.defaultBranch}</p> : null}
+        </div>
+        <div>
+          <dt className="text-xs font-black uppercase text-company-muted">Deployment</dt>
+          <dd className="mt-1 break-all text-sm">{deploymentUrl ? <a className="link link-primary" href={deploymentUrl} rel="noreferrer" target="_blank">{deploymentUrl}</a> : "Not configured"}</dd>
+          <p className="mt-1 text-xs text-company-muted">Coolify · triggered by an authorized Git push</p>
+        </div>
+        <div>
+          <dt className="text-xs font-black uppercase text-company-muted">Execution policy</dt>
+          <dd className="mt-1 text-sm font-bold">Codex runs locally on Windows</dd>
+          <p className="mt-1 text-xs text-company-muted">Commit, push and deployment require explicit owner authority.</p>
+        </div>
+      </dl>
+    </section>
+  );
+}
+
 function CreateApplicationPanel({
   catalog,
   onCreated,
@@ -1339,6 +1383,7 @@ export function InnovationRoute() {
                   Done dimensions (25%), and verified evidence coverage (15%).
                 </p>
               </section>
+              <OperationalContext application={selected} />
             </div>
           ) : null}
           {view === "capabilities" ? (

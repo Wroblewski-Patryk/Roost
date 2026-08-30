@@ -47,12 +47,17 @@ next-step handoff notes.
 
 ## Agent execution
 
-Paperclip owns agent roles, assignments, coordination, execution state, and
-handoffs. This repository supplies Roost code and project-specific technical
-truth; it does not maintain a second agent operating system.
+Roost owns task intent, governed company context, execution requests, and
+completion evidence. Local Codex Agent Hosts claim authorized work through the
+production API and report results back to Roost.
+
+The local execution boundary is fixed at
+`C:\Personal\Projekty\Aplikacje`. Agent Host configuration may select only
+allowlisted, direct-child Git repositories under that root; path traversal,
+nested repositories, links/junctions, and mismatched origins fail closed.
 
 ## Agent App-Building Helpers
 
 - `docs/governance/app-creation-playbook.md` turns loose app ideas into architecture and first slices.
 - `docs/governance/user-feedback-loop.md` keeps user notes and visual corrections durable.
-- Paperclip issues, comments, and work products carry execution handoffs.
+- Agent execution records, events, and evidence carry execution handoffs.

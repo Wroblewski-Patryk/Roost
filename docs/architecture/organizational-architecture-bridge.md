@@ -27,7 +27,7 @@ CompanyCore should become:
   knowledge, metrics, and decisions
 
 The product must be usable by humans through web and future mobile surfaces,
-and by AI agents through MCP. Paperclip, Jarvis, Codex, n8n, and future agents
+and by AI agents through MCP. Codex Agent Host, Jarvis, Codex, n8n, and future agents
 must operate through CompanyCore APIs or MCP tools rather than direct database
 or provider access.
 
@@ -40,7 +40,7 @@ derived view before implementation.
 External business operating taxonomies and templates are governed by
 `docs/architecture/business-ontology-import-strategy.md`. APQC PCF, SIPOC,
 organization-chart CSV, role/ACL mapping, and SOP templates are useful future
-inputs for process domains, responsibilities, hierarchy, and Paperclip
+inputs for process domains, responsibilities, hierarchy, and Codex Agent Host
 planning context, but they must be imported through CompanyCore contracts and
 must not become a parallel source of truth.
 
@@ -184,9 +184,9 @@ execution model should combine:
 - approvals and acceptance criteria
 - audit logs and decision logs
 - agent event outbox and provider event inbox
-- Paperclip/Jarvis/future-agent handoffs
+- Codex Agent Host/Jarvis/future-agent handoffs
 
-Paperclip should be treated as an execution/work item surface connected through
+Codex Agent Host should be treated as an execution/work item surface connected through
 CompanyCore events, MCP/API tools, and auditable handoffs.
 
 ### Resource Structure
@@ -251,22 +251,22 @@ CompanyCore must support three first-class consumption modes:
 All channels must respect the same workspace ownership, permissions,
 capabilities, approval, audit, and event rules.
 
-## Paperclip Bridge Direction
+## Codex Agent Host Bridge Direction
 
-Paperclip should be connected as an execution companion, not a separate source
+Codex Agent Host should be connected as an execution companion, not a separate source
 of truth. CompanyCore emits and receives work signals through auditable events,
 API routes, MCP tools, and agent outbox/inbox patterns.
 
 Target behavior:
 
-- CompanyCore can send actionable work items or context to Paperclip.
-- Paperclip can report issue/work status back through CompanyCore routes.
-- AI agents can see the CompanyCore-to-Paperclip context through MCP.
+- CompanyCore can send actionable work items or context to Codex Agent Host.
+- Codex Agent Host can report issue/work status back through CompanyCore routes.
+- AI agents can see the CompanyCore-to-agent runtime context through MCP.
 - Handoffs leave audit/event evidence and do not require direct DB access.
 
-## Paperclip Company-Building Operating Model
+## Codex Agent Host Company-Building Operating Model
 
-Paperclip's long-term role is a supervised company-building execution agent.
+Codex Agent Host's long-term role is a supervised company-building execution agent.
 CompanyCore itself does not need an embedded AI brain for this direction:
 external AI agents may use CompanyCore as the business operating layer through
 HTTP APIs and MCP tools.
@@ -282,7 +282,7 @@ Business plan / owner intent
   -> status, feedback, evidence, and next gaps
 ```
 
-Paperclip should first help the owner by reading the business plan, current
+Codex Agent Host should first help the owner by reading the business plan, current
 CompanyCore context, imported knowledge, ClickUp task state, decisions, and
 operating-area responsibilities; then it should identify missing work, propose
 or create scoped tasks, and continue only through approved CompanyCore tools.
@@ -293,9 +293,9 @@ layers:
 | Layer | Purpose | Current foundation |
 | --- | --- | --- |
 | Intent | What the company is trying to build now: business plan, priorities, owner decisions, and active operating-area goals. | goals, decisions, decision logs, operating areas, planning docs imported as knowledge |
-| Knowledge | What Paperclip may know: trusted sources, document snapshots, task/context reads, decisions, standards, and operating graph context. | knowledge roots, knowledge items, Google Drive files/content snapshots, Company OS reads, relationship graph |
+| Knowledge | What Codex Agent Host may know: trusted sources, document snapshots, task/context reads, decisions, standards, and operating graph context. | knowledge roots, knowledge items, Google Drive files/content snapshots, Company OS reads, relationship graph |
 | Planning and orchestration | How gaps become executable work and follow-up tasks. | tasks, task lists, processes, pipelines, agent events, ClickUp sync |
-| Tools | What Paperclip may do through CompanyCore: create/update work items, report status, request approvals, create or update provider documents where allowed. | MCP manifest, HTTP command routes, tool adapters, integration capabilities |
+| Tools | What Codex Agent Host may do through CompanyCore: create/update work items, report status, request approvals, create or update provider documents where allowed. | MCP manifest, HTTP command routes, tool adapters, integration capabilities |
 | Access and autonomy | Which agent profile can use which knowledge and tools, at which risk level, and when owner approval is required. | service API keys, scopes, capabilities, risk levels, approval requirements |
 | Audit and feedback | What happened, why, under which key/profile, and what the result teaches the next planning pass. | events, audit logs, approvals, agent event outbox, correlation IDs |
 
@@ -305,12 +305,12 @@ when reading Docs or Sheets and a tool when creating or updating them; ClickUp
 can be knowledge when reading task state and a tool when creating tasks,
 comments, or status updates.
 
-The first Paperclip-ready implementation direction should therefore be narrow:
+The first Codex Agent Host-ready implementation direction should therefore be narrow:
 
 1. expose business-plan and company-context knowledge through existing
    CompanyCore read APIs or MCP tools;
 2. expose ClickUp and CompanyCore task state as planning input;
-3. let Paperclip propose missing tasks before broad autonomous execution;
+3. let Codex Agent Host propose missing tasks before broad autonomous execution;
 4. allow task creation or status reporting only through scoped CompanyCore
    tools;
 5. require owner approval for high-risk external writes, workflow activation,

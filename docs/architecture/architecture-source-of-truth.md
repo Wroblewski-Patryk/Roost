@@ -87,6 +87,7 @@ At minimum, keep these files aligned:
 - `docs/architecture/company-os-workflow-definition-command-contract.md`
 - `docs/architecture/innovation-product-engineering.md`
 - `docs/architecture/web-and-mcp-foundation-before-v2.md`
+- `docs/architecture/local-codex-agent-runtime.md`
 - `docs/architecture/relationship-graph-audit-2026-05-14.md`
 - `docs/ARCHITECTURE.md`
 - `docs/DATABASE.md`
@@ -139,7 +140,7 @@ The approved v1 direction is:
   operating system where vertical hierarchy and horizontal processes coexist.
   The accepted direction is recorded in
   `docs/architecture/organizational-architecture-bridge.md` and must guide
-  future schema, MCP, web, mobile, Paperclip, governance, knowledge, KPI, and
+  future schema, MCP, web, mobile, Codex, governance, knowledge, KPI, and
   organizational graph work without bypassing scoped task contracts or existing
   Company OS boundaries.
 - CompanyCore's unified organizational operating-system direction is recorded
@@ -159,10 +160,17 @@ The approved v1 direction is:
 - CompanyCore/Roost Process Core is recorded in
   `docs/architecture/process-core-workflow-core-architecture.md`. Pipelines,
   stages, transitions, workflow items, procedures, checklists, evidence logs,
-  approval policies, blueprints, linked assets, and Paperclip sync contexts
+  approval policies, blueprints, linked assets, and agent runtime contexts
   are shared system capabilities, not department-local screens. Future agents
-  must preserve the boundary that Roost is the source of truth and Paperclip is
-  an external supervised execution layer using API/MCP.
+  must preserve the boundary that Roost is the source of truth and local Codex
+  Agent Hosts are supervised execution clients using the workspace-scoped API.
+- Roost's approved Codex execution topology is recorded in
+  `docs/architecture/local-codex-agent-runtime.md`. Production Roost and its
+  private PostgreSQL database run on the VPS. Local Roost development uses a
+  separate local PostgreSQL database. A Windows Agent Host makes outbound HTTPS
+  calls to claim production work, runs Codex against explicitly mapped local
+  repositories, and reports events/results to Roost. Codex and local backends
+  never connect directly to production PostgreSQL; databases are not synced.
 - Business ontology imports are governed by
   `docs/architecture/business-ontology-import-strategy.md`. APQC PCF,
   SIPOC, organization-chart CSV, role/ACL mapping, and one-page SOP templates

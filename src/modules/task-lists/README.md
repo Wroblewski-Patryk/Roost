@@ -1,7 +1,7 @@
 # Task Lists Module
 
 The task lists module exposes workspace-scoped list/create/update routes for
-organizing tasks created by Paperclip, Jarvis, and future adapters.
+organizing tasks created by Codex, Jarvis, and future adapters.
 
 Implemented routes:
 

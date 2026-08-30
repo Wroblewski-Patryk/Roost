@@ -28,7 +28,7 @@ function validPacket() {
     lifecycleProcedure: {
       procedureId: "PROC-SH-APPLICATION-LIFECYCLE",
       procedureVersion: "1.0",
-      executionAuthority: "paperclip",
+      executionAuthority: "agent_runtime",
       observedAt,
       verifiedAt: observedAt,
       freshness: "current",
@@ -46,7 +46,7 @@ function validPacket() {
     },
     items: [{
       offeringId: "roost",
-      paperclipProjectName: "Roost",
+      executionProjectName: "Roost",
       lifecycleStage: "implementation",
       conflictState: "none",
       sourceControl: {
@@ -77,7 +77,7 @@ function envelope(packet: ReturnType<typeof validPacket>, overrides: Record<stri
   const base = {
     transportVersion: productMapTransportVersion,
     schemaVersion: productMapSchemaVersion,
-    companyId: "paperclip-company",
+    companyId: "codex-company",
     sourceSnapshotId: "snapshot-1",
     observedAt: packet.observedAt,
     publishedAt: "2026-07-28T10:01:00.000Z",

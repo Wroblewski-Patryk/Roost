@@ -37,6 +37,7 @@ services:
       COMPANYCORE_BUILD_IMAGE: ${COOLIFY_CONTAINER_NAME:-unknown}
       COMPANYCORE_ALLOWED_ORIGINS: "${COMPANYCORE_ALLOWED_ORIGINS:-https://roost.luckysparrow.ch,https://api.roost.luckysparrow.ch}"
       COMPANYCORE_API_HOSTS: ${COMPANYCORE_API_HOSTS:-api.roost.luckysparrow.ch}
+      ROOST_CODEX_EXECUTION_ENABLED: ${ROOST_CODEX_EXECUTION_ENABLED:-false}
       SERVICE_URL_BACKEND_3000: ${SERVICE_URL_BACKEND_3000}
     expose:
       - "3000"

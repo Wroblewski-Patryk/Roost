@@ -50,6 +50,7 @@ const protectedMounts = new Map([
   ["agents.routes.ts", "/agents"],
   ["agent-logs.routes.ts", "/agent-logs"],
   ["agent-events.routes.ts", "/agent-events"],
+  ["agent-runtime.routes.ts", "/agent-runtime"],
   ["events.routes.ts", "/events"],
   ["integration-settings.routes.ts", "/integration-settings"],
   ["google-drive.routes.ts", "/google-drive"],

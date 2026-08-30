@@ -72,7 +72,7 @@ secret still uses the committed development placeholder pattern.
 
 v1 service credentials:
 
-- workspace-scoped service API keys for Paperclip, Jarvis, n8n, and other
+- workspace-scoped service API keys for Codex Agent Host, Jarvis, n8n, and other
   agents
 
 ClickUp configuration:
@@ -218,6 +218,26 @@ First-owner bootstrap:
 - After bootstrap, rotate temporary owner password/API key material if it was
   shared through deployment tooling.
 - Do not rely on repeat production seed runs as an admin access mechanism.
+
+## Local Codex Agent Runtime Rollout
+
+The VPS deployment contains only the Roost migration, API, web console, and
+private PostgreSQL data. It does not run Codex or mount laptop repositories.
+
+Release order:
+
+1. Back up production PostgreSQL and deploy the reviewed Roost image.
+2. Confirm `prisma migrate deploy` applied the agent-runtime migration.
+3. Verify public health and an owner-authenticated read of
+   `/v1/agent-runtime/hosts` and `/v1/agent-runtime/executions`.
+4. Create a workspace key with profile `mcp_codex_worker`.
+5. Configure and start the outbound Windows host using
+   `docs/operations/local-codex-agent-host.md`.
+6. Queue one non-critical task, confirm progress/result visibility, inspect the
+   local Git diff, then rotate the trial key if it was handled manually.
+
+Do not expose PostgreSQL, add a database tunnel to the laptop, or run a second
+production-connected Roost backend locally.
 
 ## Data Safety
 

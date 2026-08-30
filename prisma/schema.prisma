@@ -28,6 +28,22 @@ enum AgentStatus {
   retired
 }
 
+enum AgentHostStatus {
+  online
+  offline
+  disabled
+}
+
+enum AgentExecutionStatus {
+  queued
+  claimed
+  running
+  waiting_for_approval
+  completed
+  failed
+  cancelled
+}
+
 enum WorkforceEntityType {
   human
   agent
@@ -516,6 +532,9 @@ model Workspace {
   productMapProjectionState         ProductMapProjectionState?
   productMapProjectionAdmissions    ProductMapProjectionAdmission[]
   agentEventOutbox                  AgentEventOutbox[]
+  agentHosts                        AgentHost[]
+  agentExecutions                   AgentExecution[]
+  agentExecutionEvents              AgentExecutionEvent[]
   applications                      Application[]
   capabilityDomains                 CapabilityDomain[]
   capabilityDefinitions             CapabilityDefinition[]
@@ -1839,6 +1858,84 @@ model AgentEventOutbox {
   @@map("agent_event_outbox")
 }
 
+model AgentHost {
+  id               String           @id @default(uuid()) @db.Uuid
+  workspaceId      String           @map("workspace_id") @db.Uuid
+  workspace        Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name             String
+  slug             String
+  status           AgentHostStatus  @default(offline)
+  platform         String
+  capabilities     Json             @default("[]")
+  applicationSlugs Json             @default("[]") @map("application_slugs")
+  metadata         Json             @default("{}")
+  lastSeenAt       DateTime?        @map("last_seen_at")
+  executions       AgentExecution[]
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  @@unique([workspaceId, slug])
+  @@index([workspaceId, status, lastSeenAt])
+  @@map("agent_hosts")
+}
+
+model AgentExecution {
+  id                String                @id @default(uuid()) @db.Uuid
+  workspaceId       String                @map("workspace_id") @db.Uuid
+  workspace         Workspace             @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  taskId            String                @map("task_id") @db.Uuid
+  task              Task                  @relation(fields: [taskId], references: [id], onDelete: Restrict)
+  applicationId     String                @map("application_id") @db.Uuid
+  application       Application           @relation(fields: [applicationId], references: [id], onDelete: Restrict)
+  agentHostId       String?               @map("agent_host_id") @db.Uuid
+  agentHost         AgentHost?            @relation(fields: [agentHostId], references: [id], onDelete: SetNull)
+  status            AgentExecutionStatus  @default(queued)
+  requestedByType   ActorType             @map("requested_by_type")
+  requestedById     String?               @map("requested_by_id")
+  prompt            String?
+  baseBranch        String?               @map("base_branch")
+  codexThreadId     String?               @map("codex_thread_id")
+  leaseToken        String?               @unique @map("lease_token")
+  leaseExpiresAt    DateTime?             @map("lease_expires_at")
+  lastHeartbeatAt   DateTime?             @map("last_heartbeat_at")
+  cancelRequestedAt DateTime?             @map("cancel_requested_at")
+  startedAt         DateTime?             @map("started_at")
+  completedAt       DateTime?             @map("completed_at")
+  attempt           Int                   @default(0)
+  summary           String?
+  finalResponse     String?               @map("final_response")
+  changedFiles      Json                  @default("[]") @map("changed_files")
+  verification      Json                  @default("{}")
+  usage             Json                  @default("{}")
+  errorState        Json?                 @map("error_state")
+  metadata          Json                  @default("{}")
+  events            AgentExecutionEvent[]
+  createdAt         DateTime              @default(now()) @map("created_at")
+  updatedAt         DateTime              @updatedAt @map("updated_at")
+
+  @@index([workspaceId, status, createdAt])
+  @@index([workspaceId, taskId, createdAt])
+  @@index([workspaceId, applicationId, createdAt])
+  @@index([agentHostId, status])
+  @@map("agent_executions")
+}
+
+model AgentExecutionEvent {
+  id          String         @id @default(uuid()) @db.Uuid
+  workspaceId String         @map("workspace_id") @db.Uuid
+  workspace   Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  executionId String         @map("execution_id") @db.Uuid
+  execution   AgentExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  type        String
+  level       String         @default("info")
+  message     String
+  payload     Json           @default("{}")
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  @@index([workspaceId, executionId, createdAt])
+  @@map("agent_execution_events")
+}
+
 model ProductMapProjectionSnapshot {
   id               String    @id @default(uuid()) @db.Uuid
   workspaceId      String    @map("workspace_id") @db.Uuid
@@ -1988,6 +2085,7 @@ model Application {
   observations     CapabilityObservation[]
   projects         ApplicationProject[]
   procedures       ApplicationProcedure[]
+  agentExecutions  AgentExecution[]
   offerings        ProductOffering[]
   createdAt        DateTime                           @default(now()) @map("created_at")
   updatedAt        DateTime                           @updatedAt @map("updated_at")
@@ -2552,6 +2650,7 @@ model Task {
   pipelineRunTaskLinks      PipelineRunTaskLink[]
   notes                     Note[]
   events                    Event[]
+  agentExecutions           AgentExecution[]
   createdAt                 DateTime              @default(now()) @map("created_at")
   updatedAt                 DateTime              @updatedAt @map("updated_at")
 
@@ -2750,7 +2849,7 @@ model WorkforceEntity {
   personalityProfile     WorkforcePersonalityProfile @default(supportive) @map("personality_profile")
   model                  String?
   runtimeMode            WorkforceRuntimeMode        @default(manual) @map("runtime_mode")
-  paperclipAgentId       String?                     @map("paperclip_agent_id")
+  runtimeExternalId      String?                     @map("runtime_external_id")
   synchronizationEnabled Boolean                     @default(false) @map("synchronization_enabled")
   hierarchyLevel         String?                     @map("hierarchy_level")
   bigFiveProfile         Json                        @default("{}") @map("big_five_profile")
@@ -2758,7 +2857,7 @@ model WorkforceEntity {
   knowledgeIndex         Json                        @default("[]") @map("knowledge_index")
   toolIndex              Json                        @default("[]") @map("tool_index")
   authorityScope         Json                        @default("[]") @map("authority_scope")
-  paperclipProfile       Json                        @default("{}") @map("paperclip_profile")
+  runtimeProfile         Json                        @default("{}") @map("runtime_profile")
   generatedFiles         Json                        @default("{}") @map("generated_files")
   syncStatus             String                      @default("not_synced") @map("sync_status")
   syncLog                Json                        @default("[]") @map("sync_log")

@@ -1002,7 +1002,7 @@ function generatedWorkforceFiles(entity: {
   personalityProfile: string;
   runtimeMode: string;
   model?: string | null;
-  paperclipAgentId?: string | null;
+  runtimeExternalId?: string | null;
   description?: string | null;
   hierarchyLevel?: string | null;
   bigFiveProfile?: Record<string, number>;
@@ -1039,7 +1039,7 @@ ${list(entity.toolIndex)}
 ## Runtime
 - Runtime mode: ${entity.runtimeMode}
 - Model: ${entity.model || "not configured"}
-- Paperclip agent ID: ${entity.paperclipAgentId || "not linked"}
+- Runtime external ID: ${entity.runtimeExternalId || "not linked"}
 `,
     "personality.md": `# ${entity.name} Personality
 
@@ -1057,10 +1057,10 @@ Follow CompanyCore authority, evidence, and approval guardrails.
 `,
     "environment.md": `# ${entity.name} Environment
 
-CompanyCore/Roost is the organizational source of truth. Paperclip is the external runtime for synchronized agents.
+Roost is the organizational source of truth. Local Codex Agent Hosts are supervised execution clients.
 
 ## Organization Context
-CompanyCore manages the 00-12 operating departments, workforce roster, responsibilities, permissions, knowledge, resources, tasks, events, and generated runtime files. Paperclip must consume synchronized context and must not become the source of truth for people, roles, skills, tools, or knowledge access.
+Roost manages the 00-12 operating departments, workforce roster, responsibilities, permissions, knowledge, resources, tasks, events, and generated runtime files. Execution clients consume scoped API context and must not become the source of truth for people, roles, skills, tools, or knowledge access.
 `
   };
 }
@@ -1086,14 +1086,14 @@ const commonToolIndex = [
   "Approvals"
 ] as const;
 
-const paperclipDirectorSeeds = [
+const departmentAgentSeeds = [
   {
     name: "00 AIA(AI Assistant)",
     slug: "00-aia-ai-assistant",
     role: "AI Assistant and Executive Coordination Hub",
     title: "General - AI Assistant and Executive Coordination Hub",
     department: "00-ogolny",
-    paperclipAgentId: "e48c5fab-70ec-4b6c-a1c0-e3ec4566bca1",
+    runtimeExternalId: "00-aia-ai-assistant",
     reportsToSlug: null,
     hierarchyLevel: "executive_root",
     personalityProfile: "executive",
@@ -1109,7 +1109,7 @@ const paperclipDirectorSeeds = [
     role: "Chief Strategy Officer",
     title: "Researcher - Chief Strategy Officer",
     department: "01-strategia",
-    paperclipAgentId: "8adc0ced-7f18-4355-b26e-848ec46509ec",
+    runtimeExternalId: "01-cso-chief-strategy-officer",
     reportsToSlug: "00-aia-ai-assistant",
     hierarchyLevel: "department_director",
     personalityProfile: "researcher",
@@ -1124,7 +1124,7 @@ const paperclipDirectorSeeds = [
     role: "Chief Product Officer",
     title: "PM - Chief Product Officer",
     department: "02-produkt",
-    paperclipAgentId: "5f421952-a0a2-46fa-8a1c-7d942f6d1c77",
+    runtimeExternalId: "02-cpo-chief-product-officer",
     reportsToSlug: "00-aia-ai-assistant",
     hierarchyLevel: "department_director",
     personalityProfile: "creative",
@@ -1139,7 +1139,7 @@ const paperclipDirectorSeeds = [
     role: "Chief Revenue Officer",
     title: "CMO - Chief Revenue Officer",
     department: "03-sprzedaz",
-    paperclipAgentId: "9179eebb-e51c-4982-844f-146d3b021c46",
+    runtimeExternalId: "03-cro-chief-revenue-officer",
     reportsToSlug: "00-aia-ai-assistant",
     hierarchyLevel: "department_director",
     personalityProfile: "executive",
@@ -1154,7 +1154,7 @@ const paperclipDirectorSeeds = [
     role: "Chief Operating Officer",
     title: "DevOps - Chief Operating Officer",
     department: "04-operacje",
-    paperclipAgentId: "a86877e6-6277-4754-9b32-512755428f48",
+    runtimeExternalId: "04-coo-chief-operating-officer",
     reportsToSlug: "00-aia-ai-assistant",
     hierarchyLevel: "department_director",
     personalityProfile: "analytical",
@@ -1169,7 +1169,7 @@ const paperclipDirectorSeeds = [
     role: "Chief Customer Officer",
     title: "General - Chief Customer Officer",
     department: "05-relacje",
-    paperclipAgentId: "d181cf74-4b50-4936-90d1-e81981691d91",
+    runtimeExternalId: "05-cco-chief-customer-officer",
     reportsToSlug: "00-aia-ai-assistant",
     hierarchyLevel: "department_director",
     personalityProfile: "supportive",
@@ -1184,7 +1184,7 @@ const paperclipDirectorSeeds = [
     role: "Chief Human Resources Officer",
     title: "General - Chief Human Resources Officer",
     department: "06-kadry",
-    paperclipAgentId: "38b87a38-bfc2-4201-8690-62b7dec1898c",
+    runtimeExternalId: "06-chro-chief-human-resources-officer",
     reportsToSlug: "00-aia-ai-assistant",
     hierarchyLevel: "department_director",
     personalityProfile: "supportive",
@@ -1199,7 +1199,7 @@ const paperclipDirectorSeeds = [
     role: "Chief Financial Officer",
     title: "CFO - Chief Financial Officer",
     department: "07-finanse",
-    paperclipAgentId: "3757a439-1655-4272-b152-916024039068",
+    runtimeExternalId: "07-cfo-chief-financial-officer",
     reportsToSlug: "00-aia-ai-assistant",
     hierarchyLevel: "department_director",
     personalityProfile: "analytical",
@@ -1214,7 +1214,7 @@ const paperclipDirectorSeeds = [
     role: "Chief Assets Officer",
     title: "General - Chief Assets Officer",
     department: "08-zasoby",
-    paperclipAgentId: "c62a3b01-3ee7-462b-a080-4d8525c4f96b",
+    runtimeExternalId: "08-cao-chief-assets-officer",
     reportsToSlug: "00-aia-ai-assistant",
     hierarchyLevel: "department_director",
     personalityProfile: "analytical",
@@ -1229,7 +1229,7 @@ const paperclipDirectorSeeds = [
     role: "Chief Technology Officer",
     title: "CTO - Chief Technology Officer",
     department: "09-technologia",
-    paperclipAgentId: "40feaabb-bde8-4413-80eb-e5f7d9baad23",
+    runtimeExternalId: "09-cto-chief-technology-officer",
     reportsToSlug: "00-aia-ai-assistant",
     hierarchyLevel: "department_director",
     personalityProfile: "analytical",
@@ -1244,7 +1244,7 @@ const paperclipDirectorSeeds = [
     role: "Chief Legal Officer",
     title: "Security - Chief Legal Officer",
     department: "10-prawo",
-    paperclipAgentId: "438ddea0-4968-44d9-8ba2-86128ad28f3e",
+    runtimeExternalId: "10-clo-chief-legal-officer",
     reportsToSlug: "00-aia-ai-assistant",
     hierarchyLevel: "department_director",
     personalityProfile: "analytical",
@@ -1259,7 +1259,7 @@ const paperclipDirectorSeeds = [
     role: "Chief Innovation Officer",
     title: "Researcher - Chief Innovation Officer",
     department: "11-innowacje",
-    paperclipAgentId: "e054757b-d8b5-439e-acff-b66430a2b46f",
+    runtimeExternalId: "11-cino-chief-innovation-officer",
     reportsToSlug: "00-aia-ai-assistant",
     hierarchyLevel: "department_director",
     personalityProfile: "researcher",
@@ -1274,7 +1274,7 @@ const paperclipDirectorSeeds = [
     role: "Chief Executive Officer",
     title: "CEO - Chief Executive Officer",
     department: "12-zarzadzanie",
-    paperclipAgentId: "42c35233-d0a5-4f51-9105-fc9d113fb809",
+    runtimeExternalId: "12-ceo-chief-executive-officer",
     reportsToSlug: "00-aia-ai-assistant",
     hierarchyLevel: "department_director",
     personalityProfile: "executive",
@@ -1289,8 +1289,8 @@ async function ensureWorkforceFoundation(workspaceId: string, owner: { id: strin
   const ownerDisplayName = owner.name || owner.email;
   const ownerBigFive = { openness: 1, conscientiousness: 1, extraversion: 0.4, agreeableness: 0.6, neuroticism: 0.4 };
   const ownerSkills = ["Company ownership", "Strategy", "Systems design", "Product direction", "AI agent orchestration"];
-  const ownerKnowledge = ["CompanyCore source of truth", "LuckySparrow operating model", "Paperclip runtime", "Workspace administration"];
-  const ownerTools = ["CompanyCore web", "Paperclip", "ClickUp", "Google Drive"];
+  const ownerKnowledge = ["Roost source of truth", "LuckySparrow operating model", "Codex agent runtime", "Workspace administration"];
+  const ownerTools = ["Roost web", "Codex", "ClickUp", "Google Drive"];
   await prisma.workforceEntity.upsert({
     where: {
       workspaceId_source_externalId: {
@@ -1364,7 +1364,7 @@ async function ensureWorkforceFoundation(workspaceId: string, owner: { id: strin
   });
 
   const directorBySlug = new Map<string, { id: string }>();
-  for (const director of paperclipDirectorSeeds) {
+  for (const director of departmentAgentSeeds) {
     const manager = director.reportsToSlug ? directorBySlug.get(director.reportsToSlug) : null;
     const skillIndex = [...commonDirectorSkills];
     const knowledgeIndex = [
@@ -1373,11 +1373,11 @@ async function ensureWorkforceFoundation(workspaceId: string, owner: { id: strin
       "Google Drive files",
       "ClickUp tables",
       "Tasks",
-      `${director.knowledgeCount} assigned Paperclip resources`
+      `${director.knowledgeCount} assigned knowledge resources`
     ];
     const toolIndex = [
       ...commonToolIndex,
-      `${director.toolCount} Paperclip recommended tools`
+      `${director.toolCount} recommended tools`
     ];
     const description = director.description
       || `Owns department ${director.department} as ${director.role}. Delegates work top-down to future managers, reports progress bottom-up to 00 AIA, and runs the department with APQC, PAEI, and MECE discipline.`;
@@ -1389,7 +1389,7 @@ async function ensureWorkforceFoundation(workspaceId: string, owner: { id: strin
       personalityProfile: director.personalityProfile,
       runtimeMode: "semi_autonomous",
       model: "gpt-5.3-codex",
-      paperclipAgentId: director.paperclipAgentId,
+      runtimeExternalId: director.runtimeExternalId,
       description,
       hierarchyLevel: director.hierarchyLevel,
       bigFiveProfile: director.bigFiveProfile,
@@ -1401,8 +1401,8 @@ async function ensureWorkforceFoundation(workspaceId: string, owner: { id: strin
       where: {
         workspaceId_source_externalId: {
           workspaceId,
-          source: "paperclip",
-          externalId: director.paperclipAgentId
+          source: "seed",
+          externalId: director.slug
         }
       },
       update: {
@@ -1416,7 +1416,7 @@ async function ensureWorkforceFoundation(workspaceId: string, owner: { id: strin
         personalityProfile: director.personalityProfile,
         model: "gpt-5.3-codex",
         runtimeMode: "semi_autonomous",
-        paperclipAgentId: director.paperclipAgentId,
+        runtimeExternalId: director.runtimeExternalId,
         synchronizationEnabled: true,
         hierarchyLevel: director.hierarchyLevel,
         bigFiveProfile: director.bigFiveProfile,
@@ -1424,21 +1424,20 @@ async function ensureWorkforceFoundation(workspaceId: string, owner: { id: strin
         knowledgeIndex,
         toolIndex,
         authorityScope: ["department_lead", "reports_to_aia", director.department],
-        paperclipProfile: {
-          url: `https://paperclip.luckysparrow.ch/LUC/agents/${director.slug}/dashboard`,
+        runtimeProfile: {
           title: director.title,
-          runtimeStatus: director.runtimeStatus,
+          provider: "codex",
+          runtimeStatus: "not_linked",
           adapterType: "Codex (local)",
           model: "gpt-5.3-codex",
-          scrapeDate: "2026-05-18",
           toolCount: director.toolCount,
           knowledgeCount: director.knowledgeCount,
           manager: director.reportsToSlug
         },
         generatedFiles,
         syncStatus: "stale",
-        source: "paperclip",
-        externalId: director.paperclipAgentId
+        source: "seed",
+        externalId: director.slug
       },
       create: {
         workspaceId,
@@ -1453,7 +1452,7 @@ async function ensureWorkforceFoundation(workspaceId: string, owner: { id: strin
         personalityProfile: director.personalityProfile,
         runtimeMode: "semi_autonomous",
         model: "gpt-5.3-codex",
-        paperclipAgentId: director.paperclipAgentId,
+        runtimeExternalId: director.runtimeExternalId,
         synchronizationEnabled: true,
         hierarchyLevel: director.hierarchyLevel,
         bigFiveProfile: director.bigFiveProfile,
@@ -1461,21 +1460,20 @@ async function ensureWorkforceFoundation(workspaceId: string, owner: { id: strin
         knowledgeIndex,
         toolIndex,
         authorityScope: ["department_lead", "reports_to_aia", director.department],
-        paperclipProfile: {
-          url: `https://paperclip.luckysparrow.ch/LUC/agents/${director.slug}/dashboard`,
+        runtimeProfile: {
           title: director.title,
-          runtimeStatus: director.runtimeStatus,
+          provider: "codex",
+          runtimeStatus: "not_linked",
           adapterType: "Codex (local)",
           model: "gpt-5.3-codex",
-          scrapeDate: "2026-05-18",
           toolCount: director.toolCount,
           knowledgeCount: director.knowledgeCount,
           manager: director.reportsToSlug
         },
         generatedFiles,
         syncStatus: "stale",
-        source: "paperclip",
-        externalId: director.paperclipAgentId
+        source: "seed",
+        externalId: director.slug
       }
     });
     directorBySlug.set(director.slug, record);
@@ -1555,14 +1553,38 @@ async function ensureProductEngineeringFoundation(workspaceId: string) {
   for (const capabilityKey of [...coreSaasKeys, ...aiReadyKeys]) await prisma.applicationBlueprintCapability.upsert({ where: { blueprintId_capabilityDefinitionId: { blueprintId: blueprint.id, capabilityDefinitionId: capabilityByKey.get(capabilityKey)!.id } }, update: { applicability: "required" }, create: { blueprintId: blueprint.id, capabilityDefinitionId: capabilityByKey.get(capabilityKey)!.id, applicability: "required" } });
   for (const [key, name, category] of [["react", "React", "frontend"], ["express", "Express", "backend"], ["postgresql", "PostgreSQL", "database"], ["prisma", "Prisma", "orm"], ["docker", "Docker", "deployment"], ["mcp", "Model Context Protocol", "interface"]] as const) await prisma.technologyDefinition.upsert({ where: { workspaceId_key: { workspaceId, key } }, update: { name, category }, create: { workspaceId, key, name, category } });
   const applications = [
-    { slug: "roost", name: "Roost", description: "LuckySparrow company operating system and source of truth for products, work, evidence and supervised agents.", stage: "development" as const, path: "C:/Personal/Projekty/Aplikacje/Roost/docs/README.md" },
-    { slug: "soar", name: "Soar", description: "Trading automation platform.", stage: "development" as const, path: "C:/Personal/Projekty/Aplikacje/Soar/docs/README.md" },
-    { slug: "featherly", name: "Featherly", description: "Content management and application delivery system.", stage: "development" as const, path: "C:/Personal/Projekty/Aplikacje/Featherly/docs/README.md" },
-    { slug: "nest", name: "Nest", description: "Application record awaiting source documentation.", stage: "idea" as const, path: null },
-    { slug: "aviary", name: "Aviary", description: "Application record awaiting source documentation.", stage: "idea" as const, path: null }
+    { slug: "aviary", name: "Aviary", description: "LuckySparrow application maintained in the approved local application workspace.", stage: "development" as const, directory: "Aviary", repositoryUrl: "https://github.com/Wroblewski-Patryk/Aviary.git", frontendUrl: "https://aviary.luckysparrow.ch/", path: "C:/Personal/Projekty/Aplikacje/Aviary/docs/README.md" },
+    { slug: "featherly", name: "Featherly", description: "Content management and application delivery system.", stage: "development" as const, directory: "Featherly", repositoryUrl: "https://github.com/Wroblewski-Patryk/Featherly.git", frontendUrl: "https://test.wroblewskipatryk.pl/pl", path: "C:/Personal/Projekty/Aplikacje/Featherly/docs/README.md" },
+    { slug: "nest", name: "Nest", description: "LuckySparrow application maintained in the approved local application workspace.", stage: "development" as const, directory: "Nest", repositoryUrl: "https://github.com/Wroblewski-Patryk/Nest.git", frontendUrl: "https://nest.luckysparrow.ch/", path: "C:/Personal/Projekty/Aplikacje/Nest/docs/README.md" },
+    { slug: "roost", name: "Roost", description: "LuckySparrow company operating system and source of truth for products, work, evidence and supervised agents.", stage: "development" as const, directory: "Roost", repositoryUrl: "https://github.com/Wroblewski-Patryk/Roost.git", frontendUrl: "https://roost.luckysparrow.ch/", path: "C:/Personal/Projekty/Aplikacje/Roost/docs/README.md" },
+    { slug: "soar", name: "Soar", description: "Trading automation platform.", stage: "development" as const, directory: "Soar", repositoryUrl: "https://github.com/Wroblewski-Patryk/Soar.git", frontendUrl: "https://soar.luckysparrow.ch/", path: "C:/Personal/Projekty/Aplikacje/Soar/docs/README.md" }
   ];
   for (const item of applications) {
-    const application = await prisma.application.upsert({ where: { workspaceId_slug: { workspaceId, slug: item.slug } }, update: { name: item.name }, create: { workspaceId, slug: item.slug, name: item.name, description: item.description, innovationStage: item.stage, targetPlatforms: ["web", "api", "agent_facing"], source: "import", metadata: { documentationImport: item.path ? "source_registered" : "source_missing" } } });
+    const runtimeMetadata = {
+      localWorkspaceRoot: "C:\\Personal\\Projekty\\Aplikacje",
+      localDirectory: item.directory,
+      repositoryUrl: item.repositoryUrl,
+      deploymentUrl: item.frontendUrl,
+      deploymentProvider: "coolify",
+      deploymentTrigger: "owner_authorized_git_push",
+      releaseAuthority: "explicit_owner_authorization",
+      codexExecutionLocation: "local_windows"
+    };
+    const application = await prisma.application.upsert({
+      where: { workspaceId_slug: { workspaceId, slug: item.slug } },
+      update: { name: item.name, description: item.description, innovationStage: item.stage, frontendUrl: item.frontendUrl, metadata: runtimeMetadata },
+      create: { workspaceId, slug: item.slug, name: item.name, description: item.description, innovationStage: item.stage, targetPlatforms: ["web", "api", "agent_facing"], frontendUrl: item.frontendUrl, source: "import", metadata: runtimeMetadata }
+    });
+    let deliveryProject = await prisma.project.findFirst({ where: { workspaceId, source: "companycore", externalId: `application-delivery:${item.slug}` } });
+    deliveryProject = deliveryProject
+      ? await prisma.project.update({ where: { id: deliveryProject.id }, data: { name: `${item.name} application delivery`, description: `Canonical project for planning and delivering ${item.name}. Tasks linked here resolve to exactly one application for supervised Codex execution.`, status: "active" } })
+      : await prisma.project.create({ data: { workspaceId, name: `${item.name} application delivery`, description: `Canonical project for planning and delivering ${item.name}. Tasks linked here resolve to exactly one application for supervised Codex execution.`, status: "active", source: "companycore", externalId: `application-delivery:${item.slug}` } });
+    await prisma.applicationProject.upsert({ where: { applicationId_projectId: { applicationId: application.id, projectId: deliveryProject.id } }, update: { relationType: "delivery" }, create: { applicationId: application.id, projectId: deliveryProject.id, relationType: "delivery" } });
+    await prisma.applicationRepository.upsert({
+      where: { applicationId_url: { applicationId: application.id, url: item.repositoryUrl } },
+      update: { name: `${item.name} repository`, defaultBranch: "main", purpose: "Canonical application source", isPrimary: true },
+      create: { applicationId: application.id, name: `${item.name} repository`, url: item.repositoryUrl, defaultBranch: "main", purpose: "Canonical application source", isPrimary: true }
+    });
     if (item.path) {
       const reference = `documentation-root:${item.path}`;
       if (!await prisma.applicationEvidence.findFirst({ where: { applicationId: application.id, reference } })) await prisma.applicationEvidence.create({ data: { workspaceId, applicationId: application.id, type: "documentation", source: "import", reference, description: "Registered documentation root. This proves documentation provenance, not runtime implementation.", verificationStatus: "unverified" } });
@@ -1570,6 +1592,14 @@ async function ensureProductEngineeringFoundation(workspaceId: string) {
     const specific = item.slug === "roost" ? ["organization-management", "department-management", "process-core", "workforce-agents"] : item.slug === "soar" ? ["trading-engine", "market-data", "position-management", "risk-management"] : [];
     for (const capabilityKey of [...coreSaasKeys, ...aiReadyKeys, ...specific]) await prisma.applicationCapability.upsert({ where: { applicationId_capabilityDefinitionId: { applicationId: application.id, capabilityDefinitionId: capabilityByKey.get(capabilityKey)!.id } }, update: {}, create: { applicationId: application.id, capabilityDefinitionId: capabilityByKey.get(capabilityKey)!.id, applicability: "required", targetState: "complete", observedState: "unknown" } });
   }
+  const codexCandidateRule = await prisma.automationRule.upsert({
+    where: { workspaceId_name: { workspaceId, name: "Prepare Codex candidate after explicit task readiness" } },
+    update: { description: "Foundation-only rule. It may emit a Codex candidate event after an explicit readiness event; it never creates a task or execution.", condition: { eventType: "task_ready_for_codex", resourceType: "task" }, action: { type: "emit_event", eventType: "codex_execution_candidate", riskLevel: "medium", payload: { requiresOwnerReview: true } }, status: "paused" },
+    create: { workspaceId, name: "Prepare Codex candidate after explicit task readiness", description: "Foundation-only rule. It may emit a Codex candidate event after an explicit readiness event; it never creates a task or execution.", condition: { eventType: "task_ready_for_codex", resourceType: "task" }, action: { type: "emit_event", eventType: "codex_execution_candidate", riskLevel: "medium", payload: { requiresOwnerReview: true } }, status: "paused" }
+  });
+  const codexCandidateTrigger = await prisma.trigger.findFirst({ where: { workspaceId, automationRuleId: codexCandidateRule.id, sourceType: "system_event", eventType: "task_ready_for_codex" } });
+  if (codexCandidateTrigger) await prisma.trigger.update({ where: { id: codexCandidateTrigger.id }, data: { status: "paused", config: { mode: "foundation_only", createsExecution: false } } });
+  else await prisma.trigger.create({ data: { workspaceId, automationRuleId: codexCandidateRule.id, sourceType: "system_event", eventType: "task_ready_for_codex", status: "paused", config: { mode: "foundation_only", createsExecution: false } } });
 }
 
 async function main() {

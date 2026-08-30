@@ -35,8 +35,8 @@ not authorize new product scope or change existing API/database identifiers.
 
 - Primary user: the LuckySparrow workspace owner who configures integrations,
   reviews operating data, and performs governed business actions.
-- Secondary user: supervised agents and automations (including Paperclip and
-  Jarvis) that use workspace-scoped API keys or MCP tools.
+- Secondary user: supervised agents and automations (including local Codex
+  Agent Hosts and Jarvis) that use workspace-scoped API keys or MCP tools.
 - Early adopter profile: a small company operator who needs one accountable
   operational source of truth while continuing to use ClickUp and Google Drive.
 
@@ -62,6 +62,9 @@ not authorize new product scope or change existing API/database identifiers.
   that API.
 - Native ClickUp and Google Drive adapters are workspace-scoped. n8n is an
   optional orchestrator, not the required operating path.
+- The owner can queue a Codex run from a Roost task, observe its local execution
+  from the VPS-hosted console, cancel or retry it, and review the reported diff,
+  checks, final response, and task evidence before committing or deploying.
 
 ## Product Rules
 

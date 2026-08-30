@@ -131,7 +131,7 @@ dashboardRouter.get("/command", asyncHandler(async (req, res) => {
     prisma.agentEventOutbox.count({
       where: {
         workspaceId,
-        eventType: "paperclip_agent_config_sync_requested",
+        eventType: "agent_runtime_config_sync_requested",
         deliveryStatus: "pending"
       }
     }),
@@ -231,7 +231,7 @@ dashboardRouter.get("/command", asyncHandler(async (req, res) => {
     } : null,
     pendingWorkforceSyncs > 0 ? {
       key: "sync_people_agents",
-      label: "Deliver pending Paperclip workforce syncs",
+      label: "Deliver pending agent runtime syncs",
       target: "/areas?area=06-kadry&view=directory",
       count: pendingWorkforceSyncs,
       priority: "medium"

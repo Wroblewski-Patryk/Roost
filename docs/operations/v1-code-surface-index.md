@@ -108,7 +108,7 @@ Use it with:
 | ClickUp | `src/integrations/clickup/*`, `src/modules/integration-settings/*`, `src/modules/webhooks/*`, `src/modules/tasks/*` | Discovery, sync, webhook registration, signed webhook ingestion, provider inbox retry, maintenance, task write-back, custom fields, comments bridge. |
 | Google Drive | `src/integrations/google-drive/*`, `src/modules/google-drive/*`, `src/modules/integration-settings/*` | OAuth URL/exchange, folder discovery/import, metadata persistence, content snapshots, Docs/Sheets create/edit, changes reconcile, operating scope updates. |
 | MCP | `src/mcp/*`, `src/modules/mcp/*`, `scripts/companycore-mcp-*` | Manifest projection, stdio bridge, profile-scoped tools, smoke harness. |
-| Paperclip | `integrations/paperclip/companycore-adapter.patch`, operations docs | Production adapter patch and validated source handoff; upstream merge blocked by external permissions. |
+| Codex Agent Host | `src/modules/agent-runtime/*`, `scripts/roost-codex-agent-host.mjs`, `docs/operations/local-codex-agent-host.md` | VPS queue and owner console with outbound local Windows execution, leases, heartbeats, cancellation, events, and result evidence. |
 | OpenJarvis | operations docs | Production connector behavior and validated source handoff; upstream merge blocked by external permissions. |
 
 ## Validation Surface

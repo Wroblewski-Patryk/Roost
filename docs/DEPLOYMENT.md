@@ -63,6 +63,9 @@ Required environment values:
   from `https://roost.luckysparrow.ch,https://api.roost.luckysparrow.ch`
 - `COMPANYCORE_API_HOSTS` if API metadata should be served on hostnames other
   than `api.roost.luckysparrow.ch`
+- `ROOST_CODEX_EXECUTION_ENABLED` remains `false` during the foundation
+  rollout. Set it to `true` only after the application map, scoped worker key,
+  Windows host, paused trigger contract, and non-critical trial are reviewed.
 
 Production startup fails when required secrets are missing or still use the
 committed development placeholder values.

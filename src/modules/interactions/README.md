@@ -1,7 +1,7 @@
 # Interactions Module
 
 The interactions module exposes the workspace-scoped v1 CRM timeline API for
-service clients such as Paperclip and Jarvis.
+service clients such as Codex and Jarvis.
 
 Implemented routes:
 

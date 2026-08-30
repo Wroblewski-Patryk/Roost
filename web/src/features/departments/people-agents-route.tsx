@@ -178,8 +178,8 @@ function BigFiveRadarChart({
   );
 }
 
-function paperclipRuntime(entity: WorkforceEntity) {
-  return entity.paperclipProfile?.runtimeStatus || entity.syncStatus || "not linked";
+function agentRuntime(entity: WorkforceEntity) {
+  return entity.runtimeProfile?.runtimeStatus || entity.syncStatus || "not linked";
 }
 
 function needsAttention(entity: WorkforceEntity) {
@@ -251,7 +251,7 @@ const textareaClassName = "textarea textarea-bordered w-full";
 const defaultAccessCatalogs = {
   skillIndex: ["operations", "product-management", "software-engineering", "design", "research", "sales", "finance", "quality-assurance"],
   knowledgeIndex: ["company-context", "procedures", "products", "customers", "architecture", "security", "operations"],
-  toolIndex: ["roost", "clickup", "google-drive", "github", "paperclip", "n8n"],
+  toolIndex: ["roost", "clickup", "google-drive", "github", "codex", "n8n"],
   authorityScope: ["companycore:read", "companycore:tasks:write", "companycore:workforce:read", "companycore:assets:read", "companycore:procedures:read"]
 } as const;
 
@@ -336,7 +336,7 @@ function WorkforceForm({
       personalityProfile: String(form.get("personalityProfile") || "supportive"),
       model: String(form.get("model") || "") || null,
       runtimeMode: String(form.get("runtimeMode") || "manual"),
-      paperclipAgentId: String(form.get("paperclipAgentId") || "") || null,
+      runtimeExternalId: String(form.get("runtimeExternalId") || "") || null,
       synchronizationEnabled: Boolean(form.get("synchronizationEnabled")),
       hierarchyLevel: String(form.get("hierarchyLevel") || "") || null,
       bigFiveProfile: {
@@ -448,7 +448,7 @@ function WorkforceForm({
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
               <div className="rounded-company border border-base-300 bg-base-100/70 p-4">
                 <h3 className="font-black text-company-ink">Runtime and personality</h3>
-                <p className="text-sm text-company-muted">Runtime metadata stays in CompanyCore; Paperclip remains the execution layer.</p>
+                <p className="text-sm text-company-muted">Runtime metadata stays in Roost; local Codex Agent Hosts execute authorized tasks.</p>
                 <div className="mt-3 grid gap-4 md:grid-cols-2">
                   <CcField label="Personality profile">
                     {({ id }) => (
@@ -467,13 +467,13 @@ function WorkforceForm({
                   <CcField label="Model">
                     {({ id }) => <CcTextInput defaultValue={values.model || ""} id={id} name="model" placeholder="gpt-5.4, claude, local..." />}
                   </CcField>
-                  <CcField label="Paperclip agent ID">
-                    {({ id }) => <CcTextInput defaultValue={values.paperclipAgentId || ""} id={id} name="paperclipAgentId" placeholder="Runtime UUID or slug" />}
+                  <CcField label="Runtime external ID">
+                    {({ id }) => <CcTextInput defaultValue={values.runtimeExternalId || ""} id={id} name="runtimeExternalId" placeholder="Runtime UUID or slug" />}
                   </CcField>
                   <CcField label="Hierarchy level">
                     {({ id }) => <CcTextInput defaultValue={values.hierarchyLevel || ""} id={id} name="hierarchyLevel" placeholder="executive_root, department_director..." />}
                   </CcField>
-                  <CcField label="Paperclip sync">
+                  <CcField label="Runtime sync">
                     {({ id }) => (
                       <label className="flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-company border border-base-300 bg-base-100 px-3" htmlFor={id}>
                         <input className="checkbox checkbox-primary" defaultChecked={Boolean(values.synchronizationEnabled)} id={id} name="synchronizationEnabled" type="checkbox" />
@@ -660,7 +660,7 @@ function DetailModal({
               ["Department", entity.department || "06-kadry"],
               ["Status", entity.status],
               ["Runtime", runtimeLabels[entity.runtimeMode]],
-              ["Runtime state", paperclipRuntime(entity)],
+              ["Runtime state", agentRuntime(entity)],
               ["Hierarchy", entity.hierarchyLevel || "No hierarchy"],
               ["Manager", entity.manager?.name || "None"],
               ["Direct reports", String(entity.directReportCount ?? 0)],
@@ -722,7 +722,7 @@ function DetailModal({
                 ["Personality", entity.personalityProfile],
                 ["Model", entity.model || "Not configured"],
                 ["Hierarchy", entity.hierarchyLevel || "Not configured"],
-                ["Paperclip", entity.paperclipAgentId || "Not linked"],
+                ["Runtime ID", entity.runtimeExternalId || "Not linked"],
                 ["Direct reports", String(entity.directReportCount ?? 0)],
                 ["Big Five", bigFiveSummary(entity)]
               ].map(([label, value]) => (
@@ -755,10 +755,10 @@ function DetailModal({
               <DetailListSection title="Tools" items={entity.toolIndex || []} />
               <DetailListSection title="Authority scope" items={entity.authorityScope || []} />
             </div>
-            {entity.paperclipProfile?.url ? (
-              <a className="btn btn-outline justify-start" href={entity.paperclipProfile.url} rel="noreferrer" target="_blank">
+            {entity.runtimeProfile?.url ? (
+              <a className="btn btn-outline justify-start" href={entity.runtimeProfile.url} rel="noreferrer" target="_blank">
                 <i className="ph-bold ph-arrow-square-out" aria-hidden="true"></i>
-                <span>Open Paperclip profile</span>
+                <span>Open runtime profile</span>
               </a>
             ) : null}
           </section>
@@ -862,7 +862,7 @@ function ConfirmEntityModal({
       confirmLabel={isDelete ? "Delete" : "Archive"}
       confirmTone={isDelete ? "danger" : "warning"}
       description={isDelete
-        ? "This permanently removes the workforce record. It does not delete a user account or the Paperclip runtime, but the CompanyCore source-of-truth row will be gone."
+        ? "This permanently removes the workforce record. It does not delete a user account or an external runtime, but the Roost source-of-truth row will be gone."
         : "This keeps the record for history, but removes it from active workforce use."}
       detail={<><strong className="text-company-ink">{typeLabel(entity.type)}</strong><span className="mx-2 text-company-muted">/</span><span>{entity.role || "Unassigned role"}</span><span className="mx-2 text-company-muted">/</span><span>{entity.department || "No department"}</span></>}
       eyebrow={isDelete ? "Delete workforce record" : "Archive workforce record"}
@@ -889,7 +889,7 @@ export function PeopleAgentsRoute({ departmentKey }: { departmentKey?: string } 
     id: "",
     name: `${entity.name} copy`,
     slug: `${entity.slug || entity.name.toLowerCase().replace(/\s+/g, "-")}-copy`,
-    paperclipAgentId: null,
+    runtimeExternalId: null,
     source: "manual",
     externalId: null,
     syncStatus: "not_synced",
@@ -1058,7 +1058,7 @@ export function PeopleAgentsRoute({ departmentKey }: { departmentKey?: string } 
 
   return (
     <>
-      <CcPageHeader actions={packet.status === "ready" ? <CcButton iconLeft="ph-plus" onClick={() => setEditingEntity({ entity: null, mode: "create" })} size="sm" variant="primary">{t("people.new")}</CcButton> : null} description={t("people.description")} eyebrow={t("people.eyebrow")} title={t("people.title")} />
+      <CcPageHeader actions={packet.status === "ready" ? <><CcButton href="/areas?area=06-kadry&view=executions" iconLeft="ph-terminal-window" size="sm" variant="outline">Codex runs</CcButton><CcButton iconLeft="ph-plus" onClick={() => setEditingEntity({ entity: null, mode: "create" })} size="sm" variant="primary">{t("people.new")}</CcButton></> : null} description={t("people.description")} eyebrow={t("people.eyebrow")} title={t("people.title")} />
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
       {packet.status === "error" ? <CcNotice tone="error" title={packet.error || t("people.loadError")} live /> : null}
       {notice ? <CcNotice tone={notice.tone} title={notice.title} live /> : null}

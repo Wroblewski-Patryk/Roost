@@ -49,7 +49,7 @@ Use this prompt when risk is meaningful:
   - agent logs and operational memory
 - Actors:
   - workspace owner
-  - Paperclip/Jarvis/service agents
+  - Codex Agent Host/Jarvis/service agents
   - optional n8n workflows
   - unauthenticated internet clients
   - misconfigured or compromised integration providers

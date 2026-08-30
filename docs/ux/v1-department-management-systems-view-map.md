@@ -165,7 +165,7 @@ Use mobile for supervision, not full administration:
 
 | Area key | Label | System view name | Primary route | Core subsystems |
 | --- | --- | --- | --- | --- |
-| `00-ogolny` | 00 Ogolny | Company Orchestration System | `/areas?area=00-ogolny&view=overview` | global intake, owner inbox, Paperclip/agent output, unassigned resources, risks, cross-department priorities, company graph, global flow, system health |
+| `00-ogolny` | 00 Ogolny | Company Orchestration System | `/areas?area=00-ogolny&view=overview` | global intake, owner inbox, Codex Agent Host/agent output, unassigned resources, risks, cross-department priorities, company graph, global flow, system health |
 | `01-strategia` | 01 Strategia | Strategy Management System | `/areas?area=01-strategia&view=overview` | goals, targets, roadmap, decisions, risks, KPIs, portfolio |
 | `02-produkt` | 02 Produkt | Product And Delivery Management System | `/areas?area=02-produkt&view=overview` | offers, service/product catalog, backlog, delivery plans, releases, acceptance |
 | `03-sprzedaz` | 03 Sprzedaz | Sales Management System | `/areas?area=03-sprzedaz&view=overview` | leads, discovery, opportunities, offers, pricing, deal pipeline |
@@ -222,7 +222,7 @@ Every department route should be composed from these groups:
    Strategy, Sales, Work Execution, Knowledge, AI Agents.
 6. Add write actions only where current APIs already support safe scoped
    behavior.
-7. Add Paperclip/MCP department packets after human-readable department
+7. Add Codex Agent Host/MCP department packets after human-readable department
    read models are stable.
 
 ## Prompt Pack Link

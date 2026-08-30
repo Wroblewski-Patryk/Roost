@@ -250,7 +250,7 @@ forms, command panels, and action feedback.
 The accepted near-term order is:
 
 1. Preserve and deepen `00 Main` as the company intake, router, and
-   Paperclip/agent-output review system.
+   Codex Agent Host/agent-output review system.
 2. Preserve and deepen `04 Operations` as the operations management and task
    execution system.
 3. Then build `08 Assets` as the file/resource/source-readiness system.

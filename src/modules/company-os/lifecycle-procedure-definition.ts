@@ -13,7 +13,7 @@ export const lifecycleRoostSource = {
   sourceSha: "7c06b448235ed8c0cad9cd872d64d6c66e43888a"
 } as const;
 export const lifecycleOperatingContractSource = {
-  repository: "Paperclip_Softwarehouse",
+  repository: "Roost",
   path: "docs/softwarehouse/19-autonomous-application-business-lifecycle.md",
   documentVersion: lifecycleProcedureVersion,
   commitSha: "b0e02c28de8bb3ebe0abf6239a5771b389a779f9"
@@ -156,7 +156,7 @@ export const lifecycleStageKeySchema = z.enum(lifecycleStageKeys);
 export type LifecycleStageKey = z.infer<typeof lifecycleStageKeySchema>;
 
 export const lifecyclePurpose = "Present how an offering moves from direction and a validated problem through product delivery, release, operation, measured outcomes, and improvement.";
-export const lifecycleScope = "Owner-facing application and business lifecycle knowledge projection; Paperclip retains live execution, approval, budget, blocker, run, and completion-evidence authority.";
+export const lifecycleScope = "Owner-facing application and business lifecycle knowledge projection; the supervised agent runtime reports live execution, blocker, run, and completion evidence while Roost retains approval and governance authority.";
 export const lifecycleTrigger = "A new offering, material product change, release candidate, production recovery, or evidence-backed improvement enters the governed lifecycle.";
 export const lifecycleEntryCriteria = [
   "The offering or change has a stable identity and accountable owner.",

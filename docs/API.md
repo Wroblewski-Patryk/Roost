@@ -88,7 +88,7 @@ target is recorded in
 
 ## Response Contract
 
-CompanyCore v1 should use stable response envelopes so Paperclip, Jarvis,
+CompanyCore v1 should use stable response envelopes so Codex Agent Host, Jarvis,
 future GUI clients, and tests can rely on predictable shapes.
 
 Successful single-resource responses:
@@ -226,7 +226,7 @@ workspace and must not be returned in API responses.
 
 ## Service API Keys
 
-`X-API-Key` remains the service-client auth mechanism for Paperclip, Jarvis,
+`X-API-Key` remains the service-client auth mechanism for Codex Agent Host, Jarvis,
 n8n, and other agents. In v1 it must become workspace-scoped:
 
 - API key resolves exactly one workspace.
@@ -237,7 +237,7 @@ n8n, and other agents. In v1 it must become workspace-scoped:
 - Service-key scopes are enforced against route capabilities. A scoped key can
   call only routes whose capability appears in its `scopes` array.
 - Empty scopes, `*`, `companycore:*`, and legacy `adapter:*` scopes currently
-  retain broad compatibility for already deployed Jarvis/Paperclip-style
+  retain broad compatibility for already deployed Jarvis/Codex Agent Host-style
   agents. New keys should use explicit route capabilities.
 - Raw keys are only shown once if an API key creation endpoint is added.
 
@@ -627,7 +627,7 @@ Safe response:
 ```
 
 The `adapterManifest` is the machine-readable v1 onboarding surface for
-Paperclip, Jarvis, Jarvan, Aviary, n8n, and similar clients. It lists canonical
+Codex Agent Host, Jarvis, Jarvan, Aviary, n8n, and similar clients. It lists canonical
 paths, methods, expected capabilities, payload field hints, safe error
 behavior, and write rules without exposing secrets. `data.capabilities` is
 filtered to the authenticated key's effective capabilities unless the key is in
@@ -685,7 +685,7 @@ Read guarantees:
 `GET /v1/finance/context` is the protected read-only Finance and Billing
 packet for candidate pricing models, hourly-value assumptions, work valuation,
 commercial exceptions, invoice-readiness blockers, payment context, risks,
-source conflicts, and Paperclip-safe owner-decision prompts.
+source conflicts, and Codex Agent Host-safe owner-decision prompts.
 
 Supported query parameters:
 
@@ -703,7 +703,7 @@ Read guarantees:
 - conflicting price models remain `needs_owner_decision`
 - the `150 CHF/hour` assumption remains a candidate until confirmed
 - `100%` discounts are included from the commercial exception read model
-- Finance and Paperclip get explicit blocked actions for active price policy,
+- Finance and Codex Agent Host get explicit blocked actions for active price policy,
   final quote, discount application, invoice sending, and payment status writes
 
 ## Sales Context
@@ -727,7 +727,7 @@ Read guarantees:
   finance, Drive, or agent-event source is mutated on read
 - `100%` discounts and pro-bono work are represented as commercial exceptions
   and remain owner-reviewed
-- Sales and Paperclip get explicit blocked actions for final quotes, discount
+- Sales and Codex Agent Host get explicit blocked actions for final quotes, discount
   application, invoice sending, autonomous outreach, and paid-ad launch
 - missing pricing, approval, source, or invoice evidence is surfaced as
   handoff context instead of being hidden behind a fake sales-ready state
@@ -850,7 +850,7 @@ npm run mcp:smoke
 
 Operational setup and smoke instructions live in
 `docs/operations/companycore-mcp-bridge.md`. Runtime setup snippets for Codex,
-Paperclip, and generic MCP-compatible agents live in
+Codex Agent Host, and generic MCP-compatible agents live in
 `docs/operations/mcp-agent-runtime-setup.md`.
 
 ## Relationship Graph
@@ -2276,8 +2276,8 @@ Governance, and Evidence & activity.
 
 ```json
 {
-  "name": "Paperclip Growth",
-  "description": "Strategic work for Paperclip"
+  "name": "Codex Agent Host Growth",
+  "description": "Strategic work for Codex Agent Host"
 }
 ```
 
@@ -2469,9 +2469,9 @@ DELETE /task-lists/:id
 ```json
 {
   "projectId": "uuid",
-  "name": "Paperclip intake",
+  "name": "Codex Agent Host intake",
   "description": "Lead capture tasks",
-  "source": "paperclip"
+  "source": "agent_runtime"
 }
 ```
 
@@ -2689,9 +2689,9 @@ DELETE /interactions/:id
 {
   "clientId": "uuid",
   "type": "email",
-  "summary": "Paperclip captured a reply from the lead",
+  "summary": "Codex Agent Host captured a reply from the lead",
   "occurredAt": "2026-05-03T10:00:00.000Z",
-  "source": "paperclip"
+  "source": "agent_runtime"
 }
 ```
 
@@ -2812,7 +2812,7 @@ and invalid signatures return `invalid_webhook_signature`.
 
 Valid signed ClickUp events are stored idempotently in the provider inbox,
 processed into CompanyCore task records, and status changes create
-provider-neutral agent events for Paperclip, Jarvis, Aviary, and future
+provider-neutral agent events for Codex Agent Host, Jarvis, Aviary, and future
 consumers.
 
 ClickUp task comment events are mapped to CompanyCore notes attached to the
@@ -2867,9 +2867,9 @@ Safe response shape:
         "id": "AgentEventOutbox:event-uuid",
         "family": "agent_output",
         "status": "needs_owner_decision",
-        "title": "Paperclip pricing discount proposal",
+        "title": "Codex Agent Host pricing discount proposal",
         "source": "agent_event_outbox",
-        "sourceAgent": "paperclip",
+        "sourceAgent": "agent-runtime",
         "sourceModel": "AgentEventOutbox",
         "sourceId": "event-uuid",
         "risk": "critical",
@@ -2890,7 +2890,7 @@ Safe response shape:
 
 The MCP manifest exposes this endpoint as `companycore_get_intake` when the key
 has `intake:read`. The canonical MCP profiles include `intake:read` so
-Paperclip can inspect background work and route it through CompanyCore instead
+Codex Agent Host can inspect background work and route it through CompanyCore instead
 of reading provider tables directly.
 
 ```http
@@ -3010,12 +3010,12 @@ Body:
   "sourceId": "event-uuid",
   "targetDepartmentKey": "03-sprzedaz",
   "classification": "route_to_department",
-  "reason": "Paperclip output should be reviewed by Sales before any commercial action.",
+  "reason": "Codex Agent Host output should be reviewed by Sales before any commercial action.",
   "proposedNextAction": "Create a Sales follow-up after owner review.",
   "riskLevel": "medium",
   "requestOwnerDecision": true,
   "createTaskDraft": true,
-  "idempotencyKey": "paperclip-route-event-uuid-sales"
+  "idempotencyKey": "agent-runtime-route-event-uuid-sales"
 }
 ```
 
@@ -3056,7 +3056,7 @@ Safe response shape:
       "decisionId": "decision-uuid",
       "taskId": "task-uuid",
       "auditLogId": "audit-log-uuid",
-      "idempotencyKey": "paperclip-route-event-uuid-sales"
+      "idempotencyKey": "agent-runtime-route-event-uuid-sales"
     },
     "blockedActions": [
       {
@@ -3070,6 +3070,44 @@ Safe response shape:
 
 Idempotent replays with the same source, target department, classification, and
 idempotency key return the existing proposal with `idempotentReplay=true`.
+
+## Local Codex Agent Runtime
+
+The dedicated runtime API coordinates VPS-owned work with a local Windows
+Agent Host. All routes are workspace-scoped and require the matching
+`agent-runtime:*` capability.
+
+```http
+GET  /v1/agent-runtime/hosts
+GET  /v1/agent-runtime/readiness
+POST /v1/agent-runtime/hosts/register
+POST /v1/agent-runtime/hosts/:id/heartbeat
+
+GET  /v1/agent-runtime/executions
+GET  /v1/agent-runtime/executions/:id
+POST /v1/agent-runtime/executions
+POST /v1/agent-runtime/executions/claim
+POST /v1/agent-runtime/executions/:id/heartbeat
+POST /v1/agent-runtime/executions/:id/events
+POST /v1/agent-runtime/executions/:id/actions/complete
+POST /v1/agent-runtime/executions/:id/actions/fail
+POST /v1/agent-runtime/executions/:id/actions/cancelled
+POST /v1/agent-runtime/executions/:id/actions/cancel
+POST /v1/agent-runtime/executions/:id/actions/retry
+```
+
+Queueing requires `taskId`. `applicationId` is optional only when the task's
+project maps to exactly one application. Roost rejects missing or ambiguous
+application resolution instead of allowing the host to guess a repository.
+
+Claim responses include a short-lived lease token. Only that token may renew,
+append runtime events, complete, fail, or acknowledge cancellation. Expired
+active leases return to the queue. Owner cancel and retry actions do not require
+the execution lease.
+
+Use API-key profile `mcp_codex_worker` for the local host. See
+`docs/architecture/local-codex-agent-runtime.md` and
+`docs/operations/local-codex-agent-host.md`.
 
 ## Agent Events
 

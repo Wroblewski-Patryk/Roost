@@ -80,7 +80,7 @@ Department management system route inventory:
 `docs/ux/v1-department-management-systems-view-map.md`.
 
 Prompt pack for generating department specs, concepts, implementation plans,
-and Paperclip/AI packets: `docs/ux/v1-department-system-prompt-pack.md`.
+and Codex Agent Host/AI packets: `docs/ux/v1-department-system-prompt-pack.md`.
 
 | Route | Current Status | V1 Direction | Keep / Rebuild / Remove |
 | --- | --- | --- | --- |
@@ -162,7 +162,7 @@ V1 status:
 /areas?area=:areaKey&view=ai -> /react-agent-tools -> /settings/api
 ```
 
-Goal: decide what Jarvis/Paperclip can safely read or do.
+Goal: decide what Jarvis/Codex Agent Host can safely read or do.
 
 V1 status:
 

@@ -42,7 +42,7 @@ The user outcome is:
 
 ```text
 I open CompanyCore and immediately know what matters now, what is blocked,
-which company area owns it, and whether Jarvis/Paperclip can safely use the
+which company area owns it, and whether Jarvis/Codex Agent Host can safely use the
 context.
 ```
 
@@ -165,7 +165,7 @@ available:
 | Knowledge | Drive/docs/notes/decisions relevant to area | strategy briefs and decisions |
 | Resources | tools, repositories, files, providers | planning docs, dashboards, APIs |
 | Decisions | approvals, risks, controls, open decisions | governance review queue |
-| AI | agent permissions, safe actions, handoff state | Jarvis can summarize, Paperclip waiting |
+| AI | agent permissions, safe actions, handoff state | Jarvis can summarize, Codex Agent Host waiting |
 
 ### Sidebar Expanded Area Example
 
@@ -395,7 +395,7 @@ sidebar, selected-area tabs, simplified header, and mobile-specific layout.
   process families instead of raw app modules.
 - `MECE Ownership`: every high-impact resource/process/tool should resolve to
   one accountable owner before AI write actions.
-- `Human + AI Execution`: owner decisions, approvals, Jarvis/Paperclip
+- `Human + AI Execution`: owner decisions, approvals, Jarvis/Codex Agent Host
   handoffs, and MCP-safe actions.
 
 ### Screen Behavior
@@ -503,7 +503,7 @@ over the original card-grid concept.
 
 3. `RightBrief`
    - owner decisions
-   - Jarvis/Paperclip handoff
+   - Jarvis/Codex Agent Host handoff
    - active blockers
    - recent proof
 
@@ -539,7 +539,7 @@ the first viewport should use the `OperatingFlowBoard` as the main object.
 | CRM Pipeline | `/v1/company-os` and pipeline records | active stage runs, blocked runs, approvals | `/pipeline` or `/react-company-os` |
 | Knowledge | `/v1/google-drive/files` | imported folders/files, unassigned count, freshness | `/settings/drive` |
 | Integrations | `/v1/connection`, integration settings | ClickUp, Drive, graph, MCP readiness | `/settings/integrations` |
-| Agents | `/v1/mcp/manifest`, `/v1/api-keys` | safe tools, supervised tools, broad keys, Jarvis/Paperclip handoff | `/settings/api` |
+| Agents | `/v1/mcp/manifest`, `/v1/api-keys` | safe tools, supervised tools, broad keys, Jarvis/Codex Agent Host handoff | `/settings/api` |
 | Data Quality | operating tables and table snapshots | populated/empty tables, records needing context | `/data` |
 
 ## Component Boundaries
@@ -714,7 +714,7 @@ Suggested tokens:
 | Component extraction collides with dirty W02 changes | Worktree already has in-progress shell changes | Wait for W02 verification or branch carefully before runtime edits |
 | Dashboard becomes static mockup | User needs real backend-backed state | Every widget must map to current API/connection data |
 | V1 conflicts with V2 city direction | Existing docs approve Company City later | Treat V1 as operational foundation and V2 as future visual layer |
-| Agent safety gets buried | Jarvis/Paperclip need safe access visibility | Keep `Agents` widget and right brief showing safe/supervised readiness |
+| Agent safety gets buried | Jarvis/Codex Agent Host need safe access visibility | Keep `Agents` widget and right brief showing safe/supervised readiness |
 
 ## Acceptance For Future Code Task
 

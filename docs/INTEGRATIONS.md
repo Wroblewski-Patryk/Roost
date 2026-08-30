@@ -2,7 +2,7 @@
 
 ## Service Adapter Onboarding
 
-Paperclip, Jarvis, Jarvan, Aviary, n8n, and future service clients should start
+Codex Agent Host, Jarvis, Jarvan, Aviary, n8n, and future service clients should start
 from `docs/integrations/adapter-onboarding.md`.
 
 The required first call for adapters is:
@@ -19,7 +19,7 @@ Adapters that need a durable identity should create or reuse a workspace-scoped
 agent record through `POST /v1/agents`, then attach `agentId` to
 `POST /v1/agent-logs`.
 
-CRM-style adapters such as Paperclip should write lead/customer timeline
+CRM-style adapters such as Codex Agent Host should write lead/customer timeline
 activity through `POST /v1/interactions` instead of hiding it in notes or
 agent logs.
 
@@ -92,10 +92,10 @@ CompanyCore is responsible for:
 - refreshing local metadata/content snapshots after successful provider writes
 - reconciling external edits through Drive `changes.list` first and
   `changes.watch` channels after the polling path is proven
-- emitting provider-neutral file/content events for Jarvis, Paperclip, Aviary,
+- emitting provider-neutral file/content events for Jarvis, Codex Agent Host, Aviary,
   and future GUI modules
 
-Jarvis, Paperclip, Aviary, and future agents must read Google Drive metadata
+Jarvis, Codex Agent Host, Aviary, and future agents must read Google Drive metadata
 and content through CompanyCore APIs. They must not receive raw Google OAuth
 tokens or write directly to PostgreSQL. Structured extraction from Sheets or
 Docs into CompanyCore business tables is allowed only when an explicit table
@@ -140,7 +140,7 @@ Implemented foundation:
   with `secretConfigured`, `oauthClientConfigured`, and
   `oauthTokenConfigured`, never OAuth tokens or client secrets.
 - `GET /v1/connection` exposes safe Google Drive configuration state to
-  Jarvis, Paperclip, Aviary, and future adapters.
+  Jarvis, Codex Agent Host, Aviary, and future adapters.
 - `src/integrations/google-drive/google-drive.client.ts` contains the safe
   client boundary for Drive file listing, Drive file creation, Drive changes,
   Docs get/batchUpdate, and Sheets create/read/write methods.
@@ -151,7 +151,7 @@ Implemented foundation:
 - Google Drive import emits `google_drive_import_succeeded` events with safe
   counts and selected folder IDs.
 - `/v1/google-drive/files` lists imported Drive files with their latest content
-  snapshot for Jarvis, Paperclip, Aviary, and future GUI clients.
+  snapshot for Jarvis, Codex Agent Host, Aviary, and future GUI clients.
 - `/v1/google-drive/files/:id/content` refreshes a local content snapshot from
   Google Docs or Sheets through CompanyCore.
 - `/v1/google-drive/files/:id/description` updates the CompanyCore-owned
@@ -300,7 +300,7 @@ CompanyCore. The implementation must follow the current ClickUp docs:
 - Verify every incoming webhook using the `X-Signature` header and HMAC
   SHA-256 over the exact raw request body before trusting any payload fields.
 - Treat `taskStatusUpdated` as a first-class business trigger because it can
-  tell Paperclip, Jarvis, Aviary, or future agents that a record crossed a
+  tell Codex Agent Host, Jarvis, Aviary, or future agents that a record crossed a
   workflow boundary.
 - Track webhook health and support reactivation because ClickUp webhooks are
   tied to the user token that created them.
@@ -320,7 +320,7 @@ Runtime layers:
   changes, fetches the full task from ClickUp when the payload is only a delta,
   and emits internal events.
 - `agent event bridge`: durable outbox or event API surface that lets
-  Paperclip, Jarvis, Aviary, and future modules consume CompanyCore events
+  Codex Agent Host, Jarvis, Aviary, and future modules consume CompanyCore events
   without each agent implementing ClickUp-specific webhook logic.
 
 Idempotency:
@@ -338,7 +338,7 @@ Agent bridge behavior:
   `task_status_updated_from_clickup`, and enqueue an agent-visible event with
   before/after status, task ID, external ClickUp task ID, list/table scope, and
   actor metadata when available.
-- Paperclip can subscribe to status-change events to start or continue
+- Codex Agent Host can subscribe to status-change events to start or continue
   workflow work.
 - Jarvis can use the same event stream to refresh context and answer with
   current task state.
@@ -356,7 +356,7 @@ Delivery slices:
 3. Add ClickUp webhook registration/reconciliation service and owner API.
 4. Add task event processor for `taskCreated`, `taskUpdated`, `taskDeleted`,
    and `taskStatusUpdated`.
-5. Add agent event bridge endpoints and Paperclip/Jarvis/Aviary consumption
+5. Add agent event bridge endpoints and Codex Agent Host/Jarvis/Aviary consumption
    contract.
 6. Deploy behind the existing API domain, create webhooks for selected Lists,
    and run a real ClickUp status-change smoke.
@@ -459,15 +459,20 @@ The first native ClickUp implementation must be smoke-tested by verifying:
 - `task_synced_from_clickup` appears in `GET /events`
 - logs/events include provider, workspace, counts, and safe error codes only
 
-## Paperclip
+## Codex Agent Host
 
-Paperclip should use Company Core as operational memory through the API:
+The local Codex Agent Host uses Roost as operational memory and execution
+control through the API:
 
-- read projects, goals, targets, and tasks before planning work
-- write notes and decisions when durable context appears
-- read events for recent operational changes
+- register its supported local application slugs
+- claim one compatible task execution using a renewable lease
+- read bounded task and application context before planning work
+- report progress, cancellation, changed files, verification, final response,
+  and failures to the owner-visible execution record
 
-Paperclip should not write directly to Postgres.
+The host makes outbound HTTPS calls from the laptop. It must not write directly
+to Postgres, expose a listener, accept remote repository paths, commit, push, or
+deploy. See `operations/local-codex-agent-host.md`.
 
 ## Jarvis
 

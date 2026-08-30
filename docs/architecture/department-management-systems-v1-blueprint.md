@@ -14,7 +14,7 @@ It answers:
 - how `00 Main` coordinates the whole company without becoming another silo;
 - which existing CompanyCore backend contracts should be reused first;
 - which backend gaps must be planned before richer V1 functionality;
-- how Paperclip and other supervised agents should consume each department.
+- how Codex Agent Host and other supervised agents should consume each department.
 
 This document complements:
 
@@ -76,7 +76,7 @@ The company has:
 
 `00 Main` is not counted as one of the 12 operating departments. It is the
 control tower that routes attention across them. It is also the global intake
-for anything unclassified: owner ideas, client requests, tasks, Paperclip
+for anything unclassified: owner ideas, client requests, tasks, Codex Agent Host
 outputs, documents, risks, bugs, opportunities, feedback, and improvement
 signals. Items should enter `00 Main` first when their department, owner,
 workflow, or risk class is unclear, then be assigned into the correct
@@ -98,7 +98,7 @@ intake in 00 Main
 ```
 
 This loop should become visible in V1 before broad automation. It lets the
-owner react to what Paperclip creates in the background, turns old client work
+owner react to what Codex Agent Host creates in the background, turns old client work
 into learning material, and prevents AI output from becoming invisible work.
 
 ## Shared Department Contract
@@ -112,7 +112,7 @@ Every department system must expose the same high-level contract:
 | Subsystems | Department-specific management capabilities. |
 | Work graph | Goals, workflows, tasks, records, resources, decisions, metrics, risks, and evidence. |
 | Actions | Read-only first; writes only through existing API/Company OS command contracts. |
-| Agent packet | What Paperclip can read, propose, create, or request approval for. |
+| Agent packet | What Codex Agent Host can read, propose, create, or request approval for. |
 | Evidence rail | Tables, Drive files, task records, workflow runs, approvals, events, audit. |
 | Improvement loop | Feedback, defects, retros, standards updates, and new tasks. |
 
@@ -153,7 +153,7 @@ for that job.
 | `03 Sales` | Sales pipeline and offer workbench | leads, qualification, discovery, offers, pricing context, discounts, deal stages, follow-ups, source campaigns | show pipeline by stage, next follow-up, offer/pricing packet, discount exceptions, and lead quality signals | show urgent follow-ups, deal stage changes, current client work, quick contact context, and discount warning | read-only sales context over clients/deals/interactions/commercial exceptions |
 | `04 Operations` | Operating rhythm and control board | routines, SOPs, procedures, dependencies, approvals, controls, recurring admin, operational tasks | show procedure health, pending approvals, blocked dependencies, routines, and operational work queue | show what must be done today, approvals to review, blocked routines, and safe handoff to agents | deployed read-only operations context, then guarded command contract |
 | `05 Relationships` | Client success and relationship health board | active clients, archived clients, stakeholders, interactions, support, satisfaction, referrals, feedback | show client health, contact history, stakeholder map, follow-up queue, support issues, and archived-learning signals | show who needs contact now, last interaction, open support, feedback request, and relationship risk | read-only relationships context plus archived-client source audit |
-| `06 People/Agents And Roles` | Human/agent roster and authority board | people, AI agents, roles, responsibilities, capacity, permissions, escalation, hiring/agent creation, Paperclip roster sync | show roster, responsibilities, capacity load, authority boundaries, escalation map, service keys, and missing staffing | show who/which agent owns this, overload warnings, escalation route, and permission risk before action | read-only people/agents authority packet and Paperclip roster reconciliation design |
+| `06 People/Agents And Roles` | Human/agent roster and authority board | people, AI agents, roles, responsibilities, capacity, permissions, escalation, hiring/agent creation, Codex Agent Host roster sync | show roster, responsibilities, capacity load, authority boundaries, escalation map, service keys, and missing staffing | show who/which agent owns this, overload warnings, escalation route, and permission risk before action | read-only people/agents authority packet and Codex Agent Host roster reconciliation design |
 | `07 Finance And Billing` | Money readiness and billing control board | pricing models, hourly value, work valuation, discounts, invoice readiness, payments, receivables, margin, finance risks | show pricing assumptions, commercial exceptions, invoice blockers, payment status, margin risk, and owner decisions | show invoice-ready work, payment blockers, discount approvals, and money-risk alerts | deployed finance context plus read-only board; writes require finance command contract |
 | `08 Assets And Resources` | Company asset and source control board | Drive folders/files, resources, prompts, repositories, tools, storage locations, knowledge roots, freshness | show source map, ownership, freshness, missing descriptions, unscoped files, and resource readiness by department | show recently changed/missing/untrusted sources, quick file inspection, and assignment needs | read-only asset/resource packet and freshness aggregate |
 | `09 Technology And AI Infrastructure` | Runtime, integration, and agent tool control board | integrations, API keys, MCP tools, agent runtime health, deployment health, observability, automation, incidents | show integration health, MCP exposure, agent authority, API/service key risk, deploy/runtime status, and automation health | show broken integrations, risky keys, failed agent/tool events, deploy status, and required owner action | read-only technology health aggregate before any automation writes |
@@ -275,7 +275,7 @@ operating graph aggregates before adding write models.
 | No duplicate department tables | Departments are projections over shared modules, not separate apps. |
 | Area links must be real | Do not fake task-to-area, workflow-to-goal, or record-to-stage links. |
 | Finance/legal/ads are high-risk | Payment, pricing, legal, and paid advertising need explicit contracts before writes. |
-| Agent actions are supervised | Paperclip can propose broadly, execute narrowly, and must record evidence. |
+| Agent actions are supervised | Codex Agent Host can propose broadly, execute narrowly, and must record evidence. |
 
 ## 00 Main - Company Orchestration System
 
@@ -290,7 +290,7 @@ Primary subsystems:
 - global business-flow health;
 - cross-department blockers;
 - owner inbox and approval routing;
-- Paperclip output review queue;
+- Codex Agent Host output review queue;
 - module confidence and release readiness;
 - company graph and escalation map;
 - AI-agent supervision overview.
@@ -324,7 +324,7 @@ Agent packet:
 - active blockers by department;
 - allowed MCP tools;
 - pending approvals;
-- Paperclip-created background items waiting for review;
+- Codex Agent Host-created background items waiting for review;
 - next suggested department to improve.
 
 ## 01 Strategy Management System
@@ -626,7 +626,7 @@ Current backend foundation:
 - agents and capabilities;
 - tasks and approvals;
 - policies, controls, and audit.
-- future Paperclip agent structure as an external source to reconcile, not a
+- future Codex Agent Host agent structure as an external source to reconcile, not a
   direct source of authority until imported through CompanyCore contracts.
 
 V1 web target:
@@ -643,7 +643,7 @@ Backend gaps:
 
 - explicit responsibility assignments if role/task ownership is not enough;
 - capacity signal model;
-- Paperclip agent roster import or reconciliation contract;
+- Codex Agent Host agent roster import or reconciliation contract;
 - people/agent unit relation to roles, capabilities, departments, and tasks;
 - PAEI profile storage if accepted later;
 - role-to-capability and escalation aggregate.
@@ -651,7 +651,7 @@ Backend gaps:
 First safe implementation slice:
 
 - read-only People/Agents and Role board using roles, users, agents, task
-  ownership, approvals, policies, Paperclip agent-structure context when
+  ownership, approvals, policies, Codex Agent Host agent-structure context when
   available, and capability scopes.
 
 Agent packet:
@@ -1088,7 +1088,7 @@ Goal: close real concept gaps discovered by read models and proof.
 Candidate contracts:
 
 - department system packet aggregate;
-- global intake and Paperclip output review queue;
+- global intake and Codex Agent Host output review queue;
 - global business-flow read model;
 - lead/discovery/offer relation;
 - price list, hourly-value, discount, and invoice readiness read model;
@@ -1099,7 +1099,7 @@ Candidate contracts:
 - resource freshness and agent-safe usage model;
 - department health aggregate.
 
-### Wave 5 - Paperclip Department Operators
+### Wave 5 - Codex Agent Host Department Operators
 
 Goal: let agents help run departments through supervised packets and commands.
 
@@ -1137,7 +1137,7 @@ based on existing backend readiness and company leverage:
 | 8 | 10 Legal, Standards, And Decisions | Raises safety for AI, sales, finance, and workflow writes. |
 | 9 | 12 Executive Management | Consolidates approvals, escalation, and portfolio control after lower-level signals exist. |
 | 10 | 07 Finance And Billing | High business value but high-risk; needs explicit finance contract before writes. |
-| 11 | 06 People/Agents And Roles | Important for scaling humans and agents together, but capacity/responsibility and Paperclip-roster contracts need careful work. |
+| 11 | 06 People/Agents And Roles | Important for scaling humans and agents together, but capacity/responsibility and Codex Agent Host-roster contracts need careful work. |
 | 12 | 11 Innovation And Growth | Best after strategy, sales, relationships, and feedback foundations provide signals. |
 
 `00 Main` should evolve in parallel as the company-level orchestrator and
@@ -1147,7 +1147,7 @@ should not wait until all departments are complete.
 
 | Gap ID | Gap | Needed by | Suggested first step |
 | --- | --- | --- | --- |
-| DMS-BE-001 | Department system packet read model | all departments, Paperclip | Decide whether to extend AOG or add `/v1/department-systems/:areaKey`. |
+| DMS-BE-001 | Department system packet read model | all departments, Codex Agent Host | Decide whether to extend AOG or add `/v1/department-systems/:areaKey`. |
 | DMS-BE-002 | Global business-flow read model | 00, 01, 03, 12 | Project current records into 13 stages without new writes. |
 | DMS-BE-003 | Goal/workflow/task bridge | 01, 02, 04, 12 | Continue AOG-BE-003 after AOG production proof. |
 | DMS-BE-004 | Lead/discovery/offer relation | 03, 05, 07 | Audit current CRM/deal/interactions shape before schema. |
@@ -1157,7 +1157,7 @@ should not wait until all departments are complete.
 | DMS-BE-008 | Resource freshness model | 08, 09, agents | Add read-only stale/source-confidence aggregate before write commands. |
 | DMS-BE-009 | Integration health aggregate | 09, 12 | Derive from settings, provider state, events, and health metadata. |
 | DMS-BE-010 | Department health aggregate | 00, 12, all | Combine blockers, stale evidence, open tasks, risks, and approvals. |
-| DMS-BE-011 | Global intake and Paperclip output review | 00, 09, 12, all | Start with read/review queue for unassigned ideas, tasks, files, risks, and agent-created items. |
+| DMS-BE-011 | Global intake and Codex Agent Host output review | 00, 09, 12, all | Start with read/review queue for unassigned ideas, tasks, files, risks, and agent-created items. |
 | DMS-BE-012 | Price list, hourly value, and discount model | 03, 07, 12 | Inventory Drive/ClickUp pricing sources, then create a read-only pricing context before write actions. |
 | DMS-BE-013 | Archived-client learning model | 05, 11, 03, 07 | Import/classify old clients as archive evidence before using them for process improvement. |
 

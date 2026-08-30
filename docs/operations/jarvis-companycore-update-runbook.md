@@ -6,7 +6,7 @@ Jarvis can use CompanyCore as a Data Source and chat context provider.
 ## Purpose
 
 Jarvis should be able to answer company-memory questions from CompanyCore,
-including Paperclip onboarding records, decisions, tasks, notes, agents, and
+including Codex Agent Host onboarding records, decisions, tasks, notes, agents, and
 events. CompanyCore remains the source of truth. OpenJarvis reads it through
 the authenticated CompanyCore HTTP API.
 
@@ -168,7 +168,7 @@ $body = Join-Path $env:TEMP "jarvis-chat-companycore.json"
   "messages": [
     {
       "role": "user",
-      "content": "Na podstawie CompanyCore powiedz, co wiesz o projekcie Paperclip AI onboarding to CompanyCore. Wymien decyzje, dwa zadania i agenta."
+      "content": "Na podstawie CompanyCore powiedz, co wiesz o projekcie Codex Agent Host AI onboarding to CompanyCore. Wymien decyzje, dwa zadania i agenta."
     }
   ]
 }
@@ -183,10 +183,10 @@ Remove-Item $body -Force
 
 The answer should mention:
 
-- project `Paperclip AI onboarding to CompanyCore`
+- project `Codex Agent Host AI onboarding to CompanyCore`
 - decision `Use CompanyCore API as the agent source of truth`
 - task `Teach Jarvis to summarize CompanyCore records`
-- task `Reuse the same CompanyCore adapter path in Paperclip`
+- task `Reuse the same CompanyCore adapter path in Codex Agent Host`
 - agent `Jarvis production chat adapter`
 
 The CompanyCore context injector filters smoke/test records from ordinary
@@ -228,7 +228,7 @@ Confirm that the chat context injector is deployed:
 - the chat route calls `maybe_inject_companycore_context(request_body)` before
   model execution
 - the user prompt contains a CompanyCore-related keyword such as
-  `CompanyCore`, `Paperclip`, `projekt`, `zadanie`, `decyzja`, or `agent`
+  `CompanyCore`, `Codex Agent Host`, `projekt`, `zadanie`, `decyzja`, or `agent`
 
 ## Documentation Updates After Deployment
 

@@ -23,7 +23,7 @@ database client. External tools should not write directly to the database.
 
 ## API Boundary
 
-Express exposes a small HTTP API. Paperclip, Jarvis, n8n, and future GUI
+Express exposes a small HTTP API. Codex Agent Host, Jarvis, n8n, and future GUI
 clients must use this API rather than bypassing it.
 
 ## Ownership Boundary
@@ -56,7 +56,7 @@ backend. It is not the required primary path for ClickUp in v1.
 
 ## Consumers
 
-Paperclip and Jarvis consume Company Core as operational memory:
+Codex Agent Host and Jarvis consume Company Core as operational memory:
 
 - goals, targets, tasks, processes, pipelines, and runtime evidence for
   execution context

@@ -31,11 +31,12 @@ export type ProductApplication = {
   frontendUrl?: string | null;
   backendUrl?: string | null;
   documentationUrl?: string | null;
+  metadata?: Record<string, unknown>;
   updatedAt: string;
   readiness?: Readiness;
   gapSummary?: { total: number; blockers: number };
   offerings?: ProductOffering[];
-  repositories?: Array<{ id: string; name: string; url: string; isPrimary: boolean }>;
+  repositories?: Array<{ id: string; name: string; url: string; defaultBranch?: string | null; purpose?: string | null; isPrimary: boolean }>;
   architecture?: Array<{ id: string; type: string; name: string; description?: string; technologyDefinition?: TechnologyDefinition }>;
   technologies?: Array<{ id: string; purpose?: string; version?: string; technologyDefinition: TechnologyDefinition }>;
   interfaces?: Array<{ id: string; type: string; key: string; name: string; reference?: string; requiresApproval: boolean; auditRequired: boolean }>;

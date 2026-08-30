@@ -274,7 +274,7 @@ strategyRouter.get("/context", asyncHandler(async (req, res) => {
         mode: "read_only",
         recommendedNextActions: [
           "Compare active goals with current targets before proposing new work.",
-          "Use decision logs and risks as constraints for Paperclip task planning.",
+          "Use decision logs and risks as constraints for supervised agent task planning.",
           "Convert strategic gaps into task proposals through existing task routes only when authorized.",
           "Request owner review before changing priorities, pricing assumptions, or portfolio direction."
         ],

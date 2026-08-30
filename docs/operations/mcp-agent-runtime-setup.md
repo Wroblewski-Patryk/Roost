@@ -22,7 +22,8 @@ the smallest MCP profile that supports their role.
 | Executive or PM read context agent | `mcp_company_os_reader` | Reads Company OS cockpit, process, pipeline, approval, audit, governance, operating model, and event context. |
 | Research or documentation agent | `mcp_knowledge_reader` | Reads Company OS context plus notes, decisions, and Drive file metadata/content. |
 | Memory-writing assistant | `mcp_memory_writer` | Reads company context and writes notes, decisions, and agent logs. |
-| Paperclip task executor | `mcp_event_worker` | Reads tasks and assigned agent events, writes execution logs, and acknowledges work queue items. |
+| Local Codex Agent Host | `mcp_codex_worker` | Claims bounded execution records, reads task/application context, reports heartbeats, events, results, and failures. |
+| Generic event worker | `mcp_event_worker` | Reads tasks and assigned agent events, writes execution logs, and acknowledges work queue items. |
 | Human-supervised operator | `mcp_operator` | Broad controlled write access for business records and safe integration lifecycle actions. |
 
 Use `mcp_operator` only for supervised runtimes. Destructive or high-risk tool
@@ -44,8 +45,8 @@ Example:
 
 ```json
 {
-  "name": "Paperclip MCP event worker",
-  "profileId": "mcp_event_worker"
+  "name": "Development laptop Codex host",
+  "profileId": "mcp_codex_worker"
 }
 ```
 
@@ -103,32 +104,13 @@ Recommended profile:
 - `mcp_memory_writer` for agents allowed to write decisions, notes, and logs.
 - `mcp_operator` only for human-supervised execution sessions.
 
-## Paperclip MCP Snippet
+## Local Codex Execution Host
 
-Paperclip-style task executors should usually use `mcp_event_worker`.
-
-```json
-{
-  "mcpServers": {
-    "companycore": {
-      "command": "npm",
-      "args": ["run", "mcp:server"],
-      "cwd": "C:\\Personal\\Projekty\\Aplikacje\\Roost",
-      "env": {
-        "COMPANYCORE_BASE_URL": "https://api.roost.luckysparrow.ch",
-        "COMPANYCORE_API_KEY": "cc_v1_workspace_service_key"
-      }
-    }
-  }
-}
-```
-
-Expected behavior:
-
-- Read assigned events and task context.
-- Write agent logs.
-- Acknowledge work queue items.
-- Request approval through CompanyCore workflows before risky external action.
+The long-running Windows execution host uses the HTTP agent-runtime queue rather
+than an MCP polling loop. Follow
+`docs/operations/local-codex-agent-host.md`. MCP remains available to Codex for
+additional scoped company tools, but execution claims, leases, cancellation,
+events, and results use the dedicated API contract.
 
 ## Generic MCP Runtime Snippet
 

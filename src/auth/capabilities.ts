@@ -82,6 +82,10 @@ export const capabilities = [
   "agent-logs:write",
   "agent-events:read",
   "agent-events:ack",
+  "agent-runtime:read",
+  "agent-runtime:write",
+  "agent-runtime:claim",
+  "agent-runtime:report",
   "events:read",
   "integration-settings:clickup:read",
   "integration-settings:clickup:write",
@@ -427,6 +431,23 @@ export const adapterManifest = {
     agentEvents: [
       { method: "GET", path: "/v1/agent-events", capability: "agent-events:read" },
       { method: "POST", path: "/v1/agent-events/:id/ack", capability: "agent-events:ack" }
+    ],
+    agentRuntime: [
+      { method: "GET", path: "/v1/agent-runtime/hosts", capability: "agent-runtime:read" },
+      { method: "GET", path: "/v1/agent-runtime/readiness", capability: "agent-runtime:read" },
+      { method: "POST", path: "/v1/agent-runtime/hosts/register", capability: "agent-runtime:claim" },
+      { method: "POST", path: "/v1/agent-runtime/hosts/:id/heartbeat", capability: "agent-runtime:claim" },
+      { method: "GET", path: "/v1/agent-runtime/executions", capability: "agent-runtime:read" },
+      { method: "GET", path: "/v1/agent-runtime/executions/:id", capability: "agent-runtime:read" },
+      { method: "POST", path: "/v1/agent-runtime/executions", capability: "agent-runtime:write" },
+      { method: "POST", path: "/v1/agent-runtime/executions/claim", capability: "agent-runtime:claim" },
+      { method: "POST", path: "/v1/agent-runtime/executions/:id/heartbeat", capability: "agent-runtime:report" },
+      { method: "POST", path: "/v1/agent-runtime/executions/:id/events", capability: "agent-runtime:report" },
+      { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/complete", capability: "agent-runtime:report" },
+      { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/fail", capability: "agent-runtime:report" },
+      { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/cancelled", capability: "agent-runtime:report" },
+      { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/cancel", capability: "agent-runtime:write" },
+      { method: "POST", path: "/v1/agent-runtime/executions/:id/actions/retry", capability: "agent-runtime:write" }
     ],
     events: [
       { method: "GET", path: "/v1/events", capability: "events:read" }

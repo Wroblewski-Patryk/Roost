@@ -4,18 +4,21 @@ Roost is LuckySparrow's internal company operating system. `CompanyCore` is
 the legacy runtime identifier used by the API, database and deployment
 contracts; it is not a separate product.
 
-The repository keeps durable product and engineering truth here. Paperclip,
-Codex and other execution tools keep their task state outside the repository.
+The repository keeps durable product and engineering truth here. Roost keeps
+execution queue/history in its database; Codex and local execution tools keep
+only transient process state outside the repository.
 
 ## Start here
 
 - Product: `product/product.md`, `product/overview.md`, `product/mvp_scope.md`
 - Architecture: `architecture/architecture-source-of-truth.md`,
   `architecture/system-architecture.md`, `architecture/tech-stack.md`,
-  `architecture/innovation-product-engineering.md`
+  `architecture/innovation-product-engineering.md`,
+  `architecture/local-codex-agent-runtime.md`
 - Engineering: `engineering/local-development.md`, `engineering/testing.md`
 - Operations: `DEPLOYMENT.md`, `operations/coolify-vps-deployment-contract.md`,
-  `operations/rollback-and-recovery.md`, `operations/post-deploy-smoke.md`
+  `operations/rollback-and-recovery.md`, `operations/post-deploy-smoke.md`,
+  `operations/local-codex-agent-host.md`
 - Security: `security/security-baseline.md`
 - Current planning: `planning/mvp-next-commits.md`,
   `planning/open-decisions.md`

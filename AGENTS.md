@@ -7,7 +7,7 @@ Read `docs/documentation-contract.json`, then load its bounded
 architecture, operations and release truth lives under `docs/`.
 
 Do not create repository-local agent roles, task boards, project memory or
-coordination systems. External tools such as Paperclip and Codex keep their
+coordination systems. External tools such as Codex keep their
 execution state outside this repository.
 
 ## Project boundaries

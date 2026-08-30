@@ -7,6 +7,7 @@ import { errorHandler } from "./middleware/error-handler";
 import { createRateLimiter, requestContext, securityHeaders } from "./middleware/security";
 import { agentLogsRouter } from "./modules/agent-logs/agent-logs.routes";
 import { agentEventsRouter } from "./modules/agent-events/agent-events.routes";
+import { agentRuntimeRouter } from "./modules/agent-runtime/agent-runtime.routes";
 import { agentsRouter } from "./modules/agents/agents.routes";
 import { apiKeysRouter } from "./modules/api-keys/api-keys.routes";
 import { assetsRouter } from "./modules/assets/assets.routes";
@@ -88,6 +89,7 @@ function mountProtectedRoutes(router: Router) {
   router.use("/agents", agentsRouter);
   router.use("/agent-logs", agentLogsRouter);
   router.use("/agent-events", agentEventsRouter);
+  router.use("/agent-runtime", agentRuntimeRouter);
   router.use("/api-keys", apiKeysRouter);
   router.use("/integration-settings", integrationSettingsRouter);
   router.use("/events", eventsRouter);

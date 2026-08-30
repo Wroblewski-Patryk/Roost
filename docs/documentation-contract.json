@@ -5,7 +5,8 @@
   "defaultAgentContext": [
     "docs/README.md",
     "docs/product/product.md",
-    "docs/architecture/architecture-source-of-truth.md"
+    "docs/architecture/architecture-source-of-truth.md",
+    "docs/architecture/local-codex-agent-runtime.md"
   ],
   "authority": {
     "product": ["docs/product/"],

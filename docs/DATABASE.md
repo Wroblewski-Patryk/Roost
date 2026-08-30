@@ -49,7 +49,7 @@ workspace scope.
 - `decisions`: structured global decisions with context, problem, chosen
   decision, alternatives, rationale, consequences, outcome, human/agent/system
   author identity, optional supersession history, and project links.
-- `agents`: AI agents such as Paperclip/Jarvis workers.
+- `agents`: AI agents such as Codex Agent Host/Jarvis workers.
 - `agent_logs`: logs emitted by agents.
 - `events`: append-style system events for important changes.
 - `company_roles`: human, agent, and system roles with responsibilities,
@@ -551,7 +551,7 @@ responses or logs.
 ## Integration Fields
 
 `source` identifies the origin system, for example `companycore`, `clickup`, or
-`paperclip`.
+`agent-runtime`.
 
 `external_id` stores the upstream identifier from the source system. External
 records should be unique per workspace and source, for example
@@ -580,8 +580,28 @@ business processing:
   - verified provider deliveries, idempotency key, payload hash, safe payload,
     processing state, retry count, and timestamps
 - `agent_event_outbox`
-  - provider-neutral follow-up events for Paperclip, Jarvis, Aviary, and future
+  - provider-neutral follow-up events for Codex Agent Host, Jarvis, Aviary, and future
     consumers
+
+## Local Agent Runtime Tables
+
+- `agent_hosts`: workspace-scoped host identity, platform, supported
+  capabilities/application slugs, status, safe metadata, and last heartbeat.
+- `agent_executions`: immutable execution attempts linked to one task and one
+  application, with requester, host lease, Codex thread ID, lifecycle state,
+  cancellation, result, changed paths, verification, usage, and safe failure
+  metadata.
+- `agent_execution_events`: ordered workspace-scoped progress and audit events
+  linked to an execution.
+
+The queue is stored only in production Roost PostgreSQL. The Windows host uses
+the HTTP API; it does not synchronize this database into local PostgreSQL and
+does not connect to production PostgreSQL. Local Roost development creates the
+same tables through migrations in its independent local database.
+
+Workforce runtime fields use provider-neutral `runtime_external_id` and
+`runtime_profile` columns. The forward migration preserves and normalizes
+legacy values without retaining an active dependency on the retired runtime.
 
 ClickUp webhook secrets are secret material and must be encrypted like provider
 tokens. Incoming webhook payloads must be signature-verified against the raw
