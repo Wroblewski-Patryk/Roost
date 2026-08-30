@@ -65,6 +65,11 @@ not authorize new product scope or change existing API/database identifiers.
 - The owner can queue a Codex run from a Roost task, observe its local execution
   from the VPS-hosted console, cancel or retry it, and review the reported diff,
   checks, final response, and task evidence before committing or deploying.
+- Workspace administrators can copy secret-free API, Codex MCP, and Windows
+  Agent Host setup from workspace settings. The People / Agents activity view
+  combines live Codex execution events with provider-neutral agent logs while
+  keeping existing raw keys hidden and execution triggers disabled until the
+  explicit activation gate is satisfied.
 
 ## Product Rules
 

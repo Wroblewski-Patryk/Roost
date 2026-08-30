@@ -55,7 +55,7 @@ mismatches. The same validation runs before every claimed execution.
 Set secrets only for the current process and start the long-running host:
 
 ```powershell
-$env:ROOST_BASE_URL = "https://roost.example.com"
+$env:ROOST_BASE_URL = "https://api.roost.luckysparrow.ch"
 $env:ROOST_AGENT_API_KEY = "cc_v1_replace_with_one_time_key"
 $env:ROOST_AGENT_HOST_CONFIG = "$env:USERPROFILE\.roost\agent-host.json"
 npm run agent:codex-host
@@ -63,7 +63,9 @@ npm run agent:codex-host
 
 Run this command from the Roost checkout. A successful start prints the
 registered host name and ID. The owner console shows it in `06 People/Agents`
-under **Codex runs**.
+under **Agent activity**. `Workspace settings -> Agent connections` shows the
+same API endpoint, current host heartbeat, foundation/execution mode, and
+copyable setup commands.
 
 For a local end-to-end test, use a separate development key and:
 

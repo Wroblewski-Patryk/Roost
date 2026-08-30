@@ -10,6 +10,8 @@ const commandMode = process.env.COMPANYCORE_MCP_COMMAND_MODE ?? "read_only";
 
 let cachedManifest = null;
 
+const serverInstructions = "Use Roost as the workspace-scoped source of truth for company context, applications, procedures, tasks, evidence, and agent activity. Read context before acting. Never access Roost PostgreSQL or provider secrets directly. Treat write tools as governed actions, keep risky tools supervised, and report useful progress or evidence back to Roost when the assigned workflow permits it.";
+
 function stderr(message) {
   process.stderr.write(`[companycore-mcp] ${message}\n`);
 }
@@ -244,7 +246,8 @@ async function handleRequest(message) {
           serverInfo: {
             name: "companycore-mcp",
             version: "0.1.0"
-          }
+          },
+          instructions: serverInstructions
         });
         break;
       case "ping":

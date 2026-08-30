@@ -99,7 +99,7 @@ Use it with:
 | contextual record views across `00`-`12` | React | Reusable CRUD workbenches for requirements, deliverables, issues, incidents, contracts, budgets, evidence-bearing reviews, and other canonical record families. |
 | `/areas?area=11-innowacje&view=application-graph` | React | Progressive Product Engineering graph projection with focus, search, modes, filters, dependencies, and details. |
 | `/dashboard`, `/react-dashboard`, `/operations`, `/people-agents`, `/workforce` | React | Compatibility aliases normalized to canonical `/areas` routes. |
-| `/account/settings`, `/workspace/settings` | React | Account, workspace identity, integrations, human members/invitations, roles, and agent credentials. |
+| `/account/settings`, `/workspace/settings` | React | Account, workspace identity, integrations, human members/invitations, roles, agent credentials, API/MCP setup, Agent Host state, and the execution activation gate. |
 | `/auth/invitations/:token` | React | Invitation preview and acceptance for existing or new human accounts. |
 | Retired private paths such as `/data`, `/relationships`, `/pipeline`, and provider-specific setup routes | None | Not active web routes; protected backend contracts remain available for scoped React rebuilds and API/MCP use. |
 

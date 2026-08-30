@@ -175,7 +175,7 @@ async function main() {
       for (const route of routes) {
         await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded" });
         await waitForConsoleHydration(page);
-        const routeTitle = await page.locator("#routeTitle").innerText().catch(() => "");
+        const routeTitle = await page.locator("#routeTitle").innerText({ timeout: 1000 }).catch(() => "");
         const bodyRoute = await page.locator("body").getAttribute("data-route");
         const signedIn = await page.evaluate(() => Boolean(window.sessionStorage.getItem("companycoreOwnerToken")));
         assertions.push({
@@ -260,6 +260,32 @@ async function main() {
           interaction: "redacted provider setup status",
           file: await screenshot(page, "desktop-workspace-settings-drive-status.png")
         });
+        const agentSetupButton = page.getByRole("button", { name: /configure api and mcp|skonfiguruj api i mcp/i }).first();
+        const agentSetupVisible = await agentSetupButton.isVisible().catch(() => false);
+        assertions.push({
+          viewport: viewport.name,
+          route: "/workspace/settings",
+          control: "agentConnectionSetup",
+          visible: agentSetupVisible
+        });
+        if (agentSetupVisible) {
+          await agentSetupButton.click();
+          await page.waitForTimeout(250);
+          const secretForwardingVisible = await page.getByText("env_vars = [\"COMPANYCORE_API_KEY\"]", { exact: false }).count().then((count) => count > 0).catch(() => false);
+          assertions.push({
+            viewport: viewport.name,
+            route: "/workspace/settings",
+            control: "agentConnectionSecretForwarding",
+            visible: secretForwardingVisible
+          });
+          screenshots.push({
+            viewport: viewport.name,
+            route: "/workspace/settings",
+            interaction: "agent connection setup",
+            file: await screenshot(page, "desktop-workspace-settings-agent-connection-setup.png")
+          });
+          await page.keyboard.press("Escape");
+        }
       }
 
       await context.close();

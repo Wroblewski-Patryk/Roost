@@ -195,6 +195,9 @@ child.on("close", (code) => {
   if (!initialize?.result?.capabilities?.tools) {
     fail("initialize did not advertise tools capability.");
   }
+  if (typeof initialize?.result?.instructions !== "string" || !initialize.result.instructions.includes("Use Roost as the workspace-scoped source of truth")) {
+    fail("initialize did not return the Roost server instructions contract.");
+  }
 
   if (toolList?.error) {
     fail(`tools/list failed: ${toolList.error.message}`);
@@ -238,6 +241,7 @@ child.on("close", (code) => {
     baseUrl,
     manifestPreflightStatus: manifestPreflight.status,
     manifestPreflightRequestId: manifestPreflight.requestId,
+    instructionsConfigured: true,
     toolCount: tools.length,
     calledTool: smokeToolName,
     callStatus: toolCall.result.structuredContent.status,

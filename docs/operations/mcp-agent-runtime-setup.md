@@ -22,6 +22,7 @@ the smallest MCP profile that supports their role.
 | Executive or PM read context agent | `mcp_company_os_reader` | Reads Company OS cockpit, process, pipeline, approval, audit, governance, operating model, and event context. |
 | Research or documentation agent | `mcp_knowledge_reader` | Reads Company OS context plus notes, decisions, and Drive file metadata/content. |
 | Memory-writing assistant | `mcp_memory_writer` | Reads company context and writes notes, decisions, and agent logs. |
+| Procedure author | `mcp_procedure_author` | Reads application/process context and creates procedure drafts or proposed versions; cannot activate them. |
 | Local Codex Agent Host | `mcp_codex_worker` | Claims bounded execution records, reads task/application context, reports heartbeats, events, results, and failures. |
 | Generic event worker | `mcp_event_worker` | Reads tasks and assigned agent events, writes execution logs, and acknowledges work queue items. |
 | Human-supervised operator | `mcp_operator` | Broad controlled write access for business records and safe integration lifecycle actions. |
@@ -84,25 +85,38 @@ The smoke verifies `initialize`, `tools/list`, and one safe
 
 ## Codex MCP Snippet
 
-Use the bridge as a stdio MCP server. Keep the service key in the local secret
-store or environment and reference it at process launch.
+Use the bridge as a stdio MCP server. The ChatGPT desktop app, Codex CLI, and
+IDE extension share this Codex-host configuration. Keep the service key in the
+local environment and forward it with `env_vars`; do not place it in
+`config.toml`.
 
 ```toml
-[mcp_servers.companycore]
+[mcp_servers.roost]
 command = "npm"
 args = ["run", "mcp:server"]
 cwd = "C:\\Personal\\Projekty\\Aplikacje\\Roost"
+env_vars = ["COMPANYCORE_API_KEY"]
+startup_timeout_sec = 15
+tool_timeout_sec = 60
+default_tools_approval_mode = "writes"
 
-[mcp_servers.companycore.env]
+[mcp_servers.roost.env]
 COMPANYCORE_BASE_URL = "https://api.roost.luckysparrow.ch"
-COMPANYCORE_API_KEY = "cc_v1_workspace_service_key"
+COMPANYCORE_MCP_COMMAND_MODE = "read_only"
 ```
 
 Recommended profile:
 
 - `mcp_company_os_reader` for planning and review agents.
 - `mcp_memory_writer` for agents allowed to write decisions, notes, and logs.
+- `mcp_procedure_author` for agents allowed to draft procedures without
+  activating them.
 - `mcp_operator` only for human-supervised execution sessions.
+
+The bridge returns MCP server instructions during `initialize`. They tell Codex
+to use Roost as the workspace source of truth, read context before acting,
+avoid direct database/provider-secret access, and keep governed actions under
+the Roost capability and approval boundary.
 
 ## Local Codex Execution Host
 
@@ -156,6 +170,9 @@ CompanyCore evidence surfaces when available.
 - Create the service key from `/settings/api` or `POST /v1/api-keys`.
 - Store the raw key in the runtime's secret store.
 - Configure the MCP server command and environment.
+- In Roost, use `Workspace settings -> Agent connections` to copy the current
+  API, Codex MCP, and Windows Agent Host configuration without exposing an
+  existing key.
 - Run `npm run mcp:smoke` against the target API.
 - Confirm `tools/list` exposes only expected capabilities.
 - Confirm tools marked `requiresApproval` are not available to unsupervised

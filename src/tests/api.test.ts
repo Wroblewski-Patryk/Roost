@@ -6731,6 +6731,13 @@ test("CompanyCore v1 protected API flow", async () => {
   const mcpOperatorProfile = agentKeyProfilesBody.data.find((profile) => profile.id === "mcp_operator");
   assert.ok(mcpOperatorProfile);
   assert.ok(mcpOperatorProfile.scopes.includes("company-os:automation:execute"));
+  const procedureAuthorProfile = agentKeyProfilesBody.data.find((profile) => profile.id === "mcp_procedure_author");
+  assert.ok(procedureAuthorProfile);
+  assert.equal(procedureAuthorProfile.riskLevel, "medium");
+  assert.ok(procedureAuthorProfile.scopes.includes("process-core:write"));
+  assert.ok(procedureAuthorProfile.scopes.includes("product-engineering:read"));
+  assert.ok(!procedureAuthorProfile.scopes.includes("process-core:activate"));
+  assert.ok(!procedureAuthorProfile.scopes.includes("agent-runtime:write"));
 
   const createdProfileKey = await request("/v1/api-keys", {
     method: "POST",
@@ -7230,6 +7237,12 @@ test("CompanyCore v1 protected API flow", async () => {
         service: string;
         tools: Array<{ name: string; path: string; capability: string; riskLevel: string; requiresApproval: boolean }>;
       };
+      agentAccess: {
+        api: { baseUrl: string; authHeader: string; connectionPath: string; healthPath: string };
+        mcp: { serverName: string; transport: string; bridgeWorkingDirectory: string; secretEnvironmentVariable: string };
+        codex: { configPath: string; defaultToolsApprovalMode: string; verificationCommand: string };
+        agentHost: { transport: string; workspaceRoot: string; configPath: string; runtimeCommand: string };
+      };
       integrations: {
         clickup: { configured: boolean; active: boolean; config: unknown };
         googleDrive: { configured: boolean; active: boolean; config: unknown };
@@ -7242,6 +7255,16 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(connectionBody.data.auth.type, "api_key");
   assert.equal(connectionBody.data.auth.workspaceId, ownerA.workspace.id);
   assert.equal(connectionBody.data.workspace.id, ownerA.workspace.id);
+  assert.equal(connectionBody.data.agentAccess.api.authHeader, "X-API-Key");
+  assert.equal(connectionBody.data.agentAccess.api.connectionPath, "/v1/connection");
+  assert.equal(connectionBody.data.agentAccess.mcp.serverName, "roost");
+  assert.equal(connectionBody.data.agentAccess.mcp.transport, "stdio");
+  assert.equal(connectionBody.data.agentAccess.mcp.bridgeWorkingDirectory, "C:\\Personal\\Projekty\\Aplikacje\\Roost");
+  assert.equal(connectionBody.data.agentAccess.mcp.secretEnvironmentVariable, "COMPANYCORE_API_KEY");
+  assert.equal(connectionBody.data.agentAccess.codex.configPath, "~/.codex/config.toml");
+  assert.equal(connectionBody.data.agentAccess.codex.defaultToolsApprovalMode, "writes");
+  assert.equal(connectionBody.data.agentAccess.agentHost.transport, "outbound_https");
+  assert.equal(connectionBody.data.agentAccess.agentHost.workspaceRoot, "C:\\Personal\\Projekty\\Aplikacje");
   assert.equal(
     connectionBody.data.operatingModel.hierarchy,
     "workspace -> operating_area -> operating_folder -> operating_table -> record"

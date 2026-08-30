@@ -518,6 +518,11 @@ not repeat that image or cover it with large opaque gray containers.
   sync state. Automations compare execution definitions, triggers, enabled/run
   state, and failures. Do not merge these records merely because both can
   participate in technical workflows.
+- Workspace agent connections use one continuous settings list for API, MCP,
+  Agent Host, and execution-gate state. Copyable technical setup belongs in a
+  progressive-disclosure editor; raw keys remain a separate one-time secret
+  flow. Agent activity uses a chronological live feed plus execution history,
+  not a dashboard of decorative cards.
 
 ## Unified Record Editing Contract
 

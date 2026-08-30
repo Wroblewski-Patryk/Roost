@@ -76,6 +76,8 @@ Available profiles:
 | `mcp_knowledge_reader` | low | Read notes, decisions, Drive files, and knowledge context. |
 | `mcp_memory_writer` | medium | Write notes, decisions, and agent logs while reading core context. |
 | `mcp_event_worker` | medium | Consume assigned agent events and report execution logs. |
+| `mcp_procedure_author` | medium | Draft procedures and proposed versions from application/process context without activation authority. |
+| `mcp_codex_worker` | medium | Claim and report bounded local Codex Agent Host work; not a general MCP authoring key. |
 | `mcp_operator` | high | Human-supervised operational agent with broad business write and safe integration lifecycle scopes. |
 
 The server implements the MCP stdio transport with newline-delimited JSON-RPC
@@ -85,6 +87,10 @@ messages. It supports:
 - `ping`
 - `tools/list`
 - `tools/call`
+
+`initialize` also returns a concise server-wide `instructions` contract. Codex
+uses it alongside tool metadata to preserve the Roost source-of-truth,
+workspace, database, secret, approval, and progress-reporting boundaries.
 
 It writes only valid JSON-RPC messages to stdout. Operational logs go to
 stderr.

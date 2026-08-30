@@ -556,6 +556,26 @@ Safe response:
     },
     "capabilities": ["operating-model:read", "tasks:read", "tasks:write", "events:read"],
     "scopeMode": "scoped",
+    "agentAccess": {
+      "api": {
+        "baseUrl": "https://api.roost.luckysparrow.ch",
+        "authHeader": "X-API-Key"
+      },
+      "mcp": {
+        "serverName": "roost",
+        "transport": "stdio",
+        "bridgeWorkingDirectory": "C:\\Personal\\Projekty\\Aplikacje\\Roost",
+        "secretEnvironmentVariable": "COMPANYCORE_API_KEY"
+      },
+      "codex": {
+        "configPath": "~/.codex/config.toml",
+        "defaultToolsApprovalMode": "writes"
+      },
+      "agentHost": {
+        "transport": "outbound_https",
+        "workspaceRoot": "C:\\Personal\\Projekty\\Aplikacje"
+      }
+    },
     "adapterManifest": {
       "basePath": "/v1",
       "schemaVersion": "2026-05-06",
@@ -830,6 +850,8 @@ Implemented MCP-oriented profiles:
 | `mcp_knowledge_reader` | low | Read-only notes, decisions, Drive files, and Company OS knowledge context. |
 | `mcp_memory_writer` | medium | Write notes, decisions, and agent logs while reading company context. |
 | `mcp_event_worker` | medium | Read and acknowledge assigned agent events, then report logs. |
+| `mcp_procedure_author` | medium | Draft procedures and proposed versions from application/process context without activation authority. |
+| `mcp_codex_worker` | medium | Claim and report bounded local Codex Agent Host executions. |
 | `mcp_operator` | high | Human-supervised operational agent with broad business write and safe integration lifecycle scopes. |
 
 The returned tools are filtered by the authenticated key's effective
@@ -2803,6 +2825,9 @@ GET /agent-logs
 GET /agent-logs/:id
 POST /agent-logs
 ```
+
+`GET /v1/agent-logs?limit=80` returns the newest workspace-scoped records,
+includes the safe agent identity when available, and caps `limit` at `500`.
 
 ```json
 {

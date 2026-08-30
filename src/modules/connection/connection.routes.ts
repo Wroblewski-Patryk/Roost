@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { adapterManifest, capabilities, effectiveCapabilities, scopesAreBroad } from "../../auth/capabilities";
+import { env } from "../../config/env";
 import { prisma } from "../../db/prisma";
 import { googleDriveSecretStatus } from "../../integrations/integration-settings.service";
 import { asyncHandler } from "../../middleware/async-handler";
@@ -76,6 +77,10 @@ connectionRouter.get("/", asyncHandler(async (req, res) => {
     }
   });
 
+  const requestBaseUrl = `${req.protocol}://${req.get("host")}`;
+  const productionApiBaseUrl = env.apiHostnames[0] ? `https://${env.apiHostnames[0]}` : requestBaseUrl;
+  const publicApiBaseUrl = (env.publicApiBaseUrl || (env.nodeEnv === "production" ? productionApiBaseUrl : requestBaseUrl)).replace(/\/+$/, "");
+
   res.json({
     data: {
       service: "companycore",
@@ -111,6 +116,38 @@ connectionRouter.get("/", asyncHandler(async (req, res) => {
       scopeMode: scopesAreBroad(req.auth!.scopes ?? []) ? "broad" : "scoped",
       adapterManifest,
       mcpManifest: createMcpManifest(req.auth!.scopes),
+      agentAccess: {
+        api: {
+          baseUrl: publicApiBaseUrl,
+          authHeader: adapterManifest.auth.serviceHeader,
+          connectionPath: "/v1/connection",
+          healthPath: "/health"
+        },
+        mcp: {
+          serverName: "roost",
+          transport: "stdio",
+          bridgeCommand: "npm",
+          bridgeArgs: ["run", "mcp:server"],
+          bridgeWorkingDirectory: "C:\\Personal\\Projekty\\Aplikacje\\Roost",
+          manifestPath: "/v1/mcp/manifest",
+          secretEnvironmentVariable: "COMPANYCORE_API_KEY",
+          baseUrlEnvironmentVariable: "COMPANYCORE_BASE_URL",
+          commandModeEnvironmentVariable: "COMPANYCORE_MCP_COMMAND_MODE"
+        },
+        codex: {
+          configPath: "~/.codex/config.toml",
+          defaultToolsApprovalMode: "writes",
+          verificationCommand: "codex mcp list"
+        },
+        agentHost: {
+          transport: "outbound_https",
+          workspaceRoot: "C:\\Personal\\Projekty\\Aplikacje",
+          configPath: "%USERPROFILE%\\.roost\\agent-host.json",
+          runtimeCommand: "npm run agent:codex-host",
+          readinessPath: "/v1/agent-runtime/readiness",
+          executionsPath: "/v1/agent-runtime/executions"
+        }
+      },
       integrations: {
         clickup: {
           configured: Boolean(clickUp?.secretCiphertext),

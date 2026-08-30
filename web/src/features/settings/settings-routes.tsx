@@ -11,6 +11,7 @@ import { formatAppDate } from "../../i18n/date-format";
 import { useLanguage } from "../../i18n/i18n";
 import { AuthMe, ConnectionPacket, IntegrationStatus, LoadState } from "../../types";
 import { WorkspaceAccessSection } from "./workspace-access-section";
+import { AgentConnectionsSection } from "./agent-connections-section";
 
 const workspaceAccentPresets = ["#6366F1", "#3B82F6", "#06B6D4", "#10B981", "#F59E0B", "#EC4899"];
 
@@ -533,6 +534,7 @@ export function WorkspaceSettingsRoute() {
           <CcButton href="/areas?area=09-technologia&view=integrations" iconLeft="ph-chart-line-up" variant="ghost">{t("workspaceSettings.integrationHealth")}</CcButton>
           </div>
         </section>
+        {activeWorkspace?.id && profile.data?.authType === "user" && ["owner", "admin"].includes(activeWorkspace.role || "") ? <AgentConnectionsSection connection={connection.data} /> : null}
         {activeWorkspace?.id && profile.data?.authType === "user" ? <WorkspaceAccessSection currentRole={(activeWorkspace.role || "viewer") as "owner" | "admin" | "member" | "viewer"} currentUserId={profile.data.userId} workspaceId={activeWorkspace.id} /> : null}
         {actionError ? <CcNotice detail={actionError} live title={t("workspaceSettings.saveError")} tone="error" /> : null}
       </div>

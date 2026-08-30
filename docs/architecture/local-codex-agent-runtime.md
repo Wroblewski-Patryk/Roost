@@ -39,6 +39,14 @@ This topology keeps code execution where the repositories and Codex login
 already exist, while the owner-visible task queue, execution history, and
 evidence remain available in Roost on the VPS.
 
+Workspace administrators configure this boundary from `Workspace settings ->
+Agent connections`. The panel mirrors the public API base URL, local STDIO MCP
+bridge configuration, separate key profiles, approved Windows workspace root,
+Agent Host heartbeat, and foundation/execution mode. It never returns an
+existing raw key. The `06 People / Agents -> Agent activity` workbench combines
+Codex execution events with provider-neutral agent logs and refreshes while
+visible.
+
 ## Ownership
 
 - Roost owns task intent, application/repository metadata, authorization,

@@ -67,6 +67,29 @@ export type ConnectionPacket = {
   };
   capabilities?: string[];
   scopeMode?: "broad" | "scoped";
+  agentAccess?: {
+    api: { baseUrl: string; authHeader: string; connectionPath: string; healthPath: string };
+    mcp: {
+      serverName: string;
+      transport: "stdio";
+      bridgeCommand: string;
+      bridgeArgs: string[];
+      bridgeWorkingDirectory: string;
+      manifestPath: string;
+      secretEnvironmentVariable: string;
+      baseUrlEnvironmentVariable: string;
+      commandModeEnvironmentVariable: string;
+    };
+    codex: { configPath: string; defaultToolsApprovalMode: string; verificationCommand: string };
+    agentHost: {
+      transport: "outbound_https";
+      workspaceRoot: string;
+      configPath: string;
+      runtimeCommand: string;
+      readinessPath: string;
+      executionsPath: string;
+    };
+  };
   integrations?: {
     clickup?: IntegrationStatus;
     googleDrive?: IntegrationStatus;
@@ -733,6 +756,7 @@ export type DepartmentView = {
   href?: string;
   icon?: string;
   enabled?: boolean;
+  sourceDepartmentKey?: string;
 };
 
 export type DepartmentCatalogView = {

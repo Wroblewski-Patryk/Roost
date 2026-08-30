@@ -14,9 +14,13 @@ const createAgentLogSchema = z.object({
 export const agentLogsRouter = Router();
 
 agentLogsRouter.get("/", asyncHandler(async (req, res) => {
+  const requestedLimit = Number(req.query.limit ?? 200);
+  const limit = Number.isFinite(requestedLimit) ? Math.min(Math.max(Math.trunc(requestedLimit), 1), 500) : 200;
   const logs = await prisma.agentLog.findMany({
     where: { workspaceId: req.auth!.workspaceId },
-    orderBy: { createdAt: "desc" }
+    include: { agent: { select: { id: true, name: true } } },
+    orderBy: { createdAt: "desc" },
+    take: limit
   });
   res.json({ data: logs });
 }));
