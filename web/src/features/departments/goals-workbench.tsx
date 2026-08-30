@@ -135,16 +135,18 @@ function GoalEditor({ goal, departmentKey, departments, onClose, onSaved }: {
 
 export function GoalsWorkbench({ departmentKey, canonical = false }: { departmentKey?: CoreAreaKey; canonical?: boolean }) {
   const { t } = useLanguage();
+  const requestedDepartment = canonical ? new URLSearchParams(window.location.search).get("department") as CoreAreaKey | null : departmentKey || null;
+  const scoped = Boolean(requestedDepartment);
   const [refreshKey, setRefreshKey] = useState(0);
   const [editing, setEditing] = useState<Goal | null | undefined>(undefined);
   const [archiveGoal, setArchiveGoal] = useState<Goal | null>(null);
   const [archiveBusy, setArchiveBusy] = useState(false);
-  const query = departmentKey && !canonical ? `?departmentKey=${departmentKey}&includeCompanyWide=true` : "";
+  const query = requestedDepartment ? `?departmentKey=${requestedDepartment}&includeCompanyWide=true` : "";
   const packet = useOwnerPacket<Goal[]>(`/v1/goals${query}${query ? "&" : "?"}refresh=${refreshKey}`, true, t);
   const departmentPacket = useOwnerPacket<{ departments: Department[] }>(`/v1/departments?refresh=${refreshKey}`, true, t);
   const rows = packet.data || [];
   const tableLabels = useTranslatedTableLabels();
-  const visibleTitle = canonical ? t("goals.allGoals") : t("goals.departmentGoals", { department: departmentKey ? departmentLabel(departmentKey, t) : "" });
+  const visibleTitle = scoped ? t("goals.departmentGoals", { department: departmentLabel(requestedDepartment!, t) }) : t("goals.allGoals");
   const departmentOptions = departmentPacket.data?.departments || [];
   const columns = useMemo<Array<CcTableColumn<Goal>>>(() => [
     { key: "goal", header: t("goals.title"), sortable: true, searchValue: (row) => `${row.title} ${row.description || ""} ${row.businessPurpose || ""}`, cell: (row) => <button className="grid text-left" onClick={() => setEditing(row)} type="button"><strong>{row.title}</strong><span className="text-xs text-company-muted">{row.businessPurpose || row.description || t("common.noDescription")}</span></button> },
@@ -163,10 +165,10 @@ export function GoalsWorkbench({ departmentKey, canonical = false }: { departmen
   }
 
   return <>
-    <CcPageHeader actions={<CcButton iconLeft="ph-plus" onClick={() => setEditing(null)} size="sm" variant="primary">{t("goals.create")}</CcButton>} description={canonical ? t("goals.canonicalDescription") : t("goals.contextualDescription")} eyebrow={canonical ? t("goals.canonicalEyebrow") : t("goals.contextualEyebrow")} title={visibleTitle} />
+    <CcPageHeader actions={<>{scoped ? <CcButton href="/areas?area=01-strategia&view=goals" iconLeft="ph-x" size="sm" variant="outline">Show all accessible goals</CcButton> : null}<CcButton iconLeft="ph-plus" onClick={() => setEditing(null)} size="sm" variant="primary">{t("goals.create")}</CcButton></>} description={scoped ? t("goals.contextualDescription") : t("goals.canonicalDescription")} eyebrow={scoped ? t("goals.contextualEyebrow") : t("goals.canonicalEyebrow")} title={visibleTitle} />
     {packet.status === "error" ? <CcNotice live tone="error" title={packet.error || t("goals.loadError")} /> : null}
     <CcDataTable columns={columns} rows={rows} emptyDetail={canonical ? t("goals.emptyCanonicalDetail") : t("goals.emptyContextualDetail")} emptyTitle={t("goals.emptyTitle")} error={packet.status === "error" ? packet.error || t("goals.loadError") : null} getRowLabel={(row) => row.title} labels={tableLabels} loading={packet.status === "loading"} mobileMode="cards" />
-    {editing !== undefined ? <GoalEditor departmentKey={departmentKey} departments={departmentOptions} goal={editing} onClose={() => setEditing(undefined)} onSaved={refresh} /> : null}
+    {editing !== undefined ? <GoalEditor departmentKey={requestedDepartment || departmentKey} departments={departmentOptions} goal={editing} onClose={() => setEditing(undefined)} onSaved={refresh} /> : null}
     {archiveGoal ? <CcConfirmDialog busy={archiveBusy} confirmIcon="ph-archive" confirmLabel={t("goals.archive")} confirmTone="warning" description={t("goals.archiveDescription")} detail={<strong>{archiveGoal.title}</strong>} eyebrow={t("goals.eyebrow")} onCancel={() => setArchiveGoal(null)} onConfirm={confirmArchive} title={t("goals.archiveTitle")} /> : null}
   </>;
 }

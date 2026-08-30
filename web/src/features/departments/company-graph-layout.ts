@@ -16,6 +16,64 @@ const nodeHeight = 86;
 const nodeGap = 44;
 const componentGap = 180;
 
+function layoutWholeCompany(
+  nodes: CompanyGraphLayoutNode[],
+  edges: CompanyGraphLayoutEdge[],
+  workspaceId: string,
+  departmentIds: string[]
+) {
+  const positions = new Map<string, CompanyGraphPosition>();
+  const departmentSet = new Set(departmentIds);
+  const departmentByRecord = new Map<string, string>();
+  for (const edge of edges) {
+    if (departmentSet.has(edge.from.entityId) && !departmentSet.has(edge.to.entityId) && edge.to.entityId !== workspaceId) departmentByRecord.set(edge.to.entityId, departmentByRecord.get(edge.to.entityId) ?? edge.from.entityId);
+    if (departmentSet.has(edge.to.entityId) && !departmentSet.has(edge.from.entityId) && edge.from.entityId !== workspaceId) departmentByRecord.set(edge.from.entityId, departmentByRecord.get(edge.from.entityId) ?? edge.to.entityId);
+  }
+  const byDepartment = new Map(departmentIds.map((id) => [id, [] as CompanyGraphLayoutNode[]]));
+  const unassigned: CompanyGraphLayoutNode[] = [];
+  nodes.filter((node) => node.id !== workspaceId && !departmentSet.has(node.id)).forEach((node) => {
+    const departmentId = departmentByRecord.get(node.id);
+    if (departmentId) byDepartment.get(departmentId)?.push(node);
+    else unassigned.push(node);
+  });
+  byDepartment.forEach((records) => records.sort((left, right) => left.entityType.localeCompare(right.entityType) || left.label.localeCompare(right.label)));
+  unassigned.sort((left, right) => left.entityType.localeCompare(right.entityType) || left.label.localeCompare(right.label));
+
+  const clusters = [
+    ...departmentIds.map((id) => ({ id, records: byDepartment.get(id) ?? [] })),
+    ...(unassigned.length ? [{ id: workspaceId, records: unassigned }] : [])
+  ];
+  const clusterColumns = Math.min(4, Math.max(2, Math.ceil(Math.sqrt(clusters.length))));
+  const clusterGap = 220;
+  const clusterPadding = 70;
+  const measured = clusters.map((cluster) => {
+    const columns = Math.max(1, Math.min(6, Math.ceil(Math.sqrt(Math.max(cluster.records.length, 1) * 1.5))));
+    const rows = Math.max(1, Math.ceil(cluster.records.length / columns));
+    return { ...cluster, columns, width: columns * (nodeWidth + nodeGap) - nodeGap + clusterPadding * 2, height: 150 + rows * (nodeHeight + nodeGap) + clusterPadding };
+  });
+  const columnWidths = Array.from({ length: clusterColumns }, (_, column) => Math.max(...measured.filter((_, index) => index % clusterColumns === column).map((cluster) => cluster.width), nodeWidth));
+  const columnOffsets = columnWidths.map((_, index) => columnWidths.slice(0, index).reduce((sum, width) => sum + width + clusterGap, 0));
+  const rowHeights: number[] = [];
+  measured.forEach((cluster, index) => { const row = Math.floor(index / clusterColumns); rowHeights[row] = Math.max(rowHeights[row] ?? 0, cluster.height); });
+  const rowOffsets = rowHeights.map((_, index) => rowHeights.slice(0, index).reduce((sum, height) => sum + height + clusterGap, 0));
+  const totalWidth = columnWidths.reduce((sum, width) => sum + width, 0) + clusterGap * Math.max(0, clusterColumns - 1);
+  positions.set(workspaceId, { x: totalWidth / 2 - nodeWidth / 2, y: 0 });
+
+  measured.forEach((cluster, index) => {
+    const column = index % clusterColumns;
+    const row = Math.floor(index / clusterColumns);
+    const left = columnOffsets[column]!;
+    const top = 260 + rowOffsets[row]!;
+    if (cluster.id !== workspaceId) positions.set(cluster.id, { x: left + cluster.width / 2 - nodeWidth / 2, y: top });
+    cluster.records.forEach((record, recordIndex) => {
+      const recordColumn = recordIndex % cluster.columns;
+      const recordRow = Math.floor(recordIndex / cluster.columns);
+      positions.set(record.id, { x: left + clusterPadding + recordColumn * (nodeWidth + nodeGap), y: top + 150 + recordRow * (nodeHeight + nodeGap) });
+    });
+  });
+  return positions;
+}
+
 function componentBounds(ids: string[], positions: Map<string, CompanyGraphPosition>) {
   const points = ids.map((id) => positions.get(id)).filter((position): position is CompanyGraphPosition => Boolean(position));
   const left = Math.min(...points.map((position) => position.x));
@@ -32,6 +90,11 @@ function componentBounds(ids: string[], positions: Map<string, CompanyGraphPosit
  */
 export function layoutCompanyGraphNodes(nodes: CompanyGraphLayoutNode[], edges: CompanyGraphLayoutEdge[]) {
   const byId = new Map(nodes.map((node) => [node.id, node]));
+  const workspace = nodes.find((node) => node.entityType === "workspace");
+  const departments = nodes.filter((node) => node.entityType === "department").sort((left, right) => left.label.localeCompare(right.label));
+  if (workspace && departments.length > 1 && nodes.length > departments.length + 1) {
+    return layoutWholeCompany(nodes, edges, workspace.id, departments.map((department) => department.id));
+  }
   const adjacency = new Map(nodes.map((node) => [node.id, new Set<string>()]));
   for (const edge of edges) {
     const source = edge.from.entityId;

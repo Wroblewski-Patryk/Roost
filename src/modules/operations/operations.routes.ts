@@ -7,6 +7,7 @@ import { createCompanyCoreTaskInClickUp, writeBackCompanyCoreTaskToClickUp } fro
 import { asyncHandler } from "../../middleware/async-handler";
 import { departmentRegistry, resolveDepartmentEntry } from "../../operating-model/department-registry";
 import { createEvent } from "../events/event.service";
+import { contextualEntityIds } from "../organizational-context/organizational-context.service";
 
 const OPERATIONS_DEPARTMENT_KEY = "04-operacje";
 const OPERATIONS_LIMIT = 12;
@@ -17,6 +18,7 @@ const workItemsQuerySchema = z.object({
   priority: z.string().min(1).optional(),
   source: z.string().min(1).optional(),
   taskListId: z.string().uuid().optional(),
+  departmentKey: z.string().refine((value) => Boolean(resolveDepartmentEntry(value))).optional(),
   refresh: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(200).default(WORK_ITEM_LIMIT)
 }).strict();
@@ -322,6 +324,7 @@ operationsRouter.post("/work-items", asyncHandler(async (req, res) => {
 operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
   const query = workItemsQuerySchema.parse(req.query);
+  const contextualTaskIds = query.departmentKey ? await contextualEntityIds(workspaceId, "task", query.departmentKey, true) : null;
   const department = resolveDepartmentEntry(OPERATIONS_DEPARTMENT_KEY);
   const operationsArea = await prisma.operatingArea.findFirst({
     where: {
@@ -333,6 +336,7 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
   const tasks = await prisma.task.findMany({
     where: {
       workspaceId,
+      ...(contextualTaskIds ? { id: { in: contextualTaskIds } } : {}),
       ...(query.status ? { status: query.status } : {}),
       ...(query.priority ? { priority: query.priority } : {}),
       ...(query.source ? { source: query.source } : {}),
@@ -361,7 +365,7 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
     }),
     prisma.task.groupBy({
       by: ["taskListId"],
-      where: { workspaceId },
+      where: { workspaceId, ...(contextualTaskIds ? { id: { in: contextualTaskIds } } : {}) },
       _count: { _all: true }
     }),
     prisma.workspaceMembership.findMany({
@@ -406,6 +410,11 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
     ));
     return mapping ? [[taskList.id, mapping] as const] : [];
   }));
+  const contextualTaskListIds = new Set(tasks.map((task) => task.taskListId).filter((id): id is string => Boolean(id)));
+  const visibleTaskLists = query.departmentKey ? taskLists.filter((taskList) => {
+    const mappedDepartment = resolveTaskListDepartment(mappingByTaskListId.get(taskList.id));
+    return contextualTaskListIds.has(taskList.id) || mappedDepartment?.key === query.departmentKey;
+  }) : taskLists;
   const taskIds = tasks.map((task) => task.id);
   const projectIds = Array.from(new Set(tasks.map((task) => task.projectId).filter((id): id is string => Boolean(id))));
 
@@ -662,6 +671,7 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
           modifiedTime: file.modifiedTime?.toISOString() ?? null
         }))
       },
+      scope: query.departmentKey ? { type: "department", departmentKey: query.departmentKey } : { type: "company" },
       operatingAreas: operatingAreas.map((area) => ({
         id: area.id,
         key: area.key,
@@ -671,7 +681,7 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
       })),
       departments: canonicalDepartmentsForAreas(operatingAreas),
       taskLists: [
-        {
+        ...(!query.departmentKey || tasks.some((task) => !task.taskListId) ? [{
           id: "unassigned",
           name: "Unassigned",
           description: "Tasks without a list assignment.",
@@ -681,8 +691,8 @@ operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
           areaAssignment: null,
           project: null,
           taskCount: taskCountByListId.get("unassigned") ?? 0
-        },
-        ...taskLists.map((taskList) => ({
+        }] : []),
+        ...visibleTaskLists.map((taskList) => ({
           ...(() => {
             const mapping = mappingByTaskListId.get(taskList.id);
             return {

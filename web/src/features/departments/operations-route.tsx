@@ -1307,6 +1307,7 @@ function OperationsCalendar({
 export function OperationsRoute() {
   const { t } = useLanguage();
   const activeView = currentOperationsView();
+  const departmentScope = new URLSearchParams(window.location.search).get("department") as CoreAreaKey | null;
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedListIds, setSelectedListIds] = useState<string[]>([]);
   const [listSelectionInitialized, setListSelectionInitialized] = useState(false);
@@ -1319,7 +1320,7 @@ export function OperationsRoute() {
   const [taskQuery, setTaskQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState<TaskPriorityFilter>("all");
   const [dateFilter, setDateFilter] = useState<TaskDateFilter>("all");
-  const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200&refresh=${refreshKey}`, activeView !== "procedures", t);
+  const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200${departmentScope ? `&departmentKey=${encodeURIComponent(departmentScope)}` : ""}&refresh=${refreshKey}`, activeView !== "procedures", t);
   const rows = useMemo(() => (packet.data?.workItems || []).map((item) => ({ ...item, id: item.task.id })), [packet.data?.workItems]);
   const taskLists = packet.data?.taskLists || [];
   const departments = packet.data?.departments || [];
@@ -1363,15 +1364,16 @@ export function OperationsRoute() {
   }
 
   if (activeView === "procedures") {
-    return <ProceduresWorkbench />;
+    return <ProceduresWorkbench canonical={!departmentScope} departmentKey={departmentScope || "04-operacje"} />;
   }
 
   return (
     <>
       <CcPageHeader
-        description={t(activeView === "calendar" ? "operations.calendarDescription" : "operations.description")}
-        eyebrow={t("areas.04.label")}
-        title={t(activeView === "calendar" ? "operations.calendarTitle" : "operations.title")}
+        actions={departmentScope ? <CcButton href={`/areas?area=04-operacje&view=${activeView}`} iconLeft="ph-x" size="sm" variant="outline">Show all accessible work</CcButton> : null}
+        description={departmentScope ? `Filtered to work related to ${departmentLabel(departmentScope, t)}. Company-wide records remain visible.` : t(activeView === "calendar" ? "operations.calendarDescription" : "operations.description")}
+        eyebrow={departmentScope ? `${t("areas.04.label")} · ${departmentLabel(departmentScope, t)}` : t("areas.04.label")}
+        title={departmentScope ? `${t(activeView === "calendar" ? "operations.calendarTitle" : "operations.title")} · ${departmentLabel(departmentScope, t)}` : t(activeView === "calendar" ? "operations.calendarTitle" : "operations.title")}
       />
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
       {packet.status === "error" ? <CcNotice tone="error" title={packet.error || t("operations.packetError")} live /> : null}

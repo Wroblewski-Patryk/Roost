@@ -29,6 +29,8 @@ import { clearRouteAssetRecovery, installRouteAssetRecovery } from "./route-reco
 import { Shell } from "./layout/shell";
 import { AppDocumentMetadata } from "./app-document-metadata";
 import { DepartmentHealthStrip } from "./features/departments/department-health-strip";
+import { DepartmentToolsPreview } from "./features/departments/department-tools-preview";
+import type { CoreAreaKey } from "./types";
 import "./styles.css";
 
 const AssetsRoute = lazy(() => import("./features/departments/assets-route").then((module) => ({ default: module.AssetsRoute })));
@@ -48,7 +50,6 @@ const InnovationRoute = lazy(() => import("./features/departments/innovation-rou
 const ApplicationGraphRoute = lazy(() => import("./features/departments/application-graph-route").then((module) => ({ default: module.ApplicationGraphRoute })));
 const ManagementRoute = lazy(() => import("./features/departments/management-route").then((module) => ({ default: module.ManagementRoute })));
 const CompanyRecordsWorkbench = lazy(() => import("./features/departments/company-records-workbench").then((module) => ({ default: module.CompanyRecordsWorkbench })));
-const TasksWorkbench = lazy(() => import("./features/departments/tasks-workbench").then((module) => ({ default: module.TasksWorkbench })));
 const DecisionsWorkbench = lazy(() => import("./features/departments/decisions-workbench").then((module) => ({ default: module.DecisionsWorkbench })));
 const ProceduresWorkbench = lazy(() => import("./features/departments/procedures-workbench").then((module) => ({ default: module.ProceduresWorkbench })));
 const GoalsWorkbench = lazy(() => import("./features/departments/goals-workbench").then((module) => ({ default: module.GoalsWorkbench })));
@@ -127,7 +128,8 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 function PrivateAppRoute({ activeArea, children }: { activeArea?: string; children: React.ReactNode }) {
   const dashboardView = ["overview", "directory", "departments"].includes(currentAreaView()) || (activeArea === "04-operacje" && currentAreaView() === "tasks");
-  return <PrivateRoute><Shell activeArea={activeArea}><LazyRoute>{activeArea && dashboardView ? <DepartmentHealthStrip departmentKey={activeArea as ReturnType<typeof currentAreaKey>} /> : null}{children}</LazyRoute></Shell></PrivateRoute>;
+  const showToolPreview = Boolean(activeArea && activeArea !== "00-ogolny" && currentAreaView() === "overview");
+  return <PrivateRoute><Shell activeArea={activeArea}><LazyRoute>{activeArea && dashboardView ? <DepartmentHealthStrip departmentKey={activeArea as ReturnType<typeof currentAreaKey>} /> : null}{children}{showToolPreview ? <DepartmentToolsPreview departmentKey={activeArea as CoreAreaKey} /> : null}</LazyRoute></Shell></PrivateRoute>;
 }
 
 function App() {
@@ -150,28 +152,35 @@ function App() {
     return <>{metadata}<PrivateAppRoute activeArea={areaKey}><CompanyObjectsWorkbench departmentKey={areaKey} type={companyObjectType} /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "projects") {
-    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><ProjectsWorkbench departmentKey={areaKey} /></PrivateAppRoute></>;
+    if (areaKey !== "11-innowacje") window.history.replaceState(null, "", `/areas?area=11-innowacje&view=projects&department=${encodeURIComponent(areaKey)}`);
+    return <>{metadata}<PrivateAppRoute activeArea="11-innowacje"><ProjectsWorkbench departmentKey={areaKey === "11-innowacje" ? undefined : areaKey} /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "project-workspace") {
     return <>{metadata}<PrivateAppRoute activeArea="11-innowacje"><ProjectWorkspaceRoute /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "directory" && areaKey !== "06-kadry") {
-    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><PeopleAgentsRoute departmentKey={areaKey} /></PrivateAppRoute></>;
+    window.history.replaceState(null, "", `/areas?area=06-kadry&view=directory&department=${encodeURIComponent(areaKey)}`);
+    return <>{metadata}<PrivateAppRoute activeArea="06-kadry"><PeopleAgentsRoute departmentKey={areaKey} /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "goals" && areaKey !== "01-strategia" && areaKey !== "09-technologia") {
-    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><GoalsWorkbench canonical={false} departmentKey={areaKey} /></PrivateAppRoute></>;
+    window.history.replaceState(null, "", `/areas?area=01-strategia&view=goals&department=${encodeURIComponent(areaKey)}`);
+    return <>{metadata}<PrivateAppRoute activeArea="01-strategia"><GoalsWorkbench canonical departmentKey="01-strategia" /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "tasks" && areaKey !== "04-operacje") {
-    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><TasksWorkbench departmentKey={areaKey} /></PrivateAppRoute></>;
+    window.history.replaceState(null, "", `/areas?area=04-operacje&view=tasks&department=${encodeURIComponent(areaKey)}`);
+    return <>{metadata}<PrivateAppRoute activeArea="04-operacje"><OperationsRoute /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "decisions") {
-    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><DecisionsWorkbench canonical={areaKey === "01-strategia"} departmentKey={areaKey} /></PrivateAppRoute></>;
+    if (areaKey !== "01-strategia") window.history.replaceState(null, "", `/areas?area=01-strategia&view=decisions&department=${encodeURIComponent(areaKey)}`);
+    return <>{metadata}<PrivateAppRoute activeArea="01-strategia"><DecisionsWorkbench canonical departmentKey="01-strategia" /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "procedures" && areaKey !== "04-operacje") {
-    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><ProceduresWorkbench canonical={false} departmentKey={areaKey} /></PrivateAppRoute></>;
+    window.history.replaceState(null, "", `/areas?area=04-operacje&view=procedures&department=${encodeURIComponent(areaKey)}`);
+    return <>{metadata}<PrivateAppRoute activeArea="04-operacje"><ProceduresWorkbench canonical={false} departmentKey={areaKey} /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "files" && areaKey !== "08-zasoby") {
-    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><AssetsRoute canonical={false} departmentKey={areaKey} /></PrivateAppRoute></>;
+    window.history.replaceState(null, "", `/areas?area=08-zasoby&view=files&department=${encodeURIComponent(areaKey)}`);
+    return <>{metadata}<PrivateAppRoute activeArea="08-zasoby"><AssetsRoute /></PrivateAppRoute></>;
   }
   const recordView = pathname === "/areas" ? companyRecordViews[`${areaKey}:${currentAreaView()}`] : null;
   if (recordView) {
@@ -250,7 +259,7 @@ function App() {
     if (pathname !== "/areas" || window.location.search !== "?area=06-kadry&view=directory") {
       window.history.replaceState(null, "", canonicalPeopleAgentsPath);
     }
-    return <>{metadata}<PrivateAppRoute activeArea="06-kadry"><PeopleAgentsRoute /></PrivateAppRoute></>;
+    return <>{metadata}<PrivateAppRoute activeArea="06-kadry"><PeopleAgentsRoute departmentKey={new URLSearchParams(window.location.search).get("department") || undefined} /></PrivateAppRoute></>;
   }
 
   if (pathname === "/areas" && currentAreaKey() === "07-finanse") {

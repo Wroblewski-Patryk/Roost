@@ -14,7 +14,8 @@ import { CcSelect } from "../../components/cc-select";
 import { CcTextInput } from "../../components/cc-text-input";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
-import { WorkforceEntity, WorkforcePacket } from "../../types";
+import { CoreAreaKey, WorkforceEntity, WorkforcePacket } from "../../types";
+import { departmentLabel } from "./department-labels";
 import { humanizeBusinessValue } from "./shared";
 
 type DetailTab = "profile" | "access" | "work" | "authority" | "files";
@@ -1102,7 +1103,7 @@ export function PeopleAgentsRoute({ departmentKey }: { departmentKey?: string } 
 
   return (
     <>
-      <CcPageHeader actions={packet.status === "ready" ? <><CcButton href="/areas?area=06-kadry&view=executions" iconLeft="ph-terminal-window" size="sm" variant="outline">Codex runs</CcButton><CcButton iconLeft="ph-plus" onClick={() => setEditingEntity({ entity: null, mode: "create" })} size="sm" variant="primary">{t("people.new")}</CcButton></> : null} description={t("people.description")} eyebrow={t("people.eyebrow")} title={t("people.title")} />
+      <CcPageHeader actions={packet.status === "ready" ? <>{departmentKey ? <CcButton href="/areas?area=06-kadry&view=directory" iconLeft="ph-x" size="sm" variant="outline">Show all accessible people and agents</CcButton> : <CcButton href="/areas?area=06-kadry&view=executions" iconLeft="ph-terminal-window" size="sm" variant="outline">Codex runs</CcButton>}<CcButton iconLeft="ph-plus" onClick={() => setEditingEntity({ entity: null, mode: "create" })} size="sm" variant="primary">{t("people.new")}</CcButton></> : null} description={departmentKey ? `People and agents assigned or related to ${departmentLabel(departmentKey as CoreAreaKey, t)}.` : t("people.description")} eyebrow={departmentKey ? departmentLabel(departmentKey as CoreAreaKey, t) : t("people.eyebrow")} title={t("people.title")} />
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
       {packet.status === "error" ? <CcNotice tone="error" title={packet.error || t("people.loadError")} live /> : null}
       {notice ? <CcNotice tone={notice.tone} title={notice.title} live /> : null}

@@ -122,6 +122,10 @@ The approved v1 direction is:
   followed by the 12 company departments, while users, memberships, API keys,
   integration settings, provider mappings, and platform metadata remain system
   tables
+- shared company tools keep one canonical module and one record identity.
+  Department overviews expose scoped previews that deep-link to those modules;
+  the originating department travels as a filter and never creates a parallel
+  task, file, project, goal, decision, procedure, or workforce store
 - provider imports must expose an explicit existing-record policy before
   writing; ClickUp supports `merge`, `skip_existing`,
   `replace_selected_lists`, and `inspect_only`, with deletes limited to

@@ -1163,6 +1163,9 @@ Query parameters:
 - `source`: optional task source filter.
 - `taskListId`: optional list filter. Use `unassigned` only in the web layer;
   API filtering accepts persisted list UUIDs.
+- `departmentKey`: optional canonical department filter. It projects the
+  existing tasks and task lists through their organizational context and does
+  not create department-local copies.
 - `limit`: optional result limit, default `100`, maximum `200`.
 
 `GET /v1/operations/work-items` returns an Operations work item packet over the
@@ -2446,6 +2449,9 @@ derived from organizational ownership, record/goal hierarchy, project task
 lists and tasks, project resources, application project/procedure links, and
 Google Drive folder membership. Structural edges expose existing source-of-
 truth relations; they do not persist synthetic `Dependency` rows.
+Every returned record is incident to at least one edge. When a record has no
+more specific source-of-truth relationship, the packet emits structural
+workspace containment so the UI never renders an unexplained orphan.
 `GET /v1/company-intelligence/entities/:entityType/:id` is the universal entity
 inspector packet: canonical record, organizational context, inbound/outbound
 typed edges, resolved related records, and evidence. Search results navigate

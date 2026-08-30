@@ -520,10 +520,13 @@ not repeat that image or cover it with large opaque gray containers.
   overflow; tables may switch to the established mobile record treatment.
 - Interactive glass controls must retain a visible focus ring, sufficient text
   contrast, reduced-transparency fallback, and reduced-motion behavior.
-- Every active department route must be reachable from that department's
-  contextual sidebar navigation. The API-backed department catalog and the
-  static navigation fallback must expose the same active view set; a route must
-  not exist as an undiscoverable deep link.
+- A department sidebar exposes that department's own management-system views.
+  Shared company tools such as tasks, files, projects, goals, decisions,
+  procedures, and the workforce directory are previewed on the department
+  overview and link to their canonical module with a `department` context
+  filter. Opening the canonical module without that filter shows all records
+  authorized by the workspace role. The filter is an operating lens, not a
+  department-level authorization boundary.
 - Technology separates `Overview`, `Integrations`, and `Automations`.
   Integrations compare external adapters, connection/health, capabilities, and
   sync state. Automations compare execution definitions, triggers, enabled/run
@@ -612,9 +615,13 @@ visualizations.
 
 - Position nodes from recorded relationships or hierarchy. Never use backend
   type or array order as the primary layout axis.
-- Whole-company graphs use progressive disclosure: company, department,
-  record, then its direct neighbourhood. Never render the complete file and
-  task inventory in the initial viewport.
+- Whole-company graphs support both an `All relationships` overview and a
+  focused neighbourhood. The overview packs records into their department
+  clusters and keeps every relationship on one navigable canvas; focus mode
+  progressively discloses one record's direct neighbourhood.
+- Edges attach through invisible cardinal ports selected from node geometry.
+  Visible handle dots or unrelated top/bottom stubs must not compete with the
+  relationship path, and edge paths must remain legible where clusters meet.
 - The canvas must have a definite responsive height before React Flow measures
   nodes. Refit only after visible nodes are initialized and after filters,
   focus, or inspector width changes.

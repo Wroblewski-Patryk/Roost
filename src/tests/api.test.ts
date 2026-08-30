@@ -805,6 +805,12 @@ test("company operating graph keeps records canonical, contextual, evidenced, an
   assert.equal(fileContext.status, 200, JSON.stringify(fileContext.body));
   const fileEntity = await request(`/v1/company-intelligence/entities/file/${driveFile.id}`, { headers });
   assert.equal(fileEntity.status, 200);
+  const technologyFiles = await request("/v1/assets/context?areaKey=all&limit=50&departmentKey=09-technologia", { headers });
+  assert.ok((technologyFiles.body as { data: { resources: Array<{ sourceId: string }> } }).data.resources.some((item) => item.sourceId === driveFile.id), "department-scoped Assets must include assigned files");
+
+  const technologyOperations = await request("/v1/operations/work-items?limit=50&departmentKey=09-technologia", { headers });
+  assert.equal(technologyOperations.status, 200, JSON.stringify(technologyOperations.body));
+  assert.ok((technologyOperations.body as { data: { workItems: Array<{ task: { id: string } }> } }).data.workItems.some((item) => item.task.id === task.id), "central Operations must retain the incoming department scope");
 
   const taskContext = await request(`/v1/company-intelligence/tasks/${task.id}/agent-context`, { headers });
   assert.equal(taskContext.status, 200);
@@ -827,6 +833,8 @@ test("company operating graph keeps records canonical, contextual, evidenced, an
   assert.ok(graphBody.data.edges.some((edge) => edge.source === "structural" && edge.type === "owns" && edge.to.entityId === record.id));
   assert.ok(graphBody.data.edges.some((edge) => edge.source === "structural" && edge.type === "contains" && edge.to.entityId === taskListId));
   assert.ok(graphBody.data.edges.some((edge) => edge.source === "structural" && edge.type === "contains" && edge.from.entityId === taskListId && edge.to.entityId === projectTaskId));
+  const connectedGraphNodeIds = new Set(graphBody.data.edges.flatMap((edge) => [edge.from.entityId, edge.to.entityId]));
+  assert.ok(graphBody.data.nodes.every((node) => connectedGraphNodeIds.has(node.id)), "the whole-company graph must not contain isolated nodes");
   const health = await request("/v1/company-intelligence/health", { headers });
   assert.equal(health.status, 200);
   assert.ok(Number((health.body as { data: { score: number } }).data.score) >= 0);

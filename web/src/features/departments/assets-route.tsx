@@ -1161,16 +1161,20 @@ function AssetsFilesView({ packet, onRefresh }: { packet: AssetsPacket; onRefres
 export function AssetsRoute({ departmentKey = "08-zasoby", canonical = true }: { departmentKey?: CoreAreaKey; canonical?: boolean }) {
   const { t } = useLanguage();
   const activeView = currentAssetsView();
+  const requestedDepartment = canonical ? new URLSearchParams(window.location.search).get("department") as CoreAreaKey | null : departmentKey;
+  const scoped = Boolean(requestedDepartment);
+  const effectiveDepartment = requestedDepartment || departmentKey;
   const [refreshKey, setRefreshKey] = useState(0);
-  const packet = useOwnerPacket<AssetsPacket>(`/v1/assets/context?areaKey=all&limit=1000${canonical ? "" : `&departmentKey=${encodeURIComponent(departmentKey)}`}&refresh=${refreshKey}`, true, t);
+  const packet = useOwnerPacket<AssetsPacket>(`/v1/assets/context?areaKey=all&limit=1000${scoped ? `&departmentKey=${encodeURIComponent(effectiveDepartment)}` : ""}&refresh=${refreshKey}`, true, t);
 
   return (
     <>
       {activeView === "files" ? (
         <CcPageHeader
-          description={canonical ? t("assets.filesFoldersDescription") : "Kontekstowy widok tej samej firmowej warstwy plików i zasobów."}
-          eyebrow={canonical ? t("areas.08.label") : departmentLabel(departmentKey, t)}
-          title={canonical ? t("assets.filesFoldersTitle") : `${t("assets.filesFoldersTitle")} · ${departmentLabel(departmentKey, t)}`}
+          actions={scoped ? <CcButton href="/areas?area=08-zasoby&view=files" iconLeft="ph-x" size="sm" variant="outline">Show all accessible files</CcButton> : null}
+          description={scoped ? "The shared company file layer, filtered to this department and company-wide resources." : t("assets.filesFoldersDescription")}
+          eyebrow={scoped ? `${t("areas.08.label")} · ${departmentLabel(effectiveDepartment, t)}` : t("areas.08.label")}
+          title={scoped ? `${t("assets.filesFoldersTitle")} · ${departmentLabel(effectiveDepartment, t)}` : t("assets.filesFoldersTitle")}
         />
       ) : null}
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}

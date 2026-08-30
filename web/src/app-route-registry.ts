@@ -266,6 +266,10 @@ export function resolveRouteMeta(pathname: string) {
     const params = new URLSearchParams(rawQuery);
     const area = params.get("area");
     const view = params.get("view");
+    const department = params.get("department");
+    if (department && area === "01-strategia" && ["goals", "decisions"].includes(view || "")) return `/areas?area=01-strategia&view=${encodeURIComponent(view!)}&department=${encodeURIComponent(department)}`;
+    if (department && area === "06-kadry" && view === "directory") return `/areas?area=06-kadry&view=directory&department=${encodeURIComponent(department)}`;
+    if (department && area === "11-innowacje" && view === "projects") return `/areas?area=11-innowacje&view=projects&department=${encodeURIComponent(department)}`;
     if (area === "00-ogolny" && view === "product-map") {
       return appRoutes.find((route) => route.id === "product-map");
     }
@@ -351,9 +355,9 @@ export function canonicalPostAuthPath(pathname?: string | null) {
     }
     if (area === "04-operacje") {
       const view = params.get("view");
-      if (view === "calendar") return "/areas?area=04-operacje&view=calendar";
-      if (view === "procedures") return "/areas?area=04-operacje&view=procedures";
-      return canonicalOperationsPath;
+      const department = params.get("department");
+      const base = view === "calendar" ? "/areas?area=04-operacje&view=calendar" : view === "procedures" ? "/areas?area=04-operacje&view=procedures" : canonicalOperationsPath;
+      return department ? `${base}&department=${encodeURIComponent(department)}` : base;
     }
     if (area === "05-relacje") {
       return canonicalRelationshipsPath;
@@ -366,7 +370,9 @@ export function canonicalPostAuthPath(pathname?: string | null) {
     }
     if (area === "08-zasoby") {
       const view = params.get("view");
-      return view === "files" ? "/areas?area=08-zasoby&view=files" : canonicalAssetsPath;
+      const department = params.get("department");
+      const base = view === "files" ? "/areas?area=08-zasoby&view=files" : canonicalAssetsPath;
+      return department && view === "files" ? `${base}&department=${encodeURIComponent(department)}` : base;
     }
     if (area === "09-technologia") {
       const view = params.get("view");

@@ -138,6 +138,12 @@ companyIntelligenceRouter.get("/graph", asyncHandler(async (req, res) => {
     if (!nodeIds.has(edge.from.entityId) || !nodeIds.has(edge.to.entityId)) return;
     edgeBySignature.set(`${edge.from.entityId}:${edge.type}:${edge.to.entityId}`, edge);
   });
+  const connectedNodeIds = new Set([...edgeBySignature.values()].flatMap((edge) => [edge.from.entityId, edge.to.entityId]));
+  nodes.forEach((node) => {
+    if (node.id === workspaceNodeId || connectedNodeIds.has(node.id)) return;
+    const edge: GraphEdge = { id: `structural:workspace-record:${node.entityType}:${node.id}`, type: "contains", from: { entityType: "workspace", entityId: workspaceNodeId }, to: { entityType: node.entityType, entityId: node.id }, status: "active", source: "structural" };
+    edgeBySignature.set(`${edge.from.entityId}:${edge.type}:${edge.to.entityId}`, edge);
+  });
   res.json({ data: { schemaVersion: "company-graph-v2", generatedAt: new Date().toISOString(), rootNodeId: workspaceNodeId, nodes, edges: [...edgeBySignature.values()], organizationalMemberships: memberships.map((x) => ({ entityType: x.entityType, entityId: x.entityId, departmentKey: x.department.key, role: x.relationshipRole })) } });
 }));
 
