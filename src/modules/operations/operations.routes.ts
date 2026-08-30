@@ -19,6 +19,7 @@ const workItemsQuerySchema = z.object({
   source: z.string().min(1).optional(),
   taskListId: z.string().uuid().optional(),
   departmentKey: z.string().refine((value) => Boolean(resolveDepartmentEntry(value))).optional(),
+  includeCompanyWide: z.enum(["true", "false"]).default("true"),
   refresh: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(200).default(WORK_ITEM_LIMIT)
 }).strict();
@@ -324,7 +325,7 @@ operationsRouter.post("/work-items", asyncHandler(async (req, res) => {
 operationsRouter.get("/work-items", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
   const query = workItemsQuerySchema.parse(req.query);
-  const contextualTaskIds = query.departmentKey ? await contextualEntityIds(workspaceId, "task", query.departmentKey, true) : null;
+  const contextualTaskIds = query.departmentKey ? await contextualEntityIds(workspaceId, "task", query.departmentKey, query.includeCompanyWide !== "false") : null;
   const department = resolveDepartmentEntry(OPERATIONS_DEPARTMENT_KEY);
   const operationsArea = await prisma.operatingArea.findFirst({
     where: {

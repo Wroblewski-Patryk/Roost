@@ -18,6 +18,7 @@ const querySchema = z.object({
   readiness: z.enum(["not_indexed", "metadata_ready", "content_ready", "summary_ready", "relation_ready", "ai_context_ready"]).optional(),
   areaKey: z.string().min(1).optional(),
   departmentKey: z.string().refine(isCanonicalDepartmentKey).optional(),
+  includeCompanyWide: z.enum(["true", "false"]).default("true"),
   refresh: z.coerce.number().int().optional(),
   limit: z.coerce.number().int().min(1).max(MAX_CONTEXT_LIMIT).default(DEFAULT_LIMIT)
 }).strict();
@@ -672,9 +673,9 @@ assetsRouter.get("/context", asyncHandler(async (req, res) => {
   const driveFiles = [...driveFolders, ...driveFilesOnly];
   const [resourceContexts, contextualResourceIds, fileContexts, contextualFileIds] = await Promise.all([
     organizationalContextsForEntities(workspaceId, "resource", resources.map((resource) => resource.id)),
-    query.departmentKey ? contextualEntityIds(workspaceId, "resource", query.departmentKey, true) : Promise.resolve([]),
+    query.departmentKey ? contextualEntityIds(workspaceId, "resource", query.departmentKey, query.includeCompanyWide !== "false") : Promise.resolve([]),
     organizationalContextsForEntities(workspaceId, "file", driveFiles.map((file) => file.id)),
-    query.departmentKey ? contextualEntityIds(workspaceId, "file", query.departmentKey, true) : Promise.resolve([])
+    query.departmentKey ? contextualEntityIds(workspaceId, "file", query.departmentKey, query.includeCompanyWide !== "false") : Promise.resolve([])
   ]);
   const contextualResourceIdSet = new Set(contextualResourceIds);
   const contextualFileIdSet = new Set(contextualFileIds);

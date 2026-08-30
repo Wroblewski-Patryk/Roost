@@ -53,7 +53,7 @@ function navigationAreasFromCatalog(catalog: DepartmentCatalogPacket | undefined
         sourceDepartmentKey: view.sourceDepartmentKey
       }));
       const seenViewDestinations = new Set<string>();
-      const linkedViews = catalogViews.filter((view) => {
+      const ownedViews = catalogViews.filter((view) => !view.sourceDepartmentKey || view.sourceDepartmentKey === department.key).filter((view) => {
         const destination = view.href || view.key;
         if (seenViewDestinations.has(destination)) return false;
         seenViewDestinations.add(destination);
@@ -68,7 +68,7 @@ function navigationAreasFromCatalog(catalog: DepartmentCatalogPacket | undefined
         href,
         icon: department.icon || fallbackArea?.icon || "ph-buildings",
         enabled: Boolean(href),
-        views: linkedViews
+        views: ownedViews
       };
     });
 }
@@ -91,7 +91,6 @@ function humanizeSearchType(result: UniversalSearchResult) {
 function DepartmentSidebar({ activeArea, navigationAreas, onNavigate }: { activeArea?: string; navigationAreas: CoreArea[]; onNavigate?: () => void }) {
   const { t } = useLanguage();
   const activeView = currentAreaView();
-  const [expandedRelatedArea, setExpandedRelatedArea] = useState<string>();
 
   return (
     <nav className="roost-sidebar-navigation" aria-label={t("sidebar.departments")}>
@@ -103,8 +102,6 @@ function DepartmentSidebar({ activeArea, navigationAreas, onNavigate }: { active
           const label = displayDepartmentLabel(translatedAreaLabel(area.labelKey, t));
           const activeViews = isActive ? (area.views || []).filter((view) => view.enabled !== false && view.href) : [];
           const primaryViews = activeViews.filter((view) => !view.sourceDepartmentKey || view.sourceDepartmentKey === area.key);
-          const relatedViews = activeViews.filter((view) => view.sourceDepartmentKey && view.sourceDepartmentKey !== area.key);
-          const relatedOpen = expandedRelatedArea === area.key || relatedViews.some((view) => view.key === activeView);
 
           return (
             <div className="roost-sidebar-area-group" key={area.key}>
@@ -120,25 +117,13 @@ function DepartmentSidebar({ activeArea, navigationAreas, onNavigate }: { active
                 </div>
               )}
 
-              {primaryViews.length > 1 || relatedViews.length ? (
+              {primaryViews.length > 1 ? (
                 <div className="roost-sidebar-context-nav" aria-label={t("sidebar.currentAreaViews")}>
                   {primaryViews.map((view) => (
                     <a aria-current={view.key === activeView ? "page" : undefined} className={view.key === activeView ? "is-active" : ""} href={view.href} key={view.key} onClick={onNavigate}>
                       {contextualViewLabel(translatedViewLabel(view.labelKey, t), label)}
                     </a>
                   ))}
-                  {relatedViews.length ? (
-                    <>
-                      <button aria-expanded={relatedOpen} className="roost-sidebar-related-toggle" onClick={() => setExpandedRelatedArea(relatedOpen ? undefined : area.key)} type="button">
-                        <span>{t("sidebar.relatedTools")}</span><small>{relatedViews.length}</small><i className={`ph-bold ph-caret-${relatedOpen ? "up" : "down"}`} aria-hidden="true"></i>
-                      </button>
-                      {relatedOpen ? <div className="roost-sidebar-related-views">{relatedViews.map((view) => (
-                        <a aria-current={view.key === activeView ? "page" : undefined} className={view.key === activeView ? "is-active" : ""} href={view.href} key={view.key} onClick={onNavigate}>
-                          {contextualViewLabel(translatedViewLabel(view.labelKey, t), label)}
-                        </a>
-                      ))}</div> : null}
-                    </>
-                  ) : null}
                 </div>
               ) : null}
             </div>

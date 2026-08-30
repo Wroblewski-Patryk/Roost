@@ -5,38 +5,55 @@ import type { CoreAreaKey } from "../../types";
 import { departmentLabel } from "./department-labels";
 import { humanizeBusinessValue } from "./shared";
 
-type PreviewTask = { id: string; title: string; status: string; priority?: string | null };
-type PreviewAsset = { id: string; name: string; type?: string; sourceModel?: string; organization?: { isFolder?: boolean } };
-type PreviewAssetsPacket = { resources: PreviewAsset[] };
-type DepartmentHealth = { signals: Record<string, number> };
+type PreviewRecord = { id: string; title?: string; name?: string; status?: string; priority?: string | null; type?: string; sourceModel?: string };
+type PreviewAssetsPacket = { resources: PreviewRecord[] };
+type PreviewWorkforcePacket = { entities: PreviewRecord[] };
+type PreviewDefinition = { label: string; icon: string; href: string; records: PreviewRecord[]; empty: string };
 
 function scopedHref(base: string, departmentKey: CoreAreaKey) {
   return `${base}&department=${encodeURIComponent(departmentKey)}`;
 }
 
+function PreviewSection({ definition, locale, viewAll }: { definition: PreviewDefinition; locale: "en" | "pl"; viewAll: string }) {
+  const rows = definition.records.slice(0, 4);
+  return <section>
+    <header><div><i className={`ph-bold ${definition.icon}`} aria-hidden="true"></i><div><strong>{definition.label}</strong><span>{rows.length ? `${rows.length} ${locale === "pl" ? "ostatnie przypisane" : "recent assigned"}` : definition.empty}</span></div></div><CcButton href={definition.href} iconRight="ph-arrow-right" size="xs" variant="ghost">{viewAll}</CcButton></header>
+    <div>{rows.map((record) => <a href={definition.href} key={record.id}><span><strong>{record.title || record.name || "—"}</strong><small>{humanizeBusinessValue(record.priority || record.type || record.sourceModel || "record", undefined, locale)}</small></span>{record.status ? <b>{humanizeBusinessValue(record.status, undefined, locale)}</b> : <i className="ph-bold ph-arrow-right" aria-hidden="true"></i>}</a>)}</div>
+  </section>;
+}
+
 export function DepartmentToolsPreview({ departmentKey }: { departmentKey: CoreAreaKey }) {
   const { locale, t } = useLanguage();
   const polish = locale === "pl";
-  const tasks = useOwnerPacket<PreviewTask[]>(`/v1/tasks?departmentKey=${encodeURIComponent(departmentKey)}&includeCompanyWide=true`, true, t);
-  const assets = useOwnerPacket<PreviewAssetsPacket>(`/v1/assets/context?areaKey=all&limit=8&departmentKey=${encodeURIComponent(departmentKey)}`, true, t);
-  const health = useOwnerPacket<DepartmentHealth>(`/v1/company-intelligence/health?departmentKey=${encodeURIComponent(departmentKey)}`, true, t);
-  const taskRows = (tasks.data || []).slice(0, 4);
-  const assetRows = (assets.data?.resources || []).slice(0, 4);
-  const signals = health.data?.signals || {};
-  const tools = [
-    { label: polish ? "Cele" : "Goals", count: signals.activeGoals || 0, icon: "ph-target", href: scopedHref("/areas?area=01-strategia&view=goals", departmentKey) },
-    { label: polish ? "Decyzje" : "Decisions", count: signals.decisionsRequiringReview || 0, icon: "ph-signpost", href: scopedHref("/areas?area=01-strategia&view=decisions", departmentKey) },
-    { label: polish ? "Procedury" : "Procedures", count: signals.applicableProcedures || 0, icon: "ph-list-numbers", href: scopedHref("/areas?area=04-operacje&view=procedures", departmentKey) },
-    { label: polish ? "Ludzie i agenci" : "People and agents", count: signals.assignedPeopleAndAgents || 0, icon: "ph-users-three", href: scopedHref("/areas?area=06-kadry&view=directory", departmentKey) },
-    { label: polish ? "Projekty" : "Projects", count: signals.activeProjects || 0, icon: "ph-briefcase", href: scopedHref("/areas?area=11-innowacje&view=projects", departmentKey) }
+  const query = `departmentKey=${encodeURIComponent(departmentKey)}&includeCompanyWide=false`;
+  const tasks = useOwnerPacket<PreviewRecord[]>(`/v1/tasks?${query}`, true, t);
+  const procedures = useOwnerPacket<PreviewRecord[]>(`/v1/process-core/procedures?${query}`, true, t);
+  const assets = useOwnerPacket<PreviewAssetsPacket>(`/v1/assets/context?areaKey=all&limit=8&${query}`, true, t);
+  const goals = useOwnerPacket<PreviewRecord[]>(`/v1/goals?${query}`, true, t);
+  const decisions = useOwnerPacket<PreviewRecord[]>(`/v1/decisions?${query}`, true, t);
+  const projects = useOwnerPacket<PreviewRecord[]>(`/v1/projects?${query}`, true, t);
+  const workforce = useOwnerPacket<PreviewWorkforcePacket>(`/v1/workforce?departmentKey=${encodeURIComponent(departmentKey)}`, true, t);
+  const resources = useOwnerPacket<PreviewRecord[]>(`/v1/company-objects/resource?${query}`, true, t);
+  const metrics = useOwnerPacket<PreviewRecord[]>(`/v1/company-objects/metric?${query}`, true, t);
+  const policies = useOwnerPacket<PreviewRecord[]>(`/v1/company-objects/policy?${query}`, true, t);
+  const risks = useOwnerPacket<PreviewRecord[]>(`/v1/company-objects/risk?${query}`, true, t);
+  const viewAll = polish ? "Wszystkie" : "View all";
+  const definitions: PreviewDefinition[] = [
+    { label: polish ? "Zadania" : "Tasks", icon: "ph-list-checks", href: scopedHref("/areas?area=04-operacje&view=tasks", departmentKey), records: tasks.data || [], empty: polish ? "Brak przypisanych zadań" : "No assigned tasks" },
+    { label: polish ? "Procedury" : "Procedures", icon: "ph-list-numbers", href: scopedHref("/areas?area=04-operacje&view=procedures", departmentKey), records: procedures.data || [], empty: polish ? "Brak przypisanych procedur" : "No assigned procedures" },
+    { label: polish ? "Pliki i foldery" : "Files and folders", icon: "ph-folders", href: scopedHref("/areas?area=08-zasoby&view=files", departmentKey), records: assets.data?.resources || [], empty: polish ? "Brak przypisanych plików" : "No assigned files" },
+    { label: polish ? "Cele" : "Goals", icon: "ph-target", href: scopedHref("/areas?area=01-strategia&view=goals", departmentKey), records: goals.data || [], empty: polish ? "Brak przypisanych celów" : "No assigned goals" },
+    { label: polish ? "Decyzje" : "Decisions", icon: "ph-signpost", href: scopedHref("/areas?area=01-strategia&view=decisions", departmentKey), records: decisions.data || [], empty: polish ? "Brak przypisanych decyzji" : "No assigned decisions" },
+    { label: polish ? "Projekty" : "Projects", icon: "ph-briefcase", href: scopedHref("/areas?area=11-innowacje&view=projects", departmentKey), records: projects.data || [], empty: polish ? "Brak przypisanych projektów" : "No assigned projects" },
+    { label: polish ? "Ludzie i agenci" : "People and agents", icon: "ph-users-three", href: scopedHref("/areas?area=06-kadry&view=directory", departmentKey), records: workforce.data?.entities || [], empty: polish ? "Brak przypisanych osób i agentów" : "No assigned people or agents" },
+    { label: polish ? "Zasoby firmy" : "Company resources", icon: "ph-cube", href: scopedHref("/areas?area=08-zasoby&view=resources", departmentKey), records: resources.data || [], empty: polish ? "Brak przypisanych zasobów" : "No assigned resources" },
+    { label: polish ? "Metryki i KPI" : "Metrics and KPIs", icon: "ph-chart-line-up", href: scopedHref("/areas?area=01-strategia&view=metrics", departmentKey), records: metrics.data || [], empty: polish ? "Brak przypisanych metryk" : "No assigned metrics" },
+    { label: polish ? "Polityki i guardraile" : "Policies and guardrails", icon: "ph-shield-check", href: scopedHref("/areas?area=10-prawo&view=policies", departmentKey), records: policies.data || [], empty: polish ? "Brak przypisanych polityk" : "No assigned policies" },
+    { label: polish ? "Ryzyka" : "Risks", icon: "ph-warning-diamond", href: scopedHref("/areas?area=12-zarzadzanie&view=risks", departmentKey), records: risks.data || [], empty: polish ? "Brak przypisanych ryzyk" : "No assigned risks" }
   ];
 
   return <section className="department-tools-preview" aria-labelledby={`department-tools-${departmentKey}`}>
-    <header><div><p>{polish ? "Wspólna warstwa firmy" : "Shared company layer"}</p><h2 id={`department-tools-${departmentKey}`}>{polish ? "Powiązane narzędzia" : "Related company tools"}</h2><span>{departmentLabel(departmentKey, t)} · {polish ? "podgląd danych przypisanych lub dostępnych w całej firmie" : "records assigned here or available company-wide"}</span></div></header>
-    <div className="department-tools-preview__primary">
-      <section><header><div><i className="ph-bold ph-list-checks" aria-hidden="true"></i><div><strong>{polish ? "Zadania" : "Tasks"}</strong><span>{taskRows.length ? `${taskRows.length} ${polish ? "ostatnie" : "recent"}` : polish ? "Brak przypisanych zadań" : "No assigned tasks"}</span></div></div><CcButton href={scopedHref("/areas?area=04-operacje&view=tasks", departmentKey)} iconRight="ph-arrow-right" size="xs" variant="ghost">{polish ? "Wszystkie" : "View all"}</CcButton></header><div>{taskRows.map((task) => <a href={scopedHref("/areas?area=04-operacje&view=tasks", departmentKey)} key={task.id}><span><strong>{task.title}</strong><small>{humanizeBusinessValue(task.priority || "normal", undefined, locale)}</small></span><b>{humanizeBusinessValue(task.status, undefined, locale)}</b></a>)}</div></section>
-      <section><header><div><i className="ph-bold ph-folders" aria-hidden="true"></i><div><strong>{polish ? "Pliki i foldery" : "Files and folders"}</strong><span>{assetRows.length ? `${assetRows.length} ${polish ? "ostatnie" : "recent"}` : polish ? "Brak przypisanych plików" : "No assigned files"}</span></div></div><CcButton href={scopedHref("/areas?area=08-zasoby&view=files", departmentKey)} iconRight="ph-arrow-right" size="xs" variant="ghost">{polish ? "Wszystkie" : "View all"}</CcButton></header><div>{assetRows.map((asset) => <a href={scopedHref("/areas?area=08-zasoby&view=files", departmentKey)} key={asset.id}><span><strong>{asset.name}</strong><small>{humanizeBusinessValue(asset.type || asset.sourceModel || "resource", undefined, locale)}</small></span><i className={`ph-bold ${asset.organization?.isFolder ? "ph-folder" : "ph-file"}`} aria-hidden="true"></i></a>)}</div></section>
-    </div>
-    <nav aria-label={polish ? "Pozostałe powiązane narzędzia" : "Other related company tools"}>{tools.map((tool) => <a href={tool.href} key={tool.label}><i className={`ph-bold ${tool.icon}`} aria-hidden="true"></i><span><strong>{tool.label}</strong><small>{polish ? "Otwórz przefiltrowany moduł" : "Open filtered module"}</small></span><b>{tool.count}</b><i className="ph-bold ph-arrow-right" aria-hidden="true"></i></a>)}</nav>
+    <header><div><p>{polish ? "Wspólna warstwa firmy" : "Shared company layer"}</p><h2 id={`department-tools-${departmentKey}`}>{polish ? "Dane przypisane do działu" : "Records assigned to this department"}</h2><span>{departmentLabel(departmentKey, t)} · {polish ? "tylko rekordy bezpośrednio powiązane z tym działem" : "only records directly linked to this department"}</span></div></header>
+    <div className="department-tools-preview__primary">{definitions.map((definition) => <PreviewSection definition={definition} key={definition.label} locale={locale} viewAll={viewAll} />)}</div>
   </section>;
 }

@@ -12,7 +12,6 @@ import {
   canonicalPeopleAgentsPath,
   canonicalFinancePath,
   canonicalTechnologyPath,
-  canonicalTechnologyGoalsPath,
   canonicalTechnologyIntegrationsPath,
   canonicalTechnologyAutomationsPath,
   canonicalLegalPath,
@@ -46,6 +45,7 @@ export const coreAreas: CoreArea[] = [
     views: [
       { key: "overview", labelKey: "views.default.overview", href: canonicalStrategyPath, icon: "ph-gauge", enabled: true },
       { key: "goals", labelKey: "views.shared.goals", href: canonicalStrategyGoalsPath, icon: "ph-target", enabled: true },
+      { key: "metrics", labelKey: "views.shared.metrics", href: "/areas?area=01-strategia&view=metrics", icon: "ph-chart-line-up", enabled: true },
       { key: "initiatives", labelKey: "views.12.portfolio", href: "/areas?area=01-strategia&view=initiatives", icon: "ph-flag", enabled: true },
       { key: "decisions", labelKey: "views.12.approvals", href: "/areas?area=01-strategia&view=decisions", icon: "ph-signpost", enabled: true }
     ]
@@ -78,11 +78,12 @@ export const coreAreas: CoreArea[] = [
     key: "04-operacje",
     labelKey: "areas.04.label",
     eyebrowKey: "areas.04.eyebrow",
-    href: canonicalOperationsPath,
+    href: "/areas?area=04-operacje&view=overview",
     descriptionKey: "areas.04.description",
     icon: "ph-list-checks",
     enabled: true,
     views: [
+      { key: "overview", labelKey: "views.04.overview", href: "/areas?area=04-operacje&view=overview", icon: "ph-gauge", enabled: true },
       { key: "tasks", labelKey: "views.04.tasks", href: canonicalOperationsPath, icon: "ph-list-checks", enabled: true },
       { key: "calendar", labelKey: "views.04.calendar", href: "/areas?area=04-operacje&view=calendar", icon: "ph-calendar-blank", enabled: true },
       { key: "procedures", labelKey: "views.04.procedures", href: "/areas?area=04-operacje&view=procedures", icon: "ph-list-numbers", enabled: true },
@@ -104,11 +105,12 @@ export const coreAreas: CoreArea[] = [
     key: "06-kadry",
     labelKey: "departments.06",
     eyebrowKey: "departments.06.eyebrow",
-    href: canonicalPeopleAgentsPath,
+    href: "/areas?area=06-kadry&view=overview",
     descriptionKey: "departments.06.description",
     icon: "ph-users-three",
     enabled: true,
     views: [
+      { key: "overview", labelKey: "views.default.overview", href: "/areas?area=06-kadry&view=overview", icon: "ph-gauge", enabled: true },
       { key: "directory", labelKey: "views.06.directory", href: canonicalPeopleAgentsPath, icon: "ph-users-three", enabled: true },
       { key: "competencies", labelKey: "views.06.competencies", href: "/areas?area=06-kadry&view=competencies", icon: "ph-brain", enabled: true }
     ]
@@ -134,6 +136,7 @@ export const coreAreas: CoreArea[] = [
     views: [
       { key: "overview", labelKey: "views.08.overview", href: canonicalAssetsPath, icon: "ph-gauge", enabled: true },
       { key: "files", labelKey: "views.08.files", href: "/areas?area=08-zasoby&view=files", icon: "ph-folders", enabled: true },
+      { key: "resources", labelKey: "views.shared.resources", href: "/areas?area=08-zasoby&view=resources", icon: "ph-cube", enabled: true },
       { key: "knowledge", labelKey: "views.08.knowledge", href: "/areas?area=08-zasoby&view=knowledge", icon: "ph-book-open-text", enabled: true }
     ]
   },
@@ -147,7 +150,6 @@ export const coreAreas: CoreArea[] = [
     enabled: true,
     views: [
       { key: "overview", labelKey: "views.09.overview", href: canonicalTechnologyPath, icon: "ph-gauge", enabled: true },
-      { key: "goals", labelKey: "views.shared.goals", href: canonicalTechnologyGoalsPath, icon: "ph-target", enabled: true },
       { key: "integrations", labelKey: "views.09.integrations", href: canonicalTechnologyIntegrationsPath, icon: "ph-plugs-connected", enabled: true },
       { key: "automations", labelKey: "views.09.automations", href: canonicalTechnologyAutomationsPath, icon: "ph-lightning", enabled: true },
       { key: "incidents", labelKey: "views.12.escalations", href: "/areas?area=09-technologia&view=incidents", icon: "ph-siren", enabled: true },
@@ -162,7 +164,7 @@ export const coreAreas: CoreArea[] = [
     descriptionKey: "departments.10.description",
     icon: "ph-scales",
     enabled: true,
-    views: [{ key: "overview", labelKey: "views.default.overview", href: canonicalLegalPath, icon: "ph-gauge", enabled: true }, { key: "contracts", labelKey: "views.12.approvals", href: "/areas?area=10-prawo&view=contracts", icon: "ph-file-lock", enabled: true }, { key: "compliance", labelKey: "views.12.reviews", href: "/areas?area=10-prawo&view=compliance", icon: "ph-shield-check", enabled: true }]
+    views: [{ key: "overview", labelKey: "views.default.overview", href: canonicalLegalPath, icon: "ph-gauge", enabled: true }, { key: "contracts", labelKey: "views.12.approvals", href: "/areas?area=10-prawo&view=contracts", icon: "ph-file-lock", enabled: true }, { key: "policies", labelKey: "views.shared.policies", href: "/areas?area=10-prawo&view=policies", icon: "ph-shield-check", enabled: true }, { key: "compliance", labelKey: "views.12.reviews", href: "/areas?area=10-prawo&view=compliance", icon: "ph-shield-check", enabled: true }]
   },
   {
     key: "11-innowacje",
@@ -174,6 +176,7 @@ export const coreAreas: CoreArea[] = [
     enabled: true,
     views: [
       { key: "overview", labelKey: "views.default.overview", href: canonicalInnovationPath, icon: "ph-gauge", enabled: true },
+      { key: "projects", labelKey: "views.shared.projects", href: "/areas?area=11-innowacje&view=projects", icon: "ph-briefcase", enabled: true },
       { key: "application-graph", labelKey: "views.11.applicationGraph", href: "/areas?area=11-innowacje&view=application-graph", icon: "ph-graph", enabled: true },
       { key: "requirements", labelKey: "views.11.requirements", href: "/areas?area=11-innowacje&view=requirements", icon: "ph-list-magnifying-glass", enabled: true },
       { key: "experiments", labelKey: "views.12.reviews", href: "/areas?area=11-innowacje&view=experiments", icon: "ph-flask", enabled: true }
@@ -183,12 +186,14 @@ export const coreAreas: CoreArea[] = [
     key: "12-zarzadzanie",
     labelKey: "departments.12",
     eyebrowKey: "departments.12.eyebrow",
-    href: canonicalManagementDepartmentsPath,
+    href: "/areas?area=12-zarzadzanie&view=overview",
     descriptionKey: "departments.12.description",
     icon: "ph-chart-line-up",
     enabled: true,
     views: [
+      { key: "overview", labelKey: "views.default.overview", href: "/areas?area=12-zarzadzanie&view=overview", icon: "ph-gauge", enabled: true },
       { key: "departments", labelKey: "views.12.departments", href: canonicalManagementDepartmentsPath, icon: "ph-buildings", enabled: true },
+      { key: "risks", labelKey: "views.shared.risks", href: "/areas?area=12-zarzadzanie&view=risks", icon: "ph-warning-diamond", enabled: true },
       { key: "portfolio", labelKey: "views.12.portfolio", href: "/areas?area=12-zarzadzanie&view=portfolio", icon: "ph-briefcase", enabled: true },
       { key: "escalations", labelKey: "views.12.escalations", href: "/areas?area=12-zarzadzanie&view=escalations", icon: "ph-warning-octagon", enabled: true },
       { key: "reviews", labelKey: "views.12.reviews", href: "/areas?area=12-zarzadzanie&view=reviews", icon: "ph-clipboard-text", enabled: true }

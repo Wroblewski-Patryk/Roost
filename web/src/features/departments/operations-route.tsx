@@ -14,6 +14,7 @@ import { useLanguage } from "../../i18n/i18n";
 import { formatAppDate } from "../../i18n/date-format";
 import { CoreAreaKey, OperationsDepartment, OperationsPacket, OperationsStatusColumn, OperationsTaskList, OperationsWorkItem } from "../../types";
 import { departmentLabel } from "./department-labels";
+import { DepartmentScopeControl } from "./department-scope-control";
 import { ProceduresWorkbench } from "./procedures-workbench";
 
 type OperationsView = "tasks" | "calendar" | "procedures";
@@ -1320,7 +1321,7 @@ export function OperationsRoute() {
   const [taskQuery, setTaskQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState<TaskPriorityFilter>("all");
   const [dateFilter, setDateFilter] = useState<TaskDateFilter>("all");
-  const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200${departmentScope ? `&departmentKey=${encodeURIComponent(departmentScope)}` : ""}&refresh=${refreshKey}`, activeView !== "procedures", t);
+  const packet = useOwnerPacket<OperationsPacket>(`/v1/operations/work-items?limit=200${departmentScope ? `&departmentKey=${encodeURIComponent(departmentScope)}&includeCompanyWide=false` : ""}&refresh=${refreshKey}`, activeView !== "procedures", t);
   const rows = useMemo(() => (packet.data?.workItems || []).map((item) => ({ ...item, id: item.task.id })), [packet.data?.workItems]);
   const taskLists = packet.data?.taskLists || [];
   const departments = packet.data?.departments || [];
@@ -1370,8 +1371,8 @@ export function OperationsRoute() {
   return (
     <>
       <CcPageHeader
-        actions={departmentScope ? <CcButton href={`/areas?area=04-operacje&view=${activeView}`} iconLeft="ph-x" size="sm" variant="outline">Show all accessible work</CcButton> : null}
-        description={departmentScope ? `Filtered to work related to ${departmentLabel(departmentScope, t)}. Company-wide records remain visible.` : t(activeView === "calendar" ? "operations.calendarDescription" : "operations.description")}
+        actions={<DepartmentScopeControl baseHref={`/areas?area=04-operacje&view=${activeView}`} value={departmentScope} />}
+        description={departmentScope ? `Filtered to work assigned to ${departmentLabel(departmentScope, t)}.` : t(activeView === "calendar" ? "operations.calendarDescription" : "operations.description")}
         eyebrow={departmentScope ? `${t("areas.04.label")} · ${departmentLabel(departmentScope, t)}` : t("areas.04.label")}
         title={departmentScope ? `${t(activeView === "calendar" ? "operations.calendarTitle" : "operations.title")} · ${departmentLabel(departmentScope, t)}` : t(activeView === "calendar" ? "operations.calendarTitle" : "operations.title")}
       />

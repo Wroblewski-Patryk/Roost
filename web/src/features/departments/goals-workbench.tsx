@@ -13,6 +13,7 @@ import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import type { CoreAreaKey } from "../../types";
 import { departmentLabel } from "./department-labels";
+import { DepartmentScopeControl } from "./department-scope-control";
 import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 
 type Department = { id: string; key: CoreAreaKey; name: string; status: string };
@@ -141,7 +142,7 @@ export function GoalsWorkbench({ departmentKey, canonical = false }: { departmen
   const [editing, setEditing] = useState<Goal | null | undefined>(undefined);
   const [archiveGoal, setArchiveGoal] = useState<Goal | null>(null);
   const [archiveBusy, setArchiveBusy] = useState(false);
-  const query = requestedDepartment ? `?departmentKey=${requestedDepartment}&includeCompanyWide=true` : "";
+  const query = requestedDepartment ? `?departmentKey=${requestedDepartment}&includeCompanyWide=false` : "";
   const packet = useOwnerPacket<Goal[]>(`/v1/goals${query}${query ? "&" : "?"}refresh=${refreshKey}`, true, t);
   const departmentPacket = useOwnerPacket<{ departments: Department[] }>(`/v1/departments?refresh=${refreshKey}`, true, t);
   const rows = packet.data || [];
@@ -165,7 +166,7 @@ export function GoalsWorkbench({ departmentKey, canonical = false }: { departmen
   }
 
   return <>
-    <CcPageHeader actions={<>{scoped ? <CcButton href="/areas?area=01-strategia&view=goals" iconLeft="ph-x" size="sm" variant="outline">Show all accessible goals</CcButton> : null}<CcButton iconLeft="ph-plus" onClick={() => setEditing(null)} size="sm" variant="primary">{t("goals.create")}</CcButton></>} description={scoped ? t("goals.contextualDescription") : t("goals.canonicalDescription")} eyebrow={scoped ? t("goals.contextualEyebrow") : t("goals.canonicalEyebrow")} title={visibleTitle} />
+    <CcPageHeader actions={<><DepartmentScopeControl baseHref="/areas?area=01-strategia&view=goals" value={requestedDepartment} /><CcButton iconLeft="ph-plus" onClick={() => setEditing(null)} size="sm" variant="primary">{t("goals.create")}</CcButton></>} description={scoped ? t("goals.contextualDescription") : t("goals.canonicalDescription")} eyebrow={scoped ? t("goals.contextualEyebrow") : t("goals.canonicalEyebrow")} title={visibleTitle} />
     {packet.status === "error" ? <CcNotice live tone="error" title={packet.error || t("goals.loadError")} /> : null}
     <CcDataTable columns={columns} rows={rows} emptyDetail={canonical ? t("goals.emptyCanonicalDetail") : t("goals.emptyContextualDetail")} emptyTitle={t("goals.emptyTitle")} error={packet.status === "error" ? packet.error || t("goals.loadError") : null} getRowLabel={(row) => row.title} labels={tableLabels} loading={packet.status === "loading"} mobileMode="cards" />
     {editing !== undefined ? <GoalEditor departmentKey={requestedDepartment || departmentKey} departments={departmentOptions} goal={editing} onClose={() => setEditing(undefined)} onSaved={refresh} /> : null}

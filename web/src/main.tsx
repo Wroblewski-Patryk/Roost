@@ -58,6 +58,7 @@ const CompanyGraphRoute = lazy(() => import("./features/departments/company-grap
 const EntityInspectorRoute = lazy(() => import("./features/departments/entity-inspector-route").then((module) => ({ default: module.EntityInspectorRoute })));
 const ProjectsWorkbench = lazy(() => import("./features/departments/projects-workbench").then((module) => ({ default: module.ProjectsWorkbench })));
 const ProjectWorkspaceRoute = lazy(() => import("./features/departments/project-workspace-route").then((module) => ({ default: module.ProjectWorkspaceRoute })));
+const DepartmentOverviewRoute = lazy(() => import("./features/departments/department-overview-route").then((module) => ({ default: module.DepartmentOverviewRoute })));
 const AccountSettingsRoute = lazy(() => import("./features/settings/settings-routes").then((module) => ({ default: module.AccountSettingsRoute })));
 const WorkspaceSettingsRoute = lazy(() => import("./features/settings/settings-routes").then((module) => ({ default: module.WorkspaceSettingsRoute })));
 
@@ -147,9 +148,15 @@ function App() {
   if (pathname === "/areas" && currentAreaView() === "entity") {
     return <>{metadata}<PrivateAppRoute activeArea={areaKey}><EntityInspectorRoute /></PrivateAppRoute></>;
   }
+  if (pathname === "/areas" && currentAreaView() === "overview" && ["04-operacje", "06-kadry", "12-zarzadzanie"].includes(areaKey)) {
+    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><DepartmentOverviewRoute departmentKey={areaKey as CoreAreaKey} /></PrivateAppRoute></>;
+  }
   const companyObjectType = ({ resources: "resource", risks: "risk", metrics: "metric", policies: "policy" } as const)[currentAreaView() as "resources" | "risks" | "metrics" | "policies"];
   if (pathname === "/areas" && companyObjectType) {
-    return <>{metadata}<PrivateAppRoute activeArea={areaKey}><CompanyObjectsWorkbench departmentKey={areaKey} type={companyObjectType} /></PrivateAppRoute></>;
+    const sourceArea = ({ resource: "08-zasoby", risk: "12-zarzadzanie", metric: "01-strategia", policy: "10-prawo" } as const)[companyObjectType];
+    const sourceView = ({ resource: "resources", risk: "risks", metric: "metrics", policy: "policies" } as const)[companyObjectType];
+    if (areaKey !== sourceArea) window.history.replaceState(null, "", `/areas?area=${sourceArea}&view=${sourceView}&department=${encodeURIComponent(areaKey)}`);
+    return <>{metadata}<PrivateAppRoute activeArea={sourceArea}><CompanyObjectsWorkbench departmentKey={sourceArea} type={companyObjectType} /></PrivateAppRoute></>;
   }
   if (pathname === "/areas" && currentAreaView() === "projects") {
     if (areaKey !== "11-innowacje") window.history.replaceState(null, "", `/areas?area=11-innowacje&view=projects&department=${encodeURIComponent(areaKey)}`);
@@ -162,7 +169,7 @@ function App() {
     window.history.replaceState(null, "", `/areas?area=06-kadry&view=directory&department=${encodeURIComponent(areaKey)}`);
     return <>{metadata}<PrivateAppRoute activeArea="06-kadry"><PeopleAgentsRoute departmentKey={areaKey} /></PrivateAppRoute></>;
   }
-  if (pathname === "/areas" && currentAreaView() === "goals" && areaKey !== "01-strategia" && areaKey !== "09-technologia") {
+  if (pathname === "/areas" && currentAreaView() === "goals" && areaKey !== "01-strategia") {
     window.history.replaceState(null, "", `/areas?area=01-strategia&view=goals&department=${encodeURIComponent(areaKey)}`);
     return <>{metadata}<PrivateAppRoute activeArea="01-strategia"><GoalsWorkbench canonical departmentKey="01-strategia" /></PrivateAppRoute></>;
   }
@@ -275,7 +282,7 @@ function App() {
 
   if (pathname === "/areas" && currentAreaKey() === "09-technologia") {
     const view = new URLSearchParams(window.location.search).get("view") || "overview";
-    if (!["overview", "goals", "integrations", "automations"].includes(view)) {
+    if (!["overview", "integrations", "automations"].includes(view)) {
       window.history.replaceState(null, "", canonicalTechnologyPath);
     }
     return <>{metadata}<PrivateAppRoute activeArea="09-technologia"><TechnologyRoute /></PrivateAppRoute></>;

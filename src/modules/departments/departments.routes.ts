@@ -19,15 +19,15 @@ const DEFAULT_DEPARTMENTS = [
   { key: "01-strategia", name: "01 Strategy", description: "Strategic goals, decisions, priorities, and roadmap governance.", icon: "ph-target", position: 1, linkedViews: ["strategy.overview", "strategy.goals", "strategy.metrics", "strategy.initiatives", "strategy.decisions"] },
   { key: "02-produkt", name: "02 Product", description: "Product and service definition, delivery scope, and improvement loops.", icon: "ph-package", position: 2, linkedViews: ["product.overview", "product.requirements", "product.deliverables"] },
   { key: "03-sprzedaz", name: "03 Sales", description: "Lead, offer, deal, and commercial follow-up management.", icon: "ph-handshake", position: 3, linkedViews: ["sales.overview", "sales.offers"] },
-  { key: "04-operacje", name: "04 Operations", description: "Procedures, task boards, calendars, routines, and operational controls.", icon: "ph-list-checks", position: 4, linkedViews: ["operations.tasks", "operations.calendar", "operations.procedures", "operations.issues", "operations.events"] },
+  { key: "04-operacje", name: "04 Operations", description: "Procedures, task boards, calendars, routines, and operational controls.", icon: "ph-list-checks", position: 4, linkedViews: ["operations.overview", "operations.tasks", "operations.calendar", "operations.procedures", "operations.issues", "operations.events"] },
   { key: "05-relacje", name: "05 Relationships", description: "Clients, partners, support, feedback, and relationship evidence.", icon: "ph-address-book", position: 5, linkedViews: ["relationships.overview", "relationships.feedback"] },
-  { key: "06-kadry", name: "06 People / Agents", description: "People, AI agents, roles, responsibilities, and workload context.", icon: "ph-users-three", position: 6, linkedViews: ["people.directory", "people.competencies"] },
+  { key: "06-kadry", name: "06 People / Agents", description: "People, AI agents, roles, responsibilities, and workload context.", icon: "ph-users-three", position: 6, linkedViews: ["people.overview", "people.directory", "people.competencies"] },
   { key: "07-finanse", name: "07 Finance", description: "Revenue, costs, budgets, invoices, and commercial exceptions.", icon: "ph-bank", position: 7, linkedViews: ["finance.overview", "finance.budgets", "finance.invoices"] },
   { key: "08-zasoby", name: "08 Assets", description: "Files, folders, resources, repositories, prompts, and knowledge roots.", icon: "ph-folder-open", position: 8, linkedViews: ["assets.overview", "assets.files", "assets.resources", "assets.knowledge"] },
-  { key: "09-technologia", name: "09 Technology", description: "Code, infrastructure, deployments, integrations, and technical health.", icon: "ph-cpu", position: 9, linkedViews: ["technology.overview", "technology.goals", "technology.integrations", "technology.automations", "technology.incidents", "technology.environments"] },
+  { key: "09-technologia", name: "09 Technology", description: "Code, infrastructure, deployments, integrations, and technical health.", icon: "ph-cpu", position: 9, linkedViews: ["technology.overview", "technology.integrations", "technology.automations", "technology.incidents", "technology.environments"] },
   { key: "10-prawo", name: "10 Legal", description: "Contracts, compliance, approvals, and legal risk control.", icon: "ph-scales", position: 10, linkedViews: ["legal.overview", "legal.contracts", "legal.policies", "legal.compliance"] },
   { key: "11-innowacje", name: "11 Innovation", description: "Research, experiments, discovery, and improvement portfolio.", icon: "ph-lightbulb", position: 11, linkedViews: ["innovation.overview", "innovation.projects", "innovation.application-graph", "product.requirements", "innovation.experiments"] },
-  { key: "12-zarzadzanie", name: "12 Management", description: "Executive control, department administration, approvals, and portfolio steering.", icon: "ph-chart-line-up", position: 12, linkedViews: ["management.departments", "management.portfolio", "management.risks", "management.escalations", "management.reviews"] }
+  { key: "12-zarzadzanie", name: "12 Management", description: "Executive control, department administration, approvals, and portfolio steering.", icon: "ph-chart-line-up", position: 12, linkedViews: ["management.overview", "management.departments", "management.portfolio", "management.risks", "management.escalations", "management.reviews"] }
 ] as const;
 
 const AVAILABLE_VIEWS: ViewDefinition[] = [
@@ -44,6 +44,7 @@ const AVAILABLE_VIEWS: ViewDefinition[] = [
   { id: "product.deliverables", label: "Deliverables", href: "/areas?area=02-produkt&view=deliverables", icon: "ph-package", sourceDepartmentKey: "02-produkt", enabled: true },
   { id: "sales.overview", label: "Sales overview", href: "/areas?area=03-sprzedaz&view=overview", icon: "ph-gauge", sourceDepartmentKey: "03-sprzedaz", enabled: true },
   { id: "sales.offers", label: "Commercial offers", href: "/areas?area=03-sprzedaz&view=offers", icon: "ph-file-text", sourceDepartmentKey: "03-sprzedaz", enabled: true },
+  { id: "operations.overview", label: "Operations overview", href: "/areas?area=04-operacje&view=overview", icon: "ph-gauge", sourceDepartmentKey: "04-operacje", enabled: true },
   { id: "operations.tasks", label: "Operations tasks", href: "/areas?area=04-operacje&view=tasks", icon: "ph-list-checks", sourceDepartmentKey: "04-operacje", enabled: true },
   { id: "operations.calendar", label: "Operations calendar", href: "/areas?area=04-operacje&view=calendar", icon: "ph-calendar-blank", sourceDepartmentKey: "04-operacje", enabled: true },
   { id: "operations.procedures", label: "Operations procedures", href: "/areas?area=04-operacje&view=procedures", icon: "ph-list-numbers", sourceDepartmentKey: "04-operacje", enabled: true },
@@ -51,6 +52,7 @@ const AVAILABLE_VIEWS: ViewDefinition[] = [
   { id: "operations.events", label: "Operational events", href: "/areas?area=04-operacje&view=events", icon: "ph-calendar-dots", sourceDepartmentKey: "04-operacje", enabled: true },
   { id: "relationships.overview", label: "Relationships overview", href: "/areas?area=05-relacje&view=overview", icon: "ph-address-book", sourceDepartmentKey: "05-relacje", enabled: true },
   { id: "relationships.feedback", label: "Feedback", href: "/areas?area=05-relacje&view=feedback", icon: "ph-chat-centered-text", sourceDepartmentKey: "05-relacje", enabled: true },
+  { id: "people.overview", label: "People and agents overview", href: "/areas?area=06-kadry&view=overview", icon: "ph-gauge", sourceDepartmentKey: "06-kadry", enabled: true },
   { id: "people.directory", label: "People and agents directory", href: "/areas?area=06-kadry&view=directory", icon: "ph-users-three", sourceDepartmentKey: "06-kadry", enabled: true },
   { id: "people.competencies", label: "Competencies", href: "/areas?area=06-kadry&view=competencies", icon: "ph-brain", sourceDepartmentKey: "06-kadry", enabled: true },
   { id: "finance.overview", label: "Finance overview", href: "/areas?area=07-finanse&view=overview", icon: "ph-bank", sourceDepartmentKey: "07-finanse", enabled: true },
@@ -74,6 +76,7 @@ const AVAILABLE_VIEWS: ViewDefinition[] = [
   { id: "innovation.projects", label: "Projects", href: "/areas?area=11-innowacje&view=projects", icon: "ph-briefcase", sourceDepartmentKey: "11-innowacje", enabled: true },
   { id: "innovation.application-graph", label: "Application Graph", href: "/areas?area=11-innowacje&view=application-graph", icon: "ph-graph", sourceDepartmentKey: "11-innowacje", enabled: true },
   { id: "innovation.experiments", label: "Experiments", href: "/areas?area=11-innowacje&view=experiments", icon: "ph-flask", sourceDepartmentKey: "11-innowacje", enabled: true },
+  { id: "management.overview", label: "Management overview", href: "/areas?area=12-zarzadzanie&view=overview", icon: "ph-gauge", sourceDepartmentKey: "12-zarzadzanie", enabled: true },
   { id: "management.departments", label: "Department management", href: "/areas?area=12-zarzadzanie&view=departments", icon: "ph-buildings", sourceDepartmentKey: "12-zarzadzanie", enabled: true },
   { id: "management.portfolio", label: "Portfolio steering", href: "/areas?area=12-zarzadzanie&view=portfolio", icon: "ph-briefcase", sourceDepartmentKey: "12-zarzadzanie", enabled: true },
   { id: "management.risks", label: "Company risks", href: "/areas?area=12-zarzadzanie&view=risks", icon: "ph-warning-diamond", sourceDepartmentKey: "12-zarzadzanie", enabled: true },
@@ -121,7 +124,9 @@ function serializeDepartment(department: {
   linkedViews: unknown;
   updatedAt: Date;
 }) {
-  const viewIds = linkedViews(department.linkedViews);
+  const requiredOverview = ({ "04-operacje": "operations.overview", "06-kadry": "people.overview", "12-zarzadzanie": "management.overview" } as Record<string, string>)[department.key];
+  const persistedViewIds = linkedViews(department.linkedViews).filter((id) => id !== "technology.goals");
+  const viewIds = requiredOverview && !persistedViewIds.includes(requiredOverview) ? [requiredOverview, ...persistedViewIds] : persistedViewIds;
   const views = viewSummaries(viewIds);
   return {
     id: department.id,

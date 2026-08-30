@@ -731,6 +731,9 @@ test("company operating graph keeps records canonical, contextual, evidenced, an
   const createdTask = await request("/v1/tasks", { method: "POST", headers, body: JSON.stringify({ title: "Implement evidence gate", status: "todo", organizationalContext: { ownerDepartmentKey: "09-technologia", relatedDepartmentKeys: ["11-innowacje"], applicableDepartmentKeys: [], scopes: [] } }) });
   assert.equal(createdTask.status, 201, JSON.stringify(createdTask.body));
   const task = (createdTask.body as { data: { id: string } }).data;
+  const companyWideFinanceTask = await request("/v1/tasks", { method: "POST", headers, body: JSON.stringify({ title: "Finance-wide company notice", status: "todo", organizationalContext: { ownerDepartmentKey: "07-finanse", relatedDepartmentKeys: [], applicableDepartmentKeys: [], scopes: [{ type: "company" }] } }) });
+  assert.equal(companyWideFinanceTask.status, 201, JSON.stringify(companyWideFinanceTask.body));
+  const companyWideFinanceTaskId = (companyWideFinanceTask.body as { data: { id: string } }).data.id;
   const technologyTasks = await request("/v1/tasks?departmentKey=09-technologia", { headers });
   const innovationTasks = await request("/v1/tasks?departmentKey=11-innowacje", { headers });
   assert.ok((technologyTasks.body as { data: Array<{ id: string }> }).data.some((item) => item.id === task.id));
@@ -807,10 +810,18 @@ test("company operating graph keeps records canonical, contextual, evidenced, an
   assert.equal(fileEntity.status, 200);
   const technologyFiles = await request("/v1/assets/context?areaKey=all&limit=50&departmentKey=09-technologia", { headers });
   assert.ok((technologyFiles.body as { data: { resources: Array<{ sourceId: string }> } }).data.resources.some((item) => item.sourceId === driveFile.id), "department-scoped Assets must include assigned files");
+  const financeFile = await prisma.googleDriveFile.create({ data: { workspaceId: owner.workspace.id, externalId: "finance-company-file", name: "Finance Company Notice", mimeType: "text/markdown" } });
+  await request(`/v1/organizational-context/file/${financeFile.id}`, { method: "PATCH", headers, body: JSON.stringify({ ownerDepartmentKey: "07-finanse", relatedDepartmentKeys: [], applicableDepartmentKeys: [], scopes: [{ type: "company" }] }) });
+  const strictTechnologyFiles = await request("/v1/assets/context?areaKey=all&limit=50&departmentKey=09-technologia&includeCompanyWide=false", { headers });
+  const strictTechnologyFileIds = (strictTechnologyFiles.body as { data: { resources: Array<{ sourceId: string }> } }).data.resources.map((item) => item.sourceId);
+  assert.ok(strictTechnologyFileIds.includes(driveFile.id), "strict department Assets must retain directly assigned files");
+  assert.ok(!strictTechnologyFileIds.includes(financeFile.id), "strict department Assets must exclude unrelated company-wide files");
 
-  const technologyOperations = await request("/v1/operations/work-items?limit=50&departmentKey=09-technologia", { headers });
+  const technologyOperations = await request("/v1/operations/work-items?limit=50&departmentKey=09-technologia&includeCompanyWide=false", { headers });
   assert.equal(technologyOperations.status, 200, JSON.stringify(technologyOperations.body));
-  assert.ok((technologyOperations.body as { data: { workItems: Array<{ task: { id: string } }> } }).data.workItems.some((item) => item.task.id === task.id), "central Operations must retain the incoming department scope");
+  const technologyWorkItemIds = (technologyOperations.body as { data: { workItems: Array<{ task: { id: string } }> } }).data.workItems.map((item) => item.task.id);
+  assert.ok(technologyWorkItemIds.includes(task.id), "central Operations must retain the incoming department scope");
+  assert.ok(!technologyWorkItemIds.includes(companyWideFinanceTaskId), "strict Operations scope must exclude unrelated company-wide tasks");
 
   const taskContext = await request(`/v1/company-intelligence/tasks/${task.id}/agent-context`, { headers });
   assert.equal(taskContext.status, 200);
@@ -1341,7 +1352,7 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(managementDepartment.name, "12 Management");
   assert.equal(managementDepartment.isSystem, true);
   assert.ok(managementDepartment.linkedViews.includes("management.departments"));
-  assert.equal(managementDepartment.href, "/areas?area=12-zarzadzanie&view=departments");
+  assert.equal(managementDepartment.href, "/areas?area=12-zarzadzanie&view=overview");
 
   const createdDepartment = await request("/v1/departments", {
     method: "POST",

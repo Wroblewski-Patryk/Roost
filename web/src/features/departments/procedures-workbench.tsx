@@ -13,6 +13,7 @@ import { CcTextInput } from "../../components/cc-text-input";
 import { useLanguage } from "../../i18n/i18n";
 import type { CoreAreaKey } from "../../types";
 import { departmentLabel } from "./department-labels";
+import { DepartmentScopeControl } from "./department-scope-control";
 import { humanizeBusinessValue, useTranslatedTableLabels } from "./shared";
 
 type ProcedureStep = {
@@ -269,6 +270,9 @@ function ProcedureDetail({ procedure, busy, onActivate, onArchive, onClose, onEd
 
 export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical = true }: { departmentKey?: CoreAreaKey; canonical?: boolean }) {
   const { locale, t } = useLanguage();
+  const requestedDepartment = canonical ? new URLSearchParams(window.location.search).get("department") as CoreAreaKey | null : departmentKey;
+  const scoped = Boolean(requestedDepartment);
+  const effectiveDepartment = requestedDepartment || departmentKey;
   const tableLabels = useTranslatedTableLabels();
   const [procedures, setProcedures] = useState<Procedure[]>([]);
   const [processes, setProcesses] = useState<ProcessDefinition[]>([]);
@@ -285,7 +289,7 @@ export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical =
   const load = useCallback(async (preferredId?: string) => {
     try {
       const [procedureResponse, processResponse, toolResponse, integrationCapabilityResponse, connectionResponse] = await Promise.all([
-        api<{ data: Procedure[] }>(canonical ? "/v1/process-core/procedures" : `/v1/process-core/procedures?departmentKey=${encodeURIComponent(departmentKey)}&includeCompanyWide=true`),
+        api<{ data: Procedure[] }>(scoped ? `/v1/process-core/procedures?departmentKey=${encodeURIComponent(effectiveDepartment)}&includeCompanyWide=false` : "/v1/process-core/procedures"),
         api<{ data: ProcessDefinition[] }>("/v1/company-os/processes?limit=100"),
         api<{ data: ToolAdapter[] }>("/v1/company-os/tool-adapters?limit=100"),
         api<{ data: IntegrationCapability[] }>("/v1/company-os/integration-capabilities?limit=100"),
@@ -303,7 +307,7 @@ export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical =
       setError(caught instanceof AppApiError ? caught.code : "procedures_load_failed");
       setStatus("error");
     }
-  }, [canonical, departmentKey]);
+  }, [effectiveDepartment, scoped]);
 
   useEffect(() => { void load(); }, [load]);
   const selected = procedures.find((item) => item.id === selectedId) || null;
@@ -337,7 +341,7 @@ export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical =
         requiredTools: form.getAll("requiredTools").map(String),
         requiredPermissions: form.getAll("requiredPermissions").map(String),
         steps: JSON.parse(String(form.get("stepsJson") || "[]")),
-        ...(!editing ? { organizationalContext: { ownerDepartmentKey: departmentKey, relatedDepartmentKeys: [], applicableDepartmentKeys: [], scopes: canonical ? [{ type: "company" }] : [{ type: "department", entityId: departmentKey }] } } : {})
+        ...(!editing ? { organizationalContext: { ownerDepartmentKey: effectiveDepartment, relatedDepartmentKeys: [], applicableDepartmentKeys: [], scopes: scoped ? [{ type: "department", entityId: effectiveDepartment }] : [{ type: "company" }] } } : {})
       };
       const response = editing ? await api<{ data: Procedure }>(`/v1/process-core/procedures/${editing.id}`, { method: "PATCH", body: JSON.stringify(payload) }) : await api<{ data: Procedure }>("/v1/process-core/procedures", { method: "POST", body: JSON.stringify(payload) });
       setEditing(undefined);
@@ -378,7 +382,7 @@ export function ProceduresWorkbench({ departmentKey = "04-operacje", canonical =
 
   return (
     <section className="roost-work-surface grid min-h-[calc(100vh-10rem)] min-w-0 grid-rows-[auto_minmax(0,1fr)] gap-3 rounded-company p-3">
-      <CcPageHeader actions={<CcButton iconLeft="ph-plus" onClick={() => { setError(null); setEditing(null); }} size="sm" variant="primary">{t("procedures.new")}</CcButton>} description={canonical ? t("procedures.description") : locale === "pl" ? "Kontekstowy widok globalnych procedur mających zastosowanie w tym dziale." : "A contextual view of global procedures applicable to this department."} eyebrow={canonical ? t("procedures.eyebrow") : departmentLabel(departmentKey, t)} title={canonical ? t("views.04.procedures") : `${t("views.04.procedures")} · ${departmentLabel(departmentKey, t)}`} />
+      <CcPageHeader actions={<><DepartmentScopeControl baseHref="/areas?area=04-operacje&view=procedures" value={scoped ? effectiveDepartment : null} /><CcButton iconLeft="ph-plus" onClick={() => { setError(null); setEditing(null); }} size="sm" variant="primary">{t("procedures.new")}</CcButton></>} description={scoped ? locale === "pl" ? "Procedury przypisane do wybranego działu." : "Procedures assigned to the selected department." : t("procedures.description")} eyebrow={scoped ? departmentLabel(effectiveDepartment, t) : t("procedures.eyebrow")} title={scoped ? `${t("views.04.procedures")} · ${departmentLabel(effectiveDepartment, t)}` : t("views.04.procedures")} />
       <div className="min-h-0 min-w-0 overflow-y-auto">
         {status === "loading" ? <CcNotice tone="loading" title={t("procedures.loading")} /> : null}
         {status === "error" ? <CcNotice tone="error" title={error || t("procedures.loadError")} /> : null}

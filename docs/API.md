@@ -1166,6 +1166,9 @@ Query parameters:
 - `departmentKey`: optional canonical department filter. It projects the
   existing tasks and task lists through their organizational context and does
   not create department-local copies.
+- `includeCompanyWide`: optional `true`/`false`, default `true`. Department
+  overview previews and explicit department filters pass `false` so only
+  records directly related to that department are returned.
 - `limit`: optional result limit, default `100`, maximum `200`.
 
 `GET /v1/operations/work-items` returns an Operations work item packet over the
@@ -1325,6 +1328,10 @@ Query parameters:
 - `readiness`: optional AI-readiness label filter: `not_indexed`,
   `metadata_ready`, `content_ready`, `summary_ready`, `relation_ready`, or
   `ai_context_ready`.
+- `departmentKey`: optional canonical department filter over file and Resource
+  organizational context.
+- `includeCompanyWide`: optional `true`/`false`, default `true`. Pass `false`
+  for strict department previews that must not include company-wide records.
 - `limit`: optional result limit, default `100`, maximum `200`.
 
 `GET /v1/assets/context` returns the read-only `08 Assets And Resources`

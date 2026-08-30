@@ -527,6 +527,11 @@ not repeat that image or cover it with large opaque gray containers.
   filter. Opening the canonical module without that filter shows all records
   authorized by the workspace role. The filter is an operating lens, not a
   department-level authorization boundary.
+- Never place shared modules in an expandable `Related company tools` sidebar
+  group. Every operating department has one Overview route; its compact
+  previews show only records explicitly related to that department and link to
+  the canonical source module. The canonical source route opens unfiltered and
+  provides a department selector over the same record IDs.
 - Technology separates `Overview`, `Integrations`, and `Automations`.
   Integrations compare external adapters, connection/health, capabilities, and
   sync state. Automations compare execution definitions, triggers, enabled/run

@@ -14,6 +14,7 @@ import { formatAppDate } from "../../i18n/date-format";
 import { AssetResource, AssetsPacket, CoreAreaKey } from "../../types";
 import { coreAreas } from "./core-area-data";
 import { backendAreaToDepartmentKey, departmentLabel } from "./department-labels";
+import { DepartmentScopeControl } from "./department-scope-control";
 
 type AssetsView = "overview" | "files";
 type AssetKindFilter = "all" | "folders" | "files";
@@ -1165,14 +1166,14 @@ export function AssetsRoute({ departmentKey = "08-zasoby", canonical = true }: {
   const scoped = Boolean(requestedDepartment);
   const effectiveDepartment = requestedDepartment || departmentKey;
   const [refreshKey, setRefreshKey] = useState(0);
-  const packet = useOwnerPacket<AssetsPacket>(`/v1/assets/context?areaKey=all&limit=1000${scoped ? `&departmentKey=${encodeURIComponent(effectiveDepartment)}` : ""}&refresh=${refreshKey}`, true, t);
+  const packet = useOwnerPacket<AssetsPacket>(`/v1/assets/context?areaKey=all&limit=1000${scoped ? `&departmentKey=${encodeURIComponent(effectiveDepartment)}&includeCompanyWide=false` : ""}&refresh=${refreshKey}`, true, t);
 
   return (
     <>
       {activeView === "files" ? (
         <CcPageHeader
-          actions={scoped ? <CcButton href="/areas?area=08-zasoby&view=files" iconLeft="ph-x" size="sm" variant="outline">Show all accessible files</CcButton> : null}
-          description={scoped ? "The shared company file layer, filtered to this department and company-wide resources." : t("assets.filesFoldersDescription")}
+          actions={<DepartmentScopeControl baseHref="/areas?area=08-zasoby&view=files" value={requestedDepartment} />}
+          description={scoped ? "The shared company file layer, filtered to records assigned to this department." : t("assets.filesFoldersDescription")}
           eyebrow={scoped ? `${t("areas.08.label")} · ${departmentLabel(effectiveDepartment, t)}` : t("areas.08.label")}
           title={scoped ? `${t("assets.filesFoldersTitle")} · ${departmentLabel(effectiveDepartment, t)}` : t("assets.filesFoldersTitle")}
         />
