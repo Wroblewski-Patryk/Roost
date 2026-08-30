@@ -268,11 +268,22 @@ the V1 area-first model without changing route, backend, or data ownership:
   sidebar and a compact context command bar;
 - the sidebar shows the 13 areas as the stable primary structure and exposes
   subviews only for the selected area;
+- selected-area navigation shows capabilities owned by that area directly;
+  cross-company contextual capabilities stay discoverable behind one labelled
+  disclosure with a count, and that disclosure opens automatically when one
+  of its views is selected. Command search indexes both groups;
+- the department-health strip is an attention aid, not a metric inventory:
+  show the score plus non-zero blockers, incidents, decisions, risks, or open
+  work, and collapse a healthy state to one calm confirmation instead of a
+  grid of zero-value cards;
 - every authenticated view exposes a stable, compact page introduction before
   its main work surface: area eyebrow, one page title, one-sentence purpose,
   and an optional primary action. It remains visible during loading, error,
   empty, and ready states; selected lists, folders, and records use lower-level
   headings instead of becoming a second page title;
+- empty states for writable records must expose a direct create or management
+  action. Shared record editors move focus into the first field, trap focus,
+  close on Escape, and restore focus to the invoking control;
 - `00 General` is an owner decision surface ordered by attention, next action,
   operating health, routing, guardrails, and agent handoff;
 - repeated records use rows, tables, boards, timelines, and split views before

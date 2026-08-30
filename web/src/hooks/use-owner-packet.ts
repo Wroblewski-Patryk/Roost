@@ -4,7 +4,7 @@ import { userErrorMessage } from "../api/errors";
 import { Translate } from "../i18n/i18n";
 import { LoadState } from "../types";
 
-export function useOwnerPacket<T>(path: string, enabled: boolean, t: Translate): LoadState<T> {
+export function useOwnerPacket<T>(path: string, enabled: boolean, t: Translate, refreshKey: string | number = 0): LoadState<T> {
   const [state, setState] = useState<LoadState<T>>({ status: enabled ? "loading" : "idle", data: null });
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export function useOwnerPacket<T>(path: string, enabled: boolean, t: Translate):
     return () => {
       active = false;
     };
-  }, [enabled, path, t]);
+  }, [enabled, path, refreshKey, t]);
 
   return state;
 }

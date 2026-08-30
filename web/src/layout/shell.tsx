@@ -34,7 +34,43 @@ function translatedViewLabel(value: string, t: ReturnType<typeof useLanguage>["t
 function contextualViewLabel(viewLabel: string, areaLabel: string) {
   const escapedArea = areaLabel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const withoutRepeatedArea = viewLabel.replace(new RegExp(`^${escapedArea}(?:\\s*[-–—:>/]\\s*|\\s+)`, "i"), "").trim();
-  return withoutRepeatedArea || viewLabel;
+  const label = withoutRepeatedArea || viewLabel;
+  return `${label.charAt(0).toLocaleUpperCase()}${label.slice(1)}`;
+}
+
+function navigationAreasFromCatalog(catalog: DepartmentCatalogPacket | undefined): CoreArea[] {
+  if (!catalog?.departments) return coreAreas;
+  return catalog.departments
+    .filter((department) => department.status !== "archived")
+    .map((department) => {
+      const fallbackArea = coreAreas.find((area) => area.key === department.key);
+      const catalogViews = department.views.map((view) => ({
+        key: view.routeView || (view.href ? new URL(view.href, window.location.origin).searchParams.get("view") || view.id : view.id),
+        labelKey: view.label,
+        href: view.href || undefined,
+        icon: view.icon,
+        enabled: view.enabled !== false && Boolean(view.href),
+        sourceDepartmentKey: view.sourceDepartmentKey
+      }));
+      const seenViewDestinations = new Set<string>();
+      const linkedViews = catalogViews.filter((view) => {
+        const destination = view.href || view.key;
+        if (seenViewDestinations.has(destination)) return false;
+        seenViewDestinations.add(destination);
+        return true;
+      });
+      const href = department.href || fallbackArea?.href;
+      return {
+        key: department.key,
+        labelKey: fallbackArea?.labelKey || department.name,
+        eyebrowKey: department.description || fallbackArea?.eyebrowKey || "Workspace department",
+        descriptionKey: department.description || fallbackArea?.descriptionKey || "",
+        href,
+        icon: department.icon || fallbackArea?.icon || "ph-buildings",
+        enabled: Boolean(href),
+        views: linkedViews
+      };
+    });
 }
 
 type UniversalSearchResult = { entityType: string; recordType?: string; id: string; title: string; subtitle?: string | null };
@@ -52,43 +88,10 @@ function humanizeSearchType(result: UniversalSearchResult) {
   return (result.recordType || result.entityType).replace(/_/g, " ");
 }
 
-function DepartmentSidebar({ activeArea, onNavigate }: { activeArea?: string; onNavigate?: () => void }) {
+function DepartmentSidebar({ activeArea, navigationAreas, onNavigate }: { activeArea?: string; navigationAreas: CoreArea[]; onNavigate?: () => void }) {
   const { t } = useLanguage();
   const activeView = currentAreaView();
-  const departmentCatalog = useOwnerPacket<DepartmentCatalogPacket>("/v1/departments", true, t);
-  const navigationAreas: CoreArea[] = departmentCatalog.data?.departments
-    .filter((department) => department.status !== "archived")
-    .map((department) => {
-      const fallbackArea = coreAreas.find((area) => area.key === department.key);
-      const catalogViews = department.views.map((view) => ({
-        key: view.routeView || (view.href ? new URL(view.href, window.location.origin).searchParams.get("view") || view.id : view.id),
-        labelKey: view.label,
-        href: view.href || undefined,
-        icon: view.icon,
-        enabled: view.enabled !== false && Boolean(view.href)
-      }));
-      const seenViewDestinations = new Set<string>();
-      const linkedViews = catalogViews.filter((view) => {
-        const destination = view.href || view.key;
-        if (seenViewDestinations.has(destination)) return false;
-        seenViewDestinations.add(destination);
-        return true;
-      });
-      const href = department.href || fallbackArea?.href;
-      return {
-        key: department.key,
-        // Keep canonical departments translated even when the runtime catalog
-        // supplies their persisted English display names. Custom departments
-        // still fall back to the workspace-owned name.
-        labelKey: fallbackArea?.labelKey || department.name,
-        eyebrowKey: department.description || fallbackArea?.eyebrowKey || "Workspace department",
-        descriptionKey: department.description || fallbackArea?.descriptionKey || "",
-        href,
-        icon: department.icon || fallbackArea?.icon,
-        enabled: Boolean(href),
-        views: linkedViews
-      };
-    }) || coreAreas;
+  const [expandedRelatedArea, setExpandedRelatedArea] = useState<string>();
 
   return (
     <nav className="roost-sidebar-navigation" aria-label={t("sidebar.departments")}>
@@ -99,6 +102,9 @@ function DepartmentSidebar({ activeArea, onNavigate }: { activeArea?: string; on
           const isEnabled = area.enabled !== false && Boolean(area.href);
           const label = displayDepartmentLabel(translatedAreaLabel(area.labelKey, t));
           const activeViews = isActive ? (area.views || []).filter((view) => view.enabled !== false && view.href) : [];
+          const primaryViews = activeViews.filter((view) => !view.sourceDepartmentKey || view.sourceDepartmentKey === area.key);
+          const relatedViews = activeViews.filter((view) => view.sourceDepartmentKey && view.sourceDepartmentKey !== area.key);
+          const relatedOpen = expandedRelatedArea === area.key || relatedViews.some((view) => view.key === activeView);
 
           return (
             <div className="roost-sidebar-area-group" key={area.key}>
@@ -114,13 +120,25 @@ function DepartmentSidebar({ activeArea, onNavigate }: { activeArea?: string; on
                 </div>
               )}
 
-              {activeViews.length > 1 ? (
+              {primaryViews.length > 1 || relatedViews.length ? (
                 <div className="roost-sidebar-context-nav" aria-label={t("sidebar.currentAreaViews")}>
-                  {activeViews.map((view) => (
+                  {primaryViews.map((view) => (
                     <a aria-current={view.key === activeView ? "page" : undefined} className={view.key === activeView ? "is-active" : ""} href={view.href} key={view.key} onClick={onNavigate}>
                       {contextualViewLabel(translatedViewLabel(view.labelKey, t), label)}
                     </a>
                   ))}
+                  {relatedViews.length ? (
+                    <>
+                      <button aria-expanded={relatedOpen} className="roost-sidebar-related-toggle" onClick={() => setExpandedRelatedArea(relatedOpen ? undefined : area.key)} type="button">
+                        <span>{t("sidebar.relatedTools")}</span><small>{relatedViews.length}</small><i className={`ph-bold ph-caret-${relatedOpen ? "up" : "down"}`} aria-hidden="true"></i>
+                      </button>
+                      {relatedOpen ? <div className="roost-sidebar-related-views">{relatedViews.map((view) => (
+                        <a aria-current={view.key === activeView ? "page" : undefined} className={view.key === activeView ? "is-active" : ""} href={view.href} key={view.key} onClick={onNavigate}>
+                          {contextualViewLabel(translatedViewLabel(view.labelKey, t), label)}
+                        </a>
+                      ))}</div> : null}
+                    </>
+                  ) : null}
                 </div>
               ) : null}
             </div>
@@ -190,6 +208,8 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
   const { t } = useLanguage();
   const pathname = typeof window === "undefined" ? "" : window.location.pathname;
   const profile = useOwnerPacket<AuthMe>("/v1/auth/me", true, t);
+  const departmentCatalog = useOwnerPacket<DepartmentCatalogPacket>("/v1/departments", true, t);
+  const navigationAreas = useMemo(() => navigationAreasFromCatalog(departmentCatalog.data), [departmentCatalog.data]);
   const [workspaceUpdate, setWorkspaceUpdate] = useState<Partial<NonNullable<AuthMe["workspaces"]>[number]> | null>(null);
   const workspaces = (profile.data?.workspaces || []).map((workspace) => workspace.id === workspaceUpdate?.id ? { ...workspace, ...workspaceUpdate } : workspace);
   const activeWorkspace = workspaces.find((workspace) => workspace.active) || workspaces[0];
@@ -206,24 +226,38 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
   const [entityResults, setEntityResults] = useState<UniversalSearchResult[]>([]);
   const [entitySearchBusy, setEntitySearchBusy] = useState(false);
   const activeView = currentAreaView();
-  const activeShellArea = coreAreas.find((area) => area.key === activeArea) || coreAreas[0];
+  const activeShellArea = navigationAreas.find((area) => area.key === activeArea) || navigationAreas[0] || coreAreas[0];
   const settingsRoute = pathname === "/workspace/settings" || pathname === "/account/settings";
-  const activeShellLabel = settingsRoute ? t("shell.settings") : displayDepartmentLabel(t(activeShellArea.labelKey));
+  const activeShellLabel = settingsRoute ? t("shell.settings") : displayDepartmentLabel(translatedAreaLabel(activeShellArea.labelKey, t));
   const activeShellView = activeShellArea.views?.find((view) => view.key === activeView);
   const activeShellViewLabel = pathname === "/workspace/settings"
     ? t("workspace.settings")
     : pathname === "/account/settings"
       ? t("user.myAccount")
       : activeShellView
-        ? t(activeShellView.labelKey)
-        : t(activeShellArea.eyebrowKey);
+        ? translatedViewLabel(activeShellView.labelKey, t)
+        : translatedAreaLabel(activeShellArea.eyebrowKey, t);
   const commandResults = useMemo(() => {
     const query = commandQuery.trim().toLocaleLowerCase();
-    return coreAreas.filter((area) => {
-      const label = displayDepartmentLabel(t(area.labelKey));
-      return area.enabled !== false && area.href && (!query || `${label} ${t(area.eyebrowKey)}`.toLocaleLowerCase().includes(query));
-    }).slice(0, 8);
-  }, [commandQuery, t]);
+    const areas = navigationAreas.filter((area) => area.enabled !== false && area.href).map((area) => ({
+      id: `area:${area.key}`,
+      areaKey: area.key,
+      href: area.href!,
+      icon: area.icon,
+      label: displayDepartmentLabel(translatedAreaLabel(area.labelKey, t)),
+      context: translatedAreaLabel(area.eyebrowKey, t)
+    }));
+    const views = navigationAreas.flatMap((area) => (area.views || []).filter((view) => view.enabled !== false && view.href).map((view) => ({
+      id: `view:${area.key}:${view.key}`,
+      areaKey: area.key,
+      href: view.href!,
+      icon: view.icon || area.icon,
+      label: contextualViewLabel(translatedViewLabel(view.labelKey, t), displayDepartmentLabel(translatedAreaLabel(area.labelKey, t))),
+      context: displayDepartmentLabel(translatedAreaLabel(area.labelKey, t))
+    })));
+    const candidates = (query ? [...areas, ...views] : [...views.filter((result) => result.id.startsWith(`view:${activeArea}:`)), ...areas]).filter((result) => !searchDepartmentKey || result.areaKey === searchDepartmentKey);
+    return candidates.filter((result) => !query || `${result.label} ${result.context}`.toLocaleLowerCase().includes(query)).filter((result, index, all) => all.findIndex((candidate) => candidate.href === result.href) === index).slice(0, 12);
+  }, [activeArea, commandQuery, navigationAreas, searchDepartmentKey, t]);
 
   useEffect(() => {
     const query = commandQuery.trim();
@@ -351,7 +385,7 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
         {mobile ? <button className="roost-sidebar-close" aria-label={t("sidebar.close")} onClick={() => setMobileNavOpen(false)} ref={mobileNavCloseRef} type="button"><i className="ph-bold ph-x" aria-hidden="true"></i></button> : null}
       </div>
       <WorkspaceControl activeWorkspaceId={activeWorkspace?.id} onSelect={(id) => void selectWorkspace(id)} workspaces={workspaces} />
-      <div className="roost-sidebar-scroll"><DepartmentSidebar activeArea={activeArea} onNavigate={() => setMobileNavOpen(false)} /></div>
+      <div className="roost-sidebar-scroll"><DepartmentSidebar activeArea={activeArea} navigationAreas={navigationAreas} onNavigate={() => setMobileNavOpen(false)} /></div>
       <div className="roost-sidebar-footer">
         <a aria-current={pathname === "/account/settings" ? "page" : undefined} className={`roost-sidebar-account${pathname === "/account/settings" ? " is-active" : ""}`} href="/account/settings" onClick={() => setMobileNavOpen(false)}>
           <CcIdentityMark className="roost-owner-avatar" name={userLabel} value={profileAvatar === undefined ? profile.data?.user?.avatar : profileAvatar} />
@@ -389,12 +423,12 @@ export function Shell({ children, activeArea }: { children: React.ReactNode; act
             <button className="roost-command-backdrop" aria-label={t("shell.closeCommand")} onClick={() => setCommandOpen(false)} type="button"></button>
             <section className="roost-command-palette">
               <label><i className="ph-bold ph-magnifying-glass" aria-hidden="true"></i><input aria-label={t("shell.commandSearch")} autoFocus onChange={(event) => setCommandQuery(event.target.value)} placeholder={t("shell.commandSearch")} type="search" value={commandQuery} /><kbd aria-hidden="true">ESC</kbd></label>
-              <div className="flex items-center justify-between gap-3"><p>{t("shell.commandHint")}</p><select aria-label="Search department" className="select select-bordered select-sm max-w-52" onChange={(event) => setSearchDepartmentKey(event.target.value)} value={searchDepartmentKey}><option value="">All departments</option>{coreAreas.map((area) => <option key={area.key} value={area.key}>{displayDepartmentLabel(t(area.labelKey))}</option>)}</select></div>
+              <div className="flex items-center justify-between gap-3"><p>{t("shell.commandHint")}</p><select aria-label="Search department" className="select select-bordered select-sm max-w-52" onChange={(event) => setSearchDepartmentKey(event.target.value)} value={searchDepartmentKey}><option value="">All departments</option>{navigationAreas.map((area) => <option key={area.key} value={area.key}>{displayDepartmentLabel(translatedAreaLabel(area.labelKey, t))}</option>)}</select></div>
               <nav aria-label={t("sidebar.departments")}>
                 {commandResults.map((area) => (
-                  <a href={area.href} key={area.key} onClick={() => setCommandOpen(false)}>
+                  <a href={area.href} key={area.id} onClick={() => setCommandOpen(false)}>
                     <i className={`ph-bold ${area.icon}`} aria-hidden="true"></i>
-                    <span><strong>{displayDepartmentLabel(t(area.labelKey))}</strong><small>{t(area.eyebrowKey)}</small></span>
+                    <span><strong>{area.label}</strong><small>{area.context}</small></span>
                     <i className="ph-bold ph-arrow-up-right" aria-hidden="true"></i>
                   </a>
                 ))}

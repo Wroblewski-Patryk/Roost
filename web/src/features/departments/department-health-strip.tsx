@@ -4,14 +4,27 @@ import type { CoreAreaKey } from "../../types";
 import { humanizeBusinessValue } from "./shared";
 
 type Health = { score: number; status: string; signals: Record<string, number | Record<string, number>> };
-const signals = [
-  ["activeGoals", "Goals", "goals", "ph-target"], ["activeProjects", "Projects", "projects", "ph-briefcase"], ["openTasks", "Open tasks", "tasks", "ph-list-checks"],
-  ["blockedTasks", "Blocked", "tasks", "ph-hand-palm"], ["applicableProcedures", "Procedures", "procedures", "ph-list-numbers"], ["assignedPeopleAndAgents", "People / Agents", "directory", "ph-users-three"],
-  ["resources", "Resources", "resources", "ph-cube"], ["incidentsAndIssues", "Incidents", "risks", "ph-siren"], ["decisionsRequiringReview", "Decisions", "decisions", "ph-signpost"],
-  ["activeRisks", "Risks", "risks", "ph-warning-diamond"], ["trackedMetrics", "Metrics", "metrics", "ph-chart-line-up"]
+const attentionSignals = [
+  ["blockedTasks", "health.blocked", "tasks", "ph-hand-palm", "danger"],
+  ["incidentsAndIssues", "health.incidents", "risks", "ph-siren", "danger"],
+  ["decisionsRequiringReview", "health.decisions", "decisions", "ph-signpost", "warning"],
+  ["activeRisks", "health.risks", "risks", "ph-warning-diamond", "warning"],
+  ["openTasks", "health.openTasks", "tasks", "ph-list-checks", "neutral"]
 ] as const;
 
 export function DepartmentHealthStrip({ departmentKey }: { departmentKey: CoreAreaKey }) {
-  const { locale, t } = useLanguage(); const packet = useOwnerPacket<Health>(`/v1/company-intelligence/health?departmentKey=${encodeURIComponent(departmentKey)}`, true, t); if (!packet.data) return null;
-  return <section className="roost-work-panel mb-4 rounded-company p-4" aria-label="Department health"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs font-black uppercase tracking-wide text-primary">Contextual company health</p><h2 className="mt-1 text-lg font-black">{packet.data.score}% · {humanizeBusinessValue(packet.data.status, undefined, locale)}</h2></div><a className="btn btn-ghost btn-sm" href={`/areas?area=${departmentKey}&view=company-graph`}><i className="ph-bold ph-graph" aria-hidden="true"></i>Company Graph</a></div><div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">{signals.map(([key, label, view, icon]) => <a className="rounded-company border border-base-300 bg-base-100/25 p-3 transition-colors hover:border-primary hover:bg-primary/5" href={`/areas?area=${departmentKey}&view=${view}`} key={key}><span className="flex items-center gap-2 text-xs font-bold text-company-muted"><i className={`ph-bold ${icon}`} aria-hidden="true"></i>{label}</span><strong className="mt-1 block text-xl text-company-ink">{Number(packet.data?.signals[key] || 0)}</strong></a>)}</div></section>;
+  const { locale, t } = useLanguage();
+  const packet = useOwnerPacket<Health>(`/v1/company-intelligence/health?departmentKey=${encodeURIComponent(departmentKey)}`, true, t);
+  if (!packet.data) return null;
+  const attention = attentionSignals.map(([key, label, view, icon, tone]) => ({ key, label, view, icon, tone, value: Number(packet.data?.signals[key] || 0) })).filter((signal) => signal.value > 0).slice(0, 4);
+  const clear = !attention.some((signal) => signal.tone === "danger" || signal.tone === "warning");
+  return <section className="roost-department-health" aria-label={t("health.label")}>
+    <div className={`roost-department-health-status${clear ? " is-clear" : " is-attention"}`}>
+      <i className={`ph-bold ${clear ? "ph-check-circle" : "ph-warning-circle"}`} aria-hidden="true"></i>
+      <span><small>{t("health.label")}</small><strong>{clear ? t("health.clear") : humanizeBusinessValue(packet.data.status, undefined, locale)}</strong></span>
+      <b>{packet.data.score}%</b>
+    </div>
+    {attention.length ? <nav aria-label={t("health.attention")} className="roost-department-health-signals">{attention.map((signal) => <a className={`is-${signal.tone}`} href={`/areas?area=${departmentKey}&view=${signal.view}`} key={signal.key}><i className={`ph-bold ${signal.icon}`} aria-hidden="true"></i><span>{t(signal.label)}</span><strong>{signal.value}</strong></a>)}</nav> : <p>{t("health.noAttention")}</p>}
+    <a className="roost-department-health-graph" href={`/areas?area=${departmentKey}&view=company-graph`}><i className="ph-bold ph-graph" aria-hidden="true"></i><span>{t("health.companyGraph")}</span></a>
+  </section>;
 }

@@ -1,3 +1,4 @@
+import { CcButton } from "../../components/cc-button";
 import { CcDataTable, type CcTableColumn } from "../../components/cc-data-table";
 import { CcNotice } from "../../components/cc-notice";
 import { CcPageHeader } from "../../components/cc-page-header";
@@ -24,7 +25,7 @@ export function StrategyRoute() {
   const risks = packet.data?.risks || [];
   const recentTasks = packet.data?.tasks || [];
   const tableLabels = useTranslatedTableLabels();
-  const header = <CcPageHeader eyebrow={t("strategy.eyebrow")} title={t("strategy.title")} description={t("strategy.description")} />;
+  const header = <CcPageHeader actions={<CcButton href="/areas?area=01-strategia&view=goals" iconLeft="ph-plus" size="sm" variant="primary">{t("strategy.openGoals")}</CcButton>} eyebrow={t("strategy.eyebrow")} title={t("strategy.title")} description={t("strategy.description")} />;
   const columns: Array<CcTableColumn<(typeof rows)[number]>> = [
     {
       key: "goal",

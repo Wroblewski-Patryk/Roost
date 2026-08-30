@@ -309,7 +309,7 @@ export function WorkspaceSettingsRoute() {
   const [workspaceLogo, setWorkspaceLogo] = useState<string | null>(null);
   const [workspaceAccent, setWorkspaceAccent] = useState("#6366F1");
   const profile = useOwnerPacket<AuthMe>("/v1/auth/me", true, t);
-  const connection = useOwnerPacket<ConnectionPacket>(`/v1/connection?refresh=${refreshKey}`, true, t);
+  const connection = useOwnerPacket<ConnectionPacket>("/v1/connection", true, t, refreshKey);
   const clickUpConnectionStatus = connection.data?.integrations?.clickup;
   const googleDriveConnectionStatus = connection.data?.integrations?.googleDrive;
   const clickUpSetting = useIntegrationSetting("clickup", connection.status === "ready" && Boolean(clickUpConnectionStatus?.configured), refreshKey);

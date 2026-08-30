@@ -34,6 +34,18 @@ export function CcRecordEditorModal({
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
+    function focusableElements() {
+      if (!dialogRef.current) return [];
+      return Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
+        'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+      )).filter((element) => !element.hasAttribute("hidden") && element.getAttribute("aria-hidden") !== "true");
+    }
+
+    const focusFrame = window.requestAnimationFrame(() => {
+      const firstField = dialogRef.current?.querySelector<HTMLElement>('input:not([disabled]), select:not([disabled]), textarea:not([disabled])');
+      (firstField || focusableElements()[0])?.focus();
+    });
+
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
@@ -41,9 +53,7 @@ export function CcRecordEditorModal({
         return;
       }
       if (event.key !== "Tab" || !dialogRef.current) return;
-      const focusable = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
-      )).filter((element) => !element.hasAttribute("hidden"));
+      const focusable = focusableElements();
       if (!focusable.length) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
@@ -59,6 +69,7 @@ export function CcRecordEditorModal({
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+      window.cancelAnimationFrame(focusFrame);
       document.body.style.overflow = previousOverflow;
       previousFocus?.focus();
     };

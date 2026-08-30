@@ -1,6 +1,12 @@
+import { FormEvent, useState } from "react";
+import { api, AppApiError } from "../../api/client";
+import { CcButton } from "../../components/cc-button";
+import { CcConfirmDialog } from "../../components/cc-confirm-dialog";
 import { CcDataTable, type CcTableColumn } from "../../components/cc-data-table";
+import { CcField } from "../../components/cc-field";
 import { CcNotice } from "../../components/cc-notice";
 import { CcPageHeader } from "../../components/cc-page-header";
+import { CcRecordEditorModal, CcRecordEditorSection } from "../../components/cc-record-editor";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import { formatAppDate } from "../../i18n/date-format";
@@ -13,8 +19,13 @@ function formatDate(value?: string | null) {
 }
 
 export function SalesRoute() {
-  const { t } = useLanguage();
-  const packet = useOwnerPacket<SalesPacket>("/v1/sales/context?limit=80", true, t);
+  const { locale, t } = useLanguage();
+  const polish = locale === "pl";
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [editing, setEditing] = useState<NonNullable<SalesPacket["deals"]>[number] | null | undefined>();
+  const [archiving, setArchiving] = useState<NonNullable<SalesPacket["deals"]>[number] | null>(null);
+  const [busy, setBusy] = useState(false);
+  const packet = useOwnerPacket<SalesPacket>("/v1/sales/context?limit=80", true, t, refreshKey);
   const realRows = packet.data?.deals || [];
   const exampleRows: NonNullable<SalesPacket["deals"]> = [
     { id: "example-discovery", title: t("sales.example.deal.redesign"), clientName: "Northstar Labs", pipelineStageName: t("sales.example.stage.discovery"), value: 18000, currency: "CHF", status: "qualified" },
@@ -58,12 +69,17 @@ export function SalesRoute() {
       filterable: true,
       filterValue: (row) => row.status || "unknown",
       cell: (row) => <span className="badge badge-outline">{humanizeBusinessValue(row.status)}</span>
+    },
+    {
+      key: "actions",
+      header: t("table.actions"),
+      cell: (row) => showingExample ? <span className="text-xs text-company-muted">{polish ? "Przykład" : "Example"}</span> : <div className="flex justify-end gap-1"><CcButton ariaLabel={polish ? "Edytuj szansę" : "Edit deal"} iconLeft="ph-pencil-simple" onClick={() => setEditing(row)} size="xs" variant="ghost"><span className="sr-only">{polish ? "Edytuj" : "Edit"}</span></CcButton><CcButton ariaLabel={polish ? "Archiwizuj szansę" : "Archive deal"} iconLeft="ph-archive" onClick={() => setArchiving(row)} size="xs" variant="ghost"><span className="sr-only">{polish ? "Archiwizuj" : "Archive"}</span></CcButton></div>
     }
   ];
 
   return (
     <>
-      <CcPageHeader eyebrow={t("sales.eyebrow")} title={t("sales.title")} description={t("sales.description")} />
+      <CcPageHeader actions={<CcButton iconLeft="ph-plus" onClick={() => setEditing(null)} size="sm" variant="primary">{polish ? "Dodaj szansę" : "Add deal"}</CcButton>} eyebrow={t("sales.eyebrow")} title={t("sales.title")} description={t("sales.description")} />
 
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
       {packet.status === "error" ? <CcNotice tone="error" title={packet.error || "Sales context could not load."} live /> : null}
@@ -115,6 +131,31 @@ export function SalesRoute() {
       />
 
       {!showingExample ? <BlockedActions actions={packet.data?.blockedActions || packet.data?.agentPacket?.blockedActions} /> : null}
+      {editing !== undefined ? <DealEditor clients={packet.data?.clients || []} deal={editing} onClose={() => setEditing(undefined)} onSaved={() => { setEditing(undefined); setRefreshKey((value) => value + 1); }} polish={polish} /> : null}
+      {archiving ? <CcConfirmDialog busy={busy} confirmIcon="ph-archive" confirmLabel={polish ? "Archiwizuj" : "Archive"} description={polish ? "Szansa pozostanie w historii, ale zniknie z aktywnego lejka." : "The deal remains in history but leaves the active pipeline."} detail={<strong>{archiving.title}</strong>} eyebrow={polish ? "Sprzedaż" : "Sales"} onCancel={() => setArchiving(null)} onConfirm={async () => { setBusy(true); try { await api(`/v1/deals/${archiving.id}`, { method: "DELETE" }); setArchiving(null); setRefreshKey((value) => value + 1); } finally { setBusy(false); } }} title={polish ? "Zarchiwizować szansę?" : "Archive deal?"} /> : null}
     </>
   );
+}
+
+function DealEditor({ clients, deal, onClose, onSaved, polish }: { clients: NonNullable<SalesPacket["clients"]>; deal: NonNullable<SalesPacket["deals"]>[number] | null; onClose: () => void; onSaved: () => void; polish: boolean }) {
+  const [busy, setBusy] = useState(false); const [error, setError] = useState<string | null>(null);
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setBusy(true); setError(null); const form = new FormData(event.currentTarget);
+    const rawValue = String(form.get("value") || "").trim(); const clientId = String(form.get("clientId") || "").trim();
+    const body: Record<string, unknown> = { title: String(form.get("title") || "").trim(), currency: String(form.get("currency") || "CHF").trim(), status: String(form.get("status") || "lead") };
+    if (rawValue) body.value = Number(rawValue); if (!deal && clientId) body.clientId = clientId;
+    try { await api(deal ? `/v1/deals/${deal.id}` : "/v1/deals", { method: deal ? "PATCH" : "POST", body: JSON.stringify(body) }); onSaved(); }
+    catch (caught) { setError(caught instanceof AppApiError ? caught.code : "request_failed"); }
+    finally { setBusy(false); }
+  }
+  return <CcRecordEditorModal actions={<><CcButton onClick={onClose} variant="ghost">{polish ? "Anuluj" : "Cancel"}</CcButton><CcButton loading={busy} type="submit" variant="primary">{polish ? "Zapisz" : "Save"}</CcButton></>} description={polish ? "Szansa łączy klienta, wartość i etap pracy w jednym lejku." : "A deal connects the client, value and work stage in one pipeline."} eyebrow={polish ? "Sprzedaż" : "Sales"} onClose={onClose} onSubmit={submit} title={deal ? polish ? "Edytuj szansę" : "Edit deal" : polish ? "Dodaj szansę" : "Add deal"} titleId="deal-editor-title">
+    {error ? <CcNotice live tone="error" title={humanizeBusinessValue(error)} /> : null}
+    <CcRecordEditorSection title={polish ? "Dane szansy" : "Deal details"}><div className="grid gap-4 md:grid-cols-2">
+      <CcField label={polish ? "Nazwa szansy" : "Deal title"} required>{({ id }) => <input className="input input-bordered w-full" defaultValue={deal?.title || ""} id={id} name="title" required />}</CcField>
+      {!deal ? <CcField label={polish ? "Klient" : "Client"}>{({ id }) => <select className="select select-bordered w-full" id={id} name="clientId"><option value="">{polish ? "Bez przypisania" : "Unassigned"}</option>{clients.map((client) => <option key={client.id} value={client.id}>{client.name}</option>)}</select>}</CcField> : null}
+      <CcField label={polish ? "Wartość" : "Value"}>{({ id }) => <input className="input input-bordered w-full" defaultValue={deal?.value ?? ""} id={id} min="0" name="value" step="0.01" type="number" />}</CcField>
+      <CcField label={polish ? "Waluta" : "Currency"}>{({ id }) => <input className="input input-bordered w-full" defaultValue={deal?.currency || "CHF"} id={id} maxLength={3} name="currency" />}</CcField>
+      <CcField label="Status">{({ id }) => <select className="select select-bordered w-full" defaultValue={deal?.status || "lead"} id={id} name="status"><option value="lead">Lead</option><option value="qualified">Qualified</option><option value="proposal">Proposal</option><option value="negotiation">Negotiation</option><option value="won">Won</option><option value="lost">Lost</option></select>}</CcField>
+    </div></CcRecordEditorSection>
+  </CcRecordEditorModal>;
 }

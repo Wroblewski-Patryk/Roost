@@ -61,11 +61,7 @@ export function GeneralDashboard() {
   const blockedActions = command.data?.blockedActions || command.data?.agentPacket?.blockedActions || [];
   const summaryEntries = Object.entries(command.data?.summary || {}).filter((entry): entry is [string, number] => typeof entry[1] === "number").slice(0, 4);
   const [selectedPriorityId, setSelectedPriorityId] = useState<string>();
-  const [inspectorOpen, setInspectorOpen] = useState(() => typeof window !== "undefined" && window.matchMedia("(min-width: 1280px)").matches);
-
-  useEffect(() => {
-    if (!selectedPriorityId && priorityItems[0]) setSelectedPriorityId(priorityItems[0].id);
-  }, [priorityItems, selectedPriorityId]);
+  const [inspectorOpen, setInspectorOpen] = useState(false);
 
   useEffect(() => {
     const desktopInspector = window.matchMedia("(min-width: 1280px)");
@@ -76,7 +72,7 @@ export function GeneralDashboard() {
     return () => desktopInspector.removeEventListener("change", adaptInspector);
   }, []);
 
-  const selectedPriority = priorityItems.find((item) => item.id === selectedPriorityId) || priorityItems[0];
+  const selectedPriority = priorityItems.find((item) => item.id === selectedPriorityId);
   const selectedSource = selectedPriority
     ? departmentSignals.find((signal) => signal.label.toLocaleLowerCase().includes(selectedPriority.source.toLocaleLowerCase()) || selectedPriority.source.toLocaleLowerCase().includes(signal.label.toLocaleLowerCase()))
     : undefined;
@@ -85,11 +81,11 @@ export function GeneralDashboard() {
     const base = summaryEntries.map(([label, value], index) => ({ label: summaryLabel(label, t), value, icon: icons[index] || "ph-chart-line-up" }));
     return [
       ...base,
-      { label: t("general.operatingAreas"), value: departmentSignals.length, icon: "ph-buildings" },
       { label: t("general.routingQueue"), value: rows.length, icon: "ph-git-branch" }
-    ].slice(0, 6);
-  }, [departmentSignals.length, rows.length, summaryEntries, t]);
-  const riskItems = priorityItems.filter((item) => priorityTone(item) !== "is-neutral").slice(0, 5);
+    ].filter((metric) => metric.value > 0).slice(0, 6);
+  }, [rows.length, summaryEntries, t]);
+  const visiblePriorityIds = new Set(priorityItems.slice(0, 5).map((item) => item.id));
+  const riskItems = priorityItems.filter((item) => priorityTone(item) !== "is-neutral" && !visiblePriorityIds.has(item.id)).slice(0, 5);
 
   function choosePriority(item: DashboardPriorityItem) {
     setSelectedPriorityId(item.id);
@@ -143,14 +139,14 @@ export function GeneralDashboard() {
                 )}
               </section>
 
-              <section className="roost-company-pulse" aria-labelledby="company-pulse-heading">
+              {pulseMetrics.length ? <section className="roost-company-pulse" aria-labelledby="company-pulse-heading">
                 <header><h2 id="company-pulse-heading">{t("general.companyPulse")}</h2><span><i aria-hidden="true"></i>{t("general.live")}</span></header>
                 <div>
                   {pulseMetrics.map((metric) => (
                     <article key={metric.label}><i className={`ph-bold ${metric.icon}`} aria-hidden="true"></i><span>{metric.label}</span><strong>{metric.value}</strong></article>
                   ))}
                 </div>
-              </section>
+              </section> : null}
 
               <div className="roost-operating-ledgers">
                 <section aria-labelledby="routing-ledger-heading">
@@ -166,16 +162,14 @@ export function GeneralDashboard() {
                   ) : <p className="roost-ledger-empty">{t("general.noProposals.detail")}</p>}
                 </section>
 
-                <section aria-labelledby="risk-ledger-heading">
+                {riskItems.length ? <section aria-labelledby="risk-ledger-heading">
                   <header><h2 id="risk-ledger-heading">{t("general.topRisks")}</h2><span>{riskItems.length} {pluralLabel(locale, riskItems.length, t("general.signal.one"), t("general.signal.few"), t("general.signal.many"))}</span></header>
-                  {riskItems.length ? (
-                    <div className="roost-ledger-list is-risk">
-                      {riskItems.map((item, index) => (
-                        <button key={item.id} onClick={() => choosePriority(item)} type="button"><span>{String(index + 1).padStart(2, "0")}</span><strong>{item.title}</strong><small>{item.source}</small><b>{item.severity || item.status}</b></button>
-                      ))}
-                    </div>
-                  ) : <p className="roost-ledger-empty">{t("general.noBlockedActions")}</p>}
-                </section>
+                  <div className="roost-ledger-list is-risk">
+                    {riskItems.map((item, index) => (
+                      <button key={item.id} onClick={() => choosePriority(item)} type="button"><span>{String(index + 1).padStart(2, "0")}</span><strong>{item.title}</strong><small>{item.source}</small><b>{item.severity || item.status}</b></button>
+                    ))}
+                  </div>
+                </section> : null}
               </div>
 
               {departmentSignals.length ? (

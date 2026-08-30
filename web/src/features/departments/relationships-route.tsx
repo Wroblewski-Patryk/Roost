@@ -1,7 +1,13 @@
+import { FormEvent, useState } from "react";
+import { api, AppApiError } from "../../api/client";
+import { CcButton } from "../../components/cc-button";
+import { CcConfirmDialog } from "../../components/cc-confirm-dialog";
 import { CcDataTable, type CcTableColumn } from "../../components/cc-data-table";
+import { CcField } from "../../components/cc-field";
 import { CcCompactList, CcCompactListItem, CcListStatus } from "../../components/cc-compact-list";
 import { CcNotice } from "../../components/cc-notice";
 import { CcPageHeader } from "../../components/cc-page-header";
+import { CcRecordEditorModal, CcRecordEditorSection } from "../../components/cc-record-editor";
 import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { useLanguage } from "../../i18n/i18n";
 import { formatAppDate } from "../../i18n/date-format";
@@ -14,8 +20,14 @@ function formatDate(value?: string | null) {
 }
 
 export function RelationshipsRoute() {
-  const { t } = useLanguage();
-  const packet = useOwnerPacket<RelationshipsPacket>("/v1/relationships/context", true, t);
+  const { locale, t } = useLanguage();
+  const polish = locale === "pl";
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [editing, setEditing] = useState<NonNullable<RelationshipsPacket["clients"]>[number] | null | undefined>();
+  const [archiving, setArchiving] = useState<NonNullable<RelationshipsPacket["clients"]>[number] | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const packet = useOwnerPacket<RelationshipsPacket>("/v1/relationships/context", true, t, refreshKey);
   const rows = packet.data?.clients || [];
   const notes = packet.data?.notes || [];
   const driveFiles = packet.data?.driveFiles || [];
@@ -36,6 +48,11 @@ export function RelationshipsRoute() {
           <span className="text-xs text-company-muted">{row.companyName || row.email || "-"}</span>
         </div>
       )
+    },
+    {
+      key: "actions",
+      header: t("table.actions"),
+      cell: (row) => <div className="flex justify-end gap-1"><CcButton ariaLabel={polish ? "Edytuj klienta" : "Edit client"} iconLeft="ph-pencil-simple" onClick={() => setEditing(row)} size="xs" variant="ghost"><span className="sr-only">{polish ? "Edytuj" : "Edit"}</span></CcButton><CcButton ariaLabel={polish ? "Archiwizuj klienta" : "Archive client"} iconLeft="ph-archive" onClick={() => setArchiving(row)} size="xs" variant="ghost"><span className="sr-only">{polish ? "Archiwizuj" : "Archive"}</span></CcButton></div>
     },
     {
       key: "status",
@@ -64,7 +81,7 @@ export function RelationshipsRoute() {
 
   return (
     <>
-      <CcPageHeader eyebrow={t("relationships.eyebrow")} title={t("relationships.title")} description={t("relationships.description")} />
+      <CcPageHeader actions={<CcButton iconLeft="ph-plus" onClick={() => setEditing(null)} size="sm" variant="primary">{polish ? "Dodaj klienta" : "Add client"}</CcButton>} eyebrow={t("relationships.eyebrow")} title={t("relationships.title")} description={t("relationships.description")} />
 
       {packet.status === "loading" ? <CcNotice tone="loading" title={t("table.loading.title")} detail={t("table.loading.detail")} /> : null}
       {packet.status === "error" ? <CcNotice tone="error" title={packet.error || "Relationships context could not load."} live /> : null}
@@ -190,6 +207,31 @@ export function RelationshipsRoute() {
       />
 
       {hasRelationshipData ? <BlockedActions actions={packet.data?.blockedActions || packet.data?.agentPacket?.blockedActions} /> : null}
+
+      {editing !== undefined ? <ClientEditor client={editing} error={error} onClose={() => { setEditing(undefined); setError(null); }} onSaved={() => { setEditing(undefined); setError(null); setRefreshKey((value) => value + 1); }} polish={polish} setError={setError} /> : null}
+      {archiving ? <CcConfirmDialog busy={busy} confirmIcon="ph-archive" confirmLabel={polish ? "Archiwizuj" : "Archive"} description={polish ? "Klient pozostanie w historii i zniknie z aktywnego widoku." : "The client remains in history and leaves the active view."} detail={<strong>{archiving.name}</strong>} eyebrow={polish ? "Relacje" : "Relationships"} onCancel={() => setArchiving(null)} onConfirm={async () => { setBusy(true); try { await api(`/v1/clients/${archiving.id}`, { method: "DELETE" }); setArchiving(null); setRefreshKey((value) => value + 1); } finally { setBusy(false); } }} title={polish ? "Zarchiwizować klienta?" : "Archive client?"} /> : null}
     </>
   );
+}
+
+function ClientEditor({ client, error, onClose, onSaved, polish, setError }: { client: NonNullable<RelationshipsPacket["clients"]>[number] | null; error: string | null; onClose: () => void; onSaved: () => void; polish: boolean; setError: (value: string | null) => void }) {
+  const [busy, setBusy] = useState(false);
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setBusy(true); setError(null);
+    const form = new FormData(event.currentTarget);
+    const body = Object.fromEntries(["name", "companyName", "email", "phone", "status"].map((key) => [key, String(form.get(key) || "").trim()]).filter(([, value]) => value));
+    try { await api(client ? `/v1/clients/${client.id}` : "/v1/clients", { method: client ? "PATCH" : "POST", body: JSON.stringify(body) }); onSaved(); }
+    catch (caught) { setError(caught instanceof AppApiError ? caught.code : "request_failed"); }
+    finally { setBusy(false); }
+  }
+  return <CcRecordEditorModal actions={<><CcButton onClick={onClose} variant="ghost">{polish ? "Anuluj" : "Cancel"}</CcButton><CcButton loading={busy} type="submit" variant="primary">{polish ? "Zapisz" : "Save"}</CcButton></>} description={polish ? "Podstawowe dane klienta będą wspólnym źródłem dla relacji, sprzedaży i realizacji." : "Core client data becomes shared context for relationships, sales and delivery."} eyebrow={polish ? "Relacje" : "Relationships"} onClose={onClose} onSubmit={submit} title={client ? polish ? "Edytuj klienta" : "Edit client" : polish ? "Dodaj klienta" : "Add client"} titleId="client-editor-title">
+    {error ? <CcNotice live tone="error" title={humanizeBusinessValue(error)} /> : null}
+    <CcRecordEditorSection title={polish ? "Dane klienta" : "Client details"}><div className="grid gap-4 md:grid-cols-2">
+      <CcField label={polish ? "Nazwa" : "Name"} required>{({ id }) => <input className="input input-bordered w-full" defaultValue={client?.name || ""} id={id} name="name" required />}</CcField>
+      <CcField label={polish ? "Firma" : "Company"}>{({ id }) => <input className="input input-bordered w-full" defaultValue={client?.companyName || ""} id={id} name="companyName" />}</CcField>
+      <CcField label="E-mail">{({ id }) => <input className="input input-bordered w-full" defaultValue={client?.email || ""} id={id} name="email" type="email" />}</CcField>
+      <CcField label={polish ? "Telefon" : "Phone"}>{({ id }) => <input className="input input-bordered w-full" defaultValue={client?.phone || ""} id={id} name="phone" />}</CcField>
+      <CcField label="Status">{({ id }) => <select className="select select-bordered w-full" defaultValue={client?.status || "active"} id={id} name="status"><option value="active">Active</option><option value="lead">Lead</option><option value="qualified">Qualified</option><option value="inactive">Inactive</option></select>}</CcField>
+    </div></CcRecordEditorSection>
+  </CcRecordEditorModal>;
 }
