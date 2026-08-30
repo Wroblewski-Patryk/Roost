@@ -7216,6 +7216,17 @@ textarea:focus-visible,
 
 /* 2026 Liquid Command Deck — authenticated shell and owner briefing. */
 .roost-liquid-shell {
+  /* Compatibility triplets for the focused graph and overview workbenches.
+     DaisyUI v5 exposes --color-* values, while these scoped surfaces use the
+     alpha-friendly HSL form. Keep the bridge local to the authenticated shell. */
+  --b1: 216 28% 7%;
+  --b2: 215 20% 11%;
+  --b3: 215 16% 15%;
+  --bc: 220 13% 91%;
+  --p: 239 84% 67%;
+  --su: 160 84% 39%;
+  --wa: 38 92% 50%;
+  --er: 0 84% 60%;
   --roost-glass-line: rgb(164 205 255 / 0.22);
   --roost-glass-line-strong: rgb(178 216 255 / 0.38);
   --roost-glass-fill: rgb(7 19 31 / 0.68);
