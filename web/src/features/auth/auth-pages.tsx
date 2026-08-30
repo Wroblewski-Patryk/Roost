@@ -146,13 +146,13 @@ export function AuthRoute({ mode }: { mode: "login" | "register" }) {
           <CcButton className="roost-auth-submit" iconRight="ph-arrow-right" loading={status === "loading"} type="submit" variant="primary">
             {t(isLogin ? "auth.submit.login" : "auth.submit.register")}
           </CcButton>
-          <div className="roost-auth-switch">
+          {!isLogin ? <div className="roost-auth-switch">
             <span>{t(isLogin ? "auth.needWorkspace" : "auth.alreadyHaveAccess")}</span>
             <a href={isLogin ? "/auth/register" : "/auth/login"}>
               {t(isLogin ? "auth.createOne" : "auth.submit.login")}
               <i className="ph-bold ph-arrow-up-right" aria-hidden="true"></i>
             </a>
-          </div>
+          </div> : null}
         </form>
       </section>
     </PublicLayout>

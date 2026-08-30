@@ -4,6 +4,7 @@ import { hashApiKey } from "./api-key";
 import { capabilityForRequest, hasCapability } from "./capabilities";
 import { verifyAuthToken } from "./token";
 import { sendApiError } from "../middleware/api-error";
+import type { WorkspaceRole } from "@prisma/client";
 
 export type AuthContext = {
   userId?: string;
@@ -11,6 +12,7 @@ export type AuthContext = {
   authType: "user" | "api_key";
   apiKeyId?: string;
   scopes?: string[];
+  workspaceRole?: WorkspaceRole;
 };
 
 declare global {
@@ -54,7 +56,8 @@ export async function requireAuthContext(req: Request, res: Response, next: Next
     req.auth = {
       userId: payload.userId,
       workspaceId: payload.workspaceId,
-      authType: "user"
+      authType: "user",
+      workspaceRole: membership.role
     };
     return next();
   }

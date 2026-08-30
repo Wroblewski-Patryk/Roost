@@ -70,7 +70,6 @@ export function PublicLayout({ active, children }: { active: PublicLayoutActive;
             <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-base-content/65" aria-label={t("footer.navigationLabel")}>
               <a className="transition hover:text-accent" href="#system">{t("nav.features")}</a>
               <a className="transition hover:text-accent" href="/auth/login">{t("nav.signIn")}</a>
-              <a className="transition hover:text-accent" href="/auth/register">{t("nav.createAccount")}</a>
             </nav>
             <LanguageSelector />
           </div>

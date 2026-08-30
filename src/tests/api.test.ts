@@ -14,6 +14,7 @@ import { runProductMapProjectionCleanupIfDue } from "../integrations/clickup/cli
 import { consumeProjectionAdmission, expectedIdempotencyKey, packetDigest, productMapSchemaVersion, productMapTransportVersion, tryAcquireProjectionWorkspaceLock } from "../modules/product-map/product-map-projection.service";
 import { canonicalLifecycleStages, lifecycleOperatingContractSource } from "../modules/company-os/lifecycle-procedure-definition";
 import { calculateApplicationReadiness } from "../modules/product-engineering/readiness";
+import { env } from "../config/env";
 
 const realFetch = globalThis.fetch.bind(globalThis);
 let baseUrl = "";
@@ -3937,6 +3938,79 @@ test("CompanyCore v1 protected API flow", async () => {
   assert.equal(ownerAWorkspacesInitialBody.data.length, 1);
   assert.equal(ownerAWorkspacesInitialBody.data[0]?.id, ownerA.workspace.id);
   assert.equal(ownerAWorkspacesInitialBody.data[0]?.active, true);
+
+  const invitation = await request(`/v1/workspaces/${ownerA.workspace.id}/access/invitations`, {
+    method: "POST",
+    headers: authA,
+    body: JSON.stringify({ email: "workspace-member@example.com", role: "member" })
+  });
+  assert.equal(invitation.status, 201);
+  const invitationBody = invitation.body as { data: { id: string; token: string; email: string; role: string } };
+  assert.equal(invitationBody.data.email, "workspace-member@example.com");
+  assert.equal(invitationBody.data.role, "member");
+  assert.ok(invitationBody.data.token.length >= 40);
+  const storedInvitation = await prisma.workspaceInvitation.findUniqueOrThrow({ where: { id: invitationBody.data.id } });
+  assert.notEqual(storedInvitation.tokenHash, invitationBody.data.token);
+
+  const invitationPreview = await request(`/v1/auth/invitations/${invitationBody.data.token}`);
+  assert.equal(invitationPreview.status, 200);
+  assert.equal((invitationPreview.body as { data: { accountExists: boolean; workspace: { id?: string; name: string } } }).data.accountExists, false);
+
+  const acceptedInvitation = await request(`/v1/auth/invitations/${invitationBody.data.token}/accept`, {
+    method: "POST",
+    body: JSON.stringify({ name: "Workspace Member", password: "workspace-member-password" })
+  });
+  assert.equal(acceptedInvitation.status, 200);
+  const acceptedInvitationBody = acceptedInvitation.body as { data: { token: string; user: { id: string }; role: string } };
+  assert.equal(acceptedInvitationBody.data.role, "member");
+  const memberAuth = { Authorization: `Bearer ${acceptedInvitationBody.data.token}` };
+  assert.equal((await request("/v1/projects", { headers: memberAuth })).status, 200);
+  assert.equal((await request("/v1/api-keys", { headers: memberAuth })).status, 403);
+  assert.equal((await request(`/v1/workspaces/${ownerA.workspace.id}/access/invitations`, {
+    method: "POST", headers: memberAuth, body: JSON.stringify({ email: "denied@example.com", role: "viewer" })
+  })).status, 403);
+
+  const membersAfterAccept = await request(`/v1/workspaces/${ownerA.workspace.id}/access/members`, { headers: authA });
+  assert.equal(membersAfterAccept.status, 200);
+  assert.ok((membersAfterAccept.body as { data: Array<{ userId: string; role: string }> }).data.some((member) => (
+    member.userId === acceptedInvitationBody.data.user.id && member.role === "member"
+  )));
+  assert.equal((await request(`/v1/workspaces/${ownerA.workspace.id}/access/members/${acceptedInvitationBody.data.user.id}`, {
+    method: "PATCH", headers: authA, body: JSON.stringify({ role: "viewer" })
+  })).status, 200);
+  assert.equal((await request("/v1/projects", {
+    method: "POST", headers: memberAuth, body: JSON.stringify({ name: "Viewer cannot create" })
+  })).status, 403);
+  const ownerARecord = await prisma.workspace.findUniqueOrThrow({ where: { id: ownerA.workspace.id } });
+  assert.equal((await request(`/v1/workspaces/${ownerA.workspace.id}/access/members/${ownerARecord.ownerUserId}`, {
+    method: "DELETE", headers: authA
+  })).status, 409);
+  assert.equal((await request(`/v1/workspaces/${ownerA.workspace.id}/access/actions/transfer-ownership`, {
+    method: "POST", headers: authA, body: JSON.stringify({ userId: acceptedInvitationBody.data.user.id })
+  })).status, 200);
+  assert.equal((await prisma.workspace.findUniqueOrThrow({ where: { id: ownerA.workspace.id } })).ownerUserId, acceptedInvitationBody.data.user.id);
+  assert.equal((await request(`/v1/workspaces/${ownerA.workspace.id}/access/actions/transfer-ownership`, {
+    method: "POST", headers: memberAuth, body: JSON.stringify({ userId: ownerARecord.ownerUserId })
+  })).status, 200);
+  assert.equal((await prisma.workspace.findUniqueOrThrow({ where: { id: ownerA.workspace.id } })).ownerUserId, ownerARecord.ownerUserId);
+  assert.equal((await request(`/v1/workspaces/${ownerA.workspace.id}/access/members/${acceptedInvitationBody.data.user.id}`, {
+    method: "DELETE", headers: authA
+  })).status, 204);
+  await prisma.workforceEntity.deleteMany({ where: { workspaceId: ownerA.workspace.id, source: "user", externalId: acceptedInvitationBody.data.user.id } });
+  await prisma.user.delete({ where: { id: acceptedInvitationBody.data.user.id } });
+  assert.ok(await prisma.auditLog.count({ where: { workspaceId: ownerA.workspace.id, action: { startsWith: "workspace_" } } }) >= 3);
+  await prisma.auditLog.deleteMany({ where: { workspaceId: ownerA.workspace.id, action: { startsWith: "workspace_" } } });
+
+  const previousWorkspaceCreationEnabled = env.workspaceCreationEnabled;
+  env.workspaceCreationEnabled = false;
+  try {
+    assert.equal((await request("/v1/workspaces", { method: "POST", headers: authA, body: JSON.stringify({ name: "Blocked workspace" }) })).status, 403);
+    assert.equal((await request("/v1/auth/register", {
+      method: "POST", body: JSON.stringify({ email: "blocked-register@example.com", password: "very-strong-password", workspaceName: "Blocked" })
+    })).status, 403);
+  } finally {
+    env.workspaceCreationEnabled = previousWorkspaceCreationEnabled;
+  }
 
   const secondWorkspace = await request("/v1/workspaces", {
     method: "POST",

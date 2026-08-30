@@ -101,14 +101,15 @@ should always stay current.
 
 The approved v1 direction is:
 
-- API-first product foundation with a minimal owner-only web console for v1
+- API-first product foundation with a role-governed human web console
   ClickUp setup
 - CompanyCore is the company operating system, not an embedded AI system;
   humans use web UI and AI agents use API/MCP as external clients
 - PostgreSQL is the source of truth
 - API is the supported access layer for agents, automations, future dashboards,
   and future mobile clients
-- owner registration creates a workspace
+- development bootstrap registration may create a workspace; LuckySparrow
+  production uses invitation-only membership in one canonical workspace
 - business data, service API keys, integration settings, and integration sync
   state are workspace-scoped
 - ClickUp is the first native integration adapter

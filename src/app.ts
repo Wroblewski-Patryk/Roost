@@ -53,6 +53,7 @@ import { evidenceRouter } from "./modules/evidence/evidence.routes";
 import { entityRelationsRouter } from "./modules/entity-relations/entity-relations.routes";
 import { companyIntelligenceRouter } from "./modules/company-intelligence/company-intelligence.routes";
 import { companyObjectsRouter } from "./modules/company-objects/company-objects.routes";
+import { enforceHumanWorkspaceAccess } from "./auth/workspace-access";
 
 function mountProtectedRoutes(router: Router) {
   router.use("/projects", projectsRouter);
@@ -207,6 +208,10 @@ export function createApp() {
 
     res.sendFile(path.join(publicRoot, "react", "index.html"));
   });
+  app.get(/^\/auth\/invitations\/[^/]+$/, (req, res, next) => {
+    if (isApiHost(req.headers.host)) return next();
+    res.sendFile(path.join(publicRoot, "react", "index.html"));
+  });
   app.use("/health", healthRouter);
   app.use("/v1/health", healthRouter);
   app.use("/ready", readinessRouter);
@@ -218,6 +223,7 @@ export function createApp() {
 
   app.use(apiRateLimiter);
   app.use(requireApiKey);
+  app.use(enforceHumanWorkspaceAccess);
   mountProtectedRoutes(app);
 
   const v1Router = Router();

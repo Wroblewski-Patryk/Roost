@@ -9048,6 +9048,93 @@ textarea:focus-visible,
   gap: 0.5rem;
 }
 
+.roost-access-list,
+.roost-access-subsection {
+  display: grid;
+  border-top: 1px solid rgb(169 207 255 / 0.1);
+}
+
+.roost-access-subsection h3 {
+  padding: 0.75rem 1rem 0.45rem;
+  color: rgb(184 201 220 / 0.58);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.roost-access-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  min-height: 4.25rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgb(169 207 255 / 0.1);
+}
+
+.roost-access-row:last-child {
+  border-bottom: 0;
+}
+
+.roost-access-identity,
+.roost-access-controls {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.roost-access-identity > i {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgb(139 131 255 / 0.18);
+  border-radius: 10px;
+  color: #aaa5ff;
+}
+
+.roost-access-identity span {
+  min-width: 0;
+}
+
+.roost-access-identity strong,
+.roost-access-identity small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.roost-access-identity strong {
+  color: #edf3f9;
+  font-size: 0.78rem;
+}
+
+.roost-access-identity small {
+  margin-top: 0.18rem;
+  color: rgb(184 201 220 / 0.55);
+  font-size: 0.66rem;
+  overflow-wrap: anywhere;
+}
+
+.roost-access-controls {
+  justify-content: flex-end;
+}
+
+@media (max-width: 680px) {
+  .roost-access-row {
+    grid-template-columns: 1fr;
+  }
+
+  .roost-access-controls {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    padding-left: 3.2rem;
+  }
+}
+
 .roost-account-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

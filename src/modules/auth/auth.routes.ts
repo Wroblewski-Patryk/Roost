@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import { randomUUID } from "crypto";
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
@@ -9,6 +10,8 @@ import { asyncHandler } from "../../middleware/async-handler";
 import { ensureOperatingModelForWorkspace } from "../../operating-model/catalog";
 import { ensureLifecycleProcedureForWorkspace } from "../company-os/lifecycle-procedure-definition";
 import { createWorkforceEntity } from "../workforce/workforce.service";
+import { env } from "../../config/env";
+import { hashWorkspaceInvitationToken } from "../../auth/workspace-invitation-token";
 
 const registerSchema = z.object({
   email: z.string().email().transform((value) => value.toLowerCase()),
@@ -42,9 +45,99 @@ const changePasswordSchema = z.object({
   newPassword: z.string().min(12)
 }).strict();
 
+const acceptInvitationSchema = z.object({
+  name: z.string().trim().min(1).max(120).optional(),
+  password: z.string().min(12)
+}).strict();
+
 export const authRouter = Router();
 
+authRouter.get("/invitations/:token", asyncHandler(async (req, res) => {
+  const token = z.string().min(20).parse(req.params.token);
+  const invitation = await prisma.workspaceInvitation.findUnique({
+    where: { tokenHash: hashWorkspaceInvitationToken(token) },
+    include: { workspace: { select: { name: true, logo: true } } }
+  });
+  if (!invitation || invitation.status !== "pending") return res.status(404).json({ error: "invitation_not_found" });
+  if (invitation.expiresAt <= new Date()) {
+    await prisma.workspaceInvitation.update({ where: { id: invitation.id }, data: { status: "expired" } });
+    return res.status(410).json({ error: "invitation_expired" });
+  }
+  const accountExists = Boolean(await prisma.user.findUnique({ where: { email: invitation.email }, select: { id: true } }));
+  res.json({ data: {
+    email: invitation.email,
+    role: invitation.role,
+    expiresAt: invitation.expiresAt,
+    accountExists,
+    workspace: invitation.workspace
+  } });
+}));
+
+authRouter.post("/invitations/:token/accept", asyncHandler(async (req, res) => {
+  const token = z.string().min(20).parse(req.params.token);
+  const input = acceptInvitationSchema.parse(req.body);
+  const invitation = await prisma.workspaceInvitation.findUnique({
+    where: { tokenHash: hashWorkspaceInvitationToken(token) },
+    include: { workspace: true }
+  });
+  if (!invitation || invitation.status !== "pending") return res.status(404).json({ error: "invitation_not_found" });
+  if (invitation.expiresAt <= new Date()) {
+    await prisma.workspaceInvitation.update({ where: { id: invitation.id }, data: { status: "expired" } });
+    return res.status(410).json({ error: "invitation_expired" });
+  }
+
+  const existing = await prisma.user.findUnique({ where: { email: invitation.email } });
+  if (existing && !(await verifyPassword(input.password, existing.passwordHash))) {
+    return res.status(401).json({ error: "invalid_credentials" });
+  }
+  const passwordHash = existing ? existing.passwordHash : await hashPassword(input.password);
+  const accepted = await prisma.$transaction(async (tx) => {
+    const claimed = await tx.workspaceInvitation.updateMany({
+      where: { id: invitation.id, status: "pending", expiresAt: { gt: new Date() } },
+      data: { status: "accepted", acceptedAt: new Date() }
+    });
+    if (claimed.count !== 1) throw new Error("workspace_invitation_already_used");
+    const user = existing ?? await tx.user.create({ data: { email: invitation.email, name: input.name, passwordHash } });
+    const membership = await tx.workspaceMembership.upsert({
+      where: { workspaceId_userId: { workspaceId: invitation.workspaceId, userId: user.id } },
+      create: { workspaceId: invitation.workspaceId, userId: user.id, role: invitation.role },
+      update: {}
+    });
+    await tx.workspaceInvitation.update({ where: { id: invitation.id }, data: { acceptedByUserId: user.id } });
+    await tx.auditLog.create({ data: {
+      workspaceId: invitation.workspaceId, actorType: "user", actorId: user.id, action: "workspace_invitation_accepted",
+      resourceType: "workspace_membership", resourceId: membership.id, inputPayload: {},
+      outputPayload: { role: membership.role }, correlationId: randomUUID()
+    } });
+    return { user, membership };
+  }).catch((error: unknown) => {
+    if (error instanceof Error && error.message === "workspace_invitation_already_used") return null;
+    throw error;
+  });
+  if (!accepted) return res.status(409).json({ error: "invitation_already_used" });
+
+  const workforce = await prisma.workforceEntity.findFirst({ where: {
+    workspaceId: invitation.workspaceId, source: "user", externalId: accepted.user.id
+  } });
+  if (!workforce) {
+    await createWorkforceEntity(invitation.workspaceId, {
+      type: "human", status: "active", name: accepted.user.name || accepted.user.email,
+      department: "06-kadry", role: accepted.membership.role, personalityProfile: "supportive",
+      runtimeMode: "manual", synchronizationEnabled: false
+    }, { source: "user", externalId: accepted.user.id });
+  }
+
+  const authToken = createAuthToken({ userId: accepted.user.id, workspaceId: invitation.workspaceId });
+  res.json({ data: {
+    token: authToken,
+    user: { id: accepted.user.id, email: accepted.user.email, name: accepted.user.name },
+    workspace: { id: invitation.workspace.id, name: invitation.workspace.name },
+    role: accepted.membership.role
+  } });
+}));
+
 authRouter.post("/register", asyncHandler(async (req, res) => {
+  if (!env.workspaceCreationEnabled) return res.status(403).json({ error: "workspace_creation_disabled" });
   const input = registerSchema.parse(req.body);
   const passwordHash = await hashPassword(input.password);
 

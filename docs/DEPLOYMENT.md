@@ -66,6 +66,9 @@ Required environment values:
 - `ROOST_CODEX_EXECUTION_ENABLED` remains `false` during the foundation
   rollout. Set it to `true` only after the application map, scoped worker key,
   Windows host, paused trigger contract, and non-critical trial are reviewed.
+- `ROOST_ALLOW_WORKSPACE_CREATION` remains unset/`false` for LuckySparrow
+  production. Enable it only for an explicitly approved multi-workspace
+  deployment; ordinary people join through workspace invitations.
 
 Production startup fails when required secrets are missing or still use the
 committed development placeholder values.

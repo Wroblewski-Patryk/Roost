@@ -20,6 +20,7 @@ import {
 } from "./app-route-registry";
 import { isSignedIn } from "./api/auth-token";
 import { AuthRoute } from "./features/auth/auth-pages";
+import { InvitationPage } from "./features/auth/invitation-page";
 import { PublicHomeRoute } from "./features/public/public-home";
 import { LanguageProvider, useLanguage } from "./i18n/i18n";
 import { CcRouteLoading } from "./components/cc-route-loading";
@@ -187,6 +188,10 @@ function App() {
 
   if (pathname === "/auth/register") {
     return <>{metadata}<AuthRoute mode="register" /></>;
+  }
+  const invitationMatch = pathname.match(/^\/auth\/invitations\/([^/]+)$/);
+  if (invitationMatch) {
+    return <>{metadata}<InvitationPage token={invitationMatch[1]} /></>;
   }
 
   if (pathname === "/areas" && currentAreaKey() === "00-ogolny" && currentAreaView() === "product-map") {

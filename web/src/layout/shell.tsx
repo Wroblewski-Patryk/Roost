@@ -15,7 +15,7 @@ function displayDepartmentLabel(label: string) {
 }
 
 function roleLabel(role: string | undefined, t: ReturnType<typeof useLanguage>["t"]) {
-  return role === "owner" ? t("account.role.owner") : role || t("user.account");
+  return role && ["owner", "admin", "member", "viewer"].includes(role) ? t(`account.role.${role}`) : t("user.account");
 }
 
 function currentAreaView() {

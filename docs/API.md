@@ -189,11 +189,13 @@ key.
 
 Approved v1 auth direction:
 
-- Human owner auth uses email/password with hashed password storage.
+- Human auth uses email/password with hashed password storage.
 - Registration creates the owner user, workspace, and owner membership
   atomically.
-- Workspace memberships are included in the data model, but v1 only activates
-  the `owner` role.
+- Workspace memberships activate `owner`, `admin`, `member`, and `viewer`.
+  Every human request resolves current membership authority from PostgreSQL.
+- Production disables public workspace creation by default. New people join
+  the canonical workspace through a hashed, expiring invitation.
 - Agent/service access uses workspace-scoped hashed API keys.
 - Protected routes must accept a valid owner auth context or workspace service
   API key and resolve `workspaceId`.
@@ -205,6 +207,21 @@ Implemented minimum:
 POST /auth/register
 POST /auth/login
 GET /auth/me
+GET /auth/invitations/:token
+POST /auth/invitations/:token/accept
+```
+
+Workspace access administration:
+
+```http
+GET /v1/workspaces/:id/access/members
+GET /v1/workspaces/:id/access/invitations
+POST /v1/workspaces/:id/access/invitations
+POST /v1/workspaces/:id/access/invitations/:invitationId/actions/reissue
+DELETE /v1/workspaces/:id/access/invitations/:invitationId
+PATCH /v1/workspaces/:id/access/members/:userId
+DELETE /v1/workspaces/:id/access/members/:userId
+POST /v1/workspaces/:id/access/actions/transfer-ownership
 ```
 
 Planned registration payload:
@@ -258,7 +275,7 @@ The owner console loads `GET /v1/api-keys/profiles` as the canonical source
 for MCP agent key presets. Static frontend presets are only a signed-out or
 profile-load fallback.
 
-`POST /v1/api-keys` is owner-only and returns the raw API key exactly once:
+`POST /v1/api-keys` requires an owner or administrator and returns the raw API key exactly once:
 
 ```json
 {

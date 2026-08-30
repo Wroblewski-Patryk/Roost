@@ -90,14 +90,10 @@ export function PublicHomeRoute() {
             </h1>
             <p className="mt-5 max-w-xl text-base leading-7 text-base-content/68 sm:mt-7 sm:text-lg sm:leading-8">{t("home.description")}</p>
 
-            <div className="mt-7 grid grid-cols-2 gap-3 sm:mt-9 sm:flex">
+            <div className="mt-7 flex sm:mt-9">
               <CcButton ariaLabel={t("home.openWorkspace")} className="min-w-0 whitespace-nowrap px-2 text-sm sm:min-w-52 sm:px-6 sm:text-base" href="/auth/login" iconRight="ph-arrow-right" size="lg" variant="primary">
                 <span className="sm:hidden">{t("home.enterRoost")}</span>
                 <span className="hidden sm:inline">{t("home.openWorkspace")}</span>
-              </CcButton>
-              <CcButton ariaLabel={t("home.createWorkspace")} className="min-w-0 whitespace-nowrap px-2 text-sm sm:min-w-44 sm:px-6 sm:text-base" href="/auth/register" iconRight="ph-plus" size="lg" variant="outline">
-                <span className="sm:hidden">{t("nav.createAccount")}</span>
-                <span className="hidden sm:inline">{t("home.createWorkspace")}</span>
               </CcButton>
             </div>
 

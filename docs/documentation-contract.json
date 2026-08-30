@@ -6,7 +6,8 @@
     "docs/README.md",
     "docs/product/product.md",
     "docs/architecture/architecture-source-of-truth.md",
-    "docs/architecture/local-codex-agent-runtime.md"
+    "docs/architecture/local-codex-agent-runtime.md",
+    "docs/architecture/workspace-human-access.md"
   ],
   "authority": {
     "product": ["docs/product/"],

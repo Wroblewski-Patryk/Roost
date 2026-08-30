@@ -33,9 +33,9 @@ not authorize new product scope or change existing API/database identifiers.
 
 ## Target Users
 
-- Primary user: the LuckySparrow workspace owner who configures integrations,
-  reviews operating data, and performs governed business actions.
-- Secondary user: supervised agents and automations (including local Codex
+- Primary users: the LuckySparrow workspace owner, administrators, employees,
+  and read-only collaborators who operate from one role-governed workspace.
+- Secondary users: supervised agents and automations (including local Codex
   Agent Hosts and Jarvis) that use workspace-scoped API keys or MCP tools.
 - Early adopter profile: a small company operator who needs one accountable
   operational source of truth while continuing to use ClickUp and Google Drive.
@@ -72,8 +72,8 @@ not authorize new product scope or change existing API/database identifiers.
   sync state are workspace-scoped; external tools do not write PostgreSQL
   directly.
 - Trust or safety expectations: protected actions resolve the workspace before
-  access, cross-workspace access fails closed, and significant state changes
-  are auditable through events or logs.
+  access, enforce the current membership role, fail closed across workspaces,
+  and audit membership, invitation, ownership and credential changes.
 - Data sensitivity notes: owner credentials, service API keys, and integration
   tokens are secret material and must not be returned in API responses or logs.
 - UX complexity policy: the web console is the reliable human control plane;

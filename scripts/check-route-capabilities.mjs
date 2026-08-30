@@ -71,6 +71,7 @@ const ownerOnlyOrOutOfBand = new Set([
   "api-keys.routes.ts",
   "auth.routes.ts",
   "workspaces.routes.ts",
+  "workspace-access.routes.ts",
   "clickup-webhooks.routes.ts"
 ]);
 

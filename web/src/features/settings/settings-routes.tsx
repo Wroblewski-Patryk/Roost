@@ -10,6 +10,7 @@ import { useOwnerPacket } from "../../hooks/use-owner-packet";
 import { formatAppDate } from "../../i18n/date-format";
 import { useLanguage } from "../../i18n/i18n";
 import { AuthMe, ConnectionPacket, IntegrationStatus, LoadState } from "../../types";
+import { WorkspaceAccessSection } from "./workspace-access-section";
 
 const workspaceAccentPresets = ["#6366F1", "#3B82F6", "#06B6D4", "#10B981", "#F59E0B", "#EC4899"];
 
@@ -38,7 +39,7 @@ function SettingRow({ icon, label, value }: { icon?: string; label: string; valu
 }
 
 function roleLabel(role: string | undefined, t: ReturnType<typeof useLanguage>["t"]) {
-  return role === "owner" ? t("account.role.owner") : role || "—";
+  return role && ["owner", "admin", "member", "viewer"].includes(role) ? t(`account.role.${role}`) : "—";
 }
 
 function authLabel(authType: AuthMe["authType"] | undefined, t: ReturnType<typeof useLanguage>["t"]) {
@@ -307,11 +308,11 @@ export function WorkspaceSettingsRoute() {
   const [workspaceLogo, setWorkspaceLogo] = useState<string | null>(null);
   const [workspaceAccent, setWorkspaceAccent] = useState("#6366F1");
   const profile = useOwnerPacket<AuthMe>("/v1/auth/me", true, t);
-  const connection = useOwnerPacket<ConnectionPacket>("/v1/connection", true, t);
+  const connection = useOwnerPacket<ConnectionPacket>(`/v1/connection?refresh=${refreshKey}`, true, t);
   const clickUpConnectionStatus = connection.data?.integrations?.clickup;
   const googleDriveConnectionStatus = connection.data?.integrations?.googleDrive;
-  const clickUpSetting = useIntegrationSetting("clickup", connection.status === "ready", refreshKey);
-  const googleDriveSetting = useIntegrationSetting("google_drive", connection.status === "ready", refreshKey);
+  const clickUpSetting = useIntegrationSetting("clickup", connection.status === "ready" && Boolean(clickUpConnectionStatus?.configured), refreshKey);
+  const googleDriveSetting = useIntegrationSetting("google_drive", connection.status === "ready" && Boolean(googleDriveConnectionStatus?.configured), refreshKey);
   const activeWorkspace = profile.data?.workspaces?.find((workspace) => workspace.active);
   const clickUpStatus = clickUpSetting.data ?? clickUpConnectionStatus;
   const googleDriveStatus = googleDriveSetting.data ?? googleDriveConnectionStatus;
@@ -532,6 +533,7 @@ export function WorkspaceSettingsRoute() {
           <CcButton href="/areas?area=09-technologia&view=integrations" iconLeft="ph-chart-line-up" variant="ghost">{t("workspaceSettings.integrationHealth")}</CcButton>
           </div>
         </section>
+        {activeWorkspace?.id && profile.data?.authType === "user" ? <WorkspaceAccessSection currentRole={(activeWorkspace.role || "viewer") as "owner" | "admin" | "member" | "viewer"} currentUserId={profile.data.userId} workspaceId={activeWorkspace.id} /> : null}
         {actionError ? <CcNotice detail={actionError} live title={t("workspaceSettings.saveError")} tone="error" /> : null}
       </div>
       {actionSuccess ? <CcToast detail={actionSuccess} dismissLabel={t("common.dismiss")} onDismiss={() => setActionSuccess(null)} title={t("workspaceSettings.saved")} tone="success" /> : null}

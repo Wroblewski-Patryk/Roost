@@ -34,7 +34,7 @@ Use it with:
 
 | Group | Models |
 | --- | --- |
-| Auth and ownership | `User`, `Workspace`, `WorkspaceMembership`, `ApiKey`, `IntegrationSetting` |
+| Auth and ownership | `User`, `Workspace`, `WorkspaceMembership`, `WorkspaceInvitation`, `ApiKey`, `IntegrationSetting` |
 | Operating model | `OperatingArea`, `OperatingFolder`, `OperatingTable`, `ExternalContainerMapping`, `ExternalFieldMapping`, `StorageLocation`, `KnowledgeRoot`, `AutomationDefinition` |
 | Company OS definitions | `CompanyRole`, `Process`, `Pipeline`, `PipelineStage`, `Procedure`, `ProcedureStep`, `Resource`, `ToolAdapter`, `IntegrationCapability`, `Standard` |
 | Runtime evidence | `PipelineRun`, `StageRun`, `Approval`, `ChecklistTemplate`, `ChecklistItem`, `AcceptanceCriterion`, `AuditLog`, `Event` |
@@ -79,6 +79,7 @@ Use it with:
 | events | `/v1/events` | Workspace-scoped event reads. |
 | health | `/health`, `/v1/health` | Public readiness signal. |
 | auth | `/auth`, `/v1/auth` | Register, login, and current user context. |
+| workspace access | `/v1/workspaces/:id/access` | Members, roles, expiring invitations, removal, ownership transfer, and audit evidence. |
 
 ## Web Route Ownership
 
@@ -98,7 +99,8 @@ Use it with:
 | contextual record views across `00`-`12` | React | Reusable CRUD workbenches for requirements, deliverables, issues, incidents, contracts, budgets, evidence-bearing reviews, and other canonical record families. |
 | `/areas?area=11-innowacje&view=application-graph` | React | Progressive Product Engineering graph projection with focus, search, modes, filters, dependencies, and details. |
 | `/dashboard`, `/react-dashboard`, `/operations`, `/people-agents`, `/workforce` | React | Compatibility aliases normalized to canonical `/areas` routes. |
-| `/account/settings`, `/workspace/settings` | React | Authenticated account and workspace settings. |
+| `/account/settings`, `/workspace/settings` | React | Account, workspace identity, integrations, human members/invitations, roles, and agent credentials. |
+| `/auth/invitations/:token` | React | Invitation preview and acceptance for existing or new human accounts. |
 | Retired private paths such as `/data`, `/relationships`, `/pipeline`, and provider-specific setup routes | None | Not active web routes; protected backend contracts remain available for scoped React rebuilds and API/MCP use. |
 
 ## Integration Services

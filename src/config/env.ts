@@ -109,5 +109,6 @@ export const env = {
       ? undefined
       : "dev-companycore-auth-secret-change-me")
   ),
-  corsAllowedOrigins: getCorsAllowedOrigins()
+  corsAllowedOrigins: getCorsAllowedOrigins(),
+  workspaceCreationEnabled: process.env.ROOST_ALLOW_WORKSPACE_CREATION === "true" || nodeEnv !== "production"
 };

@@ -7,6 +7,7 @@ import { agentKeyProfiles, findAgentKeyProfile } from "../../auth/agent-key-prof
 import { capabilities, scopesAreBroad } from "../../auth/capabilities";
 import { asyncHandler } from "../../middleware/async-handler";
 import { sendApiError } from "../../middleware/api-error";
+import { requireWorkspaceRole } from "../../auth/workspace-access";
 
 const createApiKeySchema = z.object({
   name: z.string().min(1),
@@ -22,11 +23,7 @@ const updateApiKeySchema = z.object({
 export const apiKeysRouter = Router();
 
 function requireOwner(req: Request, res: Response) {
-  if (req.auth?.authType !== "user" || !req.auth.userId) {
-    sendApiError(res, 403, "forbidden");
-    return false;
-  }
-  return true;
+  return requireWorkspaceRole(req, res, "admin");
 }
 
 function safeApiKey(record: {

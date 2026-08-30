@@ -13,8 +13,12 @@
 - Owner login uses email/password with hashed password storage.
 - Registration creates owner user, workspace, and owner membership in one
   transaction.
-- Workspace memberships exist for future growth, but v1 only activates the
-  `owner` role.
+- Workspace memberships activate `owner`, `admin`, `member`, and `viewer`.
+  Roles are resolved from the database on every protected human request.
+- Production onboarding is invitation-only by default. Invitation tokens are
+  stored hashed, expire after seven days, and raw values are shown once.
+- The primary owner cannot be removed or demoted; ownership transfer is an
+  audited atomic operation.
 - Service API keys are workspace-scoped credentials for Codex Agent Host, Jarvis, n8n,
   and other agents.
 - API key material is hashed for new seed/bootstrap paths. Legacy plaintext
@@ -60,8 +64,8 @@ the old key. Raw key material must only be shown at creation/bootstrap time and
 must not be logged. `key_prefix` can identify keys operationally without
 revealing the secret.
 
-Owner API key management endpoints are owner-only. Workspace service API keys
-must not be allowed to create additional keys. This prevents a leaked adapter
+API key management endpoints require an owner or administrator human session.
+Workspace service API keys must not be allowed to create additional keys. This prevents a leaked adapter
 key from minting persistent replacement credentials.
 
 ## Elevated Risk Areas

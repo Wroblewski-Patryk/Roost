@@ -73,6 +73,16 @@ enum WorkforcePersonalityProfile {
 
 enum WorkspaceRole {
   owner
+  admin
+  member
+  viewer
+}
+
+enum WorkspaceInvitationStatus {
+  pending
+  accepted
+  revoked
+  expired
 }
 
 enum OperatingStatus {
@@ -442,6 +452,8 @@ model User {
   passwordHash      String                @map("password_hash")
   ownedWorkspaces   Workspace[]           @relation("WorkspaceOwner")
   memberships       WorkspaceMembership[]
+  sentWorkspaceInvitations WorkspaceInvitation[] @relation("WorkspaceInvitationInviter")
+  acceptedWorkspaceInvitations WorkspaceInvitation[] @relation("WorkspaceInvitationAcceptor")
   approvalDecisions Approval[]            @relation("ApprovalApproverUser")
   ownedTasks        Task[]                @relation("TaskOwnerUser")
   reviewTasks       Task[]                @relation("TaskReviewerUser")
@@ -460,6 +472,7 @@ model Workspace {
   productMapCompanyId               String?                            @unique @map("product_map_company_id")
   owner                             User                               @relation("WorkspaceOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
   memberships                       WorkspaceMembership[]
+  invitations                       WorkspaceInvitation[]
   apiKeys                           ApiKey[]
   integrationSettings               IntegrationSetting[]
   projects                          Project[]
@@ -2025,6 +2038,29 @@ model WorkspaceMembership {
 
   @@unique([workspaceId, userId])
   @@map("workspace_memberships")
+}
+
+model WorkspaceInvitation {
+  id               String                    @id @default(uuid()) @db.Uuid
+  workspaceId      String                    @map("workspace_id") @db.Uuid
+  workspace        Workspace                 @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  email            String
+  role             WorkspaceRole             @default(member)
+  tokenHash        String                    @unique @map("token_hash")
+  status           WorkspaceInvitationStatus @default(pending)
+  invitedByUserId  String                    @map("invited_by_user_id") @db.Uuid
+  invitedBy        User                      @relation("WorkspaceInvitationInviter", fields: [invitedByUserId], references: [id], onDelete: Restrict)
+  acceptedByUserId String?                   @map("accepted_by_user_id") @db.Uuid
+  acceptedBy       User?                     @relation("WorkspaceInvitationAcceptor", fields: [acceptedByUserId], references: [id], onDelete: SetNull)
+  expiresAt        DateTime                  @map("expires_at")
+  acceptedAt       DateTime?                 @map("accepted_at")
+  revokedAt        DateTime?                 @map("revoked_at")
+  createdAt        DateTime                  @default(now()) @map("created_at")
+  updatedAt        DateTime                  @updatedAt @map("updated_at")
+
+  @@index([workspaceId, status, createdAt])
+  @@index([email, status])
+  @@map("workspace_invitations")
 }
 
 model Project {

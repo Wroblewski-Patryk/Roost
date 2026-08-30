@@ -15,6 +15,7 @@ only transient process state outside the repository.
   `architecture/system-architecture.md`, `architecture/tech-stack.md`,
   `architecture/innovation-product-engineering.md`,
   `architecture/local-codex-agent-runtime.md`
+  `architecture/workspace-human-access.md`
 - Engineering: `engineering/local-development.md`, `engineering/testing.md`
 - Operations: `DEPLOYMENT.md`, `operations/coolify-vps-deployment-contract.md`,
   `operations/rollback-and-recovery.md`, `operations/post-deploy-smoke.md`,

@@ -6,6 +6,9 @@ import { createAuthToken } from "../../auth/token";
 import { asyncHandler } from "../../middleware/async-handler";
 import { ensureOperatingModelForWorkspace } from "../../operating-model/catalog";
 import { ensureLifecycleProcedureForWorkspace } from "../company-os/lifecycle-procedure-definition";
+import { workspaceAccessRouter } from "./workspace-access.routes";
+import { env } from "../../config/env";
+import { roleAtLeast } from "../../auth/workspace-access";
 
 const identityValueSchema = z.string().max(900_000).refine((value) => (
   value === "initials"
@@ -24,6 +27,7 @@ const updateWorkspaceSchema = z.object({
 }).strict().refine((input) => Object.keys(input).length > 0, { message: "workspace_field_required" });
 
 export const workspacesRouter = Router();
+workspacesRouter.use("/:id/access", workspaceAccessRouter);
 
 function safeWorkspace(workspace: {
   id: string;
@@ -80,6 +84,7 @@ workspacesRouter.post("/", asyncHandler(async (req, res) => {
   if (!userId) {
     return;
   }
+  if (!env.workspaceCreationEnabled) return res.status(403).json({ error: "workspace_creation_disabled" });
 
   const input = workspaceSchema.parse(req.body);
   const workspace = await prisma.$transaction(async (tx) => {
@@ -125,7 +130,7 @@ workspacesRouter.patch("/:id", asyncHandler(async (req, res) => {
     where: { workspaceId_userId: { workspaceId, userId } }
   });
   if (!membership) return res.status(404).json({ error: "not_found" });
-  if (membership.role !== "owner") return res.status(403).json({ error: "forbidden" });
+  if (!roleAtLeast(membership.role, "admin")) return res.status(403).json({ error: "forbidden" });
 
   const input = updateWorkspaceSchema.parse(req.body);
   const workspace = await prisma.workspace.update({

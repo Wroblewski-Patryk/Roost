@@ -33,8 +33,10 @@ workspace scope.
 
 - `users`: human account records for owner login.
 - `workspaces`: workspace containers owned by users.
-- `workspace_memberships`: future-proof membership table; v1 activates only
-  the `owner` role.
+- `workspace_memberships`: active human membership with `owner`, `admin`,
+  `member`, or `viewer` authority.
+- `workspace_invitations`: hashed, expiring, revocable invitation records with
+  inviter, accepted user, requested role, and lifecycle timestamps.
 - `projects`: company projects and strategic work containers.
 - `goals`: outcomes, optionally linked to projects.
 - `targets`: measurable targets, optionally linked to goals.
