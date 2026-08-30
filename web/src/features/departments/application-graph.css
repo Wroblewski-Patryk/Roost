@@ -166,11 +166,13 @@
 .application-graph-depth button:focus-visible { border-color: rgba(142, 165, 255, 0.7); color: #eef1fb; outline: none; }
 .application-graph-depth button.is-active { border-color: rgba(142, 165, 255, 0.72); background: rgba(112, 134, 239, 0.2); color: #dce3ff; }
 
-.application-graph-canvas { position: relative; min-height: 25rem; overflow: hidden; background: var(--graph-canvas); }
+.application-graph-canvas { position: relative; height: clamp(32rem, calc(100dvh - 18rem), 52rem); min-height: 32rem; overflow: hidden; background: var(--graph-canvas); }
 .application-graph-canvas[data-inspector-open] { display: grid; grid-template-columns: minmax(0, 1fr) 21rem; }
 .application-graph-canvas[data-inspector-open] > .react-flow { min-width: 0; grid-column: 1; grid-row: 1; }
 .application-graph-canvas .react-flow__controls { overflow: hidden; border: 1px solid var(--graph-border); border-radius: 0.55rem; box-shadow: none; }
-.application-graph-canvas .react-flow__controls-button { border-color: var(--graph-border); background: #131b2c; fill: #d4daea; }
+.application-graph-canvas .react-flow__controls-button { width: 2.65rem; height: 2.65rem; border-color: var(--graph-border); background: #131b2c; color: #d4daea; fill: currentColor; }
+.application-graph-canvas .react-flow__controls-button svg { width: 1.05rem; height: 1.05rem; fill: currentColor; }
+.application-graph-canvas .react-flow__controls-button:focus-visible { position: relative; z-index: 1; outline: 3px solid rgba(142, 165, 255, 0.38); outline-offset: -3px; }
 .application-graph-canvas .react-flow__controls-button:hover { background: #1b2740; }
 .application-graph-canvas .react-flow__minimap { width: 8rem !important; height: 5rem !important; overflow: hidden; border: 1px solid var(--graph-border); border-radius: 0.55rem; background: #111827; }
 .application-graph-canvas .react-flow__edge-text { fill: #c8d0e1; font-size: 10px; font-weight: 700; }

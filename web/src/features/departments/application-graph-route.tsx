@@ -8,6 +8,7 @@ import {
   Position,
   ReactFlow,
   ReactFlowProvider,
+  useNodesInitialized,
   useReactFlow,
   type Edge,
   type Node,
@@ -428,6 +429,7 @@ function ApplicationGraphCanvas() {
   const [searching, setSearching] = useState(false);
   const [allSearchDataLoaded, setAllSearchDataLoaded] = useState(false);
   const { fitBounds, setCenter } = useReactFlow<GraphFlowNode>();
+  const nodesInitialized = useNodesInitialized();
 
   useEffect(() => {
     let active = true;
@@ -630,7 +632,7 @@ function ApplicationGraphCanvas() {
     }), [byId, graph.edges, hoveredId, hoverNeighbourhood, mode, pendingNeighbourhood, positions, targetPositions, visibleIds]);
 
   useEffect(() => {
-    if (!focus || !targetPositions.has(focus.id)) return;
+    if (!focus || !nodesInitialized || !targetPositions.has(focus.id)) return;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const timer = window.setTimeout(() => {
       const bounds = applicationGraphBounds(visibleRecords, focus, targetPositions);
@@ -651,7 +653,7 @@ function ApplicationGraphCanvas() {
       }
     }, reducedMotion ? 0 : 56);
     return () => window.clearTimeout(timer);
-  }, [fitBounds, focus, inspectorId, mode, setCenter, targetPositions, visibleRecords]);
+  }, [fitBounds, focus, inspectorId, mode, nodesInitialized, setCenter, targetPositions, visibleRecords]);
 
   const goToParent = useCallback(() => {
     if (!focus?.parentNodeId) return;
@@ -763,9 +765,9 @@ function ApplicationGraphCanvas() {
           colorMode="dark"
           edges={flowEdges}
           elementsSelectable
-          fitView
+          fitViewOptions={{ maxZoom: 1, minZoom: 0.48, padding: 0.16 }}
           maxZoom={1.8}
-          minZoom={0.22}
+          minZoom={0.48}
           nodes={flowNodes}
           nodesConnectable={false}
           nodesDraggable={false}

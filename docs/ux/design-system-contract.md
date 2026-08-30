@@ -604,3 +604,24 @@ primitives before adding a route-local modal recipe.
   cross-department.
 - Archive and delete commands always use the shared confirmation dialog with a
   plain-language consequence and enough record context to prevent mistakes.
+
+## Interactive Graph Contract
+
+Company and application graphs are relationship workbenches, not catalog
+visualizations.
+
+- Position nodes from recorded relationships or hierarchy. Never use backend
+  type or array order as the primary layout axis.
+- The canvas must have a definite responsive height before React Flow measures
+  nodes. Refit only after visible nodes are initialized and after filters,
+  focus, or inspector width changes.
+- Preserve a readable minimum zoom. It is preferable to pan through a larger
+  graph than to shrink labels and controls below legibility.
+- Keep zoom and fit controls at least 42px square, visibly focused, and styled
+  as part of the Roost work surface. Mini-maps use the active dark surface and
+  must never appear as an opaque light rectangle.
+- Initial fit, filter changes, and focus transitions must retain visible node
+  content and relationship edges. Empty, loading, and error states remain
+  outside the graph viewport and provide a clear recovery action.
+- On narrow screens, hide the mini-map before reducing graph controls or node
+  labels; the canvas remains pannable and preserves readable zoom.

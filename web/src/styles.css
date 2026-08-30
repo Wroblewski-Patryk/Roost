@@ -17,7 +17,14 @@
 .company-graph-filterbar button.is-active { border-color: hsl(var(--p)); background: hsl(var(--p) / .1); color: hsl(var(--p)); }
 .company-graph-stage { display: grid; min-height: 42rem; grid-template-columns: minmax(0, 1fr); }
 .company-graph-stage.has-inspector { grid-template-columns: minmax(0, 1fr) minmax(18rem, 23rem); }
-.company-graph-canvas { min-height: 42rem; background: linear-gradient(145deg, hsl(var(--b1) / .9), hsl(var(--b2) / .55)); }
+.company-graph-canvas { height: clamp(34rem, calc(100dvh - 16rem), 52rem); min-height: 34rem; background: hsl(var(--b1) / .94); }
+.company-graph-canvas .react-flow__controls { overflow: hidden; border: 1px solid hsl(var(--bc) / .2); border-radius: .65rem; background: hsl(var(--b1) / .96); box-shadow: 0 .65rem 1.5rem hsl(var(--bc) / .12); }
+.company-graph-canvas .react-flow__controls-button { width: 2.65rem; height: 2.65rem; border: 0; border-bottom: 1px solid hsl(var(--bc) / .16); background: hsl(var(--b1) / .96); color: hsl(var(--bc) / .82); fill: currentColor; }
+.company-graph-canvas .react-flow__controls-button:last-child { border-bottom: 0; }
+.company-graph-canvas .react-flow__controls-button:hover { background: hsl(var(--p) / .13); color: hsl(var(--p)); }
+.company-graph-canvas .react-flow__controls-button:focus-visible { position: relative; z-index: 1; outline: 3px solid hsl(var(--p) / .34); outline-offset: -3px; }
+.company-graph-canvas .react-flow__controls-button svg { width: 1.05rem; height: 1.05rem; fill: currentColor; }
+.company-graph-canvas .react-flow__minimap { width: 9.5rem !important; height: 6.5rem !important; overflow: hidden; border: 1px solid hsl(var(--bc) / .2); border-radius: .65rem; background: hsl(var(--b1) / .96); box-shadow: 0 .65rem 1.5rem hsl(var(--bc) / .12); }
 .company-graph-node { border-radius: .75rem !important; background: hsl(var(--b1) / .96) !important; box-shadow: 0 .5rem 1.5rem hsl(var(--bc) / .08); }
 .company-graph-node.is-selected { outline: 3px solid hsl(var(--p) / .24); box-shadow: 0 .75rem 2rem hsl(var(--p) / .16); }
 .company-graph-node-copy { display: grid; gap: .2rem; text-align: left; }
@@ -31,7 +38,7 @@
 .company-graph-inspector section { display: grid; gap: .5rem; border-top: 1px solid hsl(var(--bc) / .12); padding-top: .85rem; }
 .company-graph-inspector section h3 { font-size: .75rem; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
 .company-graph-inspector section p { color: hsl(var(--bc) / .64); font-size: .84rem; }
-@media (max-width: 900px) { .company-graph-stage.has-inspector { grid-template-columns: minmax(0, 1fr); }.company-graph-inspector { border-left: 0; border-top: 1px solid hsl(var(--bc) / .14); }.company-graph-canvas { min-height: 34rem; } }
+@media (max-width: 900px) { .company-graph-stage.has-inspector { grid-template-columns: minmax(0, 1fr); }.company-graph-inspector { border-left: 0; border-top: 1px solid hsl(var(--bc) / .14); }.company-graph-canvas { height: max(32rem, calc(100dvh - 12rem)); min-height: 32rem; }.company-graph-canvas .react-flow__minimap { display: none; } }
 
 @plugin "daisyui/theme" {
   name: "roost";
