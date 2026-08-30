@@ -2439,7 +2439,13 @@ Typed entity relations use `depends_on`, `blocks`, `implements`, `consumes`,
 (`unverified`, `verified`, `rejected`, `stale`) and never promotes a declared
 functional state automatically.
 
-`GET /v1/company-intelligence/graph` is the whole-workspace Company Graph.
+`GET /v1/company-intelligence/graph` is the whole-workspace Company Graph. Its
+`company-graph-v2` packet includes a workspace root, department anchors,
+canonical business records, explicit dependency edges, and structural edges
+derived from organizational ownership, record/goal hierarchy, project task
+lists and tasks, project resources, application project/procedure links, and
+Google Drive folder membership. Structural edges expose existing source-of-
+truth relations; they do not persist synthetic `Dependency` rows.
 `GET /v1/company-intelligence/entities/:entityType/:id` is the universal entity
 inspector packet: canonical record, organizational context, inbound/outbound
 typed edges, resolved related records, and evidence. Search results navigate

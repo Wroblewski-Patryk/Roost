@@ -816,11 +816,17 @@ test("company operating graph keeps records canonical, contextual, evidenced, an
 
   const graph = await request("/v1/company-intelligence/graph", { headers });
   assert.equal(graph.status, 200);
-  const graphBody = graph.body as { data: { nodes: Array<{ id: string }>; edges: Array<{ type: string }> } };
+  const graphBody = graph.body as { data: { schemaVersion: string; rootNodeId: string; nodes: Array<{ id: string; entityType: string }>; edges: Array<{ type: string; source: string; from: { entityId: string }; to: { entityId: string } }> } };
+  assert.equal(graphBody.data.schemaVersion, "company-graph-v2");
+  assert.ok(graphBody.data.nodes.some((node) => node.id === graphBody.data.rootNodeId && node.entityType === "workspace"));
+  assert.equal(graphBody.data.nodes.filter((node) => node.entityType === "department").length, 13);
   assert.ok(graphBody.data.nodes.some((node) => node.id === record.id));
   assert.ok(graphBody.data.nodes.some((node) => node.id === resourceId));
   assert.ok(graphBody.data.nodes.some((node) => node.id === driveFile.id));
   assert.ok(graphBody.data.edges.some((edge) => edge.type === "implements"));
+  assert.ok(graphBody.data.edges.some((edge) => edge.source === "structural" && edge.type === "owns" && edge.to.entityId === record.id));
+  assert.ok(graphBody.data.edges.some((edge) => edge.source === "structural" && edge.type === "contains" && edge.to.entityId === taskListId));
+  assert.ok(graphBody.data.edges.some((edge) => edge.source === "structural" && edge.type === "contains" && edge.from.entityId === taskListId && edge.to.entityId === projectTaskId));
   const health = await request("/v1/company-intelligence/health", { headers });
   assert.equal(health.status, 200);
   assert.ok(Number((health.body as { data: { score: number } }).data.score) >= 0);

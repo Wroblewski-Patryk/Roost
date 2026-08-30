@@ -15,6 +15,13 @@
 .company-graph-filterbar button > span { height: .5rem; width: .5rem; border-radius: 999px; }
 .company-graph-filterbar button small { border-radius: 999px; background: hsl(var(--b2)); padding: .05rem .3rem; }
 .company-graph-filterbar button.is-active { border-color: hsl(var(--p)); background: hsl(var(--p) / .1); color: hsl(var(--p)); }
+.company-graph-focusbar { display: flex; min-width: 0; align-items: center; gap: .5rem; border-bottom: 1px solid hsl(var(--bc) / .12); background: hsl(var(--b2) / .45); padding: .55rem 1rem; color: hsl(var(--bc) / .58); font-size: .76rem; }
+.company-graph-focusbar button { display: inline-flex; min-height: 2.25rem; flex: 0 0 auto; align-items: center; gap: .4rem; border-radius: .5rem; padding: 0 .6rem; color: hsl(var(--p)); font-weight: 850; }
+.company-graph-focusbar button:hover:not(:disabled), .company-graph-focusbar button:focus-visible { background: hsl(var(--p) / .12); outline: none; }
+.company-graph-focusbar button:focus-visible { box-shadow: 0 0 0 3px hsl(var(--p) / .24); }
+.company-graph-focusbar button:disabled { color: hsl(var(--bc) / .42); cursor: default; }
+.company-graph-focusbar strong { overflow: hidden; color: hsl(var(--bc)); text-overflow: ellipsis; white-space: nowrap; }
+.company-graph-focusbar > span { margin-left: auto; }
 .company-graph-stage { display: grid; min-height: 42rem; grid-template-columns: minmax(0, 1fr); }
 .company-graph-stage.has-inspector { grid-template-columns: minmax(0, 1fr) minmax(18rem, 23rem); }
 .company-graph-canvas { height: clamp(34rem, calc(100dvh - 16rem), 52rem); min-height: 34rem; background: hsl(var(--b1) / .94); }
@@ -26,6 +33,8 @@
 .company-graph-canvas .react-flow__controls-button svg { width: 1.05rem; height: 1.05rem; fill: currentColor; }
 .company-graph-canvas .react-flow__minimap { width: 9.5rem !important; height: 6.5rem !important; overflow: hidden; border: 1px solid hsl(var(--bc) / .2); border-radius: .65rem; background: hsl(var(--b1) / .96); box-shadow: 0 .65rem 1.5rem hsl(var(--bc) / .12); }
 .company-graph-node { border-radius: .75rem !important; background: hsl(var(--b1) / .96) !important; box-shadow: 0 .5rem 1.5rem hsl(var(--bc) / .08); }
+.company-graph-node.is-anchor { border-width: 1px 1px 1px 6px !important; background: hsl(var(--b2) / .98) !important; box-shadow: 0 .75rem 1.8rem hsl(var(--bc) / .13); }
+.company-graph-node.is-anchor .company-graph-node-copy strong { font-size: .9rem; }
 .company-graph-node.is-selected { outline: 3px solid hsl(var(--p) / .24); box-shadow: 0 .75rem 2rem hsl(var(--p) / .16); }
 .company-graph-node-copy { display: grid; gap: .2rem; text-align: left; }
 .company-graph-node-copy small { color: hsl(var(--bc) / .55); font-size: .62rem; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
@@ -38,7 +47,7 @@
 .company-graph-inspector section { display: grid; gap: .5rem; border-top: 1px solid hsl(var(--bc) / .12); padding-top: .85rem; }
 .company-graph-inspector section h3 { font-size: .75rem; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
 .company-graph-inspector section p { color: hsl(var(--bc) / .64); font-size: .84rem; }
-@media (max-width: 900px) { .company-graph-stage.has-inspector { grid-template-columns: minmax(0, 1fr); }.company-graph-inspector { border-left: 0; border-top: 1px solid hsl(var(--bc) / .14); }.company-graph-canvas { height: max(32rem, calc(100dvh - 12rem)); min-height: 32rem; }.company-graph-canvas .react-flow__minimap { display: none; } }
+@media (max-width: 900px) { .company-graph-stage.has-inspector { grid-template-columns: minmax(0, 1fr); }.company-graph-inspector { border-left: 0; border-top: 1px solid hsl(var(--bc) / .14); }.company-graph-canvas { height: max(32rem, calc(100dvh - 12rem)); min-height: 32rem; }.company-graph-canvas .react-flow__minimap { display: none; }.company-graph-focusbar > span { display: none; } }
 
 @plugin "daisyui/theme" {
   name: "roost";

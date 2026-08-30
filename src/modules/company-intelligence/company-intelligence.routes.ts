@@ -70,30 +70,75 @@ companyIntelligenceRouter.get("/search", asyncHandler(async (req, res) => {
 }));
 
 companyIntelligenceRouter.get("/graph", asyncHandler(async (req, res) => {
-  const workspaceId = req.auth!.workspaceId; const [relations, departments, records, goals, projects, applications, tasks, procedures, risks, metrics, resources, policies, clients, workforce, files] = await Promise.all([
-    prisma.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, fromEntityType: { not: null }, toEntityType: { not: null } } }),
+  const workspaceId = req.auth!.workspaceId; const [workspace, relations, memberships, departmentCatalog, records, goals, projects, applications, tasks, taskLists, procedures, risks, metrics, resources, policies, clients, workforce, files, applicationProjects, applicationProcedures] = await Promise.all([
+    prisma.workspace.findUnique({ where: { id: workspaceId }, select: { id: true, name: true } }),
+    prisma.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, fromEntityType: { not: null }, fromEntityId: { not: null }, toEntityType: { not: null }, toEntityId: { not: null } } }),
     prisma.organizationalDepartmentRelation.findMany({ where: { workspaceId }, include: { department: true } }),
-    prisma.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, recordType: true, title: true, status: true, functionalState: true } }),
-    prisma.goal.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, title: true, status: true } }),
+    prisma.workspaceDepartment.findMany({ where: { workspaceId, status: { not: "archived" } }, orderBy: { position: "asc" }, select: { id: true, key: true, name: true, status: true } }),
+    prisma.companyRecord.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, recordType: true, title: true, status: true, functionalState: true, parentId: true, projectId: true, applicationId: true, clientId: true } }),
+    prisma.goal.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, title: true, status: true, projectId: true, parentGoalId: true } }),
     prisma.project.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, name: true, status: true } }),
     prisma.application.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, name: true, status: true } }),
-    prisma.task.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, title: true, status: true } }),
+    prisma.task.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, title: true, status: true, projectId: true, goalId: true, taskListId: true, assignedWorkforceEntityId: true } }),
+    prisma.taskList.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, name: true, status: true, projectId: true } }),
     prisma.procedure.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, name: true, status: true } }),
     prisma.risk.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, name: true, status: true } }),
     prisma.metric.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, name: true, status: true } }),
-    prisma.resource.findMany({ where: { workspaceId }, select: { id: true, name: true, type: true } }),
+    prisma.resource.findMany({ where: { workspaceId }, select: { id: true, name: true, type: true, relatedProjectId: true } }),
     prisma.policy.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, name: true, status: true } }),
     prisma.client.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, name: true, status: true } }),
     prisma.workforceEntity.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, name: true, status: true, type: true } }),
-    prisma.googleDriveFile.findMany({ where: { workspaceId, trashed: false }, select: { id: true, name: true, mimeType: true, isFolder: true } })
+    prisma.googleDriveFile.findMany({ where: { workspaceId, trashed: false }, select: { id: true, externalId: true, parentExternalId: true, name: true, mimeType: true, isFolder: true } }),
+    prisma.applicationProject.findMany({ where: { application: { workspaceId } }, select: { applicationId: true, projectId: true, relationType: true } }),
+    prisma.applicationProcedure.findMany({ where: { application: { workspaceId } }, select: { applicationId: true, procedureId: true, relationType: true } })
   ]);
-  const nodes = [...records.map((x) => ({ id: x.id, entityType: "company_record", recordType: x.recordType, label: x.title, state: x.functionalState })), ...goals.map((x) => ({ id: x.id, entityType: "goal", label: x.title, state: x.status })), ...projects.map((x) => ({ id: x.id, entityType: "project", label: x.name, state: x.status })), ...applications.map((x) => ({ id: x.id, entityType: "application", label: x.name, state: x.status })),
-    ...tasks.map((x) => ({ id: x.id, entityType: "task", label: x.title, state: x.status })), ...procedures.map((x) => ({ id: x.id, entityType: "procedure", label: x.name, state: x.status })),
+  const workspaceNodeId = `workspace:${workspaceId}`;
+  const departmentNodeId = (id: string) => `department:${id}`;
+  const nodes = [{ id: workspaceNodeId, entityType: "workspace", recordType: "workspace", label: workspace?.name || "Company", state: "active" }, ...departmentCatalog.map((x) => ({ id: departmentNodeId(x.id), entityType: "department", recordType: x.key, label: x.name, state: x.status })),
+    ...records.map((x) => ({ id: x.id, entityType: "company_record", recordType: x.recordType, label: x.title, state: x.functionalState })), ...goals.map((x) => ({ id: x.id, entityType: "goal", label: x.title, state: x.status })), ...projects.map((x) => ({ id: x.id, entityType: "project", label: x.name, state: x.status })), ...applications.map((x) => ({ id: x.id, entityType: "application", label: x.name, state: x.status })),
+    ...tasks.map((x) => ({ id: x.id, entityType: "task", label: x.title, state: x.status })), ...taskLists.map((x) => ({ id: x.id, entityType: "task_list", label: x.name, state: x.status })), ...procedures.map((x) => ({ id: x.id, entityType: "procedure", label: x.name, state: x.status })),
     ...risks.map((x) => ({ id: x.id, entityType: "risk", label: x.name, state: x.status })), ...metrics.map((x) => ({ id: x.id, entityType: "metric", label: x.name, state: x.status })),
     ...resources.map((x) => ({ id: x.id, entityType: "resource", label: x.name, state: x.type })), ...policies.map((x) => ({ id: x.id, entityType: "policy", label: x.name, state: x.status })),
     ...clients.map((x) => ({ id: x.id, entityType: "client", label: x.name, state: x.status })), ...workforce.map((x) => ({ id: x.id, entityType: "workforce", label: x.name, state: `${x.type}:${x.status}` })),
     ...files.map((x) => ({ id: x.id, entityType: "file", label: x.name, state: x.isFolder ? "folder" : x.mimeType }))];
-  res.json({ data: { schemaVersion: "company-graph-v1", generatedAt: new Date().toISOString(), nodes, edges: relations.map((x) => ({ id: x.id, type: x.dependencyType, from: { entityType: x.fromEntityType, entityId: x.fromEntityId }, to: { entityType: x.toEntityType, entityId: x.toEntityId }, status: x.status })), organizationalMemberships: departments.map((x) => ({ entityType: x.entityType, entityId: x.entityId, departmentKey: x.department.key, role: x.relationshipRole })) } });
+  type GraphEdge = { id: string; type: string; from: { entityType: string; entityId: string }; to: { entityType: string; entityId: string }; status: string; source: "explicit" | "structural" };
+  const structuralEdges: GraphEdge[] = [];
+  const addStructuralEdge = (id: string, type: string, fromType: string, fromId: string | null | undefined, toType: string, toId: string | null | undefined) => {
+    if (!fromId || !toId || fromId === toId) return;
+    structuralEdges.push({ id: `structural:${id}`, type, from: { entityType: fromType, entityId: fromId }, to: { entityType: toType, entityId: toId }, status: "active", source: "structural" });
+  };
+  departmentCatalog.forEach((department) => addStructuralEdge(`workspace-department:${department.id}`, "contains", "workspace", workspaceNodeId, "department", departmentNodeId(department.id)));
+  memberships.forEach((membership) => addStructuralEdge(`department-member:${membership.id}`, membership.relationshipRole === "owner" ? "owns" : membership.relationshipRole === "applicable" ? "applies_to" : "relates_to", "department", departmentNodeId(membership.departmentId), membership.entityType, membership.entityId));
+  records.forEach((record) => {
+    addStructuralEdge(`record-parent:${record.id}`, "contains", "company_record", record.parentId, "company_record", record.id);
+    addStructuralEdge(`project-record:${record.id}`, "contains", "project", record.projectId, "company_record", record.id);
+    addStructuralEdge(`application-record:${record.id}`, "defines", "application", record.applicationId, "company_record", record.id);
+    addStructuralEdge(`client-record:${record.id}`, "context_for", "client", record.clientId, "company_record", record.id);
+  });
+  goals.forEach((goal) => {
+    addStructuralEdge(`goal-parent:${goal.id}`, "contains", "goal", goal.parentGoalId, "goal", goal.id);
+    addStructuralEdge(`project-goal:${goal.id}`, "targets", "project", goal.projectId, "goal", goal.id);
+  });
+  taskLists.forEach((list) => addStructuralEdge(`project-task-list:${list.id}`, "contains", "project", list.projectId, "task_list", list.id));
+  tasks.forEach((task) => {
+    addStructuralEdge(`task-list-task:${task.id}`, "contains", "task_list", task.taskListId, "task", task.id);
+    if (!task.taskListId) addStructuralEdge(`project-task:${task.id}`, "contains", "project", task.projectId, "task", task.id);
+    addStructuralEdge(`goal-task:${task.id}`, "requires", "goal", task.goalId, "task", task.id);
+    addStructuralEdge(`workforce-task:${task.id}`, "assigned_to", "workforce", task.assignedWorkforceEntityId, "task", task.id);
+  });
+  resources.forEach((resource) => addStructuralEdge(`project-resource:${resource.id}`, "uses", "project", resource.relatedProjectId, "resource", resource.id));
+  applicationProjects.forEach((link) => addStructuralEdge(`application-project:${link.applicationId}:${link.projectId}`, link.relationType || "delivers", "application", link.applicationId, "project", link.projectId));
+  applicationProcedures.forEach((link) => addStructuralEdge(`application-procedure:${link.applicationId}:${link.procedureId}`, link.relationType || "governs", "application", link.applicationId, "procedure", link.procedureId));
+  const fileIdByExternalId = new Map(files.map((file) => [file.externalId, file.id]));
+  files.forEach((file) => addStructuralEdge(`folder-file:${file.id}`, "contains", "file", file.parentExternalId ? fileIdByExternalId.get(file.parentExternalId) : null, "file", file.id));
+  const explicitEdges: GraphEdge[] = relations.map((relation) => ({ id: relation.id, type: relation.dependencyType, from: { entityType: relation.fromEntityType!, entityId: relation.fromEntityId! }, to: { entityType: relation.toEntityType!, entityId: relation.toEntityId! }, status: relation.status, source: "explicit" }));
+  const nodeIds = new Set(nodes.map((node) => node.id));
+  const edgeBySignature = new Map<string, GraphEdge>();
+  [...structuralEdges, ...explicitEdges].forEach((edge) => {
+    if (!nodeIds.has(edge.from.entityId) || !nodeIds.has(edge.to.entityId)) return;
+    edgeBySignature.set(`${edge.from.entityId}:${edge.type}:${edge.to.entityId}`, edge);
+  });
+  res.json({ data: { schemaVersion: "company-graph-v2", generatedAt: new Date().toISOString(), rootNodeId: workspaceNodeId, nodes, edges: [...edgeBySignature.values()], organizationalMemberships: memberships.map((x) => ({ entityType: x.entityType, entityId: x.entityId, departmentKey: x.department.key, role: x.relationshipRole })) } });
 }));
 
 companyIntelligenceRouter.get("/entities/:entityType/:id", asyncHandler(async (req, res) => {

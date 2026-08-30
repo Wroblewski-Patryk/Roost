@@ -3,9 +3,9 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { config as loadDotenv } from "dotenv";
 
-const port = process.env.ROOST_POSTGRES_PORT || process.env.COMPANYCORE_TEST_DB_PORT || "55432";
 const composeEnvironment = {};
 loadDotenv({ path: resolve(process.cwd(), ".env"), processEnv: composeEnvironment, quiet: true });
+const port = process.env.ROOST_POSTGRES_PORT || process.env.COMPANYCORE_TEST_DB_PORT || composeEnvironment.ROOST_POSTGRES_PORT || "55432";
 const postgresPassword = process.env.SERVICE_PASSWORD_POSTGRES || composeEnvironment.SERVICE_PASSWORD_POSTGRES || "companycore";
 const databaseUrl = process.env.DATABASE_URL || `postgresql://companycore:${encodeURIComponent(postgresPassword)}@127.0.0.1:${port}/companycore_test?schema=public`;
 const dockerDesktopPath = process.env.COMPANYCORE_DOCKER_DESKTOP_PATH || "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe";

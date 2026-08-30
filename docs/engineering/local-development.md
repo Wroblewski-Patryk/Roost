@@ -61,9 +61,12 @@ committed file or command transcript.
 ## Run DEV mode
 
 npm run dev runs the TypeScript server in watch mode on the host. Roost reserves
-host port `3102` for the backend and `55432` for PostgreSQL; this keeps it clear
-of Soar's `5432` PostgreSQL and `6379` Redis ports. Start the Roost PostgreSQL
-service through Compose.
+host port `3102` for the backend and uses `ROOST_POSTGRES_PORT` for PostgreSQL
+(`55432` by default); this keeps it clear of Soar's `5432` PostgreSQL and `6379`
+Redis ports. When Windows reserves the default port through an excluded port
+range, set one available port in `.env` and use that same value in
+`DATABASE_URL`. The local test runner reads this override automatically. Start
+the Roost PostgreSQL service through Compose.
 
 First use:
 
@@ -208,7 +211,7 @@ database is intentional.
 
 ## Troubleshooting
 
-### Port 3102 or 55432 is already in use
+### Port 3102 or the configured PostgreSQL port is already in use or reserved
 
 Inspect the listener before stopping anything:
 
@@ -216,12 +219,16 @@ Inspect the listener before stopping anything:
 Get-NetTCPConnection -State Listen |
   Where-Object LocalPort -In 3102, 55432 |
   Select-Object LocalAddress, LocalPort, OwningProcess
+
+netsh interface ipv4 show excludedportrange protocol=tcp
 ~~~
 
 Stop only the process or container you own. Do not kill all Node or PostgreSQL
-processes by name. Override `ROOST_BACKEND_PORT` or `ROOST_POSTGRES_PORT` when
-needed and update the local URL to match. Container-to-container PostgreSQL
-traffic remains on the internal port `5432`.
+processes by name. Override `ROOST_BACKEND_PORT` or `ROOST_POSTGRES_PORT` in
+`.env` when needed and update `DATABASE_URL` to the same PostgreSQL port. A port
+inside an excluded Windows range cannot be bound even when it does not appear
+as a listener. Container-to-container PostgreSQL traffic remains on the
+internal port `5432`.
 
 ### The server cannot reach PostgreSQL
 

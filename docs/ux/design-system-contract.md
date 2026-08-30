@@ -612,6 +612,9 @@ visualizations.
 
 - Position nodes from recorded relationships or hierarchy. Never use backend
   type or array order as the primary layout axis.
+- Whole-company graphs use progressive disclosure: company, department,
+  record, then its direct neighbourhood. Never render the complete file and
+  task inventory in the initial viewport.
 - The canvas must have a definite responsive height before React Flow measures
   nodes. Refit only after visible nodes are initialized and after filters,
   focus, or inspector width changes.
