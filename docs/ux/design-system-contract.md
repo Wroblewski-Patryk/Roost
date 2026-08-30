@@ -532,6 +532,13 @@ not repeat that image or cover it with large opaque gray containers.
   previews show only records explicitly related to that department and link to
   the canonical source module. The canonical source route opens unfiltered and
   provides a department selector over the same record IDs.
+- Department overview previews form one continuous work surface, ordered as
+  `Current work -> Direction and delivery -> Capacity and governance`. Tasks,
+  procedures, and files receive the highest density; supporting modules remain
+  compact and secondary. Every preview preserves its own loading skeleton,
+  linked-record count, empty recovery, error recovery, keyboard focus, and
+  direct link to the canonical module. Do not render the shared layer as an
+  undifferentiated grid of equal cards.
 - Technology separates `Overview`, `Integrations`, and `Automations`.
   Integrations compare external adapters, connection/health, capabilities, and
   sync state. Automations compare execution definitions, triggers, enabled/run
