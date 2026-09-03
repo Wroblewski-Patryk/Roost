@@ -753,6 +753,12 @@ test("company operating graph keeps records canonical, contextual, evidenced, an
   const projectTaskResponse = await request("/v1/tasks", { method: "POST", headers, body: JSON.stringify({ title: "Verify the shared project workspace", status: "in_progress", projectId, taskListId, organizationalContext: { ownerDepartmentKey: "11-innowacje", relatedDepartmentKeys: ["09-technologia"], applicableDepartmentKeys: [], scopes: [] } }) });
   assert.equal(projectTaskResponse.status, 201, JSON.stringify(projectTaskResponse.body));
   const projectTaskId = (projectTaskResponse.body as { data: { id: string } }).data.id;
+  const mappedOperationsArea = await prisma.operatingArea.findFirstOrThrow({ where: { workspaceId: owner.workspace.id, key: "operations-administration" } });
+  const mappedClickUpList = await prisma.taskList.create({ data: { workspaceId: owner.workspace.id, name: "Mapped ClickUp operations", source: "clickup", externalId: "mapped-operations-list" } });
+  await prisma.externalContainerMapping.create({ data: { workspaceId: owner.workspace.id, provider: "clickup", entityType: "list", externalId: "mapped-operations-list", name: "Mapped ClickUp operations", areaId: mappedOperationsArea.id, raw: { manualDepartmentKey: "04-operacje" } } });
+  const mappedClickUpTask = await prisma.task.create({ data: { workspaceId: owner.workspace.id, taskListId: mappedClickUpList.id, title: "Imported mapped operation", status: "todo", source: "clickup", externalId: "mapped-operation-task" } });
+  const mappedOperationsTasks = await request("/v1/tasks?departmentKey=04-operacje&includeCompanyWide=false", { headers });
+  assert.ok((mappedOperationsTasks.body as { data: Array<{ id: string }> }).data.some((item) => item.id === mappedClickUpTask.id), "provider-mapped tasks must appear in their department context without duplicate manual assignment");
 
   const createdProcedure = await request("/v1/process-core/procedures", { method: "POST", headers, body: JSON.stringify({ name: "Shared production verification", purpose: "Verify releases before declaring completion", expectedResult: "Verified runtime evidence", steps: [{ instruction: "Run the approved verification suite", stepType: "manual" }], organizationalContext: { ownerDepartmentKey: "04-operacje", relatedDepartmentKeys: [], applicableDepartmentKeys: ["09-technologia", "11-innowacje"], scopes: [] } }) });
   assert.equal(createdProcedure.status, 201, JSON.stringify(createdProcedure.body));
@@ -833,7 +839,13 @@ test("company operating graph keeps records canonical, contextual, evidenced, an
 
   const graph = await request("/v1/company-intelligence/graph", { headers });
   assert.equal(graph.status, 200);
-  const graphBody = graph.body as { data: { schemaVersion: string; rootNodeId: string; nodes: Array<{ id: string; entityType: string }>; edges: Array<{ type: string; source: string; from: { entityId: string }; to: { entityId: string } }> } };
+  const graphBody = graph.body as { data: {
+    schemaVersion: string;
+    rootNodeId: string;
+    nodes: Array<{ id: string; entityType: string }>;
+    edges: Array<{ type: string; source: string; from: { entityId: string }; to: { entityId: string } }>;
+    summary: { recordCount: number; contextualizedRecordCount: number; unassignedRecordCount: number; relationshipCoverage: number };
+  } };
   assert.equal(graphBody.data.schemaVersion, "company-graph-v2");
   assert.ok(graphBody.data.nodes.some((node) => node.id === graphBody.data.rootNodeId && node.entityType === "workspace"));
   assert.equal(graphBody.data.nodes.filter((node) => node.entityType === "department").length, 13);
@@ -844,6 +856,9 @@ test("company operating graph keeps records canonical, contextual, evidenced, an
   assert.ok(graphBody.data.edges.some((edge) => edge.source === "structural" && edge.type === "owns" && edge.to.entityId === record.id));
   assert.ok(graphBody.data.edges.some((edge) => edge.source === "structural" && edge.type === "contains" && edge.to.entityId === taskListId));
   assert.ok(graphBody.data.edges.some((edge) => edge.source === "structural" && edge.type === "contains" && edge.from.entityId === taskListId && edge.to.entityId === projectTaskId));
+  assert.ok(graphBody.data.edges.some((edge) => edge.source === "derived" && edge.type === "mapped_to" && edge.to.entityId === mappedClickUpList.id));
+  assert.ok(graphBody.data.summary.recordCount >= graphBody.data.summary.contextualizedRecordCount);
+  assert.ok(graphBody.data.summary.relationshipCoverage >= 0 && graphBody.data.summary.relationshipCoverage <= 100);
   const connectedGraphNodeIds = new Set(graphBody.data.edges.flatMap((edge) => [edge.from.entityId, edge.to.entityId]));
   assert.ok(graphBody.data.nodes.every((node) => connectedGraphNodeIds.has(node.id)), "the whole-company graph must not contain isolated nodes");
   const health = await request("/v1/company-intelligence/health", { headers });

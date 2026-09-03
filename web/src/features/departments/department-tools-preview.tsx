@@ -108,7 +108,7 @@ export function DepartmentToolsPreview({ departmentKey }: { departmentKey: CoreA
 
   return <section className="department-tools-preview" aria-labelledby={`department-tools-${departmentKey}`}>
     <header className="department-tools-preview__header">
-      <div><p>{polish ? "Kontekst działu" : "Department context"}</p><h2 id={`department-tools-${departmentKey}`}>{polish ? "Wspólna praca w jednym miejscu" : "Shared work in one place"}</h2><span>{departmentLabel(departmentKey, t)} · {polish ? "wyłącznie rekordy bezpośrednio powiązane z tym działem" : "only records directly linked to this department"}</span></div>
+      <div><p>{polish ? "Kontekst działu" : "Department context"}</p><h2 id={`department-tools-${departmentKey}`}>{polish ? "Wspólna praca w jednym miejscu" : "Shared work in one place"}</h2><span>{departmentLabel(departmentKey, t)} · {polish ? "rekordy przypisane lub zmapowane do tego działu" : "records assigned or mapped to this department"}</span></div>
       {readyDefinitions.length ? <p className="department-tools-preview__summary"><strong>{assignedCount}</strong><span>{polish ? "powiązanych rekordów" : "linked records"}</span></p> : null}
     </header>
     <div className="department-tools-preview__groups">{groups.map((group) => <PreviewGroupSection group={group} key={group.key} locale={locale} viewAll={viewAll} />)}</div>

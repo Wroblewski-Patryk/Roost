@@ -2454,11 +2454,14 @@ functional state automatically.
 canonical business records, explicit dependency edges, and structural edges
 derived from organizational ownership, record/goal hierarchy, project task
 lists and tasks, project resources, application project/procedure links, and
-Google Drive folder membership. Structural edges expose existing source-of-
-truth relations; they do not persist synthetic `Dependency` rows.
+Google Drive folder membership. Provider-derived edges also bridge ClickUp
+task-list mappings and Drive operating-area assignments into the canonical
+department graph without persisting duplicate `Dependency` rows.
 Every returned record is incident to at least one edge. When a record has no
-more specific source-of-truth relationship, the packet emits structural
-workspace containment so the UI never renders an unexplained orphan.
+more specific source-of-truth relationship, the packet emits a `fallback`
+`needs_context` edge rather than presenting generic workspace containment as a
+meaningful business relation. The packet summary reports record count,
+contextualized count, records needing context, and relationship coverage.
 `GET /v1/company-intelligence/entities/:entityType/:id` is the universal entity
 inspector packet: canonical record, organizational context, inbound/outbound
 typed edges, resolved related records, and evidence. Search results navigate

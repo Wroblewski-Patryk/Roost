@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma";
-import { isCanonicalDepartmentKey } from "../../operating-model/department-registry";
+import { isCanonicalDepartmentKey, resolveDepartmentEntry } from "../../operating-model/department-registry";
 
 export const organizationalEntityTypes = [
   "goal", "task", "task_list", "procedure", "project", "requirement", "feature",
@@ -179,5 +179,64 @@ export async function contextualEntityIds(workspaceId: string, entityType: strin
       select: { entityId: true }
     }) : Promise.resolve([])
   ]);
-  return [...new Set([...relations, ...companyScopes].map((item) => item.entityId))];
+  const inferredIds: string[] = [];
+
+  if (entityType === "task" || entityType === "task_list") {
+    const taskLists = await prisma.taskList.findMany({
+      where: { workspaceId },
+      select: { id: true, source: true, externalId: true }
+    });
+    const identities = taskLists.map((taskList) => ({
+      taskList,
+      provider: taskList.source === "clickup" ? "clickup" : taskList.source || "companycore",
+      entityType: taskList.source === "clickup" ? "list" : "task_list",
+      externalId: taskList.externalId || taskList.id
+    }));
+    const mappings = identities.length ? await prisma.externalContainerMapping.findMany({
+      where: {
+        workspaceId,
+        OR: identities.map((identity) => ({
+          provider: identity.provider,
+          entityType: identity.entityType,
+          externalId: identity.externalId
+        }))
+      },
+      include: { area: true }
+    }) : [];
+    const mappingByIdentity = new Map(mappings.map((mapping) => [`${mapping.provider}:${mapping.entityType}:${mapping.externalId}`, mapping]));
+    const contextualTaskListIds = identities.flatMap((identity) => {
+      const mapping = mappingByIdentity.get(`${identity.provider}:${identity.entityType}:${identity.externalId}`);
+      if (!mapping) return [];
+      const raw = mapping.raw && typeof mapping.raw === "object" && !Array.isArray(mapping.raw) ? mapping.raw as Record<string, unknown> : {};
+      const manualKey = typeof raw.manualDepartmentKey === "string" ? raw.manualDepartmentKey : null;
+      const resolved = resolveDepartmentEntry(manualKey || mapping.area?.key || "");
+      return resolved?.canonicalKey === departmentKey ? [identity.taskList.id] : [];
+    });
+    if (entityType === "task_list") {
+      inferredIds.push(...contextualTaskListIds);
+    } else if (contextualTaskListIds.length) {
+      const tasks = await prisma.task.findMany({
+        where: { workspaceId, taskListId: { in: contextualTaskListIds } },
+        select: { id: true }
+      });
+      inferredIds.push(...tasks.map((task) => task.id));
+    }
+  }
+
+  if (entityType === "file") {
+    const files = await prisma.googleDriveFile.findMany({
+      where: { workspaceId, trashed: false },
+      select: { id: true, rawMetadata: true, operatingArea: { select: { key: true } } }
+    });
+    inferredIds.push(...files.flatMap((file) => {
+      const metadata = file.rawMetadata && typeof file.rawMetadata === "object" && !Array.isArray(file.rawMetadata) ? file.rawMetadata as Record<string, unknown> : {};
+      const explicitKey = typeof metadata.companycoreDepartmentKey === "string" && isCanonicalDepartmentKey(metadata.companycoreDepartmentKey)
+        ? metadata.companycoreDepartmentKey
+        : null;
+      const resolved = explicitKey ? resolveDepartmentEntry(explicitKey) : resolveDepartmentEntry(file.operatingArea?.key || "");
+      return resolved?.canonicalKey === departmentKey ? [file.id] : [];
+    }));
+  }
+
+  return [...new Set([...relations, ...companyScopes].map((item) => item.entityId).concat(inferredIds))];
 }

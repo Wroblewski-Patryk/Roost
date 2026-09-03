@@ -78,6 +78,15 @@ The graph API and UI must never present `route_inferred` or
 | Storage, knowledge, and automation definitions are scoped but empty by accepted decision. | UI could look incomplete if it treats emptiness as an error. | Show honest empty-ready states and real create/import paths later. |
 | Agent events are evidence, not durable object links. | Graph could overstate event outbox as entity relationships. | Keep event edges in evidence/readiness panels unless a durable target relation exists. |
 
+The Company Graph projection now bridges existing ClickUp list mappings and
+Google Drive operating-area assignments into department context as derived
+edges. Records with no stronger direct, structural, provider-derived, or
+company-scope relationship remain visible through an explicitly labelled
+`needs_context` fallback edge and are counted as relationship coverage gaps.
+The owner UI opens in a bounded context-exploration mode; the full topology is
+an intentional secondary view because rendering every imported file and task
+at once obscures rather than explains the operating model.
+
 ## Canonical Next Architecture
 
 The read-only relationship graph API is now implemented:
