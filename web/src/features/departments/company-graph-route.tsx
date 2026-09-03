@@ -83,7 +83,7 @@ export function CompanyGraphRoute() {
         if (candidateIds.has(edge.to.entityId) && ["workspace", "department", "application", "project", "task_list"].includes(edge.from.entityType)) candidateIds.add(edge.from.entityId);
       });
     } else {
-      const neighbours = allEdges.flatMap((edge) => edge.from.entityId === activeFocus.id ? [recordById.get(edge.to.entityId)] : edge.to.entityId === activeFocus.id ? [recordById.get(edge.from.entityId)] : []).filter((node): node is GraphNode => Boolean(node)).filter(passesType).sort((left, right) => nodePriority(left) - nodePriority(right) || left.label.localeCompare(right.label));
+      const neighbours = allEdges.flatMap((edge) => edge.from.entityId === activeFocus.id ? [recordById.get(edge.to.entityId)] : edge.to.entityId === activeFocus.id ? [recordById.get(edge.from.entityId)] : []).filter((node): node is GraphNode => Boolean(node)).filter((node) => activeFocus.entityType !== "workspace" || node.entityType === "department").filter(passesType).sort((left, right) => nodePriority(left) - nodePriority(right) || left.label.localeCompare(right.label));
       neighbours.forEach((node) => candidateIds.add(node.id));
     }
     const candidates = [...candidateIds].map((id) => recordById.get(id)).filter((node): node is GraphNode => Boolean(node)).sort((left, right) => left.id === activeFocus.id ? -1 : right.id === activeFocus.id ? 1 : nodePriority(left) - nodePriority(right) || left.label.localeCompare(right.label));
