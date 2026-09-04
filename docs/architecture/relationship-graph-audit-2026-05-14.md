@@ -125,6 +125,10 @@ labels, and the keyboard navigation fallback. Route workbenches continue to
 own domain filters, progressive loading, breadcrumbs, inspectors, and links to
 canonical records.
 
+The force pass clamps per-edge attraction and per-node velocity. This keeps
+high-degree, company-scale graphs inside the shared camera frustum instead of
+allowing numeric expansion to move every node beyond the visible scene.
+
 The renderer accepts arbitrary record types. Color and emphasis are visual
 metadata only; topology always comes from recorded hierarchy, organizational
 context, typed dependency edges, or explicitly labelled deterministic

@@ -39,3 +39,23 @@ test("layout is deterministic regardless of repeated calculation", () => {
   const edges = nodes.slice(1).map((node) => ({ source: "node-0", target: node.id }));
   assert.deepEqual([...layoutUnifiedGraph3D(nodes, edges, "node-0")], [...layoutUnifiedGraph3D(nodes, edges, "node-0")]);
 });
+
+test("keeps a production-scale high-degree company graph inside the camera frustum", () => {
+  const root = { id: "company" };
+  const departments = Array.from({ length: 13 }, (_, index) => ({ id: `department-${index}`, parentId: root.id }));
+  const records = Array.from({ length: 3970 }, (_, index) => ({
+    id: `record-${index}`,
+    parentId: departments[index % departments.length]!.id
+  }));
+  const nodes = [root, ...departments, ...records];
+  const edges = [
+    ...departments.map((department) => ({ source: root.id, target: department.id })),
+    ...records.map((record, index) => ({ source: departments[index % departments.length]!.id, target: record.id })),
+    ...records.map((record, index) => ({ source: record.id, target: records[(index * 37 + 101) % records.length]!.id }))
+  ];
+
+  const positions = layoutUnifiedGraph3D(nodes, edges, root.id);
+  const radii = [...positions.values()].map((position) => Math.hypot(position.x, position.y, position.z));
+  assert.ok(radii.every(Number.isFinite));
+  assert.ok(Math.max(...radii) < 120, "the full graph must remain visible with the shared camera bounds");
+});

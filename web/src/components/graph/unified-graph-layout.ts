@@ -118,6 +118,8 @@ export function layoutUnifiedGraph3D(
   // A bounded force pass turns the hierarchy into an organic knowledge cloud:
   // links pull related records together while every branch keeps a stable home.
   const iterations = nodes.length > 700 ? 34 : nodes.length > 250 ? 48 : 64;
+  const maximumSpringForce = 0.65;
+  const maximumVelocity = 1.4;
   for (let iteration = 0; iteration < iterations; iteration += 1) {
     const cooling = 1 - iteration / iterations;
     edges.forEach((edge) => {
@@ -129,7 +131,7 @@ export function layoutUnifiedGraph3D(
       const dz = target.z - source.z;
       const distance = Math.max(0.01, Math.hypot(dx, dy, dz));
       const desired = parentFor(byId.get(edge.target)!) === edge.source ? 5.2 : 9.2;
-      const force = (distance - desired) * 0.015 * cooling;
+      const force = Math.max(-maximumSpringForce, Math.min(maximumSpringForce, (distance - desired) * 0.015 * cooling));
       const fx = dx / distance * force;
       const fy = dy / distance * force;
       const fz = dz / distance * force;
@@ -160,6 +162,13 @@ export function layoutUnifiedGraph3D(
     });
     positions.forEach((position, id) => {
       if (id === resolvedRootId) return;
+      const velocity = Math.hypot(position.vx, position.vy, position.vz);
+      if (velocity > maximumVelocity) {
+        const scale = maximumVelocity / velocity;
+        position.vx *= scale;
+        position.vy *= scale;
+        position.vz *= scale;
+      }
       position.vx *= 0.76;
       position.vy *= 0.76;
       position.vz *= 0.76;
