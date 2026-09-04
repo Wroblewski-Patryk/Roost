@@ -1,7 +1,8 @@
 import { Html, OrbitControls } from "@react-three/drei";
 import { Canvas, type ThreeEvent, useFrame, useThree } from "@react-three/fiber";
-import { type ComponentRef, type CSSProperties, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { type ComponentRef, type CSSProperties, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { graphHoverClearDelayMs, graphNodeHitRadius, resolveInstancedItem } from "./unified-graph-interaction";
 import { layoutUnifiedGraph3D, type UnifiedGraphPosition } from "./unified-graph-layout";
 import { directLabelLimit, resolveGraphSelection, visibleSelectionLabelIds, type GraphSelectionContext } from "./unified-graph-selection";
 import "./unified-graph-3d.css";
@@ -54,8 +55,8 @@ function colorFor(node: UnifiedGraphNode) {
   return new THREE.Color(node.emphasis === "blocked" ? "#d96b67" : node.emphasis === "attention" ? "#d0a354" : node.color || fallbackColor);
 }
 
-function CameraRig({ positions, pivotId, resetSequence, zoomCommand }: { positions: Map<string, UnifiedGraphPosition>; pivotId: string; resetSequence: number; zoomCommand: ZoomCommand }) {
-  const { camera, size } = useThree();
+function CameraRig({ positions, pivotId, resetSequence, zoomCommand, onInteractionChange }: { positions: Map<string, UnifiedGraphPosition>; pivotId: string; resetSequence: number; zoomCommand: ZoomCommand; onInteractionChange: (active: boolean) => void }) {
+  const { camera, events, size } = useThree();
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null);
   const target = positions.get(pivotId) || { x: 0, y: 0, z: 0 };
   const initialized = useRef(false);
@@ -127,6 +128,7 @@ function CameraRig({ positions, pivotId, resetSequence, zoomCommand }: { positio
     controls.current.target.y = THREE.MathUtils.damp(controls.current.target.y, desiredTarget.current.y, 6.4, step);
     controls.current.target.z = THREE.MathUtils.damp(controls.current.target.z, desiredTarget.current.z, 6.4, step);
     controls.current.update();
+    events.update?.();
     if (camera.position.distanceToSquared(desiredPosition.current) < 0.0004 && controls.current.target.distanceToSquared(desiredTarget.current) < 0.0004) {
       camera.position.copy(desiredPosition.current);
       controls.current.target.copy(desiredTarget.current);
@@ -135,7 +137,7 @@ function CameraRig({ positions, pivotId, resetSequence, zoomCommand }: { positio
     }
   });
 
-  return <OrbitControls ref={controls} makeDefault enableDamping dampingFactor={0.09} minDistance={0.8} maxDistance={Math.max(96, extent * 8)} onEnd={() => { if (!controls.current) return; desiredTarget.current.copy(controls.current.target); desiredPosition.current.copy(camera.position); }} onStart={() => { transitioning.current = false; }} screenSpacePanning zoomSpeed={0.82} />;
+  return <OrbitControls ref={controls} makeDefault enableDamping dampingFactor={0.09} minDistance={0.8} maxDistance={Math.max(96, extent * 8)} onEnd={() => { if (!controls.current) return; desiredTarget.current.copy(controls.current.target); desiredPosition.current.copy(camera.position); onInteractionChange(false); requestAnimationFrame(() => events.update?.()); }} onStart={() => { transitioning.current = false; onInteractionChange(true); }} screenSpacePanning zoomSpeed={0.82} />;
 }
 
 function EdgeCloud({ edges, positions, selection }: { edges: UnifiedGraphEdge[]; positions: Map<string, UnifiedGraphPosition>; selection: GraphSelectionContext | null }) {
@@ -162,21 +164,23 @@ function EdgeCloud({ edges, positions, selection }: { edges: UnifiedGraphEdge[];
   return <lineSegments geometry={geometry}><lineBasicMaterial vertexColors transparent opacity={selection ? 0.76 : 0.56} /></lineSegments>;
 }
 
-function NodeCloud({ nodes, positions, focusId, selectedId, hoveredId, highlightedIds, onHover, onSelect, onActivate }: {
+function NodeCloud({ nodes, positions, focusId, selectedId, hoveredId, highlightedIds, hoverEnabled, onHover, onSelect, onActivate }: {
   nodes: UnifiedGraphNode[];
   positions: Map<string, UnifiedGraphPosition>;
   focusId: string;
   selectedId?: string | null;
   hoveredId?: string | null;
   highlightedIds: Set<string> | null;
+  hoverEnabled: boolean;
   onHover: (node: UnifiedGraphNode | null) => void;
   onSelect?: (node: UnifiedGraphNode) => void;
   onActivate?: (node: UnifiedGraphNode) => void;
 }) {
   const mesh = useRef<THREE.InstancedMesh>(null);
+  const hitMesh = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   useLayoutEffect(() => {
-    if (!mesh.current) return;
+    if (!mesh.current || !hitMesh.current) return;
     nodes.forEach((node, index) => {
       const position = positions.get(node.id) || { x: 0, y: 0, z: 0 };
       const active = highlightedIds?.has(node.id) || (!highlightedIds && node.id === focusId);
@@ -186,35 +190,53 @@ function NodeCloud({ nodes, positions, focusId, selectedId, hoveredId, highlight
       dummy.updateMatrix();
       mesh.current!.setMatrixAt(index, dummy.matrix);
       mesh.current!.setColorAt(index, colorFor(node));
+      dummy.scale.setScalar(graphNodeHitRadius(radiusFor(node, false, false)));
+      dummy.updateMatrix();
+      hitMesh.current!.setMatrixAt(index, dummy.matrix);
     });
     mesh.current.instanceMatrix.needsUpdate = true;
     if (mesh.current.instanceColor) mesh.current.instanceColor.needsUpdate = true;
+    hitMesh.current.instanceMatrix.needsUpdate = true;
   }, [dummy, focusId, highlightedIds, hoveredId, nodes, positions, selectedId]);
 
-  const resolveNode = (event: ThreeEvent<PointerEvent | MouseEvent>) => typeof event.instanceId === "number" ? nodes[event.instanceId] : null;
-  return <instancedMesh
-    ref={mesh}
-    args={[undefined, undefined, nodes.length]}
-    onClick={(event) => { event.stopPropagation(); const node = resolveNode(event); if (node) onSelect?.(node); }}
-    onDoubleClick={(event) => { event.stopPropagation(); const node = resolveNode(event); if (node) onActivate?.(node); }}
-    onPointerOver={(event) => { event.stopPropagation(); const node = resolveNode(event); if (node) onHover(node); }}
-    onPointerOut={() => onHover(null)}
-  >
-    <icosahedronGeometry args={[1, 1]} />
-    <meshStandardMaterial roughness={0.78} metalness={0.04} emissive="#141d30" emissiveIntensity={0.14} />
-  </instancedMesh>;
+  const resolveNode = (event: ThreeEvent<PointerEvent | MouseEvent>) => resolveInstancedItem(nodes, event.instanceId);
+  const trackNode = (event: ThreeEvent<PointerEvent>) => {
+    event.stopPropagation();
+    if (!hoverEnabled) return;
+    const node = resolveNode(event);
+    if (node) onHover(node);
+  };
+  return <>
+    <instancedMesh ref={mesh} args={[undefined, undefined, nodes.length]}>
+      <icosahedronGeometry args={[1, 1]} />
+      <meshStandardMaterial roughness={0.78} metalness={0.04} emissive="#141d30" emissiveIntensity={0.14} />
+    </instancedMesh>
+    <instancedMesh
+      ref={hitMesh}
+      args={[undefined, undefined, nodes.length]}
+      onClick={(event) => { event.stopPropagation(); const node = resolveNode(event); if (node) onSelect?.(node); }}
+      onDoubleClick={(event) => { event.stopPropagation(); const node = resolveNode(event); if (node) onActivate?.(node); }}
+      onPointerMove={trackNode}
+      onPointerOver={trackNode}
+      onPointerOut={(event) => { event.stopPropagation(); onHover(null); }}
+    >
+      <icosahedronGeometry args={[1, 1]} />
+      <meshBasicMaterial colorWrite={false} depthWrite={false} transparent opacity={0} />
+    </instancedMesh>
+  </>;
 }
 
-function GraphScene(props: Props & { hovered: UnifiedGraphNode | null; resetSequence: number; selection: GraphSelectionContext | null; zoomCommand: ZoomCommand; onHover: (node: UnifiedGraphNode | null) => void }) {
+function GraphScene(props: Props & { hovered: UnifiedGraphNode | null; orbiting: boolean; resetSequence: number; selection: GraphSelectionContext | null; zoomCommand: ZoomCommand; onHover: (node: UnifiedGraphNode | null) => void; onOrbitingChange: (active: boolean) => void }) {
   const positions = useMemo(() => layoutUnifiedGraph3D(props.nodes, props.edges, props.focusId || props.rootId), [props.edges, props.focusId, props.nodes, props.rootId]);
   const focusId = props.focusId || props.rootId;
   const pivotId = props.selectedId || focusId;
   const selection = props.selection;
+  const persistentLabelIds = useMemo(() => selection ? visibleSelectionLabelIds(selection) : new Set([focusId]), [focusId, selection]);
   const labelNodes = useMemo(() => {
-    const ids = selection ? visibleSelectionLabelIds(selection, props.hovered?.id) : new Set([focusId]);
+    const ids = new Set(persistentLabelIds);
     if (props.hovered?.id) ids.add(props.hovered.id);
     return [...ids].map((id) => props.nodes.find((node) => node.id === id)).filter((node): node is UnifiedGraphNode => Boolean(node));
-  }, [focusId, props.hovered?.id, props.nodes, selection]);
+  }, [persistentLabelIds, props.hovered?.id, props.nodes]);
 
   return <>
     <color attach="background" args={["#080d19"]} />
@@ -223,7 +245,7 @@ function GraphScene(props: Props & { hovered: UnifiedGraphNode | null; resetSequ
     <directionalLight intensity={1.45} position={[8, 12, 10]} />
     <pointLight color="#7187ef" intensity={18} position={[0, 1, 0]} distance={92} />
     <EdgeCloud edges={props.edges} positions={positions} selection={selection} />
-    <NodeCloud nodes={props.nodes} positions={positions} focusId={focusId} highlightedIds={selection?.highlightedIds || null} hoveredId={props.hovered?.id} selectedId={props.selectedId} onHover={props.onHover} onSelect={(node) => node.id === props.selectedId ? props.onClearSelection?.() : props.onNodeSelect?.(node)} onActivate={props.onNodeActivate} />
+    <NodeCloud nodes={props.nodes} positions={positions} focusId={focusId} highlightedIds={selection?.highlightedIds || null} hoveredId={props.hovered?.id} selectedId={props.selectedId} hoverEnabled={!props.orbiting} onHover={props.onHover} onSelect={(node) => node.id === props.selectedId ? props.onClearSelection?.() : props.onNodeSelect?.(node)} onActivate={props.onNodeActivate} />
     {labelNodes.map((node) => {
       const position = positions.get(node.id);
       if (!position) return null;
@@ -233,29 +255,53 @@ function GraphScene(props: Props & { hovered: UnifiedGraphNode | null; resetSequ
       const directIndex = directLabelIds.indexOf(node.id);
       const labelStyle = directIndex >= 0 ? { "--graph-label-lift": `${((directIndex % 3) + 1) * 0.75}rem` } as CSSProperties : undefined;
       const relationshipContext = !selection ? null : node.id === props.selectedId ? "Selected" : node.id === props.rootId && onPath ? "Workspace root" : onPath ? "Path to workspace" : selection.directIds.has(node.id) ? "Direct relationship" : null;
+      const transient = node.id === props.hovered?.id && !persistentLabelIds.has(node.id);
       return <Html key={node.id} position={[position.x, position.y + radiusFor(node, false, active) + 0.34, position.z]} zIndexRange={[12, 1]}>
         <div className="unified-graph3d-label-anchor" style={labelStyle}>
-          <button className="unified-graph3d-label" data-active={active || undefined} data-hovered={node.id === props.hovered?.id || undefined} data-path={onPath || undefined} onClick={(event) => { event.stopPropagation(); node.id === props.selectedId ? props.onClearSelection?.() : props.onNodeSelect?.(node); }} onDoubleClick={(event) => { event.stopPropagation(); props.onNodeActivate?.(node); }} type="button">
+          <button aria-hidden={transient || undefined} className="unified-graph3d-label" data-active={active || undefined} data-hovered={node.id === props.hovered?.id || undefined} data-path={onPath || undefined} data-transient={transient || undefined} onClick={(event) => { event.stopPropagation(); node.id === props.selectedId ? props.onClearSelection?.() : props.onNodeSelect?.(node); }} onDoubleClick={(event) => { event.stopPropagation(); props.onNodeActivate?.(node); }} tabIndex={transient ? -1 : undefined} type="button">
             <small>{node.category || node.type}</small><strong>{node.label}</strong>{node.status || relationshipContext ? <span>{[relationshipContext, node.status].filter(Boolean).join(" · ")}</span> : null}
           </button>
         </div>
         </Html>;
     })}
     <gridHelper args={[80, 40, "#28344d", "#131c2c"]} position={[0, -10, 0]} />
-    <CameraRig positions={positions} pivotId={pivotId} resetSequence={props.resetSequence} zoomCommand={props.zoomCommand} />
+    <CameraRig positions={positions} pivotId={pivotId} resetSequence={props.resetSequence} zoomCommand={props.zoomCommand} onInteractionChange={props.onOrbitingChange} />
   </>;
 }
 
 export function UnifiedGraph3D(props: Props) {
   const [hovered, setHovered] = useState<UnifiedGraphNode | null>(null);
+  const [orbiting, setOrbiting] = useState(false);
   const [resetSequence, setResetSequence] = useState(0);
   const [zoomCommand, setZoomCommand] = useState<ZoomCommand>({ sequence: 0, factor: 1 });
+  const hoverClearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const updateHover = useCallback((node: UnifiedGraphNode | null) => {
+    if (hoverClearTimer.current) {
+      clearTimeout(hoverClearTimer.current);
+      hoverClearTimer.current = null;
+    }
+    if (node) {
+      setHovered((current) => current?.id === node.id ? current : node);
+      return;
+    }
+    hoverClearTimer.current = setTimeout(() => {
+      setHovered(null);
+      hoverClearTimer.current = null;
+    }, graphHoverClearDelayMs);
+  }, []);
+  useEffect(() => () => {
+    if (hoverClearTimer.current) clearTimeout(hoverClearTimer.current);
+  }, []);
+  const updateOrbiting = useCallback((active: boolean) => {
+    setOrbiting(active);
+    if (active) updateHover(null);
+  }, [updateHover]);
   const selection = useMemo(() => resolveGraphSelection(props.edges, props.selectedId, props.rootId), [props.edges, props.rootId, props.selectedId]);
   if (!props.nodes.length) return <div className="unified-graph3d unified-graph3d--empty">{props.emptyLabel || "No graph records to display."}</div>;
 
-  return <div aria-label={props.ariaLabel} className="unified-graph3d" role="application">
+  return <div aria-label={props.ariaLabel} className="unified-graph3d" data-node-hovered={Boolean(hovered) || undefined} onPointerLeave={() => updateHover(null)} role="application">
     <Canvas camera={{ fov: 48, near: 0.1, far: 240 }} dpr={[1, 1.65]} gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }} onPointerMissed={props.onClearSelection}>
-      <GraphScene {...props} hovered={hovered} onHover={setHovered} resetSequence={resetSequence} selection={selection} zoomCommand={zoomCommand} />
+      <GraphScene {...props} hovered={hovered} orbiting={orbiting} onHover={updateHover} onOrbitingChange={updateOrbiting} resetSequence={resetSequence} selection={selection} zoomCommand={zoomCommand} />
     </Canvas>
     <div className="unified-graph3d-controls">
       {props.selectedId ? <button onClick={props.onClearSelection} title="Clear graph selection" type="button"><i className="ph-bold ph-x" aria-hidden="true"></i><span>Clear selection</span></button> : null}

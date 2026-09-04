@@ -642,6 +642,10 @@ domain packets to its shared node and typed-edge contract.
   neighbour and edge highlighted but reveals neighbour labels on hover instead
   of detaching or stacking them outside the viewport. The root is not implied
   when no recorded path exists.
+- Node hover uses a forgiving invisible hit area, follows the individual
+  instance under a moving pointer, pauses during camera gestures, and resumes
+  against the updated camera position. A transient hover label must not capture
+  the pointer away from the node that opened it.
 - Node markers are compact, matte, low-poly objects that inherit the Roost
   work-surface palette. Branches keep enough three-dimensional separation for
   the camera to travel between records instead of collapsing into solid balls.
