@@ -11,7 +11,7 @@ type GraphNode = { id: string; entityType: string; recordType?: string; label: s
 type GraphEdge = { id: string; type: string; from: { entityType: string; entityId: string }; to: { entityType: string; entityId: string }; status: string; source?: "explicit" | "structural" | "derived" | "fallback" };
 type GraphPacket = { schemaVersion: string; generatedAt: string; rootNodeId: string; nodes: GraphNode[]; edges: GraphEdge[]; summary?: { recordCount: number; contextualizedRecordCount: number; unassignedRecordCount: number; unrootedComponentCount: number; relationshipCoverage: number }; organizationalMemberships: Array<{ entityType: string; entityId: string; departmentKey: string; role: string }> };
 
-const typeColors: Record<string, string> = { workspace: "#8ea5ff", department: "#7c8bad", portfolio: "#9a8cff", goal: "#7c3aed", target: "#8b5cf6", project: "#2563eb", application: "#0891b2", domain: "#14b8a6", capability: "#22c55e", feature: "#84cc16", layer: "#a855f7", implementation: "#64748b", requirement: "#4f46e5", company_record: "#4f46e5", business_function: "#0ea5e9", role: "#d97706", process: "#059669", pipeline: "#0d9488", pipeline_stage: "#2dd4bf", task: "#ea580c", task_list: "#b7791f", procedure: "#16a34a", procedure_step: "#65a30d", standard: "#6366f1", control: "#e11d48", risk: "#dc2626", metric: "#0d9488", resource: "#64748b", file: "#64748b", policy: "#9333ea", decision: "#c026d3", client: "#db2777", workforce: "#ca8a04" };
+const typeColors: Record<string, string> = { workspace: "#8ea5ff", department: "#7c8bad", portfolio: "#9a8cff", goal: "#7c3aed", target: "#8b5cf6", project: "#2563eb", application: "#0891b2", domain: "#14b8a6", capability: "#22c55e", feature: "#84cc16", layer: "#a855f7", implementation: "#64748b", requirement: "#4f46e5", company_record: "#4f46e5", business_function: "#0ea5e9", role: "#d97706", process: "#059669", pipeline: "#0d9488", pipeline_stage: "#2dd4bf", task: "#ea580c", task_list: "#b7791f", procedure: "#16a34a", procedure_step: "#65a30d", standard: "#6366f1", control: "#e11d48", risk: "#dc2626", metric: "#0d9488", resource: "#64748b", file: "#64748b", policy: "#9333ea", decision: "#c026d3", client: "#db2777", deal: "#ec4899", interaction: "#f472b6", note: "#94a3b8", stakeholder: "#f59e0b", workforce: "#ca8a04" };
 type GraphMode = "all" | "explore";
 type PerspectiveDepth = 1 | 2 | 3 | "all";
 function entityHref(node: GraphNode) {
@@ -25,7 +25,7 @@ function nodePriority(node: GraphNode) {
   if (node.entityType === "workspace") return 0;
   if (node.entityType === "department") return 1;
   if (["application", "business_function", "process", "project", "goal", "risk", "policy"].includes(node.entityType)) return 2;
-  if (["pipeline", "role", "procedure", "workforce", "metric", "standard", "control", "decision", "resource", "company_record", "client", "task_list"].includes(node.entityType)) return 3;
+  if (["pipeline", "role", "procedure", "workforce", "metric", "standard", "control", "decision", "resource", "company_record", "client", "deal", "stakeholder", "task_list"].includes(node.entityType)) return 3;
   return 4;
 }
 

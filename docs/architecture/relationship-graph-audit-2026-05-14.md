@@ -93,7 +93,10 @@ The whole-company packet also includes the durable Company OS definition
 chain: department -> process -> pipeline -> stage -> procedure -> step, plus
 business functions, accountable/owner roles, goals and targets, standards,
 controls, risks, metrics, policies, resources, and decisions wherever canonical
-foreign keys prove the relationship. Workforce reporting lines and recorded
+foreign keys prove the relationship. The CRM branch preserves client -> deal,
+pipeline stage -> deal, client -> interaction/stakeholder, and contextual note
+links. Legacy standalone CRM stages are explicitly derived under Sales rather
+than left as anonymous graph components. Workforce reporting lines and recorded
 department keys are projected as structural/derived relationships. Runtime
 runs, logs, audit events, and outbox records remain evidence instead of being
 misrepresented as durable company objects.

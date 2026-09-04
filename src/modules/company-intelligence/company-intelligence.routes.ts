@@ -33,6 +33,10 @@ async function resolveEntity(workspaceId: string, entityType: string, entityId: 
   if (entityType === "implementation") return prisma.applicationArchitectureComponent.findFirst({ where: { id: entityId, application: { workspaceId } }, include: { application: true, technologyDefinition: true } });
   if (entityType === "procedure_step") return prisma.procedureStep.findFirst({ where: { id: entityId, procedure: { workspaceId } }, include: { procedure: true } });
   if (entityType === "client") return prisma.client.findFirst({ where: { id: entityId, workspaceId } });
+  if (entityType === "deal") return prisma.deal.findFirst({ where: { id: entityId, workspaceId }, include: { client: true, pipelineStage: true } });
+  if (entityType === "interaction") return prisma.interaction.findFirst({ where: { id: entityId, workspaceId }, include: { client: true } });
+  if (entityType === "note") return prisma.note.findFirst({ where: { id: entityId, workspaceId }, include: { project: true, task: true, client: true, deal: true } });
+  if (entityType === "stakeholder") return prisma.stakeholder.findFirst({ where: { id: entityId, workspaceId }, include: { client: true } });
   if (entityType === "file") return prisma.googleDriveFile.findFirst({ where: { id: entityId, workspaceId }, include: { operatingArea: true, operatingFolder: true, operatingTable: true, contentSnapshots: { orderBy: { createdAt: "desc" }, take: 1 } } });
   if (entityType === "workforce") return prisma.workforceEntity.findFirst({ where: { id: entityId, workspaceId } });
   if (entityType === "agent") return prisma.agent.findFirst({ where: { id: entityId, workspaceId } });
@@ -83,7 +87,7 @@ companyIntelligenceRouter.get("/search", asyncHandler(async (req, res) => {
 }));
 
 companyIntelligenceRouter.get("/graph", asyncHandler(async (req, res) => {
-  const workspaceId = req.auth!.workspaceId; const [workspace, relations, memberships, scopes, departmentCatalog, records, goals, targets, projects, applications, tasks, taskLists, roles, businessFunctions, processes, pipelines, pipelineStages, procedures, procedureSteps, standards, risks, controls, metrics, resources, policies, decisions, clients, workforce, files, applicationProjects, applicationProcedures, containerMappings] = await Promise.all([
+  const workspaceId = req.auth!.workspaceId; const [workspace, relations, memberships, scopes, departmentCatalog, records, goals, targets, projects, applications, tasks, taskLists, roles, businessFunctions, processes, pipelines, pipelineStages, procedures, procedureSteps, standards, risks, controls, metrics, resources, policies, decisions, clients, deals, interactions, notes, stakeholders, workforce, files, applicationProjects, applicationProcedures, containerMappings] = await Promise.all([
     prisma.workspace.findUnique({ where: { id: workspaceId }, select: { id: true, name: true } }),
     prisma.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, fromEntityType: { not: null }, fromEntityId: { not: null }, toEntityType: { not: null }, toEntityId: { not: null } } }),
     prisma.organizationalDepartmentRelation.findMany({ where: { workspaceId }, include: { department: true } }),
@@ -111,6 +115,10 @@ companyIntelligenceRouter.get("/graph", asyncHandler(async (req, res) => {
     prisma.policy.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, name: true, status: true, processId: true, procedureId: true, escalationRoleId: true } }),
     prisma.decision.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, title: true, status: true, projectId: true, supersedesId: true } }),
     prisma.client.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, name: true, status: true } }),
+    prisma.deal.findMany({ where: { workspaceId }, select: { id: true, title: true, status: true, clientId: true, pipelineStageId: true } }),
+    prisma.interaction.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, type: true, summary: true, status: true, clientId: true } }),
+    prisma.note.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, content: true, status: true, projectId: true, taskId: true, clientId: true, dealId: true } }),
+    prisma.stakeholder.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, name: true, type: true, status: true, clientId: true } }),
     prisma.workforceEntity.findMany({ where: { workspaceId, status: { not: "archived" } }, select: { id: true, name: true, status: true, type: true, department: true, managerId: true } }),
     prisma.googleDriveFile.findMany({ where: { workspaceId, trashed: false }, select: { id: true, externalId: true, parentExternalId: true, name: true, mimeType: true, isFolder: true, rawMetadata: true, operatingArea: { select: { key: true } } } }),
     prisma.applicationProject.findMany({ where: { application: { workspaceId } }, select: { applicationId: true, projectId: true, relationType: true } }),
@@ -124,7 +132,7 @@ companyIntelligenceRouter.get("/graph", asyncHandler(async (req, res) => {
     ...tasks.map((x) => ({ id: x.id, entityType: "task", label: x.title, state: x.status })), ...taskLists.map((x) => ({ id: x.id, entityType: "task_list", label: x.name, state: x.status })), ...roles.map((x) => ({ id: x.id, entityType: "role", label: x.name, state: x.type })), ...businessFunctions.map((x) => ({ id: x.id, entityType: "business_function", recordType: x.category || "business_function", label: x.name, state: x.status })), ...processes.map((x) => ({ id: x.id, entityType: "process", recordType: x.category || "process", label: x.name, state: x.status })), ...pipelines.map((x) => ({ id: x.id, entityType: "pipeline", label: x.name, state: x.status })), ...pipelineStages.map((x) => ({ id: x.id, entityType: "pipeline_stage", label: x.name, state: x.status })), ...procedures.map((x) => ({ id: x.id, entityType: "procedure", label: x.name, state: x.status })), ...procedureSteps.map((x) => ({ id: x.id, entityType: "procedure_step", recordType: String(x.stepType), label: `${x.stepOrder}. ${x.instruction.length > 90 ? `${x.instruction.slice(0, 87)}...` : x.instruction}`, state: "active" })), ...standards.map((x) => ({ id: x.id, entityType: "standard", recordType: x.category, label: x.name, state: x.status })),
     ...risks.map((x) => ({ id: x.id, entityType: "risk", label: x.name, state: x.status })), ...controls.map((x) => ({ id: x.id, entityType: "control", recordType: x.controlType, label: x.name, state: x.status })), ...metrics.map((x) => ({ id: x.id, entityType: "metric", label: x.name, state: x.status })),
     ...resources.map((x) => ({ id: x.id, entityType: "resource", label: x.name, state: x.type })), ...policies.map((x) => ({ id: x.id, entityType: "policy", label: x.name, state: x.status })),
-    ...decisions.map((x) => ({ id: x.id, entityType: "decision", label: x.title, state: x.status })), ...clients.map((x) => ({ id: x.id, entityType: "client", label: x.name, state: x.status })), ...workforce.map((x) => ({ id: x.id, entityType: "workforce", label: x.name, state: `${x.type}:${x.status}` })),
+    ...decisions.map((x) => ({ id: x.id, entityType: "decision", label: x.title, state: x.status })), ...clients.map((x) => ({ id: x.id, entityType: "client", label: x.name, state: x.status })), ...deals.map((x) => ({ id: x.id, entityType: "deal", label: x.title, state: x.status })), ...interactions.map((x) => ({ id: x.id, entityType: "interaction", recordType: x.type, label: x.summary || x.type, state: x.status })), ...notes.map((x) => ({ id: x.id, entityType: "note", label: x.content.length > 90 ? `${x.content.slice(0, 87)}...` : x.content, state: x.status })), ...stakeholders.map((x) => ({ id: x.id, entityType: "stakeholder", recordType: x.type, label: x.name, state: x.status })), ...workforce.map((x) => ({ id: x.id, entityType: "workforce", label: x.name, state: `${x.type}:${x.status}` })),
     ...files.map((x) => ({ id: x.id, entityType: "file", label: x.name, state: x.isFolder ? "folder" : x.mimeType }))];
   type GraphEdge = { id: string; type: string; from: { entityType: string; entityId: string }; to: { entityType: string; entityId: string }; status: string; source: "explicit" | "structural" | "derived" | "fallback" };
   const structuralEdges: GraphEdge[] = [];
@@ -206,6 +214,18 @@ companyIntelligenceRouter.get("/graph", asyncHandler(async (req, res) => {
     addStructuralEdge(`project-decision:${decision.id}`, "informed_by", "project", decision.projectId, "decision", decision.id);
     addStructuralEdge(`decision-supersedes:${decision.id}`, "supersedes", "decision", decision.id, "decision", decision.supersedesId);
   });
+  deals.forEach((deal) => {
+    addStructuralEdge(`client-deal:${deal.id}`, "contains", "client", deal.clientId, "deal", deal.id);
+    addStructuralEdge(`stage-deal:${deal.id}`, "contains", "pipeline_stage", deal.pipelineStageId, "deal", deal.id);
+  });
+  interactions.forEach((interaction) => addStructuralEdge(`client-interaction:${interaction.id}`, "contains", "client", interaction.clientId, "interaction", interaction.id));
+  notes.forEach((note) => {
+    addStructuralEdge(`project-note:${note.id}`, "contains", "project", note.projectId, "note", note.id);
+    addStructuralEdge(`task-note:${note.id}`, "contains", "task", note.taskId, "note", note.id);
+    addStructuralEdge(`client-note:${note.id}`, "contains", "client", note.clientId, "note", note.id);
+    addStructuralEdge(`deal-note:${note.id}`, "contains", "deal", note.dealId, "note", note.id);
+  });
+  stakeholders.forEach((stakeholder) => addStructuralEdge(`client-stakeholder:${stakeholder.id}`, "has_stakeholder", "client", stakeholder.clientId, "stakeholder", stakeholder.id));
   workforce.forEach((person) => {
     addStructuralEdge(`workforce-manager:${person.id}`, "reports_to", "workforce", person.id, "workforce", person.managerId);
   });
@@ -224,6 +244,7 @@ companyIntelligenceRouter.get("/graph", asyncHandler(async (req, res) => {
     .filter((key): key is NonNullable<typeof key> => Boolean(key)))];
   processes.forEach((process) => departmentKeysFromLabel(process.department).forEach((key) => addDerivedDepartmentEdge("process", process.id, key, `process:${process.id}:${key}`)));
   businessFunctions.forEach((item) => departmentKeysFromLabel(item.name).forEach((key) => addDerivedDepartmentEdge("business_function", item.id, key, `business-function:${item.id}:${key}`)));
+  pipelineStages.filter((stage) => !stage.pipelineId).forEach((stage) => addDerivedDepartmentEdge("pipeline_stage", stage.id, "03-sprzedaz", `legacy-crm-stage:${stage.id}`));
   workforce.forEach((person) => addDerivedDepartmentEdge("workforce", person.id, resolveDepartmentEntry(person.department || "")?.canonicalKey, `workforce:${person.id}`));
   const mappingByIdentity = new Map(containerMappings.map((mapping) => [`${mapping.provider}:${mapping.entityType}:${mapping.externalId}`, mapping]));
   taskLists.forEach((taskList) => {
