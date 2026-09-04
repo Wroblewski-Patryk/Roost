@@ -73,7 +73,7 @@ function CameraRig({ positions, pivotId, zoomCommand }: { positions: Map<string,
       return;
     }
     const aspect = Math.max(0.55, size.width / Math.max(1, size.height));
-    const distance = extent * (aspect < 1 ? 2.7 / aspect : 2.25);
+    const distance = extent * (aspect < 1 ? 1.85 / aspect : 1.85);
     camera.position.set(target.x + distance * 0.24, target.y + distance * 0.16, target.z + distance * 0.94);
     camera.lookAt(nextTarget);
     camera.updateProjectionMatrix();
@@ -180,10 +180,10 @@ function GraphScene(props: Props & { hovered: UnifiedGraphNode | null; viewKey: 
 
   return <>
     <color attach="background" args={["#080d19"]} />
-    <fog attach="fog" args={["#080d19", 24, 70]} />
-    <ambientLight intensity={0.95} />
+    <fog attach="fog" args={["#080d19", 48, 180]} />
+    <ambientLight intensity={1.08} />
     <directionalLight intensity={2.2} position={[8, 12, 10]} />
-    <pointLight color="#7187ef" intensity={34} position={[0, 1, 0]} distance={24} />
+    <pointLight color="#7187ef" intensity={38} position={[0, 1, 0]} distance={72} />
     <EdgeCloud edges={props.edges} positions={positions} selectedId={props.selectedId} />
     <NodeCloud nodes={props.nodes} positions={positions} focusId={focusId} highlightedIds={highlightedIds} selectedId={props.selectedId} onHover={props.onHover} onSelect={(node) => node.id === props.selectedId ? props.onClearSelection?.() : props.onNodeSelect?.(node)} onActivate={props.onNodeActivate} />
     {labelNodes.map((node) => {
