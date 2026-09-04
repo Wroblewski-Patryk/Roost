@@ -11,6 +11,10 @@ const edges = [
   { id: "area-other", source: "area", target: "other" }
 ];
 
+test("does not create selection context before a node is selected", () => {
+  assert.equal(resolveGraphSelection(edges, null, "root"), null);
+});
+
 test("highlights the shortest path to the root and every direct neighbour", () => {
   const selection = resolveGraphSelection(edges, "human", "root")!;
   assert.deepEqual(selection.pathIds, ["human", "folder", "area", "root"]);
