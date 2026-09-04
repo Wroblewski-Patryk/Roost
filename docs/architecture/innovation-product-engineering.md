@@ -190,15 +190,22 @@ same Product Engineering records. It does not own application, capability,
 feature, evidence, dependency, readiness, or lifecycle state and introduces no
 parallel graph tables.
 
-The bounded product and implementation hierarchy is:
+The bounded product and implementation hierarchy in the Application Graph is:
 
 ```text
-Company -> Application -> Graph Domain -> Capability -> Feature
-                                                -> Implementation Layer -> Implementation Atom
-                    -> Operating model -> Application Procedure -> Procedure Step
-                    -> Delivery -> Project -> Task List -> Task
+Applications -> Application -> Graph Domain -> Capability -> Feature
+                                                     -> Implementation Layer -> Implementation Atom
+                         -> Operating model -> Application Procedure -> Procedure Step
+                         -> Delivery -> Project -> Task List -> Task
 Capability -> Reusable Procedure -> Procedure Step
 ```
+
+`Applications` is a deterministic portfolio projection node. The contextual
+Application Graph deliberately omits the workspace and Innovation ancestors;
+the complete Company Graph places the same projection under `LuckySparrow ->
+11 Innovation -> Applications`. The two views reuse the same Product
+Engineering packet builder and native record identities rather than
+maintaining separate graph data.
 
 An implementation atom is an existing `ApplicationArchitectureComponent` with
 structured provenance metadata. It may represent a page, component, API route,
@@ -226,7 +233,7 @@ Operating System capabilities to Domain. Unrecognized catalog domains remain
 visible under their canonical name. The mapping never copies or reassigns the
 source capability definition.
 
-`GET /graph` returns only the company and application portfolio required for
+`GET /graph` returns only the Applications portfolio root and application nodes required for
 the initial canvas. `GET /applications/:id/graph` lazily returns one complete
 application projection with domains, capabilities, assigned features,
 implementation layers and atoms, hierarchy edges, typed implementation
@@ -249,6 +256,19 @@ Roost feature assignments and imports non-feature registry records and chains
 as architecture atoms. It is idempotent for records whose metadata source is
 `soar-architecture-registry`; it is not part of the production seed and does
 not infer verified runtime state beyond the source registry's declarations.
+
+`npm run import:application-docs:local-preview` inventories canonical
+top-level Product and Architecture Markdown for the registered Aviary,
+Featherly, Nest, Roost, and Soar repositories. With a workspace-scoped
+`ROOST_API_TOKEN`, the same command previews the production import through
+HTTPS; `npm run import:application-docs:apply` performs the audited write.
+Markdown documents and headings
+become hierarchical `CompanyRecord` context attached to the existing
+application. Stable source IDs make the import idempotent, Git revisions and
+file paths preserve provenance, and imported declarations remain
+`functionalState=expected` with verification not started. The importer does
+not claim that documentation proves implementation and does not delete records
+that disappear from a later scan.
 
 The supported visual modes are Structure, Execution, Progress, Dependencies,
 Agent Ready, and Productization. They are alternate interpretations of one packet, not

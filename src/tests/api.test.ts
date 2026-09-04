@@ -844,7 +844,7 @@ test("company operating graph keeps records canonical, contextual, evidenced, an
     rootNodeId: string;
     nodes: Array<{ id: string; entityType: string }>;
     edges: Array<{ type: string; source: string; from: { entityId: string }; to: { entityId: string } }>;
-    summary: { recordCount: number; contextualizedRecordCount: number; unassignedRecordCount: number; relationshipCoverage: number };
+    summary: { recordCount: number; contextualizedRecordCount: number; unassignedRecordCount: number; unrootedComponentCount: number; relationshipCoverage: number };
   } };
   assert.equal(graphBody.data.schemaVersion, "company-graph-v2");
   assert.ok(graphBody.data.nodes.some((node) => node.id === graphBody.data.rootNodeId && node.entityType === "workspace"));
@@ -859,8 +859,20 @@ test("company operating graph keeps records canonical, contextual, evidenced, an
   assert.ok(graphBody.data.edges.some((edge) => edge.source === "derived" && edge.type === "mapped_to" && edge.to.entityId === mappedClickUpList.id));
   assert.ok(graphBody.data.summary.recordCount >= graphBody.data.summary.contextualizedRecordCount);
   assert.ok(graphBody.data.summary.relationshipCoverage >= 0 && graphBody.data.summary.relationshipCoverage <= 100);
-  const connectedGraphNodeIds = new Set(graphBody.data.edges.flatMap((edge) => [edge.from.entityId, edge.to.entityId]));
-  assert.ok(graphBody.data.nodes.every((node) => connectedGraphNodeIds.has(node.id)), "the whole-company graph must not contain isolated nodes");
+  const graphNeighbours = new Map<string, string[]>();
+  graphBody.data.edges.forEach((edge) => {
+    graphNeighbours.set(edge.from.entityId, [...(graphNeighbours.get(edge.from.entityId) ?? []), edge.to.entityId]);
+    graphNeighbours.set(edge.to.entityId, [...(graphNeighbours.get(edge.to.entityId) ?? []), edge.from.entityId]);
+  });
+  const reachableGraphNodeIds = new Set<string>();
+  const graphFrontier = [graphBody.data.rootNodeId];
+  while (graphFrontier.length) {
+    const current = graphFrontier.shift()!;
+    if (reachableGraphNodeIds.has(current)) continue;
+    reachableGraphNodeIds.add(current);
+    graphFrontier.push(...(graphNeighbours.get(current) ?? []).filter((id) => !reachableGraphNodeIds.has(id)));
+  }
+  assert.ok(graphBody.data.nodes.every((node) => reachableGraphNodeIds.has(node.id)), "every whole-company graph node must be reachable from the workspace root");
   const health = await request("/v1/company-intelligence/health", { headers });
   assert.equal(health.status, 200);
   assert.ok(Number((health.body as { data: { score: number } }).data.score) >= 0);
@@ -1067,7 +1079,7 @@ test("product engineering keeps definitions shared, observations explicit, and p
   assert.equal(portfolioGraphResponse.status, 200);
   const portfolioGraph = (portfolioGraphResponse.body as { data: { schemaVersion: string; nodes: Array<{ id: string; type: string; entityId: string; completeness: number; path: string[] }>; edges: Array<{ type: string }> } }).data;
   assert.equal(portfolioGraph.schemaVersion, "application-graph-v2");
-  assert.equal(portfolioGraph.nodes.filter((node) => node.type === "company").length, 1);
+  assert.equal(portfolioGraph.nodes.filter((node) => node.type === "portfolio").length, 1);
   assert.equal(portfolioGraph.nodes.find((node) => node.entityId === roostId)?.completeness, readiness.overall);
   assert.ok(portfolioGraph.edges.every((edge) => edge.type === "hierarchy"));
   const applicationGraphResponse = await request(`/v1/product-engineering/applications/${roostId}/graph`, { headers: auth });
@@ -1080,6 +1092,33 @@ test("product engineering keeps definitions shared, observations explicit, and p
   assert.equal(graphFeature?.parentNodeId, graphCapability?.id);
   assert.equal(graphFeature?.path.at(-1), graphFeature?.id);
   assert.equal(graphCapability?.details.evidenceCount, 1);
+  const documentationPayload = {
+    sourceSystem: "repository-docs-v1",
+    sourceRoot: "C:/Personal/Projekty/Aplikacje/Roost",
+    sourceRevision: "test-revision",
+    records: [
+      { sourceId: "file:docs/product/product.md", recordType: "architecture_document", title: "Product", description: "Canonical product truth.", filePath: "docs/product/product.md", headingPath: ["Product"] },
+      { sourceId: "file:docs/product/product.md#goal", parentSourceId: "file:docs/product/product.md", recordType: "application_goal", title: "Goal", description: "Operate the company coherently.", filePath: "docs/product/product.md", headingPath: ["Product", "Goal"] }
+    ]
+  };
+  const documentationPreview = await request(`/v1/product-engineering/applications/${roostId}/actions/import-documentation-context`, { method: "POST", headers: auth, body: JSON.stringify({ ...documentationPayload, mode: "preview" }) });
+  assert.equal(documentationPreview.status, 200);
+  assert.equal((documentationPreview.body as { data: { createCount: number; deleteCount: number } }).data.createCount, 2);
+  assert.equal((documentationPreview.body as { data: { deleteCount: number } }).data.deleteCount, 0);
+  assert.equal(await prisma.companyRecord.count({ where: { applicationId: roostId, source: "documentation-import" } }), 0, "preview must not write documentation records");
+  const documentationApply = await request(`/v1/product-engineering/applications/${roostId}/actions/import-documentation-context`, { method: "POST", headers: auth, body: JSON.stringify({ ...documentationPayload, mode: "apply" }) });
+  assert.equal(documentationApply.status, 200);
+  const importedDocumentation = await prisma.companyRecord.findMany({ where: { applicationId: roostId, source: "documentation-import" }, orderBy: { title: "asc" } });
+  assert.equal(importedDocumentation.length, 2);
+  assert.equal(importedDocumentation.find((record) => record.recordType === "application_goal")?.parentId, importedDocumentation.find((record) => record.recordType === "architecture_document")?.id);
+  const documentationSecondPreview = await request(`/v1/product-engineering/applications/${roostId}/actions/import-documentation-context`, { method: "POST", headers: auth, body: JSON.stringify({ ...documentationPayload, mode: "preview" }) });
+  assert.equal((documentationSecondPreview.body as { data: { createCount: number; updateCount: number } }).data.createCount, 0);
+  assert.equal((documentationSecondPreview.body as { data: { updateCount: number } }).data.updateCount, 2);
+  const documentedGraphResponse = await request(`/v1/product-engineering/applications/${roostId}/graph`, { headers: auth });
+  const documentedNodes = (documentedGraphResponse.body as { data: { nodes: Array<{ id: string; entityId: string; parentNodeId: string | null }> } }).data.nodes;
+  const importedDocumentNode = documentedNodes.find((node) => node.entityId === importedDocumentation.find((record) => record.recordType === "architecture_document")?.id);
+  const importedGoalNode = documentedNodes.find((node) => node.entityId === importedDocumentation.find((record) => record.recordType === "application_goal")?.id);
+  assert.equal(importedGoalNode?.parentNodeId, importedDocumentNode?.id);
   const agentContextResponse = await request(`/v1/product-engineering/applications/${roostId}/agent-context`, { headers: auth });
   assert.equal(agentContextResponse.status, 200);
   assert.equal((agentContextResponse.body as { data: { authority: { declarationIsNotObservation: boolean } } }).data.authority.declarationIsNotObservation, true);

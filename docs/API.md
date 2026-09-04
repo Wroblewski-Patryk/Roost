@@ -6,7 +6,9 @@ Protected routes under `/v1/product-engineering` expose workspace-scoped
 application CRUD, the capability catalog, application capabilities,
 observations, evidence verification, dependencies, packs, blueprints,
 technologies, architecture, interfaces, project links, and product/service
-offerings.
+offerings. Repository documentation context has a preview-first, idempotent
+batch command so local Agent Hosts can enrich an application without direct
+production database access.
 
 Primary read models:
 
@@ -18,6 +20,7 @@ GET /v1/product-engineering/applications/:id/capability-map
 GET /v1/product-engineering/applications/:id/gaps
 GET /v1/product-engineering/applications/:id/readiness
 GET /v1/product-engineering/applications/:id/agent-context
+POST /v1/product-engineering/applications/:id/actions/import-documentation-context
 ```
 
 Writes require `product-engineering:write`. Evidence verification uses the
@@ -29,11 +32,20 @@ target and observed capabilities, evidence, gaps, dependencies, architecture,
 interfaces, and readiness. It is a derived packet; PostgreSQL domain records
 remain the source of truth.
 
-The graph endpoints return the versioned `application-graph-v1` read model.
-`/graph` is the lightweight company/application portfolio projection;
+The graph endpoints return the versioned `application-graph-v2` read model.
+`/graph` is the lightweight Applications/application portfolio projection;
 `/applications/:id/graph` contains one application's Domain -> Capability ->
 Feature hierarchy and its dependency/blocker edges. Both are derived responses
 and require `product-engineering:read`.
+
+The documentation-context command requires `product-engineering:write` and
+accepts `mode: preview|apply`, a stable source-system/root/revision tuple, and
+hierarchical records with stable source IDs. Preview performs no writes. Apply
+upserts matching imported records, preserves parent hierarchy, records
+repository provenance in metadata, writes one audit/event summary, and never
+deletes records missing from a later payload. The bundled
+`import:application-docs` client uses HTTPS and a workspace-scoped
+`ROOST_API_TOKEN`; it never connects to PostgreSQL.
 
 ## Procedure management
 

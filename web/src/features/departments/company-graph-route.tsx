@@ -9,14 +9,15 @@ import { humanizeBusinessValue } from "./shared";
 
 type GraphNode = { id: string; entityType: string; recordType?: string; label: string; state?: string };
 type GraphEdge = { id: string; type: string; from: { entityType: string; entityId: string }; to: { entityType: string; entityId: string }; status: string; source?: "explicit" | "structural" | "derived" | "fallback" };
-type GraphPacket = { schemaVersion: string; generatedAt: string; rootNodeId: string; nodes: GraphNode[]; edges: GraphEdge[]; summary?: { recordCount: number; contextualizedRecordCount: number; unassignedRecordCount: number; relationshipCoverage: number }; organizationalMemberships: Array<{ entityType: string; entityId: string; departmentKey: string; role: string }> };
+type GraphPacket = { schemaVersion: string; generatedAt: string; rootNodeId: string; nodes: GraphNode[]; edges: GraphEdge[]; summary?: { recordCount: number; contextualizedRecordCount: number; unassignedRecordCount: number; unrootedComponentCount: number; relationshipCoverage: number }; organizationalMemberships: Array<{ entityType: string; entityId: string; departmentKey: string; role: string }> };
 
-const typeColors: Record<string, string> = { workspace: "#8ea5ff", department: "#7c8bad", goal: "#7c3aed", project: "#2563eb", application: "#0891b2", company_record: "#4f46e5", task: "#ea580c", task_list: "#b7791f", procedure: "#16a34a", risk: "#dc2626", metric: "#0d9488", resource: "#64748b", file: "#64748b", policy: "#9333ea", client: "#db2777", workforce: "#ca8a04" };
+const typeColors: Record<string, string> = { workspace: "#8ea5ff", department: "#7c8bad", portfolio: "#9a8cff", goal: "#7c3aed", project: "#2563eb", application: "#0891b2", domain: "#14b8a6", capability: "#22c55e", feature: "#84cc16", layer: "#a855f7", implementation: "#64748b", requirement: "#4f46e5", company_record: "#4f46e5", task: "#ea580c", task_list: "#b7791f", procedure: "#16a34a", procedure_step: "#65a30d", risk: "#dc2626", metric: "#0d9488", resource: "#64748b", file: "#64748b", policy: "#9333ea", client: "#db2777", workforce: "#ca8a04" };
 type GraphMode = "all" | "explore";
 type PerspectiveDepth = 1 | 2 | 3 | "all";
 function entityHref(node: GraphNode) {
   if (node.entityType === "workspace") return "/areas?area=00-ogolny&view=overview";
   if (node.entityType === "department" && node.recordType) return `/areas?area=${encodeURIComponent(node.recordType)}&view=overview`;
+  if (node.entityType === "portfolio") return "/areas?area=11-innowacje&view=application-graph";
   return `/areas?area=00-ogolny&view=entity&type=${encodeURIComponent(node.recordType === "requirement" ? "requirement" : node.entityType)}&id=${encodeURIComponent(node.id)}`;
 }
 

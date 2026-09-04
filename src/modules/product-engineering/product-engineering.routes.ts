@@ -11,6 +11,7 @@ import {
   EvidenceSource,
   EvidenceType,
   EvidenceVerificationStatus,
+  FunctionalState,
   ImplementationStrategy,
   InnovationLifecycleStage,
   OperatingStatus,
@@ -19,13 +20,15 @@ import {
   ProductOfferingType,
   Prisma
 } from "@prisma/client";
+import { createHash } from "node:crypto";
 import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../../db/prisma";
 import { sendApiError } from "../../middleware/api-error";
 import { asyncHandler } from "../../middleware/async-handler";
 import { createEvent } from "../events/event.service";
-import { buildApplicationGraph, buildPortfolioGraph } from "./application-graph";
+import { buildPortfolioGraph } from "./application-graph";
+import { capabilityInclude, gapsFor, loadApplicationGraphPacket, loadCapabilities, procedureInclude, projectInclude, readinessInput } from "./application-graph-projection.service";
 import { calculateApplicationReadiness } from "./readiness";
 
 const optionalText = z.string().trim().min(1).optional().nullable();
@@ -216,6 +219,28 @@ const createArchitectureComponentSchema = z.object({
   metadata: z.record(z.unknown()).optional()
 });
 
+const documentationContextImportSchema = z.object({
+  mode: z.enum(["preview", "apply"]).default("preview"),
+  sourceSystem: z.string().trim().min(1).max(80),
+  sourceRoot: z.string().trim().min(1).max(1000),
+  sourceRevision: z.string().trim().max(200).nullable().optional(),
+  records: z.array(z.object({
+    sourceId: z.string().trim().min(1).max(500),
+    parentSourceId: z.string().trim().min(1).max(500).nullable().optional(),
+    recordType: z.enum(["architecture_document", "application_goal", "architecture_principle", "architecture_requirement", "architecture_decision", "architecture_layer", "architecture_component", "architecture_section"]),
+    title: z.string().trim().min(1).max(240),
+    description: z.string().trim().max(10000).nullable().optional(),
+    filePath: z.string().trim().min(1).max(1000),
+    headingPath: z.array(z.string().trim().min(1).max(240)).max(12).default([])
+  }).strict()).max(2500)
+}).strict();
+
+function documentationRecordKey(applicationSlug: string, sourceSystem: string, sourceId: string) {
+  const readable = `${applicationSlug}-${sourceSystem}-${sourceId}`.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const digest = createHash("sha256").update(`${applicationSlug}:${sourceSystem}:${sourceId}`).digest("hex").slice(0, 12);
+  return `docs-${readable.slice(0, 100)}-${digest}`.slice(0, 120);
+}
+
 const createInterfaceSchema = z.object({
   applicationCapabilityId: idSchema.optional().nullable(),
   applicationFeatureId: idSchema.optional().nullable(),
@@ -248,34 +273,6 @@ const createOfferingSchema = z.object({
 
 const updateOfferingSchema = createOfferingSchema.omit({ key: true }).partial();
 
-const procedureInclude = {
-  process: true,
-  qualityStandard: true,
-  steps: { orderBy: { stepOrder: "asc" as const } }
-};
-
-const projectInclude = {
-  taskLists: { include: { tasks: { orderBy: [{ status: "asc" as const }, { updatedAt: "desc" as const }] } }, orderBy: { name: "asc" as const } },
-  tasks: { where: { taskListId: null }, orderBy: [{ status: "asc" as const }, { updatedAt: "desc" as const }] }
-};
-
-const capabilityInclude = {
-  capabilityDefinition: {
-    include: {
-      domain: true,
-      readinessDimension: true,
-      features: true,
-      procedures: { include: { procedure: { include: procedureInclude } }, orderBy: { createdAt: "asc" as const } }
-    }
-  },
-  dimensions: { orderBy: { key: "asc" as const } },
-  evidence: { orderBy: { observedAt: "desc" as const } },
-  interfaces: { orderBy: { name: "asc" as const } },
-  features: { include: { featureDefinition: true, evidence: true, interfaces: true } },
-  dependenciesFrom: { include: { toCapability: { include: { capabilityDefinition: true } } } },
-  dependenciesTo: { include: { fromCapability: { include: { capabilityDefinition: true } } } }
-};
-
 function actor(req: Express.Request) {
   return req.auth!.authType === "user"
     ? { actorType: ActorType.user, actorId: req.auth!.userId ?? null }
@@ -303,70 +300,6 @@ async function applicationForWorkspace(workspaceId: string, id: string) {
 
 async function capabilityForWorkspace(workspaceId: string, id: string) {
   return prisma.applicationCapability.findFirst({ where: { id, application: { workspaceId } } });
-}
-
-async function loadCapabilities(applicationId: string) {
-  return prisma.applicationCapability.findMany({
-    where: { applicationId },
-    include: capabilityInclude,
-    orderBy: [{ capabilityDefinition: { domain: { position: "asc" } } }, { priority: "desc" }]
-  });
-}
-
-function readinessInput(capabilities: Awaited<ReturnType<typeof loadCapabilities>>) {
-  return capabilities.map((capability) => ({
-    id: capability.id,
-    applicability: capability.applicability,
-    observedState: capability.observedState,
-    dimensionKey: capability.capabilityDefinition.readinessDimension?.key ?? capability.capabilityDefinition.domain.key,
-    dimensionName: capability.capabilityDefinition.readinessDimension?.name ?? capability.capabilityDefinition.domain.name,
-    dimensionWeight: capability.capabilityDefinition.readinessDimension?.weight ?? 100,
-    dimensions: capability.dimensions.map((dimension) => ({
-      applicability: dimension.applicability,
-      observedState: dimension.observedState
-    })),
-    evidence: capability.evidence.map((evidence) => ({ verificationStatus: evidence.verificationStatus })),
-    blockedBy: capability.dependenciesFrom.map((dependency) => ({
-      id: dependency.toCapability.id,
-      observedState: dependency.toCapability.observedState,
-      required: dependency.required
-    }))
-  }));
-}
-
-function gapsFor(capabilities: Awaited<ReturnType<typeof loadCapabilities>>) {
-  return capabilities
-    .filter((capability) => capability.applicability !== "not_applicable" && !["complete", "verified"].includes(capability.observedState))
-    .map((capability) => {
-      const blockedBy = capability.dependenciesFrom
-        .filter((dependency) => dependency.required && !["complete", "verified"].includes(dependency.toCapability.observedState))
-        .map((dependency) => ({
-          id: dependency.toCapability.id,
-          key: dependency.toCapability.capabilityDefinition.key,
-          name: dependency.toCapability.capabilityDefinition.name,
-          observedState: dependency.toCapability.observedState
-        }));
-      return {
-        id: capability.id,
-        capabilityDefinitionId: capability.capabilityDefinitionId,
-        key: capability.capabilityDefinition.key,
-        name: capability.capabilityDefinition.name,
-        domain: capability.capabilityDefinition.domain,
-        applicability: capability.applicability,
-        targetState: capability.targetState,
-        observedState: capability.observedState,
-        priority: capability.priority,
-        evidenceCount: capability.evidence.length,
-        verifiedEvidenceCount: capability.evidence.filter((evidence) => evidence.verificationStatus === "verified").length,
-        blocked: blockedBy.length > 0,
-        blockedBy,
-        severity: (blockedBy.length ? "blocker" : capability.applicability === "required" ? "critical" : capability.applicability === "recommended" ? "high" : "medium") as "blocker" | "critical" | "high" | "medium"
-      };
-    })
-    .sort((left, right) => {
-      const order = { blocker: 0, critical: 1, high: 2, medium: 3 };
-      return order[left.severity] - order[right.severity] || right.priority - left.priority;
-    });
 }
 
 export const productEngineeringRouter = Router();
@@ -401,33 +334,79 @@ productEngineeringRouter.get("/graph", asyncHandler(async (req, res) => {
 
 productEngineeringRouter.get("/applications/:id/graph", asyncHandler(async (req, res) => {
   const workspaceId = req.auth!.workspaceId;
-  const [workspace, application, architecture, procedures, projects, records] = await Promise.all([
-    prisma.workspace.findUnique({ where: { id: workspaceId }, select: { id: true, name: true } }),
-    prisma.application.findFirst({ where: { id: String(req.params.id), workspaceId } }),
-    prisma.applicationArchitectureComponent.findMany({
-      where: { application: { id: String(req.params.id), workspaceId } },
-      orderBy: [{ name: "asc" }, { id: "asc" }]
-    }),
-    prisma.applicationProcedure.findMany({
-      where: { application: { id: String(req.params.id), workspaceId } },
-      include: { procedure: { include: procedureInclude } },
-      orderBy: { createdAt: "asc" }
-    }),
-    prisma.applicationProject.findMany({
-      where: { application: { id: String(req.params.id), workspaceId } },
-      include: { project: { include: projectInclude } },
-      orderBy: { createdAt: "asc" }
-    }),
-    prisma.companyRecord.findMany({ where: { workspaceId, applicationId: String(req.params.id), status: { not: "archived" } }, orderBy: [{ recordType: "asc" }, { priority: "asc" }, { updatedAt: "desc" }] })
-  ]);
-  if (!workspace) return sendApiError(res, 404, "workspace_not_found");
+  const packet = await loadApplicationGraphPacket(workspaceId, String(req.params.id));
+  if (!packet) return sendApiError(res, 404, "application_not_found");
+  res.json({ data: packet });
+}));
+
+productEngineeringRouter.post("/applications/:id/actions/import-documentation-context", asyncHandler(async (req, res) => {
+  const workspaceId = req.auth!.workspaceId;
+  const application = await applicationForWorkspace(workspaceId, String(req.params.id));
   if (!application) return sendApiError(res, 404, "application_not_found");
-  const capabilities = await loadCapabilities(application.id);
-  const readiness = calculateApplicationReadiness(readinessInput(capabilities));
-  const evidenceCounts = await prisma.evidenceRecord.groupBy({ by: ["entityId"], where: { workspaceId, entityId: { in: records.map((record) => record.id) } }, _count: true });
-  const evidenceById = new Map(evidenceCounts.map((entry) => [entry.entityId, entry._count]));
-  const relationships = await prisma.dependency.findMany({ where: { workspaceId, status: { not: "archived" }, OR: [{ fromEntityType: "application", fromEntityId: application.id }, { toEntityType: "application", toEntityId: application.id }, { fromEntityId: { in: records.map((record) => record.id) } }, { toEntityId: { in: records.map((record) => record.id) } }] } });
-  res.json({ data: buildApplicationGraph({ workspace, application, capabilities, architecture, procedures, projects, records: records.map((record) => ({ ...record, evidenceCount: evidenceById.get(record.id) ?? 0 })), relationships, readiness }) });
+  const input = documentationContextImportSchema.parse(req.body);
+  const duplicateSourceIds = input.records.filter((record, index) => input.records.findIndex((candidate) => candidate.sourceId === record.sourceId) !== index);
+  if (duplicateSourceIds.length) return sendApiError(res, 400, "duplicate_documentation_source_id", { details: { sourceIds: [...new Set(duplicateSourceIds.map((record) => record.sourceId))] } });
+  const existingRecords = await prisma.companyRecord.findMany({ where: { workspaceId, applicationId: application.id, source: "documentation-import" } });
+  const existingBySourceId = new Map(existingRecords.flatMap((record) => {
+    const metadata = record.metadata && typeof record.metadata === "object" && !Array.isArray(record.metadata) ? record.metadata as Record<string, unknown> : {};
+    return metadata.sourceSystem === input.sourceSystem && typeof metadata.sourceId === "string" ? [[metadata.sourceId, record] as const] : [];
+  }));
+  const parentIds = new Set(input.records.map((record) => record.sourceId));
+  const missingParentSourceIds = [...new Set(input.records.map((record) => record.parentSourceId).filter((sourceId): sourceId is string => Boolean(sourceId) && !parentIds.has(sourceId!) && !existingBySourceId.has(sourceId!)))];
+  if (missingParentSourceIds.length) return sendApiError(res, 400, "documentation_parent_not_found", { details: { sourceIds: missingParentSourceIds } });
+
+  const preview = {
+    applicationId: application.id,
+    application: application.name,
+    mode: input.mode,
+    sourceSystem: input.sourceSystem,
+    sourceRoot: input.sourceRoot,
+    recordCount: input.records.length,
+    createCount: input.records.filter((record) => !existingBySourceId.has(record.sourceId)).length,
+    updateCount: input.records.filter((record) => existingBySourceId.has(record.sourceId)).length,
+    deleteCount: 0
+  };
+  if (input.mode === "preview") return res.json({ data: preview });
+
+  const orderedRecords = [...input.records].sort((left, right) => left.headingPath.length - right.headingPath.length || left.sourceId.localeCompare(right.sourceId));
+  const idBySourceId = new Map([...existingBySourceId].map(([sourceId, record]) => [sourceId, record.id]));
+  await prisma.$transaction(async (transaction) => {
+    for (const record of orderedRecords) {
+      const existing = existingBySourceId.get(record.sourceId);
+      const parentId = record.parentSourceId ? idBySourceId.get(record.parentSourceId) ?? null : null;
+      const metadata = {
+        sourceSystem: input.sourceSystem,
+        sourceId: record.sourceId,
+        sourceRoot: input.sourceRoot,
+        sourceRevision: input.sourceRevision ?? null,
+        filePath: record.filePath,
+        headingPath: record.headingPath,
+        provenance: "repository-documentation"
+      } satisfies Prisma.InputJsonObject;
+      const data = {
+        recordType: record.recordType,
+        title: record.title,
+        description: record.description ?? null,
+        businessPurpose: record.recordType === "application_goal" ? record.description ?? record.title : null,
+        desiredState: ["application_goal", "architecture_requirement"].includes(record.recordType) ? record.description ?? record.title : null,
+        priority: record.recordType === "application_goal" ? "high" : "normal",
+        status: "active",
+        functionalState: FunctionalState.expected,
+        verificationState: "not_started" as const,
+        source: "documentation-import",
+        parentId,
+        applicationId: application.id,
+        metadata
+      };
+      const saved = existing
+        ? await transaction.companyRecord.update({ where: { id: existing.id }, data })
+        : await transaction.companyRecord.create({ data: { ...data, workspaceId, key: documentationRecordKey(application.slug, input.sourceSystem, record.sourceId) } });
+      idBySourceId.set(record.sourceId, saved.id);
+    }
+  }, { maxWait: 10_000, timeout: 120_000 });
+  await audit(req, "application.documentation_context.import", "Application", application.id, { ...preview, sourceRevision: input.sourceRevision ?? null });
+  await createEvent({ type: "application_documentation_context_imported", workspaceId, ...actor(req), resourceType: "Application", resourceId: application.id, payload: preview });
+  res.json({ data: preview });
 }));
 
 productEngineeringRouter.get("/portfolio", asyncHandler(async (req, res) => {

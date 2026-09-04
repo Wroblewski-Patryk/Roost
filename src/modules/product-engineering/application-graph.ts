@@ -6,7 +6,7 @@ import type {
   ProductLifecycleStage
 } from "@prisma/client";
 
-export type ApplicationGraphNodeType = "company" | "application" | "requirement" | "domain" | "capability" | "feature" | "layer" | "implementation" | "procedure" | "procedure_step" | "project" | "task_list" | "task";
+export type ApplicationGraphNodeType = "portfolio" | "application" | "requirement" | "domain" | "capability" | "feature" | "layer" | "implementation" | "procedure" | "procedure_step" | "project" | "task_list" | "task";
 export type ApplicationGraphEdgeType = "hierarchy" | "dependency" | "blocks" | "relates_to";
 
 export type ApplicationGraphNode = {
@@ -648,7 +648,7 @@ function appendExecutionProjection(input: {
 }
 
 export function buildPortfolioGraph(input: { workspace: { id: string; name: string }; applications: PortfolioApplication[] }): ApplicationGraphPacket {
-  const rootId = nodeId("company", input.workspace.id);
+  const rootId = nodeId("portfolio", input.workspace.id);
   const applicationNodes = input.applications.map<ApplicationGraphNode>((application) => {
     const id = nodeId("application", application.id);
     return {
@@ -685,10 +685,10 @@ export function buildPortfolioGraph(input: { workspace: { id: string; name: stri
   const root: ApplicationGraphNode = {
     id: rootId,
     entityId: input.workspace.id,
-    type: "company",
-    label: input.workspace.name,
-    shortLabel: input.workspace.name,
-    category: "Company",
+    type: "portfolio",
+    label: "Applications",
+    shortLabel: "Applications",
+    category: "Product Engineering",
     status: applicationNodes.some((node) => node.isBlocked) ? "attention" : "active",
     completeness: average(applicationNodes.map((node) => node.completeness)),
     isRequired: true,
@@ -699,7 +699,7 @@ export function buildPortfolioGraph(input: { workspace: { id: string; name: stri
     childCount: applicationNodes.length,
     path: [rootId],
     details: {
-      description: "Application portfolio owned by the current Roost workspace.",
+      description: `Application portfolio for ${input.workspace.name}. This is a contextual projection, not a separate business entity.`,
       evidenceCount: applicationNodes.reduce((sum, node) => sum + (node.details.evidenceCount ?? 0), 0),
       recommendations: applicationNodes.length ? [] : ["Create the first application in Product Engineering."]
     }
@@ -723,11 +723,11 @@ export function buildApplicationGraph(input: {
   architecture?: GraphArchitectureComponent[];
   procedures?: GraphApplicationProcedure[];
   projects?: GraphProject[];
-  records?: Array<{ id: string; recordType: string; key: string; title: string; description?: string | null; status: string; priority: string; functionalState: string; implementationCoverage?: number | null; evidenceCount?: number }>;
+  records?: Array<{ id: string; recordType: string; key: string; title: string; description?: string | null; status: string; priority: string; functionalState: string; parentId?: string | null; implementationCoverage?: number | null; evidenceCount?: number }>;
   relationships?: Array<{ id: string; dependencyType: string; fromEntityType?: string | null; fromEntityId?: string | null; toEntityType?: string | null; toEntityId?: string | null }>;
   readiness: { overall: number; blockers: Array<{ capabilityId: string }> };
 }): ApplicationGraphPacket {
-  const companyId = nodeId("company", input.workspace.id);
+  const portfolioId = nodeId("portfolio", input.workspace.id);
   const applicationId = nodeId("application", input.application.id);
   const blockedCapabilityIds = new Set(input.readiness.blockers.map((blocker) => blocker.capabilityId));
   const groups = new Map<string, { key: string; label: string; order: number; capabilities: GraphCapability[] }>();
@@ -739,13 +739,13 @@ export function buildApplicationGraph(input: {
     groups.set(mapped.key, group);
   }
 
-  const companyNode: ApplicationGraphNode = {
-    id: companyId,
+  const portfolioNode: ApplicationGraphNode = {
+    id: portfolioId,
     entityId: input.workspace.id,
-    type: "company",
-    label: input.workspace.name,
-    shortLabel: input.workspace.name,
-    category: "Company",
+    type: "portfolio",
+    label: "Applications",
+    shortLabel: "Applications",
+    category: "Product Engineering",
     status: "active",
     completeness: input.readiness.overall,
     isRequired: true,
@@ -754,8 +754,8 @@ export function buildApplicationGraph(input: {
     tags: ["portfolio", "product-engineering"],
     parentNodeId: null,
     childCount: 1,
-    path: [companyId],
-    details: { description: "Application portfolio owned by the current Roost workspace." }
+    path: [portfolioId],
+    details: { description: `Application portfolio for ${input.workspace.name}. This is a contextual projection, not a separate business entity.` }
   };
 
   const appNode: ApplicationGraphNode = {
@@ -771,9 +771,9 @@ export function buildApplicationGraph(input: {
     isBlocked: input.readiness.blockers.length > 0,
     hasEvidence: input.capabilities.some((capability) => capability.evidence.length > 0),
     tags: [input.application.slug, input.application.innovationStage, input.application.productStage],
-    parentNodeId: companyId,
+    parentNodeId: portfolioId,
     childCount: groups.size,
-    path: [companyId, applicationId],
+    path: [portfolioId, applicationId],
     details: {
       description: input.application.description,
       owner: input.application.owner,
@@ -788,24 +788,39 @@ export function buildApplicationGraph(input: {
     }
   };
 
-  const nodes: ApplicationGraphNode[] = [companyNode, appNode];
-  const edges: ApplicationGraphEdge[] = [{ id: `hierarchy:${companyId}:${applicationId}`, source: companyId, target: applicationId, type: "hierarchy", required: true }];
+  const nodes: ApplicationGraphNode[] = [portfolioNode, appNode];
+  const edges: ApplicationGraphEdge[] = [{ id: `hierarchy:${portfolioId}:${applicationId}`, source: portfolioId, target: applicationId, type: "hierarchy", required: true }];
   const featureNodeByKey = new Map<string, ApplicationGraphNode>();
   const capabilityNodeByDefinitionId = new Map<string, ApplicationGraphNode>();
 
-  for (const record of input.records ?? []) {
+  const records = input.records ?? [];
+  const recordById = new Map(records.map((record) => [record.id, record]));
+  const appendedRecordIds = new Set<string>();
+  const appendingRecordIds = new Set<string>();
+  const appendRecord = (record: (typeof records)[number]) => {
+    if (appendedRecordIds.has(record.id)) return;
+    const parentRecord = record.parentId ? recordById.get(record.parentId) : undefined;
+    if (parentRecord && !appendingRecordIds.has(parentRecord.id)) {
+      appendingRecordIds.add(record.id);
+      appendRecord(parentRecord);
+      appendingRecordIds.delete(record.id);
+    }
     const recordId = nodeId("requirement", record.id);
+    const parentId = parentRecord && appendedRecordIds.has(parentRecord.id) ? nodeId("requirement", parentRecord.id) : applicationId;
+    const parentNode = nodes.find((node) => node.id === parentId) ?? appNode;
     const blocked = ["missing", "broken"].includes(record.functionalState) || record.status === "blocked";
     nodes.push({
       id: recordId, entityId: record.id, type: "requirement", label: record.title, shortLabel: record.title,
       category: record.recordType.replace(/_/g, " "), status: record.functionalState,
       completeness: record.implementationCoverage ?? (record.functionalState === "verified_working" ? 100 : record.functionalState === "implemented" ? 90 : record.functionalState === "partially_implemented" ? 50 : 0),
       isRequired: record.recordType === "requirement", isBlocked: blocked, hasEvidence: Boolean(record.evidenceCount), tags: [record.recordType, record.key, record.priority],
-      parentNodeId: applicationId, childCount: 0, path: [companyId, applicationId, recordId],
+      parentNodeId: parentId, childCount: 0, path: [...parentNode.path, recordId],
       details: { description: record.description, evidenceCount: record.evidenceCount ?? 0, missingEvidence: record.recordType === "requirement" && !record.evidenceCount, recommendations: !record.evidenceCount ? ["Attach verified evidence before claiming implementation."] : [] }
     });
-    edges.push({ id: `hierarchy:${applicationId}:${recordId}`, source: applicationId, target: recordId, type: "hierarchy", required: record.recordType === "requirement" });
-  }
+    edges.push({ id: `hierarchy:${parentId}:${recordId}`, source: parentId, target: recordId, type: "hierarchy", required: record.recordType === "requirement" });
+    appendedRecordIds.add(record.id);
+  };
+  records.forEach(appendRecord);
 
   for (const group of Array.from(groups.values()).sort((left, right) => left.order - right.order || left.label.localeCompare(right.label))) {
     const domainId = nodeId("domain", `${input.application.id}:${group.key}`);
@@ -826,7 +841,7 @@ export function buildApplicationGraph(input: {
       tags: Array.from(new Set(group.capabilities.flatMap((capability) => [capability.capabilityDefinition.domain.key, ...capability.capabilityDefinition.tags]))),
       parentNodeId: applicationId,
       childCount: group.capabilities.length,
-      path: [companyId, applicationId, domainId],
+      path: [portfolioId, applicationId, domainId],
       details: {
         description: `${group.capabilities.length} application capabilities projected from the Product Engineering catalog.`,
         evidenceCount: group.capabilities.reduce((sum, capability) => sum + capability.evidence.length, 0),
@@ -863,7 +878,7 @@ export function buildApplicationGraph(input: {
         tags: [capability.capabilityDefinition.key, capability.capabilityDefinition.domain.key, ...capability.capabilityDefinition.tags],
         parentNodeId: domainId,
         childCount: capability.features.filter((feature) => feature.applicability !== "not_applicable").length,
-        path: [companyId, applicationId, domainId, capabilityId],
+        path: [portfolioId, applicationId, domainId, capabilityId],
         details: {
           description: capability.observedSummary || capability.targetDescription || capability.capabilityDefinition.description,
           owner: capability.owner,
@@ -904,7 +919,7 @@ export function buildApplicationGraph(input: {
           tags: [feature.featureDefinition.key, capability.capabilityDefinition.key],
           parentNodeId: capabilityId,
           childCount: 0,
-          path: [companyId, applicationId, domainId, capabilityId, featureId],
+          path: [portfolioId, applicationId, domainId, capabilityId, featureId],
           details: {
             description: feature.notes || feature.featureDefinition.description,
             applicability: feature.applicability,
@@ -981,7 +996,7 @@ export function buildApplicationGraph(input: {
     schemaVersion: "application-graph-v2",
     generatedAt: new Date().toISOString(),
     scope: "application",
-    rootNodeId: companyId,
+    rootNodeId: portfolioId,
     applicationId: input.application.id,
     nodes,
     edges,

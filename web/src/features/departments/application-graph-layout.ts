@@ -3,7 +3,7 @@ import type { ApplicationGraphNode } from "./application-graph-types";
 export type GraphPosition = { x: number; y: number };
 
 export function getApplicationGraphNodeSize(node: ApplicationGraphNode, focusId: string) {
-  if (node.id === focusId && node.type === "company") return { width: 200, height: 200 };
+  if (node.id === focusId && node.type === "portfolio") return { width: 200, height: 200 };
   if (node.id === focusId) return { width: 256, height: node.type === "application" ? 112 : 100 };
   if (node.path.includes(focusId)) {
     if (node.type === "application") return { width: 240, height: 112 };

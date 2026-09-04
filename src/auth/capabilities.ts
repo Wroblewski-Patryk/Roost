@@ -317,6 +317,7 @@ export const adapterManifest = {
       { method: "DELETE", path: "/v1/product-engineering/capability-definitions/:id/procedures/:procedureId", capability: "product-engineering:write" },
       { method: "POST", path: "/v1/product-engineering/capability-packs", capability: "product-engineering:write" },
       { method: "POST", path: "/v1/product-engineering/applications/:id/actions/apply-pack", capability: "product-engineering:write" },
+      { method: "POST", path: "/v1/product-engineering/applications/:id/actions/import-documentation-context", capability: "product-engineering:write" },
       { method: "POST", path: "/v1/product-engineering/application-blueprints", capability: "product-engineering:write" },
       { method: "POST", path: "/v1/product-engineering/technologies", capability: "product-engineering:write" },
       { method: "POST", path: "/v1/product-engineering/applications/:id/technologies", capability: "product-engineering:write" },

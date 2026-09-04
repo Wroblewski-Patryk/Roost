@@ -41,7 +41,7 @@ const modes: Array<{ id: ApplicationGraphMode; label: string; icon: string }> = 
 const graphExitDuration = 150;
 
 function iconFor(type: ApplicationGraphNode["type"]) {
-  if (type === "company") return "ph-buildings";
+  if (type === "portfolio") return "ph-app-window";
   if (type === "application") return "ph-app-window";
   if (type === "domain") return "ph-circles-three-plus";
   if (type === "capability") return "ph-hexagon";
@@ -63,7 +63,7 @@ function statusLabel(record: ApplicationGraphNode) {
 const branchPalette = ["#8b7cf6", "#2da9e9", "#16b985", "#e6a12a", "#d85b65", "#7d8ba8"];
 
 function branchAccent(record: ApplicationGraphNode) {
-  if (record.type === "company") return "#9a8cff";
+  if (record.type === "portfolio") return "#9a8cff";
   const applicationId = record.type === "application"
     ? record.id
     : record.path.find((id) => id.startsWith("application:")) ?? record.id;
@@ -89,7 +89,7 @@ function mergePackets(portfolio: ApplicationGraphPacket | null, applicationPacke
 }
 
 function matchesFilters(node: ApplicationGraphNode, filters: GraphFilters) {
-  if (node.type === "company" || node.type === "application") return true;
+  if (node.type === "portfolio" || node.type === "application") return true;
   if (filters.status !== "all" && node.status !== filters.status) return false;
   if (filters.domain !== "all" && !node.path.includes(filters.domain) && node.id !== filters.domain) return false;
   if (filters.requiredOnly && !node.isRequired) return false;
@@ -136,7 +136,7 @@ function visibleNodeIds(
       const relatedId = anchors.has(edge.source) ? edge.target : anchors.has(edge.target) ? edge.source : null;
       if (!relatedId || anchors.has(relatedId) || relatedIds.includes(relatedId)) continue;
       const related = byId.get(relatedId);
-      if (related && !["company", "application", "domain"].includes(related.type) && matchesFilters(related, filters)) relatedIds.push(relatedId);
+      if (related && !["portfolio", "application", "domain"].includes(related.type) && matchesFilters(related, filters)) relatedIds.push(relatedId);
     }
 
     relatedIds.forEach((id) => visible.add(id));
@@ -148,7 +148,7 @@ function visibleNodeIds(
 function nextLevelLabel(type: ApplicationGraphNode["type"], children: ApplicationGraphNode[]) {
   const count = children.length;
   const labels: Record<ApplicationGraphNode["type"], [string, string]> = {
-    company: ["application", "applications"],
+    portfolio: ["application", "applications"],
     application: ["domain", "domains"],
     domain: ["capability", "capabilities"],
     capability: ["feature", "features"],
@@ -364,7 +364,7 @@ function ApplicationGraphCanvas() {
     parentId: record.parentNodeId,
     color: branchAccent(record),
     weight: record.childCount + (record.details.relationCount || 0),
-    emphasis: record.isBlocked ? "blocked" : record.id === focus?.id || ["company", "application"].includes(record.type) ? "anchor" : record.details.missingEvidence ? "attention" : "standard"
+    emphasis: record.isBlocked ? "blocked" : record.id === focus?.id || ["portfolio", "application"].includes(record.type) ? "anchor" : record.details.missingEvidence ? "attention" : "standard"
   })), [focus?.id, visibleRecords]);
   const unifiedEdges = useMemo<UnifiedGraphEdge[]>(() => graph.edges
     .filter((edge) => visibleIds.has(edge.source) && visibleIds.has(edge.target))

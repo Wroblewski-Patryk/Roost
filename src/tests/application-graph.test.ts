@@ -82,7 +82,7 @@ function capability(overrides: Partial<{
   };
 }
 
-test("portfolio graph is a deterministic company to application projection", () => {
+test("portfolio graph is a deterministic Applications to application projection", () => {
   const packet = buildPortfolioGraph({
     workspace,
     applications: [{
@@ -95,7 +95,8 @@ test("portfolio graph is a deterministic company to application projection", () 
   });
 
   assert.equal(packet.schemaVersion, "application-graph-v2");
-  assert.deepEqual(packet.nodes.map((node) => node.type), ["company", "application"]);
+  assert.deepEqual(packet.nodes.map((node) => node.type), ["portfolio", "application"]);
+  assert.equal(packet.nodes[0]?.label, "Applications");
   assert.equal(packet.edges[0]?.type, "hierarchy");
   assert.equal(packet.nodes[1]?.completeness, 52);
   assert.deepEqual(packet.nodes[1]?.path, [packet.nodes[0]?.id, packet.nodes[1]?.id]);
@@ -112,6 +113,24 @@ test("application graph maps product-specific capability domains into Domain", (
   assert.equal(projectedCapability?.parentNodeId, domain?.id);
   assert.equal(projectedCapability?.completeness, 50);
   assert.equal(projectedCapability?.details.verifiedEvidenceCount, 1);
+});
+
+test("application documentation records preserve their recorded parent hierarchy", () => {
+  const packet = buildApplicationGraph({
+    workspace,
+    application,
+    capabilities: [],
+    records: [
+      { id: "doc-1", recordType: "architecture_document", key: "system", title: "System architecture", status: "active", priority: "normal", functionalState: "expected" },
+      { id: "section-1", recordType: "architecture_section", key: "runtime", title: "Runtime topology", status: "active", priority: "normal", functionalState: "expected", parentId: "doc-1" }
+    ],
+    readiness: { overall: 0, blockers: [] }
+  });
+  const document = packet.nodes.find((node) => node.entityId === "doc-1");
+  const section = packet.nodes.find((node) => node.entityId === "section-1");
+
+  assert.equal(section?.parentNodeId, document?.id);
+  assert.deepEqual(section?.path, [packet.rootNodeId, `application:${application.id}`, document?.id, section?.id]);
 });
 
 test("required incomplete dependencies become blocker edges and node blockers", () => {

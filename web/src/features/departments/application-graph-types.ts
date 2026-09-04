@@ -1,4 +1,4 @@
-export type ApplicationGraphNodeType = "company" | "application" | "domain" | "capability" | "feature" | "layer" | "implementation" | "procedure" | "procedure_step" | "project" | "task_list" | "task";
+export type ApplicationGraphNodeType = "portfolio" | "application" | "requirement" | "domain" | "capability" | "feature" | "layer" | "implementation" | "procedure" | "procedure_step" | "project" | "task_list" | "task";
 export type ApplicationGraphEdgeType = "hierarchy" | "dependency" | "blocks" | "relates_to";
 
 export type ApplicationGraphNode = {

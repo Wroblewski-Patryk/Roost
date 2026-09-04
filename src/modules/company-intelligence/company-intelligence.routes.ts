@@ -3,6 +3,9 @@ import { prisma } from "../../db/prisma";
 import { asyncHandler } from "../../middleware/async-handler";
 import { isCanonicalDepartmentKey, resolveDepartmentEntry } from "../../operating-model/department-registry";
 import { contextualEntityIds, organizationalContextsForEntities } from "../organizational-context/organizational-context.service";
+import { loadApplicationGraphPacket } from "../product-engineering/application-graph-projection.service";
+import { projectApplicationPacketsIntoCompanyGraph } from "./company-graph-application-projection";
+import { analyzeCompanyGraphConnectivity } from "./company-graph-connectivity";
 
 export const companyIntelligenceRouter = Router();
 
@@ -160,6 +163,18 @@ companyIntelligenceRouter.get("/graph", asyncHandler(async (req, res) => {
     const departmentKey = explicitKey || resolveDepartmentEntry(file.operatingArea?.key || "")?.canonicalKey;
     addDerivedDepartmentEdge("file", file.id, departmentKey, `file:${file.id}`);
   });
+  const applicationGraphPackets = (await Promise.all(applications.map((application) => loadApplicationGraphPacket(workspaceId, application.id))))
+    .filter((packet): packet is NonNullable<typeof packet> => Boolean(packet));
+  const innovationDepartment = departmentCatalog.find((department) => department.key === "11-innowacje");
+  const applicationProjection = projectApplicationPacketsIntoCompanyGraph({
+    workspaceId,
+    workspaceName: workspace?.name || "Company",
+    innovationDepartmentNodeId: innovationDepartment ? departmentNodeId(innovationDepartment.id) : undefined,
+    existingNodeIds: new Set(nodes.map((node) => node.id)),
+    packets: applicationGraphPackets
+  });
+  nodes.push(...applicationProjection.nodes);
+  derivedEdges.push(...applicationProjection.edges);
   const explicitEdges: GraphEdge[] = relations.map((relation) => ({ id: relation.id, type: relation.dependencyType, from: { entityType: relation.fromEntityType!, entityId: relation.fromEntityId! }, to: { entityType: relation.toEntityType!, entityId: relation.toEntityId! }, status: relation.status, source: "explicit" }));
   const nodeIds = new Set(nodes.map((node) => node.id));
   const edgeBySignature = new Map<string, GraphEdge>();
@@ -167,16 +182,17 @@ companyIntelligenceRouter.get("/graph", asyncHandler(async (req, res) => {
     if (!nodeIds.has(edge.from.entityId) || !nodeIds.has(edge.to.entityId)) return;
     edgeBySignature.set(`${edge.from.entityId}:${edge.type}:${edge.to.entityId}`, edge);
   });
-  const connectedNodeIds = new Set([...edgeBySignature.values()].flatMap((edge) => [edge.from.entityId, edge.to.entityId]));
-  const contextualizedRecordCount = nodes.filter((node) => node.id !== workspaceNodeId && node.entityType !== "department" && connectedNodeIds.has(node.id)).length;
+  const connectivity = analyzeCompanyGraphConnectivity(nodes, [...edgeBySignature.values()], workspaceNodeId);
+  const contextualizedRecordCount = nodes.filter((node) => node.id !== workspaceNodeId && node.entityType !== "department" && connectivity.reachableNodeIds.has(node.id)).length;
   const recordCount = nodes.filter((node) => node.id !== workspaceNodeId && node.entityType !== "department").length;
   const unassignedRecordCount = Math.max(0, recordCount - contextualizedRecordCount);
-  nodes.forEach((node) => {
-    if (node.id === workspaceNodeId || connectedNodeIds.has(node.id)) return;
-    const edge: GraphEdge = { id: `fallback:workspace-record:${node.entityType}:${node.id}`, type: "needs_context", from: { entityType: "workspace", entityId: workspaceNodeId }, to: { entityType: node.entityType, entityId: node.id }, status: "needs_review", source: "fallback" };
+  const nodeById = new Map(nodes.map((node) => [node.id, node]));
+  connectivity.unrootedComponents.forEach((component) => {
+    const anchor = nodeById.get(component.anchorNodeId)!;
+    const edge: GraphEdge = { id: `fallback:workspace-component:${anchor.entityType}:${anchor.id}`, type: "needs_context", from: { entityType: "workspace", entityId: workspaceNodeId }, to: { entityType: anchor.entityType, entityId: anchor.id }, status: "needs_review", source: "fallback" };
     edgeBySignature.set(`${edge.from.entityId}:${edge.type}:${edge.to.entityId}`, edge);
   });
-  res.json({ data: { schemaVersion: "company-graph-v2", generatedAt: new Date().toISOString(), rootNodeId: workspaceNodeId, nodes, edges: [...edgeBySignature.values()], summary: { recordCount, contextualizedRecordCount, unassignedRecordCount, relationshipCoverage: recordCount ? Math.round((contextualizedRecordCount / recordCount) * 100) : 100 }, organizationalMemberships: memberships.map((x) => ({ entityType: x.entityType, entityId: x.entityId, departmentKey: x.department.key, role: x.relationshipRole })) } });
+  res.json({ data: { schemaVersion: "company-graph-v2", generatedAt: new Date().toISOString(), rootNodeId: workspaceNodeId, nodes, edges: [...edgeBySignature.values()], summary: { recordCount, contextualizedRecordCount, unassignedRecordCount, unrootedComponentCount: connectivity.unrootedComponents.length, relationshipCoverage: recordCount ? Math.round((contextualizedRecordCount / recordCount) * 100) : 100 }, organizationalMemberships: memberships.map((x) => ({ entityType: x.entityType, entityId: x.entityId, departmentKey: x.department.key, role: x.relationshipRole })) } });
 }));
 
 companyIntelligenceRouter.get("/entities/:entityType/:id", asyncHandler(async (req, res) => {

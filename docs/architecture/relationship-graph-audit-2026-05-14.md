@@ -80,11 +80,23 @@ The graph API and UI must never present `route_inferred` or
 | Storage, knowledge, and automation definitions are scoped but empty by accepted decision. | UI could look incomplete if it treats emptiness as an error. | Show honest empty-ready states and real create/import paths later. |
 | Agent events are evidence, not durable object links. | Graph could overstate event outbox as entity relationships. | Keep event edges in evidence/readiness panels unless a durable target relation exists. |
 
-The Company Graph projection now bridges existing ClickUp list mappings and
-Google Drive operating-area assignments into department context as derived
-edges. Records with no stronger direct, structural, provider-derived, or
-company-scope relationship remain visible through an explicitly labelled
-`needs_context` fallback edge and are counted as relationship coverage gaps.
+The Company Graph projection now bridges existing ClickUp list mappings,
+Google Drive operating-area assignments, and the complete Product Engineering
+application projection into department context as derived edges. The
+application branch is rooted at `11 Innovation -> Applications`; native
+applications, procedures, projects, task lists, tasks, and requirements retain
+their existing Company Graph identities, while deterministic navigation groups
+such as domains and implementation layers remain explicitly derived.
+
+Context coverage is measured by undirected reachability from the workspace
+root, not merely by whether a record participates in any edge. A connected but
+unrooted project/list/task island is therefore still a coverage gap. Each
+unrooted component receives one explicitly labelled `needs_context` diagnostic
+edge to a deterministic high-level anchor. The edge makes the component
+inspectable without asserting false ownership; all truthful relationships
+inside the component remain unchanged. The summary reports both the number of
+unrooted records and unrooted components before those diagnostic edges are
+added.
 The owner UI opens on the complete topology. A focused perspective keeps the
 selected record's full lineage and can reveal one, two, three, or every level
 of descendants. Filters reduce visual density without silently truncating the
@@ -102,7 +114,8 @@ canonical records.
 
 The renderer accepts arbitrary record types. Color and emphasis are visual
 metadata only; topology always comes from recorded hierarchy, organizational
-context, or typed dependency edges. It uses GPU-instanced node geometry and a
+context, typed dependency edges, or explicitly labelled deterministic
+projection groups. It uses GPU-instanced node geometry and a
 batched edge geometry so a larger company projection does not create one draw
 call per record. Labels are progressively disclosed for anchors, focus,
 selection, and a bounded high-signal set. Selecting a record visually mutes
